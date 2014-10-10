@@ -260,7 +260,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   stepinc_ = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
 
   // create object for edgebased stabilization
-  if(xfluid_.edge_based_ or xfluid_.ghost_penalty_ )
+  if(xfluid_.eval_eos_)
     edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid.bgdis_));
 
   // allocate memory for fluid-fluid coupling matrices
@@ -733,28 +733,27 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(const Teuchos::RCP<D
                                               cutdiscret,
                                               bcells,
                                               bintpoints,
-                                              side_coupling,
                                               eleparams,
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
-                                              Cuiui,
                                               cells,
-                                              true);
+                                              side_coupling,
+                                              Cuiui,
+                                              Teuchos::null);
           else if (xfluid_.coupling_approach_ == CouplingNitsche_EmbFluid or xfluid_.coupling_approach_ == CouplingNitsche_TwoSided)
-            impl->ElementXfemInterfaceNIT2(   ele,
+            impl->ElementXfemInterfaceNIT(    ele,
                                               *bgdis,
                                               la[0].lm_,
-                                              *cutdiscret,
+                                              cutdiscret,
                                               bcells,
                                               bintpoints,
-                                              side_coupling,
                                               eleparams,
-                                              *embdis,
-                                              xfluid_.boundary_emb_gid_map_,
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
+                                              cells,
+                                              side_coupling,
                                               Cuiui,
-                                              cells);
+                                              embdis);
           else
             dserror("The coupling method you have chosen is not (yet) implemented.");
 
@@ -876,7 +875,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(const Teuchos::RCP<D
   } // end of loop over bgdis
 
   // call edge stabilization
-  if ( xfluid_.edge_based_ or xfluid_.ghost_penalty_ )
+  if ( xfluid_.eval_eos_)
   {
     TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
@@ -1007,7 +1006,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(const Teuchos::RCP<D
   } // end of loop over embedded discretization
 
   // call edge stabilization
-  if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ )
+  if( xfluid_.eval_eos_)
   {
     TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
@@ -1047,7 +1046,10 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid(const Teuchos::RCP<D
       DRT::Element* actface = xdiscret->lRowFace(i);
       DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
       if ( ele==NULL ) dserror( "expect FluidIntFace element" );
-      edgestab_->EvaluateEdgeStabStd(faceparams, xfluid_.embdis_, ele, sysmat_linalg, ale_residual_col);
+      if (xfluid_.xff_eos_pres_emb_layer_)
+        edgestab_->EvaluateEdgeStabBoundaryGP(faceparams, xfluid_.embdis_,xfluid_.embboundarydis_, ele, sysmat_linalg, ale_residual_col);
+      else
+        edgestab_->EvaluateEdgeStabStd(faceparams, xfluid_.embdis_, ele, sysmat_linalg, ale_residual_col);
     }
 
     //------------------------------------------------------------
@@ -1288,7 +1290,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElement( DRT::Discretization 
     dserror( "unsupported shape" ); break;
   }
 
-  for ( int i=0; i<actele->NumNode(); ++i )
+  for ( int i=0; i<8; ++i )
   {
     if ( i > 0 )
     {
@@ -1302,7 +1304,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElement( DRT::Discretization 
   vel_f << "){";
   press_f << "){";
 
-  for ( int i=0; i<actele->NumNode(); ++i )
+  for ( int i=0; i<8; ++i )
   {
     if ( i > 0 )
     {
@@ -1351,7 +1353,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElementEmb( DRT::Discretizati
     dserror( "unsupported shape" ); break;
   }
 
-  for ( int i=0; i<actele->NumNode(); ++i )
+  for ( int i=0; i<8; ++i )
   {
     if ( i > 0 )
     {
@@ -1374,7 +1376,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElementEmb( DRT::Discretizati
   vel_f << "){";
   press_f << "){";
 
-  for ( int i=0; i<actele->NumNode(); ++i )
+  for ( int i=0; i<8; ++i )
   {
     if ( i > 0 )
     {
@@ -1866,7 +1868,7 @@ void FLD::XFluidFluid::Init()
 
   //-------------------------------------------------------------------
   // create internal faces extension for edge based stabilization
-  if(edge_based_ or ghost_penalty_)
+  if (eval_eos_)
   {
     Teuchos::RCP<DRT::DiscretizationFaces> actembdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(embdis_, true);
     actembdis->CreateInternalFacesExtension();
@@ -1984,9 +1986,10 @@ void FLD::XFluidFluid::Init()
 
   //----------------------------------------------------------------
   // create embedded-boundary discretization needed for solving
-  // Nitsche-Eigenvalue-Problem
+  // Nitsche-Eigenvalue-Problem and for application of EOS
+  // pressure term to outer embedded element
   //----------------------------------------------------------------
-  if (nitsche_evp_)
+  if (nitsche_evp_ || xff_eos_pres_emb_layer_)
     CreateEmbeddedBoundaryDiscretization();
 
   //gmsh discretization output
@@ -2159,7 +2162,7 @@ void FLD::XFluidFluid::CreateBoundaryEmbeddedMap()
 
   // update the estimate of the maximal eigenvalues in the parameter list to access on element level
   DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->Set_boundary_emb_face_lid_map(boundary_emb_face_lid_map);
-
+  DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->Set_boundary_emb_gid_map(boundary_emb_gid_map_);
 
 }//FLD::XFluidFluid::CreateBoundaryEmbeddedMap()
 
@@ -2364,16 +2367,6 @@ void FLD::XFluidFluid::CheckXFluidFluidParams() const
       IO::cout << "FluidFluidCoupling condition is not related for a full Newton approach!" << IO::endl;
   }
 
-  // convective stabilization parameter (scaling factor and stabilization factor)
-  if (conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_none)
-    dserror("INPAR::XFEM::ConvStabScaling should be set to ConvStabScaling_none for XFluidFluid!");
-
-  if (velgrad_interface_stab_ and coupling_approach_ != CouplingNitsche_EmbFluid )
-    dserror("VELGRAD_INTERFACE_STAB just for embedded sided Nitsche-Coupling!");
-
-  if (presscoupling_interface_stab_ and coupling_approach_ != CouplingNitsche_EmbFluid)
-    dserror("PRESSCOUPLING_INTERFACE_STAB just for embedded sided Nitsche-Coupling!");
-
   if (nitsche_evp_ and coupling_approach_ != CouplingNitsche_EmbFluid)
     dserror("NITSCHE_EVP just for embedded sided Nitsche-Coupling!");
 
@@ -2496,12 +2489,14 @@ void FLD::XFluidFluid::PrintStabilizationParams() const
     //---------------------------------------------------------------------------------------------
     IO::cout << "\n\nEDGE-BASED (EOS) fluid stabilizations " << "\n";
 
-    IO::cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<std::string>("EOS_PRES")      <<"\n";
-    IO::cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<std::string>("EOS_CONV_STREAM")      <<"\n";
-    IO::cout <<  "                    " << "EOS_CONV_CROSS       = " << stabparams_edgebased->get<std::string>("EOS_CONV_CROSS")      <<"\n";
-    IO::cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<std::string>("EOS_DIV")      <<"\n";
-    IO::cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<std::string>("EOS_DEFINITION_TAU")      <<"\n";
-    IO::cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<std::string>("EOS_H_DEFINITION")      <<"\n";
+    IO::cout <<  "                    " << "EOS_PRES                = " << stabparams_edgebased->get<std::string>("EOS_PRES")      <<"\n";
+    IO::cout <<  "                    " << "EOS_CONV_STREAM         = " << stabparams_edgebased->get<std::string>("EOS_CONV_STREAM")      <<"\n";
+    IO::cout <<  "                    " << "EOS_CONV_CROSS          = " << stabparams_edgebased->get<std::string>("EOS_CONV_CROSS")      <<"\n";
+    IO::cout <<  "                    " << "EOS_DIV                 = " << stabparams_edgebased->get<std::string>("EOS_DIV")      <<"\n";
+    IO::cout <<  "                    " << "EOS_DEFINITION_TAU      = " << stabparams_edgebased->get<std::string>("EOS_DEFINITION_TAU")      <<"\n";
+    IO::cout <<  "                    " << "EOS_H_DEFINITION        = " << stabparams_edgebased->get<std::string>("EOS_H_DEFINITION")      <<"\n";
+    IO::cout <<  "                    " << "XFF_EOS_PRES_EMB_LAYER  = " << interfstabparams->get<std::string>("XFF_EOS_PRES_EMB_LAYER") << IO::endl;
+
     IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
     IO::cout << "\n";
 
@@ -2523,10 +2518,6 @@ void FLD::XFluidFluid::PrintStabilizationParams() const
     IO::cout << "GHOST_PENALTY_2nd_STAB       : " << interfstabparams->get<std::string>("GHOST_PENALTY_2nd_STAB") << "\n";
 
     IO::cout << "INFLOW_CONV_STAB_STRATEGY    : " << interfstabparams->get<std::string>("XFF_CONV_STAB_SCALING") << IO::endl;
-
-    IO::cout << "VELGRAD_INTERFACE_STAB       : " << interfstabparams->get<std::string>("VELGRAD_INTERFACE_STAB")<< IO::endl;
-    IO::cout << "PRESSCOUPLING_INTERFACE_STAB : " << interfstabparams->get<std::string>("PRESSCOUPLING_INTERFACE_STAB")<< IO::endl;
-    IO::cout << "PRESSCOUPLING_INTERFACE_FAC  : " << presscoupling_interface_fac_ << IO::endl;
 
     IO::cout << "VISC_STAB_FAC                : " << interfstabparams->get<double>("VISC_STAB_FAC") << "\n";
     IO::cout << "VISC_STAB_TRACE_ESTIMATE     : " << interfstabparams->get<std::string>("VISC_STAB_TRACE_ESTIMATE") << "\n";
@@ -5494,7 +5485,9 @@ void FLD::XFluidFluid::SetXFluidFluidParams()
   hybrid_lm_l2_proj_     = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
 
   xff_conv_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFF_ConvStabScaling>(params_xf_stab,"XFF_CONV_STAB_SCALING");
-  conv_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
+
+  // Todo: the flags edge_based_ and ghost_penalty_ are now combined to one (eval_eos_) and will be removed as
+  // soon as the gmsh output is re-organized
 
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
   edge_based_ = ( params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE") == "edge_based"
@@ -5508,12 +5501,14 @@ void FLD::XFluidFluid::SetXFluidFluidParams()
                     or DRT::INPUT::IntegralValue<bool>(params_xf_stab,"GHOST_PENALTY_TRANSIENT_STAB")
                     or DRT::INPUT::IntegralValue<bool>(params_xf_stab,"GHOST_PENALTY_2nd_STAB") );
 
+  eval_eos_ = edge_based_ || ghost_penalty_;
+
+  // additional eos pressure stabilization on the elements of the embedded discretization,
+  // that contribute to the interface
+  xff_eos_pres_emb_layer_ = DRT::INPUT::IntegralValue<bool>(params_xf_stab,"XFF_EOS_PRES_EMB_LAYER");
+
+  // parameter of viscous ghost-penalty term
   ghost_penalty_fac_ = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
-
-  velgrad_interface_stab_ = DRT::INPUT::IntegralValue<bool>(params_xf_stab,"VELGRAD_INTERFACE_STAB");
-
-  presscoupling_interface_stab_ = DRT::INPUT::IntegralValue<bool>(params_xf_stab,"PRESSCOUPLING_INTERFACE_STAB");
-  presscoupling_interface_fac_  = params_xf_stab.get<double>("PRESSCOUPLING_INTERFACE_FAC", 0.0);
 
   nitsche_evp_ = (DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_TraceEstimate>(params_xf_stab,"VISC_STAB_TRACE_ESTIMATE")
                    == INPAR::XFEM::ViscStab_TraceEstimate_eigenvalue);

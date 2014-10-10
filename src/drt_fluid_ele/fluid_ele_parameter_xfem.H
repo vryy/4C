@@ -103,9 +103,15 @@ public:
   /*----------------------------------------------------*/
 
   //! set the map to store the local id (value) of the boundary element (key) w.r.t to the embedded element
-  void Set_boundary_emb_face_lid_map(std::map<int,int > boundary_emb_face_lid_map)
+  void Set_boundary_emb_face_lid_map(const std::map<int,int > & boundary_emb_face_lid_map)
   {
     boundary_emb_face_lid_map_ = boundary_emb_face_lid_map;
+  }
+
+  //! set the map to store the local id (value) of the boundary element (key) w.r.t to the embedded element
+  void Set_boundary_emb_gid_map(const std::map<int,int > & boundary_emb_gid_map)
+  {
+    boundary_emb_gid_map_ = boundary_emb_gid_map;
   }
 
   //! get the local id of the face element(key) of the cut discretization w.r.t to the embedded element
@@ -120,11 +126,23 @@ public:
     return it->second;
   }
 
+  //! get global ID of parent embedded element for a side ID in embedded-sided fluid-fluid coupling
+   int Get_embedded_ele_gid(
+       const int sid  ///< ID of associated boundary element
+   )
+   {
+     std::map<int,int>::iterator it = boundary_emb_gid_map_.find(sid);
+
+     if (it == boundary_emb_gid_map_.end()) dserror("Could not find parent element ID for side %d.", sid);
+
+     return it->second;
+   }
+
   //@}
 
 
   /*----------------------------------------------------*/
-  //! @name access routines for convective stabilization
+  //! @name access routines for convective inflow stabilization
   //! parameters in Nitsche's method and MixedHybrid_LM methods
   /*----------------------------------------------------*/
   //@{
@@ -136,30 +154,20 @@ public:
 
   //@}
 
-
   /*----------------------------------------------------*/
-  //! @name access routines for parameters regarding
-  //! additional interface penalty terms in
-  //! fluid-fluid coupling
+  //! @name access routines for definitions to compute
+  //! Nitsche's penalty parameter for different flow
+  //! regimes
   /*----------------------------------------------------*/
   //@{
+  //! get information, whether we take the maximum from the viscous and convective penalty
+  //! scaling or the sum of them
+  INPAR::XFEM::MassConservationCombination MassConservationCombination() const{ return mass_conservation_combo_; }
 
-  //! get information, if velocity gradient penalty term
-  //! acts on fluid-fluid interface
-  bool IsVelGradInterfaceStab() const{ return is_velgrad_interface_stab_; }
-
-  //! get stabilization parameter for velocity gradient interface penalty term
-  double GetVelGradInterfaceStabFac() const{ return velgrad_interface_stab_fac_; }
-
-  //! get information, if velocity gradient penalty term
-  //! acts on fluid-fluid interface
-  bool IsPressureGradientInterfaceStab() const{ return is_pressure_gradient_interface_stab_; }
-
-  //! get stabilization parameter for pressure gradient interface penalty term
-  double GetPressureGradientInterfaceStabFac() const{ return pressure_interface_stab_fac_; }
+  //! get the type of scaling for convective/inflow stabilization term for classical xfluid problem
+  INPAR::XFEM::MassConservationScaling MassConservationScaling() const{ return mass_conservation_scaling_; }
 
   //@}
-
 
 private:
 
@@ -240,6 +248,9 @@ private:
   //! used to evaluate certain characteristic element length definitions for embedded sided formulations in xfluidfluid
   std::map<int, int> boundary_emb_face_lid_map_;
 
+  //! map of boundary element to parent element IDs
+  std::map<int,int> boundary_emb_gid_map_;
+
   //@}
 
   /*----------------------------------------------------*/
@@ -256,21 +267,17 @@ private:
   //@}
 
   /*----------------------------------------------------*/
-  //! @name special interface stabilizations for fluidfluid problems
+  //! @name definitions to compute Nitsche's penalty
+  //! parameter for different flow regimes
   /*----------------------------------------------------*/
   //@{
 
-  //! flag, that indicates whether velocity gradient interface penalty terms are active
-  bool is_velgrad_interface_stab_;
+  //! get information, whether we take the maximum from the viscous and convective penalty
+  //! scaling or the sum of them
+  INPAR::XFEM::MassConservationCombination mass_conservation_combo_;
 
-  //! parameter for velocity gradient interface penalty term
-  double velgrad_interface_stab_fac_;
-
-  //! flag, that indicates whether pressure gradient interface penalty terms are active
-  bool is_pressure_gradient_interface_stab_;
-
-  //! parameter for pressure gradient interface penalty term
-  double pressure_interface_stab_fac_;
+  //! get the type of scaling for convective/inflow stabilization term for classical xfluid problem
+  INPAR::XFEM::MassConservationScaling mass_conservation_scaling_;
 
   //@}
 

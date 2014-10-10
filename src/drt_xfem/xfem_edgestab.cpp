@@ -664,3 +664,70 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabStd(
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  prepares edge based stabilization for fluid-fluid applications      |
+ |  where EOS pressure stab. shall be applied to interface-contributing |
+ |  embedded fluid elements                               (kruse 10/14) |
+ *----------------------------------------------------------------------*/
+void XFEM::XFEM_EdgeStab::EvaluateEdgeStabBoundaryGP(
+    Teuchos::ParameterList &               eleparams,        ///< element parameter list
+    Teuchos::RCP<DRT::Discretization>      discret,          ///< discretization
+    Teuchos::RCP<DRT::Discretization>      boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
+    DRT::ELEMENTS::FluidIntFace *          faceele,          ///< face element
+    Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
+    Teuchos::RCP<Epetra_Vector>            systemvector      ///< systemvector
+)
+{
+  Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret);
+  if (xdiscret == Teuchos::null)
+    dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
+
+
+  // get the parent fluid elements
+  DRT::ELEMENTS::Fluid* p_master = faceele->ParentMasterElement();
+  DRT::ELEMENTS::Fluid* p_slave  = faceele->ParentSlaveElement();
+
+  size_t p_master_numnode = p_master->NumNode();
+  size_t p_slave_numnode  = p_slave->NumNode();
+
+
+  std::vector<int> nds_master;
+  nds_master.reserve(p_master_numnode);
+
+  std::vector<int> nds_slave;
+  nds_slave.reserve(p_slave_numnode);
+
+  //------------------------------------------------------------------------------
+  // simplest case: no element handles for both parent elements
+  // two uncut elements / standard fluid case
+  //------------------------------------------------------------------------------
+
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds" );
+
+    for(size_t i=0; i< p_master_numnode; i++)  nds_master.push_back(0);
+
+    for(size_t i=0; i< p_slave_numnode; i++)   nds_slave.push_back(0);
+  }
+
+  //--------------------------------------------------------------------------------------------
+  // leave, if neither slave nor master element of this face contributes to the fluid-fluid
+  // interface
+  if (!( boundarydiscret->HaveGlobalElement(p_master->Id()) || boundarydiscret->HaveGlobalElement(p_slave->Id())))
+    return;
+
+  // call evaluate and assemble routine
+   AssembleEdgeStabGhostPenalty( eleparams,
+                                 INPAR::XFEM::face_type_boundary_ghost_penalty,
+                                 faceele,
+                                 nds_master,
+                                 nds_slave,
+                                 *xdiscret,
+                                 systemmatrix,
+                                 systemvector);
+
+  //--------------------------------------------------------------------------------------------
+
+  return;
+}

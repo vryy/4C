@@ -91,9 +91,6 @@ VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.003                         // in [0.1;0.5]
-PRESSCOUPLING_INTERFACE_STAB    no
-PRESSCOUPLING_INTERFACE_FAC     0.1
-VELGRAD_INTERFACE_STAB          no
 VISC_ADJOINT_SYMMETRY           no                           // no is strongly recommended for fluid-fluid coupling with viscous-stress based LM!
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver

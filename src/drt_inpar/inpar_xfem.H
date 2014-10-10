@@ -96,25 +96,35 @@ namespace INPAR
       ViscStab_hk_ele_vol_div_by_max_ele_surf /// full element volume divided by maximal element surface measure ( used to estimate the trace inequality for stretched elements in combination with ghost-penalties)
     };
 
-    /// scaling for convective/inflow stabilization term
+    /// type of scaling for convective/inflow stabilization term
     enum ConvStabScaling
     {
-      ConvStabScaling_inflow,
-      ConvStabScaling_abs_normal_vel,
-      ConvStabScaling_max_abs_normal_vel,
-      ConvStabScaling_const,
-      ConvStabScaling_averaged,
+      ConvStabScaling_inflow,                 /// interface-normal velocity component in case of inflow, 0 for outflow
+      ConvStabScaling_abs_inflow,             /// absolute value of interface-normal velocity component in case of inflow, 0 for outflow
       ConvStabScaling_none
     };
 
-    /// Xfluidfluid scaling for convective/inflow stabilization term
+    /// type of scaling for convective/inflow stabilization term (xfluid-fluid applications)
     enum XFF_ConvStabScaling
     {
-      XFF_ConvStabScaling_onesidedinflow,
-      XFF_ConvStabScaling_averaged,
-      XFF_ConvStabScaling_onesidedinflow_max_penalty,
-      XFF_ConvStabScaling_averaged_max_penalty,
+      XFF_ConvStabScaling_upwinding,         ///
+      XFF_ConvStabScaling_only_averaged,
       XFF_ConvStabScaling_none
+    };
+
+    /// depending on the flow regime, one can either choose the maximum from the viscous and convective
+    /// contributions to the penalty factor or just sum all of them up
+    enum MassConservationCombination
+    {
+      MassConservationCombination_max,       /// take the maximum from the viscous/convective/transient contribution of the penalty term
+      MassConservationCombination_sum        /// take the sum of all contributions to the penalty term, independent from the flow regime
+    };
+
+    /// apply additional scaling of penalty term to enforce mass conservation for convection-dominated flow
+    enum MassConservationScaling
+    {
+      MassConservationScaling_full,          /// apply additional penalty scaling
+      MassConservationScaling_only_visc      /// use only the viscous scaling
     };
 
     /// xfluidfluid-fsi-monolithic approach
@@ -166,6 +176,7 @@ namespace INPAR
       face_type_std,
       face_type_ghost_penalty,
       face_type_ghost,
+      face_type_boundary_ghost_penalty,
       face_type_double_plus, // combustion only
       face_type_double_minus // combustion only
     };

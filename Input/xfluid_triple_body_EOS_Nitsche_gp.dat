@@ -90,7 +90,7 @@ IS_PSEUDO_2D                    yes
 VISC_STAB_FAC                   24.40282794                   // = 35.0/CT(2D) with former 35 in [10;100]
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
-CONV_STAB_SCALING               max_abs_normal_vel //abs_normal_vel  // inflow // const // none
+CONV_STAB_SCALING               abs_inflow //abs_normal_vel   // inflow // const // none
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 --------------------------------------------------------------------SOLVER 1

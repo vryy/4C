@@ -775,22 +775,23 @@ namespace FLD
 
     //! @name Nitsche stabilization factors
     //@{
-    enum INPAR::XFEM::ConvStabScaling conv_stab_scaling_;         ///< convective stabilization scaling for inflow terms
     enum INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling_; ///< convective stabilization scaling for inflow terms (xfluidfluid)
     //@}
 
-    /// flag for edge-based stabilization
+    /// flag for full edge-based stabilization on the whole embedded & background fluid stabilization
     bool edge_based_;
 
     /// flag for ghost penalty stabilization
     bool ghost_penalty_;
 
+    /// flag, that indicates evaluation of edge-based stabilizing terms
+    bool eval_eos_;
+
+    /// flag, that indicates part of embedded domain, where eos-terms are active
+    bool xff_eos_pres_emb_layer_;
+
     /// ghost-penalty parameter
     double ghost_penalty_fac_;
-
-    /// penalty term for pressure coupling at the interface
-    bool presscoupling_interface_stab_;
-    double presscoupling_interface_fac_;
 
     /// if true solving Eigenvalue problem to get the right Nitsche parameter
     bool nitsche_evp_;

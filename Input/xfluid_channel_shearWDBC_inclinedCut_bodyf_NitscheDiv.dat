@@ -84,7 +84,7 @@ VEL_INIT_FUNCT_NO               2
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 VISC_STAB_FAC                   31.38594035                   // equal to 50.0/CT(3D) with former 50 in [10;100]
-CONV_STAB_SCALING               abs_normal_vel
+CONV_STAB_SCALING               abs_inflow
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

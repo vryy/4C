@@ -251,10 +251,11 @@ namespace DRT
           Epetra_SerialDenseVector &                            rhs_Cum,                ///< master rhs
           const LINALG::Matrix<nen_,1> &                        funct_m,                ///< master shape functions
           const LINALG::Matrix<nsd_,1> &                        velint_m,               ///< vector of slave shape functions
-          const double &                                        NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
-          const double &                                        avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
+          const LINALG::Matrix<nsd_,1> &                        normal,                 ///< normal vector n^b
+          const double &                                        density_m,              ///< fluid density (master)
+          const double &                                        NIT_stab_fac_conv,      ///< full Nitsche's penalty term scaling (viscous+convective part)
           const double &                                        timefacfac,             ///< theta*dt
-          INPAR::XFEM::XFF_ConvStabScaling                      xff_conv_stab           ///< type of convective stabilization in XFF-problems
+          INPAR::XFEM::XFF_ConvStabScaling                      xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none         ///< type of convective stabilization in XFF-problems
         );
 
         //! build coupling matrices and assemble terms for Nitsche's (NIT) method
@@ -267,30 +268,14 @@ namespace DRT
           const double &                    visceff_s,              ///< viscosity in coupling slave fluid
           const double &                    kappa_m,                ///< mortaring weight for coupling master
           const double &                    kappa_s,                ///< mortaring weight for coupling slave
+          const double &                    density_m,              ///< fluid density (master)
           const double &                    NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
-          const double &                    avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
           const LINALG::Matrix<nen_,1> &    funct_m,                ///< coupling master shape functions
           const LINALG::Matrix<nsd_,nen_> & derxy_m,                ///< spatial derivatives of coupling master shape functions
           const LINALG::Matrix<nsd_,nsd_> & vderxy_m,               ///< coupling master spatial velocity derivatives
           const double &                    press_m,                ///< coupling master pressure
           const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
           INPAR::XFEM::XFF_ConvStabScaling  xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
-        );
-
-        //! apply penalty terms on interface pressure and velocity gradient (for xfluidfluid-problems)
-        void NIT_applyAdditionalInterfacePenaltyTerms(
-          Epetra_SerialDenseMatrix &          C_umum,                       ///< standard master-master couplingmatrix
-          Epetra_SerialDenseVector &          rhs_Cum,                      ///< standard master coupling rhs
-          const LINALG::Matrix<nsd_,1> &      normal,                       ///< normal vector
-          const double &                      timefacfac,                   ///< theta*dt
-          LINALG::Matrix<nen_,1> &            funct_m,                      ///< master shape function
-          LINALG::Matrix<nsd_,nen_> &         derxy_m,                      ///< master shape function derivatives
-          LINALG::Matrix<nsd_,nsd_> &         vderxy_m,                     ///< master spatial velocity derivatives
-          const double &                      press_m,                      ///< master pressure
-          const bool &                        velgrad_interface_stab,       ///< penalty term for velocity gradients at the interface
-          const double &                      velgrad_interface_fac,        ///< stabilization fac for velocity gradients at the interface
-          const bool &                        presscoupling_interface_stab, ///< penalty term for pressure coupling at the interface
-          const double &                      presscoupling_interface_fac   ///< stabilization fac for pressure coupling at the interface
         );
 
       private:
@@ -409,7 +394,7 @@ namespace DRT
         );
 
         //! add stabilizing terms due to cross-interface convective mass transport (fluid-fluid only)
-        void NIT_Stab_ConvAveraged(
+        void NIT_Stab_Inflow_AveragedTerm(
           Epetra_SerialDenseMatrix &                    C_umum,                       ///< standard master-master-matrix
           Epetra_SerialDenseVector &                    rhs_Cum,                      ///< master rhs
           const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
@@ -419,7 +404,8 @@ namespace DRT
           const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
           const LINALG::Matrix<slave_nen_,nen_>&        funct_s_m_dyad_timefacfac,    ///< (funct_s^T * funct) * timefacfac
           const LINALG::Matrix<slave_nen_,slave_nen_> & funct_s_s_dyad_timefacfac,    ///< (funct_s^T * funct_s) * timefacfac
-          const double &                                stabfac_avg                   ///< stabilization factor
+          const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal vector n^m
+          const double &                                density                       ///< fluid density
         );
 
       private:

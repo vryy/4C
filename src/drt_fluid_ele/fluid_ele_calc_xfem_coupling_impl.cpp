@@ -547,8 +547,9 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
   Epetra_SerialDenseVector &                            rhs_Cum,                ///< master rhs
   const LINALG::Matrix<nen_,1> &                        funct_m,                ///< master shape functions
   const LINALG::Matrix<nsd_,1> &                        velint_m,               ///< vector of slave shape functions
-  const double &                                        NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
-  const double &                                        avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
+  const LINALG::Matrix<nsd_,1> &                        normal,                 ///< normal vector n^b
+  const double &                                        density_m,              ///< fluid density (master)
+  const double &                                        NIT_stab_fac_conv,      ///< full Nitsche's penalty term scaling (viscous+convective part)
   const double &                                        timefacfac,             ///< theta*dt
   INPAR::XFEM::XFF_ConvStabScaling                      xff_conv_stab           ///< type of convective stabilization in XFF-problems
 )
@@ -587,7 +588,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
         velint_s,
         funct_m_timefacfac,
         funct_m_m_dyad_timefacfac,
-        NIT_full_stab_fac
+        NIT_stab_fac_conv
       );
       break;
     }
@@ -612,8 +613,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
       LINALG::Matrix<slave_nen_,nen_> funct_s_m_dyad_timefacfac(true);
       funct_s_m_dyad_timefacfac.MultiplyNT(funct_s_timefacfac, funct_m);
 
-      if (xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow ||
-          xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty)
+      if (xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_upwinding)
       {
         NIT_Stab_Penalty(
           C_umum,
@@ -625,17 +625,15 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
           funct_s_timefacfac,
           funct_s_m_dyad_timefacfac,
           funct_s_s_dyad_timefacfac,
-          NIT_full_stab_fac
+          NIT_stab_fac_conv
         );
       }
 
       // prevent instabilities due to convective mass transport across the fluid-fluid interface
-      if (xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow ||
-          xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty ||
-          xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty ||
-          xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_averaged)
+      if (xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_upwinding ||
+          xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_only_averaged)
       {
-        NIT_Stab_ConvAveraged(
+        NIT_Stab_Inflow_AveragedTerm(
           C_umum,
           rhs_Cum,
           velint_m,
@@ -645,7 +643,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
           funct_s_timefacfac,
           funct_s_m_dyad_timefacfac,
           funct_s_s_dyad_timefacfac,
-          avg_conv_stab_fac
+          normal,
+          density_m
         );
       }
       break;
@@ -672,8 +671,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_buildCouplingMatri
   const double &                    visceff_s,              ///< viscosity in coupling slave fluid
   const double &                    kappa_m,                ///< mortaring weight for coupling master
   const double &                    kappa_s,                ///< mortaring weight for coupling slave
+  const double &                    density_m,              ///< fluid density (master)
   const double &                    NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
-  const double &                    avg_conv_stab_fac,      ///< scaling of the convective average coupling term for fluidfluid problems
   const LINALG::Matrix<nen_,1> &    funct_m,                ///< coupling master shape functions
   const LINALG::Matrix<nsd_,nen_> & derxy_m,                ///< spatial derivatives of coupling master shape functions
   const LINALG::Matrix<nsd_,nsd_> & vderxy_m,               ///< coupling master spatial velocity derivatives
@@ -785,12 +784,10 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_buildCouplingMatri
   }
 
   // add averaged term
-  if (xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow ||
-      xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_averaged ||
-      xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty ||
-      xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty)
+  if (xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_upwinding ||
+      xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_only_averaged )
   {
-    NIT_Stab_ConvAveraged(
+    NIT_Stab_Inflow_AveragedTerm(
       C_umum,
       rhs_Cum,
       velint_m,
@@ -800,7 +797,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_buildCouplingMatri
       funct_s_timefacfac,
       funct_s_m_dyad_timefacfac,
       funct_s_s_dyad_timefacfac,
-      avg_conv_stab_fac
+      normal,
+      density_m
     );
   }
 
@@ -1059,138 +1057,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_buildCouplingMatri
       normal
   );
 
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_applyAdditionalInterfacePenaltyTerms(
-  Epetra_SerialDenseMatrix &          C_umum,                        ///< standard master-master couplingmatrix
-  Epetra_SerialDenseVector &          rhs_Cum,                      ///< standard master coupling rhs
-  const LINALG::Matrix<nsd_,1> &      normal,                       ///< normal vector
-  const double &                      timefacfac,                   ///< theta*dt
-  LINALG::Matrix<nen_,1> &            funct_m,                      ///< master shape function
-  LINALG::Matrix<nsd_,nen_> &         derxy_m,                      ///< master shape function derivatives
-  LINALG::Matrix<nsd_,nsd_> &         vderxy_m,                     ///< master spatial velocity derivatives
-  const double &                      press_m,                      ///< master pressure
-  const bool &                        velgrad_interface_stab,       ///< penalty term for velocity gradients at the interface
-  const double &                      velgrad_interface_fac,        ///< stabilization fac for velocity gradients at the interface
-  const bool &                        presscoupling_interface_stab, ///< penalty term for pressure coupling at the interface
-  const double &                      presscoupling_interface_fac   ///< stabilization fac for pressure coupling at the interface
-)
-{
-  //-----------------------------------------------------------------
-  // penalty term for velocity gradients at the interface
-  if (velgrad_interface_stab)
-  {
-    const double tau_timefacfac = velgrad_interface_fac * timefacfac;
-
-    // get shape function gradient in normal direction
-    LINALG::Matrix<nsd_,slave_nen_> deriv_s(true);
-    this->GetSlaveFunctDeriv(deriv_s);
-    LINALG::Matrix<slave_nen_,1> deriv_s_normal(true);
-    deriv_s_normal.MultiplyTN(deriv_s,normal);
-
-    LINALG::Matrix<nen_,1> deriv_m_normal(true);
-    deriv_m_normal.MultiplyTN(derxy_m,normal);
-
-    LINALG::Matrix<nsd_,nsd_> vderxy_s(true);
-    this->GetInterfaceVelGrad(vderxy_s);
-    LINALG::Matrix<nsd_,1> vderxy_s_normal(true);
-    vderxy_s_normal.Multiply(vderxy_s,normal);
-
-    LINALG::Matrix<nsd_,1> vderxy_m_normal(true);
-    vderxy_m_normal.Multiply(vderxy_m,normal);
-
-    // additional stability of gradients
-    for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
-    {
-      for (unsigned ic=0; ic<slave_nen_; ++ic)
-      {
-        for (unsigned ir=0; ir<slave_nen_; ++ir)
-        {
-          const double tmp = tau_timefacfac*deriv_s_normal(ic)*deriv_s_normal(ir);
-          C_usus_(sIndex(ir,ivel), sIndex(ic,ivel)) += tmp;
-        }
-
-        // neighbor row
-        for (unsigned ir=0; ir<nen_; ++ir)
-        {
-          const double tmp = tau_timefacfac*deriv_s_normal(ic)*deriv_m_normal(ir);
-          C_umus_(mIndex(ir,ivel), sIndex(ic,ivel)) -= tmp;
-          C_usum_(sIndex(ic,ivel), mIndex(ir,ivel)) -= tmp;
-        }
-      }
-
-      for (unsigned ir=0; ir<nen_; ++ir)
-      {
-        for (unsigned ic=0; ic<nen_; ++ic)
-        {
-          const double tmp = tau_timefacfac*deriv_m_normal(ir)*deriv_m_normal(ic);
-          C_umum(mIndex(ir,ivel), mIndex(ic,ivel)) += tmp;
-        }
-      }
-
-      // v_parent (u_neighbor-u_parent)
-      for (unsigned ir=0; ir<slave_nen_; ++ir)
-      {
-        rhC_us_(sIndex(ir,ivel),0) += tau_timefacfac * deriv_s_normal(ir) * (vderxy_m_normal(ivel)-vderxy_s_normal(ivel));
-      }
-
-      // v_neighbor (u_neighbor-u_parent)
-      for (unsigned ir=0; ir<nen_; ++ir)
-      {
-        rhs_Cum(mIndex(ir,ivel),0) +=  tau_timefacfac * deriv_m_normal(ir) * (vderxy_s_normal(ivel)-vderxy_m_normal(ivel));
-      }
-    }
-  }// velgrad_interface_fac
-  // --------------------------------------------------------
-  // pressure coupling penalty term at the interface
-
-  if (presscoupling_interface_stab)
-  {
-    double press_s = 0.0;
-    this->GetInterfacePres(press_s);
-
-    LINALG::Matrix<slave_nen_,1> funct_s;
-    this->GetSlaveFunct(funct_s);
-
-    const double tau_timefacfac_press = presscoupling_interface_fac * timefacfac;
-
-    const double press_jump = press_m - press_s;
-
-    for (unsigned ir=0; ir<slave_nen_; ++ir)
-    {
-      for (unsigned ic=0; ic<slave_nen_; ++ic)
-      {
-        const double tmp = tau_timefacfac_press*funct_s(ir)*funct_s(ic);
-        C_usus_(sPres(ir),sPres(ic)) += tmp;
-
-      }
-
-      for (unsigned ic=0; ic<nen_; ++ic)
-      {
-        const double tmp = tau_timefacfac_press*funct_s(ir)*funct_m(ic);
-        C_umus_(mPres(ic),sPres(ir)) -= tmp;
-
-        C_usum_(sPres(ir),mPres(ic)) -= tmp;
-      }
-
-      rhC_us_(sPres(ir),0) += funct_s(ir)*press_jump*tau_timefacfac_press;
-    }
-
-    for (unsigned ir=0; ir<nen_; ++ir)
-    {
-      for (unsigned ic=0; ic<nen_; ++ic)
-      {
-        const double tmp = tau_timefacfac_press*funct_m(ir)*funct_m(ic);
-        C_umum(mPres(ir),mPres(ic)) += tmp;
-      }
-
-      const double tmp = funct_m(ir)*press_jump*tau_timefacfac_press;
-      rhs_Cum(mPres(ir),0) -= tmp;
-    }
-  } // presscoupling_interface_stab
 }
 
 /*----------------------------------------------------------------------*
@@ -1865,9 +1731,11 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_Maste
 }
 
 /*----------------------------------------------------------------------*
+ * add averaged term to balance instabilities due to convective
+ * mass transport across the fluid-fluid interface
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_ConvAveraged(
+void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Inflow_AveragedTerm(
   Epetra_SerialDenseMatrix &                    C_umum,                       ///< standard master-master-matrix
   Epetra_SerialDenseVector &                    rhs_Cum,                      ///< master rhs
   const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
@@ -1877,14 +1745,19 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_ConvAveraged(
   const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
   const LINALG::Matrix<slave_nen_,nen_>&        funct_s_m_dyad_timefacfac,    ///< (funct_s^T * funct) * timefacfac
   const LINALG::Matrix<slave_nen_,slave_nen_> & funct_s_s_dyad_timefacfac,    ///< (funct_s^T * funct_s) * timefacfac
-  const double &                                stabfac_avg                  ///< stabilization factor
+  const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal vector n^m
+  const double &                                density                       ///< fluid density
 )
 {
-  /*                                        \        /                                       i \
- -|  [rho * (beta * n)] *  { v }_m , [ Du ] | =  + |  [rho * (beta * n)] * { v }_m,  [ u ]      |
-  \ ----stab_avg-----                       /         \ ----stab_avg-----                      */
+  //
+  /*                                        \
+ -|  [rho * (beta * n)] *  { v }_m , [   u ] |
+  \ ----stab_avg-----                       / */
 
-  const double stabfac_avg_scaled = 0.5*stabfac_avg;
+  // { v }_m = 0.5* (v^b + v^e) leads to the scaling with 0.5;
+  // beta: convective velocity, currently beta=u^b_Gamma;
+  // n:= n^b
+  const double stabfac_avg_scaled = 0.5 * velint_m.Dot(normal) * density;
 
   for (unsigned ivel = 0; ivel<nsd_; ivel ++)
   {

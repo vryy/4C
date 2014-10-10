@@ -119,8 +119,7 @@ IS_PSEUDO_2D                    yes
 VISC_STAB_FAC                   20.0
 VISC_STAB_HK                    vol_equivalent
 XFF_CONV_STAB_SCALING           averaged //inflow
-VELGRAD_INTERFACE_STAB          yes
-PRESSCOUPLING_INTERFACE_STAB    yes
+XFF_EOS_PRES_EMB_LAYER          no
 GHOST_PENALTY_STAB              yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 7.0 GAMMA 1.0

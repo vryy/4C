@@ -198,40 +198,39 @@ public:
   );
 
 
+//  /// add Nitsche (NIT) interface condition to element matrix and rhs
+//  virtual void ElementXfemInterfaceNIT(
+//      DRT::ELEMENTS::Fluid *                                              ele,                ///< fluid element
+//      DRT::Discretization &                                               dis,               ///< background discretization
+//      const std::vector<int> &                                            lm,                ///< element local map
+//      const Teuchos::RCP<DRT::Discretization> &                           cutdis,            ///< cut discretization
+//      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
+//      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+//      std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
+//      Teuchos::ParameterList&                                             params,            ///< parameter list
+//      Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
+//      Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
+//      Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
+//      const GEO::CUT::plain_volumecell_set&                               vcSet,             ///< volumecell sets in this element
+//      bool                                                                fluidfluidcoupling = false ///< indicates fluid-fluid coupling context
+//  );
+
   /// add Nitsche (NIT) interface condition to element matrix and rhs
   virtual void ElementXfemInterfaceNIT(
-      DRT::ELEMENTS::Fluid *                                              ele,                ///< fluid element
+      DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
       DRT::Discretization &                                               dis,               ///< background discretization
       const std::vector<int> &                                            lm,                ///< element local map
       const Teuchos::RCP<DRT::Discretization> &                           cutdis,            ///< cut discretization
       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-      std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
       Teuchos::ParameterList&                                             params,            ///< parameter list
       Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
       Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
+      const GEO::CUT::plain_volumecell_set &                              vcSet,             ///< volumecell sets in this element
+      std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
       Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
-      const GEO::CUT::plain_volumecell_set&                               vcSet,             ///< volumecell sets in this element
-      bool                                                                fluidfluidcoupling = false ///< indicates fluid-fluid coupling context
-  );
-
-  /// add two-sided Nitsche (NIT2) interface condition to element matrix and rhs
-  virtual void ElementXfemInterfaceNIT2(
-      DRT::ELEMENTS::Fluid *                                              ele,
-      DRT::Discretization &                                               dis,
-      const std::vector<int> &                                            lm,
-      DRT::Discretization &                                               cutdis,
-      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,
-      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,
-      std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,
-      Teuchos::ParameterList&                                             params,
-      DRT::Discretization &                                               alediscret,
-      std::map<int,int> &                                                 boundary_emb_gid_map,
-      Epetra_SerialDenseMatrix&                                           elemat1_epetra,
-      Epetra_SerialDenseVector&                                           elevec1_epetra,
-      Epetra_SerialDenseMatrix&                                           Cuiui,
-      const GEO::CUT::plain_volumecell_set&                               vcSet
-  );
+      const Teuchos::RCP<DRT::Discretization> &                           alediscret         ///< embedded fluid discretization
+   );
 
   ///
   virtual void CalculateContinuityXFEM(
@@ -270,55 +269,29 @@ private:
   );
 
   //! compute viscous part of Nitsche's penalty term scaling for Nitsche's method
-  double NIT_ComputeNitscheStabfac(
+  double NIT_Compute_ViscPenalty_Stabfac(
       const DRT::Element::DiscretizationType ele_distype, ///< the discretization type of the element w.r.t which the stabilization factor is computed
-      const double h_k,                                   ///< the characteristic element length
-      const int sid = -1                                  ///< Id of the side element for embedded sided fluidfluid formulations
+      const double inv_hk                                ///< the inverse characteristic element length
       );
 
   //! get the constant which satisfies the trace inequality depending on the spatial dimension and polynomial order of the element
   double NIT_getTraceEstimateConstant(const DRT::Element::DiscretizationType ele_distype);
 
-  //! compute full Nitsche's penalty term scaling for Nitsche's method (xfluid/xfsi)
-  void NIT_ComputeFullStabfac(
-      double &                         NIT_full_stab_fac,     ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
-      const double                     NIT_visc_stab_fac,     ///< Nitsche's viscous scaling part of penalty term
-      INPAR::XFEM::ConvStabScaling     conv_stab_scaling,     ///< type of convective stabilization for xfluid
-      const double                     veln_normal            ///< interface-normal velocity contribution
-  );
-
-  //! compute stabilization factors for Nitsche's method (fluid-fluid coupling)
-  void NIT_ComputeFullStabfacFluidFluid(
-      double &                         NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
-      double &                         avg_conv_stab_fac,             ///< to be filled: scaling of the convective average coupling term for fluidfluid problems
-      double &                         velgrad_interface_fac,         ///< to be filled: stabilization parameter for velocity-gradients penalty term
-      double &                         press_coupling_fac,            ///< to be filled: stabilization parameter for pressure-coupling penalty term
-      INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling,         ///< type of convective stabilization for fluid-fluid problem
-      const double                     veln_normal,                   ///< interface-normal velocity contribution
-      const LINALG::Matrix<my::nsd_,1> velint,                        ///< interface velocity
-      const double                     h_k,                           ///< characteristic element length
-      const double                     NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
-      const double                     gamma_ghost_penalty = 0.0,     ///< ghost-penalty parameter
-      const double                     gamma_press_coupling = 0.0     ///< factor of stabilization parameter for pressure-coupling penalty term
-  );
+  //! compute full scaling of Nitsche's penalty term (xfluid-fluid)
+  void NIT_Compute_FullPenalty_Stabfac(
+          double &                           NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+          const LINALG::Matrix<my::nsd_,1>&  normal,                        ///< interface-normal vector
+          const double                       h_k,                           ///< characteristic element length
+          const double                       NIT_visc_stab_fac              ///< Nitsche's viscous scaling part of penalty term
+ );
 
   //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
   void PatchLocationVector(
       std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
-      DRT::Discretization &                                   cutdis,                  ///< cut discretization
+      DRT::Discretization &                                   slavedis,                ///< coupling slave discretization
       std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
       std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
       std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling           ///< coupling matrices
-  );
-
-  //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices (for embedded coupling)
-  void PatchLocationVector(
-      std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
-      DRT::Discretization &                                   cutdis,                  ///< cut discretization
-      std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
-      std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
-      std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
-      std::map<int,int> &                                     boundary_emb_gid_map     ///< map between boundary sid and corresponding embedded element id
   );
 
   //! prepare coupling matrices, that include contributions from convective stabilization

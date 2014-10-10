@@ -245,6 +245,18 @@ bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
     Set_Face_GP_trans   (Is_General_Ghost_Penalty_trans());
     Set_Face_GP_u_p_2nd (Is_General_Ghost_Penalty_u_p_2nd());
   }
+  else if(face_type == INPAR::XFEM::face_type_boundary_ghost_penalty)
+  {
+    Set_Face_EOS_Pres        ((EOS_Pres() == INPAR::FLUID::EOS_PRES_xfem_gp));
+    Set_Face_EOS_Conv_Stream (false);
+    Set_Face_EOS_Conv_Cross  (false);
+    Set_Face_EOS_Div_vel_jump(false);
+    Set_Face_EOS_Div_div_jump(false);
+
+    Set_Face_GP_visc    (false);
+    Set_Face_GP_trans   (false);
+    Set_Face_GP_u_p_2nd (false);
+  }
   else if(face_type == INPAR::XFEM::face_type_ghost)
   {
     Set_Face_EOS_Pres        (false);

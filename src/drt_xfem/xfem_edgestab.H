@@ -105,6 +105,17 @@ public:
                                      Teuchos::RCP<Epetra_Vector>            systemvector            ///< systemvector
                                      );
 
+  //! prepares edge based stabilization for fluid-fluid applications, where we want to apply
+  //! EOS pressure stabilizing terms to the interface-contributing embedded fluid elements
+  void EvaluateEdgeStabBoundaryGP(
+      Teuchos::ParameterList &               eleparams,        ///< element parameter list
+      Teuchos::RCP<DRT::Discretization>      discret,          ///< discretization
+      Teuchos::RCP<DRT::Discretization>      boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
+      DRT::ELEMENTS::FluidIntFace *          faceele,          ///< face element
+      Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
+      Teuchos::RCP<Epetra_Vector>            systemvector      ///< systemvector
+  );
+
   //! returns a map containing the ghost penalty stabilized internal face elements
   std::map<int,int> & GetGhostPenaltyMap(){return ghost_penalty_stab_;}
 

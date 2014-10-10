@@ -63,11 +63,7 @@ DRT::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
     is_visc_adjoint_symmetric_(true),
     is_pseudo_2D_(false),
     xff_conv_stab_scaling_(INPAR::XFEM::XFF_ConvStabScaling_none),
-    conv_stab_scaling_(INPAR::XFEM::ConvStabScaling_none),
-    is_velgrad_interface_stab_(false),
-    velgrad_interface_stab_fac_(0.0),
-    is_pressure_gradient_interface_stab_(false),
-    pressure_interface_stab_fac_(0.0)
+    conv_stab_scaling_(INPAR::XFEM::ConvStabScaling_none)
 {
 }
 
@@ -180,19 +176,12 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
   xff_conv_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFF_ConvStabScaling>(params_xf_stab,"XFF_CONV_STAB_SCALING");
   conv_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
 
-
   //--------------------------------------------
-  // special interface stabilizations for fluidfluid problems
+  // settings for computation of Nitsche's penalty parameter
   //---------------------------------------------
 
-  is_velgrad_interface_stab_   =  DRT::INPUT::IntegralValue<bool>(params_xf_stab,"VELGRAD_INTERFACE_STAB");
-
-  velgrad_interface_stab_fac_  = params_xf_stab.get<double>("GHOST_PENALTY_FAC",0.0);
-
-  is_pressure_gradient_interface_stab_ = DRT::INPUT::IntegralValue<bool>(params_xf_stab,"PRESSCOUPLING_INTERFACE_STAB");
-
-  pressure_interface_stab_fac_ = params_xf_stab.get<double>("PRESSCOUPLING_INTERFACE_FAC",0.0);
-
+  mass_conservation_combo_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MassConservationCombination>(params_xf_stab,"MASS_CONSERVATION_COMBO");
+  mass_conservation_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MassConservationScaling>(params_xf_stab,"MASS_CONSERVATION_SCALING");
 
   //--------------------------------------------
   // CONSISTENCY CHECKS for PARAMETERS

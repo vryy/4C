@@ -158,10 +158,8 @@ VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
-VELGRAD_INTERFACE_STAB          yes
-PRESSCOUPLING_INTERFACE_STAB    yes
-PRESSCOUPLING_INTERFACE_FAC     10
 GHOST_PENALTY_FAC               0.01
+XFF_EOS_PRES_EMB_LAYER          yes
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj//Xff_TimeInt_IncompProj Xff_TimeInt_ProjIfMoved  // Xff_TimeInt_FullProj// //Xff_TimeInt_KeepGhostValues
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
@@ -8681,7 +8679,7 @@ FLUID DIS xfluid NODE 2038 QUANTITY pressure VALUE 6.58556198338145523e-04 TOLER
 FLUID DIS xfluid NODE 575 QUANTITY velx VALUE 1.56274063720873082e-05 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 575 QUANTITY pressure VALUE 3.66876861368259019e-03 TOLERANCE 1e-6
 FLUID DIS fluid NODE 3005 QUANTITY velx VALUE 4.53887336596113307e-06 TOLERANCE 1e-6
-FLUID DIS fluid NODE 3005 QUANTITY pressure VALUE 4.05317731842190585e-03 TOLERANCE 1e-6
+FLUID DIS fluid NODE 3005 QUANTITY pressure VALUE 4.05642856997015001e-03 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 3162 QUANTITY dispx VALUE 1.40555963921060386e-09 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 // END

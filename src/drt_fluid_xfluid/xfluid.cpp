@@ -553,12 +553,13 @@ void FLD::XFluid::XFluidState::Evaluate( DRT::Discretization & discret,
                                                  cutdiscret,
                                                  bcells,
                                                  bintpoints,
-                                                 side_coupling,
                                                  eleparams,
                                                  strategy.Elematrix1(),
                                                  strategy.Elevector1(),
+                                                 cells,
+                                                 side_coupling,
                                                  C_ss,
-                                                 cells
+                                                 Teuchos::null
                                                  );
 
               //------------------------------------------------------------------------------------------

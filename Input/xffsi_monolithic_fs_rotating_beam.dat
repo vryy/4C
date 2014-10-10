@@ -117,10 +117,8 @@ VISC_STAB_FAC                   24.40282794  // 35/CT(2D)
 VISC_STAB_HK                    vol_equivalent
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
-VELGRAD_INTERFACE_STAB          yes
-PRESSCOUPLING_INTERFACE_STAB    yes
-PRESSCOUPLING_INTERFACE_FAC     10
 GHOST_PENALTY_FAC               0.01
+XFF_EOS_PRES_EMB_LAYER          yes
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj//Xff_TimeInt_IncompProj Xff_TimeInt_ProjIfMoved  // Xff_TimeInt_FullProj// //Xff_TimeInt_KeepGhostValues
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned

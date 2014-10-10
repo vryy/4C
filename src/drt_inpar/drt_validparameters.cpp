@@ -7066,28 +7066,38 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 
   setStringToIntegralParameter<int>("CONV_STAB_SCALING","none","scaling factor for viscous interface stabilization (Nitsche, MSH)",
-                                    tuple<std::string>("inflow", "abs_normal_vel", "max_abs_normal_vel", "averaged" , "none"),
+                                    tuple<std::string>("inflow", "abs_inflow", "none"),
                                     tuple<int>(
-                                      INPAR::XFEM::ConvStabScaling_inflow,            // scaling with max(0,-u*n)
-                                      INPAR::XFEM::ConvStabScaling_abs_normal_vel,    // scaling with |u*n|
-                                      INPAR::XFEM::ConvStabScaling_max_abs_normal_vel,// scaling with max(1.0, |u*n|)
-                                      INPAR::XFEM::ConvStabScaling_averaged,          // scaling with u*n
-                                      INPAR::XFEM::ConvStabScaling_none               // no convective stabilization
+                                      INPAR::XFEM::ConvStabScaling_inflow,                // scaling with max(0,-u*n)
+                                      INPAR::XFEM::ConvStabScaling_abs_inflow,            // scaling with |u*n|
+                                      INPAR::XFEM::ConvStabScaling_none                   // no convective stabilization
                                       ),
                                &xfluid_stab);
 
   setStringToIntegralParameter<int>("XFF_CONV_STAB_SCALING","none","scaling factor for convective interface stabilization of fluid-fluid Coupling",
-                                    tuple<std::string>("inflow", "averaged", "inflow_max_penalty", "averaged_max_penalty", "none"),
+                                    tuple<std::string>("inflow", "averaged", "none"),
                                     tuple<int>(
-                                      INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow,              // one-sided inflow stabilization
-                                      INPAR::XFEM::XFF_ConvStabScaling_averaged,                    // averaged inflow stabilization
-                                      INPAR::XFEM::XFF_ConvStabScaling_onesidedinflow_max_penalty,  // one-sided inflow stabilization with max(|u|_inf,\alpha)
-                                      INPAR::XFEM::XFF_ConvStabScaling_averaged_max_penalty,        // averaged inflow stabilization with max(|u|_inf,\alpha)
-                                      INPAR::XFEM::XFF_ConvStabScaling_none                         // no convective stabilization
+                                      INPAR::XFEM::XFF_ConvStabScaling_upwinding,          // one-sided inflow stabilization
+                                      INPAR::XFEM::XFF_ConvStabScaling_only_averaged,      // averaged inflow stabilization
+                                      INPAR::XFEM::XFF_ConvStabScaling_none                // no convective stabilization
                                       ),
                                &xfluid_stab);
 
-  BoolParameter("VELGRAD_INTERFACE_STAB","no","switch on/off penalty term for velocity gradients at the interface",&xfluid_stab);
+  setStringToIntegralParameter<int>("MASS_CONSERVATION_COMBO","max","choose the maximum from viscous and convective contributions or just sum both up",
+                                    tuple<std::string>("max", "sum"),
+                                    tuple<int>(
+                                      INPAR::XFEM::MassConservationCombination_max,        /// use the maximum contribution
+                                      INPAR::XFEM::MassConservationCombination_sum         /// sum viscous and convective contributions
+                                      ),
+                               &xfluid_stab);
+
+  setStringToIntegralParameter<int>("MASS_CONSERVATION_SCALING","only_visc","apply additional scaling of penalty term to enforce mass conservation for convection-dominated flow",
+                                    tuple<std::string>("full", "only_visc"),
+                                    tuple<int>(
+                                      INPAR::XFEM::MassConservationScaling_full,           /// apply mass-conserving convective scaling additionally
+                                      INPAR::XFEM::MassConservationScaling_only_visc       /// use only the viscous scaling
+                                      ),
+                               &xfluid_stab);
 
   BoolParameter("GHOST_PENALTY_STAB","no","switch on/off ghost penalty interface stabilization",&xfluid_stab);
 
@@ -7099,9 +7109,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("GHOST_PENALTY_TRANSIENT_FAC",       0.001, "define stabilization parameter ghost penalty transient interface stabilization",&xfluid_stab);
 
-  BoolParameter("PRESSCOUPLING_INTERFACE_STAB","no","switch on/off pressure coupling interface stabilization",&xfluid_stab);
-
-  DoubleParameter("PRESSCOUPLING_INTERFACE_FAC",  10, "define stabilization parameter for pressure coupling interface stabilization",&xfluid_stab);
+  BoolParameter("XFF_EOS_PRES_EMB_LAYER","no","switch on/off edge-based pressure stabilization on interface-contributing elements of the embedded fluid",&xfluid_stab);
 
   BoolParameter("IS_PSEUDO_2D","no","modify viscous interface stabilization due to the vanishing polynomial in third dimension when using strong Dirichlet conditions to block polynomials in one spatial dimension",&xfluid_stab);
 

@@ -94,7 +94,7 @@ COUPLING_METHOD                 Nitsche
 VISC_STAB_FAC                   24.40282794                   // = 35.0/CT(2D) with former 35 in [10;100]
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
-CONV_STAB_SCALING               max_abs_normal_vel //max_abs_normal_vel //abs_normal_vel //inflow //abs_normal_vel //abs_normal_vel //abs_normal_vel //abs_normal_vel  // inflow // const // none
+CONV_STAB_SCALING               abs_inflow //max_abs_normal_vel //abs_normal_vel //inflow //abs_normal_vel //abs_normal_vel //abs_normal_vel //abs_normal_vel  // inflow // const // none
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.01                          // in [0.1;0.5]
 --------------------------------------------------------------------SOLVER 1
@@ -124,14 +124,14 @@ FUNCT2                          KIMMOIN-UP MAT 1 ISSTAT 0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1664 QUANTITY velx VALUE -2.21559406548934856e-01 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1664 QUANTITY vely VALUE -5.94458200396448477e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1664 QUANTITY velx VALUE -2.17740892855935203e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1664 QUANTITY vely VALUE -5.91097132222110022e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1664 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1664 QUANTITY pressure VALUE -3.03957182339928633e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 1451 QUANTITY velx VALUE -3.36775853363478650e-01 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1451 QUANTITY vely VALUE 3.54314035470961297e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1664 QUANTITY pressure VALUE -3.02419350877689341e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 1451 QUANTITY velx VALUE -3.38262956344037302e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1451 QUANTITY vely VALUE 3.56504221214544559e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1451 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1451 QUANTITY pressure VALUE 3.50775119419565073e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 1451 QUANTITY pressure VALUE 3.53186169152707563e-01 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0

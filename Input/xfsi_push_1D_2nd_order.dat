@@ -138,7 +138,7 @@ COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTa
 VISC_STAB_FAC                   21.97015825                   // 35/CT(3d)
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
-CONV_STAB_SCALING               max_abs_normal_vel //abs_normal_vel  // inflow // const // none
+CONV_STAB_SCALING               abs_inflow //abs_normal_vel   // inflow // const // none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 -------------------------------------------------------------------MATERIALS
