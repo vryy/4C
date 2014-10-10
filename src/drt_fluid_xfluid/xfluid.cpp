@@ -732,6 +732,7 @@ void FLD::XFluid::XFluidState::Evaluate( DRT::Discretization & discret,
     if(xfluid_.soliddis_ != Teuchos::null)
     {
     // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
+    // (domain-map are the columns, range-map are the rows)
     C_fs_->Complete(*xfluid_.boundarydofrowmap_,*xfluid_.discret_->DofRowMap());
     C_sf_->Complete(*xfluid_.discret_->DofRowMap(),*xfluid_.boundarydofrowmap_);
     C_ss_->Complete(*xfluid_.boundarydofrowmap_,*xfluid_.boundarydofrowmap_);

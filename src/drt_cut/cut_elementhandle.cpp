@@ -712,10 +712,18 @@ bool GEO::CUT::QuadraticElementHandle::IsIntersected()
       return true;
     }
 
+
     // do the sub-elements have different positions ? (e.g. when the cut side directly cuts between sub-elements)
-    if(     (unique_pos != GEO::CUT::Point::undecided)
-        and (e->VolumeCells()[0]->Position() != unique_pos) )
+    if(unique_pos == GEO::CUT::Point::undecided)
+    {
+      // assume a new unique position for all sub elements
+      unique_pos = e->VolumeCells()[0]->Position();
+    }
+    else if (e->VolumeCells()[0]->Position() != unique_pos)
+    {
       return true;
+    }
+
   }
   return false;
 }

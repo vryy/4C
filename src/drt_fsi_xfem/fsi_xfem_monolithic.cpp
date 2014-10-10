@@ -292,14 +292,20 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::SetupSystemMatrix");
 
+  // zero the block system matrix
+  systemmatrix_->Zero();
+
   /*----------------------------------------------------------------------*/
   // extract Jacobian matrices and put them into composite system
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField()->SystemMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
+
+#ifdef DEBUG
   if (s==Teuchos::null)
     dserror("expect structure matrix");
-  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
   if (f==Teuchos::null)
     dserror("expect fluid matrix");
+#endif
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
@@ -342,6 +348,10 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   /*----------------------------------------------------------------------*/
 
   // Uncomplete structure matrix to be able to deal with slightly defective interface meshes.
+  // uncomplete because the fluid interface can have more connections than the
+  // structural one. (Tet elements in fluid can cause this.) We should do
+  // this just once...
+  // TODO: really needed here?
   s->UnComplete();
 
   // scale the structure system matrix
@@ -373,13 +383,24 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   // add the coupling block C_ss on the already existing diagonal block
   C_ss_block.Add(*C_ss, false, scaling_F*scaling_FSI, 1.0);
 
+
   // scale the off diagonal coupling blocks
   C_sf->Scale(scaling_F);              //<   1/(theta_f*dt)                    = 1/weight(t^f_np)
   C_fs->Scale(scaling_F*scaling_FSI);  //<   1/(theta_f*dt) * 1/(theta_FSI*dt) = 1/weight(t^f_np) * 1/weight(t^FSI_np)
 
-  // assign Off-diagonal coupling blocks
-  systemmatrix_->Assign(0,1,View,*C_sf);
-  systemmatrix_->Assign(1,0,View,*C_fs);
+
+  // get already existing off-diagonal block C_sf
+  LINALG::SparseMatrix& C_sf_block = (*systemmatrix_)(0,1);
+
+  // add the coupling block C_sf on the already existing off-diagonal block
+  C_sf_block.Add(*C_sf, false, 1.0, 1.0);
+
+
+  // get already existing off-diagonal block C_fs
+  LINALG::SparseMatrix& C_fs_block = (*systemmatrix_)(1,0);
+
+  // add the coupling block C_fs on the already existing off-diagonal block
+  C_fs_block.Add(*C_fs, false, 1.0, 1.0);
 
 
   /*----------------------------------------------------------------------*/
