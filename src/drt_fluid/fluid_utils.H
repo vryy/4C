@@ -320,6 +320,7 @@ namespace UTILS
 
   We assume that each node possesses ndim velocity dofs and (optionally)
   one pressure dof. The dof row map is thus split in two.
+  If one node has more than ndim dofs, only the ndimth dof is included in the pressure part
 
   The velocity dofs are assigned to map 0 (the other map) and the pressure
   dofs are assigned to map 1 (the condition map).

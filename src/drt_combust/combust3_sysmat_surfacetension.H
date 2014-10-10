@@ -119,7 +119,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
     if (isbound == true) // line is a boundary line => integrate boundary integral for surface tension at Interface-boundaries
     {
       //============================ INTEGRATE BOUNDARY TERM ==============================
-      //    		std::cout << "boundary line is found:\n" << *line_it;
+      //        std::cout << "boundary line is found:\n" << *line_it;
 
       // get integration points
       // TODO get the right intrule
@@ -244,7 +244,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
         {
           static LINALG::Matrix<6,numnode> deriv2_gp;
           DRT::UTILS::shape_function_3D_deriv2(deriv2_gp,gpinXi3D(0),gpinXi3D(1),gpinXi3D(2),DISTYPE);
-          DRT::UTILS::gder2<DISTYPE>(xjm_gp, derxy_gp, deriv2_gp, xyze, derxy2_gp);
+          DRT::UTILS::gder2<DISTYPE,numnode>(xjm_gp, derxy_gp, deriv2_gp, xyze, derxy2_gp);
         }
         else
         {
@@ -466,7 +466,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
     if (isbound == true) // line is a boundary line => integrate boundary integral for surface tension at Interface-boundaries
     {
       //============================ INTEGRATE BOUNDARY TERM ==============================
-      //    		std::cout << "boundary line is found:\n" << *line_it;
+      //        std::cout << "boundary line is found:\n" << *line_it;
 
       // get integration points
       // TODO get the right intrule
@@ -591,7 +591,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
         {
           static LINALG::Matrix<6,numnode> deriv2_gp;
           DRT::UTILS::shape_function_3D_deriv2(deriv2_gp,gpinXi3D(0),gpinXi3D(1),gpinXi3D(2),DISTYPE);
-          DRT::UTILS::gder2<DISTYPE>(xjm_gp, derxy_gp, deriv2_gp, xyze, derxy2_gp);
+          DRT::UTILS::gder2<DISTYPE,numnode>(xjm_gp, derxy_gp, deriv2_gp, xyze, derxy2_gp);
         }
         else
         {
@@ -1189,7 +1189,7 @@ void SysmatBoundarySurfaceTensionIntCell(
     {
       static LINALG::Matrix<6,numnode> deriv2;
       DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-      DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+      DRT::UTILS::gder2<DISTYPE,numnode>(xjm, derxy, deriv2, xyze, derxy2);
     }
     else
     {

@@ -1655,8 +1655,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
 
   if(use2ndderiv)
   {
-    DRT::UTILS::gder2<pdistype>(pxjm_,pderxy_,pderiv2_,pxyze_,pderxy2_);
-    DRT::UTILS::gder2<ndistype>(nxjm_,nderxy_,nderiv2_,nxyze_,nderxy2_);
+    DRT::UTILS::gder2<pdistype,piel>(pxjm_,pderxy_,pderiv2_,pxyze_,pderxy2_);
+    DRT::UTILS::gder2<ndistype,niel>(nxjm_,nderxy_,nderiv2_,nxyze_,nderxy2_);
   }
   else
   {
@@ -2088,8 +2088,8 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
 
   if(use2ndderiv)
   {
-    DRT::UTILS::gder2<pdistype>(pxjm_,pderxy_,pderiv2_,pxyze_,pderxy2_);
-    DRT::UTILS::gder2<ndistype>(nxjm_,nderxy_,nderiv2_,nxyze_,nderxy2_);
+    DRT::UTILS::gder2<pdistype,piel>(pxjm_,pderxy_,pderiv2_,pxyze_,pderxy2_);
+    DRT::UTILS::gder2<ndistype,niel>(nxjm_,nderxy_,nderiv2_,nxyze_,nderxy2_);
   }
   else
   {

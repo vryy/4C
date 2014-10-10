@@ -41,7 +41,7 @@ void FLD::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
     for (unsigned j=0; j<dof.size(); ++j)
     {
       // test for dof position
-      if (j<static_cast<unsigned>(ndim))
+      if (j != static_cast<unsigned>(ndim))
       {
         otherdofset.insert(dof[j]);
       }

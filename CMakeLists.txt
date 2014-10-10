@@ -430,6 +430,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_discret.cpp
   src/drt_lib/drt_discret_faces.cpp
   src/drt_lib/drt_discret_hdg.cpp
+  src/drt_lib/drt_discret_xwall.cpp
   src/drt_lib/drt_discret_xfem.cpp
   src/drt_lib/drt_discret_xfem_evaluate.cpp
   src/drt_lib/drt_discret_conditions.cpp
@@ -1137,6 +1138,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluidresulttest.cpp
   src/drt_fluid/fluid_timint.cpp
   src/drt_fluid/fluid_timint_hdg.cpp
+  src/drt_fluid/fluid_xwall.cpp
 )
 set(OBJS_DRT_FLUID_TURBULENCE
   src/drt_fluid_turbulence/dyn_smag.cpp
@@ -1603,6 +1605,9 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_poro_boundary.cpp
   src/drt_fluid_ele/fluid_ele_poro_boundary_evaluate.cpp
   src/drt_fluid_ele/fluid_ele_calc.cpp
+  src/drt_fluid_ele/fluid_ele_calc_xwall.cpp
+  src/drt_fluid_ele/fluid_ele_xwall.cpp
+  src/drt_fluid_ele/fluid_ele_xwall_boundary.cpp
   src/drt_fluid_ele/fluid_ele_calc_ale_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_general_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_loma.cpp

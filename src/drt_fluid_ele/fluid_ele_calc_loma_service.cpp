@@ -27,8 +27,8 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/yoghurt.H"
 
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeGalRHSContEq(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeGalRHSContEq(
     const LINALG::Matrix<nsd_,nen_>&  eveln,
     const LINALG::Matrix<nen_,1>&     escaaf,
     const LINALG::Matrix<nen_,1>&     escaam,
@@ -114,8 +114,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeGalRHSContEq(
 }
 
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeGalRHSContEqArtComp(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeGalRHSContEqArtComp(
     const LINALG::Matrix<nen_,1>&  epreaf,
     const LINALG::Matrix<nen_,1>&  epren,
     const LINALG::Matrix<nen_,1>&  escadtam)
@@ -166,8 +166,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeGalRHSContEqArtComp(
 }
 
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleScalar(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeSubgridScaleScalar(
     const LINALG::Matrix<nen_,1>&             escaaf,
     const LINALG::Matrix<nen_,1>&             escaam)
 {
@@ -232,8 +232,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleScalar(
 /*----------------------------------------------------------------------*
  |  update material parameters including s.-s. part of scalar  vg 10/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::UpdateMaterialParams(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::UpdateMaterialParams(
   Teuchos::RCP<const MAT::Material>  material,
   const LINALG::Matrix<nsd_,nen_>&   evelaf,
   const LINALG::Matrix<nen_,1>&      escaaf,
@@ -484,8 +484,8 @@ return;
 
 
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::RecomputeGalAndComputeCrossRHSContEq()
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::RecomputeGalAndComputeCrossRHSContEq()
 {
   //----------------------------------------------------------------------
   // recompute Galerkin terms based on updated material parameters
@@ -553,8 +553,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::RecomputeGalAndComputeCrossRHSContEq(
 }
 
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::LomaGalPart(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::LomaGalPart(
     LINALG::Matrix<nen_, nen_*nsd_> &       estif_q_u,
     LINALG::Matrix<nen_,1> &                preforce,
     const double &                          timefacfac,
@@ -610,8 +610,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LomaGalPart(
 }
 
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::ArtCompPressureInertiaGalPartandContStab(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ArtCompPressureInertiaGalPartandContStab(
     LINALG::Matrix<nen_*nsd_,nen_> &        estif_p_v,
     LINALG::Matrix<nen_,nen_> &             ppmat)
 {
@@ -644,7 +644,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ArtCompPressureInertiaGalPartandContS
     */
 
     prefac *= tau_(2);
-    
+
     for (int ui=0; ui<nen_; ++ui)
     {
       for (int vi=0; vi<nen_; ++vi)
@@ -665,17 +665,18 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ArtCompPressureInertiaGalPartandContS
 
 
 // Ursula is responsible for this comment!
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex20>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet10>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad4>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad9>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri3>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri6>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8,DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex20,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet10,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge6,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::pyramid5,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad4,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad8,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad9,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri3,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri6,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs9,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs27,DRT::ELEMENTS::Fluid::none>;

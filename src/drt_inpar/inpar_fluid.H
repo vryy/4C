@@ -111,6 +111,7 @@ namespace INPAR
       tau_shakib_hughes_codina_wo_dt,
       tau_codina,
       tau_codina_wo_dt,
+      tau_codina_convscaled,
       tau_franca_madureira_valentin_badia_codina,
       tau_franca_madureira_valentin_badia_codina_wo_dt,
       tau_hughes_franca_balestra_wo_dt,
@@ -327,6 +328,31 @@ namespace INPAR
       fncc_L2_wo_res,/* converg. check with L2 norm, no computation
                       *   of residual norm if itmax is reached        */
       fncc_Linf      //converg. check with L-inf. norm
+    };
+
+    enum XWallTauwType
+    {
+      constant,
+      mean_between_steps,
+      mean_iter,
+      between_steps,
+      fix_point_iter_with_step_control,
+      fully_linearized
+    };
+
+    enum XWallTauwCalcType
+    {
+      residual,
+      spalding,
+      gradient,
+      gradient_to_residual
+    };
+
+    enum XWallBlendingType
+    {
+      none,
+      ramp_function,
+      tauw_transformation
     };
 
   }  // namespace FLUID

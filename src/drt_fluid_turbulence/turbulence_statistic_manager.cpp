@@ -16,6 +16,7 @@ Maintainer: Ursula Rasthofer
 
 #include "turbulence_statistic_manager.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
+#include "../drt_fluid/fluid_xwall.H"
 #include "../drt_combust/combust_fluidimplicitintegration.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_fluid/fluid_utils.H" // for LiftDrag
@@ -62,6 +63,7 @@ namespace FLD
     myfilteredreystr_(fluid.filteredreystr_),
     myfsvelaf_       (fluid.fsvelaf_       ),
     myfsscaaf_       (fluid.fsscaaf_       ),
+    myxwall_       (fluid.xwall_       ),
     flow_            (no_special_flow      ),
     withscatra_      (false                ),
     turbmodel_      (INPAR::FLUID::no_model),
@@ -83,7 +85,7 @@ namespace FLD
 
     // toogle statistics output for turbulent inflow
     inflow_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true;
-    
+
     // toogle output of mean velocity for paraview
     out_mean_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENCE MODEL"),"OUTMEAN")==true;
 
@@ -102,7 +104,8 @@ namespace FLD
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           *params_             ,
-                                                          subgrid_dissipation_));
+                                                          subgrid_dissipation_,
+                                                          myxwall_));
     }
     else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
     {
@@ -117,7 +120,8 @@ namespace FLD
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           *params_             ,
-                                                          subgrid_dissipation_));
+                                                          subgrid_dissipation_,
+                                                          Teuchos::null));
     }
     else if(fluid.special_flow_=="scatra_channel_flow_of_height_2")
     {
@@ -132,7 +136,8 @@ namespace FLD
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           *params_             ,
-                                                          subgrid_dissipation_));
+                                                          subgrid_dissipation_,
+                                                          Teuchos::null));
     }
     else if(fluid.special_flow_=="decaying_homogeneous_isotropic_turbulence"
             or fluid.special_flow_=="forced_homogeneous_isotropic_turbulence"
@@ -218,7 +223,8 @@ namespace FLD
                                                               alefluid_,
                                                               mydispnp_,
                                                               *params_,
-                                                              subgrid_dissipation_));
+                                                              subgrid_dissipation_,
+                                                              Teuchos::null));
         }
       }
     }
@@ -248,7 +254,8 @@ namespace FLD
                                                               alefluid_,
                                                               mydispnp_,
                                                               *params_,
-                                                              subgrid_dissipation_));
+                                                              subgrid_dissipation_,
+                                                              Teuchos::null));
         }
       }
 
@@ -344,7 +351,7 @@ namespace FLD
             discret_,
             homdir,
             fluid.VelPresSplitter(),false));
-      }    
+      }
     }
     else statistics_general_mean_=Teuchos::null;
 
@@ -379,6 +386,7 @@ namespace FLD
     myfilteredreystr_(Teuchos::null        ),
     myfsvelaf_       (Teuchos::null        ),
     myfsscaaf_       (Teuchos::null        ),
+    myxwall_         (Teuchos::null        ),
     flow_            (no_special_flow      ),
     withscatra_      (false                ),
     turbmodel_      (INPAR::FLUID::no_model),
@@ -445,7 +453,8 @@ namespace FLD
                                                               alefluid_,
                                                               mydispnp_,
                                                               *params_,
-                                                              subgrid_dissipation_));
+                                                              subgrid_dissipation_,
+                                                              Teuchos::null));
         }
       }
 
@@ -1057,7 +1066,7 @@ namespace FLD
         std::cout << "\n";
       }
 
-      if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales and inflow_==false)
+      if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales and inflow_==false and myxwall_==Teuchos::null)
       {
         switch(flow_)
         {

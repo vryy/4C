@@ -233,7 +233,7 @@ void SysmatDomainNitsche(
       {
         static LINALG::Matrix<6,numnode> deriv2;
         DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-        DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+        DRT::UTILS::gder2<DISTYPE,numnode>(xjm, derxy, deriv2, xyze, derxy2);
       }
       else
       {
@@ -804,7 +804,7 @@ void SysmatDomainNitscheGalerkin(
       {
         static LINALG::Matrix<6,numnode> deriv2;
         DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-        DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+        DRT::UTILS::gder2<DISTYPE,numnode>(xjm, derxy, deriv2, xyze, derxy2);
       }
       else
       {
@@ -1398,7 +1398,7 @@ if (intpoints.nquad != 8)
       {
         static LINALG::Matrix<6,numnode> deriv2;
         DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-        DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+        DRT::UTILS::gder2<DISTYPE,numnode>(xjm, derxy, deriv2, xyze, derxy2);
       }
       else
       {
@@ -2159,7 +2159,7 @@ void Nitsche_SysmatBoundaryCell(
     {
       static LINALG::Matrix<6,numnode> deriv2;
       DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-      DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+      DRT::UTILS::gder2<DISTYPE,numnode>(xjm, derxy, deriv2, xyze, derxy2);
     }
     else
     {

@@ -34,13 +34,15 @@ Maintainer: Andreas Ehrl
 namespace FLD
 {
 
-template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 class RotationallySymmetricPeriodicBC
 {
 public:
 
-  /// number of nodes for this element type
-  static const int elenumnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  /// number of nodes for this element type including virtual nodes
+  static const int elenumnode = DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode * DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  /// number of nodes for this element type (only real nodes)
+  static const int elenumnodereal = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   /// number of dofs per node for fluid problem = 1 + space dimension
   static const int numdofpernode = 1 + DRT::UTILS::DisTypeToDim<distype>::dim;
 
@@ -79,10 +81,11 @@ public:
       rotmat_.Clear();
 
       DRT::Node** nodes = ele->Nodes();
-      slavenodelids_.reserve(elenumnode);
+      slavenodelids_.reserve(elenumnodereal);
 
-      for (int inode=0; inode<elenumnode; inode++)
+      for (int inode=0; inode<elenumnodereal; inode++)
       {
+
         if(FLD::IsSlaveNodeOfRotSymPBC(nodes[inode],rotangle_))
         {
           // store the lid of this node

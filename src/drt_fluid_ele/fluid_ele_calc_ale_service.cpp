@@ -17,8 +17,8 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_parameter_timint.H"
 
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::LinMeshMotion_2D(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::LinMeshMotion_2D(
     LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
     const LINALG::Matrix<nsd_,nen_>&              evelaf,
     const double &                                press,
@@ -130,8 +130,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinMeshMotion_2D(
 }
 
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::LinMeshMotion_3D(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::LinMeshMotion_3D(
     LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
     const LINALG::Matrix<nsd_,nen_>&              evelaf,
     const double &                                press,
@@ -726,17 +726,18 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinMeshMotion_3D(
 
 
 // Ursula is responsible for this comment!
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex20>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet10>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad4>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad9>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri3>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri6>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8,DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex20,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet10,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge6,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::pyramid5,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad4,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad8,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad9,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri3,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri6,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs9,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs27,DRT::ELEMENTS::Fluid::none>;

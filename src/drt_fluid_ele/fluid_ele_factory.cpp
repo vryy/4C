@@ -22,6 +22,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_calc_poro_p1.H"
 #include "fluid_ele_calc_poro_p2.H"
 #include "fluid_ele_calc_xfem.H"
+#include "fluid_ele_calc_xwall.H"
 #include "fluid_ele_calc_hdg.H"
 
 #include "../drt_meshfree_discret/meshfree_fluid_cell_interface.H"
@@ -124,6 +125,14 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
     return DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Instance();
   else if (problem == "hdg")
     return DRT::ELEMENTS::FluidEleCalcHDG<distype>::Instance();
+  else if (problem == "xw")
+  {
+    // for now we only build the hex8 element for xwall
+    // later we might consider other kinds of elements
+    if (distype == DRT::Element::hex8)
+      return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8,DRT::ELEMENTS::Fluid::xwall>::Instance();
+    else dserror("only hex8 element compiled for xwall");
+  }
   else
     dserror("Defined problem type does not exist!!");
 

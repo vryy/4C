@@ -178,6 +178,8 @@ void FluidFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("idispnfull", "ale_idisp", dofbased, field->problem()->num_dim());
   writer_->WriteResult("traction", "traction", dofbased, field->problem()->num_dim());
   writer_->WriteResult("wss", "wss", dofbased, field->problem()->num_dim());
+  // for xwall
+  writer_->WriteResult("enrvelnp", "enrvelnp", dofbased, field->problem()->num_dim());
   //  writer_->WriteResult("radii", "radii", nodebased, 1);
   writer_->WriteResult("par_vel", "par_vel", dofbased, field->problem()->num_dim());
 

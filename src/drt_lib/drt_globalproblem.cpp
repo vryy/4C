@@ -34,6 +34,7 @@ Maintainer: Martin Kronbichler
 #include "drt_utils_createdis.H"
 #include "drt_discret.H"
 #include "drt_discret_faces.H"
+#include "drt_discret_xwall.H"
 #include "drt_discret_hdg.H"
 #include "drt_discret_xfem.H"
 #include "drt_linedefinition.H"
@@ -250,6 +251,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FLUID DYNAMIC/POROUS-FLOW STABILIZATION", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENCE MODEL", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/SUBGRID VISCOSITY", *list);
+  reader.ReadGidSection("--FLUID DYNAMIC/WALL MODEL", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENT INFLOW", *list);
   reader.ReadGidSection("--TWO PHASE FLOW", *list);
@@ -1177,6 +1179,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       // create discretization writer - in constructor set ingto and owned by corresponding discret
       fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
     }
+    else if(DRT::INPUT::IntegralValue<int>(FluidDynamicParams().sublist("WALL MODEL"),"X_WALL"))
+    {
+      fluiddis  = Teuchos::rcp(new DRT::DiscretizationXWall("fluid",reader.Comm()));
+
+      // create discretization writer - in constructor set into and owned by corresponding discret
+      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+    }
     else
     {
       //fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
@@ -1192,6 +1201,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID");
     fluidelementtypes.insert("FLUID2");
     fluidelementtypes.insert("FLUID3");
+    fluidelementtypes.insert("FLUID3XW");
     fluidelementtypes.insert("MEFLUID");
     fluidelementtypes.insert("FLUIDHDG");
 

@@ -836,7 +836,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::EvalShapeFuncAndDerivsAtEleCente
   //--------------------------------------------------------------
   if (is_higher_order_ele_)
   {
-    DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
+    DRT::UTILS::gder2<distype,nen_>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
   }
   else derxy2_.Clear();
 
@@ -904,7 +904,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint
   //--------------------------------------------------------------
   if (is_higher_order_ele_)
   {
-    DRT::UTILS::gder2<distype>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
+    DRT::UTILS::gder2<distype,nen_>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
   }
   else derxy2_.Clear();
 

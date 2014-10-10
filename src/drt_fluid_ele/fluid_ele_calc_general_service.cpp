@@ -38,8 +38,8 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 /*----------------------------------------------------------------------*
  * Evaluate supporting methods of the element
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::EvaluateService(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
     DRT::ELEMENTS::Fluid*     ele,
     Teuchos::ParameterList&   params,
     Teuchos::RCP<MAT::Material> & mat,
@@ -162,8 +162,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::EvaluateService(
 /*----------------------------------------------------------------------*
  * Action type: Integrate shape function
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::IntegrateShapeFunction(
     DRT::ELEMENTS::Fluid*     ele,
     DRT::Discretization&      discretization,
     const std::vector<int>&   lm,
@@ -177,8 +177,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
 /*----------------------------------------------------------------------*
  * Action type: Integrate shape function
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::IntegrateShapeFunction(
     DRT::ELEMENTS::Fluid*     ele,
     DRT::Discretization&      discretization,
     const std::vector<int>&   lm            ,
@@ -245,8 +245,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
  | Action type: calc_divop                                             |
  | calculate integrated divergence operator              mayr.mt 04/12 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDivOp(
     DRT::ELEMENTS::Fluid*     ele,
     DRT::Discretization&      discretization,
     std::vector<int>&         lm            ,
@@ -290,8 +290,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
  | Action type: calc_mat_derivative_u                                  |
  | calculate material derivative of velocity               ghamm 01/13 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMatDerivAndRotU(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMatDerivAndRotU(
   DRT::ELEMENTS::Fluid*     ele,
   Teuchos::ParameterList&   params,
   DRT::Discretization&      discretization,
@@ -374,8 +374,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMatDerivAndRotU(
  | Action type: void_fraction_gaussian_integration                     |
  | calculate void fraction for this element                ghamm 01/13 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeVoidFraction(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeVoidFraction(
   DRT::ELEMENTS::Fluid*     ele,
   Teuchos::ParameterList&   params,
   DRT::Discretization&      discretization,
@@ -504,8 +504,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeVoidFraction(
  | Action type: velgradient_projection                                 |
  | project velocity gradient to nodal level                ghamm 06/14 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::VelGradientProjection(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::VelGradientProjection(
   DRT::ELEMENTS::Fluid*     ele,
   Teuchos::ParameterList&   params,
   DRT::Discretization&      discretization,
@@ -579,8 +579,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::VelGradientProjection(
 /*----------------------------------------------------------------------*
  * Action type: Compute Div u                                 ehrl 12/12|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeDivU(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeDivU(
     DRT::ELEMENTS::Fluid*           ele,
     DRT::Discretization&            discretization,
     std::vector<int>&               lm,
@@ -671,8 +671,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeDivU(
 /*----------------------------------------------------------------------*
  * Action type: Compute Error                              shahmiri 01/12
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeError(
     DRT::ELEMENTS::Fluid*           ele,
     Teuchos::ParameterList&         params,
     Teuchos::RCP<MAT::Material>&    mat,
@@ -694,8 +694,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
 /*----------------------------------------------------------------------*
  * Action type: Compute Error                              shahmiri 01/12
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeError(
     DRT::ELEMENTS::Fluid*           ele,
     Teuchos::ParameterList&         params,
     Teuchos::RCP<MAT::Material>&    mat,
@@ -851,8 +851,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
 }
 
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::EvaluateAnalyticSolutionPoint (
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateAnalyticSolutionPoint (
       const LINALG::Matrix<nsd_,1>      &xyzint,
       const double                       t,
       const INPAR::FLUID::CalcError      calcerr,
@@ -1150,10 +1150,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::EvaluateAnalyticSolutionPoint (
 /*!
  * \brief fill elment matrix and vectors with the global values
  */
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::ExtractValuesFromGlobalVector( const DRT::Discretization&   discretization, ///< discretization
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ExtractValuesFromGlobalVector( const DRT::Discretization&   discretization, ///< discretization
                                     const std::vector<int>&      lm,             ///<
-                                    FLD::RotationallySymmetricPeriodicBC<distype> & rotsymmpbc, ///<
+                                    FLD::RotationallySymmetricPeriodicBC<distype,enrtype> & rotsymmpbc, ///<
                                     LINALG::Matrix<nsd_,nen_> *  matrixtofill,   ///< vector field
                                     LINALG::Matrix<nen_,1> *     vectortofill,   ///< scalar field
                                     const std::string            state)          ///< state of the global vector
@@ -1193,8 +1193,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ExtractValuesFromGlobalVector( const 
  * additional output for turbulent channel flow                    rasthofer 12/10
  * -> dissipation
  *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
   Fluid*                     ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
@@ -1296,7 +1296,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     Teuchos::RCP<Epetra_MultiVector> filtered_vel = params.get<Teuchos::RCP<Epetra_MultiVector> >("Filtered velocity");
     Teuchos::RCP<Epetra_MultiVector> fs_vel = params.get<Teuchos::RCP<Epetra_MultiVector> >("Fine scale velocity");
     Teuchos::RCP<Epetra_MultiVector> filtered_reystre = params.get<Teuchos::RCP<Epetra_MultiVector> >("Filtered reynoldsstress");
-
+    if(enrtype==DRT::ELEMENTS::Fluid::xwall)
+      dserror("the following lines are not compatible with the xwall enrichment type");
     for (int nn=0;nn<nen_;++nn)
     {
       int lid = (ele->Nodes()[nn])->LID();
@@ -1374,10 +1375,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   //this will be the y-coordinate of a point in the element interior
   double center = 0.0;
   // get node coordinates of element
-  for(int inode=0;inode<nen_;inode++)
+  for(int inode=0;inode<ele->NumNode();inode++)
     center+=xyze_(1,inode);
 
-  center/=nen_;
+  center/=(double)ele->NumNode();
 
   // working arrays for the quantities we want to compute
   LINALG::Matrix<nsd_,1>  mean_res        ;
@@ -2001,6 +2002,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     h += fac_*hk;
 
     // streamlength based element size
+    // The stream length is not correct for xwall as calculated here, because the virtual (enriched) dofs don't have any geometric meaning
+    if(enrtype==DRT::ELEMENTS::Fluid::xwall)
+      strle=10000000;
+    else
     {
       const double vel_norm=velint_.Norm2();
 
@@ -2259,6 +2264,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   Teuchos::RCP<std::vector<double> > incrstrle         = params.get<Teuchos::RCP<std::vector<double> > >("incrstrle"        );
   Teuchos::RCP<std::vector<double> > incrgradle        = params.get<Teuchos::RCP<std::vector<double> > >("incrgradle"       );
 
+  Teuchos::RCP<std::vector<double> > incrmk            = params.get<Teuchos::RCP<std::vector<double> > >("incrmk"           );
+
   Teuchos::RCP<std::vector<double> > incrres           = params.get<Teuchos::RCP<std::vector<double> > >("incrres"          );
   Teuchos::RCP<std::vector<double> > incrres_sq        = params.get<Teuchos::RCP<std::vector<double> > >("incrres_sq"       );
   Teuchos::RCP<std::vector<double> > incrabsres        = params.get<Teuchos::RCP<std::vector<double> > >("incrabsres"       );
@@ -2314,6 +2321,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   // averages of stabilisation parameters
   (*incrtauC     )[nlayer] += averaged_tauC;
   (*incrtauM     )[nlayer] += averaged_tauM;
+
+  // element mk in stabilisation parameter
+  (*incrmk       )[nlayer] += GetMK();
 
   // averages of momentum residuals, subscale velocity and accelerations
   for(int mm=0;mm<3;++mm)
@@ -2412,8 +2422,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input (pass-through)
 */
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::FDcheck(
   const LINALG::Matrix<nsd_,nen_>&                    evelaf,
   const LINALG::Matrix<nsd_,nen_>&                    eveln,
   const LINALG::Matrix<nsd_,nen_>&                    fsevelaf,
@@ -2610,8 +2620,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
 /*-------------------------------------------------------------------------------*
  |find elements of inflow section                                rasthofer 10/12 |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalc<distype>::InflowElement(DRT::Element* ele)
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InflowElement(DRT::Element* ele)
 {
    is_inflow_ele_ = false;
 
@@ -2631,8 +2641,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::InflowElement(DRT::Element* ele)
 /*-----------------------------------------------------------------------------*
  | Calculate element mass matrix                               mayr.mt 05/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMassMatrix(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassMatrix(
     DRT::ELEMENTS::Fluid*                ele,
 //    Teuchos::ParameterList&              params,
     DRT::Discretization &                discretization,
@@ -2729,8 +2739,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMassMatrix(
 /*-----------------------------------------------------------------------------*
  | Calculate channel statistics                                     bk 05/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcChannelStatistics(
     DRT::ELEMENTS::Fluid*                ele,
     Teuchos::ParameterList&              params,
     DRT::Discretization &                discretization,
@@ -2867,7 +2877,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
   GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // Do ALE specific updates if necessary
-  if (ele->IsAle())
+  if (ele->IsAle()&&enrtype != DRT::ELEMENTS::Fluid::xwall)
   {
     LINALG::Matrix<nsd_,nen_> edispnp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
@@ -2882,7 +2892,22 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
          dserror("no sampling possible if homogeneous planes are not conserved\n");
        }
      }
+  }
+  else if(ele->IsAle()&&enrtype == DRT::ELEMENTS::Fluid::xwall)
+    dserror("HEX8 with xwall is not implemented for ale flow");
 
+  //we have to fill the virtual nodes of the xyze_ matrix, since we only get
+  //coordinates of the real nodes
+  if(enrtype == DRT::ELEMENTS::Fluid::xwall)
+  {
+    for (int inode=0; inode<nen_/2; inode++)
+    {
+      for(int sdm=0;sdm<nsd_;++sdm)
+      {
+        xyze_(sdm,inode+nen_/2)=xyze_(sdm,inode);//watch out, this is not in the correct order
+        //but otherwise we would have to introduce a new copy which is costly
+      }
+    }
   }
 
   if(distype == DRT::Element::hex8
@@ -3010,7 +3035,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
     // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
     // (now we allow even more)
     double layershift=0;
-
+//    if(elenormdirect==0)
+//    {
+//      std::cout << "numplanes in ele:   " << numplanesinele<< std::endl;
+//      for(std::set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
+//        std::cout <<"planesinele id:  "<< *id << std::endl;
+//
+//    }
     // loop all levels in element
     for(std::set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
     {
@@ -3047,11 +3078,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
         {
           e[inplanedirect[i]]=iquad.Point()[i];
         }
+        {
+          const double* econst=e;
 
-        const double* econst=e;
-
-        // evaluate shape functions and derivatives at integration point
-        EvalShapeFuncAndDerivsAtIntPoint(econst,iquad.Weight());
+          // evaluate shape functions and derivatives at integration point
+          EvalShapeFuncAndDerivsAtIntPoint(econst,iquad.Weight());
+        }
 
         // we assume that every plane parallel to the wall is preserved
         // hence we can compute the jacobian determinant of the 2d cutting
@@ -3095,9 +3127,21 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
       x[2]=0;
       for(int inode=0;inode<nen_;inode++)
       {
-        x[0]+=funct_(inode)*xyze_(0,inode);
-        x[1]+=funct_(inode)*xyze_(1,inode);
-        x[2]+=funct_(inode)*xyze_(2,inode);
+        if(enrtype == DRT::ELEMENTS::Fluid::xwall)
+        {
+          if(inode<nen_/2)
+          {//funct and xyze not in the same order
+            x[0]+=funct_(inode*2)*xyze_(0,inode);
+            x[1]+=funct_(inode*2)*xyze_(1,inode);
+            x[2]+=funct_(inode*2)*xyze_(2,inode);
+          }
+        }
+        else
+        {
+          x[0]+=funct_(inode)*xyze_(0,inode);
+          x[1]+=funct_(inode)*xyze_(1,inode);
+          x[2]+=funct_(inode)*xyze_(2,inode);
+        }
       }
 
       if(abs(x[normdirect]-(*planes)[*id])>2e-9)
@@ -3396,8 +3440,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcChannelStatistics(
 /*-----------------------------------------------------------------------------*
  | Calculate properties for adaptive time step based on CFL number  bk 08/2014 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::FluidEleCalc<distype>::CalcTimeStep(
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcTimeStep(
     DRT::ELEMENTS::Fluid*                ele,
     DRT::Discretization &                discretization,
     const std::vector<int> &             lm,
@@ -3409,7 +3453,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcTimeStep(
   // ---------------------------------------------------------------------------
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
   // Do ALE specific updates if necessary
   if (ele->IsAle())
     dserror("The adaptive time step is not implemented for Ale flow up to now. How is the CFL number defined with Ale? Update and test yourself, it is easy.");
@@ -3436,7 +3479,20 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcTimeStep(
 
     // get streamlength using the normed velocity at element centre
     LINALG::Matrix<nen_,1> tmp;
-    tmp.MultiplyTN(derxy_,velino);
+    //enriched dofs are not interpolatory with respect to geometry
+    if(enrtype == DRT::ELEMENTS::Fluid::xwall)
+    {
+      LINALG::Matrix<nsd_,nen_> derxy_copy(derxy_);
+      for(int inode=1;inode<nen_;inode+=2)
+      {
+        for (int idim=0; idim<nsd_;idim++)
+          derxy_copy(idim,inode)=0.0;
+      }
+      tmp.MultiplyTN(derxy_copy,velino);
+    }
+    else
+      tmp.MultiplyTN(derxy_,velino);
+
     const double val = tmp.Norm1();
     h = 2.0/val; // h=streamlength
 
@@ -3450,17 +3506,18 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcTimeStep(
 
 
 // template classes
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex20>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet10>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad4>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad9>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri3>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri6>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs9>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8,DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex20,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet10,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge6,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::pyramid5,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad4,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad8,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad9,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri3,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri6,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs9,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs27,DRT::ELEMENTS::Fluid::none>;

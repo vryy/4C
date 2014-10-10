@@ -3701,43 +3701,36 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                ),
                                &fdyn_stab);
 
-  // this parameter selects the tau definition applied
-  setStringToIntegralParameter<int>("DEFINITION_TAU",
-                               "Franca_Barrenechea_Valentin_Frey_Wall",
-                               "Definition of tau_M and Tau_C",
-                               tuple<std::string>(
-                                 "Taylor_Hughes_Zarins",
-                                 "Taylor_Hughes_Zarins_wo_dt",
-                                 "Taylor_Hughes_Zarins_Whiting_Jansen",
-                                 "Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt",
-                                 "Taylor_Hughes_Zarins_scaled",
-                                 "Taylor_Hughes_Zarins_scaled_wo_dt",
-                                 "Franca_Barrenechea_Valentin_Frey_Wall",
-                                 "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt",
-                                 "Shakib_Hughes_Codina",
-                                 "Shakib_Hughes_Codina_wo_dt",
-                                 "Codina",
-                                 "Codina_wo_dt",
-                                 "Franca_Madureira_Valentin_Badia_Codina",
-                                 "Franca_Madureira_Valentin_Badia_Codina_wo_dt",
-                                 "Hughes_Franca_Balestra_wo_dt"),
-                               tuple<int>(
-                                   INPAR::FLUID::tau_taylor_hughes_zarins,
-                                   INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt,
-                                   INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen,
-                                   INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt,
-                                   INPAR::FLUID::tau_taylor_hughes_zarins_scaled,
-                                   INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt,
-                                   INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall,
-                                   INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt,
-                                   INPAR::FLUID::tau_shakib_hughes_codina,
-                                   INPAR::FLUID::tau_shakib_hughes_codina_wo_dt,
-                                   INPAR::FLUID::tau_codina,
-                                   INPAR::FLUID::tau_codina_wo_dt,
-                                   INPAR::FLUID::tau_franca_madureira_valentin_badia_codina,
-                                   INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt,
-                                   INPAR::FLUID::tau_hughes_franca_balestra_wo_dt),
-                               &fdyn_stab);
+  {
+    // this parameter selects the tau definition applied
+    // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
+    Teuchos::Tuple<std::string,16> name;
+    Teuchos::Tuple<int,16> label;
+    name[ 0] = "Taylor_Hughes_Zarins";                        label[ 0] = INPAR::FLUID::tau_taylor_hughes_zarins;
+    name[ 1] = "Taylor_Hughes_Zarins_wo_dt";                  label[ 1] = INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt;
+    name[ 2] = "Taylor_Hughes_Zarins_Whiting_Jansen";         label[ 2] = INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen;
+    name[ 3] = "Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt";   label[ 3] = INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt;
+    name[ 4] = "Taylor_Hughes_Zarins_scaled";                 label[ 4] = INPAR::FLUID::tau_taylor_hughes_zarins_scaled;
+    name[ 5] = "Taylor_Hughes_Zarins_scaled_wo_dt";           label[ 5] = INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt;
+    name[ 6] = "Franca_Barrenechea_Valentin_Frey_Wall";       label[ 6] = INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall;
+    name[ 7] = "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt"; label[ 7] = INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt;
+    name[ 8] = "Shakib_Hughes_Codina";                        label[ 8] = INPAR::FLUID::tau_shakib_hughes_codina;
+    name[ 9] = "Shakib_Hughes_Codina_wo_dt";                  label[ 9] = INPAR::FLUID::tau_shakib_hughes_codina_wo_dt;
+    name[10] = "Codina";                                      label[10] = INPAR::FLUID::tau_codina;
+    name[11] = "Codina_wo_dt";                                label[11] = INPAR::FLUID::tau_codina_wo_dt;
+    name[12] = "Codina_convscaled";                           label[12] = INPAR::FLUID::tau_codina_convscaled;
+    name[13] = "Franca_Madureira_Valentin_Badia_Codina";      label[13] = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina;
+    name[14] = "Franca_Madureira_Valentin_Badia_Codina_wo_dt";label[14] = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
+    name[15] = "Hughes_Franca_Balestra_wo_dt";                label[15] = INPAR::FLUID::tau_hughes_franca_balestra_wo_dt;
+
+    setStringToIntegralParameter<int>(
+        "DEFINITION_TAU",
+        "Franca_Barrenechea_Valentin_Frey_Wall",
+        "Definition of tau_M and Tau_C",
+        name,
+        label,
+        &fdyn_stab);
+  }
 
   // this parameter selects the characteristic element length for tau_Mu for all
   // stabilization parameter definitions requiring such a length
@@ -4550,6 +4543,112 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::FLUID::min_len),
                                &fdyn_turbsgv);
 
+
+  /*----------------------------------------------------------------------*/
+  // sublist with additional input parameters for Smagorinsky model
+  Teuchos::ParameterList& fdyn_wallmodel = fdyn.sublist("WALL MODEL",false,"");
+
+  BoolParameter("X_WALL","No","Flag to switch on the xwall model",&fdyn_wallmodel);
+
+  setStringToIntegralParameter<int>(
+    "Tauw_Type",
+    "constant",
+    "Methods for calculating/updating the wall shear stress necessary for Spalding's law.",
+    tuple<std::string>(
+      "constant",
+      "mean_between_steps",
+      "mean_iter",
+      "between_steps",
+      "fix_point_iter_with_step_control",
+      "fully_linearized"),
+    tuple<std::string>(
+      "Use the constant wall shear stress given in the input file for the whole simulation.",
+      "Calculate wall shear stress in between time steps and use the mean value.",
+      "Calculate wall shear stress at every iteration and use the mean value.",
+      "Calculate wall shear stress in between time steps.",
+      "Calculate wall shear stress in between every non-linear iteration and use fix point iteration to converge.\n Since this results in an unstable behavior, the increment of tauw is reduced if necessary.",
+      "Fully linearized wall shear stress."),
+    tuple<int>(0,1,2,3,4,5),
+    &fdyn_wallmodel);
+
+  setStringToIntegralParameter<int>(
+    "Tauw_Calc_Type",
+    "residual",
+    "Methods for calculating the wall shear stress necessary for Spalding's law.",
+    tuple<std::string>(
+      "residual",
+      "spalding",
+      "gradient",
+      "gradient_to_residual"),
+    tuple<std::string>(
+      "Residual (force) devided by area.",
+      "Shear stress by inverse calculation via Spalding's law.",
+      "Gradient via shape functions and nodal values.",
+      "First gradient, then residual."),
+    tuple<int>(0,1,2,3),
+    &fdyn_wallmodel);
+
+  IntParameter(
+    "Switch_Step",
+    -1,
+    "Switch from gradient to residual based tauw.",
+  &fdyn_wallmodel);
+
+  setStringToIntegralParameter<int>(
+    "Projection",
+    "No",
+    "Flag to switch projection of the enriched dofs after updating tauw, alternatively with or without continuity constraint.",
+    tuple<std::string>(
+      "No",
+      "onlyl2projection",
+      "l2projectionwithcontinuityconstraint"),
+    tuple<std::string>(
+      "Switch off projection.",
+      "Only l2 projection.",
+      "L2 projection with continuity constraint."),
+    tuple<int>(0,1,2),
+    &fdyn_wallmodel);
+
+  DoubleParameter("C_Tauw",1.0,"Constant wall shear stress for Spalding's law, if applicable",&fdyn_wallmodel);
+
+  DoubleParameter("Min_Tauw",2.0e-9,"Minimum wall shear stress preventing system to become singular",&fdyn_wallmodel);
+
+  DoubleParameter("Inc_Tauw",1.0,"Increment of Tauw of full step, between 0.0 and 1.0",&fdyn_wallmodel);
+
+  DoubleParameter("Penalty_Param",1000.0,"Penalty parameter for divergence free projection",&fdyn_wallmodel);
+
+  setStringToIntegralParameter<int>(
+    "Blending_Type",
+    "none",
+    "Methods for blending the enrichment space.",
+    tuple<std::string>(
+      "none",
+      "ramp_function",
+      "tauw_transformation"),
+    tuple<std::string>(
+      "No ramp function, does not converge!",
+      "Enrichment is multiplied with linear ramp function resulting in zero enrichment at the interface",
+      "Wall shear stress is modified at blending nodes such that y+ is constant at the interface"),
+    tuple<int>(0,1,2),
+    &fdyn_wallmodel);
+
+  IntParameter("GP_Wall_Normal",3,"Gauss points in wall normal direction",&fdyn_wallmodel);
+
+  IntParameter("GP_Wall_Parallel",3,"Gauss points in wall parallel direction",&fdyn_wallmodel);
+
+  BoolParameter("SMOOTH_TAUW","No","Flag to switch on smoothing of the residual before calculating tauw",&fdyn_wallmodel);
+
+  IntParameter(
+    "ML_SOLVER",
+    -1,
+    "Set solver number for smooting of residual for tauw via level set transfer operators from plain aggregation.",
+  &fdyn_wallmodel);
+
+  IntParameter(
+    "PROJECTION_SOLVER",
+    -1,
+    "Set solver number for l2-projection.",
+  &fdyn_wallmodel);
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for multifractal subgrid-scales

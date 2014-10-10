@@ -36,7 +36,8 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     )
   : dis_(dis),
     dbcmaps_(dbcmaps),
-    curve_(-1)
+    curve_(-1),
+    numveldof_(3)
 {
   active_=false;
 
@@ -219,7 +220,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
 
   std::vector<int>             mymasters;
-  std::vector<std::vector<double> > mymasters_vel(3);
+  std::vector<std::vector<double> > mymasters_vel(numveldof_);
 
   if(active_)
   {
@@ -269,7 +270,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       }
       else
       {
-	dserror("master %d in midtosid but not on proc. This was unexpected",gid);
+  dserror("master %d in midtosid but not on proc. This was unexpected",gid);
       }
     }
 
@@ -518,12 +519,12 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
 
   midtosid_.clear();
 
-  if((int)mymasters_vel.size()!=3)
+  if((int)mymasters_vel.size()!=numveldof_)
   {
     dserror("expecting three spatial dimensions in mymasters_vel to unpack into");
   }
 
-  for(int rr=0;rr<3;++rr)
+  for(int rr=0;rr<numveldof_;++rr)
   {
     (mymasters_vel[rr]).clear();
   }
@@ -571,11 +572,11 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
 
       if(iter!=midtosid_.end())
       {
-	iter->second.push_back(sid);
+  iter->second.push_back(sid);
       }
       else
       {
-	dserror("master id %d was not in midtosid_",mymasters[rr]);
+  dserror("master id %d was not in midtosid_",mymasters[rr]);
       }
     }
 
@@ -586,7 +587,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
   }
 
   // extract values (first u, then v, then w)
-  for(int mm=0;mm<3;++mm)
+  for(int mm=0;mm<numveldof_;++mm)
   {
     for(int rr=0;rr<size;++rr)
     {
@@ -622,12 +623,12 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(
 {
   int size=mymasters.size();
 
-  if(mymasters_vel.size()!=3)
+  if(mymasters_vel.size()!=(unsigned)numveldof_)
   {
     dserror("expecting three spatial dimensions in mymasters_vel to pack");
   }
 
-  for(int rr=0;rr<3;++rr)
+  for(int rr=0;rr<numveldof_;++rr)
   {
     if((int)(mymasters_vel[rr]).size()!=size)
     {
@@ -662,13 +663,13 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(
       DRT::ParObject::AddtoPack(sblock,slavesize);
       for(int ll=0;ll<slavesize;++ll)
       {
-	DRT::ParObject::AddtoPack(sblock,slaves[ll]);
+  DRT::ParObject::AddtoPack(sblock,slaves[ll]);
       }
     }
   }
 
   // add values (first u, then v, then w)
-  for(int mm=0;mm<3;++mm)
+  for(int mm=0;mm<numveldof_;++mm)
   {
     for(int rr=0;rr<size;++rr)
     {
@@ -678,8 +679,6 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(
 
   return;
 } // PackLocalMasterValues
-
-
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -716,27 +715,27 @@ void FLD::TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
           // get dofs
           std::vector<int> slavedofs=dis_->Dof(slave);
 
-	  for(int rr=0;rr<3;++rr)
+          for(int rr=0;rr<numveldof_;++rr)
           {
             int gid = slavedofs[rr];
 
-	    // only set if DBC is active, otherwise throw error
-	    if(activedbcdofs->MyGID(gid))
-	    {
-	      double value=(mymasters_vel[rr])[nn];
+            // only set if DBC is active, otherwise throw error
+            if(activedbcdofs->MyGID(gid))
+            {
+              double value=(mymasters_vel[rr])[nn];
 
-	      velnp->ReplaceGlobalValues(1,&value,&gid);
-	    }
-	    else
-	    {
-	      int    id=slave->Id();
+              velnp->ReplaceGlobalValues(1,&value,&gid);
+            }
+            else
+            {
+              int    id=slave->Id();
 
-	      double x=slave->X()[0];
-	      double y=slave->X()[1];
-	      double z=slave->X()[2];
+              double x=slave->X()[0];
+              double y=slave->X()[1];
+              double z=slave->X()[2];
 
-	      dserror("Dirichlet condition required on slave node (%12.5e,%12.5e,%12.5e), id %d, dof %d of transfer condition",x,y,z,id,rr);
-	    }
+              dserror("Dirichlet condition required on slave node (%12.5e,%12.5e,%12.5e), id %d, dof %d of transfer condition",x,y,z,id,rr);
+            }
           }
         }
       }
@@ -745,5 +744,264 @@ void FLD::TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
 
   return;
 } // SetValuesAvailableOnThisProc
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Constructor (public)                                        bk 09/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+FLD::TransferTurbulentInflowConditionXW::TransferTurbulentInflowConditionXW(
+  Teuchos::RCP<DRT::Discretization>  dis    ,
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps
+    )
+  : TransferTurbulentInflowCondition(dis,dbcmaps)
+{
+  numveldof_=6;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Destructor dtor  (public)                                    bk 09/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+FLD::TransferTurbulentInflowConditionXW::~TransferTurbulentInflowConditionXW()
+{
+  return;
+}// ~TransferTurbulentInflowCondition (XW)
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Perform transfer process (public)                           bk 09/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::TransferTurbulentInflowConditionXW::Transfer(
+  const Teuchos::RCP<Epetra_Vector> veln ,
+  Teuchos::RCP<Epetra_Vector>       velnp,
+  const double                      time)
+{
+  const Epetra_Map* dofrowmap = dis_->DofRowMap();
+
+  std::vector<int>             mymasters;
+  //there can be up to 6 velocity dofs per node (3 +3 virtual dofs)
+  std::vector<std::vector<double> > mymasters_vel(numveldof_);
+
+  if(active_)
+  {
+
+      // initialization of time curve factor
+      double curvefac    = 1.0;
+      if (curve_ >= 0) // yes, we have a time curve
+      {
+        // time factor for the intermediate step
+        if(time >= 0.0)
+        {
+          curvefac = DRT::Problem::Instance()->Curve(curve_).f(time);
+        }
+        else
+        {
+          // do not compute an "alternative" curvefac here since a negative time value
+          // indicates an error.
+          dserror("Negative time value: time = %f",time);
+        }
+      }
+      else // we do not have a time curve --- time curve factor is constant equal 1
+      {
+        // nothing to do
+      }
+
+    // collect masters on this proc and associated velocities
+    for (std::map<int,std::vector<int> >::iterator pair=midtosid_.begin();
+         pair!=midtosid_.end();
+         ++pair)
+    {
+      int gid=pair->first;
+
+      if(dis_->HaveGlobalNode(gid))
+      {
+        mymasters.push_back(gid);
+
+        DRT::Node* master=dis_->gNode(gid);
+
+        std::vector<int> masterdofs=dis_->Dof(master);
+
+        for(int rr=0;rr<3;++rr)
+        {
+          int lid = dofrowmap->LID(masterdofs[rr]);
+
+          (mymasters_vel[rr]).push_back(((*veln)[lid])*curvefac);
+        }
+
+        //in xwall, we have another virtual node right after this node
+        if(dis_->NumDof(master)==8)
+        {
+          for(int rr=4;rr<7;++rr)
+          {
+            int lid = dofrowmap->LID(masterdofs[rr]);
+
+            (mymasters_vel[rr-1]).push_back(((*veln)[lid])*curvefac);
+          }
+        }
+        else
+          for(int rr=4;rr<7;++rr)
+          {
+            (mymasters_vel[rr-1]).push_back(0.0);
+          }
+      }
+      else
+      {
+  dserror("master %d in midtosid but not on proc. This was unexpected",gid);
+      }
+    }
+
+#ifdef PARALLEL
+    // create an exporter for point to point comunication
+    DRT::Exporter exporter(dis_->Comm());
+
+    // necessary variables
+    MPI_Request request;
+#endif
+
+    // define send and receive blocks
+    std::vector<char> sblock;
+    std::vector<char> rblock;
+
+    // get number of processors and the current processors id
+    int numproc=dis_->Comm().NumProc();
+
+    //----------------------------------------------------------------------
+    // communication is done in a round robin loop
+    //----------------------------------------------------------------------
+    for (int np=0;np<numproc+1;++np)
+    {
+      // in the first step, we cannot receive anything
+      if(np >0)
+      {
+#ifdef PARALLEL
+        ReceiveBlock(rblock,exporter,request);
+#else
+        rblock=sblock;
+#endif
+
+        // Unpack info from the receive block from the last proc
+        UnpackLocalMasterValues(mymasters,mymasters_vel,rblock);
+      }
+
+      // in the last step, we keep everything on this proc
+      if(np < numproc)
+      {
+        // -----------------------
+        // do what we wanted to do
+        SetValuesAvailableOnThisProc(mymasters,mymasters_vel,velnp);
+
+        // Pack info into block to send
+        DRT::PackBuffer data;
+        PackLocalMasterValues(mymasters,mymasters_vel,data);
+        data.StartPacking();
+        PackLocalMasterValues(mymasters,mymasters_vel,data);
+        swap( sblock, data() );
+
+#ifdef PARALLEL
+        SendBlock(sblock,exporter,request);
+#endif
+      }
+    }
+  }
+  return;
+} // Transfer (XW)
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | for all values avaible on the processor, do the final setting of the |
+ | value                          (private)                    bk 09/14 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::TransferTurbulentInflowConditionXW::SetValuesAvailableOnThisProc(
+    std::vector<int>                 & mymasters,
+    std::vector<std::vector<double> >     & mymasters_vel,
+    Teuchos::RCP<Epetra_Vector>   velnp)
+{
+  const Teuchos::RCP<const Epetra_Map> activedbcdofs=dbcmaps_->CondMap();
+
+  for(unsigned nn=0;nn<mymasters.size();++nn)
+  {
+    std::map<int,std::vector<int> >::iterator iter=midtosid_.find(mymasters[nn]);
+
+    if(iter!=midtosid_.end())
+    {
+      std::vector<int> myslaves(iter->second);
+
+      for(std::vector<int>::iterator sid=myslaves.begin();sid!=myslaves.end();++sid)
+      {
+        // is this slave id on this proc?
+        if(dis_->NodeRowMap()->MyGID(*sid))
+        {
+          DRT::Node* slave=dis_->gNode(*sid);
+
+          // get dofs
+          std::vector<int> slavedofs=dis_->Dof(slave);
+
+          for(int rr=0;rr<3;++rr)
+          {
+            int gid = slavedofs[rr];
+
+            // only set if DBC is active, otherwise throw error
+            if(activedbcdofs->MyGID(gid))
+            {
+              double value=(mymasters_vel[rr])[nn];
+
+              velnp->ReplaceGlobalValues(1,&value,&gid);
+            }
+            else
+            {
+              int    id=slave->Id();
+
+              double x=slave->X()[0];
+              double y=slave->X()[1];
+              double z=slave->X()[2];
+
+              dserror("Dirichlet condition required on slave node (%12.5e,%12.5e,%12.5e), id %d, dof %d of transfer condition",x,y,z,id,rr);
+            }
+          }
+
+          //and treat xwall dofs
+          if(dis_->NumDof(slave)==8)
+            for(int rr=4;rr<7;++rr)
+            {
+              int gid = slavedofs[rr];
+
+              // only set if DBC is active, otherwise throw error
+              if(activedbcdofs->MyGID(gid))
+              {
+                double value=(mymasters_vel[rr-1])[nn];
+
+                velnp->ReplaceGlobalValues(1,&value,&gid);
+              }
+              else
+                dserror("xwall dofs don't have active dbc for transfer");
+            }
+        }
+      }
+    }
+  }
+
+  return;
+} // SetValuesAvailableOnThisProc (XW)
 
 

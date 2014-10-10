@@ -417,8 +417,9 @@ public:
   \param nds (in)         : number of dofset
   \param nodaldofset (in) : number of nodal dofset
   \param node (in)        : the node
+  \param element (in)     : the element (optionally)
   */
-  virtual void Dof(std::vector<int>& dof, const Node* node ,unsigned nds, unsigned nodaldofset) const
+  virtual void Dof(std::vector<int>& dof, const Node* node ,unsigned nds, unsigned nodaldofset, const Element* element = NULL) const
   {
     dsassert(nds<dofsets_.size(),"undefined dof set");
     dsassert(havedof_,"no dofs assigned");

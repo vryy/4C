@@ -14,6 +14,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_factory.H"
 
 #include "fluid_ele.H"
+#include "fluid_ele_xwall.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_evaluate_utils.H"
 #include "../drt_lib/drt_element_integration_select.H"
@@ -139,6 +140,10 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
   {
   case INPAR::FLUID::loma:    impltype = "loma";    break;
   }
+
+  DRT::ELEMENTS::FluidXWall* xwallele=dynamic_cast<DRT::ELEMENTS::FluidXWall*>(this);
+  if(xwallele)//not a xwall element and the node row maps don't know it's nodes
+    impltype = "xw";
 
   switch(act)
   {
@@ -783,6 +788,10 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::calc_mat_deriv_u_and_rot_u:
     case FLD::void_fraction_gaussian_integration:
     case FLD::calc_turbulence_statistics:
+    case FLD::xwall_l2_projection:
+    case FLD::xwall_l2_projection_with_continuity_constraint:
+    case FLD::xwall_calc_mk:
+    case FLD::tauw_via_gradient:
     case FLD::velgradient_projection:
     case FLD::calc_dt_via_cfl:
     {

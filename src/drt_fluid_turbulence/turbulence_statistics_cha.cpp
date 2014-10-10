@@ -11,6 +11,7 @@ flows.
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_fluid/fluid_xwall.H"
 
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
@@ -31,7 +32,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   bool                     alefluid           ,
   Teuchos::RCP<Epetra_Vector>       dispnp             ,
   Teuchos::ParameterList&  params             ,
-  bool                     subgrid_dissipation
+  bool                     subgrid_dissipation,
+  Teuchos::RCP<FLD::XWall> xwallobj
   )
   :
   discret_            (actdis             ),
@@ -45,7 +47,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   dens_     (1.0),
   visc_     (1.0),
   shc_      (1.0),
-  scnum_    (1.0)
+  scnum_    (1.0),
+  myxwall_  (xwallobj)
 {
   //----------------------------------------------------------------------
   // plausibility check
@@ -167,6 +170,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       }
     }
   }
+
+  //not supported yet
+  if(myxwall_!=Teuchos::null)
+    multifractal_=false;
 
   if (physicaltype_ == INPAR::FLUID::incompressible)
   {
@@ -496,7 +503,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       // so get the number of points
       const int numnp = actele->NumNode();
 
-	// access elements knot span
+  // access elements knot span
       std::vector<Epetra_SerialDenseVector> knots(3);
       (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots,actele->Id());
 
@@ -644,6 +651,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       }
       default:
         dserror("Unknown element shape for a nurbs element or nurbs type not valid for turbulence calculation\n");
+      break;
       }
     }
 
@@ -984,7 +992,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // means for C_sgs_phi
     sumCsgs_phi_  =  Teuchos::rcp(new std::vector<double> );
     sumCsgs_phi_->resize(nodeplanes_->size()-1,0.0);
-    
+
     incrsumCsgs_phi_  =  Teuchos::rcp(new std::vector<double> );
     incrsumCsgs_phi_->resize(nodeplanes_->size()-1,0.0);
   }
@@ -1012,6 +1020,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
     Teuchos::RCP<std::vector<double> > local_incrtauC          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
     Teuchos::RCP<std::vector<double> > local_incrtauM          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
+    Teuchos::RCP<std::vector<double> > local_incrmk            = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
     Teuchos::RCP<std::vector<double> > local_incrres           = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
     Teuchos::RCP<std::vector<double> > local_incrres_sq        = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
@@ -1050,6 +1060,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrhbazilevs"    ,local_incrhbazilevs   );
     eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrstrle"        ,local_incrstrle       );
     eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrgradle"       ,local_incrgradle      );
+
+    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrmk"           ,local_incrmk          );
 
     eleparams_.set<Teuchos::RCP<std::vector<double> > >("planecoords_"     ,nodeplanes_           );
     eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrtauC"         ,local_incrtauC        );
@@ -1122,6 +1134,9 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     sumtauM_->resize(nodeplanes_->size()-1,0.0);
     sumtauC_       =  Teuchos::rcp(new std::vector<double> );
     sumtauC_->resize(nodeplanes_->size()-1,0.0);
+
+    summk_         =  Teuchos::rcp(new std::vector<double> );
+    summk_->resize(nodeplanes_->size()-1,0.0);
 
     sum_eps_pspg_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_pspg_->resize(nodeplanes_->size()-1,0.0);
@@ -1300,7 +1315,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
         (*log_MF) << "# Statistics for turbulent incompressible channel flow (parameter multifractal subgrid scales)\n\n";
       }
     }
-    
+
     // additional output of residuals and subscale quantities
     if (subgrid_dissipation_)
     {
@@ -1959,6 +1974,12 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   int locprocessedeles=0;
 
   eleparams.set("count processed elements",&locprocessedeles);
+
+  //also set the xwall params if necessary
+
+  if(myxwall_!=Teuchos::null)
+    myxwall_->SetXWallParams(eleparams);
+
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -3157,7 +3178,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
         }
       }
     }
-    
+
     eleparams_.set<double>("thermpress at n+alpha_F/n+1",thermpressaf);
     eleparams_.set<double>("thermpress at n+alpha_M/n",thermpressam);
     eleparams_.set<double>("thermpressderiv at n+alpha_F/n+1",thermpressdtaf);
@@ -3170,6 +3191,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     {
       discret_->SetState(state->first,state->second);
     }
+
+    if(myxwall_!=Teuchos::null)
+      myxwall_->SetXWallParams(eleparams_);
 
     // call loop over elements to compute means
     discret_->Evaluate(eleparams_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -3235,6 +3259,8 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     Teuchos::RCP<std::vector<double> > local_incrtauC          =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrtauC"        );
     Teuchos::RCP<std::vector<double> > local_incrtauM          =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrtauM"        );
 
+    Teuchos::RCP<std::vector<double> > local_incrmk            =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrmk"          );
+
     Teuchos::RCP<std::vector<double> > local_incrres           =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrres"         );
     Teuchos::RCP<std::vector<double> > local_incrres_sq        =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrres_sq"      );
     Teuchos::RCP<std::vector<double> > local_incrabsres        =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrabsres"      );
@@ -3298,6 +3324,10 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     Teuchos::RCP<std::vector<double> > global_incrtauC;
     global_incrtauC=  Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+    // mk of element layers
+    Teuchos::RCP<std::vector<double> > global_incrmk;
+    global_incrmk        =  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of resM (^2) (abs)
 
@@ -3436,6 +3466,11 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
                             &((*global_incrtauC)[0]),
                             presize);
 
+    // compute global sum, mk
+    discret_->Comm().SumAll(&((*local_incrmk )[0]),
+                            &((*global_incrmk)[0]),
+                            presize);
+
     // compute global sums, momentum equation residuals
     discret_->Comm().SumAll(&((*local_incrres       )[0]),
                             &((*global_incrres      )[0]),
@@ -3546,6 +3581,8 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       (*sumtauM_         )[rr]+=(*global_incrtauM         )[rr];
       (*sumtauC_         )[rr]+=(*global_incrtauC         )[rr];
 
+      (*summk_           )[rr]+=(*global_incrmk           )[rr];
+
       (*sumresC_         )[rr]+=(*global_incrresC         )[rr];
       (*sumresC_sq_      )[rr]+=(*global_incrresC_sq      )[rr];
       (*sumspressnp_     )[rr]+=(*global_incrspressnp     )[rr];
@@ -3581,6 +3618,8 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     local_incrtauC          = Teuchos::rcp(new std::vector<double> (presize,0.0));
     local_incrtauM          = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+    local_incrmk            = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     local_incrres           = Teuchos::rcp(new std::vector<double> (velsize,0.0));
     local_incrres_sq        = Teuchos::rcp(new std::vector<double> (velsize,0.0));
@@ -3620,6 +3659,8 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrtauC"         ,local_incrtauC         );
     eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrtauM"         ,local_incrtauM         );
+
+    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrmk"           ,local_incrmk           );
 
     eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrres"          ,local_incrres          );
     eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrres_sq"       ,local_incrres_sq       );
@@ -4211,6 +4252,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       (*log_res) << " tau_rey_12  ";
       (*log_res) << " tau_rey_23  ";
       (*log_res) << " tau_rey_31  ";
+      (*log_res) << " mk          ";
       (*log_res) << "\n";
 
       (*log_res) << std::scientific;
@@ -4282,6 +4324,8 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*summk_           )[rr]/(numele_*numsamp_) << "  ";
 
 
         (*log_res)  << &std::endl;
@@ -4526,6 +4570,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       (*log_res) << " tau_rey_12  ";
       (*log_res) << " tau_rey_23  ";
       (*log_res) << " tau_rey_31  ";
+      (*log_res) << " mk          ";
       (*log_res) << "\n";
 
       (*log_res) << std::scientific;
@@ -4598,6 +4643,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
 
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*summk_           )[rr]/(numele_*numsamp_) << "  ";
 
         (*log_res)  << &std::endl;
       }
@@ -4820,6 +4866,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       (*log_res) << " tau_rey_12  ";
       (*log_res) << " tau_rey_23  ";
       (*log_res) << " tau_rey_31  ";
+      (*log_res) << " mk          ";
       (*log_res) << "\n";
 
       (*log_res) << std::scientific;
@@ -4892,6 +4939,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
 
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*summk_           )[rr]/(numele_*numsamp_) << "  ";
 
         (*log_res)  << &std::endl;
       }
@@ -5217,6 +5265,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       (*log_res) << " tau_rey_12  ";
       (*log_res) << " tau_rey_23  ";
       (*log_res) << " tau_rey_31  ";
+      (*log_res) << " mk          ";
       (*log_res) << "\n";
 
       (*log_res) << std::scientific;
@@ -5289,6 +5338,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
 
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*summk_           )[rr]/(numele_*numsamp_) << "  ";
 
         (*log_res)  << &std::endl;
       }
@@ -5614,6 +5664,8 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
 
       (*sumtauM_         )[rr]=0.0;
       (*sumtauC_         )[rr]=0.0;
+
+      (*summk_           )[rr]=0.0;
 
       (*sum_eps_pspg_    )[rr]=0.0;
       (*sum_eps_supg_    )[rr]=0.0;

@@ -60,11 +60,11 @@ public:
          dummy Dirichlet values on the slave boundary by the values
          of the last time step on the master boundary
   */
-  void Transfer(const Teuchos::RCP<Epetra_Vector> veln ,
+  virtual void Transfer(const Teuchos::RCP<Epetra_Vector> veln ,
                 Teuchos::RCP<Epetra_Vector>       velnp,
                 const double                      time);
 
-private:
+protected:
 
   //! there are two types of tranfer conditions. values are transferred
   //! from master to slave conditions
@@ -107,7 +107,7 @@ private:
     );
 
   //! for all values avaible on the processor, do the final setting of the value
-  void SetValuesAvailableOnThisProc(
+  virtual void SetValuesAvailableOnThisProc(
     std::vector<int>                 & mymasters,
     std::vector<std::vector<double> >     & mymasters_vel,
     Teuchos::RCP<Epetra_Vector>   velnp);
@@ -127,8 +127,48 @@ private:
   //! time curve number
   int curve_;
 
+  int numveldof_;
+
 };
 
+class TransferTurbulentInflowConditionXW : public TransferTurbulentInflowCondition
+{
+public:
+  /*!
+  \brief Standard Constructor
+
+  */
+  TransferTurbulentInflowConditionXW(
+    Teuchos::RCP<DRT::Discretization>  dis,
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps
+    );
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~TransferTurbulentInflowConditionXW();
+
+  /*!
+  \brief Transfer process copying values from master boundary to slave
+         boundary (slave must be of Dirichlet type, otherwise this
+         operation doesn't make to mauch sense)
+
+         Intended to be called after ApplyDirichlet, overwriting the
+         dummy Dirichlet values on the slave boundary by the values
+         of the last time step on the master boundary
+  */
+  void Transfer(const Teuchos::RCP<Epetra_Vector> veln ,
+                Teuchos::RCP<Epetra_Vector>       velnp,
+                const double                      time);
+
+private:
+  //! for all values avaible on the processor, do the final setting of the value
+  void SetValuesAvailableOnThisProc(
+    std::vector<int>                 & mymasters,
+    std::vector<std::vector<double> >     & mymasters_vel,
+    Teuchos::RCP<Epetra_Vector>   velnp);
+};
 
 } // end namespace FLD
 

@@ -548,10 +548,10 @@ void FaceMatTwoPhase(
     {
       static LINALG::Matrix<6,ms_numnode> deriv2;
       DRT::UTILS::shape_function_3D_deriv2(deriv2,master_xi_points(iquad,0),master_xi_points(iquad,1),master_xi_points(iquad,2),M_DISTYPE);
-      DRT::UTILS::gder2<M_DISTYPE>(m_xjm,m_derxy,deriv2,m_xyze,m_derxy2);
+      DRT::UTILS::gder2<M_DISTYPE,ms_numnode>(m_xjm,m_derxy,deriv2,m_xyze,m_derxy2);
       deriv2.Clear();
       DRT::UTILS::shape_function_3D_deriv2(deriv2,slave_xi_points(iquad,0),slave_xi_points(iquad,1),slave_xi_points(iquad,2),S_DISTYPE);
-      DRT::UTILS::gder2<S_DISTYPE>(s_xjm,s_derxy,deriv2,s_xyze,s_derxy2);
+      DRT::UTILS::gder2<S_DISTYPE,ms_numnode>(s_xjm,s_derxy,deriv2,s_xyze,s_derxy2);
     }
     else
     {

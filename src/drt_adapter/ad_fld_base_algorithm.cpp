@@ -17,6 +17,7 @@ Maintainer: Ulrich Kuettler
 #include "ad_fld_base_algorithm.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
@@ -1244,6 +1245,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
     fluidtimeparams->sublist("SUBGRID VISCOSITY")=fdyn.sublist("SUBGRID VISCOSITY");
     fluidtimeparams->sublist("MULTIFRACTAL SUBGRID SCALES")=fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
     fluidtimeparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
+    fluidtimeparams->sublist("WALL MODEL")=fdyn.sublist("WALL MODEL");
 
     fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",DRT::Problem::Instance()->OutputControlFile()->FileName());
   }

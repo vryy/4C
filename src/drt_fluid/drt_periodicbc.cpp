@@ -21,6 +21,7 @@ Maintainer: Ursula Rasthofer
 
 
 #include "drt_periodicbc.H"
+#include "../drt_fluid_ele/fluid_ele_xwall.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_dofset_pbc.H"
@@ -195,15 +196,15 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
       if(discret_->Comm().MyPID()==0 && verbose_)
       {
-	printf("   +-----+---------------+--------------+-------------+-----------------+----------------+-----------------+\n");
-	printf("   | PID |    n_nodes    |   n_master   |   n_slave   |    n_elements   |   n_ghostele   |      n_dof      |\n");
-	printf("   +-----+---------------+--------------+-------------+-----------------+----------------+-----------------+\n");
-	for(int npid=0;npid<numprocs;++npid)
-	{
-	  printf("   | %3d | %13d | %12d | %11d | %15d | %14d | %15d |\n",npid,n_nodes[npid],n_master[npid],n_slave[npid],n_elements[npid],n_ghostele[npid],n_dof[npid]);
-	  printf("   +-----+---------------+--------------+-------------+-----------------+----------------+-----------------+\n");
-	}
-	std::cout << std::endl <<std::endl;
+  printf("   +-----+---------------+--------------+-------------+-----------------+----------------+-----------------+\n");
+  printf("   | PID |    n_nodes    |   n_master   |   n_slave   |    n_elements   |   n_ghostele   |      n_dof      |\n");
+  printf("   +-----+---------------+--------------+-------------+-----------------+----------------+-----------------+\n");
+  for(int npid=0;npid<numprocs;++npid)
+  {
+    printf("   | %3d | %13d | %12d | %11d | %15d | %14d | %15d |\n",npid,n_nodes[npid],n_master[npid],n_slave[npid],n_elements[npid],n_ghostele[npid],n_dof[npid]);
+    printf("   +-----+---------------+--------------+-------------+-----------------+----------------+-----------------+\n");
+  }
+  std::cout << std::endl <<std::endl;
       }
     }
   } // end if numpbcpairs_>0
@@ -1087,7 +1088,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
           int slaveid  = *iter;
 
           nodesonthisproc.push_back(slaveid);
-	  ++mynumappend;
+    ++mynumappend;
         }
       }
     }
@@ -1095,7 +1096,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     discret_->Comm().SumAll(&mynumappend,&numappend,1);
     if(discret_->Comm().MyPID()==0 && verbose_)
       {
-	std::cout << " Appended " << numappend << " ids which belong to slave ";
+  std::cout << " Appended " << numappend << " ids which belong to slave ";
         std::cout << "nodes that are coupled to a master\n";
         std::cout << "        node. They will be fetched to the master's ";
         std::cout << "procs, an their total \n";
@@ -1117,28 +1118,28 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       for(std::map<int,std::vector<int> >::iterator curr = allcoupledrownodes_->begin();
           curr != allcoupledrownodes_->end();
           ++curr )
-	{
-	  if((int)curr->second.size()>mymax)
-	    {
-	      mymax=curr->second.size();
-	    }
-	  if((int)curr->second.size()<mymin)
-	    {
-	      mymin=curr->second.size();
-	    }
+  {
+    if((int)curr->second.size()>mymax)
+      {
+        mymax=curr->second.size();
+      }
+    if((int)curr->second.size()<mymin)
+      {
+        mymin=curr->second.size();
+      }
 
-	}
+  }
 
       discret_->Comm().SumAll(&myallcouplednodes,&allcouplednodes,1);
       discret_->Comm().MaxAll(&mymax,&max,1);
       discret_->Comm().MinAll(&mymin,&min,1);
 
       if(discret_->Comm().MyPID()==0 && verbose_)
-	{
- 	  std::cout << " The layout is generated: " << allcouplednodes << " masters are coupled to at least " << min << " and up to "<< max << " slaves,\n";
+  {
+     std::cout << " The layout is generated: " << allcouplednodes << " masters are coupled to at least " << min << " and up to "<< max << " slaves,\n";
         std::cout << "        all master/slave couples are sent to the same proc.\n";
 
-	}
+  }
     }
 
 
@@ -1150,7 +1151,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
       if(gn!=discret_->NumGlobalNodes())
       {
-	dserror("Unmatching numbers of nodes before and after call Redistribution. Nodemap constructor will crash.\n");
+  dserror("Unmatching numbers of nodes before and after call Redistribution. Nodemap constructor will crash.\n");
       }
     }
 
@@ -1419,6 +1420,22 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
     Epetra_Vector weights(*noderowmap,false);
     weights.PutScalar(10.0);
 
+    // apply weight of special elements
+    for (int inode=0;inode<noderowmap->NumMyElements();++inode)
+    {
+      int gid=noderowmap->GID(inode);
+      DRT::Node*  node = discret_->gNode(gid);
+      if(!node)
+        dserror("cant find node");
+      double weight = 0.0;
+      DRT::Element** surrele = node->Elements();
+
+      //returns 10.0 for standard elements
+      for (int k=0;k<node->NumElement();++k)
+        weight=std::max(weight,surrele[k]->EvaluationCost());
+
+      weights.ReplaceMyValue(inode,0,weight);
+    }
     // ----------------------------------------
     // loop masternodes to adjust weights of slavenodes
     // they need a small weight since they do not contribute any dofs

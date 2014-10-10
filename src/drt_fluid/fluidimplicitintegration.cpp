@@ -33,6 +33,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
 #include "fluid_utils_mapextractor.H"
 #include "fluid_meshtying.H"
+#include "fluid_xwall.H"
 #include "fluid_MHD_evaluate.H"
 #include "../drt_fluid_turbulence/turbulence_hit_initial_field.H"
 #include "../drt_fluid_turbulence/turbulence_hit_forcing.H"
@@ -108,6 +109,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   homisoturb_forcing_(Teuchos::null),
   surfacesplitter_(NULL),
   inrelaxation_(false),
+  xwall_(Teuchos::null),
   msht_(INPAR::FLUID::no_meshtying),
   facediscret_(Teuchos::null),
   fldgrdisp_(Teuchos::null),
@@ -246,6 +248,12 @@ void FLD::FluidImplicitTimeInt::Init()
   // nodes with 4 dofs each. (27*4=108)
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
+
+  {
+    //XWall: enrichment with spaldings law
+    if(DRT::INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"),"X_WALL"))
+      xwall_= Teuchos::rcp(new XWall(discret_,numdim_,params_));
+  }
 
   if (not params_->get<int>("Simple Preconditioner",0) && not params_->get<int>("AMG BS Preconditioner",0)
       && params_->get<int>("MESHTYING") == INPAR::FLUID::no_meshtying)
@@ -437,8 +445,12 @@ void FLD::FluidImplicitTimeInt::Init()
   // check whether we have a coupling to a turbulent inflow generating
   // computation and initialize the transfer if necessary
   // -------------------------------------------------------------------
-  turbulent_inflow_condition_
-    = Teuchos::rcp(new TransferTurbulentInflowCondition(discret_,dbcmaps_));
+  if(xwall_==Teuchos::null)
+    turbulent_inflow_condition_
+      = Teuchos::rcp(new TransferTurbulentInflowCondition(discret_,dbcmaps_));
+  else
+    turbulent_inflow_condition_
+      = Teuchos::rcp(new TransferTurbulentInflowConditionXW(discret_,dbcmaps_));
 
   // -------------------------------------------------------------------
   // initialize turbulence-statistics evaluation
@@ -781,6 +793,13 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     discret_->ClearState();
   }
 
+
+  // ----------------------------------------------------------------
+  // Calculate new wall shear stress for xwall, if appropriate
+  // ----------------------------------------------------------------
+  if(xwall_!=Teuchos::null)
+    xwall_->UpdateTauW(step_,trueresidual_,0,accn_,velnp_,veln_,*this);
+
   // -------------------------------------------------------------------
   //  evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
@@ -957,7 +976,8 @@ void FLD::FluidImplicitTimeInt::Solve()
       // !!! only done for FEM since for NURBS- and meshfree-approximations,
       //     the integration error can already disturb matrix nullspace too
       //     much for sensitive problems
-      if (DRT::Problem::Instance()->SpatialApproximation()=="Polynomial")
+      //     xwall uses non-polynomial shape functions
+      if (DRT::Problem::Instance()->SpatialApproximation()=="Polynomial" && xwall_==Teuchos::null)
         CheckMatrixNullspace();
 
       if (msht_== INPAR::FLUID::no_meshtying)
@@ -1087,9 +1107,9 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   // create the parameters for the discretization
   Teuchos::ParameterList eleparams;
 
-  //----------------------------------------------------------------------
-  // set general vector values needed by elements
-  //----------------------------------------------------------------------
+  // set action type
+  eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
+  eleparams.set<int>("physical type",physicaltype_);
 
   //set parameters for turbulence models
   TreatTurbulenceModels(eleparams);
@@ -1100,6 +1120,9 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   //set parameters for HDG
   SetCustomEleParamsAssembleMatAndRHS(eleparams);
 
+  //----------------------------------------------------------------------
+  // set general vector values needed by elements
+  //----------------------------------------------------------------------
   discret_->SetState("hist" ,hist_ );
   discret_->SetState("veln" ,veln_ );
   discret_->SetState("accam",accam_);
@@ -1247,9 +1270,6 @@ void FLD::FluidImplicitTimeInt::TreatTurbulenceModels(Teuchos::ParameterList& el
     dtfilter_=Teuchos::Time::wallTime()-tcpufilter;
   }
 
-   // set action type
-   eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
-   eleparams.set<int>("physical type",physicaltype_);
   // parameters for turbulence model
   // TODO: rename list
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -1268,6 +1288,11 @@ void FLD::FluidImplicitTimeInt::TreatTurbulenceModels(Teuchos::ParameterList& el
     cv=params_->get<double>("C_vreman");
     eleparams.set<double>("C_vreman", cv );
   }
+
+  //set xwall params
+  if(xwall_!=Teuchos::null)
+    xwall_->SetXWallParams(eleparams);
+
   return;
 }
 
@@ -2041,6 +2066,9 @@ void FLD::FluidImplicitTimeInt::UpdateKrylovSpaceProjection()
       discret_->SetState("dispnp",dispnp_);
     }
 
+    if(xwall_!=Teuchos::null)
+      xwall_->SetXWallParams(mode_params);
+
     /*
     // evaluate KrylovSpaceProjection condition in order to get
     // integrated nodal basis functions w_
@@ -2063,6 +2091,8 @@ void FLD::FluidImplicitTimeInt::UpdateKrylovSpaceProjection()
        Teuchos::null      ,
        Teuchos::null      ,
        "KrylovSpaceProjection");
+
+    discret_->ClearState();
 
     // adapt weight vector according to meshtying case
     if (msht_ != INPAR::FLUID::no_meshtying)
@@ -2947,7 +2977,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> stepi
  |  accn_  = (velnp_-veln_) / (dt)                                      |
  |                                                                      |
  |                                                           gammi 04/07|
- |  overloaded in TimIntRedModels                              bk 12/13 |
+ |  overloaded in TimIntRedModels                               bk 12/13|
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
@@ -3275,6 +3305,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   EvaluateDivU();
 
+  return;
 } // FluidImplicitTimeInt::StatisticsAndOutput
 
 /*----------------------------------------------------------------------*
@@ -3336,6 +3367,9 @@ void FLD::FluidImplicitTimeInt::Output()
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
     output_->WriteVector("pressure", pressure);
 
+    if(xwall_!=Teuchos::null)
+      output_->WriteVector("enrvelnp",xwall_->GetOutputVector(velnp_));
+
     // velocity/pressure at nodes for meshfree problems with non-interpolatory basis functions
     if(velatmeshfreenodes_!=Teuchos::null)
     {
@@ -3368,6 +3402,8 @@ void FLD::FluidImplicitTimeInt::Output()
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
       {
+        if(xwall_!=Teuchos::null)
+          xwall_->FilterResVectorForOutput(trueresidual_);
         Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses();
         output_->WriteVector("wss",wss);
       }
@@ -3492,6 +3528,8 @@ void FLD::FluidImplicitTimeInt::Output()
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
       {
+        if(xwall_!=Teuchos::null)
+          xwall_->FilterResVectorForOutput(trueresidual_);
         Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses();
         output_->WriteVector("wss",wss);
       }
@@ -3881,6 +3919,9 @@ void FLD::FluidImplicitTimeInt::AVM3AssembleMatAndRHS(Teuchos::ParameterList& el
     dserror("AVM3 can't be used with locsys conditions cause it hasn't been implemented yet!");
   }
 
+  if(msht_ == INPAR::FLUID::condensed_bmat || msht_ == INPAR::FLUID::condensed_bmat_merged)
+    dserror("Scale separation via aggregation is currently not implemented for block matrices");
+
   // zero matrix
   sysmat_->Zero();
 
@@ -3905,6 +3946,10 @@ void FLD::FluidImplicitTimeInt::AVM3AssembleMatAndRHS(Teuchos::ParameterList& el
     eleparams.set("Fine scale velocity",finescalevel_);
     eleparams.set("Filtered reynoldsstress",filteredreystr_);
   }
+
+  //set xwall params
+  if(xwall_!=Teuchos::null)
+    xwall_->SetXWallParams(eleparams);
 
   // set general vector values needed by elements
   discret_->ClearState();
@@ -3993,6 +4038,10 @@ void FLD::FluidImplicitTimeInt::AVM3GetScaleSeparationMatrix()
                                           DRT::Problem::Instance()->ErrorFile()->Handle()));
     // compute the null space,
     discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
+
+    if(xwall_!=Teuchos::null)
+      xwall_->AdaptMLNullspace(solver);
+
     // and, finally, extract the ML parameters
     mlparams = solver->Params().sublist("ML Parameters");
   }
@@ -4807,6 +4856,9 @@ Teuchos::RCP<double> FLD::FluidImplicitTimeInt::EvaluateDivU()
     // action for elements
     eleparams.set<int>("action",FLD::calc_div_u);
 
+    if(xwall_!=Teuchos::null)
+      xwall_->SetXWallParams(eleparams);
+
     // set vector values needed by elements
     // div u is always evaluated at time n+af (generalized alpha time integration schemes) and
     // at time  n+1 (one-step-theta)
@@ -4876,6 +4928,9 @@ void FLD::FluidImplicitTimeInt::EvaluateDtWithCFL()
 
     // action for elements
     eleparams.set<int>("action",FLD::calc_dt_via_cfl);
+
+    if(xwall_!=Teuchos::null)
+      xwall_->SetXWallParams(eleparams);
 
     discret_->SetState("velnp", velnp_);
 
@@ -6347,6 +6402,10 @@ void FLD::FluidImplicitTimeInt::SetupMeshtying()
     // coupleddof [1, 1, 1, 0]
     coupleddof[numdim_]=0;
   }
+
+  if(xwall_!=Teuchos::null)
+    for (int xdof=0;xdof<4;xdof++)
+      coupleddof.push_back(0);
 
   meshtying_ = Teuchos::rcp(new Meshtying(discret_, *solver_, msht_, numdim_, surfacesplitter_));
   sysmat_ = meshtying_->Setup(coupleddof);

@@ -78,6 +78,8 @@ Maintainer: Ursula Rasthofer
 namespace FLD
 {
 
+class XWall;
+
 class TurbulenceStatisticsCha
 {
 
@@ -102,7 +104,8 @@ public:
                           bool                             alefluid           ,
                           Teuchos::RCP<Epetra_Vector>       dispnp             ,
                           Teuchos::ParameterList&                   params             ,
-                          bool                             subgrid_dissipation);
+                          bool                             subgrid_dissipation,
+                          Teuchos::RCP<FLD::XWall> xwallobj);
 
   /*!
   \brief Destructor
@@ -433,6 +436,8 @@ private:
   //! Schmidt number (passive scalar)
   double scnum_;
 
+  Teuchos::RCP<FLD::XWall> myxwall_;
+
   //!--------------------------------------------------
   //!         integration based averaging
   //!--------------------------------------------------
@@ -643,6 +648,9 @@ private:
   Teuchos::RCP<std::vector<double> >     sumtauM_;
   //! sum over all in plane squared residuals
   Teuchos::RCP<std::vector<double> >     sumtauC_;
+
+  //! sum over all in plane mk (parameter for stabilization parameter, 1/3 for lin ele)
+  Teuchos::RCP<std::vector<double> >     summk_;
 
   //! sum over all in plane residuals
   Teuchos::RCP<std::vector<double> >     sumres_;

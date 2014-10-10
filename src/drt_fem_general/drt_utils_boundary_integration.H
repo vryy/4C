@@ -1570,8 +1570,8 @@ void ElementNodeNormal(
   if ((discretization.Name()=="ale") or (discretization.Name()=="structure")) numdofpernode = nsd;
 
   // This functionality has only been tested for types fluid, ale and structure
-  if (not ((discretization.Name()=="fluid") or (discretization.Name()=="ale") or (discretization.Name()=="structure")))
-    dserror("ElementNodeNormal: The mass-consistent-node-normal calculation can currently only be performed for discretization types 'fluid', 'ale' and 'structure'.");
+  if (not ((discretization.Name()=="fluid") or (discretization.Name()=="inflow")or (discretization.Name()=="ale") or (discretization.Name()=="structure")))
+    dserror("ElementNodeNormal: The mass-consistent-node-normal calculation can currently only be performed for discretization types 'fluid', 'inflow', 'ale' and 'structure'.");
 
   // Get gaussrule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);

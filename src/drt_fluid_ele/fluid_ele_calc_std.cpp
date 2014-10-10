@@ -59,7 +59,6 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcStd<distype>::FluidEleCalcStd()
   : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
 {
-  my::fldpara_=DRT::ELEMENTS::FluidEleParameterStd::Instance();
 }
 
 /*----------------------------------------------------------------------*

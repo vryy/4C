@@ -89,6 +89,7 @@ class Vreman;
 class Boxfilter;
 class LESScaleSeparation;
 class Meshtying;
+class XWall;
 class TransferTurbulentInflowCondition;
 class FluidMHDEvaluate;
 namespace UTILS
@@ -1181,6 +1182,9 @@ protected:
 
   /// coupling of fluid-fluid at an internal interface
   Teuchos::RCP<FLD::Meshtying>   meshtying_;
+
+  /// coupling of fluid-fluid at an internal interface
+  Teuchos::RCP<FLD::XWall>   xwall_;
 
   /// flag for mesh-tying
   enum INPAR::FLUID::MeshTying msht_;

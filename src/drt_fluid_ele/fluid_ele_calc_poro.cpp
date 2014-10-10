@@ -4791,7 +4791,7 @@ double DRT::ELEMENTS::FluidEleCalcPoro<distype>::SetupMaterialDerivatives()
   if(my::is_higher_order_ele_)
   {
     // get the second derivatives of standard element at current GP w.r.t. XYZ
-    DRT::UTILS::gder2<distype>(xjm0,N_XYZ_,my::deriv2_,xyze0_,N_XYZ2_);
+    DRT::UTILS::gder2<distype,my::nen_>(xjm0,N_XYZ_,my::deriv2_,xyze0_,N_XYZ2_);
 
     if(my::nsd_==3)
     {

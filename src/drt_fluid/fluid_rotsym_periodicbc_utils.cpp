@@ -85,8 +85,8 @@ bool FLD::IsSlaveNodeOfRotSymPBC(
       }
   }
 
-      return isrotsymslave; // yes, it is a slave node with non-zero angle
-    }
+  return isrotsymslave; // yes, it is a slave node with non-zero angle
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

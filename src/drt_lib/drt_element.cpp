@@ -599,7 +599,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
 
         const int owner = node->Owner();
         std::vector<int> dof;
-        dis.Dof(dof,node,dofset,0);
+        dis.Dof(dof,node,dofset,0,this);
         const int size = dof.size();
         if (size) lmstride.push_back(size);
         for (int j=0; j< size; ++j)

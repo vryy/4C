@@ -55,6 +55,7 @@ namespace FLD
 {
 // forward declarations
 class FluidImplicitTimeInt;
+class XWall;
 class CombustFluidImplicitTimeInt;
 class TurbulenceStatisticsCha;
 class TurbulenceStatisticsCcy;
@@ -267,6 +268,8 @@ private:
   Teuchos::RCP<Epetra_MultiVector>      myfilteredreystr_;
   Teuchos::RCP<Epetra_Vector>           myfsvelaf_    ;
   Teuchos::RCP<Epetra_Vector>           myfsscaaf_;
+  //xwall object is required for evaluating inner element planes of channel
+  Teuchos::RCP<FLD::XWall>              myxwall_;
 
   //! scatra result vector (defined on the scatra dofrowmap!)
   Teuchos::RCP<Epetra_Vector>                   myphinp_;

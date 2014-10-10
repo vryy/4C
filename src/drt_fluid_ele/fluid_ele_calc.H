@@ -17,11 +17,12 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 
 #include "fluid_ele_interface.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "fluid_ele.H"
 
 // forward declarations
 namespace FLD
 {
-  template <DRT::Element::DiscretizationType distype>
+  template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype = DRT::ELEMENTS::Fluid::none>
   class RotationallySymmetricPeriodicBC;
 
   class TDSEleData;
@@ -74,7 +75,7 @@ namespace ELEMENTS
     \date 07/07
   */
 
-  template<DRT::Element::DiscretizationType distype>
+  template<DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype = DRT::ELEMENTS::Fluid::none>
   class FluidEleCalc : public FluidEleInterface
   {
 
@@ -84,7 +85,7 @@ public:
   virtual ~FluidEleCalc() {}
 
   //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
-  static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  static const int nen_ = DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode * DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   //! number of space dimensions
   static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -616,12 +617,12 @@ protected:
 
 
   //! evaluate shape functions and their derivatives at element center
-  void EvalShapeFuncAndDerivsAtEleCenter();
+  virtual void EvalShapeFuncAndDerivsAtEleCenter();
 
   //! brief evaluate shape functions and their derivatives at integration point
-  void EvalShapeFuncAndDerivsAtIntPoint(const double* gpcoords,      ///< actual integration point (coords)
-                                        double gpweight     ///< actual integration point (weight)
-                                        );
+  virtual void EvalShapeFuncAndDerivsAtIntPoint(const double* gpcoords,      ///< actual integration point (coords)
+                                                      double gpweight        ///< actual integration point (weight)
+                                                );
 
 
   //! get material parameters
@@ -636,6 +637,9 @@ protected:
                          const double                       thermpressdtam,  ///< time derivative of thermodynamic pressure at time n+alpha_m / n+1
                          const double                       vol              ///< element volume
                          );
+
+  //! return constant mk for stabilization parameters
+  virtual double GetMK();
 
   //! calculate stabilization parameter
   void CalcStabParameter(const double  vol);  ///< volume
@@ -1083,7 +1087,7 @@ protected:
      */
   void ExtractValuesFromGlobalVector(const DRT::Discretization&                       discretization, ///< discretization
                                      const std::vector<int>&                          lm,             ///<
-                                     FLD::RotationallySymmetricPeriodicBC<distype>  & rotsymmpbc, ///<
+                                     FLD::RotationallySymmetricPeriodicBC<distype,enrtype>  & rotsymmpbc, ///<
                                      LINALG::Matrix<nsd_,nen_> *                      matrixtofill,   ///< vector field
                                      LINALG::Matrix<nen_,1> *                         vectortofill,   ///< scalar field
                                      const std::string                                state);          ///< state of the global vector
@@ -1123,7 +1127,7 @@ protected:
 //  }
 
   //! for the handling of rotationally symmetric periodic boundary conditions
-  Teuchos::RCP<FLD::RotationallySymmetricPeriodicBC<distype> > rotsymmpbc_;
+  Teuchos::RCP<FLD::RotationallySymmetricPeriodicBC<distype,enrtype> > rotsymmpbc_;
   //! element id
   int eid_;
   //! Flag to (de)activate higher order elements
@@ -1319,7 +1323,7 @@ protected:
   //static std::map<int,std::map<int,DRT::ELEMENTS::FluidEleCalc<distype>* >* > instances_;
 
   };
-  //template<DRT::Element::DiscretizationType distype> std::map<int,std::map<int,DRT::ELEMENTS::FluidEleCalc<distype>* >* > FluidEleCalc<distype>::instances_;
+  //template<DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype = DRT::ELEMENTS::Fluid::none> std::map<int,std::map<int,DRT::ELEMENTS::FluidEleCalc<distype>* >* > FluidEleCalc<distype>::instances_;
 }
 }
 

@@ -45,7 +45,6 @@ class FluidEleParameter;
 class FluidEleParameterStd;
 class FluidEleParameterPoro;
 class FluidEleParameterTimInt;
-template<DRT::Element::DiscretizationType distype> class FluidEleCalc;
 class FluidBoundary;
 class FluidIntFace;
 
@@ -93,6 +92,15 @@ class Fluid : public DRT::Element
 {
 public:
 
+
+  /*!
+   \brief Enrichment type
+  */
+  enum EnrichmentType
+  {
+    none,                          // no enrichment
+    xwall                          // xwall: additional virtual nodes, every other is a virtual one
+  };
 
   //! @name friends
   friend class FluidBoundary;
@@ -409,6 +417,11 @@ protected:
 
 }; // class Fluid
 
+//! Template Meta Programming version of switch over enrichment type
+template<DRT::ELEMENTS::Fluid::EnrichmentType ENRTYPE>
+struct MultipleNumNode {};
+template<> struct MultipleNumNode<DRT::ELEMENTS::Fluid::none>     {static const int multipleNode =  1;};
+template<> struct MultipleNumNode<DRT::ELEMENTS::Fluid::xwall>    {static const int multipleNode =  2;};
 
 //=======================================================================
 //=======================================================================

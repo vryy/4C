@@ -205,6 +205,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
                          INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
                          INPAR::FLUID::tau_codina or
                          INPAR::FLUID::tau_codina_wo_dt or
+                         INPAR::FLUID::tau_codina_convscaled or
                          INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
                          INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt or
                          INPAR::FLUID::tau_hughes_franca_balestra_wo_dt))
@@ -227,6 +228,8 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
         whichtau_ = INPAR::FLUID::tau_codina_wo_dt;
       else if (whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
         whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_codina_convscaled)
+        dserror("This stabilization Parameter is not implemented for stationary flows");
     }
 
     // tau_donea_huerta_wo_dt should only be used for stokes problems and vice versa

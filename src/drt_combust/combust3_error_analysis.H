@@ -70,7 +70,7 @@ void AnalyticalSol_Couette_20x20x1_plain(
     LINALG::Matrix<3,1>& analyt_pres_deriv)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: x+0.025
+  /*  Levelset: x+0.025
    *
    * [|u|]:=0, [|sigma*n|]:=3, g=0 -> [|-p|]=3
    *             | 20.0*y+10.0 |
@@ -78,8 +78,8 @@ void AnalyticalSol_Couette_20x20x1_plain(
    *             | 0             |
    * du_x/dy = 20.0 other derivatives are zero
    *
-   * p(x,y,z)= 	7.0 for x<-0.025
-   * 				4.0 for x>-0.025
+   * p(x,y,z)=   7.0 for x<-0.025
+   *         4.0 for x>-0.025
    * gradp = 0.0
    */
 
@@ -133,7 +133,7 @@ void AnalyticalSol_Couette_20x20x1_plain_Interface(
     LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: x+0.025
+  /*  Levelset: x+0.025
    *
    * [|u|]:=0, [|sigma*n|]:=3, g=0 -> [|-p|]=3
    *             | 20.0*y+10.0 |
@@ -141,8 +141,8 @@ void AnalyticalSol_Couette_20x20x1_plain_Interface(
    *             | 0             |
    * du_x/dy = 20.0 other derivatives are zero
    *
-   * p(x,y,z)= 	7.0 for x<-0.025
-   * 				4.0 for x>-0.025
+   * p(x,y,z)=   7.0 for x<-0.025
+   *         4.0 for x>-0.025
    * gradp = 0.0
    */
 
@@ -195,7 +195,7 @@ void AnalyticalSol_shear(
    * #define COMBUST_TESTCOUETTEFLOW
    * !!!!!!!!!!!!!!!!!!!!!!!!!!!!
    *
-   * 	Levelset: x+y+0.05
+   *   Levelset: x+y+0.05
    *
    * [|u|]:=5, [|sigma*n|]:=3, g=0 -> [|-p|]=3
    *             | 20.0/0.6*y+10.0 |
@@ -207,8 +207,8 @@ void AnalyticalSol_shear(
    *             | 0               |
    * du_x/dy = 20.0/0.6 other derivatives are zero
    *
-   * p(x,y,z)= 	5.0 for x+y<-0.05
-   * 				2.0 for x+y>-0.05
+   * p(x,y,z)=   5.0 for x+y<-0.05
+   *         2.0 for x+y>-0.05
    * gradp = 0.0
    *
    *
@@ -271,7 +271,7 @@ void AnalyticalSol_shear_Interface(
     LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: x+y+0.05
+  /*  Levelset: x+y+0.05
    *
    * [|u|]:=5, [|sigma*n|]:=3, g=0 -> [|-p|]=3
    *             | 20.0/0.6*y+10.0 |
@@ -283,8 +283,8 @@ void AnalyticalSol_shear_Interface(
    *             | 0               |
    * du_x/dy = 20.0/0.6 other derivatives are zero
    *
-   * p(x,y,z)= 	5.0 for x+y<-0.05
-   * 				2.0 for x+y>-0.05
+   * p(x,y,z)=   5.0 for x+y<-0.05
+   *         2.0 for x+y>-0.05
    * gradp = 0.0
    *
    *
@@ -294,12 +294,12 @@ void AnalyticalSol_shear_Interface(
    * !!!!!!!!!!!!!!!!!!!!!!!!!!!!
    */
 
-  //	double exact_levelset_gp = posXYZgp(0)+posXYZgp(1)+0.05;
-  //	// check if Gaussian point (calculate in Phi_h-approx Interface) lies at the same side of the real!!! Interface
-  //	// matid = 3 -> burnt domain (+ domain), matid = 4 -> unburnt domain (- domain)
-  //	if((domainplus && exact_levelset_gp > 0) ||
-  //	   (!domainplus && exact_levelset_gp < 0)); // do nothing
-  //	else std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
+  //  double exact_levelset_gp = posXYZgp(0)+posXYZgp(1)+0.05;
+  //  // check if Gaussian point (calculate in Phi_h-approx Interface) lies at the same side of the real!!! Interface
+  //  // matid = 3 -> burnt domain (+ domain), matid = 4 -> unburnt domain (- domain)
+  //  if((domainplus && exact_levelset_gp > 0) ||
+  //     (!domainplus && exact_levelset_gp < 0)); // do nothing
+  //  else std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
 
   // set analytical velocity
@@ -345,7 +345,7 @@ void AnalyticalSol_straight_bodyforce_inclined(
     LINALG::Matrix<3,1>& analyt_pres_deriv)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: x+y+0.05
+  /*  Levelset: x+y+0.05
    *
    * bodyforce(0) = -10.0 =>   dp/dx= -10.0
    *
@@ -359,8 +359,8 @@ void AnalyticalSol_straight_bodyforce_inclined(
    *             | 0               |
    * derivatives are zero
    *
-   * p(x,y,z)= 	5.0 for x+y<-0.05
-   * 				2.0 for x+y>-0.05
+   * p(x,y,z)=   5.0 for x+y<-0.05
+   *         2.0 for x+y>-0.05
    * gradp = 0.0
    *
    */
@@ -422,7 +422,7 @@ void AnalyticalSol_straight_bodyforce_inclined_Interface(
     LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: x+y+0.05
+  /*  Levelset: x+y+0.05
    *
    * bodyforce(0) = 10.0 =>   dp/dx= -10.0
    *
@@ -436,18 +436,18 @@ void AnalyticalSol_straight_bodyforce_inclined_Interface(
    *             | 0               |
    * derivatives are zero
    *
-   * p(x,y,z)= 	5.0 for x+y<-0.05
-   * 				2.0 for x+y>-0.05
+   * p(x,y,z)=   5.0 for x+y<-0.05
+   *         2.0 for x+y>-0.05
    * gradp = 0.0
    *
    */
 
-  //	double exact_levelset_gp = posXYZgp(0)+posXYZgp(1)+0.05;
-  //	// check if Gaussian point (calculate in Phi_h-approx Interface) lies at the same side of the real!!! Interface
-  //	// matid = 3 -> burnt domain (+ domain), matid = 4 -> unburnt domain (- domain)
-  //	if((domainplus && exact_levelset_gp > 0) ||
-  //	   (!domainplus && exact_levelset_gp < 0)); // do nothing
-  //	else std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
+  //  double exact_levelset_gp = posXYZgp(0)+posXYZgp(1)+0.05;
+  //  // check if Gaussian point (calculate in Phi_h-approx Interface) lies at the same side of the real!!! Interface
+  //  // matid = 3 -> burnt domain (+ domain), matid = 4 -> unburnt domain (- domain)
+  //  if((domainplus && exact_levelset_gp > 0) ||
+  //     (!domainplus && exact_levelset_gp < 0)); // do nothing
+  //  else std::cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
 
   // set analytical velocity
@@ -490,7 +490,7 @@ void AnalyticalSol_static_bubble(
     LINALG::Matrix<3,1>& analyt_pres_deriv)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04
+  /*  Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04
    *
    * [|u|]:=0, [|sigma*n|]:=3, g=0 -> [|-p|]=3
    *             | 0               |
@@ -499,8 +499,8 @@ void AnalyticalSol_static_bubble(
    *
    * vel derivatives are zero
    *
-   * p(x,y,z)= 	5.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04<0
-   * 				2.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04>0
+   * p(x,y,z)=   5.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04<0
+   *         2.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04>0
    * gradp = 0.0
    *
    */
@@ -551,7 +551,7 @@ void AnalyticalSol_static_bubble_Interface(
     LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04
+  /*  Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04
    *
    * [|u|]:=0, [|sigma*n|]:=3, g=0 -> [|-p|]=3
    *             | 0               |
@@ -560,8 +560,8 @@ void AnalyticalSol_static_bubble_Interface(
    *
    * vel derivatives are zero
    *
-   * p(x,y,z)= 	5.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04<0
-   * 				2.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04>0
+   * p(x,y,z)=   5.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04<0
+   *         2.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04>0
    * gradp = 0.0
    *
    */
@@ -592,7 +592,7 @@ void AnalyticalSol_static_bubble_nxnx1(
     LINALG::Matrix<3,1>& analyt_pres_deriv)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04
+  /*  Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04
    *
    * [|u|]:=0, [|sigma*n|]:=3, g=0 -> [|-p|]=3
    *             | 0               |
@@ -601,8 +601,8 @@ void AnalyticalSol_static_bubble_nxnx1(
    *
    * vel derivatives are zero
    *
-   * p(x,y,z)= 	5.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04<0
-   * 				2.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04>0
+   * p(x,y,z)=   5.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04<0
+   *         2.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04>0
    * gradp = 0.0
    *
    */
@@ -626,8 +626,8 @@ void AnalyticalSol_static_bubble_nxnx1(
 
   analyt_pres_deriv.Clear();
 
-  //	if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)-0.04>0) analyt_pres=0.0;
-  //	else if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)-0.04<0) analyt_pres= 0.0+curvature*surftens;
+  //  if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)-0.04>0) analyt_pres=0.0;
+  //  else if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)-0.04<0) analyt_pres= 0.0+curvature*surftens;
   //
   // get the solution which is the best on the approximativ interface
   // take the constant curvature of the not approximated interface (1/rad)
@@ -663,7 +663,7 @@ void AnalyticalSol_static_bubble_nxnx1_Interface(
     LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04
+  /*  Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04
    *
    * [|u|]:=0, [|sigma*n|]:=3, g=0 -> [|-p|]=3
    *             | 0               |
@@ -672,8 +672,8 @@ void AnalyticalSol_static_bubble_nxnx1_Interface(
    *
    * vel derivatives are zero
    *
-   * p(x,y,z)= 	5.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04<0
-   * 				2.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04>0
+   * p(x,y,z)=   5.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04<0
+   *         2.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.04>0
    * gradp = 0.0
    *
    */
@@ -704,7 +704,7 @@ void AnalyticalSol_static_bubble_nxnxn(
     LINALG::Matrix<3,1>& analyt_pres_deriv)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.09
+  /*  Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.09
    *
    * [|u|]:=0, [|sigma*n|]:=3, g=0 -> [|-p|]=3
    *             | 0               |
@@ -713,8 +713,8 @@ void AnalyticalSol_static_bubble_nxnxn(
    *
    * vel derivatives are zero
    *
-   * p(x,y,z)= 	5.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.09<0
-   * 				2.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.09<0
+   * p(x,y,z)=   5.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.09<0
+   *         2.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.09<0
    * gradp = 0.0
    *
    */
@@ -740,8 +740,8 @@ void AnalyticalSol_static_bubble_nxnxn(
 
   analyt_pres_deriv.Clear();
 
-  //	if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)-0.04>0) analyt_pres=0.0;
-  //	else if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)-0.04<0) analyt_pres= 0.0+curvature*surftens;
+  //  if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)-0.04>0) analyt_pres=0.0;
+  //  else if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)-0.04<0) analyt_pres= 0.0+curvature*surftens;
   //
   // get the solution which is the best on the approximativ interface
   // take the constant curvature of the not approximated interface (1/rad)
@@ -775,7 +775,7 @@ void AnalyticalSol_static_bubble_nxnxn_Interface(
     LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.09
+  /*  Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.09
    *
    * [|u|]:=0, [|sigma*n|]:=3, g=0 -> [|-p|]=3
    *             | 0               |
@@ -784,8 +784,8 @@ void AnalyticalSol_static_bubble_nxnxn_Interface(
    *
    * vel derivatives are zero
    *
-   * p(x,y,z)= 	5.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.09<0
-   * 				2.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.09>0
+   * p(x,y,z)=   5.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.09<0
+   *         2.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.09>0
    * gradp = 0.0
    *
    */
@@ -816,7 +816,7 @@ void AnalyticalSol_ellipsoid_bubble_nxnxn_instat(
     LINALG::Matrix<3,1>& analyt_pres_deriv)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04
+  /*  Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04
    *
    * [|u|]:=0, [|sigma*n|]:=2/rad * surftens, g=0 -> [|-p|]=2/rad * surftens
    *             | 0               |
@@ -825,8 +825,8 @@ void AnalyticalSol_ellipsoid_bubble_nxnxn_instat(
    *
    * vel derivatives are zero
    *
-   * p(x,y,z)= 	2/rad * surftens for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04<0
-   * 				0.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04>0
+   * p(x,y,z)=   2/rad * surftens for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04<0
+   *         0.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04>0
    * gradp = 0.0
    *
    */
@@ -852,8 +852,8 @@ void AnalyticalSol_ellipsoid_bubble_nxnxn_instat(
 
   analyt_pres_deriv.Clear();
 
-  //	if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)+(posXYZgp(2)-0.01)*(posXYZgp(2)-0.01)-0.04>0) analyt_pres=0.0;
-  //	else if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)+(posXYZgp(2)-0.01)*(posXYZgp(2)-0.01)-0.04<0) analyt_pres= 0.0+curvature*surftens;
+  //  if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)+(posXYZgp(2)-0.01)*(posXYZgp(2)-0.01)-0.04>0) analyt_pres=0.0;
+  //  else if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)+(posXYZgp(2)-0.01)*(posXYZgp(2)-0.01)-0.04<0) analyt_pres= 0.0+curvature*surftens;
   //
   // get the solution which is the best on the approximativ interface
   // take the constant curvature of the not approximated interface (1/rad)
@@ -889,7 +889,7 @@ void AnalyticalSol_ellipsoid_bubble_nxnxn_instat_Interface(
     LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)(z-0.01)*(z-0.01)-0.04
+  /*  Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)(z-0.01)*(z-0.01)-0.04
    *
    * [|u|]:=0, [|sigma*n|]:=2/rad * surftens, g=0 -> [|-p|]=2/rad * surftens
    *             | 0               |
@@ -898,8 +898,8 @@ void AnalyticalSol_ellipsoid_bubble_nxnxn_instat_Interface(
    *
    * vel derivatives are zero
    *
-   * p(x,y,z)= 	2/rad * surftens for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04<0
-   * 				0.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04>0
+   * p(x,y,z)=   2/rad * surftens for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04<0
+   *         0.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04>0
    * gradp = 0.0
    *
    */
@@ -931,7 +931,7 @@ void AnalyticalSol_ellipsoid_bubble_nxnx1_instat(
     LINALG::Matrix<3,1>& analyt_pres_deriv)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.01
+  /*  Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)-0.01
    *
    * [|u|]:=0, [|sigma*n|]:=2/rad * surftens, g=0 -> [|-p|]=2/rad * surftens
    *             | 0               |
@@ -940,8 +940,8 @@ void AnalyticalSol_ellipsoid_bubble_nxnx1_instat(
    *
    * vel derivatives are zero
    *
-   * p(x,y,z)= 	2/rad * surftens for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04<0
-   * 				0.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04>0
+   * p(x,y,z)=   2/rad * surftens for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04<0
+   *         0.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04>0
    * gradp = 0.0
    *
    */
@@ -967,8 +967,8 @@ void AnalyticalSol_ellipsoid_bubble_nxnx1_instat(
 
   analyt_pres_deriv.Clear();
 
-  //	if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)+(posXYZgp(2)-0.01)*(posXYZgp(2)-0.01)-0.04>0) analyt_pres=0.0;
-  //	else if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)+(posXYZgp(2)-0.01)*(posXYZgp(2)-0.01)-0.04<0) analyt_pres= 0.0+curvature*surftens;
+  //  if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)+(posXYZgp(2)-0.01)*(posXYZgp(2)-0.01)-0.04>0) analyt_pres=0.0;
+  //  else if((posXYZgp(0)-0.01)*(posXYZgp(0)-0.01)+(posXYZgp(1)-0.01)*(posXYZgp(1)-0.01)+(posXYZgp(2)-0.01)*(posXYZgp(2)-0.01)-0.04<0) analyt_pres= 0.0+curvature*surftens;
   //
   // get the solution which is the best on the approximativ interface
   // take the constant curvature of the not approximated interface (1/rad)
@@ -1001,7 +1001,7 @@ void AnalyticalSol_ellipsoid_bubble_nxnx1_instat_Interface(
     LINALG::Matrix<1,1>& analyt_pres_minus)
 {
   // evaluate the analytical solution of the flow problem at posXYZgp
-  /*	Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)(z-0.01)*(z-0.01)-0.04
+  /*  Levelset: (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)(z-0.01)*(z-0.01)-0.04
    *
    * [|u|]:=0, [|sigma*n|]:=2/rad * surftens, g=0 -> [|-p|]=2/rad * surftens
    *             | 0               |
@@ -1010,8 +1010,8 @@ void AnalyticalSol_ellipsoid_bubble_nxnx1_instat_Interface(
    *
    * vel derivatives are zero
    *
-   * p(x,y,z)= 	2/rad * surftens for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04<0
-   * 				0.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04>0
+   * p(x,y,z)=   2/rad * surftens for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04<0
+   *         0.0 for (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.04>0
    * gradp = 0.0
    *
    */
@@ -1399,7 +1399,7 @@ void Nitsche_BuildDomainIntegratedErrors(
       {
         static LINALG::Matrix<6,numnode> deriv2;
         DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-        DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+        DRT::UTILS::gder2<DISTYPE,numnode>(xjm, derxy, deriv2, xyze, derxy2);
       }
       else
       {
@@ -1930,7 +1930,7 @@ void Nitsche_BuildBoundaryIntegratedErrors_Cell(
     {
       static LINALG::Matrix<6,numnode> deriv2;
       DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-      DRT::UTILS::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+      DRT::UTILS::gder2<DISTYPE,numnode>(xjm, derxy, deriv2, xyze, derxy2);
     }
     else
     {
