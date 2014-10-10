@@ -258,11 +258,11 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   //    K_{Teffdyn} = K_{T}
   // i.e. do nothing here
 
-  // apply forces and stiffness due to contact / meshtying
-  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
-
   // apply forces and stiffness due to beam contact
   ApplyForceStiffBeamContact(stiff_,fres_,disn_,predict);
+
+  // apply forces and stiffness due to contact / meshtying
+  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
 
   // close stiffness matrix
   stiff_->Complete();

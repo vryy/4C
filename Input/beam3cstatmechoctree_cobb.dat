@@ -67,14 +67,11 @@ MAXITER                         25
 //GAMMA                         1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
--------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   2
-APPLICATION                     BeamContact
-STRATEGY                        Uzawa
-PENALTYPARAM                    1e+06
-UZAWACONSTRTOL                  1e-08
-UZAWAMAXSTEPS                   25
 ----------------------------------------------------------------BEAM CONTACT
+BEAMS_STRATEGY                  Uzawa
+BEAMS_BTBPENALTYPARAM           1e+06
+BEAMS_BTBUZAWACONSTRTOL         1e-08
+BEAMS_BTBUZAWAMAXSTEPS          25
 BEAMS_NEWGAP                    No
 BEAMS_SMOOTHING                 None
 BEAMS_PENALTYLAW                LinPen//LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"

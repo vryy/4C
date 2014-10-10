@@ -1,3 +1,4 @@
+//
 // Maintainer: Christoph Meier
 // meier@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
@@ -59,14 +60,11 @@ BETA                            0.5
 GAMMA                           1.0
 ALPHA_M                         0.5
 ALPHA_F                         0.5
--------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   2
-APPLICATION                     BeamContact
-STRATEGY                        Uzawa
-PENALTYPARAM                    1e+06
-UZAWACONSTRTOL                  1e-08
-UZAWAMAXSTEPS                   25
 ----------------------------------------------------------------BEAM CONTACT
+BEAMS_STRATEGY                  Uzawa
+BEAMS_BTBPENALTYPARAM           1e+06
+BEAMS_BTBUZAWACONSTRTOL         1e-08
+BEAMS_BTBUZAWAMAXSTEPS          25
 BEAMS_NEWGAP                    No
 BEAMS_SMOOTHING                 None
 BEAMS_PENALTYLAW                LinPen//LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"

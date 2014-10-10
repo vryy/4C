@@ -48,6 +48,7 @@ Maintainer: Alexander Popp
 #include "../drt_contact/meshtying_contact_bridge.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_crack.H"
 #include "../drt_constraint/constraint_manager.H"
@@ -263,7 +264,6 @@ STR::TimInt::TimInt
     // stuff is initialized. Else, #beamcman_ remains a Teuchos::null pointer.
     PrepareBeamContact(sdynparams);
   }
-
   // check for mortar contact or meshtying
   {
     // If mortar contact or meshtying is chosen in the input file, then a
@@ -271,7 +271,6 @@ STR::TimInt::TimInt
     // stuff is initialized. Else, #cmtman_ remains a Teuchos::null pointer.
     PrepareContactMeshtying(sdynparams);
   }
-
   // check for elements using a semi-smooth Newton method for plasticity
   {
     // If at least one such element exists, then a
@@ -461,11 +460,11 @@ void STR::TimInt::SetInitialFields()
 void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
 {
   // some parameters
-  const Teuchos::ParameterList&   scontact = DRT::Problem::Instance()->ContactDynamicParams();
-  INPAR::CONTACT::ApplicationType apptype  = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
+  const Teuchos::ParameterList& beamcontact = DRT::Problem::Instance()->BeamContactParams();
+  INPAR::BEAMCONTACT::Strategy strategy = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact,"BEAMS_STRATEGY");
 
   // only continue if beam contact unmistakably chosen in input file
-  if (apptype == INPAR::CONTACT::app_beamcontact)
+  if (strategy != INPAR::BEAMCONTACT::bstr_none)
   {
     // store integration parameter alphaf into beamcman_ as well
     // (for all cases except OST, GenAlpha and GEMM this is zero)

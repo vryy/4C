@@ -27,6 +27,7 @@ Maintainer: Kei Müller
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "stru_aux.H"
 
@@ -269,9 +270,9 @@ void STR::TimIntStatMech::InitializeBeamContact()
   if(HaveBeamContact())
   {
     //check wheter appropriate parameters are set in the parameter list "CONTACT DYNAMIC"
-    // initialize beam contact detection strategy (for network simulations, octree is the choice)
-    const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
+    //initialize beam contact detection strategy (for network simulations, octree is the choice)
+    const Teuchos::ParameterList& beamcontact = DRT::Problem::Instance()->BeamContactParams();
+    if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact,"BEAMS_STRATEGY") != INPAR::BEAMCONTACT::bstr_none)
       buildoctree_ = true;
     else
       dserror("Check your input parameters in CONTACT DYNAMIC!");
@@ -846,11 +847,7 @@ void STR::TimIntStatMech::NewtonFull()
 
   ConvergenceStatusUpdate(Converged());
 
-  INPAR::CONTACT::SolvingStrategy soltype = INPAR::CONTACT::solution_penalty;
-//  if(HaveBeamContact())
-//    soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
-//  if(printscreen_ && !isconverged_ &&  !myrank_ && soltype != INPAR::CONTACT::solution_uzawa)
-//    std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
+  INPAR::BEAMCONTACT::Strategy strategy = INPAR::BEAMCONTACT::bstr_penalty;
 
   // test whether max iterations was hit
   if ( (Converged()) && !discret_->Comm().MyPID() && printscreen_)
@@ -872,7 +869,7 @@ void STR::TimIntStatMech::NewtonFull()
     break;
     case INPAR::STR::divcont_continue:
     {
-      if(soltype != INPAR::CONTACT::solution_uzawa && !discret_->Comm().MyPID() && (fresmnormdivergent || iter_ >= itermax_))
+      if(strategy != INPAR::BEAMCONTACT::bstr_uzawa && !discret_->Comm().MyPID() && (fresmnormdivergent || iter_ >= itermax_))
         printf("Newton unconverged in %d iterations - new trial with new random numbers!\n\n", iter_);
       return;
     }
@@ -1363,10 +1360,10 @@ void STR::TimIntStatMech::PTC()
     }
     else
     {
-      INPAR::CONTACT::SolvingStrategy soltype = INPAR::CONTACT::solution_penalty;
+      INPAR::BEAMCONTACT::Strategy strategy = INPAR::BEAMCONTACT::bstr_penalty;
       if(HaveBeamContact())
-        soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
-      if(!myrank_ && soltype != INPAR::CONTACT::solution_uzawa)
+        strategy = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcman_->BeamContactParameters(),"BEAMS_STRATEGY");
+      if(!myrank_ && strategy != INPAR::BEAMCONTACT::bstr_uzawa)
         std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
     }
 
@@ -1445,8 +1442,8 @@ void STR::TimIntStatMech::PTCConvergenceStatus(int& numiter, int& maxiter, bool 
     // configurations arise, where (especially in network simulations) the constraint is fullfilled by almost all of the contact
     // pairs except for a very tiny number of pairs (often only 1 pair), where one radius is significantly smaller than the other
     // (pair linker/filament).
-//    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
-//    if(soltype==INPAR::CONTACT::solution_uzawa)
+//    INPAR::BEAMCONTACT::Strategy strategy = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcman_->BeamContactParameters(),"BEAMS_STRATEGY");
+//    if(strategy==INPAR::BEAMCONTACT::bstr_uzawa)
 //    {
 //      double cnorm = 1e6;
 //      // get the constraint norm and decrease penalty parameter
@@ -1582,15 +1579,15 @@ void STR::TimIntStatMech::ConvergenceStatusUpdate(bool converged, bool increases
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::BeamContactNonlinearSolve()
 {
-  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
-  switch (soltype)
+  INPAR::BEAMCONTACT::Strategy strategy = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcman_->BeamContactParameters(),"BEAMS_STRATEGY");
+  switch (strategy)
   {
     //solving strategy using regularization with penalty method (nonlinear solution approach: ordinary NEWTON (PTC))
-    case INPAR::CONTACT::solution_penalty:
+    case INPAR::BEAMCONTACT::bstr_penalty:
       BeamContactPenalty();
     break;
     //solving strategy using regularization with augmented Lagrange method (nonlinear solution approach: nested UZAWA NEWTON (PTC))
-    case INPAR::CONTACT::solution_uzawa:
+    case INPAR::BEAMCONTACT::bstr_uzawa:
     {
       BeamContactAugLag();
     }
@@ -1632,8 +1629,8 @@ void STR::TimIntStatMech::BeamContactPenalty()
 void STR::TimIntStatMech::BeamContactAugLag()
 {
   // get tolerance and maximum number of Uzawa steps from input file
-  double eps = beamcman_->GeneralContactParameters().get<double>("UZAWACONSTRTOL");
-  int maxuzawaiter = beamcman_->GeneralContactParameters().get<int>("UZAWAMAXSTEPS");
+  double eps = beamcman_->BeamContactParameters().get<double>("BEAMS_BTBUZAWACONSTRTOL");
+  int maxuzawaiter = beamcman_->BeamContactParameters().get<int>("BEAMS_BTBUZAWAMAXSTEPS");
 
   Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
   if(!discret_->Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))

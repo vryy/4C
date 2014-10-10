@@ -386,6 +386,9 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
     stiff_->Add(*damp_, false, 1.0/(*dt_)[0], 1.0);
   }
 
+  // apply forces and stiffness due to beam contact
+  ApplyForceStiffBeamContact(stiff_,fres_,disn_,predict);
+
   // apply forces and stiffness due to contact / meshtying
   // Note that we ALWAYS use a TR-like approach to compute the interface
   // forces. This means we never explicitly compute fc at the generalized
@@ -393,9 +396,6 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   // point n and the new end-point n+1 instead:
   // F_{c;n+theta} := theta * F_{c;n+1} +  (1-theta) * F_{c;n}
   ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
-
-  // apply forces and stiffness due to beam contact
-  ApplyForceStiffBeamContact(stiff_,fres_,disn_,predict);
 
   // close stiffness matrix
   stiff_->Complete();

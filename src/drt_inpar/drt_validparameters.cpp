@@ -1732,14 +1732,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for meshtying and contact",&scontact);
 
-  setStringToIntegralParameter<int>("APPLICATION","None","Type of contact or meshtying app",
-       tuple<std::string>("None","none",
-                          "BeamContact","beamcontact"),
-       tuple<int>(
-                  INPAR::CONTACT::app_none,INPAR::CONTACT::app_none,
-                  INPAR::CONTACT::app_beamcontact, INPAR::CONTACT::app_beamcontact),
-       &scontact);
-
   setStringToIntegralParameter<int>("RESTART_WITH_CONTACT","No","Must be chosen if a non-contact simulation is to be restarted with contact",
                                yesnotuple,yesnovalue,&scontact);
 
@@ -2030,13 +2022,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_INACTIVESTIFF","No","Always apply contact stiffness in first Newton step for pairs which have active in last time step",
-                                  yesnotuple,yesnovalue,&beamcontact);
+                               yesnotuple,yesnovalue,&beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_BTSOL","No","decide, if also the contact between beams and solids is possible",
                                yesnotuple,yesnovalue,&beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_BTSPH","No","decide, if also the contact between beams and spheres is possible",
                                yesnotuple,yesnovalue,&beamcontact);
+
+  setStringToIntegralParameter<int>("BEAMS_STRATEGY","None","Type of employed solving strategy",
+        tuple<std::string>("None","none",
+                           "Penalty", "penalty",
+                           "Uzawa","uzawa"),
+        tuple<int>(
+                INPAR::BEAMCONTACT::bstr_none, INPAR::BEAMCONTACT::bstr_none,
+                INPAR::BEAMCONTACT::bstr_penalty, INPAR::BEAMCONTACT::bstr_penalty,
+                INPAR::BEAMCONTACT::bstr_uzawa, INPAR::BEAMCONTACT::bstr_uzawa),
+        &beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_SMOOTHING","None","Application of smoothed tangent field",
        tuple<std::string>("None","none",
@@ -2054,6 +2056,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   INPAR::BEAMCONTACT::bd_yes,INPAR::BEAMCONTACT::bd_yes),
        &beamcontact);
 
+  DoubleParameter("BEAMS_BTBPENALTYPARAM",0.0,"Penalty parameter for beam-to-beam contact",&beamcontact);
+  DoubleParameter("BEAMS_BTSPENALTYPARAM",0.0,"Penalty parameter for beam-to-solid contact",&beamcontact);
+  IntParameter("BEAMS_BTBUZAWAMAXSTEPS",10,"Maximum no. of Uzawa steps for Uzawa solution strategy",&beamcontact);
+  DoubleParameter("BEAMS_BTBUZAWACONSTRTOL",1.0e-8,"Tolerance of constraint norm for Uzawa solution strategy",&beamcontact);
   DoubleParameter("BEAMS_DAMPINGPARAM",-1000.0,"Damping parameter for contact damping force",&beamcontact);
   DoubleParameter("BEAMS_DAMPREGPARAM1",-1000.0,"First (at gap1, with gap1>gap2) regularization parameter for contact damping force",&beamcontact);
   DoubleParameter("BEAMS_DAMPREGPARAM2",-1000.0,"Second (at gap2, with gap1>gap2) regularization parameter for contact damping force",&beamcontact);

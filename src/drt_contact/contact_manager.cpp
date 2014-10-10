@@ -106,8 +106,19 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
     fflush(stdout);
   }
 
+  //Vector that contains solid-to-solid and beam-to-solid contact pairs
+  std::vector<DRT::Condition*> beamandsolidcontactconditions(0);
+  Discret().GetCondition("Contact", beamandsolidcontactconditions);
+
+  //Vector that solely contains solid-to-solid contact pairs
   std::vector<DRT::Condition*> contactconditions(0);
-  Discret().GetCondition("Contact", contactconditions);
+
+  //Sort out beam-to-solid contact pairs, since these are treated in the beam3contact framework
+  for (int i = 0; i < (int) beamandsolidcontactconditions.size(); ++i)
+  {
+    if(*(beamandsolidcontactconditions[i]->Get<std::string>("Application"))!="Beamtosolidcontact")
+      contactconditions.push_back(beamandsolidcontactconditions[i]);
+  }
 
   // there must be more than one contact condition
   // unless we have a self contact problem!

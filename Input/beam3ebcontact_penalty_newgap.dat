@@ -67,12 +67,9 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          Amesos_KLU_nonsym
--------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   2
-APPLICATION                     BeamContact
-STRATEGY                        Penalty
-PENALTYPARAM                    1e-5
 ----------------------------------------------------------------BEAM CONTACT
+BEAMS_STRATEGY                  Penalty
+BEAMS_BTBPENALTYPARAM           1e-5
 BEAMS_NEWGAP                    Yes
 BEAMS_SMOOTHING                 None
 BEAMS_PENALTYLAW                LinPen//LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"

@@ -31,6 +31,7 @@ Maintainer: Alexander Popp
 #include "../drt_contact/contact_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "../drt_contact/meshtying_contact_bridge.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_beamcontact/beam3contact_defines.H"
@@ -3161,8 +3162,8 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
   // get some parameters
   //********************************************************************
   // strategy type
-  INPAR::CONTACT::SolvingStrategy soltype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->GeneralContactParameters(),"STRATEGY");
+  INPAR::BEAMCONTACT::Strategy strategy =
+    DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcman_->BeamContactParameters(),"BEAMS_STRATEGY");
 
   // unknown types of nonlinear iteration schemes
   if (itertype_ != INPAR::STR::soltech_newtonfull)
@@ -3172,7 +3173,7 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
   // solving strategy using regularization with penalty method
   // (nonlinear solution approach: ordinary NEWTON)
   //**********************************************************************
-  if (soltype == INPAR::CONTACT::solution_penalty)
+  if (strategy == INPAR::BEAMCONTACT::bstr_penalty)
   {
      // nonlinear iteration (Newton)
     int error = NewtonFull();
@@ -3187,11 +3188,11 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
   // solving strategy using regularization with augmented Lagrange method
   // (nonlinear solution approach: nested UZAWA NEWTON)
   //**********************************************************************
-  else if (soltype == INPAR::CONTACT::solution_uzawa)
+  else if (strategy == INPAR::BEAMCONTACT::bstr_uzawa)
   {
     // get tolerance and maximum number of Uzawa steps from input file
-    double eps = beamcman_->GeneralContactParameters().get<double>("UZAWACONSTRTOL");
-    int maxuzawaiter = beamcman_->GeneralContactParameters().get<int>("UZAWAMAXSTEPS");
+    double eps = beamcman_->BeamContactParameters().get<double>("BEAMS_BTBUZAWACONSTRTOL");
+    int maxuzawaiter = beamcman_->BeamContactParameters().get<int>("BEAMS_BTBUZAWAMAXSTEPS");
 
     // outer Augmented Lagrangian iteration (Uzawa)
     do

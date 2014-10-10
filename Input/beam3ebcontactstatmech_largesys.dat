@@ -1,5 +1,11 @@
+//
+// Maintainer: Christoph Meier
+// meier@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15262
+//
 ==================================================================
-              BACI Statistical Mechanics Input File
+General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
 Large statmech example with beam3eb elements and penalty contact (no parallel contact so far)
@@ -53,14 +59,9 @@ MAXITER                30
 ITERNORM               L2
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA        1 //header_01 end
-----------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER       2
-APPLICATION         BeamContact
-STRATEGY            Penalty
-PENALTYPARAM        500
-UZAWACONSTRTOL      0.25
-UZAWAMAXSTEPS       20
 ----------------------------------------------BEAM CONTACT
+BEAMS_STRATEGY          Penalty
+BEAMS_BTBPENALTYPARAM   500
 BEAMS_NEWGAP            Yes
 BEAMS_SMOOTHING         None
 BEAMS_PENALTYLAW        LinPosQuadPen //Linpen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"

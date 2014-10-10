@@ -1,7 +1,11 @@
-
-
+//
+// Maintainer: Christoph Meier
+// meier@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15262
+//
 ==================================================================
-              BACI Statistical Mechanics Input File
+General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
 ortho_b3ii_3fpl_pl20_lfil5_R0.1.dat
@@ -55,25 +59,22 @@ MAXITER                100
 ITERNORM               L2
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA        1 //header_01 end
-----------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   2
-APPLICATION                     BeamContact
-STRATEGY                        Penalty
-PENALTYPARAM                    500  //, 4000, 100
 ----------------------------------------------BEAM CONTACT
-BEAMS_NEWGAP          Yes
-BEAMS_SMOOTHING       None
-BEAMS_PENALTYLAW      LinPen //Linpen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
-BEAMS_PENREGPARAM_G0  0.0
-BEAMS_PENREGPARAM_F0  0.0
-BEAMS_PENREGPARAM_C0  0.0
-BEAMS_DAMPING           No
-BEAMS_DAMPINGPARAM  0.0
-BEAMS_DAMPREGPARAM1  0.0
-BEAMS_DAMPREGPARAM2  0.0
-BEAMS_BASICSTIFFGAP  0.001
-BEAMS_INACTIVESTIFF  Yes
-BEAMS_OCTREE          none
+BEAMS_STRATEGY         Penalty
+BEAMS_BTBPENALTYPARAM  500  //, 4000, 100
+BEAMS_NEWGAP           Yes
+BEAMS_SMOOTHING        None
+BEAMS_PENALTYLAW       LinPen //Linpen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
+BEAMS_PENREGPARAM_G0   0.0
+BEAMS_PENREGPARAM_F0   0.0
+BEAMS_PENREGPARAM_C0   0.0
+BEAMS_DAMPING          No
+BEAMS_DAMPINGPARAM     0.0
+BEAMS_DAMPREGPARAM1    0.0
+BEAMS_DAMPREGPARAM2    0.0
+BEAMS_BASICSTIFFGAP    0.001
+BEAMS_INACTIVESTIFF    Yes
+BEAMS_OCTREE           none
 BEAMS_ADDITEXT         Yes
 BEAMS_EXTVAL           20
 ----------------------------------------------STATISTICAL MECHANICS

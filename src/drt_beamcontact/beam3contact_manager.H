@@ -392,6 +392,9 @@ private:
   //! current penalty parameter (might be modified within augmented Lagrange strategy)
   double currentpp_;
 
+  //! beam-tp-solid penalty parameter
+  double btspp_;
+
   //! current Uzawa iteration index (for augmented Lagrange strategy)
   int uzawaiter_;
 

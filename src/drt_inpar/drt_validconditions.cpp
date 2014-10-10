@@ -753,6 +753,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   contactcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("AdhesionBound",true)));
   contactcomponents.push_back(Teuchos::rcp(new RealConditionComponent("AdhesionBound")));
 
+  contactcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "Application","Solidcontact",
+        Teuchos::tuple<std::string>("Solidcontact","Beamtosolidcontact"),
+        Teuchos::tuple<std::string>("Solidcontact","Beamtosolidcontact"),true)));
+
   Teuchos::RCP<ConditionDefinition> linecontact =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR CONTACT CONDITIONS 2D",
                                          "Contact",

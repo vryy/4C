@@ -59,13 +59,6 @@ MAXITER                         15
 ITERNORM                        L2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1 //header_01 end
--------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   2
-APPLICATION                     none
-STRATEGY Augmented //Penalty
-PENALTYPARAM                    25
-UZAWACONSTRTOL                  0.25
-UZAWAMAXSTEPS                   20
 -------------------------------------------------------STATISTICAL MECHANICS
 //====                          GENERAL STATMECH SIMULATION FLAGS ====
 THERMALBATH                     uniform

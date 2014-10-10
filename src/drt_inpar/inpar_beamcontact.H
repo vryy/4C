@@ -48,6 +48,15 @@ namespace INPAR
   /// Input parameters for beam contact
   namespace BEAMCONTACT
   {
+    /// Type of employed solving strategy
+    /// (this enum represents the input file parameter BEAMS_STRATEGY)
+    enum Strategy
+    {
+      bstr_none,         ///< no beam contact
+      bstr_penalty,       ///< penalty method
+      bstr_uzawa         ///< uzawa method
+    };
+
     /// Application of a smoothed tangent field
     /// (this enum represents the input file parameter BEAMS_SMOOTHING)
     enum Smoothing

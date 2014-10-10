@@ -1,5 +1,11 @@
+//
+// Maintainer: Christoph Meier
+// meier@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15262
+//
 ==================================================================
-              BACI Statistical Mechanics Input File
+General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
 singlefil_b3eb_0_lfil10.dat
@@ -52,13 +58,6 @@ ADAPTCONV_BETTER       0.1
 MAXITER                25
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA        1 //header_01 end
-----------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER       2
-APPLICATION         none
-STRATEGY            Augmented //Penalty
-PENALTYPARAM        25
-UZAWACONSTRTOL      0.25
-UZAWAMAXSTEPS       20
 ----------------------------------------------STATISTICAL MECHANICS
 //==== GENERAL STATMECH SIMULATION FLAGS ====
 THERMALBATH         uniform

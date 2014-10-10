@@ -59,12 +59,9 @@ ADAPTCONV_BETTER                0.1
 MAXITER                         25
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
--------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER                   2
-APPLICATION                     BeamContact
-STRATEGY                        Penalty
-PENALTYPARAM                    1e+06
 ----------------------------------------------------------------BEAM CONTACT
+BEAMS_STRATEGY                  Penalty
+BEAMS_BTBPENALTYPARAM           1e+06
 BEAMS_NEWGAP                    No
 BEAMS_SMOOTHING                 None
 BEAMS_PENALTYLAW                LinPen//LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"

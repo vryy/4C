@@ -110,18 +110,29 @@ totpenaltyenergy_(0.0)
 
   //begin: determine surface elements and there nodes
 
-  std::vector<DRT::Condition*> contactconditions(0);
-  discret.GetCondition("Mortar",contactconditions);
+  //Vector that contains solid-to-solid and beam-to-solid contact pairs
+  std::vector<DRT::Condition*> beamandsolidcontactconditions(0);
+  discret.GetCondition("Contact", beamandsolidcontactconditions);
+
+  //Vector that solely contains beam-to-solid contact pairs
+  std::vector<DRT::Condition*> btscontactconditions(0);
+
+  //Sort out solid-to-solid contact pairs, since these are treated in the drt_contact framework
+  for (int i = 0; i < (int) beamandsolidcontactconditions.size(); ++i)
+  {
+    if(*(beamandsolidcontactconditions[i]->Get<std::string>("Application"))=="Beamtosolidcontact")
+      btscontactconditions.push_back(beamandsolidcontactconditions[i]);
+  }
 
   solcontacteles_.resize(0);
   solcontactnodes_.resize(0);
   int ggsize = 0;
 
    //-------------------------------------------------- process surface nodes
-   for (int j=0;j<(int)contactconditions.size();++j)
+   for (int j=0;j<(int)btscontactconditions.size();++j)
    {
      // get all nodes and add them
-     const std::vector<int>* nodeids = contactconditions[j]->Nodes();
+     const std::vector<int>* nodeids = btscontactconditions[j]->Nodes();
      if (!nodeids) dserror("Condition does not have Node Ids");
      for (int k=0; k<(int)(*nodeids).size(); ++k)
      {
@@ -151,10 +162,10 @@ totpenaltyenergy_(0.0)
    }
 
   //process surface elements
-  for (int j=0;j<(int)contactconditions.size();++j)
+  for (int j=0;j<(int)btscontactconditions.size();++j)
   {
     // get elements from condition j of current group
-    std::map<int,Teuchos::RCP<DRT::Element> >& currele = contactconditions[j]->Geometry();
+    std::map<int,Teuchos::RCP<DRT::Element> >& currele = btscontactconditions[j]->Geometry();
 
     // elements in a boundary condition have a unique id
     // but ids are not unique among 2 distinct conditions
@@ -173,7 +184,7 @@ totpenaltyenergy_(0.0)
     {
       //The IDs of the surface elements of each conditions begin with zero. Therefore we have to add ggsize in order to
       //get unique element IDs in the end. Furthermore, only the solid elements are added to the contact discretization btsoldiscret_
-      //via the contactconditions, whereas all beam elements with their original ID are simply cloned from the problem discretization
+      //via the btscontactconditions, whereas all beam elements with their original ID are simply cloned from the problem discretization
       //into the contact discretization. In order to avoid solid element IDs being identical to these beam element IDs within the contact
       //discretization we have to add the additional offset maxproblemid, which is identical to the maximal element ID in the problem
       //discretization.
@@ -291,9 +302,7 @@ totpenaltyenergy_(0.0)
   }
 
   // check input parameters
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact_,"APPLICATION") != INPAR::CONTACT::app_beamcontact)
-   dserror("ERROR: The given input parameters are not for beam contact");
-  if (scontact_.get<double>("PENALTYPARAM") < 0.0)
+  if (sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM") < 0.0)
    dserror("ERROR: The penalty parameter has to be positive.");
 
   // initialize contact element pairs
@@ -302,7 +311,8 @@ totpenaltyenergy_(0.0)
   btsolpairs_.resize(0);
 
   // initialize input parameters
-  currentpp_ = scontact_.get<double>("PENALTYPARAM");
+  currentpp_ = sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM");
+  btspp_ = sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM");
 
   // initialize Uzawa iteration index
   uzawaiter_ = 0;
@@ -318,6 +328,9 @@ totpenaltyenergy_(0.0)
   {
     if (!pdiscret_.Comm().MyPID())
       std::cout << "Penalty parameter      = " << currentpp_ << std::endl;
+
+    if (!pdiscret_.Comm().MyPID())
+      std::cout << "BTS-Penalty parameter  = " << btspp_ << std::endl;
 
     tree_ = Teuchos::rcp(new Beam3ContactOctTree(sbeamcontact_,pdiscret_,*btsoldiscret_));
   }
@@ -335,15 +348,16 @@ totpenaltyenergy_(0.0)
 
   if(!pdiscret_.Comm().MyPID())
   {
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact_,"STRATEGY") == INPAR::CONTACT::solution_penalty )
+    if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_,"BEAMS_STRATEGY") == INPAR::BEAMCONTACT::bstr_penalty )
       std::cout << "Strategy                 Penalty" << std::endl;
-    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact_,"STRATEGY") == INPAR::CONTACT::solution_uzawa)
+    else if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_,"BEAMS_STRATEGY") == INPAR::BEAMCONTACT::bstr_uzawa)
     {
       std::cout << "Strategy                 Augmented Lagrange" << std::endl;
       if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(sbeamcontact_,"BEAMS_PENALTYLAW")!=INPAR::BEAMCONTACT::pl_lp)
         dserror("Augmented Lagrange strategy only implemented for Linear penalty law (LinPen) so far!");
-
     }
+    else
+      dserror("Unknown strategy for beam contact!");
 
     switch (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(sbeamcontact_,"BEAMS_PENALTYLAW"))
     {
@@ -636,7 +650,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     // evaluate additional contact forces and stiffness
     if (firstisincolmap || secondisincolmap)
     {
-      btsolpairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_);
+      btsolpairs_[i]->Evaluate(*stiffc_,*fc_,btspp_);
     }
   }
 
@@ -1173,6 +1187,7 @@ void CONTACT::Beam3cmanager::ComputeSearchRadius()
   if (Comm().MyPID()==0)
   {
     std::cout << "Penalty parameter      = " << currentpp_ << std::endl;
+    std::cout << "BTS-Penalty parameter  = " << btspp_ << std::endl;
     std::cout << "Maximum element radius = " << maxeleradius << std::endl;
     std::cout << "Maximum element length = " << maxelelength << std::endl;
     std::cout << "Search radius          = " << searchradius_  << std::endl << std::endl;
@@ -1377,12 +1392,12 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   if (timestep%OUTPUTEVERY!=0)
     return;
 
-  if (btsol_)
-    dserror("GmshOutput not implemented for beam-to-solid contact so far!");
+//  if (btsol_)
+//    dserror("GmshOutput not implemented for beam-to-solid contact so far!");
 
   // STEP 1: OUTPUT OF TIME STEP INDEX
   std::ostringstream filename;
-  filename << "/home/meier/workspace/o/gmsh_output/";
+  filename << "/o/gmsh_output/";
   if (timestep<1000000)
     filename << "beams_t" << std::setw(6) << std::setfill('0') << timestep;
   else /*(timestep>=1000000)*/
@@ -1394,10 +1409,10 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   if (!endoftimestep)
   {
     // check if Uzawa index is needed or not
-    INPAR::CONTACT::SolvingStrategy soltype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(GeneralContactParameters(),"STRATEGY");
+    INPAR::BEAMCONTACT::Strategy strategy =
+    DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(BeamContactParameters(),"BEAMS_STRATEGY");
 
-    if (soltype==INPAR::CONTACT::solution_uzawa)
+    if (strategy==INPAR::BEAMCONTACT::bstr_uzawa)
     {
       uzawastep = uzawaiter_;
       if (uzawastep<10)
@@ -1515,7 +1530,12 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 
       // write output in specific function
       const DRT::ElementType & eot = element->ElementType();
-      // standard procedure for Reissner beams
+
+      //No output for solid elements so far!
+      if (eot != DRT::ELEMENTS::Beam3ebType::Instance() and eot != DRT::ELEMENTS::Beam3Type::Instance() and eot != DRT::ELEMENTS::Beam3iiType::Instance())
+        continue;
+
+      //standard procedure for Reissner beams
       if ( eot == DRT::ELEMENTS::Beam3Type::Instance() or eot == DRT::ELEMENTS::Beam3iiType::Instance() )
       {
 
@@ -1935,7 +1955,8 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
     std::cout << "Total Contact Energy = " << totpenaltyenergy_ << std::endl;
     std::cout << "Global Constraint Norm = " << globnorm << std::endl;
     std::cout << "Global BTS Constraint Norm = " << btsolglobnorm << std::endl;
-    std::cout << "Penalty parameter = " << currentpp_ << std::endl;
+    std::cout << "BTB-Penalty parameter = " << currentpp_ << std::endl;
+    std::cout << "BTS-Penalty parameter = " << btspp_ << std::endl;
     std::cout<<"*********************************************"<<std::endl;
   }
 
@@ -1971,7 +1992,7 @@ void CONTACT::Beam3cmanager::UpdateAlllmuzawa()
     pairs_[i]->Updatelmuzawa(currentpp_);
 
   for (int i=0;i<(int)btsolpairs_.size();++i)
-    btsolpairs_[i]->Updatelmuzawa(currentpp_);
+    btsolpairs_[i]->Updatelmuzawa(btspp_);
 
   return;
 }
@@ -1982,7 +2003,10 @@ void CONTACT::Beam3cmanager::UpdateAlllmuzawa()
 void CONTACT::Beam3cmanager::ResetCurrentpp()
 {
   // get initial value from input file and reset
-  currentpp_ = GeneralContactParameters().get<double>("PENALTYPARAM");
+  currentpp_ = BeamContactParameters().get<double>("BEAMS_BTBPENALTYPARAM");
+
+  // get initial value from input file and reset
+  btspp_ = BeamContactParameters().get<double>("BEAMS_BTSPENALTYPARAM");
 
   return;
 }

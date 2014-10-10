@@ -168,7 +168,12 @@ basisnodes_(discret.NumGlobalNodes())
 
   for(int i=0; i<(int)lines.size(); i++)
     for(int j=0; j<(int)lines[i]->Nodes()->size(); j++)
-      (*bbox2line_)[searchdis_.NodeColMap()->LID( lines[i]->Nodes()->at(j))] = lines[i]->GetInt("Filament Number");
+    {
+      if(searchdis_.NodeColMap()->LID(lines[i]->Nodes()->at(j))<0)
+        dserror("ID of node on FILAMENT NUMBERS condition not found in discretization searchdis_. Check your FILAMENT NUMBERS condition!");
+      else
+      (*bbox2line_)[searchdis_.NodeColMap()->LID(lines[i]->Nodes()->at(j))] = lines[i]->GetInt("Filament Number");
+    }
 
   return;
 }

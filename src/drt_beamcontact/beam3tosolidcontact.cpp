@@ -60,7 +60,7 @@ xi1_(0.0),
 xi2_(0.0)
 {
 
-  std::cout << "Warning: Currently only a dummy constructor is implemented!" << std::endl;
+//  std::cout << "Warning: Currently only a dummy constructor is implemented!" << std::endl;
 
 //  for (int i=0;i<3;i++)
 //  {
@@ -138,10 +138,10 @@ bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
      const double& pp)
 {
 
-  std::cout << "Warning: Currently only a dummy version of the method Evaluate is implemented!" << std::endl;
+//  std::cout << "Warning: Currently only a dummy version of the method Evaluate is implemented!" << std::endl;
 
-  std::cout << "element1_->Id(): " << element1_->Id() << std::endl;
-  std::cout << "element2_->Id(): " << element2_->Id() << std::endl;
+//  std::cout << "element1_->Id(): " << element1_->Id() << std::endl;
+//  std::cout << "element2_->Id(): " << element2_->Id() << std::endl;
 
 //  //**********************************************************************
 //  // Evaluation of contact forces and stiffness

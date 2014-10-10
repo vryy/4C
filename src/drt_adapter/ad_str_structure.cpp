@@ -213,9 +213,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // create contact/meshtying solver only if contact/meshtying problem.
   Teuchos::RCP<LINALG::Solver> contactsolver = Teuchos::null;
   const Teuchos::ParameterList& scontact = problem->ContactDynamicParams();
-  INPAR::CONTACT::ApplicationType bContact = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
 
-  if((bContact == INPAR::CONTACT::app_beamcontact ) or onlymeshtying or onlycontact or meshtyingandcontact)
+  if(onlymeshtying or onlycontact or meshtyingandcontact)
     contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
 
   // create contact/meshtying solver only if contact/meshtying problem.

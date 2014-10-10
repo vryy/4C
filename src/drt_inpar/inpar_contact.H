@@ -49,14 +49,6 @@ namespace INPAR
   namespace CONTACT
   {
 
-    /// Type of contact or meshtying application
-    /// (this enum represents the input file parameter APPLICATION)
-    enum ApplicationType
-    {
-      app_none,             ///< no meshtying or contact
-      app_beamcontact       ///< beam contact
-    };
-
     /// Type of contact friction law
     /// (this enum represents the input file parameter FRICTION)
     enum FrictionType

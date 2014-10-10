@@ -450,13 +450,13 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
     BuildResStiffNLMassRot(fres_, fextn_, fintn_, finertn_, stiff_, mass_);
   }
 
-  // apply forces and stiffness due to contact / meshtying ----> TR-like
-  // F_{c;n+1-alpha_f} := (1.-alphaf) * F_{c;n+1} + alpha_f * F_{c;n}
-  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
-
   // apply forces and stiffness due to beam contact ----> TR-like
   // F_{c;n+1-alpha_f} := (1.-alphaf) * F_{c;n+1} + alpha_f * F_{c;n}
   ApplyForceStiffBeamContact(stiff_,fres_,disn_,predict);
+
+  // apply forces and stiffness due to contact / meshtying ----> TR-like
+  // F_{c;n+1-alpha_f} := (1.-alphaf) * F_{c;n+1} + alpha_f * F_{c;n}
+  ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
 
   // calculate RHS without local condensations (for NewtonLs)
   if (fresn_str_!=Teuchos::null)
