@@ -1162,56 +1162,30 @@ void CONTACT::CoCoupling3dManager::EvaluateMortar()
   //**********************************************************************
   if (IntType() == INPAR::MORTAR::inttype_segments)
   {
-    // switch, if consistent boundary modification chosen
-    if (DRT::INPUT::IntegralValue<int>(imortar_, "LM_DUAL_CONSISTENT") == true
-        && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
-        )
+    // loop over all master elements associated with this slave element
+    for (int m = 0; m < (int) MasterElements().size(); ++m)
     {
-      // loop over all master elements associated with this slave element
-      for (int m = 0; m < (int) MasterElements().size(); ++m)
-      {
-        // create CoCoupling3d object and push back
-        Coupling().push_back(
-            Teuchos::rcp(
-                new CoCoupling3d(idiscret_, dim_, false, imortar_,
-                    SlaveElement(), MasterElement(m))));
+      // create CoCoupling3d object and push back
+      Coupling().push_back(
+          Teuchos::rcp(
+              new CoCoupling3d(idiscret_, dim_, false, imortar_,
+                  SlaveElement(), MasterElement(m))));
 
-        // do coupling
-        Coupling()[m]->EvaluateCoupling();
+      // do coupling
+      Coupling()[m]->EvaluateCoupling();
 
-        // store number of intcells
-        ncells_ += (int) (Coupling()[m]->Cells()).size();
-      }
-
-      // special treatment of boundary elements
-      ConsistDualShape();
-
-      // integrate cells
-      for (int m = 0; m < (int) MasterElements().size(); ++m)
-        Coupling()[m]->IntegrateCells();
+      // store number of intcells
+      ncells_ += (int) (Coupling()[m]->Cells()).size();
     }
-    else
-    {
-      // loop over all master elements associated with this slave element
-      for (int m = 0; m < (int) MasterElements().size(); ++m)
-      {
-        // create CoCoupling3d object and push back
-        Coupling().push_back(
-            Teuchos::rcp(
-                new CoCoupling3d(idiscret_, dim_, false, imortar_,
-                    SlaveElement(), MasterElement(m))));
 
-        // do coupling
-        Coupling()[m]->EvaluateCoupling();
+    // special treatment of boundary elements
+    ConsistDualShape();
 
-        // integrate cells
-        Coupling()[m]->IntegrateCells();
-
-        // store number of intcells
-        ncells_ += (int) (Coupling()[m]->Cells()).size();
-      }
-    }
+    // integrate cells
+    for (int m = 0; m < (int) MasterElements().size(); ++m)
+      Coupling()[m]->IntegrateCells();
   }
+
   //**********************************************************************
   // ELEMENT-BASED INTEGRATION
   //**********************************************************************
@@ -1247,11 +1221,6 @@ void CONTACT::CoCoupling3dManager::EvaluateMortar()
       {
         if (boundary_ele == true)
         {
-          // switch, if consistent boundary modification chosen
-          if (DRT::INPUT::IntegralValue<int>(imortar_, "LM_DUAL_CONSISTENT")
-              == true && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
-              )
-          {
             // loop over all master elements associated with this slave element
             for (int m = 0; m < (int) MasterElements().size(); ++m)
             {
@@ -1272,32 +1241,6 @@ void CONTACT::CoCoupling3dManager::EvaluateMortar()
             // integrate cells
             for (int m = 0; m < (int) MasterElements().size(); ++m)
               Coupling()[m]->IntegrateCells();
-
-            // free memory of consistent dual shape function coefficient matrix
-            SlaveElement().MoData().ResetDualShape();
-            SlaveElement().MoData().ResetDerivDualShape();
-          }
-          else
-          {
-            // loop over all master elements associated with this slave element
-            for (int m = 0; m < (int) MasterElements().size(); ++m)
-            {
-              // create CoCoupling3d object and push back
-              Coupling().push_back(
-                  Teuchos::rcp(
-                      new CoCoupling3d(idiscret_, dim_, false, imortar_,
-                          SlaveElement(), MasterElement(m))));
-
-              // do coupling
-              Coupling()[m]->EvaluateCoupling();
-
-              // integrate cells
-              Coupling()[m]->IntegrateCells();
-
-              // store number of intcells
-              ncells_ += (int) (Coupling()[m]->Cells()).size();
-            }
-          }
         }
       }
     }
@@ -1314,7 +1257,7 @@ void CONTACT::CoCoupling3dManager::EvaluateMortar()
     dserror("ERROR: Invalid type of numerical integration!");
   }
 
-  // free memory of consistent dual shape function coefficient matrix
+  // free memory of dual shape function coefficient matrix
   SlaveElement().MoData().ResetDualShape();
   SlaveElement().MoData().ResetDerivDualShape();
 
@@ -1549,301 +1492,301 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   // For standard shape functions no modification is necessary
   // A switch earlier in the process improves computational efficiency
   if (ShapeFcn() == INPAR::MORTAR::shape_standard)
-    dserror("ConsistentDualShape() called for standard LM interpolation.");
-
-    // Consistent modification only for linear LM interpolation
-    if (Quad()==true && DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true)
-    dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
-
-    // you should not be here
-    if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==false)
-    dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
-
-    // do nothing if there are no coupling pairs
-    if (Coupling().size()==0)
     return;
 
-    // check for boundary elements in segment-based integration
-    // (fast integration already has this check, so that ConsistDualShape()
-    // is only called for boundary elements)
-    if (IntType()==INPAR::MORTAR::inttype_segments)
+  bool consistent_bound = DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT");
+  if (consistent_bound==false)
+    return;
+
+  // Consistent modification only for linear LM interpolation
+  if (Quad()==true && consistent_bound)
+    dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
+
+  // do nothing if there are no coupling pairs
+  if (Coupling().size()==0)
+    return;
+
+  // check for boundary elements in segment-based integration
+  // (fast integration already has this check, so that ConsistDualShape()
+  // is only called for boundary elements)
+  if (IntType()==INPAR::MORTAR::inttype_segments)
+  {
+    // check, if slave element is fully projecting
+    // for convenience, we don't check each quadrature point
+    // but only the element nodes. This usually does the job.
+    bool boundary_ele=false;
+
+    DRT::Element::DiscretizationType dt_s = SlaveElement().Shape();
+
+    double sxi_test[2] = { 0.0, 0.0};
+    double alpha_test=0.0;
+    bool proj_test=false;
+
+    DRT::Node** mynodes_test = SlaveElement().Nodes();
+    if (!mynodes_test) dserror("ERROR: HasProjStatus: Null pointer!");
+
+    if (dt_s==DRT::Element::quad4 ) //|| dt_s==DRT::Element::quad8 || dt_s==DRT::Element::quad9)
     {
-      // check, if slave element is fully projecting
-      // for convenience, we don't check each quadrature point
-      // but only the element nodes. This usually does the job.
-      bool boundary_ele=false;
-
-      DRT::Element::DiscretizationType dt_s = SlaveElement().Shape();
-
-      double sxi_test[2] = { 0.0, 0.0};
-      double alpha_test=0.0;
-      bool proj_test=false;
-
-      DRT::Node** mynodes_test = SlaveElement().Nodes();
-      if (!mynodes_test) dserror("ERROR: HasProjStatus: Null pointer!");
-
-      if (dt_s==DRT::Element::quad4 ) //|| dt_s==DRT::Element::quad8 || dt_s==DRT::Element::quad9)
+      for (int s_test=0;s_test<4;++s_test)
       {
-        for (int s_test=0;s_test<4;++s_test)
+        if (s_test==0)      { sxi_test[0]=-1.0;sxi_test[1]=-1.0;}
+        else if (s_test==1) { sxi_test[0]=-1.0;sxi_test[1]= 1.0;}
+        else if (s_test==2) { sxi_test[0]= 1.0;sxi_test[1]=-1.0;}
+        else if (s_test==3) { sxi_test[0]= 1.0;sxi_test[1]= 1.0;}
+
+        proj_test=false;
+        for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
         {
-          if (s_test==0)      { sxi_test[0]=-1.0;sxi_test[1]=-1.0;}
-          else if (s_test==1) { sxi_test[0]=-1.0;sxi_test[1]= 1.0;}
-          else if (s_test==2) { sxi_test[0]= 1.0;sxi_test[1]=-1.0;}
-          else if (s_test==3) { sxi_test[0]= 1.0;sxi_test[1]= 1.0;}
+          double mxi_test[2] =
+          { 0.0, 0.0};
+          MORTAR::MortarProjector::Impl(SlaveElement(),Coupling()[bs_test]->MasterElement())->ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
 
-          proj_test=false;
-          for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
+          DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterElement().Shape();
+          if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
           {
-            double mxi_test[2] =
-            { 0.0, 0.0};
-            MORTAR::MortarProjector::Impl(SlaveElement(),Coupling()[bs_test]->MasterElement())->ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
-
-            DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterElement().Shape();
-            if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
-            {
-              if (mxi_test[0]>=-1.0 && mxi_test[1]>=-1.0 && mxi_test[0]<=1.0 && mxi_test[1]<=1.0)
+            if (mxi_test[0]>=-1.0 && mxi_test[1]>=-1.0 && mxi_test[0]<=1.0 && mxi_test[1]<=1.0)
               proj_test=true;
-            }
-            else if(dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
-            {
-              if (mxi_test[0]>=0.0 && mxi_test[1]>=0.0 && mxi_test[0]<=1.0 && mxi_test[1]<=1.0 && mxi_test[0]+mxi_test[1]<=1.0)
-              proj_test=true;
-            }
-            else
-            {
-              dserror("Non valid element type for master discretization!");
-            }
           }
-          if(proj_test==false) boundary_ele=true;
+          else if(dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
+          {
+            if (mxi_test[0]>=0.0 && mxi_test[1]>=0.0 && mxi_test[0]<=1.0 && mxi_test[1]<=1.0 && mxi_test[0]+mxi_test[1]<=1.0)
+              proj_test=true;
+          }
+          else
+          {
+            dserror("Non valid element type for master discretization!");
+          }
         }
+        if(proj_test==false) boundary_ele=true;
       }
+    }
 
-      else if(dt_s==DRT::Element::tri3)
+    else if(dt_s==DRT::Element::tri3)
+    {
+      for (int s_test=0;s_test<3;++s_test)
       {
-        for (int s_test=0;s_test<3;++s_test)
+        if      (s_test==0) { sxi_test[0]=0.0;sxi_test[1]=0.0;}
+        else if (s_test==1) { sxi_test[0]=1.0;sxi_test[1]=0.0;}
+        else if (s_test==2) { sxi_test[0]=0.0;sxi_test[1]=1.0;}
+
+        proj_test=false;
+        for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
         {
-          if      (s_test==0) { sxi_test[0]=0.0;sxi_test[1]=0.0;}
-          else if (s_test==1) { sxi_test[0]=1.0;sxi_test[1]=0.0;}
-          else if (s_test==2) { sxi_test[0]=0.0;sxi_test[1]=1.0;}
+          double mxi_test[2] =
+          { 0.0, 0.0};
+          MORTAR::MortarProjector::Impl(SlaveElement(),Coupling()[bs_test]->MasterElement())->ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
 
-          proj_test=false;
-          for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
+          DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterElement().Shape();
+          if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
           {
-            double mxi_test[2] =
-            { 0.0, 0.0};
-            MORTAR::MortarProjector::Impl(SlaveElement(),Coupling()[bs_test]->MasterElement())->ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
-
-            DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterElement().Shape();
-            if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
-            {
-              if (mxi_test[0]>=-1.0 && mxi_test[1]>=-1.0 && mxi_test[0]<=1.0 && mxi_test[1]<=1.0)
+            if (mxi_test[0]>=-1.0 && mxi_test[1]>=-1.0 && mxi_test[0]<=1.0 && mxi_test[1]<=1.0)
               proj_test=true;
-            }
-            else if(dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
-            {
-              if (mxi_test[0]>=0.0 && mxi_test[1]>=0.0 && mxi_test[0]<=1.0 && mxi_test[1]<=1.0 && mxi_test[0]+mxi_test[1]<=1.0)
-              proj_test=true;
-            }
-            else
-            {
-              dserror("Non valid element type for master discretization!");
-            }
           }
-          if(proj_test==false) boundary_ele=true;
+          else if(dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
+          {
+            if (mxi_test[0]>=0.0 && mxi_test[1]>=0.0 && mxi_test[0]<=1.0 && mxi_test[1]<=1.0 && mxi_test[0]+mxi_test[1]<=1.0)
+              proj_test=true;
+          }
+          else
+          {
+            dserror("Non valid element type for master discretization!");
+          }
         }
+        if(proj_test==false) boundary_ele=true;
       }
+    }
 
-      else
+    else
       dserror("Calculation of consistent dual shape functions called for non-valid slave element shape.\n"
           "Currently this is only supported for linear FE, i.e. quad4 and tri3. Sorry.");
 
-      if (boundary_ele==false)
+    if (boundary_ele==false)
       return;
-    }
+  }
 
-    // slave nodes and dofs
-    const int nnodes = SlaveElement().NumNode();
-    const int ndof = 3;
-    const int msize = MasterElements().size();
+  // slave nodes and dofs
+  const int nnodes = SlaveElement().NumNode();
+  const int ndof = 3;
+  const int msize = MasterElements().size();
 
-    // get number of master nodes
-    int mnodes = 0;
-    for (int m=0;m<msize;++m)
+  // get number of master nodes
+  int mnodes = 0;
+  for (int m=0;m<msize;++m)
     mnodes += MasterElements()[m]->NumNode();
 
-    // Dual shape functions coefficient matrix and linearization
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
-    std::vector<std::vector<GEN::pairedvector<int, double> > > derivae(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,(nnodes+mnodes)*ndof));
+  // Dual shape functions coefficient matrix and linearization
+  LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
+  std::vector<std::vector<GEN::pairedvector<int, double> > > derivae(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,(nnodes+mnodes)*ndof));
 
-    // various variables
-    double detg=0.0;
-    typedef GEN::pairedvector<int,double>::const_iterator _CI;
+  // various variables
+  double detg=0.0;
+  typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-    // initialize matrices de and me
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+  // initialize matrices de and me
+  LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+  LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
 
-    // two-dim arrays of maps for linearization of me/de
-    std::vector<std::vector<GEN::pairedvector<int,double> > > derivme(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,(nnodes+mnodes)*ndof));
-    std::vector<std::vector<GEN::pairedvector<int,double> > > derivde(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,(nnodes+mnodes)*ndof));
+  // two-dim arrays of maps for linearization of me/de
+  std::vector<std::vector<GEN::pairedvector<int,double> > > derivme(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,(nnodes+mnodes)*ndof));
+  std::vector<std::vector<GEN::pairedvector<int,double> > > derivde(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,(nnodes+mnodes)*ndof));
 
-    // loop over all master elements associated with this slave element
-    for (int m=0;m<msize;++m)
+  // loop over all master elements associated with this slave element
+  for (int m=0;m<msize;++m)
+  {
+    // get number of master nodes
+    const int ncol = MasterElements()[m]->NumNode();
+
+    // loop over all integration cells
+    for (int c=0;c<(int)Coupling()[m]->Cells().size();++c)
     {
-      // get number of master nodes
-      const int ncol = MasterElements()[m]->NumNode();
+      Teuchos::RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
 
-      // loop over all integration cells
-      for (int c=0;c<(int)Coupling()[m]->Cells().size();++c)
+      // create an integrator for this cell
+      CONTACT::CoIntegrator integrator(imortar_,currcell->Shape(),Comm());
+      for (int gp=0;gp<integrator.nGP(); ++gp)
       {
-        Teuchos::RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
+        // coordinates and weight
+        double eta[2] =
+        { integrator.Coordinate(gp,0), integrator.Coordinate(gp,1)};
+        const double wgt = integrator.Weight(gp);
 
-        // create an integrator for this cell
-        CONTACT::CoIntegrator integrator(imortar_,currcell->Shape(),Comm());
-        for (int gp=0;gp<integrator.nGP(); ++gp)
+        // get global Gauss point coordinates
+        double globgp[3] = { 0.0, 0.0, 0.0};
+        currcell->LocalToGlobal(eta, globgp,0);
+
+        // project Gauss point onto slave integration element
+        double sxi[2] = { 0.0, 0.0};
+        double sprojalpha = 0.0;
+        MORTAR::MortarProjector::Impl(SlaveElement())->ProjectGaussPointAuxn3D(globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
+
+        // create vector for shape function evaluation
+        LINALG::SerialDenseVector sval (nnodes);
+        LINALG::SerialDenseMatrix sderiv(nnodes,2,true);
+
+        // evaluate trace space shape functions at Gauss point
+        SlaveElement().EvaluateShape(sxi, sval, sderiv, nnodes);
+        detg=currcell->Jacobian(eta);
+
+        // additional data for contact calculation (i.e. incl. derivative of dual shape functions coefficient matrix)
+        // directional derivative of cell Jacobian
+        GEN::pairedvector<int,double> derivjaccell((nnodes+ncol)*ndof);
+        // GP slave coordinate derivatives
+        std::vector<GEN::pairedvector<int,double> > dsxigp(2,(nnodes+ncol)*ndof);
+        // global GP coordinate derivative
+        std::vector<GEN::pairedvector<int,double> > lingp(3,(nnodes+ncol)*ndof);
+
+        // compute directional derivative of cell Jacobian
+        currcell->DerivJacobian(eta, derivjaccell);
+
+        // compute global GP coordinate derivative
+        static LINALG::Matrix<3,1> svalcell;
+        static LINALG::Matrix<3,2> sderivcell;
+        currcell->EvaluateShape(eta,svalcell,sderivcell);
+
+        for (int v=0;v<3;++v)
         {
-          // coordinates and weight
-          double eta[2] =
-          { integrator.Coordinate(gp,0), integrator.Coordinate(gp,1)};
-          const double wgt = integrator.Weight(gp);
+          for (_CI p=(currcell->GetDerivVertex(v))[0].begin();p!=(currcell->GetDerivVertex(v))[0].end();++p)
+            lingp[0][p->first] += svalcell(v) * (p->second);
+          for (_CI p=(currcell->GetDerivVertex(v))[1].begin();p!=(currcell->GetDerivVertex(v))[1].end();++p)
+            lingp[1][p->first] += svalcell(v) * (p->second);
+          for (_CI p=(currcell->GetDerivVertex(v))[2].begin();p!=(currcell->GetDerivVertex(v))[2].end();++p)
+            lingp[2][p->first] += svalcell(v) * (p->second);
+        }
 
-          // get global Gauss point coordinates
-          double globgp[3] = { 0.0, 0.0, 0.0};
-          currcell->LocalToGlobal(eta, globgp,0);
+        // compute GP slave coordinate derivatives
+        integrator.DerivXiGP3DAuxPlane(SlaveElement(),sxi,currcell->Auxn(),dsxigp,sprojalpha,currcell->GetDerivAuxn(),lingp);
 
-          // project Gauss point onto slave integration element
-          double sxi[2] = { 0.0, 0.0};
-          double sprojalpha = 0.0;
-          MORTAR::MortarProjector::Impl(SlaveElement())->ProjectGaussPointAuxn3D(globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
+        // computing de, derivde and me, derivme and kappa, derivkappa
+        for (int j=0; j<nnodes; ++j)
+        {
+          double fac;
+          fac = sval[j]*wgt;
+          // computing de
+          de(j,j)+=fac*detg;
 
-          // create vector for shape function evaluation
-          LINALG::SerialDenseVector sval (nnodes);
-          LINALG::SerialDenseMatrix sderiv(nnodes,2,true);
-
-          // evaluate trace space shape functions at Gauss point
-          SlaveElement().EvaluateShape(sxi, sval, sderiv, nnodes);
-          detg=currcell->Jacobian(eta);
-
-          // additional data for contact calculation (i.e. incl. derivative of dual shape functions coefficient matrix)
-          // directional derivative of cell Jacobian
-          GEN::pairedvector<int,double> derivjaccell((nnodes+ncol)*ndof);
-          // GP slave coordinate derivatives
-          std::vector<GEN::pairedvector<int,double> > dsxigp(2,(nnodes+ncol)*ndof);
-          // global GP coordinate derivative
-          std::vector<GEN::pairedvector<int,double> > lingp(3,(nnodes+ncol)*ndof);
-
-          // compute directional derivative of cell Jacobian
-          currcell->DerivJacobian(eta, derivjaccell);
-
-          // compute global GP coordinate derivative
-          static LINALG::Matrix<3,1> svalcell;
-          static LINALG::Matrix<3,2> sderivcell;
-          currcell->EvaluateShape(eta,svalcell,sderivcell);
-
-          for (int v=0;v<3;++v)
-          {
-            for (_CI p=(currcell->GetDerivVertex(v))[0].begin();p!=(currcell->GetDerivVertex(v))[0].end();++p)
-              lingp[0][p->first] += svalcell(v) * (p->second);
-            for (_CI p=(currcell->GetDerivVertex(v))[1].begin();p!=(currcell->GetDerivVertex(v))[1].end();++p)
-              lingp[1][p->first] += svalcell(v) * (p->second);
-            for (_CI p=(currcell->GetDerivVertex(v))[2].begin();p!=(currcell->GetDerivVertex(v))[2].end();++p)
-              lingp[2][p->first] += svalcell(v) * (p->second);
-          }
-
-          // compute GP slave coordinate derivatives
-          integrator.DerivXiGP3DAuxPlane(SlaveElement(),sxi,currcell->Auxn(),dsxigp,sprojalpha,currcell->GetDerivAuxn(),lingp);
-
-          // computing de, derivde and me, derivme and kappa, derivkappa
-          for (int j=0; j<nnodes; ++j)
-          {
-            double fac;
-            fac = sval[j]*wgt;
-            // computing de
-            de(j,j)+=fac*detg;
-
-            // linearization of de
-            // linearization of cell jacobian
-            for (_CI p=derivjaccell.begin();p!=derivjaccell.end();++p)
+          // linearization of de
+          // linearization of cell jacobian
+          for (_CI p=derivjaccell.begin();p!=derivjaccell.end();++p)
             derivde[j][j][p->first] += fac*(p->second);
 
-            // linearization of slave gp coordinates in ansatz function j for derivate of de
-            fac=wgt*sderiv(j,0)*detg;
-            for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-              derivde[j][j][p->first] += fac * (p->second);
-            fac=wgt*sderiv(j,1)*detg;
-            for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-              derivde[j][j][p->first] += fac*(p->second);
+          // linearization of slave gp coordinates in ansatz function j for derivate of de
+          fac=wgt*sderiv(j,0)*detg;
+          for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+            derivde[j][j][p->first] += fac * (p->second);
+          fac=wgt*sderiv(j,1)*detg;
+          for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+            derivde[j][j][p->first] += fac*(p->second);
 
-            for (int k=0; k<nnodes; ++k)
-            {
-              // computing me
-              fac = wgt*sval[j]*sval[k];
-              me(j,k)+=fac*detg;
+          for (int k=0; k<nnodes; ++k)
+          {
+            // computing me
+            fac = wgt*sval[j]*sval[k];
+            me(j,k)+=fac*detg;
 
-              // linearization of me
-              // linearization of cell Jacobian
-              for (_CI p=derivjaccell.begin(); p!=derivjaccell.end(); ++p)
+            // linearization of me
+            // linearization of cell Jacobian
+            for (_CI p=derivjaccell.begin(); p!=derivjaccell.end(); ++p)
               derivme[j][k][p->first] += fac*(p->second);
 
-              // linearizaion of gp coordinates in ansatz function
-              fac=wgt*sderiv(j,0)*sval[k]*detg;
-              for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-              {
-                derivme[j][k][p->first] += fac*(p->second);
-                derivme[k][j][p->first] += fac*(p->second);
-              }
+            // linearizaion of gp coordinates in ansatz function
+            fac=wgt*sderiv(j,0)*sval[k]*detg;
+            for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+            {
+              derivme[j][k][p->first] += fac*(p->second);
+              derivme[k][j][p->first] += fac*(p->second);
+            }
 
-              fac=wgt*sderiv(j,1)*sval[k]*detg;
-              for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-              {
-                derivme[j][k][p->first] += fac*(p->second);
-                derivme[k][j][p->first] += fac*(p->second);
-              }
+            fac=wgt*sderiv(j,1)*sval[k]*detg;
+            for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
+            {
+              derivme[j][k][p->first] += fac*(p->second);
+              derivme[k][j][p->first] += fac*(p->second);
             }
           }
         }
-      } // cells
-    } // master elements
+      }
+    } // cells
+  } // master elements
 
-    // in case of no overlap just return, as there is no integration area
-    // and therefore the consistent dual shape functions are not defined.
-    // This doesn't matter, as there is no associated integration domain anyway
-    if (me.Det_long()==0) return;
+  // in case of no overlap just return, as there is no integration area
+  // and therefore the consistent dual shape functions are not defined.
+  // This doesn't matter, as there is no associated integration domain anyway
+  if (me.Det_long()==0) return;
 
-    // invert bi-ortho matrix me
-    LINALG::SerialDenseMatrix meinv = LINALG::InvertAndMultiplyByCholesky(me,de,ae);
+  // invert bi-ortho matrix me
+  LINALG::SerialDenseMatrix meinv = LINALG::InvertAndMultiplyByCholesky(me,de,ae);
 
-    // build linearization of ae and store in derivdual
-    // (this is done according to a quite complex formula, which
-    // we get from the linearization of the biorthogonality condition:
-    // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
+  // build linearization of ae and store in derivdual
+  // (this is done according to a quite complex formula, which
+  // we get from the linearization of the biorthogonality condition:
+  // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
 
-    // loop over all entries of ae (index i,j)
-    for (int i=0;i<nnodes;++i)
+  // loop over all entries of ae (index i,j)
+  for (int i=0;i<nnodes;++i)
+  {
+    for (int j=0;j<nnodes;++j)
     {
-      for (int j=0;j<nnodes;++j)
+      // compute Lin(Ae) according to formula above
+      for (int l=0;l<nnodes;++l)// loop over sum l
       {
-        // compute Lin(Ae) according to formula above
-        for (int l=0;l<nnodes;++l)// loop over sum l
-        {
-          // part1: Lin(De)*Inv(Me)
-          for (_CI p=derivde[i][l].begin();p!=derivde[i][l].end();++p)
-            derivae[i][j][p->first] += meinv(l,j)*(p->second);
+        // part1: Lin(De)*Inv(Me)
+        for (_CI p=derivde[i][l].begin();p!=derivde[i][l].end();++p)
+          derivae[i][j][p->first] += meinv(l,j)*(p->second);
 
-          // part2: Ae*Lin(Me)*Inv(Me)
-          for (int k=0;k<nnodes;++k)// loop over sum k
-            for (_CI p=derivme[k][l].begin();p!=derivme[k][l].end();++p)
-              derivae[i][j][p->first] -= ae(i,k)*meinv(l,j)*(p->second);
-        }
+        // part2: Ae*Lin(Me)*Inv(Me)
+        for (int k=0;k<nnodes;++k)// loop over sum k
+          for (_CI p=derivme[k][l].begin();p!=derivme[k][l].end();++p)
+            derivae[i][j][p->first] -= ae(i,k)*meinv(l,j)*(p->second);
       }
     }
-
-    // store ae matrix in slave element data container
-    SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
-//
-    // store derivae into element
-    SlaveElement().MoData().DerivDualShape() = Teuchos::rcp(new std::vector<std::vector<GEN::pairedvector<int,double> > >(derivae));
-
-    return;
   }
+
+  // store ae matrix in slave element data container
+  SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+  //
+  // store derivae into element
+  SlaveElement().MoData().DerivDualShape() = Teuchos::rcp(new std::vector<std::vector<GEN::pairedvector<int,double> > >(derivae));
+
+  return;
+}
 

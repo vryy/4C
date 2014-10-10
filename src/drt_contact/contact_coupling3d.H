@@ -427,6 +427,9 @@ public:
   /*!
    \brief Calculate consistent dual shape functions in boundary elements
 
+   It just returns if
+     - option CONSISTENT_DUAL_BOUND is not set
+     - standard shape functions are used
    */
   virtual void ConsistDualShape();
 
