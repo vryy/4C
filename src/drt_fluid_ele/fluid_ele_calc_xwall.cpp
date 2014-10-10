@@ -1136,7 +1136,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::TauWViaGradient(
   //----------------------------------------------------------------------------
 
   LINALG::Matrix<my::nsd_,my::nen_> evel(true);
-  ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evel, NULL,"vel");
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evel, NULL,"vel");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -1379,17 +1379,17 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::XWallProjection(
   //----------------------------------------------------------------------------
 
   LINALG::Matrix<my::nsd_,my::nen_> eveln(true);
-  ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eveln, NULL,"veln");
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eveln, NULL,"veln");
 
   LINALG::Matrix<my::nsd_,my::nen_> eaccn(true);
   bool switchonaccn = discretization.HasState("accn");
   if(switchonaccn)
-    ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eaccn, NULL,"accn");
+    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eaccn, NULL,"accn");
 
   LINALG::Matrix<my::nsd_,my::nen_> evelnp(true);
   bool switchonvelnp = discretization.HasState("velnp");
   if(switchonvelnp)
-    ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelnp, NULL,"velnp");
+    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelnp, NULL,"velnp");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -1621,17 +1621,17 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::XWallProjectionWithContin
   //----------------------------------------------------------------------------
 
   LINALG::Matrix<my::nsd_,my::nen_> eveln(true);
-  ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eveln, NULL,"veln");
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eveln, NULL,"veln");
 
   LINALG::Matrix<my::nsd_,my::nen_> eaccn(true);
   bool switchonaccn = discretization.HasState("accn");
   if(switchonaccn)
-    ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eaccn, NULL,"accn");
+    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eaccn, NULL,"accn");
 
   LINALG::Matrix<my::nsd_,my::nen_> evelnp(true);
   bool switchonvelnp = discretization.HasState("velnp");
   if(switchonvelnp)
-    ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelnp, NULL,"velnp");
+    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelnp, NULL,"velnp");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
