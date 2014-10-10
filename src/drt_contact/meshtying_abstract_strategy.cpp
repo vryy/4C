@@ -152,6 +152,24 @@ void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
     if (Comm().MyPID()==0) std::cout << "\nTime for parallel redistribution.........." << t_sum << " secs\n";
   }
 
+  //---------------------------------------
+  // Extend ghosting withi binning
+  //---------------------------------------
+  INPAR::MORTAR::ParallelStrategy strat =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(interface_[0]->IParams(),"PARALLEL_STRATEGY");
+  Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
+  if (strat==INPAR::MORTAR::binningstrategy)
+  {
+    for (int i=0; i<(int)interface_.size();++i)
+    {
+      // binning if necessary
+      interface_[i]->BinningStrategy(initial_elecolmap_[i],0.0);
+
+      // output
+      interface_[i]->PrintParallelDistribution(i+1);
+    }
+  }
+
   return;
 }
 
@@ -173,7 +191,12 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   gdisprowmap_      = Teuchos::null;
   gsnoderowmap_     = Teuchos::null;
   gmnoderowmap_     = Teuchos::null;
-  if (!redistributed) gndofrowmap_  = Teuchos::null;
+  if (!redistributed)
+    gndofrowmap_  = Teuchos::null;
+
+  // element col. map for binning
+  initial_elecolmap_.clear();
+  initial_elecolmap_.resize(0);
 
   // make numbering of LM dofs consecutive and unique across N interfaces
   int offset_if = 0;
@@ -194,6 +217,9 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
     gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_, interface_[i]->MasterRowDofs());
     gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_, interface_[i]->SlaveRowNodes());
     gmnoderowmap_ = LINALG::MergeMap(gmnoderowmap_, interface_[i]->MasterRowNodes());
+
+    // store initial element col map for binning strategy
+    initial_elecolmap_.push_back(Teuchos::rcp(new Epetra_Map(*interface_[i]->Discret().ElementColMap())));
   }
 
   // setup global non-slave-or-master dof map

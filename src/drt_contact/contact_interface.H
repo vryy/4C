@@ -272,7 +272,6 @@ public:
 
   void RoundRobinExtendGhosting(bool firstevaluation);
 
-  void BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, double vel);
   /*!
   \brief Collect data concering load balance and parallel distribution
 

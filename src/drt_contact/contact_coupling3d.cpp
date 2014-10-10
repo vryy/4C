@@ -1266,7 +1266,7 @@ void CONTACT::CoCoupling3dManager::EvaluateMortar()
 
 
 /*----------------------------------------------------------------------*
- |  Evaluate node-to-segment coupling pairs                   popp 03/09|
+ |  Evaluate node-to-segment coupling pairs                  farah 10/14|
  *----------------------------------------------------------------------*/
 void CONTACT::CoCoupling3dManager::EvaluateNTS()
 {

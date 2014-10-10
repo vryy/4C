@@ -493,6 +493,8 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Map> pgsmdofrowmap_;        // global slave and master dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;   // global dirichlet toggle of all slave dofs (before parallel redistribution)
 
+    std::vector<Teuchos::RCP<Epetra_Map> > initial_elecolmap_; // init a col ele map for binning strategy (s m)
+
     Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;    // global Mortar matrix D
     Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;    // global Mortar matrix M
     Teuchos::RCP<Epetra_Vector> g_;                 // global weighted gap vector g
