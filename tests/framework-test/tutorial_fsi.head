@@ -645,7 +645,7 @@ INTTYPE                         Segments
 //                              piecewiselinear_piecewiselinear
 //                              lin_lin
 //                              linear_linear
-LAGMULT_QUAD                    undefined
+LM_QUAD                         undefined
 //
 // Maximum value of load balance measure before parallel redistribution
 MAX_BALANCE                     2
@@ -679,7 +679,7 @@ SEARCH_PARAM                    0.3
 //
 // Type of employed set of shape functions
 //                              Dual,dual,Standard,standard,std,PetrovGalerkin,petrovgalerkin,pg
-SHAPEFCN                        Dual
+LM_SHAPEFCN                     Dual
 //
 -----------------------------------------------------------------PROBLEM TYP
 //
