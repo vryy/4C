@@ -2525,6 +2525,9 @@ void FLD::XFluidFluid::PrintStabilizationParams() const
     if (coupling_method_ != INPAR::XFEM::Hybrid_LM_viscous_stress)
       IO::cout << "VISC_ADJOINT_SYMMETRY        : " << interfstabparams->get<std::string>("VISC_ADJOINT_SYMMETRY") << "\n";
 
+    IO::cout << "MASS_CONSERVATION_COMBO      : " << interfstabparams->get<std::string>("MASS_CONSERVATION_COMBO") << "\n";
+    IO::cout << "MASS_CONSERVATION_SCALING    : " << interfstabparams->get<std::string>("MASS_CONSERVATION_SCALING") << "\n";
+
     IO::cout << "IS_PSEUDO_2D                 : " << interfstabparams->get<std::string>("IS_PSEUDO_2D") << IO::endl;
 
     IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;

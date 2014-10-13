@@ -63,7 +63,9 @@ DRT::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
     is_visc_adjoint_symmetric_(true),
     is_pseudo_2D_(false),
     xff_conv_stab_scaling_(INPAR::XFEM::XFF_ConvStabScaling_none),
-    conv_stab_scaling_(INPAR::XFEM::ConvStabScaling_none)
+    conv_stab_scaling_(INPAR::XFEM::ConvStabScaling_none),
+    mass_conservation_combo_(INPAR::XFEM::MassConservationCombination_max),
+    mass_conservation_scaling_(INPAR::XFEM::MassConservationScaling_only_visc)
 {
 }
 

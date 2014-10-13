@@ -2665,6 +2665,9 @@ void FLD::XFluid::PrintStabilizationParams() const
     if (coupling_method_ != INPAR::XFEM::Hybrid_LM_Cauchy_stress)
       IO::cout << "VISC_ADJOINT_SYMMETRY:             " << interfstabparams->get<std::string>("VISC_ADJOINT_SYMMETRY") << "\n";
 
+    IO::cout << "MASS_CONSERVATION_COMBO:           " << interfstabparams->get<std::string>("MASS_CONSERVATION_COMBO") << "\n";
+    IO::cout << "MASS_CONSERVATION_SCALING:         " << interfstabparams->get<std::string>("MASS_CONSERVATION_SCALING") << "\n";
+
     IO::cout << "GHOST_PENALTY_STAB:                " << interfstabparams->get<std::string>("GHOST_PENALTY_STAB") << "\n";
     IO::cout << "GHOST_PENALTY_TRANSIENT_STAB:      " << interfstabparams->get<std::string>("GHOST_PENALTY_TRANSIENT_STAB") << "\n";
     IO::cout << "GHOST_PENALTY_FAC:                 " << interfstabparams->get<double>("GHOST_PENALTY_FAC") << "\n";

@@ -80,7 +80,7 @@ GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation //Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
+VOLUME_GAUSS_POINTS_BY          DirectDivergence //Tessellation //Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY                 xfluid_stationary_boundary
@@ -99,6 +99,8 @@ GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.01                          // in [0.01;0.05]
 GHOST_PENALTY_TRANSIENT_STAB    yes
 GHOST_PENALTY_TRANSIENT_FAC     0.005                         // in [0.001;0.0.005]
+MASS_CONSERVATION_SCALING       full
+MASS_CONSERVATION_COMBO         sum
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                     // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -126,14 +128,14 @@ FUNCT2                          KIMMOIN-UP MAT 1 ISSTAT 0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1664 QUANTITY velx VALUE -2.20664116745306865e-01 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1664 QUANTITY vely VALUE -5.85194446194039597e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1664 QUANTITY velx VALUE -2.23981093354054500e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1664 QUANTITY vely VALUE -5.88816946698353383e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1664 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1664 QUANTITY pressure VALUE -3.00382740635815548e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 1451 QUANTITY velx VALUE -3.37899864031847408e-01 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1451 QUANTITY vely VALUE 3.54722500175461086e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1664 QUANTITY pressure VALUE -3.02640032429467964e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 1451 QUANTITY velx VALUE -3.35533457013814818e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1451 QUANTITY vely VALUE 3.50459417986450417e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1451 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1451 QUANTITY pressure VALUE 3.54407511542979281e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 1451 QUANTITY pressure VALUE 3.52129945469298100e-01 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0
