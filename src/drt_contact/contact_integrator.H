@@ -933,90 +933,11 @@ public:
       std::vector<GEN::pairedvector<int, double> >& derivgp);
 
   /*!
-   \brief Assemble D contribution of current overlap into slave nodes
-
-   */
-  bool AssembleD(const Epetra_Comm& comm, MORTAR::MortarElement& sele,
-      Epetra_SerialDenseMatrix& D_seg);
-
-  /*!
-   \brief Assemble scale factor contribution of current overlap into slave nodes
-
-   */
-  bool AssembleScale(const Epetra_Comm& comm, MORTAR::MortarElement& sele,
-      Epetra_SerialDenseVector& scseg);
-
-  /*!
-   \brief Assemble T contribution of current overlap into slave nodes
-
-   */
-  bool AssembleT(const Epetra_Comm& comm, MORTAR::MortarElement& sele,
-      Epetra_SerialDenseMatrix& T_seg);
-
-  /*!
-   \brief Assemble E contribution of current overlap into slave nodes
-
-   */
-  bool AssembleE(const Epetra_Comm& comm, MORTAR::MortarElement& sele,
-      Epetra_SerialDenseMatrix& E_seg);
-
-  /*!
-   \brief Assemble Ws contribution of current overlap into slave nodes
-
-   */
-  bool AssembleWS(const Epetra_Comm& comm, MORTAR::MortarElement& sele,
-      Epetra_SerialDenseMatrix& Ws_seg);
-  /*!
-   \brief Assemble D2 contribution of current overlap into master nodes
-
-   */
-  bool AssembleD2(const Epetra_Comm& comm, MORTAR::MortarElement& mele,
-      Epetra_SerialDenseMatrix& D2_seg);
-
-  /*!
-   \brief Assemble D contribution of current overlap into slave nodes
-   (special version for 3D quadratic mortar with piecewise linear LM interpolation)
-
-   */
-  virtual bool AssembleD(const Epetra_Comm& comm, MORTAR::MortarElement& sele,
-      MORTAR::IntElement& sintele, Epetra_SerialDenseMatrix& D_seg);
-
-  /*!
-   \brief Assemble M contribution of current overlap into slave nodes
-
-   */
-  bool AssembleM(const Epetra_Comm& comm, MORTAR::MortarElement& sele,
-      MORTAR::MortarElement& mele, Epetra_SerialDenseMatrix& M_seg);
-
-  /*!
-   \brief Assemble M contribution of current overlap into slave nodes
-   (special version for 3D quadratic mortar with piecewise linear LM interpolation)
-
-   */
-  virtual bool AssembleM(const Epetra_Comm& comm, MORTAR::IntElement& sintele,
-      MORTAR::MortarElement& mele, Epetra_SerialDenseMatrix& M_seg);
-
-  /*!
-   \brief Assemble M contribution of current slave-master pairing for EleBased int.
-
-   */
-  virtual bool AssembleM_EleBased(const Epetra_Comm& comm,
-      MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
-      Epetra_SerialDenseMatrix& M_seg);
-  /*!
    \brief Assemble g~ contribution of current overlap into slave nodes
 
    */
   bool AssembleG(const Epetra_Comm& comm, MORTAR::MortarElement& sele,
       Epetra_SerialDenseVector& g_seg);
-
-  /*!
-   \brief Assemble u~ contribution of current overlap into slave nodes
-   --> this is the relative tangential weighted slip integrated at the gp
-
-   */
-  bool AssembleU(const Epetra_Comm& comm, MORTAR::MortarElement& sele,
-      Epetra_SerialDenseMatrix& u_seg);
 
   /*!
    \brief Assemble g~ contribution of current overlap into slave nodes
@@ -1025,42 +946,6 @@ public:
    */
   bool AssembleG(const Epetra_Comm& comm, MORTAR::IntElement& sintele,
       Epetra_SerialDenseVector& g_seg);
-
-  /*!
-   \brief Assemble mechanical dissipation contribution of current overlap
-   into slave nodes
-
-   */
-  bool AssembleMechDissSlave(const Epetra_Comm& comm,
-      MORTAR::MortarElement& sele, Epetra_SerialDenseVector& mdissseg);
-  /*!
-   \brief Assemble mechanical dissipation contribution of current overlap
-   into master nodes
-
-   */
-  bool AssembleMechDissMaster(const Epetra_Comm& comm,
-      MORTAR::MortarElement& sele, Epetra_SerialDenseVector& mdissseg);
-
-  /*!
-   \brief Assemble A contribution of current overlap into slave nodes
-
-   */
-  bool AssembleA(const Epetra_Comm& comm, MORTAR::MortarElement& sele,
-      Epetra_SerialDenseMatrix& aseg);
-
-  /*!
-   \brief Assemble B contribution of current overlap into master nodes
-
-   */
-  bool AssembleB(const Epetra_Comm& comm, MORTAR::MortarElement& mele,
-      Epetra_SerialDenseMatrix& bseg);
-
-  /*!
-   \brief Assemble wear contribution of current overlap into slave nodes
-
-   */
-  bool AssembleWear(const Epetra_Comm& comm, MORTAR::MortarElement& sele,
-      Epetra_SerialDenseVector& wseg);
 
   /*!
    \brief Return the Wear shape fcn type (wear weighting...)
