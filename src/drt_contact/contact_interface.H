@@ -242,7 +242,7 @@ public:
   that only parts of the slave surface actually need to evaluate
   contact terms (those parts that are "close" to the master side).
 
-  Internally, we call ParMetis to re-partition the contact interfacs
+  Internally, we call ZOLTAN to re-partition the contact interfacs
   in three independent parts: (1) close slave part, (2) non-close
   slave part, (3) master part. This results in new "optimal" node/element
   maps of the interface discretization. Note that after Redistribute(),

@@ -880,10 +880,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
 
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
-  // old version
-  //DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,scnids,numproc,scproc,comm,time,false);
-  // new version
-  DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,comm,false);
+  DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,comm,false,scproc);
   //**********************************************************************
 
   //**********************************************************************
@@ -904,10 +901,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
 
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
-  // old version
-  //DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,sncnids,numproc,sncproc,comm,time,false);
-  // new version
-  DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,comm,false);
+  DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,comm,false,sncproc);
   //**********************************************************************
 
   //**********************************************************************
@@ -925,11 +919,7 @@ bool CONTACT::CoInterface::Redistribute(int index)
   LINALG::Gather<int>(mnidslocal,mnids,numproc,&allproc[0],Comm());
 
   //**********************************************************************
-  // call ZOLTAN for parallel redistribution
-  // old version
-  //DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,mproc,comm,time,false);
-  // new version
-  DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,comm,false);
+  DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,comm,false,mproc);
   //**********************************************************************
 
   //**********************************************************************

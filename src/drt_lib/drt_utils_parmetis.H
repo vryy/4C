@@ -62,24 +62,14 @@ namespace UTILS
   /*!
     Actually, only the \p rownodes and \p colnodes maps are created.
    */
-#if 0
-  void PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
-                         Teuchos::RCP<Epetra_Map> roweles,
-                         Teuchos::RCP<Epetra_Map>& rownodes,
-                         Teuchos::RCP<Epetra_Map>& colnodes,
-                         std::vector<int>& nids,
-                         int nblock,
-                         int ntarget,
-                         Teuchos::RCP<Epetra_Comm> comm,
-                         Epetra_Time& time,
-                         bool outflag);
-#endif
+
   void PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
       Teuchos::RCP<Epetra_Map> roweles,
       Teuchos::RCP<Epetra_Map>& rownodes,
       Teuchos::RCP<Epetra_Map>& colnodes,
       Teuchos::RCP<Epetra_Comm> comm,
-      bool outflag);
+      bool outflag,
+      int parts = -1);
 
   void PartUsingZoltanWithWeights(Teuchos::RCP<DRT::Discretization> dis,
       Teuchos::RCP<Epetra_Map>& rownodes,

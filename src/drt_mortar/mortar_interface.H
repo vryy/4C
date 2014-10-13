@@ -513,7 +513,7 @@ public:
   Thus, an independent parallel distribution of the interface is
   desirable, which divides the interface among all available
   processors. Redistribute() is the method to achieve this.
-  Internally, we call ParMetis to re-partition both slave and
+  Internally, we call ZOLTAN to re-partition both slave and
   master side of the interface independently. This results in new
   "optimal" node/element maps of the interface discretization.
   Note that after Redistribute(), we must call FillComplete() again.

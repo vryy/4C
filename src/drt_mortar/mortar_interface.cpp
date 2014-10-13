@@ -1002,10 +1002,7 @@ void MORTAR::MortarInterface::Redistribute()
 
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
-  // old version
-  //DRT::UTILS::PartUsingParMetis(idiscret_,sroweles,srownodes,scolnodes,snids,numproc,sproc,comm,time,false);
-  // new version
-  DRT::UTILS::PartUsingParMetis(idiscret_, sroweles, srownodes, scolnodes, comm,false);
+  DRT::UTILS::PartUsingParMetis(idiscret_, sroweles, srownodes, scolnodes, comm,false,sproc);
   //**********************************************************************
 
   //**********************************************************************
@@ -1024,10 +1021,7 @@ void MORTAR::MortarInterface::Redistribute()
 
   //**********************************************************************
   // call ZOLTAN for parallel redistribution
-  // old version
-  //DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,mproc,comm,time,false);
-  // new version
-  DRT::UTILS::PartUsingParMetis(idiscret_, mroweles, mrownodes, mcolnodes, comm,false);
+  DRT::UTILS::PartUsingParMetis(idiscret_, mroweles, mrownodes, mcolnodes, comm,false,mproc);
   //**********************************************************************
 
   //**********************************************************************
