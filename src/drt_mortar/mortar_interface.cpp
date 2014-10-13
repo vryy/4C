@@ -213,30 +213,30 @@ void MORTAR::MortarInterface::PrintParallelDistribution(int index)
     my_n_nodes[myrank] = Discret().NumMyRowNodes();
     my_n_ghostnodes[myrank] = Discret().NumMyColNodes() - my_n_nodes[myrank];
     my_n_elements[myrank] = Discret().NumMyRowElements();
-    my_n_ghostele[myrank] = Discret().NumMyColElements()
-        - my_n_elements[myrank];
+    my_n_ghostele[myrank] = Discret().NumMyColElements() - my_n_elements[myrank];
 
     my_s_nodes[myrank] = snoderowmap_->NumMyElements();
-    my_s_ghostnodes[myrank] = snodecolmap_->NumMyElements()
-        - my_s_nodes[myrank];
+    my_s_ghostnodes[myrank] = snodecolmap_->NumMyElements() - my_s_nodes[myrank];
     my_s_elements[myrank] = selerowmap_->NumMyElements();
-    my_s_ghostele[myrank] = selecolmap_->NumMyElements()
-        - my_s_elements[myrank];
+    my_s_ghostele[myrank] = selecolmap_->NumMyElements() - my_s_elements[myrank];
 
     my_m_nodes[myrank] = mnoderowmap_->NumMyElements();
-    my_m_ghostnodes[myrank] = mnoderowmap_->NumGlobalElements()
-        - my_m_nodes[myrank];
+    my_m_ghostnodes[myrank] = mnodecolmap_->NumMyElements() - my_m_nodes[myrank];
     my_m_elements[myrank] = melerowmap_->NumMyElements();
-    my_m_ghostele[myrank] = melerowmap_->NumGlobalElements()
-        - my_m_elements[myrank];
+    my_m_ghostele[myrank] = melecolmap_->NumMyElements() - my_m_elements[myrank];
 
-    // adapt output for redundant slave case
-    if (Redundant() == INPAR::MORTAR::redundant_all)
+    // adapt output for redundant master or all redundant case
+    if (Redundant() == INPAR::MORTAR::redundant_master)
     {
-      my_s_ghostnodes[myrank] = snoderowmap_->NumGlobalElements()
-          - my_s_nodes[myrank];
-      my_s_ghostele[myrank] = selerowmap_->NumGlobalElements()
-          - my_s_elements[myrank];
+      my_m_ghostnodes[myrank] = mnoderowmap_->NumGlobalElements() - my_m_nodes[myrank];
+      my_m_ghostele[myrank] = melerowmap_->NumGlobalElements() - my_m_elements[myrank];
+    }
+    else if (Redundant() == INPAR::MORTAR::redundant_all)
+    {
+      my_m_ghostnodes[myrank] = mnoderowmap_->NumGlobalElements() - my_m_nodes[myrank];
+      my_m_ghostele[myrank] = melerowmap_->NumGlobalElements() - my_m_elements[myrank];
+      my_s_ghostnodes[myrank] = snoderowmap_->NumGlobalElements() - my_s_nodes[myrank];
+      my_s_ghostele[myrank] = selerowmap_->NumGlobalElements() - my_s_elements[myrank];
     }
 
     Discret().Comm().SumAll(&my_n_nodes[0], &n_nodes[0], numproc);
