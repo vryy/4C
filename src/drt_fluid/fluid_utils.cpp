@@ -993,8 +993,9 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ComputeL2ProjectedVelGradient(
     }
     else
     {
+      const int lid = noderowmap.LID(nodeid);
       for(int j=0; j<dimsquare; ++j)
-        fullnodevec->ReplaceMyValue(i, j, ((*(*nodevec)(j))[i]));
+        fullnodevec->ReplaceMyValue(i, j, ((*(*nodevec)(j))[lid]));
     }
   }
 
