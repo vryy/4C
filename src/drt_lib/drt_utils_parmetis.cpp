@@ -46,8 +46,6 @@ Maintainer: Michael Gee
 
 #include <Epetra_Time.h>
 
-//#ifdef HAVE_Trilinos_Q1_2013
-#if 1
 //Include Isorropia_Exception.hpp only because the helper functions at
 //the bottom of this file (which create the epetra objects) can
 //potentially throw exceptions.
@@ -59,7 +57,6 @@ Maintainer: Michael Gee
 #include <Isorropia_EpetraRedistributor.hpp>
 #include <Isorropia_EpetraPartitioner.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
-#endif
 
 #include <iterator>
 
@@ -72,14 +69,14 @@ void UnpackLocalConnectivity(std::map<int,std::set<int> >& lcon, std::vector<cha
 }
 }
 
-typedef int idxtype;
+/*typedef int idxtype;
 extern "C"
 {
   void ParMETIS_V3_PartKway(idxtype *vtxdist, idxtype *xadj, idxtype *adjncy, idxtype *vwgt,
                             idxtype *adjwgt, int *wgtflag, int *numflag, int *ncon, int *nparts,
                             float *tpwgts, float *ubvec, int *options, int *edgecut, idxtype *part,
                             MPI_Comm *comm);
-}
+}*/
 
 
 /*----------------------------------------------------------------------*/
@@ -205,9 +202,6 @@ void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
     comm,
     outflag);
 
-//#ifdef HAVE_Trilinos_Q1_2013
-#if 1
-
   // use Isorropia
 
   Teuchos::ParameterList paramlist;
@@ -273,147 +267,6 @@ void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
     printf("Graph rebalancing:    %10.5e secs\n",t2-t1);
     fflush(stdout);
   }
-
-#else  // use old PARMETIS partition algorithm
-
-  // prepare parmetis input and call parmetis to partition the graph
-  std::vector<int> vtxdist(numproc+1,0);
-  std::vector<int> xadj(graph->RowMap().NumMyElements()+1);
-  std::vector<int> adjncy(0,0);
-  {
-    Epetra_IntVector ridtoidx(graph->RowMap(),false);
-    Epetra_IntVector cidtoidx(graph->ColMap(),false);
-
-    xadj[0] = 0;
-
-    // create vtxdist
-    std::vector<int> svtxdist(numproc+1,0);
-    svtxdist[myrank+1] = graph->RowMap().NumMyElements();
-    comm->SumAll(&svtxdist[0],&vtxdist[0],numproc+1);
-    for (int i=0; i<numproc; ++i) vtxdist[i+1] += vtxdist[i];
-
-    // create a Epetra_IntVector in rowmap with new numbering starting from zero and being linear
-    for (int i=0; i<ridtoidx.Map().NumMyElements(); ++i) ridtoidx[i] = i + vtxdist[myrank];
-    Epetra_Import importer(graph->ColMap(),graph->RowMap());
-    int err = cidtoidx.Import(ridtoidx,importer,Insert);
-    if (err) dserror("Import using importer returned %d",err);
-
-    // create xadj and adjncy;
-    for (int lrid=0; lrid<graph->RowMap().NumMyElements(); ++lrid)
-    {
-      int metisrid = ridtoidx[lrid];
-      int  numindices;
-      int* indices;
-      int err = graph->ExtractMyRowView(lrid,numindices,indices);
-      if (err) dserror("Epetra_CrsGraph::GetMyRowView returned %d",err);
-      // switch column indices to parmetis indices and add to vector of columns
-      std::vector<int> metisindices(0);
-      for (int i=0; i<numindices; ++i)
-      {
-        if (metisrid == cidtoidx[indices[i]]) continue; // must not contain main diagonal entry
-        metisindices.push_back(cidtoidx[indices[i]]);
-      }
-      //sort(metisindices.begin(),metisindices.end());
-      // beginning of new row
-      xadj[lrid+1] = xadj[lrid] + (int)metisindices.size();
-      for (int i=0; i<(int)metisindices.size(); ++i)
-        adjncy.push_back(metisindices[i]);
-    }
-  }
-
-  comm->Barrier();
-
-  double t2 = timer.ElapsedTime();
-  if (!myrank && outflag)
-  {
-    printf("parmetis setup    %10.5e secs\n",t2-t1);
-    fflush(stdout);
-  }
-
-  std::vector<int> part;              // output
-  // make sure there is memory allocated, even for empty processors
-  part.reserve(graph->RowMap().NumMyElements()+1);
-  part.resize(graph->RowMap().NumMyElements());
-  {
-    int wgtflag = 0;             // graph is not weighted
-    int numflag = 0;             // numbering start from zero
-    int ncon = 1;                // number of weights on each node
-    int npart = numproc;         // number of partitions desired
-    int options[4] = { 0,0,15,0 }; // use default metis parameters
-    int edgecut = 0;             // output, number of edges cut in partitioning
-    float ubvec = (float)1.05;
-    std::vector<float> tpwgts(npart,static_cast<float>(1.0/(double)npart));
-    MPI_Comm mpicomm=(dynamic_cast<const Epetra_MpiComm*>(&(dis->Comm())))->Comm();
-
-    ParMETIS_V3_PartKway(&(vtxdist[0]),&(xadj[0]),&(adjncy[0]),
-                         NULL,NULL,&wgtflag,&numflag,&ncon,&npart,&(tpwgts[0]),&ubvec,
-                         &(options[0]),&edgecut,&(part[0]),&mpicomm);
-
-  }
-
-  double t3 = timer.ElapsedTime();
-  if (!myrank && outflag)
-  {
-    printf("parmetis call     %10.5e secs\n",t3-t2);
-    fflush(stdout);
-  }
-
-  // build new row map according to part
-  {
-    std::vector<int> mygids;
-    for (int proc=0; proc<numproc; ++proc)
-    {
-      int size = 0;
-      std::vector<int> sendpart;
-      std::vector<int> sendgid;
-      if (proc==myrank)
-      {
-        sendpart = part;
-        size = (int)sendpart.size();
-        sendgid.resize(size);
-        for (int i=0; i<(int)sendgid.size(); ++i) sendgid[i] = graph->RowMap().GID(i);
-      }
-      comm->Broadcast(&size,1,proc);
-      if (proc!=myrank)
-      {
-        sendpart.resize(size);
-        sendgid.resize(size);
-      }
-      comm->Broadcast(&sendpart[0],size,proc);
-      comm->Broadcast(&sendgid[0],size,proc);
-      for (int i=0; i<(int)sendpart.size(); ++i)
-      {
-        if (sendpart[i] != myrank) continue;
-        mygids.push_back(sendgid[i]);
-      }
-      comm->Barrier();
-    }
-    rownodes = Teuchos::rcp(new Epetra_Map(-1,(int)mygids.size(),&mygids[0],0,*comm));
-  }
-
-  // export the graph to the new row map to obtain the new column map
-  {
-    int bandwith = graph->GlobalMaxNumNonzeros();
-    Epetra_CrsGraph finalgraph(Copy,*rownodes,bandwith,false);
-    Epetra_Export exporter(graph->RowMap(),*rownodes);
-    int err = finalgraph.Export(*graph,exporter,Insert);
-    if (err<0) dserror("Graph export returned err=%d",err);
-    graph = Teuchos::null;
-    finalgraph.FillComplete();
-    finalgraph.OptimizeStorage();
-    colnodes = Teuchos::rcp(new Epetra_Map(-1,//finalgraph.ColMap().NumGlobalElements(),
-                                  finalgraph.ColMap().NumMyElements(),
-                                  finalgraph.ColMap().MyGlobalElements(),0,*comm));
-  }
-
-
-  double t4 = timer.ElapsedTime();
-  if (!myrank && outflag)
-  {
-    printf("parmetis cleanup  %10.5e secs\n",t4-t3);
-    fflush(stdout);
-  }
-#endif
 
   return;
 }

@@ -31,10 +31,10 @@ http://www.lnm.mw.tum.de
 -------------------------------------------------------------------------
 </pre>
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Georg Hammerl
+            hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15237
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -56,8 +56,6 @@ class Discretization;
 /// collection of useful and important but less central stuff
 namespace UTILS
 {
-#if defined(PARALLEL) && defined(PARMETIS)
-
   /// redistribute a discretization using ParMetis
   /*!
     Actually, only the \p rownodes and \p colnodes maps are created.
@@ -77,23 +75,10 @@ namespace UTILS
       bool outflag);
 
   Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(Teuchos::RCP<DRT::Discretization> dis,
-            Teuchos::RCP<Epetra_Map> roweles,
-            Teuchos::RCP<Epetra_Map>& rownodes,
-            Teuchos::RCP<Epetra_Comm> comm,
-            bool outflag);
-#else
-
-#if 0 // this is out of date, we don't support non-parmetis anymore mmwgee 4/12
-  /// redistribute a discretization using metis
-  /*!
-    Actually, only the \p rownodes and \p colnodes maps are created.
-   */
-  void PartUsingMetis(Teuchos::RCP<Epetra_Map>& rownodes,
-      Teuchos::RCP<Epetra_Map>& colnodes,
-      list<vector<int> >& elementnodes,
-      Teuchos::RCP<Epetra_Comm> comm);
-#endif
-#endif
+      Teuchos::RCP<Epetra_Map> roweles,
+      Teuchos::RCP<Epetra_Map>& rownodes,
+      Teuchos::RCP<Epetra_Comm> comm,
+      bool outflag);
 
 } // namespace UTILS
 } // namespace DRT
