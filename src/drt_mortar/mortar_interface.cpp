@@ -37,9 +37,8 @@ Maintainer: Alexander Popp
 
  *----------------------------------------------------------------------*/
 
-#ifndef PARALLEL
-#include "Epetra_SerialComm.h"
-#endif
+// Epetra_SerialComm needed in non-parallel implementation only
+//#include "Epetra_SerialComm.h"
 
 #include "mortar_interface.H"
 #include "mortar_node.H"
@@ -655,7 +654,6 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   // this intra-communicator will be used to handle most stuff on this
   // interface so the interface will not block all other procs
   {
-#ifdef PARALLEL
     std::vector<int> lin(Comm().NumProc());
     std::vector<int> gin(Comm().NumProc());
     for (int i = 0; i < Comm().NumProc(); ++i)
@@ -723,15 +721,16 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
     // create the new Epetra_MpiComm only for participating procs
     if (mpi_local_comm != MPI_COMM_NULL)
       lcomm_ = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
-
-#else  // the easy serial case
-    Teuchos::RCP<Epetra_Comm> copycomm = Teuchos::rcp(Comm().Clone());
-    Epetra_SerialComm* serialcomm = dynamic_cast<Epetra_SerialComm*>(copycomm.get());
-    if (!serialcomm)
-    dserror("ERROR: casting Epetra_Comm -> Epetra_SerialComm failed");
-    lcomm_ = Teuchos::rcp(new Epetra_SerialComm(*serialcomm));
-#endif // #ifdef PARALLEL
   }
+
+//  // the easy serial case
+//  {
+//    Teuchos::RCP<Epetra_Comm> copycomm = Teuchos::rcp(Comm().Clone());
+//    Epetra_SerialComm* serialcomm = dynamic_cast<Epetra_SerialComm*>(copycomm.get());
+//    if (!serialcomm)
+//    dserror("ERROR: casting Epetra_Comm -> Epetra_SerialComm failed");
+//    lcomm_ = Teuchos::rcp(new Epetra_SerialComm(*serialcomm));
+//  }
 
   // create interface ghosting
   // (currently, the slave is kept with the standard overlap of one,
@@ -933,11 +932,6 @@ void MORTAR::MortarInterface::BinningStrategy(Teuchos::RCP<Epetra_Map> initial_e
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::Redistribute()
 {
-  // we need PARALLEL and PARMETIS defined for this
-#if !defined(PARALLEL) || !defined(PARMETIS)
-  dserror("ERROR: Redistribution of mortar interface needs PARMETIS");
-#endif
-
   // make sure we are supposed to be here
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(IParams(),
       "PARALLEL_REDIST") == INPAR::MORTAR::parredist_none)
@@ -1007,14 +1001,11 @@ void MORTAR::MortarInterface::Redistribute()
   LINALG::Gather<int>(snidslocal, snids, numproc, &allproc[0], Comm());
 
   //**********************************************************************
-  // call PARMETIS (again with #ifdef to be on the safe side)
-#if defined(PARALLEL) && defined(PARMETIS)
+  // call ZOLTAN for parallel redistribution
   // old version
   //DRT::UTILS::PartUsingParMetis(idiscret_,sroweles,srownodes,scolnodes,snids,numproc,sproc,comm,time,false);
   // new version
-  DRT::UTILS::PartUsingParMetis(idiscret_, sroweles, srownodes, scolnodes, comm,
-      false);
-#endif
+  DRT::UTILS::PartUsingParMetis(idiscret_, sroweles, srownodes, scolnodes, comm,false);
   //**********************************************************************
 
   //**********************************************************************
@@ -1032,14 +1023,11 @@ void MORTAR::MortarInterface::Redistribute()
   LINALG::Gather<int>(mnidslocal, mnids, numproc, &allproc[0], Comm());
 
   //**********************************************************************
-  // call PARMETIS (again with #ifdef to be on the safe side)
-#if defined(PARALLEL) && defined(PARMETIS)
+  // call ZOLTAN for parallel redistribution
   // old version
   //DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,mproc,comm,time,false);
   // new version
-  DRT::UTILS::PartUsingParMetis(idiscret_, mroweles, mrownodes, mcolnodes, comm,
-      false);
-#endif
+  DRT::UTILS::PartUsingParMetis(idiscret_, mroweles, mrownodes, mcolnodes, comm,false);
   //**********************************************************************
 
   //**********************************************************************

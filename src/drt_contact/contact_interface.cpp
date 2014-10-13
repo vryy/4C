@@ -702,11 +702,6 @@ void CONTACT::CoInterface::RoundRobinEvaluate()
  *----------------------------------------------------------------------*/
 bool CONTACT::CoInterface::Redistribute(int index)
 {
-  // we need PARALLEL and PARMETIS defined for this
-#if !defined(PARALLEL) || !defined(PARMETIS)
-  dserror("ERROR: Redistribution of mortar interface needs PARMETIS");
-#endif
-
   // make sure we are supposed to be here
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(IParams(),"PARALLEL_REDIST")==INPAR::MORTAR::parredist_none)
     dserror("ERROR: You are not supposed to be here...");
@@ -884,13 +879,11 @@ bool CONTACT::CoInterface::Redistribute(int index)
   for (iter=setglobalcns.begin();iter!=setglobalcns.end();++iter) scnids.push_back(*iter);
 
   //**********************************************************************
-  // call PARMETIS (again with #ifdef to be on the safe side)
-#if defined(PARALLEL) && defined(PARMETIS)
+  // call ZOLTAN for parallel redistribution
   // old version
   //DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,scnids,numproc,scproc,comm,time,false);
   // new version
   DRT::UTILS::PartUsingParMetis(idiscret_,scroweles,scrownodes,sccolnodes,comm,false);
-#endif
   //**********************************************************************
 
   //**********************************************************************
@@ -910,13 +903,11 @@ bool CONTACT::CoInterface::Redistribute(int index)
   for (iter=setglobalfns.begin();iter!=setglobalfns.end();++iter) sncnids.push_back(*iter);
 
   //**********************************************************************
-  // call PARMETIS (again with #ifdef to be on the safe side)
-#if defined(PARALLEL) && defined(PARMETIS)
+  // call ZOLTAN for parallel redistribution
   // old version
   //DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,sncnids,numproc,sncproc,comm,time,false);
   // new version
   DRT::UTILS::PartUsingParMetis(idiscret_,sncroweles,sncrownodes,snccolnodes,comm,false);
-#endif
   //**********************************************************************
 
   //**********************************************************************
@@ -934,13 +925,11 @@ bool CONTACT::CoInterface::Redistribute(int index)
   LINALG::Gather<int>(mnidslocal,mnids,numproc,&allproc[0],Comm());
 
   //**********************************************************************
-  // call PARMETIS (again with #ifdef to be on the safe side)
-#if defined(PARALLEL) && defined(PARMETIS)
+  // call ZOLTAN for parallel redistribution
   // old version
   //DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,mnids,numproc,mproc,comm,time,false);
   // new version
   DRT::UTILS::PartUsingParMetis(idiscret_,mroweles,mrownodes,mcolnodes,comm,false);
-#endif
   //**********************************************************************
 
   //**********************************************************************

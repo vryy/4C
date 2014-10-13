@@ -4131,7 +4131,6 @@ void CONTACT::WearInterface::FillComplete(int maxdof, bool newghosting)
   // this intra-communicator will be used to handle most stuff on this
   // interface so the interface will not block all other procs
   {
-#ifdef PARALLEL
     std::vector<int> lin(Comm().NumProc());
     std::vector<int> gin(Comm().NumProc());
     for (int i=0; i<Comm().NumProc(); ++i)
@@ -4197,15 +4196,16 @@ void CONTACT::WearInterface::FillComplete(int maxdof, bool newghosting)
     // create the new Epetra_MpiComm only for participating procs
     if (mpi_local_comm != MPI_COMM_NULL)
       lcomm_ = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
-
-#else  // the easy serial case
-    Teuchos::RCP<Epetra_Comm> copycomm = Teuchos::rcp(Comm().Clone());
-    Epetra_SerialComm* serialcomm = dynamic_cast<Epetra_SerialComm*>(copycomm.get());
-    if (!serialcomm)
-      dserror("ERROR: casting Epetra_Comm -> Epetra_SerialComm failed");
-    lcomm_ = Teuchos::rcp(new Epetra_SerialComm(*serialcomm));
-#endif // #ifdef PARALLEL
   }
+
+//  // the easy serial case
+//  {
+//    Teuchos::RCP<Epetra_Comm> copycomm = Teuchos::rcp(Comm().Clone());
+//    Epetra_SerialComm* serialcomm = dynamic_cast<Epetra_SerialComm*>(copycomm.get());
+//    if (!serialcomm)
+//      dserror("ERROR: casting Epetra_Comm -> Epetra_SerialComm failed");
+//    lcomm_ = Teuchos::rcp(new Epetra_SerialComm(*serialcomm));
+//  }
 
   // create interface ghosting
   // (currently, the slave is kept with the standard overlap of one,
