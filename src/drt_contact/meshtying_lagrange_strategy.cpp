@@ -243,6 +243,11 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(
  *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::MeshInitialization()
 {
+  // get out of here is NTS algorithm is activated
+  if(DRT::INPUT::IntegralValue<INPAR::CONTACT::AlgorithmType>(Params(), "ALGORITHM") ==
+      INPAR::CONTACT::contact_nts)
+    return;
+
   // print message
   if (Comm().MyPID() == 0)
   {

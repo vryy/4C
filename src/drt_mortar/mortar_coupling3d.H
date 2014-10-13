@@ -757,6 +757,18 @@ public:
   virtual bool EvaluateCoupling();
 
   /*!
+   \brief Evaluate mortar-coupling pairs
+
+   */
+  virtual void EvaluateMortar();
+
+  /*!
+   \brief Evaluate nts-coupling pairs
+
+   */
+  virtual void EvaluateNTS();
+
+  /*!
    \brief Return the LM shape fcn type
 
    */
@@ -879,12 +891,24 @@ public:
 
    */
   virtual const Epetra_Comm& Comm() const;
+
   /*!
    \brief Evaluate coupling pairs
 
    */
   virtual bool EvaluateCoupling();
 
+  /*!
+   \brief Evaluate mortar-coupling pairs
+
+   */
+  virtual void EvaluateMortar();
+
+  /*!
+   \brief Evaluate nts-coupling pairs
+
+   */
+  virtual void EvaluateNTS();
   // @
 
 protected:

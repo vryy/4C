@@ -155,7 +155,6 @@ public:
   //destructor
   virtual ~MortarIntegratorCalc() {};
 
-
   /// called upon destruction
   virtual void Done();
 

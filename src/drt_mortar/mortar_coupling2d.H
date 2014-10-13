@@ -30,10 +30,10 @@
  </pre>
 
  <pre>
- Maintainer: Alexander Popp
- popp@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15238
+       Maintainer: Alexander Popp
+       popp@lnm.mw.tum.de
+       http://www.lnm.mw.tum.de
+       089 - 289-15238
  </pre>
 
  *----------------------------------------------------------------------*/
@@ -373,6 +373,18 @@ public:
 
    */
   virtual bool EvaluateCoupling();
+
+  /*!
+   \brief Evaluate mortar coupling pairs
+
+   */
+  virtual void EvaluateMortar();
+
+  /*!
+   \brief Evaluate mortar coupling pairs
+
+   */
+  virtual void EvaluateNTS();
 
   /*!
    \brief Get coupling type

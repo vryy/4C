@@ -47,6 +47,7 @@ Maintainer: Philipp Farah
 #include "../headers/pairedvector.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_inpar/inpar_wear.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 09/14 |
@@ -231,6 +232,78 @@ protected:
 
 };
 
+
+/*!
+\brief A class to implement MTInterpolator
+
+\author farah (farah@lnm.mw.tum.de)
+*/
+class MTInterpolator : DRT::SingletonDestruction
+{
+public:
+
+  MTInterpolator() {};
+
+  //destructor
+  virtual ~MTInterpolator() {}
+
+  //! @name Access methods
+  /// Internal implementation class
+  static MTInterpolator* Impl(MORTAR::MortarElement& sele,
+                              std::vector<MORTAR::MortarElement*> meles);
+
+  /*!
+   \brief Interpolate for 2D problems
+
+   */
+  virtual void Interpolate2D(MORTAR::MortarElement& sele,
+                     std::vector<MORTAR::MortarElement*> meles) = 0;
+
+  /*!
+   \brief Interpolate for 3D problems
+
+   */
+  virtual void Interpolate3D(MORTAR::MortarElement& sele,
+                     std::vector<MORTAR::MortarElement*> meles) = 0;
+};
+
+
+/*!
+\author farah (farah@lnm.mw.tum.de)
+*/
+template<DRT::Element::DiscretizationType distypeM>
+class MTInterpolatorCalc : public MTInterpolator
+{
+public:
+
+  MTInterpolatorCalc();
+
+  //destructor
+  virtual ~MTInterpolatorCalc() {};
+
+  /// called upon destruction
+  virtual void Done();
+
+  /// Singleton access method
+  static MTInterpolatorCalc<distypeM> * Instance(bool create);
+
+  //! nm_: number of master element nodes
+  static const int nm_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+
+  /*!
+   \brief Interpolate for 2D problems
+
+   */
+  virtual void Interpolate2D(MORTAR::MortarElement& sele,
+                     std::vector<MORTAR::MortarElement*> meles);
+
+  /*!
+   \brief Interpolate for 3D problems
+
+   */
+  virtual void Interpolate3D(MORTAR::MortarElement& sele,
+                     std::vector<MORTAR::MortarElement*> meles);
+};
 
 }// namespace CONTACT
 

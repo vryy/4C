@@ -43,10 +43,15 @@
 #include "mortar_projector.H"
 #include "mortar_integrator.H"
 #include "mortar_defines.H"
+#include "mortar_projector.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
-#include "mortar_projector.H"
+
+// for nts-meshtying
+#include "../drt_contact/contact_interpolator.H"
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
@@ -703,10 +708,11 @@ MORTAR::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret,
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Evaluate coupling pairs                                   popp 03/09|
+ |  Evaluate mortar-coupling pairs                           popp 03/09 |
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling2dManager::EvaluateCoupling()
+void MORTAR::Coupling2dManager::EvaluateMortar()
 {
   // decide which type of numerical integration scheme
 
@@ -775,7 +781,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
       || IntType() == INPAR::MORTAR::inttype_elements_BS)
   {
     if ((int) MasterElements().size() == 0)
-      return false;
+      return;
 
     // bool for boundary segmentation
     bool boundary_ele = false;
@@ -877,6 +883,53 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
   // free memory of consistent dual shape function coefficient matrix
   SlaveElement().MoData().ResetDualShape();
   SlaveElement().MoData().ResetDerivDualShape();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate coupling pairs                                  farah 10/14|
+ *----------------------------------------------------------------------*/
+void MORTAR::Coupling2dManager::EvaluateNTS()
+{
+  CONTACT::MTInterpolator::Impl(SlaveElement(), MasterElements())->Interpolate2D(
+      SlaveElement(),
+      MasterElements());
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate coupling pairs                                  farah 10/14|
+ *----------------------------------------------------------------------*/
+bool MORTAR::Coupling2dManager::EvaluateCoupling()
+{
+  if(MasterElements().size() == 0)
+    return false;
+
+  // decide which type of coupling should be evaluated
+  INPAR::CONTACT::AlgorithmType algo =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::AlgorithmType>(imortar_, "ALGORITHM");
+
+  //*********************************
+  // Mortar Contact
+  //*********************************
+  if(algo==INPAR::CONTACT::contact_mortar)
+    EvaluateMortar();
+
+  //*********************************
+  // Node-to-Segment Contact
+  //*********************************
+  else if(algo == INPAR::CONTACT::contact_nts)
+    EvaluateNTS();
+
+  //*********************************
+  // Error
+  //*********************************
+  else
+    dserror("ERROR: chose contact algorithm not supported!");
 
   return true;
 }

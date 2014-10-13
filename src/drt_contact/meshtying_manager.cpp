@@ -36,26 +36,33 @@ Maintainer: Alexander Popp
 </pre>
 
 *----------------------------------------------------------------------*/
-
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #include "meshtying_manager.H"
 #include "meshtying_lagrange_strategy.H"
 #include "meshtying_penalty_strategy.H"
 #include "meshtying_defines.H"
+
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_defines.H"
+
 #include "../drt_io/io.H"
+
 #include "../linalg/linalg_utils.H"
+
 #include "../drt_lib/drt_globalproblem.H"
+
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_mortar.H"
 
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_nurbs_discret/drt_knotvector.H"
+
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
@@ -70,7 +77,9 @@ discret_(discret)
 
   // create some local variables (later to be stored in strategy)
   int dim = DRT::Problem::Instance()->NDim();
-  if (dim!= 2 && dim!=3) dserror("ERROR: Meshtying problem must be 2D or 3D");
+  if (dim!= 2 && dim!=3)
+    dserror("ERROR: Meshtying problem must be 2D or 3D");
+
   std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interfaces;
   Teuchos::ParameterList mtparams;
 
@@ -176,7 +185,9 @@ discret_(discret)
         isslave[j] = false;
       }
       else
+      {
         dserror("ERROR: MtManager: Unknown contact side qualifier!");
+      }
     }
 
     if (!hasslave) dserror("Slave side missing in contact condition group!");
@@ -204,12 +215,15 @@ discret_(discret)
         else                               dserror("ERROR: Unknown contact init qualifier!");
       }
       else
+      {
         dserror("ERROR: MtManager: Unknown contact side qualifier!");
+      }
     }
 
     // create an empty meshtying interface and store it in this Manager
     // (for structural meshtying we currently choose redundant master storage)
-    INPAR::MORTAR::RedundantStorage redundant = DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mtparams,"REDUNDANT_STORAGE");
+    INPAR::MORTAR::RedundantStorage redundant =
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mtparams,"REDUNDANT_STORAGE");
 //    if (redundant != INPAR::MORTAR::redundant_master)
 //      dserror("ERROR: MtManager: Meshtying requires redundant master storage");
     interfaces.push_back(Teuchos::rcp(new MORTAR::MortarInterface(groupid1,Comm(),dim,mtparams,redundant)));
@@ -361,6 +375,7 @@ discret_(discret)
     strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret(),mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else
     dserror("Unrecognized strategy");
+
   if(Comm().MyPID()==0) std::cout << "done!" << std::endl;
   //**********************************************************************
 
@@ -396,8 +411,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 
   // read Problem Type and Problem Dimension from DRT::Problem
   const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
-  int dim = DRT::Problem::Instance()->NDim();
-  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
+  int dim                       = DRT::Problem::Instance()->NDim();
+  std::string distype           = DRT::Problem::Instance()->SpatialApproximation();
 
   // get mortar information
   std::vector<DRT::Condition*> mtcond(0);
@@ -416,34 +431,48 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   if(mtcond.size()!=0 and ccond.size()==0)
     onlymeshtying = true;
 
+  // *********************************************************************
+  // invalid parallel strategies
+  // *********************************************************************
+  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mortar,"REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_master and
+     DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar,"PARALLEL_STRATEGY") != INPAR::MORTAR::ghosting_redundant )
+    dserror("ERROR: Redundant storage only reasonable in combination with parallel strategy: ghosting_redundant !");
+
+  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mortar,"REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_all and
+     DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar,"PARALLEL_STRATEGY") != INPAR::MORTAR::ghosting_redundant )
+    dserror("ERROR: Redundant storage only reasonable in combination with parallel strategy: redundant_ghosting !");
+
+  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar,"PARALLEL_STRATEGY") == INPAR::MORTAR::roundrobinevaluate or
+     DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar,"PARALLEL_STRATEGY") == INPAR::MORTAR::roundrobinghost)
+    dserror("ERROR: Round-Robin strategies not for mortar meshtying!");
 
   // *********************************************************************
   // invalid parameter combinations
   // *********************************************************************
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_penalty &&
                                                  meshtying.get<double>("PENALTYPARAM") <= 0.0)
-    dserror("Penalty parameter eps = 0, must be greater than 0");
+    dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_uzawa &&
                                                  meshtying.get<double>("PENALTYPARAM") <= 0.0)
-    dserror("Penalty parameter eps = 0, must be greater than 0");
+    dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_uzawa &&
                                                    meshtying.get<int>("UZAWAMAXSTEPS") <  2)
-    dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
+    dserror("ERROR: Maximum number of Uzawa / Augmentation steps must be at least 2");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_uzawa &&
                                                meshtying.get<double>("UZAWACONSTRTOL") <= 0.0)
-    dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
+    dserror("ERROR: Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
   if (onlymeshtying &&
             DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(meshtying,"FRICTION") != INPAR::CONTACT::friction_none)
-    dserror("Friction law supplied for mortar meshtying");
+    dserror("ERROR: Friction law supplied for mortar meshtying");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_standard &&
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying,"SYSTEM") == INPAR::CONTACT::system_condensed)
-    dserror("Condensation of linear system only possible for dual Lagrange multipliers");
+    dserror("ERROR: Condensation of linear system only possible for dual Lagrange multipliers");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic and
       onlymeshtying)
@@ -451,7 +480,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
                                                    mortar.get<int>("MIN_ELEPROC") <  0)
-    dserror("Minimum number of elements per processor for parallel redistribution must be >= 0");
+    dserror("ERROR: Minimum number of elements per processor for parallel redistribution must be >= 0");
 
   if(DRT::INPUT::IntegralValue<int>(mortar,"LM_DUAL_CONSISTENT")==true &&
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") != INPAR::CONTACT::solution_lagmult&&
@@ -469,7 +498,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 
   if(DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements)
-   dserror("ERROR: Nodal scaling of Lagrange multipliers not for purely element-based integration.");
+    dserror("ERROR: Nodal scaling of Lagrange multipliers not for purely element-based integration.");
 
 
   // *********************************************************************
@@ -488,19 +517,19 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin and
       onlymeshtying)
-    dserror("Petrov-Galerkin approach makes no sense for meshtying");
+    dserror("ERROR: Petrov-Galerkin approach makes no sense for meshtying");
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_pwlin &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
-    dserror("No pwlin approach (for LM) implemented for quadratic meshtying with DUAL shape fct.");
+    dserror("ERROR: No pwlin approach (for LM) implemented for quadratic meshtying with DUAL shape fct.");
 
 #ifndef MORTARTRAFO
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_lin &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
-    dserror("Linear approach (for LM) for quadratic meshtying with DUAL shape fct. requires MORTARTRAFO");
+    dserror("ERROR: Linear approach (for LM) for quadratic meshtying with DUAL shape fct. requires MORTARTRAFO");
 #endif // #ifndef MORTARTRAFO
 
   // *********************************************************************
@@ -509,23 +538,22 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   INPAR::MORTAR::IntType inttype = DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
 
   if (inttype == INPAR::MORTAR::inttype_segments && mortar.get<int>("NUMGP_PER_DIM") != 0)
-    dserror("It is not possible to choose a Gauss rule with NUMGP_PER_DIM for segment-based integration."
+    dserror("ERROR: It is not possible to choose a Gauss rule with NUMGP_PER_DIM for segment-based integration."
             "\nSegment-based integration always uses pre-defined default values (5 GP per segment in 2D "
             "\nand 7 GP per triangular cell in 3D). Ask a 'contact person' if you want to change this.");
 
   if (inttype == INPAR::MORTAR::inttype_elements && mortar.get<int>("NUMGP_PER_DIM") <= 0)
-    dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
+    dserror("ERROR: Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
   if (inttype == INPAR::MORTAR::inttype_elements_BS && mortar.get<int>("NUMGP_PER_DIM") <= 0)
-    dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration with boundary segmentation."
+    dserror("ERROR: Invalid Gauss point number NUMGP_PER_DIM for element-based integration with boundary segmentation."
             "\nPlease note that the value you have to provide only applies to the element-based integration"
             "\ndomain, while pre-defined default values will be used in the segment-based boundary domain.");
 
   if ((problemtype!=prb_tfsi_aero &&
       (inttype == INPAR::MORTAR::inttype_elements || inttype == INPAR::MORTAR::inttype_elements_BS) &&
       mortar.get<int>("NUMGP_PER_DIM") <= 1))
-    dserror(
-        "Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
+    dserror("ERROR: Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
   // *********************************************************************
   // warnings
@@ -561,13 +589,11 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // smooth interfaces
   // *********************************************************************
   // NURBS PROBLEM?
-  if(distype=="Nurbs")
-    mtparams.set<bool>("NURBS",true);
-  else
-    mtparams.set<bool>("NURBS",false);
+  if(distype=="Nurbs") mtparams.set<bool>("NURBS",true);
+  else                 mtparams.set<bool>("NURBS",false);
 
   if (DRT::INPUT::IntegralValue<int>(mtparams,"HERMITE_SMOOTHING") == true)
-    dserror("Hermite smoothing only for mortar contact!");
+    dserror("ERROR: Hermite smoothing only for mortar contact!");
 
   mtparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 

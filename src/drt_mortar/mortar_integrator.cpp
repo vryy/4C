@@ -4,53 +4,54 @@
  of two MortarElements in 1D and 2D
 
  <pre>
- -------------------------------------------------------------------------
- BACI Contact library
- Copyright (2008) Technical University of Munich
+-------------------------------------------------------------------------
+                        BACI Contact library
+            Copyright (2008) Technical University of Munich
 
- Under terms of contract T004.008.000 there is a non-exclusive license for use
- of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+Under terms of contract T004.008.000 there is a non-exclusive license for use
+of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
- This library is proprietary software. It must not be published, distributed,
- copied or altered in any form or any media without written permission
- of the copyright holder. It may be used under terms and conditions of the
- above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+This library is proprietary software. It must not be published, distributed,
+copied or altered in any form or any media without written permission
+of the copyright holder. It may be used under terms and conditions of the
+above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
 
- This library contains and makes use of software copyrighted by Sandia Corporation
- and distributed under LGPL licence. Licensing does not apply to this or any
- other third party software used here.
+This library contains and makes use of software copyrighted by Sandia Corporation
+and distributed under LGPL licence. Licensing does not apply to this or any
+other third party software used here.
 
- Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
- or
- Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
+Questions? Contact Prof. Dr. Michael W. Gee (gee@lnm.mw.tum.de)
+                   or
+                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
 
- http://www.lnm.mw.tum.de
+http://www.lnm.mw.tum.de
 
- -------------------------------------------------------------------------
+-------------------------------------------------------------------------
  </pre>
 
  <pre>
- Maintainer: Alexander Popp
- popp@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15238
+         Maintainer: Alexander Popp
+         popp@lnm.mw.tum.de
+         http://www.lnm.mw.tum.de
+         089 - 289-15238
  </pre>
 
  *----------------------------------------------------------------------*/
-
 #include "mortar_integrator.H"
 #include "mortar_node.H"
 #include "mortar_element.H"
 #include "mortar_projector.H"
 #include "mortar_coupling3d_classes.H"
 #include "mortar_defines.H"
+#include "mortar_calc_utils.H"
+#include "mortar_shape_utils.H"
+
 #include "../drt_fem_general/drt_utils_integration.H"
+
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
 
-#include "mortar_calc_utils.H"
-#include "mortar_shape_utils.H"
 /*----------------------------------------------------------------------*
  |  impl...                                                  farah 01/14|
  *----------------------------------------------------------------------*/
@@ -90,7 +91,7 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(MortarElement& sele,
           true, params);
     }
     default:
-      dserror("Element combination not allowed!");
+      dserror("ERROR: Element combination not allowed!");
     }
     break;
   }
@@ -124,7 +125,7 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(MortarElement& sele,
           true, params);
     }
     default:
-      dserror("Element combination not allowed!");
+      dserror("ERROR: Element combination not allowed!");
     }
     break;
   }
@@ -158,7 +159,7 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(MortarElement& sele,
           true, params);
     }
     default:
-      dserror("Element combination not allowed!");
+      dserror("ERROR: Element combination not allowed!");
     }
     break;
   }
@@ -192,7 +193,7 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(MortarElement& sele,
           true, params);
     }
     default:
-      dserror("Element combination not allowed!");
+      dserror("ERROR: Element combination not allowed!");
     }
     break;
   }
@@ -226,7 +227,7 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(MortarElement& sele,
           true, params);
     }
     default:
-      dserror("Element combination not allowed!");
+      dserror("ERROR: Element combination not allowed!");
     }
     break;
   }
@@ -246,7 +247,7 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(MortarElement& sele,
           true, params);
     }
     default:
-      dserror("Element combination not allowed!");
+      dserror("ERROR: Element combination not allowed!");
     }
     break;
   }
@@ -265,7 +266,7 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(MortarElement& sele,
           true, params);
     }
     default:
-      dserror("Element combination not allowed!");
+      dserror("ERROR: Element combination not allowed!");
     }
     break;
   }
@@ -289,7 +290,7 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(MortarElement& sele,
           true, params);
     }
     default:
-      dserror("Element combination not allowed!");
+      dserror("ERROR: Element combination not allowed!");
     }
     break;
   }
@@ -308,7 +309,7 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(MortarElement& sele,
           true, params);
     }
     default:
-      dserror("Element combination not allowed!");
+      dserror("ERROR: Element combination not allowed!");
     }
     break;
   }
@@ -319,36 +320,33 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(MortarElement& sele,
   return NULL;
 }
 
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 MORTAR::MortarIntegratorCalc<distypeS, distypeM>::MortarIntegratorCalc(
     Teuchos::ParameterList& params) :
-    imortar_(params), shapefcn_(
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")), lmquadtype_(
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params,
-            "LM_QUAD")), scale_(
-        DRT::INPUT::IntegralValue<int>(imortar_, "LM_NODAL_SCALE"))
+    imortar_(params), shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
+    lmquadtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params,"LM_QUAD")),
+    scale_(DRT::INPUT::IntegralValue<int>(imortar_, "LM_NODAL_SCALE"))
 {
   InitializeGP();
 }
 
+
 /*----------------------------------------------------------------------*
  |  Instance (public)                                        farah 01/14|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
-MORTAR::MortarIntegratorCalc<distypeS, distypeM> * MORTAR::MortarIntegratorCalc<
-    distypeS, distypeM>::Instance(bool create, Teuchos::ParameterList& params)
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+MORTAR::MortarIntegratorCalc<distypeS, distypeM> * MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Instance(
+    bool create, Teuchos::ParameterList& params)
 {
   static MortarIntegratorCalc<distypeS, distypeM> * instance;
   if (create)
   {
     if (instance == NULL)
       instance = new MortarIntegratorCalc<distypeS, distypeM>(params);
-
   }
   else
   {
@@ -359,11 +357,11 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM> * MORTAR::MortarIntegratorCalc<
   return instance;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Done (public)                                             farah 01/14|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
@@ -371,11 +369,11 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::Done()
   Instance(false, imortar_);
 }
 
+
 /*----------------------------------------------------------------------*
  |  Initialize gauss points                                   popp 06/09|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
 {
   //**********************************************************************
@@ -741,13 +739,13 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
   return;
 }
 
+
 /*--------------------------------------------------------------------------------------*
  | Integrate without segmentation --> more GP required                       farah 01/13|
  | Integration over the entire Slave-Element: no mapping sxi->eta                       |
  | required                                                                             |
  *--------------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
     MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
     bool *boundary_ele, const Epetra_Comm& comm)
@@ -756,119 +754,117 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
   if (ndim_ != 2)
     dserror("ERROR: 2D integration method called for non-2D problem");
 
-    bool scaling = false;
-    if (scale_)
+  bool scaling = false;
+  if (scale_)
     scaling=true;
 
-    // number of nodes (slave, master)
-    int nrow = sele.NumNode();
-    int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
-    int nodemaster = meles[0]->NumNode();
+  // number of nodes (slave, master)
+  int nrow = sele.NumNode();
+  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int nodemaster = meles[0]->NumNode();
 
-    // create empty vectors for shape fct. evaluation
-    static LINALG::Matrix<ns_, 1> sval;
-    static LINALG::Matrix<nm_,1> mval;
-    static LINALG::Matrix<ns_,1> lmval;
+  // create empty vectors for shape fct. evaluation
+  static LINALG::Matrix<ns_, 1> sval;
+  static LINALG::Matrix<nm_,1> mval;
+  static LINALG::Matrix<ns_,1> lmval;
 
-    // get slave element nodes themselves
-    DRT::Node** mynodes = sele.Nodes();
-    if(!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  // get slave element nodes themselves
+  DRT::Node** mynodes = sele.Nodes();
+  if(!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
-    // decide whether boundary modification has to be considered or not
-    // this is element-specific (is there a boundary node in this element?)
-    bool bound = false;
-    for (int k=0;k<nrow;++k)
-    {
-      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-      if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
-      bound += mymrtrnode->IsOnBound();
-    }
+  // decide whether boundary modification has to be considered or not
+  // this is element-specific (is there a boundary node in this element?)
+  bool bound = false;
+  for (int k=0;k<nrow;++k)
+  {
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+    bound += mymrtrnode->IsOnBound();
+  }
 
-    // decide whether linear LM are used for quadratic FE here
-    bool linlm = false;
-    if (lmquadtype_ == INPAR::MORTAR::lagmult_lin && sele.Shape() == DRT::Element::line3)
-    {
-      bound = false; // crosspoints and linear LM NOT at the same time!!!!
-      linlm = true;
-    }
+  // decide whether linear LM are used for quadratic FE here
+  bool linlm = false;
+  if (lmquadtype_ == INPAR::MORTAR::lagmult_lin && sele.Shape() == DRT::Element::line3)
+  {
+    bound = false; // crosspoints and linear LM NOT at the same time!!!!
+    linlm = true;
+  }
 
-    double sxia=-1;
-    double sxib= 1;
-    double sxi[2]=
-    { 0.0 , 0.0};
+  double sxia =-1;
+  double sxib = 1;
+  double sxi[2]= { 0.0 , 0.0};
 
-    //**********************************************************************
-    // loop over all Gauss points for integration
-    //**********************************************************************
-    for (int gp=0;gp<nGP();++gp)//loop to the end //Number of the GP
-    {
-      bool is_on_mele=false;
-      bool kink_projection=false;
-      // coordinates and weight of the GP
-      double eta[2] =
-      { Coordinate(gp,0), 0.0};
-      double wgt = Weight(gp);
-      sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
+  //**********************************************************************
+  // loop over all Gauss points for integration
+  //**********************************************************************
+  for (int gp=0;gp<nGP();++gp)//loop to the end //Number of the GP
+  {
+    bool is_on_mele      = false;
+    bool kink_projection = false;
+    // coordinates and weight of the GP
+    double eta[2] = { Coordinate(gp,0), 0.0};
+    double wgt = Weight(gp);
+    sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
 
-      // evaluate the two slave side Jacobians
-      double dxdsxi = sele.Jacobian(sxi);
-      double dsxideta = -0.5*sxia + 0.5*sxib;
+    // evaluate the two slave side Jacobians
+    double dxdsxi = sele.Jacobian(sxi);
+    double dsxideta = -0.5*sxia + 0.5*sxib;
 
-      // evaluate Lagrange multiplier shape functions (on slave element)
-      if (linlm)
+    // evaluate Lagrange multiplier shape functions (on slave element)
+    if (linlm)
       UTILS::EvaluateShape_LM_Lin(shapefcn_,sxi,lmval,sele,nrow);
-      else
+    else
       UTILS::EvaluateShape_LM(shapefcn_,sxi,lmval,sele,nrow);
 
+    // evaluate trace space shape functions (on both elements)
+    UTILS::EvaluateShape_Displ(sxi, sval,sele, false);
+
+    //********************************************************************
+    //  loop over all involved masterelements
+    //********************************************************************
+    for (int nummaster=0;nummaster<(int)meles.size();++nummaster)
+    {
+      // get Master element nodes themselves
+      DRT::Node** mnodes = meles[nummaster]->Nodes();
+      if(!mnodes) dserror("ERROR: EleBased_Integration: Null pointer!");
+
+      // project Gauss point onto master element
+      double mxi[2] = { 0.0, 0.0};
+      sxi[0]=eta[0];
+
+      MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint(sele,eta,*meles[nummaster],mxi);
+
       // evaluate trace space shape functions (on both elements)
-      UTILS::EvaluateShape_Displ(sxi, sval,sele, false);
+      UTILS::EvaluateShape_Displ(mxi, mval,*meles[nummaster], false);
 
-      //********************************************************************
-      //  loop over all involved masterelements
-      //********************************************************************
-      for (int nummaster=0;nummaster<(int)meles.size();++nummaster)
+      // check GP projection
+      if ((mxi[0]>=-1) && (mxi[0]<=1) && (kink_projection==false))
       {
-        // get Master element nodes themselves
-        DRT::Node** mnodes = meles[nummaster]->Nodes();
-        if(!mnodes) dserror("ERROR: EleBased_Integration: Null pointer!");
+        kink_projection=true;
+        is_on_mele=true;
 
-        // project Gauss point onto master element
-        double mxi[2] =
-        { 0.0, 0.0};
-        sxi[0]=eta[0];
+        // compute segment D/M matrix ****************************************
+        double jac = dsxideta*dxdsxi;
+        GP_DM(sele,*meles[nummaster],lmval,sval,mval,jac, wgt,nrow,nodemaster,ndof,bound,comm);
 
-        MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint(sele,eta,*meles[nummaster],mxi);
+        // compute nodal scaling factor **************************************
+        if(scaling)
+        GP_2D_Scaling(sele,sval,dsxideta,wgt);
+      } // end - if Pojection on MasterElement
+    } //loop-end over all involved master elements
 
-        // evaluate trace space shape functions (on both elements)
-        UTILS::EvaluateShape_Displ(mxi, mval,*meles[nummaster], false);
+    // strong discontinuity --> Boundary Segmentation
+    if(is_on_mele==false)
+    {
+      *boundary_ele=true;
+      std::cout << "WARNING: strong disc. occurs !!!"<< std::endl;
+    }
 
-        // check GP projection
-        if ((mxi[0]>=-1) && (mxi[0]<=1) && (kink_projection==false))
-        {
-          kink_projection=true;
-          is_on_mele=true;
+  } //loop-end over all gp
 
-          // compute segment D/M matrix ****************************************
-          double jac = dsxideta*dxdsxi;
-          GP_DM(sele,*meles[nummaster],lmval,sval,mval,jac, wgt,nrow,nodemaster,ndof,bound,comm);
+  return;
+}
 
-          // compute nodal scaling factor **************************************
-          if(scaling)
-          GP_2D_Scaling(sele,sval,dsxideta,wgt);
-        } // end - if Pojection on MasterElement
-      } //loop-end over all involved master elements
-
-      // strong discontinuity --> Boundary Segmentation
-      if(is_on_mele==false)
-      {
-        *boundary_ele=true;
-        std::cout << "WARNING: strong disc. occurs !!!"<< std::endl;
-      }
-
-    } //loop-end over all gp
-
-    return;
-  }
 
 /*----------------------------------------------------------------------*
  |  Integrate and linearize a 1D slave / master overlap (2D)  popp 02/09|
@@ -876,8 +872,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
  |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
  |  LinD/M and Ling are built and stored directly into adjacent nodes.  |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
     MORTAR::MortarElement& sele, double& sxia, double& sxib,
     MORTAR::MortarElement& mele, double& mxia, double& mxib,
@@ -895,26 +890,25 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
     dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
 
     //check for problem dimension
-    if (ndim_!=2) dserror("ERROR: 2D integration method called for non-2D problem");
+  if (ndim_!=2)
+    dserror("ERROR: 2D integration method called for non-2D problem");
 
-    // check input data
-    if ((!sele.IsSlave()) || (mele.IsSlave()))
+  // check input data
+  if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
-    if ((sxia<-1.0) || (sxib>1.0))
+  if ((sxia<-1.0) || (sxib>1.0))
     dserror("ERROR: IntegrateAndDerivSegment called with infeasible slave limits!");
-    if ((mxia<-1.0) || (mxib>1.0))
+  if ((mxia<-1.0) || (mxib>1.0))
     dserror("ERROR: IntegrateAndDerivSegment called with infeasible master limits!");
 
-    // number of nodes (slave, master)
-    int nrow = sele.NumNode();
-    int ncol = mele.NumNode();
-    int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  // number of nodes (slave, master)
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
-    // create empty vectors for shape fct. evaluation
-    static LINALG::Matrix<ns_, 1
->sval;static LINALG
-:: Matrix<nm_
-,1  > mval;
+  // create empty vectors for shape fct. evaluation
+  static LINALG::Matrix<ns_, 1> sval;
+  static LINALG::Matrix<nm_,1 > mval;
   static LINALG::Matrix<ns_, 1> lmval;
 
   // get slave element nodes themselves
@@ -949,30 +943,24 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
   for (int gp = 0; gp < nGP(); ++gp)
   {
     // coordinates and weight
-    double eta[2] =
-    { Coordinate(gp, 0), 0.0 };
+    double eta[2] = { Coordinate(gp, 0), 0.0 };
     double wgt = Weight(gp);
 
     // coordinate transformation sxi->eta (slave MortarElement->Overlap)
-    double sxi[2] =
-    { 0.0, 0.0 };
+    double sxi[2] = { 0.0, 0.0 };
     sxi[0] = 0.5 * (1 - eta[0]) * sxia + 0.5 * (1 + eta[0]) * sxib;
 
     // project Gauss point onto master element
-    double mxi[2] =
-    { 0.0, 0.0 };
-    MORTAR::MortarProjector::Impl(sele, mele)->ProjectGaussPoint(sele, sxi,
-        mele, mxi);
+    double mxi[2] = { 0.0, 0.0 };
+    MORTAR::MortarProjector::Impl(sele, mele)->ProjectGaussPoint(sele, sxi, mele, mxi);
 
     // check GP projection
     if ((mxi[0] < mxia) || (mxi[0] > mxib))
     {
-      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id()
-          << std::endl;
+      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
       std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << std::endl;
       std::cout << "Projection: " << mxi[0] << " " << mxi[1] << std::endl;
-      dserror(
-          "ERROR: IntegrateAndDerivSegment: Gauss point projection failed! mxi=%d",
+      dserror("ERROR: IntegrateAndDerivSegment: Gauss point projection failed! mxi=%d",
           mxi[0]);
     }
 
@@ -1006,8 +994,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
 /*----------------------------------------------------------------------*
  |  Compute entries for D and M matrix at GP                 farah 12/13|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     LINALG::Matrix<ns_, 1>& lmval,
@@ -1180,8 +1167,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(
 /*----------------------------------------------------------------------*
  |  Compute entries for D and M matrix at GP (3D Quad)       farah 12/13|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     MORTAR::IntElement& sintele, LINALG::SerialDenseVector& lmval,
@@ -1415,8 +1401,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
 /*----------------------------------------------------------------------*
  |  Compute entries for scaling at GP                        farah 12/13|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_2D_Scaling(
     MORTAR::MortarElement& sele, LINALG::Matrix<ns_, 1>& sval,
     double& dsxideta, double& wgt)
@@ -1437,8 +1422,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_2D_Scaling(
 /*----------------------------------------------------------------------*
  |  Compute entries for scaling at GP                        farah 12/13|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_Scaling(
     MORTAR::MortarElement& sele, LINALG::Matrix<ns_, 1>& sval,
     double& jac, double& wgt,
@@ -1462,6 +1446,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_Scaling(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Integrate Mmod on slave / master overlap (2D)             popp 01/08|
  |  This method integrates the modification to the Mortar matrix M      |
@@ -1470,10 +1455,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_Scaling(
  |  element coordinates given by mxia and mxib                          |
  |  Output is an Epetra_SerialDenseMatrix holding the int. values       |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
-Teuchos::RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegratorCalc<distypeS,
-    distypeM>::IntegrateMmod2D(MORTAR::MortarElement& sele, double& sxia,
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+Teuchos::RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegratorCalc<distypeS,distypeM>::IntegrateMmod2D(
+    MORTAR::MortarElement& sele, double& sxia,
     double& sxib, MORTAR::MortarElement& mele, double& mxia, double& mxib)
 {
   //**********************************************************************
@@ -1512,14 +1496,11 @@ Teuchos::RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegratorCalc<distypeS,
   // loop over all Gauss points for integration
   for (int gp = 0; gp < nGP(); ++gp)
   {
-    double eta[2] =
-    { Coordinate(gp, 0), 0.0 };
+    double eta[2] = { Coordinate(gp, 0), 0.0 };
     double wgt = Weight(gp);
 
-    double sxi[2] =
-    { 0.0, 0.0 };
-    double mxi[2] =
-    { 0.0, 0.0 };
+    double sxi[2] = { 0.0, 0.0 };
+    double mxi[2] = { 0.0, 0.0 };
 
     // coordinate transformation sxi->eta (slave MortarElement->Overlap)
     sxi[0] = 0.5 * (1 - eta[0]) * sxia + 0.5 * (1 + eta[0]) * sxib;
@@ -1531,8 +1512,7 @@ Teuchos::RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegratorCalc<distypeS,
     // check GP projection
     if ((mxi[0] < mxia) || (mxi[0] > mxib))
     {
-      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id()
-          << std::endl;
+      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
       std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << std::endl;
       std::cout << "Projection: " << mxi[0] << " " << mxi[1] << std::endl;
       dserror("ERROR: IntegrateMmod2D: Gauss point projection failed!");
@@ -1603,11 +1583,11 @@ Teuchos::RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegratorCalc<distypeS,
   return mmodseg;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Integrate and linearize without segmentation             farah 01/13|
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
     MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
     bool *boundary_ele, const Epetra_Comm& comm)
@@ -1616,134 +1596,132 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
-    //check for problem dimension
-    if (ndim_!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+  //check for problem dimension
+  if (ndim_!=3)
+    dserror("ERROR: 3D integration method called for non-3D problem");
 
-    bool scaling = false;
-    if (scale_)
+  bool scaling = false;
+  if (scale_)
     scaling=true;
 
-    // discretization type of master element
-    DRT::Element::DiscretizationType dt = meles[0]->Shape();
+  // discretization type of master element
+  DRT::Element::DiscretizationType dt = meles[0]->Shape();
 
-    // check input data
-    for (int test=0; test<(int)meles.size();++test)
-    {
-      if ((!sele.IsSlave()) || (meles[test]->IsSlave()))
-      dserror("ERROR: IntegrateDerivCell3D called on a wrong type of MortarElement pair!");
-    }
-
-    int msize = meles.size();
-    int nrow = sele.NumNode();
-    int nmnode = meles[0]->NumNode();
-    int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
-
-    // create empty vectors for shape fct. evaluation
-    static LINALG::Matrix<ns_, 1> sval;
-    static LINALG::Matrix<nm_,1> mval;
-    static LINALG::Matrix<ns_,1> lmval;
-
-    //**********************************************************************
-    // loop over all Gauss points for integration
-    //**********************************************************************
-    for (int gp=0;gp<nGP();++gp)
-    {
-      // coordinates and weight
-      double eta[2] =
-      { Coordinate(gp,0), Coordinate(gp,1)};
-      double wgt = Weight(gp);
-
-      // note that the third component of sxi is necessary!
-      // (although it will always be 0.0 of course)
-      //double tempsxi[3] = {0.0, 0.0, 0.0};
-      double sxi[2] =
-      { 0.0, 0.0};
-      double mxi[2] =
-      { 0.0, 0.0};
-      double projalpha = 0.0;
-
-      sxi[0]=eta[0];
-      sxi[1]=eta[1];
-
-      // evaluate the two Jacobians (int. cell and slave element)
-      //double jaccell = cell->Jacobian(eta);
-      double jacslave = sele.Jacobian(sxi);
-
-      // evaluate Lagrange mutliplier shape functions (on slave element)
-      UTILS::EvaluateShape_LM(shapefcn_,sxi,lmval,sele,nrow);
-
-      // evaluate trace space shape functions (on both elements)
-      UTILS::EvaluateShape_Displ(sxi, sval,sele, false);
-
-      //check for Boundary Segmentation
-      bool projactable_gp=false;
-
-      //*******************************************************************
-      // loop over meles
-      //*******************************************************************
-      for(int nummaster=0;nummaster<msize;++nummaster)
-      {
-        // project Gauss point onto master element
-        bool is_on_mele = MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
-        if(not is_on_mele)
-        continue;
-
-        // check GP projection
-        double tol = 0.00;
-        if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9 ||
-            dt==DRT::Element::nurbs8 || dt==DRT::Element::nurbs9)
-        {
-          if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
-          {
-            is_on_mele=false;
-          }
-        }
-        else
-        {
-          if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
-          {
-            is_on_mele=false;
-          }
-        }
-
-        if (is_on_mele==true)
-        {
-          projactable_gp=true;
-
-          // evaluate trace space shape functions (on both elements)
-          UTILS::EvaluateShape_Displ(mxi, mval,*meles[nummaster], false);
-
-          // compute cell D/M matrix *******************************************
-          bool bound =false;
-          GP_DM(sele,*meles[nummaster],lmval,sval,mval,jacslave,wgt,nrow,nmnode,ndof,bound,comm);
-
-          // compute nodal scaling factor **************************************
-          if (scaling)
-          GP_3D_Scaling(sele,sval,jacslave,wgt,sxi);
-          // compute nodal scaling factor **************************************
-
-        } //is_on_mele==true
-      } //loop over meles
-
-      // strong discontinuity --> Boundary Segmentation
-      if(projactable_gp==false)
-      *boundary_ele=true;
-    }
-
-    return;
+  // check input data
+  for (int test=0; test<(int)meles.size();++test)
+  {
+    if ((!sele.IsSlave()) || (meles[test]->IsSlave()))
+    dserror("ERROR: IntegrateDerivCell3D called on a wrong type of MortarElement pair!");
   }
 
-    /*----------------------------------------------------------------------*
-     |  Integrate and linearize a 2D slave / master cell (3D)     popp 03/09|
-     |  This method integrates the cell M matrix and weighted gap g~        |
-     |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
-     |  LinM and Ling are built and stored directly into the adjacent nodes.|
-     |  (Thus this method combines EVERYTHING before done separately in     |
-     |  IntegrateM3D, IntegrateG3D, DerivM3D and DerivG3D!)                 |
-     |  This is the auxiliary plane coupling version!!!                     |
-     *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
+  int msize = meles.size();
+  int nrow = sele.NumNode();
+  int nmnode = meles[0]->NumNode();
+  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+
+  // create empty vectors for shape fct. evaluation
+  static LINALG::Matrix<ns_,1> sval;
+  static LINALG::Matrix<nm_,1> mval;
+  static LINALG::Matrix<ns_,1> lmval;
+
+  //**********************************************************************
+  // loop over all Gauss points for integration
+  //**********************************************************************
+  for (int gp=0;gp<nGP();++gp)
+  {
+    // coordinates and weight
+    double eta[2] = { Coordinate(gp,0), Coordinate(gp,1)};
+    double wgt = Weight(gp);
+
+    // note that the third component of sxi is necessary!
+    // (although it will always be 0.0 of course)
+    //double tempsxi[3] = {0.0, 0.0, 0.0};
+    double sxi[2] = { 0.0, 0.0};
+    double mxi[2] = { 0.0, 0.0};
+    double projalpha = 0.0;
+
+    sxi[0]=eta[0];
+    sxi[1]=eta[1];
+
+    // evaluate the two Jacobians (int. cell and slave element)
+    //double jaccell = cell->Jacobian(eta);
+    double jacslave = sele.Jacobian(sxi);
+
+    // evaluate Lagrange mutliplier shape functions (on slave element)
+    UTILS::EvaluateShape_LM(shapefcn_,sxi,lmval,sele,nrow);
+
+    // evaluate trace space shape functions (on both elements)
+    UTILS::EvaluateShape_Displ(sxi, sval,sele, false);
+
+    //check for Boundary Segmentation
+    bool projactable_gp=false;
+
+    //*******************************************************************
+    // loop over meles
+    //*******************************************************************
+    for(int nummaster=0;nummaster<msize;++nummaster)
+    {
+      // project Gauss point onto master element
+      bool is_on_mele = MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
+      if(not is_on_mele)
+      continue;
+
+      // check GP projection
+      double tol = 0.00;
+      if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9 ||
+          dt==DRT::Element::nurbs8 || dt==DRT::Element::nurbs9)
+      {
+        if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+        {
+          is_on_mele=false;
+        }
+      }
+      else
+      {
+        if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+        {
+          is_on_mele=false;
+        }
+      }
+
+      if (is_on_mele==true)
+      {
+        projactable_gp=true;
+
+        // evaluate trace space shape functions (on both elements)
+        UTILS::EvaluateShape_Displ(mxi, mval,*meles[nummaster], false);
+
+        // compute cell D/M matrix *******************************************
+        bool bound =false;
+        GP_DM(sele,*meles[nummaster],lmval,sval,mval,jacslave,wgt,nrow,nmnode,ndof,bound,comm);
+
+        // compute nodal scaling factor **************************************
+        if (scaling)
+          GP_3D_Scaling(sele,sval,jacslave,wgt,sxi);
+        // compute nodal scaling factor **************************************
+
+      } //is_on_mele==true
+    } //loop over meles
+
+    // strong discontinuity --> Boundary Segmentation
+    if(projactable_gp==false)
+    *boundary_ele=true;
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Integrate and linearize a 2D slave / master cell (3D)     popp 03/09|
+ |  This method integrates the cell M matrix and weighted gap g~        |
+ |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
+ |  LinM and Ling are built and stored directly into the adjacent nodes.|
+ |  (Thus this method combines EVERYTHING before done separately in     |
+ |  IntegrateM3D, IntegrateG3D, DerivM3D and DerivG3D!)                 |
+ |  This is the auxiliary plane coupling version!!!                     |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm)
@@ -1752,136 +1730,133 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
-    //check for problem dimension
-    if (ndim_!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+  //check for problem dimension
+  if (ndim_!=3)
+    dserror("ERROR: 3D integration method called for non-3D problem");
 
-    // discretization type of master element
-    DRT::Element::DiscretizationType sdt = sele.Shape();
-    DRT::Element::DiscretizationType mdt = mele.Shape();
+  // discretization type of master element
+  DRT::Element::DiscretizationType sdt = sele.Shape();
+  DRT::Element::DiscretizationType mdt = mele.Shape();
 
-    // check input data
-    if ((!sele.IsSlave()) || (mele.IsSlave()))
+  // check input data
+  if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
-    if (cell==Teuchos::null)
+  if (cell==Teuchos::null)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
 
-    bool scaling = false;
-    if (scale_)
+  bool scaling = false;
+  if (scale_)
     scaling=true;
 
-    // number of nodes (slave, master)
-    int nrow = sele.NumNode();
-    int ncol = mele.NumNode();
-    int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  // number of nodes (slave, master)
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
-    // create empty vectors for shape fct. evaluation
-    static LINALG::Matrix<ns_, 1> sval;
-    static LINALG::Matrix<nm_,1> mval;
-    static LINALG::Matrix<ns_,1> lmval;
+  // create empty vectors for shape fct. evaluation
+  static LINALG::Matrix<ns_, 1> sval;
+  static LINALG::Matrix<nm_,1> mval;
+  static LINALG::Matrix<ns_,1> lmval;
 
-    //**********************************************************************
-    // loop over all Gauss points for integration
-    //**********************************************************************
-    for (int gp=0;gp<nGP();++gp)
+  //**********************************************************************
+  // loop over all Gauss points for integration
+  //**********************************************************************
+  for (int gp=0;gp<nGP();++gp)
+  {
+    // coordinates and weight
+    double eta[2] = { Coordinate(gp,0), Coordinate(gp,1)};
+    double wgt = Weight(gp);
+
+    // get global Gauss point coordinates
+    double globgp[3] = { 0.0, 0.0, 0.0};
+    cell->LocalToGlobal(eta,globgp,0);
+
+    double sxi[2] = { 0.0, 0.0};
+    double mxi[2] = { 0.0, 0.0};
+
+    // project Gauss point onto slave element
+    // project Gauss point onto master element
+    double sprojalpha = 0.0;
+    double mprojalpha = 0.0;
+    MORTAR::MortarProjector::Impl(sele)->ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi,sprojalpha);
+    MORTAR::MortarProjector::Impl(mele)->ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi,mprojalpha);
+
+    // check GP projection (SLAVE)
+    double tol = 0.01;
+    if (sdt==DRT::Element::quad4 || sdt==DRT::Element::quad8 || sdt==DRT::Element::quad9)
     {
-      // coordinates and weight
-      double eta[2] =
-      { Coordinate(gp,0), Coordinate(gp,1)};
-      double wgt = Weight(gp);
-
-      // get global Gauss point coordinates
-      double globgp[3] =
-      { 0.0, 0.0, 0.0};
-      cell->LocalToGlobal(eta,globgp,0);
-
-      double sxi[2] =
-      { 0.0, 0.0};
-      double mxi[2] =
-      { 0.0, 0.0};
-
-      // project Gauss point onto slave element
-      // project Gauss point onto master element
-      double sprojalpha = 0.0;
-      double mprojalpha = 0.0;
-      MORTAR::MortarProjector::Impl(sele)->ProjectGaussPointAuxn3D(globgp,auxn,sele,sxi,sprojalpha);
-      MORTAR::MortarProjector::Impl(mele)->ProjectGaussPointAuxn3D(globgp,auxn,mele,mxi,mprojalpha);
-
-      // check GP projection (SLAVE)
-      double tol = 0.01;
-      if (sdt==DRT::Element::quad4 || sdt==DRT::Element::quad8 || sdt==DRT::Element::quad9)
+      if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
       {
-        if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
-        {
-          std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
-          std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
-          std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
-          std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
-        }
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
       }
-      else
+    }
+    else
+    {
+      if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
       {
-        if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
-        {
-          std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
-          std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
-          std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
-          std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
-        }
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
       }
-
-      // check GP projection (MASTER)
-      if (mdt==DRT::Element::quad4 || mdt==DRT::Element::quad8 || mdt==DRT::Element::quad9)
-      {
-        if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
-        {
-          std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
-          std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
-          std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
-          std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
-        }
-      }
-      else
-      {
-        if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
-        {
-          std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
-          std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
-          std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
-          std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
-        }
-      }
-
-      // evaluate Lagrange mutliplier shape functions (on slave element)
-      UTILS::EvaluateShape_LM(shapefcn_,sxi,lmval,sele,nrow);
-
-      // evaluate trace space shape functions (on both elements)
-      UTILS::EvaluateShape_Displ(sxi, sval,sele, false);
-      UTILS::EvaluateShape_Displ(mxi, mval,mele, false);
-
-      // evaluate the integration cell Jacobian
-      double jac = cell->Jacobian(eta);
-
-      // compute cell D/M matrix *******************************************
-      bool bound =false;
-      GP_DM(sele,mele,lmval,sval,mval,jac,wgt,nrow,ncol,ndof,bound,comm);
-
-      // compute nodal scaling factor **************************************
-      if (scaling)
-      GP_3D_Scaling(sele,sval,jac,wgt,sxi);
-      // compute nodal scaling factor **************************************
     }
 
-    return;
+    // check GP projection (MASTER)
+    if (mdt==DRT::Element::quad4 || mdt==DRT::Element::quad8 || mdt==DRT::Element::quad9)
+    {
+      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+      {
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
+      }
+    }
+    else
+    {
+      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+      {
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
+      }
+    }
+
+    // evaluate Lagrange mutliplier shape functions (on slave element)
+    UTILS::EvaluateShape_LM(shapefcn_,sxi,lmval,sele,nrow);
+
+    // evaluate trace space shape functions (on both elements)
+    UTILS::EvaluateShape_Displ(sxi, sval,sele, false);
+    UTILS::EvaluateShape_Displ(mxi, mval,mele, false);
+
+    // evaluate the integration cell Jacobian
+    double jac = cell->Jacobian(eta);
+
+    // compute cell D/M matrix *******************************************
+    bool bound =false;
+    GP_DM(sele,mele,lmval,sval,mval,jac,wgt,nrow,ncol,ndof,bound,comm);
+
+    // compute nodal scaling factor **************************************
+    if (scaling)
+      GP_3D_Scaling(sele,sval,jac,wgt,sxi);
+    // compute nodal scaling factor **************************************
   }
 
-    /*----------------------------------------------------------------------*
-     |  Integrate and linearize a 2D slave / master cell (3D)     popp 03/09|
-     |  This method integrates the cell M matrix (and possibly D matrix)    |
-     |  and stores it in mseg and dseg respectively.                        |
-     |  This is the QUADRATIC auxiliary plane coupling version!!!           |
-     *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS,
-    DRT::Element::DiscretizationType distypeM>
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Integrate and linearize a 2D slave / master cell (3D)     popp 03/09|
+ |  This method integrates the cell M matrix (and possibly D matrix)    |
+ |  and stores it in mseg and dseg respectively.                        |
+ |  This is the QUADRATIC auxiliary plane coupling version!!!           |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQuad(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
@@ -1894,31 +1869,29 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called without specific shape function defined!");
 
-    //check for problem dimension
-    if (ndim_!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+  //check for problem dimension
+  if (ndim_!=3)
+    dserror("ERROR: 3D integration method called for non-3D problem");
 
-    // discretization type of slave and master IntElement
-    DRT::Element::DiscretizationType sdt = sintele.Shape();
-    DRT::Element::DiscretizationType mdt = mintele.Shape();
+  // discretization type of slave and master IntElement
+  DRT::Element::DiscretizationType sdt = sintele.Shape();
+  DRT::Element::DiscretizationType mdt = mintele.Shape();
 
-    // check input data
-    if ((!sele.IsSlave()) || (mele.IsSlave()))
+  // check input data
+  if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called on a wrong type of MortarElement pair!");
-    if (cell==Teuchos::null)
+  if (cell==Teuchos::null)
     dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called without integration cell");
 
-    // number of nodes (slave, master)
-    int nrow = sele.NumNode();
-    int ncol = mele.NumNode();
-    int nintrow = sintele.NumNode();
-    int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  // number of nodes (slave, master)
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+  int nintrow = sintele.NumNode();
+  int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
-    // create empty vectors for shape fct. evaluation
-    LINALG::Matrix<ns_, 1
->sval;LINALG:: Matrix
-< nm_
-  ,1
->mval  ;
+  // create empty vectors for shape fct. evaluation
+  LINALG::Matrix<ns_, 1> sval;
+  LINALG::Matrix<nm_, 1> mval;
   LINALG::SerialDenseVector lmval(nrow);
   LINALG::SerialDenseMatrix lmderiv(nrow, 2, true);
   LINALG::SerialDenseVector lmintval(nintrow);
@@ -1960,19 +1933,15 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   for (int gp = 0; gp < nGP(); ++gp)
   {
     // coordinates and weight
-    double eta[2] =
-    { Coordinate(gp, 0), Coordinate(gp, 1) };
+    double eta[2] = { Coordinate(gp, 0), Coordinate(gp, 1) };
     double wgt = Weight(gp);
 
     // get global Gauss point coordinates
-    double globgp[3] =
-    { 0.0, 0.0, 0.0 };
+    double globgp[3] = { 0.0, 0.0, 0.0 };
     cell->LocalToGlobal(eta, globgp, 0);
 
-    double sxi[2] =
-    { 0.0, 0.0 };
-    double mxi[2] =
-    { 0.0, 0.0 };
+    double sxi[2] = { 0.0, 0.0 };
+    double mxi[2] = { 0.0, 0.0 };
 
     // project Gauss point onto slave integration element
     // project Gauss point onto master integration element
@@ -1991,13 +1960,10 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol
           || sxi[1] > 1.0 + tol)
       {
-        std::cout
-            << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id()
-            << std::endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
-        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1]
-            << std::endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
+        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1]       << std::endl;
       }
     }
     else
@@ -2005,13 +1971,10 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
       if (sxi[0] < -tol || sxi[1] < -tol || sxi[0] > 1.0 + tol
           || sxi[1] > 1.0 + tol || sxi[0] + sxi[1] > 1.0 + 2 * tol)
       {
-        std::cout
-            << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id()
-            << std::endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
-        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1]
-            << std::endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
+        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1]       << std::endl;
       }
     }
 
@@ -2022,13 +1985,10 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol
           || mxi[1] > 1.0 + tol)
       {
-        std::cout
-            << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id()
-            << std::endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
-        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1]
-            << std::endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1]      << std::endl;
       }
     }
     else
@@ -2036,33 +1996,29 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
       if (mxi[0] < -tol || mxi[1] < -tol || mxi[0] > 1.0 + tol
           || mxi[1] > 1.0 + tol || mxi[0] + mxi[1] > 1.0 + 2 * tol)
       {
-        std::cout
-            << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
-        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id()
-            << std::endl;
-        std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
-        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1]
-            << std::endl;
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
+        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1]      << std::endl;
       }
     }
 
     // map Gauss point back to slave element (affine map)
     // map Gauss point back to master element (affine map)
-    double psxi[2] =
-    { 0.0, 0.0 };
-    double pmxi[2] =
-    { 0.0, 0.0 };
+    double psxi[2] = { 0.0, 0.0 };
+    double pmxi[2] = { 0.0, 0.0 };
     sintele.MapToParent(sxi, psxi);
     mintele.MapToParent(mxi, pmxi);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     if (bound)
+    {
       sele.EvaluateShapeLagMultLin(shapefcn_, psxi, lmval, lmderiv, nrow);
+    }
     else
     {
       sele.EvaluateShapeLagMult(shapefcn_, psxi, lmval, lmderiv, nrow);
-      sintele.EvaluateShapeLagMult(shapefcn_, sxi, lmintval, lmintderiv,
-          nintrow);
+      sintele.EvaluateShapeLagMult(shapefcn_, sxi, lmintval, lmintderiv, nintrow);
     }
 
     // evaluate trace space shape functions (on both elements)
@@ -2081,89 +2037,57 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   return;
 }
 
+
 //line2 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::line2,
-    DRT::Element::line2>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::line2,
-    DRT::Element::line3>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::line2, DRT::Element::line2>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::line2, DRT::Element::line3>;
 
 //line3 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::line3,
-    DRT::Element::line2>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::line3,
-    DRT::Element::line3>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::line3, DRT::Element::line2>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::line3, DRT::Element::line3>;
 
 //quad4 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad4,
-    DRT::Element::quad4>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad4,
-    DRT::Element::quad8>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad4,
-    DRT::Element::quad9>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad4,
-    DRT::Element::tri3>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad4,
-    DRT::Element::tri6>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad4, DRT::Element::quad4>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad4, DRT::Element::quad8>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad4, DRT::Element::quad9>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad4, DRT::Element::tri3>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad4, DRT::Element::tri6>;
 
 //quad8 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad8,
-    DRT::Element::quad4>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad8,
-    DRT::Element::quad8>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad8,
-    DRT::Element::quad9>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad8,
-    DRT::Element::tri3>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad8,
-    DRT::Element::tri6>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad8, DRT::Element::quad4>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad8, DRT::Element::quad8>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad8, DRT::Element::quad9>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad8, DRT::Element::tri3>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad8, DRT::Element::tri6>;
 
 //quad9 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad9,
-    DRT::Element::quad4>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad9,
-    DRT::Element::quad8>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad9,
-    DRT::Element::quad9>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad9,
-    DRT::Element::tri3>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::quad9,
-    DRT::Element::tri6>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad9, DRT::Element::quad4>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad9, DRT::Element::quad8>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad9, DRT::Element::quad9>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad9, DRT::Element::tri3>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::quad9, DRT::Element::tri6>;
 
 //tri3 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::tri3,
-    DRT::Element::quad4>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::tri3,
-    DRT::Element::quad8>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::tri3,
-    DRT::Element::quad9>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::tri3,
-    DRT::Element::tri3>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::tri3,
-    DRT::Element::tri6>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::tri3, DRT::Element::quad4>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::tri3, DRT::Element::quad8>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::tri3, DRT::Element::quad9>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::tri3, DRT::Element::tri3>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::tri3, DRT::Element::tri6>;
 
 //tri6 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6,
-    DRT::Element::quad4>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6,
-    DRT::Element::quad8>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6,
-    DRT::Element::quad9>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6,
-    DRT::Element::tri3>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6,
-    DRT::Element::tri6>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6, DRT::Element::quad4>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6, DRT::Element::quad8>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6, DRT::Element::quad9>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6, DRT::Element::tri3>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::tri6, DRT::Element::tri6>;
 
 //==================================================
 //                     NURBS
 //==================================================
 //nurbs2 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::nurbs2,
-    DRT::Element::nurbs2>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::nurbs2,
-    DRT::Element::nurbs3>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::nurbs2, DRT::Element::nurbs2>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::nurbs2, DRT::Element::nurbs3>;
 
 //nurbs3 slave
-template class MORTAR::MortarIntegratorCalc<DRT::Element::nurbs3,
-    DRT::Element::nurbs2>;
-template class MORTAR::MortarIntegratorCalc<DRT::Element::nurbs3,
-    DRT::Element::nurbs3>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::nurbs3, DRT::Element::nurbs2>;
+template class MORTAR::MortarIntegratorCalc<DRT::Element::nurbs3, DRT::Element::nurbs3>;

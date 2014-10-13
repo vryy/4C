@@ -45,8 +45,8 @@ RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.1
-NUMSTEP                         20
-MAXTIME                         2.0
+NUMSTEP                         10
+MAXTIME                         1.0
 DAMPING                         No
 M_DAMP                          0.00001
 K_DAMP                          0.00001
@@ -77,193 +77,28 @@ MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 7.8e-6
 MAT 2 ELAST_CoupNeoHooke YOUNG 10 NUE 0.3
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 2.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 2.0 0.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 180 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 180 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 180 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 200 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 180 QUANTITY dispx VALUE 3.92152496739107737e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 180 QUANTITY dispy VALUE 7.01220989797458172e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 180 QUANTITY dispz VALUE 6.63363881791205645e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 8.98057903892079512e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE 7.79212745350494562e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 200 QUANTITY dispz VALUE 4.94710970341323997e-01 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          4
 NDSURF                          4
 NDVOL                           0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT                          0
-------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE 1 1 1 FUNCT 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE                           0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF                           0
---------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL                            0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE                           0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF                           0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
-DLINE                           0
 -----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
 //                              slave
 E 3 - 1 Master Inactive
 //                              master
 E 4 - 1 Slave Active
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-DVOL                            0
-------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-DSURF                           0
----------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
-DSURF                           0
------------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
-DSURF                           0
-----------------------------------------FLUID NEUMANN INFLOW LINE CONDITIONS
-DLINE                           0
-----------------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
-DSURF                           0
-------------------------------------TRANSPORT NEUMANN INFLOW LINE CONDITIONS
-DLINE                           0
-------------------------------------TRANSPORT NEUMANN INFLOW SURF CONDITIONS
-DSURF                           0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF                           0
--------------------------------DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS
-DSURF                           0
-----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS
-DSURF                           0
------------------------DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS
-DVOL                            0
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-DSURF                           0
----------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF                           0
-------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
-DVOL                            0
---------------------------------------------------SURFACE TENSION CONDITIONS
-DSURF                           0
--------------------------------------------------------SURFACTANT CONDITIONS
-DSURF                           0
-------------------------------------------DESIGN VOL LJ_POTENTIAL CONDITIONS
-DVOL                            0
------------------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
-DSURF                           0
------------------------------------------DESIGN LINE LJ_POTENTIAL CONDITIONS
-DLINE                           0
--------------------------------DESIGN VOL VAN DER WAALS POTENTIAL CONDITIONS
-DVOL                            0
-------------------------------DESIGN SURF VAN DER WAALS POTENTIAL CONDITIONS
-DSURF                           0
-------------------------------DESIGN LINE VAN DER WAALS POTENTIAL CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF ELECTRO REPULSION CONDITIONS
-DSURF                           0
-------------------------------------DESIGN LINE ELECTRO REPULSION CONDITIONS
-DLINE                           0
---------------------------------------DESIGN BROWNIAN MOTION SURF CONDITIONS
-DSURF                           0
-------------------------------------------------------------FILAMENT NUMBERS
-DLINE                           0
----------------------------------------------------------------FORCE SENSORS
-DPOINT                          0
--------------------------------------------------------MICROSCALE CONDITIONS
-DSURF                           0
-------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
-DLINE                           0
-------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-DSURF                           0
------------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF                           0
--------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
-DSURF                           0
---------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
-DLINE                           0
--------------------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE                           0
---------------------------------------------DESIGN SURF IMPEDANCE CONDITIONS
-DSURF                           0
----------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
-DSURF                           0
------------------------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D
-DSURF                           0
-------------------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
-DLINE                           0
-------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
-DLINE                           0
-------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
-DSURF                           0
---------------------------------------------DESIGN FLOW RATE SURF CONDITIONS
-DSURF                           0
-------------------------------------------DESIGN IMPULS RATE SURF CONDITIONS
-DSURF                           0
---------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
-DSURF                           0
----------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
-DVOL                            0
--------------------------------------------------DESIGN SURFACE INV ANALYSIS
-DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 21 DNODE 1
 NODE 217 DNODE 2
@@ -1368,9 +1203,5 @@ NODE 559 COORD 5.00000000e+00 5.00000000e+00 -1.92893219e+00
 339 SOLIDH8 HEX8 500 501 508 507 549 550 557 556 MAT 1 KINEM nonlinear EAS none
 340 SOLIDH8 HEX8 501 502 509 508 550 551 558 557 MAT 1 KINEM nonlinear EAS none
 341 SOLIDH8 HEX8 502 503 510 509 551 552 559 558 MAT 1 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END
