@@ -240,7 +240,7 @@ class StrategyBase
     virtual void ResetActiveSet() = 0;
     virtual void ResetPenalty() = 0;
     virtual void RestrictMeshtyingZone() = 0;
-    virtual void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
+    virtual void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter) = 0;
     virtual void SaveReferenceState(Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void SetState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec) = 0;
     virtual const Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;

@@ -3115,7 +3115,7 @@ void STR::TimIntImpl::CmtLinearSolve()
       && systype!=INPAR::CONTACT::system_condensed)
   {
     // (iter_-1 to be consistent with old time integration)
-    cmtbridge_->GetStrategy().SaddlePointSolve(*contactsolver_,*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
+    cmtbridge_->GetStrategy().SaddlePointSolve(*contactsolver_,*solver_,stiff_,fres_,disi_,dbcmaps_,iter_-1);
   }
 
   //**********************************************************************

@@ -357,7 +357,6 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
   if (Comm().MyPID() == 0)
     std::cout << "done!\n" << std::endl;
 
-//#ifdef CONTACTCONSTRAINTXYZ
   /**********************************************************************/
   /* blank symmetry rows in dinv                                        */
   /**********************************************************************/
@@ -378,13 +377,11 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
   if (err > 0)
     dserror("ERROR: Reciprocal: Zero diagonal entry!");
 
-  //#ifdef CONTACTCONSTRAINTXYZ
   Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
   LINALG::Export(*pgsdirichtoggle_, *lmDBC);
   Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*gsdofrowmap_, true);
   tmp->Multiply(1., *diag, *lmDBC, 0.);
   diag->Update(-1., *tmp, 1.);
-  //#endif
 
   // re-insert inverted diagonal into invd
   err = invd_->ReplaceDiagonalValues(*diag);
@@ -394,7 +391,7 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
   // do the multiplication M^ = inv(D) * M
   mhatmatrix_ = LINALG::MLMultiply(*invd_, false, *mmatrix_, false, false,
       false, true);
-//#endif
+
   return;
 }
 
@@ -746,8 +743,16 @@ ksm,    ksn, kms, kmm, kmn, kns, knm, knn;
 void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd,
     Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-    Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter)
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter)
 {
+  // create old style dirichtoggle vector (supposed to go away)
+  // the use of a toggle vector is more flexible here. It allows to apply dirichlet
+  // conditions on different matrix blocks separately.
+  Teuchos::RCP<Epetra_Vector> dirichtoggle = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->FullMap())));
+  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
+  temp->PutScalar(1.0);
+  LINALG::Export(*temp,*dirichtoggle);
+
   //**********************************************************************
   // prepare saddle point system
   //**********************************************************************

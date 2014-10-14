@@ -177,7 +177,7 @@ class AugmentedLagrangeStrategy : public CoLagrangeStrategy
   void SaddlePointSolve(LINALG::Solver& solver,
       LINALG::Solver& fallbacksolver,
       Teuchos::RCP<LINALG::SparseOperator> kdd,  Teuchos::RCP<Epetra_Vector> fd,
-      Teuchos::RCP<Epetra_Vector>  sold, Teuchos::RCP<Epetra_Vector> dirichtoggle,
+      Teuchos::RCP<Epetra_Vector>  sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
       int numiter);
 
   //! @name Debugging and visualization methods

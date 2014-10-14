@@ -267,7 +267,6 @@ discret_(discret)
           mtnode->NurbsW() = cp->W();
         }
 
-//#ifdef CONTACTCONSTRAINTXYZ
         // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
         std::vector<DRT::Condition*> contactSymconditions(0);
         Discret().GetCondition("mrtrsym",contactSymconditions);
@@ -280,7 +279,6 @@ discret_(discret)
               if (onoff->at(k)==1)
                 mtnode->DbcDofs()[k]=true;
           }
-//#endif
 
         // note that we do not have to worry about double entries
         // as the AddNode function can deal with this case!

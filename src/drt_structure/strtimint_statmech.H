@@ -201,9 +201,6 @@ namespace STR
     //! \brief MultiVector holding random numbers
     Teuchos::RCP<Epetra_MultiVector> randomnumbers_;
 
-    //! \brief old style inverted dirichtoggle vector
-    Teuchos::RCP<Epetra_Vector> invtoggle_;
-
     //! \brief false if in current time step the iterative solution of the nonlinear system of equations has not converged
     bool   isconverged_;
 

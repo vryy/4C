@@ -222,7 +222,7 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   int ActiveSetSteps() {return 0;}
   void ResetActiveSet() {}
   void Recover(Teuchos::RCP<Epetra_Vector> disi) {}
-  void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter) { std::cout << "WARNING: no saddlepoint solver in contact penalty strategy" << std::endl;}
+  void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter) { std::cout << "WARNING: no saddlepoint solver in contact penalty strategy" << std::endl;}
   void EvalConstrRHS(){}
   void UpdateActiveSet() {}
   void UpdateActiveSetSemiSmooth() {}

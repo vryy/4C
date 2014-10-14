@@ -75,7 +75,8 @@ dualquadslave3d_(false),
 tsi_(false),
 wear_(false),
 wbdiscr_(false),
-stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY"))
+stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY")),
+constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(params,"CONSTRAINT_DIRECTIONS"))
 {
   // set potential global self contact status
   // (this is TRUE if at least one contact interface is a self contact interface)
@@ -1101,11 +1102,13 @@ void CONTACT::CoAbstractStrategy::InitMortar()
   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
   dmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 10));
   mmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100));
-#ifdef CONTACTCONSTRAINTXYZ
+
+  if (constr_direction_==INPAR::CONTACT::constr_xyz)
   g_ = LINALG::CreateVector(*gsdofrowmap_, true);
-#else
-  g_ = LINALG::CreateVector(*gsnoderowmap_, true);
-#endif
+  else if (constr_direction_==INPAR::CONTACT::constr_ntt)
+    g_ = LINALG::CreateVector(*gsnoderowmap_, true);
+  else
+    dserror("unknown contact constraint direction");
 
   // matrix A for tsi problems
   if (tsi_)
@@ -1862,7 +1865,6 @@ void CONTACT::CoAbstractStrategy::StoreDirichletStatus(
         if (lid >= 0 && cnode->DbcDofs()[k] == false)
           cnode->SetDbc() = true;
 
-#ifdef CONTACTCONSTRAINTXYZ
         // check compatibility of contact symmetry condition and displacement dirichlet conditions
         if (lid<0 && cnode->DbcDofs()[k]==true)
         {
@@ -1870,17 +1872,14 @@ void CONTACT::CoAbstractStrategy::StoreDirichletStatus(
           std::cout << "dbcdofs: " << cnode->DbcDofs()[0] << cnode->DbcDofs()[1] << cnode->DbcDofs()[2] << std::endl;
           dserror("Inconsistency in structure Dirichlet conditions and Mortar symmetry conditions");
         }
-#endif
       }
     }
   }
-#ifdef CONTACTCONSTRAINTXYZ
   // create old style dirichtoggle vector (supposed to go away)
   pgsdirichtoggle_ = LINALG::CreateVector(*gsdofrowmap_,true);
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
   temp->PutScalar(1.0);
   LINALG::Export(*temp,*pgsdirichtoggle_);
-#endif
 
   return;
 }

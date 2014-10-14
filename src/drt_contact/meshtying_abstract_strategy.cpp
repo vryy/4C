@@ -827,23 +827,19 @@ void CONTACT::MtAbstractStrategy::StoreDirichletStatus(Teuchos::RCP<LINALG::MapE
         {
           mtnode->SetDbc() = true;
 
-//#ifdef CONTACTCONSTRAINTXYZ
         // check compatibility of contact symmetry condition and displacement dirichlet conditions
         if (lid<0 && mtnode->DbcDofs()[k]==true)
           dserror("Inconsistency in structure Dirichlet conditions and Mortar symmetry conditions");
-//#endif
         }
       }
     }
   }
 
-//#ifdef CONTACTCONSTRAINTXYZ
   // create old style dirichtoggle vector (supposed to go away)
   pgsdirichtoggle_ = LINALG::CreateVector(*gsdofrowmap_,true);
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
   temp->PutScalar(1.0);
   LINALG::Export(*temp,*pgsdirichtoggle_);
-//#endif
 
   return;
 }

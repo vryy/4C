@@ -129,7 +129,7 @@ class MtLagrangeStrategy : public MtAbstractStrategy
                           Teuchos::RCP<LINALG::SparseOperator> kdd,
                           Teuchos::RCP<Epetra_Vector>          fd,
                           Teuchos::RCP<Epetra_Vector>          sold,
-                          Teuchos::RCP<Epetra_Vector>          dirichtoggle,
+                          Teuchos::RCP<LINALG::MapExtractor>   dbcmaps,
                           int numiter);
 
     void EvalConstrRHS(){std::cout << "Warning: The EvalConstrRHS() function is not yet implemented for meshtying." << std::endl; }

@@ -248,7 +248,7 @@ Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformGIDs(Teuchos::RC
                                                                      Teuchos::RCP<Epetra_Map> newdomainmap)
 {
   // initialize output matrix
-  Teuchos::RCP<LINALG::SparseMatrix> outmat = Teuchos::rcp(new LINALG::SparseMatrix(*newrowmap,100,false,true));
+  Teuchos::RCP<LINALG::SparseMatrix> outmat = Teuchos::rcp(new LINALG::SparseMatrix(*newrowmap,100,true,true));
 
   // mapping of column gids
   std::map<int,int> gidmap;
@@ -305,7 +305,7 @@ Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowTransform(Teuchos::RCP<LINAL
   Teuchos::RCP<Epetra_CrsMatrix> permmat = Redistribute(*inmat,*newrowmap,inmat->DomainMap());
 
   // output matrix
-  Teuchos::RCP<LINALG::SparseMatrix> outmat = Teuchos::rcp(new LINALG::SparseMatrix(*permmat,false));
+  Teuchos::RCP<LINALG::SparseMatrix> outmat = Teuchos::rcp(new LINALG::SparseMatrix(*permmat,true));
 
   return outmat;
 }

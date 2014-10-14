@@ -712,7 +712,7 @@ public:
   virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
   virtual void ResetActiveSet() = 0;
   virtual void ResetPenalty() = 0;
-  virtual void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
+  virtual void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter) = 0;
   virtual void EvalConstrRHS() = 0;
   virtual void SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis) = 0;
   virtual void UpdateActiveSet() = 0;
@@ -842,6 +842,7 @@ protected:
     std::vector<double > ivel_;                           // mean interface velocity
 
     INPAR::CONTACT::SolvingStrategy stype_;               // current used solving strategy
+    INPAR::CONTACT::ConstraintDirection constr_direction_;// direction in which the contact constraints are formulated
 }; // class CoAbstractStrategy
 } // namespace CONTACT
 

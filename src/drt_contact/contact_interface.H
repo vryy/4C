@@ -39,6 +39,7 @@ Maintainer: Alexander Popp
 #define CONTACT_INTERFACE_H
 
 #include "../drt_mortar/mortar_interface.H"
+#include "../drt_inpar/inpar_contact.H"
 
 
 /*!
@@ -642,10 +643,11 @@ protected:
   CoInterface operator = (const CoInterface& old);
   CoInterface(const CoInterface& old);
 
-  bool                          selfcontact_;    // flag indicating if this is a self contact interface
-  bool                          friction_;       // flag for frictional contact
-  bool                          wear_;           // flag for wear
-  bool                          tsi_;            // flag for thermo structure interaction
+  bool                          selfcontact_;           // flag indicating if this is a self contact interface
+  bool                          friction_;              // flag for frictional contact
+  bool                          wear_;                  // flag for wear
+  bool                          tsi_;                   // flag for thermo structure interaction
+  INPAR::CONTACT::ConstraintDirection constr_direction_;// direction in which the contact constraints are formulated
 
   Teuchos::RCP<Epetra_Map>      activenodes_;    // row map of all active slave nodes
   Teuchos::RCP<Epetra_Map>      activedofs_;     // row map of all active slave dofs

@@ -582,7 +582,6 @@ public:
    */
   virtual void ResetDataContainer();
 
-  // for CONTACTCONSTRAINTXYZ
   // return dirichlet satus at node
   bool* DbcDofs()
   {

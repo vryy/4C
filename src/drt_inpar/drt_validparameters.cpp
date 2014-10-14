@@ -1883,6 +1883,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      "use a scaling of ct with the local mesh size",
                                      yesnotuple,yesnovalue,&scontact);
 
+  setStringToIntegralParameter<int>("CONSTRAINT_DIRECTIONS","ntt",
+      "formulation of constraints in normal/tangential or xyz-direction",
+      tuple<std::string>(
+        "ntt",
+        "xyz"),
+      tuple<int>(
+        INPAR::CONTACT::constr_ntt,
+        INPAR::CONTACT::constr_xyz),
+      &scontact
+      );
+
   /*----------------------------------------------------------------------*/
   /* parameters for volmortar */
   Teuchos::ParameterList& volmortar = list->sublist("VOLMORTAR COUPLING",false,"");

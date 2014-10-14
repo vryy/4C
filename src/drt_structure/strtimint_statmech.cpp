@@ -79,14 +79,6 @@ isconverged_(false)
   //suppress all output printed to screen in case of single filament studies in order not to generate too much output on the cluster
   SuppressOutput();
 
-  // set up inverted dirichlet toggle vector (old dbc way)
-  if(dirichtoggle_!=Teuchos::null)
-  {
-    invtoggle_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-    invtoggle_->PutScalar(1.0);
-    invtoggle_->Update(-1.0,*dirichtoggle_,1.0);
-  }
-
   //in case that beam contact is activated by respective input parameter, a Beam3cmanager object is created
   InitializeBeamContact();
 
@@ -965,8 +957,7 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
     //**********************************************************************
 
     // blank residual DOFs that are on Dirichlet BC
-    Epetra_Vector frescopy(*fres_);
-    fres_->Multiply(1.0,*invtoggle_,frescopy,0.0);
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
   }
 
   return;
@@ -1513,11 +1504,8 @@ void STR::TimIntStatMech::UpdateIterIncrementally()
                0.0);
   aux->Update(-(1.0-theta_)/theta_, *(*vel_)(0), 1.0);
   // put only to free/non-DBC DOFs
-  // old version
-  veln_->Multiply(1.0, *invtoggle_,*aux, 0.0);
-
   // new version of updating velocity vector
-  //dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), veln_);
+  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(aux), veln_);
 
   // note: no accelerations in statmech...
 //  // new end-point accelerations

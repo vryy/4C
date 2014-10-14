@@ -216,9 +216,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
   // of the active nodes
   gactivenodes_ = Teuchos::null;
   gslipnodes_ = Teuchos::null;
-#ifdef CONTACTCONSTRAINTXYZ
   gactivedofs_=Teuchos::null;
-#endif
 
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
@@ -226,9 +224,7 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOper
   {
     interface_[i]->BuildActiveSet();
     gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
-#ifdef CONTACTCONSTRAINTXYZ
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
-#endif
     gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
   }
 
@@ -565,13 +561,17 @@ void CONTACT::CoPenaltyStrategy::UpdateConstraintNorm(int uzawaiter)
   else
   {
     // export weighted gap vector to gactiveN-map
-#ifdef CONTACTCONSTRAINTXYZ
-    Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivedofs_,true);
-    LINALG::Export(*g_,*gact);
-#else
-    Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
-    if (gact->GlobalLength()) LINALG::Export(*g_,*gact);
-#endif
+    Teuchos::RCP<Epetra_Vector> gact;
+    if (constr_direction_==INPAR::CONTACT::constr_xyz)
+    {
+      gact = LINALG::CreateVector(*gactivedofs_,true);
+      LINALG::Export(*g_,*gact);
+    }
+    else
+    {
+      gact = LINALG::CreateVector(*gactivenodes_,true);
+      if (gact->GlobalLength()) LINALG::Export(*g_,*gact);
+    }
 
     // compute constraint norm
     gact->Norm2(&cnorm);

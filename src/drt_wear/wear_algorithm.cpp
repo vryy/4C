@@ -175,6 +175,8 @@ void WEAR::Algorithm::CreateMaterialInterface()
       INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
   INPAR::CONTACT::WearLaw wlaw = DRT::INPUT::IntegralValue<
       INPAR::CONTACT::WearLaw>(cparams, "WEARLAW");
+  INPAR::CONTACT::ConstraintDirection constr_direction =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(cparams,"CONSTRAINT_DIRECTIONS");
 
   bool friplus = false;
   if ((wlaw != INPAR::CONTACT::wear_none)
@@ -495,11 +497,10 @@ void WEAR::Algorithm::CreateMaterialInterface()
             for (unsigned k=0; k<onoff->size(); k++)
             if (onoff->at(k)==1)
             cnode->DbcDofs()[k]=true;
-#ifndef CONTACTCONSTRAINTXYZ
-             if (stype==INPAR::CONTACT::solution_lagmult)
-               dserror("Contact symmetry with Lagrange multiplier method"
-                   " only with CONTACTCONSTRAINTXYZ-flag");
-#endif
+            if (stype==INPAR::CONTACT::solution_lagmult && constr_direction!=INPAR::CONTACT::constr_xyz)
+              dserror("Contact symmetry with Lagrange multiplier method"
+                  " only with contact constraints in xyz direction.\n"
+                  "Set CONSTRAINT_DIRECTIONS to xyz in CONTACT input section");
           }
 
           // note that we do not have to worry about double entries
@@ -537,14 +538,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
                   std::vector<int> >("onoff");
               for (unsigned k = 0; k < onoff->size(); k++)
                 if (onoff->at(k) == 1)
-                {
                   cnode->DbcDofs()[k] = true;
-#ifndef CONTACTCONSTRAINTXYZ
-                  if (stype==INPAR::CONTACT::solution_lagmult)
-                    dserror("Contact symmetry with Lagrange multiplier method "
-                        "only with CONTACTCONSTRAINTXYZ-flag");
-#endif
-                }
             }
 
           // note that we do not have to worry about double entries

@@ -617,9 +617,17 @@ void CONTACT::AugmentedLagrangeStrategy::EvalConstrRHS()
 void CONTACT::AugmentedLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     LINALG::Solver& fallbacksolver,
     Teuchos::RCP<LINALG::SparseOperator> kdd,  Teuchos::RCP<Epetra_Vector> fd,
-    Teuchos::RCP<Epetra_Vector>  sold, Teuchos::RCP<Epetra_Vector> dirichtoggle,
+    Teuchos::RCP<Epetra_Vector>  sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
     int numiter)
 {
+  // create old style dirichtoggle vector (supposed to go away)
+  // the use of a toggle vector is more flexible here. It allows to apply dirichlet
+  // conditions on different matrix blocks separately.
+  Teuchos::RCP<Epetra_Vector> dirichtoggle = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->FullMap())));
+  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
+  temp->PutScalar(1.0);
+  LINALG::Export(*temp,*dirichtoggle);
+
   // get system type
   INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
   if (systype!=INPAR::CONTACT::system_saddlepoint)

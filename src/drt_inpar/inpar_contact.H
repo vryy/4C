@@ -125,6 +125,13 @@ namespace INPAR
       other
     };
 
+    // formulation of constraint equations
+    enum ConstraintDirection
+    {
+      constr_ntt,
+      constr_xyz
+    };
+
   }  // namespace CONTACT
 
 }  // namespace INPAR

@@ -1007,9 +1007,6 @@ namespace STR
                                                   //!< containing non-overlapping
                                                   //!< map of global DOFs on Dirichlet
                                                   //!< boundary conditions
-    Teuchos::RCP<Epetra_Vector> dirichtoggle_;    //!< old style dirichtoggle vector
-                                                  //!< (only used for contact and supposed
-                                                  //!< to go away sooner or later)
     enum INPAR::STR::DivContAct divcontype_ ; // what to do when nonlinear solution fails
     //@}
 

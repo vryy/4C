@@ -539,12 +539,6 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   cmtbridge_->StoreDirichletStatus(dbcmaps_);
   cmtbridge_->SetState(zeros_);
 
-  // create old style dirichtoggle vector (supposed to go away)
-  dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->FullMap())));
-  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
-  temp->PutScalar(1.0);
-  LINALG::Export(*temp,*dirichtoggle_);
-
   // contact and constraints together not yet implemented
   if (conman_->HaveConstraint())
     dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
@@ -849,11 +843,6 @@ void STR::TimInt::PrepareStatMech()
   if(tbtype != INPAR::STATMECH::thermalbath_none)
   {
     statmechman_ = Teuchos::rcp(new STATMECH::StatMechManager(discret_));
-
-    dirichtoggle_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-    Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps_->CondMap())));
-    temp->PutScalar(1.0);
-    LINALG::Export(*temp,*dirichtoggle_);
 
     // output
     if (!discret_->Comm().MyPID())

@@ -73,74 +73,75 @@ void CONTACT::CoLagrangeStrategy::Initialize()
   lindmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
   linmmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
-#ifdef CONTACTCONSTRAINTXYZ
-
-  // (re)setup global tangent matrix
-  tmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_,3));
-
-  // (re)setup global matrix containing gap derivatives
-  smatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_,3));
-
-  // inactive rhs for the saddle point problem
-  Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_, *gactivedofs_);
-  inactiverhs_ = LINALG::CreateVector(*gidofs, true);
-
-  // further terms depend on friction case
-  // (re)setup global matrix containing "no-friction"-derivatives
-  if (!friction_)
+  if (constr_direction_==INPAR::CONTACT::constr_xyz)
   {
-    // tangential rhs
-    tangrhs_ = LINALG::CreateVector(*gactivedofs_, true);
-    pmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_,3));
+    // (re)setup global tangent matrix
+    tmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_,3));
+
+    // (re)setup global matrix containing gap derivatives
+    smatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_,3));
+
+    // inactive rhs for the saddle point problem
+    Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_, *gactivedofs_);
+    inactiverhs_ = LINALG::CreateVector(*gidofs, true);
+
+    // further terms depend on friction case
+    // (re)setup global matrix containing "no-friction"-derivatives
+    if (!friction_)
+    {
+      // tangential rhs
+      tangrhs_ = LINALG::CreateVector(*gactivedofs_, true);
+      pmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_,3));
+    }
+    // (re)setup of global friction
+    else
+    {
+      // here the calculation of gstickt is necessary
+      Teuchos::RCP<Epetra_Map> gstickdofs = LINALG::SplitMap(*gactivedofs_,*gslipdofs_);
+      linstickLM_ = Teuchos::rcp(new LINALG::SparseMatrix(*gstickdofs,3));
+      linstickDIS_ = Teuchos::rcp(new LINALG::SparseMatrix(*gstickdofs,3));
+      linstickRHS_ = LINALG::CreateVector(*gstickdofs,true);
+
+      linslipLM_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipdofs_,3));
+      linslipDIS_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipdofs_,3));
+      linslipRHS_ = LINALG::CreateVector(*gslipdofs_,true);
+    }
   }
-  // (re)setup of global friction
+
   else
   {
-    // here the calculation of gstickt is necessary
-    Teuchos::RCP<Epetra_Map> gstickdofs = LINALG::SplitMap(*gactivedofs_,*gslipdofs_);
-    linstickLM_ = Teuchos::rcp(new LINALG::SparseMatrix(*gstickdofs,3));
-    linstickDIS_ = Teuchos::rcp(new LINALG::SparseMatrix(*gstickdofs,3));
-    linstickRHS_ = LINALG::CreateVector(*gstickdofs,true);
+    // (re)setup global tangent matrix
+    tmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,3));
 
-    linslipLM_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipdofs_,3));
-    linslipDIS_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipdofs_,3));
-    linslipRHS_ = LINALG::CreateVector(*gslipdofs_,true);
+    // (re)setup global matrix containing gap derivatives
+    smatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_,3));
+
+    // inactive rhs for the saddle point problem
+    Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_, *gactivedofs_);
+    inactiverhs_ = LINALG::CreateVector(*gidofs, true);
+
+    // further terms depend on friction case
+    // (re)setup global matrix containing "no-friction"-derivatives
+    if (!friction_)
+    {
+      // tangential rhs
+      tangrhs_ = LINALG::CreateVector(*gactivet_, true);
+      pmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,3));
+    }
+    // (re)setup of global friction
+    else
+    {
+      // here the calculation of gstickt is necessary
+      Teuchos::RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
+      linstickLM_ = Teuchos::rcp(new LINALG::SparseMatrix(*gstickt,3));
+      linstickDIS_ = Teuchos::rcp(new LINALG::SparseMatrix(*gstickt,3));
+      linstickRHS_ = LINALG::CreateVector(*gstickt,true);
+
+      linslipLM_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
+      linslipDIS_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
+      linslipRHS_ = LINALG::CreateVector(*gslipt_,true);
+    }
   }
-
-#else // CONTACTCONSTRAINTXYZ
-
-  // (re)setup global tangent matrix
-  tmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,3));
-
-  // (re)setup global matrix containing gap derivatives
-  smatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_,3));
-
-  // inactive rhs for the saddle point problem
-  Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_, *gactivedofs_);
-  inactiverhs_ = LINALG::CreateVector(*gidofs, true);
-
-  // further terms depend on friction case
-  // (re)setup global matrix containing "no-friction"-derivatives
-  if (!friction_)
-  {
-    // tangential rhs
-    tangrhs_ = LINALG::CreateVector(*gactivet_, true);
-    pmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,3));
-  }
-  // (re)setup of global friction
-  else
-  {
-    // here the calculation of gstickt is necessary
-    Teuchos::RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
-    linstickLM_ = Teuchos::rcp(new LINALG::SparseMatrix(*gstickt,3));
-    linstickDIS_ = Teuchos::rcp(new LINALG::SparseMatrix(*gstickt,3));
-    linstickRHS_ = LINALG::CreateVector(*gstickt,true);
-
-    linslipLM_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
-    linslipDIS_ = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
-    linslipRHS_ = LINALG::CreateVector(*gslipt_,true);
-  }
-#endif
   return;
 }
 
@@ -164,20 +165,22 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   /**********************************************************************/
   /* export weighted gap vector to gactiveN-map                         */
   /**********************************************************************/
-#ifdef CONTACTCONSTRAINTXYZ
-  Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivedofs_,true);
-   if (gact->GlobalLength())
-   {
-     LINALG::Export(*g_,*gact);
-   }
-#else
-  Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
-  if (gact->GlobalLength())
+  Teuchos::RCP<Epetra_Vector> gact;
+  if (constr_direction_==INPAR::CONTACT::constr_xyz)
   {
-    LINALG::Export(*g_,*gact);
-    gact->ReplaceMap(*gactiven_);
+    gact = LINALG::CreateVector(*gactivedofs_,true);
+    if (gact->GlobalLength())
+      LINALG::Export(*g_,*gact);
   }
-#endif
+  else
+  {
+    gact = LINALG::CreateVector(*gactivenodes_,true);
+    if (gact->GlobalLength())
+    {
+      LINALG::Export(*g_,*gact);
+      gact->ReplaceMap(*gactiven_);
+    }
+  }
 
   /**********************************************************************/
   /* build global matrix t with tangent vectors of active nodes         */
@@ -196,16 +199,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     if (systype != INPAR::CONTACT::system_condensed)
       interface_[i]->AssembleInactiverhs(*inactiverhs_);
   }
-#ifdef CONTACTCONSTRAINTXYZ
-  tmatrix_->Complete(*gactivedofs_,*gactivedofs_);
-  smatrix_->Complete(*gsmdofrowmap_,*gactivedofs_);
-#else
-  // FillComplete() global matrix T
-  tmatrix_->Complete(*gactivedofs_,*gactivet_);
+  if (constr_direction_==INPAR::CONTACT::constr_xyz)
+  {
+    tmatrix_->Complete(*gactivedofs_,*gactivedofs_);
+    smatrix_->Complete(*gsmdofrowmap_,*gactivedofs_);
+  }
+  else
+  {
+    // FillComplete() global matrix T
+    tmatrix_->Complete(*gactivedofs_,*gactivet_);
 
-  // FillComplete() global matrix S
-  smatrix_->Complete(*gsmdofrowmap_,*gactiven_);
-#endif
+    // FillComplete() global matrix S
+    smatrix_->Complete(*gsmdofrowmap_,*gactiven_);
+  }
 
   // FillComplete() global matrices LinD, LinM
   // (again for linD gsdofrowmap_ is sufficient as domain map,
@@ -217,19 +223,22 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   Teuchos::RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
   Teuchos::RCP<Epetra_Map> gstickdofs = LINALG::SplitMap(*gactivedofs_,*gslipdofs_);
 
-#ifdef CONTACTCONSTRAINTXYZ
-  linstickLM_->Complete(*gstickdofs,*gstickdofs);
-  linstickDIS_->Complete(*gsmdofrowmap_,*gstickdofs);
-  linslipLM_->Complete(*gslipdofs_,*gslipdofs_);
-  linslipDIS_->Complete(*gsmdofrowmap_,*gslipdofs_);
-#else
-  linstickLM_->Complete(*gstickdofs,*gstickt);
-  linstickDIS_->Complete(*gsmdofrowmap_,*gstickt);
+  if (constr_direction_==INPAR::CONTACT::constr_xyz)
+  {
+    linstickLM_->Complete(*gstickdofs,*gstickdofs);
+    linstickDIS_->Complete(*gsmdofrowmap_,*gstickdofs);
+    linslipLM_->Complete(*gslipdofs_,*gslipdofs_);
+    linslipDIS_->Complete(*gsmdofrowmap_,*gslipdofs_);
+  }
+  else
+  {
+    linstickLM_->Complete(*gstickdofs,*gstickt);
+    linstickDIS_->Complete(*gsmdofrowmap_,*gstickt);
 
-  // FillComplete global Matrix linslipLM_ and linslipDIS_
-  linslipLM_->Complete(*gslipdofs_,*gslipt_);
-  linslipDIS_->Complete(*gsmdofrowmap_,*gslipt_);
-#endif
+    // FillComplete global Matrix linslipLM_ and linslipDIS_
+    linslipLM_->Complete(*gslipdofs_,*gslipt_);
+    linslipDIS_->Complete(*gsmdofrowmap_,*gslipt_);
+  }
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
   //----------------------------------------------------------------------
@@ -275,13 +284,14 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     err = diag->Reciprocal(*diag);
     if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
 
-#ifdef CONTACTCONSTRAINTXYZ
-    Teuchos::RCP<Epetra_Vector> lmDBC=LINALG::CreateVector(*gsdofrowmap_,true);
-    LINALG::Export(*pgsdirichtoggle_,*lmDBC);
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*gsdofrowmap_,true);
-    tmp->Multiply(1.,*diag,*lmDBC,0.);
-    diag->Update(-1.,*tmp,1.);
-#endif
+    if (constr_direction_==INPAR::CONTACT::constr_xyz)
+    {
+      Teuchos::RCP<Epetra_Vector> lmDBC=LINALG::CreateVector(*gsdofrowmap_,true);
+      LINALG::Export(*pgsdirichtoggle_,*lmDBC);
+      Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*gsdofrowmap_,true);
+      tmp->Multiply(1.,*diag,*lmDBC,0.);
+      diag->Update(-1.,*tmp,1.);
+    }
 
     // re-insert inverted diagonal into invd
     err = invd->ReplaceDiagonalValues(*diag);
@@ -768,19 +778,17 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     Teuchos::RCP<Epetra_Vector> fstmod;
     if (stickset)
     {
-#ifdef CONTACTCONSTRAINTXYZ
-      fstmod = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
-#else
-      fstmod = Teuchos::rcp(new Epetra_Vector(*gstickt));
-#endif
+      if (constr_direction_==INPAR::CONTACT::constr_xyz)
+        fstmod = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
+      else
+        fstmod = Teuchos::rcp(new Epetra_Vector(*gstickt));
       Teuchos::RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*linstickLM_,false,*invdst,true,false,false,true);
       temp1->Multiply(false,*fa,*fstmod);
 
-#ifdef CONTACTCONSTRAINTXYZ
-      tempvec1 = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
-#else
-      tempvec1 = Teuchos::rcp(new Epetra_Vector(*gstickt));
-#endif
+      if (constr_direction_==INPAR::CONTACT::constr_xyz)
+        tempvec1 = Teuchos::rcp(new Epetra_Vector(*gstickdofs));
+      else
+        tempvec1 = Teuchos::rcp(new Epetra_Vector(*gstickt));
 
       linstickLM_->Multiply(false, *zst, *tempvec1);
       fstmod->Update(-1.0,*tempvec1,1.0);
@@ -793,19 +801,17 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
 
     if (slipset)
     {
-#ifdef CONTACTCONSTRAINTXYZ
-      fslmod = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
-#else
-      fslmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
-#endif
+      if (constr_direction_==INPAR::CONTACT::constr_xyz)
+        fslmod = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
+      else
+        fslmod = Teuchos::rcp(new Epetra_Vector(*gslipt_));
       Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*linslipLM_,false,*invdsl,true,false,false,true);
       temp->Multiply(false,*fa,*fslmod);
 
-#ifdef CONTACTCONSTRAINTXYZ
-      tempvec1 = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
-#else
-      tempvec1 = Teuchos::rcp(new Epetra_Vector(*gslipt_));
-#endif
+      if (constr_direction_==INPAR::CONTACT::constr_xyz)
+        tempvec1 = Teuchos::rcp(new Epetra_Vector(*gslipdofs_));
+      else
+        tempvec1 = Teuchos::rcp(new Epetra_Vector(*gslipt_));
 
       linslipLM_->Multiply(false, *zsl, *tempvec1);
 
@@ -1200,20 +1206,24 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   /**********************************************************************/
   /* export weighted gap vector to gactiveN-map                         */
   /**********************************************************************/
-#ifdef CONTACTCONSTRAINTXYZ
-  Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivedofs_,true);
-   if (gact->GlobalLength())
-   {
-     LINALG::Export(*g_,*gact);
-   }
-#else
-  Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
-  if (gact->GlobalLength())
+  Teuchos::RCP<Epetra_Vector> gact;
+  if (constr_direction_==INPAR::CONTACT::constr_xyz)
   {
-    LINALG::Export(*g_,*gact);
-    gact->ReplaceMap(*gactiven_);
+    gact = LINALG::CreateVector(*gactivedofs_,true);
+    if (gact->GlobalLength())
+    {
+      LINALG::Export(*g_,*gact);
+    }
   }
-#endif
+  else
+  {
+    gact = LINALG::CreateVector(*gactivenodes_,true);
+    if (gact->GlobalLength())
+    {
+      LINALG::Export(*g_,*gact);
+      gact->ReplaceMap(*gactiven_);
+    }
+  }
   /**********************************************************************/
   /* calculate                                                          */
   /**********************************************************************/
@@ -1236,23 +1246,25 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
       interface_[i]->AssembleTangrhs(*tangrhs_);
     }
   }
-#ifdef CONTACTCONSTRAINTXYZ
-  tmatrix_->Complete(*gactivedofs_,*gactivedofs_);
-  smatrix_->Complete(*gsmdofrowmap_,*gactivedofs_);
-  pmatrix_->Complete(*gsmdofrowmap_,*gactivedofs_);
-#else
-  // FillComplete() global matrix T
-  tmatrix_->Complete(*gactivedofs_,*gactivet_);
+  if (constr_direction_==INPAR::CONTACT::constr_xyz)
+  {
+    tmatrix_->Complete(*gactivedofs_,*gactivedofs_);
+    smatrix_->Complete(*gsmdofrowmap_,*gactivedofs_);
+    pmatrix_->Complete(*gsmdofrowmap_,*gactivedofs_);
+  }
+  else
+  {
+    // FillComplete() global matrix T
+    tmatrix_->Complete(*gactivedofs_,*gactivet_);
 
-  // FillComplete() global matrix S
-  smatrix_->Complete(*gsmdofrowmap_,*gactiven_);
+    // FillComplete() global matrix S
+    smatrix_->Complete(*gsmdofrowmap_,*gactiven_);
 
-  // FillComplete() global matrix P
-  // (actually gsdofrowmap_ is in general sufficient as domain map,
-  // but in the edge node modification case, master entries occur!)
-  pmatrix_->Complete(*gsmdofrowmap_,*gactivet_);
-
-#endif
+    // FillComplete() global matrix P
+    // (actually gsdofrowmap_ is in general sufficient as domain map,
+    // but in the edge node modification case, master entries occur!)
+    pmatrix_->Complete(*gsmdofrowmap_,*gactivet_);
+  }
 
   // FillComplete() global matrices LinD, LinM
   // (again for linD gsdofrowmap_ is sufficient as domain map,
@@ -1306,13 +1318,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     err = diag->Reciprocal(*diag);
     if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
 
-#ifdef CONTACTCONSTRAINTXYZ
     Teuchos::RCP<Epetra_Vector> lmDBC=LINALG::CreateVector(*gsdofrowmap_,true);
     LINALG::Export(*pgsdirichtoggle_,*lmDBC);
     Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*gsdofrowmap_,true);
     tmp->Multiply(1.,*diag,*lmDBC,0.);
     diag->Update(-1.,*tmp,1.);
-#endif
 
     // re-insert inverted diagonal into invd
     err = invd->ReplaceDiagonalValues(*diag);
@@ -1711,12 +1721,12 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     Teuchos::RCP<LINALG::SparseMatrix> tinvda;
     if (aset)
     {
-#ifdef CONTACTCONSTRAINTXYZ
-      famod = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
-#else
+      if (constr_direction_==INPAR::CONTACT::constr_xyz)
+        famod = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
+    else
       famod = Teuchos::rcp(new Epetra_Vector(*gactivet_));
-#endif
-      tinvda = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
+
+    tinvda = LINALG::MLMultiply(*tmatrix_,false,*invda,true,false,false,true);
       tinvda->Multiply(false,*fa,*famod);
     }
 
@@ -1986,9 +1996,17 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
 void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
                   LINALG::Solver& fallbacksolver,
                   Teuchos::RCP<LINALG::SparseOperator> kdd,  Teuchos::RCP<Epetra_Vector> fd,
-                  Teuchos::RCP<Epetra_Vector>  sold, Teuchos::RCP<Epetra_Vector> dirichtoggle,
+                  Teuchos::RCP<Epetra_Vector>  sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
                   int numiter)
 {
+  // create old style dirichtoggle vector (supposed to go away)
+  // the use of a toggle vector is more flexible here. It allows to apply dirichlet
+  // conditions on different matrix blocks separately.
+  Teuchos::RCP<Epetra_Vector> dirichtoggle = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->FullMap())));
+  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
+  temp->PutScalar(1.0);
+  LINALG::Export(*temp,*dirichtoggle);
+
   // get system type
   INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
 
@@ -2019,40 +2037,40 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   Teuchos::RCP<Epetra_Vector>        mergedsol   = LINALG::CreateVector(*mergedmap);
   Teuchos::RCP<Epetra_Vector>        mergedzeros = LINALG::CreateVector(*mergedmap);
 
+  // initialize constraint matrices
+  Teuchos::RCP<LINALG::SparseMatrix> kzz = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,true));
+  Teuchos::RCP<LINALG::SparseMatrix> kzd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
+  Teuchos::RCP<LINALG::SparseMatrix> kdz = Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
+
   // initialize transformed constraint matrices
   Teuchos::RCP<LINALG::SparseMatrix> trkdz, trkzd, trkzz;
 
   //**********************************************************************
   // build matrix and vector blocks
   //**********************************************************************
+  // build constraint matrix kdz
+  kdz->Add(*dmatrix_,true,1.0-alphaf_,1.0);
+  kdz->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
+  kdz->Complete(*gsdofrowmap_,*gdisprowmap_);
+
   // *** CASE 1: FRICTIONLESS CONTACT ************************************
   if (!friction_)
   {
-    // build constraint matrix kdz
-    Teuchos::RCP<LINALG::SparseMatrix> kdz = Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
-    kdz->Add(*dmatrix_,true,1.0-alphaf_,1.0);
-    kdz->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
-    kdz->Complete(*gsdofrowmap_,*gdisprowmap_);
-
-    // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
-    trkdz = MORTAR::MatrixColTransformGIDs(kdz,glmdofrowmap_);
-
-    // transform parallel row distribution of constraint matrix kdz
-    // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(trkdz,ProblemDofs());
-
     // build constraint matrix kzd
-    Teuchos::RCP<LINALG::SparseMatrix> kzd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
-    if (gactiven_->NumGlobalElements()) kzd->Add(*smatrix_,false,1.0,1.0);
-    if (gactivet_->NumGlobalElements()) kzd->Add(*pmatrix_,false,1.0,1.0);
+    if (constr_direction_==INPAR::CONTACT::constr_xyz)
+    {
+      if (gactivedofs_->NumGlobalElements())
+      {
+        kzd->Add(*smatrix_,false,1.0,1.0);
+        kzd->Add(*pmatrix_,false,1.0,1.0);
+      }
+    }
+    else
+    {
+      if (gactiven_->NumGlobalElements()) kzd->Add(*smatrix_,false,1.0,1.0);
+      if (gactivet_->NumGlobalElements()) kzd->Add(*pmatrix_,false,1.0,1.0);
+    }
     kzd->Complete(*gdisprowmap_,*gsdofrowmap_);
-
-    // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzd = MORTAR::MatrixRowTransformGIDs(kzd,glmdofrowmap_);
-
-    // transform parallel column distribution of constraint matrix kzd
-    // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkzd = MORTAR::MatrixColTransform(trkzd,ProblemDofs());
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,*gactivedofs_);
@@ -2062,13 +2080,9 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     onesdiag->Complete();
 
     // build constraint matrix kzz
-    Teuchos::RCP<LINALG::SparseMatrix> kzz = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
     if (gidofs->NumGlobalElements())    kzz->Add(*onesdiag,false,1.0,1.0);
     if (gactivet_->NumGlobalElements()) kzz->Add(*tmatrix_,false,1.0,1.0);
     kzz->Complete(*gsdofrowmap_,*gsdofrowmap_);
-
-    // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
-    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,glmdofrowmap_,glmdofrowmap_);
   }
 
   //**********************************************************************
@@ -2081,38 +2095,20 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     Teuchos::RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
     Teuchos::RCP<Epetra_Map> gstickdofs=LINALG::SplitMap(*gactivedofs_,*gslipdofs_);
 
-    // build constraint matrix kdz
-    Teuchos::RCP<LINALG::SparseMatrix> kdz = Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
-    kdz->Add(*dmatrix_,true,1.0-alphaf_,1.0);
-    kdz->Add(*mmatrix_,true,-(1.0-alphaf_),1.0);
-    kdz->Complete(*gsdofrowmap_,*gdisprowmap_);
-
-    // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
-    trkdz = MORTAR::MatrixColTransformGIDs(kdz,glmdofrowmap_);
-
-    // transform parallel row distribution of constraint matrix kdz
-    // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(trkdz,ProblemDofs());
-
     // build constraint matrix kzd
-    Teuchos::RCP<LINALG::SparseMatrix> kzd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
-#ifdef CONTACTCONSTRAINTXYZ
-    if (gactivedofs_->NumGlobalElements()) kzd->Add(*smatrix_,false,1.0,1.0);
-    if (gstickdofs->NumGlobalElements()) kzd->Add(*linstickDIS_,false,1.0,1.0);
-    if (gslipdofs_->NumGlobalElements()) kzd->Add(*linslipDIS_,false,1.0,1.0);
-#else
-    if (gactiven_->NumGlobalElements()) kzd->Add(*smatrix_,false,1.0,1.0);
-    if (gstickt->NumGlobalElements()) kzd->Add(*linstickDIS_,false,1.0,1.0);
-    if (gslipt_->NumGlobalElements()) kzd->Add(*linslipDIS_,false,1.0,1.0);
-#endif
-    kzd->Complete(*gdisprowmap_,*gsdofrowmap_);
-
-    // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzd = MORTAR::MatrixRowTransformGIDs(kzd,glmdofrowmap_);
-
-    // transform parallel column distribution of constraint matrix kzd
-    // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkzd = MORTAR::MatrixColTransform(trkzd,ProblemDofs());
+    if (constr_direction_==INPAR::CONTACT::constr_xyz)
+    {
+      if (gactivedofs_->NumGlobalElements()) kzd->Add(*smatrix_,false,1.0,1.0);
+      if (gstickdofs->NumGlobalElements()) kzd->Add(*linstickDIS_,false,1.0,1.0);
+      if (gslipdofs_->NumGlobalElements()) kzd->Add(*linslipDIS_,false,1.0,1.0);
+    }
+    else
+    {
+      if (gactiven_->NumGlobalElements()) kzd->Add(*smatrix_,false,1.0,1.0);
+      if (gstickt->NumGlobalElements()) kzd->Add(*linstickDIS_,false,1.0,1.0);
+      if (gslipt_->NumGlobalElements()) kzd->Add(*linslipDIS_,false,1.0,1.0);
+    }
+    kzd->Complete(*gdisprowmap_,*gsdofrowmap_);;
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,*gactivedofs_);
@@ -2122,21 +2118,41 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     onesdiag->Complete();
 
     // build constraint matrix kzz
-    Teuchos::RCP<LINALG::SparseMatrix> kzz = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
-#ifdef CONTACTCONSTRAINTXYZ
-    if (gidofs->NumGlobalElements())    kzz->Add(*onesdiag,false,1.0,1.0);
-    if (gstickdofs->NumGlobalElements()) kzz->Add(*linstickLM_,false,1.0,1.0);
-    if (gslipdofs_->NumGlobalElements()) kzz->Add(*linslipLM_,false,1.0,1.0);
-#else
-    if (gidofs->NumGlobalElements())    kzz->Add(*onesdiag,false,1.0,1.0);
-    if (gstickt->NumGlobalElements()) kzz->Add(*linstickLM_,false,1.0,1.0);
-    if (gslipt_->NumGlobalElements()) kzz->Add(*linslipLM_,false,1.0,1.0);
-#endif
+    if (constr_direction_==INPAR::CONTACT::constr_xyz)
+    {
+      if (gidofs->NumGlobalElements())    kzz->Add(*onesdiag,false,1.0,1.0);
+      if (gstickdofs->NumGlobalElements()) kzz->Add(*linstickLM_,false,1.0,1.0);
+      if (gslipdofs_->NumGlobalElements()) kzz->Add(*linslipLM_,false,1.0,1.0);
+    }
+    else
+    {
+      if (gidofs->NumGlobalElements())    kzz->Add(*onesdiag,false,1.0,1.0);
+      if (gstickt->NumGlobalElements()) kzz->Add(*linstickLM_,false,1.0,1.0);
+      if (gslipt_->NumGlobalElements()) kzz->Add(*linslipLM_,false,1.0,1.0);
+    }
     kzz->Complete(*gsdofrowmap_,*gsdofrowmap_);
-
-    // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
-    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,glmdofrowmap_,glmdofrowmap_);
   }
+
+  //**********************************************************************
+  // transform matrix blocks to lm-dof-map
+  //**********************************************************************
+
+  // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
+  trkzd = MORTAR::MatrixRowTransformGIDs(kzd,glmdofrowmap_);
+
+  // transform parallel column distribution of constraint matrix kzd
+  // (only necessary in the parallel redistribution case)
+  if (ParRedist()) trkzd = MORTAR::MatrixColTransform(trkzd,ProblemDofs());
+
+  // transform constraint matrix kzz to lmdofmap (MatrixRowColTransform)
+  trkzz = MORTAR::MatrixRowColTransformGIDs(kzz,glmdofrowmap_,glmdofrowmap_);
+
+  // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
+  trkdz = MORTAR::MatrixColTransformGIDs(kdz,glmdofrowmap_);
+
+  // transform parallel row distribution of constraint matrix kdz
+  // (only necessary in the parallel redistribution case)
+  if (ParRedist()) trkdz = MORTAR::MatrixRowTransform(trkdz,ProblemDofs());
 
   //**********************************************************************
   // build and solve saddle point system
@@ -2145,7 +2161,6 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   {
     Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
     LINALG::Export(*dirichtoggle,*dirichtoggleexp);
-#ifdef CONTACTCONSTRAINTXYZ
     Teuchos::RCP<Epetra_Vector> lmDBC = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     LINALG::Export(*dirichtoggle,*lmDBC);
     lmDBC->ReplaceMap(*glmdofrowmap_);
@@ -2153,8 +2168,9 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     LINALG::Export(*lmDBC,*lmDBCexp);
     dirichtoggleexp->Update(1.,*lmDBCexp,1.);
     trkzd->ApplyDirichlet(lmDBC,false);
+
+    trkzz->Complete();
     trkzz->ApplyDirichlet(lmDBC,true);
-#endif
 
     // apply Dirichlet conditions to (0,0) and (0,1) blocks
     Teuchos::RCP<Epetra_Vector> zeros   = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(),true));
@@ -2252,20 +2268,24 @@ void CONTACT::CoLagrangeStrategy::EvalConstrRHS()
   // r = r_effdyn,co = r_effdyn + a_f * B_co(d_(n)) * z_(n) + (1-a_f) * B_co(d^(i)_(n+1)) * z^(i)_(n+1)
 
   // export weighted gap vector
-#ifdef CONTACTCONSTRAINTXYZ
-  Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivedofs_,true);
-  if (gact->GlobalLength())
+  Teuchos::RCP<Epetra_Vector> gact;
+  if (constr_direction_==INPAR::CONTACT::constr_xyz)
   {
-    LINALG::Export(*g_,*gact);
+    gact = LINALG::CreateVector(*gactivedofs_,true);
+    if (gact->GlobalLength())
+    {
+      LINALG::Export(*g_,*gact);
+    }
   }
-#else
-  Teuchos::RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
-  if (gactiven_->NumGlobalElements())
+  else
   {
-    LINALG::Export(*g_,*gact);
-    gact->ReplaceMap(*gactiven_);
+    gact = LINALG::CreateVector(*gactivenodes_,true);
+    if (gactiven_->NumGlobalElements())
+    {
+      LINALG::Export(*g_,*gact);
+      gact->ReplaceMap(*gactiven_);
+    }
   }
-#endif
 
   Teuchos::RCP<Epetra_Vector> gact_exp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   LINALG::Export(*gact,*gact_exp);
