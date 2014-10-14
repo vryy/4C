@@ -55,20 +55,12 @@ UQ::UQ_REDAIRWAYS::UQ_REDAIRWAYS(Teuchos::RCP<DRT::Discretization> dis)
 
   numb_run_ =  start_run_;    // counter of how many runs were made monte carlo
 
-  // init number of wall elements
-  //tot_num_wall_elements_ = 0;
-  //SetupEvalDisAtEleCenters(AllMyOutputEleIds_);
-  //SetupEvalPeakWallStress();
-
   reduced_output_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"REDUCED_OUTPUT");
 
   //set up managers to create stochasticity
   //my_matpar_manager_ = Teuchos::rcp(new UQ::MCMatParManager(discret_));
   my_matpar_manager_ = Teuchos::null;
-  // init field with some seed
-  //my_matpar_manager_->SetupRandomFields(2);
 
-  IO::cout<< "Hello World" <<IO::endl;
 }
 
 /*----------------------------------------------------------------------*/
@@ -81,13 +73,13 @@ void UQ::UQ_REDAIRWAYS::Integrate()
   // set some pointers and variables
   // -------------------------------------------------------------------
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
-  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+  //const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
 
   // nested par hack
   int numruns =numruns_pergroup_+start_run_;
 
   // get initial random seed from inputfile
-  unsigned int random_seed= mlmcp.get<int>("INITRANDOMSEED");
+  //unsigned int random_seed= mlmcp.get<int>("INITRANDOMSEED");
 
   const double t0 = Teuchos::Time::wallTime();
   do
