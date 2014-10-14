@@ -83,8 +83,6 @@ MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.1
 MAT 2   ELAST_CoupNeoHooke YOUNG 2250 NUE 0.3
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0 1  FACTOR 0 2.5
-------------------------------------------------RESULT DESCRIPTION
-
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  4
@@ -328,5 +326,9 @@ NODE        74 COORD  8.0000000000000000e+00 -5.0000000000000000e+00  2.00000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ---------------------------------------------------ACOUSTIC ELEMENTS
----------------------------------------------------------------END
+-------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 35 QUANTITY dispx VALUE 3.52828011713420195e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 35 QUANTITY dispy VALUE -1.46524265614282512e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 35 QUANTITY dispz VALUE 6.27558870492144101e-03 TOLERANCE 1e-11
+------------------------------------------------------------------------END
 // END
