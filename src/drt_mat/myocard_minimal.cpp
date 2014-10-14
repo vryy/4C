@@ -50,69 +50,130 @@ Myocard_Minimal::Myocard_Minimal(const double eps_deriv_myocard,const std::strin
   eps_deriv_ = eps_deriv_myocard;
   // Model parameter (To pack later in the parameter list of inputfile!)
   if (tissue == "M"){
-    u_o_ = 0.0;
-    u_u_ = 1.61;
-    Theta_v_ = 0.3;
-    Theta_w_ = 0.13;
-    Theta_vm_ = 0.1;
-    Theta_o_ = 0.005;
-    Tau_v1m_ = 80.0;
-    Tau_v2m_ = 1.4506;
-    Tau_vp_ = 1.4506;
-    Tau_w1m_ = 70.0;
-    Tau_w2m_ = 8.0;
-    k_wm_ = 200.0;
-    u_wm_ = 0.016;
-    Tau_wp_ = 280.0;
-    Tau_fi_ = 0.078;
-    Tau_o1_ = 410.0;
-    Tau_o2_ = 7.0;
-    Tau_so1_ = 91;
-    Tau_so2_ = 0.8;
-    k_so_ = 2.1;
-    u_so_ = 0.6;
-    Tau_s1_ = 2.7342;
-    Tau_s2_ = 4.0;
-    k_s_ = 2.0994;
-    u_s_ = 0.9087;
-    Tau_si_ = 3.3849;
-    Tau_winf_ = 0.01;
-    w_infs_ = 0.5;
-  }else if (tissue == "Atria")
-  {
-    u_o_ = 0.0;
-    u_u_ = 1.02;//1.58;
-    Theta_v_ = 0.302;
-    Theta_w_ = 0.33;//0.015;
-    Theta_vm_ = 0.172;//0.015;
-    Theta_o_ = 0.06;
-    Tau_v1m_ = 65.6;
-    Tau_v2m_ = 1150.0;
-    Tau_vp_ = 0.95;
-    Tau_w1m_ = 170.8;//70.0;
-    Tau_w2m_ = 112.4;//20.0;
-    k_wm_ = 135.0;
-    u_wm_ = 0.0744;
-    Tau_wp_ = 217.0;//280.0;
-    Tau_fi_ = 0.0678;
-    Tau_o1_ = 100.0;//6.0;
-    Tau_o2_ = 64.87;
-    Tau_so1_ = 53.54;//43.0;
-    Tau_so2_ = 8.03;//0.2;
-    k_so_ = 1.748;//2.0;
-    u_so_ = 0.644;
-    Tau_s1_ = 5.406;
-    Tau_s2_ = 52.91;//3.0;
-    k_s_ = 1.008;
-    u_s_ = 0.814;
-    Tau_si_ = 6.978;//2.8723;
-    Tau_winf_ = 4.97;
-    w_infs_ = 1.0;
-  }
-  else
-  {
-    dserror("Parameters for tissue type not supported for minimal model (only M, Atria)");
-  }
+      u_o_ = 0.0;
+      u_u_ = 1.61;
+      Theta_v_ = 0.3;
+      Theta_w_ = 0.13;
+      Theta_vm_ = 0.1;
+      Theta_o_ = 0.005;
+      Tau_v1m_ = 80.0;
+      Tau_v2m_ = 1.4506;
+      Tau_vp_ = 1.4506;
+      Tau_w1m_ = 70.0;
+      Tau_w2m_ = 8.0;
+      k_wm_ = 200.0;
+      u_wm_ = 0.016;
+      Tau_wp_ = 280.0;
+      Tau_fi_ = 0.078;
+      Tau_o1_ = 410.0;
+      Tau_o2_ = 7.0;
+      Tau_so1_ = 91;
+      Tau_so2_ = 0.8;
+      k_so_ = 2.1;
+      u_so_ = 0.6;
+      Tau_s1_ = 2.7342;
+      Tau_s2_ = 4.0;
+      k_s_ = 2.0994;
+      u_s_ = 0.9087;
+      Tau_si_ = 3.3849;
+      Tau_winf_ = 0.01;
+      w_infs_ = 0.5;
+    }
+    else if(tissue == "ENDO"){
+      u_o_ = 0.0;
+      u_u_ = 1.56;
+      Theta_v_ = 0.3;
+      Theta_w_ = 0.13;
+      Theta_vm_ = 0.2;
+      Theta_o_ = 0.006;
+      Tau_v1m_ = 75.0;
+      Tau_v2m_ = 10.0;
+      Tau_vp_ = 1.4506;
+      Tau_w1m_ = 6.0;
+      Tau_w2m_ = 140.0;
+      k_wm_ = 200.0;
+      u_wm_ = 0.016;
+      Tau_wp_ = 280.0;
+      Tau_fi_ = 0.1;
+      Tau_o1_ = 470.0;
+      Tau_o2_ = 6.0;
+      Tau_so1_ = 40.0;
+      Tau_so2_ = 1.2;
+      k_so_ = 2.0;
+      u_so_ = 0.65;
+      Tau_s1_ = 2.7342;
+      Tau_s2_ = 2.0;
+      k_s_ = 2.0994;
+      u_s_ = 0.9087;
+      Tau_si_ = 2.9013;
+      Tau_winf_ = 0.0273;
+      w_infs_ = 0.78;
+    }
+    else if(tissue == "EPI"){
+      u_o_ = 0.0;
+      u_u_ = 1.55;
+      Theta_v_ = 0.3;
+      Theta_w_ = 0.13;
+      Theta_vm_ = 0.006;
+      Theta_o_ = 0.006;
+      Tau_v1m_ = 60.0;
+      Tau_v2m_ = 1150;
+      Tau_vp_ = 1.4506;
+      Tau_w1m_ = 60.0;
+      Tau_w2m_ = 15.0;
+      k_wm_ = 65.0;
+      u_wm_ = 0.03;
+      Tau_wp_ = 200.0;
+      Tau_fi_ = 0.11;
+      Tau_o1_ = 400.0;
+      Tau_o2_ = 6.0;
+      Tau_so1_ = 30.0181;
+      Tau_so2_ = 0.9957;
+      k_so_ = 2.0458;
+      u_so_ = 0.65;
+      Tau_s1_ = 2.7342;
+      Tau_s2_ = 16.0;
+      k_s_ = 2.0994;
+      u_s_ = 0.9087;
+      Tau_si_ = 1.8875;
+      Tau_winf_ = 0.07;
+      w_infs_ = 0.94;
+    }
+    else if (tissue == "Atria")
+    {
+      u_o_ = 0.0;
+      u_u_ = 1.02;//1.58;
+      Theta_v_ = 0.302;
+      Theta_w_ = 0.33;//0.015;
+      Theta_vm_ = 0.172;//0.015;
+      Theta_o_ = 0.06;
+      Tau_v1m_ = 65.6;
+      Tau_v2m_ = 1150.0;
+      Tau_vp_ = 0.95;
+      Tau_w1m_ = 170.8;//70.0;
+      Tau_w2m_ = 112.4;//20.0;
+      k_wm_ = 135.0;
+      u_wm_ = 0.0744;
+      Tau_wp_ = 217.0;//280.0;
+      Tau_fi_ = 0.0678;
+      Tau_o1_ = 100.0;//6.0;
+      Tau_o2_ = 64.87;
+      Tau_so1_ = 53.54;//43.0;
+      Tau_so2_ = 8.03;//0.2;
+      k_so_ = 1.748;//2.0;
+      u_so_ = 0.644;
+      Tau_s1_ = 5.406;
+      Tau_s2_ = 52.91;//3.0;
+      k_s_ = 1.008;
+      u_s_ = 0.814;
+      Tau_si_ = 6.978;//2.8723;
+      Tau_winf_ = 4.97;
+      w_infs_ = 1.0;
+    }
+    else
+    {
+      dserror("Parameters for tissue type not supported for minimal model (only M, Atria, EPI, ENDO)");
+    }
 
   // Variables for electromechanical coupling
    mechanical_activation_ = 0.0; // to store the variable for activation (phi in this case=)
