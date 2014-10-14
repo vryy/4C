@@ -24,9 +24,10 @@ namespace MAT
   {
 
   enum reaction_coupling
-    {
-      simple_multiplicative
-    };
+  {
+    reac_coup_none,  ///< no coupling, initialisation value
+    reac_coup_simple_multiplicative ///< coupling of type A*B
+  };
 
   /*----------------------------------------------------------------------*/
   /// parameters for scalar transport material
@@ -47,6 +48,8 @@ namespace MAT
 
     void OptParams(std::map<std::string, int>* pnames);
 
+    /// returns the enum of the current coupling type
+    MAT::PAR::reaction_coupling SetCouplingType( Teuchos::RCP<MAT::PAR::Material> matdata );
 
     /// number of scalars in this reaction
     const int numscal_;
@@ -60,7 +63,7 @@ namespace MAT
     /// type of coupling
     const MAT::PAR::reaction_coupling coupling_;
 
-    /// paraeter to define start of reaction
+    /// parameter to define start of reaction
     const double reacstart_;
 
   };  // class Scatra

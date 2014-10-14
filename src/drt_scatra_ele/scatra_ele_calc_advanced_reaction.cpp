@@ -108,7 +108,12 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal)
+  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
+    numcond_(-1),
+    stoich_(0),
+    reaccoeff_(0),
+    couplingtype_(MAT::PAR::reac_coup_none),
+    reacstart_(0)
 {
   my::reamanager_ = Teuchos::rcp(new ScaTraEleReaManagerAdvReac(my::numscal_));
 }
@@ -152,6 +157,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetMaterialParams(
     const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
     if (actmat->NumMat() < my::numscal_) dserror("Not enough materials in MatList.");
 
+    GetAdvancedReactionCoefficients(actmat); // read all reaction input from material and copy it into local variables
+
     for (int k = 0;k<my::numscal_;++k)
     {
       int matid = actmat->MatID(k);
@@ -159,13 +166,12 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetMaterialParams(
 
       Materials(singlemat,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
 
-      SetAdvancedReactionTerms(actmat,reamanager,k,1.0); //every reaction calculation stuff happens in here!!
+      SetAdvancedReactionTerms(reamanager,k,1.0); //every reaction calculation stuff happens in here!!
     }
 
   }
   else
   {
-
     Materials(material,0,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
   }
   return;
@@ -200,7 +206,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Materials(
     break;
   default:
     dserror("Material type %i is not supported",material->MaterialType());
-   break;
+    break;
   }
   return;
 }
@@ -330,25 +336,18 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetRhsInt(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeff(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
     const int                        k                       //!< id of current scalar
 )
 {
   double reactermK=0;
 
-  const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
-
-    for (int condnum = 0;condnum<actmat->NumReac();condnum++)
+    for (int condnum = 0;condnum < numcond_;condnum++)
     {
 
-      int reacid = actmat->ReacID(condnum);
-      Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(reacid);
-      const Teuchos::RCP<const MAT::ScatraReactionMat>& singlemat2 = Teuchos::rcp_dynamic_cast<const MAT::ScatraReactionMat>(singlemat);
-
-      const std::vector<int> stoich = *(singlemat2->Stoich()); //get stoichometrie
-      const MAT::PAR::reaction_coupling couplingtype = singlemat2->Coupling(); //get coupling type
-      const double reaccoeff = singlemat2->ReacCoeff(); //get reaction coefficient
-      const double reacstart = singlemat2->ReacStart(); //get reactionstart coefficient
+      const std::vector<int>& stoich = stoich_[condnum]; //get stoichometrie
+      const double& reaccoeff = reaccoeff_[condnum]; //get reaction coefficient
+      const MAT::PAR::reaction_coupling& couplingtype = couplingtype_[condnum]; //get coupling type
+      const double& reacstart = reacstart_[condnum]; //get reactionstart coefficient
 
     if (stoich[k] < 0)
     {
@@ -384,10 +383,16 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffFac(
       {
         switch (couplingtype)
         {
-        case MAT::PAR::simple_multiplicative:
+        case MAT::PAR::reac_coup_simple_multiplicative:
           rcfac *=my::funct_.Dot(my::ephinp_[ii]);
           break;
         //case ... :  //insert new Couplings here
+        case MAT::PAR::reac_coup_none:
+          dserror("reac_coup_none is not a valid coupling");
+          break;
+        default:
+          dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
+          break;
         }
       }
     }
@@ -403,26 +408,18 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffFac(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivMatrix(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
     const int                 k,                  //!< id of current scalar
     const int                 j                   //!< concentration to be derived to
 )
 {
   double reacoeffderivmatrixKJ=0;
 
-
-  const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
-
-    for (int condnum = 0;condnum<actmat->NumReac();condnum++)
+    for (int condnum = 0;condnum < numcond_;condnum++)
     {
-      int reacid = actmat->ReacID(condnum);
-      Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(reacid);
-      const Teuchos::RCP<const MAT::ScatraReactionMat>& singlemat2 = Teuchos::rcp_dynamic_cast<const MAT::ScatraReactionMat>(singlemat);
-
-      const std::vector<int>stoich = *(singlemat2->Stoich()); //get stoichometrie
-      const MAT::PAR::reaction_coupling couplingtype = singlemat2->Coupling(); //get coupling type
-      const double reaccoeff = singlemat2->ReacCoeff(); //get reaction coefficient
-      const double reacstart = singlemat2->ReacStart(); //get reactionstart coefficient
+      const std::vector<int>& stoich = stoich_[condnum]; //get stoichometrie
+      const double& reaccoeff = reaccoeff_[condnum]; //get reaction coefficient
+      const MAT::PAR::reaction_coupling& couplingtype = couplingtype_[condnum]; //get coupling type
+      const double& reacstart = reacstart_[condnum]; //get reactionstart coefficient
 
     if (stoich[k] < 0)
     {
@@ -458,11 +455,17 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
       {
         switch (couplingtype)
         {
-        case MAT::PAR::simple_multiplicative:
+        case MAT::PAR::reac_coup_simple_multiplicative:
           if (ii!=k and ii!= toderive)
             rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
           break;
         //case ... :  //insert new Couplings here
+        case MAT::PAR::reac_coup_none:
+          dserror("reac_coup_none is not a valid coupling");
+          break;
+        default:
+          dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
+          break;
         }
       }
     }
@@ -478,30 +481,18 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTerm(
-    const Teuchos::RCP<const MAT::Material>   material,                 //!< pointer to current material
     const int                                 k                       //!< id of current scalar
 )
 {
   double bodyforcetermK=0;
 
-
-  const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
-
-  for (int condnum = 0;condnum<actmat->NumReac();condnum++)
+  for (int condnum = 0;condnum < numcond_;condnum++)
   {
 
-    int reacid = actmat->ReacID(condnum);
-    Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(reacid);
-
-    const Teuchos::RCP<const MAT::ScatraReactionMat>& singlemat2 = Teuchos::rcp_dynamic_cast<const MAT::ScatraReactionMat>(singlemat);
-
-    if (singlemat2->NumScal() != my::numscal_)
-        dserror("The NUMSCAL you have entered in some MAT_scatra_reaction is not equal to the amount of actual scalars");
-
-    const std::vector<int> stoich = *(singlemat2->Stoich()); //get stoichometrie
-    const MAT::PAR::reaction_coupling couplingtype = singlemat2->Coupling(); //get coupling type
-    const double reaccoeff = singlemat2->ReacCoeff(); //get reactioncoefficient
-    const double reacstart = singlemat2->ReacStart(); //get reaction start coefficient
+    const std::vector<int>& stoich = stoich_[condnum]; //get stoichometrie
+    const double& reaccoeff = reaccoeff_[condnum]; //get reaction coefficient
+    const MAT::PAR::reaction_coupling& couplingtype = couplingtype_[condnum]; //get coupling type
+    const double& reacstart = reacstart_[condnum]; //get reactionstart coefficient
 
     if (stoich[k] > 0)
     {
@@ -534,10 +525,16 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTermFac(
       allpositive = false;
       switch (couplingtype)
       {
-      case MAT::PAR::simple_multiplicative:
+      case MAT::PAR::reac_coup_simple_multiplicative:
         bftfac *=my::funct_.Dot(my::ephinp_[ii]);
         break;
       //case ... :  //insert new Couplings here
+      case MAT::PAR::reac_coup_none:
+        dserror("reac_coup_none is not a valid coupling");
+        break;
+      default:
+        dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
+        break;
       }
     }
   }
@@ -552,27 +549,19 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTermFac(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivMatrix(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+
     const int                 k,                  //!< id of current scalar
     const int                 j                   //!< concentration to be derived to
 )
 {
   double reabodyforcederivmatrixKJ=0;
 
-
-
-  const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
-
-    for (int condnum = 0;condnum<actmat->NumReac();condnum++)
+    for (int condnum = 0;condnum < numcond_;condnum++)
     {
-      int reacid = actmat->ReacID(condnum);
-      Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(reacid);
-      const Teuchos::RCP<const MAT::ScatraReactionMat>& singlemat2 = Teuchos::rcp_dynamic_cast<const MAT::ScatraReactionMat>(singlemat);
-
-      const std::vector<int> stoich = *(singlemat2->Stoich()); //get stoichometrie
-      const MAT::PAR::reaction_coupling couplingtype = singlemat2->Coupling(); //get coupling type
-      const double reaccoeff = singlemat2->ReacCoeff(); //get reaction coefficient
-      const double reacstart = singlemat2->ReacStart(); //get reactionstart coefficient
+      const std::vector<int>& stoich = stoich_[condnum]; //get stoichometrie
+      const double& reaccoeff = reaccoeff_[condnum]; //get reaction coefficient
+      const MAT::PAR::reaction_coupling& couplingtype = couplingtype_[condnum]; //get coupling type
+      const double& reacstart = reacstart_[condnum]; //get reactionstart coefficient
 
     if (stoich[k] > 0)
     {
@@ -606,11 +595,17 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivFac(
       {
         switch (couplingtype)
         {
-        case MAT::PAR::simple_multiplicative:
+        case MAT::PAR::reac_coup_simple_multiplicative:
           if (ii!=toderive)
             bfdmfac *= my::funct_.Dot(my::ephinp_[ii]);
           break;
         //case ... :  //insert new Couplings here
+        case MAT::PAR::reac_coup_none:
+          dserror("reac_coup_none is not a valid coupling");
+          break;
+        default:
+          dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
+          break;
         }
       }
     }
@@ -858,12 +853,46 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
   return;
 }
 
+/*-----------------------------------------------------------------------------------------*
+ |  get numcond, stoich list, reaction coefficient, couplingtpye from material  thon 09/14 |
+ *----------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetAdvancedReactionCoefficients(
+    const Teuchos::RCP<const MAT::Material> material //!< pointer to current material
+  )
+{
+  const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
+
+  if (numcond_ == -1) //if not yet initialisied
+  {
+    if(actmat==Teuchos::null)
+      dserror("cast to MatListReactions failed");
+
+    numcond_= actmat->NumReac();
+
+    stoich_.resize(numcond_);
+    couplingtype_.resize(numcond_);
+    reaccoeff_.resize(numcond_);
+    reacstart_.resize(numcond_);
+  }
+
+  for (int i=0;i<numcond_;i++)
+  {
+    const int reacid = actmat->ReacID(i);
+    const Teuchos::RCP<const MAT::ScatraReactionMat>& reacmat = Teuchos::rcp_dynamic_cast<const MAT::ScatraReactionMat>(actmat->MaterialById(reacid));
+
+    stoich_[i] = *(reacmat->Stoich()); //get stoichometrie
+    couplingtype_[i] = reacmat->Coupling(); //get coupling type
+    reaccoeff_[i] = reacmat->ReacCoeff(); //get reaction coefficient
+    reacstart_[i] = reacmat->ReacStart(); //get reaction start coefficient
+  }
+}
+
 /*-------------------------------------------------------------------------------*
- |  set body force, reaction coefficient and derivatives          thon 09/14 |
+ |  set body force, reaction coefficient and derivatives              thon 09/14 |
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::SetAdvancedReactionTerms(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
     Teuchos::RCP<ScaTraEleReaManager>       reamanager,
     const int                               k,
     const double                            scale
@@ -874,16 +903,16 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::SetAdvancedReactionTerms(
   if(reamanageradvreac==Teuchos::null)
     dserror("cast to ScaTraEleReaManagerAdvReac failed");
 
-  reamanageradvreac->SetReaBodyForce( CalcReaBodyForceTerm(material,k)*scale ,k);
+  reamanageradvreac->SetReaBodyForce( CalcReaBodyForceTerm(k)*scale ,k);
 
-  reamanageradvreac->SetReaCoeff( CalcReaCoeff(material,k)*scale ,k);
+  reamanageradvreac->SetReaCoeff( CalcReaCoeff(k)*scale ,k);
 
   for (int j=0; j<my::numscal_ ;j++)
   {
 
-    reamanageradvreac->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(material,k,j)*scale ,k,j );
+    reamanageradvreac->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j)*scale ,k,j );
 
-    reamanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(material,k,j)*scale ,k,j );
+    reamanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j)*scale ,k,j );
 
   }
 

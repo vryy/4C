@@ -112,7 +112,6 @@ protected:
 
   //!Calculate K(c)
   virtual double CalcReaCoeff(
-      const Teuchos::RCP<const MAT::Material>   material, //!< pointer to current material
       const int                                 k         //!< id of current scalar
       );
 
@@ -126,7 +125,6 @@ protected:
 
   //! calculate \frac{partial}{\partial c} K(c)
   virtual double CalcReaCoeffDerivMatrix(
-      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       const int                 k,                  //!< id of current scalar
       const int                 j                   //!< concentration to be derived to
       );
@@ -142,7 +140,6 @@ protected:
 
   //! calculate f(c)
   virtual double CalcReaBodyForceTerm(
-      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       const int                                 k                       //!< id of current scalar
 );
 
@@ -155,7 +152,6 @@ protected:
 
   //! calculate \frac{partial}{\partial c} f(c)
   virtual double CalcReaBodyForceDerivMatrix(
-      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       const int                 k,                  //!< id of current scalar
       const int                 j                   //!< concentration to be derived to
 );
@@ -199,11 +195,11 @@ protected:
   //! Calculate \frac{\partial}{\partial_c} (f(c)-reacstart(c))_{+}
   void ReacStartForReaBFDeriv(
     const int                               k,              //!< id of current scalar
-    const int                               toderive,       //!<concentration to be derived to
+    const int                               toderive,       //!< concentration to be derived to
     const int                               condnum,        //!< id of current condition
     const double                            reacstart,      //!< value for reaction starting
     double&                                 value,          //!< current reaction value
-    const std::vector<int>                  stoich,         //!<stoichometrie of current condition
+    const std::vector<int>                  stoich,         //!< stoichometrie of current condition
     const MAT::PAR::reaction_coupling  couplingtype    //!<type of coupling the stoichometry coefficients
     );
 
@@ -223,12 +219,22 @@ protected:
     const LINALG::Matrix<my::nen_,1>&      diff         //!< laplace term
   );
 
+  void GetAdvancedReactionCoefficients(
+      const Teuchos::RCP<const MAT::Material> material //!< pointer to current material
+  );
+
+
   void SetAdvancedReactionTerms(
-      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       Teuchos::RCP<ScaTraEleReaManager>       reamanager,
       const int                               k,
       const double                            scale=1.0
   );
+
+  int numcond_;                              //!< number of homogenous scatra coupling conditions
+  std::vector<std::vector<int> > stoich_;    //!< vector containing the stoichometrie
+  std::vector<double> reaccoeff_;             //!< constant by which the reaction coefficient is multiplied
+  std::vector<MAT::PAR::reaction_coupling> couplingtype_;///how to calculate the different couplings
+  std::vector<double> reacstart_;             //!< constant by which the reaction starts
 
 }; //end ScaTraEleCalcAdvReac
 

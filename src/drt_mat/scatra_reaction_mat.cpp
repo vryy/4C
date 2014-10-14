@@ -26,16 +26,12 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
   numscal_(matdata->GetInt("NUMSCAL")),
   stoich_(matdata->Get<std::vector<int> >("STOICH")),
   reaccoeff_(matdata->GetDouble("REACCOEFF")),
-  coupling_(simple_multiplicative),
+  coupling_(SetCouplingType(matdata)),
   reacstart_((matdata->GetDouble("REACSTART")))
 {
-  if ( *(matdata->Get<std::string >("COUPLING")) == "simple_multiplicative" )
-  {
-    //if you want to use another coupling than "simple_multiplicative", one probably has to remove the const and assign it here like this:
-    //coupling_ = simple_multiplicative);
-  }
-  else
-    dserror("The chosen coupling is not valid");
+  //Some checks for more safety
+  if (coupling_ == reac_coup_none)
+    dserror("The coupling '%s' is not a valid reaction coupling. For now the only valid coupling is: 'simple_multiplicative'.",(matdata->Get<std::string >("COUPLING"))->c_str() );
 
   if (numscal_ != (int)stoich_->size())
     dserror("number of materials %d does not fit to size of material vector %d", numscal_, stoich_->size());
@@ -58,6 +54,21 @@ void MAT::PAR::ScatraReactionMat::OptParams(std::map<std::string,int>* pnames)
   pnames->insert(std::pair<std::string,int>("REACSTART", reacstart_));
 }
 
+MAT::PAR::reaction_coupling MAT::PAR::ScatraReactionMat::SetCouplingType( Teuchos::RCP<MAT::PAR::Material> matdata )
+{
+  if ( *(matdata->Get<std::string >("COUPLING")) == "simple_multiplicative" )
+  {
+    return reac_coup_simple_multiplicative;
+  }
+  else if ( *(matdata->Get<std::string >("COUPLING")) == "no_coupling")
+  {
+    return reac_coup_none;
+  }
+  else
+  {
+    return reac_coup_none;
+  }
+}
 
 DRT::ParObject* MAT::ScatraReactionMatType::Create( const std::vector<char> & data )
 {

@@ -212,7 +212,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"NUMSCAL","number of reactions for these elements");
     AddNamedIntVector(m,"STOICH","advanced reaction list","NUMSCAL");
     AddNamedReal(m,"REACCOEFF","reaction coefficient");
-    AddNamedString(m,"COUPLING","type of coupling", "simple_multiplicative");
+    AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
     AddNamedReal(m,"REACSTART","starting point of reaction",-1.0,true);
 
     AppendMaterialDefinition(matlist,m);
