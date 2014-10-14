@@ -170,6 +170,47 @@ private:
     Teuchos::RCP<Epetra_Vector>   velnp);
 };
 
+
+class TransferTurbulentInflowConditionNodal : public TransferTurbulentInflowCondition
+{
+public:
+  /*!
+  \brief Standard Constructor
+
+  */
+  TransferTurbulentInflowConditionNodal(
+    Teuchos::RCP<DRT::Discretization>  dis,
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps
+    );
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~TransferTurbulentInflowConditionNodal();
+
+  /*!
+  \brief Transfer process copying values from master boundary to slave
+         boundary (slave must be of Dirichlet type, otherwise this
+         operation doesn't make to mauch sense)
+
+         Intended to be called after ApplyDirichlet, overwriting the
+         dummy Dirichlet values on the slave boundary by the values
+         of the last time step on the master boundary
+  */
+  void Transfer(const Teuchos::RCP<Epetra_Vector> invec ,
+                Teuchos::RCP<Epetra_Vector>       outvec,
+                const double                      time);
+
+  bool IsActive(){return active_;}
+private:
+  //! for all values avaible on the processor, do the final setting of the value
+  void SetValuesAvailableOnThisProc(
+    std::vector<int>                 & mymasters,
+    std::vector<std::vector<double> >     & mymasters_vec,
+    Teuchos::RCP<Epetra_Vector>   outvec);
+};
+
 } // end namespace FLD
 
 #endif  // #ifndef TRANSFERTURBINF_H

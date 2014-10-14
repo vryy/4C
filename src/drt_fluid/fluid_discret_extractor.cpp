@@ -3,6 +3,7 @@
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_io/io.H"
+#include "../drt_lib/drt_discret_xwall.H"
 
 
 /*----------------------------------------------------------------------*
@@ -47,9 +48,15 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // in the separate section of the problem
     // add your discretization name here!
     if (condition == "TurbulentInflowSection")
-      childdiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"inflow",Teuchos::rcp(parentdiscret_->Comm().Clone())));
-    else //dummy discretization
-      childdiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"none",Teuchos::rcp(parentdiscret_->Comm().Clone())));
+    {
+      DRT::DiscretizationXWall* xwall = dynamic_cast<DRT::DiscretizationXWall*>(&*actdis);
+      if(NULL != xwall)
+        childdiscret_ = Teuchos::rcp(new DRT::DiscretizationXWall((std::string)"inflow",Teuchos::rcp(parentdiscret_->Comm().Clone())));
+      else
+        childdiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"inflow",Teuchos::rcp(parentdiscret_->Comm().Clone())));
+    }
+      else //dummy discretization
+        childdiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"none",Teuchos::rcp(parentdiscret_->Comm().Clone())));
 
     // get set of ids of all child nodes
     std::set<int> sepcondnodeset;

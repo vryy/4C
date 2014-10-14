@@ -1004,4 +1004,175 @@ void FLD::TransferTurbulentInflowConditionXW::SetValuesAvailableOnThisProc(
   return;
 } // SetValuesAvailableOnThisProc (XW)
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Constructor (public)                                        bk 09/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+FLD::TransferTurbulentInflowConditionNodal::TransferTurbulentInflowConditionNodal(
+  Teuchos::RCP<DRT::Discretization>  dis    ,
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps
+    )
+  : TransferTurbulentInflowCondition(dis,dbcmaps)
+{
+  numveldof_=1;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Destructor dtor  (public)                                    bk 09/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+FLD::TransferTurbulentInflowConditionNodal::~TransferTurbulentInflowConditionNodal()
+{
+  return;
+}// ~TransferTurbulentInflowCondition (Nodal)
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Perform transfer process (public)                           bk 09/14|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::TransferTurbulentInflowConditionNodal::Transfer(
+  const Teuchos::RCP<Epetra_Vector> invec ,
+  Teuchos::RCP<Epetra_Vector>       outvec,
+  const double                      time)
+{
+
+
+  std::vector<int>             mymasters;
+  std::vector<std::vector<double> > mymasters_vec(numveldof_);
+
+  if(active_)
+  {
+
+    // collect masters on this proc and associated velocities
+    for (std::map<int,std::vector<int> >::iterator pair=midtosid_.begin();
+         pair!=midtosid_.end();
+         ++pair)
+    {
+      int gid=pair->first;
+
+      if(dis_->HaveGlobalNode(gid))
+      {
+        mymasters.push_back(gid);
+
+        DRT::Node* master=dis_->gNode(gid);
+
+        std::vector<int> masterdofs=dis_->Dof(master);
+
+        // and the 7th value is filled with the wall shear stress
+        int lnodeid=dis_->NodeRowMap()->LID(gid);
+        (mymasters_vec[0]).push_back((*invec)[lnodeid]);
+      }
+      else
+      {
+  dserror("master %d in midtosid but not on proc. This was unexpected",gid);
+      }
+    }
+
+#ifdef PARALLEL
+    // create an exporter for point to point comunication
+    DRT::Exporter exporter(dis_->Comm());
+
+    // necessary variables
+    MPI_Request request;
+#endif
+
+    // define send and receive blocks
+    std::vector<char> sblock;
+    std::vector<char> rblock;
+
+    // get number of processors and the current processors id
+    int numproc=dis_->Comm().NumProc();
+
+    //----------------------------------------------------------------------
+    // communication is done in a round robin loop
+    //----------------------------------------------------------------------
+    for (int np=0;np<numproc+1;++np)
+    {
+      // in the first step, we cannot receive anything
+      if(np >0)
+      {
+#ifdef PARALLEL
+        ReceiveBlock(rblock,exporter,request);
+#else
+        rblock=sblock;
+#endif
+
+        // Unpack info from the receive block from the last proc
+        UnpackLocalMasterValues(mymasters,mymasters_vec,rblock);
+      }
+
+      // in the last step, we keep everything on this proc
+      if(np < numproc)
+      {
+        // -----------------------
+        // do what we wanted to do
+        SetValuesAvailableOnThisProc(mymasters,mymasters_vec,outvec);
+
+        // Pack info into block to send
+        DRT::PackBuffer data;
+        PackLocalMasterValues(mymasters,mymasters_vec,data);
+        data.StartPacking();
+        PackLocalMasterValues(mymasters,mymasters_vec,data);
+        swap( sblock, data() );
+
+#ifdef PARALLEL
+        SendBlock(sblock,exporter,request);
+#endif
+      }
+    }
+  }
+  return;
+} // Transfer (Nodal)
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | for all values avaible on the processor, do the final setting of the |
+ | value                          (private)                    bk 09/14 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::TransferTurbulentInflowConditionNodal::SetValuesAvailableOnThisProc(
+    std::vector<int>                 & mymasters,
+    std::vector<std::vector<double> >     & mymasters_vec,
+    Teuchos::RCP<Epetra_Vector>   outvec)
+{
+
+  for(unsigned nn=0;nn<mymasters.size();++nn)
+  {
+    std::map<int,std::vector<int> >::iterator iter=midtosid_.find(mymasters[nn]);
+
+    if(iter!=midtosid_.end())
+    {
+      std::vector<int> myslaves(iter->second);
+
+      for(std::vector<int>::iterator sid=myslaves.begin();sid!=myslaves.end();++sid)
+      {
+        // is this slave id on this proc?
+        if(dis_->NodeRowMap()->MyGID(*sid))
+          outvec->ReplaceGlobalValue(*sid,0,(mymasters_vec[0])[nn]);
+      }
+    }
+  }
+
+  return;
+} // SetValuesAvailableOnThisProc (Nodal)
+
 

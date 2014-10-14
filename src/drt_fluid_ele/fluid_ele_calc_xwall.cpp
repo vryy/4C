@@ -165,88 +165,9 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::EvaluateService(
 
      return err;
   }
-  else //if(elevec1.Length()==(my::nsd_+1)*my::nen_)
-  {
-    return EvaluateServiceXWall( ele, params, mat,
-                         discretization, lm, elemat1, elemat2, elevec1,
-                         elevec2, elevec3);
-  }
-//  else
-//  {
-//    dserror("this should not have happended: some nodes have too many dofs in the LM vector, because they are dof-blending nodes and the wrong LocationVector() function is called");
-//    std::vector<int> lmbl;
-//    std::vector<int> assembletoggle;
-//    int lmlast=0;
-//    int nodecount=0;
-//    for( std::vector<int>::const_iterator i = lm.begin(); i != lm.end(); ++i)
-//    {
-//      ++nodecount;
-//      if(nodecount==5)
-//      {//check if we have a dof-blending ele
-//        if(lmlast+1==*i)
-//        {//enriched node
-//          assembletoggle.push_back(0);
-//        }
-//        else
-//        {//non-enriched node, new node begins
-//          lmbl.push_back(*i);
-//          assembletoggle.push_back(1);
-//          nodecount=1;
-//        }
-//      }
-//      else if(nodecount<5)
-//      {
-//        lmbl.push_back(*i);
-//        assembletoggle.push_back(1);
-//      }
-//      else if(nodecount==8)//change here if the number of dofs are changed
-//      {
-//        nodecount=0;
-//        assembletoggle.push_back(0);
-//      }
-//      else
-//        assembletoggle.push_back(0);
-//
-//      lmlast=*i;
-//    }
-//
-//    Epetra_SerialDenseMatrix elematrixbl=Epetra_SerialDenseMatrix ((my::nsd_+1)*my::nen_, (my::nsd_+1)*my::nen_, true);
-//    Epetra_SerialDenseVector elevecbl=Epetra_SerialDenseVector ((my::nsd_+1)*my::nen_);
-//    Epetra_SerialDenseVector elevecdummy=Epetra_SerialDenseVector ((my::nsd_+1)*my::nen_);
-//
-//    int err=0;
-////    if(act!=FLD::xwall_l2_projection_with_continuity_constraint)
-//      err= EvaluateServiceXWall( ele, params, mat,
-//            discretization, lmbl, elematrixbl, elemat2,
-//            elevecbl, elevecdummy, elevecdummy);
-////    else
-////      err= my::EvaluateService( ele, params, mat,
-////            discretization, lmbl, elematrixbl, elemat2,
-////            elevecdummy, elevecdummy, elevecdummy);
-//
-//    //for some EvaluateService actions, elevec1 is not necessary
-//    if(elevec1!=NULL&&act!=FLD::tauw_via_gradient&&act!=FLD::calc_div_u&&act!=FLD::calc_dt_via_cfl)
-//    {
-//      int row1=0;
-//      int row2=0;
-//      //assembly back into the old matrix
-//      for( std::vector<int>::const_iterator i = assembletoggle.begin(); i != assembletoggle.end(); ++i)
-//      {
-//        if(*i==1)
-//        {
-//          elevec1[row1]=elevecbl[row2];
-//          ++row2;
-//        }
-//        else
-//          elevec1[row1]=0.0;
-//        ++row1;
-//      }
-//    }
-//    else if (act==FLD::calc_div_u||act==FLD::calc_dt_via_cfl)
-//      elevec1[0]=elevecbl[0];
-//
-//    return err;
-//  }
+  else
+    dserror("not xwall element");
+
 
   return 1;
 }
@@ -332,21 +253,13 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Evaluate(DRT::ELEMENTS::F
                                                  bool                       offdiag)
 {
   calcoldandnewpsi_=false;
-//  std::cout << my::nen_ << std::endl;
-//  std::cout << elemat1_epetra.M() << "  " << elemat1_epetra.N() << std::endl;
-  GetEleProperties(ele, discretization, lm,params, mat);
 
-//  std::cout << elemat1_epetra << std::endl;
-//  for( std::vector<int>::const_iterator i = lm.begin(); i != lm.end(); ++i)
-//      std::cout << *i << '\n';
-//  std::cout << std::endl;
+  GetEleProperties(ele, discretization, lm,params, mat);
 
   if(enrtype == DRT::ELEMENTS::Fluid::xwall)//this element has the same no of dofs on each node
   {
     std::vector<int> assembletoggle;
-    std::vector<int> enrichedtoggle;
     int nodecount=0;
-    int enrichedcount=0;
     for( std::vector<int>::const_iterator i = lm.begin(); i != lm.end(); ++i)
     {
       ++nodecount;
@@ -354,15 +267,9 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Evaluate(DRT::ELEMENTS::F
       {
         nodecount=0;
         assembletoggle.push_back(0);
-        enrichedtoggle.push_back(-1);
-        enrichedcount++;
       }
       else
       {
-        if(nodecount==5||nodecount==6||nodecount==7)
-          enrichedtoggle.push_back(enrichedcount);
-        else
-          enrichedtoggle.push_back(-1);
         assembletoggle.push_back(1);
       }
     }
@@ -404,105 +311,9 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Evaluate(DRT::ELEMENTS::F
 
     return err;
   }
-  //non-enriched case, solve problem as usual
-  else if(elemat1_epetra.M()==(my::nsd_+1)*my::nen_)
-    return my::Evaluate( ele, discretization, lm, params, mat,
-                     elemat1_epetra, elemat2_epetra,
-                     elevec1_epetra, elevec2_epetra, elevec3_epetra,
-                     my::intpoints_);
-  else //dof-blending case
-  {
-
+  else
     dserror("this should not have happended: some nodes have too many dofs in the LM vector, because they are dof-blending nodes and the wrong LocationVector() function is called");
 
-//    std::vector<int> lmbl;
-//    std::vector<int> assembletoggle;
-//    int lmlast=0;
-//    int nodecount=0;
-//    for( std::vector<int>::const_iterator i = lm.begin(); i != lm.end(); ++i)
-//    {
-//      ++nodecount;
-//      if(nodecount==5)
-//      {//check if we have a dof-blending ele
-//        if(lmlast+1==*i)
-//        {//enriched node
-//          assembletoggle.push_back(0);
-//        }
-//        else
-//        {//non-enriched node, new node begins
-//          lmbl.push_back(*i);
-//          assembletoggle.push_back(1);
-//          nodecount=1;
-//        }
-//      }
-//      else if(nodecount<5)
-//      {
-//        lmbl.push_back(*i);
-//        assembletoggle.push_back(1);
-//      }
-//      else if(nodecount==8)//change here if the number of dofs are changed
-//      {
-//        nodecount=0;
-//        assembletoggle.push_back(0);
-//      }
-//      else
-//        assembletoggle.push_back(0);
-//
-//      lmlast=*i;
-//    }
-//    Epetra_SerialDenseMatrix elematrixbl=Epetra_SerialDenseMatrix ((my::nsd_+1)*my::nen_, (my::nsd_+1)*my::nen_, true);
-//    Epetra_SerialDenseVector elevecdummy=Epetra_SerialDenseVector ((my::nsd_+1)*my::nen_);
-//    Epetra_SerialDenseVector elevecbl=Epetra_SerialDenseVector ((my::nsd_+1)*my::nen_);
-//
-//    int err= my::Evaluate( ele, discretization, lmbl, params, mat,
-//                     elematrixbl, elemat2_epetra,
-//                     elevecbl, elevecdummy, elevecdummy,
-//                     my::intpoints_);
-//
-//    int row1=0;
-//    int row2=0;
-//    int col1=0;
-//    int col2=0;
-//    //assembly back into the old matrix
-//    for( std::vector<int>::const_iterator i = assembletoggle.begin(); i != assembletoggle.end(); ++i)
-//    {
-//      row1=0;
-//      row2=0;
-//      for( std::vector<int>::const_iterator j = assembletoggle.begin(); j != assembletoggle.end(); ++j)
-//      {
-//        if(*i==1&&*j==1)
-//        {//this part has to be assembled
-//          elemat1_epetra[col1][row1]=elematrixbl[col2][row2];
-//          ++row2;
-//        }
-//        else
-//          elemat1_epetra[col1][row1]=0.0;
-//        ++row1;
-//      }
-//      if(*i==1)
-//        ++col2;
-//      ++col1;
-//    }
-//
-//    row1=0;
-//    row2=0;
-//    //assembly back into the old matrix
-//    for( std::vector<int>::const_iterator i = assembletoggle.begin(); i != assembletoggle.end(); ++i)
-//    {
-//      if(*i==1)
-//      {
-//        elevec1_epetra[row1]=elevecbl[row2];
-//        ++row2;
-//      }
-//      else
-//        elevec1_epetra[row1]=0.0;
-//      ++row1;
-//    }
-//
-//
-//    return err;
-//    return 0;
-  }
 
   return 1;
 }

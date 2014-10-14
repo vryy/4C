@@ -18,6 +18,7 @@ Maintainer: Benjamin Krank
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include "../drt_inpar/inpar_fluid.H"
+#include "../linalg/linalg_utils.H"
 
 //forward declarations
 namespace DRT
@@ -35,6 +36,7 @@ namespace LINALG
 namespace FLD
 {
 class FluidImplicitTimeInt;
+class TransferTurbulentInflowConditionNodal;
 
 class XWall
 {
@@ -43,7 +45,8 @@ public:
   /// Standard Constructor
   XWall(Teuchos::RCP<DRT::Discretization>      dis,
       int                           nsd,
-      Teuchos::RCP<Teuchos::ParameterList>& params);
+      Teuchos::RCP<Teuchos::ParameterList>& params,
+      Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
 
   /// Destructor
   virtual ~XWall(){return;};
@@ -65,6 +68,9 @@ public:
 
   // returns, if Properties for GenAlpha have to be updated
   void UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual,int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln, FluidImplicitTimeInt& fluid);
+
+  // returns tauw of discret_
+  Teuchos::RCP<Epetra_Vector>   GetTauw();
 
 protected:
 
@@ -105,6 +111,12 @@ protected:
   void BlendingViaModificationOfTauw(Teuchos::RCP<Epetra_Vector>   newtauw2);
 
 private:
+
+  // for inflowchannel
+  void TransferAndSaveTauw();
+
+  // for inflowchannel
+  void OverwriteTransferedValues();
 
   //! discretisation
   Teuchos::RCP<DRT::Discretization> discret_;
@@ -154,6 +166,12 @@ private:
   //! vector on same dofs for deltatauw (increment)
   Teuchos::RCP<Epetra_Vector> inctauwxwdis_;
 
+  //! vector on same dofs for old tauw
+  Teuchos::RCP<Epetra_Vector> oldtauw_;
+
+  //! vector on same dofs for old tauw
+  Teuchos::RCP<Epetra_Vector> oldinctauw_;
+
   //! matrix projecting the wall shear stress to off-wall nodes
   Teuchos::RCP<LINALG::SparseMatrix> tauwcouplingmattrans_;
 
@@ -201,6 +219,8 @@ private:
 
   //! scale separation matrix for smoothing of tauw/ residual
   Teuchos::RCP<LINALG::SparseMatrix> SepEnr_;
+
+  Teuchos::RCP<TransferTurbulentInflowConditionNodal> turbulent_inflow_condition_;
 
   //! increment factor of tauw
   double fac_;

@@ -31,6 +31,7 @@ Maintainer: Benjamin Krank
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_fluid_turbulence/drt_transfer_turb_inflow.H"
 
 #include <MLAPI_Workspace.h>
 #include <MLAPI_Aggregation.h>
@@ -41,7 +42,8 @@ Maintainer: Benjamin Krank
 FLD::XWall::XWall(
     Teuchos::RCP<DRT::Discretization>      dis,
     int                           nsd,
-    Teuchos::RCP<Teuchos::ParameterList>& params):
+    Teuchos::RCP<Teuchos::ParameterList>& params,
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps):
     discret_(dis),
     params_(params)
 {
@@ -186,6 +188,21 @@ FLD::XWall::XWall(
   }
 
   Setup();
+
+//todo possible to change this to xwdiscret? how does dbcmaps look like in this case?
+  turbulent_inflow_condition_
+    = Teuchos::rcp(new TransferTurbulentInflowConditionNodal(discret_,dbcmaps));
+
+  if(turbulent_inflow_condition_->IsActive())
+  {
+    oldtauw_ = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()),true));
+    oldinctauw_ = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()),true));
+  }
+  else
+  {
+    oldtauw_ = Teuchos::null;
+    oldinctauw_ = Teuchos::null;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -193,9 +210,6 @@ FLD::XWall::XWall(
  *----------------------------------------------------------------------*/
 void FLD::XWall::SetXWallParams(Teuchos::ParameterList& eleparams)
 {
-
-  //makes sure to use the xwall template
-//  eleparams.set<std::string>("impltype","xwall");
 
   //params required for the shape functions
   eleparams.set("walldist",wdist_);
@@ -877,7 +891,11 @@ void FLD::XWall::SetupL2Projection()
  *----------------------------------------------------------------------*/
   void FLD::XWall::UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual, int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln, FluidImplicitTimeInt& fluid)
 {
+  TransferAndSaveTauw();
+
   Teuchos::RCP<Epetra_Vector> newtauw = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
+  //calculate wall stress
+  Teuchos::RCP<Epetra_Vector> wss = fluid.CalcWallShearStresses();
 
   if(((tauwcalctype_ == INPAR::FLUID::gradient_to_residual && step >= switch_step_) || (tauwcalctype_ != INPAR::FLUID::gradient_to_residual && step > 1)) && smooth_res_aggregation_)
   {
@@ -963,8 +981,8 @@ void FLD::XWall::SetupL2Projection()
     }
 
     Teuchos::RCP<Epetra_Vector> fsresidual = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
-    SepEnr_->Multiply(false,*trueresidual,*fsresidual);
-    trueresidual->Update(1.0,*fsresidual,0.0);
+    SepEnr_->Multiply(false,*wss,*fsresidual);
+    wss->Update(1.0,*fsresidual,0.0);
   }
   switch (tauwtype_)
   {
@@ -991,7 +1009,7 @@ void FLD::XWall::SetupL2Projection()
       inctauw_->PutScalar(0.0);
 
       if(itnum==0)//in between steps
-        CalcTauW(step,trueresidual, velnp,fluid.CalcWallShearStresses());
+        CalcTauW(step,trueresidual,velnp,wss);
       else
         return;
     }
@@ -1346,9 +1364,6 @@ void FLD::XWall::CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   trueresidual,T
   tauwcouplingmattrans_->Multiply(true,*newtauw,*newtauw2);
 
 
-  double meansp=0.0;
-  newtauw2->MeanValue(&meansp);
-
   //here i can modify newtauw2 to get rid of ramp functions!
   BlendingViaModificationOfTauw(newtauw2);
 
@@ -1356,6 +1371,12 @@ void FLD::XWall::CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   trueresidual,T
   inctauw_->Update(fac_,*tauw,-fac_); //now this is the increment (new-old)
 
   tauw_->Update(1.0,*inctauw_,1.0);
+
+  OverwriteTransferedValues();
+
+  LINALG::Export(*tauw_,*newtauw2);
+  double meansp=0.0;
+  newtauw2->MeanValue(&meansp);
 
   LINALG::Export(*inctauw_,*newtauw2);
   LINALG::Export(*newtauw2,*inctauwxwdis_);
@@ -1912,4 +1933,71 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::GetOutputVector(Teuchos::RCP<Epetra_Vect
       dserror("error during replacemyvalue");
   }
   return velenr;
+}
+
+/*----------------------------------------------------------------------*
+ |  transfer tauw for turbulent inflow channel                 bk 09/14 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector>   FLD::XWall::GetTauw()
+{
+
+  return tauw_;
+}
+
+/*----------------------------------------------------------------------*
+ |  transfer tauw for turbulent inflow channel                 bk 09/14 |
+ *----------------------------------------------------------------------*/
+void   FLD::XWall::TransferAndSaveTauw()
+{
+  if(turbulent_inflow_condition_->IsActive())
+  {
+    LINALG::Export(*tauw_,*oldtauw_);
+    LINALG::Export(*inctauw_,*oldinctauw_);
+    turbulent_inflow_condition_->Transfer(oldtauw_,oldtauw_,0.0);
+    turbulent_inflow_condition_->Transfer(oldinctauw_,oldinctauw_,0.0);
+  }
+  return ;
+}
+
+/*----------------------------------------------------------------------*
+ |  transfer tauw for turbulent inflow channel                 bk 09/14 |
+ *----------------------------------------------------------------------*/
+void   FLD::XWall::OverwriteTransferedValues()
+{
+  if(turbulent_inflow_condition_->IsActive())
+  {
+    Teuchos::RCP<Epetra_Vector> inctauwtmp = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()),true));
+    LINALG::Export(*inctauw_,*inctauwtmp);
+    Teuchos::RCP<Epetra_Vector> tauwtmp = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()),true));
+    LINALG::Export(*tauw_,*tauwtmp);
+
+    for (int i=0;i<discret_->NodeRowMap()->NumMyElements();++i)
+    {
+      int xwallgid = discret_->NodeRowMap()->GID(i);
+      DRT::Node* xwallnode = discret_->gNode(xwallgid);
+      if(!xwallnode) dserror("Cannot find node");
+      std::vector<DRT::Condition*> nodecloudstocouple;
+      xwallnode->GetCondition("TransferTurbulentInflow",nodecloudstocouple);
+      if(not nodecloudstocouple.empty())
+      {
+        //usually we will only have one condition in nodecloudstocouple
+        //but it doesn't hurt if there are several ones
+        for(std::vector<DRT::Condition*>::iterator cond=nodecloudstocouple.begin();
+            cond!=nodecloudstocouple.end();
+            ++cond)
+        {
+          const std::string* mytoggle = (*cond)->Get<std::string>("toggle");
+          if (*mytoggle == "slave")
+          {
+            inctauwtmp->ReplaceMyValue(i,0,(*oldinctauw_)[i]);
+            tauwtmp->ReplaceMyValue(i,0,(*oldtauw_)[i]);
+          }
+        }
+      }
+    }
+
+    LINALG::Export(*inctauwtmp,*inctauw_);
+    LINALG::Export(*tauwtmp,*tauw_);
+  }
+  return;
 }

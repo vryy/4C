@@ -252,7 +252,7 @@ void FLD::FluidImplicitTimeInt::Init()
   {
     //XWall: enrichment with spaldings law
     if(DRT::INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"),"X_WALL"))
-      xwall_= Teuchos::rcp(new XWall(discret_,numdim_,params_));
+      xwall_= Teuchos::rcp(new XWall(discret_,numdim_,params_,dbcmaps_));
   }
 
   if (not params_->get<int>("Simple Preconditioner",0) && not params_->get<int>("AMG BS Preconditioner",0)
@@ -798,7 +798,11 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // Calculate new wall shear stress for xwall, if appropriate
   // ----------------------------------------------------------------
   if(xwall_!=Teuchos::null)
+  {
+    // Transfer of boundary data if necessary
+    turbulent_inflow_condition_->Transfer(trueresidual_,trueresidual_,time_);
     xwall_->UpdateTauW(step_,trueresidual_,0,accn_,velnp_,veln_,*this);
+  }
 
   // -------------------------------------------------------------------
   //  evaluate Dirichlet and Neumann boundary conditions
@@ -3402,9 +3406,9 @@ void FLD::FluidImplicitTimeInt::Output()
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
       {
-        if(xwall_!=Teuchos::null)
-          xwall_->FilterResVectorForOutput(trueresidual_);
         Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses();
+        if(xwall_!=Teuchos::null)
+          xwall_->FilterResVectorForOutput(wss);
         output_->WriteVector("wss",wss);
       }
     }
@@ -3528,9 +3532,9 @@ void FLD::FluidImplicitTimeInt::Output()
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
       {
-        if(xwall_!=Teuchos::null)
-          xwall_->FilterResVectorForOutput(trueresidual_);
         Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses();
+        if(xwall_!=Teuchos::null)
+          xwall_->FilterResVectorForOutput(wss);
         output_->WriteVector("wss",wss);
       }
     }
