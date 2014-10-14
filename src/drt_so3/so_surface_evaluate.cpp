@@ -357,24 +357,22 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
       double val_curvefac_functfac;
 
       // factor given by spatial function
-      if (spa_func) functnum = (*spa_func)[0];
-      {
-        if (functnum>0)
-        {
-          gp_coord.Multiply('T','N',1.0,funct,xc,0.0);
-          // write coordinates in another datatype
-          double gp_coord2[numdim];
-          for(int i=0;i<numdim;i++)
-          {
-            gp_coord2[i]=gp_coord(0,i);
-          }
-          const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
+      if (spa_func)
+        functnum = (*spa_func)[0];
 
-          // evaluate function at current gauss point
-          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,time,NULL);
+      if (functnum>0)
+      {
+        gp_coord.Multiply('T','N',1.0,funct,xc,0.0);
+        // write coordinates in another datatype
+        double gp_coord2[numdim];
+        for(int i=0;i<numdim;i++)
+        {
+          gp_coord2[i]=gp_coord(0,i);
         }
-        else
-          functfac = 1.0;
+        const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
+
+        // evaluate function at current gauss point
+        functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,time,NULL);
       }
 
       val_curvefac_functfac = curvefac*functfac;
