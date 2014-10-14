@@ -1287,19 +1287,19 @@ void CONTACT::CoCoupling3dManager::EvaluateNTS()
 bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
 {
   // decide which type of coupling should be evaluated
-  INPAR::CONTACT::AlgorithmType algo =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::AlgorithmType>(imortar_, "ALGORITHM");
+  INPAR::MORTAR::AlgorithmType algo =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact
   //*********************************
-  if(algo==INPAR::CONTACT::contact_mortar)
+  if(algo==INPAR::MORTAR::algorithm_mortar)
     EvaluateMortar();
 
   //*********************************
   // Node-to-Segment Contact
   //*********************************
-  else if(algo == INPAR::CONTACT::contact_nts)
+  else if(algo == INPAR::MORTAR::algorithm_nts)
     EvaluateNTS();
 
   //*********************************
@@ -1460,19 +1460,19 @@ void CONTACT::CoCoupling3dQuadManager::EvaluateNTS()
 bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
 {
   // decide which type of coupling should be evaluated
-  INPAR::CONTACT::AlgorithmType algo =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::AlgorithmType>(imortar_, "ALGORITHM");
+  INPAR::MORTAR::AlgorithmType algo =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
 
   //*********************************
   // Mortar Contact
   //*********************************
-  if(algo==INPAR::CONTACT::contact_mortar)
+  if(algo==INPAR::MORTAR::algorithm_mortar)
     EvaluateMortar();
 
   //*********************************
   // Node-to-Segment Contact
   //*********************************
-  else if(algo == INPAR::CONTACT::contact_nts)
+  else if(algo == INPAR::MORTAR::algorithm_nts)
     EvaluateNTS();
 
   //*********************************

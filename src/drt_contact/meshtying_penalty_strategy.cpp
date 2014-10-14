@@ -134,8 +134,8 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector
 void CONTACT::MtPenaltyStrategy::MeshInitialization()
 {
   // get out of here is NTS algorithm is activated
-  if(DRT::INPUT::IntegralValue<INPAR::CONTACT::AlgorithmType>(Params(), "ALGORITHM") ==
-      INPAR::CONTACT::contact_nts)
+  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM") ==
+      INPAR::MORTAR::algorithm_nts)
     return;
 
   // print message

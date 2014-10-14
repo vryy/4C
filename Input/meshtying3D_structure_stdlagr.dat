@@ -61,9 +61,9 @@ MAXITER                         50
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 SYSTEM                          Saddlepoint
-ALGORITHM                       mortar
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Standard
+ALGORITHM                       mortar
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

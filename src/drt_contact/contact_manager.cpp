@@ -813,7 +813,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   //                       MORTAR-SPECIFIC CHECKS
   // *********************************************************************
-  if(DRT::INPUT::IntegralValue<INPAR::CONTACT::AlgorithmType>(contact,"ALGORITHM") == INPAR::CONTACT::contact_mortar)
+  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar,"ALGORITHM") == INPAR::MORTAR::algorithm_mortar)
   {
     // *********************************************************************
     // invalid parameter combinations
@@ -1052,7 +1052,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   //                       NTS-SPECIFIC CHECKS
   // *********************************************************************
-  else if(DRT::INPUT::IntegralValue<INPAR::CONTACT::AlgorithmType>(contact,"ALGORITHM") == INPAR::CONTACT::contact_nts)
+  else if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar,"ALGORITHM") == INPAR::MORTAR::algorithm_nts)
   {
     if(DRT::INPUT::IntegralValue<int>(mortar,"HERMITE_SMOOTHING") == true)
       dserror("ERROR: Hermite smoothing only for mortar contact!");

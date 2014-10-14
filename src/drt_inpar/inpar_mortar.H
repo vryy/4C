@@ -105,6 +105,14 @@ namespace INPAR
       binningstrategy      ///< binning strategy
     };
 
+    /// Type of meshtying/contact algorithm
+    /// (this enum represents the input file parameter ALGORITHM)
+    enum AlgorithmType
+    {
+      algorithm_mortar,    ///< mortar algorithm
+      algorithm_nts        ///< node-to-segment algorithm
+    };
+
     /// Type of parallel redistribution algorithm
     /// (this enum represents the input file parameter PARALLEL_REDIST)
     enum ParRedist

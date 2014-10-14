@@ -1711,6 +1711,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::MORTAR::parredist_dynamic, INPAR::MORTAR::parredist_dynamic),
       &mortar);
 
+  setStringToIntegralParameter<int>("ALGORITHM","Mortar","Type of meshtying/contact algorithm",
+      tuple<std::string>("mortar","Mortar",
+                         "nts","NTS"),
+      tuple<int>(
+                 INPAR::MORTAR::algorithm_mortar,INPAR::MORTAR::algorithm_mortar,
+                 INPAR::MORTAR::algorithm_nts,INPAR::MORTAR::algorithm_nts),
+      &mortar);
+
   DoubleParameter("MAX_BALANCE",2.0,"Maximum value of load balance measure before parallel redistribution",&mortar);
   IntParameter("MIN_ELEPROC",0,"Minimum no. of elements per processor for parallel redistribution",&mortar);
 
@@ -1741,14 +1749,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       tuple<int>(
                  INPAR::CONTACT::adhesion_none,INPAR::CONTACT::adhesion_none,
                  INPAR::CONTACT::adhesion_bound,INPAR::CONTACT::adhesion_bound),
-      &scontact);
-
-  setStringToIntegralParameter<int>("ALGORITHM","Mortar","Type of contact algorithm",
-      tuple<std::string>("mortar","Mortar",
-                         "nts","NTS"),
-      tuple<int>(
-                 INPAR::CONTACT::contact_mortar,INPAR::CONTACT::contact_mortar,
-                 INPAR::CONTACT::contact_nts,INPAR::CONTACT::contact_nts),
       &scontact);
 
   setStringToIntegralParameter<int>("FRICTION","None","Type of friction law",

@@ -496,7 +496,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   INPAR::MORTAR::ShapeFcn         shapefcn  = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar,"LM_SHAPEFCN");
   INPAR::CONTACT::SolvingStrategy soltype   = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(scontact,"STRATEGY");
   INPAR::CONTACT::SystemType      systype   = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact,"SYSTEM");
-  INPAR::CONTACT::AlgorithmType   algorithm = DRT::INPUT::IntegralValue<INPAR::CONTACT::AlgorithmType>(scontact,"ALGORITHM");
+  INPAR::MORTAR::AlgorithmType    algorithm = DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(smortar,"ALGORITHM");
 
   // check mortar contact or meshtying conditions
   std::vector<DRT::Condition*> mortarconditions(0);
@@ -648,7 +648,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     // output
     if (!myrank_)
     {
-      if(algorithm == INPAR::CONTACT::contact_mortar)
+      if(algorithm == INPAR::MORTAR::algorithm_mortar)
       {
         // saddle point formulation
         if (systype == INPAR::CONTACT::system_saddlepoint)
@@ -760,7 +760,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
           else dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
         }
       }
-      else if(algorithm == INPAR::CONTACT::contact_nts)
+      else if(algorithm == INPAR::MORTAR::algorithm_nts)
       {
         std::cout << "================================================================" << std::endl;
         std::cout << "===== Node-To-Segment approach =================================" << std::endl;

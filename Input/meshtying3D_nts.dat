@@ -56,13 +56,13 @@ MAXITER                         50
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
 SYSTEM                          sp
-ALGORITHM                       nts
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     dual
 SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.8
 INTTYPE                         elements
 NUMGP_PER_DIM                   2
+ALGORITHM                       nts
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Superlu
