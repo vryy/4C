@@ -68,7 +68,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure
     = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams(), const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-  structure_ = structure->StructureFieldrcp();
+  structure_ = structure->StructureField();
 
   Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermo
     = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams(),thermodis));

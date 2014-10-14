@@ -24,7 +24,6 @@ Maintainer: Philipp Farah
 /*----------------------------------------------------------------------*
  | headers                                                  farah 11/13 |
  *----------------------------------------------------------------------*/
-#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_ale/ale.H"
@@ -88,7 +87,7 @@ namespace WEAR
       ) = 0;
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
+    Teuchos::RCP<ADAPTER::FSIStructureWrapper> StructureField(){return structure_;}
 
     //! access to ALE field
     ALE::Ale& AleField() { return *ale_; }

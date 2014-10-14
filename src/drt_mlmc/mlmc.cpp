@@ -272,29 +272,29 @@ void UQ::MLMC::Integrate()
         Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
         // create an adapterbase and adapter
         ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
-        ADAPTER::Structure& structadaptor = adapterbase.StructureField();
+        Teuchos::RCP<ADAPTER::Structure> structadaptor = adapterbase.StructureField();
 
         // do restart
         const int restart = DRT::Problem::Instance()->Restart();
         if (restart)
         {
-          structadaptor.ReadRestart(restart);
+          structadaptor->ReadRestart(restart);
         }
 
         t3 = Teuchos::Time::wallTime();
         // do we want parameter continuation (for now we use the reset presstress flag)
-        structadaptor.Integrate();
+        structadaptor->Integrate();
 
         t4 = Teuchos::Time::wallTime();
 
-        displacements= Teuchos::rcp(new const Epetra_Vector(*(structadaptor.Dispn())));
+        displacements= Teuchos::rcp(new const Epetra_Vector(*(structadaptor->Dispn())));
         // test results
-        DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
-        DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
+        DRT::Problem::Instance()->AddFieldTest(structadaptor->CreateFieldTest());
+        DRT::Problem::Instance()->TestAll(structadaptor->DofRowMap()->Comm());
 
         if(!reduced_output_)
         {
-          Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
+          Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor->DofRowMap()->Comm());
           Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
         }
 
@@ -441,14 +441,13 @@ void UQ::MLMC::IntegrateNoReset()
         // access the structural discretization
         Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
         ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
-        ADAPTER::Structure& structadaptor = adapterbase.StructureField();
-
+        Teuchos::RCP<ADAPTER::Structure> structadaptor = adapterbase.StructureField();
 
         // do restart
         const int restart = DRT::Problem::Instance()->Restart();
         if (restart)
         {
-          structadaptor.ReadRestart(restart);
+          structadaptor->ReadRestart(restart);
         }
         /// Try some nasty stuff
         if (numb_run_-start_run_== 0)
@@ -456,11 +455,11 @@ void UQ::MLMC::IntegrateNoReset()
 
           // for first run do normal integration
           my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),0.0,false);
-          structadaptor.Integrate();
+          structadaptor->Integrate();
           // get all information
-          structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_init_,cont_veln_,cont_accn_,cont_elementdata_init_,cont_nodedata_init_);
+          structadaptor->GetRestartData(cont_step_,cont_time_,cont_disn_init_,cont_veln_,cont_accn_,cont_elementdata_init_,cont_nodedata_init_);
           // Get timestep size
-          //time_step_size=structadaptor.Dt();
+          //time_step_size=structadaptor->Dt();
         }
         else
         {
@@ -489,12 +488,12 @@ void UQ::MLMC::IntegrateNoReset()
 
 
         // test results
-        DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
-        DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
+        DRT::Problem::Instance()->AddFieldTest(structadaptor->CreateFieldTest());
+        DRT::Problem::Instance()->TestAll(structadaptor->DofRowMap()->Comm());
 
         if(!reduced_output_)
         {
-          Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
+          Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor->DofRowMap()->Comm());
           Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
         }
 
@@ -610,8 +609,7 @@ void UQ::MLMC::IntegrateScaleByThickness()
         // access the structural discretization
         Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
         ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
-        ADAPTER::Structure& structadaptor = adapterbase.StructureField();
-
+        Teuchos::RCP<ADAPTER::Structure> structadaptor = adapterbase.StructureField();
 
         // do restart
         const int restart = DRT::Problem::Instance()->Restart();
@@ -633,9 +631,9 @@ void UQ::MLMC::IntegrateScaleByThickness()
           }
           discret_->Comm().Barrier();
           ResetPrestress();
-          structadaptor.Integrate();
+          structadaptor->Integrate();
           // get all information
-          structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_init_,cont_veln_,cont_accn_,cont_elementdata_init_,cont_nodedata_init_);
+          structadaptor->GetRestartData(cont_step_,cont_time_,cont_disn_init_,cont_veln_,cont_accn_,cont_elementdata_init_,cont_nodedata_init_);
 
           // dummy
           Teuchos::RCP<std::list<std::pair <int , double > > > peak_vals = Teuchos::rcp(new std::list<std::pair <int , double  > >);
@@ -733,12 +731,12 @@ void UQ::MLMC::IntegrateScaleByThickness()
 
 
         // test results
-        DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
-        DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
+        DRT::Problem::Instance()->AddFieldTest(structadaptor->CreateFieldTest());
+        DRT::Problem::Instance()->TestAll(structadaptor->DofRowMap()->Comm());
 
         if(!reduced_output_)
         {
-          Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
+          Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor->DofRowMap()->Comm());
           Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
         }
         // time to go home...
@@ -797,7 +795,7 @@ void UQ::MLMC::IntegrateScaleByThickness()
 
 
 //---------------------------------------------------------------------------------------------
-int UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int random_seed, bool re_use_rf, ADAPTER::Structure&  structadaptor)
+int UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int random_seed, bool re_use_rf, Teuchos::RCP<ADAPTER::Structure> structadaptor)
 {
   int error = 0;
   t1_ = Teuchos::Time::wallTime();
@@ -808,7 +806,7 @@ int UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int ra
   *cont_disn_=*cont_disn_init_;
 
   // Get timestep size
-  const double time_step_size=structadaptor.Dt();
+  const double time_step_size=structadaptor->Dt();
 
   // for loop to encapsulate parameter continuation scheme
   for(unsigned int k =0 ; k<num_cont_steps ; k++)
@@ -847,11 +845,11 @@ int UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int ra
        // compute the number of steps we did in prestressing mode
        int num_prestress_steps = (int)(pstime/time_step_size);
        // store maxtime
-       endtime= structadaptor.GetTimeEnd();
+       endtime= structadaptor->GetTimeEnd();
        // alter timemax to compute only one timestep
-       structadaptor.SetTimeEnd(pstime);
+       structadaptor->SetTimeEnd(pstime);
        // set restart without displacement (use acc instead which are zero in statics)
-       structadaptor.SetRestart(num_prestress_steps-1,(num_prestress_steps-1)*time_step_size,cont_accn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
+       structadaptor->SetRestart(num_prestress_steps-1,(num_prestress_steps-1)*time_step_size,cont_accn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
        // set new material parameters
        // Setup Material Parameters in each element based on deterministic value
        //measure time only if we really compute the random field (k=0)
@@ -867,11 +865,11 @@ int UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int ra
        {
          my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),gamma,re_use_rf);
        }
-       error=structadaptor.Integrate();
+       error=structadaptor->Integrate();
        if(error)
        {
          // reset endtime
-         structadaptor.SetTimeEnd(endtime);
+         structadaptor->SetTimeEnd(endtime);
          return error;
        }
 
@@ -880,31 +878,31 @@ int UQ::MLMC::ParameterContinuation(unsigned int num_cont_steps, unsigned int ra
        Teuchos::RCP<double> garbage2  = Teuchos::rcp(new double);
        // get the newly computed prestress deformation gradient
        // use acc for disp again which will be overritten by the accc directly after
-       structadaptor.GetRestartData(garbage1,garbage2,cont_accn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
+       structadaptor->GetRestartData(garbage1,garbage2,cont_accn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
        // write new prestress data together with old displament data to discretization
-       structadaptor.SetRestart((*(cont_step_)-1),(*cont_time_)-time_step_size,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
+       structadaptor->SetRestart((*(cont_step_)-1),(*cont_time_)-time_step_size,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
        // reset old maxtime
-       structadaptor.SetTimeEnd(endtime);
+       structadaptor->SetTimeEnd(endtime);
        my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),gamma,true);
-       error = structadaptor.Integrate();
+       error = structadaptor->Integrate();
        if(error)
          return error;
-       structadaptor.GetRestartData(garbage1,garbage2,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
+       structadaptor->GetRestartData(garbage1,garbage2,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
      }
      else // no prestress
      {
        // set prestress state and time, disp acc vel are al set to zero
-       structadaptor.SetRestart((*(cont_step_)-1),(*cont_time_)-time_step_size,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
+       structadaptor->SetRestart((*(cont_step_)-1),(*cont_time_)-time_step_size,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
        //measure time only if we really compute the random field (k=0)
        if(!k)
          t2_ = Teuchos::Time::wallTime();
        my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),gamma,(bool)k);
        if(!k)
          t3_ = Teuchos::Time::wallTime();
-       error = structadaptor.Integrate();
+       error = structadaptor->Integrate();
        if(error)
          return error;
-       structadaptor.GetRestartData(cont_step_,cont_time_,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
+       structadaptor->GetRestartData(cont_step_,cont_time_,cont_disn_,cont_veln_,cont_accn_,cont_elementdata_,cont_nodedata_);
      }
 
   }// eof parameter continuation scheme

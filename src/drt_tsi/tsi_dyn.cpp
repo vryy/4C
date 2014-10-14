@@ -31,6 +31,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_adapter/adapter_thermo.H"
+#include "../drt_adapter/ad_str_structure.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

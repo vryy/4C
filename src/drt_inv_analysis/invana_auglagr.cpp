@@ -143,19 +143,19 @@ void STR::INVANA::InvanaAugLagr::SolveForwardProblem()
     case INPAR::STR::dyna_statics:
     {
       ADAPTER::StructureBaseAlgorithm adapterbase(sdyn,const_cast<Teuchos::ParameterList&>(sdyn), Discret());
-      ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
+      Teuchos::RCP<ADAPTER::Structure> structadaptor = adapterbase.StructureField();
 
       // do restart but the one which is explicitly given in the INVERSE ANALYSIS section
       if (fprestart_)
       {
         dserror("Restarting from within a timestep of the forward problem needs some tweaking first!");
-        structadaptor.ReadRestart(fprestart_);
+        structadaptor->ReadRestart(fprestart_);
       }
-      structadaptor.Integrate();
+      structadaptor->Integrate();
 
       // get displacement and time
-      MStepEpetraToEpetraMulti(structadaptor.DispMStep(), dis_);
-      MStepDToStdVecD(structadaptor.TimeMStep(), time_);
+      MStepEpetraToEpetraMulti(structadaptor->DispMStep(), dis_);
+      MStepDToStdVecD(structadaptor->TimeMStep(), time_);
 
       break;
     }

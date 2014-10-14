@@ -113,13 +113,13 @@ void dyn_nlnstructural_drt()
 
   // create an adapterbase and adapter
   ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
-  ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
+  Teuchos::RCP<ADAPTER::Structure> structadaptor = adapterbase.StructureField();
 
   // do restart
   const int restart = DRT::Problem::Instance()->Restart();
   if (restart)
   {
-    structadaptor.ReadRestart(restart);
+    structadaptor->ReadRestart(restart);
   }
 
   // write output at beginnning of calc
@@ -135,25 +135,25 @@ void dyn_nlnstructural_drt()
 
 #if 1
   // run time integration
-  structadaptor.Integrate();
+  structadaptor->Integrate();
 #else // this is a bone optimization hack - do not touch
-  structadaptor.PrepareTimeStep();
-  structadaptor.Solve();
-  structadaptor.Update();
-  structadaptor.Output();
+  structadaptor->PrepareTimeStep();
+  structadaptor->Solve();
+  structadaptor->Update();
+  structadaptor->Output();
 
-  const Epetra_Vector* disp = structadaptor.Dispn().get();
+  const Epetra_Vector* disp = structadaptor->Dispn().get();
   const_cast<Epetra_Vector*>(disp)->PutScalar(0.0);
 
-  structadaptor.PrepareTimeStep();
-  structadaptor.Solve();
-  structadaptor.Update();
-  structadaptor.Output();
+  structadaptor->PrepareTimeStep();
+  structadaptor->Solve();
+  structadaptor->Update();
+  structadaptor->Output();
 #endif
 
   // test results
-  DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
+  DRT::Problem::Instance()->AddFieldTest(structadaptor->CreateFieldTest());
+  DRT::Problem::Instance()->TestAll(structadaptor->DofRowMap()->Comm());
 
   // print monitoring of time consumption
   Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structdis->Comm());

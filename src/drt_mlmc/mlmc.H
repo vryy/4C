@@ -259,7 +259,7 @@ public:
 
 
   //! brief compute solution of nonlinear problem using numerical continuation scheme
-  int ParameterContinuation(unsigned int num_cont_steps, unsigned int random_seed, bool re_use_rf, ADAPTER::Structure &structadaptor);
+  int ParameterContinuation(unsigned int num_cont_steps, unsigned int random_seed, bool re_use_rf, Teuchos::RCP<ADAPTER::Structure> structadaptor);
 
   //! \brief routine to assign material parameters to each element based on random field
   void SetupStochMat(unsigned int random_seed);

@@ -25,6 +25,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"

@@ -113,7 +113,7 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::StructureRedAirway>(structure->StructureFieldrcp());
+  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::StructureRedAirway>(structure->StructureField());
 
   SetupRedAirways();
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();

@@ -20,6 +20,7 @@ Maintainer: Georg Hammerl
 #include "aero_tfsi.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/adapter_thermo.H"
 #include "../drt_tsi/tsi_monolithic.H"
 #include "../drt_tsi/tsi_utils.H"
@@ -99,7 +100,7 @@ FS3I::AeroTFSI::AeroTFSI(
 
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
         Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-    structure_ = structure->StructureFieldrcp();
+    structure_ = structure->StructureField();
 
     // setup of the helper class
     aerocoupling_ = Teuchos::rcp(new FS3I::UTILS::AeroCouplingUtils(structure_->Discretization(), true));

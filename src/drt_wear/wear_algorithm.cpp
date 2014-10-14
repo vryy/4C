@@ -50,7 +50,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
       DRT::Problem::Instance()->StructuralDynamicParams(),
       const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams()),
       DRT::Problem::Instance()->GetDis("structure")));
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureFieldrcp());
+  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureField());
 
   // create ale
   Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(

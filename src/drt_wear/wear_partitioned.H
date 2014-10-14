@@ -30,7 +30,6 @@ Maintainer: Philipp Farah
 
 #include "wear_algorithm.H"
 
-#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_ale/ale.H"

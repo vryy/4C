@@ -43,7 +43,7 @@ namespace THR
 namespace LINALG
 {
   class SparseMatrix;
-  class MapExtractor;
+  class MultiMapExtractor;
 
   class BlockSparseMatrixBase;
   class Solver;

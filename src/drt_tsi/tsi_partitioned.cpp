@@ -21,10 +21,12 @@
 #include "tsi_defines.H"
 #include "tsi_utils.H"
 #include "../drt_inpar/inpar_tsi.H"
+#include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_adapter/adapter_thermo.H"
+#include "../drt_adapter/ad_str_structure.H"
 
 // contact
 #include "../drt_contact/contact_abstract_strategy.H"

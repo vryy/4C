@@ -69,7 +69,7 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
 
   // ask base algorithm for the structural time integrator
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureFieldrcp());
+  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureField());
 
   if(structure_ == Teuchos::null)
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");

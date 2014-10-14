@@ -25,9 +25,6 @@
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
 #include "../drt_adapter/adapter_algorithmbase.H"
-
-#include "../drt_adapter/ad_str_structure.H"
-
 #include <Epetra_Vector.h>
 
 

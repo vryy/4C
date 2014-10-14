@@ -466,13 +466,7 @@ namespace ADAPTER {
     virtual ~StructureBaseAlgorithm();
 
     /// structural field solver
-    Structure& StructureField() { return *structure_; }
-
-    /// const version of structural field solver
-    const Structure& StructureField() const { return *structure_; }
-
-    /// Teuchos::rcp version of structural field solver
-    Teuchos::RCP<Structure> StructureFieldrcp() { return structure_; }
+    Teuchos::RCP<Structure> StructureField() { return structure_; }
 
   private:
 
