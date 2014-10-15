@@ -41,7 +41,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 
 #include "../drt_ale/ale_utils_clonestrategy.H"
-#include "../drt_ale/ale.cpp"
+#include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_lib/drt_condition_utils.H"
 
@@ -470,7 +470,7 @@ void FS3I::PartFS3I::SetupSystem()
 void FS3I::PartFS3I::TestResults(const Epetra_Comm& comm)
 {
   DRT::Problem::Instance()->AddFieldTest(fsi_->FluidField().CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(fsi_->AleField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(fsi_->AleField()->CreateFieldTest());
   DRT::Problem::Instance()->AddFieldTest(fsi_->StructureField()->CreateFieldTest());
 
   for (unsigned i=0; i<scatravec_.size(); ++i)

@@ -30,8 +30,8 @@ Maintainer: Matthias Mayr
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
-#include "../drt_ale/ale.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 
 #include "fsi_nox_group.H"
 
@@ -179,8 +179,8 @@ void FSI::MonolithicStructureSplit::SetupSystem()
 
     fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                        FluidField().Interface()->FSCondMap(),
-                                      *AleField().Discretization(),
-                                       AleField().Interface()->FSCondMap(),
+                                      *AleField()->Discretization(),
+                                       AleField()->Interface()->FSCondMap(),
                                       "FREESURFCoupling",
                                        ndim);
   }
@@ -196,9 +196,9 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   StructureField()->UseBlockMatrix();
 
   // build ale system matrix in splitted system
-  AleField().BuildSystemMatrix(false);
+  AleField()->CreateSystemMatrix(false);
 
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
+  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->OtherMap()));
 
   // ---------------------------------------------------------------------------
   // Build the global Dirichlet map extractor
@@ -279,7 +279,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                                           Extractor(),
                                                           *StructureField(),
                                                           FluidField(),
-                                                          AleField(),
+                                                          *AleField(),
                                                           true,
                                                           DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
                                                           blocksmoother,
@@ -309,7 +309,7 @@ void FSI::MonolithicStructureSplit::CreateCombinedDofRowMap()
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField()->Interface()->OtherMap());
   vecSpaces.push_back(FluidField().DofRowMap());
-  vecSpaces.push_back(AleField().Interface()->OtherMap());
+  vecSpaces.push_back(AleField()->Interface()->OtherMap());
 
   if (vecSpaces[0]->NumGlobalElements()==0)
     dserror("No inner structural equations. Splitting not possible. Panic.");
@@ -328,8 +328,8 @@ void FSI::MonolithicStructureSplit::SetupDBCMapExtractor()
   // are not part of the final system of equations. Hence, we just need the
   // intersection of inner ALE DOFs with Dirichlet ALE DOFs.
   std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
-  aleintersectionmaps.push_back(AleField().GetDBCMapExtractor()->CondMap());
-  aleintersectionmaps.push_back(AleField().Interface()->OtherMap());
+  aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());
+  aleintersectionmaps.push_back(AleField()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap = LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
 
   // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
@@ -368,11 +368,11 @@ void FSI::MonolithicStructureSplit::SetupRHSResidual(Epetra_Vector& f)
   // get single field residuals
   Teuchos::RCP<const Epetra_Vector> sv = Teuchos::rcp(new Epetra_Vector(*StructureField()->RHS()));
   Teuchos::RCP<const Epetra_Vector> fv = Teuchos::rcp(new Epetra_Vector(*FluidField().RHS()));
-  Teuchos::RCP<const Epetra_Vector> av = Teuchos::rcp(new Epetra_Vector(*AleField().RHS()));
+  Teuchos::RCP<const Epetra_Vector> av = Teuchos::rcp(new Epetra_Vector(*AleField()->RHS()));
 
 //  // extract only inner DOFs from structure (=slave) and ALE field
   Teuchos::RCP<const Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
-  Teuchos::RCP<const Epetra_Vector> aov = AleField().Interface()->ExtractOtherVector(av);
+  Teuchos::RCP<const Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
 
   // add structure interface residual to fluid interface residual considering temporal scaling
   Teuchos::RCP<Epetra_Vector> scv = StructureField()->Interface()->ExtractFSICondVector(sv);
@@ -435,7 +435,7 @@ void FSI::MonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   const Teuchos::RCP<const LINALG::BlockSparseMatrixBase> blocks = StructureField()->BlockSystemMatrix();
 
   // get ale matrix
-  const Teuchos::RCP<const LINALG::BlockSparseMatrixBase> blocka = AleField().BlockSystemMatrix();
+  const Teuchos::RCP<const LINALG::BlockSparseMatrixBase> blocka = AleField()->BlockSystemMatrix();
 
 #ifdef DEBUG
   if (blocks==Teuchos::null) { dserror("Expected Teuchos::rcp to structure block matrix."); }
@@ -639,7 +639,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   // get single field block matrices
   const Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
   const Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
-  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
 #ifdef DEBUG
   // check whether allocation was successful
@@ -1271,8 +1271,8 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   Teuchos::RCP<Epetra_Vector> acx = FluidToAleInterface(fcx);
 
   // put inner and interface ALE solution increments together
-  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
-  AleField().Interface()->InsertFSICondVector(acx, a);
+  Teuchos::RCP<Epetra_Vector> a = AleField()->Interface()->InsertOtherVector(aox);
+  AleField()->Interface()->InsertFSICondVector(acx, a);
 
   // if there is a free surface
   if (FluidField().Interface()->FSCondRelevant())
@@ -1281,7 +1281,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
     FluidField().FreeSurfVelocityToDisplacement(fcx);
 
     Teuchos::RCP<Epetra_Vector> acx = fscoupfa_->MasterToSlave(fcx);
-    AleField().Interface()->InsertFSCondVector(acx, a);
+    AleField()->Interface()->InsertFSCondVector(acx, a);
   }
 
   ax = a;
@@ -1347,7 +1347,7 @@ void FSI::MonolithicStructureSplit::Output()
   }
 
   FluidField().    Output();
-  AleField().      Output();
+  AleField()->      Output();
   FluidField().LiftDrag();
 
   if (StructureField()->GetConstraintManager()->HaveMonitor())
@@ -1372,7 +1372,7 @@ void FSI::MonolithicStructureSplit::ReadRestart(int step)
 
   StructureField()->ReadRestart(step);
   FluidField().ReadRestart(step);
-  AleField().ReadRestart(step);
+  AleField()->ReadRestart(step);
 
   SetTimeStep(FluidField().Time(),FluidField().Step());
 }
@@ -1518,7 +1518,7 @@ void FSI::MonolithicStructureSplit::CombineFieldVectors(Epetra_Vector& v,
   {
     // extract inner DOFs from slave vectors
     Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
-    Teuchos::RCP<Epetra_Vector> aov = AleField().Interface()->ExtractOtherVector(av);
+    Teuchos::RCP<Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
 
     // put them together
     Extractor().AddVector(*sov,0,v);

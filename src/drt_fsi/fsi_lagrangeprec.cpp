@@ -6,6 +6,7 @@
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_structure/stru_aux.H"
 
@@ -17,7 +18,7 @@
 FSI::LagrangianBlockMatrix::LagrangianBlockMatrix(const LINALG::MultiMapExtractor& maps,
                                                   ADAPTER::FSIStructureWrapper& structure,
                                                   ADAPTER::Fluid& fluid,
-                                                  ALE::Ale& ale,
+                                                  ADAPTER::AleFsiWrapper& ale,
                                                   int symmetric,
                                                   double omega,
                                                   int iterations,

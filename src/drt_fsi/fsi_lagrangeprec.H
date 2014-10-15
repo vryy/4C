@@ -11,6 +11,7 @@ namespace ADAPTER
 {
   class FSIStructureWrapper;
   class Fluid;
+  class AleFsiWrapper;
 }
 
 namespace FSI
@@ -25,7 +26,7 @@ namespace FSI
     LagrangianBlockMatrix(const LINALG::MultiMapExtractor& maps,
                           ::ADAPTER::FSIStructureWrapper& structure,
                           ::ADAPTER::Fluid& fluid,
-                          ALE::Ale& ale,
+                          ::ADAPTER::AleFsiWrapper& ale,
                           int symmetric,
                           double omega=1.0,
                           int iterations=1,

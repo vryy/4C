@@ -1,16 +1,16 @@
-//-----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
 /*!
 \file ale3_evaluate.cpp
 
 <pre>
-
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289 10362
 </pre>
 */
-//-----------------------------------------------------------------------
-#ifdef D_ALE
+/*----------------------------------------------------------------------------*/
 
-
-
+/*----------------------------------------------------------------------------*/
 #include "ale3.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
@@ -20,10 +20,13 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/elasthyper.H"
+#include "Epetra_SerialDenseSolver.h"
 
-
-
-DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(DRT::ELEMENTS::Ale3* ele)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(
+    DRT::ELEMENTS::Ale3* ele)
 {
   switch (ele->Shape())
   {
@@ -69,15 +72,16 @@ DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(DRT
   }
   default:
     dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
+    break;
   }
   return NULL;
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::Ale3_Impl<distype> * DRT::ELEMENTS::Ale3_Impl<distype>::Instance( bool create )
+DRT::ELEMENTS::Ale3_Impl<distype> * DRT::ELEMENTS::Ale3_Impl<distype>::Instance(
+    bool create)
 {
   static Ale3_Impl<distype> * instance;
   if ( create )
@@ -94,10 +98,9 @@ DRT::ELEMENTS::Ale3_Impl<distype> * DRT::ELEMENTS::Ale3_Impl<distype>::Instance(
   return instance;
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
@@ -105,35 +108,37 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::Done()
   Instance( false );
 }
 
-
-/*----------------------------------------------------------------------*
- |  evaluate the element (public)                            g.bau 03/07|
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
-                                  DRT::Discretization&      discretization,
-                                  std::vector<int>&         lm,
-                                  Epetra_SerialDenseMatrix& elemat1,
-                                  Epetra_SerialDenseMatrix& elemat2,
-                                  Epetra_SerialDenseVector& elevec1,
-                                  Epetra_SerialDenseVector& elevec2,
-                                  Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
+    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
+    Epetra_SerialDenseVector& elevec3)
 {
   DRT::ELEMENTS::Ale3::ActionType act = Ale3::none;
 
+  bool incremental = params.get<bool>("incremental");
   // get the action required
   std::string action = params.get<std::string>("action","none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_ale_laplace")
       act = Ale3::calc_ale_laplace;
-  else if (action == "calc_ale_lin_stiff")
-    act = Ale3::calc_ale_lin_stiff;
-  else if (action == "calc_ale_spring")
-    act = Ale3::calc_ale_spring;
+  else if ( (action == "calc_ale_lin_stiff" && incremental) )
+     act = Ale3::calc_ale_lin;
+  else if ( (action == "calc_ale_lin_stiff" && !incremental) )
+    act = Ale3::calc_ale_lin_fixed_ref;
+  else if (action == "calc_ale_solid")
+      act = Ale3::calc_ale_solid;
+  else if (action == "calc_ale_spring" || action == "calc_ale_springs" )
+    act = Ale3::calc_ale_springs;
   else if (action == "calc_ale_spring_fixed_ref")
-    act = Ale3::calc_ale_spring_fixed_ref;
+    act = Ale3::calc_ale_springs_fixed_ref;
   else if (action == "calc_ale_node_normal")
     act = Ale3::calc_ale_node_normal;
+  else if (action == "setup_material")
+    act = Ale3::setup_material;
   else
     dserror("Unknown type of action for Ale3");
 
@@ -165,45 +170,51 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
 
     break;
   }
-  case calc_ale_lin_stiff:
-  {
-    std::vector<double> my_dispnp;
-    bool incremental = params.get<bool>("incremental");
-    if (incremental)
-    {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-      my_dispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
-    }
-
-    Ale3_Impl_Interface::Impl(this)->static_ke(this,
-					       discretization,
-					       lm,
-					       elemat1,
-					       elevec1,
-					       incremental,
-					       my_dispnp,
-					       mat,
-					       params);
-
-    break;
-  }
-
-  case calc_ale_spring:
+  case calc_ale_lin:
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     std::vector<double> my_dispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-    Ale3_Impl_Interface::Impl(this)->static_ke_spring(this,elemat1,my_dispnp);
+    Ale3_Impl_Interface::Impl(this)->static_ke(this, discretization, lm,
+        elemat1, elevec1, true, my_dispnp, params);
+
+    break;
+  }
+  case calc_ale_lin_fixed_ref:
+  {
+    std::vector<double> my_dispnp(lm.size(), 0.0);
+    Ale3_Impl_Interface::Impl(this)->static_ke(this, discretization, lm,
+        elemat1, elevec1, false, my_dispnp, params);
+
+    break;
+  }
+  case calc_ale_solid:
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    std::vector<double> my_dispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+
+    Ale3_Impl_Interface::Impl(this)->static_ke_nonlinear(this, discretization, lm,
+        elemat1, elevec1, true, my_dispnp, params);
+
+    break;
+  }
+  case calc_ale_springs:
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    std::vector<double> my_dispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+
+    Ale3_Impl_Interface::Impl(this)->static_ke_spring(this,elemat1,elevec1,true,my_dispnp);
 
     break;
   }
 
-  case calc_ale_spring_fixed_ref:
+  case calc_ale_springs_fixed_ref:
   {
     std::vector<double> my_dispnp(lm.size(),0.0);
-    Ale3_Impl_Interface::Impl(this)->static_ke_spring(this,elemat1,my_dispnp);
+    Ale3_Impl_Interface::Impl(this)->static_ke_spring(this,elemat1,elevec1,false,my_dispnp);
 
     break;
   }
@@ -218,40 +229,50 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
 
     break;
   }
+  case setup_material:
+  {
+    // get material
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<
+        MAT::So3Material>(mat, true);
+
+    if (so3mat->MaterialType() != INPAR::MAT::m_elasthyper
+        and so3mat->MaterialType() != INPAR::MAT::m_stvenant) // ToDo (mayr): allow only materials without history
+    {
+      dserror("Illegal material type for ALE. Only materials allowed that do "
+          "not store Gauss point data and do not need additional data from the "
+          "element line definition.");
+    }
+
+    if (so3mat->MaterialType() == INPAR::MAT::m_elasthyper)
+    {
+      so3mat = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(mat, true);
+      so3mat->Setup(0, NULL);
+    }
+    break; // no setup for St-Venant
+  }
 
   default:
     dserror("Unknown type of action for Ale3");
+    break;
   }
-
   return 0;
 }
 
-
-/*----------------------------------------------------------------------*
- |  do nothing (public)                                      gammi 04/07|
- |                                                                      |
- |  The function is just a dummy. For the ale elements, the           |
- |  integration of the volume neumann loads takes place in the element. |
- |  We need it there for the stabilisation terms!                       |
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Ale3::EvaluateNeumann(Teuchos::ParameterList& params,
-                                           DRT::Discretization&      discretization,
-                                           DRT::Condition&           condition,
-                                           std::vector<int>&         lm,
-                                           Epetra_SerialDenseVector& elevec1,
-                                           Epetra_SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, DRT::Condition& condition,
+    std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseMatrix* elemat1)
 {
   return 0;
 }
 
-//=================== ElementNodeNormal =============================
-// Calculate node normals acc. to Wall (7.13)
-template <DRT::Element::DiscretizationType distype>
-inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
-  Ale3*                      ele,
-  Epetra_SerialDenseVector& elevec1,
-  std::vector<double>&       my_dispnp
-  )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(Ale3* ele,
+    Epetra_SerialDenseVector& elevec1, std::vector<double>& my_dispnp)
 {
   if (distype == DRT::Element::nurbs8 or
       distype == DRT::Element::nurbs27)
@@ -321,16 +342,12 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
   }
 }
 
-//////
-// Calculate length of edge and differences in each dimension for two nodes.
-template <DRT::Element::DiscretizationType distype>
-inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(
-  int i, int j,
-  const LINALG::Matrix<3, iel>& xyze,
-  double& length,
-  double& dx,
-  double& dy,
-  double& dz)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(int i, int j,
+    const LINALG::Matrix<3, iel>& xyze, double& length, double& dx, double& dy,
+    double& dz)
 {
   /*---------------------------------------------- x-, y- and z-difference ---*/
   dx = xyze(0,j)-xyze(0,i);
@@ -343,18 +360,15 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(
 #endif
 }
 
-
-
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(
-    int node_p, int node_q, int node_r, int node_s,
-    const LINALG::Matrix<3, 1>& sq,
-    const double len_sq,
-    const LINALG::Matrix<3, 1>& rp,
-    const double len_rp,
-    const LINALG::Matrix<3, 1>& qp,
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(int node_p,
+    int node_q, int node_r, int node_s, const LINALG::Matrix<3, 1>& sq,
+    const double len_sq, const LINALG::Matrix<3, 1>& rp,
+    const double len_rp, const LINALG::Matrix<3, 1>& qp,
     const LINALG::Matrix<3, 1>& local_x,
-    LINALG::Matrix<3*iel,3*iel>& sys_mat)
+    LINALG::Matrix<3 * iel, 3 * iel>& sys_mat)
 {
   //Positions for dynamic triangle (2D)
   //sequence: s,j,q
@@ -660,11 +674,12 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(
   }
 }
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tetra_stiffness(
-  int tet_0, int tet_1, int tet_2, int tet_3,
-  LINALG::Matrix<3*iel,3*iel>& sys_mat,
-  const LINALG::Matrix<3,iel>& xyze)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tetra_stiffness(int tet_0,
+    int tet_1, int tet_2, int tet_3, LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
+    const LINALG::Matrix<3, iel>& xyze)
 {
   //according to Farhat et al.
   //twelve-triangle configuration
@@ -717,22 +732,22 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tetra_stiffness(
   ale3_add_tria_stiffness(tet_1, tet_0, tet_2, tet_3, e30, l03, e21, l12, e01, local_x, sys_mat);
 }
 
-//////
-// dummy function, "divide tetra into tetras"
-template <DRT::Element::DiscretizationType distype>
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_tet4(
-  LINALG::Matrix<3*iel,3*iel>& sys_mat,
-  const LINALG::Matrix<3,iel>& xyze)
+    LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
+    const LINALG::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(0,1,2,3,sys_mat,xyze);
 }
 
-//////
-// divide pyramid into tetras
-template <DRT::Element::DiscretizationType distype>
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_pyramid5(
-  LINALG::Matrix<3*iel,3*iel>& sys_mat,
-  const LINALG::Matrix<3,iel>& xyze)
+    LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
+    const LINALG::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(0,1,3,4,sys_mat,xyze);
   ale3_add_tetra_stiffness(0,1,2,4,sys_mat,xyze);
@@ -740,12 +755,12 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_pyramid5(
   ale3_add_tetra_stiffness(0,2,3,4,sys_mat,xyze);
 }
 
-//////
-// divide wedge into tetras
-template <DRT::Element::DiscretizationType distype>
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_wedge6(
-  LINALG::Matrix<3*iel,3*iel>& sys_mat,
-  const LINALG::Matrix<3,iel>& xyze)
+    LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
+    const LINALG::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(2, 0, 1, 3, sys_mat, xyze);
   ale3_add_tetra_stiffness(2, 0, 1, 4, sys_mat, xyze);
@@ -763,12 +778,12 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_wedge6(
   ale3_add_tetra_stiffness(4, 2, 3, 5, sys_mat, xyze);
 }
 
-//////
-// divide hex into tetras
-template <DRT::Element::DiscretizationType distype>
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_hex8(
-  LINALG::Matrix<3*iel,3*iel>& sys_mat,
-  const LINALG::Matrix<3,iel>& xyze)
+    LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
+    const LINALG::Matrix<3, iel>& xyze)
 {
 
   //Use 8 tetrahedra to prevent node-face-penetration
@@ -783,12 +798,12 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_hex8(
   ale3_add_tetra_stiffness(3,4,6,7,sys_mat,xyze);
 }
 
-//////
-// divide nurbs into tetras
-template <DRT::Element::DiscretizationType distype>
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
-  LINALG::Matrix<3*iel,3*iel>& sys_mat,
-  const LINALG::Matrix<3,iel>& xyze)
+    LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
+    const LINALG::Matrix<3, iel>& xyze)
 {
 
   //                          v
@@ -809,10 +824,10 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
   //  | / |   X-|-/-|---X-|-/-|---X              |4  |     |5  |
   //  |/  |  /6 |/  |  /7 |/  |  /8              |   X-----|---X      0,4,5,7
   //  X---------X---------X   | /                |  /3     |  /2      1,4,5,6
-  //  |9  |/    |10 |/    |11 |/    	         | /       | /        2,5,6,7
-  //  |   X-----|---X-----|---X     	         |/        |/         3,4,6,7
-  //  |  /3     |  /4     |  /5		         X---------X
-  //  | /       | /       | /		          0         1
+  //  |9  |/    |10 |/    |11 |/               | /       | /        2,5,6,7
+  //  |   X-----|---X-----|---X                |/        |/         3,4,6,7
+  //  |  /3     |  /4     |  /5             X---------X
+  //  | /       | /       | /              0         1
   //  |/        |/        |/
   //  X---------X---------X ----->u
   //   0         1         2
@@ -915,11 +930,13 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
   ale3_add_tetra_stiffness(15,21,25,24,sys_mat,xyze);
 }
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(
-  Ale3*                     ele,
-  Epetra_SerialDenseMatrix& sys_mat_epetra,
-  const std::vector<double>&       displacements)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
+    Epetra_SerialDenseMatrix& sys_mat_epetra,
+    Epetra_SerialDenseVector& residual, bool incremental,
+    const std::vector<double>& displacements)
 {
   LINALG::Matrix<3*iel,3*iel> sys_mat(sys_mat_epetra.A(),true);
   int node_i, node_j;                                     // end nodes of spring
@@ -933,9 +950,19 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(
   for(int i=0;i<iel;i++)
   {
     const double* x = nodes[i]->X();
-    xyze(0,i) = x[0] + displacements[i*3];
-    xyze(1,i) = x[1] + displacements[i*3+1];
-    xyze(2,i) = x[2] + displacements[i*3+2];
+    xyze(0,i)=x[0];
+    xyze(1,i)=x[1];
+    xyze(2,i)=x[2];
+  }
+
+  if (incremental)
+  {
+    for(int i=0;i<iel;i++)
+    {
+      xyze(0,i) += displacements[3*i];
+      xyze(1,i) += displacements[3*i+1];
+      xyze(2,i) += displacements[3*i+2];
+    }
   }
 
 //lineal springs from all corner nodes to all corner nodes
@@ -1327,28 +1354,35 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(
     dserror("unknown distype in ale spring dynamic");
     break;
   }
+
+  residual.Scale(0.0);
+  for(int i =0; i< 3*iel; ++i)
+  {
+    for(int j=0; j<3*iel; ++j)
+    {
+      residual[i]+=sys_mat(i,j)*displacements[j];
+    }
+  }
+  return;
 }
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
-  Ale3*                      ele,
-  DRT::Discretization&       dis,
-  std::vector<int>&          lm,
-  Epetra_SerialDenseMatrix&  sys_mat_epetra,
-  Epetra_SerialDenseVector&  /*residual*/,
-  bool                       incremental,
-  std::vector<double>&       my_dispnp,
-  Teuchos::RCP<MAT::Material> material,
-  Teuchos::ParameterList&    params)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(Ale3* ele,
+    DRT::Discretization& dis, std::vector<int>& lm,
+    Epetra_SerialDenseMatrix& sys_mat_epetra,
+    Epetra_SerialDenseVector& residual, bool incremental,
+    std::vector<double>& my_dispnp, Teuchos::ParameterList& params)
 {
   const int nd  = 3 * iel;
   // A view to sys_mat_epetra
   LINALG::Matrix<nd,nd> sys_mat(sys_mat_epetra.A(),true);
 
   //  get material using class StVenantKirchhoff
-  if (material->MaterialType()!=INPAR::MAT::m_stvenant)
-    dserror("stvenant material expected but got type %d", material->MaterialType());
-  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
+  if (ele->Material()->MaterialType()!=INPAR::MAT::m_stvenant)
+    dserror("stvenant material expected but got type %d", ele->Material()->MaterialType());
+  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(ele->Material().get());
 
   LINALG::Matrix<3,iel> xyze;
 
@@ -1375,11 +1409,9 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
   // --------------------------------------------------
   // Now do the nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots(3);
-  LINALG::Matrix<iel,1  >               weights(iel);
+  LINALG::Matrix<iel,1> weights(iel);
 
-  if(distype==DRT::Element::nurbs8
-     ||
-     distype==DRT::Element::nurbs27)
+  if (distype == DRT::Element::nurbs8 || distype == DRT::Element::nurbs27)
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis
       =
@@ -1425,29 +1457,22 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
 
 
     // get values of shape functions and derivatives in the gausspoint
-    if(distype != DRT::Element::nurbs8
-       &&
-       distype != DRT::Element::nurbs27)
+    if (distype != DRT::Element::nurbs8 && distype != DRT::Element::nurbs27)
     {
       // shape functions and their derivatives for polynomials
-      DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,distype);
-      DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+      DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
+      DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
     }
     else
     {
       // nurbs version
       Epetra_SerialDenseVector gp(3);
-      gp(0)=e1;
-      gp(1)=e2;
-      gp(2)=e3;
+      gp(0) = e1;
+      gp(1) = e2;
+      gp(2) = e3;
 
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
-	(funct  ,
-	 deriv  ,
-	 gp     ,
-	 myknots,
-	 weights,
-	 distype);
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots,
+          weights, distype);
     }
 
     // compute jacobian matrix
@@ -1524,273 +1549,256 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
         sys_mat(i,j) += dum;
       }
     }
-
-    // hourglass stabalization stiffness matrix ke
-    /*
-      see also:
-      (1) T. Belytschko and L.P. Bindeman:
-          Assumed strain stabilization of the 8-node hexahedral element
-          Comp. Meth. Appl. Mech. Eng.: 105 (1993) p. 225-260.
-      (2) D.P. Flanagan and T. Belytschko:
-          A uniform strain hexahedron and quadrilateral with orthogonal
-          hourglass control
-          Int. J. Num. Meth. Ing.: Vol. 17 (1981) p. 679-706.
-    */
-
-    //Integration rule for hour-glass-stabilization. Not used in the moment. If needed,
-    //it should be implemented within the getOptimalGaussrule-method
-#if 0
-        if (distype==hex8 and intpoints.nquad == 1)
-        {
-          const double ee = material->m.stvenant->youngs;
-          const double nu = material->m.stvenant->possionratio;
-          const double mu = ee / (2*(1+nu));
-
-          // ASQBI
-          const double c1 = 1.0/(1.0 - nu);
-          const double c2 = (1.0 + nu)/3;
-          const double c3 = 1.0/(1.0 - nu);
-
-          double         xc[3][8];
-          double         b[3][8];
-
-          double         a[3][3];
-          double         ba[3];
-          double         r[3][3];
-
-          double         h[4][8] = {{1,1,-1,-1,-1,-1,1,1},{1,-1,-1,1,-1,1,1,-1},
-                                    {1,-1,1,-1,1,-1,1,-1},{-1,1,-1,1,1,-1,1,-1}};
-          double         lam[3][8] = {{-1,1,1,-1,-1,1,1,-1},
-                                      {-1,-1,1,1,-1,-1,1,1},
-                                      {-1,-1,-1,-1,1,1,1,1}};
-          double         gam[4][8];
-          double         lx[3];
-          double         hh[3][3];
-
-          double         gg00[8][8], gg11[8][8], gg22[8][8], gg33[8][8];
-          double         gg01[8][8], gg10[8][8], gg02[8][8], gg20[8][8];
-          double         gg12[8][8], gg21[8][8];
-
-          double         kstab[24][24];
-
-          // corotational coordinate system: rotation tensor r[3][3]
-          // accord. to (1) Appendix A, Table 9
-          for (int i=0; i<2; i++)
-          {
-            for (int j=0; j<3; j++)
-            {
-              a[i][j] = 0.0;
-              for (int k=0; k<8; k++)
-              {
-                a[i][j] += lam[i][k]*xyze(j,k);
-              }
-            }
-          }
-
-          const double dum =(a[0][0]*a[1][0]+a[0][1]*a[1][1]+a[0][2]*a[1][2])/
-                            (a[0][0]*a[0][0]+a[0][1]*a[0][1]+a[0][2]*a[0][2]);
-
-          a[1][0] = a[1][0] - dum * a[0][0];
-          a[1][1] = a[1][1] - dum * a[0][1];
-          a[1][2] = a[1][2] - dum * a[0][2];
-
-          a[2][0] = a[0][1]*a[1][2] - a[0][2]*a[1][1];
-          a[2][1] = a[0][2]*a[1][0] - a[0][0]*a[1][2];
-          a[2][2] = a[0][0]*a[1][1] - a[0][1]*a[1][0];
-
-          for(int i = 0; i<3; i++)
-          {
-            ba[i] = sqrt(a[i][0]*a[i][0]+a[i][1]*a[i][1]+a[i][2]*a[i][2]);
-            r[i][0] = a[i][0] / ba[i];
-            r[i][1] = a[i][1] / ba[i];
-            r[i][2] = a[i][2] / ba[i];
-          }
-
-          // transforming nodal coordinates to the corotational system
-          for (int i=0; i<8; i++)
-          {
-            for (int j=0; j<3; j++)
-            {
-              xc[j][i] = r[j][0]*xyze(0,i)+r[j][1]*xyze(1,i)+r[j][2]*xyze(2,i);
-            }
-          }
-
-          int l0=0,l1=0,l2=0,l3=0,l4=0,l5=0,l6=0,l7=0;
-
-          // B-matrix b[3][8] accord. to (2) Appendix I, eqn (79)
-          for (int i=0; i<3; i++)
-          {
-            const int j = (i+1)%3;
-            const int k = (j+1)%3;
-            for (int l=0; l<8;l++)
-            {
-              switch (l)
-              {
-              case 0:
-                l0=0;l1=1;l2=2;l3=3;l4=4;l5=5;l6=6;l7=7;
-                break;
-              case 1:
-                l0=1;l1=2;l2=3;l3=0;l4=5;l5=6;l6=7;l7=4;
-                break;
-              case 2:
-                l0=2;l1=3;l2=0;l3=1;l4=6;l5=7;l6=4;l7=5;
-                break;
-              case 3:
-                l0=3;l1=0;l2=1;l3=2;l4=7;l5=4;l6=5;l7=6;
-                break;
-              case 4:
-                l0=4;l1=7;l2=6;l3=5;l4=0;l5=3;l6=2;l7=1;
-                break;
-              case 5:
-                l0=5;l1=4;l2=7;l3=6;l4=1;l5=0;l6=3;l7=2;
-                break;
-              case 6:
-                l0=6;l1=5;l2=4;l3=7;l4=2;l5=1;l6=0;l7=3;
-                break;
-              case 7:
-                l0=7;l1=6;l2=5;l3=4;l4=3;l5=2;l6=1;l7=0;
-                break;
-              }
-              b[i][l0] =1/(12 * vol) * (xc[j][l1]*((xc[k][l5] - xc[k][l2]) -
-                                                   (xc[k][l3] - xc[k][l4])) +
-                                        xc[j][l2]* (xc[k][l1] - xc[k][l3]) +
-                                        xc[j][l3]*((xc[k][l2] - xc[k][l7]) -
-                                                   (xc[k][l4] - xc[k][l1])) +
-                                        xc[j][l4]*((xc[k][l7] - xc[k][l5]) -
-                                                   (xc[k][l1] - xc[k][l3])) +
-                                        xc[j][l5]* (xc[k][l4] - xc[k][l1]) +
-                                        xc[j][l7]* (xc[k][l3] - xc[k][l4]) );
-            }
-          }
-
-          // gamma vectors, accord. to (1) eqn (2.12b)
-          for (int i=0; i<4; i++)
-          {
-            for (int j=0; j<8; j++)
-            {
-              gam[i][j] = 0.125 * h[i][j];
-              for (int k=0; k<3; k++)
-              {
-                const double dum = h[i][0]*xc[k][0]+h[i][1]*xc[k][1]+h[i][2]*xc[k][2]+
-                                   h[i][3]*xc[k][3]+h[i][4]*xc[k][4]+h[i][5]*xc[k][5]+
-                                   h[i][6]*xc[k][6]+h[i][7]*xc[k][7];
-                gam[i][j] -= 0.125 * dum * b[k][j];
-              }
-            }
-          }
-
-          /* lambda * x (auxiliary vector) */
-          lx[0] = lam[0][0]*xc[0][0]+lam[0][1]*xc[0][1]+lam[0][2]*xc[0][2]+
-                  lam[0][3]*xc[0][3]+lam[0][4]*xc[0][4]+lam[0][5]*xc[0][5]+
-                  lam[0][6]*xc[0][6]+lam[0][7]*xc[0][7];
-          lx[1] = lam[1][0]*xc[1][0]+lam[1][1]*xc[1][1]+lam[1][2]*xc[1][2]+
-                  lam[1][3]*xc[1][3]+lam[1][4]*xc[1][4]+lam[1][5]*xc[1][5]+
-                  lam[1][6]*xc[1][6]+lam[1][7]*xc[1][7];
-          lx[2] = lam[2][0]*xc[2][0]+lam[2][1]*xc[2][1]+lam[2][2]*xc[2][2]+
-                  lam[2][3]*xc[2][3]+lam[2][4]*xc[2][4]+lam[2][5]*xc[2][5]+
-                  lam[2][6]*xc[2][6]+lam[2][7]*xc[2][7];
-
-          /* H_ij, accord. to (1) eqns. (3.15d) and (3.15e) */
-          hh[0][0] = 1.0/3.0 * (lx[1]*lx[2])/lx[0];
-          hh[1][1] = 1.0/3.0 * (lx[2]*lx[0])/lx[1];
-          hh[2][2] = 1.0/3.0 * (lx[0]*lx[1])/lx[2];
-          hh[0][1] = 1.0/3.0 * lx[2];
-          hh[1][0] = 1.0/3.0 * lx[2];
-          hh[0][2] = 1.0/3.0 * lx[1];
-          hh[2][0] = 1.0/3.0 * lx[1];
-          hh[1][2] = 1.0/3.0 * lx[0];
-          hh[2][1] = 1.0/3.0 * lx[0];
-
-          /* stabalization matrix with respect to the corotational ccord. system. */
-          /* rearranging orders of dofs, accord. to (1) eqns. (3.15a) to (3.15c) */
-          for (int i=0; i<8; i++)
-          {
-            for (int j=0; j<8; j++)
-            {
-              gg00[i][j] = gam[0][i] * gam[0][j];
-              gg11[i][j] = gam[1][i] * gam[1][j];
-              gg22[i][j] = gam[2][i] * gam[2][j];
-              gg33[i][j] = gam[3][i] * gam[3][j];
-              gg01[i][j] = gam[0][i] * gam[1][j];
-              gg10[i][j] = gam[1][i] * gam[0][j];
-              gg02[i][j] = gam[0][i] * gam[2][j];
-              gg20[i][j] = gam[2][i] * gam[0][j];
-              gg12[i][j] = gam[1][i] * gam[2][j];
-              gg21[i][j] = gam[2][i] * gam[1][j];
-
-              /* kstab 00 */
-              kstab[i*3][j*3]     = 2*mu* (hh[0][0]*(c1*(gg11[i][j] + gg22[i][j])
-                                                     + c2*gg33[i][j]) + 0.5 * (hh[1][1] + hh[2][2]) * gg00[i][j]);
-
-              /* kstab 11 */
-              kstab[i*3+1][j*3+1] = 2*mu* (hh[1][1]*(c1*(gg22[i][j] + gg00[i][j])
-                                                     + c2*gg33[i][j]) + 0.5 * (hh[2][2] + hh[0][0]) * gg11[i][j]);
-
-              /* kstab 22 */
-              kstab[i*3+2][j*3+2] = 2*mu* (hh[2][2]*(c1*(gg00[i][j] + gg11[i][j])
-                                                     + c2*gg33[i][j]) + 0.5 * (hh[0][0] + hh[1][1]) * gg22[i][j]);
-
-              /* kstab 01 */
-              kstab[i*3][j*3+1]   = 2*mu* (hh[0][1]*(c3*gg10[i][j]+0.5*gg01[i][j]));
-
-              /* kstab 10 */
-              kstab[i*3+1][j*3]   = 2*mu* (hh[1][0]*(c3*gg01[i][j]+0.5*gg10[i][j]));
-
-              /* kstab 02 */
-              kstab[i*3][j*3+2]   = 2*mu* (hh[0][2]*(c3*gg20[i][j]+0.5*gg02[i][j]));
-
-              /* kstab 20 */
-              kstab[i*3+2][j*3]   = 2*mu* (hh[2][0]*(c3*gg02[i][j]+0.5*gg20[i][j]));
-
-              /* kstab 12 */
-              kstab[i*3+1][j*3+2] = 2*mu* (hh[1][2]*(c3*gg21[i][j]+0.5*gg12[i][j]));
-
-              /* kstab 21 */
-              kstab[i*3+2][j*3+1] = 2*mu* (hh[2][1]*(c3*gg12[i][j]+0.5*gg21[i][j]));
-            }
-          }
-
-          /* transforming kstab to the global coordinate system and */
-          /* and adding to the one point quadrature matrix */
-          for (int i=0; i<8; i++)
-          {
-            for (int j=0;j<8;j++)
-            {
-              for (int k=0;k<3;k++)
-              {
-                for (int l=0;l<3;l++)
-                {
-                  (*sys_mat)(i*3+k,j*3+l) += (r[0][k]*kstab[i*3+0][j*3+0] +
-                                              r[1][k]*kstab[i*3+1][j*3+0] +
-                                              r[2][k]*kstab[i*3+2][j*3+0]) * r[0][l] +
-                                             (r[0][k]*kstab[i*3+0][j*3+1] +
-                                              r[1][k]*kstab[i*3+1][j*3+1] +
-                                              r[2][k]*kstab[i*3+2][j*3+1]) * r[1][l] +
-                                             (r[0][k]*kstab[i*3+0][j*3+2] +
-                                              r[1][k]*kstab[i*3+1][j*3+2] +
-                                              r[2][k]*kstab[i*3+2][j*3+2]) * r[2][l];
-                }
-              }
-            }
-          }
-        }
-#endif
   }
 
+  residual.Scale(0.0);
+  for(int i =0; i< 3*iel; ++i)
+  {
+    for(int j=0; j<3*iel; ++j)
+    {
+      residual[i]+=(sys_mat)(i,j)*my_dispnp[j];
+    }
+  }
 }
 
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
+    DRT::Discretization& dis, std::vector<int>& lm,
+    Epetra_SerialDenseMatrix& sys_mat_epetra,
+    Epetra_SerialDenseVector& residual, bool incremental,
+    std::vector<double>& my_dispnp, Teuchos::ParameterList& params)
+{
 
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(
-    Ale3*                      ele,
-    DRT::Discretization&       dis     ,
-    Epetra_SerialDenseMatrix&  sys_mat_epetra ,
-    Epetra_SerialDenseVector&  residual,
-    bool                       incremental,
-    std::vector<double>&        my_dispnp,
-    Teuchos::RCP<MAT::Material>  material,
-    Teuchos::ParameterList&    params  )
+  const int numdof  = NODDOF_ALE3 * iel;
+  // A view to sys_mat_epetra
+  LINALG::Matrix<numdof,numdof> sys_mat(sys_mat_epetra.A(),true);
+  // update element geometry
+  Epetra_SerialDenseMatrix xrefe(iel,NUMDIM_ALE3);  // material coord. of element
+  Epetra_SerialDenseMatrix xcurr(iel,NUMDIM_ALE3);  // current  coord. of element
+  for (int i=0; i<iel; ++i)
+  {
+    xrefe(i,0) = ele->Nodes()[i]->X()[0];
+    xrefe(i,1) = ele->Nodes()[i]->X()[1];
+    xrefe(i,2) = ele->Nodes()[i]->X()[2];
+
+    xcurr(i,0) = xrefe(i,0) + my_dispnp[i*NODDOF_ALE3+0];
+    xcurr(i,1) = xrefe(i,1) + my_dispnp[i*NODDOF_ALE3+1];
+    xcurr(i,2) = xrefe(i,2) + my_dispnp[i*NODDOF_ALE3+2];
+  }
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(3);
+  LINALG::Matrix<iel,1  >               weights(iel);
+
+  if (distype == DRT::Element::nurbs8 || distype == DRT::Element::nurbs27)
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis =
+        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+
+    bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,
+        ele->Id());
+
+    if (zero_size)
     {
+      return;
+    }
+
+    for (int inode = 0; inode < iel; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp =
+          dynamic_cast<DRT::NURBS::ControlPoint*>(ele->Nodes()[inode]);
+      weights(inode) = cp->W();
+    }
+  }
+  /*----------------------------------------- declaration of variables ---*/
+  LINALG::Matrix<iel,1  > funct;
+  Epetra_SerialDenseMatrix deriv(NUMDIM_ALE3,iel);
+  //LINALG::Matrix<3,  iel> deriv;
+  LINALG::Matrix<3,  3  > xjm;
+  LINALG::Matrix<3,  3  > xji;
+  LINALG::Matrix<6,  numdof > bop;
+  LINALG::Matrix<6,  6  > D(true);
+  // gaussian points
+  const DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
+  const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule);
+
+  /* =========================================================================*/
+  /* ================================================= Loop over Gauss Points */
+  /* =========================================================================*/
+  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  {
+    const double e1 = intpoints.qxg[iquad][0];
+    const double e2 = intpoints.qxg[iquad][1];
+    const double e3 = intpoints.qxg[iquad][2];
+    // get values of shape functions and derivatives in the gausspoint
+    if (distype != DRT::Element::nurbs8 && distype != DRT::Element::nurbs27)
+    {
+      // shape functions and their derivatives for polynomials
+      DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
+      DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
+    }
+    else
+    {
+      // nurbs version
+      Epetra_SerialDenseVector gp(3);
+      gp(0) = e1;
+      gp(1) = e2;
+      gp(2) = e3;
+
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots,
+          weights, distype);
+    }
+  /* compute the Jacobian matrix which looks like:
+  **         [ x_,r  y_,r  z_,r ]
+  **     J = [ x_,s  y_,s  z_,s ]
+  **         [ x_,t  y_,t  z_,t ]
+  */
+  Epetra_SerialDenseMatrix jac(NUMDIM_ALE3,NUMDIM_ALE3);
+  jac.Multiply('N','N',1.0,deriv,xrefe,1.0);
+
+  // compute determinant of Jacobian by Sarrus' rule
+  double detJ= jac(0,0) * jac(1,1) * jac(2,2)
+             + jac(0,1) * jac(1,2) * jac(2,0)
+             + jac(0,2) * jac(1,0) * jac(2,1)
+             - jac(0,0) * jac(1,2) * jac(2,1)
+             - jac(0,1) * jac(1,0) * jac(2,2)
+             - jac(0,2) * jac(1,1) * jac(2,0);
+  if (abs(detJ) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
+  else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+  /* compute derivatives N_XYZ at gp w.r.t. material coordinates
+  ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
+  ** Inverse of Jacobian is therefore not explicitly computed
+  */
+  Epetra_SerialDenseMatrix N_XYZ(NUMDIM_ALE3,iel);
+  Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
+  solve_for_inverseJac.SetMatrix(jac);            // set A=jac
+  solve_for_inverseJac.SetVectors(N_XYZ,deriv);// set X=N_XYZ, B=deriv_gp
+  solve_for_inverseJac.FactorWithEquilibration(true);
+  int err2 = solve_for_inverseJac.Factor();
+  int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
+  if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
+
+  // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+  Epetra_SerialDenseMatrix defgrd(NUMDIM_ALE3,NUMDIM_ALE3);
+  defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,1.0);
+
+  // Right Cauchy-Green tensor = F^T * F
+  Epetra_SerialDenseMatrix cauchygreen(NUMDIM_ALE3,NUMDIM_ALE3);
+  cauchygreen.Multiply('T','N',1.0,defgrd,defgrd,1.0);
+  // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+  // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+  Epetra_SerialDenseVector glstrain(MAT::NUM_STRESS_3D);
+  glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+  glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+  glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+  glstrain(3) = cauchygreen(0,1);
+  glstrain(4) = cauchygreen(1,2);
+  glstrain(5) = cauchygreen(2,0);
+
+  /* non-linear B-operator (may so be called, meaning
+  ** of B-operator is not so sharp in the non-linear realm) *
+  ** B = F . Bl *
+  **
+  **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
+  **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
+  **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
+  ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
+  **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
+  **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
+  **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
+  **      [                                                         ]
+  **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
+  **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
+  **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
+  **      [                                                         ]
+  **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
+  **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
+  **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+  */
+  Epetra_SerialDenseMatrix bop(MAT::NUM_STRESS_3D,numdof);
+  for (int i=0; i<iel; ++i) {
+    bop(0,NODDOF_ALE3*i+0) = defgrd(0,0)*N_XYZ(0,i);
+    bop(0,NODDOF_ALE3*i+1) = defgrd(1,0)*N_XYZ(0,i);
+    bop(0,NODDOF_ALE3*i+2) = defgrd(2,0)*N_XYZ(0,i);
+    bop(1,NODDOF_ALE3*i+0) = defgrd(0,1)*N_XYZ(1,i);
+    bop(1,NODDOF_ALE3*i+1) = defgrd(1,1)*N_XYZ(1,i);
+    bop(1,NODDOF_ALE3*i+2) = defgrd(2,1)*N_XYZ(1,i);
+    bop(2,NODDOF_ALE3*i+0) = defgrd(0,2)*N_XYZ(2,i);
+    bop(2,NODDOF_ALE3*i+1) = defgrd(1,2)*N_XYZ(2,i);
+    bop(2,NODDOF_ALE3*i+2) = defgrd(2,2)*N_XYZ(2,i);
+    /* ~~~ */
+    bop(3,NODDOF_ALE3*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
+    bop(3,NODDOF_ALE3*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
+    bop(3,NODDOF_ALE3*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
+    bop(4,NODDOF_ALE3*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
+    bop(4,NODDOF_ALE3*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
+    bop(4,NODDOF_ALE3*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
+    bop(5,NODDOF_ALE3*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
+    bop(5,NODDOF_ALE3*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
+    bop(5,NODDOF_ALE3*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
+  }
+  // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat_f(true);
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress_f(true);
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain_f(glstrain.A());
+  // QUICK HACK until so_disp exclusively uses LINALG::Matrix!!!!!
+  LINALG::Matrix<NUMDIM_ALE3,NUMDIM_ALE3> fixed_defgrd(defgrd);
+  params.set<int>("gp",iquad);
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
+  so3mat->Evaluate(&fixed_defgrd,&glstrain_f,params,&stress_f,&cmat_f,ele->Id());
+  Epetra_SerialDenseMatrix cmat(View,cmat_f.A(),cmat_f.Rows(),cmat_f.Rows(),cmat_f.Columns());
+  Epetra_SerialDenseVector stress(View,stress_f.A(),stress_f.Rows());
+  // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+
+  // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
+  (residual).Multiply('T','N',detJ * intpoints.qwgt[iquad] ,bop,stress,1.0);
+
+  // integrate `elastic' and `initial-displacement' stiffness matrix
+  // keu = keu + (B^T . C . B) * detJ * w(gp)
+  Epetra_SerialDenseMatrix cb(MAT::NUM_STRESS_3D,numdof);
+  cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
+  (sys_mat_epetra).Multiply('T','N',detJ * intpoints.qwgt[iquad] ,bop,cb,1.0);
+  // integrate `geometric' stiffness matrix and add to keu *****************
+  Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
+  sfac.Scale(detJ * intpoints.qwgt[iquad] );     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+  std::vector<double> SmB_L(NUMDIM_ALE3);     // intermediate Sm.B_L
+  // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
+  for (int inod=0; inod<iel; ++inod){
+    SmB_L[0] = sfac(0) * N_XYZ(0,inod) + sfac(3) * N_XYZ(1,inod) + sfac(5) * N_XYZ(2,inod);
+    SmB_L[1] = sfac(3) * N_XYZ(0,inod) + sfac(1) * N_XYZ(1,inod) + sfac(4) * N_XYZ(2,inod);
+    SmB_L[2] = sfac(5) * N_XYZ(0,inod) + sfac(4) * N_XYZ(1,inod) + sfac(2) * N_XYZ(2,inod);
+    for (int jnod=0; jnod<iel; ++jnod){
+      double bopstrbop = 0.0;            // intermediate value
+      for (int idim=0; idim<NUMDIM_ALE3; ++idim) bopstrbop += N_XYZ(idim,jnod) * SmB_L[idim];
+      (sys_mat)(NUMDIM_ALE3*inod+0,NUMDIM_ALE3*jnod+0) += bopstrbop;
+      (sys_mat)(NUMDIM_ALE3*inod+1,NUMDIM_ALE3*jnod+1) += bopstrbop;
+      (sys_mat)(NUMDIM_ALE3*inod+2,NUMDIM_ALE3*jnod+2) += bopstrbop;
+    }
+  } // end of integrate `geometric' stiffness ******************************
+
+  /* =========================================================================*/
+  }/* ==================================================== end of Loop over GP */
+  /* =========================================================================*/
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele,
+    DRT::Discretization& dis, Epetra_SerialDenseMatrix& sys_mat_epetra,
+    Epetra_SerialDenseVector& residual, bool incremental,
+    std::vector<double>& my_dispnp, Teuchos::RCP<MAT::Material> material,
+    Teuchos::ParameterList& params)
+{
+  dserror("We don't know what is really done in the element evaluation"
+      "of the Laplace smoothing strategy. Check this CAREFULLY before"
+      "using it.");
+
+
   // ******************************************************
   // this method was copied from the ALE2 element and extended to 3D
   // ToDo: proper implementation of min_Jac for stiffness heuristics
@@ -1817,7 +1825,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(
     xyze(2,i)=x[2];
   }
 
-  if (incremental)  // Laplace with incremental????
+  if (incremental)
   {
     for(int i=0;i<iel;i++)
     {
@@ -1864,6 +1872,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(
   LINALG::Matrix<3,  3  > xji(true);
   LINALG::Matrix<3,  iel> deriv_xy(true);
   LINALG::Matrix<iel,iel> tempmat(true);
+  LINALG::Matrix<3*iel,1> tempmat2(true);
 
   double vol=0.;
 
@@ -1953,13 +1962,20 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(
       }
     }
   }
-
-  return;
+  residual.Scale(0.0);
+  for(int i =0; i< nd; ++i)
+  {
+    for(int j=0; j<nd; ++j)
+    {
+      residual[i]+=sys_mat(i,j)*my_dispnp[j];
     }
+  }
+  return;
+}
 
-
-// get optimal gaussrule for discretization type
-template <DRT::Element::DiscretizationType distype>
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
 inline DRT::UTILS::GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussrule()
 {
     switch (distype)
@@ -1987,5 +2003,3 @@ inline DRT::UTILS::GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaus
     }
 }
 
-
-#endif

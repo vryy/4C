@@ -623,6 +623,14 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_fsi_timint_adaptive.cpp
   src/drt_adapter/ad_str_fsi_crack.cpp
   src/drt_adapter/adapter_thermo.cpp
+  src/drt_adapter/ad_ale.cpp
+  src/drt_adapter/ad_ale_biofilm_fsi.cpp
+  src/drt_adapter/ad_ale_crack.cpp
+  src/drt_adapter/ad_ale_fpsi.cpp
+  src/drt_adapter/ad_ale_fsi.cpp
+  src/drt_adapter/ad_ale_wear.cpp
+  src/drt_adapter/ad_ale_wrapper.cpp
+  src/drt_adapter/ad_ale_xffsi.cpp
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_analytical.cpp
@@ -1675,6 +1683,11 @@ set(OBJS_DRT_ALEALG
   src/drt_ale/ale_springs_fixed_ref.cpp
   src/drt_ale/ale_utils_mapextractor.cpp
   src/drt_ale/ale_utils_clonestrategy.cpp
+  src/drt_ale_new/ale.cpp
+  src/drt_ale_new/ale_dyn.cpp
+  src/drt_ale_new/ale_resulttest.cpp
+  src/drt_ale_new/ale_utils_mapextractor.cpp
+  src/drt_ale_new/ale_utils_clonestrategy.cpp
 )
 set(OBJS_DRT_W1_LIB
   src/drt_w1/wall1.cpp

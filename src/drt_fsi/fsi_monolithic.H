@@ -28,14 +28,10 @@ Maintainer: Matthias Mayr
 /// forward declarations
 namespace ADAPTER
 {
+  class AleFsiWrapper;
   class Coupling;
   class FSIStructureWrapper;
   class StructureFSITimIntAda;
-}
-
-namespace ALE
-{
-  class Ale;
 }
 
 namespace DRT
@@ -131,7 +127,7 @@ namespace FSI
     ::ADAPTER::Fluid& FluidField(){return *fluid_;}
 
     /// access to ale field
-    ALE::Ale& AleField() { return *ale_; }
+    const Teuchos::RCP<ADAPTER::AleFsiWrapper>& AleField() { return ale_; }
 
     //@}
 
@@ -150,7 +146,7 @@ namespace FSI
     Teuchos::RCP< ::ADAPTER::Fluid> fluid_;
 
     /// underlying ale of the FSI problem
-    Teuchos::RCP<ALE::Ale> ale_;
+    Teuchos::RCP< ::ADAPTER::AleFsiWrapper> ale_;
 
     //! @name Transfer helpers
 

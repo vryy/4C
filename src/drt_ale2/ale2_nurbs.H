@@ -1,20 +1,23 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*
 \file ale2_nurbs.H
 
-A nurbs implementation of the ale2 element
+\brief A nurbs implementation of the ale2 element
 
 <pre>
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289 15362
 </pre>
+*/
+/*----------------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
-#ifdef D_ALE
+/*----------------------------------------------------------------------------*/
 #ifndef ALE2_NURBS_H
 #define ALE2_NURBS_H
 
+/*----------------------------------------------------------------------------*/
+/* header inclusions */
 #include "ale2.H"
 
 /*!
@@ -146,4 +149,3 @@ private:
 
 
 #endif  // #ifndef ALE2_NURBS_H
-#endif  // #ifdef D_ALE2

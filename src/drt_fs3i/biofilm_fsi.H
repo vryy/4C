@@ -13,7 +13,7 @@ Maintainer: Mirella Coroneo
 #define FSI_BIOFILM_GROWTH_H
 
 #include "../drt_fs3i/fs3i_partitioned_1wc.H"
-#include "../drt_ale/ale.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 
 // forward declarations
 
@@ -103,7 +103,7 @@ namespace FS3I
     //Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> structure_;
 
     //Teuchos::RCP<ALE::AleBaseAlgorithm> ale_;
-    Teuchos::RCP<ALE::Ale> ale_;
+    Teuchos::RCP<ADAPTER::AleFsiWrapper> ale_;
 
 //    // total flux at the interface overall the InnerTimeloop
 //    Teuchos::RCP<Epetra_MultiVector> flux;

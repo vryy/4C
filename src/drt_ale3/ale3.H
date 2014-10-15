@@ -1,18 +1,21 @@
-//-----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
 /*!
 \file ale3.H
 
 <pre>
-
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289 10362
 </pre>
 */
-//-----------------------------------------------------------------------
-#ifdef D_ALE
+/*----------------------------------------------------------------------------*/
 
-
+/*----------------------------------------------------------------------------*/
 #ifndef ALE3_H
 #define ALE3_H
 
+/*----------------------------------------------------------------------------*/
+/* header inclusions */
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
@@ -23,6 +26,11 @@
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
+const int NUMDIM_ALE3 = 3;      ///< number of dimensions
+const int NODDOF_ALE3 = 3;      ///< number of dofs per node
+
+/*----------------------------------------------------------------------------*/
+/* forward declarations */
 namespace DRT
 {
 
@@ -30,7 +38,6 @@ class Discretization;
 
 namespace ELEMENTS
 {
-
   // where should that be put?
   template <DRT::Element::DiscretizationType dtype>
   struct DisTypeToNumCornerNodes {};
@@ -46,7 +53,8 @@ namespace ELEMENTS
   template<> struct DisTypeToNumCornerNodes<DRT::Element::nurbs27>  {static const int numCornerNodes = 8;};
 
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 class Ale3Surface;
 class Ale3_Impl_Interface;
 template <DRT::Element::DiscretizationType distype> class Ale3_Impl;
@@ -321,31 +329,22 @@ public:
   enum ActionType
   {
     none,
-    calc_ale_laplace,
-    calc_ale_lin_stiff,
-    calc_ale_spring,            ///< compute stiffness based on springs algorithm on last time step configuration
-    calc_ale_spring_fixed_ref,  ///< compute stiffness based on springs algorithm on initial configuration
-    calc_ale_node_normal,
-    ba_calc_ale_node_normal     // Calculate boundary node normal
+    calc_ale_solid, ///< compute stiffness based on fully nonlinear elastic solid with hyperelastic material law
+    calc_ale_springs, ///< compute stiffness based on springs algorithm on last time step configuration
+    calc_ale_laplace,///< compute stiffness based on laplacian smoothing based on initial configuration
+    calc_ale_node_normal,///< Calculate boundary node normal
+    ba_calc_ale_node_normal, ///< Calculate boundary node normal TODO (@ HAHN unused action please fix me!)
+    setup_material, ///< Setup material in case of ElastHyper Tool Box
+    // old types will be removed in the near future
+    calc_ale_lin, ///< compute stiffness based on linear elastic solid at current configuration
+    calc_ale_lin_fixed_ref, ///< compute stiffness based on linear elastic solid in initial configuration
+    calc_ale_springs_fixed_ref ///< compute stiffness based on springs algorithm on initial configuration
   };
 
 private:
 
-  //! Gaussrule
-  //DRT::UTILS::GaussRule3D                         gaussrule_;
-
-  //! container containing all kind of ale3 thisandthat
-  //DRT::Container                                  data_;
-
-
-  // internal calculation methods
-
-  // don't want = operator
+  //! don't want = operator
   Ale3& operator = (const Ale3& old);
-#if 0
-  // get optimal gaussrule for given discretization type
-  DRT::UTILS::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype);
-#endif
 };
 
 //=======================================================================
@@ -365,28 +364,26 @@ public:
   /// Internal implementation class for fluid element
   static Ale3_Impl_Interface* Impl(DRT::ELEMENTS::Ale3* ele);
 
-  virtual void static_ke_spring(Ale3*                     ele,
-                                Epetra_SerialDenseMatrix& sys_mat,
-                                const std::vector<double>& displacements) = 0;
-  virtual void static_ke(Ale3*                      ele,
-                         DRT::Discretization&       discretization,
-                         std::vector<int>&          lm,
-                         Epetra_SerialDenseMatrix&  sys_mat,
-                         Epetra_SerialDenseVector&  residual,
-                         bool                       incremental,
-                         std::vector<double>&       my_dispnp,
-                         Teuchos::RCP<MAT::Material> material,
-                         Teuchos::ParameterList&    params) = 0;
+  virtual void static_ke_spring(Ale3* ele, Epetra_SerialDenseMatrix& sys_mat,
+      Epetra_SerialDenseVector& residual,
+      bool incremental, const std::vector<double>& displacements) = 0;
 
-  virtual void static_ke_laplace(
-  Ale3*                      ele,
-  DRT::Discretization&       dis,
-  Epetra_SerialDenseMatrix&  sys_mat,
-  Epetra_SerialDenseVector&  residual,
-  bool                       incremental,
-  std::vector<double>&       my_dispnp,
-  Teuchos::RCP<MAT::Material> material,
-  Teuchos::ParameterList&    params) = 0;
+  virtual void static_ke(Ale3* ele, DRT::Discretization& discretization,
+      std::vector<int>& lm, Epetra_SerialDenseMatrix& sys_mat,
+      Epetra_SerialDenseVector& residual, bool incremental,
+      std::vector<double>& my_dispnp,
+      Teuchos::ParameterList& params) = 0;
+
+  virtual void static_ke_nonlinear(Ale3* ele, DRT::Discretization& discretization,
+      std::vector<int>& lm, Epetra_SerialDenseMatrix& sys_mat,
+      Epetra_SerialDenseVector& residual, bool incremental,
+      std::vector<double>& my_dispnp,
+      Teuchos::ParameterList& params)=0;
+
+  virtual void static_ke_laplace(Ale3* ele, DRT::Discretization& dis,
+      Epetra_SerialDenseMatrix& sys_mat, Epetra_SerialDenseVector& residual,
+      bool incremental, std::vector<double>& my_dispnp,
+      Teuchos::RCP<MAT::Material> material, Teuchos::ParameterList& params) = 0;
 
     virtual void ElementNodeNormal(Ale3*                      ele,
                                    Epetra_SerialDenseVector&  elevec1,
@@ -423,17 +420,21 @@ public:
 
   void static_ke_spring(Ale3*                     ele,
                         Epetra_SerialDenseMatrix& sys_mat,
+                        Epetra_SerialDenseVector& residual,
+                        bool incremental,
                         const std::vector<double>& displacements);
 
-  void static_ke(Ale3*                      ele,
-   DRT::Discretization&       discretization,
-                 std::vector<int>&          lm,
-                 Epetra_SerialDenseMatrix&  sys_mat,
-                 Epetra_SerialDenseVector&  residual,
-                 bool                       incremental,
-                 std::vector<double>&       my_dispnp,
-                 Teuchos::RCP<MAT::Material> material,
-                 Teuchos::ParameterList&    params);
+  void static_ke(Ale3* ele, DRT::Discretization& discretization,
+      std::vector<int>& lm, Epetra_SerialDenseMatrix& sys_mat,
+      Epetra_SerialDenseVector& residual, bool incremental,
+      std::vector<double>& my_dispnp,
+      Teuchos::ParameterList& params);
+
+  void static_ke_nonlinear(Ale3* ele, DRT::Discretization& discretization,
+      std::vector<int>& lm, Epetra_SerialDenseMatrix& sys_mat,
+      Epetra_SerialDenseVector& residual, bool incremental,
+      std::vector<double>& my_dispnp,
+      Teuchos::ParameterList& params);
 
   void ElementNodeNormal(Ale3*                      ele,
                               Epetra_SerialDenseVector&  elevec1,
@@ -877,7 +878,4 @@ protected:
 } // namespace ELEMENTS
 } // namespace DRT
 
-
-
-#endif
 #endif

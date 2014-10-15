@@ -26,12 +26,23 @@ namespace INPAR
   /// possible types of moving boundary simulation
   enum AleDynamic
   {
-    classic_lin,
-    incr_lin,
+    // old types
+    none,
+    classic_lin, // will die
+    incr_lin, // will die
     laplace,
     springs,
-    springs_fixed_ref
+    springs_fixed_ref, // will die
+    // new type
+    solid,
   };
+  /// Handling of non-converged nonlinear solver
+  enum DivContAct
+  {
+    divcont_stop,               ///< abort simulation
+    divcont_continue           ///< continue nevertheless
+  };
+
 
   }  // namespace ALE
 

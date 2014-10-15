@@ -4,10 +4,10 @@
 #include "fsi_monolithic_linearsystem.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_ale/ale.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
 
 #include "../drt_lib/drt_colors.H"
@@ -75,8 +75,8 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
   coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
                                  StructureField()->Interface()->FSICondMap(),
-                                *AleField().Discretization(),
-                                 AleField().Interface()->FSICondMap(),
+                                *AleField()->Discretization(),
+                                 AleField()->Interface()->FSICondMap(),
                                 "FSICoupling",
                                 ndim);
 
@@ -84,8 +84,8 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                    FluidField().Interface()->FSICondMap(),
-                                  *AleField().Discretization(),
-                                   AleField().Interface()->FSICondMap(),
+                                  *AleField()->Discretization(),
+                                   AleField()->Interface()->FSICondMap(),
                                   "FSICoupling",
                                   ndim);
 
@@ -101,17 +101,17 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
 
   coupfa.SetupCoupling(*FluidField().Discretization(),
-                       *AleField().Discretization(),
+                       *AleField()->Discretization(),
                        *fluidnodemap,
                        *alenodemap,
                        ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->Map(0)));
+  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(0)));
 
   // ---------------------------------------------------------------------------
   // Build the global Dirichlet map extractor
@@ -121,8 +121,8 @@ void FSI::ConstrMonolithic::GeneralSetup()
   // are not part of the final system of equations. Hence, we just need the
   // intersection of inner ALE DOFs with Dirichlet ALE DOFs.
   std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
-  aleintersectionmaps.push_back(AleField().GetDBCMapExtractor()->CondMap());
-  aleintersectionmaps.push_back(AleField().Interface()->OtherMap());
+  aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());
+  aleintersectionmaps.push_back(AleField()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap = LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
 
   // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map

@@ -26,7 +26,7 @@ Maintainer: Lena Yoshihara
 FSI::LungOverlappingBlockMatrix::LungOverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
                                                             ADAPTER::FSIStructureWrapper& structure,
                                                             ADAPTER::Fluid& fluid,
-                                                            ALE::Ale& ale,
+                                                            ADAPTER::AleFsiWrapper& ale,
                                                             bool structuresplit,
                                                             int symmetric,
                                                             double omega,

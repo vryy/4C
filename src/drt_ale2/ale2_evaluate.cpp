@@ -1,16 +1,16 @@
-//-----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
 /*!
 \file ale2_evaluate.cpp
 
 <pre>
-
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289 15362
 </pre>
 */
-//-----------------------------------------------------------------------
-#ifdef D_ALE
+/*----------------------------------------------------------------------------*/
 
-
-
+/*----------------------------------------------------------------------------*/
 #include "ale2.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
@@ -21,19 +21,16 @@
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/elasthyper.H"
 
 
-/*----------------------------------------------------------------------*
- |  evaluate the element (public)                            g.bau 03/07|
- *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList&   params,
-                                  DRT::Discretization&      discretization,
-                                  std::vector<int>&         lm,
-                                  Epetra_SerialDenseMatrix& elemat1,
-                                  Epetra_SerialDenseMatrix& elemat2,
-                                  Epetra_SerialDenseVector& elevec1,
-                                  Epetra_SerialDenseVector& elevec2,
-                                  Epetra_SerialDenseVector& elevec3)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
+    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
+    Epetra_SerialDenseVector& elevec3)
 {
   DRT::ELEMENTS::Ale2::ActionType act = Ale2::none;
 
@@ -41,61 +38,104 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList&   params,
   std::string action = params.get<std::string>("action","none");
   if (action == "none")
     dserror("No action supplied");
+  else if (action == "calc_ale_lin")
+     act = Ale2::calc_ale_lin;
   else if (action == "calc_ale_lin_stiff")
-    act = Ale2::calc_ale_lin_stiff;
+    act = Ale2::calc_ale_lin_fixed_ref;
+  else if (action == "calc_ale_solid")
+     act = Ale2::calc_ale_solid;
   else if (action == "calc_ale_laplace")
       act = Ale2::calc_ale_laplace;
-  else if (action == "calc_ale_spring")
-    act = Ale2::calc_ale_spring;
+  else if (action == "calc_ale_spring" || action == "calc_ale_springs" )
+    act = Ale2::calc_ale_springs;
   else if (action == "calc_ale_spring_fixed_ref")
-    act = Ale2::calc_ale_spring_fixed_ref;
+    act = Ale2::calc_ale_springs_fixed_ref;
+  else if (action == "setup_material")
+    act = Ale2::setup_material;
   else
-    dserror("Unknown type of action for Ale2");
+    dserror("%s is an unknown type of action for Ale2",action.c_str());
 
   // get the material
   Teuchos::RCP<MAT::Material> mat = Material();
 
   switch (act)
   {
-    case calc_ale_lin_stiff:
+    case calc_ale_lin:
     {
-      //Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-      //vector<double> my_dispnp(lm.size());
-      //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      std::vector<double> my_dispnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-      static_ke(discretization,lm,&elemat1,&elevec1,mat,params);
+      static_ke(discretization,lm,&elemat1,elevec1,true,my_dispnp,params);
+
+      break;
+    }
+    case calc_ale_lin_fixed_ref:
+    {
+      std::vector<double> my_dispnp(lm.size(),0.0);
+      static_ke(discretization,lm,&elemat1,elevec1,false,my_dispnp,params);
+
+      break;
+    }
+    case calc_ale_solid:
+    {
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      std::vector<double> my_dispnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+
+      static_ke_nonlinear(lm,&elemat1,elevec1,my_dispnp,params);
 
       break;
     }
     case calc_ale_laplace:
     {
-      //Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-      //vector<double> my_dispnp(lm.size());
-      //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
-
-      static_ke_laplace(discretization,lm,&elemat1,&elevec1,mat,params);
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      std::vector<double> my_dispnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+      static_ke_laplace(discretization,lm,&elemat1,elevec1,my_dispnp,params);
 
       break;
     }
-    case calc_ale_spring:
+    case calc_ale_springs:
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp"); // get the displacements
       std::vector<double> my_dispnp(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-      static_ke_spring(&elemat1,my_dispnp);
+      static_ke_spring(&elemat1,elevec1,true,my_dispnp);
 
       break;
     }
-    case calc_ale_spring_fixed_ref:
+    case calc_ale_springs_fixed_ref:
     {
       // same as calc_ale_spring, however, no displ. and hence initial/reference configuration
       // is used for stiffness matrix computation
       std::vector<double> my_dispnp(lm.size(),0.0);
-      static_ke_spring(&elemat1,my_dispnp);
+      static_ke_spring(&elemat1,elevec1,false,my_dispnp);
 
       break;
     }
+    case setup_material:
+   {
+     // get material
+     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<
+         MAT::So3Material>(mat, true);
+
+     if (so3mat->MaterialType() != INPAR::MAT::m_elasthyper
+         and so3mat->MaterialType() != INPAR::MAT::m_stvenant) // ToDo (mayr): allow only materials without history
+     {
+       dserror("Illegal material type for ALE. Only materials allowed that do "
+           "not store Gauss point data and do not need additional data from the "
+           "element line definition.");
+     }
+
+     if (so3mat->MaterialType() == INPAR::MAT::m_elasthyper)
+     {
+       so3mat = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(mat, true);
+       so3mat->Setup(0, NULL);
+     }
+     break; // no setup for St-Venant / classic_lin required
+   }
     default:
     {
       dserror("Unknown type of action for Ale2");
@@ -106,29 +146,21 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList&   params,
   return 0;
 }
 
-
-/*----------------------------------------------------------------------*
- |  do nothing (public)                                      gammi 04/07|
- |                                                                      |
- |  The function is just a dummy. For the ale elements, the           |
- |  integration of the volume neumann loads takes place in the element. |
- |  We need it there for the stabilisation terms!                       |
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Ale2::EvaluateNeumann(Teuchos::ParameterList& params,
-                                           DRT::Discretization&      discretization,
-                                           DRT::Condition&           condition,
-                                           std::vector<int>&         lm,
-                                           Epetra_SerialDenseVector& elevec1,
-                                           Epetra_SerialDenseMatrix* elemat1)
+    DRT::Discretization& discretization, DRT::Condition& condition,
+    std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseMatrix* elemat1)
 {
   return 0;
 }
 
-
-void DRT::ELEMENTS::Ale2::edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
-	           double* length,
-	           double* sin_alpha,
-	           double* cos_alpha)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::edge_geometry(int i, int j,
+    const Epetra_SerialDenseMatrix& xyze, double* length, double* sin_alpha,
+    double* cos_alpha)
 {
   double delta_x, delta_y;
   /*---------------------------------------------- x- and y-difference ---*/
@@ -144,8 +176,10 @@ void DRT::ELEMENTS::Ale2::edge_geometry(int i, int j, const Epetra_SerialDenseMa
   /*----------------------------------------------------------------------*/
 }
 
-
-double DRT::ELEMENTS::Ale2::ale2_area_tria(const Epetra_SerialDenseMatrix& xyze, int i, int j, int k)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+double DRT::ELEMENTS::Ale2::ale2_area_tria(const Epetra_SerialDenseMatrix& xyze,
+    int i, int j, int k)
 {
   double a, b, c;  /* geometrical values */
   double el_area;  /* element area */
@@ -161,18 +195,19 @@ double DRT::ELEMENTS::Ale2::ale2_area_tria(const Epetra_SerialDenseMatrix& xyze,
   return el_area;
 }
 
-
-void DRT::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k, const Epetra_SerialDenseMatrix& xyze,
-                                         Epetra_SerialDenseMatrix* k_torsion)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k,
+    const Epetra_SerialDenseMatrix& xyze, Epetra_SerialDenseMatrix* k_torsion)
 {
 /*
                            k
                            *
-	                  / \
-       y,v ^	    l_ki /   \  l_jk
-           |	       	/     \
-	    --->     i *-------* j
-            x,u	        l_ij
+                    / \
+       y,v ^      l_ki /   \  l_jk
+           |           /     \
+      --->     i *-------* j
+            x,u          l_ij
 */
 
   double x_ij, x_jk, x_ki;  /* x-differences between nodes */
@@ -183,7 +218,7 @@ void DRT::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k, const Epetra_Seria
   double area;              /* area of the triangle */
 
 
-  Epetra_SerialDenseMatrix R(3,6);	 /* rotation matrix same as in Farhat et al. */
+  Epetra_SerialDenseMatrix R(3,6);   /* rotation matrix same as in Farhat et al. */
   Epetra_SerialDenseMatrix C(3,3);   /* torsion stiffness matrix same as in Farhat et al. */
   Epetra_SerialDenseMatrix A(6,3);   /* auxiliary array of intermediate results */
 
@@ -248,20 +283,23 @@ void DRT::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k, const Epetra_Seria
 /*----------------------------------- perform matrix multiplications ---*/
 
 
-  int err = A.Multiply('T','N',1,R,C,0);	// A = R^t * C
+  int err = A.Multiply('T','N',1,R,C,0);  // A = R^t * C
   if (err!=0)
     dserror("Multiply failed");
-  err = k_torsion->Multiply('N','N',1,A,R,0);	// stiff = A * R
+  err = k_torsion->Multiply('N','N',1,A,R,0);  // stiff = A * R
   if (err!=0)
     dserror("Multiply failed");
 
 }
 
-void DRT::ELEMENTS::Ale2::ale2_tors_spring_tri3(Epetra_SerialDenseMatrix* sys_mat, const Epetra_SerialDenseMatrix& xyze)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::ale2_tors_spring_tri3(
+    Epetra_SerialDenseMatrix* sys_mat, const Epetra_SerialDenseMatrix& xyze)
 {
   int i, j;      /* counters */
 
-  Epetra_SerialDenseMatrix k_tria(6,6);	// rotational stiffness matrix of one triangle
+  Epetra_SerialDenseMatrix k_tria(6,6);  // rotational stiffness matrix of one triangle
 
   /*-------------------------------- evaluate torsional stiffness part ---*/
   ale2_torsional(0,1,2,xyze,&k_tria);
@@ -272,12 +310,14 @@ void DRT::ELEMENTS::Ale2::ale2_tors_spring_tri3(Epetra_SerialDenseMatrix* sys_ma
       (*sys_mat)(i,j) += k_tria(i,j);
 }
 
-
-void DRT::ELEMENTS::Ale2::ale2_tors_spring_quad4(Epetra_SerialDenseMatrix* sys_mat, const Epetra_SerialDenseMatrix& xyze)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::ale2_tors_spring_quad4(
+    Epetra_SerialDenseMatrix* sys_mat, const Epetra_SerialDenseMatrix& xyze)
 {
   int i, j;                 /* counters */
 
-  Epetra_SerialDenseMatrix k_tria(6,6);	// rotational stiffness matrix of one triangle
+  Epetra_SerialDenseMatrix k_tria(6,6);  // rotational stiffness matrix of one triangle
 
   /*--- pass all nodes and determine the triangle defined by the node i and
   adjunct nodes... ---*/
@@ -329,17 +369,18 @@ void DRT::ELEMENTS::Ale2::ale2_tors_spring_quad4(Epetra_SerialDenseMatrix* sys_m
   }
 }
 
-
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
-                                           std::vector<double>& displacements)
+    Epetra_SerialDenseVector& residual, bool incremental,
+    std::vector<double>& displacements)
 {
-  const int iel = NumNode();                              // numnp to this element
+  const int iel = NumNode(); // numnode of this element
   const DiscretizationType distype = this->Shape();
-  int numcnd;                                             // number of corner nodes
-  int node_i, node_j;                                     // end nodes of actual spring
-  double length;                                          // length of actual edge
-  double sin, cos;                                        // direction of actual edge
+  int numcnd; // number of corner nodes
+  int node_i, node_j; // end nodes of actual spring
+  double length; // length of actual edge
+  double sin, cos; // direction of actual edge
   double factor;
 
 
@@ -366,8 +407,17 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
 
   for(int i=0;i<iel;i++)
   {
-    xyze(0,i)=Nodes()[i]->X()[0];// + displacements[i*2];
-    xyze(1,i)=Nodes()[i]->X()[1];// + displacements[i*2+1];
+    xyze(0,i)=Nodes()[i]->X()[0];
+    xyze(1,i)=Nodes()[i]->X()[1];
+  }
+
+  if(incremental)
+  {
+    for(int i=0;i<iel;i++)
+    {
+      xyze(0,i)+= displacements[i*2];
+      xyze(1,i)+= displacements[i*2+1];
+    }
   }
 
 
@@ -497,29 +547,31 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
       dserror("unknown distype in ale spring dynamic");
       break;
   }
+  residual.Scale(0.0);
+  for(int i =0; i< 2*iel; ++i)
+  {
+    for(int j=0; j<2*iel; ++j)
+    {
+      residual[i]+=(*sys_mat)(i,j)*displacements[j];
+    }
+  }
 }
 
-//=======================================================================
-//=======================================================================
-
-
-
-void DRT::ELEMENTS::Ale2::static_ke(
-  DRT::Discretization       &dis     ,
-  std::vector<int>          &lm      ,
-  Epetra_SerialDenseMatrix  *sys_mat ,
-  Epetra_SerialDenseVector  *residual,
-  Teuchos::RCP<MAT::Material> material,
-  Teuchos::ParameterList    &params  )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::static_ke(DRT::Discretization& dis,
+    std::vector<int> &lm, Epetra_SerialDenseMatrix *sys_mat,
+    Epetra_SerialDenseVector& residual, bool incremental,
+    std::vector<double>& my_dispnp, Teuchos::ParameterList &params)
 {
   const int iel = NumNode();
   const int nd  = 2 * iel;
   const DiscretizationType distype = this->Shape();
 
   // get material using class StVenantKirchhoff
-  if (material->MaterialType()!=INPAR::MAT::m_stvenant)
-    dserror("stvenant material expected but got type %d", material->MaterialType());
-  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
+  if (Material()->MaterialType()!=INPAR::MAT::m_stvenant)
+    dserror("stvenant material expected but got type %d", Material()->MaterialType());
+  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(Material().get());
 
   Epetra_SerialDenseMatrix xyze(2,iel);
 
@@ -530,6 +582,14 @@ void DRT::ELEMENTS::Ale2::static_ke(
     xyze(1,i)=Nodes()[i]->X()[1];
   }
 
+  if (incremental)
+  {
+    for(int i=0;i<iel;i++)
+    {
+      xyze(0,i) += my_dispnp[2*i+0];
+      xyze(1,i) += my_dispnp[2*i+1];
+    }
+  }
   // --------------------------------------------------
   // Now do the nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots(2);
@@ -685,15 +745,193 @@ void DRT::ELEMENTS::Ale2::static_ke(
       }
     }
   }
+  residual.Scale(0.0);
+  for(int i =0; i< 2*iel; ++i)
+  {
+    for(int j=0; j<2*iel; ++j)
+    {
+      residual[i]+=(*sys_mat)(i,j)*my_dispnp[j];
+    }
+  }
 }
 
-
-//=======================================================================
-//=======================================================================
-
-static void ale2_min_jaco(DRT::Element::DiscretizationType distyp, Epetra_SerialDenseMatrix xyz, double *min_detF)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int> &lm,
+    Epetra_SerialDenseMatrix *sys_mat, Epetra_SerialDenseVector& residual,
+    const std::vector<double>& my_dispnp, Teuchos::ParameterList &params)
 {
-  double  detF[4];          /* Jacobian determinant at nodes */
+  // declaration of variables
+  const DiscretizationType distype = this->Shape();
+  const int numnode = NumNode(); // number of nodes
+  const int numdf = 2; // number of degrees of freedom
+  const int nd = numnode * numdf; // number of nodal degrees of freedom
+  double det = 0.0; // jacobian determinant wrt. xrefe
+  Epetra_SerialDenseVector funct(numnode); // shape functions
+  Epetra_SerialDenseMatrix deriv(2, numnode); // shape function derivatives
+  Epetra_SerialDenseMatrix xjm(2, 2); // jacobian matrix wrt. xrefe
+  Epetra_SerialDenseMatrix xji(2, 2); // inverse of jacobian matrix wrt. xrefe
+  Epetra_SerialDenseMatrix boplin(4, nd); // blin operator
+  Epetra_SerialDenseMatrix b_cure(4, nd); // blin operator in current configuration
+  Epetra_SerialDenseMatrix F(2, 2); // deformation gradient
+  Epetra_SerialDenseMatrix strain(2, 2); // strains
+  Epetra_SerialDenseMatrix stress(4, 4); // stresses
+  Epetra_SerialDenseMatrix C(4, 4); // constitutive matrix
+  Epetra_SerialDenseMatrix stiffmatrix(nd, nd); // stiffness matrix
+  Epetra_SerialDenseVector force(nd); // force vector
+
+  // check element shape
+  if (distype == nurbs4 or distype == nurbs9)
+    dserror("No nurbs support in the nonlinear ALE");
+
+  // get element node coordinates and calculate current configuration
+  Epetra_SerialDenseMatrix xrefe(2, numnode); // reference configuration
+  Epetra_SerialDenseMatrix xcure(2, numnode); // current configuration
+  for (int k = 0; k < numnode; ++k)
+  {
+    xrefe(0, k) = Nodes()[k]->X()[0];
+    xrefe(1, k) = Nodes()[k]->X()[1];
+    xcure(0, k) = xrefe(0, k) + my_dispnp[k * numdf + 0];
+    xcure(1, k) = xrefe(1, k) + my_dispnp[k * numdf + 1];
+  }
+
+  // gaussian points
+  const DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
+  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+
+  // integration loop
+  for (int ip = 0; ip < intpoints.nquad; ++ip)
+  {
+    // get gausspoints and integration weight
+    const double e1 = intpoints.qxg[ip][0];
+    const double e2 = intpoints.qxg[ip][1];
+    const double wgt = intpoints.qwgt[ip];
+
+    // get values of shape functions and derivatives in the gausspoint
+    DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
+    DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+
+    // compute jacobian matrix wrt. xrefe
+    ale2_jacobianmatrix(xrefe, deriv, xjm, &det, numnode);
+    double fac = wgt * det;
+
+    // calculate shape function derivatives wrt. xrefe
+    Epetra_SerialDenseMatrix bop_temp(2, numnode);
+    ale2_bop(bop_temp, deriv, xjm, xji, numnode);
+
+    // fill blin operator
+    for (int j = 0; j < numnode; j++)
+    {
+      boplin(0, 2 * j) = bop_temp(0, j);
+      boplin(1, 2 * j + 1) = bop_temp(1, j);
+      boplin(2, 2 * j) = bop_temp(1, j);
+      boplin(3, 2 * j + 1) = bop_temp(0, j);
+    }
+
+    // calculate deformation gradient F and Green-Lagrange deformations
+    ale2_greenlag(F, strain, deriv, xji, my_dispnp);
+
+    // write the deformation gradient F in matrix notation
+    Epetra_SerialDenseMatrix Fmatrix(4, 4);
+    Fmatrix(0, 0) = F(0, 0);
+    Fmatrix(0, 2) = 0.5 * F(0, 1);
+    Fmatrix(0, 3) = 0.5 * F(0, 1);
+    Fmatrix(1, 1) = F(1, 1);
+    Fmatrix(1, 2) = 0.5 * F(1, 0);
+    Fmatrix(1, 3) = 0.5 * F(1, 0);
+    Fmatrix(2, 1) = F(0, 1);
+    Fmatrix(2, 2) = 0.5 * F(0, 0);
+    Fmatrix(2, 3) = 0.5 * F(0, 0);
+    Fmatrix(3, 0) = F(1, 0);
+    Fmatrix(3, 2) = 0.5 * F(1, 1);
+    Fmatrix(3, 3) = 0.5 * F(1, 1);
+
+    // calculate b_cure operator
+    int err = b_cure.Multiply('T', 'N', 1.0, Fmatrix, boplin, 0.0);
+    if (err != 0)
+      dserror("Multiply failed");
+
+    // make 3D equivalent of Green-Lagrange strain
+    LINALG::Matrix<6, 1> gl(false);
+    gl(0) = strain(0, 0); // E_{11}
+    gl(1) = strain(1, 1); // E_{22}
+    gl(2) = 0.0; // E_{33}
+    gl(3) = strain(0, 1) + strain(1, 0); // 2*E_{12}=E_{12}+E_{21}
+    gl(4) = 0.0; // 2*E_{23}
+    gl(5) = 0.0; // 2*E_{31}
+
+    // call 3D stress response under plain strain
+    LINALG::Matrix<6, 1> pk2(true); // Piola-Kirchhoff 2 stresses (must be zerofied!)
+    LINALG::Matrix<6, 6> cmat(true); // constitutive matrix (must be zerofied!)
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<
+        MAT::So3Material>(Material(), true);
+    so3mat->Evaluate(NULL, &gl, params, &pk2, &cmat, Id());
+
+    // transform 2nd Piola-Kirchhoff stress back to 2d stress matrix
+    memset(stress.A(), 0, stress.M() * stress.N() * sizeof(double)); // set all values to zero
+    stress(0, 0) = stress(3, 3) = pk2(0); // S_{11}
+    stress(1, 1) = stress(2, 2) = pk2(1); // S_{22}
+    stress(0, 2) = stress(1, 3) = stress(3, 1) = stress(2, 0) = pk2(3); // S_{12}
+
+    // transform elasticity matrix  back to 2d matrix
+    C(0, 0) = cmat(0, 0); // C_{1111}
+    C(0, 1) = cmat(0, 1); // C_{1122}
+    C(0, 2) = cmat(0, 3); // C_{1112}
+    C(0, 3) = cmat(0, 3); // C_{1112} = C_{1121}
+
+    C(1, 0) = cmat(1, 0); // C_{2211}
+    C(1, 1) = cmat(1, 1); // C_{2222}
+    C(1, 2) = cmat(1, 3); // C_{2212}
+    C(1, 3) = cmat(1, 3); // C_{2221} = C_{2212}
+
+    C(2, 0) = cmat(3, 0); // C_{1211}
+    C(2, 1) = cmat(3, 1); // C_{1222}
+    C(2, 2) = cmat(3, 3); // C_{1212}
+    C(2, 3) = cmat(3, 3); // C_{1221} = C_{1212}
+
+    C(3, 0) = cmat(3, 0); // C_{2111} = C_{1211}
+    C(3, 1) = cmat(3, 1); // C_{2122} = C_{1222}
+    C(3, 2) = cmat(3, 3); // C_{2112} = C_{1212}
+    C(3, 3) = cmat(3, 3); // C_{2121} = C_{1212}
+
+    // geometric part of stiffness matrix k_g perform B^T * SIGMA * B * fac
+    Epetra_SerialDenseMatrix dumdum(4, nd); // temporary variable
+    err = dumdum.Multiply('N', 'N', 1.0, stress, boplin, 0.0);
+    if (err != 0)
+      dserror("Multiply failed");
+    err = (*sys_mat).Multiply('T', 'N', fac, boplin, dumdum, 1.0);
+    if (err != 0)
+      dserror("Multiply failed");
+
+    // linear stiffness matrix k_eu perform B_cure^T * C * B_cure * fac
+    err = dumdum.Multiply('N', 'N', 1.0, C, b_cure, 0.0);
+    if (err != 0)
+      dserror("Multiply failed");
+    err = (*sys_mat).Multiply('T', 'N', fac, b_cure, dumdum, 1.0);
+    if (err != 0)
+      dserror("Multiply failed");
+
+    // compute residual forces
+    Epetra_SerialDenseMatrix stress_vec(4, 1); // stress vector
+    stress_vec(0, 0) = stress(0, 0);
+    stress_vec(1, 0) = stress(1, 1);
+    stress_vec(2, 0) = stress(0, 2);
+    stress_vec(3, 0) = stress(0, 2);
+
+    // perform B_cure^T * S * fac
+    err = (residual).Multiply('T', 'N', fac, b_cure, stress_vec, 1.0);
+    if (err != 0)
+      dserror("Multiply failed");
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+static void ale2_min_jaco(DRT::Element::DiscretizationType distyp,
+    Epetra_SerialDenseMatrix xyz, double *min_detF)
+{
+  double  detF[4]; // Jacobian determinant at nodes
 
   switch (distyp)
   {
@@ -709,6 +947,11 @@ static void ale2_min_jaco(DRT::Element::DiscretizationType distyp, Epetra_Serial
                        - (xyz[1][3]-xyz[1][2]) * (xyz[0][1]-xyz[0][2]) );
       detF[3] = 0.25 * ( (xyz[0][3]-xyz[0][2]) * (xyz[1][0]-xyz[1][3])
                        - (xyz[1][3]-xyz[1][2]) * (xyz[0][0]-xyz[0][3]) );
+
+      std::cout << "detF[0] = " << detF[0] << std::endl;
+      std::cout << "detF[1] = " << detF[1] << std::endl;
+      std::cout << "detF[2] = " << detF[2] << std::endl;
+      std::cout << "detF[3] = " << detF[3] << std::endl;
 
       /*------------------------------------------------- check sign ---*/
       if (detF[0] <= 0.0) dserror("Negative JACOBIAN ");
@@ -733,25 +976,20 @@ static void ale2_min_jaco(DRT::Element::DiscretizationType distyp, Epetra_Serial
   return;
 }
 
-
-
-void DRT::ELEMENTS::Ale2::static_ke_laplace(
-  DRT::Discretization        &dis     ,
-  std::vector<int>           &lm      ,
-  Epetra_SerialDenseMatrix   *sys_mat ,
-  Epetra_SerialDenseVector   *residual,
-  Teuchos::RCP<MAT::Material>  material,
-  Teuchos::ParameterList     &params  )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis,
+    std::vector<int> &lm, Epetra_SerialDenseMatrix *sys_mat,
+    Epetra_SerialDenseVector& residual, std::vector<double>& displacements,
+    Teuchos::ParameterList &params)
 {
+  dserror("We don't know what is really done in the element evaluation"
+      "of the Laplace smoothing strategy. Check this CAREFULLY before"
+      "using it.");
+
   const int iel = NumNode();
 //  const int nd  = 2 * iel;
   const DiscretizationType distype = this->Shape();
-
-
-//  // get material using class StVenantKirchhoff
-//  if (material->MaterialType()!=m_stvenant)
-//    dserror("stvenant material expected but got type %d", material->MaterialType());
-//  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
 
   Epetra_SerialDenseMatrix xyze(2,iel);
 
@@ -762,6 +1000,12 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
     xyze(1,i)=Nodes()[i]->X()[1];
   }
 
+  // update spatial configuration
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i) += displacements[2*i+0];
+    xyze(1,i) += displacements[2*i+1];
+  }
   // --------------------------------------------------
   // Now do the nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots(2);
@@ -878,6 +1122,126 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
        }
     }
   }
+  residual.Scale(0.0);
+  for(int i =0; i< 2*iel; ++i)
+  {
+    for(int j=0; j<2*iel; ++j)
+    {
+      residual[i]+=(*sys_mat)(i,j)*displacements[j];
+    }
+  }
 }
 
-#endif
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::ale2_jacobianmatrix(
+    const Epetra_SerialDenseMatrix& xrefe,
+    const Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& xjm,
+    double* det, const int iel)
+{
+  /* calculate jacobian matrix (parameter space to reference configuration)
+   * xjm = deriv * xrefe^T */
+  int err = xjm.Multiply('N', 'T', 1.0, deriv, xrefe, 0.0);
+  if (err != 0)
+    dserror("Multiply failed");
+
+  // determinant of jacobian
+  *det = xjm(0, 0) * xjm(1, 1) - xjm(0, 1) * xjm(1, 0);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::ale2_jacobianmatrix_cure(
+    const Epetra_SerialDenseMatrix& xcure,
+    const Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& xjm_cure,
+    double* det_cure, const int iel)
+{
+  /* calculate jacobian matrix (parameter space to reference configuration)
+   * xjm_cure = deriv * xcure^T */
+  int err = xjm_cure.Multiply('N', 'T', 1.0, deriv, xcure, 0.0);
+  if (err != 0)
+    dserror("Multiply failed");
+
+  // determinant of jacobian
+  *det_cure = xjm_cure(0, 0) * xjm_cure(1, 1) - xjm_cure(0, 1) * xjm_cure(1, 0);
+  if (*det_cure <= 0.0)
+  {
+    dserror("JACOBIAN determinant ZERO or NEGATIVE in ALE element %d: %12.5e\n",
+        Id(), *det_cure);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::ale2_bop(Epetra_SerialDenseMatrix& bop,
+    Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& xjm,
+    Epetra_SerialDenseMatrix& xji, const int numnode)
+{
+
+  /*
+   | Nk,x |
+   | Nk,y |   k=0...numnode-1
+   */
+
+  // calculate inverse of jacobian
+  const double dum = 1.0 / (xjm(0, 0) * xjm(1, 1) - xjm(0, 1) * xjm(1, 0));
+  xji(0, 0) = xjm(1, 1) * dum;
+  xji(0, 1) = -xjm(0, 1) * dum;
+  xji(1, 0) = -xjm(1, 0) * dum;
+  xji(1, 1) = xjm(0, 0) * dum;
+
+  // calculate bop = xji * deriv
+  int err = bop.Multiply('N', 'N', 1.0, xji, deriv, 0.0);
+  if (err != 0)
+    dserror("Multiply failed");
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::ale2_greenlag(Epetra_SerialDenseMatrix& defgrad,
+    Epetra_SerialDenseMatrix& greenlag, Epetra_SerialDenseMatrix& deriv,
+    Epetra_SerialDenseMatrix& xji, const std::vector<double>& my_dispnp)
+{
+
+  Epetra_SerialDenseMatrix displacements(NumNode(), 2); // displacements
+  Epetra_SerialDenseMatrix rcg(2, 2); // right Cauchy-Green tensor
+
+  // rewrite displacements
+  for (int i = 0; i < NumNode(); i++)
+    for (int j = 0; j < 2; j++) {
+      displacements(i, j) = my_dispnp[2*i+j];
+    }
+
+  // determine deformation gradient F dumdum = xji * deriv
+  Epetra_SerialDenseMatrix dumdum(2, NumNode());
+  int err = dumdum.Multiply('N', 'N', 1.0, xji, deriv, 0.0);
+  if (err != 0)
+    dserror("Multiply failed");
+
+  // F = I + displacements^T * (xji * deriv)^T = I + displacements^T * dumdum^T
+  err = defgrad.Multiply('T', 'T', 1.0, displacements, dumdum, 0.0);
+  if (err != 0)
+    dserror("Multiply failed");
+  defgrad(0, 0) += 1.0;
+  defgrad(1, 1) += 1.0;
+
+  // calculate right Cauchy-Green tensor C = F^T * F
+  err = rcg.Multiply('T', 'N', 1.0, defgrad, defgrad, 0.0);
+  if (err != 0)
+    dserror("Multiply failed");
+
+  // calculate Green-Lagrange strain tensor E = 0.5 * (F^T * F - I)
+  greenlag(0, 0) = 0.5 * (rcg(0, 0) - 1.0);
+  greenlag(0, 1) = 0.5 * rcg(0, 1);
+  greenlag(1, 0) = 0.5 * rcg(1, 0);
+  greenlag(1, 1) = 0.5 * (rcg(1, 1) - 1.0);
+
+  return;
+}
+

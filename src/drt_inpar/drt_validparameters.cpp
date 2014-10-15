@@ -5005,16 +5005,30 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUMSTEP",41,"",&adyn);
   DoubleParameter("MAXTIME",4.0,"",&adyn);
   setStringToIntegralParameter<int>("ALE_TYPE","classic_lin","ale mesh movement algorithm",
-                               tuple<std::string>("classic_lin","incr_lin","laplace","springs","springs_fixed_ref"),
+                               tuple<std::string>("classic_lin","incr_lin","solid","laplace","springs","springs_fixed_ref"),
                                tuple<int>(INPAR::ALE::classic_lin,
                                    INPAR::ALE::incr_lin,
+                                   INPAR::ALE::solid,
                                    INPAR::ALE::laplace,
                                    INPAR::ALE::springs,
                                    INPAR::ALE::springs_fixed_ref),
                                &adyn);
+  IntParameter("MAXITER",1,"Maximum number of newton iterations.",&adyn);
+  DoubleParameter("TOLRES",1.0e-06,"Absolute tolerance for length scaled L2 residual norm ",&adyn);
+  DoubleParameter("TOLDISP",1.0e-06,"Absolute tolerance for length scaled L2 increment norm ",&adyn);
+
   IntParameter("NUM_INITSTEP",0,"",&adyn);
   IntParameter("RESTARTEVRY",1,"write restart data every RESTARTEVRY steps",&adyn);
   IntParameter("RESULTSEVRY",0,"write results every RESULTSTEVRY steps",&adyn);
+  setStringToIntegralParameter<int>("DIVERCONT", "continue",
+                                    "What to do if nonlinear solver does not converge?",
+                                    tuple<std::string>(
+                                        "stop",
+                                        "continue"),
+                                    tuple<int>(
+                                        INPAR::ALE::divcont_stop,
+                                        INPAR::ALE::divcont_continue),
+                                    &adyn);
 
   // linear solver id used for scalar ale problems
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for ale problems...",&adyn);

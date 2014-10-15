@@ -16,7 +16,7 @@ Maintainer: Michael Gee
 #include "../drt_structure/stru_dyn_nln_drt.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
 #include "../drt_scatra/scatra_dyn.H"
-#include "../drt_ale/ale_dyn.H"
+#include "../drt_ale_new/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
 #include "../drt_fs3i/fs3i_dyn.H"
 #include "../drt_levelset/levelset_dyn.H"
@@ -40,7 +40,6 @@ Maintainer: Michael Gee
 #ifdef HAVE_FFTW
   #include "../drt_mlmc/drt_uq_dyn.H"
 #endif
-
 
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
@@ -102,8 +101,8 @@ void ntacal()
       break;
 
     case prb_ale:
-      dyn_ale_drt();
-      break;
+      dyn_ale_new_drt();
+    break;
 
     case prb_thermo:
       thr_dyn_drt();

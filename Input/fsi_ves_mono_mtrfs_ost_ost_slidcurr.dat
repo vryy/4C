@@ -98,7 +98,7 @@ TOL_VEL_RES_INF                 1e-11
 TOL_VEL_RES_L2                  1e-11
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-ALE_TYPE                        laplace
+ALE_TYPE                        solid
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          Aztec_MSR
@@ -5829,9 +5829,9 @@ NODE 2393 COORD 1.2437880660728e-07 2.9000000000000e+00 0.0000000000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1521 QUANTITY velx VALUE 3.77071204702109824e-03 TOLERANCE 1e-10
-FLUID DIS fluid NODE 960 QUANTITY velx VALUE -3.77065164583712236e-03 TOLERANCE 1e-10
-FLUID DIS fluid NODE 960 QUANTITY pressure VALUE -1.41091217795459817e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2271 QUANTITY dispx VALUE 2.15663657814453291e-02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 2031 QUANTITY dispx VALUE -2.15662137498863447e-02 TOLERANCE 1e-9
+FLUID DIS fluid NODE 1521 QUANTITY velx VALUE 3.77076088256844558e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 960 QUANTITY velx VALUE -3.77070048779844453e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 960 QUANTITY pressure VALUE -5.40379031844156013e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2271 QUANTITY dispx VALUE 2.15664999820048969e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 2031 QUANTITY dispx VALUE -2.15663479712237156e-02 TOLERANCE 1e-9
 -------------------------------------------------------------------------END

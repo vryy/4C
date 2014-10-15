@@ -14,7 +14,7 @@ Structure: GenAlpha with ConstVel
 //NODES                         24
 DIM                             3
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        classic_lin
+ALE_TYPE                        springs
 LINEAR_SOLVER                   1
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1
@@ -31,7 +31,7 @@ GAMMA                           0.5
 LINEAR_SOLVER                   1
 NONLINITER                      Newton
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       constant_acceleration
+PREDICTOR                       steady_state
 TIMEINTEGR                      Np_Gen_Alpha
 -----------------------------------------------------------------FSI DYNAMIC
 COUPALGO                        iter_monolithicfluidsplit
@@ -44,7 +44,7 @@ UPRES                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-06
-ITEMAX                          10
+ITEMAX                          20
 LINEARBLOCKSOLVER               PreconditionedKrylov
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
@@ -72,7 +72,7 @@ SHAPEFCT                        Polynomial
 DYNAMICTYP                      GenAlpha
 LINEAR_SOLVER                   1
 NLNSOL                          fullnewton
-PREDICT                         ConstVel
+PREDICT                         ConstDisVelAcc
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.5
 ALPHA_M                         0.5
@@ -84,7 +84,7 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.3 DENS 7.8e-4 THEXPANS 0.0
 MAT 2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1
-MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0
+MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.0 DENS 1.0 THEXPANS 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
 ----------------------------------------------------------------------CURVE1

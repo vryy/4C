@@ -38,7 +38,7 @@ namespace FSI
     OverlappingBlockMatrixFSIAMG(const LINALG::MultiMapExtractor& maps,
                                  ADAPTER::FSIStructureWrapper& structure,
                                  ADAPTER::Fluid& fluid,
-                                 ALE::Ale& ale,
+                                 ADAPTER::AleFsiWrapper& ale,
                                  bool structuresplit,
                                  int symmetric,
                                  std::vector<std::string>& blocksmoother,

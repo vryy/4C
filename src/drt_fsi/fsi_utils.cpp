@@ -39,7 +39,7 @@
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_ale/ale.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 #include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_io/io.H"

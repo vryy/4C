@@ -1,39 +1,41 @@
-//-----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
 /*!
 \file ale3.cpp
 
 <pre>
-
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289 10362
 </pre>
 */
-//-----------------------------------------------------------------------
-#ifdef D_ALE
+/*----------------------------------------------------------------------------*/
 
-
+/*----------------------------------------------------------------------------*/
 #include "ale3.H"
 #include "ale3_nurbs.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-
-
 DRT::ELEMENTS::Ale3Type DRT::ELEMENTS::Ale3Type::instance_;
 
-DRT::ParObject* DRT::ELEMENTS::Ale3Type::Create( const std::vector<char> & data )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+DRT::ParObject* DRT::ELEMENTS::Ale3Type::Create(const std::vector<char> & data)
 {
   DRT::ELEMENTS::Ale3* object = new DRT::ELEMENTS::Ale3(-1,-1);
   object->Unpack(data);
   return object;
 }
 
-
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create( const std::string eletype,
-                                                            const std::string eledistype,
-                                                            const int id,
-                                                            const int owner )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create(
+    const std::string eletype, const std::string eledistype, const int id,
+    const int owner)
 {
   Teuchos::RCP<DRT::Element> ele;
 
@@ -48,26 +50,36 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create( const std::string el
   return ele;
 }
 
-
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create( const int id, const int owner )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3Type::Create(const int id,
+    const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::Ale3(id,owner));
 }
 
-
-void DRT::ELEMENTS::Ale3Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale3Type::NodalBlockInformation(DRT::Element * dwele,
+    int & numdf, int & dimns, int & nv, int & np)
 {
   numdf = 3;
   dimns = 6;
   nv = 3;
 }
 
-void DRT::ELEMENTS::Ale3Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale3Type::ComputeNullSpace(DRT::Discretization & dis,
+    std::vector<double> & ns, const double * x0, int numdf, int dimns)
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
-void DRT::ELEMENTS::Ale3Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale3Type::SetupElementDefinition(
+    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition> > & definitions)
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["ALE3"];
 
@@ -112,36 +124,40 @@ void DRT::ELEMENTS::Ale3Type::SetupElementDefinition( std::map<std::string,std::
     ;
 }
 
-
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3SurfaceType::Create( const int id, const int owner )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale3SurfaceType::Create(const int id,
+    const int owner)
 {
   //return Teuchos::rcp( new Ale3Surface( id, owner ) );
   return Teuchos::null;
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale3::Ale3(int id, int owner)
   : DRT::Element(id,owner)
-    //data_()
 {
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale3::Ale3(const DRT::ELEMENTS::Ale3& old)
   : DRT::Element(old)
-    //data_(old.data_)
 {
   return;
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Ale3::Clone() const
 {
   DRT::ELEMENTS::Ale3* newelement = new DRT::ELEMENTS::Ale3(*this);
   return newelement;
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Ale3::Shape() const
 {
   switch (NumNode())
@@ -155,11 +171,13 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Ale3::Shape() const
   case 27: return hex27;
   default:
     dserror("unexpected number of nodes %d", NumNode());
+    break;
   }
   return dis_none;
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale3::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
@@ -178,7 +196,8 @@ void DRT::ELEMENTS::Ale3::Pack(DRT::PackBuffer& data) const
   //AddtoPack(data,tmp);
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale3::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
@@ -201,12 +220,14 @@ void DRT::ELEMENTS::Ale3::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale3::~Ale3()
 {
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale3::Print(std::ostream& os) const
 {
   os << "Ale3 ";
@@ -216,10 +237,8 @@ void DRT::ELEMENTS::Ale3::Print(std::ostream& os) const
   return;
 }
 
-
-//
-// get vector of surfaces
-//
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
@@ -232,7 +251,8 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Surfaces()
   return DRT::UTILS::ElementBoundaryFactory<Ale3Surface,Ale3>(DRT::UTILS::buildSurfaces,this);
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Volumes()
 {
   std::vector<Teuchos::RCP<Element> > volumes(1);
@@ -240,5 +260,3 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Volumes()
   return volumes;
 }
 
-
-#endif

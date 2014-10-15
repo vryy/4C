@@ -1,24 +1,29 @@
-//-----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
 /*!
 \file ale2.H
 
 <pre>
-
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289 15362
 </pre>
 */
-//-----------------------------------------------------------------------
-#ifdef D_ALE
+/*----------------------------------------------------------------------------*/
 
-
+/*----------------------------------------------------------------------------*/
 #ifndef ALE2_H
 #define ALE2_H
 
+/*----------------------------------------------------------------------------*/
+/* header inclusions */
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
+/*----------------------------------------------------------------------------*/
+/* forward declarations */
 namespace DRT
 {
 
@@ -29,7 +34,8 @@ namespace ELEMENTS
 
 class Ale2Line;
 
-
+/*----------------------------------------------------------------------------*/
+/* definition of classes */
 class Ale2Type : public DRT::ElementType
 {
 public:
@@ -58,7 +64,7 @@ private:
   static Ale2Type instance_;
 };
 
-
+/*----------------------------------------------------------------------------*/
 /*!
 \brief A C++ wrapper for the ale2 element
 */
@@ -286,21 +292,29 @@ public:
 private:
 
   void static_ke(
-    DRT::Discretization&       dis,
-    std::vector<int>&          lm,
-    Epetra_SerialDenseMatrix*  sys_mat,
-    Epetra_SerialDenseVector*  residual,
-    Teuchos::RCP<MAT::Material> material,
-    Teuchos::ParameterList&    params);
+      DRT::Discretization& dis,
+      std::vector<int>& lm,
+      Epetra_SerialDenseMatrix* sys_mat, Epetra_SerialDenseVector& residual,
+      bool incremental, std::vector<double>& my_dispnp,
+      Teuchos::ParameterList& params);
 
   void static_ke_laplace(
-    DRT::Discretization&       dis,
-    std::vector<int>&          lm,
-    Epetra_SerialDenseMatrix*  sys_mat,
-    Epetra_SerialDenseVector*  residual,
-    Teuchos::RCP<MAT::Material> material,
-    Teuchos::ParameterList&    params);
-  void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat, std::vector<double>& displacements);
+      DRT::Discretization& dis,
+      std::vector<int>& lm,
+      Epetra_SerialDenseMatrix* sys_mat, Epetra_SerialDenseVector& residual,
+      std::vector<double>& displacements,
+      Teuchos::ParameterList& params);
+
+  void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
+      Epetra_SerialDenseVector& residual,
+      bool incremental,
+      std::vector<double>& displacements);
+
+  void static_ke_nonlinear( const std::vector<int> &lm,
+      Epetra_SerialDenseMatrix *sys_mat, Epetra_SerialDenseVector& residual,
+      const std::vector<double>& my_dispnp,
+      Teuchos::ParameterList &params);
+
   void edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
                      double* length, double* sin_alpha, double* cos_alpha);
   double ale2_area_tria(const Epetra_SerialDenseMatrix& xyze, int i, int j, int k);
@@ -310,23 +324,39 @@ private:
                       Epetra_SerialDenseMatrix* k_torsion);
 
 
+  void ale2_jacobianmatrix(const Epetra_SerialDenseMatrix& xrefe,
+      const Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& xjm,
+      double* det, const int numnode);
+
+  void ale2_jacobianmatrix_cure(const Epetra_SerialDenseMatrix& xcure,
+      const Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& xjm_cure,
+      double* det_cure, const int numnode);
+
+  void ale2_bop(Epetra_SerialDenseMatrix& bop, Epetra_SerialDenseMatrix& deriv,
+      Epetra_SerialDenseMatrix& xjm, Epetra_SerialDenseMatrix& xji,
+      const int numnode);
+
+  void ale2_greenlag(Epetra_SerialDenseMatrix& defgrad,
+      Epetra_SerialDenseMatrix& greenlag, Epetra_SerialDenseMatrix& deriv,
+      Epetra_SerialDenseMatrix& xji, const std::vector<double>& my_dispnp);
+
+
   //! action parameters recognized by ale2
   enum ActionType
   {
     none,
-    calc_ale_lin_stiff,
-    calc_ale_laplace,
-    calc_ale_spring,           ///< compute stiffness based on springs algorithm on last time step configuration
-    calc_ale_spring_fixed_ref  ///< compute stiffness based on springs algorithm on initial configuration
+    calc_ale_solid, ///< compute stiffness based on fully nonlinear elastic solid with hyperelastic material law
+    calc_ale_springs, ///< compute stiffness based on springs algorithm on last time step configuration
+    calc_ale_laplace,///< compute stiffness based on laplacian smoothing based on initial configuration
+    setup_material, ///< Setup material in case of ElastHyper Tool Box
+
+    // old types will be removed in the near future
+    calc_ale_lin, ///< compute stiffness based on linear elastic solid at current configuration
+    calc_ale_lin_fixed_ref, ///< compute stiffness based on linear elastic solid in initial configuration
+    calc_ale_springs_fixed_ref ///< compute stiffness based on springs algorithm on initial configuration
   };
 
-  //! container containing all kind of ale2 thisandthat
-  //DRT::Container                                  data_;
-
-
-  // internal calculation methods
-
-  // don't want = operator
+  //! don't want = operator
   Ale2& operator = (const Ale2& old);
 
 
@@ -512,7 +542,4 @@ private:
 } // namespace ELEMENTS
 } // namespace DRT
 
-
-
-#endif
 #endif

@@ -31,8 +31,8 @@ Maintainer:  Shadan Shahmiri
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
-#include "../drt_ale/ale.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
@@ -122,7 +122,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystem()
   FluidField().UseBlockMatrix(true);
 
   // Build the ALE-matrix in split system
-  AleField().BuildSystemMatrix(false);
+  AleField()->CreateSystemMatrix(false);
 
   // Initialize the global system matrix!
   systemmatrix_=
@@ -157,7 +157,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupRHS(Epetra_Vector& f, bool f
   SetupVector(f,
            StructureField()->RHS(),
            FluidField().RHS(),
-          AleField().RHS(),
+          AleField()->RHS(),
           FluidField().ResidualScaling());
 
   /*----------------------------------------------------------------------
@@ -207,7 +207,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupRHS(Epetra_Vector& f, bool f
 
     // A_...
     // ALE block system matrix
-    const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocka=AleField().BlockSystemMatrix();
+    const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocka=AleField()->BlockSystemMatrix();
     if (blocka == Teuchos::null)
       dserror("Expected ALE block matrix...");
 
@@ -404,7 +404,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
   // get single field block matrices
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField()->SystemMatrix(); // can't be 'const' --> is modified by STC
   const Teuchos::RCP<LINALG::BlockSparseMatrixBase> f = FluidField().BlockSystemMatrix();
-  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
 #ifdef DEBUG
   // check whether allocation was successful
@@ -567,7 +567,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::InitialGuess(Teuchos::RCP<Epetra_
   SetupVector(*ig,
         StructureField()->InitialGuess(),
         FluidField().InitialGuess(),
-        AleField().InitialGuess(),
+        AleField()->InitialGuess(),
         0.0);
 }
 
@@ -584,8 +584,8 @@ Teuchos::RCP<Epetra_Map> FSI::FluidFluidMonolithicFluidSplitNoNOX::CombinedDBCMa
   alldbcmaps.push_back(FluidField().FluidDirichMaps());
   // ALE-DBC
   std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
-  aleintersectionmaps.push_back(AleField().GetDBCMapExtractor()->CondMap());
-  aleintersectionmaps.push_back(AleField().Interface()->OtherMap());
+  aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());
+  aleintersectionmaps.push_back(AleField()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap = LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
   alldbcmaps.push_back(aleintersectionmap);
 
@@ -633,7 +633,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupVector(Epetra_Vector &f,
 
 
   // Extract inner DOFs for ALE-field
-  Teuchos::RCP<Epetra_Vector> aov=AleField().Interface()->ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov=AleField()->Interface()->ExtractOtherVector(av);
 
   // Get the FSI-interface RHS-vector for the fluid side!
   Teuchos::RCP<Epetra_Vector> fcv=FluidField().Interface()->ExtractFSICondVector(fv);
@@ -697,9 +697,9 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::ExtractFieldVectors(Teuchos::RCP<
   scx->Update(1.0,*ddgpred_,1.0);
   Teuchos::RCP<Epetra_Vector> acx=StructToAle(scx);
 
-  Teuchos::RCP<Epetra_Vector> a=AleField().Interface()->InsertOtherVector(aox);
+  Teuchos::RCP<Epetra_Vector> a=AleField()->Interface()->InsertOtherVector(aox);
   // Insert the FSI-DOF vector into full vector a
-  AleField().Interface()->InsertFSICondVector(acx,a);
+  AleField()->Interface()->InsertFSICondVector(acx,a);
   // Write a into passed argument ax
   ax=a;
 
@@ -738,7 +738,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::ReadRestart(int step)
 
   StructureField()->ReadRestart(step);
   FluidField().ReadRestart(step);
-  AleField().ReadRestart(step);
+  AleField()->ReadRestart(step);
 
   SetTimeStep(FluidField().Time(),FluidField().Step());
 }
@@ -766,7 +766,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::Output()
     if ((uprestart != 0 && FluidField().Step() % uprestart == 0) || FluidField().Step() % upres == 0)
       FluidField().DiscWriter()->WriteVector("fsilambda", lambdaemb);
   }
-  AleField().      Output();
+  AleField()->      Output();
   FluidField().LiftDrag();
 
   if (StructureField()->GetConstraintManager()->HaveMonitor())
@@ -791,7 +791,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::CreateCombinedDofRowMap()
   vecSpaces.push_back(FluidField().Interface()->OtherMap());
 
   //Append ALE DOF map
-  vecSpaces.push_back(AleField().Interface()->OtherMap());
+  vecSpaces.push_back(AleField()->Interface()->OtherMap());
 
   // If the non-FSI fluid maps are empty
   if (vecSpaces[1]->NumGlobalElements() == 0)
@@ -820,7 +820,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::Newton()
   // Initialization for 1st Newton call
   // structural interface predictor
   ddginc_    = Teuchos::rcp(new Epetra_Vector(*ddgpred_));
-  ddialeinc_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()),true);
+  ddialeinc_ = Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->OtherMap()),true);
   duiinc_     = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->OtherMap(),true));
 
   FSI::MonolithicNoNOX::Newton();
@@ -1068,7 +1068,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::BuildConvergenceNorms()
        *FluidField().XFluidFluidMapExtractor()->FluidMap(),innerfluidpresmap,false));
 
     // Get the ALE-displacements, convert to inner fluid DOF. Still mapped to the embedded fluid.
-    Teuchos::RCP<Epetra_Vector> aux = AleToFluid(AleField().Interface()->InsertOtherVector(ddialeinc_));
+    Teuchos::RCP<Epetra_Vector> aux = AleToFluid(AleField()->Interface()->InsertOtherVector(ddialeinc_));
     // Add the pressure DOF as zeros
     aux = innerfluidvelextractor->InsertCondVector(aux);
     aux = FluidField().XFluidFluidMapExtractor()->InsertFluidVector(aux);

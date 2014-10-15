@@ -284,6 +284,10 @@ void ALE::AleLinear::EvaluateElements()
   discret_->SetState("dispnp", dispnp_);
 
   discret_->Evaluate(eleparams,sysmat_,residual_);
+
+  // Temporary hack to keep old ale implementation running
+  residual_->PutScalar(0.0);
+
   discret_->ClearState();
 
   sysmat_->Complete();

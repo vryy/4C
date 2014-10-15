@@ -23,8 +23,8 @@ Maintainer: Lena Yoshihara
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_io/io_control.H"
 #include "../drt_structure/stru_aux.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
-#include "../drt_ale/ale.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------*/
@@ -109,7 +109,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystem()
   FluidField().UseBlockMatrix(false);
 
   // build ale system matrix in splitted system
-  AleField().BuildSystemMatrix(false);
+  AleField()->CreateSystemMatrix(false);
 
   // get the PCITER from inputfile
   std::vector<int> pciter;
@@ -167,7 +167,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystem()
     systemmatrix_ = Teuchos::rcp(new LungOverlappingBlockMatrix(Extractor(),
                                                                 *StructureField(),
                                                                 FluidField(),
-                                                                AleField(),
+                                                                *AleField(),
                                                                 true,
                                                                 DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
                                                                 pcomega[0],
@@ -197,7 +197,7 @@ void FSI::LungMonolithicStructureSplit::CreateCombinedDofRowMap()
   vecSpaces.push_back(structfield->FSIInterface()->OtherMap());
   vecSpaces.push_back(FluidField().DofRowMap());
   // remaining (not coupled) dofs of ale field
-  vecSpaces.push_back(AleField().Interface()->Map(0));
+  vecSpaces.push_back(AleField()->Interface()->Map(0));
   // additional volume constraints
   vecSpaces.push_back(ConstrMap_);
 
@@ -224,7 +224,7 @@ void FSI::LungMonolithicStructureSplit::SetupRHSResidual(Epetra_Vector& f)
   SetupVector(f,
               structureRHS,
               fluidRHS,
-              AleField().RHS(),
+              AleField()->RHS(),
               ConstrRHS_,
               fluidscale);
 
@@ -259,7 +259,7 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   //--------------------------------------------------------------------------------
   // ale
   //--------------------------------------------------------------------------------
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
   if (a==Teuchos::null)
     dserror("expect ale block matrix");
 
@@ -568,7 +568,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   /*----------------------------------------------------------------------*/
   // ale part
 
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
   if (a==Teuchos::null)
     dserror("expect ale block matrix");
@@ -653,7 +653,7 @@ void FSI::LungMonolithicStructureSplit::InitialGuess(Teuchos::RCP<Epetra_Vector>
   SetupVector(*ig,
               StructureField()->InitialGuess(),
               FluidField().InitialGuess(),
-              AleField().InitialGuess(),
+              AleField()->InitialGuess(),
               ConstraintInitialGuess,
               0.0);
 }
@@ -674,7 +674,7 @@ void FSI::LungMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
 
   Teuchos::RCP<Epetra_Vector> sov = structfield->FSIInterface()->ExtractOtherVector(sv);
 
-  Teuchos::RCP<Epetra_Vector> aov = AleField().Interface()->ExtractVector(av, 0);
+  Teuchos::RCP<Epetra_Vector> aov = AleField()->Interface()->ExtractVector(av, 0);
 
   if (fluidscale!=0)
   {
@@ -722,12 +722,12 @@ void FSI::LungMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const E
 
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
-  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertVector(aox,0);
-  AleField().Interface()->InsertVector(acx, 1, a);
+  Teuchos::RCP<Epetra_Vector> a = AleField()->Interface()->InsertVector(aox,0);
+  AleField()->Interface()->InsertVector(acx, 1, a);
 
   Teuchos::RCP<Epetra_Vector> scox = StructureField()->Interface()->ExtractLungASICondVector(sx);
   Teuchos::RCP<Epetra_Vector> acox = StructToAleOutflow(scox);
-  AleField().Interface()->InsertVector(acox, 3, a);
+  AleField()->Interface()->InsertVector(acox, 3, a);
 
   ax = a;
 }

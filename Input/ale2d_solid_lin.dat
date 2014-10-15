@@ -29,13 +29,15 @@ WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              0
 --------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
 LINEAR_SOLVER                   1
 NUMSTEP                         2
 MAXTIME                         0.5
 TIMESTEP                        0.25
 RESTARTEVRY                     1
 RESULTSEVRY                     1
+MAXITER                         1
+DIVERCONT                       continue
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
@@ -43,8 +45,8 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
 -------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t t1 0.0 t2 1.0
 -------------------------------------------------RESULT DESCRIPTION
-ALE DIS ale NODE 3 QUANTITY dispx VALUE -7.5e-02 TOLERANCE 1e-12
-ALE DIS ale NODE 3 QUANTITY dispy VALUE 0.25 TOLERANCE 1e-12
+ALE DIS ale NODE 3 QUANTITY dispx VALUE -7.80631728391385227e-02 TOLERANCE 1e-12
+ALE DIS ale NODE 3 QUANTITY dispy VALUE 2.47686101904987549e-01 TOLERANCE 1e-12
 -------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  0

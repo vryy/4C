@@ -1,15 +1,16 @@
-//-----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
 /*!
 \file ale2.cpp
 
 <pre>
-
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289 15362
 </pre>
 */
-//-----------------------------------------------------------------------
-#ifdef D_ALE
+/*----------------------------------------------------------------------------*/
 
-
+/*----------------------------------------------------------------------------*/
 #include "ale2.H"
 #include "../drt_ale2/ale2_nurbs.H"
 #include "../drt_lib/drt_discret.H"
@@ -21,18 +22,20 @@
 
 DRT::ELEMENTS::Ale2Type DRT::ELEMENTS::Ale2Type::instance_;
 
-DRT::ParObject* DRT::ELEMENTS::Ale2Type::Create( const std::vector<char> & data )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+DRT::ParObject* DRT::ELEMENTS::Ale2Type::Create(const std::vector<char> & data)
 {
   DRT::ELEMENTS::Ale2* object = new DRT::ELEMENTS::Ale2(-1,-1);
   object->Unpack(data);
   return object;
 }
 
-
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create( const std::string eletype,
-                                                            const std::string eledistype,
-                                                            const int id,
-                                                            const int owner )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create(
+    const std::string eletype, const std::string eledistype, const int id,
+    const int owner)
 {
   Teuchos::RCP<DRT::Element> ele;
 
@@ -47,26 +50,36 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create( const std::string el
   return ele;
 }
 
-
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create( const int id, const int owner )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2Type::Create(const int id,
+    const int owner)
 {
   return Teuchos::rcp(new DRT::ELEMENTS::Ale2(id,owner));
 }
 
-
-void DRT::ELEMENTS::Ale2Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2Type::NodalBlockInformation(DRT::Element * dwele,
+    int & numdf, int & dimns, int & nv, int & np)
 {
   numdf = 2;
   dimns = 3;
   nv = 2;
 }
 
-void DRT::ELEMENTS::Ale2Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2Type::ComputeNullSpace(DRT::Discretization & dis,
+    std::vector<double> & ns, const double * x0, int numdf, int dimns)
 {
   DRT::UTILS::ComputeStructure2DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
-void DRT::ELEMENTS::Ale2Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2Type::SetupElementDefinition(
+    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition> > & definitions)
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["ALE2"];
 
@@ -96,33 +109,39 @@ void DRT::ELEMENTS::Ale2Type::SetupElementDefinition( std::map<std::string,std::
     ;
 }
 
-
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2LineType::Create( const int id, const int owner )
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Ale2LineType::Create(const int id,
+    const int owner)
 {
   //return Teuchos::rcp( new Ale2Line( id, owner ) );
   return Teuchos::null;
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale2::Ale2(int id, int owner)
   : DRT::Element(id,owner)
 {
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale2::Ale2(const DRT::ELEMENTS::Ale2& old)
   : DRT::Element(old)
 {
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Ale2::Clone() const
 {
   DRT::ELEMENTS::Ale2* newelement = new DRT::ELEMENTS::Ale2(*this);
   return newelement;
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Ale2::Shape() const
 {
   switch (NumNode())
@@ -134,11 +153,13 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Ale2::Shape() const
   case  9: return quad9;
   default:
     dserror("unexpected number of nodes %d", NumNode());
+    break;
   }
   return dis_none;
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
@@ -151,7 +172,8 @@ void DRT::ELEMENTS::Ale2::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
@@ -168,12 +190,14 @@ void DRT::ELEMENTS::Ale2::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale2::~Ale2()
 {
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2::Print(std::ostream& os) const
 {
   os << "Ale2 ";
@@ -182,10 +206,8 @@ void DRT::ELEMENTS::Ale2::Print(std::ostream& os) const
   return;
 }
 
-
-//
-// get vector of lines
-//
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Lines()
 {
   // do NOT store line or surface elements inside the parent element
@@ -198,7 +220,8 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Lines()
   return DRT::UTILS::ElementBoundaryFactory<Ale2Line,Ale2>(DRT::UTILS::buildLines,this);
 }
 
-
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Surfaces()
 {
   std::vector<Teuchos::RCP<Element> > surfaces(1);
@@ -206,8 +229,10 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Surfaces()
   return surfaces;
 }
 
-
-DRT::UTILS::GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(const DiscretizationType& distype)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+DRT::UTILS::GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(
+    const DiscretizationType& distype)
 {
     DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule2D_undefined;
     switch (distype)
@@ -231,5 +256,3 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(const Discretiz
   return rule;
 }
 
-
-#endif

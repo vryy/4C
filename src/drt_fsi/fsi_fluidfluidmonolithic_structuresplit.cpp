@@ -16,8 +16,8 @@ Maintainer: Raffaela Kruse
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
-#include "../drt_ale/ale.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_ale.H"
@@ -72,13 +72,13 @@ void FSI::FluidFluidMonolithicStructureSplit::Update()
 
   if (relaxing_ale)
   {
-    FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField().WriteAccessDispnp()));
+    FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
 
     if (Comm().MyPID() == 0)
       IO::cout << "Relaxing Ale" << IO::endl;
 
-    AleField().SolveAleXFluidFluidFSI();
-    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().WriteAccessDispnp()));
+    AleField()->SolveAleXFluidFluidFSI();
+    FluidField().ApplyMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
   }
 
   // update fields
@@ -89,7 +89,7 @@ void FSI::FluidFluidMonolithicStructureSplit::Update()
   // in buildsystemmatrix
   if (relaxing_ale)
   {
-    AleField().BuildSystemMatrix(false);
+    AleField()->CreateSystemMatrix(false);
   }
 }
 
@@ -147,8 +147,8 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupDBCMapExtractor()
   dbcmaps.push_back(FluidField().FluidDirichMaps());
   // ALE-DBC-maps, free of FSI DOF
   std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
-  aleintersectionmaps.push_back(AleField().GetDBCMapExtractor()->CondMap());
-  aleintersectionmaps.push_back(AleField().Interface()->OtherMap());
+  aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());
+  aleintersectionmaps.push_back(AleField()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap = LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
   dbcmaps.push_back(aleintersectionmap);
 

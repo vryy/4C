@@ -50,7 +50,7 @@ Maintainer: Matthias Mayr
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_fluid_xfluid/xfluidfluid.H"
 
-#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "../drt_ale_new/ale_utils_clonestrategy.H"
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_lib/drt_resulttest.H"
@@ -71,6 +71,7 @@ Maintainer: Matthias Mayr
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_adapter/ad_fld_moving_boundary.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_lib/drt_discret_xfem.H"
 
@@ -98,7 +99,7 @@ void fluid_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(fluiddis,aledis);
   }
   else  // filled ale discretization
   {
@@ -384,7 +385,7 @@ void fluid_fluid_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(embfluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(embfluiddis,aledis);
   }
   else  // ale discretization in input file
     dserror("Providing an ALE mesh is not supported for this problemtype.");
@@ -598,7 +599,7 @@ void fluid_fluid_fsi_drt()
   Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
   if (aledis->NumGlobalNodes()==0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(embfluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(embfluiddis,aledis);
   }
   else  // ale discretization in input file
     dserror("Providing an ALE mesh is not supported for problemtype Fluid_Fluid_FSI.");
@@ -783,7 +784,7 @@ void fluid_freesurf_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(fluiddis,aledis);
   }
   else  // filled ale discretization
   {
@@ -871,7 +872,7 @@ void fsi_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes() == 0) // empty ale discretization
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis, aledis);
+    DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(fluiddis, aledis);
   }
   else  // filled ale discretization (i.e. read from input file)
   {
@@ -978,7 +979,7 @@ void fsi_ale_drt()
       fsi->FluidField().CalculateError();
 
       // create result tests for single fields
-      DRT::Problem::Instance()->AddFieldTest(fsi->AleField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->AleField()->CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 

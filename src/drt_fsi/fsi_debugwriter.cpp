@@ -5,9 +5,8 @@
 #include "fsi_debugwriter.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 #include "fsi_monolithic.H"
-
-#include "../drt_ale/ale.H"
 
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -150,7 +149,7 @@ FSI::UTILS::MonolithicDebugWriter::MonolithicDebugWriter(Monolithic& algorithm)
 {
   struct_writer_ = Teuchos::rcp(new SimpleDebugWriter(algorithm_.StructureField()->Discretization(), "structure"));
   fluid_writer_ = Teuchos::rcp(new SimpleDebugWriter(algorithm_.FluidField().Discretization(), "fluid"));
-  ale_writer_ = Teuchos::rcp(new SimpleDebugWriter(algorithm_.AleField().Discretization(), "ale"));
+  ale_writer_ = Teuchos::rcp(new SimpleDebugWriter(algorithm_.AleField()->WriteAccessDiscretization(), "ale"));
 }
 
 

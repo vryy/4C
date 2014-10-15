@@ -25,8 +25,8 @@ Maintainer: Lena Yoshihara
 #include "../drt_constraint/constraintdofset.H"
 #include "../drt_structure/stru_aux.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
-#include "../drt_ale/ale.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------*/
@@ -216,8 +216,8 @@ void FSI::LungMonolithic::GeneralSetup()
 
   coupsa.SetupConditionCoupling(*StructureField()->Discretization(),
                                  StructureField()->Interface()->FSICondMap(),
-                                *AleField().Discretization(),
-                                 AleField().Interface()->FSICondMap(),
+                                *AleField()->Discretization(),
+                                 AleField()->Interface()->FSICondMap(),
                                 "FSICoupling",
                                 ndim);
 
@@ -225,8 +225,8 @@ void FSI::LungMonolithic::GeneralSetup()
 
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                     FluidField().Interface()->FSICondMap(),
-                                   *AleField().Discretization(),
-                                    AleField().Interface()->FSICondMap(),
+                                   *AleField()->Discretization(),
+                                    AleField()->Interface()->FSICondMap(),
                                    "FSICoupling",
                                    ndim);
 
@@ -242,17 +242,17 @@ void FSI::LungMonolithic::GeneralSetup()
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
 
   coupfa.SetupCoupling(*FluidField().Discretization(),
-                       *AleField().Discretization(),
+                       *AleField()->Discretization(),
                        *fluidnodemap,
                        *alenodemap,
                        ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->Map(0)));
+  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(0)));
 
   //-----------------------------------------------------------------------------
   // additional coupling of structure and ale field at the outflow boundary
@@ -261,8 +261,8 @@ void FSI::LungMonolithic::GeneralSetup()
   // coupling of structure and ale dofs at airway outflow
   coupsaout_->SetupConstrainedConditionCoupling(*StructureField()->Discretization(),
                                                 StructureField()->Interface()->LungASICondMap(),
-                                                *AleField().Discretization(),
-                                                AleField().Interface()->LungASICondMap(),
+                                                *AleField()->Discretization(),
+                                                AleField()->Interface()->LungASICondMap(),
                                                 "StructAleCoupling",
                                                 "FSICoupling",
                                                 ndim);
@@ -283,8 +283,8 @@ void FSI::LungMonolithic::GeneralSetup()
   // coupling of fluid and ale dofs at airway outflow
   coupfaout_->SetupConstrainedConditionCoupling(*FluidField().Discretization(),
                                                 FluidField().Interface()->LungASICondMap(),
-                                                *AleField().Discretization(),
-                                                AleField().Interface()->LungASICondMap(),
+                                                *AleField()->Discretization(),
+                                                AleField()->Interface()->LungASICondMap(),
                                                 "StructAleCoupling",
                                                 "FSICoupling",
                                                 ndim);
@@ -868,7 +868,7 @@ void FSI::LungMonolithic::Output()
 //   ADAPTER::FluidLung& fluidfield = dynamic_cast<ADAPTER::FluidLung&>(FluidField());
 //   fluidfield.OutputForces(AddFluidRHS_);
 
-  AleField().Output();
+  AleField()->Output();
 
   FluidField().LiftDrag();
 

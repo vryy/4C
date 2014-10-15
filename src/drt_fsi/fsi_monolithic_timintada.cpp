@@ -26,7 +26,7 @@ Maintainer: Matthias Mayr
 
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_ale/ale.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_adapter/ad_str_fsi_timint_adaptive.H"
 
@@ -704,7 +704,7 @@ void FSI::Monolithic::ResetStep()
     StructureField()->ResetStep();
 
   FluidField().ResetStep();
-  AleField().ResetStep();
+  AleField()->ResetStep();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -713,7 +713,7 @@ void FSI::Monolithic::ResetTime()
 {
   // Fluid and ALE
   FluidField().ResetTime(DtPast(1));
-  AleField().ResetTime(DtPast(1));
+  AleField()->ResetTime(DtPast(1));
 
   // FSI routine
   SetTimeStep(Time() - DtPast(1), Step() - 1);
@@ -730,7 +730,7 @@ void FSI::Monolithic::SetDt(const double dtnew)
     StructureField()->SetDt(dtnew);
 
   FluidField().SetDt(dtnew);
-  AleField().SetDt(dtnew);
+  AleField()->SetDt(dtnew);
 
   // FSI algorithm
   dt_->SetStep(1, Dt()); // save step size of previous run of this time step for ResetTime()
@@ -775,7 +775,7 @@ bool FSI::Monolithic::CheckIfDtsSame()
   const double dtfsi = Dt();
   const double dtstruct = StructureField()->Dt();
   const double dtfluid = FluidField().Dt();
-  const double dtale = AleField().Dt();
+  const double dtale = AleField()->Dt();
 
   double dtstrada = -1.0;
   if (IsAdaStructure())

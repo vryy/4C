@@ -18,8 +18,8 @@
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
-#include "../drt_ale/ale.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_adapter/ad_ale_fsi.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -102,7 +102,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
   sconT_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*StructureField()->Interface(),*extractor,81,false,true));
 
   // build ale system matrix in splitted system
-  AleField().BuildSystemMatrix(false);
+  AleField()->CreateSystemMatrix(false);
 
   // get the PCITER from inputfile
   std::vector<int> pciter;
@@ -160,7 +160,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
     systemmatrix_ = Teuchos::rcp(new ConstrOverlappingBlockMatrix(Extractor(),
                                                                 *StructureField(),
                                                                 FluidField(),
-                                                                AleField(),
+                                                                *AleField(),
                                                                 true,
                                                                 DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
                                                                 pcomega[0],
@@ -188,7 +188,7 @@ void FSI::ConstrMonolithicStructureSplit::CreateCombinedDofRowMap()
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField()->Interface()->OtherMap());
   vecSpaces.push_back(FluidField().DofRowMap());
-  vecSpaces.push_back(AleField().Interface()->OtherMap());
+  vecSpaces.push_back(AleField()->Interface()->OtherMap());
 
   vecSpaces.push_back(conman_->GetConstraintMap());
 
@@ -209,7 +209,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupRHSResidual(Epetra_Vector& f)
   SetupVector(f,
     StructureField()->RHS(),
     FluidField().RHS(),
-    AleField().RHS(),
+    AleField()->RHS(),
     conman_->GetError(),
     scale);
 
@@ -239,7 +239,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   //
   // And we are concerned with the u(n) part here.
 
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
   if (a==Teuchos::null)
     dserror("expect ale block matrix");
 
@@ -339,7 +339,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
   if (f==Teuchos::null)
     dserror("expect fluid matrix");
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
   if (a==Teuchos::null)
     dserror("expect ale block matrix");
 
@@ -480,7 +480,7 @@ void FSI::ConstrMonolithicStructureSplit::InitialGuess(Teuchos::RCP<Epetra_Vecto
   SetupVector(*ig,
               StructureField()->InitialGuess(),
               FluidField().InitialGuess(),
-              AleField().InitialGuess(),
+              AleField()->InitialGuess(),
               ConstraintInitialGuess,
               0.0);
 }
@@ -498,7 +498,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
   // extract the inner and boundary dofs of all three fields
 
   Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
-  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface()->ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
 
   if (fluidscale!=0)
   {
@@ -550,8 +550,8 @@ void FSI::ConstrMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
     Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
     Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
 
-    Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
-    AleField().Interface()->InsertFSICondVector(acx, a);
+    Teuchos::RCP<Epetra_Vector> a = AleField()->Interface()->InsertOtherVector(aox);
+    AleField()->Interface()->InsertFSICondVector(acx, a);
 
     ax = a;
 }

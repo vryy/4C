@@ -17,8 +17,7 @@ Maintainer: Matthias Mayr
 #include "fsi_overlapprec.H"
 #include "fsi_debugwriter.H"
 
-#include "../drt_ale/ale.H"
-
+#include "../drt_adapter/ad_ale_fsi.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
@@ -33,7 +32,7 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(Teuchos::RCP<UTILS::
                                                             const LINALG::MultiMapExtractor& maps,
                                                             ADAPTER::FSIStructureWrapper& structure,
                                                             ADAPTER::Fluid& fluid,
-                                                            ALE::Ale& ale,
+                                                            ADAPTER::AleFsiWrapper& ale,
                                                             int symmetric,
                                                             double omega,
                                                             int iterations,
@@ -218,7 +217,7 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(Teuchos::RCP<UTILS::Monolith
                                                     const LINALG::MultiMapExtractor& maps,
                                                     ADAPTER::FSIStructureWrapper& structure,
                                                     ADAPTER::Fluid& fluid,
-                                                    ALE::Ale& ale,
+                                                    ADAPTER::AleFsiWrapper& ale,
                                                     bool structuresplit,
                                                     int symmetric,
                                                     double omega,

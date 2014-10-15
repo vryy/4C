@@ -27,13 +27,9 @@ Maintainer: Matthias Mayr
 /// forward declarations
 namespace ADAPTER
 {
+  class AleFsiWrapper;
   class Fluid;
   class FSIStructureWrapper;
-}
-
-namespace ALE
-{
-  class Ale;
 }
 
 namespace FSI
@@ -61,7 +57,7 @@ namespace FSI
                                const LINALG::MultiMapExtractor& maps,
                                ::ADAPTER::FSIStructureWrapper& structure,
                                ::ADAPTER::Fluid& fluid,
-                               ALE::Ale& ale,
+                               ::ADAPTER::AleFsiWrapper& ale,
                                int symmetric,
                                double omega=1.0,
                                int iterations=1,
@@ -158,7 +154,7 @@ namespace FSI
                            const LINALG::MultiMapExtractor& maps,
                            ::ADAPTER::FSIStructureWrapper& structure,
                            ::ADAPTER::Fluid& fluid,
-                           ALE::Ale& ale,
+                           ::ADAPTER::AleFsiWrapper& ale,
                            bool structuresplit,
                            int symmetric,
                            double omega=1.0,
@@ -191,8 +187,8 @@ namespace FSI
     bool structuresplit_;
 
     ::ADAPTER::FSIStructureWrapper& structure_;
-    ::ADAPTER::Fluid&     fluid_;
-    ALE::Ale&       ale_;
+    ::ADAPTER::Fluid& fluid_;
+    ::ADAPTER::AleFsiWrapper& ale_;
 
   };
 }
