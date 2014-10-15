@@ -359,6 +359,8 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
   // plot Neumann nodes
   GmshOutputPointNeumann(disrow, &filename, color);
 
+  discret_->Comm().Barrier();
+
   // finish data section of this view by closing curly brackets
   if (discret_->Comm().MyPID() == 0)
   {
@@ -1785,17 +1787,22 @@ void  STATMECH::StatMechManager::GmshOutputPointNeumann(const Epetra_Vector&    
     LINALG::Export(disrow, discol);
 
     //In case of the 4-noded Crosslinker Element we need the following vectors
-    Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
-    GetBindingSpotPositions(discol, bspotpositions, Teuchos::null);
+    Teuchos::RCP<Epetra_MultiVector> nodepositions = Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeColMap(),3,true));
+    GetNodalBindingSpotPositionsFromDisVec(discol, nodepositions, Teuchos::null);
 
     FILE* fp = NULL;
     fp = fopen(filename->str().c_str(), "a");
     std::stringstream gmshfilecontent;
 
-    double beadcolor = 5.0*color;
+    double beadcolor = 7.0*color;
     int nodesetindex = timeintervalstep_-bctimeindex_;
-    if(timeintervalstep_>1)
-      nodesetindex--;
+    if((int)nbcnodesets_.size()==1)
+      nodesetindex = 0;
+    else
+    {
+      if(timeintervalstep_>1)
+        nodesetindex--;
+    }
 
     INPAR::STATMECH::NBCType nbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::NBCType>(statmechparams_, "NBCTYPE");
     switch(nbctype)
@@ -1807,11 +1814,15 @@ void  STATMECH::StatMechManager::GmshOutputPointNeumann(const Epetra_Vector&    
         //writing element by nodal coordinates as a sphere
         if(discret_->NodeRowMap()->MyGID(nbcnodesets_[nodesetindex][0]))
         {
+          LINALG::Matrix<3,1> position(true);
+          for(int i=0; i<(int)position.M(); i++)
+            position(i) = (*nodepositions)[i][bspotcolmap_->LID(nbcnodesets_[nodesetindex][0])];
+          std::vector<double> boxsize(3, 1.5*statmechparams_.get<double>("R_LINK",0.1));
+          GmshOutputBox(beadcolor,&position,boxsize,filename, false);
           gmshfilecontent << "SP(" << std::scientific;
-          gmshfilecontent<< (*bspotpositions)[0][bspotcolmap_->LID(nbcnodesets_[nodesetindex][0])]<< ","
-                         << (*bspotpositions)[1][bspotcolmap_->LID(nbcnodesets_[nodesetindex][0])] << ","
-                         << (*bspotpositions)[2][bspotcolmap_->LID(nbcnodesets_[nodesetindex][0])];
-          gmshfilecontent << ")" << "{" << std::scientific << beadcolor << "," << beadcolor << "};" << std::endl;
+          gmshfilecontent<< position(0)<< ","
+                         << position(1) << ","
+                         << position(2) << ")" << "{" << std::scientific << beadcolor << "," << beadcolor << "};" << std::endl;
         }
       }
       break;

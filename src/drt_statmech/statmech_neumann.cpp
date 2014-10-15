@@ -115,7 +115,7 @@ void STATMECH::StatMechManager::EvaluateNeumannStatMech(Teuchos::ParameterList& 
         LINALG::Export(*disn, discol);
         GetNodalBindingSpotPositionsFromDisVec(discol, nodepositions, Teuchos::null);
 
-        GetNBCNodes(params);
+        GetNBCNodes(params, nodepositions);
 
         int oscdir = statmechparams_.get<int>("DBCDISPDIR",0)-1;
         int curvenum = statmechparams_.get<int>("NBCCURVENUMBER", 0)-1;
@@ -148,8 +148,14 @@ void STATMECH::StatMechManager::EvaluateNeumannStatMech(Teuchos::ParameterList& 
         int nodesetindex = timeintervalstep_-bctimeindex_;
         // necessary adjustment beyond the first timeintervalstep_ since timeintervalstep_ does not mark the current position in actiontime_
         // but the next position to reach (hence --).
-        if(timeintervalstep_>1)
-          nodesetindex--;
+        if((int)nbcnodesets_.size()==1)
+          nodesetindex = 0;
+        else
+        {
+          if(timeintervalstep_>1)// && timeintervalstep_<(int)actiontime_->size())
+            nodesetindex--;
+        }
+
         ApplyNeumannValueStatMech(params, onoff, curve, val, systemvector, nodesetindex);
       }
     }
@@ -189,16 +195,15 @@ void STATMECH::StatMechManager::GetNBCNodes(Teuchos::ParameterList&          par
         if(N==1)
         {
           // all processors should arrive at the same node (also a check for consistency!)
-          double H = statmechparams_.get<double>("PERIODLENGTH", -1.0);
           double dmin = 1e9;
           std::vector<int> nodecolid(1,-1);
-          if(H<0.0) dserror("PERIODLENGTH needs to exist in the input file.");
+          if(periodlength_==Teuchos::null) dserror("PERIODLENGTH needs to exist in the input file.");
           if(nodeposcol==Teuchos::null) dserror("No nodal positions supplied!");
           for(int i=0; i<nodeposcol->MyLength(); i++)
           {
-            double disti = ((*nodeposcol)[0][i]-H/2.0)*((*nodeposcol)[0][i]-H/2.0)+
-                           ((*nodeposcol)[1][i]-H/2.0)*((*nodeposcol)[0][i]-H/2.0)+
-                           ((*nodeposcol)[2][i]-H/2.0)*((*nodeposcol)[0][i]-H/2.0);
+            double disti = ((*nodeposcol)[0][i]-(*periodlength_)[0]/2.0)*((*nodeposcol)[0][i]-(*periodlength_)[0]/2.0)+
+                           ((*nodeposcol)[1][i]-(*periodlength_)[1]/2.0)*((*nodeposcol)[1][i]-(*periodlength_)[1]/2.0)+
+                           ((*nodeposcol)[2][i]-(*periodlength_)[2]/2.0)*((*nodeposcol)[2][i]-(*periodlength_)[2]/2.0);
             if(disti<dmin)
             {
               nodecolid[0] = nodeposcol->Map().GID(i);
@@ -261,6 +266,8 @@ void STATMECH::StatMechManager::ApplyNeumannValueStatMech(Teuchos::ParameterList
     return;
 
   int curvenum = statmechparams_.get<int>("NBCCURVENUMBER", 0)-1;
+  if(curvenum<0)  dserror("Provide NBCCURVENUMBER>=1 in your input file!");
+
   // get the current time
   const double time = params.get("total time",-1.0);
 
