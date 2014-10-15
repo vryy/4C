@@ -2424,8 +2424,9 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
   return rmap;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+|  create an allreduced map on EVERY processor (public)                 |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(
     const Epetra_Map& emap)
 {
@@ -2437,6 +2438,38 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(
   rv.assign(rs.begin(), rs.end());
 
   return Teuchos::rcp(new Epetra_Map(-1, rv.size(), &rv[0], 0, emap.Comm()));
+}
+
+/*----------------------------------------------------------------------*
+| create an allreduced map on a distinct processor (public)  ghamm 10/14|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap,
+  const int pid)
+{
+  std::vector<int> rv;
+  AllreduceEMap(rv, emap);
+  Teuchos::RCP<Epetra_Map> rmap;
+
+  if (emap.Comm().MyPID() == pid)
+  {
+    // remove duplicates only on proc pid
+    std::set<int> rs(rv.begin(), rv.end());
+    rv.assign(rs.begin(), rs.end());
+
+    rmap = Teuchos::rcp(new Epetra_Map(-1, rv.size(), &rv[0], 0, emap.Comm()));
+    // check the map
+    dsassert(rmap->NumMyElements() == rmap->NumGlobalElements(),
+        "Processor with pid does not get all map elements");
+  }
+  else
+  {
+    rv.clear();
+    rmap = Teuchos::rcp(new Epetra_Map(-1, 0, NULL, 0, emap.Comm()));
+    // check the map
+    dsassert(rmap->NumMyElements() == 0,
+        "At least one proc will keep a map element");
+  }
+  return rmap;
 }
 
 /*----------------------------------------------------------------------*

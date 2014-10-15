@@ -23,6 +23,8 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
+#include "../linalg/linalg_utils.H"
 
 #include <vector>
 #include <sstream>
@@ -172,6 +174,12 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
           color = 0;
         else
           color = 1;
+      }
+      else if(argument.substr( 0, 9 ) == "diffgroup")
+      {
+        npType = no_nested_parallelism;
+        ngroup = 2;
+        color = atoi(argument.substr( 9, std::string::npos ).c_str());
       }
       else
       {
@@ -867,3 +875,93 @@ void COMM_UTILS::NPDuplicateDiscretization(
   return;
 }
 /*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | compare vectors from different parallel baci runs        ghamm 10/14 |
+ |                                                                      |
+ | You can add COMM_UTILS::CompareVectors([insert any Epetra_MultiVector|
+ | here]); in your code which will lead to a comparison                 |
+ | of the given vector for different executables and/or configurations  |
+ | command for starting this feature:                                   |
+ | mpirun -np 1 ./baci-release -nptype=diffgroup0 input.dat xxx_ser : -np 3 ./other-baci-release -nptype=diffgroup1 other-input.dat xxx_par
+ |                                                                      |
+ | Do not forget to include the header ( #include "../drt_comm/         |
+ | comm_utils.H" ) for the compare method, otherwise it won't compile.  |
+ |                                                                      |
+ | Further nice options are that you can compare results from different |
+ | executables used for running the same simulation                     |
+ | Note: you need to add the CompareVectors method in both executables  |
+ | at the same position in the code                                     |
+ *----------------------------------------------------------------------*/
+void COMM_UTILS::CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec)
+{
+  DRT::Problem* problem = DRT::Problem::Instance();
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = problem->GetNPGroup();
+  Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
+  MPI_Comm mpi_gcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm)->GetMpiComm();
+
+  // do stupid conversion from Epetra_BlockMap to Epetra_Map
+  const Epetra_BlockMap& vecblockmap = vec->Map();
+  Teuchos::RCP<Epetra_Map> vecmap = Teuchos::rcp(new Epetra_Map(vecblockmap.NumGlobalElements(),
+      vecblockmap.NumMyElements(),vecblockmap.MyGlobalElements(),0,vec->Comm()));
+
+  // gather data of vector to compare on gcomm proc 0 and last gcomm proc
+  Teuchos::RCP<Epetra_Map> proc0map;
+  if(lcomm->MyPID() == gcomm->MyPID())
+    proc0map = LINALG::AllreduceOverlappingEMap(*vecmap,0);
+  else
+    proc0map = LINALG::AllreduceOverlappingEMap(*vecmap,lcomm->NumProc()-1);
+
+  // export full vectors to the two desired processors
+  Teuchos::RCP<Epetra_MultiVector> fullvec = Teuchos::rcp(new Epetra_MultiVector(*proc0map,vec->NumVectors(),true));
+  LINALG::Export(*vec,*fullvec);
+
+  const int myglobalrank = gcomm->MyPID();
+  // last proc in gcomm sends its data to proc 0 which does the comparison
+  if(myglobalrank == 0)
+  {
+    int lengthRecv = 0;
+    std::vector<double> receivebuf;
+    MPI_Status status;
+    //first: receive length of data
+    int tag = 1337;
+    MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
+    if(lengthRecv == 0)
+      dserror("Length of data received from second run is incorrect.");
+
+    //second: receive data
+    tag = 2674;
+    receivebuf.resize(lengthRecv);
+    MPI_Recv(&receivebuf[0], lengthRecv, MPI_DOUBLE, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
+
+    // start comparison
+    int mylength = fullvec->MyLength()*vec->NumVectors();
+    if (mylength != lengthRecv)
+      dserror("length of received data (%i) does not match own data (%i)", lengthRecv, mylength);
+
+    double maxdiff = 0.0;
+    for (int i=0; i<mylength ; ++i)
+    {
+      double difference = std::abs(fullvec->Values()[i] - receivebuf[i]);
+      maxdiff = std::max(maxdiff, difference);
+    }
+    if (maxdiff > 1.0e-14)
+      dserror("vectors do not match, maximum difference between entries is: %lf", maxdiff);
+    else
+      IO::cout << "compared vectors of length: " << mylength << " are identical." << IO::endl;
+  }
+  else if (myglobalrank == gcomm->NumProc()-1)
+  {
+    int lengthSend = fullvec->MyLength()*vec->NumVectors();
+    //first: send length of data
+    int tag = 1337;
+    MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, mpi_gcomm);
+
+    //second: send data
+    tag = 2674;
+    MPI_Send(&fullvec->Values()[0], lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
+  }
+
+  return;
+}

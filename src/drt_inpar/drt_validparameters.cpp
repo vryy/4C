@@ -115,6 +115,7 @@ void PrintHelpMessage()
             << "\n"
             << "\t-nptype=parallelism_type\n"
             << "\t\tAvailable options: \"separateDatFiles\", \"everyGroupReadDatFile\" and \"copyDatFile\"; Must be set if \"-ngroup\" > 1.\n"
+            << "\t\t\"diffgroupx\" can be used to compare results from separate but parallel baci runs; x must be 0 and 1 for the respective run"
             << "\n"
             << "\tdat_name\n"
             << "\t\tName of the input file (Usually *.dat)\n"

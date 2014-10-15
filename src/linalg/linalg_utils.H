@@ -1852,6 +1852,18 @@ Teuchos::RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap);
  */
 Teuchos::RCP<Epetra_Map> AllreduceOverlappingEMap(const Epetra_Map& emap);
 
+/// Create an allreduced Epetra_Map from the given Epetra_Map
+/// on a distinct processor, all other procs create empty maps instead.
+/*!
+ \param emap (i) any distributed overlapping Epetra_Map
+ \param pid (i)  processor id where you want to have the allreduced and
+  sorted map exclusively
+ \author ghamm
+ \date 10/14
+ */
+Teuchos::RCP<Epetra_Map> AllreduceOverlappingEMap(const Epetra_Map& emap,
+  const int pid);
+
 /// find position of my map elements in a consecutive vector
 /*!
  The idea is to put the entries of a given map into a redundant

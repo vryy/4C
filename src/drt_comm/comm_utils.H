@@ -27,6 +27,7 @@ Maintainer: Georg Hammerl
  *----------------------------------------------------------------------*/
 #include <Teuchos_DefaultMpiComm.hpp>
 #include <Epetra_MpiComm.h>
+#include <Epetra_MultiVector.h>
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem_enums.H"
@@ -44,10 +45,10 @@ namespace COMM_UTILS
 {
   // forward declaration
   class NestedParGroup;
-  
+
   //! create a local and a global communicator for the problem
   void CreateComm(int argc, char** argv);
-  
+
 #if(0)
   //! distribute discretizations from one group to the others
   void BroadcastDiscretizations(const int bgroup);
@@ -56,11 +57,14 @@ namespace COMM_UTILS
   //! distribute discretizations from one group to the others with ponzi scheme
   void BroadcastDiscretizations();
   //! distribute a discretization from one group to one other
-  void NPDuplicateDiscretization(const int sgroup, 
+  void NPDuplicateDiscretization(const int sgroup,
                                  const int rgroup,
                                  Teuchos::RCP<NestedParGroup> group,
                                  Teuchos::RCP<DRT::Discretization> dis,
                                  Teuchos::RCP<Epetra_MpiComm> icomm);
+
+  //! comparison of two vectors from parallel baci runs for debugging reason
+  void CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec);
 
   //! transform Epetra_Comm to Teuchos::Comm, Teuchos::RCP version
   template<class datatype>
