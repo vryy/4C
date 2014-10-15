@@ -13,17 +13,15 @@ Maintainer: Philipp Farah
 */
 
 /*----------------------------------------------------------------------*
- | definitions                                               farah 11/13 |
+ | definitions                                              farah 11/13 |
  *----------------------------------------------------------------------*/
 
 #ifndef WEAR_PARTITIONED_H
 #define WEAR_PARTITIONED_H
 
 /*----------------------------------------------------------------------*
- | headers                                                   farah 11/13 |
+ | headers                                                  farah 11/13 |
  *----------------------------------------------------------------------*/
-//#include <Epetra_Comm.h>
-//
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -31,8 +29,6 @@ Maintainer: Philipp Farah
 #include "wear_algorithm.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_ale/ale.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     farah 11/13 |
@@ -48,7 +44,13 @@ namespace ADAPTER
 namespace DRT
 {
   class LocationArray;
+  class Element;
 }
+namespace ALE
+{
+  class Ale;
+}
+
 /*----------------------------------------------------------------------*
  |                                                          farah 11/13 |
  *----------------------------------------------------------------------*/

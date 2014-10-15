@@ -24,9 +24,7 @@ Maintainer: Philipp Farah
 /*----------------------------------------------------------------------*
  | headers                                                  farah 11/13 |
  *----------------------------------------------------------------------*/
-#include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
-#include "../drt_ale/ale.H"
 
 #include <Epetra_Vector.h>
 
@@ -41,8 +39,14 @@ namespace DRT
 
 namespace ADAPTER
 {
-  //class Structure;
+  class Structure;
+  class FSIStructureWrapper;
   class coupling;
+}
+
+namespace ALE
+{
+  class Ale;
 }
 
 namespace MORTAR

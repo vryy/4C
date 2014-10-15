@@ -21,6 +21,7 @@ Maintainer: Philipp Farah
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_elementtype.H"
+#include "../drt_lib/drt_element.H"
 
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -60,6 +61,7 @@ Maintainer: Philipp Farah
 #include "../drt_ale/ale.H"
 
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                     farah 05/13 |
