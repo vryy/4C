@@ -106,6 +106,7 @@ bool DRT::ELEMENTS::SoDisp::ReadElement(const std::string& eletype,
   } // end reading gaussian points for tetrahedral elements
   default:
     dserror("Reading of SOLID3 element failed: integration points\n");
+    break;
   } // end switch distype
 
   // set up of materials with GP data (e.g., history variables)

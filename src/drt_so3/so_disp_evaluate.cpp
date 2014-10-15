@@ -360,13 +360,14 @@ int DRT::ELEMENTS::SoDisp::Evaluate(Teuchos::ParameterList& params,
             elevec1(1) = h1norm;
             elevec1(2) = energynorm;
           }
-			else
+    else
                           dserror("ERROR: Error norms only implemented for SVK material");
   }
   break;
 
   default:
       dserror("Unknown type of action for Solid3");
+      break;
   }
   return 0;
 }

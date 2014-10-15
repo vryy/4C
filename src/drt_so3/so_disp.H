@@ -20,7 +20,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_mat/material.H"
 
-// Several parameters which are fixed for Solid Wedge6
+// Several parameters which are fixed three dimensional solid elements
 const int NUMDIM_DISP = 3;      ///< number of dimensions
 const int NODDOF_DISP = 3;      ///< number of dofs per node
 

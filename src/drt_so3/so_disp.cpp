@@ -213,6 +213,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::SoDisp::Shape() const
     case  5: return pyramid5;
     default:
       dserror("unexpected number of nodes %d", NumNode());
+      break;
     }
     return dis_none;
 }
