@@ -212,7 +212,6 @@ void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
   // if the user wants to use less procs than available (as indicated by
   // the input flag "parts" above) then pass on this information to the
   // parameter list for Zoltan/Isorropia
-  paramlist.set("partitioning method", "graph");
   if (parts != -1)
   {
     std::stringstream ss;
@@ -220,22 +219,6 @@ void DRT::UTILS::PartUsingParMetis(Teuchos::RCP<DRT::Discretization> dis,
     std::string s = ss.str();
     paramlist.set("num parts", s);
   }
-
-  //This time, we'll try graph partitioning..
-  //Create a parameter sublist for Zoltan parameters.
-  /*paramlist.set("PARTITIONING METHOD", "GRAPH");
-  paramlist.set("STRUCTURALLY SYMMETRIC", "NO");
-
-  //We could also call ParMetis, if Zoltan was built with ParMetis.
-  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
-  sublist.set("GRAPH_PACKAGE", "PARMETIS");
-  sublist.set("PARMETIS_METHOD", "PARTKWAY");
-  sublist.set("CHECK_GRAPH", "2");
-  sublist.set("GRAPH_SYMMETRIZE", "TRANSPOSE");
-  sublist.set("PARMETIS_OUTPUT_LEVEL", "7");*/
-
-  //Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
-  //sublist.set("LB_APPROACH", "PARTITION");
 
   Epetra_CrsGraph *balanced_graph = NULL;
   try {
