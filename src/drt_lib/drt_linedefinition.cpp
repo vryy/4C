@@ -642,7 +642,7 @@ void DRT::INPUT::LineDefinition::ExtractIntVector(std::string name, std::vector<
     v = c->Value();
     return;
   }
-  dserror("double vector '%s' not found", name.c_str());
+  dserror("int vector '%s' not found", name.c_str());
 }
 
 
