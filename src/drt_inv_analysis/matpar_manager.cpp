@@ -129,6 +129,7 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
       continue;
     }
 
+    int localcount=0;
     if (word2!="none" && actmatid!=0)
     {
       //check whether this material exists in the problem
@@ -143,6 +144,8 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
 
       paramap_[actmatid].push_back(optparams.at(word2));
       parapos_[actmatid].push_back(numparams_);
+      paraposGIDtoLID_[numparams_]=localcount;
+      localcount += 1;
       numparams_ += 1;
     }
     else
@@ -454,4 +457,40 @@ int STR::INVANA::MatParManager::GetParameterLocation(int eleid, std::string name
 
 return loc;
 
+}
+
+/*----------------------------------------------------------------------*/
+/* build blockwise connectivity graphs                      keh 10/14   */
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<STR::INVANA::ConnectivityData> STR::INVANA::MatParManager::GetConnectivityData()
+{
+  int maxbw=6;  // based on connectivity for hex8 elements
+  Teuchos::RCP<Epetra_CrsMatrix> graph = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*(paramapextractor_->FullMap()),maxbw,false));
+
+  for (int i=0; i<NumParams(); i++)
+    FillAdjacencyMatrix(*(paramapextractor_->Map(i)), paraposGIDtoLID_[i], graph);
+
+  // Finalize the graph ...
+  graph->FillComplete();
+  graph->OptimizeStorage();
+
+  // put zeros one the diagonal; the diagonal is the "self weight" and it should never
+  // be used somewhere since its meaningless but its better to have 0.0 than some
+  // random value resulting from redundant inserting during FillAdjacencyMatrix
+  Teuchos::RCP<Epetra_Vector> diagonal=Teuchos::rcp(new Epetra_Vector(*(paramapextractor_->FullMap()), true));
+  graph->ReplaceDiagonalValues(*diagonal);
+
+  // store maps and graph in a container
+  Teuchos::RCP<ConnectivityData> connectivity = Teuchos::rcp(new ConnectivityData(paramapextractor_,graph));
+  return connectivity;
+}
+
+/*----------------------------------------------------------------------*/
+/* build blockwise connectivity graphs                      keh 10/14   */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::MatParManager::FillAdjacencyMatrix(const Epetra_Map& elerowmap, int blockid, Teuchos::RCP<Epetra_CrsMatrix> graph)
+{
+  // if not implemented for the specific parameterizations no graph exists
+  graph=Teuchos::null;
+  return;
 }

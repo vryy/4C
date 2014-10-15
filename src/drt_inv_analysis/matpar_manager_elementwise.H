@@ -59,6 +59,9 @@ protected:
 
 private:
 
+  //! build a graph of elements in the optimization parameter vector
+  void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, int blockid, Teuchos::RCP<Epetra_CrsMatrix> graph);
+
   //! the two following 'maps' are processor specific: each proc has its own
   //! map keeping correspondence between params in the parameter vector (parameter LID in optparams_) and
   //! eleids (i.e gids of the discretizations ele layout)

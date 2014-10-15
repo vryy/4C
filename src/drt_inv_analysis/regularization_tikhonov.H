@@ -44,7 +44,7 @@ public:
   virtual ~RegularizationTikhonov(){};
 
   //! setup of the class content (nothing to be done here)
-  virtual void Setup() {return;}
+  virtual void Setup(){return;}
 
   //! evaluate value of the regularization functional
   /*!

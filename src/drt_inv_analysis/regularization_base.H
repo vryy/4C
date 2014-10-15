@@ -19,6 +19,7 @@ Maintainer: Sebastian Kehl
 /* headers */
 #include "Teuchos_RCP.hpp"
 #include "Epetra_MultiVector.h"
+#include "matpar_manager.H" //for ConnectivityData
 
 namespace LINALG
 {
@@ -39,6 +40,8 @@ namespace STR
 
 namespace INVANA
 {
+
+  class ConnectivityData;
 
 /*!
   \brief A class for regularization on a vector 'theta' of parameters
@@ -61,9 +64,9 @@ public:
   //! Set member variables after construction.
   /*!
       \param In
-      mapxtractor - a mapextractor to extract possible blocks of parameters to be regularized independenty
+      mapxtractor - a mapextractor to extract possible blocks of parameters to be regularized independently
    */
-  void Init(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<LINALG::MultiMapExtractor> mapextractor);
+  void Init(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<ConnectivityData> connectivity);
 
   //! Setup of the derived classes
   virtual void Setup() = 0;
@@ -92,7 +95,7 @@ protected:
   Teuchos::RCP<DRT::Discretization> discret_;
 
   //! layout of the parameters
-  Teuchos::RCP<LINALG::MultiMapExtractor> thetalayoutmapextractor_;
+  Teuchos::RCP<ConnectivityData> connectivity_;
 
   //! weight of the regularization
   double weight_;

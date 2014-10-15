@@ -96,8 +96,11 @@ Teuchos::RCP<STR::INVANA::InvanaBase> STR::INVANA::InvanaFactory::Create(Teuchos
     }
     break;
   }
-  regman->Init(discret,matman->ParamMapExtractor());
-  regman->Setup();
+  if (regman!=Teuchos::null)
+  {
+    regman->Init(discret,matman->GetConnectivityData());
+    regman->Setup();
+  }
 
   // optimization algorithm
   STR::INVANA::OptimizerFactory optimizerfac;

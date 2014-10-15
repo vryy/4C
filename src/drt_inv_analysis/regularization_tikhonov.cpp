@@ -16,6 +16,8 @@
 
 #include "invana_utils.H"
 #include "../linalg/linalg_mapextractor.H"
+#include "matpar_manager.H" //for ConnectivityData
+#include "../drt_lib/drt_dserror.H"
 
 #include "Teuchos_ParameterList.hpp"
 
@@ -30,7 +32,7 @@ STR::INVANA::RegularizationTikhonov::RegularizationTikhonov( const Teuchos::Para
 void STR::INVANA::RegularizationTikhonov::Evaluate(const Epetra_MultiVector& theta, double* value)
 {
   double val = 0.0;
-  STR::INVANA::MVNorm(theta, *(thetalayoutmapextractor_->FullMap()), 2, &val);
+  STR::INVANA::MVNorm(theta, *(connectivity_->MapExtractor()->FullMap()), 2, &val);
   *value += 0.5 * weight_ * val * val;
 
   return;

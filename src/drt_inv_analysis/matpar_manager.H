@@ -20,6 +20,7 @@ Maintainer: Sebastian Kehl
 #include "Teuchos_RCP.hpp"
 #include "Epetra_MultiVector.h"
 #include "Epetra_Map.h"
+#include "Epetra_CrsGraph.h"
 
 // forward declarations
 namespace DRT
@@ -36,8 +37,45 @@ namespace STR
 {
 
 namespace INVANA
-
 {
+  /*!
+  \brief a container for the connectivity among optimization parameters.
+
+  This class is thought to be constructed upon request by the MatParManager, e.g. to be used by
+  the regularization. The main purpose of it is to encapsulate the connectivity information among
+  the optimzation parameters.
+
+  \author kehl
+   */
+
+class ConnectivityData
+{
+
+public:
+   // constructor
+  ConnectivityData(Teuchos::RCP<LINALG::MultiMapExtractor> mapextractor, Teuchos::RCP<Epetra_CrsMatrix> graph)
+  {
+    mapextractor_=mapextractor;
+    graph_=graph;
+  }
+
+  // destructor
+  virtual ~ConnectivityData() {}
+
+  Teuchos::RCP<LINALG::MultiMapExtractor> MapExtractor() { return mapextractor_;}
+
+  Teuchos::RCP<Epetra_CrsMatrix> AdjacencyMatrix() { return graph_;}
+
+private:
+
+  // maps of different blocks of parameters
+  Teuchos::RCP<LINALG::MultiMapExtractor> mapextractor_;
+
+  //! graph to hold the connectivity of parameters inside a vector of parameters
+  Teuchos::RCP<Epetra_CrsMatrix> graph_;
+
+};
+
 
   /*!
   \brief A class to handle material parameters for optimization
@@ -103,8 +141,8 @@ public:
   //! return the unique map of the optimization parameter layout
   Teuchos::RCP<Epetra_Map> ParamLayoutMapUnique(){return paramlayoutmapunique_;}
 
-  //! return mapextractor of material parameters from optimization parameter vector
-  Teuchos::RCP<LINALG::MultiMapExtractor> ParamMapExtractor() {return paramapextractor_;}
+  //! return connectivity object with mapextractor and adjacency matrix
+  Teuchos::RCP<ConnectivityData> GetConnectivityData();
 
   //! put vector index of a given material parameter <string> into loc (used for result testing)
   int GetParameterLocation(int eleid, std::string name);
@@ -186,6 +224,17 @@ private:
   //! setup paramap_, parapos_ from input and check for validity
   void SetupMatOptMap();
 
+  //! build a graph of elements in the optimization parameter vector
+  /*!
+    \param In
+    paramrowmap - a map from which to build the graph.
+    \param In
+    blockid - id of the parameter block.
+    \param Out
+    graph - a reference to itself to be passed to the optimization algorithm.
+  */
+  virtual void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, int blockid, Teuchos::RCP<Epetra_CrsMatrix> graph);
+
   //! discretization for convenience
   Teuchos::RCP<DRT::Discretization> discret_;
 
@@ -201,6 +250,12 @@ private:
   //!       < 2 ; (2 , 3)> <BR>
   //! wrt the above example this means youngs is stored in vector 0, beta in vector 1, k1 in vector 3, etc.
   std::map<int,std::vector<int> > parapos_;
+
+  //! map of parameter block ids to local parameter block ids, i.e. ids per material <BR>
+  //! for  the above examle this would be\n
+  //!       < (0 , 0); (1 , 1); (2 , 0);(3 , 1) >
+  //! wrt the above example this means youngs is stored in vector 0, beta in vector 1, k1 in vector 3, etc.
+  std::map<int,int> paraposGIDtoLID_;
 
   //! number of physically different material parameters
   int numparams_;

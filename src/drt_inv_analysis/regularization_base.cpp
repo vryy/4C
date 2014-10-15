@@ -22,7 +22,7 @@ Maintainer: Sebastian Kehl
 /* constructor */
 STR::INVANA::RegularizationBase::RegularizationBase(const Teuchos::ParameterList& invp) :
 discret_(Teuchos::null),
-thetalayoutmapextractor_(Teuchos::null),
+connectivity_(Teuchos::null),
 weight_(0.0)
 {
   weight_ = invp.get<double>("REG_WEIGHT");
@@ -30,8 +30,8 @@ weight_(0.0)
   return;
 }
 
-void STR::INVANA::RegularizationBase::Init(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<LINALG::MultiMapExtractor> map)
+void STR::INVANA::RegularizationBase::Init(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<ConnectivityData> connectivity)
 {
   discret_=discret;
-  thetalayoutmapextractor_=map;
+  connectivity_=connectivity;
 }
