@@ -50,7 +50,7 @@ namespace DRT
   namespace UTILS
   {
     class LocsysManager;
-  class PlastSsnManager;
+    class PlastSsnManager;
   }
 }
 
