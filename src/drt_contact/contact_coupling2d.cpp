@@ -254,62 +254,32 @@ void CONTACT::CoCoupling2dManager::EvaluateMortar()
   //**********************************************************************
   if (IntType() == INPAR::MORTAR::inttype_segments)
   {
-    // switch, if consistent boundary modification chosen
-    if (DRT::INPUT::IntegralValue<int>(imortar_, "LM_DUAL_CONSISTENT") == true
-        && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
-        )
-    {
       // loop over all master elements associated with this slave element
-      for (int m = 0; m < (int) MasterElements().size(); ++m)
-      {
-        // create Coupling2d object and push back
-        Coupling().push_back(
-            Teuchos::rcp(
-                new CoCoupling2d(idiscret_, dim_, quad_, imortar_,
-                    SlaveElement(), MasterElement(m))));
+    for (int m = 0; m < (int) MasterElements().size(); ++m)
+    {
+      // create Coupling2d object and push back
+      Coupling().push_back(
+          Teuchos::rcp(
+              new CoCoupling2d(idiscret_, dim_, quad_, imortar_,
+                  SlaveElement(), MasterElement(m))));
 
-        // project the element pair
-        Coupling()[m]->Project();
+      // project the element pair
+      Coupling()[m]->Project();
 
-        // check for element overlap
-        Coupling()[m]->DetectOverlap();
-      }
-
-      // calculate consistent dual shape functions for this element
-      ConsistDualShape();
-
-      // do mortar integration
-      for (int m = 0; m < (int) MasterElements().size(); ++m)
-        Coupling()[m]->IntegrateOverlap();
-
-      // free memory of consistent dual shape function coefficient matrix
-      SlaveElement().MoData().ResetDualShape();
-      SlaveElement().MoData().ResetDerivDualShape();
-
+      // check for element overlap
+      Coupling()[m]->DetectOverlap();
     }
 
-    // no consistent boundary modification
-    else
-    {
-      // loop over all master elements associated with this slave element
-      for (int m = 0; m < (int) MasterElements().size(); ++m)
-      {
-        // create Coupling2d object and push back
-        Coupling().push_back(
-            Teuchos::rcp(
-                new CoCoupling2d(idiscret_, dim_, quad_, imortar_,
-                    SlaveElement(), MasterElement(m))));
+    // calculate consistent dual shape functions for this element
+    ConsistDualShape();
 
-        // project the element pair
-        Coupling()[m]->Project();
+    // do mortar integration
+    for (int m = 0; m < (int) MasterElements().size(); ++m)
+      Coupling()[m]->IntegrateOverlap();
 
-        // check for element overlap
-        Coupling()[m]->DetectOverlap();
-
-        // integrate the element overlap
-        Coupling()[m]->IntegrateOverlap();
-      }
-    }
+    // free memory of consistent dual shape function coefficient matrix
+    SlaveElement().MoData().ResetDualShape();
+    SlaveElement().MoData().ResetDerivDualShape();
   }
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
@@ -466,18 +436,16 @@ void CONTACT::CoCoupling2dManager::EvaluateMortar()
  *----------------------------------------------------------------------*/
 void CONTACT::CoCoupling2dManager::ConsistDualShape()
 {
+  bool consistent=DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT");
+
   // For standard shape functions no modification is necessary
   // A switch earlier in the process improves computational efficiency
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
-    dserror("ConsistentDualShape() called for standard LM interpolation.");
+  if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent==false)
+    return;
 
     // Consistent modification only for linear LM interpolation
-    if (Quad()==true && DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true)
+    if (Quad()==true && consistent==true)
     dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
-
-    // you should not be here
-    if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==false)
-    dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
 
     // do nothing if there are no coupling pairs
     if (Coupling().size()==0)

@@ -721,11 +721,6 @@ void MORTAR::Coupling2dManager::EvaluateMortar()
   //**********************************************************************
   if (IntType() == INPAR::MORTAR::inttype_segments)
   {
-    // switch, if consistent boundary modification chosen
-    if (DRT::INPUT::IntegralValue<int>(imortar_, "LM_DUAL_CONSISTENT") == true
-        && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
-        )
-    {
       // loop over all master elements associated with this slave element
       for (int m = 0; m < (int) MasterElements().size(); ++m)
       {
@@ -749,31 +744,8 @@ void MORTAR::Coupling2dManager::EvaluateMortar()
       // do mortar integration
       for (int m = 0; m < (int) MasterElements().size(); ++m)
         Coupling()[m]->IntegrateOverlap();
-    }
-
-    // no consistent boundary modification
-    else
-    {
-      // loop over all master elements associated with this slave element
-      for (int m = 0; m < (int) MasterElements().size(); ++m)
-      {
-        // create Coupling2d object and push back
-        Coupling().push_back(
-            Teuchos::rcp(
-                new Coupling2d(idiscret_, dim_, quad_, imortar_, SlaveElement(),
-                    MasterElement(m))));
-
-        // project the element pair
-        Coupling()[m]->Project();
-
-        // check for element overlap
-        Coupling()[m]->DetectOverlap();
-
-        // integrate the element overlap
-        Coupling()[m]->IntegrateOverlap();
-      }
-    }
   }
+
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
   //**********************************************************************
@@ -939,107 +911,105 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
  *----------------------------------------------------------------------*/
 void MORTAR::Coupling2dManager::ConsistDualShape()
 {
+  bool consistent=DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT");
+
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
-    dserror("ConsistentDualShape() called for standard LM interpolation.");
+  if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent==false)
+    return;
 
-    // Consistent modification only for linear LM interpolation
-    if (Quad()==true && DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==true)
+  // Consistent modification only for linear LM interpolation
+  if (Quad()==true && consistent==true)
     dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
 
-    // you should not be here
-    if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT")==false)
-    dserror("You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
-
-    // do nothing if there are no coupling pairs
-    if (Coupling().size()==0)
+  // do nothing if there are no coupling pairs
+  if (Coupling().size()==0)
     return;
 
-    // detect entire overlap
-    double ximin=1.0;
-    double ximax=-1.0;
-    std::map<int, double> dximin;
-    std::map<int,double> dximax;
-    std::vector<std::map<int,double> > ximaps(4);
+  // detect entire overlap
+  double ximin=1.0;
+  double ximax=-1.0;
+  std::map<int, double> dximin;
+  std::map<int,double> dximax;
+  std::vector<std::map<int,double> > ximaps(4);
 
-    // loop over all master elements associated with this slave element
-    for (int m=0;m<(int)Coupling().size();++m)
+  // loop over all master elements associated with this slave element
+  for (int m=0;m<(int)Coupling().size();++m)
+  {
+    double sxia=Coupling()[m]->XiProj()[0];
+    double sxib=Coupling()[m]->XiProj()[1];
+
+    // get element contact integration area
+    // and for contact derivatives of beginning and end
+    if (sxia<ximin) ximin=sxia;
+    if (sxib>ximax) ximax=sxib;
+  }
+
+  // no overlap: the applied dual shape functions don't matter, as the integration domain is void
+  if ((ximax==-1.0 && ximin==1.0) || (ximin==ximax))
+    return;
+
+  // fully projecting element: no modification necessary
+  if (ximin==-1. && ximax==1.)
+    return;
+
+  // calculate consistent dual schape functions (see e.g. Cichosz et.al.:
+  // Consistent treatment of boundaries with mortar contact formulations, CMAME 2010
+
+  // Dual shape functions coefficient matrix
+  int nnodes = SlaveElement().NumNode();
+  LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
+
+  // compute entries to bi-ortho matrices me/de with Gauss quadrature
+  MORTAR::ElementIntegrator integrator(SlaveElement().Shape());
+
+  // prepare for calculation of dual shape functions
+  LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+  LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+
+  for (int gp=0;gp<integrator.nGP();++gp)
+  {
+    LINALG::SerialDenseVector sval(nnodes);
+    LINALG::SerialDenseMatrix sderiv(nnodes,1,true);
+
+    // coordinates and weight
+    double eta[2] =
+    { integrator.Coordinate(gp,0), 0.0};
+    double wgt = integrator.Weight(gp);
+
+    // coordinate transformation sxi->eta (slave MortarElement->Overlap)
+    double sxi[2] =
+    { 0.0, 0.0};
+    sxi[0] = 0.5*(1.0-eta[0])*ximin + 0.5*(1.0+eta[0])*ximax;
+
+    // evaluate trace space shape functions
+    SlaveElement().EvaluateShape(sxi,sval,sderiv,nnodes);
+
+    // evaluate the two slave side Jacobians
+    double dxdsxi = SlaveElement().Jacobian(sxi);
+    double dsxideta = -0.5*ximin + 0.5*ximax;
+
+    // integrate dual shape matrices de, me and their linearizations
+    for (int j=0; j<nnodes; ++j)
     {
-      double sxia=Coupling()[m]->XiProj()[0];
-      double sxib=Coupling()[m]->XiProj()[1];
+      // de and linearization
+      de(j,j) += wgt * sval[j] * dxdsxi*dsxideta;
 
-      // get element contact integration area
-      // and for contact derivatives of beginning and end
-      if (sxia<ximin) ximin=sxia;
-      if (sxib>ximax) ximax=sxib;
-    }
-
-    // no overlap: the applied dual shape functions don't matter, as the integration domain is void
-    if ((ximax==-1.0 && ximin==1.0) || (ximin==ximax))
-    return;
-
-    // fully projecting element: no modification necessary
-    if (ximin==-1. && ximax==1.)
-    return;
-
-    // calculate consistent dual schape functions (see e.g. Cichosz et.al.:
-    // Consistent treatment of boundaries with mortar contact formulations, CMAME 2010
-
-    // Dual shape functions coefficient matrix
-    int nnodes = SlaveElement().NumNode();
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
-
-    // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    MORTAR::ElementIntegrator integrator(SlaveElement().Shape());
-
-    // prepare for calculation of dual shape functions
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
-
-    for (int gp=0;gp<integrator.nGP();++gp)
-    {
-      LINALG::SerialDenseVector sval(nnodes);
-      LINALG::SerialDenseMatrix sderiv(nnodes,1,true);
-
-      // coordinates and weight
-      double eta[2] =
-      { integrator.Coordinate(gp,0), 0.0};
-      double wgt = integrator.Weight(gp);
-
-      // coordinate transformation sxi->eta (slave MortarElement->Overlap)
-      double sxi[2] =
-      { 0.0, 0.0};
-      sxi[0] = 0.5*(1.0-eta[0])*ximin + 0.5*(1.0+eta[0])*ximax;
-
-      // evaluate trace space shape functions
-      SlaveElement().EvaluateShape(sxi,sval,sderiv,nnodes);
-
-      // evaluate the two slave side Jacobians
-      double dxdsxi = SlaveElement().Jacobian(sxi);
-      double dsxideta = -0.5*ximin + 0.5*ximax;
-
-      // integrate dual shape matrices de, me and their linearizations
-      for (int j=0; j<nnodes; ++j)
+      // me and linearization
+      for (int k=0; k<nnodes; ++k)
       {
-        // de and linearization
-        de(j,j) += wgt * sval[j] * dxdsxi*dsxideta;
-
-        // me and linearization
-        for (int k=0; k<nnodes; ++k)
-        {
-          me(j,k) += wgt * sval[j] * sval[k] *dxdsxi*dsxideta;
-        }
+        me(j,k) += wgt * sval[j] * sval[k] *dxdsxi*dsxideta;
       }
     }
-
-    // build ae matrix
-    // invert bi-ortho matrix me
-    LINALG::InvertAndMultiplyByCholesky(me,de,ae);
-
-    // store ae matrix in slave element data container
-    SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
-
-    return;
   }
+
+  // build ae matrix
+  // invert bi-ortho matrix me
+  LINALG::InvertAndMultiplyByCholesky(me,de,ae);
+
+  // store ae matrix in slave element data container
+  SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+
+  return;
+}
 

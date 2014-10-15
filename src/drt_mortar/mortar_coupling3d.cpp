@@ -4258,11 +4258,6 @@ void MORTAR::Coupling3dManager::EvaluateMortar()
   //**********************************************************************
   if (IntType() == INPAR::MORTAR::inttype_segments)
   {
-    // switch, if consistent boundary modification chosen
-    if (LMDualConsistent() == true
-        && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
-        )
-    {
       // loop over all master elements associated with this slave element
       for (int m = 0; m < (int) MasterElements().size(); ++m)
       {
@@ -4282,23 +4277,6 @@ void MORTAR::Coupling3dManager::EvaluateMortar()
       // integrate cells
       for (int m = 0; m < (int) MasterElements().size(); ++m)
         Coupling()[m]->IntegrateCells();
-    }
-    else
-    {
-      // loop over all master elements associated with this slave element
-      for (int m = 0; m < (int) MasterElements().size(); ++m)
-      {
-        // create Coupling3d object and push back
-        Coupling().push_back(
-            Teuchos::rcp(
-                new Coupling3d(idiscret_, dim_, false, imortar_, SlaveElement(),
-                    MasterElement(m))));
-        // do coupling
-        Coupling()[m]->EvaluateCoupling();
-        // integrate cells
-        Coupling()[m]->IntegrateCells();
-      }
-    }
   }
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
@@ -4556,19 +4534,16 @@ void MORTAR::Coupling3dQuadManager::EvaluateMortar()
  *----------------------------------------------------------------------*/
 void MORTAR::Coupling3dManager::ConsistDualShape()
 {
+  bool consistent=DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT");
+
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
-    dserror("ERROR: ConsistentDualShape() called for standard LM interpolation.");
+  if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent==false)
+    return;
 
   // Consistent modification only for linear LM interpolation
-  if (Quad() == true
-      && DRT::INPUT::IntegralValue<int>(imortar_, "LM_DUAL_CONSISTENT") == true)
+  if (Quad() == true && consistent == true)
     dserror("ERROR: Consistent dual shape functions in boundary elements only for linear LM interpolation");
-
-  // you should not be here
-  if (DRT::INPUT::IntegralValue<int>(imortar_, "LM_DUAL_CONSISTENT") == false)
-    dserror("ERROR: You should not be here: ConsistDualShape() called but LM_DUAL_CONSISTENT is set NO");
 
   if (Coupling().size() == 0)
     return;
