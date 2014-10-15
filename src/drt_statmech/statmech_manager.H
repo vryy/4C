@@ -340,8 +340,11 @@ public:
                                Teuchos::RCP<Epetra_Vector>          systemvector,
                                Teuchos::RCP<LINALG::SparseOperator> systemmatrix);
 
-  // ! \brief determine Neumann BC nodeset
-  void GetNBCNodes(Teuchos::ParameterList&   params);
+  /* ! \brief determine Neumann BC nodeset
+   *   \param params     (in) a parameter list
+   *   \param nodeposcol (in) column map vector of node positions */
+  void GetNBCNodes(Teuchos::ParameterList&          params,
+                   Teuchos::RCP<Epetra_MultiVector> nodeposcol = Teuchos::null);
   /*! \brief adjusted Point Neumann value for Statmech
    *  \param params      (in) parameter list
    *  \param onoff       (in) a parameter list

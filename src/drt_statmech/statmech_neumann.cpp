@@ -110,6 +110,11 @@ void STATMECH::StatMechManager::EvaluateNeumannStatMech(Teuchos::ParameterList& 
     {
       if(NBCStart(params))
       {
+        Teuchos::RCP<Epetra_MultiVector> nodepositions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()), 3, true));
+        Epetra_Vector discol(*discret_->DofColMap(),true);
+        LINALG::Export(*disn, discol);
+        GetNodalBindingSpotPositionsFromDisVec(discol, nodepositions, Teuchos::null);
+
         GetNBCNodes(params);
 
         int oscdir = statmechparams_.get<int>("DBCDISPDIR",0)-1;
@@ -157,7 +162,8 @@ void STATMECH::StatMechManager::EvaluateNeumannStatMech(Teuchos::ParameterList& 
 /*----------------------------------------------------------------------*
  | Retrieve Neumann nodes                       (private)  mueller 09/14|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::GetNBCNodes(Teuchos::ParameterList& params)
+void STATMECH::StatMechManager::GetNBCNodes(Teuchos::ParameterList&          params,
+                                            Teuchos::RCP<Epetra_MultiVector> nodeposcol)
 {
   INPAR::STATMECH::NBCType nbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::NBCType>(statmechparams_,"NBCTYPE");
   switch(nbctype)
@@ -177,32 +183,62 @@ void STATMECH::StatMechManager::GetNBCNodes(Teuchos::ParameterList& params)
       if(nbcnodesets_.empty())
       {
         int N = statmechparams_.get<int>("NUMNBCNODES",0);
-        if(N<=0)
-          dserror("Provide the number of Neumann nodes by means of the input parameter NUMNBCNODES (>0)!");
+        if(N<=0)  dserror("Provide the number of Neumann nodes by means of the input parameter NUMNBCNODES (>0)!");
 
-        std::vector<int> nbcnodes;
-        nbcnodes.clear();
-        if(!discret_->Comm().MyPID())
+        // find node closest to the volume center
+        if(N==1)
+        {
+          // all processors should arrive at the same node (also a check for consistency!)
+          double H = statmechparams_.get<double>("PERIODLENGTH", -1.0);
+          double dmin = 1e9;
+          std::vector<int> nodecolid(1,-1);
+          if(H<0.0) dserror("PERIODLENGTH needs to exist in the input file.");
+          if(nodeposcol==Teuchos::null) dserror("No nodal positions supplied!");
+          for(int i=0; i<nodeposcol->MyLength(); i++)
+          {
+            double disti = ((*nodeposcol)[0][i]-H/2.0)*((*nodeposcol)[0][i]-H/2.0)+
+                           ((*nodeposcol)[1][i]-H/2.0)*((*nodeposcol)[0][i]-H/2.0)+
+                           ((*nodeposcol)[2][i]-H/2.0)*((*nodeposcol)[0][i]-H/2.0);
+            if(disti<dmin)
+            {
+              nodecolid[0] = nodeposcol->Map().GID(i);
+              dmin = disti;
+            }
+          }
+          // check
+          int procid = nodecolid[0];
+          int summed = -1;
+          discret_->Comm().SumAll(&procid,&summed,1);
+          if(summed!=discret_->Comm().NumProc()*procid) dserror("Wrong check sum! Either communication went wrong or your column map node vector is incorrect!");
+
+          nbcnodesets_.push_back(nodecolid);
+        }
+        else // choose N nodes randomly
+        {
+          std::vector<int> nbcnodes;
+          nbcnodes.clear();
+          if(!discret_->Comm().MyPID())
+            for(int i=0; i<N; i++)
+              nbcnodes.push_back((int)(floor((*uniformgen_)()*(double)(discret_->NumGlobalNodes()))));
+          discret_->Comm().Barrier();
+          // communicate
+          // gid vector
+          std::vector<int> gids(N,0);
           for(int i=0; i<N; i++)
-            nbcnodes.push_back((int)(floor((*uniformgen_)()*(double)(discret_->NumGlobalNodes()))));
-        discret_->Comm().Barrier();
-        // communicate
-        // gid vector
-        std::vector<int> gids(N,0);
-        for(int i=0; i<N; i++)
-          gids.at(i) = i;
-        Epetra_Map fullmap(-1, N, &gids[0], 0, discret_->Comm());
-        Epetra_Map partmap(N, 0, discret_->Comm());
-        Teuchos::RCP<Epetra_Vector> target(new Epetra_Vector(fullmap,true));
-        Teuchos::RCP<Epetra_Vector> part(new Epetra_Vector(partmap, true));
-        if(!discret_->Comm().MyPID())
-          for(int i=0; i<target->MyLength(); i++)
-            (*target)[i] = (double)nbcnodes.at(i);
-        CommunicateVector(part, target, true, true);
+            gids.at(i) = i;
+          Epetra_Map fullmap(-1, N, &gids[0], 0, discret_->Comm());
+          Epetra_Map partmap(N, 0, discret_->Comm());
+          Teuchos::RCP<Epetra_Vector> target(new Epetra_Vector(fullmap,true));
+          Teuchos::RCP<Epetra_Vector> part(new Epetra_Vector(partmap, true));
+          if(!discret_->Comm().MyPID())
+            for(int i=0; i<target->MyLength(); i++)
+              (*target)[i] = (double)nbcnodes.at(i);
+          CommunicateVector(part, target, true, true);
 
-        // give all processors all nodes (the ordering is important information)
-        for(int i=0; i<N; i++)
-          nbcnodesets_.push_back(std::vector<int>(1,(*target)[i]));
+          // give all processors all nodes (the ordering is important information)
+          for(int i=0; i<N; i++)
+            nbcnodesets_.push_back(std::vector<int>(1,(*target)[i]));
+        }
       }
     }
     break;
