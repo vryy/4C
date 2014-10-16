@@ -191,9 +191,14 @@ void STATMECH::StatMechManager::GetNBCNodes(Teuchos::ParameterList&          par
         int N = statmechparams_.get<int>("NUMNBCNODES",0);
         if(N<=0)  dserror("Provide the number of Neumann nodes by means of the input parameter NUMNBCNODES (>0)!");
 
-        // find node closest to the volume center
+        // find node closest to COG
         if(N==1)
         {
+          // calculate center of gravity
+          std::vector<double> cog(nodeposcol->NumVectors(),0.0);
+          int error = nodeposcol->MeanValue(&cog[0]);
+          if(error) dserror("Calculation of vector mean values failed!");
+
           // all processors should arrive at the same node (also a check for consistency!)
           double dmin = 1e9;
           std::vector<int> nodecolid(1,-1);
@@ -201,9 +206,9 @@ void STATMECH::StatMechManager::GetNBCNodes(Teuchos::ParameterList&          par
           if(nodeposcol==Teuchos::null) dserror("No nodal positions supplied!");
           for(int i=0; i<nodeposcol->MyLength(); i++)
           {
-            double disti = ((*nodeposcol)[0][i]-(*periodlength_)[0]/2.0)*((*nodeposcol)[0][i]-(*periodlength_)[0]/2.0)+
-                           ((*nodeposcol)[1][i]-(*periodlength_)[1]/2.0)*((*nodeposcol)[1][i]-(*periodlength_)[1]/2.0)+
-                           ((*nodeposcol)[2][i]-(*periodlength_)[2]/2.0)*((*nodeposcol)[2][i]-(*periodlength_)[2]/2.0);
+            double disti = sqrt(((*nodeposcol)[0][i]-cog[0])*((*nodeposcol)[0][i]-cog[0])+
+                               ((*nodeposcol)[1][i]-cog[1])*((*nodeposcol)[1][i]-cog[1])+
+                               ((*nodeposcol)[2][i]-cog[2])*((*nodeposcol)[2][i]-cog[2]));
             if(disti<dmin)
             {
               nodecolid[0] = nodeposcol->Map().GID(i);
@@ -217,6 +222,16 @@ void STATMECH::StatMechManager::GetNBCNodes(Teuchos::ParameterList&          par
           if(summed!=discret_->Comm().NumProc()*procid) dserror("Wrong check sum! Either communication went wrong or your column map node vector is incorrect!");
 
           nbcnodesets_.push_back(nodecolid);
+
+          if(!discret_->Comm().MyPID())
+          {
+            std::cout<<"=== Point force location ==="<<std::endl;
+            std::cout<<"X: "<<(*nodeposcol)[0][nodecolid[0]]<<std::endl;
+            std::cout<<"Y: "<<(*nodeposcol)[1][nodecolid[0]]<<std::endl;
+            std::cout<<"Z: "<<(*nodeposcol)[2][nodecolid[0]]<<std::endl;
+            std::cout<<"============================"<<std::endl;
+          }
+          discret_->Comm().Barrier();
         }
         else // choose N nodes randomly
         {
