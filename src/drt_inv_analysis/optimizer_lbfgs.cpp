@@ -20,19 +20,19 @@ Maintainer: Sebastian Kehl
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_timintmstep.H"
 #include "../drt_comm/comm_utils.H"
+#include "../drt_inpar/inpar_parameterlist_utils.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */
 STR::INVANA::OptimizerLBFGS::OptimizerLBFGS(const Teuchos::ParameterList& invp):
   OptimizerBase(invp),
+initscal_(DRT::INPUT::IntegralValue<bool>(invp, "LBFGSINITSCAL")),
+ssize_(invp.get<int>("SIZESTORAGE")),
 sstore_(Teuchos::null),
 ystore_(Teuchos::null),
 p_(Teuchos::null),
 step_(Teuchos::null)
 {
-  //initialize storage vectors
-  ssize_=invp.get<int>("SIZESTORAGE");
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -42,8 +42,8 @@ void STR::INVANA::OptimizerLBFGS::Setup()
   ssize_=ssize_*numvecs_;
   actsize_=0;
 
-  sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, &SolLayoutMap(), true));
-  ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, &SolLayoutMap(), true));
+  sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, &SolLayoutMap(), true));
+  ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, &SolLayoutMap(), true));
 
   p_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), numvecs_, true));
   step_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), numvecs_, true));
@@ -280,7 +280,12 @@ int STR::INVANA::OptimizerLBFGS::polymod(double e_o, double dfp, double tau_n, d
 void STR::INVANA::OptimizerLBFGS::StoreVectors()
 {
   if (runc_*numvecs_<=ssize_) // we have "<=" since we do not store the first run
+  {
     actsize_+=numvecs_;
+    //resize storage
+    sstore_->Resize(-actsize_+1,0,&SolLayoutMap(),false);
+    ystore_->Resize(-actsize_+1,0,&SolLayoutMap(),false);
+  }
 
   Epetra_MultiVector s(SolLayoutMap(), (numvecs_),true);
 
@@ -332,8 +337,23 @@ void STR::INVANA::OptimizerLBFGS::ComputeDirection()
     }
   }
 
-  // Some scaling of the initial hessian might come in here but has not been proven to be effective
-  // altough they say so
+  // initial scaling: see Nocedal, "Numerical Optimization", 2006, p. 178, formula (7.20)
+  if (initscal_)
+  {
+    double nomi=0.0;
+    double denomi=0.0;
+    double nom=0.0;
+    double denom=0.0;
+    for (int j=numvecs_; j>0; j--)
+    {
+      MVDotProduct(*(*ystore_)(-j+1),*(*sstore_)(-j+1),SolLayoutMapUnique(),&nomi);
+      MVDotProduct(*(*ystore_)(-j+1),*(*ystore_)(-j+1),SolLayoutMapUnique(),&denomi);
+      nom += nomi;
+      denom += denomi;
+    }
+    double gamma=nom/denom;
+    p_->Scale(gamma);
+  }
 
   for (int i=-actsize_+1; i<=0; i+=numvecs_)
   {
@@ -429,6 +449,10 @@ void STR::INVANA::OptimizerLBFGS::ReadRestart(int run)
   reader.ReadMultiVector(GetSolution(),"optimization_parameters");
 
   actsize_ = reader.ReadInt("storage_size");
+
+  //resize storage
+  sstore_->Resize(-actsize_+1,0,&SolLayoutMap(),false);
+  ystore_->Resize(-actsize_+1,0,&SolLayoutMap(),false);
 
   if (actsize_>0)
   {

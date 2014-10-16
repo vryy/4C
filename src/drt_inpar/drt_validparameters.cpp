@@ -1356,6 +1356,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::STR::stat_inv_lbfgs),
                                     &statinvp);
 
+  // initial scaling for the LBFGS algorithm
+  BoolParameter("LBFGSINITSCAL","yes","want initial scaling for the LBFGS?", &statinvp);
+
   // step to restart from
   IntParameter("FPRESTART",0,"forward problem restart",&statinvp);
 
@@ -1440,8 +1443,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // convergence criterion tolerance
   DoubleParameter("CONVTOL",1.0e-06,"stop optimizaiton iterations for convergence criterion below this value",&statinvp);
 
-  // Width of the kernels used to represent the parameter field
+  // weight of the regularization
   DoubleParameter("REG_WEIGHT",0.1,"weight of the regularization",&statinvp);
+
+  // regulaization of the totalvariation functional
+  DoubleParameter("TVD_EPS",0.001,"differentiation epsilon for total variation",&statinvp);
 
   // number of optimization steps
   IntParameter("SIZESTORAGE",20,"number of vectors to keep in storage; defaults to 20 (lbfgs usage only)",&statinvp);

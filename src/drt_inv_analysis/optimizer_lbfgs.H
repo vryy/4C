@@ -87,6 +87,9 @@ private:
   //! compute new direction based on lbfgs formula
   void ComputeDirection();
 
+  //! initial scaling for the LBFGS two loop recursion algorithm
+  bool initscal_;
+
   //! maximum size of storage (number of multivectors)
   int ssize_;
 

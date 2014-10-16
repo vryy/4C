@@ -31,7 +31,7 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 STR::INVANA::RegularizationTotalVariation::RegularizationTotalVariation(const Teuchos::ParameterList& invp) :
   RegularizationBase(invp),
-eps_(1.0e-4),
+eps_(invp.get<double>("TVD_EPS")),
 adjacency_(Teuchos::null)
 {
   return;
