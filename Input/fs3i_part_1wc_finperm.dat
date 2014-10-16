@@ -15,7 +15,7 @@ created by pre_exodus
 //NODES                         924
 DIM                             3
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
 MAXTIME                         4
 NUMSTEP                         41
 NUM_INITSTEP                    0
@@ -2888,8 +2888,8 @@ NODE 924 COORD 5.0000000000000000e+01 2.5000000000000000e+00 1.0000000000000000e
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 206 QUANTITY phi VALUE 8.25309786526041478e-01 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 910 QUANTITY phi VALUE 4.50308725168331703e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 910 QUANTITY velx VALUE 9.79855719770674899e-02 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 206 QUANTITY phi VALUE 8.25309786526041478e-01 TOLERANCE 1e-9
+SCATRA DIS scatra1 NODE 910 QUANTITY phi VALUE 4.50308723334813976e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 910 QUANTITY velx VALUE 9.79854978889811851e-02 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

@@ -80,7 +80,7 @@ VELCURVENO                      -1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       No
-LINEAR_SOLVER                   7
+LINEAR_SOLVER                   -1
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-07
 ADAPTCONV                       yes
@@ -219,7 +219,7 @@ LOMA_CONTI_REYNOLDS_STRESS      no_reynolds
 TIMESTEP                        0.001
 NUMSTEP                         3000
 MAXTIME                         3
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
 NUM_INITSTEP                    0
 RESULTSEVRY                     1
 LINEAR_SOLVER                   3
@@ -481,9 +481,6 @@ ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing s
 ML_DAMPFINE                     0.67                          // damping fine grid
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
---------------------------------------------------------------------SOLVER 7
-NAME                            SCAT_DUMMY
-SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 //Units [mm, s, g -> Pa]
 MAT 1 MAT_fluid DYNVISCOSITY 3.5e-03 DENSITY 1.05e-03
@@ -520,19 +517,19 @@ FUNCT1 EXPR 0 0 0 FUNCTION ((1-(((x)^2+(y)^2)^4)/(18^8)))
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 4146 QUANTITY phi VALUE 4.00328295981476145e+00  TOLERANCE 1e-9
-SCATRA DIS scatra2 NODE 4146 QUANTITY phi2 VALUE  4.48108236545791405e-02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 4146 QUANTITY dispx VALUE 3.95541264689963229e-02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 4146 QUANTITY dispy VALUE 1.63928298764490707e-02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 1.34584943750060866e-02 TOLERANCE 1e-9
-SCATRA DIS scatra1 NODE 39 QUANTITY phi VALUE  1.26703111997493578e+00 TOLERANCE 1e-9
+SCATRA DIS scatra2 NODE 4146 QUANTITY phi VALUE 4.00332048593808398e+00 TOLERANCE 1e-9
+SCATRA DIS scatra2 NODE 4146 QUANTITY phi2 VALUE  4.48114103516989437e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 4146 QUANTITY dispx VALUE 3.95541219681302125e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 4146 QUANTITY dispy VALUE 1.63928280018422433e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 1.34584928163048474e-02 TOLERANCE 1e-9
+SCATRA DIS scatra1 NODE 39 QUANTITY phi VALUE  1.26702696485466504e+00 TOLERANCE 1e-9
 SCATRA DIS scatra1 NODE 39 QUANTITY phi2 VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 39 QUANTITY velx VALUE -1.96097172774199136e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 39 QUANTITY vely VALUE 9.78987893616201532e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 39 QUANTITY velz VALUE 1.63475710911885896e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 39 QUANTITY pressure VALUE 4.57719988732002639e+03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 39 QUANTITY velx VALUE -1.96097037827694054e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 39 QUANTITY vely VALUE 9.78987222756945386e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 39 QUANTITY velz VALUE 1.63475533526056038e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 39 QUANTITY pressure VALUE 4.57719960229639946e+03 TOLERANCE 1e-9
 ALE DIS ale NODE 39 QUANTITY dispx VALUE -1.31260638344830906e-02 TOLERANCE 1e-9
-ALE DIS ale NODE 39 QUANTITY dispy VALUE 6.55270510603297857e-02 TOLERANCE 1e-9
+ALE DIS ale NODE 39 QUANTITY dispy VALUE 6.55270466706846938e-02 TOLERANCE 1e-9
 ALE DIS ale NODE 39 QUANTITY dispz VALUE 1.12211253542231874e-02 TOLERANCE 1e-9
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

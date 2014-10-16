@@ -218,6 +218,7 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
     break;
   }
   case prb_fsi:
+  case prb_gas_fsi:
   {
     const Teuchos::ParameterList& fsidyn =
         DRT::Problem::Instance()->FSIDynamicParams();
