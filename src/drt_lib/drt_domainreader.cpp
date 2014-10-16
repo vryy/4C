@@ -177,8 +177,15 @@ void DomainReader::Partition(int* nodeoffset)
     }
   }
 
-  // TODO: wic, safety checks
+  // safety checks
+  for (int i=0; i<3; ++i)
+  {
+    if (lower_bound_[i] >= upper_bound_[i])
+      dserror("lower bound in domain reader must be smaller than upper bound");
 
+    if (interval_[i] <= 0)
+      dserror("intervals in domain reader must be greater than zero");
+  }
 
   // split ele ids
   int numnewele = interval_[0]*interval_[1]*interval_[2];

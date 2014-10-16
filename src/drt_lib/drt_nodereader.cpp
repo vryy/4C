@@ -102,9 +102,6 @@ void NodeReader::Read()
   // First we let the element reader do their thing
   int numnodes = reader_.ExcludedSectionLength(sectionname_);
 
-  if( (numnodes < numproc) && (numnodes != 0) )
-    dserror("Bad idea: Simulation with %d procs for problem with %d nodes", numproc,numnodes);
-
   /**************************************************************************
    * first we process all domains that are read from the .dat-file as usual *
    **************************************************************************/
@@ -131,8 +128,9 @@ void NodeReader::Read()
 
     // We will read the nodes block wise. we will use one block per processor
     // so the number of blocks is numproc
+    // OR number of blocks is numnodes if less nodes than procs are read in
     // determine a rough blocksize
-    int nblock = numproc;
+    int nblock = std::min(numproc,numnodes);
     int bsize = std::max(numnodes/nblock, 1);
 
     // an upper limit for bsize
@@ -351,6 +349,8 @@ void NodeReader::Read()
    ********************************************************/
   for (size_t i=0; i<dreader_.size(); ++i)
   {
+    // communicate node offset to all procs
+    comm_->MaxAll(&maxnodeid, &maxnodeid, 1);
     dreader_[i]->Partition(&maxnodeid);
     maxnodeid++;
   }
@@ -359,6 +359,10 @@ void NodeReader::Read()
   {
     dreader_[i]->Complete();
   }
+
+  comm_->MaxAll(&maxnodeid, &maxnodeid, 1);
+  if( (maxnodeid-1 < numproc) && (numnodes != 0) )
+    dserror("Bad idea: Simulation with %d procs for problem with %d nodes", numproc, maxnodeid);
 
 } // NodeReader::Read
 
