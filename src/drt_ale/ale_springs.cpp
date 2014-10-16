@@ -46,6 +46,9 @@ ALE::AleSprings::AleSprings(Teuchos::RCP<DRT::Discretization> actdis,
     xfftoggle_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
     xffinterface_->InsertXFluidFluidCondVector(dispnp_xff,xfftoggle_);
   }
+  // temporay only to ensure that old ale formulation still works with changed
+  // ale elements j biehler 10/14
+  incremental_=true;
 }
 
 
@@ -230,6 +233,7 @@ void ALE::AleSprings::EvaluateElements()
 
   // action for elements
   eleparams.set("action", "calc_ale_spring");
+  eleparams.set("incremental", incremental_);
 
   // newton-increments in displacements are of no importance for ALE-Evaluate
   discret_->SetState("dispnp", dispn_);

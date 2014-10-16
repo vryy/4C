@@ -90,6 +90,8 @@ private:
   /// the interface map setup for xfluid-fluid interface
   Teuchos::RCP<ALE::UTILS::XFluidFluidMapExtractor> xffinterface_;
 
+  bool incremental_;
+
 };
 
 }
