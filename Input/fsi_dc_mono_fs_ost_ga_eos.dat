@@ -1,8 +1,7 @@
 //
 // Maintainer: Matthias Mayr
-// mayr@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15262
+// mayr@mhpc.mw.tum.de
+// 089 - 289-10362
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: 2D Driven cavity with flexible bottom
@@ -56,7 +55,7 @@ EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
 EOS_H_DEFINITION                EOS_he_surf_with_max_diameter
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-ALE_TYPE                        classic_lin
+ALE_TYPE                        springs
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1.0
 TIMESTEP                        0.1
@@ -2880,14 +2879,14 @@ NODE 1287 COORD 1.0000000000000000e+00 1.0000000000000000e+00 0.0000000000000000
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE -1.94432500638025988e-04 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE 1.69396554606559765e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 841 QUANTITY velx VALUE -1.89233620972078312e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 841 QUANTITY vely VALUE 4.53237293873250680e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 841 QUANTITY pressure VALUE -1.29084429032922721e-01 TOLERANCE 1e-9
-ALE DIS ale NODE 841 QUANTITY dispx VALUE 1.05583498307429237e-04 TOLERANCE 1e-12
-ALE DIS ale NODE 841 QUANTITY dispy VALUE 1.06423904926392539e-02 TOLERANCE 1e-10
-FSI NODE 1139 QUANTITY lambdax VALUE -5.22459416551011356e-05 TOLERANCE 1e-13
-FSI NODE 1139 QUANTITY lambday VALUE 3.30176164778652349e-03 TOLERANCE 1e-11
+STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE -1.94315826105108581e-04 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE 1.69388626006484327e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 841 QUANTITY velx VALUE -1.87165654167711464e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 841 QUANTITY vely VALUE 4.53616037596605015e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 841 QUANTITY pressure VALUE -1.28730469450931057e-01 TOLERANCE 1e-9
+ALE DIS ale NODE 841 QUANTITY dispx VALUE 8.89013485900607829e-05 TOLERANCE 1e-12
+ALE DIS ale NODE 841 QUANTITY dispy VALUE 7.03396434711572871e-03 TOLERANCE 1e-10
+FSI NODE 1139 QUANTITY lambdax VALUE -5.21512370607125477e-05 TOLERANCE 1e-13
+FSI NODE 1139 QUANTITY lambday VALUE 3.30168580303868368e-03 TOLERANCE 1e-11
 -------------------------------------------------------------------------END
 //                              END

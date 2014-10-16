@@ -1,8 +1,7 @@
 //
 // Maintainer: Matthias Mayr
-// mayr@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15262
+// mayr@mhpc.mw.tum.de
+// 089 - 289-10362
 //
 -----------------------------------------------------------------------TITLE
 Monolithic Mortar FSI: 2D Driven cavity with flexible bottom
@@ -49,7 +48,7 @@ CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1.0
 TIMESTEP                        0.1
@@ -2891,14 +2890,24 @@ NODE 1295 COORD 1.0000000000000000e+00 1.0000000000000000e+00 0.0000000000000000
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE -1.7332002511e-04 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE 1.6327612306e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 841 QUANTITY velx VALUE -9.98411696321e-03 TOLERANCE 1e-11
-FLUID DIS fluid NODE 841 QUANTITY vely VALUE 3.43420378693e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 841 QUANTITY pressure VALUE -1.15513048245e-01 TOLERANCE 1e-9
-ALE DIS ale NODE 841 QUANTITY dispx VALUE 3.46385329262e-04 TOLERANCE 1e-12
-ALE DIS ale NODE 841 QUANTITY dispy VALUE 7.76807564583e-03 TOLERANCE 1e-11
-FSI NODE 1139 QUANTITY lambdax VALUE -1.512529660244e-03 TOLERANCE 1e-11
-FSI NODE 1139 QUANTITY lambday VALUE 9.550445163738e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE -1.73316456893029587e-04 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE 1.63275837142665657e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 841 QUANTITY velx VALUE -9.97499071198352724e-03 TOLERANCE 1e-11
+FLUID DIS fluid NODE 841 QUANTITY vely VALUE 3.43480903436662460e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 841 QUANTITY pressure VALUE -1.15498383320778927e-01 TOLERANCE 1e-9
+ALE DIS ale NODE 841 QUANTITY dispx VALUE 4.29301357130906379e-04 TOLERANCE 1e-12
+ALE DIS ale NODE 841 QUANTITY dispy VALUE 7.61240569667187908e-03 TOLERANCE 1e-11
+FSI NODE 1139 QUANTITY lambdax VALUE -1.51245762024554962e-03 TOLERANCE 1e-11
+FSI NODE 1139 QUANTITY lambday VALUE 9.55036272591851948e-02 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END
+
+STRUCTURE: dispx    at node  38  is WRONG --> actresult=-1.73316456893029587e-04, givenresult=-1.73320025109999990e-04
+STRUCTURE: dispy    at node  38  is WRONG --> actresult= 1.63275837142665657e-02, givenresult= 1.63276123060000014e-02
+FLUID    : velx     at node 841  is WRONG --> actresult=-9.97499071198352724e-03, givenresult=-9.98411696321000082e-03
+FLUID    : vely     at node 841  is WRONG --> actresult= 3.43480903436662460e-02, givenresult= 3.43420378692999989e-02
+FLUID    : pressure at node 841  is WRONG --> actresult=-1.15498383320778927e-01, givenresult=-1.15513048245000000e-01
+ALE      : dispx    at node 841  is WRONG --> actresult= 4.29301357130906379e-04, givenresult= 3.46385329261999987e-04
+ALE      : dispy    at node 841  is WRONG --> actresult= 7.61240569667187908e-03, givenresult= 7.76807564582999988e-03
+FSI      : lambdax  at node 1139         is WRONG --> actresult=-1.51245762024554962e-03, givenresult=-1.51252966024399997e-03
+FSI      : lambday  at node 1139         is WRONG --> actresult= 9.55036272591851948e-02, givenresult= 9.55044516373800001e-02

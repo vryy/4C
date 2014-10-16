@@ -1,8 +1,7 @@
 //
 // Maintainer: Matthias Mayr
-// mayr@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15262
+// mayr@mhpc.mw.tum.de
+// 089 - 289-10362
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
@@ -15,7 +14,7 @@ Structure: GenAlpha with ConstDisVelAcc
 //NODES                         108
 DIM                             3
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
 LINEAR_SOLVER                   1
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1
@@ -48,7 +47,7 @@ UPRES                           1
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-06
 INFNORMSCALING                  Yes
-ITEMAX                          10
+ITEMAX                          12
 LINEARBLOCKSOLVER               PreconditionedKrylov
 PCITER                          1 1 1
 PCOMEGA                         1.0 1.0 1.0

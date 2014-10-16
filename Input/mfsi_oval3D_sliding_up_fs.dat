@@ -1,10 +1,7 @@
 //
-// Maintainer: Thomas Kloeppel
-// kloeppel@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15257
-//
-// necessary defines: D_FLUID3 BINIO D_ALE D_SOLID3
+// Maintainer: Matthias Mayr
+// mayr@mhpc.mw.tum.de
+// 089 - 289-10362
 //
 ==================================================================
 General Data File CCARAT
@@ -19,7 +16,7 @@ MATERIALS                       2
 NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-ALE_TYPE                        classic_lin
+ALE_TYPE                        springs
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1
@@ -58,7 +55,7 @@ SLIDEALEPROJ                    Curr
 ADAPTIVEDIST                    0
 BASETOL                         1E-7
 INFNORMSCALING                  Yes
-ITEMAX                          100
+ITEMAX                          16
 LINEARBLOCKSOLVER               PreconditionedKrylov
 PRECONDREUSE                    10
 SHAPEDERIVATIVES                No
@@ -72,10 +69,10 @@ TOL_FSI_RES_INF                 1e-06
 TOL_FSI_RES_L2                  1e-06
 TOL_PRE_INC_INF                 1e-06
 TOL_PRE_INC_L2                  1e-06
-TOL_PRE_RES_INF                 1e-06
-TOL_PRE_RES_L2                  1e-06
-TOL_VEL_INC_INF                 1e-06
-TOL_VEL_INC_L2                  1e-06
+TOL_PRE_RES_INF                 1e-05
+TOL_PRE_RES_L2                  1e-05
+TOL_VEL_INC_INF                 1e-04
+TOL_VEL_INC_L2                  1e-05
 TOL_VEL_RES_INF                 1e-06
 TOL_VEL_RES_L2                  1e-06
 -------------------------------------------------------------MORTAR COUPLING
@@ -7164,11 +7161,11 @@ NODE 2482 COORD -8.43445003e-01 8.05823207e-01 -2.62499988e-01
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 824 QUANTITY velx VALUE 8.00567306462524719e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 824 QUANTITY vely VALUE -1.86738176792073038e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 824 QUANTITY pressure VALUE 8.05375311899411519e-07 TOLERANCE 1e-15
-STRUCTURE DIS structure NODE 1963 QUANTITY dispx VALUE 5.27656646418690201e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 1963 QUANTITY dispy VALUE -4.51727084107513416e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 824 QUANTITY velx VALUE 8.00611908324015520e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 824 QUANTITY vely VALUE -1.85944034457659162e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 824 QUANTITY pressure VALUE 8.00759323895365452e-07 TOLERANCE 1e-15
+STRUCTURE DIS structure NODE 1963 QUANTITY dispx VALUE 5.27647172429566852e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 1963 QUANTITY dispy VALUE -4.51718497015399442e-02 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 1963 QUANTITY dispz VALUE 0.000000000e00 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END
