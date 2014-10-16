@@ -24,6 +24,7 @@ Maintainer: Kei Müller
 #include "../drt_truss3cl/truss3cl.H"
 #include "../drt_beam3cl/beam3cl.H"
 #include "../drt_torsion3/torsion3.H"
+#include "../drt_rigidsphere/rigidsphere.H"
 
 
 /*----------------------------------------------------------------------*
@@ -254,92 +255,222 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
             }
         }
 
-        //declaring variable for color of elements
-        double color = 1.0;
-        if (element->Id() >= basisnodes_)
+        if (eot != DRT::ELEMENTS::RigidsphereType::Instance())  // beam element
         {
-          if(eot != DRT::ELEMENTS::BeamCLType::Instance() &&
-             eot != DRT::ELEMENTS::Torsion3Type::Instance() &&
-             eot != DRT::ELEMENTS::Truss3CLType::Instance() &&
-             element->NumNode()!=2)
-              dserror("Crosslinker element has more than 2 nodes! No visualization has been implemented for such linkers!");
-          //apply different colors for different crosslinkers
-          if(crosslinkertype_!=Teuchos::null)
+          //declaring variable for color of elements
+          double color = 1.0;
+          if (element->Id() >= basisnodes_)
           {
-            int crossLID = crosslinkermap_->LID((int)(*element2crosslink_)[discret_->ElementColMap()->LID(element->Id())]);
-            if((*crosslinkertype_)[crossLID]==1.0) // active linker
+            if(eot != DRT::ELEMENTS::BeamCLType::Instance() &&
+               eot != DRT::ELEMENTS::Torsion3Type::Instance() &&
+               eot != DRT::ELEMENTS::Truss3CLType::Instance() &&
+               element->NumNode()!=2)
+                dserror("Crosslinker element has more than 2 nodes! No visualization has been implemented for such linkers!");
+            //apply different colors for different crosslinkers
+            if(crosslinkertype_!=Teuchos::null)
             {
-              color = 0.75;
-              //std::cout<<"Proc "<<discret_->Comm().MyPID()<<" - SL active "<<crosslinkermap_->GID(crossLID)<<", element "<<element->Id()<<", Type "<<(*crosslinkertype_)[crossLID]<<std::endl;
+              int crossLID = crosslinkermap_->LID((int)(*element2crosslink_)[discret_->ElementColMap()->LID(element->Id())]);
+              if((*crosslinkertype_)[crossLID]==1.0) // active linker
+              {
+                color = 0.75;
+                //std::cout<<"Proc "<<discret_->Comm().MyPID()<<" - SL active "<<crosslinkermap_->GID(crossLID)<<", element "<<element->Id()<<", Type "<<(*crosslinkertype_)[crossLID]<<std::endl;
+              }
+              else // standard single species crosslinker
+              {
+                color = 0.5;
+                //std::cout<<"  Proc "<<discret_->Comm().MyPID()<<" - SL passive "<<crosslinkermap_->GID(crossLID)<<", element "<<element->Id()<<", Type "<<(*crosslinkertype_)[crossLID]<<std::endl;
+              }
             }
-            else // standard single species crosslinker
-            {
+            else // standard linker color (red) without any active linkers
               color = 0.5;
-              //std::cout<<"  Proc "<<discret_->Comm().MyPID()<<" - SL passive "<<crosslinkermap_->GID(crossLID)<<", element "<<element->Id()<<", Type "<<(*crosslinkertype_)[crossLID]<<std::endl;
+          }
+          // different color for substrate filaments of motility assay
+          if(networktype_==statmech_network_motassay && (*filamentnumber_)[discret_->NodeColMap()->LID(element->Nodes()[0]->Id())]<statmechparams_.get<int>("NUMSUBSTRATEFIL",0))
+            color = 0.375;
+
+          // highlight contacting elements
+          if(beamcmanager!=Teuchos::null)
+          {
+            for(int j=0; j<(int)(beamcmanager->Pairs()).size(); j++)
+              if(beamcmanager->Pairs()[j]->GetContactFlag() && (element->Id()==(beamcmanager->Pairs())[j]->Element1()->Id() || element->Id()==(beamcmanager->Pairs())[j]->Element2()->Id()))
+                color = 1.0; //0.375;
+
+            // loop over BTS pairs as well (if any), here we only need to check Element1 (beam ele)
+            for (int j=0;j<(int)(beamcmanager->BTSPHPairs()).size(); j++)
+            {
+              if(beamcmanager->BTSPHPairs()[j]->GetContactFlag() && (element->Id()==(beamcmanager->BTSPHPairs())[j]->Element1()->Id() ))
+                color = 1.0;
             }
           }
-          else // standard linker color (red) without any active linkers
-            color = 0.5;
-        }
-        // different color for substrate filaments of motility assay
-        if(networktype_==statmech_network_motassay && (*filamentnumber_)[discret_->NodeColMap()->LID(element->Nodes()[0]->Id())]<statmechparams_.get<int>("NUMSUBSTRATEFIL",0))
-          color = 0.375;
 
-        // highlight contacting elements
-        if(beamcmanager!=Teuchos::null)
-          for(int j=0; j<(int)(beamcmanager->Pairs()).size(); j++)
-            if(beamcmanager->Pairs()[j]->GetContactFlag() && (element->Id()==(beamcmanager->Pairs())[j]->Element1()->Id() || element->Id()==(beamcmanager->Pairs())[j]->Element2()->Id()))
-              color = 1.0; //0.375;
-
-        //if no periodic boundary conditions are to be applied, we just plot the current element
-        if (periodlength_->at(0) == 0.0)
-        {
-          // check whether the kinked visualization is to be applied
-          bool kinked = CheckForKinkedVisual(element->Id());
-          if (eot == DRT::ELEMENTS::Beam3Type::Instance() ||
-              eot==DRT::ELEMENTS::Beam3iiType::Instance() ||
-              eot==DRT::ELEMENTS::BeamCLType::Instance() ||
-              eot==DRT::ELEMENTS::Beam3ebType::Instance()||
-              eot == DRT::ELEMENTS::Truss3Type::Instance() ||
-              eot==DRT::ELEMENTS::Truss3CLType::Instance())
+          //if no periodic boundary conditions are to be applied, we just plot the current element
+          if (periodlength_->at(0) == 0.0)
           {
-            if (!kinked)
+            // check whether the kinked visualization is to be applied
+            bool kinked = CheckForKinkedVisual(element->Id());
+            if (eot == DRT::ELEMENTS::Beam3Type::Instance() ||
+                eot==DRT::ELEMENTS::Beam3iiType::Instance() ||
+                eot==DRT::ELEMENTS::BeamCLType::Instance() ||
+                eot==DRT::ELEMENTS::Beam3ebType::Instance()||
+                eot == DRT::ELEMENTS::Truss3Type::Instance() ||
+                eot==DRT::ELEMENTS::Truss3CLType::Instance())
             {
-              int numnode = element->NumNode();
-              if(eot==DRT::ELEMENTS::BeamCLType::Instance() || eot==DRT::ELEMENTS::Truss3CLType::Instance())
-                numnode = 2;
-              for (int j=0; j<numnode - 1; j++)
+              if (!kinked)
               {
-                //define output coordinates
-                LINALG::SerialDenseMatrix coordout(3,2);
-                for(int m=0; m<coordout.M(); m++)
-                  for(int n=0; n<coordout.N(); n++)
-                    coordout(m,n)=coord(m,j+n);
+                int numnode = element->NumNode();
+                if(eot==DRT::ELEMENTS::BeamCLType::Instance() || eot==DRT::ELEMENTS::Truss3CLType::Instance())
+                  numnode = 2;
+                for (int j=0; j<numnode - 1; j++)
+                {
+                  //define output coordinates
+                  LINALG::SerialDenseMatrix coordout(3,2);
+                  for(int m=0; m<coordout.M(); m++)
+                    for(int n=0; n<coordout.N(); n++)
+                      coordout(m,n)=coord(m,j+n);
 
-                 GmshWedge(nline,coordout,element,gmshfilecontent,color);
+                   GmshWedge(nline,coordout,element,gmshfilecontent,color);
+                }
+              }
+              else
+                GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
+            }
+            else if (eot == DRT::ELEMENTS::Torsion3Type::Instance())
+            {
+              double beadcolor = 0.75;
+              for (int j=0; j<element->NumNode(); j++)
+              {
+                gmshfilecontent << "SP(" << std::scientific;
+                gmshfilecontent << coord(0, j) << "," << coord(1, j) << ","<< coord(2, j);
+                gmshfilecontent << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
               }
             }
             else
-              GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
-          }
-          else if (eot == DRT::ELEMENTS::Torsion3Type::Instance())
-          {
-            double beadcolor = 0.75;
-            for (int j=0; j<element->NumNode(); j++)
             {
-              gmshfilecontent << "SP(" << std::scientific;
-              gmshfilecontent << coord(0, j) << "," << coord(1, j) << ","<< coord(2, j);
-              gmshfilecontent << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
+              //nothing!
             }
+          }
+          //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
+          else
+            GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
+
+        }//end if(eot != rigid sphere)
+
+        else  // compute and stream gmsh output for rigid sphere
+        {
+          double color=0.5;
+
+          DRT::ELEMENTS::Rigidsphere* currele = NULL;
+          currele = dynamic_cast<DRT::ELEMENTS::Rigidsphere*> (discret_->gElement(discret_->ElementColMap()->GID(i)));
+
+          double eleradius = currele->Radius();
+
+          if(beamcmanager!=Teuchos::null)   // highlighting active contact and potential interaction
+          {
+            // loop over BTS pairs (if any), here we only need to check Element2 (Rigidsphere ele)
+            for (int i=0;i<(int)(beamcmanager->BTSPHPairs()).size();++i)
+            {
+              // abbreviations
+              int id2 =  (beamcmanager->BTSPHPairs())[i]->Element2()->Id();
+              bool active = (beamcmanager->BTSPHPairs())[i]->GetContactFlag();
+
+              // if element is member of an active contact pair, choose different color
+              if ( currele->Id()==id2 && active) color = 1.0;
+            }
+          }
+
+          double plotfactorthick = statmechparams_.get<double>("PlotFactorThick", 1.0);
+
+          if (plotfactorthick==0.0)
+          {
+            // ********************** Visualization as a point ***********************************************
+
+            // syntax for scalar point:  SP( coordinates x,y,z ){value at point (determines the color)}
+            gmshfilecontent <<"SP(" << std::scientific << coord(0,0) << "," << coord(1,0) << "," << coord(2,0)
+                                        << "){" << std::scientific  << color << "};"<< std::endl;
+
+            // ***********************************************************************************************
           }
           else
           {
-            //nothing!
+            double plotradius = eleradius*plotfactorthick;
+            // ********************** Visualization as an icosphere ****************************************
+
+            // for details see http://en.wikipedia.org/wiki/Icosahedron
+            // and http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
+            //
+            // sphere is visualized as icosphere
+            // the basic icosahedron consists of 20 equilateral triangles (12 vertices)
+            // further refinement by subdividing the triangles
+
+            // list storing the (x,y,z) coordinates of all vertices
+            std::vector< std::vector<double> > vertexlist(12, std::vector<double>(3,0));
+
+            // list storing the indices of the three vertices that define a triangular face
+            std::vector< std::vector<int> > facelist(20, std::vector<int>(3,0));
+
+            double normfac = sqrt( 1.0 + 0.25* pow(1+sqrt(5),2) );
+            double c = 0.5*(1.0+sqrt(5))/normfac*plotradius;
+            double d = 1/normfac*plotradius;
+
+            // compute the final coordinates of the initial 12 vertices
+            vertexlist[0][0]+=-d; vertexlist[0][1]+=c; vertexlist[0][2]+=0;
+            vertexlist[1][0]+=d; vertexlist[1][1]+=c; vertexlist[1][2]+=0;
+            vertexlist[2][0]+=-d; vertexlist[2][1]+=-c; vertexlist[2][2]+=0;
+            vertexlist[3][0]+=d; vertexlist[3][1]+=-c; vertexlist[3][2]+=0;
+
+            vertexlist[4][0]+=0; vertexlist[4][1]+=-d; vertexlist[4][2]+=c;
+            vertexlist[5][0]+=0; vertexlist[5][1]+=d; vertexlist[5][2]+=c;
+            vertexlist[6][0]+=0; vertexlist[6][1]+=-d; vertexlist[6][2]+=-c;
+            vertexlist[7][0]+=0; vertexlist[7][1]+=d; vertexlist[7][2]+=-c;
+
+            vertexlist[8][0]+=c; vertexlist[8][1]+=0; vertexlist[8][2]+=-d;
+            vertexlist[9][0]+=c; vertexlist[9][1]+=0; vertexlist[9][2]+=d;
+            vertexlist[10][0]+=-c; vertexlist[10][1]+=0; vertexlist[10][2]+=-d;
+            vertexlist[11][0]+=-c; vertexlist[11][1]+=0; vertexlist[11][2]+=d;
+
+
+            // fill initial facelist
+            facelist[0][0]=0;   facelist[0][1]=11;    facelist[0][2]=5;
+            facelist[1][0]=0;   facelist[1][1]=5;     facelist[1][2]=1;
+            facelist[2][0]=0;   facelist[2][1]=1;     facelist[2][2]=7;
+            facelist[3][0]=0;   facelist[3][1]=7;     facelist[3][2]=10;
+            facelist[4][0]=0;   facelist[4][1]=10;    facelist[4][2]=11;
+
+            facelist[5][0]=1;   facelist[5][1]=5;     facelist[5][2]=9;
+            facelist[6][0]=5;   facelist[6][1]=11;    facelist[6][2]=4;
+            facelist[7][0]=11;  facelist[7][1]=10;    facelist[7][2]=2;
+            facelist[8][0]=10;  facelist[8][1]=7;     facelist[8][2]=6;
+            facelist[9][0]=7;   facelist[9][1]=1;     facelist[9][2]=8;
+
+            facelist[10][0]=3;  facelist[10][1]=9;    facelist[10][2]=4;
+            facelist[11][0]=3;  facelist[11][1]=4;    facelist[11][2]=2;
+            facelist[12][0]=3;  facelist[12][1]=2;    facelist[12][2]=6;
+            facelist[13][0]=3;  facelist[13][1]=6;    facelist[13][2]=8;
+            facelist[14][0]=3;  facelist[14][1]=8;    facelist[14][2]=9;
+
+            facelist[15][0]=4;  facelist[15][1]=9;    facelist[15][2]=5;
+            facelist[16][0]=2;  facelist[16][1]=4;    facelist[16][2]=11;
+            facelist[17][0]=6;  facelist[17][1]=2;    facelist[17][2]=10;
+            facelist[18][0]=8;  facelist[18][1]=6;    facelist[18][2]=7;
+            facelist[19][0]=9;  facelist[19][1]=8;    facelist[19][2]=1;
+
+            // level of refinement, num_faces = 20 * 4^(ref_level)
+            int ref_level= 3;
+            // refine the icosphere by calling GmshRefineIcosphere
+            for (int p=0; p<ref_level; ++p)
+            {
+          //    std::cout << "\np= " << p << ", num_vertices= " << vertexlist.size() << ", num_faces= " << facelist.size() << std::endl;
+              GmshRefineIcosphere(vertexlist,facelist,plotradius);
+            }
+
+            const double centercoord[] = {coord(0,0), coord(1,0), coord(2,0)};
+            for (unsigned int i=0; i<facelist.size(); ++i)
+              PrintGmshTriangleToStream(gmshfilecontent,vertexlist,facelist[i][0],facelist[i][1],facelist[i][2],color,centercoord);
+
+            // ********************* end: visualization as an icosphere ***************************************
           }
-        }
-        //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
-        else
-          GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
+        } // end: compute and stream gmsh output for rigid sphere
+
       }
       //write content into file and close it (this way we make sure that the output is written serially)
       fputs(gmshfilecontent.str().c_str(), fp);
@@ -1338,6 +1469,81 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
   }
   return;
 }//GmshWedge
+
+/*----------------------------------------------------------------------*
+ |  print Gmsh Triangle to stringstream (private)            grill 03/14|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::PrintGmshTriangleToStream(std::stringstream& gmshfilecontent,
+                                                      const std::vector< std::vector< double > > &vertexlist,
+                                                      int i, int j, int k, double color,
+                                                      const double centercoord[])
+{
+  // "ST" is scalar triangle, followed by 3x coordinates (x,y,z) of vertices and color
+  gmshfilecontent << "ST("<< std::scientific;
+  gmshfilecontent << centercoord[0] + vertexlist[i][0] << "," << centercoord[1] + vertexlist[i][1] << "," << centercoord[2] + vertexlist[i][2] << ",";
+  gmshfilecontent << centercoord[0] + vertexlist[j][0] << "," << centercoord[1] + vertexlist[j][1] << "," << centercoord[2] + vertexlist[j][2] << ",";
+  gmshfilecontent << centercoord[0] + vertexlist[k][0] << "," << centercoord[1] + vertexlist[k][1] << "," << centercoord[2] + vertexlist[k][2];
+  gmshfilecontent << "){" << std::scientific;
+  gmshfilecontent << color << "," << color << "," << color  << "};" << std::endl << std::endl;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Refine Icosphere                     (private)            grill 03/14|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::GmshRefineIcosphere(std::vector< std::vector<double> > &vertexlist,
+                                                  std::vector< std::vector<int> > &facelist,
+                                                  double radius)
+{
+  int num_faces_old = facelist.size();
+  std::vector<double> newvertex(3,0.0);
+  double scalefac = 0.0;
+  std::vector<int> newface(3,0);
+
+  // subdivide each face into four new triangular faces:
+  /*               /_\
+   *              /_V_\
+   */
+  for (int i=0; i<num_faces_old; ++i)
+  {
+    int oldvertices[] = {facelist[i][0],facelist[i][1],facelist[i][2]};
+
+    // compute, normalize and store new vertices in vertexlist
+    // subdivide all three edges (all connections of three old vertices)
+    for (int j=0; j<3; ++j)
+    {
+      for (int k=j+1; k<3; ++k)
+      {
+        newvertex[0]=0.5* (vertexlist[oldvertices[j]][0] + vertexlist[oldvertices[k]][0]);
+        newvertex[1]=0.5* (vertexlist[oldvertices[j]][1] + vertexlist[oldvertices[k]][1]);
+        newvertex[2]=0.5* (vertexlist[oldvertices[j]][2] + vertexlist[oldvertices[k]][2]);
+
+        // scale new vertex to lie on sphere with given radius
+        scalefac = radius / sqrt( pow(newvertex[0],2) + pow(newvertex[1],2) + pow(newvertex[2],2) );
+        for (int q=0; q<3; ++q) newvertex[q] *= scalefac;
+
+        vertexlist.push_back(newvertex);
+      }
+    }
+
+    int len_vertexlist = (int) vertexlist.size();
+    // add four new triangles to facelist
+    newface[0]=oldvertices[0];  newface[1]=len_vertexlist-3; newface[2]=len_vertexlist-2;
+    facelist.push_back(newface);
+    newface[0]=oldvertices[1];  newface[1]=len_vertexlist-3; newface[2]=len_vertexlist-1;
+    facelist.push_back(newface);
+    newface[0]=oldvertices[2];  newface[1]=len_vertexlist-2; newface[2]=len_vertexlist-1;
+    facelist.push_back(newface);
+    newface[0]=len_vertexlist-3;  newface[1]=len_vertexlist-2; newface[2]=len_vertexlist-1;
+    facelist.push_back(newface);
+  }
+
+  // erase the old faces
+  facelist.erase(facelist.begin(), facelist.begin()+num_faces_old);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | Gmsh Output of detected network structure volume        mueller 12/10|

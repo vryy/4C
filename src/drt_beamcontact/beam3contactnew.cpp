@@ -132,8 +132,8 @@ radius2_(0.0)
   }
 
   //Calculate initial length of beam elements (approximation for initially curved elements!)
-  LINALG::TMatrix<TYPE,3,1> lvec1(true);
-  LINALG::TMatrix<TYPE,3,1> lvec2(true);
+  LINALG::TMatrix<double,3,1> lvec1(true);
+  LINALG::TMatrix<double,3,1> lvec2(true);
   for(int i=0;i<3;i++)
   {
     lvec1(i)=(element1_->Nodes())[0]->X()[i]-(element1_->Nodes())[1]->X()[i];
@@ -993,14 +993,14 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
           stiffc2_FAD(i,j) = (fc2_FAD(i).dx(j)+fc2_FAD(i).dx(dim1+dim2)*delta_xi(j)+fc2_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
       }
 
-      std::cout << "Pair: " << element1_->Id() << " / " << element2_->Id() << std::endl;
+      std::cout << "BTB Contact Pair: " << element1_->Id() << " / " << element2_->Id() << std::endl;
 
       std::cout << "stiffc1: " << std::endl;
       for (int i=0;i<dim1;i++)
       {
         for (int j=0;j<dim1+dim2;j++)
         {
-          std::cout << stiffc1(i,j).val() << " ";
+          std::cout << std::setw(14) << stiffc1(i,j).val() << " ";
         }
         std::cout << std::endl;
       }
@@ -1010,31 +1010,46 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
       {
         for (int j=0;j<dim1+dim2;j++)
         {
-          std::cout << stiffc1_FAD(i,j).val() << " ";
+          std::cout << std::setw(14) << stiffc1_FAD(i,j).val() << " ";
         }
         std::cout << std::endl;
       }
       std::cout << std::endl;
+//
+//      std::cout << "d fc1_/ d xi: " << std::endl;
+//      for (int i=0;i<dim1;i++)
+//      {
+//        std::cout << std::setw(14) << fc1_FAD(i).dx(dim1+dim2);
+//      }
+//      std::cout << std::endl;
+
       std::cout << "stiffc2: " << std::endl;
-      for (int i=0;i<dim1;i++)
+      for (int i=0;i<dim2;i++)
       {
         for (int j=0;j<dim1+dim2;j++)
         {
-          std::cout << stiffc2(i,j).val() << " ";
+          std::cout << std::setw(14) << stiffc2(i,j).val() << " ";
         }
         std::cout << std::endl;
       }
       std::cout << std::endl;
       std::cout << "stiffc2_FAD: " << std::endl;
-      for (int i=0;i<dim1;i++)
+      for (int i=0;i<dim2;i++)
       {
         for (int j=0;j<dim1+dim2;j++)
         {
-          std::cout << stiffc2_FAD(i,j).val() << " ";
+          std::cout << std::setw(14) << stiffc2_FAD(i,j).val() << " ";
         }
         std::cout << std::endl;
       }
       std::cout << std::endl;
+//
+//      std::cout << "d fc2_/ d xi: " << std::endl;
+//      for (int i=0;i<dim2;i++)
+//      {
+//        std::cout << std::setw(14) << fc2_FAD(i).dx(dim1+dim2);
+//      }
+//      std::cout << std::endl;
     #endif
   }//if (contactflag_ or (iter_==0 and inactivestiff and oldcontactflag_ and !beamendcontactopened_ and !beamsalmostparallel_) or dampingcontactflag_)
 
@@ -3267,16 +3282,16 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateClassVariablesSte
 
 
   //First we check, that no pair surpasses the maximal displacement of MAXDELTADFAC*searchboxinc_ per time step:
-  TYPE ele1_delta_pos1 = 0.0;
-  TYPE ele1_delta_pos2 = 0.0;
-  TYPE ele2_delta_pos1 = 0.0;
-  TYPE ele2_delta_pos2 = 0.0;
+  double ele1_delta_pos1 = 0.0;
+  double ele1_delta_pos2 = 0.0;
+  double ele2_delta_pos1 = 0.0;
+  double ele2_delta_pos2 = 0.0;
   for (int i=0;i<3;i++)
   {
-    ele1_delta_pos1+=(ele1pos_old_(i)-ele1pos_(i))*(ele1pos_old_(i)-ele1pos_(i));
-    ele1_delta_pos2+=(ele1pos_old_(3*numnodalvalues+i)-ele1pos_(3*numnodalvalues+i))*(ele1pos_old_(3*numnodalvalues+i)-ele1pos_(3*numnodalvalues+i));
-    ele2_delta_pos1+=(ele2pos_old_(i)-ele2pos_(i))*(ele2pos_old_(i)-ele2pos_(i));
-    ele2_delta_pos2+=(ele2pos_old_(3*numnodalvalues+i)-ele2pos_(3*numnodalvalues+i))*(ele2pos_old_(3*numnodalvalues+i)-ele2pos_(3*numnodalvalues+i));
+    ele1_delta_pos1+=(ele1pos_old_(i)-BEAMCONTACT::CastToDouble(ele1pos_(i)))*(ele1pos_old_(i)-BEAMCONTACT::CastToDouble(ele1pos_(i)));
+    ele1_delta_pos2+=(ele1pos_old_(3*numnodalvalues+i)-BEAMCONTACT::CastToDouble(ele1pos_(3*numnodalvalues+i)))*(ele1pos_old_(3*numnodalvalues+i)-BEAMCONTACT::CastToDouble(ele1pos_(3*numnodalvalues+i)));
+    ele2_delta_pos1+=(ele2pos_old_(i)-BEAMCONTACT::CastToDouble(ele2pos_(i)))*(ele2pos_old_(i)-BEAMCONTACT::CastToDouble(ele2pos_(i)));
+    ele2_delta_pos2+=(ele2pos_old_(3*numnodalvalues+i)-BEAMCONTACT::CastToDouble(ele2pos_(3*numnodalvalues+i)))*(ele2pos_old_(3*numnodalvalues+i)-BEAMCONTACT::CastToDouble(ele2pos_(3*numnodalvalues+i)));
   }
   ele1_delta_pos1=sqrt(ele1_delta_pos1);
   ele1_delta_pos2=sqrt(ele1_delta_pos2);
@@ -3361,8 +3376,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateClassVariablesIte
 {
   for (int i=0;i<3*numnodes*numnodalvalues;i++)
   {
-    ele1pos_lastiter_(i)=ele1pos_(i);
-    ele2pos_lastiter_(i)=ele2pos_(i);
+    ele1pos_lastiter_(i)=BEAMCONTACT::CastToDouble(ele1pos_(i));
+    ele2pos_lastiter_(i)=BEAMCONTACT::CastToDouble(ele2pos_(i));
   }
 
 }
@@ -3422,8 +3437,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::SetClassVariables(const
   {
     for (int i=0;i<3*numnodes*numnodalvalues;i++)
     {
-      ele1pos_old_(i)=ele1pos_(i);
-      ele2pos_old_(i)=ele2pos_(i);
+      ele1pos_old_(i)=BEAMCONTACT::CastToDouble(ele1pos_(i));
+      ele2pos_old_(i)=BEAMCONTACT::CastToDouble(ele2pos_(i));
     }
   }
 
@@ -3432,8 +3447,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::SetClassVariables(const
   {
     for (int i=0;i<3*numnodes*numnodalvalues;i++)
     {
-      ele1pos_lastiter_(i)=ele1pos_(i);
-      ele2pos_lastiter_(i)=ele2pos_(i);
+      ele1pos_lastiter_(i)=BEAMCONTACT::CastToDouble(ele1pos_(i));
+      ele2pos_lastiter_(i)=BEAMCONTACT::CastToDouble(ele2pos_(i));
     }
     firstcallofstep_=false;
   }

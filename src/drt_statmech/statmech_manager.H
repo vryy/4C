@@ -785,6 +785,17 @@ protected:
                  bool                            ignoreeleid=false,
                  bool                            drawsphere=true);
 
+  //! \brief Gmsh triangle output for surface of sphere (visualized as Icosphere)
+  void PrintGmshTriangleToStream(std::stringstream& gmshfilecontent,
+                                 const std::vector< std::vector< double > > &vertexlist,
+                                 int i, int j, int k, double color,
+                                 const double centercoord[]);
+
+  //! \brief Refinement of Icosphere (subdivision of faces/triangles)
+  void GmshRefineIcosphere(std::vector< std::vector<double> > &vertexlist,
+                           std::vector< std::vector<int> > &facelist,
+                           double radius);
+
   /*! \brief Gmsh output of volume boundaries of detected structure type (detection in DDCorrCurrStructure())
    *  \param n               (in) number of edges for approximation of the cluster sphere or the bundle cylinder
    *  \param gmshfilecontent (in) where output is written to

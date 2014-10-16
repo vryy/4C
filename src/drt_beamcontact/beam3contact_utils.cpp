@@ -41,6 +41,7 @@ Maintainer: Christoh Meier
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
+#include "../drt_rigidsphere/rigidsphere.H"
 #include "beam3contact_manager.H"
 
 
@@ -73,7 +74,7 @@ FAD BEAMCONTACT::Norm(FAD a)
 bool BEAMCONTACT::BeamNode(DRT::Node& node)
 {
   bool beameles = false;
-  bool solideles = false;
+  bool othereles = false;
 
   //TODO: actually we would have to check all elements of all processors!!! Gather?
   for (int i=0; i< (int)(node.NumElement()); i++)
@@ -81,13 +82,36 @@ bool BEAMCONTACT::BeamNode(DRT::Node& node)
     if(BeamElement(*(node.Elements())[i]))
       beameles = true;
     else
-      solideles = true;
+      othereles = true;
   }
 
-  if (beameles and solideles)
-    dserror("Beam elements and solid elements sharing the same node is currently not allowed in BACI!");
+  if (beameles and othereles)
+    dserror("Beam elements and other (solid, rigid sphere) elements sharing the same node is currently not allowed in BACI!");
 
   return beameles;
+}
+
+/*----------------------------------------------------------------------*
+ |  Check, if current node belongs to a rigid sphere element   grill 09/14|
+ *----------------------------------------------------------------------*/
+bool BEAMCONTACT::RigidsphereNode(DRT::Node& node)
+{
+  bool sphereeles = false;
+  bool othereles = false;
+
+  //TODO: actually we would have to check all elements of all processors!!! Gather?
+  for (int i=0; i< (int)(node.NumElement()); i++)
+  {
+    if(RigidsphereElement(*(node.Elements())[i]))
+      sphereeles = true;
+    else
+      othereles = true;
+  }
+
+  if (sphereeles and othereles)
+    dserror("Rigid sphere elements and other (solid, beam) elements sharing the same node is currently not allowed in BACI!");
+
+  return sphereeles;
 }
 
 /*----------------------------------------------------------------------*
@@ -99,6 +123,19 @@ bool BEAMCONTACT::BeamElement(DRT::Element& element)
 
   if (ele_type == DRT::ELEMENTS::Beam3ebType::Instance() or ele_type ==DRT::ELEMENTS::Beam3Type::Instance() or ele_type ==DRT::ELEMENTS::Beam3iiType::Instance())
     return true; //TODO: Print Warning, that only these three types of beam elements are supported!!!
+  else
+    return false;
+}
+
+/*----------------------------------------------------------------------*
+ |  Check, if current element is a rigid sphere element       grill 09/14|
+ *----------------------------------------------------------------------*/
+bool BEAMCONTACT::RigidsphereElement(DRT::Element& element)
+{
+  const DRT::ElementType& ele_type = element.ElementType();
+
+  if (ele_type == DRT::ELEMENTS::RigidsphereType::Instance())
+    return true;
   else
     return false;
 }

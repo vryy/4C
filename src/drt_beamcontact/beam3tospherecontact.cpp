@@ -24,69 +24,68 @@ Maintainer: Christoph Meier
 
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3eb/beam3eb.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "../drt_inpar/inpar_statmech.H"
 
 /*----------------------------------------------------------------------*
- |  constructor (public)                                      popp 04/10|
+ |  constructor (public)                                     grill 09/14|
  *----------------------------------------------------------------------*/
-CONTACT::Beam3tospherecontact::Beam3tospherecontact(const DRT::Discretization& pdiscret,
+template<const int numnodes , const int numnodalvalues>
+CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Beam3tospherecontact(const DRT::Discretization& pdiscret,
                                     const DRT::Discretization& cdiscret,
-                                    const int& dofoffset,
+                                    const std::map<int,int>& dofoffsetmap,
                                     DRT::Element* element1,
                                     DRT::Element* element2):
 pdiscret_(pdiscret),
 cdiscret_(cdiscret),
-dofoffset_(dofoffset),
+dofoffsetmap_(dofoffsetmap),
 element1_(element1),
 element2_(element2),
 contactflag_(false)
 {
+  ele1pos_.Clear();
+  ele2pos_.Clear();
+
+  fc1_.Clear();
+  fc2_.Clear();
 
   // initialize augmented lagrange multiplier to zero
   lmuzawa_ = 0.0;
   gap_=0.0;
 
-  ele1pos_.Reshape(3,element1->NumNode());
-  ele2pos_.Reshape(3,1);
-
-
   // initialize class variables for contact point coordinates
-  x1_.Size(3);
-  x2_.Size(3);
-  normal_.Size(3);
-  for(int i=0;i<3;i++)
+  x1_.Clear();
+  x2_.Clear();
+  normal_.Clear();
+
+//  firstcall_ = true;
+
+  const DRT::ElementType & eot1 = element1_->ElementType();
+  const DRT::ElementType & eot2 = element2_->ElementType();
+
+  if(eot1 != DRT::ELEMENTS::Beam3Type::Instance() and eot1 != DRT::ELEMENTS::Beam3iiType::Instance()
+     and eot1 != DRT::ELEMENTS::Beam3ebType::Instance())
   {
-    x1_[i]=0.0;
-    x2_[i]=0.0;
-    normal_[i]=0.0;
-    firstcall_ = true;
-
-    const DRT::ElementType & eot1 = element1_->ElementType();
-    const DRT::ElementType & eot2 = element2_->ElementType();
-
-    if(eot1 != DRT::ELEMENTS::Beam3Type::Instance() and eot1 != DRT::ELEMENTS::Beam3iiType::Instance())
-      dserror("How did you get here? element1_ has to be of type beam3 or beam3ii!!!");
-
-    if(eot2 != DRT::ELEMENTS::RigidsphereType::Instance())
-      dserror("How did you get here? element2_ has to be of type rigidsphere!!!");
-
+    dserror("How did you get here? element1_ has to be of type beam3, beam3ii or beam3eb!!!");
   }
+
+  if(eot2 != DRT::ELEMENTS::RigidsphereType::Instance())
+    dserror("How did you get here? element2_ has to be of type rigidsphere!!!");
+
+  nodalcontactflag_.assign(element1_->NumNode(),false);
 
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: constructor
- *----------------------------------------------------------------------*/
-
 
 /*----------------------------------------------------------------------*
- |  copy-constructor (public)                                 popp 04/10|
+ |  copy-constructor (public)                                grill 09/14|
  *----------------------------------------------------------------------*/
-CONTACT::Beam3tospherecontact::Beam3tospherecontact(const Beam3tospherecontact& old):
+template<const int numnodes , const int numnodalvalues>
+CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Beam3tospherecontact(const Beam3tospherecontact& old):
 pdiscret_(old.pdiscret_),
 cdiscret_(old.cdiscret_),
-dofoffset_(old.dofoffset_),
+dofoffsetmap_(old.dofoffsetmap_),
 element1_(old.element1_),
 element2_(old.element2_),
 ele1pos_(old.ele1pos_),
@@ -95,14 +94,12 @@ ele2pos_(old.ele2pos_)
   dserror("ERROR: Copy constructor incomplete");
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: copy-constructor
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Evaluate the element (public)                             popp 04/10|
+ |  Evaluate the element (public)                            grill 09/14|
  *----------------------------------------------------------------------*/
-bool CONTACT::Beam3tospherecontact::Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, double& pp)
+template<const int numnodes , const int numnodalvalues>
+bool CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, double& pp)
 {
   //**********************************************************************
   // Evaluation of contact forces and stiffness
@@ -122,104 +119,157 @@ bool CONTACT::Beam3tospherecontact::Evaluate(LINALG::SparseMatrix& stiffmatrix, 
 
   ClosestPointProjection();
 
-  // initialize the two element coordinates xi and eta of contact point
-  double XiContact = xicontact_;
-
-  // number of nodes of each element
-  const int numnode1 = element1_->NumNode();
-
   // vectors for shape functions and their derivatives
-  Epetra_SerialDenseVector funct1(numnode1);          // = N1
-  Epetra_SerialDenseMatrix deriv1(1,numnode1);        // = N1,xi
-  Epetra_SerialDenseMatrix secondderiv1(1,numnode1);  // = N1,xixi
+  LINALG::TMatrix<TYPE,1, numnodes*numnodalvalues> N1_i;
+  LINALG::TMatrix<TYPE,1, numnodes*numnodalvalues> N1_i_xi;
+  LINALG::TMatrix<TYPE,1, numnodes*numnodalvalues> N1_i_xixi;
 
   // coords and derivatives of the two contact points
-  std::vector<double> x1(3);                            // = x1
-  std::vector<double> x2(3);                            // = x2
-  std::vector<double> dx1(3);                            // = x1,xi
-  std::vector<double> ddx1(3);                          // = x1,xixi
+  LINALG::TMatrix<TYPE,3,1> x1;                            // = x1
+  LINALG::TMatrix<TYPE,3,1> x2;                            // = x2
+  LINALG::TMatrix<TYPE,3,1> dx1;                            // = x1,xi
+  LINALG::TMatrix<TYPE,3,1> ddx1;                          // = x1,xixi
 
   // initialize
-  std::vector<double> normal(3);
-  double gap= 0.0;
-  double norm = 0.0;
+  LINALG::TMatrix<TYPE,3,1> normal;
+  TYPE gap= 0.0;
+  TYPE norm = 0.0;
 
-  if (abs(XiContact)< (1.0 + XIETATOL))
+  bool validclosestpointprojection = true;
+
+  if (abs(BEAMCONTACT::CastToDouble(xicontact_))< (1.0 + XIETATOL))
   {
-    std::cout << "Auswertung von Paar:" << element1_->Id() << "/" << element2_->Id() << std::endl;
+    nodalcontactflag_[0]=false;
+    nodalcontactflag_[1]=false;
   }
   else
   {
     contactflag_ = false;
-    return false;
+    validclosestpointprojection = false;
   }
 
-  //**********************************************************************
-  // (1) Compute some auxiliary quantities
-  //**********************************************************************
-
-  // call function to fill variables for shape functions and their derivatives
-  GetShapeFunctions(funct1,deriv1,secondderiv1,XiContact);
-
-  // call function to fill variables with coords and derivs of the contact point
-  ComputeCoordsAndDerivs(x1,x2,dx1,ddx1,funct1,deriv1,secondderiv1,numnode1);
-
-  // call function to compute scaled normal and gap in possible contact point
-  ComputeNormal(normal,gap,norm,x1,x2);
-
-  // call function to evaluate contact status
-  CheckContactStatus(pp);
-  
-  // store coordinates of contact point into class variables
-  for(int i=0;i<3;i++)
+  if(validclosestpointprojection)
   {
-    x1_[i]=x1[i];
-    x2_[i]=x2[i];
+    //**********************************************************************
+    // (1) Compute some auxiliary quantities
+    //**********************************************************************
+
+    // call function to fill variables for shape functions and their derivatives
+    GetShapeFunctions(N1_i,N1_i_xi,N1_i_xixi,xicontact_);
+
+    // call function to fill variables with coords and derivs of the contact point
+    ComputeCoordsAndDerivs(x1,x2,dx1,ddx1,N1_i,N1_i_xi,N1_i_xixi);
+
+    // call function to compute scaled normal and gap in possible contact point
+    ComputeNormal(normal,gap,norm,x1,x2);
+
+    // call function to evaluate contact status
+    CheckContactStatus(pp);
+
+    //**********************************************************************
+    // (2) Compute contact forces and stiffness
+    //**********************************************************************
+
+    // call function to evaluate and assemble contact forces
+    EvaluateFcContact(pp,gap,normal,fint,N1_i,contactflag_);
+    // call function to evaluate and assemble contact stiffness
+    EvaluateStiffcContact(pp,gap,normal,norm,stiffmatrix,x1,x2,dx1,
+                          ddx1,N1_i,N1_i_xi,N1_i_xixi,contactflag_);
+
+  }
+  else    // TODO do this only for the nodes at beam end points in case of Kirchhoff beam
+  {
+    dsassert(numnodes==2,"Beamtospherecontact: Check for nodal contact only implemented for 2-noded beam elements!");
+    //************************************************************************
+    // NEW: NODAL-BEAM-TO-SPHERE CONTACT
+    //************************************************************************
+    // distance of beam nodes and center of sphere is computed
+    // -> penalty contribution if distance is smaller than sum of radii
+    // (point-to-point contact: xi=+-1, hence no contribution from linearization of xi)
+    // this also has consequences for AUTOMATICDIFF: do not use xicontact_ here!
+    TYPE XiContact = 0.0;
+    for (int inode=0; inode<2; ++inode)
+    {
+      // Set XiContact to +-1.0
+      switch(inode)
+      {
+        case 0:
+          XiContact=-1.0;   // first node
+          break;
+        case 1:
+          XiContact=1.0;    // second node
+          break;
+        default:
+          dserror("This must not happen!");
+          break;
+      }
+
+      // Now do exactly the same as for "normal" contact based on closest point projection
+      // (except for contribution from linearization of xi)
+
+      // TODO: make more efficient: use knowledge that contact point is a node -> matrix of shape functions, etc. simplifies
+
+      //**********************************************************************
+      // (1) Compute some auxiliary quantities
+      //**********************************************************************
+
+      // call function to fill variables for shape functions and their derivatives
+      GetShapeFunctions(N1_i,N1_i_xi,N1_i_xixi,XiContact);
+
+      // call function to fill variables with coords and derivs of the contact point
+      ComputeCoordsAndDerivs(x1,x2,dx1,ddx1,N1_i,N1_i_xi,N1_i_xixi);
+
+      // call function to compute scaled normal and gap in possible contact point
+      ComputeNormal(normal,gap,norm,x1,x2);
+
+      // evaluate nodal contact status
+      if ( gap_ < 0)
+      {
+        nodalcontactflag_[inode]=true;
+      }
+      else nodalcontactflag_[inode] = false;
+
+      //**********************************************************************
+      // (2) Compute contact forces and stiffness
+      //**********************************************************************
+
+      // call function to evaluate and assemble contact forces
+      EvaluateFcContact(pp,gap,normal,fint,N1_i,nodalcontactflag_[inode]);
+
+      // call function to evaluate and assemble contact stiffness
+      EvaluateStiffcContact(pp,gap,normal,norm,stiffmatrix,x1,x2,dx1,
+                            ddx1,N1_i,N1_i_xi,N1_i_xixi,nodalcontactflag_[inode],false);
+
+    }
   }
 
-  //**********************************************************************
-  // (2) Compute contact forces and stiffness
-  //**********************************************************************
-
-  // call function to evaluate and assemble contact forces
-  EvaluateFcContact(pp,gap,normal,fint,funct1,numnode1);
-  // call function to evaluate and assemble contact stiffness
-  EvaluateStiffcContact(pp,gap,normal,norm,stiffmatrix,x1,x2,dx1,
-                        ddx1,funct1,deriv1,secondderiv1,numnode1,XiContact);
-  return true;
+  return contactflag_;
 }
-/*----------------------------------------------------------------------*
- |  end: Evaluate the element
-  *----------------------------------------------------------------------*/
-
 
 /*----------------------------------------------------------------------*
- |  Closest point projection                                  popp 04/10|
+ |  Closest point projection                                 grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::ClosestPointProjection()
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ClosestPointProjection()
 {
-
-
-  // local variables for element coordinates
-  double eta=0.0;
-
-  // number of nodes of each element
-  const int numnode1 = Element1()->NumNode();
+  // local variable for beam element coordinate
+  TYPE eta=0.0;
 
   // vectors for shape functions and their derivatives
-  Epetra_SerialDenseVector funct1(numnode1);          // = N1
-  Epetra_SerialDenseMatrix deriv1(1,numnode1);        // = N1,xi
-  Epetra_SerialDenseMatrix secondderiv1(1,numnode1);  // = N1,xixi
+  LINALG::TMatrix<TYPE,1, numnodes*numnodalvalues> N1_i;
+  LINALG::TMatrix<TYPE,1, numnodes*numnodalvalues> N1_i_xi;
+  LINALG::TMatrix<TYPE,1, numnodes*numnodalvalues> N1_i_xixi;
 
-  // coords and derivatives of the two contacting points
-  std::vector<double> x1(3);                            // = x1
-  std::vector<double> x2(3);                            // = x2
-  std::vector<double> dx1(3);                           // = x1,xi
-  std::vector<double> ddx1(3);                          // = x1,xixi
+  // coords and derivatives of the two contact points
+  LINALG::TMatrix<TYPE,3,1> x1;                            // = x1
+  LINALG::TMatrix<TYPE,3,1> x2;                            // = x2
+  LINALG::TMatrix<TYPE,3,1> dx1;                            // = x1,xi
+  LINALG::TMatrix<TYPE,3,1> ddx1;                          // = x1,xixi
+  LINALG::TMatrix<TYPE,3,1> delta_x;                       // = x1 - x2
 
   // initialize function f and Jacobian df for Newton iteration
-  double f;
-  double df;
+  TYPE f;
+  TYPE df;
 
   // initial scalar residual (L2-norm of f)
   double residual = 0.0;
@@ -234,41 +284,44 @@ void CONTACT::Beam3tospherecontact::ClosestPointProjection()
     iter++;
 
     // reset shape function variables to zero
-    for (int j=0;j<numnode1;j++) funct1[j]=0;
-    for (int j=0;j<numnode1;j++) deriv1(0,j)=0;
-    for (int j=0;j<numnode1;j++) secondderiv1(0,j)=0;
+    N1_i.Clear();
+    N1_i_xi.Clear();
+    N1_i_xixi.Clear();
 
     // update shape functions and their derivatives
-    GetShapeFunctions(funct1,deriv1,secondderiv1,eta);
+    GetShapeFunctions(N1_i,N1_i_xi,N1_i_xixi,eta);
 
     // update coordinates and derivatives of contact points
-    ComputeCoordsAndDerivs(x1,x2,dx1,ddx1,funct1,deriv1,secondderiv1,numnode1);
+    ComputeCoordsAndDerivs(x1,x2,dx1,ddx1,N1_i,N1_i_xi,N1_i_xixi);
+
+    // compute delta_x = x1-x2
+    for (int j=0; j<3; ++j)
+      delta_x(j) = x1(j) - x2(j);
 
     // compute norm of difference vector to scale the equations
     // (this yields better conditioning)
-    double norm = sqrt((x1[0]-x2[0])*(x1[0]-x2[0])
-                     + (x1[1]-x2[1])*(x1[1]-x2[1])
-                     + (x1[2]-x2[2])*(x1[2]-x2[2]));
-
+    // Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type double
+    // since this factor is needed for a pure scaling of the nonlinear CCP and has not to be linearized!
+    double norm_delta_x = BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(delta_x));
 
     // the closer the beams get, the smaller is norm
     // norm is not allowed to be too small, else numerical problems occur
-    if (norm < NORMTOL)
+    if (norm_delta_x < NORMTOL)
     {
       dserror("Contact points x1 and x2 are identical. Choose smaller time step!");
     }
 
     // evaluate f at current eta
-    EvaluateNewtonF(f,x1,x2,dx1,norm);
+    EvaluateOrthogonalityCondition(f,delta_x,norm_delta_x,dx1);
 
     // compute the scalar residuum
-    residual = abs(f);
+    residual = abs(BEAMCONTACT::CastToDouble(f));
 
     // check if Newton iteration has converged
     if (residual < BEAMCONTACTTOL) break;
 
     // evaluate Jacobian of f at current eta
-    EvaluateNewtonGradF(df,x1,x2,dx1,ddx1,norm);
+    EvaluateLinOrthogonalityCondition(df,delta_x,norm_delta_x,dx1,ddx1);
 
     // singular df
     if (abs(df)<COLINEARTOL)
@@ -290,67 +343,73 @@ void CONTACT::Beam3tospherecontact::ClosestPointProjection()
     eta = 1e+12;
   }
 
-  // store and return final result
+  // store final result and return
   xicontact_=eta;
+
+  #ifdef AUTOMATICDIFF
+  // Set xi1_ as (additional) primary variable for automatic differentiation
+  // The dependence between the infinitesimal changes delta xi1_ and the
+  // the increments of the primary displacement variables delta disp have to be given explicitly, since
+  // no explicit relation between the finite quantities xi1_ and disp exists.
+  // The latter would have been necessary if the full linearization had to be computed directly with Sacado!!!
+
+  // The 3*numnodes*numnodalvalues+3 primary DoFs are the components of the nodal positions / tangents. The additional
+  // degree of freedom (+1) represents the dependency on the beam parameter coordinate xi, which is necessary in beam contact.
+  xicontact_.diff((3*numnodes*numnodalvalues+3+1)-1,3*numnodes*numnodalvalues+3+1);
+  #endif
 
   return;
 }
-/*----------------------------------------------------------------------*
-|  end: Closest point projection
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Evaluate function f in CPP                                popp 04/10|
+ |  Evaluate function f in CPP                               grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::EvaluateNewtonF(double& f, const std::vector<double>& x1,
-     const std::vector<double>& x2,  const std::vector<double>& dx1, const double& norm)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateOrthogonalityCondition(TYPE& f, const LINALG::TMatrix<TYPE,3,1>& delta_x, const double norm_delta_x, const LINALG::TMatrix<TYPE,3,1>& dx1)
 {
   // reset f
-  f=0;
-  
+  f=0.0;
+
   // evaluate f
   // see Wriggers, Computational Contact Mechanics, equation (12.5)
 
   for (int i=0;i<3;i++)
   {
-    f += (x1[i]-x2[i])*dx1[i] / norm;
+    f += delta_x(i)*dx1(i) / norm_delta_x;
   }
 
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: Evaluate function f in CPP
- *----------------------------------------------------------------------*/
-
 
 /*----------------------------------------------------------------------*
- |  Evaluate Jacobian df in CPP                               popp 04/10|
+ |  Evaluate Jacobian df in CPP                              grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::EvaluateNewtonGradF( double& df, const std::vector<double>& x1,
-                                                         const std::vector<double>& x2, const std::vector<double>& dx1,
-                                                         const std::vector<double>& ddx1,const double& norm)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateLinOrthogonalityCondition(TYPE& df,
+                                                         LINALG::TMatrix<TYPE,3,1>& delta_x,
+                                                         const double norm_delta_x,
+                                                         const LINALG::TMatrix<TYPE,3,1>& dx1,
+                                                         const LINALG::TMatrix<TYPE,3,1>& ddx1)
 
 {
   // reset df
   df=0;
-  
+
   // evaluate df
   // see Wriggers, Computational Contact Mechanics, equation (12.7)
   for(int i=0;i<3;i++)
   {
-    df += (dx1[i]*dx1[i] + (x1[i]-x2[i])*ddx1[i]) / norm;
+    df += (dx1(i)*dx1(i) + delta_x(i)*ddx1(i)) / norm_delta_x;
   }
 
-  return;  
+  return;
 }
-/*----------------------------------------------------------------------*
- |  end: Evaluate Jacobian df in CPP
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Check if conact is active or inactive                     popp 04/10|
+ |  Check if contact is active or inactive                    grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::CheckContactStatus(double& pp)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::CheckContactStatus(double& pp)
 {
   // check contact condition valid for both pure penalty
   // (lmuzawa = 0) and augmented lagrange (lmuzawa != 0)
@@ -359,43 +418,46 @@ void CONTACT::Beam3tospherecontact::CheckContactStatus(double& pp)
 
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: Check if conact is active or inactive
- *----------------------------------------------------------------------*/
-
 
 /*----------------------------------------------------------------------*
- |  Get global dofs of a node                                 popp 12/10|
+ |  Get global dofs of a node                                grill 09/14|
  *----------------------------------------------------------------------*/
-std::vector<int> CONTACT::Beam3tospherecontact::GetGlobalDofs(DRT::Node* node)
+template<const int numnodes , const int numnodalvalues>
+std::vector<int> CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::GetGlobalDofs(DRT::Node* node)
 {
   // get dofs in beam contact discretization
   std::vector<int> cdofs = ContactDiscret().Dof(node);
 
-  // get dofs in problem discretization via offset
+  // get dofs in problem discretization via offsetmap
   std::vector<int> pdofs((int)(cdofs.size()));
   for (int k=0;k<(int)(cdofs.size());++k)
-    pdofs[k] = cdofs[k]-DofOffset();
+  {
+    pdofs[k]=(dofoffsetmap_.find(cdofs[k]))->second;
+  }
 
   return pdofs;
 }
-/*----------------------------------------------------------------------*
- |  end: Get global dofs of a node
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Compute contact forces                                    popp 04/10|
+ |  Compute contact forces                                   grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::EvaluateFcContact(const double& pp,
-     const double& gap, const std::vector<double>& normal, Epetra_Vector& fint,
-     Epetra_SerialDenseVector funct1, const int numnode1)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateFcContact(const double& pp,
+                                                               const TYPE& gap,
+                                                               const LINALG::TMatrix<TYPE,3,1>& normal,
+                                                               Epetra_Vector& fint,
+                                                               const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N1_i,
+                                                               const bool contactactive)
 {
+  fc1_.Clear();
+  fc2_.Clear();
+
   // get dimensions for vectors fc1 and fc2
-  const int dim1 = 3*numnode1;
-  
+  const int dim1 = 3*numnodes*numnodalvalues;
+
   // temporary vectors for contact forces, DOF-GIDs and owning procs
-  Epetra_SerialDenseVector fc1(dim1);
-  Epetra_SerialDenseVector fc2(3);
+  Epetra_SerialDenseVector fc1_copy(dim1);
+  Epetra_SerialDenseVector fc2_copy(3);
   std::vector<int> lm1(dim1);
   std::vector<int> lm2(3);
   std::vector<int> lmowner1(dim1);
@@ -403,11 +465,11 @@ void CONTACT::Beam3tospherecontact::EvaluateFcContact(const double& pp,
 
   // flag indicating assembly
   bool DoNotAssemble = false;
-  
+
   //**********************************************************************
   // evaluate contact forces for active pairs
   //**********************************************************************
-  if (contactflag_)
+  if (contactactive)
   {
     // node ids of both elements
     const int* node_ids1 = element1_->NodeIds();
@@ -416,36 +478,44 @@ void CONTACT::Beam3tospherecontact::EvaluateFcContact(const double& pp,
     //********************************************************************
     // Compute Fc1 (force acting on first element)
     //********************************************************************
-    for (int i=0;i<numnode1;++i)
+    // prepare assembly
+    for (int i=0;i<numnodes;++i)
     {
       // get node pointer and dof ids
       DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
       std::vector<int> NodeDofGIDs = GetGlobalDofs(node);
 
-      // compute force vector Fc1 and prepare assembly
-      for (int j=0;j<3;++j)
+      for (int j=0;j<3*numnodalvalues;++j)
       {
-        fc1[3*i+j] = (lmuzawa_ - pp*gap) * normal[j] * funct1[i];
-        lm1[3*i+j] = NodeDofGIDs[j];
-        lmowner1[3*i+j] = node->Owner();
+        lm1[3*numnodalvalues*i+j] = NodeDofGIDs[j];
+        lmowner1[3*numnodalvalues*i+j] = node->Owner();
       }
     }
+
+    // compute force vector Fc1
+    for (int i=0;i<numnodes*numnodalvalues;++i)
+    {
+      for (int j=0;j<3;++j)
+      {
+        fc1_(3*i+j) = (lmuzawa_ - pp*gap) * normal(j) * N1_i(i);
+      }
+    }
+
     //********************************************************************
     // Compute Fc2 (force acting on second element)
     //********************************************************************
-      // get node pointer and dof ids
-      DRT::Node* node = ContactDiscret().gNode(node_ids2[0]);
-      std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
-      
-      // compute force vector Fc2 and prepare assembly
-      for (int j=0;j<3;++j)
-      {
-        fc2[j] = -(lmuzawa_ - pp*gap) * normal[j];
-        lm2[j] = NodeDofGIDs[j];
-        lmowner2[j] = node->Owner();
-      }
+    // get node pointer and dof ids
+    DRT::Node* node = ContactDiscret().gNode(node_ids2[0]);
+    std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
+
+    // compute force vector Fc2 and prepare assembly
+    for (int j=0;j<3;++j)
+    {
+      fc2_(j) = -(lmuzawa_ - pp*gap) * normal(j);
+      lm2[j] = NodeDofGIDs[j];
+      lmowner2[j] = node->Owner();
+    }
   }
-  
   //**********************************************************************
   // no forces for inactive pairs
   //**********************************************************************
@@ -453,104 +523,132 @@ void CONTACT::Beam3tospherecontact::EvaluateFcContact(const double& pp,
   {
     // set flag to avoid assembly
     DoNotAssemble = true;
-    
-    // compute forces
-    for (int i=0;i<3*numnode1;++i) fc1[i]=0;
-    for (int i=0;i<3;++i) fc2[i]=0;
   }
-  
+
   //**********************************************************************
   // assemble contact forces
   //**********************************************************************
   if (!DoNotAssemble)
-  {  
+  {
+    for (int i=0; i<dim1; ++i)
+      fc1_copy[i] = BEAMCONTACT::CastToDouble(fc1_(i));
+
+    for (int i=0; i<3; ++i)
+      fc2_copy[i] = BEAMCONTACT::CastToDouble(fc2_(i));
+
     // assemble fc1 and fc2 into global contact force vector
-    LINALG::Assemble(fint,fc1,lm1,lmowner1);
-    LINALG::Assemble(fint,fc2,lm2,lmowner2);
+    LINALG::Assemble(fint,fc1_copy,lm1,lmowner1);
+    LINALG::Assemble(fint,fc2_copy,lm2,lmowner2);
   }
 
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: Compute contact forces
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Evaluate contact stiffness                                popp 04/10|
+ |  Evaluate contact stiffness                               grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::EvaluateStiffcContact(const double& pp,
-     const double& gap, const std::vector<double>& normal, const double& norm, 
-     LINALG::SparseMatrix& stiffmatrix,const std::vector<double>& x1,const std::vector<double>& x2,
-     const std::vector<double>& dx1, const std::vector<double>& ddx1,
-     const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseMatrix& deriv1,
-     const Epetra_SerialDenseMatrix& secondderiv1, const int numnode1, double& XiContact)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateStiffcContact(const double& pp,
+                                                            const TYPE& gap,
+                                                            const LINALG::TMatrix<TYPE,3,1>& normal,
+                                                            const TYPE& norm,
+                                                            LINALG::SparseMatrix& stiffmatrix,
+                                                            const LINALG::TMatrix<TYPE,3,1>& x1,
+                                                            const LINALG::TMatrix<TYPE,3,1>& x2,
+                                                            const LINALG::TMatrix<TYPE,3,1>& dx1,
+                                                            const LINALG::TMatrix<TYPE,3,1>& ddx1,
+                                                            const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N1_i,
+                                                            const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N1_i_xi,
+                                                            const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N1_i_xixi,
+                                                            bool activecontact,
+                                                            bool linxi)
 {
-  // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs 
-  Epetra_SerialDenseMatrix stiffc1(3*numnode1,3*(numnode1+1));
-  Epetra_SerialDenseMatrix stiffc2(3,3*(numnode1+1));
-  std::vector<int> lmrow1(3*numnode1);
-  std::vector<int> lmrow2(3);
-  std::vector<int> lmrowowner1(3*numnode1);
-  std::vector<int> lmrowowner2(3);
-  std::vector<int> lmcol1(3*(numnode1+1));
-  std::vector<int> lmcol2(3*(numnode1+1));
-  
+  // get dimensions for vector fc1 and fc2
+  const int dim1 = 3*numnodes*numnodalvalues;
+  const int dim2 = 3;
+
+  // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs
+  LINALG::TMatrix<TYPE, dim1, dim1+dim2> stiffc1;
+  LINALG::TMatrix<TYPE, dim2, dim1+dim2> stiffc2;
+  Epetra_SerialDenseMatrix stiffc1_copy(dim1,dim1+dim2);
+  Epetra_SerialDenseMatrix stiffc2_copy(dim2,dim1+dim2);
+  std::vector<int> lmrow1(dim1);
+  std::vector<int> lmrow2(dim2);
+  std::vector<int> lmrowowner1(dim1);
+  std::vector<int> lmrowowner2(dim2);
+  std::vector<int> lmcol1(dim1+dim2);
+  std::vector<int> lmcol2(dim1+dim2);
+
   // flag indicating assembly
   bool DoNotAssemble = false;
-  
+
+  // initialize stiffness to zero
+  for (int i=0;i<dim1;i++)
+    for (int j=0;j<(dim1+dim2);j++)
+      stiffc1(i,j) = 0.0;
+  for (int i=0;i<dim2;i++)
+    for (int j=0;j<(dim1+dim2);j++)
+      stiffc2(i,j) = 0.0;
+
   //**********************************************************************
   // evaluate contact stiffness for active pairs
   //**********************************************************************
-  if (contactflag_)
-  {
+  // initialize delta_xi here because we need it outside the if-environment for FAD Check
+      LINALG::TMatrix<TYPE,dim1+dim2, 1> delta_xi;
 
+  if (activecontact)
+  {
     // auxiliary stiffmatrix for part III of linearization to avoid tensor notation
-    Epetra_SerialDenseMatrix stiffc_III(3*(numnode1+1),3*(numnode1+1));
-    
+    LINALG::TMatrix<TYPE,dim1+dim2,dim1+dim2> stiffc_III;
+
     // node ids of both elements
     const int* node_ids1 = element1_->NodeIds();
     const int* node_ids2 = element2_->NodeIds();
-    
+
     // initialize storage for linearizations
-    std::vector<double> delta_xi(3*(numnode1+1));
-    std::vector<double> distance(3);
-    double normdist = 0.0;
-    std::vector<double> delta_gap(3*(numnode1+1));
-    Epetra_SerialDenseMatrix delta_x1_minus_x2(3,3*(numnode1+1));
-    Epetra_SerialDenseMatrix delta_n(3, 3*(numnode1+1));
-    
+    LINALG::TMatrix<TYPE,3,1> distance;
+    TYPE normdist = 0.0;
+    LINALG::TMatrix<TYPE,dim1+dim2, 1> delta_gap;
+    LINALG::TMatrix<TYPE,3, dim1+dim2> delta_x1_minus_x2;
+    LINALG::TMatrix<TYPE,3, dim1+dim2> delta_n;
+
     //********************************************************************
     // evaluate linearizations and distance
     //********************************************************************
     // linearization of contact point
-    ComputeLinXiAndLinEta(delta_xi,x1,x2,dx1,ddx1,funct1,deriv1,normal,norm,numnode1,XiContact);
-    
+    // (not needed in case of check for nodal points in contact)
+    if(linxi) ComputeLinXi(delta_xi,x1,x2,dx1,ddx1,N1_i,N1_i_xi);
+    else
+    {
+      delta_xi.Clear();
+    }
+
     // evaluation of distance
     ComputeDistance(distance, normdist, normal, norm);
-    
+
     // linearization of gap function which is equal to delta d
-    ComputeLinGap(delta_gap,delta_xi,x1,x2,dx1,funct1,normdist,numnode1,normal,norm,gap,delta_x1_minus_x2);
+    ComputeLinGap(delta_gap,delta_xi,x1,x2,dx1,N1_i,normdist,normal,norm,gap,delta_x1_minus_x2);
 
     // linearization of normal vector
-    ComputeLinNormal(delta_n,x1,x2,norm,numnode1,delta_x1_minus_x2,normal,XiContact);
+    ComputeLinNormal(delta_n,delta_xi,normal,norm,dx1,N1_i);
 
     //********************************************************************
     // prepare assembly
     //********************************************************************
     // fill lmrow1 and lmrowowner1
-    for (int i=0;i<numnode1;++i)
+    for (int i=0;i<numnodes;++i)
     {
       // get pointer and dof ids
       DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
       std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
-      
-      for (int j=0;j<3;++j)
+
+      for (int j=0;j<3*numnodalvalues;++j)
       {
-        lmrow1[3*i+j]=NodeDofGIDs[j];
-        lmrowowner1[3*i+j]=node->Owner();
+        lmrow1[3*numnodalvalues*i+j]=NodeDofGIDs[j];
+        lmrowowner1[3*numnodalvalues*i+j]=node->Owner();
       }
     }
-    
+
     // fill lmrow2 and lmrowowner2
     // get pointer and node ids
     DRT::Node* node = ContactDiscret().gNode(node_ids2[0]);
@@ -561,21 +659,21 @@ void CONTACT::Beam3tospherecontact::EvaluateStiffcContact(const double& pp,
       lmrow2[j]=NodeDofGIDs[j];
       lmrowowner2[j]=node->Owner();
     }
-    
+
     // fill lmcol1 and lmcol2
-    for (int i=0;i<numnode1;++i)
-    {  
+    for (int i=0;i<numnodes;++i)
+    {
       // get pointer and node ids
       DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
       std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
-      
-      for (int j=0;j<3;++j)
+
+      for (int j=0;j<3*numnodalvalues;++j)
       {
-        lmcol1[3*i+j] = NodeDofGIDs[j];
-        lmcol2[3*i+j] = NodeDofGIDs[j];
+        lmcol1[3*numnodalvalues*i+j] = NodeDofGIDs[j];
+        lmcol2[3*numnodalvalues*i+j] = NodeDofGIDs[j];
       }
     }
-    
+
     // fill lmcol1 and lmcol2
     // get pointer and node ids
     node = ContactDiscret().gNode(node_ids2[0]);
@@ -583,62 +681,32 @@ void CONTACT::Beam3tospherecontact::EvaluateStiffcContact(const double& pp,
 
     for (int j=0;j<3;++j)
     {
-      lmcol1[3*numnode1+j] = NodeDofGIDs[j];
-      lmcol2[3*numnode1+j] = NodeDofGIDs[j];
+      lmcol1[3*numnodes*numnodalvalues+j] = NodeDofGIDs[j];
+      lmcol2[3*numnodes*numnodalvalues+j] = NodeDofGIDs[j];
     }
-        
-    //********************************************************************
-    // index vectors for access to shape function vectors and matrices
-    //********************************************************************
-    // In literature shape functions are stored in matrices but here only
-    // a vector is used. To access an element of a shape function matrix,
-    // use index vectors, that relate the vector index to the row index of
-    // the shape function matrices. Use an if-contruction to select only
-    // the entries of the shape function matrices, that are != 0.
-    // --> if (j%3 == i): only quasi-diagonal entries are considered
-    //********************************************************************
-    // intialize index vectors
-    std::vector<int> index1(3*(numnode1+1));
-    std::vector<int> index2(3*(numnode1+1));
-    
-    // fill the index vectors
-    for (int i=0;i<3*numnode1;++i)
-    {
-      index1[i]=(int)floor(i/3);
-      index2[i]=(int)floor(i/3);
-    }
-    for (int i=3*numnode1;i<3*(numnode1+1);++i)
-    {
-      index1[i]=(int)floor((i-3*numnode1)/3);
-      index2[i]=(int)floor((i-3*numnode1)/3);
-    }
-    
+
     //********************************************************************
     // evaluate contact stiffness
     // (1) stiffc1 of first element
     //********************************************************************
-    
+
     //********************************************************************
     // part I
     //********************************************************************
-    std::vector<double> normal_t_N1(3*numnode1);
+    LINALG::TMatrix<TYPE,dim1,1> N1T_normal;
     for (int i=0;i<3;i++)
     {
-      for (int j=0;j<3*numnode1;j++)
+      for (int j=0;j<numnodes*numnodalvalues;j++)
       {
-        if (j%3 == i)
-        {
-          int row = index1[j];
-          normal_t_N1[j] += normal[i] * funct1[row];
-        }
+        N1T_normal(3*j+i) += normal(i) * N1_i(j);
       }
     }
 
-    for (int i=0;i<3*numnode1;i++)
+    for (int i=0;i<dim1;i++)
     {
-      for (int j=0;j<3*(numnode1+1);j++)
+      for (int j=0;j<(dim1+dim2);j++)
       {
-        stiffc1(i,j) = -pp * normal_t_N1[i] * delta_gap[j];
+        stiffc1(i,j) = -pp * N1T_normal(i) * delta_gap(j);
       }
     }
 
@@ -647,15 +715,11 @@ void CONTACT::Beam3tospherecontact::EvaluateStiffcContact(const double& pp,
     //********************************************************************
     for  (int i=0;i<3;i++)
     {
-      for (int j=0;j<3*numnode1;j++)
+      for (int j=0;j<numnodes*numnodalvalues;j++)
       {
-        for (int k=0;k<3*(numnode1+1);k++)
+        for (int k=0;k<dim1+dim2;k++)
         {
-          if (j%3 == i)
-          {
-            int row = index1[j];
-            stiffc1(j,k) += (lmuzawa_ - pp*gap) * funct1[row] * delta_n(i,k);
-          }
+            stiffc1(3*j+i,k) += (lmuzawa_ - pp*gap) * N1_i(j) * delta_n(i,k);
         }
       }
     }
@@ -663,24 +727,20 @@ void CONTACT::Beam3tospherecontact::EvaluateStiffcContact(const double& pp,
     //********************************************************************
     // part III
     //********************************************************************
-    std::vector<double> normal_t_N1_xi(3*numnode1);
+    LINALG::TMatrix<TYPE,dim1,1> N1xiT_normal;
     for (int i=0;i<3;i++)
     {
-      for (int j=0;j<3*numnode1;j++)
+      for (int j=0;j<numnodes*numnodalvalues;j++)
       {
-        if (j%3 == i)
-        {
-          int row = index1[j];
-          normal_t_N1_xi[j] += normal[i] * deriv1(0,row);
-        }
+        N1xiT_normal(3*j+i) += normal(i) * N1_i_xi(j);
       }
     }
 
-    for (int i=0;i<3*numnode1;i++)
+    for (int i=0;i<dim1;i++)
     {
-      for (int j=0;j<3*(numnode1+1);j++)
+      for (int j=0;j<dim1+dim2;j++)
       {
-        stiffc1(i,j) += (lmuzawa_ - pp*gap) * normal_t_N1_xi[i] * delta_xi[j];
+        stiffc1(i,j) += (lmuzawa_ - pp*gap) * N1xiT_normal(i) * delta_xi(j);
       }
     }
 
@@ -695,9 +755,9 @@ void CONTACT::Beam3tospherecontact::EvaluateStiffcContact(const double& pp,
 
     for (int i=0;i<3;i++)
     {
-      for (int j=0;j<3*(numnode1+1);j++)
+      for (int j=0;j<dim1+dim2;j++)
       {
-        stiffc2(i,j) = pp * normal[i] * delta_gap[j];
+        stiffc2(i,j) = pp * normal(i) * delta_gap(j);
       }
     }
 
@@ -706,7 +766,7 @@ void CONTACT::Beam3tospherecontact::EvaluateStiffcContact(const double& pp,
     //********************************************************************
     for (int i=0;i<3;i++)
     {
-      for (int k=0;k<3*(numnode1+1);k++)
+      for (int k=0;k<dim1+dim2;k++)
       {
         stiffc2(i,k) += -(lmuzawa_  - pp*gap) * delta_n(i,k);
       }
@@ -724,76 +784,127 @@ void CONTACT::Beam3tospherecontact::EvaluateStiffcContact(const double& pp,
   {
      // set flag to avoid assembly
     DoNotAssemble = true;
-    
-    // compute stiffness
-    for (int i=0;i<3*numnode1;i++)
-      for (int j=0;j<3*(numnode1+1);j++)
-        stiffc1(i,j) = 0;
-    for (int i=0;i<3;i++)
-      for (int j=0;j<3*(numnode1+1);j++)
-        stiffc2(i,j) = 0;
   }
-  
+
   //**********************************************************************
   // assemble contact stiffness
   //**********************************************************************
-  // change sign of stiffc1 and stiffc2 due to time integration.
-  // according to analytical derivation there is no minus sign, but for
-  // our time integration methods the negative stiffness must be assembled.
-  for (int j=0;j<3*(numnode1+1);j++)
-  {
-    for (int i=0;i<3*numnode1;i++)
-      stiffc1(i,j) = stiffc1(i,j) * (-1);
-    for (int i=0;i<3;i++)
-      stiffc2(i,j) = stiffc2(i,j) * (-1);
-  }
-
-  // now finally assemble stiffc1 and stiffc2
   if (!DoNotAssemble)
   {
-    stiffmatrix.Assemble(0,stiffc1,lmrow1,lmrowowner1,lmcol1);
-    stiffmatrix.Assemble(0,stiffc2,lmrow2,lmrowowner2,lmcol2);
+#ifndef AUTOMATICDIFF
+    // change sign of stiffc1 and stiffc2 due to time integration.
+    // according to analytical derivation there is no minus sign, but for
+    // our time integration methods the negative stiffness must be assembled.
+    for (int j=0;j<dim1+dim2;j++)
+    {
+      for (int i=0;i<dim1;i++)
+        stiffc1_copy(i,j) = - BEAMCONTACT::CastToDouble(stiffc1(i,j));
+      for (int i=0;i<dim2;i++)
+        stiffc2_copy(i,j) = - BEAMCONTACT::CastToDouble(stiffc2(i,j));
+    }
+#else
+    for (int j=0;j<dim1+dim2;j++)
+    {
+      for (int i=0;i<dim1;i++)
+        stiffc1_copy(i,j) = - BEAMCONTACT::CastToDouble(fc1_(i).dx(j) + fc1_(i).dx(dim1+dim2) * delta_xi(j) );
+      for (int i=0;i<dim2;i++)
+        stiffc2_copy(i,j) = - BEAMCONTACT::CastToDouble(fc2_(i).dx(j) + fc2_(i).dx(dim1+dim2) * delta_xi(j) );
+    }
+
+#ifdef FADCHECKS
+    std::cout << "BTSPH Contact Pair: " << element1_->Id() << " / " << element2_->Id() << std::endl;
+
+    std::cout << "stiffc1: " << std::endl;
+    for (int i=0;i<dim1;i++)
+    {
+      for (int j=0;j<dim1+dim2;j++)
+      {
+        std::cout << std::setw(14) << - stiffc1(i,j).val();
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    std::cout << "stiffc1_FAD: " << std::endl;
+    for (int i=0;i<dim1;i++)
+    {
+      for (int j=0;j<dim1+dim2;j++)
+      {
+        std::cout << std::setw(14) << stiffc1_copy(i,j);
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+    std::cout << "stiffc2: " << std::endl;
+    for (int i=0;i<dim2;i++)
+    {
+      for (int j=0;j<dim1+dim2;j++)
+      {
+        std::cout << std::setw(14) << - stiffc2(i,j).val();
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    std::cout << "stiffc2_FAD: " << std::endl;
+    for (int i=0;i<dim2;i++)
+    {
+      for (int j=0;j<dim1+dim2;j++)
+      {
+        std::cout << std::setw(14) << stiffc2_copy(i,j);
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+#endif // FADCHECKS
+
+#endif // AUTOMATICDIFF
+
+   // now finally assemble stiffc1 and stiffc2
+    stiffmatrix.Assemble(0,stiffc1_copy,lmrow1,lmrowowner1,lmcol1);
+    stiffmatrix.Assemble(0,stiffc2_copy,lmrow2,lmrowowner2,lmcol2);
   }
-  
+
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: Evaluate contact stiffness
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Compute normal vector in contact point                    popp 04/10|
+ |  Compute normal vector in contact point                   grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::ComputeNormal(std::vector<double>& normal, double& gap,
-    double& norm, const std::vector<double>& x1, const std::vector<double>& x2)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeNormal(LINALG::TMatrix<TYPE,3,1>& normal,
+                                                          TYPE& gap,
+                                                          TYPE& norm,
+                                                          const LINALG::TMatrix<TYPE,3,1>& x1,
+                                                          const LINALG::TMatrix<TYPE,3,1>& x2)
 {
   // compute non-unit normal
-  for (int i=0;i<3;i++) normal[i] = x1[i]-x2[i];
+  for (int i=0;i<3;i++)
+    normal(i) = x1(i)-x2(i);
 
   // compute length of normal
-  norm = sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
+  norm = BEAMCONTACT::VectorNorm<3>(normal);
   if (norm < NORMTOL) dserror("ERROR: Normal of length zero! --> change time step!");
-  
-  // compute unit normal
+
+  // compute unit normal and store it in class variable
   for (int i=0;i<3;i++)
     {
-    normal[i] /= norm;
-    normal_[i]=normal[i];
+    normal(i) /= norm;
+    normal_(i)=normal(i);
     }
 
   // evaluate scalar gap function
   ComputeGap(gap,norm);
-  
+
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: Compute normal vector in contact point
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Compute scalar gap function                                popp 04/10|
+ |  Compute scalar gap function                               grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::ComputeGap(double& gap, const double& norm)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeGap(TYPE& gap,
+                                                                         const TYPE& norm)
 {
   // get moments of inertia of both elements
   // NOTE: here Iyy_ = Izz_ due to the circular cross section
@@ -807,314 +918,407 @@ void CONTACT::Beam3tospherecontact::ComputeGap(double& gap, const double& norm)
 
   if ( eot1 == DRT::ELEMENTS::Beam3iiType::Instance() )
     MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element1_))->Iyy();
-  
+
   radius_ele2 = (static_cast<DRT::ELEMENTS::Rigidsphere*>(element2_))->Radius();
 
   // compute radii of both elements
   double radius_ele1=0;
   ComputeEleRadius(radius_ele1,MomentOfInertia_ele1);
-  
-  // comute gap to be returned
+
+  // compute gap to be returned
   gap = norm - radius_ele1 - radius_ele2;
   gap_ = gap;
 
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: Compute scalar gap function
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  compute radius from moment of inertia                     popp 04/10|
+ |  compute radius from moment of inertia                    grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::ComputeEleRadius(double& radius, const double& moi)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeEleRadius(double& radius, const double& moi)
 {
   // fixed formula for circular cross sections: the factor f can be used to manipulate the geometrical radius if not equal to 1
   radius = MANIPULATERADIUS * sqrt(sqrt(4 * moi / M_PI));
-  
+
   return;
 }
 
 /*----------------------------------------------------------------------*
- | compute contact point coordinates and their derivatives     popp 04/10|
+ | compute contact point coordinates and their derivatives    grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::ComputeCoordsAndDerivs(std::vector<double>& x1,
-     std::vector<double>& x2, std::vector<double>& dx1,std::vector<double>& ddx1,
-     const Epetra_SerialDenseVector& funct1,const Epetra_SerialDenseMatrix& deriv1,
-     const Epetra_SerialDenseMatrix& secondderiv1,const int& numnode1)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeCoordsAndDerivs(LINALG::TMatrix<TYPE,3,1>& x1,
+                                                             LINALG::TMatrix<TYPE,3,1>& x2,
+                                                             LINALG::TMatrix<TYPE,3,1>& dx1,
+                                                             LINALG::TMatrix<TYPE,3,1>& ddx1,
+                                                             const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N1_i,
+                                                             const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N1_i_xi,
+                                                             const LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N1_i_xixi)
 {
   // reset input variables
+  x1.Clear();
+  x2.Clear();
+  dx1.Clear();
+  ddx1.Clear();
+
+#ifdef AUTOMATICDIFF
+  // The 3*numnodes*numnodalvalues+3 primary DoFs are the components of the nodal positions / tangents. The additional
+  // degree of freedom (+1) represents the dependency on the parameter coordinates xi, which is necessary in beam contact.
+  for (int i=0;i<3*numnodes*numnodalvalues;i++)
+    ele1pos_(i).diff(i,3*numnodes*numnodalvalues+3+1);
+
+  for (int i=0;i<3;i++)
+    ele2pos_(i).diff(3*numnodes*numnodalvalues+i,3*numnodes*numnodalvalues+3+1);
+#endif // AUTOMATICDIFF
+
+  // compute output variables
+  for (int i=0;i<3;i++)
+      x2(i)=ele2pos_(i);
+
   for (int i=0;i<3;i++)
   {
-    x1[i]   = 0.0;
-    x2[i]   = 0.0;
-    dx1[i]  = 0.0;
-    ddx1[i] = 0.0;
+    for (int j=0;j<numnodes*numnodalvalues;j++)
+    {
+      x1(i) += N1_i(j) * ele1pos_(3*j+i);              // x1 = N1 * x~1
+      dx1(i) += N1_i_xi(j) * ele1pos_(3*j+i);          // dx1 = N1,xi * x~1
+      ddx1(i) += N1_i_xixi(j) * ele1pos_(3*j+i);         // ddx1 = N1,xixi * x~1
+    }
   }
-    
-  // auxialiary variables for the nodal coordinates
-  Epetra_SerialDenseMatrix coord1(3,numnode1);
-  
-  // full coord1 and coord2
-  for (int i=0;i<3;i++)
-    for (int j=0;j<numnode1;j++)      
-      coord1(i,j)=ele1pos_(i,j);      
-  for (int i=0;i<3;i++)
-      x2[i]=ele2pos_(i,0);
-  
-  // compute output variable
-  for (int i=0;i<3;i++)
+
+  // store coordinates of contact point into class variables
+  for(int i=0;i<3;i++)
   {
-    for (int j=0;j<numnode1;j++)
-      x1[i] += funct1[j] * coord1(i,j);              // x1 = N1 * x~1
-    for (int j=0;j<numnode1;j++)
-      dx1[i] += deriv1(0,j) * coord1(i,j);          // dx1 = N1,xi * x~1
-    for (int j=0;j<numnode1;j++)
-      ddx1[i] += secondderiv1(0,j) * coord1(i,j);    // ddx1 = N1,xixi * x~1
+    x1_(i)=x1(i);
+    x2_(i)=x2(i);
   }
-  
+
   return;
 }
-/*----------------------------------------------------------------------*
- | end: compute contact point coordinates and their derivatives         |
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  evaluate shape functions and derivatives                  popp 04/10|
+ |  evaluate shape functions and derivatives                 grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::GetShapeFunctions(Epetra_SerialDenseVector& funct1,
-                                                      Epetra_SerialDenseMatrix& deriv1,
-                                                      Epetra_SerialDenseMatrix& secondderiv1,
-                                                      const double& eta)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::GetShapeFunctions(LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N1_i,
+                                                      LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N1_i_xi,
+                                                      LINALG::TMatrix<TYPE,1,numnodes*numnodalvalues>& N1_i_xixi,
+                                                      const TYPE& eta)
 {
   // get both discretization types
   const DRT::Element::DiscretizationType distype1 = element1_->Shape();
-      
-  // get values and derivatives of shape functions
-  DRT::UTILS::shape_function_1D(funct1, eta, distype1);
-  DRT::UTILS::shape_function_1D_deriv1(deriv1, eta, distype1);
-  DRT::UTILS::shape_function_1D_deriv2(secondderiv1, eta, distype1);
-    
+
+  if (numnodalvalues==1)
+  {
+    // get values and derivatives of shape functions
+    DRT::UTILS::shape_function_1D(N1_i, eta, distype1);
+    DRT::UTILS::shape_function_1D_deriv1(N1_i_xi, eta, distype1);
+    DRT::UTILS::shape_function_1D_deriv2(N1_i_xixi, eta, distype1);
+  }
+  else if (numnodalvalues==2)
+  {
+    if ( element1_->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance() )
+       dserror("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
+
+     double length1 = 2*(static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->jacobi();
+
+     // get values and derivatives of shape functions
+     DRT::UTILS::shape_function_hermite_1D(N1_i, eta, length1, distype1);
+     DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta, length1, distype1);
+     DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta, length1, distype1);
+  }
+  else
+    dserror("Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents) values are valid!");
+
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: evaluate shape functions and derivatives
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Linearizations of contact point                           popp 04/10|
+ |  Linearizations of contact point                          grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::ComputeLinXiAndLinEta(
-    std::vector<double>& delta_xi, const std::vector<double>& x1, const std::vector<double>& x2,
-    const std::vector<double>& dx1, const std::vector<double>& ddx1,
-    const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseMatrix& deriv1,
-    const std::vector<double>& normal, const double& norm, const int numnode1, const double& XiContact)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeLinXi(LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues+3, 1>& delta_xi,
+                                                          const LINALG::TMatrix<TYPE,3,1>& x1,
+                                                          const LINALG::TMatrix<TYPE,3,1>& x2,
+                                                          const LINALG::TMatrix<TYPE,3,1>& dx1,
+                                                          const LINALG::TMatrix<TYPE,3,1>& ddx1,
+                                                          const LINALG::TMatrix<TYPE,1, numnodes*numnodalvalues>& N1_i,
+                                                          const LINALG::TMatrix<TYPE,1, numnodes*numnodalvalues>& N1_i_xi)
 {
-  
-  // matrices to compute Lin_Xi and Lin_Eta
-  double L=0.0;
-  Epetra_SerialDenseMatrix B(3*(numnode1+1),1);
-  
-  // compute L elementwise
+  const int dim1 = 3*numnodes*numnodalvalues;
+  const int dim2 = 3;
+
+  // matrices to compute Lin_Xi (in case of beam-sphere contact: scalar and vector)
+  TYPE L=0.0;
+  LINALG::TMatrix<TYPE,1,dim1+dim2> B;
+
+  LINALG::TMatrix<TYPE,3,1> delta_x;
+
+  // compute L
   for (int i=0;i<3;i++)
   {
-    L +=  dx1[i]*dx1[i] + (x1[i]-x2[i])*ddx1[i];
+    delta_x(i) = x1(i) - x2(i);
+    L +=  dx1(i)*dx1(i) + delta_x(i)*ddx1(i);
   }
 
   if (L == 0) dserror("ERROR: L = 0");
 
-  
-  // index vectors for access to shape function vectors and matrices
-  std::vector<int> index1(3*(numnode1));
-  
-  // fill the index vectors
-  for (int i=0;i<3*numnode1;i++)
-  {
-    index1[i]=(int) floor(i/3);
-  }
-  
-  // compute B elementwise
-  for (int i=0;i<3*(numnode1+1);i++)
-  {
-    // first block
-    if (i<3*numnode1)
-    {
-      int j=i%3;
-      int row1 = index1[i];
 
-      B(i,0) = -(x1[j]-x2[j])*deriv1(0,row1) - dx1[j]*funct1[row1];
-    }
-    // second block
-    else
+  for (int i=0; i<3; ++i)
+  {
+    for (int j=0; j<numnodes*numnodalvalues; ++j)
     {
-      B(i,0) = dx1[i-3*numnode1];
+      B(3*j+i) += -delta_x(i)*N1_i_xi(j) - dx1(i) * N1_i(j);
     }
   }
+
+  for (int i=0; i<dim2; ++i)
+    B(dim1+i) += dx1(i);
 
   // finally the linearizations / directional derivatives
-  for (int i=0;i<3*(numnode1+1);i++)
+  for (int i=0;i<dim1+dim2;i++)
   {
-    delta_xi[i] = B(i,0)/L;
+    delta_xi(i) = B(i)/L;
   }
-  
+
   return;
-  
 }
-/*----------------------------------------------------------------------*
- |  end: Linearizations of contact point
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Compute distance vector                                   popp 04/10|
+ |  Compute distance vector                                  grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::ComputeDistance(std::vector<double>& distance,
-     double& normdist, const std::vector<double>& normal, const double& norm)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeDistance(LINALG::TMatrix<TYPE,3,1>& distance,
+                                                                 TYPE& normdist,
+                                                                 const LINALG::TMatrix<TYPE,3,1>& normal,
+                                                                 const TYPE& norm)
 {
   // compute distance vector
-  for (int i=0;i<(int)normal.size();i++)
-    distance[i] = normal[i] * norm;
-  
+  for (int i=0;i<3;i++)
+    distance(i) = normal(i) * norm;
+
   // compute scalar distance
   normdist = norm;
-  
+
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: Compute distance vector
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- | Compute linearization of gap                               popp 04/10|
+ | Compute linearization of gap                              grill 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::ComputeLinGap(std::vector<double>& delta_gap,
-      std::vector<double>& delta_xi,
-      const std::vector<double>& x1, const std::vector<double>& x2, 
-      const std::vector<double>& dx1,
-      const Epetra_SerialDenseVector& funct1,
-      const double& normdist, const int& numnode1,
-      const std::vector<double>& normal, const double& norm, const double& gap,
-      Epetra_SerialDenseMatrix& delta_x1_minus_x2)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeLinGap(LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues+3, 1>& delta_gap,
+                                                LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues+3, 1>& delta_xi,
+                                                const LINALG::TMatrix<TYPE,3,1>& x1,
+                                                const LINALG::TMatrix<TYPE,3,1>& x2,
+                                                const LINALG::TMatrix<TYPE,3,1>& dx1,
+                                                const LINALG::TMatrix<TYPE,1, numnodes*numnodalvalues>& N1_i,
+                                                const TYPE& normdist,
+                                                const LINALG::TMatrix<TYPE,3,1>& normal,
+                                                const TYPE& norm,
+                                                const TYPE& gap,
+                                                LINALG::TMatrix<TYPE,3, 3*numnodes*numnodalvalues+3>& delta_x1_minus_x2)
 {
-  // index vectors for access to shape function vectors and matrices
-  std::vector<int> index1(3*(numnode1));
-  
-  // fill the index vectors
-  for (int i=0;i<3*numnode1;i++)
-  {
-    index1[i]=(int) floor(i/3);
-  }
+  const int dim1 = 3*numnodes*numnodalvalues;
+  const int dim2 = 3;
 
-  // compute linearization of disctance vector
+
+  // delta g := delta_r/||delta_r||*auxiliary_matri1 delta d, with auxiliary_matri1 = (r1_xi*delta_xi-r2_xi*delta_eta + (N1, -N2))
+
+  LINALG::TMatrix<TYPE,3,dim1+dim2>  auxiliary_matrix1(true);
+
   for (int i=0;i<3;i++)
   {
-    for (int j=0;j<3*(numnode1+1);j++)
+    for (int j=0;j<dim1+dim2;j++)
     {
-      // standard part for each j
-      delta_x1_minus_x2(i,j) = dx1[i]*delta_xi[j];
-
-      // only for first block
-      if (j<3*numnode1 && j%3 == i)
-      {
-        int row = index1[j];
-        delta_x1_minus_x2(i,j) += funct1[row];
-      }
-      // only for second block
-      else if(j%3 == i)
-      {
-        delta_x1_minus_x2(i,j) += -1.0;
-      }
+      auxiliary_matrix1(i,j)+=dx1(i)*delta_xi(j);
     }
   }
-  
+
+  for (int i=0;i<3;i++)
+  {
+    for (int j=0;j<numnodes*numnodalvalues;j++)
+    {
+      auxiliary_matrix1(i,3*j+i)+= N1_i(j);
+    }
+  }
+
+  for (int i=0;i<3;i++)
+  {
+      auxiliary_matrix1(i,i+dim1)+= -1.0;
+  }
+
   // compute linearization of gap
   for (int i=0;i<3;i++)
-    for (int j=0;j<3*(numnode1+1);j++)
-      delta_gap[j] +=  (x1[i]-x2[i])/normdist * delta_x1_minus_x2(i,j);
-  
-  return;  
-}
-/*----------------------------------------------------------------------*
- | end: Compute linearization of gap
- *----------------------------------------------------------------------*/
+  {
+    for (int j=0;j<dim1+dim2;j++)
+    {
+      delta_gap(j) +=  (x1(i)-x2(i)) * auxiliary_matrix1(i,j)/normdist;
+    }
+  }
 
-/*----------------------------------------------------------------------*
- |  Compute linearization of normal                           popp 04/10|
- *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::ComputeLinNormal(Epetra_SerialDenseMatrix& delta_n,
-     const std::vector<double>& x1, const std::vector<double>& x2,
-     const double& norm,const int& numnode1,
-     const Epetra_SerialDenseMatrix& delta_x1_minus_x2, const std::vector<double>& normal, 
-     const double& XiContact)
-{
-  // local vectors for shape functions and their derivatives
-  Epetra_SerialDenseVector funct1(numnode1);
-  Epetra_SerialDenseMatrix deriv1(1,numnode1);
-  Epetra_SerialDenseMatrix secondderiv1(1,numnode1);
-
-  // get shape functions and their derivatives
-  GetShapeFunctions(funct1,deriv1,secondderiv1,XiContact);
-    
-  // tensor product of normal (x) normal
-  Epetra_SerialDenseMatrix n_tp_n(3,3);
-  for (int i=0;i<3;i++)
-    for (int j=0;j<3;j++)
-      n_tp_n(i,j) = normal[i] * normal[j];
-
-  // build a 3x3-identity matrix
-  Epetra_SerialDenseMatrix identity(3,3);
-  for (int i=0;i<3;i++) identity(i,i) = 1;
-      
-  // compute linearization of normal
-  for (int i=0;i<3;i++)
-    for (int j=0;j<3;j++)
-      for (int k=0;k<3*(numnode1+1);k++)
-        delta_n(i,k) += (identity(i,j) - n_tp_n(i,j)) * delta_x1_minus_x2(j,k) / norm;
-  
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: Compute linearization of normal
- *----------------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------*
+ | Compute linearization of normal vector                    grill 09/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeLinNormal(LINALG::TMatrix<TYPE,3, 3*numnodes*numnodalvalues+3>& delta_normal,
+                                                            const LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues+3, 1>&  delta_xi,
+                                                            const LINALG::TMatrix<TYPE,3,1>& normal,
+                                                            const TYPE& norm_delta_x,
+                                                            const LINALG::TMatrix<TYPE,3, 1>& x1_xi,
+                                                            const LINALG::TMatrix<TYPE,1, numnodes*numnodalvalues>& N1_i)
+{
+  const int dim1 = 3*numnodes*numnodalvalues;
+  const int dim2 = 3;
+
+  //delta n := auxiliary_matri2*auxiliary_matrix1* delta d, with auxiliary_matri2 = (I-nxn)/||r1-r2||
+  //and auxiliary_matri1 = (r1_xi*delta_xi-r2_xi*delta_eta + (N1, -N2))
+
+  LINALG::TMatrix<TYPE,3,dim1+dim2>  auxiliary_matrix1(true);
+  LINALG::TMatrix<TYPE,3,3>  auxiliary_matrix2(true);
+
+  //compute auxiliary_matrix1
+  for (int i=0;i<3;i++)
+  {
+    for (int j=0;j<dim1+dim2;j++)
+    {
+      auxiliary_matrix1(i,j)+=x1_xi(i)*delta_xi(j);
+    }
+  }
+
+  for (int i=0;i<3;i++)
+  {
+    for (int j=0;j<numnodes*numnodalvalues;j++)
+    {
+      auxiliary_matrix1(i,3*j+i)+= N1_i(j);
+    }
+  }
+
+  for (int i=0;i<3;i++)
+  {
+      auxiliary_matrix1(i,dim1+i)+= -1.0;
+  }
+
+  //compute auxiliary_matrix2
+  for (int i=0;i<3;i++)
+  {
+    auxiliary_matrix2(i,i)+= 1.0/norm_delta_x;
+    for (int j=0;j<3;j++)
+    {
+      auxiliary_matrix2(i,j)+= -normal(i)*normal(j)/norm_delta_x;
+    }
+  }
+
+  // compute linearization of normal vector
+  for (int i=0;i<3;i++)
+    for (int j=0;j<3;j++)
+      for (int k=0;k<dim1+dim2;k++)
+        delta_normal(i,k) +=  auxiliary_matrix2(i,j) * auxiliary_matrix1(j,k);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Reset Uzawa-based Lagrange mutliplier                   popp 04/2010|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::Resetlmuzawa()
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Resetlmuzawa()
 {
   lmuzawa_ = 0.0;
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: Reset Uzawa-based Lagrange mutliplier
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  Update Uzawa-based Lagrange mutliplier                  popp 04/2010|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::Updatelmuzawa(const double& currentpp)
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Updatelmuzawa(const double& currentpp)
 {
   // only update for active pairs, else reset
   if (contactflag_) lmuzawa_ -=  currentpp * GetGap();
   else              lmuzawa_ = 0.0;
-  
+
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: Update Uzawa-based Lagrange mutliplier
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  Update nodal coordinates (public)                           popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3tospherecontact::UpdateElePos(Epetra_SerialDenseMatrix& newele1pos,
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::UpdateElePos(Epetra_SerialDenseMatrix& newele1pos,
                                          Epetra_SerialDenseMatrix& newele2pos)
 {
-  ele1pos_ = newele1pos;
-  ele2pos_ = newele2pos;
-  
+  for (int i=0;i<3*numnodalvalues;i++)
+  {
+    for (int j=0;j<numnodes;j++)
+    {
+      ele1pos_(3*numnodalvalues*j+i)=newele1pos(i,j);
+    }
+  }
+
+  for (int i=0; i<3; ++i)
+    ele2pos_(i)=newele2pos(i,0);
+
   return;
 }
-/*----------------------------------------------------------------------*
- |  end: Update nodal coordinates (public)
- *----------------------------------------------------------------------*/
+
+Teuchos::RCP<CONTACT::Beam3tospherecontactinterface> CONTACT::Beam3tospherecontactinterface::Impl( const int numnodes,
+                                                                      const int numnodalvalues,
+                                                                      const DRT::Discretization& pdiscret,
+                                                                      const DRT::Discretization& cdiscret,
+                                                                      const std::map<int,int>& dofoffsetmap,
+                                                                      DRT::Element* element1,
+                                                                      DRT::Element* element2)
+{
+
+  switch (numnodalvalues)
+  {
+    case 1:
+    {
+      switch (numnodes)
+      {
+        case 2:
+        {
+          return Teuchos::rcp (new CONTACT::Beam3tospherecontact<2,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2));
+        }
+        case 3:
+        {
+          return Teuchos::rcp (new CONTACT::Beam3tospherecontact<3,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2));
+        }
+        case 4:
+        {
+          return Teuchos::rcp (new CONTACT::Beam3tospherecontact<4,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2));
+        }
+        case 5:
+        {
+          return Teuchos::rcp (new CONTACT::Beam3tospherecontact<5,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2));
+        }
+        default:
+          dserror("No valid template parameter for the number of nodes (numnodes = 2,3,4,5 for Reissner beams) available!");
+          break;
+      }
+      break;
+    }
+    case 2:
+    {
+      switch (numnodes)
+      {
+        case 2:
+        {
+          return Teuchos::rcp (new CONTACT::Beam3tospherecontact<2,2>(pdiscret,cdiscret,dofoffsetmap,element1,element2));
+        }
+        default:
+          dserror("No valid template parameter for the number of nodes (only numnodes = 2 for Kirchhoff beams valid so far) available!");
+          break;
+      }
+      break;
+    }
+    default:
+      dserror("No valid template parameter for the Number of nodal values (numnodalvalues = 1 for Reissner beams, numnodalvalues = 2 for Kirchhoff beams) available!");
+      break;
+  }
+  return Teuchos::null;
+}

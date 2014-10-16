@@ -168,9 +168,19 @@ namespace BEAMCONTACT
   bool BeamNode(DRT::Node& node);
 
   /*!
+  \brief Check, if current node belongs to a rigid sphere element
+  */
+  bool RigidsphereNode(DRT::Node& node);
+
+  /*!
   \brief Check, if current node is a beam element
   */
   bool BeamElement(DRT::Element& element);
+
+  /*!
+  \brief Check, if current node is a beam element
+  */
+  bool RigidsphereElement(DRT::Element& element);
 
   /*
   \brief Check, if two elements share a node -> neighbor elements

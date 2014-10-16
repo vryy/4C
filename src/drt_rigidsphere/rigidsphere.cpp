@@ -36,9 +36,9 @@ DRT::ParObject* DRT::ELEMENTS::RigidsphereType::Create( const std::vector<char> 
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RigidsphereType::Create(const std::string eletype,
-																 															const std::string eledistype,
-																 															const int id,
-																 															const int owner )
+                                                               const std::string eledistype,
+                                                               const int id,
+                                                               const int owner )
 {
   if ( eletype=="RIGIDSPHERE" )
   {
@@ -136,7 +136,7 @@ void DRT::ELEMENTS::Rigidsphere::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Rigidsphere::Shape() const
 {
-	return (point1);
+  return (point1);
 }
 
 /*----------------------------------------------------------------------*

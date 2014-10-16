@@ -322,9 +322,7 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& x
             jacobi_= Tref_[numgp].Norm2();
 
             Tref_[numgp].Scale(1/jacobi_);
-
           }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-
 
           //compute tangent at each node
           double norm2 = 0.0;

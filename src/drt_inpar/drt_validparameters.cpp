@@ -56,6 +56,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_levelset.H"
 #include "inpar_wear.H"
 #include "inpar_beamcontact.H"
+#include "inpar_beampotential.H"
 #include "inpar_acou.H"
 #include "inpar_volmortar.H"
 
@@ -2070,6 +2071,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("BEAMS_BTBPENALTYPARAM",0.0,"Penalty parameter for beam-to-beam contact",&beamcontact);
   DoubleParameter("BEAMS_BTSPENALTYPARAM",0.0,"Penalty parameter for beam-to-solid contact",&beamcontact);
+  DoubleParameter("BEAMS_BTSPH_PENALTYPARAM",0.0,"Penalty parameter for beam-to-rigidsphere penalty / Uzawa augmented solution strategy",&beamcontact);
   IntParameter("BEAMS_BTBUZAWAMAXSTEPS",10,"Maximum no. of Uzawa steps for Uzawa solution strategy",&beamcontact);
   DoubleParameter("BEAMS_BTBUZAWACONSTRTOL",1.0e-8,"Tolerance of constraint norm for Uzawa solution strategy",&beamcontact);
   DoubleParameter("BEAMS_DAMPINGPARAM",-1000.0,"Damping parameter for contact damping force",&beamcontact);
@@ -2111,6 +2113,39 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setNumericStringParameter("BEAMS_EXTVAL","1.05", "extrusion value(s) of the bounding box, Depending on BEAMS_ADDITIVEEXTFAC is either additive or multiplicative. Give one or two values.",&beamcontact);
   IntParameter("BEAMS_TREEDEPTH",6,"max, tree depth of the octree",&beamcontact);
   IntParameter("BEAMS_BOXESINOCT",8,"max number of bounding boxes in any leaf octant",&beamcontact);
+
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for potential-based beam interaction */
+  Teuchos::ParameterList& beampotential = list->sublist("BEAM POTENTIAL",false,"");
+
+  setNumericStringParameter("POT_LAW_EXPONENT","", "negative(!) exponent(s) m_i of potential law Phi(r) = sum_i (k_i * r^(-m_i)).",&beampotential);
+  setNumericStringParameter("POT_LAW_PREFACTOR","", "prefactor(s) k_i of potential law Phi(r) = sum_i (k_i * r^(-m_i)).",&beampotential);
+  DoubleParameter("CUTOFFRADIUS",-1.0,"cutoff radius for search of potential-based interaction pairs",&beampotential);
+
+  setStringToIntegralParameter<int>("BEAMPOTENTIAL_TYPE","Surface","Type of potential interaction: surface (default) or volume potential",
+       tuple<std::string>("Surface","surface",
+                          "Volume", "volume"),
+       tuple<int>(
+                  INPAR::BEAMPOTENTIAL::beampot_surf,INPAR::BEAMPOTENTIAL::beampot_surf,
+                  INPAR::BEAMPOTENTIAL::beampot_vol,INPAR::BEAMPOTENTIAL::beampot_vol),
+       &beampotential);
+
+  setStringToIntegralParameter<int>("BEAMPOT_BTSOL","No","decide, whether potential-based interaction between beams and solids is considered",
+                               yesnotuple,yesnovalue,&beampotential);
+
+  setStringToIntegralParameter<int>("BEAMPOT_BTSPH","No","decide, whether potential-based interaction between beams and spheres is considered",
+                               yesnotuple,yesnovalue,&beampotential);
+
+  // enable octree search and determine type of bounding box (aabb = axis aligned, spbb = spherical)
+  setStringToIntegralParameter<int>("BEAMPOT_OCTREE","None","octree and bounding box type for octree search routine",
+       tuple<std::string>("None","none","octree_axisaligned","octree_cylorient","octree_spherical"),
+       tuple<int>(INPAR::BEAMCONTACT::boct_none,INPAR::BEAMCONTACT::boct_none,
+                  INPAR::BEAMCONTACT::boct_aabb,INPAR::BEAMCONTACT::boct_cobb,INPAR::BEAMCONTACT::boct_spbb),
+       &beampotential);
+
+  IntParameter("BEAMPOT_TREEDEPTH",6,"max, tree depth of the octree",&beampotential);
+  IntParameter("BEAMPOT_BOXESINOCT",8,"max number of bounding boxes in any leaf octant",&beampotential);
 
   /*----------------------------------------------------------------------*/
   /* parameters for semi-smooth Newton plasticity algorithm */
@@ -2493,6 +2528,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CTRANSPTC0",0.0,"PTC factor for translational DOF in first iteration step",&statmech);
   //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
   DoubleParameter("CROTPTC0",0.145,"PTC factor for rotational DOF in first iteration step",&statmech);
+  //Parameter for PTC (rigid spherical particle)
+  DoubleParameter("CSPHEREPTC0",0.0,"PTC factor for DOFs of rigid spherical particle in first iteration step",&statmech);
   //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
   DoubleParameter("ALPHAPTC",6.0,"exponent of power law for reduction of PTC factor",&statmech);
   //Number of iterations after which PTC is turned off
@@ -2538,6 +2575,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("RANDNUMTIMEINT",-1.0,"Within this time interval the random numbers remain constant. -1.0 means no prescribed time interval.'",&statmech);
   //cutoff for random forces, which determines the maximal value
   DoubleParameter("MAXRANDFORCE",-1.0,"Any random force beyond MAXRANDFORCE*(standard dev.) will be omitted and redrawn. -1.0 means no bounds.'",&statmech);
+  // vector of constant background velocity
+  setNumericStringParameter("BACKGROUNDVELOCITY","0.0 0.0 0.0", "Vector of constant background velocity (x,y,z)",&statmech);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");
 

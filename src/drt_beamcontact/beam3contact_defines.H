@@ -93,8 +93,8 @@ Maintainer: Christoph Meier
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
-#define N_CIRCUMFERENTIAL 10      /* number of gmsh visualzation devisions of beam element in circumferential direction*/
-#define N_Axial 10                /* number of gmsh visualzation devisions of beam element in axial direction*/
+#define N_CIRCUMFERENTIAL 10      /* number of gmsh visualization devisions of beam element in circumferential direction*/
+#define N_Axial 10                /* number of gmsh visualization devisions of beam element in axial direction*/
 
 
 #define OUTPUTEVERY 1          //Write output only every OUTPUTEVERY^th step

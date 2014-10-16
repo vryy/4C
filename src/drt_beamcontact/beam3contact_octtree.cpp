@@ -35,6 +35,7 @@ Maintainer: Kei Müller
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
+#include "../drt_rigidsphere/rigidsphere.H"
 #include "beam3contact_manager.H"
 
 
@@ -43,46 +44,82 @@ Maintainer: Kei Müller
  |  constructor (public)                                     meier 01/11|
  *----------------------------------------------------------------------*/
 Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params, DRT::Discretization& discret,DRT::Discretization& searchdis):
+btsph_(false),
+btsol_(false),
 discret_(discret),
 searchdis_(searchdis),
 basisnodes_(discret.NumGlobalNodes())
 {
-  // octree specs
-  // additive or multiplicative extrusion of bounding boxes
-  if(DRT::INPUT::IntegralValue<int>(params, "BEAMS_ADDITEXT"))
-    additiveextrusion_ = true;
-  else
-    additiveextrusion_ = false;
-  // extrusion factor(s)
-  // depending on the kind of extrusion, more than one extrusion value will be necessary
-  // AABB: one value for all dimensions
-  // COBB: 1. value for axial extrusion, 2. value for radial extrusion
-  // SPBB: one value for radial extrusion
-
-
   extrusionvalue_ = Teuchos::rcp(new std::vector<double>);
   extrusionvalue_->clear();
+
+  INPAR::BEAMCONTACT::OctreeType bboxtype_input = INPAR::BEAMCONTACT::boct_none;
+
+  // This OctTree may be used for contact search as well as search for potential-based interaction
+  // it will thus be called with slightly different parameter sets
+  // first find out which params we got and extract octtree specifications
+
+  if (params.name() == "DAT FILE->BEAM CONTACT")
   {
+    // octree specs
+    bboxtype_input = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(params, "BEAMS_OCTREE");
+
+    // additive or multiplicative extrusion of bounding boxes
+    if(DRT::INPUT::IntegralValue<int>(params, "BEAMS_ADDITEXT"))
+      additiveextrusion_ = true;
+    else
+      additiveextrusion_ = false;
+
+    // extrusion factor(s)
+    // depending on the kind of extrusion, more than one extrusion value will be necessary
+    // AABB: one value for all dimensions
+    // COBB: 1. value for axial extrusion, 2. value for radial extrusion
+    // SPBB: one value for radial extrusion
+
     std::istringstream PL(Teuchos::getNumericStringParameter(params,"BEAMS_EXTVAL"));
     std::string word;
     char* input;
     while (PL >> word)
       extrusionvalue_->push_back(std::strtod(word.c_str(), &input));
+
+    // max tree depth
+    maxtreedepth_ = params.get<int>("BEAMS_TREEDEPTH", 6);
+    // max number of bounding boxes per leaf octant
+    minbboxesinoctant_ = params.get<int>("BEAMS_BOXESINOCT",8);
+
+    btsph_ = DRT::INPUT::IntegralValue<int>(params, "BEAMS_BTSPH");
+    btsol_ = DRT::INPUT::IntegralValue<int>(params, "BEAMS_BTSOL");
   }
+  else if (params.name() == "DAT FILE->BEAM POTENTIAL")
+  {
+    bboxtype_input = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(params, "BEAMPOT_OCTREE");
+
+    additiveextrusion_ = true;
+    extrusionvalue_->push_back(Teuchos::getDoubleParameter(params,"CUTOFFRADIUS"));
+
+    // max tree depth TODO default values ???
+    maxtreedepth_ = params.get<int>("BEAMPOT_TREEDEPTH", 6);
+    // max number of bounding boxes per leaf octant
+    minbboxesinoctant_ = params.get<int>("BEAMPOT_BOXESINOCT",8);
+
+    btsph_ = DRT::INPUT::IntegralValue<int>(params, "BEAMPOT_BTSPH");
+    btsol_ = DRT::INPUT::IntegralValue<int>(params, "BEAMPOT_BTSOL");
+  }
+  else
+  {
+    dserror("OctTree called with unknown type of parameter list!");
+  }
+
+  // sanity checks for extrusion value(s)
   if((int)extrusionvalue_->size()>2)
     dserror("You gave %i values for BEAMS_EXTVAL! Check your input file.", (int)extrusionvalue_->size());
   if((int)extrusionvalue_->size()==1)
     extrusionvalue_->push_back(extrusionvalue_->at(0));
   for(int i=0; i<(int)extrusionvalue_->size(); i++)
-    if(extrusionvalue_->at(i)<1.0 && !DRT::INPUT::IntegralValue<int>(params, "BEAMS_ADDITEXT"))
+    if(extrusionvalue_->at(i)<1.0 && !additiveextrusion_)
       dserror("BEAMS_EXTVAL( %i ) = %4.2f < 1.0 does not make any sense! Check your input file.", i, extrusionvalue_->at(i));
   if(boundingbox_==Beam3ContactOctTree::cyloriented && (int)extrusionvalue_->size()!= 2)
     dserror("For cylindrical, oriented bounding boxes, TWO extrusion factors are mandatory! Check BEAMS_EXTVAL in your input file.");
-
-  // max tree depth
-  maxtreedepth_ = params.get<int>("BEAMS_TREEDEPTH", 6);
-  // max number of bounding boxes per leaf octant
-  minbboxesinoctant_ = params.get<int>("BEAMS_BOXESINOCT",8);
 
   // set flag signaling the existence of periodic boundary conditions
   Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
@@ -108,7 +145,7 @@ basisnodes_(discret.NumGlobalNodes())
     periodicBC_ = false;
 
   // determine bounding box type
-  switch(DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(params, "BEAMS_OCTREE"))
+  switch(bboxtype_input)
   {
     case INPAR::BEAMCONTACT::boct_aabb:
     {
@@ -123,9 +160,10 @@ basisnodes_(discret.NumGlobalNodes())
         std::cout<<"Search routine:\nOctree + Cylindrical Oriented BBs"<<std::endl;
       boundingbox_ = Beam3ContactOctTree::cyloriented;
 
-      #if defined(BTSOLCONTACT) or defined(BTSPHCONTACT)
-        dserror("Only axis aligned bounding boxes possible for beam to sphere and beam to solid contact!");
-      #endif
+      if (btsol_)
+        dserror("Only axis aligned bounding boxes possible for beam to solid contact!");
+      else if (btsph_)
+        dserror("Only axis-aligned or spherical bounding boxes possible for beam-to-sphere contact!");
     }
       break;
     case INPAR::BEAMCONTACT::boct_spbb:
@@ -136,14 +174,15 @@ basisnodes_(discret.NumGlobalNodes())
 
       if(periodicBC_)
         dserror("No implementation with periodic boundary conditions yet!");
-      #if defined(BTSOLCONTACT) or defined(BTSPHCONTACT)
-        dserror("Only axis aligned bounding boxes possible for beam to sphere and beam to solid contact!");
-      #endif
+
+      if (btsol_)
+        dserror("Only axis aligned bounding boxes possible for beam to solid contact!");
     }
       break;
     default: dserror("No octree (i.e. none) declared in your input file!");
       break;
   }
+
   if(!discret_.Comm().MyPID())
   {
     int numextval = (int)extrusionvalue_->size();
@@ -444,8 +483,10 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
       (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->Izz()) / M_PI));
     if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
       (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element))->Izz()) / M_PI));
+    if (eot == DRT::ELEMENTS::RigidsphereType::Instance())
+      (*diameter_)[i] = 2.0 * (dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(element))->Radius();
     //If we have a solid element, we don't need its diameter and can it set to zero:
-    if (!BEAMCONTACT::BeamElement(*element))
+    if (!BEAMCONTACT::BeamElement(*element) and !BEAMCONTACT::RigidsphereElement(*element))
       (*diameter_)[i] = 0;
     // feasibility check
     if ((*diameter_)[i] < 0.0) dserror("ERROR: Did not receive feasible element radius.");
@@ -500,6 +541,19 @@ void Beam3ContactOctTree::CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> 
           for(int j=0; j<3; j++)
             coord(j,i) = coord_aux(j);
         }
+      }
+      else if (BEAMCONTACT::RigidsphereElement(*element))
+      {
+        int gid = element->Nodes()[0]->Id();
+        LINALG::Matrix<3,1> coord_aux = currentpositions[gid];
+        for(int j=0; j<3; j++)
+        {
+          // write sphere center coordinates into both columns, then the creation of bbs will work with the following code for beams
+          coord(j,0) = coord_aux(j);
+          coord(j,1) = coord_aux(j);
+        }
+        if (boundingbox_ == Beam3ContactOctTree::cyloriented)
+          dserror("Only axis-aligned or spherical bounding boxes possible for beam-to-sphere contact!");
       }
       else
       {
@@ -675,6 +729,7 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
         edgelength(i) = fabs(coord(i,1) - coord(i,0));
 
       //Check for edgelength of AABB
+      // this ensures that edgelength is set to diameter in case of rigid sphere elements
       for(int i=0; i<(int)edgelength.M(); i++)
         if (edgelength(i)<bboxdiameter)
           edgelength(i) = bboxdiameter;
@@ -1191,9 +1246,23 @@ void Beam3ContactOctTree::CreateSPBB(Epetra_SerialDenseMatrix& coord, const int&
 
   int elegid = searchdis_.ElementColMap()->GID(elecolid);
 
-  double diameter = sqrt((coord(0,0)-coord(0,1))*(coord(0,0)-coord(0,1))+
+  // get the element with local ID (LID) elecolid
+  DRT::Element* element = searchdis_.lColElement(elecolid);
+  double diameter =0.0;
+
+  if (BEAMCONTACT::BeamElement(*element))
+  {
+    if (coord.M()==3 and coord.N()==2)
+    {
+      diameter = sqrt((coord(0,0)-coord(0,1))*(coord(0,0)-coord(0,1))+
                          (coord(1,0)-coord(1,1))*(coord(1,0)-coord(1,1))+
                          (coord(2,0)-coord(2,1))*(coord(2,0)-coord(2,1)));
+    }
+    else
+      dserror("coord matrix of nodal positions has wrong dimensions here!");
+  }
+  else if (BEAMCONTACT::RigidsphereElement(*element))
+    diameter = (*diameter_)[elecolid];
 
   for(int dof=0; dof<coord.M(); dof++)
     (*allbboxes_)[dof][elecolid] = 0.5*(coord(dof,0) + coord(dof,1));
@@ -1304,7 +1373,7 @@ bool Beam3ContactOctTree::locateAll()
       for (int u=0; u<bboxesinoctants_->MyLength(); u++)
       {
         for (int v=0; v<bboxesinoctants_->NumVectors(); v++)
-          myfile <<scientific<<(*bboxesinoctants_)[v][u] <<" ";
+          myfile << std::scientific<<(*bboxesinoctants_)[v][u] <<" ";
         myfile <<std::endl;
       }
       fprintf(fp, myfile.str().c_str());

@@ -463,8 +463,12 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
   const Teuchos::ParameterList& beamcontact = DRT::Problem::Instance()->BeamContactParams();
   INPAR::BEAMCONTACT::Strategy strategy = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact,"BEAMS_STRATEGY");
 
-  // only continue if beam contact unmistakably chosen in input file
-  if (strategy != INPAR::BEAMCONTACT::bstr_none)
+  // conditions for potential-based beam interaction
+  std::vector<DRT::Condition*> beampotconditions(0);
+  discret_->GetCondition("BeamPotentialLineCharge",beampotconditions);
+
+  // only continue if beam contact unmistakably chosen in input file or beam potential conditions applied
+  if (strategy != INPAR::BEAMCONTACT::bstr_none or (int)beampotconditions.size()!=0)
   {
     // store integration parameter alphaf into beamcman_ as well
     // (for all cases except OST, GenAlpha and GEMM this is zero)

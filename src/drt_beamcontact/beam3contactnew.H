@@ -44,13 +44,7 @@ public:
   //! @name Constructors and destructors and related methods
   /*!
   \brief Standard Constructor
-  \param pdiscret (in): the problem discretization
-  \param cdiscret (in): the beam contact discretization
-  \param dofoffset (in): offset of dof between pdiscret and cdiscret
-  \param element1 (in): first element of contact pair
-  \param element2 (in): second element of contact pair
-  \param ele1pos (in): nodal coordinates of first element
-  \param ele2pos (in): nodal coordinates of second element
+
   */
   Beam3contactinterface() {}
 
@@ -81,10 +75,9 @@ public:
   \brief Get first element
   */
   virtual const DRT::Element* Element1()=0;
-  //inline const DRT::Element* Element1() { return element1_;};
 
   /*!
-  \brief Get first element
+  \brief Get second element
   */
   virtual const DRT::Element* Element2()=0;
 
@@ -146,7 +139,7 @@ public:
                         Epetra_Vector& fint,
                         const double& pp,
                         std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap,
-                        Teuchos::ParameterList timeintparams)=0;
+                        Teuchos::ParameterList timeintparams) =0;
 
   //! return appropriate internal implementation class (acts as a simple factory)
   static Teuchos::RCP<Beam3contactinterface> Impl(const int numnodes,
@@ -313,12 +306,12 @@ public:
     if(GetNewGapStatus()==true)
     {
       for(int i=0;i<3;i++)
-        normal(i)=-normal_(i);
+        normal(i)=-BEAMCONTACT::CastToDouble(normal_(i));
     }
     else
     {
       for(int i=0;i<3;i++)
-        normal(i)=normal_(i);
+        normal(i)=BEAMCONTACT::CastToDouble(normal_(i));
     }
 
     return normal;
@@ -523,7 +516,7 @@ private:
   LINALG::Matrix<3*numnodes,1> nodaltangentssmooth2_;
 
   //! current penalty parameter
-  TYPE pp_;
+  double pp_;
 
   //! scalar value of current contact force, standard case: fp_ = -pp_ * gap_
   TYPE fp_;

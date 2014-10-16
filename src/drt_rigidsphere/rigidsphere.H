@@ -179,7 +179,7 @@ public:
   /*!
   \brief Return radius of sphere
   */
-  double Radius(){return (radius_);};
+  const double& Radius() const {return (radius_);};
 
   //! @name Construction
 
@@ -277,6 +277,8 @@ public:
                                                 Epetra_SerialDenseMatrix* massmatrix,
                                                 Epetra_SerialDenseVector* force);
 
+  //!computes the number of different random numbers required in each time step for generation of stochastic forces
+  int HowManyRandomNumbersINeed();
 
   //@}
 
@@ -313,24 +315,37 @@ private:
 
   //!calculation of drag force and corresponding stiffness contribution
   void CalcDragForce( Teuchos::ParameterList&   params,
-                      std::vector<double>&      vel,
-                      std::vector<double>&      disp,
+                      const std::vector<double>&      vel,
+                      const std::vector<double>&      disp,
                       Epetra_SerialDenseMatrix* stiffmatrix,
                       Epetra_SerialDenseVector* force);
 
   //!calculation of stochastic force and corresponding stiffness contribution
   void CalcStochasticForce( Teuchos::ParameterList&   params,
-                       std::vector<double>&      vel,
-                       std::vector<double>&      disp,
+                       const std::vector<double>&      vel,
+                       const std::vector<double>&      disp,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseVector* force);
 
-  //!calculation of inertia force and corresponding stiffness contribution
-  void CalcInertiaForce( Teuchos::ParameterList&   params,
-                         std::vector<double>&      vel,
-                         std::vector<double>&      disp,
-                         Epetra_SerialDenseMatrix* stiffmatrix,
-                         Epetra_SerialDenseVector* force);
+//  //!calculation of inertia force and corresponding stiffness contribution
+//  void CalcInertiaForce( Teuchos::ParameterList&   params,
+//                         std::vector<double>&      vel,
+//                         std::vector<double>&      disp,
+//                         Epetra_SerialDenseMatrix* stiffmatrix,
+//                         Epetra_SerialDenseVector* force);
+
+  //!calculation of background fluid velocity and gradient of velocity
+  void MyBackgroundVelocity(Teuchos::ParameterList& params,
+                            LINALG::Matrix<3,1>& velbackground,
+                            LINALG::Matrix<3,3>& velbackgroundgrad);
+
+  //! computes damping coefficient
+  double MyDampingConstant(Teuchos::ParameterList& params);
+
+  //! Compute artificial damping contribution for PTC
+  void EvaluatePTC(Teuchos::ParameterList& params,
+                     Epetra_SerialDenseMatrix& elemat1);
+
 
   // don't want = operator
   Rigidsphere& operator = (const Rigidsphere& old);

@@ -264,7 +264,12 @@ void STR::TimIntStatMech::InitializeBeamContact()
     //check wheter appropriate parameters are set in the parameter list "CONTACT DYNAMIC"
     //initialize beam contact detection strategy (for network simulations, octree is the choice)
     const Teuchos::ParameterList& beamcontact = DRT::Problem::Instance()->BeamContactParams();
-    if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact,"BEAMS_STRATEGY") != INPAR::BEAMCONTACT::bstr_none)
+
+    // conditions for potential-based beam interaction
+    std::vector<DRT::Condition*> beampotconditions(0);
+    discret_->GetCondition("BeamPotentialLineCharge",beampotconditions);
+
+    if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontact,"BEAMS_STRATEGY") != INPAR::BEAMCONTACT::bstr_none or (int)beampotconditions.size()!=0)
       buildoctree_ = true;
     else
       dserror("Check your input parameters in CONTACT DYNAMIC!");

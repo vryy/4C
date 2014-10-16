@@ -22,6 +22,9 @@ Maintainer: Christoph Meier
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "beam3contactnew.H"
 #include "beam3tosolidcontact.H"
+#include "beam3tospherecontact.H"
+#include "beam3tobeampotential.H"
+#include "beam3tospherepotential.H"
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact/contact_node.H"
 
@@ -114,6 +117,8 @@ public:
   inline const Teuchos::RCP<Epetra_Map> FullElements() const { return elefullmap_; }
   //template<int numnodes, int numnodalvalues>
   inline const std::vector<Teuchos::RCP<Beam3contactinterface > >& Pairs() const { return oldpairs_; }
+  inline const std::vector<Teuchos::RCP<Beam3tospherecontactinterface > >& BTSPHPairs() const { return btsphpairs_; }
+
   inline const Teuchos::RCP<Beam3ContactOctTree> OcTree() const {return tree_; }
 
   /*!
@@ -309,6 +314,12 @@ private:
   //! Flag from input file indicating if beam-to-sphere contact is applied or not (default: false)
   bool btsph_;
 
+  //! Flag from input file indicating if beam-to-solid potential-based interaction is applied or not (default: false)
+  bool potbtsol_;
+
+  //! Flag from input file indicating if beam-to-sphere potential-based interaction is applied or not (default: false)
+  bool potbtsph_;
+
   //! number of nodes of applied element type
   int numnodes_;
 
@@ -338,6 +349,9 @@ private:
   //! occtree for contact search
   Teuchos::RCP<Beam3ContactOctTree> tree_;
 
+  //! occtree for search of potential-based interaction pairs
+  Teuchos::RCP<Beam3ContactOctTree> pottree_;
+
   //! vector of contact pairs (pairs of elements, which might get in contact)
   std::vector<Teuchos::RCP<Beam3contactinterface > > pairs_;
   //! vector of contact pairs of last time step. After Update() oldpairs_ is identical with pairs_ until a new time
@@ -349,15 +363,33 @@ private:
   std::vector<Teuchos::RCP<CONTACT::CoElement> > solcontacteles_;
   //! total vector of solid contact elements
   std::vector<Teuchos::RCP<CONTACT::CoNode> > solcontactnodes_;
+  //! vector of close beam to sphere contact pairs (pairs of elements, which might get in contact)
+  std::vector<Teuchos::RCP<Beam3tospherecontactinterface > > btsphpairs_;
+
+  //! vector of potential-based interaction (beam,beam) pairs
+  std::vector<Teuchos::RCP<Beam3tobeampotentialinterface > > btbpotpairs_;
+  //! vector of potential-based interaction (beam,sphere) pairs
+  std::vector<Teuchos::RCP<Beam3tospherepotentialinterface > > btsphpotpairs_;
 
   //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair directly by the two element-iD's of the pair.
   // It is not needed at the moment due to the direct neigbour determination in the constructor but may be useful for future operations
+  //beam-to-beam pair map
   std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > contactpairmap_;
 
+  //beam-to-beam pair map of last time step
   std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > > oldcontactpairmap_;
+
+  //beam-to-sphere pair map
+  std::map<std::pair<int,int>, Teuchos::RCP<Beam3tospherecontactinterface > > btsphpairmap_;
+
+  //beam-to-solid pair map
+  std::map<std::pair<int,int>, Teuchos::RCP<Beam3tosolidcontactinterface > > btsolpairmap_;
 
   //! parameter list for beam contact options
   Teuchos::ParameterList sbeamcontact_;
+
+  //! parameter list for beam potential interaction options
+  Teuchos::ParameterList sbeampotential_;
 
   //! parameter list for general contact options
   Teuchos::ParameterList scontact_;
@@ -370,6 +402,9 @@ private:
 
   //! search radius for spherical intersection
   double sphericalsearchradius_;
+
+  //! search radius for potential-based interactions
+  double searchradiuspot_;
 
   //! contact forces of current time step
   Teuchos::RCP<Epetra_Vector> fc_;
@@ -389,8 +424,11 @@ private:
   //! current constraint norm (violation of non-penetration condition) of beam-to-solid contact pairs
   double btsolconstrnorm_;
 
-  //! current penalty parameter (might be modified within augmented Lagrange strategy)
+  //! current BTB penalty parameter (might be modified within augmented Lagrange strategy)
   double currentpp_;
+
+  //! BTSPH penalty parameter
+  double btsphpp_;
 
   //! beam-tp-solid penalty parameter
   double btspp_;
@@ -410,6 +448,16 @@ private:
   //! total contact energy (of elastic penalty forces)
   double totpenaltyenergy_;
 
+  //! parameters of the potential law to be applied: Phi(r)~ \sum_i (k_i * r^(-m_i))
+  Teuchos::RCP<std::vector<double> > ki_;
+  Teuchos::RCP<std::vector<double> > mi_;
+
+  //! line charge conditions
+  std::vector<DRT::Condition*> linechargeconds_;
+
+  //! map of (NodeID,DLINE) pairs
+  std::map<int,int> dlinenodemap_;
+
   //@}
 
   //! @name Private evaluation methods
@@ -420,7 +468,7 @@ private:
   We search pairs of elements that might get in contact. Pairs of elements that are direct neighbours,
   i.e. share one node, will be rejected.
   */
-  std::vector<std::vector<DRT::Element*> > SearchPossibleContactPairs(std::map<int,LINALG::Matrix<3,1> >& currentpositions);
+  std::vector<std::vector<DRT::Element*> > BruteForceSearch(std::map<int,LINALG::Matrix<3,1> >& currentpositions, const double searchradius, const double sphericalsearchradius);
 
   /*!
   \brief Compute the search radius
@@ -459,7 +507,7 @@ private:
   /*
   \brief Test if element midpoints are close (spherical bounding box intersection)
   */
-  bool CloseMidpointDistance(const DRT::Element* ele1, const DRT::Element* ele2, std::map<int,LINALG::Matrix<3,1> >& currentpositions);
+  bool CloseMidpointDistance(const DRT::Element* ele1, const DRT::Element* ele2, std::map<int,LINALG::Matrix<3,1> >& currentpositions, const double sphericalsearchradius);
 
   /*!
   \brief Set the member variables numnodes_ and numnodalvalues depending on the element type handed in!
@@ -543,6 +591,24 @@ private:
                 const Epetra_Vector& disccol);
 
   /*!
+  \brief Evaluate all pairs stored in the different pairs vectors (BTB, BTSPH, BTSOL; contact and potential)
+
+  */
+  void EvaluateAllPairs(Teuchos::ParameterList timeintparams);
+
+  /*!
+  \brief Sort found element pairs and fill vectors of contact pairs (BTB, BTSOL and BTSPH)
+
+  */
+  void FillContactPairsVectors(const std::vector<std::vector<DRT::Element* > > elementpairs);
+
+  /*!
+  \brief Sort found element pairs and fill vectors of potential pairs (BTB, BTSOL and BTSPH)
+
+  */
+  void FillPotentialPairsVectors(const std::vector<std::vector<DRT::Element* > > elementpairs);
+
+  /*!
   \brief Compute coordinates for GMSH-Output for two-noded-elements
 
   */
@@ -580,6 +646,30 @@ private:
                     const Epetra_SerialDenseMatrix& allcoord,
                     const DRT::Element* thisele,
                     std::stringstream& gmshfilecontent);
+
+  /*!
+  \brief Compute coordinates for GMSH-Output of rigid sphere
+
+  */
+  void GMSH_sphere(const Epetra_SerialDenseMatrix& coord,
+                  const DRT::Element* thisele,
+                  std::stringstream& gmshfilecontent);
+
+  /*!
+  \brief Print Gmsh Triangle to stringstream by specifying the vertices
+
+  */
+  void PrintGmshTriangleToStream(std::stringstream& gmshfilecontent,
+                                const std::vector< std::vector< double > > &vertexlist,
+                                int i, int j, int k, double color,
+                                const double centercoord[]);
+  /*!
+  \brief Refine the icosphere by subdivision of each face in four new triangles
+
+  */
+  void GmshRefineIcosphere(std::vector< std::vector<double> > &vertexlist,
+                                                    std::vector< std::vector<int> > &facelist,
+                                                    double radius);
 
   //@}
 

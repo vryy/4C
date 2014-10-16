@@ -48,7 +48,6 @@ namespace INPAR
   /// Input parameters for structural CONTACT and meshtying
   namespace CONTACT
   {
-
     /// Type of contact friction law
     /// (this enum represents the input file parameter FRICTION)
     enum FrictionType

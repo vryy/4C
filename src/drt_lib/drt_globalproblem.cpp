@@ -293,6 +293,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--LEVEL-SET CONTROL/REINITIALIZATION", *list);
   reader.ReadGidSection("--WEAR", *list);
   reader.ReadGidSection("--BEAM CONTACT", *list);
+  reader.ReadGidSection("--BEAM POTENTIAL", *list);
   reader.ReadGidSection("--SEMI-SMOOTH PLASTICITY", *list);
   reader.ReadGidSection("--ACOUSTIC DYNAMIC", *list);
   reader.ReadGidSection("--ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION", *list);

@@ -197,6 +197,7 @@ public:
     VanDerWaals_Potential_Line,
     ElectroRepulsion_Potential_Surface,
     ElectroRepulsion_Potential_Line,
+    BeamPotential_LineChargeDensity,
     ElectrodeKinetics,
     SurfacePermeability,
     TransportNeumannInflow,
