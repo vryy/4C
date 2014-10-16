@@ -210,10 +210,6 @@ namespace ADAPTER {
     /// Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
-    // should it be pure virtual?!
-    /// Return dirichlet boundray condition (used for fluidfluid)
-    virtual const Teuchos::RCP<const Epetra_Map>& FluidDirichMaps() = 0;
-
     /// set initial flow field
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno) = 0;
 

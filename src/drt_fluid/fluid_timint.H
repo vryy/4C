@@ -109,10 +109,6 @@ public:
   virtual void ApplyEmbFixedMeshDisplacement(Teuchos::RCP<const Epetra_Vector> disp) {dserror("Not implemented in the base class, may be overridden by a subclass.");};
   virtual Teuchos::RCP<const Epetra_Vector> Stepinc()       { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()   { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
-  /// Return dirichlet boundray condition (used for fluidfluid)
-  virtual const Teuchos::RCP<const Epetra_Map>& FluidDirichMaps()  { dserror("Not implemented in the base class, may be overridden by a subclass.");
-    static Teuchos::RCP<const Epetra_Map> ret = Teuchos::null; return ret; }
-
   virtual void Integrate() = 0;
   virtual void PrepareTimeStep()     { dserror("Not implemented in the base class, may be overridden by a subclass."); }
   virtual void PrepareSolve()        { dserror("Not implemented in the base class, may be overridden by a subclass."); }

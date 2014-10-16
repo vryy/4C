@@ -65,7 +65,7 @@ public:
   Teuchos::RCP<const ALENEW::UTILS::MapExtractor> Interface() const;
 
   //! ToDo (mayr) move this to XFluidFluid adapter
-  void SolveAleXFluidFluidFSI() { };
+  virtual void SolveAleXFluidFluidFSI() { };
 
   //! ToDo (mayr) move this to XFluidFluid adapter
   virtual void SolveBioGr() { };

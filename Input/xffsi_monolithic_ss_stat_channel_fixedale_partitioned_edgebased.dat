@@ -32,7 +32,7 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-06
-INITIALFIELD                    zero_field //field_by_function
+INITIALFIELD zero_field //field_by_function
 ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         50
@@ -51,13 +51,13 @@ NONLINEARBC                     no
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based                    // residual_based //
-DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no //yes
-SUPG                            no //yes
+PSPG no //yes
+SUPG no //yes
 VSTAB                           no_vstab
-GRAD_DIV                        no //yes
+GRAD_DIV no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -86,7 +86,7 @@ GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1
 HYBRID_LM_L2_PROJ               part_ele_proj //full_ele_proj (K_ss whole element or just partial)
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        incr_lin                      // classic_lin
+ALE_TYPE                        solid                         // classic_lin
 TIMESTEP                        0.005
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
@@ -2032,4 +2032,4 @@ FLUID DIS xfluid NODE 61 QUANTITY pressure VALUE 2.39969580209626088e+01 TOLERAN
 FLUID DIS fluid NODE 429 QUANTITY velx VALUE 4.37819271486950601e-01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 429 QUANTITY pressure VALUE 1.93477272492460344e+01 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
-// END
+//                              END

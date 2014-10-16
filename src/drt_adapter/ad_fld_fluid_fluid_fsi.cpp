@@ -43,7 +43,8 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> fluid,
     solver_(solver),
     params_(params),
     dirichletcond_(dirichletcond),
-    monolithicfluidfluidfsi_(monolithicfluidfluidfsi)
+    monolithicfluidfluidfsi_(monolithicfluidfluidfsi),
+    is_fluidsplit_(false)
 {
   // make sure
   if (fluid_ == Teuchos::null)
@@ -82,31 +83,13 @@ void ADAPTER::FluidFluidFSI::Init()
   // build inner velocity map
   // dofs at the interface are excluded
   // we use only velocity dofs and only those without Dirichlet constraint
-
-  // here we get the dirichletmaps for the both discretizations
-  const Teuchos::RCP<const LINALG::MapExtractor> embdbcmaps = xfluidfluid_->EmbeddedDirichMaps();
-  const Teuchos::RCP<const LINALG::MapExtractor> bgdbcmaps = xfluidfluid_->BackgroundDirichMaps();
-
-  // first build the inner map of embedded fluid (other map)
-  // intersected with the dofs with no dbc
   {
     std::vector<Teuchos::RCP<const Epetra_Map> > maps;
+    maps.push_back(xfluidfluid_->VelocityRowMap());
+    maps.push_back(VelocityRowMap());
+    maps.push_back(xfluidfluid_->GetDBCMapExtractor()->OtherMap());
     maps.push_back(embfluidinterface_->OtherMap());
-    maps.push_back(embdbcmaps->OtherMap());
-    Teuchos::RCP<Epetra_Map> innervelmap_emb = LINALG::MultiMapExtractor::IntersectMaps(maps);
-
-    // now the not-dbc map of background fluid and merge it with the
-    // inner map of embedded fluid
-    std::vector<Teuchos::RCP<const Epetra_Map> > bgembmaps;
-    bgembmaps.push_back(bgdbcmaps->OtherMap());
-    bgembmaps.push_back(innervelmap_emb);
-    Teuchos::RCP<Epetra_Map> innermap_bgemb = LINALG::MultiMapExtractor::MergeMaps(bgembmaps);
-
-    // now throw out the pressure dofs
-    std::vector<Teuchos::RCP<const Epetra_Map> > finalmaps;
-    finalmaps.push_back(innermap_bgemb);
-    finalmaps.push_back(xfluidfluid_->VelocityRowMap());
-    innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(finalmaps);
+    innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(maps);
   }
 
   if (dirichletcond_)
@@ -116,8 +99,6 @@ void ADAPTER::FluidFluidFSI::Init()
   }
 
   interfaceforcen_ = Teuchos::rcp(new Epetra_Vector(*(embfluidinterface_->FSICondMap())));
-
-  isfluidsplit_ = false;
 }
 
 /*----------------------------------------------------------------------*/
@@ -189,14 +170,13 @@ Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& ADAPTER::FluidFluidFSI::
 {
   return xfluidfluid_->XFluidFluidMapExtractor();
 }
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::ApplyEmbFixedMeshDisplacement(Teuchos::RCP<const Epetra_Vector> disp)
 {
   if (meshmap_ == Teuchos::null)
     dserror("Uninitialized mesh map");
-  meshmap_->InsertCondVector(disp,xfluidfluid_->ViewOfDispoldstate());
+  meshmap_->InsertCondVector(disp,xfluidfluid_->WriteAccesDispOldState());
 }
 
 /*----------------------------------------------------------------------*/
@@ -207,7 +187,8 @@ void ADAPTER::FluidFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vec
   // embedded-fluid-dis
   if (meshmap_ == Teuchos::null)
     dserror("Uninitialized mesh map");
-  meshmap_->InsertCondVector(fluiddisp, xfluidfluid_->ViewOfDispnp());
+
+  meshmap_->InsertCondVector(fluiddisp, xfluidfluid_->WriteAccessDispnp());
 
   // new grid velocity
   xfluidfluid_->UpdateGridv();
@@ -316,7 +297,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::BlockSystemM
 *------------------------------------------------------------------------*/
 const Teuchos::RCP<IO::DiscretizationWriter>& ADAPTER::FluidFluidFSI::DiscWriter()
 {
-  if (isfluidsplit_)
+  if (is_fluidsplit_)
     return xfluidfluid_->EmbDiscWriter();
   else
     return xfluidfluid_->DiscWriter();
@@ -339,7 +320,7 @@ void ADAPTER::FluidFluidFSI::Evaluate(
 
 Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::VelocityRowMap()
 {
-  if (! monolithicfluidfluidfsi_ || ! isfluidsplit_)
+  if (! monolithicfluidfluidfsi_ || ! is_fluidsplit_)
     return fluid_->VelocityRowMap();
 
   // in case of fsi with fluidsplit, return the embedded velocity DOF
@@ -399,6 +380,6 @@ void ADAPTER::FluidFluidFSI::PrepareShapeDerivatives()
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::UseBlockMatrix(bool split_fluidsysmat)
 {
-  isfluidsplit_ = split_fluidsysmat;
+  is_fluidsplit_ = split_fluidsysmat;
   PrepareShapeDerivatives();
 }

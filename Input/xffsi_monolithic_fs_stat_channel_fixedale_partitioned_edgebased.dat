@@ -56,10 +56,10 @@ LINEAR_SOLVER                   1
 STABTYPE                        edge_based                    // residual_based //
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no //yes
-SUPG                            no //yes
+PSPG no //yes
+SUPG no //yes
 VSTAB                           no_vstab
-GRAD_DIV                        no //yes
+GRAD_DIV no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -89,7 +89,7 @@ GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1
 HYBRID_LM_L2_PROJ               part_ele_proj //full_ele_proj (K_ss whole element or just partial)
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        incr_lin                      // classic_lin
+ALE_TYPE                        solid                         // classic_lin
 TIMESTEP                        0.005
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
@@ -141,11 +141,11 @@ CURVE3 on EXPR FUNC 0.15*(sin(2.0*pi*t/3.0)) t1 0.02 t2 30// y-oscillation
 CURVE4 on EXPR FUNC 0 t1 0.0 t2 0.01
 CURVE4 on EXPR FUNC t*0.08 t1 0.02 t2 30 //x-bewegung ale
 ----------------------------------------------------------------------CURVE5
-CURVE5 on EXPR FUNC 0 t1 0.0 t2 0.01
-CURVE5 on EXPR FUNC t*0.08 t1 0.02 t2 30 //x-bewegung str
+CURVE5                          on EXPR FUNC 0 t1 0.0 t2 0.01
+CURVE5                          on EXPR FUNC t*0.08 t1 0.02 t2 30 //x-bewegung str
 ----------------------------------------------------------------------CURVE6
-CURVE6 on EXPR FUNC 0 t1 0.0 t2 0.01 //y-bewegung str
-CURVE6 on EXPR FUNC 0.15*(sin(2.0*pi*t/3.0))+0.03*(sin(2.0*pi*t/0.1)) t1 0.02 t2 30 //y-bewegung str
+CURVE6                          on EXPR FUNC 0 t1 0.0 t2 0.01 //y-bewegung str
+CURVE6                          on EXPR FUNC 0.15*(sin(2.0*pi*t/3.0))+0.03*(sin(2.0*pi*t/0.1)) t1 0.02 t2 30 //y-bewegung str
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0 0 FUNCTION (-1/0.25)*(1/0.25)*(-0.25-y)*(0.25-y)
 ----------------------------------------------------------------------FUNCT2
@@ -2100,4 +2100,4 @@ FLUID DIS xfluid NODE 61 QUANTITY pressure VALUE 2.39969580209626088e+01 TOLERAN
 FLUID DIS fluid NODE 429 QUANTITY velx VALUE 4.37819271486950601e-01 TOLERANCE 1e-6
 FLUID DIS fluid NODE 429 QUANTITY pressure VALUE 1.93477272492460344e+01 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
-// END
+//                              END

@@ -616,16 +616,6 @@ void FSI::MonolithicNoNOX::ValidateParameters()
   relaxing_ale_ = DRT::INPUT::IntegralValue<bool>(xfluiddyn.sublist("GENERAL"),"RELAXING_ALE");
   // Get no. of steps, after which ALE field should be relaxed
   relaxing_ale_every_ = xfluiddyn.sublist("GENERAL").get<int>("RELAXING_ALE_EVERY");
-
-  // Extract parameter list ALE_DYNAMIC
-  const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
-  // Get the ALE-type index, defining the underlying ALE-algorithm
-  int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
-
-  // Just ALE algorithm type 'incremental linear' and 'springs' supports ALE relaxation
-  if ( (aletype != INPAR::ALE::incr_lin and aletype != INPAR::ALE::springs) and
-      monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton )
-    dserror("Relaxing ALE approach is just possible with Ale-incr-lin!");
 }
 
 /*----------------------------------------------------------------------*/

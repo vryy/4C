@@ -51,7 +51,7 @@ GAMMA                           0.611//0.5
 ALPHA_M                         0.333//0.5
 ALPHA_F                         0.444//0.5
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        incr_lin
+ALE_TYPE                        solid
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
 TIMESTEP                        0.1
@@ -69,7 +69,9 @@ COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
 COUPLING_STRATEGY               xfluid_sided_coupling
 XFF_CONV_STAB_SCALING           none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
+MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
+RELAXING_ALE_EVERY              1
+RELAXING_ALE                    yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.4 DENS 2.0 THEXPANS 0.0

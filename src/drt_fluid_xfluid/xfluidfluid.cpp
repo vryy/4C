@@ -1961,7 +1961,7 @@ void FLD::XFluidFluid::Init()
   //--------------------------------------------------------
   // FluidFluid-Boundary Vectros passes to element
   // -------------------------------------------------------
-  boundarydofrowmap_ = boundarydis_->DofRowMap();
+  boundarydofrowmap_ = Teuchos::RCP<const Epetra_Map>(boundarydis_->DofRowMap(),false);
   ivelnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
   idispnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
 
@@ -2929,7 +2929,8 @@ void FLD::XFluidFluid::Solve()
     // build a merged map from fluid-fluid dirichlet-maps
     state_->CreateFluidFluidDBCMaps();
 
-    LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,state_->fluidfluidzeros_,*state_->fluidfluiddbcmaps_);
+    LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,
+        state_->fluidfluidresidual_,state_->fluidfluidzeros_,*state_->fluidfluiddbcmaps_->CondMap());
 
     // set the fsi dirichlet values for monolithic_fixedale_partitioned
     if (monotype_ == FixedALEPartitioned)
@@ -3108,7 +3109,7 @@ void FLD::XFluidFluid::Evaluate(
   state_->CreateFluidFluidDBCMaps();
 
   LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,
-      state_->fluidfluidzeros_,*state_->fluidfluiddbcmaps_);
+      state_->fluidfluidzeros_,*state_->fluidfluiddbcmaps_->CondMap());
 
   if (active_shapederivatives_)
   {
@@ -5461,7 +5462,15 @@ void FLD::XFluidFluid::XFluidFluidState::CreateFluidFluidDBCMaps()
   std::vector<Teuchos::RCP<const Epetra_Map> > dbcmaps;
   dbcmaps.push_back(dbcmaps_->CondMap());
   dbcmaps.push_back(xfluid_.aledbcmaps_->CondMap());
-  fluidfluiddbcmaps_ = LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
+
+  Teuchos::RCP<const Epetra_Map> fluidfluiddbcmap = LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
+
+  std::vector<Teuchos::RCP<const Epetra_Map> > othermaps;
+  othermaps.push_back(dbcmaps_->OtherMap());
+  othermaps.push_back(xfluid_.aledbcmaps_->OtherMap());
+  Teuchos::RCP<const Epetra_Map> fluidfluidothermap = LINALG::MultiMapExtractor::MergeMaps(othermaps);
+
+  fluidfluiddbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*fluidfluiddofrowmap_,fluidfluiddbcmap,fluidfluidothermap));
 }
 
 void FLD::XFluidFluid::SetXFluidFluidParams()

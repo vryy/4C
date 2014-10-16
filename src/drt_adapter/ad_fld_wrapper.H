@@ -37,9 +37,6 @@ public:
   virtual void ApplyEmbFixedMeshDisplacement(Teuchos::RCP<const Epetra_Vector> disp)
   { dserror("not implemented"); }
   virtual Teuchos::RCP<const Epetra_Vector> Stepinc() {return fluid_->Stepinc();}
-  /// Return dirichlet boundray condition (used for fluidfluid)
-  virtual const Teuchos::RCP<const Epetra_Map>& FluidDirichMaps()
-        { return fluid_->FluidDirichMaps();}
   virtual Teuchos::RCP<const Epetra_Vector> Accnp()
         { return fluid_->Accnp(); };
   virtual Teuchos::RCP<const Epetra_Vector> Accn()

@@ -98,7 +98,7 @@ namespace FLD
           const Teuchos::RCP<DRT::Discretization>    & embdis     ///< embedded fluid discretization
           );
 
-      /// create combined map of Dirichlet-constrained DOF from background and embedded fluid
+      /// create combined map extractor for Dirichlet-constrained DOF from background and embedded fluid
       void CreateFluidFluidDBCMaps();
 
       /// write gmsh-output
@@ -215,8 +215,8 @@ namespace FLD
       Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
       /// pressure dof-map for output
       Teuchos::RCP<const Epetra_Map> outputpressuredofrowmap_;
-      /// combined background and embedded fluid map of dirichlet-constrained dof
-      Teuchos::RCP<const Epetra_Map> fluidfluiddbcmaps_;
+      /// combined background and embedded fluid map extractor for dirichlet-constrained dof
+      Teuchos::RCP<const LINALG::MapExtractor> fluidfluiddbcmaps_;
       //@}
 
       /// full system matrix for coupled background and embedded fluid
@@ -441,8 +441,8 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> Stepinc() {return state_->stepinc_;}
 
     Teuchos::RCP<const Epetra_Vector> Dispnp() {return aledispnp_; }
-    Teuchos::RCP<      Epetra_Vector> ViewOfDispnp() {return aledispnp_; }
-    Teuchos::RCP<      Epetra_Vector> ViewOfDispoldstate() {return aledispnpoldstate_; }
+    Teuchos::RCP<      Epetra_Vector> WriteAccessDispnp() {return aledispnp_; }
+    Teuchos::RCP<      Epetra_Vector> WriteAccesDispOldState() {return aledispnpoldstate_; }
     Teuchos::RCP<const Epetra_Vector> Dispn() { return aledispn_; }
 
     Teuchos::RCP<const Epetra_Map> DofRowMap() { return state_->fluidfluiddofrowmap_; }
@@ -462,8 +462,8 @@ namespace FLD
     const Teuchos::RCP<const LINALG::MapExtractor> EmbeddedDirichMaps() { return aledbcmaps_; }
     //! get background fluid dirichlet map extractor
     const Teuchos::RCP<const LINALG::MapExtractor> BackgroundDirichMaps() { return state_->dbcmaps_; }
-    //! get combined background and embedded fluid dirichlet map
-    virtual const Teuchos::RCP<const Epetra_Map>&  FluidDirichMaps() { return state_->fluidfluiddbcmaps_; }
+    //! get combined background and embedded fluid dirichlet map extractor
+    Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return state_->fluidfluiddbcmaps_; }
     //@}
 
     /// Expand the Dirichlet DOF set
@@ -711,7 +711,7 @@ namespace FLD
 
     /// dof-row maps
     const Epetra_Map* aledofrowmap_;
-    const Epetra_Map* boundarydofrowmap_;
+    Teuchos::RCP<const Epetra_Map> boundarydofrowmap_;
 
     /// map between boundary gid and corresponding embedded gid
     std::map<int, int> boundary_emb_gid_map_;

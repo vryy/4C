@@ -239,15 +239,29 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
         or coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox
         or coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nox)
     {
-      // Todo (mayr) Use AleXFFsiWrapper in the future
-      //ale_ = Teuchos::rcp(new ADAPTER::AleXFFsiWrapper(ale));
-      ale_ = Teuchos::rcp(new ADAPTER::AleFsiWrapper(ale));
+      dserror("Fluid-fluid coupling not available for problem type FSI - select Fluid_Fluid_FSI!");
     }
     else
     {
       dserror("No ALE adapter available yet for your chosen FSI coupling "
           "algorithm!");
     }
+    break;
+  }
+  case prb_fluid_fluid_fsi:
+  {
+    const Teuchos::ParameterList& fsidyn =
+        DRT::Problem::Instance()->FSIDynamicParams();
+    int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+    if (coupling == fsi_iter_fluidfluid_monolithicstructuresplit
+        or coupling == fsi_iter_fluidfluid_monolithicfluidsplit
+        or coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox
+        or coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nox)
+    {
+      ale_ = Teuchos::rcp(new ADAPTER::AleXFFsiWrapper(ale));
+    }
+    else
+      dserror("Unsupported COUPALGO for fluid-fluid FSI.");
     break;
   }
   case prb_fpsi:

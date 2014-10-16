@@ -21,6 +21,7 @@
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
 #include "ad_ale_fsi.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------------*/
 /* class definitions */
@@ -54,6 +55,12 @@ public:
   virtual void SolveAleXFluidFluidFSI();
 
 private:
+
+  /// toggle vector of xfluidfluid
+  Teuchos::RCP<Epetra_Vector>  xfftoggle_;
+
+  /// map extractor to distringuish between xfluid and fluid dof maps
+  Teuchos::RCP<ALENEW::UTILS::XFluidFluidMapExtractor> xffinterface_;
 
 }; // class AleXFFsiWrapper
 } // namespace ADAPTER

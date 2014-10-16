@@ -38,7 +38,7 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-8
-INITIALFIELD                    zero_field //field_by_function
+INITIALFIELD zero_field //field_by_function
 ITEMAX                          25
 LIFTDRAG                        No
 MAXTIME                         3
@@ -52,18 +52,18 @@ START_THETA                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
 THETA                           1.0//0.66
-TIMEINTEGR                      One_Step_Theta //Stationary
-TIMESTEP                        0.003//0.003125 //0.00625
+TIMEINTEGR One_Step_Theta //Stationary
+TIMESTEP 0.003//0.003125 //0.00625
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based //
+STABTYPE residual_based //
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes //no
-SUPG                            yes //no
+PSPG yes //no
+SUPG yes //no
 VSTAB                           no_vstab
-GRAD_DIV                        no //yes
+GRAD_DIV no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 CHARELELENGTH_PC                volume_equivalent_diameter
@@ -79,7 +79,7 @@ TIMESTEP                        1.0
 NUMSTEP                         40
 MAXTIME                         1.0
 NUM_INITSTEP                    0
-ALE_TYPE                        incr_lin
+ALE_TYPE                        solid
 LINEAR_SOLVER                   3
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
@@ -151,7 +151,7 @@ GMSH_EOS_OUT                    no
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // Which Boundary method shall be used to enforce interface conditions?
-COUPLING_STRATEGY               embedded_sided_coupling //xfluid_sided_mortaring
+COUPLING_STRATEGY embedded_sided_coupling //xfluid_sided_mortaring
 IS_PSEUDO_2D                    yes
 VISC_STAB_FAC                   24.40282794                   // 35/CT(2d)
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
@@ -203,7 +203,7 @@ E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.3 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none n
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
-//                              fluid FSI
+// fluid FSI
 E 2 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 //                              structure_unten_dir
 E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
@@ -8682,4 +8682,4 @@ FLUID DIS fluid NODE 3005 QUANTITY velx VALUE 4.53887336596113307e-06 TOLERANCE 
 FLUID DIS fluid NODE 3005 QUANTITY pressure VALUE 4.05642856997015001e-03 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 3162 QUANTITY dispx VALUE 1.40555963921060386e-09 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
-// END
+//                              END

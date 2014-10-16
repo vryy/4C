@@ -581,7 +581,7 @@ Teuchos::RCP<Epetra_Map> FSI::FluidFluidMonolithicFluidSplitNoNOX::CombinedDBCMa
   // structure DBC
   alldbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
   // fluid DBC
-  alldbcmaps.push_back(FluidField().FluidDirichMaps());
+  alldbcmaps.push_back(FluidField().GetDBCMapExtractor()->CondMap());
   // ALE-DBC
   std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
   aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());

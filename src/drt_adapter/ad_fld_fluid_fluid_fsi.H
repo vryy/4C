@@ -228,7 +228,7 @@ namespace ADAPTER {
      * embedded fluid velocities) where we need the information about
      * the FSI approach in here
      */
-    bool isfluidsplit_;
+    bool is_fluidsplit_;
 
   };
 }
