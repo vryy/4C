@@ -195,20 +195,22 @@ void STATMECH::StatMechManager::GetNBCNodes(Teuchos::ParameterList&          par
         if(N==1)
         {
           // calculate center of gravity
-          std::vector<double> cog(nodeposcol->NumVectors(),0.0);
-          int error = nodeposcol->MeanValue(&cog[0]);
-          if(error) dserror("Calculation of vector mean values failed!");
+          LINALG::Matrix<3,1> cog(true);
+          for(int i=0; i<nodeposcol->MyLength(); i++)
+            for(int j=0; j<nodeposcol->NumVectors(); j++)
+              cog(j) += (*nodeposcol)[j][i];
+          cog.Scale(1.0/(double)(nodeposcol->MyLength()));
 
           // all processors should arrive at the same node (also a check for consistency!)
           double dmin = 1e9;
           std::vector<int> nodecolid(1,-1);
-          if(periodlength_==Teuchos::null) dserror("PERIODLENGTH needs to exist in the input file.");
           if(nodeposcol==Teuchos::null) dserror("No nodal positions supplied!");
+
           for(int i=0; i<nodeposcol->MyLength(); i++)
           {
-            double disti = sqrt(((*nodeposcol)[0][i]-cog[0])*((*nodeposcol)[0][i]-cog[0])+
-                               ((*nodeposcol)[1][i]-cog[1])*((*nodeposcol)[1][i]-cog[1])+
-                               ((*nodeposcol)[2][i]-cog[2])*((*nodeposcol)[2][i]-cog[2]));
+            double disti = sqrt(((*nodeposcol)[0][i]-cog(0))*((*nodeposcol)[0][i]-cog(0))+
+                                ((*nodeposcol)[1][i]-cog(1))*((*nodeposcol)[1][i]-cog(1))+
+                                ((*nodeposcol)[2][i]-cog(2))*((*nodeposcol)[2][i]-cog(2)));
             if(disti<dmin)
             {
               nodecolid[0] = nodeposcol->Map().GID(i);
