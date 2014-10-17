@@ -183,6 +183,7 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
     }
   }
 
+
   if (probtype == prb_freesurf) {
     // FSI input parameters
     const Teuchos::ParameterList& fsidyn =
@@ -262,6 +263,23 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
     }
     else
       dserror("Unsupported COUPALGO for fluid-fluid FSI.");
+    break;
+  }
+  case prb_fsi_lung:
+  {
+    const Teuchos::ParameterList& fsidyn =
+        DRT::Problem::Instance()->FSIDynamicParams();
+    int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+    if (coupling == fsi_iter_lung_monolithicfluidsplit
+        or coupling == fsi_iter_lung_monolithicstructuresplit)
+    {
+      ale_ = Teuchos::rcp(new ADAPTER::AleFsiWrapper(ale));
+    }
+    else
+    {
+      dserror("No ALE adapter available yet for your chosen FSI coupling "
+          "algorithm!");
+    }
     break;
   }
   case prb_fpsi:

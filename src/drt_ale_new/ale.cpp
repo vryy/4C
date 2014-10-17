@@ -173,6 +173,13 @@ void ALENEW::Ale::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc )
   {
     LINALG::ApplyDirichlettoSystem(sysmat_,disi_,residual_,zeros_,*(dbcmaps_->CondMap()));
   }
+
+  /* residual_ contains the most recent "mechanical" residual including DBCs.
+   * We make this negative and store it in rhs_ for use in Newton-type methods.
+   */
+  rhs_->Update(-1.0, *residual_, 0.0);
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -246,12 +253,6 @@ void ALENEW::Ale::EvaluateElements()
   discret_->SetState("dispnp", dispnp_);
 
   discret_->Evaluate(eleparams,sysmat_,residual_);
-
-  /* residual_ contains the most recent "mechanical" residual. We make this
-   * negative and store it in rhs_ for use in Newton-type methods.
-   */
-  rhs_->Update(-1.0, *residual_, 0.0);
-
   discret_->ClearState();
 
   sysmat_->Complete();
