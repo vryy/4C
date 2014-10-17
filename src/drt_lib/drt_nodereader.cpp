@@ -258,6 +258,7 @@ void NodeReader::Read()
             int cpid;
             file >> cpid >> tmp >> coords[0] >> coords[1] >> coords[2] >> weight;
             cpid--;
+            maxnodeid = std::max(maxnodeid, cpid)+1;
             if (cpid != filecount)
               dserror("Reading of control points failed: They must be numbered consecutive!!");
             if (tmp!="COORD")
