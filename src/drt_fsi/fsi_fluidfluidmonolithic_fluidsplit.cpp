@@ -57,9 +57,6 @@ FSI::FluidFluidMonolithicFluidSplit::FluidFluidMonolithicFluidSplit(const Epetra
   if (! relaxing_ale_ && relaxing_ale_every_ != 0)
     dserror("You don't want to relax the ALE but provide a relaxation interval != 0 ?!");
 
-  // get the ALE-type index, defining the underlying ALE-algorithm
-  const Teuchos::ParameterList& adyn = DRT::Problem::Instance()->AleDynamicParams();
-  int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
 }
 
 /*----------------------------------------------------------------------*/
