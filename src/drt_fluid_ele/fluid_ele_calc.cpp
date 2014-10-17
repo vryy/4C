@@ -1665,6 +1665,38 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::BodyForce(DRT::ELEMENTS::Flui
 
       double num = (*onoff)[isd]*(*val)[isd]*curvefac;
 
+      if(enrtype==DRT::ELEMENTS::Fluid::xwall)
+      {
+        // for xwall, only the linear shape functions contribute to the bodyforce,
+        // since the sum of all shape functions sum(N_j) != 1.0 if the enriched shape functions are included
+        for ( int jnode=0; jnode<nen_; jnode+=2 )
+        {
+          if (functnum>0)
+          {
+            // evaluate function at the position of the current node
+            // ------------------------------------------------------
+            // comment: this introduces an additional error compared to an
+            // evaluation at the integration point. However, we need a node
+            // based element bodyforce vector for prescribed pressure gradients
+            // in some fancy turbulance stuff.
+            functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
+                                                                               (ele->Nodes()[jnode])->X(),
+                                                                               time,
+                                                                               NULL);
+          }
+          else functionfac = 1.0;
+
+          // get usual body force
+          if (*condtype == "neum_dead" or *condtype == "neum_live")
+            ebofoaf(isd,jnode) = num*functionfac;
+          // get prescribed pressure gradient
+          else if (*condtype == "neum_pgrad")
+            eprescpgaf(isd,jnode) = num*functionfac;
+          else
+            dserror("Unknown Neumann condition");
+        }
+      }
+      else
       for ( int jnode=0; jnode<nen_; ++jnode )
       {
         if (functnum>0)
