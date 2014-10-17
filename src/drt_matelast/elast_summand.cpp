@@ -30,6 +30,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_coup2pow.H"
 #include "elast_isoexpopow.H"
 #include "elast_isomooneyrivlin.H"
+#include "elast_coupSaintVenantKirchhoff.H"
 #include "elast_volsussmanbathe.H"
 #include "elast_volpenalty.H"
 #include "elast_vologden.H"
@@ -79,6 +80,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::CoupLogNeoHooke(curmat));
     MAT::ELASTIC::PAR::CoupLogNeoHooke* params = static_cast<MAT::ELASTIC::PAR::CoupLogNeoHooke*>(curmat->Parameter());
     return Teuchos::rcp(new CoupLogNeoHooke(params));
+  }
+  case INPAR::MAT::mes_coupSVK:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupSVK(curmat));
+    MAT::ELASTIC::PAR::CoupSVK* params = static_cast<MAT::ELASTIC::PAR::CoupSVK*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupSVK(params));
   }
   case INPAR::MAT::mes_couplogmixneohooke:
   {

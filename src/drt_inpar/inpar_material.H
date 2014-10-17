@@ -81,6 +81,7 @@ namespace INPAR
       mes_coupblatzko,  ///< Blatz and Ko  material as hyperelastic potential summand
       mes_coupmooneyrivlin,  ///< Mooney-Rivlin  material as hyperelastic potential summand
       mes_coupexppol,     ///<compressible, istropic material law for soft tissue
+      mes_coupSVK,     ///<Saint-Venant-Kirchhoff material
       mes_isoneohooke,  ///< isochoric Neo-Hooke hyperelastic potential summand
       mes_isovolHUdependentneohooke,  ///< isochoric and volumetric summands for HU dependent material
       mes_isovolaaagasser,  ///< isochoric and volumetric summands for thrombus material (varible stiffness)

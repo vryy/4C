@@ -920,6 +920,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
+  // Saint-Venant-Kirchhoff as elastic summand
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupSVK",
+                                            "Saint-Venant-Kirchhoff as elastic summand",
+                                            INPAR::MAT::mes_coupSVK));
+
+    AddNamedReal(m,"YOUNG","Young's modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
   // logarithmic mixed neo-Hooke material
   {
     Teuchos::RCP<MaterialDefinition> m
