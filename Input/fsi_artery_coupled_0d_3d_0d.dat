@@ -52,7 +52,7 @@ COUPALGO                        iter_monolithicstructuresplit
 SECONDORDER                     Yes
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          Aztec_MSR
