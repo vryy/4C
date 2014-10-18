@@ -21,22 +21,33 @@
 ADAPTER::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale)
   : AleFsiWrapper(ale)
 {
-  // setup the map extractor for both fluids
-  xffinterface_ = Teuchos::rcp(new ALENEW::UTILS::XFluidFluidMapExtractor);
-  xffinterface_->Setup(*Discretization());
-
-  // mark the fluid-fluid interface dof as Dirichlet values
-  if (xffinterface_->XFluidFluidCondRelevant())
-  {
-    // create the toggle vector for fluid-fluid-Coupling
-    Teuchos::RCP<Epetra_Vector> dispnp_xff = LINALG::CreateVector(*xffinterface_->XFluidFluidCondMap(),true);
-    dispnp_xff->PutScalar(1.0);
-    xfftoggle_ = LINALG::CreateVector(*Discretization()->DofRowMap(),true);
-    xffinterface_->InsertXFluidFluidCondVector(dispnp_xff,xfftoggle_);
-  }
+  // create the FSI interface
+  xff_interface_ = Teuchos::rcp(new ALENEW::UTILS::XFluidFluidMapExtractor);
+  xff_interface_->Setup(*Discretization());
+  SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_x_ff,Interface(),xff_interface_);
+  SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_x_fsi,Interface());
 }
 
-//! ToDo (mayr) move this to XFluidFluid adapter
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::AleXFFsiWrapper::GetDBCMapExtractor()
+{
+  return AleWrapper::GetDBCMapExtractor(ALENEW::UTILS::MapExtractor::dbc_set_x_ff);
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void ADAPTER::AleXFFsiWrapper::Evaluate(
+  Teuchos::RCP<const Epetra_Vector> disiterinc ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
+)
+{
+  AleFsiWrapper::Evaluate(disiterinc,ALENEW::UTILS::MapExtractor::dbc_set_x_ff);
+  // set dispnp_ of xfem dofs to dispn_
+  xff_interface_->InsertXFluidFluidCondVector(xff_interface_->ExtractXFluidFluidCondVector(Dispn()), WriteAccessDispnp());
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void ADAPTER::AleXFFsiWrapper::SolveAleXFluidFluidFSI()
 {
   // At the beginning of the fluid-fluid-fsi step the xfem-dofs are
@@ -45,23 +56,9 @@ void ADAPTER::AleXFFsiWrapper::SolveAleXFluidFluidFSI()
   // dirichlet and we solve the ALE again to find the real ALE
   // displacement.
 
-  // turn the toggle vector off
-  xfftoggle_->PutScalar(0.0);
+  AleFsiWrapper::CreateSystemMatrix();
 
-  // new toggle vector which is on for the fsi-dofs_
-  Teuchos::RCP<Epetra_Vector> dispnp_fsicond = LINALG::CreateVector(*Interface()->FSICondMap(),true);
-  dispnp_fsicond->PutScalar(1.0);
-  Interface()->InsertFSICondVector(dispnp_fsicond,xfftoggle_);
-
-  CreateSystemMatrix(true);
-
-  Evaluate(dispnp_fsicond);
+  AleFsiWrapper::Evaluate(Teuchos::null,ALENEW::UTILS::MapExtractor::dbc_set_x_fsi);
 
   Solve();
-
-  // for the next time step, set the xfem dofs to dirichlet values
-  Teuchos::RCP<Epetra_Vector> dispnp_xff = LINALG::CreateVector(*xffinterface_->XFluidFluidCondMap(),true);
-  dispnp_xff->PutScalar(1.0);
-  xfftoggle_->PutScalar(0.0);
-  xffinterface_->InsertXFluidFluidCondVector(dispnp_xff,xfftoggle_);
 }

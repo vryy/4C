@@ -26,6 +26,7 @@ Maintainer: Matthias Mayr
 #include <Epetra_Operator.h>
 
 #include "../drt_inpar/inpar_ale.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
@@ -110,16 +111,18 @@ public:
   virtual Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization() = 0;
 
   //! Return MapExtractor for Dirichlet boundary conditions
-  virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+  virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(
+  ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type ///< type of dbc set
+  ) = 0;
 
   //@}
 
-  /// displacements at the interface are prescribed
-  virtual void ApplyInterfaceDisplacements(
-      Teuchos::RCP<Epetra_Vector> idisp) = 0;
-
   /// setup Dirichlet boundary condition map extractor
-  virtual void SetupDBCMapEx(bool dirichletcond) = 0;
+  virtual void SetupDBCMapEx(
+    ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type,  //!< application-specific type of Dirichlet set
+    Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface,  //!< interface for creation of additional, application-specific Dirichlet map extractors
+    Teuchos::RCP<const ALENEW::UTILS::XFluidFluidMapExtractor> xff_interface  //!< interface for creation of a Dirichlet map extractor, taylored to XFFSI
+  ) = 0;
 
   //! @name Time step helpers
   //@{
@@ -152,8 +155,10 @@ public:
    *  In case the StructureNOXCorrectionWrapper is applied, the step increment
    *  is expected which is then transformed into an iteration increment
    */
-  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc //!< displacement increment between Newton iteration i and i+1
-      ) = 0;
+  virtual void Evaluate(
+    Teuchos::RCP<const Epetra_Vector>          disiterinc, ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
+    ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type   ///< application-specific type of Dirichlet set
+  ) = 0;
 
   //! update at time step end
   virtual void Update() = 0;
@@ -215,8 +220,8 @@ public:
    * Evaluate has to be called separately.
    *
    */
-  virtual void CreateSystemMatrix(bool full = true ///< Sparsematrix (true) or Blocksparsematrix (false)
-      ) = 0;
+  virtual void CreateSystemMatrix(
+    Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface = Teuchos::null) = 0;
 
 };
 

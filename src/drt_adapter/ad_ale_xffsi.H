@@ -52,15 +52,19 @@ public:
 
   //@}
 
-  virtual void SolveAleXFluidFluidFSI();
+  //! Return MapExtractor for Dirichlet boundary conditions
+  const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
+
+  /// evaluate and assemble residual and jacobian matrix
+  void Evaluate(
+    Teuchos::RCP<const Epetra_Vector> disiterinc ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
+  );
+
+  void SolveAleXFluidFluidFSI();
 
 private:
 
-  /// toggle vector of xfluidfluid
-  Teuchos::RCP<Epetra_Vector>  xfftoggle_;
-
-  /// map extractor to distringuish between xfluid and fluid dof maps
-  Teuchos::RCP<ALENEW::UTILS::XFluidFluidMapExtractor> xffinterface_;
+  Teuchos::RCP<ALENEW::UTILS::XFluidFluidMapExtractor> xff_interface_;
 
 }; // class AleXFFsiWrapper
 } // namespace ADAPTER

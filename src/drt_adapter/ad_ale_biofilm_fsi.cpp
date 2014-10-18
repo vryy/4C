@@ -22,12 +22,13 @@
 ADAPTER::AleBiofilmFsiWrapper::AleBiofilmFsiWrapper(Teuchos::RCP<Ale> ale)
   : AleFsiWrapper(ale)
 {
-  dserror("Biofilm FSI not implemented yet!");
+  //Biofilm FSI not implemented yet!");
   return;
 }
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void ADAPTER::AleBiofilmFsiWrapper::SolveBioGr()
 {
-  dserror("Biofilm FSI not implemented yet!");
+  //Todo (ager): do we need this??
 }

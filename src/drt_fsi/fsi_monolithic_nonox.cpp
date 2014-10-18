@@ -661,7 +661,7 @@ void FSI::MonolithicNoNOX::Update()
   if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton and aleupdate )
   {
     // Build the ALE-matrix after the update
-    AleField()->CreateSystemMatrix(false);
+    AleField()->CreateSystemMatrix(AleField()->Interface());
   }
 }
 

@@ -102,7 +102,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
   sconT_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*StructureField()->Interface(),*extractor,81,false,true));
 
   // build ale system matrix in splitted system
-  AleField()->CreateSystemMatrix(false);
+  AleField()->CreateSystemMatrix(AleField()->Interface());
 
   // get the PCITER from inputfile
   std::vector<int> pciter;

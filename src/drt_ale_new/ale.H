@@ -91,8 +91,7 @@ namespace UTILS
   Ale(Teuchos::RCP<DRT::Discretization> actdis,
       Teuchos::RCP<LINALG::Solver> solver,
       Teuchos::RCP<Teuchos::ParameterList> params,
-      Teuchos::RCP<IO::DiscretizationWriter> output,
-      bool dirichletcond);
+      Teuchos::RCP<IO::DiscretizationWriter> output);
 
   virtual ~Ale() {}
 
@@ -102,8 +101,9 @@ namespace UTILS
    * Evaluate has to be called separately.
    *
    */
-  void CreateSystemMatrix(bool full = true ///< Sparsematrix (true) or Blocksparsematrix (false)
-      );
+  void CreateSystemMatrix(
+      Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface = Teuchos::null //!< interface
+  );
 
   /*! \brief evaluate and assemble residual #residual_ and jacobian matrix #sysmat_
    *
@@ -112,8 +112,9 @@ namespace UTILS
    *  non monolithic case.
    */
    virtual void Evaluate(
-       Teuchos::RCP<const Epetra_Vector> stepinc = Teuchos::null ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
-       );
+     Teuchos::RCP<const Epetra_Vector> stepinc = Teuchos::null, ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
+     ALENEW::UTILS::MapExtractor::AleDBCSetType  dbc_type = ALENEW::UTILS::MapExtractor::dbc_set_std ///< application-specific type of Dirichlet set
+   );
 
    /// solve this time step with currently applied interface displacements
    virtual int Solve();
@@ -141,19 +142,6 @@ namespace UTILS
    virtual void CreatePreconditioner(bool full = true ///< Sparsematrix (true) or Blocksparsematrix (false)
        );
    //__________________________________________________________________________________________________CLEANUP
-
-  //! @name Apply interface displacements
-
-  /// displacements at the interface are prescribed
-  virtual void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
-
-  /// displacements at the free surface are prescribed
-  virtual void ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp);
-
-  /// displacements at the ale update condition nodes are prescribed
-  virtual void ApplyAleUpdateDisplacements(Teuchos::RCP<Epetra_Vector> audisp);
-
-  //@}
 
   //! @name Time step helpers
 
@@ -255,16 +243,26 @@ namespace UTILS
   /// writing access to discretization
   Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization() { return discret_; }
 
-  /// communication object at the interface
-  Teuchos::RCP<const ALENEW::UTILS::MapExtractor> Interface() const { return interface_; }
-
-  /// setup Dirichlet boundary condition map extractor
-  void SetupDBCMapEx(bool dirichletcond);
+  /*!
+   * \brief setup Dirichlet boundary condition map extractor.
+   * generally, all application-specific information belongs to the subsequent adapter class -
+   * this routine is an exception.
+   * this method creates application-specific Dirichlet maps and stores them in a map,
+   * together with an application key; by passing this key to routines like evaluate,
+   * an adapter classes can assure, that its very own Dirichlet map extractor is used.
+   */
+  void SetupDBCMapEx(
+    ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type = ALENEW::UTILS::MapExtractor::dbc_set_std,  //!< application-specific type of Dirichlet set
+    Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface = Teuchos::null,  //!< interface for creation of additional, application-specific Dirichlet map extractors
+    Teuchos::RCP<const ALENEW::UTILS::XFluidFluidMapExtractor> xff_interface = Teuchos::null  //!< interface for creation of a Dirichlet map extractor, taylored to XFFSI
+  );
 
   /// create result test for encapsulated algorithm
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
-  const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
+  const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(
+  ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type = ALENEW::UTILS::MapExtractor::dbc_set_std //!< application-specific type of Dirichlet set
+  ) { return dbcmaps_[dbc_type]; }
 
   //! Return (rotatory) transformation matrix of local co-ordinate systems
   Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
@@ -353,9 +351,13 @@ namespace UTILS
   //! @name map extractors
   //@{
 
-  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_; ///< map extractor for extracting Dirichlet and free DOF sets
-
-  Teuchos::RCP<ALENEW::UTILS::MapExtractor> interface_; ///< interface map setup for interface <-> full translation
+  /*!
+   * \brief map with application-specific Dirichlet map extractors
+   *
+   * each adapter class can extract its map extractor via
+   * an application-specific key
+   */
+  std::map<int,Teuchos::RCP<LINALG::MapExtractor> > dbcmaps_;
 
   //@}
 

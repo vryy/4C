@@ -96,7 +96,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystem()
   FluidField().UseBlockMatrix(true);
 
   // build ale system matrix in splitted system
-  AleField()->CreateSystemMatrix(false);
+  AleField()->CreateSystemMatrix(AleField()->Interface());
 
   // get the PCITER from inputfile
   std::vector<int> pciter;

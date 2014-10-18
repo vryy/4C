@@ -20,6 +20,8 @@ Maintainer: Matthias Mayr
 /* header inclusions */
 #include "ad_ale.H"
 
+#include "../drt_ale_new/ale_utils_mapextractor.H"
+
 /*----------------------------------------------------------------------------*/
 /* class definitions */
 namespace ADAPTER
@@ -115,7 +117,15 @@ public:
   //! Return MapExtractor for Dirichlet boundary conditions
   virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
   {
-    return ale_->GetDBCMapExtractor();
+    return ale_->GetDBCMapExtractor(ALENEW::UTILS::MapExtractor::dbc_set_std);
+  }
+
+  //! Return MapExtractor for Dirichlet boundary conditions in case of non-standard Dirichlet sets
+  virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(
+    ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type ///< type of dbc set
+  )
+  {
+    return ale_->GetDBCMapExtractor(dbc_type);
   }
 
   //! reset state vectors to zero
@@ -170,9 +180,20 @@ public:
   }
 
   //! update displacement and evaluate elements
-  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+  virtual void Evaluate(
+    Teuchos::RCP<const Epetra_Vector> stepinc  = Teuchos::null ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
+  )
   {
-    ale_->Evaluate(disiterinc);
+    Evaluate(stepinc,ALENEW::UTILS::MapExtractor::dbc_set_std);
+  }
+
+  //! update displacement and evaluate elements
+  void Evaluate(
+    Teuchos::RCP<const Epetra_Vector> stepinc, ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
+    ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type ///< application-specific type of Dirichlet set
+  )
+  {
+    ale_->Evaluate(stepinc,dbc_type);
   }
 
   //! update at time step end
@@ -196,16 +217,14 @@ public:
 
   //@}
 
-  /// displacements at the interface are prescribed
-  virtual void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
-  {
-    ale_->ApplyInterfaceDisplacements(idisp);
-  }
-
   /// setup Dirichlet boundary condition map extractor
-  virtual void SetupDBCMapEx(bool dirichletcond)
+  virtual void SetupDBCMapEx(
+    ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type = ALENEW::UTILS::MapExtractor::dbc_set_std,  //!< application-specific type of Dirichlet set
+    Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface = Teuchos::null,  //!< interface for creation of additional, application-specific Dirichlet map extractors
+    Teuchos::RCP<const ALENEW::UTILS::XFluidFluidMapExtractor> xff_interface = Teuchos::null  //!< interface for creation of a Dirichlet map extractor, taylored to XFFSI
+  )
   {
-    ale_->SetupDBCMapEx(dirichletcond);
+    ale_->SetupDBCMapEx(dbc_type,interface,xff_interface);
   }
 
   //! @name Solver calls
@@ -254,10 +273,11 @@ public:
    * Evaluate has to be called separately.
    *
    */
-  virtual void CreateSystemMatrix(bool full = true ///< Sparsematrix (true) or Blocksparsematrix (false)
-      )
+  void CreateSystemMatrix(
+    Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface = Teuchos::null ///< Blocksparsematrix if an interface is passed, SparseMatrix otherwise
+  )
   {
-    ale_->CreateSystemMatrix(full);
+    ale_->CreateSystemMatrix(interface);
   }
 
 private:
@@ -303,7 +323,7 @@ private:
   //!
   //! there are two increments around
   //!
-  //! x^n+1_i+1 = x^n+1_i + disiterinc  (also referred to as residual increment)
+  //! x^n+1_i+1 = x^n+1_i + stepinc  (also referred to as residual increment)
   //!
   //! x^n+1_i+1 = x^n     + disstepinc
   Teuchos::RCP<Epetra_Vector> stepinc_;

@@ -375,8 +375,6 @@ void ADAPTER::FluidFluidFSI::PrepareShapeDerivatives()
 }
 
 /*----------------------------------------------------------------------*
- * request fluid system matrix as block matrix (fluidsplit FSI)
- * and allocate a new shape derivatives matrix
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::UseBlockMatrix(bool split_fluidsysmat)
 {

@@ -146,68 +146,20 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
     adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
   }
 
-  bool dirichletcond = true;
-  if (probtype == prb_fsi or probtype == prb_fsi_redmodels
-      or probtype == prb_fsi_lung or probtype == prb_gas_fsi
-      or probtype == prb_thermo_fsi or probtype == prb_biofilm_fsi
-      or probtype == prb_fluid_fluid_fsi) {
-    // FSI input parameters
-    const Teuchos::ParameterList& fsidyn =
-        DRT::Problem::Instance()->FSIDynamicParams();
-    int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
-    if (coupling == fsi_iter_monolithicfluidsplit
-        or coupling == fsi_iter_monolithicstructuresplit
-        or coupling == fsi_iter_constr_monolithicfluidsplit
-        or coupling == fsi_iter_constr_monolithicstructuresplit
-        or coupling == fsi_iter_lung_monolithicfluidsplit
-        or coupling == fsi_iter_lung_monolithicstructuresplit
-        or coupling == fsi_iter_mortar_monolithicstructuresplit
-        or coupling == fsi_iter_mortar_monolithicfluidsplit
-        or coupling == fsi_iter_fluidfluid_monolithicstructuresplit
-        or coupling == fsi_iter_fluidfluid_monolithicfluidsplit
-        or coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox
-        or coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nox) {
-      dirichletcond = false;
-    }
-  }
-
   if (probtype == prb_fpsi) {
     // FPSI input parameters
     const Teuchos::ParameterList& fpsidyn =
         DRT::Problem::Instance()->FPSIDynamicParams();
     int coupling = DRT::INPUT::IntegralValue<int>(fpsidyn, "COUPALGO");
-    if (coupling == fpsi_monolithic_plain) {
-      dirichletcond = false;
-    } else if (coupling == partitioned) {
+    if (coupling == partitioned) {
       dserror("partitioned fpsi solution scheme has not been implemented yet.");
     }
   }
 
 
-  if (probtype == prb_freesurf) {
-    // FSI input parameters
-    const Teuchos::ParameterList& fsidyn =
-        DRT::Problem::Instance()->FSIDynamicParams();
-    int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
-    if (coupling == fsi_iter_monolithicfluidsplit
-        or coupling == fsi_iter_monolithicstructuresplit
-        or coupling == fsi_iter_constr_monolithicfluidsplit
-        or coupling == fsi_iter_constr_monolithicstructuresplit
-        or coupling == fsi_iter_lung_monolithicfluidsplit
-        or coupling == fsi_iter_lung_monolithicstructuresplit
-        or coupling == fsi_iter_mortar_monolithicstructuresplit
-        or coupling == fsi_iter_mortar_monolithicfluidsplit) {
-      dirichletcond = false;
-    }
-  }
-
-  if (probtype == prb_crack or probtype == prb_fsi_crack) {
-    dirichletcond = false;
-  }
-
   // create the ALE time integrator
   Teuchos::RCP < ALENEW::Ale > ale = Teuchos::rcp(
-      new ALENEW::Ale(actdis, solver, adyn, output, dirichletcond));
+      new ALENEW::Ale(actdis, solver, adyn, output));
 
   /* determine problem type and then wrap the ALE time integrator into a
    * problem-specific wrapper */
@@ -240,7 +192,7 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
         or coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox
         or coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nox)
     {
-      dserror("Fluid-fluid coupling not available for problem type FSI - select Fluid_Fluid_FSI!");
+       ale_ = Teuchos::rcp(new ADAPTER::AleXFFsiWrapper(ale));
     }
     else
     {

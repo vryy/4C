@@ -82,7 +82,7 @@ void FSI::FluidFluidMonolithicStructureSplit::Update()
   // in buildsystemmatrix
   if (relaxing_ale)
   {
-    AleField()->CreateSystemMatrix(false);
+    AleField()->CreateSystemMatrix(AleField()->Interface());
   }
 }
 

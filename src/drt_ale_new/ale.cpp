@@ -47,8 +47,7 @@ Maintainer: Matthias Mayr
 ALENEW::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
               Teuchos::RCP<LINALG::Solver> solver,
               Teuchos::RCP<Teuchos::ParameterList> params,
-              Teuchos::RCP<IO::DiscretizationWriter> output,
-              bool dirichletcond)
+              Teuchos::RCP<IO::DiscretizationWriter> output)
   : discret_(actdis),
     solver_(solver),
     params_(params),
@@ -84,14 +83,7 @@ ALENEW::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
   rhs_ = LINALG::CreateVector(*dofrowmap,true);
   zeros_ = LINALG::CreateVector(*dofrowmap,true);
 
-  interface_ = Teuchos::rcp(new ALENEW::UTILS::MapExtractor);
-
-  if (DRT::Problem::Instance()->ProblemType() != prb_fpsi)
-    interface_->Setup(*actdis);
-  else
-    interface_->Setup(*actdis,true); //create overlapping maps for fpsi problem
-
-  SetupDBCMapEx(dirichletcond);
+  SetupDBCMapEx();
 
   // ensure that the ALE string was removed from conditions
   {
@@ -117,14 +109,16 @@ ALENEW::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
     }
   }
 
-  CreateSystemMatrix(true);
+  CreateSystemMatrix();
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::CreateSystemMatrix(bool full)
+void ALENEW::Ale::CreateSystemMatrix(
+  Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface
+)
 {
-  if (full)
+  if (interface == Teuchos::null)
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,false,true));
@@ -133,13 +127,16 @@ void ALENEW::Ale::CreateSystemMatrix(bool full)
   {
     sysmat_ = Teuchos::rcp(
         new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-            *interface_, *interface_, 81, false, true));
+            *interface, *interface, 81, false, true));
   }
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc )
+void ALENEW::Ale::Evaluate(
+  Teuchos::RCP<const Epetra_Vector> stepinc,
+  ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type
+)
 {
   // We save the current solution here. This will not change the
   // result of our element call, but the next time somebody asks us we
@@ -167,11 +164,11 @@ void ALENEW::Ale::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc )
     Teuchos::RCP<Epetra_Vector> dispnp_local = Teuchos::rcp(new Epetra_Vector(*(zeros_)));
     LocsysManager()->RotateGlobalToLocal(dispnp_local);
 
-    LINALG::ApplyDirichlettoSystem(sysmat_,disi_,residual_,GetLocSysTrafo(),dispnp_local,*(dbcmaps_->CondMap()));
+    LINALG::ApplyDirichlettoSystem(sysmat_,disi_,residual_,GetLocSysTrafo(),dispnp_local,*(dbcmaps_[dbc_type]->CondMap()));
   }
   else
   {
-    LINALG::ApplyDirichlettoSystem(sysmat_,disi_,residual_,zeros_,*(dbcmaps_->CondMap()));
+    LINALG::ApplyDirichlettoSystem(sysmat_,disi_,residual_,zeros_,*(dbcmaps_[dbc_type]->CondMap()));
   }
 
   /* residual_ contains the most recent "mechanical" residual including DBCs.
@@ -525,48 +522,93 @@ void ALENEW::Ale::PrintTimeStepHeader() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::SetupDBCMapEx(bool dirichletcond)
+void ALENEW::Ale::SetupDBCMapEx(
+  ALENEW::UTILS::MapExtractor::AleDBCSetType      dbc_type,
+  Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface,
+  Teuchos::RCP<const ALENEW::UTILS::XFluidFluidMapExtractor> xff_interface
+)
 {
   // set fixed nodes (conditions != 0 are not supported right now). hahn: Why?!
   Teuchos::ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
 
-  ApplyDirichletBC(eleparams, dispnp_, Teuchos::null, Teuchos::null, true);
+  // some consistency checks
+  if (interface == Teuchos::null &&
+      dbc_type != ALENEW::UTILS::MapExtractor::dbc_set_std && dbc_type != ALENEW::UTILS::MapExtractor::dbc_set_x_ff)
+    dserror("For non-standard use of SetupDBCMapEx, please provide a valid ALE::UTILS::MapExtractor.");
 
-  if (dirichletcond)
+  if (xff_interface == Teuchos::null && dbc_type == ALENEW::UTILS::MapExtractor::dbc_set_x_ff)
+    dserror("For non-standard use of SetupDBCMapEx with fluid-fluid coupling, please provide a XFluidFluidMapExtractor.");
+  // REMARK: for all applications, setup of the standard Dirichlet sets is done in the ctor of this class
+
+  switch (dbc_type)
   {
+  case ALENEW::UTILS::MapExtractor::dbc_set_std:
+    dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std] = Teuchos::rcp(new LINALG::MapExtractor());
+    ApplyDirichletBC(eleparams, dispnp_, Teuchos::null, Teuchos::null, true);
+    break;
+  case ALENEW::UTILS::MapExtractor::dbc_set_x_ff:
+  {
+    std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+    condmaps.push_back(xff_interface->XFluidFluidCondMap());
+    condmaps.push_back(dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std]->CondMap());
+    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+
+    dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_x_ff] =
+        Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
+    break;
+  }
+  case ALENEW::UTILS::MapExtractor::dbc_set_x_fsi:
+  {
+    std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+    condmaps.push_back(interface->FSICondMap());
+    condmaps.push_back(dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std]->CondMap());
+    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+
+    dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_x_fsi] =
+        Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
+    break;
+  }
+  case ALENEW::UTILS::MapExtractor::dbc_set_biofilm:
+  {
+    // Todo (ager): please check if the biofilm-specific Dirichlet map extractor
+    // really requires all of these conditions and if any are missing!
+    // (kruse, 10/14)
+
     // for partitioned FSI the interface becomes a Dirichlet boundary
     // also for structural Lagrangian simulations with contact and wear
     // followed by an Eulerian step to take wear into account, the interface
     // becomes a dirichlet
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(interface_->FSICondMap());
-    condmaps.push_back(interface_->AleWearCondMap());
-    condmaps.push_back(dbcmaps_->CondMap());
-    condmaps.push_back(interface_->FPSICondMap());
+    condmaps.push_back(interface->FSICondMap());
+    condmaps.push_back(interface->AleWearCondMap());
+    condmaps.push_back(dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std]->CondMap());
+    condmaps.push_back(interface->FPSICondMap());
+
+    if (interface->FSCondRelevant() or interface->AUCondRelevant())
+    {
+      // for partitioned solves, the free surface and/or the nodes of the ale update
+      // conditions become a Dirichlet boundary
+
+      if (interface->FSCondRelevant()) {
+        condmaps.push_back(interface->FSCondMap());
+      }
+      if (interface->AUCondRelevant()) {
+        condmaps.push_back(interface->AUCondMap());
+      }
+    }
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-    *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
+    dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_biofilm] =
+        Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
+    break;
+  }
+  default:
+    dserror("Undefined type of ALE Dirichlet sets.");
+    break;
   }
 
-  if (dirichletcond and (interface_->FSCondRelevant() or interface_->AUCondRelevant()))
-  {
-    // for partitioned solves, the free surface and/or the nodes of the ale update
-    // conditions become a Dirichlet boundary
-    std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-
-    if (interface_->FSCondRelevant()) {
-      condmaps.push_back(interface_->FSCondMap());
-    }
-    if (interface_->AUCondRelevant()) {
-      condmaps.push_back(interface_->AUCondMap());
-    }
-
-    condmaps.push_back(dbcmaps_->CondMap());
-    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-    *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
-  }
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -574,31 +616,6 @@ void ALENEW::Ale::SetupDBCMapEx(bool dirichletcond)
 Teuchos::RCP<DRT::ResultTest> ALENEW::Ale::CreateFieldTest()
 {
   return Teuchos::rcp(new ALENEW::AleResultTest(*this));
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void ALENEW::Ale::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
-{
-  interface_->InsertFSCondVector(fsdisp,dispnp_);
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void ALENEW::Ale::ApplyAleUpdateDisplacements(Teuchos::RCP<Epetra_Vector> audisp)
-{
-  interface_->InsertAUCondVector(audisp,dispnp_);
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void ALENEW::Ale::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
-{
-  // applying interface displacements
-  if(DRT::Problem::Instance()->ProblemType()!=prb_struct_ale)
-    interface_->InsertFSICondVector(idisp,dispnp_);
-  else
-    interface_->AddAleWearCondVector(idisp,dispnp_);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -630,7 +647,7 @@ void ALENEW::Ale::ApplyDirichletBC
   if (recreatemap)
   {
     discret_->EvaluateDirichlet(params, systemvector, systemvectord, systemvectordd,
-                                Teuchos::null, dbcmaps_);
+                                Teuchos::null, dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std]);
   }
   else
   {

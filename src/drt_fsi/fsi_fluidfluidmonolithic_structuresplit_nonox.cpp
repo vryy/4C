@@ -119,7 +119,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupSystem()
   StructureField()->UseBlockMatrix();
 
   // build ale system matrix in splitted system
-  AleField()->CreateSystemMatrix(false);
+  AleField()->CreateSystemMatrix(AleField()->Interface());
 
   /*----------------------------------------------------------------------*/
   // initialize systemmatrix_

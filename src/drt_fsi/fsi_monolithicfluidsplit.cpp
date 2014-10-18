@@ -177,7 +177,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   FluidField().UseBlockMatrix(true);
 
   // build ale system matrix in splitted system
-  AleField()->CreateSystemMatrix(false);
+  AleField()->CreateSystemMatrix(AleField()->Interface());
 
   aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->OtherMap()));
 

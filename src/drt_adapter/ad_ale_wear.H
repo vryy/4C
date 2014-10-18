@@ -43,7 +43,15 @@ public:
 
   //@}
 
+  //! add ALE wear condition vector
+  void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
+  {
+    interface_->AddAleWearCondVector(idisp,WriteAccessDispnp());
+  }
 
+private:
+
+  Teuchos::RCP<ALENEW::UTILS::MapExtractor> interface_;
 
 }; // class AleWearWrapper
 } // namespace ADAPTER

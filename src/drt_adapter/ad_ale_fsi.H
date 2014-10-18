@@ -70,6 +70,18 @@ public:
   //! ToDo (mayr) move this to XFluidFluid adapter
   virtual void SolveBioGr() { };
 
+  //! apply interface displacements
+  void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
+  {
+    interface_->InsertFSICondVector(idisp,WriteAccessDispnp());
+  }
+
+  //! get Dirichlet map extractor
+  virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+  {
+    return AleWrapper::GetDBCMapExtractor();
+  }
+
 private:
 
   Teuchos::RCP<ALENEW::UTILS::MapExtractor> interface_;

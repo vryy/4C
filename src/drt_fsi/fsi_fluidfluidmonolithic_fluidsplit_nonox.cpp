@@ -122,7 +122,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystem()
   FluidField().UseBlockMatrix(true);
 
   // Build the ALE-matrix in split system
-  AleField()->CreateSystemMatrix(false);
+  AleField()->CreateSystemMatrix(AleField()->Interface());
 
   // Initialize the global system matrix!
   systemmatrix_=
