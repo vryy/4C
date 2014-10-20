@@ -1005,6 +1005,9 @@ void STR::TimInt::DetermineMassDampConsistAccel()
       pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), rhs);
     if (porositysplitter_ != Teuchos::null)
       porositysplitter_->InsertCondVector(porositysplitter_->ExtractCondVector(zeros_), rhs);
+
+//    std::cout<<"mass->EpetraOperator()"<<mass->EpetraOperator()<<std::endl;
+//    std::cout<<"(*acc_)(0)"<<*(*acc_)(0)<<std::endl;
     solver_->Solve(mass->EpetraOperator(), (*acc_)(0), rhs, true, true);
   }
 

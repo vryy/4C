@@ -1084,7 +1084,8 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     // new node positions and rotations
     Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
     Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::null;
-    if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+    // In case of Truss C/L, bspotrotations indicate the tangent of nodal displacement vector
+    if(statmechparams_.get<double>("ILINK",0.0)>0.0 || statmechparams_.get<double>("ILINK",0.0)==0.0)
       bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
     Epetra_Vector disrow(*discret_->DofRowMap(), true);
     Epetra_Vector discol(*discret_->DofColMap(), true);
@@ -1125,6 +1126,9 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
       randbspot = Permutation(bspotcolmap_->NumMyElements());
       randlink = Permutation(statmechparams_.get<int>("N_crosslink", 0));
       int numbspots = statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0);
+
+      if(numbspots != 0 && statmechparams_.get<int>("N_crosslink", 0)==0)
+        dserror("You can't have finite number of initial binding spots and zero crosslinkers! Please check your input file.");
 
       if(linkermodel_ != statmech_linker_none && numbspots>bspotcolmap_->NumMyElements())
         dserror("Given number of initially occupied binding spots (%i) exceeds the total binding spot count (%i)! Check your input file!",numbspots, bspotcolmap_->NumMyElements());
@@ -1454,7 +1458,8 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
             xrefe[k+3] = (*bspotpositions)[k][bspotcolmap.LID(bspotgid.at(1))];
 
             //set nodal rotations (not true ones, only those given in the displacement vector)
-            if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+            // In case of Truss C/L, bspotrotations indicate the tangent of nodal displacement vector
+            if(statmechparams_.get<double>("ILINK",0.0)>0.0 || statmechparams_.get<double>("ILINK",0.0)==0.0)
             {
               if (linkermodel_ == statmech_linker_stdintpol  ||
                   linkermodel_ == statmech_linker_activeintpol ||

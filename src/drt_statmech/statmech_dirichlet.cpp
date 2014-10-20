@@ -47,7 +47,7 @@ void STATMECH::StatMechManager::EvaluateDirichletStatMech(Teuchos::ParameterList
     }
   }
   else
-    dserror("Only new DBC application method implemented using the map extractor! Old version using toggle vectors dicontinued!");
+    dserror("Only new DBC application method implemented using the map extractor! Old version using toggle vectors discontinued!");
 
   return;
 }

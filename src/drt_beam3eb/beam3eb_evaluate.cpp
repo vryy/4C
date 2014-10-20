@@ -1655,7 +1655,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluatePTC(Teuchos::ParameterList& params,
       //variant2: PTC for tangential degrees of freedom; the Lobatto integration weight is 0.5 for 2-noded elements
       for(int k=0; k<3; k++)
       {
-        elemat1(node*6+3+k,node*6+3+k) += params.get<double>("crotptc",0.0)*0.5*jacobi_;
+        elemat1(node*6+3+k,node*6+3+k) += tTt0*params.get<double>("crotptc",0.0)*0.5*jacobi_;
       }
     #endif
 
@@ -1698,21 +1698,6 @@ inline void DRT::ELEMENTS::Beam3eb::MyDampingConstants(Teuchos::ParameterList& p
   if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropicconsistent || DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
     gamma(0) = gamma(1);
 
-   /* in the following section damping coefficients are replaced by those suggested in Ortega2003, which allows for a
-    * comparison of the finite element simulation with the results of that article; note that we assume that the element
-    * length is equivalent to the particle length in the following when computing the length to diameter ratio p*/
-/*
-   double lrefe= 0.3;
-   //for (int gp=0; gp<nnode-1; gp++)
-     //lrefe += gausspointsdamping.qwgt[gp]*jacobi_[gp];
-
-   double p=lrefe/(pow(crosssec_*4.0/PI,0.5));
-   double Ct=0.312+0.565/p-0.100/pow(p,2.0);
-   double Cr=-0.662+0.917/p-0.05/pow(p,2.0);
-   gamma(0) = 2.0*PI*params.get<double>("ETA",0.0)/(log(p) + 2*Ct - Cr);
-   gamma(1) = 4.0*PI*params.get<double>("ETA",0.0)/(log(p)+Cr);
-   gamma(2) = 4.0*PI*params.get<double>("ETA",0.0)*rsquare*artificial*(0.96 + 0.64992/p - 0.17568/(p*p));
-*/
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -1898,6 +1883,17 @@ inline void DRT::ELEMENTS::Beam3eb::MyTranslationalDamping(Teuchos::ParameterLis
       }
     }
 
+    /* currently we are neglecting the contribution from the gradient of background velocity
+     * i.e. dv/dx. Please uncomment this part if the gradient needs to be taken in account
+      */
+    //compute matrix product (t_{\par} \otimes t_{\par}) \cdot velbackgroundgrad
+    LINALG::Matrix<ndim,ndim> tpartparvelbackgroundgrad(true);
+    for(int i=0; i<ndim; i++)
+      for(int j=0; j<ndim; j++)
+        for(int k=0; k<ndim; k++)
+          tpartparvelbackgroundgrad(i,j) += r_x(i)*r_x(k)*velbackgroundgrad(k,j);
+
+
     //loop over all line nodes. Number shape functions for beam3eb is 4 in contrast to 2, in case of beam3ii elements.
     // Therefore max(i && j)= 4 i.e. 2*nnode
     for(int i=0; i<2*nnode; i++)
@@ -1915,7 +1911,9 @@ inline void DRT::ELEMENTS::Beam3eb::MyTranslationalDamping(Teuchos::ParameterLis
             for (int j=0; j<2*nnode; j++)
             {
               (*stiffmatrix)(i*3+k,j*3+l) += gausspoints.qwgt[gp]*N_i(i)*N_i(j)*jacobi_*(  (k==l)*gamma(1) + (gamma(0) - gamma(1))*r_x(k)*r_x(l) ) / dt;
-//              (*stiffmatrix)(i*dof+k,j*dof+l) -= gausspoints.qwgt[gp]*N_i(i)*N_i(j)*jacobi_*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;
+              /* currently we are neglecting the contribution from the gradient of background velocity
+               * i.e. dv/dx. Please uncomment this part if the gradient needs to be taken in account */
+              (*stiffmatrix)(i*3+k,j*3+l) -= gausspoints.qwgt[gp]*N_i(i)*N_i(j)*jacobi_*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;
               (*stiffmatrix)(i*3+k,j*3+k) += gausspoints.qwgt[gp]*N_i(i)*N_i_x(j)* (gamma(0) - gamma(1))*r_x(l)*(velgp(l) - velbackground(l));
               (*stiffmatrix)(i*3+k,j*3+l) += gausspoints.qwgt[gp]*N_i(i)*N_i_x(j)* (gamma(0) - gamma(1))*r_x(k)*(velgp(l) - velbackground(l));
             }
@@ -1923,7 +1921,6 @@ inline void DRT::ELEMENTS::Beam3eb::MyTranslationalDamping(Teuchos::ParameterLis
       }
     }
   }
-
   return;
 }//DRT::ELEMENTS::Beam3eb::MyTranslationalDamping(.)
 
@@ -2457,7 +2454,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
       {
         std::cout << std::setw(9) << std::setprecision(4) << std::scientific << (*stiffmatrix)(i,j);
       }
-      std::cout<<endl;
+      std::cout<<std::endl;
     }
 
     std::cout<<"\n\n analytical stiffness matrix: "<< std::endl;

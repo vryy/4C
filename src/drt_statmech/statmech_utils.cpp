@@ -381,10 +381,14 @@ void STATMECH::StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element
 
   /*get reference configuration of truss3 element in proper format for later call of SetUpReferenceGeometry*/
   std::vector<double> xrefe(truss->NumNode() * ndim, 0);
+  std::vector<double> rotrefe(truss->NumNode() * ndim, 0);
 
   for (int i=0; i<truss->NumNode(); i++)
     for (int dof = 0; dof < ndim; dof++)
       xrefe[3* i + dof] = truss->Nodes()[i]->X()[dof];
+
+  for(int i=0;i<6;i++)
+   rotrefe[i]=0.0;
 
   /*loop through all nodes except for the first node which remains fixed as reference node; all other nodes are
    * shifted due to periodic boundary conditions if required*/
@@ -403,9 +407,8 @@ void STATMECH::StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element
         xrefe[3* i + dof] -= periodlength_->at(dof);
     }
   }
-
-  /*note that the third argument "true" is necessary as all truss elements have already been initialized once upon reading input file*/
-  truss->SetUpReferenceGeometry(xrefe, true);
+    /*note that the third argument "true" is necessary as all truss elements have already been initialized once upon reading input file*/
+  truss->SetUpReferenceGeometry(xrefe,rotrefe,true);
 }
 
 /*------------------------------------------------------------------------*

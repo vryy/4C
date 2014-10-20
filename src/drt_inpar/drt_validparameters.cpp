@@ -2530,6 +2530,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("IPLINK",0.0,"Polar moment of inertia of area of crosslinkers",&statmech);
   //Cross section of crosslinkers
   DoubleParameter("ALINK",0.0,"Cross section of crosslinkers",&statmech);
+  //Torsional stiffness of crosslinkers
+  DoubleParameter("KTOR1_LINK",0.0,"Torsional stiffness at binding spots between Truss linkers and filaments",&statmech);
+  //Torsional stiffness of crosslinkers
+  DoubleParameter("KTOR2_LINK",0.0,"Torsional stiffness between tangents of filaments",&statmech);
   //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
   DoubleParameter("CTRANSPTC0",0.0,"PTC factor for translational DOF in first iteration step",&statmech);
   //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements

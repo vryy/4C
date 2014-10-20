@@ -130,7 +130,8 @@ void STATMECH::StatMechManager::Update(const int&                               
     Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
     Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::null;
     // allocate memory to binding spot rotations only if linkers are not Truss3, Truss3CL elements
-    if(statmechparams_.get<double>("ILINK",0.0)>0.0)
+    // In case of Truss C/L, bspotrotations indicate the tangent of nodal displacement vector
+    if(statmechparams_.get<double>("ILINK",0.0)>0.0 || statmechparams_.get<double>("ILINK",0.0)==0.0)
       bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
 
     /* note: access by ExtractMyValues requires column map vector, whereas displacements on level of time integration are
@@ -427,9 +428,11 @@ void STATMECH::StatMechManager::GetNodalBindingSpotPositionsFromDisVec(const Epe
   for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); i++)
   {
     //get pointer at a node
-    const DRT::Node* node = discret_->lRowNode(i);
+    DRT::Node* node = discret_->lRowNode(i);
     //get GIDs of this node's degrees of freedom
     std::vector<int> dofnode = discret_->Dof(node);
+    //ask the truss element about the first element the first node is connected to
+    DRT::Element* Element = node->Elements()[0];
 
     if(getpositions)
       for(int j=0; j<bspotpositionsrow->NumVectors(); j++)
@@ -437,8 +440,27 @@ void STATMECH::StatMechManager::GetNodalBindingSpotPositionsFromDisVec(const Epe
 
     //if node has also rotational degrees of freedom
     if (discret_->NumDof(node) == 6 && getrotations)
-      for(int j=0; j<bspotrotationsrow->NumVectors(); j++)
-        (*bspotrotationsrow)[j][i] = discol[discret_->DofColMap()->LID(dofnode[j+3])];
+    {
+      //Check via dynamic cast, if it's a beam3eb element
+         DRT::ELEMENTS::Beam3eb* BeamElement = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(Element);
+       //if not, tell the user to use beam3eb instead
+         if(BeamElement==NULL)
+         {
+           for(int j=0; j<bspotrotationsrow->NumVectors(); j++)
+             (*bspotrotationsrow)[j][i] = discol[discret_->DofColMap()->LID(dofnode[j+3])];
+         }
+         else
+         {
+           LINALG::Matrix<3,1> trefNodeAux(true);
+           trefNodeAux=BeamElement->Tref()[0];
+           for(int j=0; j<bspotrotationsrow->NumVectors(); j++)
+           {
+             (*bspotrotationsrow)[j][i]=trefNodeAux(j)+discol[discret_->DofColMap()->LID(dofnode[j+3])];
+
+           }
+         }
+
+    }
   }
 
   // Export
@@ -1519,7 +1541,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
   /*preliminaries*/
   // BINDING SPOT TRIAD UPDATE
   Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::null;
-  // beam elements only
+  // beam elements only. Binding spot triads are not available for Euler type elements
   if(statmechparams_.get<double>("ILINK",0.0)>0.0)
   {
     bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
@@ -2053,6 +2075,9 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
           {
             xrefe[k]   = (*bspotpositions)[k][bspotcolmap.LID(bspotgid.at(0))];
             xrefe[k+3] = (*bspotpositions)[k][bspotcolmap.LID(bspotgid.at(1))];
+            // Here rotation does not actually mean rotational degrees of freedom, but tangential dof
+            rotrefe[k] = (*bspotrotations)[k][bspotcolmap.LID((*globalnodeids)[0])];
+            rotrefe[k+3] = (*bspotrotations)[k][bspotcolmap.LID((*globalnodeids)[1])];
           }
         }
 
@@ -2249,7 +2274,7 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
        newcrosslinker->SetMaterial(2);
 
        //correct reference configuration data is computed for the new crosslinker element;
-       newcrosslinker->SetUpReferenceGeometry(xrefe);
+       newcrosslinker->SetUpReferenceGeometry(xrefe,rotrefe);
 
        //add element to discretization
        if(!addinitlinks)
