@@ -61,4 +61,6 @@ void ADAPTER::AleXFFsiWrapper::SolveAleXFluidFluidFSI()
   AleFsiWrapper::Evaluate(Teuchos::null,ALENEW::UTILS::MapExtractor::dbc_set_x_fsi);
 
   Solve();
+
+  UpdateIter();
 }
