@@ -1,15 +1,15 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file ale.H
+ \file ale.H
 
-\brief
+ \brief ALE time integration
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
-*/
+ <pre>
+ Maintainer: Matthias Mayr
+             mayr@mhpc.mw.tum.de
+             089 - 289-10362
+ </pre>
+ */
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -32,68 +32,101 @@ Maintainer: Matthias Mayr
 /* forward declarations */
 namespace LINALG
 {
-  class Solver;
-  class Preconditioner;
-  class SparseOperator;
-  class SparseMatrix;
-  class BlockSparseMatrixBase;
-  class MapExtractor;
-}
+class Solver;
+class Preconditioner;
+class SparseOperator;
+class SparseMatrix;
+class BlockSparseMatrixBase;
+class MapExtractor;
+} // namespace LINALG
 
 namespace DRT
 {
-  class ResultTest;
-  class Discretization;
-
-  namespace UTILS
-  {
-    class LocsysManager;
-  }
-}
-
-namespace IO
-{
-  class DiscretizationWriter;
-}
-
-
-
-
-namespace ALENEW {
+class ResultTest;
+class Discretization;
 
 namespace UTILS
 {
-  class MapExtractor;
-}
+class LocsysManager;
+} // namespace UTILS
+} // namespace DRT
 
-/// forward declaration
+namespace IO
+{
+class DiscretizationWriter;
+} // namespace IO
 
-/// General ALE interface
-/*!
-  An abstract base class meant to be derived for each ALE
-  implementation we want to support.
+namespace ALENEW
+{
+namespace UTILS
+{
+class MapExtractor;
+} // namespace UTILS
+} // namespace ALENEW
 
-  The purpose of the ALE field is to take an interface displacement and to
-  return the deformed interface. All in all pretty simple.
-
-  \warning Further cleanup is still needed.
-
-  \sa Structure, Fluid
-  \author u.kue
-  \date 11/07
+/*----------------------------------------------------------------------------*/
+/* definition of classes */
+namespace ALENEW
+{
+/*! \brief ALE time integration
+ *
+ *  Pure ALE field for mesh motion algorithms. To include this into a coupled
+ *  problem, use a problem specific adapter that derives from
+ *  ADAPTER::AleWrapper.
+ *
+ *  We provide the following ALE formulations:
+ *  <ul>
+ *  <li> solid: assume the ALE mesh to be a elastic, quasi-static solid body. We
+ *              allow the ALE field to have any material from the
+ *              MAT::ElastHyper tool box. </li>
+ *  <li> springs: spring analogy where the nodes are connected by lineal springs
+ *                and additional torsional springs in the element corners. </li>
+ *  <li> laplace: mesh motion as a Laplacian smoother where the diffusuvity is
+ *                computed based on the Jacobian determinant. </li>
+ *  </ul>
+ *
+ *  Since all ALE formulations just differ in the element evaluation routines,
+ *  there is no difference between them on the time integration level. We just
+ *  use the ALE_TYPE from the input file to pass an type-specific element action
+ *  kenner to the element evaluation and distinguish between the different
+ *  formulation only on the element level.
+ *
+ *  <h3>References:</h3>
+ *  For springs:
+ *  <ul>
+ *  <li> Batina, J. T.: Unsteady Euler algorithm with unstructured dynamic mesh
+ *       for complex-aircraft aerodynamic analysis, AIAA Journal (29), No. 3,
+ *       pp. 327-333, 1991 </li>
+ *  <li> Farhat, C., Degand, C, Koobus, B and Lesoinne, M.: Torsional springs
+ *       for two-dimensional dynamic unstructured fluid meshes, CMAME (163),
+ *       No. 1-4, pp. 231-245, 1998 </li>
+ *  <li> Zeng, D. and Ross Ethier, C.: A semi-torsional spring analogy model for
+ *       updating unstructured meshes in 3D moving domains, Finite Elements in
+ *       Analysis and Design (41), No. 11-12, pp. 1118-1139, 2005 </li>
+ *  <li> Degand, C. and Farhat, C.: A three-dimensional torional spring analogy
+ *       method for unstructured dynamic meshes, Computers & Structures (80),
+ *       No. 3-4, pp. 305-316, 2002
+ *  </ul>
+ *
+ *  \sa STR::TimInt, FLD::TimInt
+ *
+ *  \author mayr.mt \date 10/2014
  */
-  class Ale : public ::ADAPTER::Ale
+class Ale: public ::ADAPTER::Ale
+{
+  //friend class AleResultTest;
+
+public:
+
+  Ale(Teuchos::RCP<DRT::Discretization> actdis, ///< pointer to discretization
+      Teuchos::RCP<LINALG::Solver> solver, ///< linear solver
+      Teuchos::RCP<Teuchos::ParameterList> params, ///< parameter list
+      Teuchos::RCP<IO::DiscretizationWriter> output ///< output writing
+      );
+
+  virtual ~Ale()
   {
-    //friend class AleResultTest;
-
-  public:
-
-  Ale(Teuchos::RCP<DRT::Discretization> actdis,
-      Teuchos::RCP<LINALG::Solver> solver,
-      Teuchos::RCP<Teuchos::ParameterList> params,
-      Teuchos::RCP<IO::DiscretizationWriter> output);
-
-  virtual ~Ale() {}
+  }
 
   /*! \brief Create Systemmatrix
    *
@@ -103,7 +136,7 @@ namespace UTILS
    */
   void CreateSystemMatrix(
       Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface = Teuchos::null //!< interface
-  );
+      );
 
   /*! \brief evaluate and assemble residual #residual_ and jacobian matrix #sysmat_
    *
@@ -111,37 +144,39 @@ namespace UTILS
    *  Update in case of monolithic coupling is done by passing stepinc, Teuchos::null is assumed for
    *  non monolithic case.
    */
-   virtual void Evaluate(
-     Teuchos::RCP<const Epetra_Vector> stepinc = Teuchos::null, ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
-     ALENEW::UTILS::MapExtractor::AleDBCSetType  dbc_type = ALENEW::UTILS::MapExtractor::dbc_set_std ///< application-specific type of Dirichlet set
-   );
+  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc =
+      Teuchos::null, ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
+      ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type =
+          ALENEW::UTILS::MapExtractor::dbc_set_std ///< application-specific type of Dirichlet set
+      );
 
-   /// solve this time step with currently applied interface displacements
-   virtual int Solve();
+  /// solve this time step with currently applied interface displacements
+  virtual int Solve();
 
-   /// get the linear solver object used for this field
-   Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+  /// get the linear solver object used for this field
+  Teuchos::RCP<LINALG::Solver> LinearSolver()
+  {
+    return solver_;
+  }
 
-   //! update displacement with iterative increment
-   virtual void UpdateIter(); // TODO (Biehler) make private later
+  //! update displacement with iterative increment
+  virtual void UpdateIter(); // TODO (Biehler) make private later
 
-   /// take the current solution to be the final one for this time step
-   virtual void Update();
+  /// take the current solution to be the final one for this time step
+  virtual void Update();
 
-   /// convergence test for newton
-   virtual const bool Converged(const int iter);
+  /// convergence test for newton
+  virtual const bool Converged(const int iter);
 
-   virtual void EvaluateElements();
+  virtual void EvaluateElements();
 
-   const std::string ElementActionString(const enum INPAR::ALE::AleDynamic name ///< enum to convert
-       );
+  const std::string ElementActionString(const enum INPAR::ALE::AleDynamic name ///< enum to convert
+      );
 
-   Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner();
+  Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner();
 
-
-   virtual void CreatePreconditioner(bool full = true ///< Sparsematrix (true) or Blocksparsematrix (false)
-       );
-   //__________________________________________________________________________________________________CLEANUP
+  virtual void CreatePreconditioner(bool full = true ///< Sparsematrix (true) or Blocksparsematrix (false)
+      );
 
   //! @name Time step helpers
 
@@ -153,34 +188,32 @@ namespace UTILS
 
   virtual void TimeStep();
 
-
-
   /// write output
   virtual void Output();
 
   /*!
-  \brief Reset time step
+   \brief Reset time step
 
-  In case of time step size adaptivity, time steps might have to be repeated.
-  Therefore, we need to reset the solution back to the initial solution of the
-  time step.
+   In case of time step size adaptivity, time steps might have to be repeated.
+   Therefore, we need to reset the solution back to the initial solution of the
+   time step.
 
-  \author mayr.mt
-  \date 08/2013
-  */
+   \author mayr.mt
+   \date 08/2013
+   */
   virtual void ResetStep();
 
   /*!
-  \brief Reset time and step in case that a time step has to be repeated
+   \brief Reset time and step in case that a time step has to be repeated
 
-  ALE field increments time and step at the beginning of a time step. If a time
-  step has to be repeated, we need to take this into account and decrease time and
-  step beforehand. They will be incremented right at the beginning of the repetition
-  and, thus, everything will be fine. Currently, this is needed for time step size
-  adaptivity in FSI.
+   ALE field increments time and step at the beginning of a time step. If a time
+   step has to be repeated, we need to take this into account and decrease time and
+   step beforehand. They will be incremented right at the beginning of the repetition
+   and, thus, everything will be fine. Currently, this is needed for time step size
+   adaptivity in FSI.
 
-  \author mayr.mt
-  \date 08/2013
+   \author mayr.mt
+   \date 08/2013
    */
   virtual void ResetTime(const double dtold);
 
@@ -202,17 +235,20 @@ namespace UTILS
   //@{
 
   /// get the whole displacement field at time step \f$t^{n+1}\f$
-  virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const {return dispnp_;}
+  virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const { return dispnp_; }
 
   /// get the whole displacement field at time step \f$t^{n}\f$
-  virtual Teuchos::RCP<const Epetra_Vector> Dispn() const {return dispn_;}
+  virtual Teuchos::RCP<const Epetra_Vector> Dispn() const { return dispn_; }
 
   //@}
 
   //! @name Writing access to displacement
 
   /// write access to whole displacement field at time step \f$t^{n+1}\f$
-  virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const {return dispnp_;}
+  virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const
+  {
+    return dispnp_;
+  }
 
   //@}
 
@@ -222,7 +258,10 @@ namespace UTILS
   Teuchos::RCP<const Epetra_Vector> InitialGuess() const { return zeros_; }
 
   /// rhs of Newton's method
-  Teuchos::RCP<const Epetra_Vector> RHS() const { return rhs_; }
+  Teuchos::RCP<const Epetra_Vector> RHS() const
+  {
+    return rhs_;
+  }
 
   //@}
 
@@ -238,10 +277,16 @@ namespace UTILS
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
   /// direct access to discretization
-  Teuchos::RCP<const DRT::Discretization> Discretization() const { return discret_; }
+  Teuchos::RCP<const DRT::Discretization> Discretization() const
+  {
+    return discret_;
+  }
 
   /// writing access to discretization
-  Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization() { return discret_; }
+  Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization()
+  {
+    return discret_;
+  }
 
   /*!
    * \brief setup Dirichlet boundary condition map extractor.
@@ -251,52 +296,61 @@ namespace UTILS
    * together with an application key; by passing this key to routines like evaluate,
    * an adapter classes can assure, that its very own Dirichlet map extractor is used.
    */
-  void SetupDBCMapEx(
-    ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type = ALENEW::UTILS::MapExtractor::dbc_set_std,  //!< application-specific type of Dirichlet set
-    Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface = Teuchos::null,  //!< interface for creation of additional, application-specific Dirichlet map extractors
-    Teuchos::RCP<const ALENEW::UTILS::XFluidFluidMapExtractor> xff_interface = Teuchos::null  //!< interface for creation of a Dirichlet map extractor, taylored to XFFSI
-  );
+  void SetupDBCMapEx(ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type =
+      ALENEW::UTILS::MapExtractor::dbc_set_std, //!< application-specific type of Dirichlet set
+      Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface = Teuchos::null, //!< interface for creation of additional, application-specific Dirichlet map extractors
+      Teuchos::RCP<const ALENEW::UTILS::XFluidFluidMapExtractor> xff_interface =
+          Teuchos::null //!< interface for creation of a Dirichlet map extractor, taylored to XFFSI
+      );
 
   /// create result test for encapsulated algorithm
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
   const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(
-  ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type = ALENEW::UTILS::MapExtractor::dbc_set_std //!< application-specific type of Dirichlet set
-  ) { return dbcmaps_[dbc_type]; }
+      ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type =
+          ALENEW::UTILS::MapExtractor::dbc_set_std //!< application-specific type of Dirichlet set
+      )
+  {
+    return dbcmaps_[dbc_type];
+  }
 
   //! Return (rotatory) transformation matrix of local co-ordinate systems
   Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
 
   //! Return locsys manager
-  Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() {return locsysman_;}
+  Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() { return locsysman_; }
 
   //! Apply Dirichlet boundary conditions on provided state vectors
-  void ApplyDirichletBC
-  (
-    Teuchos::ParameterList& params,
-    Teuchos::RCP<Epetra_Vector> systemvector,   //!< (may be Teuchos::null)
-    Teuchos::RCP<Epetra_Vector> systemvectord,  //!< (may be Teuchos::null)
-    Teuchos::RCP<Epetra_Vector> systemvectordd, //!< (may be Teuchos::null)
-    bool recreatemap  //!< recreate mapextractor/toggle-vector
-                      //!< which stores the DOF IDs subjected
-                      //!< to Dirichlet BCs
-                      //!< This needs to be true if the bounded DOFs
-                      //!< have been changed.
-  );
+  void ApplyDirichletBC(Teuchos::ParameterList& params,
+      Teuchos::RCP<Epetra_Vector> systemvector, //!< (may be Teuchos::null)
+      Teuchos::RCP<Epetra_Vector> systemvectord, //!< (may be Teuchos::null)
+      Teuchos::RCP<Epetra_Vector> systemvectordd, //!< (may be Teuchos::null)
+      bool recreatemap //!< recreate mapextractor/toggle-vector
+                       //!< which stores the DOF IDs subjected
+                       //!< to Dirichlet BCs
+                       //!< This needs to be true if the bounded DOFs
+                       //!< have been changed.
+      );
 
   /// Reset state vectors to zero
   void Reset();
 
-
   //@}
 
-  private:
+private:
 
   //! @name Misc
 
+  //! ALE discretization
   Teuchos::RCP<DRT::Discretization> discret_;
+
+  //! linear solver
   Teuchos::RCP<LINALG::Solver> solver_;
+
+  //! parameter list
   Teuchos::RCP<Teuchos::ParameterList> params_;
+
+  //! output writing
   Teuchos::RCP<IO::DiscretizationWriter> output_;
 
   //! Dirichlet BCs with local co-ordinate system
@@ -305,14 +359,14 @@ namespace UTILS
   //@}
 
   //! @name Algorithm core variables
-  int step_;              ///< step counter
-  int numstep_;           ///< max number of steps
-  double time_;           ///< simulation time
-  double maxtime_;        ///< max simulation time
-  double dt_;             ///< time step size
+  int step_; ///< step counter
+  int numstep_; ///< max number of steps
+  double time_; ///< simulation time
+  double maxtime_; ///< max simulation time
+  double dt_; ///< time step size
   int writerestartevery_; ///< write restart every n steps
   int writeresultsevery_; ///< write results every n steps
-  bool incremental_;      ///< incremental ale yes/no?
+  bool incremental_; ///< incremental ale yes/no?
   //@}
 
   //! @name matrices, vectors
@@ -342,10 +396,10 @@ namespace UTILS
    */
   Teuchos::RCP<Epetra_Vector> rhs_;
 
-  Teuchos::RCP<Epetra_Vector>    dispnp_; ///< unknown solution at \f$t_{n+1}\f$
-  Teuchos::RCP<Epetra_Vector>    dispn_;  ///< known solution at \f$t_{n}\f$
-  Teuchos::RCP<Epetra_Vector>    disi_;  ///< iterative displacement increment
-  Teuchos::RCP<const Epetra_Vector>    zeros_;  ///< zero vector for dbc handling
+  Teuchos::RCP<Epetra_Vector> dispnp_; ///< unknown solution at \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> dispn_; ///< known solution at \f$t_{n}\f$
+  Teuchos::RCP<Epetra_Vector> disi_; ///< iterative displacement increment
+  Teuchos::RCP<const Epetra_Vector> zeros_; ///< zero vector for dbc handling
   //@}
 
   //! @name map extractors
@@ -357,7 +411,7 @@ namespace UTILS
    * each adapter class can extract its map extractor via
    * an application-specific key
    */
-  std::map<int,Teuchos::RCP<LINALG::MapExtractor> > dbcmaps_;
+  std::map<int, Teuchos::RCP<LINALG::MapExtractor> > dbcmaps_;
 
   //@}
 
@@ -392,8 +446,8 @@ namespace UTILS
 
   //@}
 
-};
+}; // class ALENEW
 
-}
+} // namespace ALENEW
 
 #endif /* ALENEW_H_ */

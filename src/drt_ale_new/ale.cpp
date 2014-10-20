@@ -2,8 +2,6 @@
 /*!
 \file ale.cpp
 
-\brief ALE base implementation
-
 <pre>
 Maintainer: Matthias Mayr
             mayr@mhpc.mw.tum.de
