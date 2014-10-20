@@ -825,7 +825,7 @@ void fluid_freesurf_drt()
 
     fsi->Timeloop(fsi);
 
-    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(comm);
     break;
   }

@@ -1,6 +1,8 @@
 
 #include "fs_monolithic.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/ad_ale_fs.H"
+
 #include "fsi_matrixtransform.H"
 
 #include "fsi_overlapprec_fsiamg.H"
@@ -9,7 +11,7 @@
 #include "fsi_nox_newton.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -31,10 +33,18 @@
 /*----------------------------------------------------------------------*/
 FSI::MonolithicBaseFS::MonolithicBaseFS(const Epetra_Comm& comm,
                                         const Teuchos::ParameterList& timeparams)
-  : AlgorithmBase(comm,timeparams),
-    FluidBaseAlgorithm(timeparams,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true),
-    AleBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale"))
+  : AlgorithmBase(comm,timeparams)
 {
+  // ask base algorithm for the fluid time integrator
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true));
+  fluid_ = fluid->FluidFieldrcp();
+
+  // ask base algorithm for the ale time integrator
+  Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale")));
+  ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFSWrapper>(ale->AleField());
+  if(ale_ == Teuchos::null)
+     dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
+
   coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 }
 
@@ -63,10 +73,10 @@ const ADAPTER::Coupling& FSI::MonolithicBaseFS::FluidAleCoupling() const
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBaseFS::ReadRestart(int step)
 {
-  FluidField().ReadRestart(step);
-  AleField().ReadRestart(step);
+  FluidField()->ReadRestart(step);
+  AleField()->ReadRestart(step);
 
-  SetTimeStep(FluidField().Time(),FluidField().Step());
+  SetTimeStep(FluidField()->Time(),FluidField()->Step());
 }
 
 
@@ -78,8 +88,8 @@ void FSI::MonolithicBaseFS::PrepareTimeStep()
 
   PrintHeader();
 
-  FluidField().    PrepareTimeStep();
-  AleField().      PrepareTimeStep();
+  FluidField()->    PrepareTimeStep();
+  AleField()->      PrepareTimeStep();
 }
 
 
@@ -87,8 +97,8 @@ void FSI::MonolithicBaseFS::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicBaseFS::Update()
 {
-  FluidField().    Update();
-  AleField().      Update();
+  FluidField()->    Update();
+  AleField()->      Update();
 }
 
 
@@ -100,10 +110,10 @@ void FSI::MonolithicBaseFS::Output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  FluidField().    Output();
-  AleField().      Output();
+  FluidField()->    Output();
+  AleField()->      Output();
 
-  FluidField().LiftDrag();
+  FluidField()->LiftDrag();
 }
 
 
@@ -263,17 +273,17 @@ void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   {
     Epetra_Time ta(Comm());
-    AleField().Evaluate(ax);
+    AleField()->Evaluate(ax);
     Utils()->out() << "ale      : " << ta.ElapsedTime() << " sec\n";
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().Dispnp());
-  FluidField().ApplyMeshDisplacement(fluiddisp);
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField()->Dispnp());
+  FluidField()->ApplyMeshDisplacement(fluiddisp);
 
   {
     Epetra_Time tf(Comm());
-    FluidField().Evaluate(fx);
+    FluidField()->Evaluate(fx);
     Utils()->out() << "fluid    : " << tf.ElapsedTime() << " sec\n";
   }
 
@@ -470,39 +480,39 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
 
   icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
   const int ndim = DRT::Problem::Instance()->NDim();
-  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface()->FSCondMap(),
-                                   *AleField().Discretization(),
-                                   AleField().Interface()->FSCondMap(),
+  icoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
+                                   FluidField()->Interface()->FSCondMap(),
+                                   *AleField()->Discretization(),
+                                   AleField()->Interface()->FSCondMap(),
                                    "FREESURFCoupling",
                                    ndim);
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
 
-  coupfa.SetupCoupling(*FluidField().Discretization(),
-                       *AleField().Discretization(),
+  coupfa.SetupCoupling(*FluidField()->Discretization(),
+                       *AleField()->Discretization(),
                        *fluidnodemap,
                        *alenodemap,
                         ndim);
 
-  FluidField().SetMeshMap(coupfa.MasterDofMap());
+  FluidField()->SetMeshMap(coupfa.MasterDofMap());
 
   // create combined map
 
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-  vecSpaces.push_back(FluidField()    .DofRowMap());
-  vecSpaces.push_back(AleField()      .Interface()->OtherMap());
+  vecSpaces.push_back(FluidField()->DofRowMap());
+  vecSpaces.push_back(AleField()->Interface()->OtherMap());
 
   SetDofRowMaps(vecSpaces);
 
   // Use normal matrix for fluid equations but build (splitted) mesh movement
   // linearization (if requested in the input file)
-  FluidField().UseBlockMatrix(false);
+  FluidField()->UseBlockMatrix(false);
 
   // build ale system matrix in splitted (at the free surface) system
-  AleField().BuildSystemMatrix(false);
+  AleField()->CreateSystemMatrix(AleField()->Interface());
 
   std::vector<int> pciter;
   std::vector<double> pcomega;
@@ -557,8 +567,8 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm,
   case INPAR::FSI::PreconditionedKrylov:
     systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFS(
                                    Extractor(),
-                                   FluidField(),
-                                   AleField(),
+                                   *FluidField(),
+                                   *AleField(),
                                    true,
                                    DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
                                    pcomega[0],
@@ -583,8 +593,8 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
 
   // see Kue eq. (4.2)
   SetupVector(f,
-              FluidField().RHS(),
-              AleField().RHS());
+              FluidField()->RHS(),
+              AleField()->RHS());
 
 
   // see Kue eq. (4.21)
@@ -597,7 +607,7 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
     //
     // And we are concerned with the u(n) part here.
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
     if (a==Teuchos::null)
       dserror("expect ale block matrix");
 
@@ -605,7 +615,7 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
     LINALG::SparseMatrix& aig = a->Matrix(0,2);
 
     // extract fluid free surface velocities.
-    Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractFreeSurfaceVeln();
+    Teuchos::RCP<Epetra_Vector> fveln = FluidField()->ExtractFreeSurfaceVeln();
 
     Teuchos::RCP<Epetra_Vector> aveln = icoupfa_->MasterToSlave(fveln);
 
@@ -617,7 +627,7 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
     Extractor().AddVector(*rhs,1,f);
 
     // shape derivatives
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField()->ShapeDerivatives();
     if (mmm!=Teuchos::null)
     {
       // here we extract the free surface submatrices from position 2
@@ -626,11 +636,11 @@ void FSI::MonolithicFS::SetupRHS(Epetra_Vector& f, bool firstcall)
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
       fmig.Apply(*fveln,*rhs);
-      Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface()->InsertOtherVector(rhs);
+      Teuchos::RCP<Epetra_Vector> veln = FluidField()->Interface()->InsertOtherVector(rhs);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
       fmgg.Apply(*fveln,*rhs);
-      FluidField().Interface()->InsertFSCondVector(rhs,veln);
+      FluidField()->Interface()->InsertFSCondVector(rhs,veln);
 
       veln->Scale(-1.*Dt());
 
@@ -654,11 +664,11 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 
   // split fluid matrix
 
-  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
 
   /*----------------------------------------------------------------------*/
 
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
   if (a==Teuchos::null)
     dserror("expect ale block matrix");
@@ -669,8 +679,8 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 
   /*----------------------------------------------------------------------*/
 
-//   double scale     = FluidField().ResidualScaling();
-  double timescale = FluidField().TimeScaling();
+//   double scale     = FluidField()->ResidualScaling();
+  double timescale = FluidField()->TimeScaling();
 
   // build block matrix
   // The maps of the block matrix have to match the maps of the blocks we
@@ -693,7 +703,7 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
 
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField()->ShapeDerivatives();
   if (mmm!=Teuchos::null)
   {
     // here we extract the free surface submatrices from position 2
@@ -738,8 +748,8 @@ void FSI::MonolithicFS::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFS::InitialGuess");
 
   SetupVector(*ig,
-              FluidField().InitialGuess(),
-              AleField().InitialGuess());
+              FluidField()->InitialGuess(),
+              AleField()->InitialGuess());
 }
 
 
@@ -822,7 +832,7 @@ void FSI::MonolithicFS::SetupVector(Epetra_Vector &f,
 {
 
   // extract the inner dofs of the ale field
-  Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface()->ExtractOtherVector(av);
+  Teuchos::RCP<Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
 
   Extractor().InsertVector(*fv,0,f);
 
@@ -900,7 +910,7 @@ FSI::MonolithicFS::CreateStatusTest(Teuchos::ParameterList& nlParams,
   // setup tests for interface
 
   std::vector<Teuchos::RCP<const Epetra_Map> > interface;
-  interface.push_back(FluidField().Interface()->FSCondMap());
+  interface.push_back(FluidField()->Interface()->FSCondMap());
   interface.push_back(Teuchos::null);
   LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
 
@@ -928,7 +938,7 @@ FSI::MonolithicFS::CreateStatusTest(Teuchos::ParameterList& nlParams,
   // setup tests for fluid velocities
 
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidvel;
-  fluidvel.push_back(FluidField().InnerVelocityRowMap());
+  fluidvel.push_back(FluidField()->InnerVelocityRowMap());
   fluidvel.push_back(Teuchos::null);
   LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(),fluidvel);
 
@@ -956,7 +966,7 @@ FSI::MonolithicFS::CreateStatusTest(Teuchos::ParameterList& nlParams,
   // setup tests for fluid pressure
 
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidpress;
-  fluidpress.push_back(FluidField().PressureRowMap());
+  fluidpress.push_back(FluidField()->PressureRowMap());
   fluidpress.push_back(Teuchos::null);
   LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(),fluidpress);
 
@@ -995,16 +1005,16 @@ void FSI::MonolithicFS::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
 
   fx = Extractor().ExtractVector(x,0);
 
-  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface()->ExtractFSCondVector(fx);
-  FluidField().FreeSurfVelocityToDisplacement(fcx);
+  Teuchos::RCP<Epetra_Vector> fcx = FluidField()->Interface()->ExtractFSCondVector(fx);
+  FluidField()->FreeSurfVelocityToDisplacement(fcx);
 
   // process ale unknowns
 
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,1);
   Teuchos::RCP<Epetra_Vector> acx = icoupfa_->MasterToSlave(fcx);
 
-  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
-  AleField().Interface()->InsertFSCondVector(acx, a);
+  Teuchos::RCP<Epetra_Vector> a = AleField()->Interface()->InsertOtherVector(aox);
+  AleField()->Interface()->InsertFSCondVector(acx, a);
   ax = a;
 }
 
@@ -1088,7 +1098,7 @@ NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeNewton(Teuchos::Param
  *----------------------------------------------------------------------*/
 FSI::BlockPreconditioningMatrixFS::BlockPreconditioningMatrixFS(const LINALG::MultiMapExtractor& maps,
                                                                 ADAPTER::Fluid& fluid,
-                                                                ALE::Ale& ale,
+                                                                ADAPTER::AleFSWrapper& ale,
                                                                 int symmetric,
                                                                 double omega,
                                                                 int iterations,
@@ -1214,7 +1224,7 @@ void FSI::BlockPreconditioningMatrixFS::LocalBlockRichardson(Teuchos::RCP<LINALG
  *----------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrixFS::OverlappingBlockMatrixFS(const LINALG::MultiMapExtractor& maps,
                                                         ADAPTER::Fluid& fluid,
-                                                        ALE::Ale& ale,
+                                                        ADAPTER::AleFSWrapper& ale,
                                                         bool structuresplit,
                                                         int symmetric,
                                                         double omega,

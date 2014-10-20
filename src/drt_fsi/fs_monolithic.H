@@ -7,7 +7,7 @@
 
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
-#include "../drt_ale/ale.H"
+#include "../drt_ale_new/ale.H"
 
 #include <NOX.H>
 #include <NOX_Epetra.H>
@@ -32,6 +32,7 @@ namespace LINALG
 namespace ADAPTER
 {
   class Coupling;
+  class AleFSWrapper;
 }
 
 namespace NOX
@@ -59,7 +60,7 @@ namespace FSI
 
     BlockPreconditioningMatrixFS(const LINALG::MultiMapExtractor& maps,
                                  ::ADAPTER::Fluid& fluid,
-                                 ALE::Ale& ale,
+                                 ::ADAPTER::AleFSWrapper& ale,
                                  int symmetric,
                                  double omega=1.0,
                                  int iterations=1,
@@ -142,7 +143,7 @@ namespace FSI
     /// construction
     OverlappingBlockMatrixFS(const LINALG::MultiMapExtractor& maps,
                              ::ADAPTER::Fluid& fluid,
-                             ALE::Ale& ale,
+                             ::ADAPTER::AleFSWrapper& ale,
                              bool structuresplit,
                              int symmetric,
                              double omega=1.0,
@@ -171,7 +172,7 @@ namespace FSI
     bool structuresplit_;
 
     ::ADAPTER::Fluid&     fluid_;
-    ALE::Ale&       ale_;
+    ::ADAPTER::AleFSWrapper &  ale_;
 
   };
 
@@ -186,9 +187,7 @@ namespace FSI
     \author --
     \date --
    */
-  class MonolithicBaseFS : public ::ADAPTER::AlgorithmBase,
-                           public ::ADAPTER::FluidBaseAlgorithm,
-                           public ALE::AleBaseAlgorithm
+  class MonolithicBaseFS : public ::ADAPTER::AlgorithmBase
   {
   public:
 
@@ -201,6 +200,12 @@ namespace FSI
 
     /// read restart data
     void ReadRestart(int step);
+
+    /// access to Fluid field
+    const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
+
+    /// access to ale field
+    const Teuchos::RCP<ADAPTER::AleFSWrapper>& AleField() { return ale_; }
 
   protected:
 
@@ -233,6 +238,12 @@ namespace FSI
 
     /// coupling of fluid and ale
     Teuchos::RCP<ADAPTER::Coupling>               coupfa_;
+
+    /// underlying fluid of the FS problem
+    Teuchos::RCP< ::ADAPTER::Fluid> fluid_;
+
+    /// underlying ale of the FS problem
+    Teuchos::RCP< ::ADAPTER::AleFSWrapper> ale_;
   };
 
 
