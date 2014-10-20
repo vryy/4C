@@ -27,7 +27,7 @@ Maintainer: Andreas Rauch
 namespace ADAPTER
 {
 
-class AleFpsiWrapper : public AleFsiWrapper
+class AleFpsiWrapper : public AleWrapper
 {
 public:
 
@@ -40,7 +40,21 @@ public:
   //! Destructor
   virtual ~AleFpsiWrapper(){}
 
+  //! specialized method to apply displacements to fpsi interface
+  void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
+
+  //! specialized method to apply displacements to fsi interface
+  void ApplyFSIInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
+
+  //! communicate object at the interface
+  Teuchos::RCP<const ALENEW::UTILS::MapExtractor> Interface() const;
+
   //@}
+
+private:
+
+  //! interface map extractor
+  Teuchos::RCP<ALENEW::UTILS::MapExtractor> interface_;
 
 
 }; // class AleFpsiWrapper

@@ -60,7 +60,7 @@ Maintainer: Andreas Rauch
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
 // ALE includes
-#include "../drt_ale/ale_utils_mapextractor.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
 #include "../drt_ale/ale_lin.H"
 
 // OTHER includes
@@ -102,8 +102,10 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fpsidynparams,fluiddynparams,"fluid",true));
   fluid_subproblem_ = fluid->FluidFieldrcp();
   // ask base algorithm for the ale time integrator
-  Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(fpsidynparams, DRT::Problem::Instance()->GetDis("ale")));
-  ale_ = ale->AleFieldrcp();
+  Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(fpsidynparams, DRT::Problem::Instance()->GetDis("ale")));
+  ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFpsiWrapper>(ale->AleField());
+  if(ale_ == Teuchos::null)
+     dserror("cast from ADAPTER::Ale to ADAPTER::AleFpsiWrapper failed");
 
   couple_porofluid_fluid_matching_ = Teuchos::rcp(new ADAPTER::Coupling());
   couple_porofluid_fluid_fpsi_ = Teuchos::rcp(new ADAPTER::Coupling());
@@ -126,7 +128,7 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
 
   // build a proxy of the fluid discretization for the structure field
   aledofset = Teuchos::null;
-  aledofset = AleField()->Discretization()->GetDofSetProxy();
+  aledofset = AleField()->WriteAccessDiscretization()->GetDofSetProxy();
 
   if (FluidField()->Discretization()->AddDofSet(aledofset) != 1)
   {
@@ -565,10 +567,11 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   PoroField() -> UpdatePoroIterinc(sx);
 
   Teuchos::RCP<Epetra_Vector> porointerfacedisplacements_FPSI = StructToAle_FPSI(PoroField() -> StructureField() -> ExtractInterfaceDispnp(true));
-  AleField()  -> ApplyInterfaceDisplacements(porointerfacedisplacements_FPSI,true);
+  AleField()  -> ApplyInterfaceDisplacements(porointerfacedisplacements_FPSI);
   Teuchos::RCP<Epetra_Vector> porointerfacedisplacements_FSI = StructToAle_FSI(PoroField() -> StructureField() -> ExtractInterfaceDispnp(false));
-  AleField()  -> ApplyInterfaceDisplacements(porointerfacedisplacements_FSI,false);
-  AleField()  -> Evaluate(ax,"iter");
+  AleField()  -> ApplyFSIInterfaceDisplacements(porointerfacedisplacements_FSI);
+  AleField()   ->WriteAccessDispnp()->Update(1.0,*ax,1.0);
+  AleField()  -> Evaluate(Teuchos::null);
 
 
   Teuchos::RCP<const Epetra_Vector> aledisplacements = AleToFluid(AleField()->Dispnp());

@@ -26,8 +26,8 @@ Maintainer: Andreas Rauch
 #include "../drt_poroelast/poro_base.H"
 
 //ALE includes
-#include "../drt_ale/ale.H"
-#include "../drt_ale/ale_lin.H"
+#include "../drt_ale_new/ale.H"
+#include "../drt_adapter/ad_ale_fpsi.H"
 
 //ADAPTER includes
 #include "../drt_adapter/ad_fld_base_algorithm.H"
@@ -55,6 +55,7 @@ namespace POROELAST
 namespace ADAPTER
 {
   class Coupling;
+  class AleFpsiWrapper;
 }
 
 namespace FSI
@@ -99,9 +100,9 @@ class MonolithicBase : public FPSI_Base
     virtual void Output();
 
 
-    const Teuchos::RCP<POROELAST::Monolithic>& PoroField(){return poroelast_subproblem_;}
-    const Teuchos::RCP< ::ADAPTER::Fluid>&     FluidField(){return fluid_subproblem_;}
-    const Teuchos::RCP<ALE::Ale>&              AleField(){ return ale_; }
+    const Teuchos::RCP<POROELAST::Monolithic>&  PoroField() {return poroelast_subproblem_;}
+    const Teuchos::RCP< ::ADAPTER::Fluid>&      FluidField(){return fluid_subproblem_;}
+    const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& AleField()  {return ale_; }
 
     Teuchos::RCP<DRT::DofSet> porostructdofset;
     Teuchos::RCP<DRT::DofSet> porofluiddofset;
@@ -114,11 +115,11 @@ class MonolithicBase : public FPSI_Base
   protected:
 
     // underlying poroelast problem
-    Teuchos::RCP<POROELAST::Monolithic>             poroelast_subproblem_;
+    Teuchos::RCP<POROELAST::Monolithic>       poroelast_subproblem_;
     // underlying fluid of the FSI problem
-    Teuchos::RCP< ::ADAPTER::Fluid>                 fluid_subproblem_;
+    Teuchos::RCP< ::ADAPTER::Fluid>           fluid_subproblem_;
     // underlying ale of the FSI problem
-    Teuchos::RCP<ALE::Ale>                          ale_;
+    Teuchos::RCP<ADAPTER::AleFpsiWrapper>     ale_;
 
     //flag defines if FSI Interface exists for this problem
     bool FSI_Interface_exists_;
@@ -379,51 +380,51 @@ protected:
 
 private:
 
-	enum INPAR::FPSI::ConvergenceNorm normtypeinc_;
-	enum INPAR::FPSI::ConvergenceNorm normtypefres_;
-	enum INPAR::FPSI::BinaryOp combinedconvergence_;
+  enum INPAR::FPSI::ConvergenceNorm normtypeinc_;
+  enum INPAR::FPSI::ConvergenceNorm normtypefres_;
+  enum INPAR::FPSI::BinaryOp combinedconvergence_;
 
-	double toleranceiterinc_;
-	double toleranceresidualforces_;
-	std::vector<double> toleranceresidualforceslist_; //order of fields: porofluidvelocity, porofluidpressure, porostructure, fluidvelocity, fluidpressure, ale
-	std::vector<double> toleranceiterinclist_; //order of fields: porofluidvelocity, porofluidpressure, porostructure, fluidvelocity, fluidpressure, ale
+  double toleranceiterinc_;
+  double toleranceresidualforces_;
+  std::vector<double> toleranceresidualforceslist_; //order of fields: porofluidvelocity, porofluidpressure, porostructure, fluidvelocity, fluidpressure, ale
+  std::vector<double> toleranceiterinclist_; //order of fields: porofluidvelocity, porofluidpressure, porostructure, fluidvelocity, fluidpressure, ale
 
-	int maximumiterations_;
-	int minimumiterations_;
-	double normofrhs_;
-	double normofrhsold_;
-	double normofiterinc_;
-	double normofiterincold_;
+  int maximumiterations_;
+  int minimumiterations_;
+  double normofrhs_;
+  double normofrhsold_;
+  double normofiterinc_;
+  double normofiterincold_;
 
-	double normrhsfluidvelocity_;
-	double normrhsfluidpressure_;
-	double normrhsporofluidvelocity_;
-	double normrhsporofluidpressure_;
-	double normrhsporointerface_;
-	double normrhsfluidinterface_;
-	double normrhsporostruct_;
-	double normrhsfluid_;
-	double normrhsale_;
+  double normrhsfluidvelocity_;
+  double normrhsfluidpressure_;
+  double normrhsporofluidvelocity_;
+  double normrhsporofluidpressure_;
+  double normrhsporointerface_;
+  double normrhsfluidinterface_;
+  double normrhsporostruct_;
+  double normrhsfluid_;
+  double normrhsale_;
 
-	 double normofiterincporostruct_;
-	 double normofiterincporofluid_;
-	 double normofiterincfluid_;
-	 double normofiterincporofluidvelocity_;
-	 double normofiterincporofluidpressure_;
-	 double normofiterincfluidvelocity_;
-	 double normofiterincfluidpressure_;
-	 double normofiterincale_;
-	 double normofiterincfluidinterface_;
-	 double normofiterincporointerface_;
-	 double normofiterincporo_;
+   double normofiterincporostruct_;
+   double normofiterincporofluid_;
+   double normofiterincfluid_;
+   double normofiterincporofluidvelocity_;
+   double normofiterincporofluidpressure_;
+   double normofiterincfluidvelocity_;
+   double normofiterincfluidpressure_;
+   double normofiterincale_;
+   double normofiterincfluidinterface_;
+   double normofiterincporointerface_;
+   double normofiterincporo_;
 
-	 double sqrtnall_; //!< squareroot of lenght of all dofs
-	 double sqrtnfv_;  //!< squareroot of length of fluid velocity dofs
-	 double sqrtnfp_;  //!< squareroot of length of fluid pressure dofs
-	 double sqrtnpfv_;  //!< squareroot of length of porofluid velocity dofs
-	 double sqrtnpfp_;  //!< squareroot of length of porofluid pressure dofs
-	 double sqrtnps_; //!< squareroot of length of porostruct dofs
-	 double sqrtna_;  //!< squareroot of length of ale dofs
+   double sqrtnall_; //!< squareroot of lenght of all dofs
+   double sqrtnfv_;  //!< squareroot of length of fluid velocity dofs
+   double sqrtnfp_;  //!< squareroot of length of fluid pressure dofs
+   double sqrtnpfv_;  //!< squareroot of length of porofluid velocity dofs
+   double sqrtnpfp_;  //!< squareroot of length of porofluid pressure dofs
+   double sqrtnps_; //!< squareroot of length of porostruct dofs
+   double sqrtna_;  //!< squareroot of length of ale dofs
 
    double norm1_alldof_; //!<sum of absolute values of all dofs
    double norm1_fv_; //!< sum of absolute fluid velocity values

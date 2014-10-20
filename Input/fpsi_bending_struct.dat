@@ -9,7 +9,7 @@ NODES       4430
 DIM           3
 NUMDF        6
 --------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
 LINEAR_SOLVER                   3
 MAXTIME                         4
 NUMSTEP                         41
@@ -19659,7 +19659,7 @@ NODE 4430    COORD  -1.7500000000000000e+00  2.5000000000000000e+00  -5.00000000
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 
-STRUCTURE DIS structure NODE  60 QUANTITY dispx VALUE 1.96887306223569621e-05 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 120 QUANTITY dispx VALUE 1.88557055313558839e-05 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE  60 QUANTITY dispx VALUE 1.96887306223569621e-05 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 120 QUANTITY dispx VALUE 1.88557055313558839e-05 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END
