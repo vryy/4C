@@ -1,7 +1,8 @@
 //
-// Maintainer: Mirella Coroneo
-// coroneo@lnm.mw.tum.de
-// 089/289-15236
+// Maintainer: Christoph Ager
+// ager@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289 -15249
 //
 // Test for checking biofilm growth algorithm
 //
@@ -15,7 +16,7 @@ created by pre_exodus
 //NODES                         4946
 DIM                             3
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        solid
+ALE_TYPE                        springs
 MAXTIME                         10000.0
 NUMSTEP                         41
 NUM_INITSTEP                    0
@@ -243,7 +244,7 @@ SOLVER                          UMFPACK                       // Aztec_MSR vm3 S
 --------------------------------------------------------------------SOLVER 1
 NAME                            COUPLED_FS3I_SOLVER
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        1                             // output every so often, 0 no output
+AZOUTPUT                        10                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          BGS2x2                        // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
@@ -417,12 +418,12 @@ MAT 11 MAT_Struct_StVenantKirchhoff YOUNG 0.004 NUE 0.4 DENS 0.001
 FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION 1
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 3715 QUANTITY phi VALUE 8.24197609639036433e-01 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 319 QUANTITY phi VALUE 8.24178092693030662e-01 TOLERANCE 1e-6
-SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_displx VALUE 9.03590999411364865e-02 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 3715 QUANTITY phi VALUE 8.24025769431290356e-01 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 319 QUANTITY phi VALUE 8.24005511794146495e-01 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_displx VALUE 9.03791658326586755e-02 TOLERANCE 1e-6
 SCATRA DIS scatra2 NODE 3715 QUANTITY scstr_growth_disply VALUE -1.85440113269617996e-05 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_displx VALUE 9.00256640415140613e-02 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_disply VALUE -7.10413251832777218e-03 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_displx VALUE 9.00435537376744199e-02 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 319 QUANTITY scfld_growth_disply VALUE -7.10578316476621116e-03 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

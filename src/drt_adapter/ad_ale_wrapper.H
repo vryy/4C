@@ -202,6 +202,12 @@ public:
     ale_->Update();
   }
 
+  //! update at time step end
+  virtual void UpdateIter()
+  {
+    ale_->UpdateIter();
+  }
+
   //! output results
   virtual void Output()
   {

@@ -160,6 +160,9 @@ public:
     ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type   ///< application-specific type of Dirichlet set
   ) = 0;
 
+  //! iterative update of solution after solving the linear system
+  virtual void UpdateIter() = 0;
+
   //! update at time step end
   virtual void Update() = 0;
 

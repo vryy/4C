@@ -7,10 +7,12 @@
        - an outer timeloop (resolving only the biofilm growth)
        at biological time-scale
 <pre>
-Maintainer: Mirella Coroneo
-            coroneo@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
+
+Maintainer: Christoph Ager
+ager@lnm.mw.tum.de
+http://www.lnm.mw.tum.de
+089 - 289 -15249
+
 </pre>
  *----------------------------------------------------------------------*/
 
@@ -76,6 +78,12 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFsiWrapper>(ale->AleField());
   if(ale_ == Teuchos::null)
      dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
+
+  // create fluid-ALE Dirichlet Map Extractor for ??? step
+  ale_->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_std);
+
+  // create fluid-ALE Dirichlet Map Extractor for growth step
+  ale_->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_biofilm, ale_->Interface());
 
   //---------------------------------------------------------------------
   // set up couplings
@@ -186,6 +194,13 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   normtraction_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
   tangtractionone_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
   tangtractiontwo_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
+
+  // create fluid-ALE Dirichlet Map Extractor for growth step
+  fsi_->AleField()->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_std, Teuchos::null);
+
+  // create fluid-ALE Dirichlet Map Extractor for FSI step
+  fsi_->AleField()->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_biofilm, fsi_->AleField()->Interface());
+
 }
 
 
@@ -659,16 +674,18 @@ void FS3I::BiofilmFSI::FluidAleSolve()
 {
   Teuchos::RCP<DRT::Discretization> fluidaledis = fsi_->AleField()->WriteAccessDiscretization();
 
-  fsi_->AleField()->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_biofilm, fsi_->AleField()->Interface());
-
   // if we have values at the fluid interface we need to apply them
   if (idispnp_!=Teuchos::null)
   {
     fsi_->AleField()->ApplyInterfaceDisplacements(FluidToAle(idispnp_));
   }
 
-  fsi_->AleField()->CreateSystemMatrix();
-  fsi_->AleField()->SolveBioGr();
+  fsi_->AleField()->CreateSystemMatrix(Teuchos::null);
+  fsi_->AleField()->Evaluate(Teuchos::null, ALENEW::UTILS::MapExtractor::dbc_set_biofilm);
+  int error = fsi_->AleField()->Solve();
+  if (error == 1)
+    dserror("Could not solve fluid ALE in biofilm FS3I!");
+  fsi_->AleField()->UpdateIter();
 
   //change nodes reference position of the fluid field
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->AleField()->WriteAccessDispnp());
@@ -692,8 +709,6 @@ void FS3I::BiofilmFSI::FluidAleSolve()
   VecToScatravec(scatradis, fluid_growth_disp, scatra_fluid_growth_disp);
   scatra->ScaTraField()->SetScFldGrDisp(scatra_fluid_growth_disp);
 
-  fsi_->AleField()->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_std);
-
   // computation of fluid solution
   //fluid_->Solve();
 
@@ -705,7 +720,6 @@ void FS3I::BiofilmFSI::FluidAleSolve()
 void FS3I::BiofilmFSI::StructAleSolve()
 {
   Teuchos::RCP<DRT::Discretization> structaledis = ale_->WriteAccessDiscretization();
-  ale_->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_biofilm, ale_->Interface());
 
   // if we have values at the structure interface we need to apply them
   if (struidispnp_!=Teuchos::null)
@@ -713,8 +727,12 @@ void FS3I::BiofilmFSI::StructAleSolve()
     ale_->ApplyInterfaceDisplacements(StructToAle(struidispnp_));
   }
 
-  ale_->CreateSystemMatrix();
-  ale_->SolveBioGr();
+  ale_->CreateSystemMatrix(Teuchos::null);
+  ale_->Evaluate(Teuchos::null, ALENEW::UTILS::MapExtractor::dbc_set_biofilm);
+  int error = ale_->Solve();
+  if (error == 1)
+    dserror("Could not solve fluid ALE in biofilm FS3I!");
+  ale_->UpdateIter();
 
   //change nodes reference position of the structure field
   Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->WriteAccessDispnp());
@@ -737,8 +755,6 @@ void FS3I::BiofilmFSI::StructAleSolve()
   //structure scatra
   VecToScatravec(struscatradis, struct_growth_disp, scatra_struct_growth_disp);
   struscatra->ScaTraField()->SetScStrGrDisp(scatra_struct_growth_disp);
-
-  ale_->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_std);
 
   // computation of structure solution
   //structure_->Solve();

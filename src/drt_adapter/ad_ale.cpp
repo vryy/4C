@@ -15,7 +15,6 @@ Maintainer: Matthias Mayr
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "ad_ale.H"
-#include "ad_ale_biofilm_fsi.H"
 #include "ad_ale_crack.H"
 #include "ad_ale_fpsi.H"
 #include "ad_ale_fsi.H"
@@ -172,6 +171,7 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
   }
   case prb_fsi:
   case prb_gas_fsi:
+  case prb_biofilm_fsi:
   {
     const Teuchos::ParameterList& fsidyn =
         DRT::Problem::Instance()->FSIDynamicParams();
@@ -242,11 +242,6 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
   case prb_crack: case prb_fsi_crack:
   {
     ale_ = Teuchos::rcp(new ADAPTER::AleCrackWrapper(ale));
-    break;
-  }
-  case prb_biofilm_fsi:
-  {
-    ale_ = Teuchos::rcp(new ADAPTER::AleBiofilmFsiWrapper(ale));
     break;
   }
   // Todo (farah) is this the correct problemtype for wear problems?
