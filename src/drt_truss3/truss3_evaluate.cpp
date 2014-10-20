@@ -1042,6 +1042,7 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList&   params,
   TorForceNode2.Scale(0);
 
   MyTorsionalStiffatNode(params,double(thetacurr(1)), double(deltatheta_(1)),diff_disp_curr, tcurrNode2, TorStiffmatrixNode2, TorForceNode2);
+  // Uncomment this part to verify the stiffness matrix with FAD type of variable
   //    FADMyTorsionalStiffatNode(params, double(ThetaRef_[1]), tcurrNode2, xcurr, TorStiffmatrixNode2, TorForceNode2);
 
   // Map element level into global 12 by 12 element
@@ -1087,7 +1088,7 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList&   params,
   // Calculate torsional stiffness matrices and forces between tangents at node 1 & node 2
   MyTorsionalStiffTangent(params, double(thetacurr(2)), double(deltatheta_(2)), tcurrNode2, tcurrNode1, TorStiffmatrixNode3, TorForceNode3);
 
-  // Calculate Fad torsional stiffness matrices and forces between tangents at node 1 & node 2
+  // Uncomment this part to verify the stiffness matrix with FAD type of variable
   //   FADMyTorsionalStiffTangent(params, double(ThetaRef_[2]),tcurrNode2, tcurrNode1, TorStiffmatrixNode3, TorForceNode3);
 
   // Map element level into global 12 by 12 element
@@ -1187,8 +1188,6 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNode(Teuchos::ParameterList&   par
 
       dbdv1(i,j)+= -(i==j)*s/(pow(norm_v,2)*sin(theta))+ 2*s*diff_disp(i)*diff_disp(j)/(sin(theta)*pow(norm_v,4))+ diff_disp(i)*B(j)/(pow(norm_v,2)*pow(sin(theta),2))-tcurr(i)*diff_disp(j)/(norm_t*pow(norm_v,3)*sin(theta))- tcurr(i)*B(j)*s/(norm_t*norm_v*pow(sin(theta),2));
     }
-
-  //  std::cout<<"dadt1="<<dadt1<<std::endl;
 
   // Create torsional siffness matrix
   for(int i=0; i<3; i++)
@@ -1430,9 +1429,6 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffatNode(Teuchos::ParameterList&   
     } //for(int col=0; col<3*nnode; col++)
   } //for(int line=0; line<3*nnode; line++)
 
-  std::cout<<__FILE__<<__LINE__ <<std::endl;
-
-
   std::cout<<"\n\n original stiffness matrix: "<< std::endl;
   for(int i = 0; i< 9; i++)
   {
@@ -1572,10 +1568,6 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffTangent(Teuchos::ParameterList&  
   // Spring stiffness
   FAD spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
 
-  //    std::cout<<"spring:"<<spring<<std::endl;
-
-  //  double spring = 0.1; //0.0;
-
   // Calculate torsional forces
   for(int j=0; j<6; j++)
     force_check(0,j)=spring*deltatheta*aux_c(0,j);
@@ -1589,7 +1581,6 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffTangent(Teuchos::ParameterList&  
     }
   } //for(int i = 0; i < dofpn*nnode; i++)
 
-  //    Epetra_SerialDenseMatrix stiff_relerr;
   LINALG::TMatrix<FAD,6,6> stiff_relerr;
   stiff_relerr.Clear();
   for(int row=0; row<6; row++)
@@ -1606,8 +1597,6 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffTangent(Teuchos::ParameterList&  
         stiff_relerr(row,col) = 0;
     } //for(int col=0; col<3*nnode; col++)
   } //for(int line=0; line<3*nnode; line++)
-
-  //       std::cout<<__FILE__<<__LINE__ <<std::endl;
 
 
   std::cout<<"\n\n original stiffness matrix corresponding to tangential dofs: "<< std::endl;
@@ -1634,8 +1623,6 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffTangent(Teuchos::ParameterList&  
   std::cout<<"\n\n rel error of stiffness matrix corresponding to tangential dofs"<< stiff_relerr;
   std::cout<<"Analytical Force corresponding to tangential dofs= "<< force_check << std::endl;
   std::cout<<"Original Force corresponding to tangential dofs="<<TorForce<<std::endl;
-  //  std::cout<<"Stiffnessmatrix="<<TorStiffmatrix<<std::endl;
-  //  Torsional_stiff_node1()
   return;
 }
 
