@@ -234,6 +234,27 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
     }
     break;
   }
+  case prb_fsi_redmodels:
+  {
+    const Teuchos::ParameterList& fsidyn =
+        DRT::Problem::Instance()->FSIDynamicParams();
+    int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+    if (coupling == fsi_iter_monolithicfluidsplit
+        or coupling == fsi_iter_monolithicstructuresplit
+        or coupling == fsi_iter_constr_monolithicfluidsplit
+        or coupling == fsi_iter_constr_monolithicstructuresplit
+        or coupling == fsi_iter_mortar_monolithicstructuresplit
+        or coupling == fsi_iter_mortar_monolithicfluidsplit)
+    {
+      ale_ = Teuchos::rcp(new ADAPTER::AleFsiWrapper(ale));
+    }
+    else
+    {
+      dserror("No ALE adapter available yet for your chosen FSI coupling "
+          "algorithm!");
+    }
+    break;
+  }
   case prb_fpsi:
   {
     ale_ = Teuchos::rcp(new ADAPTER::AleFpsiWrapper(ale));
