@@ -13,10 +13,8 @@ Maintainer: Andreas Rauch
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
 #include "ad_ale_fpsi.H"
-#include "../drt_lib/drt_dserror.H"
 
 #include "../drt_ale_new/ale_utils_mapextractor.H"
-#include "../drt_ale_new/ale.cpp"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

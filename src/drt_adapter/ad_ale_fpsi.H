@@ -20,7 +20,7 @@ Maintainer: Andreas Rauch
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
-#include "ad_ale_fsi.H"
+#include "ad_ale_wrapper.H"
 
 /*----------------------------------------------------------------------------*/
 /* class definitions */
