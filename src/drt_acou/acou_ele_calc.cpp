@@ -2454,12 +2454,12 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
   double tau = 1.0 / (c) ;/// dt; // / 1.0e6;
 
   // loop over number of shape functions
-  for (unsigned int p = 0; p < shapesface_->nfdofs_; ++p)
+  for (unsigned int q = 0; q < ndofs_; ++q)
   {
-    // loop over number of shape functions
-    for (unsigned int q = 0; q < ndofs_; ++q)
+    if( shapesface_->shfunctI.NonzeroOnFace(q) )
     {
-      if( shapesface_->shfunctI.NonzeroOnFace(q) )
+      // loop over number of shape functions
+      for (unsigned int p = 0; p < shapesface_->nfdofs_; ++p)
       {
         // C and E
 

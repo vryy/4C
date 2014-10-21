@@ -563,7 +563,7 @@ DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParam
     for (int i=0; i<faceValues.M(); ++i)
     {
       container->matrix_(i,q) = faceValues(i);
-      if(std::abs(faceValues(i)>1e-15))
+      if(std::abs(faceValues(i))>1e-14)
         container->isNonzero_[i] = true;
     }
   }
