@@ -27,7 +27,7 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-OUTPUT_BIN                      Yes
+OUTPUT_BIN                      No
 OUTPUT_GID                      No
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes

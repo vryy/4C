@@ -362,7 +362,7 @@ void NodeReader::Read()
   }
 
   comm_->MaxAll(&maxnodeid, &maxnodeid, 1);
-  if( (maxnodeid-1 < numproc) && (numnodes != 0) )
+  if( (maxnodeid < numproc) && (numnodes != 0) )
     dserror("Bad idea: Simulation with %d procs for problem with %d nodes", numproc, maxnodeid);
 
 } // NodeReader::Read

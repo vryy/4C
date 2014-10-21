@@ -203,6 +203,8 @@ namespace FS3I
 
     double time_;  ///< time t_{n+1} of simulation
 
+    bool diskoutput_;   ///< bool indicating if files are written to disk
+
   }; // AeroTFSI
 
 } // namespace FS3I

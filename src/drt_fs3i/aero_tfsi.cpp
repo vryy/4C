@@ -44,7 +44,8 @@ FS3I::AeroTFSI::AeroTFSI(
   structure_(Teuchos::null),
   thermo_(Teuchos::null),
   stopflag_(0),
-  time_(0.0)
+  time_(0.0),
+  diskoutput_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_BIN"))
 {
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
@@ -169,7 +170,7 @@ void FS3I::AeroTFSI::Timeloop()
 template<class A>
 void FS3I::AeroTFSI::TimeloopT(Teuchos::RCP<A> solver)
 {
-  if(DRT::Problem::Instance()->Restart() == 0)
+  if(DRT::Problem::Instance()->Restart() == 0 && diskoutput_ == true)
   {
     FILE* outFile;
     outFile = fopen("interfaceDisp.txt", "w");
@@ -217,7 +218,7 @@ void FS3I::AeroTFSI::TimeloopT(Teuchos::RCP<A> solver)
   // time loop
   while (solver->NotFinished() and stopflag_ == 0)
   {
-    if(lcomm_.MyPID() == 0)
+    if(lcomm_.MyPID() == 0 && diskoutput_ == true)
     {
       FILE* outFile;
       outFile = fopen("interfaceDisp.txt", "a");
@@ -321,7 +322,7 @@ void FS3I::AeroTFSI::TimeloopT(Teuchos::RCP<A> solver)
       ComputeTiming(time, BACICouplingTime);
     }
 
-    if(lcomm_.MyPID() == 0)
+    if(lcomm_.MyPID() == 0 && diskoutput_ == true)
     {
       FILE* outFile = fopen("interfaceFlux.txt", "a");
       fprintf(outFile, "%.12e  ", flux_in);
@@ -556,7 +557,7 @@ template<class A>
 void FS3I::AeroTFSI::WriteStatusFile(Teuchos::RCP<A> solver)
 {
   // write output to file which is used for a coupled restart
-  if(lcomm_.MyPID() == 0)
+  if(lcomm_.MyPID() == 0 && diskoutput_ == true)
   {
     FILE* outFile = fopen("coupling_status_baci.dat", "a");
     fprintf(outFile, "%10d", solver->Step());
@@ -869,7 +870,7 @@ void FS3I::AeroTFSI::Output(Teuchos::RCP<A> solver)
   // write latest step to file for proper restarting
   if(((uprestart != 0) and (solver->Step()%uprestart == 0)) or stopflag_!=0)
   {
-    if(lcomm_.MyPID() == 0)
+    if(lcomm_.MyPID() == 0 && diskoutput_ == true)
     {
       FILE *outFile;
       outFile = fopen("result_status_baci.inp", "w");
