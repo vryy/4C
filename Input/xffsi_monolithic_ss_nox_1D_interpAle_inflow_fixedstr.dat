@@ -59,7 +59,7 @@ GAMMA                           0.611//0.5
 ALPHA_M                         0.333//0.5
 ALPHA_F                         0.444//0.5
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        solid
+ALE_TYPE                        springs
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
 TIMESTEP                        0.1
@@ -69,7 +69,7 @@ COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nox
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
-ITEMAX                          7
+ITEMAX                          10
 PRECONDREUSE                    0
 SHAPEDERIVATIVES                Yes
 TOL_DIS_INC_INF                 1e-08
