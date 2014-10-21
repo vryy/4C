@@ -40,17 +40,14 @@ numparams_(0),
 params_(Teuchos::null)
 {
   const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
-
-  if (not discret_->Filled() || not discret_->HaveDofs())
-      dserror("Discretisation is not complete or has no dofs!");
+  // want metaparametrization
+  metaparams_ = DRT::INPUT::IntegralValue<bool>(statinvp, "METAPARAMS");
 
   // set up maps to link against materials, parameters and materials/parameters for the optimization
   SetupMatOptMap();
 
   params_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()),numparams_,true));
 
-  // want metaparametrization
-  metaparams_ = DRT::INPUT::IntegralValue<bool>(statinvp, "METAPARAMS");
 }
 
 /*----------------------------------------------------------------------*/
@@ -174,21 +171,11 @@ void STR::INVANA::MatParManager::SetParams()
   // export to column layout to be able to run column elements
   LINALG::Export(*getparams,*params_);
 
-
   Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*params_));
   if (metaparams_)
   {
     params_->PutScalar(0.1);
     params_->Multiply(0.5,*tmp,*tmp,1.0);
-//    double tmp=0.0;
-//    for (int j=0; j<numparams_; j++)
-//    {
-//      for (int i=0; i<params_->MyLength(); i++)
-//      {
-//        tmp=(*(*params_)(j))[i];
-//        params_->ReplaceMyValue(i,j,exp(0.5*tmp));
-//      }
-//    }
   }
 
   //loop materials to be optimized
@@ -253,6 +240,7 @@ void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_Multi
   FillParameters(getparams);
 
   // export to column layout to be able to run column elements
+  discret_->Comm().Barrier();
   LINALG::Export(*getparams,*params_);
 
   // the reason not to do this loop via a discretizations evaluate call is that if done as is,
@@ -299,16 +287,17 @@ void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_Multi
       {
         double val1 = (*(*params_)( parapos_.at(elematid).at(it-actparams.begin()) ))[actele->LID()];
         elevector1.Scale(val1);
-        //elevector1.Scale(0.5*val1);
       }
 
-      //reuse elevector2
+      // dualstate^T*(dR/dp_m)
       for (int l=0; l<(int)la[0].lm_.size(); l++)
       {
         int lid=disdual->Map().LID(la[0].lm_.at(l));
         if (lid==-1) dserror("not found on this processor");
         elevector2[l] = (*disdual)[lid];
       }
+
+      // functional differentiated wrt to this elements material parameter
       double val2 = elevector2.Dot(elevector1);
 
       // Assemble the final gradient; this is parametrization class business
@@ -491,6 +480,6 @@ Teuchos::RCP<STR::INVANA::ConnectivityData> STR::INVANA::MatParManager::GetConne
 void STR::INVANA::MatParManager::FillAdjacencyMatrix(const Epetra_Map& elerowmap, int blockid, Teuchos::RCP<Epetra_CrsMatrix> graph)
 {
   // if not implemented for the specific parameterizations no graph exists
-  graph=Teuchos::null;
+  //graph=Teuchos::null;
   return;
 }

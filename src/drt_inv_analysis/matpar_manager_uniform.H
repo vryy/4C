@@ -43,7 +43,8 @@ public:
   //! destructor
   virtual ~MatParManagerUniform(){}
 
-  int NumVectors(){return NumParams();}
+  //! Setup specific parametrization layout
+  virtual void Setup();
 
 protected:
 

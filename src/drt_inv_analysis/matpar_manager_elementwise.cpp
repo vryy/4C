@@ -29,6 +29,12 @@ Maintainer: Sebastian Kehl
 
 STR::INVANA::MatParManagerPerElement::MatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret)
    :MatParManager(discret)
+{}
+
+/*----------------------------------------------------------------------*/
+/* Setup                                                    keh 10/14   */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::MatParManagerPerElement::Setup()
 {
   // temp map to keep correspondence of parameter block position and eleids
   // used to build the mapextractor and the various maps to keep track of parameters and elements
@@ -101,9 +107,6 @@ STR::INVANA::MatParManagerPerElement::MatParManagerPerElement(Teuchos::RCP<DRT::
 
   //initialize parameter vector from material parameters given in the input file
   InitParams();
-
-  // set the parameters to be available for the elements
-  SetParams();
 
 }
 

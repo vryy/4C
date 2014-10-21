@@ -86,17 +86,18 @@ private:
   uniform distribution, kernel based parametrization, ...). Basic functionality common to
   all parametrizations is given here.
 
-  <b>Material Parameters</b>(MatParManager::params_) are stored as Epetra_MultiVector where each vector refers to a
+  <b>Material Parameters</b>(MatParManager::params_) are "stored" as Epetra_MultiVector where each vector refers to a
   physical material property (e.g. youngs modulus for St. Venant Kirchhoff, alpha "stiffness"
   and beta "stiffness" in the AAA material) corresponding to one input file material.
-  The layout of each vector is given by the underlying discretization's elecolmap.
+  The layout of each vector is given by the underlying discretization's elecolmap. It is not stored but only
+  filled with the current material parameters upon request.
 
   <b>Optimization parameters</b>(MatParManager::optparams_) are stored as Epetra_MultiVector for historical reasons too.
   The respective parametrizations need to take care about the mapping between optparams_ and params_
   The row-wise layout (MatParManager::paramlayoutmap_) must be provided  by the respective parametrizations.
-  Access to the optimization parameters is given by access functions.
+  Parameterizations should only use the first vector in the multivector. Multiple-vector support might go away.
 
-  Core functionality is the evaluation of the derivative of the residual vector wrt to the
+  Core functionality is the evaluation of the derivative of some residual vector wrt to the
   optimization parameters \f$ \frac{\partial \underline{R}}{\underline{p}_o}\f$ and the assembly into the gradient
   \f$ \frac{\partial \pi}{\underline{p}_o}\f$ of some objective function \f$ \pi \f$ via directly evaluating
   \f$ \lambda^T \cdot \frac{\partial \pi}{\underline{p}_o}\f$. With \f$ \lambda \f$ being the lagrange multiplier
@@ -118,7 +119,10 @@ public:
   virtual ~MatParManager() {}
 
   //! return number of vectors of the optimization parameter vector layout
-  virtual int NumVectors() = 0;
+  virtual int NumVectors() {return 1;}
+
+  //! Setup specific parametrization layout
+  virtual void Setup() = 0;
 
   //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
   virtual void Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate=false);

@@ -135,6 +135,7 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
       dserror("choose a valid method of parametrizing the material parameter field");
     break;
   }
+  matman_->Setup();
   ssize_ *= matman_->NumVectors();
   actsize_=0;
 

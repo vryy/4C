@@ -78,6 +78,7 @@ Teuchos::RCP<STR::INVANA::InvanaBase> STR::INVANA::InvanaFactory::Create(Teuchos
       dserror("choose a valid method of parametrizing the material parameter field");
       break;
   }
+  matman->Setup();
 
   // regularization!
   Teuchos::RCP<STR::INVANA::RegularizationBase> regman = Teuchos::null;

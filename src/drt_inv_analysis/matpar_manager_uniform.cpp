@@ -29,11 +29,17 @@ Maintainer: Sebastian Kehl
 
 STR::INVANA::MatParManagerUniform::MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret)
    :MatParManager(discret)
+{}
+
+/*----------------------------------------------------------------------*/
+/* Setup                                                    keh 10/14   */
+/*----------------------------------------------------------------------*/
+void STR::INVANA::MatParManagerUniform::Setup()
 {
-  paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(1,1,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
+  paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(NumParams(),NumParams(),0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
   int numeleperproc=0;
-  if (Discret()->Comm().MyPID()==0) numeleperproc = 1;
-  paramlayoutmapunique_ = Teuchos::rcp(new Epetra_Map(1,numeleperproc,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
+  if (Discret()->Comm().MyPID()==0) numeleperproc = NumParams();
+  paramlayoutmapunique_ = Teuchos::rcp(new Epetra_Map(-1,numeleperproc,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
 
   // build the mapextractor
   // the partial maps (only one map in case of uniform material parameters)
@@ -41,30 +47,23 @@ STR::INVANA::MatParManagerUniform::MatParManagerUniform(Teuchos::RCP<DRT::Discre
   partials.push_back(paramlayoutmapunique_);
   paramapextractor_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*paramlayoutmapunique_,partials));
 
-  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumParams(),true));
-  optparams_o_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumParams(),true));
-  optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumParams(),true));
+  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumVectors(),true));
+  optparams_o_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumVectors(),true));
+  optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumVectors(),true));
 
   //initialize parameter vector from material parameters given in the input file
   InitParams();
-
-  // set the parameters to be available for the elements
-  SetParams();
-
 }
 
 void STR::INVANA::MatParManagerUniform::FillParameters(Teuchos::RCP<Epetra_MultiVector> params)
 {
-  // zero out to make sure
-  params->PutScalar(0.0);
-
   for (int i=0; i<NumParams(); i++)
-    (*params)(i)->PutScalar((*(*optparams_)(i))[0]);
+    (*params)(i)->PutScalar((*(*optparams_)(0))[i]);
 }
 
 void STR::INVANA::MatParManagerUniform::InitParameters(int parapos, double val)
 {
-  (*optparams_)(parapos)->PutScalar(val);
+  optparams_->ReplaceGlobalValue(parapos,0,val);
 }
 
 void STR::INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
@@ -76,19 +75,17 @@ void STR::INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_Mul
   // only this proc's row elements contribute
   if (not Discret()->ElementRowMap()->MyGID(elepos)) return;
 
-  // every proc can do the 'product rule' on his own since the uniformly ditributed optparams are kept redundantly
-  int success = dfint->SumIntoGlobalValue(0,paraposglobal,val);
+  // every proc can do the 'product rule' on his own since the uniformly distributed optparams are kept redundantly
+  int success = dfint->SumIntoGlobalValue(paraposglobal,0,val);
   if (success!=0) dserror("error code %d", success);
 }
 
 void STR::INVANA::MatParManagerUniform::Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint)
 {
+  std::vector<double> val(dfint->MyLength(),0.0);
+  Discret()->Comm().SumAll((*dfint)(0)->Values(),&val[0],dfint->MyLength());
 
-  double val=0.0;
-  for (int i=0; i<dfint->NumVectors(); i++)
-  {
-    val = 0.0;
-    Discret()->Comm().SumAll((*dfint)(i)->Values(),&val,1);
-    dfint->ReplaceGlobalValue(0,i,val);
-  }
+  for (int i=0; i<NumParams(); i++)
+    dfint->ReplaceGlobalValue(i,0,val[i]);
+
 }
