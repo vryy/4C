@@ -173,6 +173,13 @@ public:
   */
   virtual ~SerialDenseMatrix();
 
+  /*!
+  \brief Assignment operator from another SerialDenseMatrix
+
+  If the matrix memory is enough to keep the new matrix, no memory reallocation
+  is done, similarly to memory management of the LightShape method.
+   */
+  SerialDenseMatrix & operator= (const SerialDenseMatrix &Source);
 
   //@}
 

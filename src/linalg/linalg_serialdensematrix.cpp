@@ -133,7 +133,35 @@ allocatedSize_(0)
     SetLabel("LINALG::SerialDenseMatrix");
   }
   if (CV_ == Copy)
-    allocatedSize_ = LDA_ * N_;
+    allocatedSize_ = std::size_t(LDA_) * N_;
+}
+
+
+/*----------------------------------------------------------------------*
+ | assignment operator (public)                       kronbichler Oct14 |
+ *----------------------------------------------------------------------*/
+LINALG::SerialDenseMatrix&
+LINALG::SerialDenseMatrix::operator =(const LINALG::SerialDenseMatrix& Source)
+{
+  if (this == &Source)
+    return *this;
+  // if we copy and already have enough memory, use a more efficient route that
+  // does not allocate new memory too frequently
+  if (Source.CV_ == Copy && CV_ == Copy &&
+      std::size_t(Source.M_) * Source.N_ <= allocatedSize_)
+  {
+    M_ = Source.M_;
+    N_ = Source.N_;
+    LDA_ = M_;
+    for (int i=0; i<N_; ++i)
+      std::memcpy(A_+LDA_*i, Source.A_+Source.LDA_*i,M_*sizeof(double));
+    return *this;
+  }
+  else
+    Epetra_SerialDenseMatrix::operator=(Source);
+  if (allocatedSize_ < std::size_t(LDA_)*N_)
+    allocatedSize_ = std::size_t(LDA_)*N_;
+  return *this;
 }
 
 
