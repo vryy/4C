@@ -24,6 +24,51 @@ namespace DRT
 {
   namespace UTILS
   {
+
+    /*!
+    \brief helper data type to evaluate only nonzero element shape functions on face
+
+     Author: schoeder 10/14
+    */
+    struct ShapeValuesInteriorOnFace
+    {
+      // shape function
+      void Shape(int numrows, int numcols)
+      {
+        matrix_.LightShape(numrows,numcols);
+        isNonzero_.resize(numrows);
+        return;
+      }
+
+      // for analog usage as a pure matrix
+      double & operator () (const int row, const int col)
+      {
+        return matrix_(row,col);
+      }
+
+      // for analog usage as a pure matrix
+      double operator () (const int row, const int col) const
+      {
+        return matrix_(row,col);
+      }
+
+      bool NonzeroOnFace(const int index) const
+      {
+        return isNonzero_[index];
+      }
+
+      LINALG::SerialDenseMatrix matrix_;
+      std::vector<bool> isNonzero_;
+
+      // assignment operator
+      ShapeValuesInteriorOnFace & operator =(ShapeValuesInteriorOnFace &other)
+      {
+        matrix_ = other.matrix_;
+        isNonzero_ = other.isNonzero_;
+        return *this;
+      }
+    };
+
     /*!
      \brief helper holding the parameters, which we need to construct a the ShapeValuesFace
     */
@@ -202,7 +247,7 @@ namespace DRT
 
       LINALG::SerialDenseMatrix     shfunct;/// evaluated shape functions for HDG face polynomials, permuted to account for face orientation
       LINALG::SerialDenseMatrix     shfunctNoPermute;/// evaluated shape functions for HDG face polynomials in natural ordering
-      LINALG::SerialDenseMatrix*    shfunctI;/// evaluated shape functions on face for interior HDG polynomials
+      ShapeValuesInteriorOnFace     shfunctI;/// evaluated shape functions on face for interior HDG polynomials
       LINALG::SerialDenseMatrix     normals; /// normal vectors on a single face for all quadrature points
 
       LINALG::Matrix<nsd_-1,1>      xsi;    /// face quadrature points
@@ -256,13 +301,13 @@ namespace DRT
       virtual void Done();
 
       /// give pointer to corresponding shape values face
-      Teuchos::RCP<LINALG::SerialDenseMatrix> Create(ShapeValuesFaceParams params);
+      Teuchos::RCP<ShapeValuesInteriorOnFace> Create(ShapeValuesFaceParams params);
     private:
       /// instance
       static ShapeValuesInteriorOnFaceCache * instance_;
 
       /// the actual cache; contains all pairs
-      std::map<std::size_t, Teuchos::RCP<LINALG::SerialDenseMatrix> > cache_;
+      std::map<std::size_t, Teuchos::RCP<ShapeValuesInteriorOnFace> > cache_;
     };
 
   }

@@ -142,8 +142,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParams params)
 :
 params_(params),
-degree_(params.degree_),
-shfunctI(NULL)
+degree_(params.degree_)
 {
   if (nsd_ == 2)
     faceNodeOrder = DRT::UTILS::getEleNodeNumberingLines(distype);
@@ -159,7 +158,6 @@ shfunctI(NULL)
   quadrature_ = DRT::UTILS::GaussPointCache::Instance().Create(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape,params.quadraturedegree_);
   nqpoints_ = quadrature_->NumPoints();
 
-
   faceValues.LightSize(nfdofs_);
   xyzreal.LightShape(nsd_, nqpoints_);
   funct.LightShape(nfn_, nqpoints_);
@@ -168,6 +166,8 @@ shfunctI(NULL)
   shfunct.LightShape(nfdofs_, nqpoints_);
   normals.LightShape(nsd_, nqpoints_);
   jfac.LightResize(nqpoints_);
+
+  shfunctI.Shape(nfdofs_,nqpoints_);
 
   for (unsigned int q=0; q<nqpoints_; ++q )
   {
@@ -241,11 +241,10 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const DRT::Element &ele,
 
   AdjustFaceOrientation(ele, face);
 
-
   DRT::UTILS::ShapeValuesFaceParams interiorparams = params_;
   interiorparams.degree_ = ele.Degree();
   interiorparams.face_ = face;
-  shfunctI = ShapeValuesInteriorOnFaceCache<distype>::Instance().Create(interiorparams).get();
+  shfunctI = *(ShapeValuesInteriorOnFaceCache<distype>::Instance().Create(interiorparams));
 }
 
 
@@ -527,11 +526,11 @@ DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Done()
 }
 
 template<DRT::Element::DiscretizationType distype>
-Teuchos::RCP<LINALG::SerialDenseMatrix>
+Teuchos::RCP<DRT::UTILS::ShapeValuesInteriorOnFace>
 DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParams params)
 {
 
-  typename std::map<std::size_t, Teuchos::RCP<LINALG::SerialDenseMatrix> >::iterator
+  typename std::map<std::size_t, Teuchos::RCP<ShapeValuesInteriorOnFace> >::iterator
     i = cache_.find(params.ToInt());
   if ( i!=cache_.end() )
   {
@@ -547,8 +546,8 @@ DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParam
   Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature = DRT::UTILS::GaussPointCache::Instance().
       Create(getEleFaceShapeType(distype,params.face_), params.quadraturedegree_);
 
-  Teuchos::RCP<LINALG::SerialDenseMatrix> matrix;
-  matrix = Teuchos::rcp( new LINALG::SerialDenseMatrix(polySpace->Size(), quadrature->NumPoints()) );
+  Teuchos::RCP<ShapeValuesInteriorOnFace> container = Teuchos::rcp( new  ShapeValuesInteriorOnFace());
+  container->Shape(polySpace->Size(), quadrature->NumPoints());
 
   LINALG::Matrix<nsd,nsd> trafo;
   LINALG::Matrix<nsd,1> xsi;
@@ -562,12 +561,15 @@ DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFaceParam
       xsi(d) = faceQPoints(q,d);
     polySpace->Evaluate(xsi,faceValues);
     for (int i=0; i<faceValues.M(); ++i)
-      (*matrix)(i,q) = faceValues(i);
+    {
+      container->matrix_(i,q) = faceValues(i);
+      if(std::abs(faceValues(i)>1e-15))
+        container->isNonzero_[i] = true;
+    }
   }
+  cache_[params.ToInt()] = container;
 
-  cache_[params.ToInt()] = matrix;
-
-  return matrix;
+  return container;
 }
 
 

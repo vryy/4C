@@ -247,6 +247,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     dserror("unknown action supplied");
     break;
   } // switch(action)
+
   return 0;
 }
 
@@ -770,7 +771,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
     for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
     {
       const double fac = shapes_.jfac(q);
-      const double sqrtfac = std::sqrt(fac);
       double xyz[nsd_];
       for (unsigned int d = 0; d < nsd_; ++d)
         xyz[d] = shapes_.xyzreal(d, q); // coordinates of quadrature point in real coordinates
@@ -781,12 +781,13 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
       {
-        massPart(i, q) = shapes_.shfunct(i, q) * sqrtfac;
+        massPart(i, q) = shapes_.shfunct(i, q);
+        massPartW(i, q) = shapes_.shfunct(i, q) * fac;
         localMat(i, 0) += shapes_.shfunct(i, q) * p * fac;
       }
     }
 
-    Mmat.Multiply('N', 'T', 1., massPart, massPart, 0.);
+    Mmat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
     {
       Epetra_SerialDenseSolver inverseMass;
       inverseMass.SetMatrix(Mmat);
@@ -940,7 +941,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectOpticalField(
     for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
     {
       const double fac = shapes_.jfac(q);
-      const double sqrtfac = std::sqrt(fac);
       double xyz[nsd_];
       for (unsigned int d = 0; d < nsd_; ++d)
         xyz[d] = shapes_.xyzreal(d, q); // coordinates of quadrature point in real coordinates
@@ -949,12 +949,13 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectOpticalField(
 
       for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
       {
-        massPart(i, q) = shapes_.shfunct(i, q) * sqrtfac;
+        massPart(i, q) = shapes_.shfunct(i, q);
+        massPartW(i, q) = shapes_.shfunct(i, q)* fac;
         localMat(i, 0) += shapes_.shfunct(i, q) * p * fac;
       }
     }
 
-    Mmat.Multiply('N', 'T', 1., massPart, massPart, 0.);
+    Mmat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
     {
       Epetra_SerialDenseSolver inverseMass;
       inverseMass.SetMatrix(Mmat);
@@ -1271,6 +1272,7 @@ DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::LocalSolver(
   reshapeMatrixIfNecessary(Dmat, ndofs_, ndofs_);
   reshapeMatrixIfNecessary(Hmat, ndofs_, nsd_ * ndofs_);
   reshapeMatrixIfNecessary(massPart, ndofs_, shapeValues.nqpoints_);
+  reshapeMatrixIfNecessary(massPartW, ndofs_, shapeValues.nqpoints_);
 }
 
 /*----------------------------------------------------------------------*
@@ -1358,6 +1360,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResid
   {
     // do the dirk
     stage = params.get<int>("stage");
+
     interiorVeln_ = ele.elesv_[stage];
     interiorPressn_ = ele.elesp_[stage];
     interiorVeln_.Scale(dt);
@@ -2293,24 +2296,24 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeInteriorMatrices(
   // loop quadrature points
   for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
   {
-    const double sqrtfac = std::sqrt(shapes_.jfac(q));
     // loop shape functions
     for (unsigned int i = 0; i < ndofs_; ++i)
     {
-      const double valf = shapes_.shfunct(i, q) * sqrtfac;
-      massPart(i, q) = valf;
+      massPart(i, q) = shapes_.shfunct(i, q);
+      const double valf = shapes_.shfunct(i, q) * shapes_.jfac(q);
+      massPartW(i, q) = valf;
       for (unsigned int d = 0; d < nsd_; ++d)
       {
-        const double vald = shapes_.shderxy(i * nsd_ + d, q) * sqrtfac;
+        const double vald = shapes_.shderxy(i * nsd_ + d, q);
         gradPart(d * ndofs_ + i, q) = vald;
       }
     }
   }
 
   // multiply matrices to perform summation over quadrature points
-  Mmat.Multiply('N', 'T', 1.0 / c / c / dt, massPart, massPart, 0.0);
-  Dmat.Multiply('N', 'T', rho / dt, massPart, massPart, 0.0); // only temporary for smaller inversion
-  Bmat.Multiply('N', 'T', -1.0, gradPart, massPart, 0.0);
+  Mmat.Multiply('N', 'T', 1.0 / c / c / dt, massPart, massPartW, 0.0);
+  Dmat.Multiply('N', 'T', rho / dt, massPart, massPartW, 0.0); // only temporary for smaller inversion
+  Bmat.Multiply('N', 'T', -1.0, gradPart, massPartW, 0.0);
   for (unsigned int j = 0; j < ndofs_; ++j)
     for (unsigned int i = 0; i < ndofs_; ++i)
     {
@@ -2456,25 +2459,29 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
     // loop over number of shape functions
     for (unsigned int q = 0; q < ndofs_; ++q)
     {
-      // C and E
-
-      // numerical integration: sum over quadrature points
-      double tempE = 0.0;
-      for (unsigned int i = 0; i < shapesface_->nqpoints_; ++i)
+      if( shapesface_->shfunctI.NonzeroOnFace(q) )
       {
-        double temp = shapesface_->jfac(i) * shapesface_->shfunct(p, i)
-            * (*shapesface_->shfunctI)(q, i);
-        tempE += temp;
+        // C and E
+
+        // numerical integration: sum over quadrature points
+        double tempE = 0.0;
+        double temp_d[nsd_] = {0.0};
+        for (unsigned int i = 0; i < shapesface_->nqpoints_; ++i)
+        {
+          double temp = shapesface_->jfac(i) * shapesface_->shfunct(p, i)
+                                             * shapesface_->shfunctI(q, i);
+          tempE += temp;
+          for (unsigned int j = 0; j < nsd_; ++j)
+            temp_d[j] += temp * shapesface_->normals(j, i);
+        }
         for (unsigned int j = 0; j < nsd_; ++j)
         {
-          double temp_d = temp * shapesface_->normals(j, i);
-          Cmat(j * ndofs_ + q, indexstart + p) += temp_d;
-          Imat(indexstart + p, j * ndofs_ + q) += temp_d;
+          Cmat(j * ndofs_ + q, indexstart + p) = temp_d[j];
+          Imat(indexstart + p, j * ndofs_ + q) = temp_d[j];
         }
+        Emat(q, indexstart + p) = tempE;
+        Jmat(indexstart + p, q) = tempE;
       }
-      Emat(q, indexstart + p) = tempE;
-      Jmat(indexstart + p, q) = tempE;
-
     } // for (unsigned int q=0; q<ndofs_; ++q)
   } // for (unsigned int p=0; p<nfdofs_; ++p)
 
@@ -2502,11 +2509,12 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
     for (unsigned int q = 0; q <= p; ++q)
     {
       double tempD = 0.0;
-      for (unsigned int i = 0; i < shapesface_->nqpoints_; ++i)
+      if( shapesface_->shfunctI.NonzeroOnFace(p) && shapesface_->shfunctI.NonzeroOnFace(q) )
       {
-        tempD += shapesface_->jfac(i) * (*shapesface_->shfunctI)(p, i) * (*shapesface_->shfunctI)(q, i);
+        for (unsigned int i = 0; i < shapesface_->nqpoints_; ++i)
+          tempD += shapesface_->jfac(i) * shapesface_->shfunctI(p, i) * shapesface_->shfunctI(q, i);
+        Dmat(p, q) = Dmat(q, p) += tau * tempD;
       }
-      Dmat(p, q) = Dmat(q, p) += tau * tempD;
     }
   }
 

@@ -260,6 +260,7 @@ namespace ELEMENTS
 
       // auxiliary stuff
       Epetra_SerialDenseMatrix  massPart;
+      Epetra_SerialDenseMatrix  massPartW;
     };
 
     /// updates interior variables and calculates residual

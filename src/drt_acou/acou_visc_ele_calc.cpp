@@ -36,6 +36,12 @@ namespace
   {
     std::memset(mat.A(), 0, sizeof(double)*mat.M()*mat.N());
   }
+
+  void reshapeMatrixIfNecessary(Epetra_SerialDenseMatrix &matrix, const int nrows,const int ncols)
+  {
+    if (nrows != matrix.M() || ncols != matrix.N())
+      matrix.Shape(nrows, ncols);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -187,7 +193,6 @@ int DRT::ELEMENTS::AcouViscEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     dyna_ = params.get<INPAR::ACOU::DynamicType>("dynamic type");
 
     ReadGlobalVectors(ele,discretization,lm);
-
     zeroMatrix(elevec1);
     ComputeMatrices(mat,*ele,dt,dyna_,adjoint);
 
@@ -221,7 +226,8 @@ int DRT::ELEMENTS::AcouViscEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     dserror("unknown action supplied %d",action);
     break;
   } // switch(action)
-  return 0;
+
+return 0;
 }
 
 /*----------------------------------------------------------------------*
@@ -423,21 +429,20 @@ VectorHandling(DRT::ELEMENTS::Acou   * ele,
       tempVec1 += tempVec2;
       tempVec1.Scale(dirk_a[stage][i]/dirk_a[stage][stage]);
       acouele->eles_[stage] += tempVec1;
-
     }
 
     // these vectors s are used for the calculation of the residual -> write them to used local solver variable
     for(unsigned i=0; i<interiorValnp_.size(); ++i)
-      interiorValnp_[i] = acouele->eles_[stage](i) * dt;
+      interiorValnp_[i] = acouele->eles_[stage](i);
     for(unsigned int i=0; i<shapes_->ndofs_; ++i)
     {
-      interiorPressnp_(i) = interiorValnp_[i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1];
-      interiorDensnp_(i)  = interiorValnp_[i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_];
+      interiorPressnp_(i) = interiorValnp_[i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1] * dt;
+      interiorDensnp_(i)  = interiorValnp_[i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_] * dt;
       for(unsigned int d=0; d<nsd_; ++d)
-        interiorVelnp_(i+d*shapes_->ndofs_) = interiorValnp_[i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+d];
+        interiorVelnp_(i+d*shapes_->ndofs_) = interiorValnp_[i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+d] * dt;
       for(unsigned int d=0; d<nsd_; ++d)
         for(unsigned int e=0; e<nsd_; ++e)
-          interiorGradVelnp_(i+(e*nsd_+d)*shapes_->ndofs_) = interiorValnp_[i*(nsd_*nsd_+nsd_+2)+e*nsd_+d];
+          interiorGradVelnp_(i+(e*nsd_+d)*shapes_->ndofs_) = interiorValnp_[i*(nsd_*nsd_+nsd_+2)+e*nsd_+d] * dt;
     }
   }
   else if(dyna_ == INPAR::ACOU::acou_bdf2)
@@ -792,30 +797,30 @@ ReadGlobalVectors(DRT::Element     * ele,
 {
   DRT::ELEMENTS::AcouVisc * acouele = dynamic_cast<DRT::ELEMENTS::AcouVisc*>(ele);
 
-  interiorGradVelnp_.Shape(shapes_->ndofs_*nsd_*nsd_,1);
-  interiorDensnp_.Shape(shapes_->ndofs_,1);
-  interiorVelnp_.Shape(shapes_->ndofs_*nsd_,1);
-  interiorPressnp_.Shape(shapes_->ndofs_,1);
+  reshapeMatrixIfNecessary(interiorGradVelnp_,shapes_->ndofs_*nsd_*nsd_,1);
+  reshapeMatrixIfNecessary(interiorDensnp_,shapes_->ndofs_,1);
+  reshapeMatrixIfNecessary(interiorVelnp_,shapes_->ndofs_*nsd_,1);
+  reshapeMatrixIfNecessary(interiorPressnp_,shapes_->ndofs_,1);
 
-  interiorGradVeln_.Shape(shapes_->ndofs_*nsd_*nsd_,1);
-  interiorDensn_.Shape(shapes_->ndofs_,1);
-  interiorVeln_.Shape(shapes_->ndofs_*nsd_,1);
-  interiorPressn_.Shape(shapes_->ndofs_,1);
+  reshapeMatrixIfNecessary(interiorGradVeln_,shapes_->ndofs_*nsd_*nsd_,1);
+  reshapeMatrixIfNecessary(interiorDensn_,shapes_->ndofs_,1);
+  reshapeMatrixIfNecessary(interiorVeln_,shapes_->ndofs_*nsd_,1);
+  reshapeMatrixIfNecessary(interiorPressn_,shapes_->ndofs_,1);
 
-  interiorGradVelnm_.Shape(shapes_->ndofs_*nsd_*nsd_,1);
-  interiorDensnm_.Shape(shapes_->ndofs_,1);
-  interiorVelnm_.Shape(shapes_->ndofs_*nsd_,1);
-  interiorPressnm_.Shape(shapes_->ndofs_,1);
+  reshapeMatrixIfNecessary(interiorGradVelnm_,shapes_->ndofs_*nsd_*nsd_,1);
+  reshapeMatrixIfNecessary(interiorDensnm_,shapes_->ndofs_,1);
+  reshapeMatrixIfNecessary(interiorVelnm_,shapes_->ndofs_*nsd_,1);
+  reshapeMatrixIfNecessary(interiorPressnm_,shapes_->ndofs_,1);
 
-  interiorGradVelnmm_.Shape(shapes_->ndofs_*nsd_*nsd_,1);
-  interiorDensnmm_.Shape(shapes_->ndofs_,1);
-  interiorVelnmm_.Shape(shapes_->ndofs_*nsd_,1);
-  interiorPressnmm_.Shape(shapes_->ndofs_,1);
+  reshapeMatrixIfNecessary(interiorGradVelnmm_,shapes_->ndofs_*nsd_*nsd_,1);
+  reshapeMatrixIfNecessary(interiorDensnmm_,shapes_->ndofs_,1);
+  reshapeMatrixIfNecessary(interiorVelnmm_,shapes_->ndofs_*nsd_,1);
+  reshapeMatrixIfNecessary(interiorPressnmm_,shapes_->ndofs_,1);
 
-  interiorGradVelnmmm_.Shape(shapes_->ndofs_*nsd_*nsd_,1);
-  interiorDensnmmm_.Shape(shapes_->ndofs_,1);
-  interiorVelnmmm_.Shape(shapes_->ndofs_*nsd_,1);
-  interiorPressnmmm_.Shape(shapes_->ndofs_,1);
+  reshapeMatrixIfNecessary(interiorGradVelnmmm_,shapes_->ndofs_*nsd_*nsd_,1);
+  reshapeMatrixIfNecessary(interiorDensnmmm_,shapes_->ndofs_,1);
+  reshapeMatrixIfNecessary(interiorVelnmmm_,shapes_->ndofs_*nsd_,1);
+  reshapeMatrixIfNecessary(interiorPressnmmm_,shapes_->ndofs_,1);
 
   // read the HDG solution vector (for traces)
   if(discretization.HasState("trace"))
@@ -909,6 +914,7 @@ ReadGlobalVectors(DRT::Element     * ele,
       }
     }
   } // read the internal vectors
+
   return;
 }
 
@@ -1247,7 +1253,7 @@ void DRT::ELEMENTS::AcouViscEleCalc<distype>::ComputeMatrices(const Teuchos::RCP
   const MAT::AcousticViscMat* actmat = static_cast<const MAT::AcousticViscMat*>(mat.get());
   double rho = actmat->Density();
   double c = actmat->SpeedofSound();
-  double tau = 1.0;//1.0;///dt;//
+  double tau = 1/rho/c;//1.0;///dt;//
   double visc = actmat->Viscosity();
   double therm = actmat->Therm();
 
@@ -1434,7 +1440,7 @@ ComputeFaceMatrices(const int                          face,
       double tempehat = 0.0;
       for (unsigned int i=0; i<shapesface_.nqpoints_; ++i)
       {
-        tempehat += shapesface_.jfac(i) * (*shapesface_.shfunctI)(p,i) * (*shapesface_.shfunctI)(q,i);
+        tempehat += shapesface_.jfac(i) * shapesface_.shfunctI(p,i) * shapesface_.shfunctI(q,i);
       }
       for (unsigned int d=0; d<nsd_; ++d)
         ehatmat(d*ndofs_+p,d*ndofs_+q) = ehatmat(d*ndofs_+q,d*ndofs_+p) += tempehat;
@@ -1465,7 +1471,7 @@ ComputeFaceMatrices(const int                          face,
       double tempmat = 0.0;
       for (unsigned int i=0; i<shapesface_.nqpoints_; ++i)
       {
-        double temp = shapesface_.jfac(i) * shapesface_.shfunct(p,i) * (*shapesface_.shfunctI)(q,i);
+        double temp = shapesface_.jfac(i) * shapesface_.shfunct(p,i) * shapesface_.shfunctI(q,i);
         tempmat += temp;
         for(unsigned int j=0; j<nsd_; ++j)
         {
@@ -1963,7 +1969,7 @@ ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
       int count = 0;
       for(unsigned int q=0; q<ndofs_; ++q)
       {
-        if(((*shapesface_.shfunctI)(q,0))>0.00001 ||((*shapesface_.shfunctI)(q,0))<-0.00001)
+        if((shapesface_.shfunctI(q,0))>0.00001 ||(shapesface_.shfunctI(q,0))<-0.00001)
         {
           sourceterm(q) = trVec(count);
           count++;
@@ -2239,6 +2245,7 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
   {
     // do the dirk
     int stage = params.get<int>("stage");
+    if(ele->Id()==0)std::cout<<"LINE "<<__LINE__<<" stage "<<stage<<std::endl;
     for(unsigned i=0; i<shapes_->ndofs_; ++i)
     {
       interiorPressn_[i]  = hdgele->eles_[stage][i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1];
@@ -2466,9 +2473,13 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
     tempVec1 = hdgele->elef_[stage];
     tempVec1.Scale(dt*dirk_b[stage]/dirk_a[stage][stage]);
     hdgele->eleinteriorValnp_ += tempVec1;
+    if(ele->Id()==0)std::cout<<"stage "<<stage<<" "<<dirk_q-1<<std::endl;
+    if(ele->Id()==0){std::cout<<__LINE__<<" eleinteriorValn"<<std::endl;for(int i=0;i<16;++i)std::cout<<(dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(ele))->eleinteriorValn_(i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1)<<" "; std::cout<<std::endl;}
 
     if(stage==dirk_q-1)
       hdgele->eleinteriorValn_ = hdgele->eleinteriorValnp_;
+    if(ele->Id()==0){std::cout<<__LINE__<<" eleinteriorValn"<<std::endl;for(int i=0;i<16;++i)std::cout<<(dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(ele))->eleinteriorValn_(i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1)<<" "; std::cout<<std::endl;}
+
   }
   else
   {
@@ -2476,19 +2487,70 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
       hdgele->eleinteriorValnp_[i] = interiorValnp_[i];
   }
 
-  if (updateonly) return;
-
   // *****************************************************
   // local postprocessing to calculate error maps
   // *****************************************************
 
   // TODO: local postprocessing
 
+  if (updateonly) return;
+
   // *****************************************************
   // compute residual second (reuse intermediate matrices)
   // *****************************************************
+  if (dyna_ == INPAR::ACOU::acou_dirk23 || dyna_ == INPAR::ACOU::acou_dirk33 ||
+      dyna_ == INPAR::ACOU::acou_dirk34 || dyna_ == INPAR::ACOU::acou_dirk54)
+  {
+    int stage = params.get<int>("stage");
 
-  if(dyna_ == INPAR::ACOU::acou_bdf2)
+    double dirk_a[6][6];
+    double dirk_b[6];
+    int dirk_q;
+    ACOU::FillDIRKValues(dyna_, dirk_a, dirk_b, dirk_q);
+
+    stage++;
+    if (stage == dirk_q)
+    {
+      stage = 0;
+      hdgele->eleinteriorValnp_ = hdgele->eleinteriorValn_;
+    }
+
+    Epetra_SerialDenseVector tempVec1(shapes_->ndofs_*(nsd_*nsd_+nsd_+2));
+    Epetra_SerialDenseVector tempVec2(shapes_->ndofs_*(nsd_*nsd_+nsd_+2));
+    if(ele->Id()==0){std::cout<<__LINE__<<" eleinteriorValn"<<std::endl;for(int i=0;i<16;++i)std::cout<<(dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(ele))->eleinteriorValn_(i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1)<<" "; std::cout<<std::endl;}
+
+    hdgele->eles_[stage] = hdgele->eleinteriorValn_;
+    hdgele->eles_[stage].Scale(1.0 / dt); // dt includes a_ii
+    if(ele->Id()==0){std::cout<<"step1"<<std::endl;for(int i=0;i<16;++i)std::cout<<(dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(ele))->eles_[0](i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1)<<" "; std::cout<<std::endl;}
+
+    for (int i = 0; i < stage; ++i)
+    {
+      tempVec1 = hdgele->eles_[i];
+      tempVec1.Scale(-1.0);
+      tempVec2 = hdgele->eley_[i];
+      tempVec2.Scale(1.0 / dt);
+      tempVec1 += tempVec2;
+      tempVec1.Scale(dirk_a[stage][i] / dirk_a[stage][stage]);
+      hdgele->eles_[stage] += tempVec1;
+    }
+    if(ele->Id()==0){std::cout<<"step2"<<std::endl;for(int i=0;i<16;++i)std::cout<<(dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(ele))->eles_[0](i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1)<<" "; std::cout<<std::endl;}
+
+    // these vectors s are used for the calculation of the residual -> write them to used local solver variable
+    for(unsigned i=0; i<interiorValnp_.size(); ++i)
+      interiorValnp_[i] = hdgele->eles_[stage](i);
+    for(unsigned int i=0; i<shapes_->ndofs_; ++i)
+    {
+      interiorPressnp_(i) = interiorValnp_[i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1] * dt;
+      interiorDensnp_(i)  = interiorValnp_[i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_] * dt;
+      for(unsigned int d=0; d<nsd_; ++d)
+        interiorVelnp_(i+d*shapes_->ndofs_) = interiorValnp_[i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+d] * dt;
+      for(unsigned int d=0; d<nsd_; ++d)
+        for(unsigned int e=0; e<nsd_; ++e)
+          interiorGradVelnp_(i+(e*nsd_+d)*shapes_->ndofs_) = interiorValnp_[i*(nsd_*nsd_+nsd_+2)+e*nsd_+d] * dt;
+    }
+
+  }
+  else if(dyna_ == INPAR::ACOU::acou_bdf2)
   {
     for(unsigned int i=0; i<shapes_->ndofs_*nsd_; ++i)
       interiorVelnp_[i] = 4.0 / 3.0 * interiorVelnp_[i] - 1.0 / 3.0 * tempVelnp[i];

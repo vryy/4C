@@ -236,10 +236,11 @@ void ACOU::TimIntImplDIRK::Solve()
     const double tcpusolve = Teuchos::Time::wallTime();
 
     //if(step_<=1)
-    //  std::cout<<"LINALG::Condest  "<<LINALG::Condest(dynamic_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES,500)<<std::endl;
-    //Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_)->EpetraMatrix()->Print(std::cout);
-    //LINALG::PrintMatrixInMatlabFormat("xxx_mat.mat",*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_)->EpetraMatrix()));
-
+    //{
+      // std::cout<<"LINALG::Condest  "<<LINALG::Condest(dynamic_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES,1500,1e-6)<<std::endl;
+      //Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_)->EpetraMatrix()->Print(std::cout);
+      //LINALG::PrintMatrixInMatlabFormat("xxx_mat.mat",*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_)->EpetraMatrix()));
+    //}
     solver_->Solve(sysmat_->EpetraOperator(),t_,residual_,true,false,Teuchos::null);
     dtsolve_ += Teuchos::Time::wallTime()-tcpusolve;
     // update interior variables
