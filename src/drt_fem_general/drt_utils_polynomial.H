@@ -560,11 +560,11 @@ namespace UTILS
 
 
   /*!
-  \brief Lagrange basis for tetrahedral elements.
+  \brief Lagrange basis for triangular/tetrahedral elements.
 
    This class constructs a Lagrangian basis for tetrahedral elements of arbitrary degree
    by a transformation of Legendre polynomials onto so-called Fekete nodes, which are
-   a generalization of Gauss-Lobatto points to higher dimensions on triangules. For the
+   a generalization of Gauss-Lobatto points to higher dimensions on triangles. For the
    transformation, a Vandermonde matrix is used to map the nodeless orthonormal Legendre
    polynomials onto the desired node distribution.
 

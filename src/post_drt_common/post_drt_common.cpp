@@ -189,8 +189,6 @@ PostField* PostProblem::get_discretization(const int num)
          << fields_.size() << " discretization(s)!";
     dserror("This is a bug!");
   }
-  if (&fields_[num] == NULL)
-    dserror("Null pointer to discretization detected!");
   return &fields_[num];
 }
 

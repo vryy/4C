@@ -1761,7 +1761,7 @@ std::ostream& LINALG::operator << (std::ostream& os, const LINALG::SparseMatrix&
   if(mat.GetMatrixtype() == SparseMatrix::CRS_MATRIX)
     os << *(const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix());
   else if(mat.GetMatrixtype() == SparseMatrix::FE_MATRIX)
-    os << Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix());
+    os << *(Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix()));
   else
     dserror("matrixtype does not exist");
   return os;
