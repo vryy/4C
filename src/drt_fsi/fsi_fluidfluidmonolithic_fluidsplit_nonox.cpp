@@ -32,7 +32,7 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_ale_new/ale_utils_mapextractor.H"
-#include "../drt_adapter/ad_ale_fsi.H"
+#include "../drt_adapter/ad_ale_xffsi.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"

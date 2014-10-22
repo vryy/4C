@@ -47,7 +47,7 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-07
-INITIALFIELD zero_field //field_by_function
+INITIALFIELD                    zero_field //field_by_function
 ITEMAX                          5
 LIFTDRAG                        No
 MAXTIME                         50
@@ -91,7 +91,7 @@ GAMMA                           0.611//0.5
 ALPHA_M                         0.333//0.5
 ALPHA_F                         0.444//0.5
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        solid                         // classic_lin
+ALE_TYPE                        solid
 TIMESTEP                        1
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
@@ -109,7 +109,7 @@ BASETOL                         1.0E-3
 PRECONDREUSE                    0
 SHAPEDERIVATIVES                yes
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Superlu//UMFPACK//Aztec_MSR   // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK//Aztec_MSR   // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          MLFLUID2                      // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann

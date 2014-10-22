@@ -25,7 +25,7 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
-#include "../drt_adapter/ad_ale_fsi.H"
+#include "../drt_adapter/ad_ale_xffsi.H"
 
 /*----------------------------------------------------------------------*/
 // constructor (public)
@@ -37,6 +37,8 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(const Epetra_Comm& comm,
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+
+  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicBase::AleField());
 
   // enable debugging
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT")==1)
@@ -647,7 +649,7 @@ void FSI::MonolithicNoNOX::Update()
       IO::cout << "Relaxing ALE!" << IO::endl;
     // Set the ALE FSI-DOFs to Dirichlet and solve ALE system again
     // to obtain the true ALE displacement
-    AleField()->SolveAleXFluidFluidFSI();
+    AleField()->Solve();
     // Now apply the ALE-displacement to the (embedded) fluid and update the
     // grid velocity
     FluidField().ApplyMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));

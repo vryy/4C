@@ -17,7 +17,7 @@ Maintainer: Raffaela Kruse
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_ale_new/ale_utils_mapextractor.H"
-#include "../drt_adapter/ad_ale_fsi.H"
+#include "../drt_adapter/ad_ale_xffsi.H"
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_ale.H"
@@ -37,6 +37,9 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(cons
                                                                             const Teuchos::ParameterList& timeparams)
   : MonolithicStructureSplit(comm,timeparams)
 {
+  // cast to problem-specific ALE-wrapper
+  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicStructureSplit::AleField());
+
   // determine the type of monolithic approach
   const Teuchos::ParameterList& xfluiddyn  = DRT::Problem::Instance()->XFluidDynamicParams();
   enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
@@ -70,7 +73,7 @@ void FSI::FluidFluidMonolithicStructureSplit::Update()
     if (Comm().MyPID() == 0)
       IO::cout << "Relaxing Ale" << IO::endl;
 
-    AleField()->SolveAleXFluidFluidFSI();
+    AleField()->Solve();
     FluidField().ApplyMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
   }
 

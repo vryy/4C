@@ -24,6 +24,11 @@ Maintainer: Shadan Shahmiri
 #include "fsi_monolithicstructuresplit.H"
 #include "../drt_inpar/inpar_xfem.H"
 
+namespace ADAPTER
+{
+  class AleXFFsiWrapper;
+}
+
 namespace FSI
 {
   /// monolithic hybrid FSI algorithm with overlapping interface equations
@@ -54,11 +59,17 @@ namespace FSI
     /// setup of extractor for merged Dirichlet maps
     void SetupDBCMapExtractor();
 
+    /// access type-cast pointer to problem-specific ALE-wrapper
+    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& AleField(){ return ale_; }
+
     /// flag, that indicates ALE-relaxation
     bool relaxing_ale_;
 
     /// number of timesteps in between ALE-relaxation
     int relaxing_ale_every_;
+
+    /// type-cast pointer to problem-specific ALE-wrapper
+    Teuchos::RCP<ADAPTER::AleXFFsiWrapper> ale_;
   };
 }
 

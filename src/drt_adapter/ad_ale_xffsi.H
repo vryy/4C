@@ -68,10 +68,11 @@ public:
    *  dirichlet and we solve the ALE again to find the real ALE
    *  displacement.
    */
-  void SolveAleXFluidFluidFSI();
+  int Solve();
 
 private:
 
+  /// map extractor for the fluid-fluid interface dof
   Teuchos::RCP<ALENEW::UTILS::XFluidFluidMapExtractor> xff_interface_;
 
 }; // class AleXFFsiWrapper

@@ -19,6 +19,11 @@ Maintainer: Raffaela Kruse
 #include "fsi_monolithicfluidsplit.H"
 #include "../drt_inpar/inpar_xfem.H"
 
+namespace ADAPTER
+{
+  class AleXFFsiWrapper;
+}
+
 namespace FSI
 {
   /// monolithic hybrid FSI algorithm with overlapping interface equations
@@ -52,6 +57,9 @@ namespace FSI
 
   private:
 
+    /// access type-cast pointer to problem-specific ALE-wrapper
+    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& AleField(){ return ale_; }
+
     /// setup of extractor for merged Dirichlet maps
     void SetupDBCMapExtractor();
 
@@ -60,6 +68,10 @@ namespace FSI
 
     /// number of timesteps in between ALE-relaxation
     int relaxing_ale_every_;
+
+    /// type-cast pointer to problem-specific ALE-wrapper
+    Teuchos::RCP<ADAPTER::AleXFFsiWrapper> ale_;
+
   };
 }
 

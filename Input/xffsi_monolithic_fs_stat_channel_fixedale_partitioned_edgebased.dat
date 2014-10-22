@@ -56,10 +56,10 @@ LINEAR_SOLVER                   1
 STABTYPE                        edge_based                    // residual_based //
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG no //yes
-SUPG no //yes
+PSPG                            no //yes
+SUPG                            no //yes
 VSTAB                           no_vstab
-GRAD_DIV no //yes
+GRAD_DIV                        no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -89,7 +89,7 @@ GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1
 HYBRID_LM_L2_PROJ               part_ele_proj //full_ele_proj (K_ss whole element or just partial)
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        solid                         // classic_lin
+ALE_TYPE                        solid
 TIMESTEP                        0.005
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC

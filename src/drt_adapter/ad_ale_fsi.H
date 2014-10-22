@@ -64,9 +64,6 @@ public:
   //! communicate object at the interface
   Teuchos::RCP<const ALENEW::UTILS::MapExtractor> Interface() const;
 
-  //! ToDo (kruse) modify XFFSI implementations such that we don't need this here
-  virtual void SolveAleXFluidFluidFSI() {};
-
   //! apply interface displacements
   void ApplyInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp)
   {

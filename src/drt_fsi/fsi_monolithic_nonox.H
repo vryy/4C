@@ -29,6 +29,11 @@ Maintainer: Shadan Shahmiri
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_xfem.H"
 
+namespace ADAPTER
+{
+  class AleXFFsiWrapper;
+}
+
 namespace FSI
 {
   namespace UTILS
@@ -209,6 +214,8 @@ namespace FSI
     virtual bool HasFluidDofMapChanged(
         const Epetra_BlockMap& fluidincrementmap) = 0;
 
+    /// access type-cast pointer to problem-specific ALE-wrapper
+    const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& AleField(){ return ale_; }
 
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;   //!< block system matrix
 
@@ -292,14 +299,15 @@ namespace FSI
     /// output stream
     Teuchos::RCP<std::ofstream> log_;
 
-    /// @name special debugging output
-
+    //! @name special debugging output
+    //@{
     Teuchos::RCP<UTILS::DebugWriter> sdbg_;
     Teuchos::RCP<UTILS::DebugWriter> fdbg_;
 
+    //@}
 
    //! @name Iterative solution technique
-
+    //@{
     enum INPAR::FSI::ConvNorm normtypeinc_;  //!< convergence check for increment
     enum INPAR::FSI::ConvNorm normtypefres_;  //!< convergence check for residual forces
     enum INPAR::FSI::BinaryOp combincfres_;  //!< binary operator to combine temperatures and forces
@@ -325,7 +333,9 @@ namespace FSI
     double TOL_VEL_INC_INF_;
     //@}
 
-    //@}
+    Teuchos::RCP<ADAPTER::AleXFFsiWrapper> ale_;
+
+
   };
 }
 

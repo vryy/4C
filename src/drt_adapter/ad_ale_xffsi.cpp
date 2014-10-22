@@ -50,13 +50,15 @@ void ADAPTER::AleXFFsiWrapper::Evaluate(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleXFFsiWrapper::SolveAleXFluidFluidFSI()
+int ADAPTER::AleXFFsiWrapper::Solve()
 {
   AleFsiWrapper::CreateSystemMatrix();
 
   AleFsiWrapper::Evaluate(Teuchos::null, ALENEW::UTILS::MapExtractor::dbc_set_x_fsi);
 
-  Solve();
+  int err = AleFsiWrapper::Solve();
 
   UpdateIter();
+
+  return err;
 }
