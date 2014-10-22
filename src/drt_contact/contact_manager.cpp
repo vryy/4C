@@ -1083,7 +1083,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   cparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 
   // store relevant problem types
-  if (problemtype == prb_structure)
+  if (problemtype == prb_structure or problemtype == prb_statmech)
   {
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::structure);
   }

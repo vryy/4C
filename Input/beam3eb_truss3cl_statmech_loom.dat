@@ -10,7 +10,7 @@ DIM          3  //rumpf2.txt /begin
 MATERIALS    1
 NUMDF        6
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Structure
+PROBLEMTYP   StatMech
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  0

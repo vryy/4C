@@ -282,6 +282,8 @@ void STR::TimIntStatMech::InitializeBeamContact()
  *----------------------------------------------------------------------*/
 int STR::TimIntStatMech::Integrate()
 {
+  dserror("time loop of statmech problems moved to ADAPTER::StructureStatMech::Integrate()"
+      "this method will be removed soon");
   // set statmech internal time and time step size
   statmechman_->UpdateTimeAndStepSize((*dt_)[0],(*time_)[0],true);
   // this is necessary in case the time step size changed with the initial step (originally timen_ is set in strtimint.cpp)
@@ -316,14 +318,7 @@ int STR::TimIntStatMech::Integrate()
 //          std::cout<<"target time = "<<timen_<<", time step = "<<(*dt_)[0]<<std::endl;
         Predict();
 
-        if(itertype_==INPAR::STR::soltech_ptc)
-          PTC();
-        else if(itertype_==INPAR::STR::soltech_newtonfull)
-          NewtonFull();
-        else if(itertype_==INPAR::STR::soltech_newtonls)
-          NewtonLS();
-        else
-          dserror("itertype %d not implemented for StatMech applications! Choose either ptc or fullnewton!", itertype_);
+        Solve();
       }
 
       /*if iterations have not converged a new trial requires setting all intern element variables, statmechmanager class variables
@@ -489,6 +484,23 @@ void STR::TimIntStatMech::PredictConstDisConsistVel()
 //                1.0);
   return;
 }//STR::TimIntStatMech::PredictConstDisConsistVel()
+
+/*----------------------------------------------------------------------*
+ | solve equilibrium                              (public) mueller 03/12|
+ *----------------------------------------------------------------------*/
+INPAR::STR::ConvergenceStatus STR::TimIntStatMech::Solve()
+{
+  if(itertype_==INPAR::STR::soltech_ptc)
+    PTC();
+  else if(itertype_==INPAR::STR::soltech_newtonfull)
+    NewtonFull();
+  else if(itertype_==INPAR::STR::soltech_newtonls)
+    NewtonLS();
+  else
+    dserror("itertype %d not implemented for StatMech applications! Choose either ptc or fullnewton!", itertype_);
+
+  return INPAR::STR::conv_success;
+}
 
 /*----------------------------------------------------------------------*
  | apply Dirichlet Boundary Conditions            (public) mueller 03/12|

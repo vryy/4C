@@ -855,8 +855,8 @@ void STATMECH::StatMechManager::RotationAroundFixedAxis(LINALG::Matrix<3,1>& axi
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow,
                                                       int            ndim,
-                                                      const double&  timen,
-                                                      const double&  dt)
+                                                      const double   timen,
+                                                      const double   dt)
 {
   double starttime = actiontime_->at((int)(actiontime_->size()-1));
   double shearamplitude = statmechparams_.get<double> ("SHEARAMPLITUDE", 0.0);

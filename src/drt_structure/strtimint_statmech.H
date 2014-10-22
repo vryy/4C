@@ -88,6 +88,9 @@ namespace STR
     //! \brief predict displacements and velocities
     void PredictConstDisConsistVel();
 
+    //! nonlinear solve
+    virtual INPAR::STR::ConvergenceStatus Solve();
+
     //! \brief evaluate residual
     void EvaluateForceStiffResidual(Teuchos::ParameterList& params);
 
@@ -135,6 +138,24 @@ namespace STR
     //!\brief does what it says
     void UpdateAndOutput();
 
+    //!\brief does what it says
+    bool IsConverged(){ return isconverged_; }
+
+    //! \brief preparation for the current time step relevant to Statistical Mechanics
+    void StatMechPrepareStep();
+
+    //! \brief evaluates beam contact according to options chosen in the input file
+    void BeamContactNonlinearSolve();
+
+    //! \brief Reset relevant values, vectors, discretization state, etc. before repeating the time step (if unconverged)
+    void StatMechRestoreConvState();
+
+    //! \brief call Update() method of statmechmanager_ according to options chosen
+    void StatMechUpdate();
+
+    //! \brief call Output() method of statmechmanager_ according to options chosen
+    void StatMechOutput();
+
     //!\brief writing output including restart information
     //virtual void Output();
 
@@ -147,26 +168,11 @@ namespace STR
     TimIntStatMech operator = (const TimIntStatMech& old);
     TimIntStatMech(const TimIntStatMech& old);
 
-    //! \brief preparation for the current time step relevant to Statistical Mechanics
-    void StatMechPrepareStep();
-
-    //! \brief call Update() method of statmechmanager_ according to options chosen
-    void StatMechUpdate();
-
     //! \brief print updated statmech values to screen
     void StatMechPrintUpdate(const double& t_admin);
 
-    //! \brief call Output() method of statmechmanager_ according to options chosen
-    void StatMechOutput();
-
-    //! \brief Reset relevant values, vectors, discretization state, etc. before repeating the time step (if unconverged)
-    void StatMechRestoreConvState();
-
     //! \brief check convergence status of Newton scheme for Augmented Lagrange method
     bool BeamContactExitUzawaAt(int& maxuzawaiter);
-
-    //! \brief evaluates beam contact according to options chosen in the input file
-    void BeamContactNonlinearSolve();
 
     //! \brief beam contact penalty approach
     void BeamContactPenalty();

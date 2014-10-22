@@ -223,6 +223,10 @@ namespace ADAPTER
     /// integrate from t1 to t2
     virtual int Integrate() { return structure_->Integrate(); }
 
+    //! do something in case nonlinear solution does not converge for some reason
+    virtual INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv)
+    { return structure_->PerformErrorAction(nonlinsoldiv); }
+
     /// tests if there are more time steps to do
     virtual bool NotFinished() const
     { return structure_->NotFinished(); }
@@ -316,7 +320,7 @@ namespace ADAPTER
     //@{
 
     /// nonlinear solve
-    virtual int Solve()
+    virtual INPAR::STR::ConvergenceStatus Solve()
     { return structure_->Solve(); }
 
     //! linear structure solve with just an interface load
@@ -403,6 +407,14 @@ namespace ADAPTER
     virtual std::vector<int> GetCrackTipNodes(){ return structure_->GetCrackTipNodes(); }
 
     //@}
+
+    /// bool indicating if micro material is used
+    virtual bool HaveMicroMat()
+    { return structure_->HaveMicroMat(); }
+
+    /// return statmech manager
+    virtual Teuchos::RCP<STATMECH::StatMechManager> StatMechManager()
+    { return structure_->StatMechManager(); }
 
 
   protected:

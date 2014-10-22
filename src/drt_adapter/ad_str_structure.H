@@ -63,6 +63,11 @@ namespace UTILS
   class WindkesselManager;
 }
 
+namespace STATMECH
+{
+  class StatMechManager;
+}
+
 namespace ADAPTER {
 
   /// general structural field interface
@@ -253,6 +258,9 @@ namespace ADAPTER {
     /// \date 11/08
     virtual int Integrate() = 0;
 
+    //! do something in case nonlinear solution does not converge for some reason
+    virtual INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv) = 0;
+
     /// tests if there are more time steps to do
     virtual bool NotFinished() const = 0;
 
@@ -366,7 +374,7 @@ namespace ADAPTER {
     for the time step. All boundary conditions have
     been set.
     */
-    virtual int Solve() = 0;
+    virtual INPAR::STR::ConvergenceStatus Solve() = 0;
 
     /*!
     \brief linear structure solve with just a interface load
@@ -450,6 +458,12 @@ namespace ADAPTER {
     /// Get new crack tip nodes after propagation
     virtual std::vector<int> GetCrackTipNodes() = 0;
     //@}
+
+    /// bool indicating if micro material is used
+    virtual bool HaveMicroMat() = 0;
+
+    /// return statmech manager
+    virtual Teuchos::RCP<STATMECH::StatMechManager> StatMechManager() = 0;
 
   };
 

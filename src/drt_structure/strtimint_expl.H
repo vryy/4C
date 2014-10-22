@@ -317,10 +317,10 @@ namespace STR
     /// Do the nonlinear solve, i.e. (multiple) corrector,
     /// for the time step. All boundary conditions have
     /// been set.
-    virtual int Solve()
+    virtual INPAR::STR::ConvergenceStatus Solve()
     {
       IntegrateStep();
-      return 0;
+      return INPAR::STR::conv_success;
     }
 
     //! prepare partiton step

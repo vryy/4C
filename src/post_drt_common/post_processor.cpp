@@ -118,6 +118,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
       break;
     }
     case prb_structure:
+    case prb_statmech:
     case prb_struct_ale:
     {
         PostField* field = problem.get_discretization(0);

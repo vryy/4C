@@ -362,7 +362,7 @@ namespace STR
     //! Do the nonlinear solve, i.e. (multiple) corrector,
     //! for the time step. All boundary conditions have
     //! been set.
-    int Solve();
+    INPAR::STR::ConvergenceStatus Solve();
 
     //! Do full Newton-Raphson iteration
     //!

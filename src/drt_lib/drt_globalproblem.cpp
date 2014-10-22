@@ -1322,6 +1322,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
 
   case prb_structure:
+  case prb_statmech:
   {
     if(distype == "Meshfree")
     {

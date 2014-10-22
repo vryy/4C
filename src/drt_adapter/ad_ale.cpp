@@ -139,6 +139,7 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
   if (probtype == prb_ale or probtype == prb_struct_ale
       or probtype == prb_structure or probtype == prb_redairways_tissue
       or probtype == prb_particle or probtype == prb_crack
+      or probtype == prb_statmech
   // uq for now means either airway or structures hence
       or probtype == prb_uq) {
     adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));

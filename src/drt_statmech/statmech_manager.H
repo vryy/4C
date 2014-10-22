@@ -155,7 +155,7 @@ public:
    *  \param timeconverged (in) time of last converged timestep
    *  \param initialaset   (in) different behavior depending on call*/
   void UpdateTimeAndStepSize(double& dt,
-                             double& timeconverged,
+                             double  timeconverged,
                              bool initialset=false);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
@@ -264,8 +264,8 @@ public:
    */
   void PeriodicBoundaryShift(Epetra_Vector& disrow,
                              int            ndim,
-                             const double&  timen,
-                             const double&  dt);
+                             const double   timen,
+                             const double   dt);
 
   //! \brief checks orientation of crosslinker relative to linked filaments
   bool CheckOrientation(const LINALG::Matrix<3,1>        direction,

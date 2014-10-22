@@ -237,13 +237,13 @@ namespace STR
     virtual void PrepareTimeStep() = 0;
 
     //! Do time integration of multiple steps
-    virtual int Integrate();
+    virtual int Integrate() { dserror("time loop moved to separate adapter"); return 0; }
 
     /// tests if there are more time steps to do
     virtual bool NotFinished() const { return timen_ <= timemax_+1.0e-8*(*dt_)[0] and stepn_ <= stepmax_; }
 
     //! do something in case nonlinear solution does not converge for some reason
-    int PerformErrorAction(int nonlinsoldiv);
+    virtual INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv);
 
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;
@@ -254,7 +254,7 @@ namespace STR
      *  Do the nonlinear solve, i.e. (multiple) corrector,
      *  for the time step. All boundary conditions have been set.
      */
-    virtual int Solve() = 0;
+    virtual INPAR::STR::ConvergenceStatus Solve() = 0;
 
     //! Linear structure solve with just an interface load
     virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
@@ -940,7 +940,7 @@ namespace STR
     bool HaveStatMech() { return (statmechman_ != Teuchos::null); }
 
     //! return statmech manager
-    Teuchos::RCP<STATMECH::StatMechManager> StatMechManager() {return statmechman_;}
+    virtual Teuchos::RCP<STATMECH::StatMechManager> StatMechManager() {return statmechman_;}
 
     //! Check if statistical mechanics is chosen in input file and
     //! create manager object + initialize all relevant stuff if so
@@ -992,6 +992,14 @@ namespace STR
     std::vector<int> GetCrackTipNodes();
 
     //@}
+
+    //! @name Micro material methods
+    //@{
+
+    //! bool indicating if micro material is used
+    virtual bool HaveMicroMat() { return havemicromat_; }
+
+    //}
 
   protected:
 

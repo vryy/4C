@@ -52,6 +52,7 @@ void ntacal()
   switch (DRT::Problem::Instance()->ProblemType())
   {
     case prb_structure:
+    case prb_statmech:
     case prb_crack:
       caldyn_drt();
       break;

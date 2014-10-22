@@ -1886,6 +1886,13 @@ void STR::TimInt::OutputEveryIter(bool nw, bool ls)
  * originally by mwgee 03/07 */
 void STR::TimInt::OutputStep(bool forced_writerestart)
 {
+  // print iterations instead of steps
+  if (outputeveryiter_)
+  {
+    OutputEveryIter();
+    return;
+  }
+
   // special treatment is necessary when restart is forced
   if(forced_writerestart)
   {
@@ -3030,78 +3037,7 @@ void STR::TimInt::ApplyForceInternal
 }
 
 /*----------------------------------------------------------------------*/
-/* integrate */
-int STR::TimInt::Integrate()
-{
-  // error checking variables
-  int lnonlinsoldiv = 0;
-  int nonlinsoldiv = 0;
-
-  // target time #timen_ and step #stepn_ already set
-  // time loop
-  while ( NotFinished() and (not nonlinsoldiv) )
-  {
-
-    // call the predictor
-    PrepareTimeStep();
-
-    // integrate time step, i.e. do corrector steps
-    // after this step we hold disn_, etc
-    lnonlinsoldiv = Solve();
-
-    // since it is possible that the nonlinear solution fails only on some procs
-    // we need to communicate the error
-    discret_->Comm().Barrier();
-    discret_->Comm().MaxAll(&lnonlinsoldiv, &nonlinsoldiv, 1);
-    discret_->Comm().Barrier();
-
-    // if everything is fine
-    if(!nonlinsoldiv)
-    {
-      // calculate stresses, strains and energies
-      // note: this has to be done before the update since otherwise a potential
-      // material history is overwritten
-      PrepareOutput();
-
-      // update displacements, velocities, accelerations
-      // after this call we will have disn_==dis_, etc
-      UpdateStepState();
-
-      // update time and step
-      UpdateStepTime();
-
-      // update everything on the element level
-      UpdateStepElement();
-
-      // write output
-      if (outputeveryiter_) OutputEveryIter();
-      else OutputStep();
-
-      // print info about finished time step
-      PrintStep();
-
-      // propagate crack within the structure
-      UpdateCrackInformation( Dispnp() );
-
-      // write Gmsh output
-      writeGmshStrucOutputStep();
-    }
-    else // something went wrong update error code according to chosen divcont action
-    {
-      nonlinsoldiv = PerformErrorAction(nonlinsoldiv);
-    }
-  }
-  // stop supporting processors in multi scale simulations
-  if (havemicromat_)
-  {
-    STRUMULTI::stop_np_multiscale();
-  }
-  // that's it say what went wrong
-  return nonlinsoldiv;
-}
-
-/*----------------------------------------------------------------------*/
-int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
+INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv)
 {
   // what to do when nonlinear solver does not converge
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -3115,13 +3051,13 @@ int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
 
       // we should not get here, dserror for safety
       dserror("Nonlinear solver did not converge! ");
-      return 1;
+      return INPAR::STR::conv_nonlin_fail;
     }
     case INPAR::STR::divcont_continue:
     {
       // we should not get here, dserror for safety
       dserror("Nonlinear solver did not converge! ");
-      return 1;
+      return INPAR::STR::conv_nonlin_fail;
     }
     break;
     case INPAR::STR::divcont_repeat_step:
@@ -3129,7 +3065,7 @@ int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
       IO::cout << "Nonlinear solver failed to converge repeat time step"
                << IO::endl;
       // do nothing since we didn't update yet
-      return 0;
+      return INPAR::STR::conv_success;
     }
     break;
     case INPAR::STR::divcont_halve_step:
@@ -3142,28 +3078,28 @@ int STR::TimInt::PerformErrorAction(int nonlinsoldiv)
       stepmax_= stepmax_ + (stepmax_-stepn_)+1;
       // reset timen_ because it is set in the constructor
       timen_ = (*time_)[0] + (*dt_)[0];;
-      return 0;
+      return INPAR::STR::conv_success;
     }
     break;
     case INPAR::STR::divcont_repeat_simulation:
     {
-      if(nonlinsoldiv==1)
+      if(nonlinsoldiv==INPAR::STR::conv_nonlin_fail)
         IO::cout << "Nonlinear solver failed to converge and DIVERCONT = "
             "repeat_simulation, hence leaving structural time integration "
             << IO::endl;
-      else if (nonlinsoldiv==2)
+      else if (nonlinsoldiv==INPAR::STR::conv_lin_fail)
         IO::cout << "Linear solver failed to converge and DIVERCONT = "
             "repeat_simulation, hence leaving structural time integration "
             << IO::endl;
-      return 1; // so that time loop will be aborted
+      return nonlinsoldiv; // so that time loop will be aborted
     }
     break;
     default:
       dserror("Unknown DIVER_CONT case");
-    return 1;
+    return INPAR::STR::conv_nonlin_fail;
     break;
   }
-  return 0; // make compiler happy
+  return INPAR::STR::conv_success; // make compiler happy
 }
 
 /*----------------------------------------------------------------------*/

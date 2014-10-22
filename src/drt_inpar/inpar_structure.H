@@ -264,6 +264,14 @@ namespace INPAR
       }
     }
 
+    /// Handling of non-converged nonlinear solver
+    enum ConvergenceStatus
+    {
+      conv_success = 0,        ///< converged successfully
+      conv_nonlin_fail = 1,    ///< nonlinear solution procedure failed
+      conv_lin_fail = 2        ///< linear system failed
+    };
+
 
     /// Type of predictor
     enum PredEnum

@@ -1480,7 +1480,7 @@ bool STR::TimIntImpl::Converged()
 
 /*----------------------------------------------------------------------*/
 /* solve equilibrium */
-int STR::TimIntImpl::Solve()
+INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
 {
   int nonlin_error = 0 ;
   // special nonlinear iterations for contact / meshtying
@@ -1533,7 +1533,14 @@ int STR::TimIntImpl::Solve()
       break;
     }
   }
-  return nonlin_error;
+
+  // since it is possible that the nonlinear solution fails only on some procs
+  // we need to communicate the error
+  Discretization()->Comm().MaxAll(&nonlin_error, &nonlin_error, 1);
+
+  INPAR::STR::ConvergenceStatus status = static_cast<INPAR::STR::ConvergenceStatus>(nonlin_error);
+
+  return status;
 }
 /*----------------------------------------------------------------------*/
 /* solution with full Newton-Raphson iteration */

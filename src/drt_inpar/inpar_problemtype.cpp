@@ -22,6 +22,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
   if (string2prbtype.size()==0)
   {
     string2prbtype["Structure"] =                                 prb_structure;
+    string2prbtype["StatMech"] =                                  prb_statmech;
     string2prbtype["Structure_Ale"] =                             prb_struct_ale;
     string2prbtype["Fluid"] =                                     prb_fluid;
     string2prbtype["Fluid_XFEM"] =                                prb_fluid_xfem;

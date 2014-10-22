@@ -245,7 +245,7 @@ void STATMECH::StatMechManager::Update(const int&                               
  | Update time step size in time integration       (public)mueller 06/12|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt,
-                                                      double& timeconverged,
+                                                      double  timeconverged,
                                                       bool    initialset)
 {
   double eps = 2.0e-11;

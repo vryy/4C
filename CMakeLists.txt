@@ -623,6 +623,9 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_fpsiwrapper.cpp
   src/drt_adapter/ad_str_fsi_timint_adaptive.cpp
   src/drt_adapter/ad_str_fsi_crack.cpp
+  src/drt_adapter/ad_str_timeloop.cpp
+  src/drt_adapter/ad_str_statmech.cpp
+  src/drt_adapter/ad_str_multiscale.cpp
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/ad_ale.cpp
   src/drt_adapter/ad_ale_crack.cpp

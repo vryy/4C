@@ -535,6 +535,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, Teuch
   if (probtype == prb_ale
       or probtype == prb_struct_ale
       or probtype == prb_structure
+      or probtype == prb_statmech
       or probtype == prb_redairways_tissue
       or probtype == prb_particle
       or probtype == prb_crack

@@ -32,6 +32,7 @@ typedef enum _PROBLEM_TYP
      prb_thermo_fsi,         // thermo-fluid-structure-interaction problem
      prb_tfsi_aero,          // thermo fluid structure interaction problem including the aero code
      prb_structure,          // structural problem
+     prb_statmech,           // structural problem
      prb_struct_ale,         // structural problem, ale formulation
      prb_fluid,              // fluid problem
      prb_fluid_xfem,         // fluid problem including XFEM interfaces
