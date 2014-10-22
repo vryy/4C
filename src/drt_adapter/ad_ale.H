@@ -63,6 +63,12 @@ namespace ADAPTER
 
 /*! \brief General ALE field interface
  *
+ *  Base class for ALE field implementations. A pure ALE problem just needs the
+ *  simple ALE time integrator ALENEW::Ale whereas coupled problems need wrap
+ *  the ALE field in an ALE adapter that provides problem specific ALE
+ *  functionalities.
+ *
+ *  \sa ALENEW::Ale
  *  \sa ADAPTER::Structure, ADAPTER::Fluid
  *
  *  \author mayr.mt \date 10/2014

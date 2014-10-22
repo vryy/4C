@@ -37,12 +37,12 @@ namespace UTILS
 namespace ADAPTER
 {
 
-/*! \brief Just a wrapper that does nothing, meant to be derived from
+/*! \brief ALE Wrapper for FSI Problems
  *
- *  This wrapper just encapsulated the ADAPTER::Ale and implements all
- *  routines that are pure virtual in ADAPTER::Ale. For a specific ALE adapter
- *  just derive from this one and overload those routines you need with your
- *  problem specific routine.
+ *  Provide FSI specific ALE functionalities here by overloading the respective
+ *  routines from ADAPTER::AleWrapper
+ *
+ *  \sa ADAPTER::Ale, ADAPTER::AleWrapper
  *
  *  \author mayr.mt \date 10/2014
  */
@@ -64,16 +64,13 @@ public:
   //! communicate object at the interface
   Teuchos::RCP<const ALENEW::UTILS::MapExtractor> Interface() const;
 
-  //! ToDo (mayr) move this to XFluidFluid adapter
-  virtual void SolveAleXFluidFluidFSI() { };
-
-  //! ToDo (mayr) move this to XFluidFluid adapter
-  virtual void SolveBioGr() { };
+  //! ToDo (kruse) modify XFFSI implementations such that we don't need this here
+  virtual void SolveAleXFluidFluidFSI() {};
 
   //! apply interface displacements
-  void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
+  void ApplyInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp)
   {
-    interface_->InsertFSICondVector(idisp,WriteAccessDispnp());
+    interface_->InsertFSICondVector(idisp, WriteAccessDispnp());
   }
 
   //! get Dirichlet map extractor

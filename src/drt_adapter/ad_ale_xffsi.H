@@ -28,12 +28,12 @@
 namespace ADAPTER
 {
 
-/*! \brief Just a wrapper that does nothing, meant to be derived from
+/*! \brief ALE Wrapper for XFFSI Problems
  *
- *  This wrapper just encapsulated the ADAPTER::Ale and implements all
- *  routines that are pure virtual in ADAPTER::Ale. For a specific ALE adapter
- *  just derive from this one and overload those routines you need with your
- *  problem specific routine.
+ *  Provide XFFSI specific ALE functionalities here by overloading the
+ *  respective routines from ADAPTER::AleFsiWrapper and ADAPTER::AleWrapper
+ *
+ *  \sa ADAPTER::Ale, ADAPTER::AleWrapper, ADAPTER::AleFsiWrapper
  *
  *  \author mayr.mt \date 10/2014
  */
@@ -57,9 +57,17 @@ public:
 
   /// evaluate and assemble residual and jacobian matrix
   void Evaluate(
-    Teuchos::RCP<const Epetra_Vector> disiterinc ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
+    Teuchos::RCP<const Epetra_Vector> stepinc ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
   );
 
+  /*! \brief Relax ALE after some deformation has occured
+   *
+   *  At the beginning of the fluid-fluid-fsi step the xfem-dofs are
+   *  dirichlet values so that they can not change in the next
+   *  iterations. After the fsi step we put the ALE FSI-dofs to
+   *  dirichlet and we solve the ALE again to find the real ALE
+   *  displacement.
+   */
   void SolveAleXFluidFluidFSI();
 
 private:

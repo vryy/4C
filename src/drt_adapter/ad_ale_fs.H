@@ -57,10 +57,10 @@ public:
   Teuchos::RCP<const ALENEW::UTILS::MapExtractor> Interface() const;
 
   /// displacements at the free surface are prescribed
-  void ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp);
+  void ApplyFreeSurfaceDisplacements(Teuchos::RCP<const Epetra_Vector> fsdisp);
 
   /// displacements at the ale update condition nodes are prescribed
-  void ApplyAleUpdateDisplacements(Teuchos::RCP<Epetra_Vector> audisp);
+  void ApplyAleUpdateDisplacements(Teuchos::RCP<const Epetra_Vector> audisp);
 
 private:
 

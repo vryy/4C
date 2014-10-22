@@ -28,21 +28,24 @@ ADAPTER::AleFSWrapper::AleFSWrapper(Teuchos::RCP<Ale> ale)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALENEW::UTILS::MapExtractor> ADAPTER::AleFSWrapper::Interface() const
+Teuchos::RCP<const ALENEW::UTILS::MapExtractor>
+ADAPTER::AleFSWrapper::Interface() const
 {
   return interface_;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleFSWrapper::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
+void ADAPTER::AleFSWrapper::ApplyFreeSurfaceDisplacements(
+    Teuchos::RCP<const Epetra_Vector> fsdisp)
 {
-  interface_->InsertFSCondVector(fsdisp,WriteAccessDispnp());
+  interface_->InsertFSCondVector(fsdisp, WriteAccessDispnp());
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleFSWrapper::ApplyAleUpdateDisplacements(Teuchos::RCP<Epetra_Vector> audisp)
+void ADAPTER::AleFSWrapper::ApplyAleUpdateDisplacements(
+    Teuchos::RCP<const Epetra_Vector> audisp)
 {
-  interface_->InsertAUCondVector(audisp,WriteAccessDispnp());
+  interface_->InsertAUCondVector(audisp, WriteAccessDispnp());
 }
