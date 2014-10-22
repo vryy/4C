@@ -2245,7 +2245,7 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
   {
     // do the dirk
     int stage = params.get<int>("stage");
-    if(ele->Id()==0)std::cout<<"LINE "<<__LINE__<<" stage "<<stage<<std::endl;
+
     for(unsigned i=0; i<shapes_->ndofs_; ++i)
     {
       interiorPressn_[i]  = hdgele->eles_[stage][i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1];
@@ -2473,13 +2473,9 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
     tempVec1 = hdgele->elef_[stage];
     tempVec1.Scale(dt*dirk_b[stage]/dirk_a[stage][stage]);
     hdgele->eleinteriorValnp_ += tempVec1;
-    if(ele->Id()==0)std::cout<<"stage "<<stage<<" "<<dirk_q-1<<std::endl;
-    if(ele->Id()==0){std::cout<<__LINE__<<" eleinteriorValn"<<std::endl;for(int i=0;i<16;++i)std::cout<<(dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(ele))->eleinteriorValn_(i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1)<<" "; std::cout<<std::endl;}
 
     if(stage==dirk_q-1)
       hdgele->eleinteriorValn_ = hdgele->eleinteriorValnp_;
-    if(ele->Id()==0){std::cout<<__LINE__<<" eleinteriorValn"<<std::endl;for(int i=0;i<16;++i)std::cout<<(dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(ele))->eleinteriorValn_(i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1)<<" "; std::cout<<std::endl;}
-
   }
   else
   {
@@ -2517,11 +2513,9 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
 
     Epetra_SerialDenseVector tempVec1(shapes_->ndofs_*(nsd_*nsd_+nsd_+2));
     Epetra_SerialDenseVector tempVec2(shapes_->ndofs_*(nsd_*nsd_+nsd_+2));
-    if(ele->Id()==0){std::cout<<__LINE__<<" eleinteriorValn"<<std::endl;for(int i=0;i<16;++i)std::cout<<(dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(ele))->eleinteriorValn_(i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1)<<" "; std::cout<<std::endl;}
 
     hdgele->eles_[stage] = hdgele->eleinteriorValn_;
     hdgele->eles_[stage].Scale(1.0 / dt); // dt includes a_ii
-    if(ele->Id()==0){std::cout<<"step1"<<std::endl;for(int i=0;i<16;++i)std::cout<<(dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(ele))->eles_[0](i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1)<<" "; std::cout<<std::endl;}
 
     for (int i = 0; i < stage; ++i)
     {
@@ -2533,7 +2527,6 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
       tempVec1.Scale(dirk_a[stage][i] / dirk_a[stage][stage]);
       hdgele->eles_[stage] += tempVec1;
     }
-    if(ele->Id()==0){std::cout<<"step2"<<std::endl;for(int i=0;i<16;++i)std::cout<<(dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(ele))->eles_[0](i*(nsd_*nsd_+nsd_+2)+nsd_*nsd_+nsd_+1)<<" "; std::cout<<std::endl;}
 
     // these vectors s are used for the calculation of the residual -> write them to used local solver variable
     for(unsigned i=0; i<interiorValnp_.size(); ++i)
