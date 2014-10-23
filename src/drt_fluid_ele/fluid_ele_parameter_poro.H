@@ -16,7 +16,6 @@ Maintainers: Anh-Tu Vuong and Andreas Rauch
 #ifndef FLUID_ELE_PARAMETER_PORO_H
 #define FLUID_ELE_PARAMETER_PORO_H
 
-#include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_parameter.H"
 #include "../drt_inpar/inpar_poroelast.H"
 
@@ -54,17 +53,11 @@ private:
   //! Flag SetGeneralParameter was called
   bool set_fluid_parameter_poro_;
 
-  /// parameter to switch the stabilization
-  //INPAR::FLUID::StabType stabtype_;
-
   //! partial integration of porosity gradient in continuity equation
   bool poro_conti_partint_;
 
   //! type of time discretization for continuity equation
   INPAR::POROELAST::TimeDisTypeConti time_distype_conti_;
-
-  //! pointer to general fluid time parameter
-  DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
 
   /// private Constructor since we are a Singleton.
   FluidEleParameterPoro();

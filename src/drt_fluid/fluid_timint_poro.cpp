@@ -17,6 +17,8 @@
 #include "../drt_poroelast/poroelast_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../linalg/linalg_utils.H"
+
 #include "../drt_io/io.H"
 
 
@@ -47,16 +49,13 @@ void FLD::TimIntPoro::Init()
     if(stabparams->get<std::string>("TDS") == "time_dependent")
       dserror("TDS is not implemented for Poro yet. An error will occur in FluidImplicitTimeInt::TimeUpdate().");
 
-  if (alefluid_)
-  {
-    if ( discret_->Name()=="porofluid" )
-      //gridvn_ can also be moved to poro class?
-      gridvn_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-  }
+  if(not alefluid_) dserror("poro fluid has to be an ale fluid!");
+
+  //grid velocity of old time step n
+  gridvn_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
 
   //set some poro-specific parameters
-  if (discret_->Name()=="porofluid")
-    SetElementCustomParameter();
+  SetElementCustomParameter();
   return;
 }
 
@@ -75,10 +74,7 @@ void FLD::TimIntPoro::SetElementGeneralFluidParameter()
 {
 
   //set some poro-specific parameters only in specific poro cases
-  if ( not (discret_->Name()=="porofluid") )
-  {
-    FluidImplicitTimeInt::SetElementGeneralFluidParameter();
-  }
+  FluidImplicitTimeInt::SetElementGeneralFluidParameter();
   return;
 }
 
@@ -89,10 +85,7 @@ void FLD::TimIntPoro::SetElementTurbulenceParameter()
 {
 
   //set some poro-specific parameters only in specific poro cases
-  if (not (discret_->Name()=="porofluid") )
-  {
-    FluidImplicitTimeInt::SetElementTurbulenceParameter();
-  }
+   FluidImplicitTimeInt::SetElementTurbulenceParameter();
   return;
 }
 
@@ -110,14 +103,9 @@ void FLD::TimIntPoro::ReadRestart(int step)
 
   FluidImplicitTimeInt::ReadRestart(step);
 
-  if(alefluid_)
-  {
-    if(discret_->Name()=="porofluid" )
-    {
-      reader.ReadVector(gridv_,"gridv");
-      reader.ReadVector(gridvn_,"gridvn");
-    }
-  }
+  reader.ReadVector(gridv_,"gridv");
+  reader.ReadVector(gridvn_,"gridvn");
+
   return;
 }
 
@@ -214,18 +202,14 @@ void FLD::TimIntPoro::UpdateIterIncrementally(
     Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(
         *(discret_->DofRowMap(0)), true);
 
-
-    if (discret_->Name()=="porofluid" )
-    {
-      //only one step theta
-      // new end-point accelerations
-      aux->Update(1.0 / (theta_ * dta_), *velnp_, -1.0 / (theta_ * dta_),
-          *(*veln_)(0), 0.0);
-      aux->Update(-(1.0 - theta_) / theta_, *(*accn_)(0), 1.0);
-      // put only to free/non-DBC DOFs
-      dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(accnp_), aux);
-      *accnp_ = *aux;
-    }
+    //only one step theta
+    // new end-point accelerations
+    aux->Update(1.0 / (theta_ * dta_), *velnp_, -1.0 / (theta_ * dta_),
+        *(*veln_)(0), 0.0);
+    aux->Update(-(1.0 - theta_) / theta_, *(*accn_)(0), 1.0);
+    // put only to free/non-DBC DOFs
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(accnp_), aux);
+    *accnp_ = *aux;
   }
 
   return;
@@ -242,14 +226,11 @@ void FLD::TimIntPoro::Output()
   // output of solution
   if (step_%upres_ == 0)
   {
-    if(discret_->Name()=="porofluid" )
-    {
-      Teuchos::RCP<Epetra_Vector>  convel= Teuchos::rcp(new Epetra_Vector(*velnp_));
-      convel->Update(-1.0,*gridv_,1.0);
-      output_->WriteVector("convel", convel);
-      output_->WriteVector("gridv", gridv_);
-      output_->WriteVector("gridvn", gridvn_);
-    }
+    Teuchos::RCP<Epetra_Vector>  convel= Teuchos::rcp(new Epetra_Vector(*velnp_));
+    convel->Update(-1.0,*gridv_,1.0);
+    output_->WriteVector("convel", convel);
+    output_->WriteVector("gridv", gridv_);
+    output_->WriteVector("gridvn", gridvn_);
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ > 0 && step_%uprestart_ == 0)
@@ -267,22 +248,15 @@ void FLD::TimIntPoro::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList
 {
   eleparams.set<int>("physical type",physicaltype_);
 
-  if (alefluid_)
-  {
-     if (   physicaltype_ == INPAR::FLUID::poro
-         or physicaltype_ == INPAR::FLUID::poro_p1
-         or physicaltype_ == INPAR::FLUID::poro_p2)
-     {
-        //just for poroelasticity
-        discret_->SetState("dispn", dispn_);
-        discret_->SetState("accnp", accnp_);
-        discret_->SetState("accn", accn_);
-        discret_->SetState("gridvn", gridvn_);
+  //just for poroelasticity
+  discret_->SetState("dispn", dispn_);
+  discret_->SetState("accnp", accnp_);
+  discret_->SetState("accn", accn_);
+  discret_->SetState("gridvn", gridvn_);
 
-        eleparams.set("total time", time_);
-        eleparams.set("delta time", dta_);
-     }
-  }
+  eleparams.set("total time", time_);
+  eleparams.set("delta time", dta_);
+
   return;
 }
 
@@ -291,56 +265,52 @@ void FLD::TimIntPoro::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList
 *----------------------------------------------------------------------*/
 void FLD::TimIntPoro::PoroIntUpdate()
 {
-  if (   physicaltype_ == INPAR::FLUID::poro
-        or physicaltype_ == INPAR::FLUID::poro_p1
-        or physicaltype_ == INPAR::FLUID::poro_p2)
+  sysmat_->UnComplete();
+
+  std::string condname = "PoroPartInt";
+  std::vector<DRT::Condition*> poroPartInt;
+  discret_->GetCondition(condname,poroPartInt);
+  if(poroPartInt.size())
   {
-    sysmat_->UnComplete();
+    Teuchos::ParameterList eleparams;
 
-    std::string condname = "PoroPartInt";
-    std::vector<DRT::Condition*> poroPartInt;
-    discret_->GetCondition(condname,poroPartInt);
-    if(poroPartInt.size())
-    {
-      Teuchos::ParameterList eleparams;
+    // set action for elements
+    eleparams.set<int>("action",FLD::poro_boundary);
+    eleparams.set("total time", time_);
+    eleparams.set("delta time", dta_);
+    eleparams.set<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
+    eleparams.set<int>("physical type",physicaltype_);
 
-      // set action for elements
-      eleparams.set<int>("action",FLD::poro_boundary);
-      eleparams.set("total time", time_);
-      eleparams.set("delta time", dta_);
-      eleparams.set<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
-      eleparams.set<int>("physical type",physicaltype_);
-
-      discret_->ClearState();
-      discret_->SetState("dispnp", dispnp_);
-      discret_->SetState("gridv", gridv_);
-      discret_->SetState("velnp",velnp_);
-      discret_->SetState("scaaf",scaaf_);
-      discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
-      discret_->ClearState();
-    }
-
-    condname = "PoroPresInt";
-    std::vector<DRT::Condition*> poroPresInt;
-    discret_->GetCondition(condname,poroPresInt);
-    if(poroPresInt.size())
-    {
-      Teuchos::ParameterList eleparams;
-
-      // set action for elements
-      eleparams.set<int>("action",FLD::poro_prescoupl);
-      eleparams.set<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
-      eleparams.set<int>("physical type",physicaltype_);
-
-      discret_->ClearState();
-      discret_->SetState("dispnp", dispnp_);
-      discret_->SetState("gridv", gridv_);
-      discret_->SetState("velnp",velnp_);
-      discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
-      discret_->ClearState();
-    }
-    sysmat_->Complete();
+    discret_->ClearState();
+    discret_->SetState("dispnp", dispnp_);
+    discret_->SetState("gridv", gridv_);
+    discret_->SetState("velnp",velnp_);
+    discret_->SetState("scaaf",scaaf_);
+    discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
+    discret_->ClearState();
   }
+
+  condname = "PoroPresInt";
+  std::vector<DRT::Condition*> poroPresInt;
+  discret_->GetCondition(condname,poroPresInt);
+  if(poroPresInt.size())
+  {
+    Teuchos::ParameterList eleparams;
+
+    // set action for elements
+    eleparams.set<int>("action",FLD::poro_prescoupl);
+    eleparams.set<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
+    eleparams.set<int>("physical type",physicaltype_);
+
+    discret_->ClearState();
+    discret_->SetState("dispnp", dispnp_);
+    discret_->SetState("gridv", gridv_);
+    discret_->SetState("velnp",velnp_);
+    discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
+    discret_->ClearState();
+  }
+  sysmat_->Complete();
+
   return;
 }
 
@@ -349,42 +319,16 @@ void FLD::TimIntPoro::PoroIntUpdate()
 *----------------------------------------------------------------------*/
 void FLD::TimIntPoro::TimIntCalculateAcceleration()
 {
-  Teuchos::RCP<Epetra_Vector> onlyaccn = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> onlyvelnm = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> onlyveln = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> onlyvelnp = Teuchos::null;
+  // for poro problems, there is a time derivative of the porosity/pressure
+  // in the continuity equation. Therefore, we potentially need time
+  // derivatives of the pressure and thus do not split the state vectors
+  CalculateAcceleration(velnp_,
+                        veln_ ,
+                        velnm_,
+                        accn_ ,
+                        accnp_);
 
-  if (  DRT::Problem::Instance()->ProblemType()==prb_fpsi
-        and discret_->Name()=="fluid"
-     ) //standard case
-  {
-    onlyaccn  = velpressplitter_.ExtractOtherVector(accn_);
-    onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
-    onlyvelnm = velpressplitter_.ExtractOtherVector(velnm_);
-    onlyveln  = velpressplitter_.ExtractOtherVector(veln_);
-    onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
-  }
-  else //poroelasticity case
-  {
-    onlyaccn = accn_;
-    onlyaccnp = accnp_;
-    onlyvelnm = velnm_;
-    onlyveln = veln_;
-    onlyvelnp = velnp_;
-  }
-
-  CalculateAcceleration(onlyvelnp,
-                        onlyveln ,
-                        onlyvelnm,
-                        onlyaccn ,
-                        onlyaccnp);
-
-  // copy back into global vector
-  LINALG::Export(*onlyaccnp,*accnp_);
-
-  if(discret_->Name()=="porofluid")
-    gridvn_ ->Update(1.0,*gridv_,0.0);
+  gridvn_ ->Update(1.0,*gridv_,0.0);
 
   return;
 }

@@ -877,9 +877,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       else if(disname == "fluid")
       {
         if(timeint == INPAR::FLUID::timeint_stationary)
-          tmpfluid = Teuchos::rcp(new FLD::TimIntPoroStat(actdis, solver, fluidtimeparams, output, isale));
+          tmpfluid = Teuchos::rcp(new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
         else if(timeint == INPAR::FLUID::timeint_one_step_theta)
-          tmpfluid = Teuchos::rcp(new FLD::TimIntPoroOst(actdis, solver, fluidtimeparams, output, isale));
+          tmpfluid = Teuchos::rcp(new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
         else
           dserror("Unknown time integration for this fluid problem type\n");
         fluid_ = Teuchos::rcp(new FluidFPSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));

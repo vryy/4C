@@ -17,10 +17,6 @@
 
 #include "fluidimplicitintegration.H"
 
-#include "../linalg/linalg_utils.H"
-
-#include "../drt_inpar/inpar_poroelast.H"
-
 namespace FLD
 {
 
@@ -65,7 +61,6 @@ public:
   /// set the initial porosity field
   void SetInitialPorosityField(
     const INPAR::POROELAST::InitialField,   ///< type of initial field
-  //const int,                                ///< type of initial field
     const int startfuncno                   ///< number of spatial function
     );
 

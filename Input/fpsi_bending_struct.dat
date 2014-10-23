@@ -73,6 +73,7 @@ SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
+GRAD_DIV                        no
 -------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
@@ -84,9 +85,9 @@ RSTAB                           rstab_gls //rstab_gls no_rstab
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab // no_vstab vstab_gls
-GRAD_DIV      yes
-CHARELELENGTH_PC    volume_equivalent_diameter
-CHARELELENGTH_U      streamlength
+GRAD_DIV                        yes
+CHARELELENGTH_PC                volume_equivalent_diameter
+CHARELELENGTH_U                 streamlength
 -------------------------------------------------------FPSI DYNAMIC
 CONVTOL                         1e-06
 COUPALGO                        fpsi_monolithic_plain

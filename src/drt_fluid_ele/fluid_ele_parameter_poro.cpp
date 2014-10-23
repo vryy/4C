@@ -59,7 +59,6 @@ DRT::ELEMENTS::FluidEleParameterPoro::FluidEleParameterPoro()
     poro_conti_partint_(false),
     time_distype_conti_(INPAR::POROELAST::pressure)
 {
-  fldparatimint_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
 }
 
 //----------------------------------------------------------------------*
@@ -73,9 +72,6 @@ void DRT::ELEMENTS::FluidEleParameterPoro::SetElementPoroParameter( Teuchos::Par
   poro_conti_partint_ = params.get<bool>("conti partial integration",false);
   reaction_= true;
   time_distype_conti_ = DRT::INPUT::get<INPAR::POROELAST::TimeDisTypeConti>(params, "Time DisType Conti");
-  //reaction_topopt_= false;
-  //graddiv_=false;
-
 }
 
 //----------------------------------------------------------------------*/
