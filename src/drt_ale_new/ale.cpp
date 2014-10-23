@@ -557,46 +557,14 @@ void ALENEW::Ale::SetupDBCMapEx(
     break;
   }
   case ALENEW::UTILS::MapExtractor::dbc_set_x_fsi:
-  {
-    std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(interface->FSICondMap());
-    condmaps.push_back(dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std]->CondMap());
-    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-
-    dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_x_fsi] =
-        Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
-    break;
-  }
   case ALENEW::UTILS::MapExtractor::dbc_set_biofilm:
   {
-    // Todo (ager): please check if the biofilm-specific Dirichlet map extractor
-    // really requires all of these conditions and if any are missing!
-    // (kruse, 10/14)
-
-    // for partitioned FSI the interface becomes a Dirichlet boundary
-    // also for structural Lagrangian simulations with contact and wear
-    // followed by an Eulerian step to take wear into account, the interface
-    // becomes a dirichlet
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
     condmaps.push_back(interface->FSICondMap());
-    condmaps.push_back(interface->AleWearCondMap());
     condmaps.push_back(dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std]->CondMap());
-    condmaps.push_back(interface->FPSICondMap());
-
-    if (interface->FSCondRelevant() or interface->AUCondRelevant())
-    {
-      // for partitioned solves, the free surface and/or the nodes of the ale update
-      // conditions become a Dirichlet boundary
-
-      if (interface->FSCondRelevant()) {
-        condmaps.push_back(interface->FSCondMap());
-      }
-      if (interface->AUCondRelevant()) {
-        condmaps.push_back(interface->AUCondMap());
-      }
-    }
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-    dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_biofilm] =
+
+    dbcmaps_[dbc_type] =
         Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
     break;
   }

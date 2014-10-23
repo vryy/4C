@@ -79,7 +79,7 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   if(ale_ == Teuchos::null)
      dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
 
-  // create fluid-ALE Dirichlet Map Extractor for ??? step
+  // create fluid-ALE Dirichlet Map Extractor for FSI step
   ale_->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_std);
 
   // create fluid-ALE Dirichlet Map Extractor for growth step
