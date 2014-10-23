@@ -51,8 +51,8 @@ SUPG                            Yes
 GRAD_DIV                        Yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 -----------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos
-EOS_CONV_STREAM                 std_eos
+EOS_PRES                        none
+EOS_CONV_STREAM                 none
 EOS_CONV_CROSS                  none
 EOS_DIV                         none
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
@@ -76,7 +76,7 @@ NAME                            ALE_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.00197238658 DENSITY 1.0 GAMMA 1.0  // viscosity 1/507 for Re=507 (U=1.0,b=1.0)
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 -------------------------------------------------------------CURVE1
@@ -112,11 +112,11 @@ E 7 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 --------------------------------DESIGN POINT ALE DIRICH CONDITIONS
 DPOINT 5
 // junction_xmid_lower
-E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
 // junction_xend_lower
-E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 1 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 1 0 0 0 0
 // junction_xstart_lower
-E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 2 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 2 0 0 0 0
 // inlet
 E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // outlet
@@ -124,9 +124,9 @@ E 5 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 ---------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE  2
 // upper_wall
-E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // lower_wall
-E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    8628 DNODE 1
 NODE    8629 DNODE 1
@@ -191,8 +191,7 @@ NODE    8687 DNODE 1
 NODE    8688 DNODE 1
 NODE    8689 DNODE 1
 NODE    8690 DNODE 1
-NODE    8691 DNODE 1
-NODE    8692 DNODE 1
+NODE    8606 DNODE 2
 NODE    8607 DNODE 2
 NODE    8608 DNODE 2
 NODE    8609 DNODE 2
@@ -214,6 +213,8 @@ NODE    8624 DNODE 2
 NODE    8625 DNODE 2
 NODE    8626 DNODE 2
 NODE    8627 DNODE 2
+NODE    8691 DNODE 3
+NODE    8692 DNODE 3
 NODE    8693 DNODE 3
 NODE    8694 DNODE 3
 NODE    8695 DNODE 3
@@ -18392,12 +18393,12 @@ NODE 8733    COORD  -9.0000000000000000e+00  -5.0000000000000000e-01  0.00000000
 ---------------------------------------------------THERMO ELEMENTS
 ---------------------------------------------------ACOUSTIC ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 62 QUANTITY velx VALUE -2.39322757452230278e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 62 QUANTITY vely VALUE -2.98216474141988666e-11 TOLERANCE 1e-10
-FLUID DIS fluid NODE 62 QUANTITY pressure VALUE -4.00070549755691829e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 2000 QUANTITY velx VALUE -3.49309264131310027e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 2000 QUANTITY vely VALUE 5.57738136867473957e-04 TOLERANCE 1e-10
-FLUID DIS fluid NODE 2000 QUANTITY pressure VALUE -1.09354076117670953e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 8620 QUANTITY pressure VALUE -1.32854599576749788e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 62 QUANTITY velx VALUE -2.39322757365636796e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 62 QUANTITY vely VALUE -2.98169706859164612e-11 TOLERANCE 1e-10
+FLUID DIS fluid NODE 62 QUANTITY pressure VALUE -4.00070549755695648e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 2000 QUANTITY velx VALUE -3.49376814962394533e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 2000 QUANTITY vely VALUE 5.85623227583868160e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 2000 QUANTITY pressure VALUE -1.09362435600150079e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 8620 QUANTITY pressure VALUE -1.32859358034964892e+01 TOLERANCE 1e-9
 ---------------------------------------------------------------END
 // END

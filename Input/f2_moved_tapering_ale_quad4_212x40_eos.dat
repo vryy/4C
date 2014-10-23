@@ -76,7 +76,7 @@ NAME                            ALE_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.00197238658 DENSITY 1.0 GAMMA 1.0  // viscosity 1/507 for Re=507 (U=1.0,b=1.0)
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 -------------------------------------------------------------CURVE1
@@ -112,11 +112,11 @@ E 7 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 --------------------------------DESIGN POINT ALE DIRICH CONDITIONS
 DPOINT 5
 // junction_xmid_lower
-E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
 // junction_xend_lower
-E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 1 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 1 0 0 0 0
 // junction_xstart_lower
-E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 2 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 2 0 0 0 0
 // inlet
 E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // outlet
@@ -124,9 +124,9 @@ E 5 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 ---------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE  2
 // upper_wall
-E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // lower_wall
-E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    8628 DNODE 1
 NODE    8629 DNODE 1
@@ -191,8 +191,7 @@ NODE    8687 DNODE 1
 NODE    8688 DNODE 1
 NODE    8689 DNODE 1
 NODE    8690 DNODE 1
-NODE    8691 DNODE 1
-NODE    8692 DNODE 1
+NODE    8606 DNODE 2
 NODE    8607 DNODE 2
 NODE    8608 DNODE 2
 NODE    8609 DNODE 2
@@ -214,6 +213,8 @@ NODE    8624 DNODE 2
 NODE    8625 DNODE 2
 NODE    8626 DNODE 2
 NODE    8627 DNODE 2
+NODE    8691 DNODE 3
+NODE    8692 DNODE 3
 NODE    8693 DNODE 3
 NODE    8694 DNODE 3
 NODE    8695 DNODE 3
@@ -18395,9 +18396,9 @@ NODE 8733    COORD  -9.0000000000000000e+00  -5.0000000000000000e-01  0.00000000
 FLUID DIS fluid NODE 62 QUANTITY velx VALUE -2.39638589437423499e-01 TOLERANCE 1e-10
 FLUID DIS fluid NODE 62 QUANTITY vely VALUE -7.58891416459016914e-14 TOLERANCE 1e-10
 FLUID DIS fluid NODE 62 QUANTITY pressure VALUE -4.00756796022147288e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 2000 QUANTITY velx VALUE -3.50138705354795188e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 2000 QUANTITY vely VALUE 5.69639651668373058e-04 TOLERANCE 1e-10
-FLUID DIS fluid NODE 2000 QUANTITY pressure VALUE -1.09538900845294265e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 8620 QUANTITY pressure VALUE -1.33079014329650889e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 2000 QUANTITY velx VALUE -3.50207255857864497e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 2000 QUANTITY vely VALUE 5.97692595844043846e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 2000 QUANTITY pressure VALUE -1.09547309020899437e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 8620 QUANTITY pressure VALUE -1.33083855771329596e+01 TOLERANCE 1e-9
 ---------------------------------------------------------------END
 // END
