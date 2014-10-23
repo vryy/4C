@@ -802,6 +802,18 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
     mele->InitializeDataContainer();
   }
 
+  if (poro_)
+  {
+    //******!Cannot be used with parallel redistribution!
+    for (std::map<int, std::pair<DRT::Element*, int> >::iterator it = ParentElementMap().begin();
+        it != ParentElementMap().end(); ++it)
+    {
+      MORTAR::MortarElement* ele = dynamic_cast<MORTAR::MortarElement*>(Discret().gElement(it->first));
+      ele->ReSetParentMasterElement(it->second.first, it->second.second);
+    }
+    //******!!
+  }
+
   // communicate quadslave status among ALL processors
   // (not only those participating in interface)
   int localstatus = (int) (quadslave_);

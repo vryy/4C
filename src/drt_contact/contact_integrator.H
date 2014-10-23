@@ -783,6 +783,7 @@ public:
        double* ncoup, double* gpn, double* lengthn,
        double& jac,
        double& wgt,
+       double* gpcoord,
        const std::vector<GEN::pairedvector<int,double> >& dsxigp,
        const std::vector<GEN::pairedvector<int,double> >& dmxigp,
        std::map<int,double> & dncoupgp,
@@ -1036,6 +1037,25 @@ public:
   ;
 
 protected:
+
+  /*!
+  \brief Calculate Determinate of the Deformation Gradient at GP
+
+  */
+  double inline DetDeformationGradient3D(
+      MORTAR::MortarElement& sele,
+      double& wgt,
+      double* gpcoord);
+
+  /*!
+  \brief Templated Calculate Determinate of the Deformation Gradient at GP
+
+  */
+  template <DRT::Element::DiscretizationType parentdistype>
+  double inline TDetDeformationGradient3D(
+      MORTAR::MortarElement& sele,
+      double& wgt,
+      double* gpcoord);
 
     // don't want = operator and cctor
     CoIntegrator operator = (const CoIntegrator& old);

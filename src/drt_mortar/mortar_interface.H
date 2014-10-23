@@ -54,6 +54,7 @@ Maintainer: Alexander Popp
 namespace DRT
 {
   class Discretization;
+  class Element;
 }
 
 namespace LINALG
@@ -731,6 +732,8 @@ public:
 
   void SetPoroFlag(bool poro){poro_ = poro;}
 
+  std::map<int, std::pair<DRT::Element*, int> >& ParentElementMap(){return parentelementmap_;}
+
   //@}
 
 protected:
@@ -789,6 +792,8 @@ protected:
   bool                               nurbs_;
 
   bool                               poro_;// flag if poro contact problem!
+
+  std::map<int, std::pair<DRT::Element*, int> > parentelementmap_; //map which contains pointers to parentelements! <cele.id, proc>,<elepointer,faceid>
 
 }; // class MortarInterface
 } // namespace MORTAR

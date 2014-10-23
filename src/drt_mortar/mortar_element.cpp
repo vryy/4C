@@ -1767,3 +1767,20 @@ void MORTAR::MortarElement::DeleteSearchElements()
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Sets the pointers of the main parent element              ager 10/14|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarElement::ReSetParentMasterElement(DRT::Element* master,
+                            const int     lface_master)
+{
+  if (master != NULL)
+    {
+    SetParentMasterElement(master,lface_master);
+    int numdof = master->NumNode()*master->NumDofPerNode(*master->Nodes()[0]);
+    MoData().ParentDisp() = std::vector<double>(numdof);
+    for (int i = 0; i < numdof; ++i)
+      MoData().ParentDisp()[i] = 0.0;
+    }
+}
+

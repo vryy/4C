@@ -60,7 +60,8 @@ CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy(DRT::Discretization& probdis
                                                 std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
                                                 int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof):
 CoLagrangeStrategy(probdiscret,params,interface,dim,comm,alphaf,maxdof),
-no_penetration_(false)
+no_penetration_(false),
+nopenalpha_(0.0)
 {
   return;
 }
@@ -697,6 +698,8 @@ void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(Teuchos::RCP<LINALG
     // if not we can skip this routine to speed things up
     if (!no_penetration_ || (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())) return;
 
+    nopenalpha_ = alphaf_; //to use different alpha for nopen condition (not used at the moment)
+
     // complete stiffness matrix
     // (this is a prerequisite for the Split2x2 methods to be called later)
     k_fseff->Complete();
@@ -728,7 +731,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(Teuchos::RCP<LINALG
       }
 
       k_fseff->UnComplete();
-      k_fseff->Add(*fporolindmatrix_,false,(1.0-alphaf_)*1.0,1.0);
+      k_fseff->Add(*fporolindmatrix_,false,(1.0-nopenalpha_)*1.0,1.0);
       //k_fseff->Add(*fporolinmmatrix_,false,1.0-alphaf_,1.0); will be needed for twosided poro contact
       k_fseff->Complete(*ProblemDofs(), *falldofrowmap_); //gets bigger because of linearisation w.r.t. to pure structural displacements!
       /**********************************************************************/
@@ -1082,7 +1085,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(Teuchos::RCP<LINALG
       {
         Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*fgmdofrowmap_));
         fmoldtransp_->Multiply(false,*lambdaold_,*tempvecm);
-        fm->Update(alphaf_,*tempvecm,1.0);
+        fm->Update(nopenalpha_,*tempvecm,1.0);
       }
 
       // fs: prepare alphaf * old contact forces (t_n)
@@ -1111,7 +1114,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(Teuchos::RCP<LINALG
         Teuchos::RCP<Epetra_Vector> faadd = Teuchos::rcp(new Epetra_Vector(*fgactivedofs_));
         LINALG::Export(*fsadd,*faadd);
 
-        fa->Update(-alphaf_,*faadd,1.0);
+        fa->Update(-nopenalpha_,*faadd,1.0);
       }
 
       // fm: add T(mhat)*fa
@@ -1129,7 +1132,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(Teuchos::RCP<LINALG
       {
         Teuchos::RCP<Epetra_Vector> fiadd = Teuchos::rcp(new Epetra_Vector(*fgidofs));
         LINALG::Export(*fsadd,*fiadd);
-        fi->Update(-alphaf_,*fiadd,1.0);
+        fi->Update(-nopenalpha_,*fiadd,1.0);
       }
 
       // fi: add T(dhat)*fa
@@ -1510,13 +1513,13 @@ void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(Teuchos::RCP<Epetra_Vector>
 
 
       fdoldtransp_->Multiply(false,*lambdaold_,*mod);
-      flambda->Update(-alphaf_,*mod,1.0);
+      flambda->Update(-nopenalpha_,*mod,1.0);
 
       Teuchos::RCP<Epetra_Vector> lambdacopy = Teuchos::rcp(new Epetra_Vector(*flambda));
 
-      finvdmod->Multiply(true,*lambdacopy,*lambda_); // should be lambda_ at the ende!!!
+      finvdmod->Multiply(true,*lambdacopy,*lambda_); // should be lambda_ at the end!!!
 
-     //lambda_->Scale((1-alphaf_)); //-- is already scaled by this factor!!!
+     lambda_->Scale((1-alphaf_)/(1-nopenalpha_)); //-- is already scaled by this factor!!! --- scale it back to with nopenalpha_...
     }
   }
    // store updated LM into nodes
@@ -1558,17 +1561,16 @@ void CONTACT::PoroLagrangeStrategy::SetState(const std::string& statename, const
   if (statename=="displacement" || statename=="olddisplacement")
   {
     CONTACT::CoAbstractStrategy::SetState(statename,vec);
-    vec->Comm().Barrier();
     return;
   }
 
-  if (statename=="fvelocity" || statename=="svelocity" || statename=="lm")
+  if (statename=="fvelocity" || statename=="svelocity" || statename=="lm" || statename=="fpressure")
   {
     //set state on interfaces
     for (int i=0; i<(int)interface_.size(); ++i)
     {
 
-      interface_[i]->SetState(statename, vec);
+      //interface_[i]->SetState(statename, vec);
       DRT::Discretization& idiscret_ = interface_[i]->Discret();
 
       if (statename=="fvelocity" or statename=="svelocity")
@@ -1636,6 +1638,76 @@ void CONTACT::PoroLagrangeStrategy::SetState(const std::string& statename, const
            }
          }
        }
+       if (statename=="fpres")
+       {
+         // alternative method to get vec to full overlap
+         Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscret_.DofColMap(),true));
+         LINALG::Export(*vec,*global);
+
+         // loop over all nodes to set current pressure
+         // (use fully overlapping column map)
+         for (int i=0;i<idiscret_.NumMyColNodes();++i)
+         {
+           CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
+
+           double myfpres;
+           int fpres;
+
+           fpres=node->Dofs()[0]; //here gets id of first component of node
+
+           myfpres = global->Values()[global->Map().LID(fpres)];
+
+           *node->CoPoroData().fpres() = myfpres;
+         }
+       }
+    }
+  }
+  return;
+}
+
+
+//this should add the displacement of the parent element to the contact element into the datacontainer...
+/*------------------------------------------------------------------------*
+ | Assign generell poro contact state!                          ager 10/14|
+ *------------------------------------------------------------------------*/
+void CONTACT::PoroLagrangeStrategy::SetParentState(const std::string& statename,
+    const Teuchos::RCP<Epetra_Vector> vec,
+    const Teuchos::RCP<DRT::Discretization> dis)
+{
+  if (statename == "displacement")
+  {
+    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(),true));
+    LINALG::Export(*vec,*global);
+
+    //set state on interfaces
+    for (int i=0; i<(int)interface_.size(); ++i)
+    {
+      DRT::Discretization& idiscret_ = interface_[i]->Discret();
+
+    //  interface_[i]->SlaveColElements()->Print(std::cout);
+    //  interface_[i]->SlaveRowElements()->Print(std::cout);
+      for (int j=0; j < interface_[i]->SlaveColElements()->NumMyElements(); ++j) //will just work for onesided poro contact as the porosity is just on slave side!!!
+      {
+        int gid = interface_[i]->SlaveColElements()->GID(j);
+
+
+        MORTAR::MortarElement* ele = dynamic_cast<MORTAR::MortarElement*>(idiscret_.gElement(gid));
+
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
+
+        ele->ParentElement()->LocationVector(*dis,lm,lmowner,lmstride);
+        ele->MoData().ParentDisp() = std::vector<double>(ele->ParentElement()->NumNode()); //initialize here!
+
+        std::vector<double> myval;
+        DRT::UTILS::ExtractMyValues(*global,myval,lm);
+
+        for (unsigned int i = 0; i < myval.size(); ++i)
+          ele->MoData().ParentDisp()[i] = myval[i];
+
+
+      }
     }
   }
   return;

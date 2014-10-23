@@ -136,6 +136,7 @@ CONTACT::CoNodePoroDataContainer::CoNodePoroDataContainer()
     svel()[i] = 0.0;
     poroLM()[i] = 0.0;
   }
+  *fpres() = 0.0;
     return;
 }
 
@@ -147,6 +148,8 @@ void CONTACT::CoNodePoroDataContainer::Pack(DRT::PackBuffer& data) const
 {
   // add fvel
   DRT::ParObject::AddtoPack(data,fvel_,3*sizeof(double));
+  // add fpres
+  DRT::ParObject::AddtoPack(data,fpres_);
   // add svel
   DRT::ParObject::AddtoPack(data,svel_,3*sizeof(double));
   // add poroLM
@@ -165,6 +168,8 @@ void CONTACT::CoNodePoroDataContainer::Unpack(std::vector<char>::size_type& posi
 {
   // fvel
   DRT::ParObject::ExtractfromPack(position,data,fvel_,3*sizeof(double));
+  // fpres
+  DRT::ParObject::ExtractfromPack(position,data,fpres_);
   // svel
   DRT::ParObject::ExtractfromPack(position,data,svel_,3*sizeof(double));
   // poroLM

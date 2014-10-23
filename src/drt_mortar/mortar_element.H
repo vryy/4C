@@ -172,6 +172,12 @@ public:
   */
   virtual void ResetDerivDualShape() { derivdualshapecoeff_ = Teuchos::null; return; }
 
+  /*!
+  \brief Return Parent displacement vector
+
+  */
+  virtual std::vector<double>& ParentDisp() {return parentdisp_; }
+
   //@}
 
 protected:
@@ -188,6 +194,10 @@ protected:
 
   // derivative of coefficient matrix for dual shape functions
   Teuchos::RCP<std::vector<std::vector<GEN::pairedvector<int,double> > > > derivdualshapecoeff_;
+
+  // Displacement of Parent Element
+  std::vector<double> parentdisp_;
+
 
 }; // class MortarEleDataContainer
 
@@ -779,6 +789,20 @@ public:
 
   */
   virtual std::vector<Epetra_SerialDenseVector>& Knots() { return mortarknots_; };
+
+  /*!
+  \brief ReSet the master element this face element is connected to
+
+  Sets the pointers of the main parent element adjacent to the current face.
+  This method is used after redistribution of the elements, for elements which still stay on the same
+  proc. (Unpack will set the pointer default to NULL & face id to -1)
+  Additionally initializes parent displacement vector!
+
+  \param master: parent element which shares the orientation of faces
+  \param lface_master: local number of face within master element
+  */
+  virtual void ReSetParentMasterElement(DRT::Element* master,
+                              const int     lface_master);
 
 
   //@}

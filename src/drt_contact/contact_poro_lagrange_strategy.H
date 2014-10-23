@@ -166,8 +166,13 @@ class PoroLagrangeStrategy : public CoLagrangeStrategy
     */
     void SetState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec);
 
+    void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<DRT::Discretization> dis);
+
     //Flag for Poro No Penetration Condition
     bool HasPoroNoPenetration(){return no_penetration_;}
+
+    //Return Lagrange Multiplier for No Penetration Condition!
+    Teuchos::RCP<Epetra_Vector> LambdaNoPen(){return lambda_;}
 
     protected:
 
@@ -181,6 +186,9 @@ class PoroLagrangeStrategy : public CoLagrangeStrategy
 
     // flag activation poro contact no penetration condition
     bool no_penetration_;
+
+    //time integration
+    double nopenalpha_; //1-theta!!!
 
     Teuchos::RCP<LINALG::SparseMatrix> csfsn_;  //poro coupling stiffness block Csf_sn (needed for LM)
     Teuchos::RCP<LINALG::SparseMatrix> csfsm_;  //poro coupling stiffness block Csf_sm (needed for LM)
@@ -243,36 +251,30 @@ class PoroLagrangeStrategy : public CoLagrangeStrategy
      //! transform object for active part of inverse D matrix \f$invDa\f$
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> invDatransform_;
 
-    public: //just for testing
-      // poro contact
 
-      Teuchos::RCP<Epetra_Vector> lambda_;                 // current vector of Lagrange multipliers(for poro no pen.) at t_n+1
-      Teuchos::RCP<Epetra_Vector> lambdaold_;              // old vector of Lagrange multipliers(for poro no pen.) at t_n
+    Teuchos::RCP<Epetra_Vector> lambda_;                 // current vector of Lagrange multipliers(for poro no pen.) at t_n+1
+    Teuchos::RCP<Epetra_Vector> lambdaold_;              // old vector of Lagrange multipliers(for poro no pen.) at t_n
 
-      //... add the relevant matrices !!!
-      Teuchos::RCP<Epetra_Vector>            NCoup_;           ///<normal coupling vector (for RHS)
-      Teuchos::RCP<LINALG::SparseMatrix>     NCoup_lindisp_;   ///<linearisation of normal coupling w.r.t. displacements
-      Teuchos::RCP<LINALG::SparseMatrix>     NCoup_linvel_;    ///<linearisation of normal coupling w.r.t. fluid velocity
+    //... add the relevant matrices !!!
+    Teuchos::RCP<Epetra_Vector>            NCoup_;           ///<normal coupling vector (for RHS)
+    Teuchos::RCP<LINALG::SparseMatrix>     NCoup_lindisp_;   ///<linearisation of normal coupling w.r.t. displacements
+    Teuchos::RCP<LINALG::SparseMatrix>     NCoup_linvel_;    ///<linearisation of normal coupling w.r.t. fluid velocity
 
-      Teuchos::RCP<Epetra_Vector>            fNCoup_;           ///<normal coupling vector (for RHS) -- transformed to fluid dofs
-      Teuchos::RCP<LINALG::SparseMatrix>     fNCoup_lindisp_;   ///<linearisation of normal coupling w.r.t. displacements -- transformed to fluid dofs
-      Teuchos::RCP<LINALG::SparseMatrix>     fNCoup_linvel_;    ///<linearisation of normal coupling w.r.t. fluid velocity -- transformed to fluid dofs
+    Teuchos::RCP<Epetra_Vector>            fNCoup_;           ///<normal coupling vector (for RHS) -- transformed to fluid dofs
+    Teuchos::RCP<LINALG::SparseMatrix>     fNCoup_lindisp_;   ///<linearisation of normal coupling w.r.t. displacements -- transformed to fluid dofs
+    Teuchos::RCP<LINALG::SparseMatrix>     fNCoup_linvel_;    ///<linearisation of normal coupling w.r.t. fluid velocity -- transformed to fluid dofs
 
-      Teuchos::RCP<LINALG::SparseMatrix>     Tangential_;      ///<matrix with tangential vectors inside
+    Teuchos::RCP<LINALG::SparseMatrix>     Tangential_;      ///<matrix with tangential vectors inside
 
-      Teuchos::RCP<LINALG::SparseMatrix>     linTangentiallambda_;  ///<linearized tangential times lambda
+    Teuchos::RCP<LINALG::SparseMatrix>     linTangentiallambda_;  ///<linearized tangential times lambda
 
-      Teuchos::RCP<LINALG::SparseMatrix>     flinTangentiallambda_;  ///<linearized tangential times lambda -- transformed to fluid dofs
+    Teuchos::RCP<LINALG::SparseMatrix>     flinTangentiallambda_;  ///<linearized tangential times lambda -- transformed to fluid dofs
 
-      Teuchos::RCP<LINALG::SparseMatrix> porolindmatrix_; // global Matrix LinD containing slave fc derivatives (with lm from poro no penetration)
-      Teuchos::RCP<LINALG::SparseMatrix> porolinmmatrix_; // global Matrix LinM containing master fc derivatives (with lm from poro no penetration)
+    Teuchos::RCP<LINALG::SparseMatrix> porolindmatrix_; // global Matrix LinD containing slave fc derivatives (with lm from poro no penetration)
+    Teuchos::RCP<LINALG::SparseMatrix> porolinmmatrix_; // global Matrix LinM containing master fc derivatives (with lm from poro no penetration)
 
-      Teuchos::RCP<LINALG::SparseMatrix> fporolindmatrix_; // global Matrix LinD containing slave fc derivatives (with lm from poro no penetration) -- transformed to fluid dofs
-      Teuchos::RCP<LINALG::SparseMatrix> fporolinmmatrix_; // global Matrix LinM containing master fc derivatives (with lm from poro no penetration) -- transformed to fluid dofs
-
-    //end of just for poro ChrAg
-
-
+    Teuchos::RCP<LINALG::SparseMatrix> fporolindmatrix_; // global Matrix LinD containing slave fc derivatives (with lm from poro no penetration) -- transformed to fluid dofs
+    Teuchos::RCP<LINALG::SparseMatrix> fporolinmmatrix_; // global Matrix LinM containing master fc derivatives (with lm from poro no penetration) -- transformed to fluid dofs
 
 }; // class POROLagrangeStrategy
 } // namespace CONTACT

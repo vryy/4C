@@ -478,6 +478,11 @@ public:
   virtual std::map<int,double>& GetVelDerivnCoup() { return velderivncoup_; }
 
   /*!
+  \brief Return current nodal fluid pressure (porous media!) (length 3)
+  */
+  virtual double* fpres() { return &fpres_; }
+
+  /*!
   \brief Return current nodal fluid velocity (porous media!) (length 3)
   */
   virtual double* fvel() { return fvel_; }
@@ -504,6 +509,7 @@ protected:
   std::map<int,double>                    velderivncoup_; // velocity derivative of nodal weighted n-coupling vector
 
   double           fvel_[3];        //fluid velocity for porous problem
+  double           fpres_;       //fluid pressure for porous problem
   double           svel_[3];        //structural velocity for porous problem
   double           porolm_[3];      //lagrange multiplier from poro no penetration condition!
 }; //class CoNodePoroDataContainer

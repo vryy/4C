@@ -1954,6 +1954,27 @@ void POROELAST::Monolithic::SetPoroContactStates(Teuchos::RCP<const Epetra_Vecto
       Teuchos::RCP<Epetra_Vector> fvel = Teuchos::rcp(new Epetra_Vector(*FluidField()->ExtractVelocityPart(FluidField()->Velnp())));
       fvel = FluidStructureCoupling().SlaveToMaster(fvel);
       costrategy.SetState("fvelocity",fvel);
+
+
+      //To get pressure dofs into first structural component!!! - any idea for nice implementation?
+      Teuchos::RCP<Epetra_Vector> fpres = Teuchos::rcp(new Epetra_Vector(*FluidField()->ExtractPressurePart(FluidField()->Velnp())));
+      Teuchos::RCP<Epetra_Vector> modfpres = Teuchos::rcp(new Epetra_Vector(*FluidField()->VelocityRowMap(),true));
+
+      int* mygids = fpres->Map().MyGlobalElements();
+      //fpres->Map().Print(std::cout);
+      double* val = fpres->Values();
+      for (int i = 0; i < fpres->MyLength() ; ++i)
+      {
+        int gid = mygids[i]-3;
+        modfpres->ReplaceGlobalValues(1, &val[i], &gid);
+      }
+
+      modfpres = FluidStructureCoupling().SlaveToMaster(modfpres);
+      costrategy.SetState("fpressure",modfpres);
+
+
+      Teuchos::RCP<Epetra_Vector> dis = Teuchos::rcp(new Epetra_Vector(*StructureField()->Dispnp()));
+      costrategy.SetParentState("displacement",dis,StructureField()->Discretization()); // add displacements of the parent element!!!
      }
   }
   return;

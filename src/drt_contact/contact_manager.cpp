@@ -557,6 +557,16 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
                 ele->Shape(), ele->NumNode(), ele->NodeIds(), isslave[j],
                 cparams.get<bool>("NURBS")));
 
+        //Setup Parent element Map (will be used in Interface FillComplete()!)
+        if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro) //!Cannot be used with parallel redistribution!
+        {
+          if (isslave[j]) //Parent just required for Slave Elements --> onesided poro contact!
+          {
+            std::pair<DRT::Element*,int> pairval = std::make_pair(ele->ParentElement(), ele->FaceParentNumber());
+            interface->ParentElementMap()[cele->Id()] = pairval;
+          }
+        }
+
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (cparams.get<bool>("NURBS") == true)
@@ -989,12 +999,13 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // poroelastic contact
     // *********************************************************************
     if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
-      dserror("POROCONTACT: Only dual shape functions implemented yet!");
+        (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual &&
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_petrovgalerkin))
+      dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
     if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
-      dserror("POROCONTACT: Parrallel Redistribution not implemented yet!");
+      dserror("POROCONTACT: Parallel Redistribution not implemented yet!"); //Since we use Pointers to Parent Elements, which are not copied to other procs!
 
     if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
@@ -1418,7 +1429,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   {
     //output of poro no penetration lagrange multiplier!
     CONTACT::PoroLagrangeStrategy& costrategy = dynamic_cast<CONTACT::PoroLagrangeStrategy&>(GetStrategy());
-    Teuchos::RCP<Epetra_Vector> lambdaout     = costrategy.lambda_;
+    Teuchos::RCP<Epetra_Vector> lambdaout     = costrategy.LambdaNoPen();
     Teuchos::RCP<Epetra_Vector> lambdaoutexp  = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     LINALG::Export(*lambdaout, *lambdaoutexp);
     output.WriteVector("poronopen_lambda",lambdaoutexp);
