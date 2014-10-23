@@ -40,6 +40,16 @@ namespace POROELAST
     Monolithic_nopenetrationsplit
   };
 
+  /// type of time discretization for continuity equation
+  enum TimeDisTypeConti
+  {
+//    OneWay,
+ //   SequStagg,
+ //   IterStagg,
+    porosity,
+    pressure
+  };
+
   /// @name Solution technique and related
 
   /// type of norm to check for convergence

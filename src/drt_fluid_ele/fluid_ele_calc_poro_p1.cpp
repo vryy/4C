@@ -146,8 +146,9 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eaccam,
       NULL, "accam");
 
+  LINALG::Matrix<my::nsd_, my::nen_> eveln(true);
   LINALG::Matrix<my::nen_, 1> epren(true);
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln,
       &epren, "veln");
 
   LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
@@ -176,7 +177,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(
       &eporositynp, "dispnp");
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &egridv,
       &eporositydot, "gridv");
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &egridvn,
       &eporositydotn, "gridvn");
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispn,
       NULL, "dispn");
@@ -196,6 +197,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(
                   evelaf,
                   epreaf,
                   evelnp,
+                  eveln,
                   eprenp,
                   epren,
                   emhist,
@@ -205,6 +207,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(
                   edispnp,
                   edispn,
                   egridv,
+                  egridvn,
                   escaaf,
                   &eporositynp,
                   &eporositydot,
@@ -247,10 +250,13 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosity(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosityGradient(
-                        const double&                                      dphidp,
-                        const double&                                      dphidJ,
-                        const LINALG::Matrix<my::nsd_,1>&                  gradJ,
-                        const LINALG::Matrix<my::nen_,1>*                  eporositynp)
+    const double&                                      dphidp,
+    const double&                                      dphidJ,
+    const LINALG::Matrix<my::nsd_,1>&                  gradJ,
+    const LINALG::Matrix<my::nsd_,1>&                  gradp,
+    const LINALG::Matrix<my::nen_,1>*                  eporositynp,
+    LINALG::Matrix<my::nsd_,1>&                        grad_porosity,
+    LINALG::Matrix<my::nsd_,1>&                        refgrad_porosity)
 {
   if(eporositynp == NULL)
     dserror("no porosity values given for calculation of porosity gradient!!");
@@ -258,10 +264,10 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosityGradient(
   //if( (my::fldpara_->PoroContiPartInt() == false) or my::visceff_)
   {
     //--------------------- current porosity gradient
-    my::grad_porosity_.Multiply(my::derxy_,*eporositynp);
+    grad_porosity.Multiply(my::derxy_,*eporositynp);
   }
 
-  my::refgrad_porosity_.Multiply(my::xjm_,my::grad_porosity_);
+  refgrad_porosity.Multiply(my::xjm_,grad_porosity);
 }
 
 /*----------------------------------------------------------------------*
@@ -404,6 +410,13 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
     this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         &eprenp, "velnp");
 
+  // np_genalpha: additional vector for velocity at time n+1
+  LINALG::Matrix<my::nsd_, my::nen_> eveln(true);
+  LINALG::Matrix<my::nen_, 1> epren(true);
+  if (my::fldparatimint_->IsGenalphaNP())
+    this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln,
+        &epren, "veln");
+
   LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
   this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
       &epressnp_timederiv, "accnp");
@@ -421,6 +434,8 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
   // ---------------------------------------------------------------------
   LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
   LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+  LINALG::Matrix<my::nsd_, my::nen_> edispn(true);
+  LINALG::Matrix<my::nsd_, my::nen_> egridvn(true);
 
   LINALG::Matrix<my::nen_, 1> eporositynp(true);
 
@@ -428,6 +443,10 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
       &eporositynp, "dispnp");
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &egridv,
       NULL, "gridv");
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispn,
+      NULL, "dispn");
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &egridvn,
+      NULL, "gridvn");
 
   //ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &initporosity_, "initporosity");
 
@@ -445,12 +464,16 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
       evelaf,
       epreaf,
       evelnp,
+      eveln,
       eprenp,
+      epren,
       emhist,
       echist,
       epressnp_timederiv,
       edispnp,
+      edispn,
       egridv,
+      egridvn,
       escaaf,
       &eporositynp,
       mat,
@@ -472,12 +495,16 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
     const LINALG::Matrix<my::nsd_,my::nen_> &                         evelaf,
     const LINALG::Matrix<my::nen_, 1> &                               epreaf,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        evelnp,
+    const LINALG::Matrix<my::nsd_, my::nen_> &                        eveln,
     const LINALG::Matrix<my::nen_, 1> &                               eprenp,
+    const LINALG::Matrix<my::nen_, 1> &                               epren,
     const LINALG::Matrix<my::nsd_,my::nen_> &                         emhist,
     const LINALG::Matrix<my::nen_,1>&                                 echist,
     const LINALG::Matrix<my::nen_, 1> &                               epressnp_timederiv,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        edispnp,
+    const LINALG::Matrix<my::nsd_, my::nen_> &                        edispn,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        egridv,
+    const LINALG::Matrix<my::nsd_, my::nen_> &                        egridvn,
     const LINALG::Matrix<my::nen_,1>&                                 escaaf,
     const LINALG::Matrix<my::nen_,1>*                                 eporositynp,
     Teuchos::RCP<MAT::Material>                                       mat,
@@ -504,13 +531,17 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
         ebofoaf,
         evelaf,
         evelnp,
+        eveln,
         epreaf,
         eprenp,
+        epren,
         emhist,
         echist,
         epressnp_timederiv,
         edispnp,
+        edispn,
         egridv,
+        egridvn,
         escaaf,
         eporositynp,
         elemat1,
@@ -531,13 +562,17 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(
     const LINALG::Matrix<my::nsd_,my::nen_>&                        ebofoaf,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
+    const LINALG::Matrix<my::nsd_, my::nen_>&                       eveln,
     const LINALG::Matrix<my::nen_, 1>&                              epreaf,
     const LINALG::Matrix<my::nen_, 1>&                              eprenp,
+    const LINALG::Matrix<my::nen_, 1>&                              epren,
     const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
     const LINALG::Matrix<my::nen_,1>&                               echist,
     const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
+    const LINALG::Matrix<my::nsd_, my::nen_>&                       edispn,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
+    const LINALG::Matrix<my::nsd_, my::nen_>&                       egridvn,
     const LINALG::Matrix<my::nen_,1>&                               escaaf,
     const LINALG::Matrix<my::nen_,1>*                               eporositynp,
     LINALG::Matrix<(my::nsd_ + 1) * my::nen_,(my::nsd_ + 1) * my::nen_>&  ecoupl,
@@ -577,13 +612,17 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(
                        ebofoaf,
                        evelaf,
                        evelnp,
+                       eveln,
                        epreaf,
                        eprenp,
+                       epren,
                        emhist,
                        echist,
                        epressnp_timederiv,
                        edispnp,
+                       edispn,
                        egridv,
+                       egridvn,
                        escaaf,
                        eporositynp,
                        eforce,
@@ -683,13 +722,17 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                         const LINALG::Matrix<my::nsd_,my::nen_>&                        ebofoaf,
                         const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
                         const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
+                        const LINALG::Matrix<my::nsd_, my::nen_>&                       eveln,
                         const LINALG::Matrix<my::nen_, 1>&                              epreaf,
                         const LINALG::Matrix<my::nen_, 1>&                              eprenp,
+                        const LINALG::Matrix<my::nen_, 1>&                              epren,
                         const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
                         const LINALG::Matrix<my::nen_,1>&                               echist,
                         const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
                         const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
+                        const LINALG::Matrix<my::nsd_, my::nen_>&                       edispn,
                         const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
+                        const LINALG::Matrix<my::nsd_, my::nen_>&                       egridvn,
                         const LINALG::Matrix<my::nen_,1>&                               escaaf,
                         const LINALG::Matrix<my::nen_,1>*                               eporositynp,
                         LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>&                   eforce,
@@ -725,11 +768,15 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
           ebofoaf,
           evelaf,
           evelnp,
+          eveln,
           epreaf,
           eprenp,
+          epren,
           epressnp_timederiv,
           edispnp,
+          edispn,
           egridv,
+          egridvn,
           escaaf,
           emhist,
           echist,
@@ -802,12 +849,16 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
 
       //compute gradients if needed
       my::ComputeGradients(
-                       dphi_dp,
-                       dphi_dJ,
-                       defgrd_IT_vec,
-                       F_x,
-                       eporositynp,
-                       gradJ);
+                            my::J_,
+                            dphi_dp,
+                            dphi_dJ,
+                            defgrd_IT_vec,
+                            F_x,
+                            my::gradp_,
+                            eporositynp,
+                            gradJ,
+                            my::grad_porosity_,
+                            my::refgrad_porosity_);
 
       ComputeLinearizationOD(
                               dphi_dJ,

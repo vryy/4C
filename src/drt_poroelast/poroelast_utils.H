@@ -92,7 +92,24 @@ namespace POROELAST
       const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
       );
 
-    //! strategy for material assignment for non matching meshes with TSI
+    //! strategy for material assignment for non matching meshes with poro
+
+    /// Helper class for assigning materials for volumetric coupling of non conforming meshes (poro)
+    /*!
+     When coupling two overlapping discretizations, most often one discretization needs access
+     to the corresponding element/material on the other side. For conforming meshes this is straight forward
+     as there is one unique element on the other side and therefore one unique material, which can
+     be accessed. However, for non conforming meshes there are potentially several elements overlapping.
+     Therefore, some rule for assigning materials is needed. This class is meant to do that.
+     It gets the element to which it shall assign a material and a vector of IDs of the overlapping elements
+     of the other discretization.
+
+     In case of poro, we also need the initial porosity type of the structural element to be known in the fluid
+     element, which is why there is a special strategy for poro. Note that this is not yet working for
+     inhomogeneous material properties.
+
+     \author vuong 10/14
+     */
     class PoroMaterialStrategy: public VOLMORTAR::UTILS::DefaultMaterialStrategy
     {
     public:

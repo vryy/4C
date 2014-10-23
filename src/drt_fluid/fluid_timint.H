@@ -89,6 +89,7 @@ public:
   virtual Teuchos::RCP<const Epetra_Vector> Scaam()         { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> Hist()          { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> GridVel()       { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+  virtual Teuchos::RCP<const Epetra_Vector> GridVeln()      { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> Dispnp()        { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> Dispn()         { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }

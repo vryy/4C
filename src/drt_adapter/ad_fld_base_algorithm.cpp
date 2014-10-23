@@ -373,15 +373,20 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")
       != INPAR::FLUID::loma)
     dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' for low-Mach-number flow and Thermo-fluid-structure interaction!");
-  if ((probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi) and disname == "porofluid")
-      {
-        const Teuchos::ParameterList& pedyn    = DRT::Problem::Instance()->PoroelastDynamicParams();
-        fluidtimeparams->set<int>("Physical Type",DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn,"PHYSICAL_TYPE"));
-        if (fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro and
-            fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro_p1 and
-            fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro_p2 )
-            dserror("Input parameter PHYSICAL_TYPE in section POROELASTICITY DYNAMIC needs to be 'Poro' or 'Poro_P1' for poro-elasticity!");
-      }
+  if ((   probtype == prb_poroelast
+       or probtype == prb_poroscatra
+       or probtype == prb_fpsi )
+       and disname == "porofluid")
+  {
+    const Teuchos::ParameterList& pedyn    = DRT::Problem::Instance()->PoroelastDynamicParams();
+    fluidtimeparams->set<int>("Physical Type",DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn,"PHYSICAL_TYPE"));
+    if (fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro and
+        fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro_p1 and
+        fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro_p2 )
+        dserror("Input parameter PHYSICAL_TYPE in section POROELASTICITY DYNAMIC needs to be 'Poro' or 'Poro_P1' for poro-elasticity!");
+
+    fluidtimeparams->set<int>("Time DisType Conti",DRT::INPUT::IntegralValue<INPAR::POROELAST::TimeDisTypeConti>(pedyn,"TIME_DISTYPE_CONTI"));
+  }
 
   // now, set general parameters required for all problems
   SetGeneralParameters(fluidtimeparams,prbdyn,fdyn);

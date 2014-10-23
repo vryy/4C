@@ -3076,6 +3076,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::FLUID::poro_p2),
                                     &poroelastdyn);
 
+  // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq approximation)
+  setStringToIntegralParameter<int>("TIME_DISTYPE_CONTI","pressure",
+                                    "type of time discretization for continuity equation",
+                                    tuple<std::string>(
+                                      "pressure",
+                                      "pres",
+                                      "porosity"
+                                      ),
+                                    tuple<int>(
+                                      INPAR::POROELAST::pressure,
+                                      INPAR::POROELAST::pressure,
+                                      INPAR::POROELAST::porosity),
+                                    &poroelastdyn);
+
   // Output type
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&poroelastdyn);
   // Time loop control

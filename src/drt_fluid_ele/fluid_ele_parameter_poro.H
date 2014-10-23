@@ -18,7 +18,7 @@ Maintainers: Anh-Tu Vuong and Andreas Rauch
 
 #include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_parameter.H"
-#include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_poroelast.H"
 
 namespace DRT
 {
@@ -45,6 +45,9 @@ public:
   //! partial integration of porosity gradient in continuity equation
   bool PoroContiPartInt(){return poro_conti_partint_;};
 
+  //! type of time discretization for continuity equation
+  INPAR::POROELAST::TimeDisTypeConti TimeDisTypeConti(){return time_distype_conti_;};
+
 
 private:
 
@@ -52,10 +55,13 @@ private:
   bool set_fluid_parameter_poro_;
 
   /// parameter to switch the stabilization
-  INPAR::FLUID::StabType stabtype_;
+  //INPAR::FLUID::StabType stabtype_;
 
   //! partial integration of porosity gradient in continuity equation
   bool poro_conti_partint_;
+
+  //! type of time discretization for continuity equation
+  INPAR::POROELAST::TimeDisTypeConti time_distype_conti_;
 
   //! pointer to general fluid time parameter
   DRT::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;

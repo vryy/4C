@@ -16,7 +16,6 @@ Maintainers: Anh-Tu Vuong and Andreas Rauch
 */
 /*----------------------------------------------------------------------*/
 #include "fluid_ele_parameter_poro.H"
-#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 //----------------------------------------------------------------------*/
@@ -57,7 +56,8 @@ void DRT::ELEMENTS::FluidEleParameterPoro::Done()
 DRT::ELEMENTS::FluidEleParameterPoro::FluidEleParameterPoro()
   : DRT::ELEMENTS::FluidEleParameter::FluidEleParameter(),
     set_fluid_parameter_poro_(false),
-    poro_conti_partint_(false)
+    poro_conti_partint_(false),
+    time_distype_conti_(INPAR::POROELAST::pressure)
 {
   fldparatimint_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
 }
@@ -72,8 +72,9 @@ void DRT::ELEMENTS::FluidEleParameterPoro::SetElementPoroParameter( Teuchos::Par
   set_fluid_parameter_poro_ = true;
   poro_conti_partint_ = params.get<bool>("conti partial integration",false);
   reaction_= true;
-  reaction_topopt_= false;
-  graddiv_=false;
+  time_distype_conti_ = DRT::INPUT::get<INPAR::POROELAST::TimeDisTypeConti>(params, "Time DisType Conti");
+  //reaction_topopt_= false;
+  //graddiv_=false;
 
 }
 
@@ -85,11 +86,13 @@ void DRT::ELEMENTS::FluidEleParameterPoro::PrintFluidParameterPoro()
   std::cout << std::endl << "|-----------------------------------------------------------------------------" << std::endl;
   std::cout << "|  Poro Fluid parameter: " << std::endl;
   std::cout << "|-----------------------------------------------------------------------------" << std::endl;
-  //! flag SetGeneralParameter was called
+  // flag SetGeneralParameter was called
   std::cout << "|    method SetElementParameterPoro was called:    " << set_fluid_parameter_poro_ << std::endl;
-  //! flag to (de)activate stationary formulation
+  // flag to (de)activate stationary formulation
   std::cout << "|    Partial integration of conti equation:    " << poro_conti_partint_ << std::endl;
-  //! flag to (de)activate Newton linearization
+  // type of time discretization for continuity equation
+  std::cout << "|   type of time discretization for continuity equation:  " << time_distype_conti_ << std::endl;
+  // flag to (de)activate Newton linearization
   std::cout << "|    Type of stabilization:    " << stabtype_ << std::endl;
 
   std::cout << "|---------------------------------------------------------------------------" << std::endl;

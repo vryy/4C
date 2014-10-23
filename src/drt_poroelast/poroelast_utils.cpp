@@ -411,6 +411,7 @@ double POROELAST::UTILS::CalculateVectorNorm(
 
 
 /*----------------------------------------------------------------------*
+ |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialBToA(
     const VOLMORTAR::VolMortarCoupl* volmortar,
@@ -444,6 +445,7 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialBToA(
 
 
 /*----------------------------------------------------------------------*
+ |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialAToB(
     const VOLMORTAR::VolMortarCoupl* volmortar,

@@ -151,7 +151,8 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
       NULL, "accam");
 
   LINALG::Matrix<my::nen_, 1> epren(true);
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
+  LINALG::Matrix<my::nsd_, my::nen_> eveln(true);
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln,
       &epren, "veln");
 
   LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
@@ -163,7 +164,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
   LINALG::Matrix<my::nen_,1> eporosity(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &eporosity,"scaaf");
 
-  if (not FluidEleCalc<distype>::fldparatimint_->IsGenalpha())
+  if (not my::fldparatimint_->IsGenalpha())
     eaccam.Clear();
 
   // ---------------------------------------------------------------------
@@ -182,7 +183,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
       NULL, "dispnp");
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &egridv,
       NULL, "gridv");
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &egridvn,
       NULL, "gridvn");
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispn,
       NULL, "dispn");
@@ -202,6 +203,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
                   evelaf,
                   epreaf,
                   evelnp,
+                  eveln,
                   eprenp,
                   epren,
                   emhist,
@@ -211,6 +213,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
                   edispnp,
                   edispn,
                   egridv,
+                  egridvn,
                   escaaf,
                   &eporosity,
                   NULL,
@@ -284,6 +287,11 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
     this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         &eprenp, "velnp");
 
+  LINALG::Matrix<my::nsd_, my::nen_> eveln(true);
+  LINALG::Matrix<my::nen_, 1> epren(true);
+  this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln,
+      &epren, "veln");
+
   LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
   this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
       &epressnp_timederiv, "accnp");
@@ -303,11 +311,17 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
   // ---------------------------------------------------------------------
   LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
   LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+  LINALG::Matrix<my::nsd_, my::nen_> edispn(true);
+  LINALG::Matrix<my::nsd_, my::nen_> egridvn(true);
 
   this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispnp,
       NULL, "dispnp");
   this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &egridv,
       NULL, "gridv");
+  this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispn,
+      NULL, "dispn");
+  this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &egridvn,
+      NULL, "gridvn");
 
   //ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &initporosity_, "initporosity");
 
@@ -338,10 +352,14 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
         evelaf,
         epreaf,
         evelnp,
+        eveln,
         eprenp,
+        epren,
         epressnp_timederiv,
         edispnp,
+        edispn,
         egridv,
+        egridvn,
         escaaf,
         emhist,
         echist,
@@ -609,14 +627,18 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluatePressureEquation(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::FillMatrixContiOD(
-    const double&                                       timefacfacpre,
-    const double&                                       dphi_dJ,
-    const double&                                       dphi_dJJ,
-    const double&                                       dphi_dJdp,
-    const LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&   dgradphi_dus,
-    const LINALG::Matrix<1,my::nsd_*my::nen_>&          dphi_dus,
-    const LINALG::Matrix<1,my::nsd_*my::nen_>&          dJ_dus,
-    LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&      ecoupl_p
+    const double&                                               timefacfacpre,
+    const double &                                              dphi_dp,
+    const double &                                              dphi_dJ,
+    const double&                                               dphi_dJJ,
+    const double&                                               dphi_dJdp,
+    const double &                                              refporositydot,
+    const LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&           dgradphi_dus,
+    const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dphi_dus,
+    const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dJ_dus,
+    const LINALG::Matrix<my::nsd_, my::nen_>&                   egridv,
+    const LINALG::Matrix<my::nsd_, my::nen_ * my::nsd_>&        lin_resM_Dus,
+    LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&              ecoupl_p
     )
 {
   for (int vi=0; vi<my::nen_; ++vi)

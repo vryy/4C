@@ -53,6 +53,8 @@ public:
         { return fluid_->Hist(); }
   virtual Teuchos::RCP<const Epetra_Vector> GridVel()
         { return fluid_->GridVel(); }
+  virtual Teuchos::RCP<const Epetra_Vector> GridVeln()
+        { return fluid_->GridVeln(); }
   virtual Teuchos::RCP<const Epetra_Vector> Dispnp()
         { return fluid_->Dispnp(); }
   virtual Teuchos::RCP<const Epetra_Vector> Dispn()

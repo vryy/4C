@@ -60,7 +60,7 @@ void MAT::PAR::FluidPoro::SetInitialPorosity(double initialporosity)
 
   if (permeabilityfunc_ == MAT::PAR::const_)
   {
-  permeabilitycorrectionfactor_ = 1.0;
+    permeabilitycorrectionfactor_ = 1.0;
   }
   else if (permeabilityfunc_ == MAT::PAR::kozeny_karman)
   {

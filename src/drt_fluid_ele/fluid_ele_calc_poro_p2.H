@@ -214,12 +214,16 @@ protected:
     */
     virtual void FillMatrixContiOD(
         const double&                                               timefacfacpre,
-        const double&                                               dphi_dJ,
+        const double &                                              dphi_dp,
+        const double &                                              dphi_dJ,
         const double&                                               dphi_dJJ,
         const double&                                               dphi_dJdp,
+        const double &                                              refporositydot,
         const LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&           dgradphi_dus,
         const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dphi_dus,
         const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dJ_dus,
+        const LINALG::Matrix<my::nsd_, my::nen_>&                   egridv,
+        const LINALG::Matrix<my::nsd_, my::nen_ * my::nsd_>&        lin_resM_Dus,
         LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&              ecoupl_p);
 
     /*!

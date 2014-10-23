@@ -19,6 +19,7 @@
 #include "volmortar_utils.H"
 
 /*----------------------------------------------------------------------*
+ |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialBToA(
     const VOLMORTAR::VolMortarCoupl* volmortar,
@@ -37,6 +38,7 @@ void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialBToA(
   //default strategy: take only material of first element found
   DRT::Element* Bele = disB->gElement(Bids[0]);
 
+  //assign additional material to element A
   Aele->AddMaterial(Bele->Material());
 
   //done
@@ -44,6 +46,7 @@ void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialBToA(
 };
 
 /*----------------------------------------------------------------------*
+ |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialAToB(
     const VOLMORTAR::VolMortarCoupl* volmortar,
@@ -62,6 +65,7 @@ void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialAToB(
   //default strategy: take only material of first element found
   DRT::Element* Aele = disA->gElement(Aids[0]);
 
+  //assign additional material to element B
   Bele->AddMaterial(Aele->Material());
 
   //done

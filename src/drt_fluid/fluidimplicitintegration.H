@@ -602,6 +602,7 @@ public:
   virtual Teuchos::RCP<const Epetra_Vector> Scaam()       { return scaam_; }
   virtual Teuchos::RCP<const Epetra_Vector> Hist()        { return hist_; }
   virtual Teuchos::RCP<const Epetra_Vector> GridVel()     { return gridv_; }
+  virtual Teuchos::RCP<const Epetra_Vector> GridVeln()    { return gridvn_; }
   virtual Teuchos::RCP<Epetra_Vector> WriteAccessGridVel(){ return gridv_; }
   virtual Teuchos::RCP<const Epetra_Vector> FsVel() {
     // get fine-scale part of velocity at time n+alpha_F or n+1

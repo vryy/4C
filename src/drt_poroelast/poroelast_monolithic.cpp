@@ -1141,7 +1141,9 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
 
   // set general vector values needed by elements
   FluidField()->Discretization()->SetState(0,"dispnp",FluidField()->Dispnp());
+  FluidField()->Discretization()->SetState(0,"dispn",FluidField()->Dispn());
   FluidField()->Discretization()->SetState(0,"gridv",FluidField()->GridVel());
+  FluidField()->Discretization()->SetState(0,"gridvn",FluidField()->GridVeln());
   FluidField()->Discretization()->SetState(0,"veln",FluidField()->Veln());
   FluidField()->Discretization()->SetState(0,"accnp",FluidField()->Accnp());
 

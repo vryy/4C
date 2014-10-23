@@ -49,19 +49,13 @@ void FLD::TimIntPoro::Init()
 
   if (alefluid_)
   {
-    if (  (physicaltype_ == INPAR::FLUID::poro
-        or physicaltype_ == INPAR::FLUID::poro_p1
-        or physicaltype_ == INPAR::FLUID::poro_p2)
-        and discret_->Name()=="porofluid" )
+    if ( discret_->Name()=="porofluid" )
       //gridvn_ can also be moved to poro class?
       gridvn_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
   }
 
   //set some poro-specific parameters
-  if (  (physicaltype_ == INPAR::FLUID::poro
-      or physicaltype_ == INPAR::FLUID::poro_p1
-      or physicaltype_ == INPAR::FLUID::poro_p2)
-      and discret_->Name()=="porofluid")
+  if (discret_->Name()=="porofluid")
     SetElementCustomParameter();
   return;
 }
@@ -81,10 +75,7 @@ void FLD::TimIntPoro::SetElementGeneralFluidParameter()
 {
 
   //set some poro-specific parameters only in specific poro cases
-  if (  not ((physicaltype_ == INPAR::FLUID::poro
-      or physicaltype_ == INPAR::FLUID::poro_p1
-      or physicaltype_ == INPAR::FLUID::poro_p2)
-      and discret_->Name()=="porofluid"))
+  if ( not (discret_->Name()=="porofluid") )
   {
     FluidImplicitTimeInt::SetElementGeneralFluidParameter();
   }
@@ -98,10 +89,7 @@ void FLD::TimIntPoro::SetElementTurbulenceParameter()
 {
 
   //set some poro-specific parameters only in specific poro cases
-  if (  not ((physicaltype_ == INPAR::FLUID::poro
-      or physicaltype_ == INPAR::FLUID::poro_p1
-      or physicaltype_ == INPAR::FLUID::poro_p2)
-      and discret_->Name()=="porofluid"))
+  if (not (discret_->Name()=="porofluid") )
   {
     FluidImplicitTimeInt::SetElementTurbulenceParameter();
   }
@@ -124,10 +112,11 @@ void FLD::TimIntPoro::ReadRestart(int step)
 
   if(alefluid_)
   {
-    if((physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2) and discret_->Name()=="porofluid" )
+    if(discret_->Name()=="porofluid" )
+    {
       reader.ReadVector(gridv_,"gridv");
-    if((physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2) and discret_->Name()=="porofluid")
       reader.ReadVector(gridvn_,"gridvn");
+    }
   }
   return;
 }
@@ -148,6 +137,7 @@ void FLD::TimIntPoro::SetElementCustomParameter()
 
   // set poro specific element parameters
   eleparams.set<bool>("conti partial integration",params_->get<bool>("conti partial integration"));
+  eleparams.set<int>("Time DisType Conti",params_->get<int>("Time DisType Conti"));
 
   // parameter for stabilization
   eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
@@ -165,7 +155,7 @@ void FLD::TimIntPoro::SetInitialPorosityField(
     const INPAR::POROELAST::InitialField init,
     const int startfuncno)
 {
-  std::cout<<"FLD::FluidImplicitTimeInt::SetInitialPorosityField()"<<std::endl;
+  std::cout<<"FLD::TimIntPoro::SetInitialPorosityField()"<<std::endl;
 
   switch(init)
   {
@@ -225,7 +215,7 @@ void FLD::TimIntPoro::UpdateIterIncrementally(
         *(discret_->DofRowMap(0)), true);
 
 
-    if ((physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2) and discret_->Name()=="porofluid" )
+    if (discret_->Name()=="porofluid" )
     {
       //only one step theta
       // new end-point accelerations
@@ -252,23 +242,20 @@ void FLD::TimIntPoro::Output()
   // output of solution
   if (step_%upres_ == 0)
   {
-    if((physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2) and discret_->Name()=="porofluid" )
+    if(discret_->Name()=="porofluid" )
     {
       Teuchos::RCP<Epetra_Vector>  convel= Teuchos::rcp(new Epetra_Vector(*velnp_));
       convel->Update(-1.0,*gridv_,1.0);
       output_->WriteVector("convel", convel);
       output_->WriteVector("gridv", gridv_);
-      if(physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2)
-        output_->WriteVector("gridvn", gridvn_);
+      output_->WriteVector("gridvn", gridvn_);
     }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ > 0 && step_%uprestart_ == 0)
   {
-    if(physicaltype_ == INPAR::FLUID::poro or physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2)
-      output_->WriteVector("gridv", gridv_);
-    if(physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2)
-      output_->WriteVector("gridvn", gridvn_);
+    output_->WriteVector("gridv", gridv_);
+    output_->WriteVector("gridvn", gridvn_);
   }
   return;
 } // TimIntPoro::Output
@@ -282,19 +269,19 @@ void FLD::TimIntPoro::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList
 
   if (alefluid_)
   {
-    if (   physicaltype_ == INPAR::FLUID::poro
-        or physicaltype_ == INPAR::FLUID::poro_p1
-        or physicaltype_ == INPAR::FLUID::poro_p2)
-    {
-      //just for poroelasticity
-      discret_->SetState("dispn", dispn_);
-      discret_->SetState("accnp", accnp_);
-      discret_->SetState("accn", accn_);
-      discret_->SetState("gridvn", gridvn_);
+     if (   physicaltype_ == INPAR::FLUID::poro
+         or physicaltype_ == INPAR::FLUID::poro_p1
+         or physicaltype_ == INPAR::FLUID::poro_p2)
+     {
+        //just for poroelasticity
+        discret_->SetState("dispn", dispn_);
+        discret_->SetState("accnp", accnp_);
+        discret_->SetState("accn", accn_);
+        discret_->SetState("gridvn", gridvn_);
 
-      eleparams.set("total time", time_);
-      eleparams.set("delta time", dta_);
-    }
+        eleparams.set("total time", time_);
+        eleparams.set("delta time", dta_);
+     }
   }
   return;
 }
@@ -354,7 +341,6 @@ void FLD::TimIntPoro::PoroIntUpdate()
     }
     sysmat_->Complete();
   }
-
   return;
 }
 
@@ -369,14 +355,8 @@ void FLD::TimIntPoro::TimIntCalculateAcceleration()
   Teuchos::RCP<Epetra_Vector> onlyveln = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> onlyvelnp = Teuchos::null;
 
-  if (not (    physicaltype_ == INPAR::FLUID::poro
-            or physicaltype_ == INPAR::FLUID::poro_p1
-            or physicaltype_ == INPAR::FLUID::poro_p2
-          )
-            or
-          (    DRT::Problem::Instance()->ProblemType()==prb_fpsi
-               and discret_->Name()=="fluid"
-          )
+  if (  DRT::Problem::Instance()->ProblemType()==prb_fpsi
+        and discret_->Name()=="fluid"
      ) //standard case
   {
     onlyaccn  = velpressplitter_.ExtractOtherVector(accn_);
@@ -403,7 +383,8 @@ void FLD::TimIntPoro::TimIntCalculateAcceleration()
   // copy back into global vector
   LINALG::Export(*onlyaccnp,*accnp_);
 
-  if ( physicaltype_ == INPAR::FLUID::poro_p1 or physicaltype_ == INPAR::FLUID::poro_p2)
+  if(discret_->Name()=="porofluid")
     gridvn_ ->Update(1.0,*gridv_,0.0);
+
   return;
 }

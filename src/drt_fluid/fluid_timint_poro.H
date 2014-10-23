@@ -19,6 +19,7 @@
 
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_inpar/inpar_poroelast.H"
 
 namespace FLD
 {

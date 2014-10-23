@@ -276,6 +276,7 @@ void TSI::UTILS::SetMaterialPointersMatchingGrid(
 }
 
 /*----------------------------------------------------------------------*
+ |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void TSI::UTILS::TSIMaterialStrategy::AssignMaterialBToA(
     const VOLMORTAR::VolMortarCoupl* volmortar,
@@ -293,6 +294,7 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterialBToA(
 
 
 /*----------------------------------------------------------------------*
+|  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
 void TSI::UTILS::TSIMaterialStrategy::AssignMaterialAToB(
     const VOLMORTAR::VolMortarCoupl* volmortar,
