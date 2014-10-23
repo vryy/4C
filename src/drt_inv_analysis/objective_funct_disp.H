@@ -14,6 +14,7 @@ Maintainer: Sebastian Kehl
 #define OBJECTIVE_FUNCT_DISP_H
 
 #include "objective_funct.H"
+#include "../linalg/linalg_mapextractor.H"
 
 
 // forward declarations
@@ -69,17 +70,16 @@ private:
   //! dofrowmap of the discretization
   const Epetra_Map* dofrowmap_;
 
-  //! dof mask on measurements
-  Teuchos::RCP<Epetra_MultiVector> mask_;
+  //! dofrowmap of measured dofs only
+  Teuchos::RCP<Epetra_Map> mdofrowmap_;
 
-  //! measured displacements
-  Teuchos::RCP<Epetra_MultiVector> mdisp_;
+  Teuchos::RCP<LINALG::MapExtractor> mextractor_;
+
+  //! measured displacements/state
+  Teuchos::RCP<Epetra_MultiVector> mstate_;
 
   //! simulated timesteps
-  Teuchos::RCP<std::vector<double> > timesteps_;
-
-  //! number of vectors in MultiVectors mdisp_ and disp
-  int msteps_;
+  std::vector<double> timesteps_;
 
 
 public:
@@ -91,10 +91,16 @@ public:
   virtual ~ObjectiveFunctDisp(){};
 
   //! evaluate value of the objective function
-  virtual void Evaluate(Teuchos::RCP<Epetra_MultiVector> disp, double& val);
+  virtual void Evaluate(Teuchos::RCP<Epetra_Vector> state, double time, double& val);
 
   //! evaluate gradient of objective function w.r.t to displacements
-  virtual void EvaluateGradient(Teuchos::RCP<Epetra_MultiVector> disp, Teuchos::RCP<Epetra_MultiVector> gradient);
+  virtual void EvaluateGradient(Teuchos::RCP<Epetra_Vector> state, double time, Teuchos::RCP<Epetra_Vector> gradient);
+
+  //! measured time steps
+  virtual std::vector<double> MeasuredTime() {return timesteps_;}
+
+  //! query for step of measurements of this time step
+  int FindStep(double time);
 
 }; // class ObjectiveFunctDisp
 }  // namespace INVANA

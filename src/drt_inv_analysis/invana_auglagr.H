@@ -95,7 +95,7 @@ private:
 
   //! Mstep double to std::vector<double>
   void MStepDToStdVecD(Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > mstepvec,
-                       Teuchos::RCP<std::vector<double> > stdvec);
+                       std::vector<double>*  stdvec);
 
   //! primal variables (displacements)
   Teuchos::RCP<Epetra_MultiVector> dis_;
@@ -104,7 +104,7 @@ private:
   Teuchos::RCP<Epetra_MultiVector> disdual_;
 
   //! time of steps of the forward problem
-  Teuchos::RCP<std::vector<double> > time_;
+  std::vector<double> time_;
 
   //! number of simulation steps in the forward problem
   int msteps_;

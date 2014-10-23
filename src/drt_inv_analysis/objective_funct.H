@@ -42,11 +42,22 @@ public:
   //! standard destructor
   virtual ~ObjectiveFunct(){};
 
-  //! evaluate value of the objective function
-  virtual void Evaluate(Teuchos::RCP<Epetra_MultiVector> disp, double& val) = 0;
+  //! evaluate value of the objective function at time "time"
+  virtual void Evaluate(Teuchos::RCP<Epetra_Vector> disp, double time, double& val) = 0;
 
-  //! evaluate gradient of objective function w.r.t to displacements
-  virtual void EvaluateGradient(Teuchos::RCP<Epetra_MultiVector> disp, Teuchos::RCP<Epetra_MultiVector> gradient) = 0;
+  //! evaluate gradient of objective function w.r.t displacements/state at time "time"
+  virtual void EvaluateGradient(Teuchos::RCP<Epetra_Vector> disp, double time, Teuchos::RCP<Epetra_Vector> gradient) = 0;
+
+  //! measured time steps
+  virtual std::vector<double> MeasuredTime() = 0;
+
+  //! query for step of measurements of this time step
+  /*!
+    \param In
+    time - timestep to be found with accuracy up to 1.0e-10
+  */
+  //! returns step of corresponding measurements; otherwise returns -1
+  virtual int FindStep(double time) = 0;
 
 }; // class ObjectiveFunct
 }  // namespace INVANA

@@ -45,7 +45,6 @@ STR::INVANA::InvanaAugLagr::InvanaAugLagr():
   InvanaBase(),
 dis_(Teuchos::null),
 disdual_(Teuchos::null),
-time_(Teuchos::null),
 msteps_(0),
 fprestart_(0)
 {
@@ -57,11 +56,9 @@ fprestart_(0)
   double timestep = sdyn.get<double>("TIMESTEP");
 
   // initialize the vector of time steps according to the structural dynamic params
-  time_ = Teuchos::rcp(new std::vector<double>(msteps_,0.0));
-  for (int i=0; i<=msteps_-1; i++)
-  {
-    (*time_)[i] = (i+1)*timestep;
-  }
+  time_.resize(msteps_,0.0);
+  for (int i=0; i< msteps_; i++)
+    time_[i] = (i+1)*timestep;
 
   fprestart_ = invp.get<int>("FPRESTART"); //this is supposed to be the forward problem restart
 
@@ -119,7 +116,7 @@ void STR::INVANA::InvanaAugLagr::MStepEpetraToEpetraMulti(Teuchos::RCP<DRT::UTIL
 /* Mstep double to std::vector<double>                       keh 10/13  */
 /*----------------------------------------------------------------------*/
 void STR::INVANA::InvanaAugLagr::MStepDToStdVecD(Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > mstepvec,
-                                                   Teuchos::RCP<std::vector<double> > stdvec)
+                                                 std::vector<double>* stdvec)
 {
   for (int i=0; i<msteps_; i++)
     (*stdvec)[i] = *(*mstepvec)(-(msteps_-i-1));
@@ -155,7 +152,7 @@ void STR::INVANA::InvanaAugLagr::SolveForwardProblem()
 
       // get displacement and time
       MStepEpetraToEpetraMulti(structadaptor->DispMStep(), dis_);
-      MStepDToStdVecD(structadaptor->TimeMStep(), time_);
+      MStepDToStdVecD(structadaptor->TimeMStep(), &time_);
 
       break;
     }
@@ -184,13 +181,26 @@ void STR::INVANA::InvanaAugLagr::SolveForwardProblem()
 void STR::INVANA::InvanaAugLagr::SolveAdjointProblem()
 {
   //Setup RHS for the adjoints
-  Teuchos::RCP<Epetra_MultiVector> objgrad;
-  objgrad = Teuchos::rcp(new Epetra_MultiVector(*(Discret()->DofRowMap()),msteps_,true));
-  ObjectiveFunct()->EvaluateGradient(dis_,objgrad);
+  Teuchos::RCP<Epetra_Vector> objgrad = Teuchos::rcp(new Epetra_Vector(*(Discret()->DofRowMap()),true));
+
+  std::vector<double> mtime = ObjectiveFunct()->MeasuredTime();
+  Teuchos::RCP<Epetra_MultiVector> adjrhs =
+      Teuchos::rcp(new Epetra_MultiVector(*(Discret()->DofRowMap()),(int)mtime.size(),true));
+
+  for (int i=0; i<(int)time_.size(); i++)
+  {
+    //find whether measurements exist for this simulation timestep
+    int mstep=ObjectiveFunct()->FindStep(time_[i]);
+    if (mstep!=-1)
+    {
+      ObjectiveFunct()->EvaluateGradient(Teuchos::rcp((*dis_)(i),false),time_[i],objgrad);
+      (*adjrhs)(mstep)->Scale(1.0,*objgrad);
+    }
+  }
 
   //initialize adjoint time integration with RHS as input
-  STR::TimIntAdjoint timintadj = TimIntAdjoint(Discret(), *time_);
-  timintadj.SetupAdjoint(objgrad, dis_);
+  STR::TimIntAdjoint timintadj = TimIntAdjoint(Discret());
+  timintadj.SetupAdjoint(adjrhs, mtime, dis_, time_);
 
   // adjoint time integration
   timintadj.Integrate();
@@ -200,6 +210,9 @@ void STR::INVANA::InvanaAugLagr::SolveAdjointProblem()
 
 }
 
+/*----------------------------------------------------------------------*/
+/* evaluate the value and/or gradient of the problem        keh 10/13   */
+/*----------------------------------------------------------------------*/
 void STR::INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double* val, Teuchos::RCP<Epetra_MultiVector> gradient)
 {
   Matman()->ReplaceParams(sol);
@@ -240,7 +253,7 @@ void STR::INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol,
 
     if (j==msteps_-1) sumaccrosprocs = true;
 
-    Matman()->Evaluate((*time_)[j], gradient, sumaccrosprocs);
+    Matman()->Evaluate(time_[j], gradient, sumaccrosprocs);
   }
 
   if (Regman() != Teuchos::null)
@@ -263,7 +276,20 @@ void STR::INVANA::InvanaAugLagr::ResetDiscretization()
 /*----------------------------------------------------------------------*/
 void STR::INVANA::InvanaAugLagr::EvaluateError(const Epetra_MultiVector& sol, double* val)
 {
-  ObjectiveFunct()->Evaluate(dis_,*val);
+  *val=0.0;
 
-  Regman()->Evaluate(sol,val);
+  double toadd;
+  for (int i=0; i< (int)time_.size(); i++)
+  {
+    //find whether measurements exist for this simulation timestep
+    int mstep=ObjectiveFunct()->FindStep(time_[i]);
+    if (mstep!=-1)
+    {
+      ObjectiveFunct()->Evaluate(Teuchos::rcp((*dis_)(i),false),time_[i], toadd);
+      *val+=toadd;
+    }
+  }
+
+  if (Regman() != Teuchos::null)
+    Regman()->Evaluate(sol,val);
 }

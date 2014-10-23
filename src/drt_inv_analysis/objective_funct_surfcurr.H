@@ -65,14 +65,13 @@ private:
   //! discretization of the target model
   Teuchos::RCP<DRT::Discretization> targetdis_;
 
-  //! simulated timesteps
-  Teuchos::RCP<std::vector<double> > timesteps_;
-
-  //! number of vectors in MultiVectors mdisp_ and disp
-  int msteps_;
+  //! measured timesteps
+  std::vector<double> timesteps_;
 
   //! vector of single surface objective functions
-  std::vector<Teuchos::RCP<STR::INVANA::ObjectiveFunctSurfCurr> > currents_;
+  //! 'std::vector wrap' to account for for measurement
+  //! for more than the last time step in the future
+  std::vector< std::vector<Teuchos::RCP<STR::INVANA::ObjectiveFunctSurfCurr> > > currents_;
 
 
 public:
@@ -87,10 +86,16 @@ public:
   void SetScale(double sigmaW);
 
   //! evaluate value of the objective function
-  virtual void Evaluate(Teuchos::RCP<Epetra_MultiVector> disp, double& val);
+  virtual void Evaluate(Teuchos::RCP<Epetra_Vector> state, double time, double& val);
 
   //! evaluate gradient of objective function w.r.t to displacements
-  virtual void EvaluateGradient(Teuchos::RCP<Epetra_MultiVector> disp, Teuchos::RCP<Epetra_MultiVector> gradient);
+  virtual void EvaluateGradient(Teuchos::RCP<Epetra_Vector> state, double time, Teuchos::RCP<Epetra_Vector> gradient);
+
+  //! measured time steps
+  virtual std::vector<double> MeasuredTime() {return timesteps_;}
+
+  //! query for step of measurements of this time step
+  int FindStep(double time);
 
 };
 
@@ -255,7 +260,7 @@ public:
   double WSpaceNorm();
 
   //! Compute gradient of Norm on current difference in W-space
-  void GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector> gradient,int vind);
+  void GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector> gradient);
 
 
 }; // class ObjectiveFunctSurfCurr

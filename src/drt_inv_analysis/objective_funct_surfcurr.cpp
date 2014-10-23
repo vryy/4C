@@ -23,9 +23,7 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 STR::INVANA::ObjectiveFunctSurfCurrRepresentation::ObjectiveFunctSurfCurrRepresentation(Teuchos::RCP<DRT::Discretization> discret):
 sourcedis_(discret),
-targetdis_(Teuchos::null),
-timesteps_(Teuchos::null),
-msteps_(0)
+targetdis_(Teuchos::null)
 {
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
@@ -49,6 +47,8 @@ msteps_(0)
 
   // find corresponding conditions in source and target discretization
   // and initialize the associated objective functions
+  std::vector<Teuchos::RCP<ObjectiveFunctSurfCurr> > dump;
+  currents_.push_back(dump);
   for (int i=0; i<(int)scc_source.size(); i++)
   {
     bool foundit=false;
@@ -58,7 +58,8 @@ msteps_(0)
       int idt = scc_target[j]->GetInt("matching id");
       if (idt==ids)
       {
-        currents_.push_back(Teuchos::rcp(new ObjectiveFunctSurfCurr(sourcedis_,targetdis_,scc_source[i],scc_target[j])));
+        // add to "0" since the loop of multiple measurements over timestill missing
+        currents_[0].push_back(Teuchos::rcp(new ObjectiveFunctSurfCurr(sourcedis_,targetdis_,scc_source[i],scc_target[j])));
         foundit=true;
         break;
       }
@@ -70,38 +71,51 @@ msteps_(0)
       dserror("corresponding condition in target not found");
   }
 
-  // this is supposed to be the number of simulation steps in the primal AND the dual problem
-  msteps_ = sdyn.get<int>("NUMSTEP");
-  double timestep = sdyn.get<double>("TIMESTEP");
+  // currents so far only for the last time step;
+  timesteps_.push_back(sdyn.get<double>("MAXTIME"));
 
-  // initialize the vector of time steps according to the structural dynamic params
-  timesteps_ = Teuchos::rcp(new std::vector<double>(msteps_,0.0));
-  for (int i=0; i<=msteps_-1; i++)
-  {
-    (*timesteps_)[i] = (i+1)*timestep;
-  }
-
-  if (currents_.size()!=scc_source.size())
+  if (currents_[0].size()!=scc_source.size())
     dserror("problem in finding corresponding current conditions in source and target discretization");
 
 }
 
 /*----------------------------------------------------------------------*/
+/* find step of measurement according to given time          keh 10/14  */
+/*----------------------------------------------------------------------*/
+int STR::INVANA::ObjectiveFunctSurfCurrRepresentation::FindStep(double time)
+{
+  // find step of the evaluation according to time:
+  int step=-1;
+  for (int i=0; i<(int)timesteps_.size(); i++)
+  {
+    double dt=abs(timesteps_[i]-time);
+    if (dt<1.0e-10)
+      step=i;
+  }
+
+  return step;
+}
+
+/*----------------------------------------------------------------------*/
 /* Evaluate value of the objective function                  keh 11/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::ObjectiveFunctSurfCurrRepresentation::Evaluate(Teuchos::RCP<Epetra_MultiVector> disp,
+void STR::INVANA::ObjectiveFunctSurfCurrRepresentation::Evaluate(Teuchos::RCP<Epetra_Vector> state,
+                                                                 double time,
                                                                  double& val)
 {
+  int step = FindStep(time); // not needed so far
+  if (step == -1)
+    dserror("no measurements for the requested time step");
+
   val = 0.0;
 
   //so far only the case were one single "measurement" for the final timestep of the simulation is considered
-  int step=msteps_-1; // so this is the last one
-  sourcedis_->SetState("displacements", Teuchos::rcp((*disp)(step), false));
+  sourcedis_->SetState("displacements", state);
 
-  for(int i=0; i<(int)currents_.size(); ++i)
+  for(int i=0; i<(int)currents_[0].size(); ++i)
   {
     // evaluate every single surface combination
-    val+=currents_[i]->WSpaceNorm();
+    val+=currents_[0][i]->WSpaceNorm();
   }
 }
 
@@ -109,27 +123,30 @@ void STR::INVANA::ObjectiveFunctSurfCurrRepresentation::Evaluate(Teuchos::RCP<Ep
 /* Evaluate the gradient of the objective function                      */
 /* w.r.t the displacements                                   keh 11/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::ObjectiveFunctSurfCurrRepresentation::EvaluateGradient(Teuchos::RCP<Epetra_MultiVector> disp,
-                                                                         Teuchos::RCP<Epetra_MultiVector> gradient)
+void STR::INVANA::ObjectiveFunctSurfCurrRepresentation::EvaluateGradient(Teuchos::RCP<Epetra_Vector> state,
+                                                                         double time,
+                                                                         Teuchos::RCP<Epetra_Vector> gradient)
 {
-  //so far only the case were one single "measurement" for the final timestep of the simulation is considered
-  int step=msteps_-1; // so this is the last one
+  int step = FindStep(time); // not needed so far
+  if (step == -1)
+    dserror("no measurements for the requested time step");
+
   gradient->PutScalar(0.0);
 
-  sourcedis_->SetState("displacements", Teuchos::rcp((*disp)(step), false));
+  sourcedis_->SetState("displacements", state);
 
-  for(int i=0; i<(int)currents_.size(); ++i)
+  for(int i=0; i<(int)currents_[0].size(); ++i)
   {
     // evaluate every single surface combination
-    currents_[i]->GradientWSpaceNorm(gradient,step);
+    currents_[0][i]->GradientWSpaceNorm(gradient);
   }
 }
 
 void STR::INVANA::ObjectiveFunctSurfCurrRepresentation::SetScale(double sigmaW)
 {
-  for(int i=0; i<(int)currents_.size(); ++i)
+  for(int i=0; i<(int)currents_[0].size(); ++i)
   {
-    currents_[i]->SetScale(sigmaW);
+    currents_[0][i]->SetScale(sigmaW);
   }
 }
 
@@ -713,7 +730,7 @@ double STR::INVANA::ObjectiveFunctSurfCurr::WSpaceNorm()
   return val;
 }
 
-void STR::INVANA::ObjectiveFunctSurfCurr::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector> gradient, int vind)
+void STR::INVANA::ObjectiveFunctSurfCurr::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector> gradient)
 {
   // we need a dof row map reduced to proc0 to be able to fill gradient data into the correct
   // global dof and then distribute it afterwards
@@ -770,7 +787,7 @@ void STR::INVANA::ObjectiveFunctSurfCurr::GradientWSpaceNorm(Teuchos::RCP<Epetra
   }
 
   // set into the gradient (update here, since there migth be other pairs of surfaces which contribute)
-  (*gradient)(vind)->Update(1.0/fac,*tempdist,1.0);
+  gradient->Update(1.0/fac,*tempdist,1.0);
 
 }
 

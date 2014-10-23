@@ -33,7 +33,7 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* constructor                                               keh 10/13  */
 /*----------------------------------------------------------------------*/
-STR::TimIntAdjoint::TimIntAdjoint(Teuchos::RCP<DRT::Discretization> discret, std::vector<double> time):
+STR::TimIntAdjoint::TimIntAdjoint(Teuchos::RCP<DRT::Discretization> discret):
 discret_(discret),
 solver_(Teuchos::null),
 dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
@@ -43,7 +43,6 @@ rhs_(Teuchos::null),
 stiff_(Teuchos::null),
 zeros_(Teuchos::null),
 stepn_(0),
-time_(time),
 isinit_(false)
 {
   PrintLogo();
@@ -98,15 +97,20 @@ isinit_(false)
 /* bring primal solution and rhs in                          keh 10/13  */
 /*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs,
-                                      Teuchos::RCP<Epetra_MultiVector> dis)
+                                      std::vector<double> mtime,
+                                      Teuchos::RCP<Epetra_MultiVector> dis,
+                                      std::vector<double> time)
 {
-  // for now, this is done by the optimizer which has control over the objective function anyway.
-  // Take care of the proper oder of the entries in MStep vector!
   rhs_ = rhs;
   dis_ = dis;
+  time_ = time;
+  mtime_ = mtime;
+
+  if ((int)time_.size() != msteps_ )
+    dserror("setup of the timesteps for the adjoint problem messed up");
 
   stepn_ = msteps_;
-  timen_ = 0.0;
+  timen_ = -1.0;
 
   if (rhs_ != Teuchos::null && dis_ != Teuchos::null)
     isinit_ = true;
@@ -187,21 +191,41 @@ Teuchos::RCP<const LINALG::SparseMatrix> STR::TimIntAdjoint::GetLocSysTrafo() co
 /*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::Solve()
 {
+  // no need to solve for a linear system with rhs of zeros
+  if (steprhsn_==-1)
+  {
+    disdualn_->Scale(0.0);
+    return;
+  }
+
   // transform to local co-ordinate systems
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_), rhsn_);
 
-
   // Apply Dirichlet
   LINALG::ApplyDirichlettoSystem(stiff_, disdualn_, rhsn_,GetLocSysTrafo(),zeros_,*(dbcmaps_->CondMap()));
-
-  //const std::string fname = "stiff.mtl";
-  //LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_))->EpetraMatrix()));
 
   // Solve
   solver_->Solve(stiff_->EpetraOperator(),disdualn_,rhsn_,true,true, Teuchos::null);
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* find step of measurement according to given time          keh 10/14  */
+/*----------------------------------------------------------------------*/
+int STR::TimIntAdjoint::FindStep(double time)
+{
+  // find step of the evaluation according to time:
+  int step=-1;
+  for (int i=0; i<(int)mtime_.size(); i++)
+  {
+    double dt=abs(mtime_[i]-time);
+    if (dt<1.0e-10)
+      step=i;
+  }
+
+  return step;
 }
 
 /*----------------------------------------------------------------------*/
@@ -213,9 +237,16 @@ void STR::TimIntAdjoint::PrepareStep()
   stepn_ -= 1;
   timen_=time_[stepn_];
 
+  steprhsn_ = FindStep(timen_);
+
+  // if there is not rhs for this timestep the dual solution is zero anyways
+  // so we can skip this
+  if (steprhsn_==-1)
+    return;
+
   // extract variables needed for this "time step"
   disn_->Update(1.0,*(*dis_)(stepn_),0.0);
-  rhsn_->Update(-1.0,*(*rhs_)(stepn_),0.0);
+  rhsn_->Update(-1.0,*(*rhs_)(steprhsn_),0.0);
   // !!! rhs is the optimality condition differentiated w.r.t the displacement; so it has to be
   //multiplied by -1 to be the correct rhsn_ for the dual problem
 

@@ -56,13 +56,26 @@ class TimIntAdjoint
 public:
 
   //! constructor
-  TimIntAdjoint(Teuchos::RCP<DRT::Discretization> dis, std::vector<double> time);
+  TimIntAdjoint(Teuchos::RCP<DRT::Discretization> dis);
 
   //! destructor
   virtual ~TimIntAdjoint() {}
 
-  // interface to the calling optimization routine to set up the rhs and the primal variables
-  void SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs, Teuchos::RCP<Epetra_MultiVector> dis);
+  //! interface to the calling optimization routine to set up the rhs and the primal variables
+  /*! \param In
+      rhs - rigth hand side for the adjoint equation.
+      \param In
+      mtime - vector with time for each entry in rhs.
+      \param In
+      dis - primal solution to the adjoint problem.
+      \param In
+      mtime - vector with time for each entry in the primal solution.
+      \param In
+  */
+  void SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs,
+                    std::vector<double> mtime,
+                    Teuchos::RCP<Epetra_MultiVector> dis,
+                    std::vector<double> time);
 
   //! do reverse time integration
   void Integrate();
@@ -95,6 +108,9 @@ private:
 
   //! return (rotatory) transformation matrix of local co-ordinate systems
   Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
+
+  //! find step in the rhs vector according to this time
+  int FindStep(double time);
 
   //! print information of time steps to screen
   int printtoscreen_;
@@ -150,8 +166,14 @@ private:
   //! time step at time n
   int stepn_;
 
+  //! to stepn_ corresponding step of the rhs
+  int steprhsn_;
+
   //! timesteps coming from the primal problem
   std::vector<double> time_;
+
+  //! timesteps for which there is a rhs not zero
+  std::vector<double> mtime_;
 
   //! current time
   double timen_;
