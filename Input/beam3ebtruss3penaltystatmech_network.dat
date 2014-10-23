@@ -68,7 +68,7 @@ FIXEDSEED           Yes                    // (de)activate pesudo-randomness
 INITIALSEED         1                     // manipulate initial seed of pseudo random numbers
 MAXRANDFORCE        -1.0                    // cutoff for random numbers. Beyond this value, another random number will be pulled
 //============== OUTPUT SET UP ==============
-GMSHOUTPUT          Yes                   // visualization via Gmsh
+GMSHOUTPUT          No                   // visualization via Gmsh
 GMSHNETSTRUCT       No                    // visualize structure detection
 PlotFactorThick     0                     // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
 SPECIAL_OUTPUT      none                  // structanaly viscoelasticity
