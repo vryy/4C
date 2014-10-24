@@ -54,6 +54,7 @@
 #include "poroelast_utils.H"
 
 /*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 bool POROELAST::UTILS::CheckPoro(
     DRT::Element* actele)
@@ -78,6 +79,7 @@ bool POROELAST::UTILS::CheckPoro(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 bool POROELAST::UTILS::CheckPoroP1(
     DRT::Element* actele)
@@ -275,6 +277,7 @@ Teuchos::RCP<POROELAST::PORO_SCATRA_Base> POROELAST::UTILS::CreatePoroScatraAlgo
 }
 
 /*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(Teuchos::RCP<DRT::Discretization> dis)
 {
@@ -304,6 +307,7 @@ Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(Teuchos::
 }
 
 /*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 void POROELAST::UTILS::SetMaterialPointersMatchingGrid(
     Teuchos::RCP<const DRT::Discretization> sourcedis,
@@ -325,6 +329,7 @@ void POROELAST::UTILS::SetMaterialPointersMatchingGrid(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 void POROELAST::PrintLogo()
 {
@@ -356,7 +361,7 @@ void POROELAST::PrintLogo()
 }
 
 /*----------------------------------------------------------------------*
- | calculate vector norm                                                 |
+ | calculate vector norm                                   vuong 08/14   |
  *----------------------------------------------------------------------*/
 double POROELAST::UTILS::CalculateVectorNorm(
   const enum INPAR::POROELAST::VectorNorm norm,

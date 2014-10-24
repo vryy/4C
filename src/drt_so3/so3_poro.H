@@ -399,6 +399,7 @@ protected:
       const INPAR::STR::StressType        iostress    //< stress output option
       );
 
+  //! Gauss Point Loop evaluating stiffness and force
   void GaussPointLoop(   Teuchos::ParameterList& params,
                                       const LINALG::Matrix<numdim_,numnod_>&  xrefe,
                                       const LINALG::Matrix<numdim_,numnod_>&  xcurr,
@@ -412,6 +413,7 @@ protected:
                                       LINALG::Matrix<numdof_,1>*              force
                                           );
 
+  //! fill stiffness matrix and rhs vector for darcy flow
   void FillMatrixAndVectors(
       const int &                                     gp,
       const LINALG::Matrix<numnod_,1>&                shapefct,
@@ -436,6 +438,7 @@ protected:
       LINALG::Matrix<numdof_,1>*                      force,
       LINALG::Matrix<numstr_,1>&                      fstress);
 
+  //! fill stiffness matrix and rhs vector for brinkman flow
   void FillMatrixAndVectorsBrinkman(
       const int &                                     gp,
       const double&                                   J,
@@ -452,6 +455,7 @@ protected:
       LINALG::Matrix<numdof_,1>*                      force,
       LINALG::Matrix<numstr_,1>&                      fstress);
 
+  //! fill stiffness matrix and rhs vector for darcy flow (off diagonal terms)
   void FillMatrixAndVectorsOD(
       const int &                             gp,
       const LINALG::Matrix<numnod_,1>&        shapefct,
@@ -467,6 +471,7 @@ protected:
       const LINALG::Matrix<numdim_,numdim_>&  C_inv,
       LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix);
 
+  //! fill stiffness matrix and rhs vector for darcy brinkman flow (off diagonal terms)
   void FillMatrixAndVectorsBrinkmanOD(
       const int &                             gp,
       const LINALG::Matrix<numnod_,1>&        shapefct,
@@ -480,6 +485,7 @@ protected:
       const LINALG::Matrix<numdim_,numdim_>&  C_inv,
       LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix);
 
+  //! Gauss Point Loop evaluating stiffness (off diagonal)
   void GaussPointLoopOD(
       Teuchos::ParameterList&                 params,
       const LINALG::Matrix<numdim_,numnod_>&  xrefe,
@@ -491,6 +497,7 @@ protected:
       LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix
                                           );
 
+  //! helper functions to get element vectors from global vector
   void ExtractValuesFromGlobalVector(
                                       const DRT::Discretization&          discretization, ///< discretization
                                       const int&                          dofset,         ///< number of dofset
@@ -513,8 +520,10 @@ protected:
     LINALG::Matrix<numdim_,numdim_>&  cauchystress
     );
 
+  //! get materials (solid and fluid)
   void GetMaterials();
 
+  //! evaluate shape functions and their derivatives at gauss point
   void ComputeShapeFunctionsAndDerivatives(
       const int &                       gp,
       LINALG::Matrix<numnod_,1>&        shapefct,
@@ -522,20 +531,14 @@ protected:
       LINALG::Matrix<numdim_,numnod_>&  N_XYZ
       );
 
-//  void ComputeSecondDerivativesOfShapeFunctions(
-//      const int &                             gp,
-//      const LINALG::Matrix<numdim_,numnod_>&  xrefe,
-//      LINALG::Matrix<numdim_,numnod_>&        deriv ,
-//      LINALG::Matrix<numderiv2_,numnod_>&     deriv2,
-//      LINALG::Matrix<numdim_,numnod_>&        N_XYZ,
-//      LINALG::Matrix<numderiv2_,numnod_>&     N_XYZ2);
-
+  //! Compute Jacobian Determinant
   double ComputeJacobianDeterminant(
      const int & gp,
      const LINALG::Matrix<numdim_,numnod_>&   xcurr,
      const   LINALG::Matrix<numdim_,numnod_>& deriv
      );
 
+  //! Compute Linearization Of Jacobian
   void ComputeLinearizationOfJacobian(
      LINALG::Matrix<1,numdof_>& dJ_dus,
      const double& J,
@@ -543,6 +546,7 @@ protected:
      const LINALG::Matrix<numdim_,numdim_>& defgrd_inv
      );
 
+  //! Compute Linearization some Auxiliary Values in gauss point loop
   void ComputeAuxiliaryValues(
       const LINALG::Matrix<numdim_,numnod_>&    N_XYZ,
       const LINALG::Matrix<numdim_,numdim_>&    defgrd_inv,
@@ -553,6 +557,7 @@ protected:
       LINALG::Matrix<numdim_,numdof_>&          dFinvdus_gradp,
       LINALG::Matrix<numstr_,numdof_>&          dCinv_dus);
 
+  //! Compute  nonlinear b-operator
   void ComputeBOperator(
       LINALG::Matrix<numstr_,numdof_>& bop,
       const LINALG::Matrix<numdim_,numdim_>& defgrd,

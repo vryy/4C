@@ -27,7 +27,7 @@ namespace ELEMENTS
 {
 
   /*----------------------------------------------------------------------*
-   |  QUAD 4 Element                                       |
+   |  QUAD 4 Element                                      vuong 07/13  |
    *----------------------------------------------------------------------*/
   class WallQuad4PoroP2Type : public DRT::ELEMENTS::WallQuad4PoroType
   {
@@ -56,7 +56,7 @@ namespace ELEMENTS
   };
 
   /*----------------------------------------------------------------------*
-   |  QUAD 9 Element                                       |
+   |  QUAD 9 Element                                    vuong 07/13    |
    *----------------------------------------------------------------------*/
   class WallQuad9PoroP2Type : public DRT::ELEMENTS::WallQuad9PoroType
   {

@@ -38,7 +38,7 @@
 //#include "Sacado.hpp"
 
 /*----------------------------------------------------------------------*
- |  preevaluate the element (public)                                       |
+ |  preevaluate the element (public)                    vuong 03/12      |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterList& params,
@@ -112,7 +112,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterLis
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                                       |
+ |  evaluate the element (public)                      vuong 03/12     |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Poro< so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
@@ -190,7 +190,7 @@ int DRT::ELEMENTS::So3_Poro< so3_ele, distype>::Evaluate(Teuchos::ParameterList&
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (protected)                                       |
+ |  evaluate the element (protected)                    vuong 03/12       |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
@@ -490,7 +490,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
 
 
 /*----------------------------------------------------------------------*
- |  evaluate only the poroelasticity fraction for the element (protected) |
+ |  evaluate only the poroelasticity fraction for the element (protected)  vuong 03/12 |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
@@ -558,9 +558,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
   return;
 }  // nlnstiff_poroelast()
 
-/*----------------------------------------------------------------------*
- |  evaluate only the poroelasticity fraction for the element (protected) |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------*
+ |  evaluate only the poroelasticity fraction for the element (protected)   vuong 03/12|
+ *----------------------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
                                     Teuchos::ParameterList&                 params,
@@ -707,9 +707,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
   /* =========================================================================*/
 }
 
-/*----------------------------------------------------------------------*
- |  evaluate only the poroelasticity fraction for the element (protected) |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ |  evaluate only the poroelasticity fraction for the element (protected)  vuong 03/12 |
+ *----------------------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     std::vector<int>&                                 lm,            // location matrix
@@ -774,9 +774,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
 
 }  // coupling_poroelast()
 
-/*----------------------------------------------------------------------*
- |  evaluate only the poroelasticity fraction for the element (protected) |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------*
+ |  evaluate only the poroelasticity fraction for the element (protected)  vuong 03/12|
+ *------------------------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
                 Teuchos::ParameterList&                           params,
@@ -898,9 +898,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
 }
 
 
-/*----------------------------------------------------------------------*
- |  evaluate only the poroelasticity fraction for the element (protected) |
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------*
+ |  evaluate only the poroelasticity fraction for the element (protected)   vuong 03/12|
+ *----------------------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::couplstress_poroelast(
     LINALG::Matrix<numdim_, numnod_>&   disp,         // current displacements
@@ -1030,6 +1030,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::couplstress_poroelast(
 
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::InitElement()
@@ -1083,6 +1084,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::InitElement()
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PK2toCauchy(
@@ -1184,6 +1186,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::stress_expol
 
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosityAndLinearization
@@ -1217,6 +1220,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosityAndLinearization
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosityAndLinearizationOD
@@ -1245,6 +1249,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosityAndLinearizationOD
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ExtractValuesFromGlobalVector(
@@ -1285,6 +1290,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ExtractValuesFromGlobalVector(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GetMaterials( )
@@ -1317,6 +1323,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GetMaterials( )
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosity
@@ -1348,6 +1355,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosity
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeSurfPorosity( Teuchos::ParameterList& params,
@@ -1380,6 +1388,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeSurfPorosity( Teuchos::Par
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::So3_Poro<so3_ele,distype>::RefPorosityTimeDeriv()
@@ -1388,6 +1397,7 @@ double DRT::ELEMENTS::So3_Poro<so3_ele,distype>::RefPorosityTimeDeriv()
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeShapeFunctionsAndDerivatives(
@@ -1440,6 +1450,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeShapeFunctionsAndDerivativ
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 //template<class so3_ele, DRT::Element::DiscretizationType distype>
 //void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeSecondDerivativesOfShapeFunctions(
@@ -1486,6 +1497,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeShapeFunctionsAndDerivativ
 //}
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeJacobianDeterminant(
@@ -1506,6 +1518,7 @@ double DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeJacobianDeterminant(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>:: ComputeAuxiliaryValues(const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
@@ -1558,6 +1571,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>:: ComputeAuxiliaryValues(const LIN
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 inline void
@@ -1613,6 +1627,7 @@ DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeBOperator(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 inline void
@@ -1657,6 +1672,7 @@ DRT::ELEMENTS::So3_Poro<so3_ele,distype>::  ComputeLinearizationOfJacobian(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
@@ -1955,6 +1971,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkman(
@@ -2093,6 +2110,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkman(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsOD(
@@ -2257,6 +2275,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsOD(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkmanOD(
@@ -2357,6 +2376,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkmanOD(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 
 #include "so3_poro_fwd.hpp"

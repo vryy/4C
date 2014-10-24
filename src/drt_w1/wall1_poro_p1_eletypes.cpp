@@ -19,7 +19,7 @@
 #include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------*
- |  QUAD 4 Element                                       |
+ |  QUAD 4 Element                                          vuong 07/13 |
  *----------------------------------------------------------------------*/
 
 DRT::ELEMENTS::WallQuad4PoroP1Type DRT::ELEMENTS::WallQuad4PoroP1Type::instance_;
@@ -33,6 +33,7 @@ DRT::ParObject* DRT::ELEMENTS::WallQuad4PoroP1Type::Create( const std::vector<ch
 }
 
 /*----------------------------------------------------------------------*
+ *                                                           vuong 07/13 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create( const std::string eletype,
                                                             const std::string eledistype,
@@ -48,6 +49,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create( const std
 }
 
 /*----------------------------------------------------------------------*
+ *                                                           vuong 07/13 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create( const int id, const int owner )
 {
@@ -56,6 +58,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad4PoroP1Type::Create( const int
 }
 
 /*----------------------------------------------------------------------*
+ *                                                           vuong 07/13 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallQuad4PoroP1Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
@@ -73,7 +76,7 @@ void DRT::ELEMENTS::WallQuad4PoroP1Type::SetupElementDefinition( std::map<std::s
 }
 
 /*----------------------------------------------------------------------*
- |  init the element (public)                                           |
+ |  init the element (public)                              vuong 07/13     |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallQuad4PoroP1Type::Initialize(DRT::Discretization& dis)
 {
@@ -89,7 +92,7 @@ int DRT::ELEMENTS::WallQuad4PoroP1Type::Initialize(DRT::Discretization& dis)
 }
 
 /*----------------------------------------------------------------------*
- |  QUAD 9 Element                                       |
+ |  QUAD 9 Element                                       vuong 07/13 |
  *----------------------------------------------------------------------*/
 
 DRT::ELEMENTS::WallQuad9PoroP1Type DRT::ELEMENTS::WallQuad9PoroP1Type::instance_;
@@ -103,6 +106,7 @@ DRT::ParObject* DRT::ELEMENTS::WallQuad9PoroP1Type::Create( const std::vector<ch
 }
 
 /*----------------------------------------------------------------------*
+ *                                                           vuong 07/13 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create( const std::string eletype,
                                                             const std::string eledistype,
@@ -118,6 +122,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create( const std
 }
 
 /*----------------------------------------------------------------------*
+ *                                                           vuong 07/13 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create( const int id, const int owner )
 {
@@ -126,6 +131,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallQuad9PoroP1Type::Create( const int
 }
 
 /*----------------------------------------------------------------------*
+ *                                                           vuong 07/13 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::WallQuad9PoroP1Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
@@ -143,7 +149,7 @@ void DRT::ELEMENTS::WallQuad9PoroP1Type::SetupElementDefinition( std::map<std::s
 }
 
 /*----------------------------------------------------------------------*
- |  init the element (public)                                           |
+ |  init the element (public)                             vuong 07/13 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallQuad9PoroP1Type::Initialize(DRT::Discretization& dis)
 {

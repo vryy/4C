@@ -2,7 +2,7 @@
 /*!
  \file StructPoroReaction_reaction.cpp
 
- \brief wrapper for structure material of porous media including reactiive reference porosity
+ \brief wrapper for structure material of porous media including reactive reference porosity
 
  <pre>
    Maintainer: Anh-Tu Vuong

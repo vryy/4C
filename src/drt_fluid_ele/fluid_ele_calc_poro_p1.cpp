@@ -2,7 +2,7 @@
 /*!
  \file fluid_ele_calc_poro_p1.cpp
 
- \brief
+ \brief Internal implementation of poro Fluid element (p1 poro fluid)
 
  <pre>
    Maintainer: Anh-Tu Vuong
@@ -27,6 +27,7 @@
 
 
 /*----------------------------------------------------------------------*
+ *  create/delete instance (public)                            vuong 06/11|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcPoroP1<distype>* DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Instance( bool create )
@@ -50,6 +51,7 @@ DRT::ELEMENTS::FluidEleCalcPoroP1<distype>* DRT::ELEMENTS::FluidEleCalcPoroP1<di
 
 
 /*----------------------------------------------------------------------*
+ * called upon destruction (public)                            vuong 06/11|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Done()
@@ -61,6 +63,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
+ *   constructor (protected)                                   vuong 06/11|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::FluidEleCalcPoroP1()
@@ -221,6 +224,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(
 
 
 /*----------------------------------------------------------------------*
+ *  Compute Porosity                                          vuong 06/11|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosity(
@@ -247,6 +251,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosity(
 }
 
 /*----------------------------------------------------------------------*
+ * Compute Porosity gradient                                  vuong 06/11|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosityGradient(
@@ -271,6 +276,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosityGradient(
 }
 
 /*----------------------------------------------------------------------*
+ *  Evaluate Pressure Equation                                 vuong 06/11|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluatePressureEquation(
@@ -342,7 +348,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluatePressureEquation(
 }
 
 /*----------------------------------------------------------------------*
- * evaluation of coupling terms for porous flow (2)
+ * evaluation of coupling terms for porous flow (2)          vuong 06/11|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
@@ -484,7 +490,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
 }
 
 /*----------------------------------------------------------------------*
- * evaluation of coupling terms for porous flow (3)
+ * evaluation of coupling terms for porous flow (3)          vuong 06/11|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
@@ -523,35 +529,35 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
   //if (isale and my::fldparatimint_->IsStationary())
   //  dserror("No ALE support within stationary fluid solver.");
 
-    // ---------------------------------------------------------------------
-    // call routine for calculating element matrix and right hand side
-    // ---------------------------------------------------------------------
-    SysmatOD(
-        params,
-        ebofoaf,
-        evelaf,
-        evelnp,
-        eveln,
-        epreaf,
-        eprenp,
-        epren,
-        emhist,
-        echist,
-        epressnp_timederiv,
-        edispnp,
-        edispn,
-        egridv,
-        egridvn,
-        escaaf,
-        eporositynp,
-        elemat1,
-        elevec1,
-        mat,
-        isale,
-        intpoints);
+  // ---------------------------------------------------------------------
+  // call routine for calculating element matrix and right hand side
+  // ---------------------------------------------------------------------
+  SysmatOD(
+      params,
+      ebofoaf,
+      evelaf,
+      evelnp,
+      eveln,
+      epreaf,
+      eprenp,
+      epren,
+      emhist,
+      echist,
+      epressnp_timederiv,
+      edispnp,
+      edispn,
+      egridv,
+      egridvn,
+      escaaf,
+      eporositynp,
+      elemat1,
+      elevec1,
+      mat,
+      isale,
+      intpoints);
 
-    return 0;
-  }
+  return 0;
+}
 
 /*----------------------------------------------------------------------*
  |  calculate coupling matrix flow                          vuong 06/11 |
@@ -1213,8 +1219,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------------*
+ *   Computation of Linearization of porosity gradient w.r.t. pressure         vuong 06/11 |
+ *----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearization(
                                   const double&                                      dphi_dp,
@@ -1227,8 +1234,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearization(
     dgradphi_dp.Clear();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------------*
+ *  Computation of Linearization of porosity gradient w.r.t. displacements    vuong 06/11 |
+ *---------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(
                             const double&                                      dphi_dJ,
@@ -1322,6 +1330,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(
 }
 
 /*----------------------------------------------------------------------*
+ *   PSPG contributions                                     vuong 06/11 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
@@ -1349,6 +1358,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
 }
 
 /*----------------------------------------------------------------------*
+ *     contributions of reactive stabilization              vuong 06/11 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ReacStab(

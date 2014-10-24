@@ -247,8 +247,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Print(std::ostream& os) const
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ReadElement(const std::string& eletype,
                                          const std::string& eledistype,
@@ -266,24 +267,27 @@ bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ReadElement(const std::string& el
   return true;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisNames(std::map<std::string,int>& names)
 {
   so3_ele::VisNames(names);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   return so3_ele::VisData(name, data);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::UniqueParObjectId() const
 {
@@ -310,8 +314,9 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::UniqueParObjectId() const
   return -1;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ElementType & DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ElementType() const
 {
@@ -333,24 +338,27 @@ DRT::ElementType & DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ElementType() const
   return So_hex8PoroType::Instance();
 };
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 inline DRT::Node** DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Nodes()
 {
   return so3_ele::Nodes();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 inline Teuchos::RCP<MAT::Material>  DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Material() const
 {
   return so3_ele::Material();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 inline int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Id() const
 {

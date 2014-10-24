@@ -277,6 +277,7 @@ void POROELAST::PoroBase::Update()
 }
 
 /*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
  *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::PrepareOutput()
 {
@@ -284,6 +285,7 @@ void POROELAST::PoroBase::PrepareOutput()
 }
 
 /*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
  *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::TestResults(const Epetra_Comm& comm)
 {
@@ -292,8 +294,9 @@ void POROELAST::PoroBase::TestResults(const Epetra_Comm& comm)
   DRT::Problem::Instance()->TestAll(comm);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::StructureToFluidField(
     Teuchos::RCP<const Epetra_Vector> iv)
 {
@@ -315,8 +318,9 @@ Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::StructureToFluidField(
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::FluidToStructureField(
     Teuchos::RCP<const Epetra_Vector> iv)
 {
@@ -334,8 +338,9 @@ Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::FluidToStructureField(
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
+ *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::SetStructSolution()
 {
   Teuchos::RCP<const Epetra_Vector> dispnp;
@@ -357,8 +362,9 @@ void POROELAST::PoroBase::SetStructSolution()
   FluidField()->ApplyMeshVelocity(structvel);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
+ *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::SetFluidSolution()
 {
   if (matchinggrid_)
@@ -371,8 +377,9 @@ void POROELAST::PoroBase::SetFluidSolution()
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
+ *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::TimeLoop()
 {
 
@@ -384,6 +391,7 @@ void POROELAST::PoroBase::TimeLoop()
 }
 
 /*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
  *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::Output()
 {
@@ -396,6 +404,7 @@ void POROELAST::PoroBase::Output()
 } // Monolithic::Output()
 
 /*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
  *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::SetupCoupling()
 {
@@ -480,6 +489,7 @@ void POROELAST::PoroBase::SetupCoupling()
 }
 
 /*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
  *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::AddDofSets(bool replace)
 {
@@ -525,6 +535,7 @@ void POROELAST::PoroBase::AddDofSets(bool replace)
 }
 
 /*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
  *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::CheckForPoroConditions()
 {
@@ -546,6 +557,7 @@ void POROELAST::PoroBase::CheckForPoroConditions()
 }
 
 /*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
  *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
 {
@@ -580,8 +592,9 @@ void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
+ *----------------------------------------------------------------------*/
 void POROELAST::NoPenetrationConditionHandle::BuidNoPenetrationMap(const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap)
 {
   std::vector<int> condIDs;
@@ -597,8 +610,9 @@ void POROELAST::NoPenetrationConditionHandle::BuidNoPenetrationMap(const Epetra_
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
+ *----------------------------------------------------------------------*/
 void POROELAST::NoPenetrationConditionHandle::ApplyCondRHS( Teuchos::RCP<Epetra_Vector> iterinc,
                                                             Teuchos::RCP<Epetra_Vector> rhs)
 {
@@ -611,8 +625,9 @@ void POROELAST::NoPenetrationConditionHandle::ApplyCondRHS( Teuchos::RCP<Epetra_
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
+ *----------------------------------------------------------------------*/
 void POROELAST::NoPenetrationConditionHandle::Clear(POROELAST::coupltype coupltype)
 {
   if(hascond_)
@@ -641,8 +656,9 @@ void POROELAST::NoPenetrationConditionHandle::Clear(POROELAST::coupltype couplty
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
+ *----------------------------------------------------------------------*/
 void POROELAST::NoPenetrationConditionHandle::Setup(Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid)
 {
   if(hascond_)
@@ -675,8 +691,9 @@ void POROELAST::NoPenetrationConditionHandle::Setup(Teuchos::RCP<const Epetra_Ma
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle::ConstraintMatrix(POROELAST::coupltype coupltype)
 {
   if(hascond_)
@@ -689,8 +706,9 @@ Teuchos::RCP<LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle::Cons
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                        vuong 01/12   |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle::StructVelConstraintMatrix(POROELAST::coupltype coupltype)
 {
   if(hascond_)

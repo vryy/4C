@@ -19,6 +19,7 @@
 #include "../drt_lib/drt_utils_factory.H"
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 08/13|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Wall1_PoroP2<distype>::Wall1_PoroP2(int id, int owner) :
@@ -27,7 +28,7 @@ DRT::ELEMENTS::Wall1_Poro<distype>(id,owner)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                                  |
+ |  copy-ctor (public)                                      vuong 08/13     |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
@@ -39,6 +40,7 @@ DRT::ELEMENTS::Wall1_Poro<distype>(old)
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 08/13|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::Element* DRT::ELEMENTS::Wall1_PoroP2<distype>::Clone() const
@@ -48,6 +50,7 @@ DRT::Element* DRT::ELEMENTS::Wall1_PoroP2<distype>::Clone() const
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 08/13|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP2<distype>::Pack(DRT::PackBuffer& data) const
@@ -66,6 +69,7 @@ void DRT::ELEMENTS::Wall1_PoroP2<distype>::Pack(DRT::PackBuffer& data) const
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 08/13|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP2<distype>::Unpack(const std::vector<char>& data)
@@ -90,6 +94,7 @@ void DRT::ELEMENTS::Wall1_PoroP2<distype>::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 08/13|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1_PoroP2<distype>::Lines()
@@ -106,6 +111,7 @@ std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1_PoroP2<distype>::
 
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 08/13|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1_PoroP2<distype>::Surfaces()
@@ -116,6 +122,7 @@ std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1_PoroP2<distype>::
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 08/13|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP2<distype>::Print(std::ostream& os) const
@@ -127,8 +134,9 @@ void DRT::ELEMENTS::Wall1_PoroP2<distype>::Print(std::ostream& os) const
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                            vuong 08/13|
+ *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Wall1_PoroP2<distype>::UniqueParObjectId() const
 {
@@ -147,8 +155,9 @@ int DRT::ELEMENTS::Wall1_PoroP2<distype>::UniqueParObjectId() const
   return -1;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                            vuong 08/13|
+ *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ElementType & DRT::ELEMENTS::Wall1_PoroP2<distype>::ElementType() const
 {
@@ -170,6 +179,7 @@ DRT::ElementType & DRT::ELEMENTS::Wall1_PoroP2<distype>::ElementType() const
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 08/13|
  *----------------------------------------------------------------------*/
 template class DRT::ELEMENTS::Wall1_PoroP2<DRT::Element::quad4>;
 template class DRT::ELEMENTS::Wall1_PoroP2<DRT::Element::quad9>;

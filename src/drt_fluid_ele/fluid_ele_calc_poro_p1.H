@@ -2,7 +2,7 @@
 /*!
  \file fluid_ele_calc_poro_p1.H
 
- \brief
+ \brief Internal implementation of poro Fluid element (p1 poro fluid)
 
  <pre>
    Maintainer: Anh-Tu Vuong
@@ -16,9 +16,14 @@
 #ifndef FLUID_ELE_CALC_PORO_P1_H_
 #define FLUID_ELE_CALC_PORO_P1_H_
 
+/*---------------------------------------------------------------------*
+ | headers                                                              |
+ *---------------------------------------------------------------------*/
 #include "fluid_ele_calc_poro.H"
 
-// forward declarations
+/*---------------------------------------------------------------------*
+ | forward declarations                                                 |
+ *---------------------------------------------------------------------*/
 namespace MAT
 {
   class StructPoro;
@@ -29,8 +34,29 @@ namespace DRT
 {
 namespace ELEMENTS
 {
-  class So_Poro_Interface;
 
+/// Class for Evaluating boundary integrals for porous media problems
+/*!
+ This class is derived from the FluidEleCalc class, i.e. it is capable of
+ evaluated all integrals implemented there. It will do so, if the evaluate action
+ given by the control routine is not known (see method Evaluate).
+
+ The main methods are the Evaluate and the EvaluateOD routines. Therein,
+ the stiffness matrixes of a porous fluid problem are evaluated. OD means
+ off diagonal, indicating linearizations with respect to structural degrees of freedom,
+ that will be assembled into off diagonal entries in the global system matrix.
+ The terms are eventually evaluated in the GaussPointLoop.. methods
+
+ This a calculation class implemented as a singleton, like all calc classes in fluid
+ (see comments on base classes for more details). In short this means that on instance
+ exists for every discretization type of the boundary element (because of the template).
+
+ This is the poro P1 implementation, i.e. meant to be coupled with a structure problem
+ which solves for the porosity. For the fluid not much changes compared with the
+ standard implementation. Only the porosity is evaluated in a different way.
+
+ \author vuong 10/14
+ */
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcPoroP1 : public FluidEleCalcPoro<distype>
 {

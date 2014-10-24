@@ -2,7 +2,7 @@
 /*!
  \file structporo_reaction.H
 
- \brief
+ \brief wrapper for structure material of porous media including reactive reference porosity
 
  <pre>
    Maintainer: Anh-Tu Vuong

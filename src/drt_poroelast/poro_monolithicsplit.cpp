@@ -55,8 +55,9 @@ POROELAST::MonolithicSplit::MonolithicSplit(const Epetra_Comm& comm,
   ddi_       = Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 11/12  |
+ *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplit::PrepareTimeStep()
 {
   // counter and print header
@@ -95,16 +96,18 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 11/12  |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicSplit::StructureToFluidAtInterface(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfs_->MasterToSlave(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 11/12  |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicSplit::FluidToStructureAtInterface(
     Teuchos::RCP<const Epetra_Vector> iv) const
 {
@@ -173,6 +176,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
 }
 
 /*----------------------------------------------------------------------*
+ |                                                         vuong 11/12  |
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
 {
@@ -224,7 +228,7 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
 }
 
 /*----------------------------------------------------------------------*
- |  map containing the dofs with Dirichlet BC
+ |  map containing the dofs with Dirichlet BC            vuong 11/12  |
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplit::BuildCombinedDBCMap()
 {
@@ -252,7 +256,7 @@ void POROELAST::MonolithicSplit::BuildCombinedDBCMap()
 }
 
 /*----------------------------------------------------------------------*
- | solution with full Newton-Raphson iteration            vuong 01/12   |
+ | solution with full Newton-Raphson iteration            vuong 11/12    |
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplit::Solve()
 {

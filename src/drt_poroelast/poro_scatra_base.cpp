@@ -27,8 +27,9 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_RCP.hpp>
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
 POROELAST::PORO_SCATRA_Base::PORO_SCATRA_Base(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams):
     AlgorithmBase(comm, timeparams)
@@ -71,8 +72,9 @@ POROELAST::PORO_SCATRA_Base::PORO_SCATRA_Base(const Epetra_Comm& comm,
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,true,"scatra",problem->SolverParams(linsolvernumber)));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Base::SetupDiscretizations(const Epetra_Comm& comm)
 {
   // Scheme    : the structure discretization is received from the input. Then, an ale-fluid disc.is cloned from the struct. one.
@@ -103,15 +105,17 @@ void POROELAST::PORO_SCATRA_Base::SetupDiscretizations(const Epetra_Comm& comm)
   dserror("Structure AND ScaTra discretization present. This is not supported.");
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Base::SetupSystem()
 {
   poro_->SetupSystem();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Base::TestResults(const Epetra_Comm& comm)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -122,16 +126,18 @@ void POROELAST::PORO_SCATRA_Base::TestResults(const Epetra_Comm& comm)
   problem->TestAll(comm);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Base::SetPoroSolution()
 {
   SetMeshDisp();
   SetVelocityFields();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Base::SetScatraSolution()
 {
   //porous structure
@@ -145,8 +151,9 @@ void POROELAST::PORO_SCATRA_Base::SetScatraSolution()
                                         scatra_->ScaTraField()->Discretization());
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Base::SetVelocityFields()
 {
   scatra_->ScaTraField()->SetVelocityField(
@@ -158,8 +165,9 @@ void POROELAST::PORO_SCATRA_Base::SetVelocityFields()
       poro_->FluidField()->Discretization()); //discretization
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Base::SetMeshDisp()
 {
   scatra_->ScaTraField()->ApplyMeshMovement(
@@ -167,8 +175,9 @@ void POROELAST::PORO_SCATRA_Base::SetMeshDisp()
       poro_->FluidField()->Discretization());
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Base::AddDofSets(bool replace)
 {
   // the problem is two way coupled, thus each discretization must know the other discretization

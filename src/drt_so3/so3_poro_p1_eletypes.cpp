@@ -19,7 +19,7 @@
 #include "../drt_lib/drt_utils_nullspace.H"
 
 /*----------------------------------------------------------------------*
- |  HEX 8 Element                                       |
+ |  HEX 8 Element                                    vuong 03/12    |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8PoroP1Type DRT::ELEMENTS::So_hex8PoroP1Type::instance_;
 
@@ -74,7 +74,7 @@ void DRT::ELEMENTS::So_hex8PoroP1Type::ComputeNullSpace( DRT::Discretization & d
 }
 
 /*----------------------------------------------------------------------*
- |  init the element (public)                                           |
+ |  init the element (public)                        vuong 03/12            |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex8PoroP1Type::Initialize(DRT::Discretization& dis)
 {

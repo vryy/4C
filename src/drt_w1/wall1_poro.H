@@ -357,6 +357,7 @@ namespace ELEMENTS
         const INPAR::STR::StressType iostress ///< stress output option
         );
 
+    //! Gauss Point Loop evaluating stiffness and force
     void GaussPointLoop(   Teuchos::ParameterList& params,
                                         const LINALG::Matrix<numdim_,numnod_>&  xrefe,
                                         const LINALG::Matrix<numdim_,numnod_>&  xcurr,
@@ -371,6 +372,7 @@ namespace ELEMENTS
                                         LINALG::Matrix<numdof_,1>*              force
                                             );
 
+    //! Gauss Point Loop evaluating stiffness (off diagonal)
     void GaussPointLoopOD(
         Teuchos::ParameterList&                 params,
         const LINALG::Matrix<numdim_,numnod_>&  xrefe,
@@ -383,7 +385,7 @@ namespace ELEMENTS
         LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& stiffmatrix
                                             );
 
-    //compute porosity at gausspoint and linearization of porosity w.r.t. structural displacements
+    //!compute porosity at gausspoint and linearization of porosity w.r.t. structural displacements
     virtual void ComputePorosityAndLinearization(Teuchos::ParameterList&                params,
                                                  const double&                          press,
                                                  const double&                          J,
@@ -394,7 +396,7 @@ namespace ELEMENTS
                                                  double &                               porosity,
                                                  LINALG::Matrix<1,numdof_>&             dphi_dus);
 
-    //compute porosity at gausspoint and linearization of porosity w.r.t. fluid pressure
+    //!compute porosity at gausspoint and linearization of porosity w.r.t. fluid pressure
     virtual void ComputePorosityAndLinearizationOD(Teuchos::ParameterList&        params,
                                                  const double&                    press,
                                                  const double&                    J,
@@ -404,6 +406,7 @@ namespace ELEMENTS
                                                  double &                         porosity,
                                                  double &                         dphi_dp);
 
+    //! fill stiffness matrix and rhs vector for darcy flow
     void FillMatrixAndVectors(
         const int &                                     gp,
         const LINALG::Matrix<numnod_,1>&                shapefct,
@@ -428,6 +431,7 @@ namespace ELEMENTS
         LINALG::Matrix<numdof_,1>*                      force,
         LINALG::Matrix<numstr_,1>&                      fstress);
 
+    //! fill stiffness matrix and rhs vector for brinkman flow
     void FillMatrixAndVectorsBrinkman(
         const int &                                     gp,
         const double&                                   J,
@@ -444,6 +448,7 @@ namespace ELEMENTS
         LINALG::Matrix<numdof_,1>*                      force,
         LINALG::Matrix<numstr_,1>&                      fstress);
 
+    //! fill stiffness matrix and rhs vector for darcy flow (off diagonal terms)
     void FillMatrixAndVectorsOD(
         const int &                             gp,
         const LINALG::Matrix<numnod_,1>&        shapefct,
@@ -459,6 +464,7 @@ namespace ELEMENTS
         const LINALG::Matrix<numdim_,numdim_>&  C_inv,
         LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl);
 
+    //! fill stiffness matrix and rhs vector for darcy brinkman flow (off diagonal terms)
     void FillMatrixAndVectorsBrinkmanOD(
         const int &                             gp,
         const LINALG::Matrix<numnod_,1>&        shapefct,
@@ -472,11 +478,13 @@ namespace ELEMENTS
         const LINALG::Matrix<numdim_,numdim_>&  C_inv,
         LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl);
 
+    //! Compute  nonlinear b-operator
     void ComputeBOperator(
         LINALG::Matrix<numstr_,numdof_>& bop,
         const LINALG::Matrix<numdim_,numdim_>& defgrd,
         const LINALG::Matrix<numdim_,numnod_>& N_XYZ);
 
+    //! evaluate shape functions and their derivatives at gauss point
     void ComputeShapeFunctionsAndDerivatives(
         const int &                       gp,
         LINALG::Matrix<numnod_,1>&        shapefct,
@@ -484,12 +492,14 @@ namespace ELEMENTS
         LINALG::Matrix<numdim_,numnod_>&  N_XYZ
         );
 
+    //! Compute Jacobian Determinant
     double ComputeJacobianDeterminant(
        const int & gp,
        const LINALG::Matrix<numdim_,numnod_>&   xcurr,
        const   LINALG::Matrix<numdim_,numnod_>& deriv
        );
 
+    //! Compute Linearization Of Jacobian
     void ComputeLinearizationOfJacobian(
        LINALG::Matrix<1,numdof_>& dJ_dus,
        const double& J,
@@ -497,6 +507,7 @@ namespace ELEMENTS
        const LINALG::Matrix<numdim_,numdim_>& defgrd_inv
        );
 
+    //! helper functions to get element vectors from global vector
     void ComputeAuxiliaryValues(
         const LINALG::Matrix<numdim_,numnod_>&    N_XYZ,
         const LINALG::Matrix<numdim_,numdim_>&    defgrd_inv,
@@ -514,6 +525,7 @@ namespace ELEMENTS
       LINALG::Matrix<numdim_,numdim_>& cauchystress
       );
 
+    //! helper functions to get element vectors from global vector
     void ExtractValuesFromGlobalVector(
                                         const DRT::Discretization&          discretization, ///< discretization
                                         const int&                          dofset,         ///< number of dofset
@@ -523,6 +535,7 @@ namespace ELEMENTS
                                         const std::string                   state           ///< state of the global vector
                                         );
 
+    //! get materials (solid and fluid)
     void GetMaterials();
 
     //!Gauss integration rule

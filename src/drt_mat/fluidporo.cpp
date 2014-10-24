@@ -1,6 +1,9 @@
 /*!-----------------------------------------------------------------------*
  \file fluidporo.cpp
 
+\brief
+  fluid material for poroelasticity problems
+
  <pre>
    Maintainer: Anh-Tu Vuong
                vuong@lnm.mw.tum.de
@@ -15,8 +18,9 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_mat/matpar_bundle.H"
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *  constructor (public)                               vuong 06/11      |
+ *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
   Parameter(matdata),
   viscosity_(matdata->GetDouble("DYNVISCOSITY")),
@@ -45,15 +49,17 @@ MAT::PAR::FluidPoro::FluidPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
     dserror("Unknown Permeabilityfunction: %s", pfuncstring->c_str());
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *  Create Material (public)                             vuong 06/11      |
+*----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoro::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::FluidPoro(this));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+  Set Initial Porosity (public)                          vuong 06/11     |
+*----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoro::SetInitialPorosity(double initialporosity)
 {
   initialporosity_ = initialporosity;
@@ -70,12 +76,14 @@ void MAT::PAR::FluidPoro::SetInitialPorosity(double initialporosity)
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                          vuong 06/11     |
+*----------------------------------------------------------------------*/
 MAT::FluidPoroType MAT::FluidPoroType::instance_;
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                           vuong 06/11 |
+ *----------------------------------------------------------------------*/
 
 DRT::ParObject* MAT::FluidPoroType::Create(const std::vector<char> & data)
 {
@@ -84,22 +92,25 @@ DRT::ParObject* MAT::FluidPoroType::Create(const std::vector<char> & data)
   return fluid_poro;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                          vuong 06/11 |
+ *----------------------------------------------------------------------*/
 MAT::FluidPoro::FluidPoro() :
   params_(NULL)
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                         vuong 06/11 |
+*----------------------------------------------------------------------*/
 MAT::FluidPoro::FluidPoro(MAT::PAR::FluidPoro* params) :
   params_(params)
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                          vuong 06/11 |
+*----------------------------------------------------------------------*/
 void MAT::FluidPoro::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
@@ -116,8 +127,9 @@ void MAT::FluidPoro::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, matid);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                          vuong 06/11 |
+*----------------------------------------------------------------------*/
 void MAT::FluidPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
@@ -146,8 +158,9 @@ void MAT::FluidPoro::Unpack(const std::vector<char>& data)
   dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                          vuong 06/11 |
+*----------------------------------------------------------------------*/
 double MAT::FluidPoro::ComputeReactionCoeff() const
 {
   // check for zero or negative viscosity
@@ -163,8 +176,9 @@ double MAT::FluidPoro::ComputeReactionCoeff() const
   return reacoeff;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                          vuong 06/11 |
+*----------------------------------------------------------------------*/
 void MAT::FluidPoro::ComputeReactionTensor(LINALG::Matrix<2,2>& reactiontensor,double J,double porosity) const
 {
   // viscosity divided by permeability
@@ -182,8 +196,9 @@ void MAT::FluidPoro::ComputeReactionTensor(LINALG::Matrix<2,2>& reactiontensor,d
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                          vuong 06/11 |
+*----------------------------------------------------------------------*/
 void MAT::FluidPoro::ComputeReactionTensor(LINALG::Matrix<3,3>& reactiontensor,double J, double porosity) const
 {
   // viscosity divided by permeability
@@ -201,8 +216,9 @@ void MAT::FluidPoro::ComputeReactionTensor(LINALG::Matrix<3,3>& reactiontensor,d
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                          vuong 06/11 |
+*----------------------------------------------------------------------*/
 void MAT::FluidPoro::ComputeLinMatReactionTensor(LINALG::Matrix<2,2>& linreac_dphi,LINALG::Matrix<2,2>& linreac_dJ,double J, double porosity) const
 {
   // viscosity divided by permeability
@@ -231,8 +247,9 @@ void MAT::FluidPoro::ComputeLinMatReactionTensor(LINALG::Matrix<2,2>& linreac_dp
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                          vuong 06/11 |
+ *----------------------------------------------------------------------*/
 void MAT::FluidPoro::ComputeLinMatReactionTensor(LINALG::Matrix<3,3>& linreac_dphi,LINALG::Matrix<3,3>& linreac_dJ,double J,  double porosity) const
 {
   // viscosity divided by permeability
@@ -261,8 +278,9 @@ void MAT::FluidPoro::ComputeLinMatReactionTensor(LINALG::Matrix<3,3>& linreac_dp
   return;
 }
 
-    /*----------------------------------------------------------------------*/
-    /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                           vuong 06/11 |
+ *----------------------------------------------------------------------*/
 double MAT::FluidPoro::EffectiveViscosity() const
 {
   // set zero viscosity and only modify it for Darcy-Stokes problems
@@ -275,7 +293,7 @@ double MAT::FluidPoro::EffectiveViscosity() const
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Material                             (public)         05/12|
+ |  Evaluate Material                             (public)     vuong 05/12|
  *----------------------------------------------------------------------*/
 void MAT::FluidPoro::EvaluateViscStress(LINALG::Matrix<6,1>* stress,
                                         LINALG::Matrix<6,6>* cmat,

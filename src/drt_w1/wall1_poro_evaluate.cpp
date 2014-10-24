@@ -37,7 +37,7 @@
 //#include "Sacado.hpp"
 
 /*----------------------------------------------------------------------*
- |  preevaluate the element (public)                                       |
+ |  preevaluate the element (public)                  vuong 12/12      |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& params,
@@ -91,7 +91,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& par
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                                       |
+ |  evaluate the element (public)                         vuong 12/12  |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
@@ -172,7 +172,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                                       |
+ |  evaluate the element (public)                        vuong 12/12    |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
@@ -489,7 +489,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
 
 
 /*----------------------------------------------------------------------*
- |  evaluate only the poroelasticity fraction for the element (private) |
+ |  evaluate only the poroelasticity fraction for the element (private) vuong 12/12 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
@@ -722,6 +722,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop(
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
@@ -907,6 +908,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsBrinkman(
@@ -1196,6 +1198,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopOD(
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsOD(
@@ -1312,6 +1315,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsOD(
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsBrinkmanOD(
@@ -1528,6 +1532,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::couplstress_poroelast(
 }//couplstress_poroelast
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::InitElement()
@@ -1578,6 +1583,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitElement()
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::PK2toCauchy(
@@ -1603,6 +1609,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PK2toCauchy(
 }  // PK2toCauchy()
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 inline void
@@ -1645,6 +1652,7 @@ DRT::ELEMENTS::Wall1_Poro<distype>::ComputeBOperator(
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeShapeFunctionsAndDerivatives(
@@ -1701,6 +1709,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeShapeFunctionsAndDerivatives(
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::Wall1_Poro<distype>::ComputeJacobianDeterminant(
@@ -1723,6 +1732,7 @@ double DRT::ELEMENTS::Wall1_Poro<distype>::ComputeJacobianDeterminant(
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 inline   void
@@ -1755,6 +1765,7 @@ DRT::ELEMENTS::Wall1_Poro<distype>::ComputeLinearizationOfJacobian(
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeAuxiliaryValues(const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
@@ -1804,6 +1815,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeAuxiliaryValues(const LINALG::Ma
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePorosityAndLinearization
@@ -1838,6 +1850,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePorosityAndLinearization
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePorosityAndLinearizationOD
@@ -1866,6 +1879,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputePorosityAndLinearizationOD
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::ExtractValuesFromGlobalVector(
@@ -1931,6 +1945,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ExtractValuesFromGlobalVector(
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>;
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>;

@@ -25,6 +25,7 @@
 #include "../drt_fem_general/drt_utils_gder2.H"
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::ComputePorosityAndLinearization
@@ -49,6 +50,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::ComputePorosityAndLinearizatio
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::ComputePorosityAndLinearizationOD
@@ -72,7 +74,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::ComputePorosityAndLinearizatio
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                                       |
+ |  evaluate the element (public)                           vuong 03/12 |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Poro_P1< so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
@@ -195,7 +197,7 @@ int DRT::ELEMENTS::So3_Poro_P1< so3_ele, distype>::Evaluate(Teuchos::ParameterLi
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (protected)                                       |
+ |  evaluate the element (protected)                        vuong 03/12    |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::MyEvaluate(
@@ -367,6 +369,7 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::MyEvaluate(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::InitElement()
@@ -377,6 +380,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::InitElement()
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::nlnstiff_poroelast(
@@ -959,5 +963,6 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1OD(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 #include "so3_poro_p1_fwd.hpp"

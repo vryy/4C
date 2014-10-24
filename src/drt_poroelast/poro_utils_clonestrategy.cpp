@@ -29,8 +29,9 @@
 
 #include "poro_utils_clonestrategy.H"
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/11  |
+ *----------------------------------------------------------------------*/
 std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::ConditionsToCopy()
 {
   std::map<std::string, std::string> conditions_to_copy;
@@ -66,8 +67,9 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::Con
   return conditions_to_copy;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/11  |
+ *----------------------------------------------------------------------*/
 void POROELAST::UTILS::PoroelastCloneStrategy::CheckMaterialType(
     const int matid)
 {
@@ -78,8 +80,9 @@ void POROELAST::UTILS::PoroelastCloneStrategy::CheckMaterialType(
     dserror("Material with ID %d is not admissible for fluid poroelasticity elements",matid);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/11  |
+ *----------------------------------------------------------------------*/
 void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
     Teuchos::RCP<DRT::Element> newele,
     DRT::Element*              oldele,
@@ -107,8 +110,9 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/11  |
+ *----------------------------------------------------------------------*/
 bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
@@ -123,8 +127,9 @@ bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
   return false;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/11  |
+ *----------------------------------------------------------------------*/
 bool POROELAST::UTILS::PoroScatraCloneStrategy::DetermineEleType(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
@@ -139,8 +144,9 @@ bool POROELAST::UTILS::PoroScatraCloneStrategy::DetermineEleType(
   return false;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/11  |
+ *----------------------------------------------------------------------*/
 std::map<std::string, std::string> POROELAST::UTILS::PoroScatraCloneStrategy::ConditionsToCopy()
 {
   //call base class

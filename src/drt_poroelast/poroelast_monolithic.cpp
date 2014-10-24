@@ -58,7 +58,7 @@
 #include "poroelast_monolithic.H"
 
 /*----------------------------------------------------------------------*
- | monolithic                                              vuong 01/12  |
+ | constructor                                              vuong 01/12  |
  *----------------------------------------------------------------------*/
 POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams
@@ -104,7 +104,7 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
 
 
 /*----------------------------------------------------------------------*
- | solve time step                    vuong 01/12     |
+ | solve time step                                      vuong 01/12     |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::DoTimeStep()
 {
@@ -584,7 +584,7 @@ void POROELAST::Monolithic::LinearSolve()
 }
 
 /*----------------------------------------------------------------------*
- | create linear solver                                   wiesner 07/11 |
+ | create linear solver                                   vuong 01/12 |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::CreateLinearSolver()
 {
@@ -794,7 +794,7 @@ bool POROELAST::Monolithic::Converged()
 
 /*----------------------------------------------------------------------*
  | print Newton-Raphson iteration to screen and error file              |
- | originally by lw 12/07, tk 01/08                                     |
+ | originally by lw 12/07, tk 01/08                       vuong 01/12   |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::PrintNewtonIter()
 {
@@ -821,7 +821,7 @@ void POROELAST::Monolithic::PrintNewtonIter()
 
 /*----------------------------------------------------------------------*
  | print Newton-Raphson iteration to screen and error file              |
- | originally by lw 12/07, tk 01/08                                     |
+ | originally by lw 12/07, tk 01/08                     vuong 01/12     |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::PrintNewtonIterHeader(FILE* ofile)
 {
@@ -942,7 +942,7 @@ void POROELAST::Monolithic::PrintNewtonIterHeader(FILE* ofile)
 
 
 /*----------------------------------------------------------------------*
- | print Newton-Raphson iteration to screen                       |
+ | print Newton-Raphson iteration to screen             vuong 01/12     |
  | originally by lw 12/07, tk 01/08                                     |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::PrintNewtonIterText(FILE* ofile)
@@ -1034,7 +1034,7 @@ void POROELAST::Monolithic::PrintNewtonIterText(FILE* ofile)
 }  // PrintNewtonIterText
 
 /*----------------------------------------------------------------------*
- | print statistics of converged NRI                                     |
+ | print statistics of converged NRI                   vuong 01/12       |
  | orignially by bborn 08/09                                            |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::PrintNewtonConv()
@@ -1044,7 +1044,7 @@ void POROELAST::Monolithic::PrintNewtonConv()
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate mechanical-fluid system matrix at state                    |
+ |  evaluate mechanical-fluid system matrix at state     vuong 01/12     |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::ApplyStrCouplMatrix(
     Teuchos::RCP<LINALG::SparseOperator> k_sf //!< off-diagonal tangent matrix term
@@ -1119,7 +1119,7 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(
 }    // ApplyStrCouplMatrix()
 
 /*----------------------------------------------------------------------*
- |    evaluate fluid-structural system matrix at state                |
+ |    evaluate fluid-structural system matrix at state       vuong 01/12 |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::ApplyFluidCouplMatrix(
     Teuchos::RCP< LINALG::SparseOperator> k_fs //!< off-diagonal tangent matrix term
@@ -1231,7 +1231,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
 }    // ApplyFluidCouplMatrix()
 
 /*----------------------------------------------------------------------*
- |  check tangent stiffness matrix via finite differences               |
+ |  check tangent stiffness matrix via finite differences     vuong 01/12 |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::PoroFDCheck()
 {
@@ -1540,6 +1540,7 @@ void POROELAST::Monolithic::EvaluateCondition(Teuchos::RCP<LINALG::SparseOperato
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::StructFluidCouplingMatrix()
 {
@@ -1551,6 +1552,7 @@ Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::StructFluidCouplingMat
 } // StructFluidCouplingMatrix()
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::FluidStructCouplingMatrix()
 {
@@ -1562,6 +1564,7 @@ Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::FluidStructCouplingMat
 } // FluidStructCouplingMatrix()
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> POROELAST::Monolithic::StructFluidCouplingBlockMatrix()
 {
@@ -1574,6 +1577,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> POROELAST::Monolithic::StructFluidCo
 } // StructFluidCouplingBlockMatrix()
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> POROELAST::Monolithic::FluidStructCouplingBlockMatrix()
 {
@@ -1618,6 +1622,7 @@ void POROELAST::Monolithic::SetupNewton()
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::BuildCovergenceNorms()
 {
@@ -1776,6 +1781,7 @@ bool POROELAST::Monolithic::SetupSolver()
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::SystemSparseMatrix()
 {
@@ -1783,6 +1789,7 @@ Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::SystemSparseMatrix()
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::IncrementPoroIter()
 {
@@ -1798,6 +1805,7 @@ void POROELAST::Monolithic::UpdatePoroIterinc(Teuchos::RCP<const Epetra_Vector> 
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::ClearPoroIterinc()
 {
@@ -1805,6 +1813,7 @@ void POROELAST::Monolithic::ClearPoroIterinc()
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::Aitken()
 {
@@ -1849,6 +1858,7 @@ void POROELAST::Monolithic::Aitken()
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::AitkenReset()
 {
@@ -1863,6 +1873,7 @@ void POROELAST::Monolithic::AitkenReset()
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 const Epetra_Map& POROELAST::Monolithic::FluidRangeMap()
 {
@@ -1870,6 +1881,7 @@ const Epetra_Map& POROELAST::Monolithic::FluidRangeMap()
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 const Epetra_Map& POROELAST::Monolithic::FluidDomainMap()
 {
@@ -1877,6 +1889,7 @@ const Epetra_Map& POROELAST::Monolithic::FluidDomainMap()
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 const Epetra_Map& POROELAST::Monolithic::StructureRangeMap()
 {
@@ -1884,6 +1897,7 @@ const Epetra_Map& POROELAST::Monolithic::StructureRangeMap()
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 const Epetra_Map& POROELAST::Monolithic::StructureDomainMap()
 {
@@ -1891,6 +1905,7 @@ const Epetra_Map& POROELAST::Monolithic::StructureDomainMap()
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> POROELAST::Monolithic::DofRowMap() const
 {
@@ -1898,6 +1913,7 @@ Teuchos::RCP<const Epetra_Map> POROELAST::Monolithic::DofRowMap() const
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> POROELAST::Monolithic::DofRowMapStructure()
 {
@@ -1905,6 +1921,7 @@ Teuchos::RCP<const Epetra_Map> POROELAST::Monolithic::DofRowMapStructure()
 }
 
 /*----------------------------------------------------------------------*
+ |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> POROELAST::Monolithic::DofRowMapFluid()
 {

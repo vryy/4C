@@ -2,7 +2,7 @@
 /*!
  \file fluid_ele_calc_poro_p2.H
 
- \brief
+ \brief Internal implementation of poro Fluid element (p2 poro fluid)
 
  <pre>
    Maintainer: Anh-Tu Vuong
@@ -16,9 +16,14 @@
 #ifndef FLUID_ELE_CALC_PORO_P2_H_
 #define FLUID_ELE_CALC_PORO_P2_H_
 
+/*---------------------------------------------------------------------*
+ | headers                                                              |
+ *---------------------------------------------------------------------*/
 #include "fluid_ele_calc_poro.H"
 
-// forward declarations
+/*---------------------------------------------------------------------*
+ | forward declarations                                                 |
+ *---------------------------------------------------------------------*/
 namespace MAT
 {
   class StructPoro;
@@ -28,7 +33,30 @@ namespace DRT
 {
 namespace ELEMENTS
 {
-  class So_Poro_Interface;
+
+/// Class for Evaluating boundary integrals for porous media problems
+/*!
+ This class is derived from the FluidEleCalc class, i.e. it is capable of
+ evaluated all integrals implemented there. It will do so, if the evaluate action
+ given by the control routine is not known (see method Evaluate).
+
+ The main methods are the Evaluate and the EvaluateOD routines. Therein,
+ the stiffness matrixes of a porous fluid problem are evaluated. OD means
+ off diagonal, indicating linearizations with respect to structural degrees of freedom,
+ that will be assembled into off diagonal entries in the global system matrix.
+ The terms are eventually evaluated in the GaussPointLoop.. methods
+
+ This a calculation class implemented as a singleton, like all calc classes in fluid
+ (see comments on base classes for more details). In short this means that on instance
+ exists for every discretization type of the boundary element (because of the template).
+
+ This is the poro P2 implementation, i.e. meant to be coupled with a scatra problem
+ which solves for the porosity. The main difference here is, that the last equation
+ evaluted by the fluid is not(!) the balance of mass/continuity equation, but
+ the constitutive relation giving the fluid pressure.
+
+ \author vuong 10/14
+ */
 
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcPoroP2 : public FluidEleCalcPoro<distype>
@@ -181,7 +209,26 @@ protected:
         bool                                                            isale,
         const DRT::UTILS::GaussIntegration &                            intpoints);
 
+    /*!
+     \brief evaluate pressure equation (i.e. continuity equation for standard poro elements and constitutive equation for poro_p2)
+            This function is overwritten by the poro_p1 and poro_p2 element
 
+      \param params         (i) element parameter list
+      \param timefacfacpre  (i) fluid pressure at gauss point
+      \param rhsfac         (i) jacobian determinant at gauss point
+      \param dphi_dp        (i) derivative of porosity gradient w.r.t. fluid pressure
+      \param dphi_dJ        (i) derivative of porosity gradient w.r.t. jacobian determinant
+      \param dphi_dJdp      (i) mixed derivative of porosity gradient w.r.t. fluid pressure and jacobian determinant
+      \param dphi_dJJ       (i) second derivative of porosity gradient w.r.t. jacobian determinant
+      \param dphi_dpp       (i) second derivative of porosity gradient w.r.t. fluid pressure
+      \param eporositydot   (i) nodal values of porosity time derivative at time step n+1
+      \param eporositydotn  (i) nodal values of porosity time derivative at time step n
+      \param echist         (i) nodal values of history values of continuity equation
+      \param dgradphi_dp    (i) derivative of porosity gradient w.r.t. fluid pressure
+      \param estif_q_u      (o) element matrix (pressure - fluid velocity weighting) to be filled
+      \param ppmat          (o) element matrix (pressure - pressure weighting) to be filled
+      \param preforce       (o) element rhs vector to be filled
+     * */
     virtual void EvaluatePressureEquation(
         Teuchos::ParameterList&                       params,
         const double&                                 timefacfacpre,

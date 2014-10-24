@@ -206,6 +206,7 @@ namespace ELEMENTS
         LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
         Teuchos::ParameterList& params); ///< algorithmic parameters e.g. time
 
+    //! gauss point loop for monolithic poro-scatra problems (off diagonl)
     void GaussPointLoopPoroScatraOD(
         Teuchos::ParameterList&                 params,
         const LINALG::Matrix<my::numdim_,my::numnod_>&  xrefe,

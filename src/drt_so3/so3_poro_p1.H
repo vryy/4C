@@ -232,7 +232,7 @@ protected:
       LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
       Teuchos::ParameterList& params); ///< algorithmic parameters e.g. time
 
-  //compute porosity at gausspoint and linearization of porosity w.r.t. structural displacements
+  //!compute porosity at gausspoint and linearization of porosity w.r.t. structural displacements
   virtual void ComputePorosityAndLinearization(Teuchos::ParameterList&                params,
                                                const double&                          press,
                                                const double&                          J,
@@ -243,7 +243,7 @@ protected:
                                                double &                               porosity,
                                                LINALG::Matrix<1,my::numdof_>&         dphi_dus);
 
-  //compute porosity at gausspoint and linearization of porosity w.r.t. fluid pressure
+  //!compute porosity at gausspoint and linearization of porosity w.r.t. fluid pressure
   virtual void ComputePorosityAndLinearizationOD(Teuchos::ParameterList&              params,
                                                const double&                          press,
                                                const double&                          J,
@@ -253,6 +253,7 @@ protected:
                                                double &                               porosity,
                                                double &                               dphi_dp);
 
+  //! gauss point loop for evaluation of stiffness and rhs vector
   void GaussPointLoopP1(   Teuchos::ParameterList& params,
                                       const LINALG::Matrix<my::numdim_,my::numnod_>& xrefe,
                                       const LINALG::Matrix<my::numdim_,my::numnod_>& xcurr,
@@ -269,6 +270,7 @@ protected:
                                       LINALG::Matrix<my::numnod_,1>& ecoupl_force_p1
                                           );
 
+  //! gauss point loop for evaluation of stiffness (off diagonal)
   void GaussPointLoopP1OD(   Teuchos::ParameterList& params,
                                       const LINALG::Matrix<my::numdim_,my::numnod_>& xrefe,
                                       const LINALG::Matrix<my::numdim_,my::numnod_>& xcurr,

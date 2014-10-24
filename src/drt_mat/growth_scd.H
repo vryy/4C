@@ -21,6 +21,9 @@ See also Bachelor thesis Jasper Rieser (2013)
 #ifndef GROWTH_SCD_H_
 #define GROWTH_SCD_H_
 
+/*---------------------------------------------------------------------*
+ | headers                                                              |
+ *---------------------------------------------------------------------*/
 #include "growth_ip.H"
 
 namespace MAT
@@ -79,15 +82,15 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for growth material
-  class GrowthScd : public Growth                                                    //
+  class GrowthScd : public Growth
   {
   public:
 
     /// construct empty material object
-    GrowthScd();                                                                      //
+    GrowthScd();
 
     /// construct the material object given material parameters
-    explicit GrowthScd(MAT::PAR::GrowthScd* params);                                  //
+    explicit GrowthScd(MAT::PAR::GrowthScd* params);
 
     //! @name Packing and Unpacking
 
@@ -231,7 +234,7 @@ namespace MAT
     /// concentration (e.g. nutrients)
     double concentration_;
 
-
+    /// growth function value evaluated by the stress law
     double stressgrowthfunc;
 
   };//class ScdGrowth

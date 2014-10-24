@@ -2,7 +2,7 @@
 /*!
  \file fluid_ele_calc_poro_p1.H
 
- \brief
+ \brief Internal implementation of poro Fluid element (standard poro fluid)
 
  <pre>
    Maintainer: Anh-Tu Vuong
@@ -15,9 +15,14 @@
 #ifndef FLUID_ELE_CALC_PORO_H
 #define FLUID_ELE_CALC_PORO_H
 
+/*---------------------------------------------------------------------*
+ | headers                                                              |
+ *---------------------------------------------------------------------*/
 #include "fluid_ele_calc.H"
 
-// forward declarations
+/*---------------------------------------------------------------------*
+ | forward declarations                                                 |
+ *---------------------------------------------------------------------*/
 namespace MAT
 {
   class StructPoro;
@@ -28,7 +33,25 @@ namespace DRT
 {
 namespace ELEMENTS
 {
-class So_Poro_Interface;
+
+/// Class for Evaluating boundary integrals for porous media problems
+/*!
+ This class is derived from the FluidEleCalc class, i.e. it is capable of
+ evaluated all integrals implemented there. It will do so, if the evaluate action
+ given by the control routine is not known (see method Evaluate).
+
+ The main methods are the Evaluate and the EvaluateOD routines. Therein,
+ the stiffness matrixes of a porous fluid problem are evaluated. OD means
+ off diagonal, indicating linearizations with respect to structural degrees of freedom,
+ that will be assembled into off diagonal entries in the global system matrix.
+ The terms are eventually evaluated in the GaussPointLoop.. methods
+
+ This a calculation class implemented as a singleton, like all calc classes in fluid
+ (see comments on base classes for more details). In short this means that on instance
+ exists for every discretization type of the boundary element (because of the template).
+
+ \author vuong 10/14
+ */
 
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcPoro : public FluidEleCalc<distype>
@@ -64,7 +87,8 @@ public:
     \param offdiag          (i) flag indicating wether diagonal or off diagonal blocks are to be calculated
 
    */
-  virtual int Evaluate(DRT::ELEMENTS::Fluid*         ele,
+  virtual int Evaluate(
+      DRT::ELEMENTS::Fluid*         ele,
       DRT::Discretization &         discretization,
       const std::vector<int> &      lm,
       Teuchos::ParameterList&       params,
@@ -92,7 +116,8 @@ public:
     \param intpoints        (i) Gaussian integration points
 
    */
-  virtual int Evaluate(DRT::ELEMENTS::Fluid*                    ele,
+  virtual int Evaluate(
+      DRT::ELEMENTS::Fluid*                ele,
       DRT::Discretization &                discretization,
       const std::vector<int> &             lm,
       Teuchos::ParameterList&              params,
@@ -120,7 +145,8 @@ public:
     \param intpoints        (i) Gaussian integration points
 
    */
-  virtual int EvaluateOD(DRT::ELEMENTS::Fluid*                  ele,
+  virtual int EvaluateOD(
+      DRT::ELEMENTS::Fluid*                ele,
       DRT::Discretization &                discretization,
       const std::vector<int> &             lm,
       Teuchos::ParameterList&              params,
@@ -224,7 +250,9 @@ protected:
           \param epren            (i) nodal pressure at n
           \param epressnp_timederiv (i) nodal pressure time derivative at n+alpha_F/n+1
           \param edispnp          (i) nodal displacements at n+1 (on moving mesh)
+          \param edispn           (i) nodal displacements at n (on moving mesh)
           \param egridv           (i) grid velocity at n+1
+          \param egridvn          (i) grid velocity at n
           \param escaaf           (i) nodal scalar at n+alpha_F/n+1
           \param eporositynp      (i) nodal porosity at n+1
           \param mat              (i) fluid material
@@ -327,6 +355,9 @@ protected:
     \param egridv           (i) grid velocity at n+1
     \param egridvn          (i) grid velocity at n
     \param escaaf           (i) nodal scalar at n+alpha_F/n+1
+     param emhist           (i) time rhs for momentum equation
+    \param echist           (i) time rhs for continuity equation
+    \param eporositynp      (i) nodal porosity at n+1
     \param ecoupl           (o) element matrix to calculate
     \param eforce           (o) element rhs to calculate
     \param material         (i) fluid material
@@ -361,10 +392,6 @@ protected:
     \brief linearisation of momentum equation in the case of mesh motion 3-D for Poroelasticity
 
     \param ecoupl_u           (o) coupling element matrix for fluid velocity
-    \param evelaf             (i) nodal velocities at n+1 (np_genalpha)
-    \param egridv             (i) nodal pressure at n+alpha_F/n+1
-    \param epreaf             (i) nodal pressure at n+alpha_F/n+1
-    \param gradphi            (i) porosity gradient at gauss point
     \param dphi_dp            (i) derivative of porosity w.r.t. fluid pressure
     \param dphi_dJ            (i) derivative of porosity w.r.t. jacobian determinant
     \param refporositydot     (i) time derivative of reference porosity
@@ -384,10 +411,6 @@ protected:
     \brief linearisation of momentum equation in the case of mesh motion 2-D for Poroelasticity
 
     \param ecoupl_u           (o) coupling element matrix for fluid velocity
-    \param evelaf             (i) nodal velocities at n+1 (np_genalpha)
-    \param egridv             (i) nodal pressure at n+alpha_F/n+1
-    \param epreaf             (i) nodal pressure at n+alpha_F/n+1
-    \param gradphi            (i) porosity gradient at gauss point
     \param dphi_dp            (i) derivative of porosity w.r.t. fluid pressure
     \param dphi_dJ            (i) derivative of porosity w.r.t. jacobian determinant
     \param refporositydot     (i) time derivative of reference porosity
@@ -407,13 +430,10 @@ protected:
     \brief linearisation of continuity equation in the case of mesh motion 2-D for Poroelasticity
 
     \param ecoupl_p           (o) coupling element matrix for fluid pressure
-    \param egridv             (i) nodal pressure at n+alpha_F/n+1
-    \param gradphi            (i) porosity gradient at gauss point
     \param dphi_dp            (i) derivative of porosity w.r.t. fluid pressure
     \param dphi_dJ            (i) derivative of porosity w.r.t. jacobian determinant
     \param refporositydot     (i) time derivative of reference porosity
-    \param timefac            (i) time factor
-    \param timefacfac         (i) time factor * integration factor
+    \param timefacfacpre      (i) time factor * integration factor
    */
   void LinMeshMotion_2D_Pres_OD(
       LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
@@ -427,13 +447,10 @@ protected:
     \brief linearisation of continuity equation in the case of mesh motion 3-D for Poroelasticity
 
     \param ecoupl_p           (o) coupling element matrix for fluid pressure
-    \param egridv             (i) nodal pressure at n+alpha_F/n+1
-    \param gradphi            (i) porosity gradient at gauss point
     \param dphi_dp            (i) derivative of porosity w.r.t. fluid pressure
     \param dphi_dJ            (i) derivative of porosity w.r.t. jacobian determinant
     \param refporositydot     (i) time derivative of reference porosity
-    \param timefac            (i) time factor
-    \param timefacfac         (i) time factor * integration factor
+    \param timefacfacpre      (i) time factor * integration factor
    */
   virtual void LinMeshMotion_3D_Pres_OD(
       LINALG::Matrix< my::nen_, my::nsd_ * my::nen_>&                   ecoupl_p,
@@ -471,22 +488,25 @@ protected:
       const double &                                         fac3            ///< factor for residual in current subgrid velocities
   );
 
-
+  //! Compute linearization of momentum residual w.r.t fluid velocities
   void ComputeLinResMDu(
       const double & timefacfac,
       LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&  lin_resM_Du);
 
+  //! Compute linearization of momentum residual (stabilization) w.r.t fluid velocities
   void ComputeLinResMDu_Stab(
       const double & timefacfac,
       LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&  lin_resM_Du);
 
+  //! Compute linearization of momentum residual w.r.t fluid pressure
   void ComputeLinResMDp(
       const double & timefacfacpre,
       const double & dphi_dp,
       LINALG::Matrix<my::nsd_,my::nen_>&  lin_resM_Du);
 
   //! calculate div(epsilon(u))
-  void CalcDivEps(const LINALG::Matrix<my::nsd_,my::nen_>& evelaf);   ///< velocity at time n+alpha_f / n+1
+  void CalcDivEps(const LINALG::Matrix<my::nsd_,my::nen_>& evelaf   ///< velocity at time n+alpha_f / n+1
+      );
 
   /*!
     \brief Compute derivatives of deformation gradient
@@ -496,10 +516,11 @@ protected:
     \param F_x             (o) derivative of deformation gradient w.r.t. current coordinates xyz
     \param F_X             (o) derivative of deformation gradient w.r.t. material coordinates XYZ
    */
-  void ComputeFDerivative(const LINALG::Matrix<my::nsd_, my::nen_>&         edispnp,
+  void ComputeFDerivative(
+      const LINALG::Matrix<my::nsd_, my::nen_>&         edispnp,
       const LINALG::Matrix<my::nsd_,my::nsd_>&          defgrd_inv,
-      LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>& F_x,
-      LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>& F_X
+      LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>&       F_x,
+      LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>&       F_X
   );
 
   /*!
@@ -510,9 +531,11 @@ protected:
     \param dphidJ         (i) derivative of porosity w.r.t. jacobian determinant
     \param defgrd_IT_vec  (i) inverse transposed deformation gradient in vector notation
     \param F_x            (i) derivative of deformation gradient w.r.t. current coordinates xyz
+    \param gradp          (i) spatial gradient of fluid pressure
     \param eporositynp    (i) nodal porosities at n+1
     \param gradJ          (o) spatial gradient of jacobian determinant
     \param grad_porosity  (o) spatial gradient of porosity
+    \param refgrad_porosity  (o) reference gradient of porosity
    */
   void ComputeGradients(
       const double&                                      J,
@@ -535,7 +558,7 @@ protected:
     \param gradJ          (i) spatial gradient of fluid pressure
     \param eporositynp    (i) nodal porosities at n+1
     \param grad_porosity  (o) spatial gradient of porosity
-    \param refgrad_porosity  (o) refernce gradient of porosity
+    \param refgrad_porosity  (o) reference gradient of porosity
    */
   virtual void ComputePorosityGradient(
       const double&                                      dphidp,
@@ -871,6 +894,8 @@ protected:
     \param grad_porosity      (i) porosity gradient at gauss point
     \param dgradphi_dus       (i) derivative of porosity gradient w.r.t. structural displacements at gauss point
     \param dphi_dus           (i) derivative of porosity w.r.t. structural displacements at gauss point
+    \param refporositydot     (i) time derivative of reference porosity
+    \param lin_resM_Dus       (i) linearization of residual of momentum equation w.r.t. structureal dofs
     \param ecoupl_u           (o) coupling element matrix of momentum equation
    */
   void FillMatrixMomentumOD(
@@ -896,6 +921,8 @@ protected:
     \param dgradphi_dus       (i) derivative of porosity gradient w.r.t. structural displacements at gauss point
     \param dphi_dus           (i) derivative of porosity w.r.t. structural displacements at gauss point
     \param dJ_dus             (i) derivative of jacobian w.r.t. structural displacements at gauss point
+    \param egridv             (i) nodal grid velocities
+    \param lin_resM_Dus       (i) linearization of residual of momentum equation w.r.t. structureal dofs
     \param ecoupl_u           (o) coupling element matrix of continuity equation
    */
   virtual void FillMatrixContiOD(
@@ -1075,9 +1102,6 @@ protected:
 
   //! linearization of stabilisation parameters w.r.t. porosity -> it is a (3,1) vector for 2D and 3D
   LINALG::Matrix<3,1> dtaudphi_;
-
-  //! corresponding solid element
-  //DRT::ELEMENTS::So_Poro_Interface* so_interface_;
 
   //! corresponding poro structure material
   Teuchos::RCP< MAT::StructPoro > structmat_;

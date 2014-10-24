@@ -141,7 +141,7 @@ namespace POROELAST
 
       //@}
 
-  }; // Monolithic
+  }; // MonolithicFluidSplit
 
 } // namespace POROELAST
 

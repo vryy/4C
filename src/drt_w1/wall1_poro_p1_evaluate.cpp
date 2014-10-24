@@ -26,6 +26,7 @@
 #include "../drt_fem_general/drt_utils_gder2.H"
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 07/13|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::ComputePorosityAndLinearization
@@ -50,6 +51,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::ComputePorosityAndLinearization
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 07/13|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::ComputePorosityAndLinearizationOD
@@ -375,6 +377,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::MyEvaluate(
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 07/13|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::InitElement()
@@ -385,6 +388,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::InitElement()
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 07/13|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::nlnstiff_poroelast(
@@ -495,7 +499,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::nlnstiff_poroelast(
 }  // nlnstiff_poroelast()
 
 /*----------------------------------------------------------------------*
- |  evaluate only the poroelasticity fraction for the element (protected) |
+ |  evaluate only the poroelasticity fraction for the element (protected) vuong 07/13 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
@@ -803,7 +807,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::coupling_poroelast(
 }  // coupling_poroelast()
 
 /*----------------------------------------------------------------------*
- |  evaluate only the poroelasticity fraction for the element (protected) |
+ |  evaluate only the poroelasticity fraction for the element (protected) vuong 07/13|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(
@@ -1042,6 +1046,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 07/13|
  *----------------------------------------------------------------------*/
 template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad4>;
 template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad9>;

@@ -2,7 +2,7 @@
 /*!
  \file fluid_ele_poro.cpp
 
- \brief
+ \brief Fluid element for poroelasticity problems
 
  <pre>
    Maintainer: Anh-Tu Vuong
@@ -24,6 +24,7 @@
 DRT::ELEMENTS::FluidPoroEleType DRT::ELEMENTS::FluidPoroEleType::instance_;
 
 /*----------------------------------------------------------------------*
+ *   create element (public)                                 vuong 06/13|
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::FluidPoroEleType::Create( const std::vector<char> & data )
 {
@@ -33,6 +34,7 @@ DRT::ParObject* DRT::ELEMENTS::FluidPoroEleType::Create( const std::vector<char>
 }
 
 /*----------------------------------------------------------------------*
+ *   create element (public)                                 vuong 06/13|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroEleType::Create(const std::string  eletype,
                                                              const std::string  eledistype,
@@ -47,6 +49,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroEleType::Create(const std::st
 }
 
 /*----------------------------------------------------------------------*
+ *   create element (public)                                 vuong 06/13|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroEleType::Create( const int id, const int owner )
 {
@@ -54,6 +57,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroEleType::Create( const int id
 }
 
 /*----------------------------------------------------------------------*
+ *   Setup Element Definition                               vuong 06/13|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidPoroEleType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
@@ -90,7 +94,7 @@ void DRT::ELEMENTS::FluidPoroEleType::SetupElementDefinition( std::map<std::stri
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                                       |
+ |  ctor (public)                                            vuong 06/13 |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidPoro::FluidPoro(int id, int owner) :
@@ -100,7 +104,7 @@ Fluid(id,owner)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                                  |
+ |  copy-ctor (public)                                     vuong 06/13   |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidPoro::FluidPoro(const DRT::ELEMENTS::FluidPoro& old) :
 Fluid(old)
@@ -110,7 +114,7 @@ Fluid(old)
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Fluid and return pointer to it (public) |
- |                                                                     |
+ |                                                     vuong 06/13    |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::FluidPoro::Clone() const
 {
@@ -120,7 +124,7 @@ DRT::Element* DRT::ELEMENTS::FluidPoro::Clone() const
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                                      |
+ |                                                         vuong 06/13  |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidPoro::Pack(DRT::PackBuffer& data) const
 {
@@ -140,7 +144,7 @@ void DRT::ELEMENTS::FluidPoro::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                                      |
+ |                                                         vuong 06/13   |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
 {
@@ -161,7 +165,7 @@ void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  get vector of lines              (public)                           |
+ |  get vector of lines              (public)           vuong 06/13     |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidPoro::Lines()
 {
@@ -193,7 +197,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidPoro::Lines()
 
 
 /*----------------------------------------------------------------------*
- |  get vector of surfaces (public)                                     |
+ |  get vector of surfaces (public)                       vuong 06/13    |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidPoro::Surfaces()
 {
@@ -223,7 +227,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidPoro::Surfaces()
 
 
 /*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                            |
+ |  get vector of volumes (length 1) (public)           vuong 06/13      |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidPoro::Volumes()
 {
@@ -241,7 +245,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidPoro::Volumes()
 }
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                                         |
+ |  print this element (public)                         vuong 06/13    |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidPoro::Print(std::ostream& os) const
 {

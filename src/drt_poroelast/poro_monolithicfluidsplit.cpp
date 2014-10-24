@@ -32,12 +32,10 @@
 
 #define FLUIDSPLITAMG
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 01/12  |
+ *----------------------------------------------------------------------*/
 POROELAST::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
                                                       const Teuchos::ParameterList& timeparams)
   : MonolithicSplit(comm,timeparams)
@@ -92,8 +90,9 @@ void POROELAST::MonolithicFluidSplit::SetupSystem()
   BuildCombinedDBCMap();
 } // SetupSystem()
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 01/12  |
+ *----------------------------------------------------------------------*/
 void POROELAST::MonolithicFluidSplit::SetupRHS( bool firstcall)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicFluidSplit::SetupRHS");
@@ -194,8 +193,9 @@ void POROELAST::MonolithicFluidSplit::SetupRHS( bool firstcall)
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 01/12  |
+ *----------------------------------------------------------------------*/
 void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicFluidSplit::SetupSystemMatrix");
@@ -357,8 +357,9 @@ void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   cggcur_ = Teuchos::rcp(new LINALG::SparseMatrix(k_fs->Matrix(1,1)));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 01/12  |
+ *----------------------------------------------------------------------*/
 void POROELAST::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
                                                 Teuchos::RCP<const Epetra_Vector> sv,
                                                 Teuchos::RCP<const Epetra_Vector> fv,
@@ -470,7 +471,7 @@ void POROELAST::MonolithicFluidSplit::ExtractFieldVectors(
 }
 
 /*----------------------------------------------------------------------*/
-/* Recover the Lagrange multiplier at the interface   mayr.mt (03/2012) */
+/* Recover the Lagrange multiplier at the interface    vuong 01/12      */
 /*----------------------------------------------------------------------*/
 void POROELAST::MonolithicFluidSplit::RecoverLagrangeMultiplier()
 {

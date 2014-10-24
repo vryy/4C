@@ -9,14 +9,18 @@
  </pre>
  *-----------------------------------------------------------------------*/
 
-#ifndef DARCYFLOW_H_
-#define DARCYFLOW_H_
+#ifndef FLUIDPORO_H_
+#define FLUIDPORO_H_
 
-
+/*---------------------------------------------------------------------*
+ | headers                                                              |
+ *---------------------------------------------------------------------*/
 #include "material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
+/*---------------------------------------------------------------------*
+ *---------------------------------------------------------------------*/
 namespace MAT
 {
   namespace PAR
@@ -74,7 +78,7 @@ namespace MAT
         double permeabilitycorrectionfactor_;
         /// initial porosity
         double initialporosity_;
-        
+
         /// create material instance of matching type with my parameters
         virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
@@ -104,7 +108,7 @@ namespace MAT
   };
 
   /*----------------------------------------------------------------------*/
-  /// Wrapper for Darcy flow material
+  /// Wrapper for poro fluid flow material
   ///
   /// This object exists (several times) at every element
   class FluidPoro: public Material
@@ -227,6 +231,7 @@ namespace MAT
         return params_;
       }
 
+      //flag indicating a varying permeability
       bool VaryingPermeablity() const {return params_->varyingpermeability_;}
 
     private:

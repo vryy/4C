@@ -1,6 +1,8 @@
 /*!-----------------------------------------------------------------------*
  \file structporo.cpp
 
+ \brief wrapper for structure material of porous media
+
  <pre>
    Maintainer: Anh-Tu Vuong
                vuong@lnm.mw.tum.de
@@ -19,8 +21,9 @@
 
 #include "../drt_lib/drt_utils_factory.H"  // for function Factory in Unpack
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
   Parameter(matdata),
   matid_(matdata->GetInt("MATID")),
@@ -30,15 +33,17 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::Material> MAT::PAR::StructPoro::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::StructPoro(this));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 MAT::StructPoroType MAT::StructPoroType::instance_;
 
 DRT::ParObject* MAT::StructPoroType::Create(const std::vector<char> & data)
@@ -48,8 +53,9 @@ DRT::ParObject* MAT::StructPoroType::Create(const std::vector<char> & data)
   return struct_poro;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 MAT::StructPoro::StructPoro() :
   params_(NULL),
   mat_(Teuchos::null),
@@ -59,8 +65,9 @@ MAT::StructPoro::StructPoro() :
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params) :
   params_(params),
   porosity_(Teuchos::null),
@@ -72,7 +79,8 @@ MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params) :
 }
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::PoroSetup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   porosity_ = Teuchos::rcp(new std::vector< double > (numgp,params_->initporosity_));
@@ -81,8 +89,9 @@ void MAT::StructPoro::PoroSetup(int numgp, DRT::INPUT::LineDefinition* linedef)
   isinitialized_=true;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
 {
   if(not isinitialized_)
@@ -126,8 +135,9 @@ void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
     mat_->Pack(data);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
@@ -193,8 +203,9 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
   isinitialized_=true;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::ComputePorosity( const double& refporosity,
                                        const double& press,
                                        const double& J,
@@ -287,8 +298,9 @@ void MAT::StructPoro::ComputePorosity( const double& refporosity,
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::ComputePorosity( Teuchos::ParameterList& params,
                                        double press,
                                        double J,
@@ -318,8 +330,12 @@ void MAT::StructPoro::ComputePorosity( Teuchos::ParameterList& params,
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::ComputePorosity( Teuchos::ParameterList& params,
                                        double press,
                                        double J,
@@ -343,8 +359,12 @@ void MAT::StructPoro::ComputePorosity( Teuchos::ParameterList& params,
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::ComputeSurfPorosity( Teuchos::ParameterList& params,
                                            double     press,
                                            double     J,
@@ -370,16 +390,23 @@ void MAT::StructPoro::ComputeSurfPorosity( Teuchos::ParameterList& params,
                   dphi_dpp,
                   save);
 
-  if(gp==0)  //it's a new iteration, so old values are not needed any more
-   ( (*surfporosity_)[surfnum] ).clear();
+  if(save)
+  {
+    if(gp==0)  //it's a new iteration, so old values are not needed any more
+     ( (*surfporosity_)[surfnum] ).clear();
 
-  ( (*surfporosity_)[surfnum] ).push_back(porosity);
+    ( (*surfporosity_)[surfnum] ).push_back(porosity);
+  }
 
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::ComputeSurfPorosity( Teuchos::ParameterList& params,
                                            double     press,
                                            double     J,
@@ -405,8 +432,10 @@ void MAT::StructPoro::ComputeSurfPorosity( Teuchos::ParameterList& params,
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
+
 double MAT::StructPoro::PorosityAv() const
 {
   double porosityav = 0.0;
@@ -422,7 +451,8 @@ double MAT::StructPoro::PorosityAv() const
 }
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::CouplStress(  const LINALG::Matrix<3,3>& defgrd,
                                     const LINALG::Matrix<3,1>& fluidvel,
                                     const double& press,
@@ -450,7 +480,8 @@ void MAT::StructPoro::CouplStress(  const LINALG::Matrix<3,3>& defgrd,
 }
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::CouplStress(  const LINALG::Matrix<2,2>& defgrd,
                                     const LINALG::Matrix<2,1>& fluidvel,
                                     const double& press,
@@ -478,7 +509,8 @@ void MAT::StructPoro::CouplStress(  const LINALG::Matrix<2,2>& defgrd,
 }
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
                                               double     press,
                                               double     J,
@@ -505,7 +537,8 @@ void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
 }
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
                                               double     press,
                                               double     J,
@@ -535,7 +568,8 @@ void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
 }
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 void MAT::StructPoro::VisNames(std::map<std::string,int>& names)
 {
   mat_->VisNames(names);
@@ -544,7 +578,8 @@ void MAT::StructPoro::VisNames(std::map<std::string,int>& names)
 }
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
 bool MAT::StructPoro::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
   if (mat_->VisData(name,data,numgp))

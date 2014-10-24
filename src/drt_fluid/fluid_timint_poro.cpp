@@ -164,7 +164,7 @@ void FLD::TimIntPoro::SetInitialPorosityField(
 
       // check whether there are invalid values of porosity
       if (initialval < EPS15) dserror("zero or negative initial porosity");
-      if (initialval >= 1) dserror("initial porosity greater or equal than 1");
+      if (initialval > 1.0) dserror("initial porosity greater than 1");
       for (int k=0;k< numdofs;++k)
       {
         const int dofgid = nodedofset[k];

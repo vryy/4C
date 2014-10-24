@@ -155,8 +155,9 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::Print(std::ostream& os) const
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::UniqueParObjectId() const
 {
@@ -171,8 +172,9 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::UniqueParObjectId() const
   return -1;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ElementType & DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::ElementType() const
 {

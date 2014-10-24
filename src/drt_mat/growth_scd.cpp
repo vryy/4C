@@ -27,7 +27,7 @@ See also Bachelor thesis Jasper Rieser (2013)
 
 
 /*----------------------------------------------------------------------*
- |                                                                      |
+ |                                                           vuong 06/11  |
  *----------------------------------------------------------------------*/
 MAT::PAR::GrowthScd::GrowthScd(
   Teuchos::RCP<MAT::PAR::Material> matdata
@@ -56,7 +56,7 @@ DRT::ParObject* MAT::GrowthScdType::Create( const std::vector<char> & data )
 }
 
 /*----------------------------------------------------------------------*
- |  Constructor                                   (public)         02/10|
+ |  Constructor                                   (public)  vuong 02/10|
  *----------------------------------------------------------------------*/
 MAT::GrowthScd::GrowthScd()
   : Growth(),
@@ -66,7 +66,7 @@ MAT::GrowthScd::GrowthScd()
 
 
 /*----------------------------------------------------------------------*
- |  Copy-Constructor                             (public)          02/10|
+ |  Copy-Constructor                             (public)    vuong  02/10|
  *----------------------------------------------------------------------*/
 MAT::GrowthScd::GrowthScd(MAT::PAR::GrowthScd* params)
   : Growth(params),
@@ -76,7 +76,7 @@ MAT::GrowthScd::GrowthScd(MAT::PAR::GrowthScd* params)
 
 
 /*----------------------------------------------------------------------*
- |  Pack                                          (public)         02/10|
+ |  Pack                                          (public)    vuong  02/10|
  *----------------------------------------------------------------------*/
 void MAT::GrowthScd::Pack(DRT::PackBuffer& data) const
 {
@@ -112,7 +112,7 @@ void MAT::GrowthScd::Pack(DRT::PackBuffer& data) const
 
 
 /*----------------------------------------------------------------------*
- |  Unpack                                        (public)         02/10|
+ |  Unpack                                        (public)   vuong 02/10|
  *----------------------------------------------------------------------*/
 void MAT::GrowthScd::Unpack(const std::vector<char>& data)
 {
@@ -172,7 +172,7 @@ void MAT::GrowthScd::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  Setup                                         (public)         02/10|
+ |  Setup                                         (public) vuong  02/10|
  *----------------------------------------------------------------------*/
 void MAT::GrowthScd::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
@@ -185,7 +185,7 @@ void MAT::GrowthScd::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 }
 
 /*----------------------------------------------------------------------*
- |  Update internal growth variables              (public)         02/10|
+ |  Update internal growth variables              (public)  vuong  02/10|
  *----------------------------------------------------------------------*/
 void MAT::GrowthScd::Update()
 {
@@ -202,7 +202,7 @@ void MAT::GrowthScd::Update()
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Material                             (public)         02/10|
+ |  Evaluate Material                             (public)  vuong   02/10|
  *----------------------------------------------------------------------*
  The deformation gradient is decomposed into an elastic and growth part:
      F = Felastic * F_g
@@ -255,7 +255,7 @@ void MAT::GrowthScd::Evaluate
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate growth function                           (protected)        02/10|
+ |  Evaluate growth function                        (protected)  vuong   02/10|
  *----------------------------------------------------------------------*/
 void MAT::GrowthScd::EvaluateGrowthFunction
 (
@@ -288,7 +288,7 @@ void MAT::GrowthScd::EvaluateGrowthFunction
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate derivative of growth function       (protected)        02/10|
+ |  Evaluate derivative of growth function       (protected)  vuong 02/10|
  *----------------------------------------------------------------------*/
 void MAT::GrowthScd::EvaluateGrowthFunctionDerivTheta
 (
@@ -319,7 +319,7 @@ void MAT::GrowthScd::EvaluateGrowthFunctionDerivTheta
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate derivative of growth function       (protected)        02/10|
+ |  Evaluate derivative of growth function       (protected) vuong 02/10|
  *----------------------------------------------------------------------*/
 void MAT::GrowthScd::EvaluateGrowthFunctionDerivC
 (

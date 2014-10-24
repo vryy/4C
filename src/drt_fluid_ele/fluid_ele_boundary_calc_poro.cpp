@@ -38,12 +38,12 @@ Maintainers: Anh-Tu Vuong and Andreas Rauch
 #include "../drt_lib/drt_discret.H"
 
 //for dual shape functions
-//#include "../drt_inpar/inpar_volmortar.H"
 #include "../drt_volmortar/volmortar_shape.H"
 
 #include "fluid_ele_boundary_calc_poro.H"
 
 /*----------------------------------------------------------------------*
+ * create/delete instance (public)                            vuong 06/11||
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype> * DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Instance( bool create )
@@ -66,6 +66,7 @@ DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype> * DRT::ELEMENTS::FluidEleBounda
 }
 
 /*----------------------------------------------------------------------*
+ * destruction call (public)                                 vuong 06/11||
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Done()
@@ -77,6 +78,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
+ * constructor (protected)                                   vuong 06/11||
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FluidEleBoundaryCalcPoro()
@@ -87,6 +89,7 @@ DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FluidEleBoundaryCalcPoro()
 }
 
 /*----------------------------------------------------------------------*
+ * evaluate boundary action (public)                          vuong 06/11||
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::ELEMENTS::FluidBoundary*  ele1,
@@ -113,8 +116,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::ELEME
         lm,
         elemat1,
         elemat2,
-        elevec1,
-        elevec2);
+        elevec1);
     break;
   }
   case FLD::no_penetrationIDs:
@@ -212,6 +214,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::ELEME
 }
 
 /*----------------------------------------------------------------------*
+ * evaluate FPSI coupling condition (protected)               rauch 10/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
@@ -272,6 +275,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 }
 
 /*----------------------------------------------------------------------*
+ * evaluate FPSI coupling condition (protected)              rauch 10/14|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType pdistype>
@@ -1581,6 +1585,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 } // FPSI Coupling Terms
 
 /*----------------------------------------------------------------------*
+ * compute flow rate over boundary (protected)              vuong 06/11||
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
@@ -1706,6 +1711,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
 }
 
 /*----------------------------------------------------------------------*
+ * compute flow rate over boundary (protected)              vuong 06/11||
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType pdistype>
@@ -1914,7 +1920,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
                         gpid,
                         porosity_gp,
                         dphi_dp,
-                        dphi_dJ );
+                        dphi_dJ,
+                        false);
 
     // flowrate = uint o normal
     const double flowrate = ( my::velint_.Dot(my::unitnormal_)//- gridvelint.Dot(my::unitnormal_)
@@ -1964,6 +1971,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
 }//DRT::ELEMENTS::FluidSurface::ComputeFlowRate
 
 /*----------------------------------------------------------------------*
+ * evaluate nodal no penetration condition (protected)       vuong 06/11||
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
@@ -1973,8 +1981,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
                                                  std::vector<int>&                lm,
                                                  Epetra_SerialDenseMatrix&        elemat1,
                                                  Epetra_SerialDenseMatrix&        elemat2,
-                                                 Epetra_SerialDenseVector&        elevec1,
-                                                 Epetra_SerialDenseVector&        elevec2)
+                                                 Epetra_SerialDenseVector&        elevec1)
 {
   // This function is only implemented for 3D
   if(my::bdrynsd_!=2 and my::bdrynsd_!=1)
@@ -2183,6 +2190,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
 }
 
 /*----------------------------------------------------------------------*
+ * find dof IDs with no penetration condition  (protected)    vuong 06/11||
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
@@ -2273,8 +2281,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*
+ * evaluate no penetration condition (weak substitution)  (protected) vuong 06/11||
+ *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
                                                  DRT::ELEMENTS::FluidBoundary*    ele,
@@ -2423,8 +2432,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
   }
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*
+ * evaluate no penetration condition (weak substitution)  (protected) vuong 06/11||
+ *------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
@@ -2668,7 +2678,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
                         gpid,
                         porosity_gp,
                         dphi_dp,
-                        dphi_dJ );
+                        dphi_dJ,
+                        false);
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal derivatives
@@ -2794,6 +2805,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
 }
 
 /*----------------------------------------------------------------------*
+ * evaluate boundary pressure                     (protected) vuong 06/11||
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
@@ -2973,6 +2985,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
 }
 
 /*----------------------------------------------------------------------*
+ *  compute porosity at gauss point               (protected) vuong 06/11||
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputePorosityAtGP(
@@ -2985,7 +2998,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputePorosityAtGP(
                                     int gp,
                                     double& porosity,
                                     double& dphi_dp,
-                                    double& dphi_dJ )
+                                    double& dphi_dJ,
+                                    bool save)
 {
   Teuchos::RCP< MAT::StructPoro > structmat =
       Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele->ParentElement()->Material(1));
@@ -3000,13 +3014,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputePorosityAtGP(
                                  NULL,                  //dphi_dJdp not needed
                                  NULL,                  //dphi_dJJ not needed
                                  NULL,                   //dphi_dpp not needed
-                                 true
+                                 save
                                  );
 
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------*
+ * evaluate no penetration condition (lagrange multiplier)    (protected) vuong 06/11||
+ *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
                                                  DRT::ELEMENTS::FluidBoundary*    ele,
@@ -3166,8 +3181,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*
+ * evaluate no penetration condition off diagonal (lagrange multiplier)    (protected) vuong 06/11||
+ *------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
                                                  DRT::ELEMENTS::FluidBoundary*    ele,
@@ -3555,6 +3571,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
 
 /*----------------------------------------------------------------------*
+ * create/delete instance (public)                            vuong 06/11||
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype> * DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Instance( bool create )
@@ -3577,6 +3594,7 @@ DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype> * DRT::ELEMENTS::FluidEleBoun
 }
 
 /*----------------------------------------------------------------------*
+ * called upon destruction (public)                            vuong 06/11||
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Done()
@@ -3587,6 +3605,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::Done()
 }
 
 /*----------------------------------------------------------------------*
+ * get porosity at nodes (protected)                        vuong 06/11||
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::ComputeNodalPorosity(
@@ -3601,6 +3620,7 @@ bool DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::ComputeNodalPorosity(
 }
 
 /*----------------------------------------------------------------------*
+ * compute porosity at gauss point (protected)                vuong 06/11||
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::ComputePorosityAtGP(
@@ -3613,7 +3633,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::ComputePorosityAtGP(
                                     int gp,
                                     double& porosity,
                                     double& dphi_dp,
-                                    double& dphi_dJ )
+                                    double& dphi_dJ,
+                                    bool save)
 {
   porosity = eporosity.Dot(my::funct_);
   dphi_dp=0.0;

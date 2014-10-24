@@ -14,7 +14,9 @@
 #ifndef STRUCTPORO_H_
 #define STRUCTPORO_H_
 
-
+/*---------------------------------------------------------------------*
+ | headers                                                              |
+ *---------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
@@ -94,6 +96,16 @@ namespace MAT
   /// Wrapper for StructPoro material
   ///
   /// This object exists (several times) at every element
+
+  /*!
+    The idea is to use any material formulation within the poro framework.
+    Therefore, a poro material wraps the 'real' material and holds it as
+    a private member. For most evaluation routines it will just call this material.
+    In addition it provides poro specific functions, as giving the constitutive law
+    for the porosity.
+
+   \author vuong 10/14
+   */
   class StructPoro: public So3Material
   {
     public:

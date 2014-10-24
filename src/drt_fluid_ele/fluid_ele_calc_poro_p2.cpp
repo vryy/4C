@@ -2,7 +2,7 @@
 /*!
  \file fluid_ele_calc_poro_p2.cpp
 
- \brief
+ \brief Internal implementation of poro Fluid element (p2 poro fluid)
 
  <pre>
    Maintainer: Anh-Tu Vuong
@@ -28,6 +28,7 @@
 
 
 /*----------------------------------------------------------------------*
+ *  create/delete instance (public)                            vuong 06/11|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcPoroP2<distype>* DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Instance( bool create )
@@ -52,6 +53,7 @@ DRT::ELEMENTS::FluidEleCalcPoroP2<distype>* DRT::ELEMENTS::FluidEleCalcPoroP2<di
 
 
 /*----------------------------------------------------------------------*
+ *  called upon destruction (public)                            vuong 06/11|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Done()
@@ -63,6 +65,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
+ *  constructor (protected)                                   vuong 06/11|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::FluidEleCalcPoroP2()
@@ -74,7 +77,7 @@ DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::FluidEleCalcPoroP2()
 }
 
 /*----------------------------------------------------------------------*
- * evaluation of coupling terms for porous flow (2)
+ * evaluation of coupling terms for porous flow (2)       vuong 06/11|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
@@ -224,9 +227,9 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
 
 }
 
-/*----------------------------------------------------------------------*
- * evaluation of coupling terms for porous flow (2)
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ * evaluation of coupling terms for porous flow off diagonal (2)  vuong 06/11|
+ *-------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
     DRT::ELEMENTS::Fluid*                 ele,
@@ -403,6 +406,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
 }
 
 /*----------------------------------------------------------------------*
+ *  Compute Porosity                                          vuong 06/11|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::ComputePorosity(
@@ -429,6 +433,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::ComputePorosity(
 }
 
 /*----------------------------------------------------------------------*
+ * Compute Porosity gradient                                  vuong 06/11|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::ComputePorosityGradient(
@@ -450,6 +455,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::ComputePorosityGradient(
 
 
 /*----------------------------------------------------------------------*
+ *  PSPG contributions                                      vuong 06/11|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::PSPG(
@@ -512,6 +518,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::PSPG(
 }
 
 /*----------------------------------------------------------------------*
+ * reactive stabilization                                      vuong 06/11|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::ReacStab(
@@ -539,7 +546,10 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::ReacStab(
 
   double reac_tau;
   if (my::fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
+  {
+    dserror("PSPG for poro p2 not checked");
     reac_tau = 0.0;//my::fldpara_->ViscReaStabFac()*my::reacoeff_*my::tau_(1);
+  }
   else
   {
     dserror("Is this factor correct? Check for bugs!");
@@ -575,6 +585,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::ReacStab(
 }
 
 /*----------------------------------------------------------------------*
+ * Evaluate Pressure Equation                                 vuong 06/11|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluatePressureEquation(
@@ -624,6 +635,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluatePressureEquation(
 }
 
 /*----------------------------------------------------------------------*
+ * Evaluate Pressure Equation off diagonal                   vuong 06/11|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::FillMatrixContiOD(
@@ -668,7 +680,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::FillMatrixContiOD(
 }
 
 /*----------------------------------------------------------------------*
- * evaluation of coupling terms for porous flow (3)
+ * evaluation of coupling terms for porous flow with scatra(3)    vuong 06/11|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateODPoroScatra(

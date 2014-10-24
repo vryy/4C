@@ -37,8 +37,9 @@
  |                                                                      |
  *----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 11/12  |
+ *----------------------------------------------------------------------*/
 POROELAST::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
                                                               const Teuchos::ParameterList& timeparams)
   : MonolithicSplit(comm, timeparams)
@@ -59,7 +60,7 @@ POROELAST::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm&
 }
 
 /*----------------------------------------------------------------------*
- | setup system (called in porolast.cpp)                                 |
+ | setup system (called in porolast.cpp)                 vuong 11/12    |
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicStructureSplit::SetupSystem()
 {
@@ -89,8 +90,9 @@ void POROELAST::MonolithicStructureSplit::SetupSystem()
   BuildCombinedDBCMap();
 } // SetupSystem()
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 11/12  |
+ *----------------------------------------------------------------------*/
 void POROELAST::MonolithicStructureSplit::SetupRHS( bool firstcall)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicStructureSplit::SetupRHS");
@@ -186,8 +188,9 @@ void POROELAST::MonolithicStructureSplit::SetupRHS( bool firstcall)
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 11/12  |
+ *----------------------------------------------------------------------*/
 void POROELAST::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicStructureSplit::SetupSystemMatrix");
@@ -340,8 +343,9 @@ void POROELAST::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   cggcur_ = Teuchos::rcp(new LINALG::SparseMatrix(k_sf->Matrix(1,1)));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 11/12  |
+ *----------------------------------------------------------------------*/
 void POROELAST::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
                                                 Teuchos::RCP<const Epetra_Vector> sv,
                                                 Teuchos::RCP<const Epetra_Vector> fv,
@@ -445,7 +449,7 @@ void POROELAST::MonolithicStructureSplit::ExtractFieldVectors(
 }
 
 /*----------------------------------------------------------------------*/
-/* Recover the Lagrange multiplier at the interface   mayr.mt (03/2012) */
+/* Recover the Lagrange multiplier at the interface   vuong 01/12 */
 /*----------------------------------------------------------------------*/
 void POROELAST::MonolithicStructureSplit::RecoverLagrangeMultiplier()
 {

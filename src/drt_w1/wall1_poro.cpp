@@ -28,6 +28,7 @@
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner) :
@@ -52,7 +53,7 @@ myknots_(numdim_)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                        popp 07/10|
+ |  copy-ctor (public)                                        vuong 12/12|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
@@ -75,6 +76,7 @@ myknots_(old.myknots_)
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::Element* DRT::ELEMENTS::Wall1_Poro<distype>::Clone() const
@@ -84,6 +86,7 @@ DRT::Element* DRT::ELEMENTS::Wall1_Poro<distype>::Clone() const
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(DRT::PackBuffer& data) const
@@ -122,6 +125,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(DRT::PackBuffer& data) const
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
@@ -172,6 +176,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1_Poro<distype>::Lines()
@@ -188,6 +193,7 @@ std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1_Poro<distype>::Li
 
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1_Poro<distype>::Surfaces()
@@ -198,6 +204,7 @@ std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1_Poro<distype>::Su
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::Print(std::ostream& os) const
@@ -209,8 +216,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Print(std::ostream& os) const
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
+ *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(const std::string& eletype,
                                              const std::string& eledistype,
@@ -229,6 +237,7 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(const std::string& eletype,
 }
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials( )
@@ -261,7 +270,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials( )
 }
 
 /*----------------------------------------------------------------------*
- |  Return names of visualization data (public)               |
+ |  Return names of visualization data (public)           vuong 12/12    |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::VisNames(std::map<std::string,int>& names)
@@ -273,7 +282,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::VisNames(std::map<std::string,int>& nam
 }
 
 /*----------------------------------------------------------------------*
- |  Return visualization data (public)                         |
+ |  Return visualization data (public)                     vuong 12/12    |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::vector<double>& data)
@@ -288,6 +297,7 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::v
 
 
 /*----------------------------------------------------------------------*
+ *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>;
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>;

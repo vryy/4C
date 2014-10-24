@@ -25,8 +25,9 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Part_1WC::DoPoroStep()
 {
   if (Comm().MyPID() == 0)
@@ -44,8 +45,9 @@ void POROELAST::PORO_SCATRA_Part_1WC::DoPoroStep()
   PoroField()-> DoTimeStep();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Part_1WC::DoScatraStep()
 {
   if (Comm().MyPID() == 0)
@@ -94,8 +96,9 @@ void POROELAST::PORO_SCATRA_Part_1WC::PrepareTimeStep()
   //PrepareTimeStep of single fields is called in DoPoroStep and DoScatraStep
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
+ *----------------------------------------------------------------------*/
 POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::PORO_SCATRA_Part_1WC_PoroToScatra(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
   : PORO_SCATRA_Part_1WC(comm, timeparams)
@@ -109,8 +112,9 @@ POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::PORO_SCATRA_Part_1WC_PoroToScatra(
     dserror("unexpected dof sets in scatra field");
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::Timeloop()
 {
   //InitialCalculations();
@@ -125,8 +129,9 @@ void POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::Timeloop()
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::ReadRestart(int restart)
 {
   // read restart information, set vectors and variables
@@ -146,8 +151,9 @@ void POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::ReadRestart(int restart)
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
+ *----------------------------------------------------------------------*/
 POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::PORO_SCATRA_Part_1WC_ScatraToPoro(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
   : PORO_SCATRA_Part_1WC(comm, timeparams)
@@ -161,8 +167,9 @@ POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::PORO_SCATRA_Part_1WC_ScatraToPoro(
     dserror("unexpected dof sets in structure field");
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::Timeloop()
 {
   //InitialCalculations();
@@ -177,8 +184,9 @@ void POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::Timeloop()
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
+ *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::ReadRestart(int restart)
 {
   // read restart information, set vectors and variables

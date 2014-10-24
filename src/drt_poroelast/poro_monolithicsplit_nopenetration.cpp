@@ -42,8 +42,9 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 09/14  |
+ *----------------------------------------------------------------------*/
 POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epetra_Comm& comm,
                                                               const Teuchos::ParameterList& timeparams)
   : MonolithicSplit(comm, timeparams)
@@ -63,7 +64,7 @@ POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epet
 }
 
 /*----------------------------------------------------------------------*
- | setup system (called in porolast.cpp)                                 |
+ | setup system (called in porolast.cpp)               vuong 09/14     |
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
 {
@@ -114,8 +115,9 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
   BuildCombinedDBCMap();
 } // SetupSystem()
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 09/14  |
+ *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::SetupRHS( bool firstcall)
 {
   // only Lagrange multipliers are condensed -> use unchanged maps from single fields
@@ -262,8 +264,9 @@ void POROELAST::MonolithicSplitNoPenetration::RecoverLagrangeMultiplier_iter(Teu
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |                                                         vuong 09/14  |
+ *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix");
@@ -371,7 +374,7 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix(LINALG::BlockSpa
 }
 
 /*----------------------------------------------------------------------*
- |    evaluate fluid-structural system matrix at state                |
+ |    evaluate fluid-structural system matrix at state      vuong 09/14   |
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
     Teuchos::RCP< LINALG::SparseOperator> k_fs //!< off-diagonal tangent matrix term
@@ -523,7 +526,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate mechanical-fluid system matrix at state                    |
+ |  evaluate mechanical-fluid system matrix at state        vuong 09/14    |
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::ApplyStrCouplMatrix(
     Teuchos::RCP<LINALG::SparseOperator> k_sf //!< off-diagonal tangent matrix term
@@ -537,7 +540,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyStrCouplMatrix(
 }
 
 /*----------------------------------------------------------------------*
- | RecoverLagrangeMultiplier (protected)                                  |
+ | RecoverLagrangeMultiplier (protected)              vuong 09/14        |
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::RecoverLagrangeMultiplier()
 {
@@ -550,6 +553,7 @@ void POROELAST::MonolithicSplitNoPenetration::RecoverLagrangeMultiplier()
 }
 
 /*----------------------------------------------------------------------*
+| RecoverLagrangeMultiplier (protected)              ager 09/14        |
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::Output()
 {
@@ -562,6 +566,7 @@ void POROELAST::MonolithicSplitNoPenetration::Output()
 } // MonolithicSplitNoPenetration::Output()
 
 /*----------------------------------------------------------------------*
+ | RecoverLagrangeMultiplier (protected)              vuong 09/14        |
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::SetupCouplingAndMatrixes()
 {
@@ -601,6 +606,7 @@ void POROELAST::MonolithicSplitNoPenetration::SetupCouplingAndMatrixes()
 
 
 /*----------------------------------------------------------------------*
+ | RecoverLagrangeMultiplier (protected)              vuong 09/14        |
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::PrepareTimeStep()
 {
