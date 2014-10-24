@@ -17,9 +17,9 @@ Maintainer: Sudhakar
 
 #include "../drt_lib/drt_discret.H"
 
-namespace ALE
+namespace ADAPTER
 {
-class Ale;
+class AleCrackWrapper;
 }
 
 namespace DRT
@@ -79,7 +79,7 @@ private:
   Teuchos::RCP<DRT::Discretization> structdis_;
 
   //! Underlying ALE object
-  Teuchos::RCP<ALE::Ale> ale_;
+  Teuchos::RCP<ADAPTER::AleCrackWrapper> ale_;
 
   //! processor id
   int myrank_;

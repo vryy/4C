@@ -18,10 +18,12 @@ Maintainer: Sudhakar
 #include "crackUtils.H"
 
 #include "../linalg/linalg_utils.H"
-#include "../drt_ale/ale_utils_clonestrategy.H"
-#include "../drt_ale/ale.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_fs3i/biofilm_fsi_utils.H"
+
+#include "../drt_ale_new/ale_utils_clonestrategy.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_adapter/ad_ale_crack.H"
 
 
 /*---------------------------------------------------------------------------------------------------*
@@ -34,24 +36,24 @@ DRT::CRACK::aleCrack::aleCrack( Teuchos::RCP<DRT::Discretization> dis )
   aledis = DRT::Problem::Instance()->GetDis("ale");
   if (!aledis->Filled()) aledis->FillComplete();
 
-  DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(structdis_,aledis);
+  DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(structdis_,aledis);
   if( aledis->NumGlobalElements() == 0 )
     dserror( "No elements found in ALE discretization" );
 
-  Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::null;
+  Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::null;
 
   if( DRT::Problem::Instance()->ProblemType() == prb_crack )
   {
-    ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(),
+    ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(),
         DRT::Problem::Instance()->GetDis("ale")));
   }
   else if ( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
   {
-    ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),
+    ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),
         DRT::Problem::Instance()->GetDis("ale")));
   }
 
-  ale_ = ale->AleFieldrcp();
+  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleCrackWrapper>(ale->AleField());
 
   myrank_ = structdis_->Comm().MyPID();
 }
@@ -135,7 +137,7 @@ void DRT::CRACK::aleCrack::modifyConditions( const std::map<int, std::vector<dou
   if( new_ale_bc.size() > 0 )
   {
     std::vector<Teuchos::RCP<Condition> > alldiri;
-    ale_->Discretization()->GetCondition( "Dirichlet", alldiri );
+    ale_->WriteAccessDiscretization()->GetCondition( "Dirichlet", alldiri );
     for( unsigned i=0; i<alldiri.size(); i++ )
     {
       Teuchos::RCP<Condition> cond = alldiri[i];
@@ -144,12 +146,14 @@ void DRT::CRACK::aleCrack::modifyConditions( const std::map<int, std::vector<dou
   }
 
   // Point dirichlet conditions at the crack tips to maintain crack propagation direction
-  DRT::CRACK::UTILS::AddConditions( ale_->Discretization(), ale_bc_nodes );
-  ale_->Discretization()->FillComplete();
+  DRT::CRACK::UTILS::AddConditions( ale_->WriteAccessDiscretization(), ale_bc_nodes );
+  ale_->WriteAccessDiscretization()->FillComplete();
+
 
   // just adding the Conditions alone do not get the work done
   // we need to build the Dirichlet boundary condition maps again for these conditions to be implemented
-  ale_->SetupDBCMapEx( false );
+  ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type = ALENEW::UTILS::MapExtractor::dbc_set_std;
+  ale_->SetupDBCMapEx( dbc_type );
 }
 
 /*---------------------------------------------------------------------------------------------------*
@@ -157,12 +161,14 @@ void DRT::CRACK::aleCrack::modifyConditions( const std::map<int, std::vector<dou
  *---------------------------------------------------------------------------------------------------*/
 void DRT::CRACK::aleCrack::ALE_Solve()
 {
-  ale_->BuildSystemMatrix();
+  ale_->Evaluate();
 
   // No need because we added this part in the condition???
   //ale_->ApplyInterfaceDisplacements( ale_disp_vec );
 
   ale_->Solve();
+
+  ale_->UpdateIter();
 
   Teuchos::RCP<const Epetra_Vector> ale_final = ale_->Dispnp();
 
@@ -179,10 +185,8 @@ void DRT::CRACK::aleCrack::ALE_Solve()
  *---------------------------------------------------------------------------------------------------*/
 void DRT::CRACK::aleCrack::clearALE_discret()
 {
-
-  ale_->Discretization()->ClearDiscret();
-
-  ale_->Discretization()->FillComplete();
+  ale_->WriteAccessDiscretization()->ClearDiscret();
+  ale_->WriteAccessDiscretization()->FillComplete();
 }
 
 /*---------------------------------------------------------------------------------------------------*
@@ -193,7 +197,7 @@ std::set<int> DRT::CRACK::aleCrack::getLineDirichNodes()
   std::set<int> lineDiri;
   std::vector<DRT::Condition*> linecond;
 
-  ale_->Discretization()->GetCondition( "Dirichlet", linecond );
+  ale_->WriteAccessDiscretization()->GetCondition( "Dirichlet", linecond );
 
   if( linecond.size() == 0 )
     dserror("No Dirichlet condition found for this discretization\n");

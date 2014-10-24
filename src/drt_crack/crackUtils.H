@@ -103,6 +103,23 @@ namespace UTILS{
    */
   void getConnectedNodeIdIndex( const Teuchos::RCP<DRT::Element> & surfele, int & tip_id, int & conn1_index, int & conn2_index );
 
+  /*!
+  \brief Get nodal stress or strain values from their Gauss point values
+   */
+  void get_nodal_values_from_gauss_point_val( Teuchos::RCP<DRT::Discretization>& discret,
+                                              Teuchos::RCP<std::vector<char> >& gausspts_val,
+                                              Teuchos::RCP<Epetra_MultiVector>& nodal_val );
+
+  /*!
+  \brief Get displacement at given node
+   */
+  std::vector<double> getDisplacementNode( Teuchos::RCP<DRT::Discretization>& discret, const int node_gid, Teuchos::RCP<Epetra_Vector>& disp );
+
+  /*!
+  \brief Get displacement at given node
+   */
+  std::vector<double> getDisplacementNode( Teuchos::RCP<DRT::Discretization>& discret, const DRT::Node * node, Teuchos::RCP<Epetra_Vector>& disp );
+
 } /* namespace CRACK */
 } /* namespace CRACK */
 } /* namespace DRT */

@@ -18,6 +18,7 @@ Maintainer: Sudhakar
 #define PROPAGATETIP_H_
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_inpar/inpar_crack.H"
 
 namespace DRT {
 namespace CRACK {
@@ -37,6 +38,16 @@ public:
   \brief destructor
    */
   ~PropagateTip(){};
+
+  /*!
+  \brief Set Cauchy stress values at Gauss points
+   */
+  void set_stress_values( Teuchos::RCP<std::vector<char> >& stressdata ){ gausspts_stress_ = stressdata; }
+
+  /*!
+  \brief Set Green-Lagrange strain values at Gauss points
+   */
+  void set_strain_values( Teuchos::RCP<std::vector<char> >& straindata ){ gausspts_strain_ = straindata; }
 
   /*!
   \brief Check whether crack tip propagates, if so find in the mesh which are the new crack tip nodes
@@ -81,7 +92,7 @@ public:
   /*!
   \brief Add given node into the list of boundary nodes
    */
-  void addBoundaryNode( int nodeid ){ boun_nodes_.push_back( nodeid ); }
+  void addBoundaryNode( int nodeid ){ boun_nodes_.insert( nodeid ); }
 
   /*!
   \brief Get segment tip nodes
@@ -95,6 +106,8 @@ private:
    */
   void findStressIntensityFactor();
 
+  //void Compute_J_integral();
+
   /*!
   \brief Construct local coordinate system at crack tip
    */
@@ -103,19 +116,12 @@ private:
   /*!
   \brief Build neighbor information to enable calculation of stress intensity factors using displacement correlation approach
    */
-  void buildNeighborInfoTipNodes( DRT::Node * node1, DRT::Node * node2, DRT::Node * tipnode );
-
-  /*!
-  \brief Get the value of displacements at this node
-   */
-  std::vector<double> getDisplacementNode( const DRT::Node * node, Teuchos::RCP<Epetra_Vector>& disp );
+  void buildNeighborInfoTipNodes( DRT::Node * node1, DRT::Node * node2, DRT::Node * tipnode, int& attach1_id, int& attach2_id );
 
   /*!
   \brief Find a neighboring node that is on the crack surface
    */
-  DRT::Node * findNeighboringCrackNode( DRT::Node * tipnode, bool second, const DRT::Node * first_node );
-
-  bool CheckIfThisCanBeNeighborNode( int & id, bool second, const DRT::Node * first_node );
+  DRT::Node * findNeighboringCrackNode( DRT::Node * tipnode, bool second, const DRT::Node * first_node, int & attach_id );
 
   /*!
   \brief Find a node that is attached to this crack tip node
@@ -193,6 +199,12 @@ private:
   //! underlying structural discretization
   Teuchos::RCP<DRT::Discretization> discret_;
 
+  //! stress at Gauss points
+  Teuchos::RCP<std::vector<char> > gausspts_stress_;
+
+  //! Green-Lagrange strain at Gauss points
+  Teuchos::RCP<std::vector<char> > gausspts_strain_;
+
   //! all the nodes that defines the crack tip
   std::vector<int> tipnodes_;
 
@@ -200,7 +212,7 @@ private:
   std::set<int> oldTipnodes_;
 
   //! all the nodes that are on the boundary of the domain
-  std::vector<int> boun_nodes_;
+  std::set<int> boun_nodes_;
 
   //! all the nodes that are falling on the crack surface, including tip nodes
   std::set<int> cracknodes_;
@@ -275,6 +287,11 @@ private:
 
   //! Is crack propagation conditions met?
   bool isProp_;
+
+  //! crack propagation criterion
+  INPAR::CRACK::propagationCriterion propcrit_;
+
+  //std::vector<double> Jvector_;
 };
 
 } /* namespace CRACK */

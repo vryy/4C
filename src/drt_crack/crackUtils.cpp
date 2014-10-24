@@ -18,6 +18,7 @@ Maintainer: Sudhakar
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_parobject.H"
 
 /*----------------------------------------------------------------------------------------*
  * When a new node is introduced in the discret, DOFs corresponding to the new node are zeros.
@@ -476,4 +477,75 @@ void DRT::CRACK::UTILS::getConnectedNodeIdIndex( const Teuchos::RCP<DRT::Element
     conn2_index = numnode-1;
   else
     conn2_index = spl_index-1;
+}
+
+/*--------------------------------------------------------------------------------------------------------------*
+ * Interpolate values at nodes from values available at gauss points                                    sudhakar 10/14
+ * Used mainly to interpolate stresses and strains
+ *--------------------------------------------------------------------------------------------------------------*/
+void DRT::CRACK::UTILS::get_nodal_values_from_gauss_point_val( Teuchos::RCP<DRT::Discretization>& discret,
+                                                               Teuchos::RCP<std::vector<char> >& gausspts_val,
+                                                               Teuchos::RCP<Epetra_MultiVector>& nodal_val )
+{
+  const Epetra_Map* elemap = discret->ElementRowMap();
+
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > mapdata = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
+  std::vector<char>::size_type position=0;
+
+  for (int i=0;i<elemap->NumMyElements();++i)
+  {
+    Teuchos::RCP<Epetra_SerialDenseMatrix> gpstr = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+    DRT::ParObject::ExtractfromPack(position, *gausspts_val, *gpstr);
+    (*mapdata)[elemap->GID(i)]=gpstr;
+    //std::cout<<"printing gauss point stress\n";//blockkk
+    //gpstr->Print(std::cout);//blockkk
+  }
+
+  const Epetra_Comm& comm = discret->Comm();
+
+  const Epetra_Map& elecolmap = *(discret->ElementColMap());
+  DRT::Exporter ex( *elemap, elecolmap, comm );
+  ex.Export(*mapdata);
+
+  Teuchos::ParameterList p;
+  p.set("action","postprocess_stress");
+  p.set("stresstype","ndxyz");
+  p.set("gpstressmap", mapdata);
+  p.set("poststress",nodal_val);
+  discret->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  if (nodal_val==Teuchos::null)
+  {
+    dserror("vector containing nodal stresses/strains not available");
+  }
+}
+
+/*------------------------------------------------------------------------------------*
+ * Extract displacement at the given node                                     sudhakar 10/14
+ *------------------------------------------------------------------------------------*/
+std::vector<double> DRT::CRACK::UTILS::getDisplacementNode( Teuchos::RCP<DRT::Discretization>& discret,
+                                                            const int node_gid,
+                                                            Teuchos::RCP<Epetra_Vector>& disp )
+{
+  if( not discret->HaveGlobalNode( node_gid ) )
+    dserror( "node not found on this processor\n" );
+  DRT::Node * node = discret->gNode( node_gid );
+  return getDisplacementNode( discret, node, disp );
+}
+
+/*------------------------------------------------------------------------------------*
+ * Extract displacement at the given node                                     sudhakar 12/13
+ *------------------------------------------------------------------------------------*/
+std::vector<double> DRT::CRACK::UTILS::getDisplacementNode( Teuchos::RCP<DRT::Discretization>& discret,
+                                                            const DRT::Node * node,
+                                                            Teuchos::RCP<Epetra_Vector>& disp )
+{
+  std::vector<int> lm;
+  std::vector<double> mydisp;
+  LINALG::Matrix<3,1> displ;
+
+  discret->Dof( node, lm );
+
+  DRT::UTILS::ExtractMyValues( *disp, mydisp, lm );
+
+  return mydisp;
 }

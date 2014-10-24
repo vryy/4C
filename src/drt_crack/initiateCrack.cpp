@@ -60,6 +60,9 @@ Maintainer: Sudhakar
 //------------------------------------------------------------------------------------------------
 bool DRT::CRACK::InitiateCrack::initiateOperations( int & start_new_node_id )
 {
+  //TODO: Read from input file
+  dist_index_ = 1;
+
   //-------------
   // STEP 1: Determine the node at which von Mises stress is maximum
   //-------------
@@ -102,38 +105,13 @@ bool DRT::CRACK::InitiateCrack::initiateOperations( int & start_new_node_id )
  *------------------------------------------------------------------------------------------------------------------------*/
 void DRT::CRACK::InitiateCrack::Determine_node_max_von_mises_stress( int & max_von_node, double & max_von_stress )
 {
-  const Epetra_Map* elemap = discret_->ElementRowMap();
-
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > mapdata = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
-  std::vector<char>::size_type position=0;
-
-  for (int i=0;i<elemap->NumMyElements();++i)
-  {
-    Teuchos::RCP<Epetra_SerialDenseMatrix> gpstr = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-    DRT::ParObject::ExtractfromPack(position, *gausspts_str_, *gpstr);
-    (*mapdata)[elemap->GID(i)]=gpstr;
-  }
-
-  const Epetra_Map& elecolmap = *(discret_->ElementColMap());
-  DRT::Exporter ex( *elemap, elecolmap, comm_ );
-  ex.Export(*mapdata);
-
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
-
-  Teuchos::ParameterList p;
-  p.set("action","postprocess_stress");
-  p.set("stresstype","ndxyz");
-  p.set("gpstressmap", mapdata);
   Teuchos::RCP<Epetra_MultiVector> nodal_str = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,6,true));
-  p.set("poststress",nodal_str);
-  discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  if (nodal_str==Teuchos::null)
-  {
-    dserror("vector containing nodal stresses/strains not available");
-  }
+  DRT::CRACK::UTILS::get_nodal_values_from_gauss_point_val( discret_, gausspts_str_, nodal_str );
 
   double max_str = 0.0;
   std::map<int,double> node_von_mis_stress;
+
 
   const int numnodes = discret_->NumMyRowNodes();
 
@@ -191,6 +169,8 @@ void DRT::CRACK::InitiateCrack::Determine_node_max_von_mises_stress( int & max_v
       max_von_node = it->first;
     }
   }
+
+  std::cout<<"maximum criterion node = "<<max_von_node<<" value = "<<max_von_stress<<"\n";
 
   if( max_von_stress == -1 )
     dserror( "von Mises stress throughout the domain is zero?" );
@@ -374,7 +354,7 @@ void DRT::CRACK::InitiateCrack::get_positive_negative_xnode( int & splnodeid,
         const double * conn1_cord = conn1->X();
         const double * conn2_cord = conn2->X();
 
-        double xdist = conn1_cord[0] - splcord[0];
+        double xdist = conn1_cord[dist_index_] - splcord[dist_index_];
         if( xdist > 0.0 and xdist > max_xdist )
         {
           max_xdist = xdist;
@@ -386,7 +366,7 @@ void DRT::CRACK::InitiateCrack::get_positive_negative_xnode( int & splnodeid,
           lneg_node = conn1->Id();
         }
 
-        xdist = conn2_cord[0] - splcord[0];
+        xdist = conn2_cord[dist_index_] - splcord[dist_index_];
         if( xdist > 0.0 and xdist > max_xdist )
         {
           max_xdist = xdist;

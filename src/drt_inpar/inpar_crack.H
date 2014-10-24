@@ -49,6 +49,12 @@ namespace INPAR
       ppr
     };
 
+    enum propagationCriterion
+    {
+      displacementCorrelation,
+      InteractionIntegral
+    };
+
   }  // namespace CRACK
 
 }  // namespace INPAR

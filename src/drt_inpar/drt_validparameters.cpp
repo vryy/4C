@@ -7420,10 +7420,25 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("START_NEW_ELE_ID",0,"Id of first wedge element that will be introduced into discretization while propagating crack. This "
         "should be set greater than total no of elements in the initial discretization",&crackdyn);
 
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& fsi_crackdyn = list->sublist("FSI-CRACK",false,"");
+  // type of crack propagation model -- either using linear elastic fracture mechanics concepts, or cohesive crack models
+  setStringToIntegralParameter<int>("CRACK_PROPAGATION_CRITERION","displacement_correlation",
+                                      "Crack propagation criterion used for LEFM",
+                                      tuple<std::string>(
+                                        "displacement_correlation",
+                                        "InteractionIntegral"),
+                                      tuple<int>(
+                                        INPAR::CRACK::displacementCorrelation,
+                                        INPAR::CRACK::InteractionIntegral),
+                                      &crackdyn);
 
-  setStringToIntegralParameter<int>("CHECK CONDITION","No","Do you want to check crack mouth opening condition?",
+  IntParameter("NO_LAYERS_J_INT",4,"No of element layers used for J-integral calculation",&crackdyn);
+
+  DoubleParameter("CRITICAL_J",1.0,"Critical energy release rate",&crackdyn);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& fsi_crackdyn = list->sublist("FSI CRACK",false,"");
+
+  setStringToIntegralParameter<int>("CHECK_CONDITION","No","Do you want to check crack mouth opening condition?",
                                      yesnotuple,yesnovalue,&fsi_crackdyn);
 
   DoubleParameter("CRACK_OPENING_DIST",0.01,"Critial crack mouth opening distance",&fsi_crackdyn);

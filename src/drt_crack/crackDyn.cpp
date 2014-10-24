@@ -203,7 +203,9 @@ void DRT::CRACK::CrackDyn::propagateOperations( Teuchos::RCP<const Epetra_Vector
     return;
 
   if( crackInitiated_ )
+  {
     crackInitiatedThisStep_ = false;
+  }
 
   //-------------
   // STEP 1 : Initiate crack if not already existing
@@ -223,6 +225,8 @@ void DRT::CRACK::CrackDyn::propagateOperations( Teuchos::RCP<const Epetra_Vector
   //------------
   for( unsigned segno = 0 ; segno < tip_segments_.size(); segno++ )
   {
+    tip_segments_[segno]->set_stress_values( stressdata );
+    tip_segments_[segno]->set_strain_values( straindata );
     tip_segments_[segno]->propagateThisTip( displace );
   }
 
@@ -240,7 +244,7 @@ void DRT::CRACK::CrackDyn::propagateOperations( Teuchos::RCP<const Epetra_Vector
     temp_bc_disp = tip_segments_[segno]->getALEtipBC();
     tipbc_disp.insert(temp_bc_disp.begin(), temp_bc_disp.end());
   }
-  Perform_ALE_Step( tipbc_disp );
+  Perform_ALE_Step( displace, tipbc_disp );
 
   std::cout<<"---------combined ALE boundary conditions----------------\n";
   for(std::map<int,std::vector<double> >::iterator it = tipbc_disp.begin(); it != tipbc_disp.end(); it++)
@@ -258,17 +262,7 @@ void DRT::CRACK::CrackDyn::propagateOperations( Teuchos::RCP<const Epetra_Vector
   }
 
   //-----------------------
-  //STEP 5: Update crack tip nodes
-  //-----------------------
-  update_crack_tip_nodes();
-
-  //-----------------------
-  // STEP 6: Update ALE boundarycondition nodes
-  //-----------------------
-  updateALE_BC_nodes();
-
-  //-----------------------
-  // STEP 7: Perform complete splitting of structure if needed
+  // STEP 5: Perform complete splitting of structure if needed
   //-----------------------
   for( unsigned segno = 0 ; segno < tip_segments_.size(); segno++ )
   {
@@ -276,6 +270,16 @@ void DRT::CRACK::CrackDyn::propagateOperations( Teuchos::RCP<const Epetra_Vector
       return;
     tip_segments_[segno]->CheckCompleteSplit( startNewNodeId_ );
   }
+
+  //-----------------------
+  //STEP 6: Update crack tip nodes
+  //-----------------------
+  update_crack_tip_nodes();
+
+  //-----------------------
+  // STEP 7: Update ALE boundarycondition nodes
+  //-----------------------
+  updateALE_BC_nodes();
 
   //-----------------------
   // STEP 8: Update boundary nodes
@@ -325,7 +329,7 @@ void DRT::CRACK::CrackDyn::InitiateCrack( Teuchos::RCP<std::vector<char> >& stre
 
   Teuchos::RCP<DRT::CRACK::InitiateCrack> ini = Teuchos::null;
 
-  if( 0 ) // strain cases
+  if( 1 ) // strain cases
   {
     ini = Teuchos::rcp(new DRT::CRACK::InitiateCrack(discret_, straindata, "strain" ));
   }
@@ -336,7 +340,7 @@ void DRT::CRACK::CrackDyn::InitiateCrack( Teuchos::RCP<std::vector<char> >& stre
 
   //TODO: read failure value from input file
 
-  ini->set_failure_value( 100/*1200*/ );
+  ini->set_failure_value( 0.045/*100*/ );
   ini->set_inner_layer_nodes( inner_layer_nodes_ );
   ini->set_outer_layer_nodes( outer_layer_nodes_ );
 
@@ -358,7 +362,8 @@ void DRT::CRACK::CrackDyn::InitiateCrack( Teuchos::RCP<std::vector<char> >& stre
 /*------------------------------------------------------------------------------------*
  * Perform all operations related to ALE step                                 sudhakar 05/14
  *------------------------------------------------------------------------------------*/
-void DRT::CRACK::CrackDyn::Perform_ALE_Step(  std::map<int, std::vector<double> >& tipbc_disp  )
+void DRT::CRACK::CrackDyn::Perform_ALE_Step(  Teuchos::RCP<const Epetra_Vector>& displace,
+                                              std::map<int, std::vector<double> >& tipbc_disp  )
 {
   if( tipbc_disp.size() == 0 )
     return;

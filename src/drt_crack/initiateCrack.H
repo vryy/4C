@@ -173,6 +173,9 @@ private:
 
   //! all nodes that are on the crack surface after initiation
   std::set<int> crackSurfNodes_;
+
+  //! When initiating crack, distance along this direction is considered
+  int dist_index_;
 };
 
 } /* namespace CRACK */

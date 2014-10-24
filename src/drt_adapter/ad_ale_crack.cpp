@@ -21,8 +21,8 @@ Maintainer: Sudhakar
 ADAPTER::AleCrackWrapper::AleCrackWrapper(Teuchos::RCP<Ale> ale)
   : AleWrapper(ale)
 {
-  dserror("ALE Crack not implemented yet.");
-
+  // we just have an empty constructor since there is no interface defined for crack
+  // we have BC only on the crack tip nodes which varies at each time step
   return;
 }
 

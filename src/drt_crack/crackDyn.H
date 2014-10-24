@@ -79,7 +79,7 @@ private:
   /*!
   \brief Perform ALE step of moving the crack tip to the desired location
    */
-  void Perform_ALE_Step( std::map<int, std::vector<double> >& tipbc_disp );
+  void Perform_ALE_Step( Teuchos::RCP<const Epetra_Vector>& displace, std::map<int, std::vector<double> >& tipbc_disp );
 
   /*!
   \brief Analyze and clean discretization after adding new nodes
