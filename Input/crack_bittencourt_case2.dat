@@ -54,7 +54,7 @@ GAMMA                           0.581
 -------------------------------------------------------------CONTACT DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
 ----------------------------------------------------------------CRACK
 CRACK_MODEL                     lefm
 CRITICAL_K1                     5

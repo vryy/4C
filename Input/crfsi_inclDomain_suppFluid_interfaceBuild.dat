@@ -65,7 +65,7 @@ START_NEW_NODE_ID   374
 START_NEW_ELE_ID    148
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-7
 COUPMETHOD                      conforming
