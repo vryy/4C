@@ -783,6 +783,9 @@ void STR::TimIntStatMech::NewtonFull()
     solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1, projector_);
     solver_->ResetTolerance();
 
+    //In beam contact applications it can be necessary to limit the Newton step size (scaled residual displacements)
+    LimitStepsizeBeamContact(disi_);
+
 //    // recover standard displacements (no effect on StatMech)
 //    RecoverSTCSolution();
 
@@ -1294,6 +1297,9 @@ void STR::TimIntStatMech::PTC()
     solver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
     solver_->ResetTolerance();
 
+    //In beam contact applications it can be necessary to limit the Newton step size (scaled residual displacements)
+    LimitStepsizeBeamContact(disi_);
+
     sumsolver += Teuchos::Time::wallTime() - t_solver;
 
     // update displacements and velocities for this iteration step
@@ -1673,7 +1679,7 @@ void STR::TimIntStatMech::BeamContactAugLag()
     }
 
     // update constraint norm and penalty parameter
-    beamcman_->UpdateConstrNorm();
+    beamcman_->UpdateConstrNormUzawa();
     // update Uzawa Lagrange multipliers
     beamcman_->UpdateAlllmuzawa();
   } while (abs(beamcman_->GetConstrNorm()) >= eps);

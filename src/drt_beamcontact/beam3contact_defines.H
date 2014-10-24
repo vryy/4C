@@ -26,7 +26,7 @@ Maintainer: Christoph Meier
 /* Beam contact algorithm parameters                                    */
 /************************************************************************/
 #define BEAMCONTACTMAXITER 50     /* max number of steps for local Newton */
-//default: 10
+//default: 50
 #define BEAMCONTACTTOL 1.0e-10    /* convergence tolerance for local Newton */
 //default: 1.0e-12
 #define XIETATOL 1.0e-7           /* tolerance for valid values of beam parameters Xi and Eta
@@ -58,7 +58,7 @@ Maintainer: Christoph Meier
 
 #define NEIGHBORNORMALTOL 5         //tolerance necessary in order to calcualte normal_old_ out of the neighbor element pair!
 
-#define MAXDELTADFAC       0.8       //Maximal allowed nodal displacement per time step as multiple bounding box increment
+#define MAXDELTADFAC       0.8      //Maximal allowed nodal displacement per time step as multiple bounding box increment
 
 #define MAXDELTAXIETA       2.0     //Maximal allowed parameter step xi_-xi_old per time step
 
@@ -90,14 +90,20 @@ Maintainer: Christoph Meier
 //#define BEAMCONTACTPTC       10        //Apply PTC terms to contact elements
 //#define BEAMCONTACTPTCROT    0.0
 
+#define SEGANGLE 2.0/180.0*M_PI           //maximal tangent angle deviation of a segment point from straight line approximation
+#define MAXNUMSEG  256                    //maximal number of segments
+#define ANGLETOL 0.1/180*M_PI             //within the search algorithm, for angles<ANGLETOL two segments are assumed to be parallel
+#define DELTALARGEANGLE 10/180*M_PI       //bound for search of large angle contact segment pairs
+#define DELTASMALLANGLE  20/180*M_PI      //bound for search of small angle contact segment pairs
+
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
 #define N_CIRCUMFERENTIAL 10      /* number of gmsh visualization devisions of beam element in circumferential direction*/
-#define N_Axial 10                /* number of gmsh visualization devisions of beam element in axial direction*/
-
+#define N_Axial 50                /* number of gmsh visualization devisions of beam element in axial direction*/
 
 #define OUTPUTEVERY 1          //Write output only every OUTPUTEVERY^th step
+//#defineOUTPUTEVERYNEWTONSTEP //Write output also after each Newton step
 //#define GMSHTIMESTEPS           /* write gmsh output in each time step */
 //#define GMSHNEWTONSTEPS           /* write gmsh and console output in each Newton step */
 //#define REACTIONFORCES          /* output of reaction forces and moments */

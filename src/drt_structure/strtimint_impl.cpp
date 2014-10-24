@@ -1186,6 +1186,34 @@ void STR::TimIntImpl::ApplyForceStiffBeamContact
 }
 
 /*----------------------------------------------------------------------*/
+/* Check residual displacement and limit it if necessary*/
+void STR::TimIntImpl::LimitStepsizeBeamContact
+(
+  Teuchos::RCP<Epetra_Vector>& disi
+)
+{
+  if(HaveBeamContact())
+  {
+    double minimal_radius = beamcman_->GetMinEleRadius();
+    double maxdisiscalefac = beamcman_->BeamContactParameters().get<double>("BEAMS_MAXDISISCALEFAC");
+    if(maxdisiscalefac>0)
+    {
+      double disi_infnorm=0.0;
+      disi->NormInf(&disi_infnorm);
+
+      while(disi_infnorm>maxdisiscalefac*minimal_radius)
+      {
+        std::cout << "      Residual displacement scaled! (Minimal element radius: " << minimal_radius << ")" << std::endl;
+        disi->Scale(0.5);
+        disi->NormInf(&disi_infnorm);
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to spring-dashpot-condition */
 void STR::TimIntImpl::ApplyForceStiffSpringDashpot
 (
@@ -1613,6 +1641,9 @@ int STR::TimIntImpl::NewtonFull()
       linsolve_error = LinSolveErrorCheck(linsolve_error);
     }
     solver_->ResetTolerance();
+
+    //In beam contact applications it can be necessary to limit the Newton step size (scaled residual displacements)
+    LimitStepsizeBeamContact(disi_);
 
     // recover standard displacements
     RecoverSTCSolution();
@@ -2109,6 +2140,9 @@ int STR::TimIntImpl::LsSolveNewtonStep()
   // check for problems in linear solver
   // however we only care about this if we have a fancy divcont action (meaning function will return 0 )
   linsolve_error = LinSolveErrorCheck(linsolve_error);
+
+  //In beam contact applications it can be necessary to limit the Newton step size (scaled residual displacements)
+  LimitStepsizeBeamContact(disi_);
 
   solver_->ResetTolerance();
 
@@ -3234,7 +3268,7 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
       int error = NewtonFull();
       if(error) return error;
       // update constraint norm and penalty parameter
-      beamcman_->UpdateConstrNorm();
+      beamcman_->UpdateConstrNormUzawa();
 
       // update Uzawa Lagrange multipliers
       beamcman_->UpdateAlllmuzawa();
@@ -3245,6 +3279,7 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
     beamcman_->ResetCurrentpp();
     beamcman_->ResetUzawaIter();
     beamcman_->ResetAlllmuzawa();
+    beamcman_->UpdateConstrNorm();
   }
 
   //**********************************************************************

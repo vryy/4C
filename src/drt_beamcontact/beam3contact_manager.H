@@ -21,6 +21,7 @@ Maintainer: Christoph Meier
 #include "beam3contact_defines.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "beam3contactnew.H"
+#include "beam3contact.H"
 #include "beam3tosolidcontact.H"
 #include "beam3tospherecontact.H"
 #include "beam3tobeampotential.H"
@@ -144,6 +145,9 @@ public:
   // \brief Get current penalty parameter
   const double GetCurrentpp() { return currentpp_; }
 
+  // \brief Get minimal beam/sphere element radius of discretization
+  const double GetMinEleRadius() { return mineleradius_; }
+
   //@}
 
   //! @name Public evaluation methods
@@ -196,15 +200,18 @@ public:
   /*!
   \brief Update constraint norm
 
-  In the penalty case, we only compute the constraint norm and print to screen,
-  whereas in the augmented Lagrange case, an empiric update formula for the
-  penalty parameter is also applied to speed up Uzawa convergence.
-
-  \param cnorm (in/out) read-only (no norm update) if cnorm is not the null pointer
-  \param convstatus (in) status of convergence, default value NULL for converged
+  Calculate and print gap values and constraint norm.
 
   */
-  void UpdateConstrNorm(double* cnorm = NULL);
+  void UpdateConstrNorm();
+
+  /*!
+  \brief Update constraint norm
+
+  Calculate and print gap values and constraint norm in case of an uzawa strategy.
+
+  */
+  void UpdateConstrNormUzawa();
 
   /*!
   \brief Shift current normal "normal_" vector to old normal vector "normal_old_"
@@ -287,11 +294,6 @@ public:
   */
   double GetTotEnergy() {return totpenaltyenergy_; };
 
-  /*!
-  \brief Get maximal gap
-  */
-  double GetMaxGap() {return maxgap_; };
-
   //@}
 
 private:
@@ -301,12 +303,6 @@ private:
   Beam3cmanager(const Beam3cmanager& old);
 
   //! @name member variables
-
-  //! Flag from input file indicating if the new gap function definition (true) should be applied in order to avoid crossing of slender beams (default: false)
-  bool newgapfunction_;
-
-  //! Flag from input file indicating which type of tangent field smoothing has to be applied? (default: none)
-  int smoothing_;
 
   //! Flag from input file indicating if beam-to-solid contact is applied or not (default: false)
   bool btsol_;
@@ -406,6 +402,15 @@ private:
   //! search radius for potential-based interactions
   double searchradiuspot_;
 
+  //! additive searchbox increment prescribed in input file
+  double searchboxinc_;
+
+  //! minimal beam/sphere radius appearing in discretization
+  double mineleradius_;
+
+  //! maximal beam/shpere radius appearing in discretization
+  double maxeleradius_;
+
   //! contact forces of current time step
   Teuchos::RCP<Epetra_Vector> fc_;
 
@@ -436,17 +441,32 @@ private:
   //! current Uzawa iteration index (for augmented Lagrange strategy)
   int uzawaiter_;
 
-  //! maximal converged gap
-  double maxgap_;
+  //! maximal converged absolute gap during the simulation
+  double maxtotalsimgap_;
 
-  //! minimal converged gap
-  double mingap_;
+  //! maximal converged relative gap during the simulation
+  double maxtotalsimrelgap_;
 
-  //! maximal unconverged gap
-  double unconvmaxgap_;
+  //! minimal converged absolute gap during the simulation
+  double mintotalsimgap_;
+
+  //! minimal converged relative gap during the simulation
+  double mintotalsimrelgap_;
+
+  //! minimal unconverged absolute gap during the simulation
+  double mintotalsimunconvgap_;
 
   //! total contact energy (of elastic penalty forces)
   double totpenaltyenergy_;
+
+  //! current displacement vector
+  Teuchos::RCP<Epetra_Vector> dis_;
+
+  //! displacement vector of last time step
+  Teuchos::RCP<Epetra_Vector> dis_old_;
+
+  //! inf-norm of dis_ - dis_old_
+  double maxdeltadisp_;
 
   //! parameters of the potential law to be applied: Phi(r)~ \sum_i (k_i * r^(-m_i))
   Teuchos::RCP<std::vector<double> > ki_;
@@ -493,16 +513,11 @@ private:
   /*!
   \brief Get maximum element radius
 
-  Finds maximum element radius in the whole discretization for circular cross
-  sections. Stores the maximum radius to 'max_ele_radius'.
+  Finds minimum and maximum element radius in the whole discretization for circular cross
+  sections. Stores the values in corresponing class variables.
 
   */
-  void GetMaxEleRadius(double& max_ele_radius);
-
-  /*
-  \brief Calculate beam radius
-  */
-  double CalcEleRadius(const DRT::Element* ele);
+  void SetMinMaxEleRadius();
 
   /*
   \brief Test if element midpoints are close (spherical bounding box intersection)

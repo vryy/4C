@@ -326,6 +326,12 @@ namespace STR
       bool predict //!< flag indicating predictor step
     );
 
+    //! Check residual displacement and scale it if necessary
+    void LimitStepsizeBeamContact
+    (
+      Teuchos::RCP<Epetra_Vector>& disi //!< residual displacement vector
+    );
+
     //! Evaluate forces and stiffness due to spring dash-pot boundary condition
     void ApplyForceStiffSpringDashpot
     (

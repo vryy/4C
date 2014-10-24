@@ -75,7 +75,7 @@ BEAMS_BTBUZAWAMAXSTEPS          25
 BEAMS_NEWGAP                    Yes
 BEAMS_SMOOTHING                 None
 BEAMS_OCTREE                    octree_spherical
-BEAMS_ADDITEXT                  No
+BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    3.0
 BEAMS_TREEDEPTH                 4
 BEAMS_BOXESINOCT                4

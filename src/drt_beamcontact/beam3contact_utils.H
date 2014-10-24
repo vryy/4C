@@ -47,6 +47,8 @@ Maintainer: Christoph Meier
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "Sacado.hpp"
 #include "../drt_lib/drt_discret.H"
+#include "beam3contact_defines.H"
+#include "../drt_fem_general/largerotations.H"
 
 typedef Sacado::Fad::DFad<double> FAD;
 
@@ -62,6 +64,24 @@ namespace BEAMCONTACT
   \brief Cast of double to double
   */
   double CastToDouble(double a);
+
+  /*!
+  \brief Cast of a FAD matrix to a double matrix
+  */
+  template<typename type,int dim1, int dim2>
+  LINALG::TMatrix<double,dim1,dim2> CastToDouble(LINALG::TMatrix<type,dim1,dim2> a)
+  {
+    LINALG::TMatrix<double,dim1,dim2> b(true);
+
+    for (int i=0;i<dim1;i++)
+    {
+      for (int j=0;j<dim2;j++)
+      {
+        b(i,j)=CastToDouble(a(i,j));
+      }
+    }
+    return b;
+  }
 
   /*!
   \brief Calculate Norm of a scalar FAD quantity
@@ -117,6 +137,54 @@ namespace BEAMCONTACT
       c(i)=a(i)-b(i);
 
     return c;
+  }
+
+  /*!
+  \brief Calculate vector product of two FAD or double vectors
+  */
+  template<typename type>
+  LINALG::TMatrix<type,3,1> VectorProduct(LINALG::TMatrix<type,3,1> first_vector, LINALG::TMatrix<type,3,1> second_vector)
+  {
+    LINALG::TMatrix<type,3,1> result_vector;
+    result_vector.Clear();
+    LINALG::TMatrix<type,3,3> S_first_vector;
+    S_first_vector.Clear();
+    LARGEROTATIONS::computespin(S_first_vector,first_vector);
+
+    result_vector.Multiply(S_first_vector, second_vector);
+
+    return result_vector;
+  }
+
+  /*!
+  \brief Calculate angle encompassed by two lines: returns an angle \in [0;pi/2]
+  */
+  double CalcAngle(LINALG::TMatrix<double,3,1> a, LINALG::TMatrix<double,3,1> b);
+
+  /*!
+  \brief Get closest distance between the endpoints of two lines
+  */
+  template<typename type>
+  type GetClosestEndpointDist(LINALG::TMatrix<type,3,1> r1_a, LINALG::TMatrix<type,3,1> r1_b, LINALG::TMatrix<type,3,1> r2_a, LINALG::TMatrix<type,3,1> r2_b)
+  {
+    type minnodaldist=0.0;
+    type nodaldist=0.0;
+
+    minnodaldist=BEAMCONTACT::VectorNorm<3>(BEAMCONTACT::DiffVector(r1_a,r2_a));
+
+    nodaldist=BEAMCONTACT::VectorNorm<3>(BEAMCONTACT::DiffVector(r1_a,r2_b));
+    if(nodaldist<minnodaldist)
+      minnodaldist=nodaldist;
+
+    nodaldist=BEAMCONTACT::VectorNorm<3>(BEAMCONTACT::DiffVector(r1_b,r2_a));
+    if(nodaldist<minnodaldist)
+      minnodaldist=nodaldist;
+
+    nodaldist=BEAMCONTACT::VectorNorm<3>(BEAMCONTACT::DiffVector(r1_b,r2_b));
+    if(nodaldist<minnodaldist)
+      minnodaldist=nodaldist;
+
+    return minnodaldist;
   }
 
   /*!
@@ -186,6 +254,44 @@ namespace BEAMCONTACT
   \brief Check, if two elements share a node -> neighbor elements
   */
   bool ElementsShareNode(DRT::Element& element1,DRT::Element& element2);
+
+  /*
+  \brief Calculate beam radius
+  */
+  double CalcEleRadius(const DRT::Element* ele);
+
+  /*
+  \brief Intersect two parallel cylinders
+  */
+  bool IntersectParallelCylinders(LINALG::TMatrix<double,3,1>& r1_a,
+                                  LINALG::TMatrix<double,3,1>& r1_b,
+                                  LINALG::TMatrix<double,3,1>& r2_a,
+                                  LINALG::TMatrix<double,3,1>& r2_b,
+                                  double& distancelimit);
+
+  /*
+  \brief Intersect two non-parallel, arbitrary oriented cylinders
+  */
+  bool IntersectArbitraryCylinders(LINALG::TMatrix<double,3,1>& r1_a,
+                                  LINALG::TMatrix<double,3,1>& r1_b,
+                                  LINALG::TMatrix<double,3,1>& r2_a,
+                                  LINALG::TMatrix<double,3,1>& r2_b,
+                                  double& distancelimit,
+                                  std::pair<double,double>& closestpoints, // The closest point are only set, if we have detected an intersection at a valid closest point with eta1_seg, eta2_seg \in [-1.0;1.0]
+                                  bool etaset); //bool to check, if the closest point coordinates have been set or not
+
+  /*
+  \brief Calculate closest distance of a point and a line
+  */
+  double CalcPointLineDist( LINALG::TMatrix<double,3,1>& rline_a,
+                            LINALG::TMatrix<double,3,1>& rline_b,
+                            LINALG::TMatrix<double,3,1>& rp,
+                            double& eta);
+
+  /*
+  \brief Determine inpute parameter representing the additive searchbox increment
+  */
+  double DetermineSearchboxInc(Teuchos::ParameterList& beamcontactparams);
 
 } // namespace BEAMCONTACT
 

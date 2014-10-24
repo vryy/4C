@@ -36,7 +36,6 @@ Maintainer: Alexander Popp
 #include <nlnml_preconditioner.H>
 #include <nlnml_linearsystem.H>
 #include <nlnml_finelevelnoxinterface.H>
-
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_utils_timintmstep.H"

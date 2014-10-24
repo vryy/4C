@@ -2037,7 +2037,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /* parameters for beam contact */
   Teuchos::ParameterList& beamcontact = list->sublist("BEAM CONTACT",false,"");
 
+  setStringToIntegralParameter<int>("BEAMS_STRATEGY","None","Type of employed solving strategy",
+        tuple<std::string>("None","none",
+                           "Penalty", "penalty",
+                           "Uzawa","uzawa"),
+        tuple<int>(
+                INPAR::BEAMCONTACT::bstr_none, INPAR::BEAMCONTACT::bstr_none,
+                INPAR::BEAMCONTACT::bstr_penalty, INPAR::BEAMCONTACT::bstr_penalty,
+                INPAR::BEAMCONTACT::bstr_uzawa, INPAR::BEAMCONTACT::bstr_uzawa),
+        &beamcontact);
+
   setStringToIntegralParameter<int>("BEAMS_NEWGAP","No","choose between original or enhanced gapfunction",
+                               yesnotuple,yesnovalue,&beamcontact);
+
+  setStringToIntegralParameter<int>("BEAMS_SEGCON","No","choose between beam contact with and without subsegment generation",
                                yesnotuple,yesnovalue,&beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_INACTIVESTIFF","No","Always apply contact stiffness in first Newton step for pairs which have active in last time step",
@@ -2048,16 +2061,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("BEAMS_BTSPH","No","decide, if also the contact between beams and spheres is possible",
                                yesnotuple,yesnovalue,&beamcontact);
-
-  setStringToIntegralParameter<int>("BEAMS_STRATEGY","None","Type of employed solving strategy",
-        tuple<std::string>("None","none",
-                           "Penalty", "penalty",
-                           "Uzawa","uzawa"),
-        tuple<int>(
-                INPAR::BEAMCONTACT::bstr_none, INPAR::BEAMCONTACT::bstr_none,
-                INPAR::BEAMCONTACT::bstr_penalty, INPAR::BEAMCONTACT::bstr_penalty,
-                INPAR::BEAMCONTACT::bstr_uzawa, INPAR::BEAMCONTACT::bstr_uzawa),
-        &beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_SMOOTHING","None","Application of smoothed tangent field",
        tuple<std::string>("None","none",
@@ -2083,6 +2086,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("BEAMS_DAMPINGPARAM",-1000.0,"Damping parameter for contact damping force",&beamcontact);
   DoubleParameter("BEAMS_DAMPREGPARAM1",-1000.0,"First (at gap1, with gap1>gap2) regularization parameter for contact damping force",&beamcontact);
   DoubleParameter("BEAMS_DAMPREGPARAM2",-1000.0,"Second (at gap2, with gap1>gap2) regularization parameter for contact damping force",&beamcontact);
+  DoubleParameter("BEAMS_MAXDISISCALEFAC",-1.0,"Scale factor in order to limit maximal iterative displacement increment (resiudal displacement)",&beamcontact);
+  DoubleParameter("BEAMS_MAXDELTADISSCALEFAC",1.0,"Scale factor in order to limit maximal displacement per time step",&beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_PENALTYLAW","LinPen","Applied Penalty Law",
        tuple<std::string>("LinPen",
@@ -2114,9 +2119,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   INPAR::BEAMCONTACT::boct_aabb,INPAR::BEAMCONTACT::boct_cobb,INPAR::BEAMCONTACT::boct_spbb),
        &beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_ADDITEXT","No","Switch between No==multiplicative extrusion factor and Yes==additive extrusion factor",
+  setStringToIntegralParameter<int>("BEAMS_ADDITEXT","Yes","Switch between No==multiplicative extrusion factor and Yes==additive extrusion factor",
                                yesnotuple,yesnovalue,&beamcontact);
-  setNumericStringParameter("BEAMS_EXTVAL","1.05", "extrusion value(s) of the bounding box, Depending on BEAMS_ADDITIVEEXTFAC is either additive or multiplicative. Give one or two values.",&beamcontact);
+  setNumericStringParameter("BEAMS_EXTVAL","-1.0", "extrusion value(s) of the bounding box, Depending on BEAMS_ADDITIVEEXTFAC is either additive or multiplicative. Give one or two values.",&beamcontact);
   IntParameter("BEAMS_TREEDEPTH",6,"max, tree depth of the octree",&beamcontact);
   IntParameter("BEAMS_BOXESINOCT",8,"max number of bounding boxes in any leaf octant",&beamcontact);
 

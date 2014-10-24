@@ -14,6 +14,7 @@ Maintainer: Christoph Meier
 #include "beam3contact_manager.H"
 #include "beam3contact_defines.H"
 #include "beam3contact_octtree.H"
+#include "beam3contact_utils.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_beampotential.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -47,10 +48,13 @@ searchradiuspot_(0.0),
 alphaf_(alphaf),
 constrnorm_(0.0),
 btsolconstrnorm_(0.0),
-maxgap_(0.0),
-mingap_(0.0),
-unconvmaxgap_(0.0),
-totpenaltyenergy_(0.0)
+maxtotalsimgap_(0.0),
+maxtotalsimrelgap_(0.0),
+mintotalsimgap_(0.0),
+mintotalsimrelgap_(0.0),
+mintotalsimunconvgap_(0.0),
+totpenaltyenergy_(0.0),
+maxdeltadisp_(0.0)
 {
   // create new (basically copied) discretization for contact
   // (to ease our search algorithms we afford the luxury of
@@ -313,9 +317,12 @@ totpenaltyenergy_(0.0)
   }
 
   // check input parameters
-  //TODO: also for btsol and btsph
-  if (sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM") < 0.0)
+  if (sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM") < 0.0
+      or sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM") < 0.0
+      or sbeamcontact_.get<double>("BEAMS_BTSPH_PENALTYPARAM") < 0.0)
+  {
     dserror("ERROR: The penalty parameter has to be positive.");
+  }
 
   // initialize contact element pairs
   pairs_.resize(0);
@@ -350,6 +357,15 @@ totpenaltyenergy_(0.0)
     std::cout << "========================= Beam Contact =========================" << std::endl;
     std::cout<<"Elements in discret.   = "<<pdiscret_.NumGlobalElements()<<std::endl;
   }
+
+  //Set maximal and minimal beam/sphere radius occuring in discretization
+  SetMinMaxEleRadius();
+
+  //Get search box increment from input file
+  searchboxinc_=BEAMCONTACT::DetermineSearchboxInc(sbeamcontact_);
+
+  if(searchboxinc_<0.0)
+    dserror("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
 
   // initialize octtree for contact search
   if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(sbeamcontact_,"BEAMS_OCTREE") != INPAR::BEAMCONTACT::boct_none)
@@ -451,9 +467,8 @@ totpenaltyenergy_(0.0)
     std::cout <<"================================================================\n" << std::endl;
   }
 
-  // initialize newgapfunction_ flag
-  newgapfunction_ = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_NEWGAP");
-
+  dis_ = LINALG::CreateVector(*ProblemDiscret().DofRowMap(), true);
+  dis_old_ = LINALG::CreateVector(*ProblemDiscret().DofRowMap(), true);
 
   // read the DLINE conditions specifying charge density of beams
   linechargeconds_.clear();
@@ -590,6 +605,9 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
                                       Teuchos::ParameterList timeintparams,
                                       bool newsti)
 {
+  //Set class variable
+  dis_->Update(1.0,disrow,0.0);
+
   // map linking node numbers and current node positions
   std::map<int,LINALG::Matrix<3,1> > currentpositions;
   currentpositions.clear();
@@ -617,7 +635,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
      double t_end = Teuchos::Time::wallTime() - t_start;
      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
      if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-       std::cout << "           OctTree Search (Contact): " << t_end << " seconds, found pairs: "<<elementpairs.size()<< std::endl;
+       std::cout << "      OctTree Search (Contact): " << t_end << " seconds, found pairs: "<<elementpairs.size()<< std::endl;
   }
   //**********************************************************************
   // Contact: brute-force search
@@ -630,12 +648,11 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     double t_end = Teuchos::Time::wallTime() - t_start;
     Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
     if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-      std::cout << "           Brute Force Search (Contact): " << t_end << " seconds" << std::endl;
+      std::cout << "      Brute Force Search (Contact): " << t_end << " seconds" << std::endl;
   }
 
   // process the found element pairs and fill the BTB, BTSOL, BTSPH interaction pair vectors
   FillContactPairsVectors(elementpairs);
-
 
   if(linechargeconds_.size()!=0)
   {
@@ -728,6 +745,11 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     stiffmatrix.Add(*stiffc_,false,1.0,1.0);
     stiffmatrix.Complete();
   }
+
+  //With this line output can be printed every Newton step
+  #ifdef OUTPUTEVERYNEWTONSTEP
+    ConsoleOutput();
+  #endif
 
   return;
 }
@@ -1116,9 +1138,18 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
     if (firstisincolmap || secondisincolmap)
     {
       pairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_,contactpairmap_,timeintparams);
-      double gap = pairs_[i]->GetGap();
-      if (gap<unconvmaxgap_)
-        unconvmaxgap_ = gap;
+
+      //if active, get minimal gap of contact element pair
+      if(pairs_[i]->GetContactFlag() == true)
+      {
+        std::vector<double> pairgaps = pairs_[i]->GetGap();
+        for(int i=0;i<(int)pairgaps.size();i++)
+        {
+          double gap = pairgaps[i];
+          if(gap<mintotalsimunconvgap_)
+            mintotalsimunconvgap_ = gap;
+        }
+      }
     }
   }
 
@@ -1320,8 +1351,8 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(const std::vector<std::vect
 
   if(pdiscret_.Comm().MyPID()==0)
   {
-    std::cout << "            Total number of BTB contact pairs: " << pairs_.size() << std::endl;
-    if (btsph_) std::cout << "            Total number of BTSPH contact pairs: " << btsphpairs_.size() << std::endl;
+    std::cout << "      Total number of BTB contact pairs: " << pairs_.size() << std::endl;
+    if (btsph_) std::cout << "\t Total number of BTSPH contact pairs: " << btsphpairs_.size() << std::endl;
   }
 }
 
@@ -1689,17 +1720,13 @@ void CONTACT::Beam3cmanager::ComputeSearchRadius()
   // some local variables
   double charactlength = 0.0;
   double globalcharactlength = 0.0;
-  double maxeleradius = 0.0;
   double maxelelength = 0.0;
-
-  // look for maximum element radius in the whole discretization
-  GetMaxEleRadius(maxeleradius);
 
   // look for maximum element length in the whole discretization
   GetMaxEleLength(maxelelength);
 
   // select characeteristic length
-  if (maxeleradius > maxelelength) charactlength = maxeleradius;
+  if (maxeleradius_ > maxelelength) charactlength = maxeleradius_;
   else                             charactlength = maxelelength;
 
   // communicate among all procs to find the global maximum
@@ -1709,29 +1736,15 @@ void CONTACT::Beam3cmanager::ComputeSearchRadius()
   // the factor is only empiric yet it must be greater than 2
   // in order to account for the circular beam cross sections
   searchradius_ = 5.0 * globalcharactlength;
-  double searchboxinc = 0.0;
-  {
-    std::vector<double> extval(0);
-    std::istringstream PL(Teuchos::getNumericStringParameter(sbeamcontact_,"BEAMS_EXTVAL"));
-    std::string word;
-    char* input;
-    while (PL >> word)
-      extval.push_back(std::strtod(word.c_str(), &input));
-    if((int)extval.size()>2)
-      dserror("BEAMS_EXTVAL should contain no more than two values. Check your input file.");
-    if(extval.size()==1)
-      searchboxinc = extval.at(0);
-    else
-      searchboxinc = std::max(extval.at(0),extval.at(1));
-  }
-  sphericalsearchradius_ = 2.0*searchboxinc + globalcharactlength;
+
+  sphericalsearchradius_ = 2.0*searchboxinc_ + globalcharactlength;
 
   // some information for the user
   if (Comm().MyPID()==0)
   {
     std::cout << "Penalty parameter      = " << currentpp_ << std::endl;
     std::cout << "BTS-Penalty parameter  = " << btspp_ << std::endl;
-    std::cout << "Maximum element radius = " << maxeleradius << std::endl;
+    std::cout << "Maximum element radius = " << maxeleradius_ << std::endl;
     std::cout << "Maximum element length = " << maxelelength << std::endl;
     std::cout << "Search radius          = " << searchradius_  << std::endl << std::endl;
   }
@@ -1742,8 +1755,14 @@ void CONTACT::Beam3cmanager::ComputeSearchRadius()
 /*-------------------------------------------------------------------- -*
  |  Find maximum element radius in discretization             popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::GetMaxEleRadius(double& maxeleradius)
+void CONTACT::Beam3cmanager::SetMinMaxEleRadius()
 {
+
+  mineleradius_=0.0;
+  maxeleradius_=0.0;
+
+  bool minbeamradiusinitialized=false;
+
   // loop over all elements in row map
   for (int i=0;i<RowElements()->NumMyElements();++i)
   {
@@ -1756,13 +1775,21 @@ void CONTACT::Beam3cmanager::GetMaxEleRadius(double& maxeleradius)
     if (BEAMCONTACT::BeamElement(*thisele) or BEAMCONTACT::RigidsphereElement(*thisele))
     {  // compute eleradius from moment of inertia
       // (RESTRICTION: CIRCULAR CROSS SECTION !!!)
-      eleradius = CalcEleRadius(thisele);
-    }
-    else
-      dserror("The function GetMaxEleRadius is only defined for beam elements and rigid sphere elements!");
+      eleradius = BEAMCONTACT::CalcEleRadius(thisele);
 
-    // if current radius is larger than maximum radius -> update
-    if (eleradius > maxeleradius) maxeleradius = eleradius;
+      // if current radius is larger than maximum radius -> update
+      if (eleradius > maxeleradius_) maxeleradius_ = eleradius;
+
+      //Initialize minbeamradius- with the first radius we get; otherwise its value will remain 0.0!
+      if (!minbeamradiusinitialized)
+      {
+        mineleradius_=eleradius;
+        minbeamradiusinitialized=true;
+      }
+
+      // if current radius is smaller than minimal radius -> update
+      if (eleradius < mineleradius_) mineleradius_ = eleradius;
+    }
   }
 
   return;
@@ -1826,6 +1853,30 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   // store values of fc_ into fcold_ (generalized alpha)
   fcold_->Update(1.0,*fc_,0.0);
 
+  // calculate (dis_old_-dis_):
+  dis_old_->Update(-1.0,*dis_,1.0);
+  // calculate inf-norm of (dis_old_-dis_)
+  dis_old_->NormInf(&maxdeltadisp_);
+  // invert the last step and get again dis_old_
+  dis_old_->Update(1.0,*dis_,1.0);
+  //update dis_old_ -> dis_
+  dis_old_->Update(1.0,*dis_,0.0);
+
+  //If the original gap function definition is applied, the displacement per time is not allowed
+  //to be larger than the smalles beam cross section radius occuring in the discretization!
+  bool newgapfunction=DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_NEWGAP");
+  if(!newgapfunction)
+  {
+    double maxdeltadisscalefac=sbeamcontact_.get<double>("BEAMS_MAXDELTADISSCALEFAC",1.0);
+    if(maxdeltadisp_>maxdeltadisscalefac*mineleradius_)
+    {
+      std::cout << "Minimal element radius: " << mineleradius_ << std::endl;
+      std::cout << "Maximal displacement per time step: " << maxdeltadisp_ << std::endl;
+      dserror("Displacement increment per time step larger than smallest beam element radius, "
+              "but newgapfunction_ flag is not set. Choose smaller time step!");
+    }
+  }
+
   // create gmsh output for nice visualization
   // (endoftimestep flag set to TRUE)
 #ifdef GMSHTIMESTEPS
@@ -1848,7 +1899,7 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
         pairs_[i]->InvertNormal();
         Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
         if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-          std::cout << "Warning: Penetration to large, choose higher penalty parameter!" << std::endl;
+          std::cout << "      Warning: Penetration to large, choose higher penalty parameter!" << std::endl;
       }
 
       if (pairs_[i]->GetShiftStatus() == true)
@@ -1863,48 +1914,6 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
 
   // set normal_old_=normal_ for all contact pairs at the end of the time step
   UpdateAllPairs();
-
-  //Next we want to find out the maximal and minimal gap
-  double maxgap = 0.0;
-  double maxallgap = 0.0;
-  double mingap = 0.0;
-  double minallgap = 0.0;
-
-  // loop over all pairs to find all gaps
-  for (int i=0;i<(int)pairs_.size();++i)
-  {
-    // only relevant if current pair is active
-    if (pairs_[i]->GetContactFlag() == true)
-    {
-      double gap = pairs_[i]->GetGap();
-
-      if (gap>maxgap)
-        maxgap = gap;
-
-      if (gap<mingap)
-        mingap = gap;
-    }
-  }
-
-  Comm().MaxAll(&maxgap,&maxallgap,1);
-  Comm().MinAll(&mingap,&minallgap,1);
-
-  if (maxallgap>maxgap_)
-    maxgap_ = maxallgap;
-
-  if (minallgap<mingap_)
-    mingap_ = minallgap;
-
-   // print results to screen
-  Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
-  if (Comm().MyPID()==0 && ioparams.get<int>("STDOUTEVRY",0))
-  {
-    std::cout << std::endl << "*********************************************"<<std::endl;
-    std::cout << "Maximal unconv. Gap = " << unconvmaxgap_ << std::endl;
-    std::cout << "Maximal Gap = " << maxgap_ << std::endl;
-    std::cout << "Minimal Gap = " << mingap_ << std::endl;
-    std::cout<<"*********************************************"<<std::endl;
-  }
 
   // print some data to screen
   ConsoleOutput();
@@ -1959,7 +1968,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 
   // STEP 1: OUTPUT OF TIME STEP INDEX
   std::ostringstream filename;
-  filename << "/o/gmsh_output/";
+  filename << "../o/gmsh_output/";
 
   if (timestep<1000000)
     filename << "beams_t" << std::setw(6) << std::setfill('0') << timestep;
@@ -2429,24 +2438,21 @@ void CONTACT::Beam3cmanager::ResetAlllmuzawa()
 }
 
 /*----------------------------------------------------------------------*
- |  Update contact constraint norm                            popp 04/10|
+ |  Update contact constraint norm during uzawa iteration    meier 10/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
+void CONTACT::Beam3cmanager::UpdateConstrNormUzawa()
 {
-  //Remark: the value cnorm is only necessary in statmech. In the default case we have cnorm=NULL.
-  // some local variables
-  int dim = (int)pairs_.size();
-  int btsoldim = (int)btsolpairs_.size();
-
-  // vector holding the values of the penetration relative to the radius of the beam with the smaller radius
-  Epetra_SerialDenseVector gapvector(dim);
-  Epetra_SerialDenseVector btsolgapvector(btsoldim);
-
-  // initalize processor-local and global norms
-  double locnorm = 0.0;
-  double globnorm = 0.0;
-  double btsollocnorm = 0.0;
-  double btsolglobnorm = 0.0;
+  //Next we want to find out the maximal and minimal gap
+  //We have to distinguish between maximal and minimal gap, since our penalty
+  //force law can already become active for positive gaps.
+  double maxgap = 0.0;
+  double maxallgap = 0.0;
+  double mingap = 0.0;
+  double minallgap = 0.0;
+  double maxrelgap = 0.0;
+  double maxallrelgap = 0.0;
+  double minrelgap = 0.0;
+  double minallrelgap = 0.0;
 
   // loop over all pairs to find all gaps
   for (int i=0;i<(int)pairs_.size();++i)
@@ -2454,92 +2460,195 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
     // only relevant if current pair is active
     if (pairs_[i]->GetContactFlag() == true)
     {
-      totpenaltyenergy_ += pairs_[i]->GetEnergy();
+      //get smaller radius of the two elements:
+      double smallerradius=0.0;
+      double radius1=BEAMCONTACT::CalcEleRadius(pairs_[i]->Element1());
+      double radius2=BEAMCONTACT::CalcEleRadius(pairs_[i]->Element2());
+      if(radius1<radius2)
+        smallerradius=radius1;
+      else
+        smallerradius=radius2;
 
-#ifdef RELCONSTRTOL
-      // Retrieve beam radii
-      std::vector<double> radii(2,0.0);
-      for(int k=0; k<2;k++)
+      std::vector<double> pairgaps = pairs_[i]->GetGap();
+      for(int i=0;i<(int)pairgaps.size();i++)
       {
-        // get Element type
-        const DRT::Element* currele = pairs_[i]->Element1();
-        if(k==1)
-          currele = pairs_[i]->Element2();
+        double gap = pairgaps[i];
 
-        radii[k] = CalcEleRadius(currele);
+        double relgap = gap/smallerradius;
 
-        if(radii[k]==0.0)
-          dserror("beam radius is 0! Check your element type.");
+        if (gap>maxgap)
+          maxgap = gap;
+
+        if (gap<mingap)
+          mingap = gap;
+
+        if (relgap>maxrelgap)
+          maxrelgap = relgap;
+
+        if (relgap<minrelgap)
+          minrelgap = relgap;
       }
-
-      double smallerradius = std::min(radii[0], radii[1]);
-
-      gapvector[i] = pairs_[i]->GetGap()/smallerradius;
-#else
-      gapvector[i] = pairs_[i]->GetGap();
-#endif
     }
   }
 
-  // loop over all pairs to find all gaps
-  for (int i=0;i<(int)btsolpairs_.size();++i)
-  {
-    // only relevant if current pair is active
-    if (btsolpairs_[i]->GetContactFlag() == true)
-    {
+  //So far, we only have the processor local extrema, but we want the extrema of the whole problem
+  //As long as the beam contact discretization is full overlapping, all pairs are stored in all procs and
+  //don't need this procedure. However, for future applications (i.e. when abstain from a fully overlapping
+  //discretization) it might be useful.
+  Comm().MaxAll(&maxgap,&maxallgap,1);
+  Comm().MinAll(&mingap,&minallgap,1);
+  Comm().MaxAll(&maxrelgap,&maxallrelgap,1);
+  Comm().MinAll(&minrelgap,&minallrelgap,1);
 
+  //Set class variable
 #ifdef RELCONSTRTOL
-      double radius = 0.0;
-      // get Element type
-      const DRT::Element* currele = btsolpairs_[i]->Element1();
-      radius = CalcEleRadius(currele);
-
-      if(radius==0.0)
-        dserror("beam radius is 0! Check your element type.");
-
-      btsolgapvector[i] = btsolpairs_[i]->GetGap()/radius;
+  constrnorm_=fabs(minallrelgap);
 #else
-      btsolgapvector[i] = btsolpairs_[i]->GetGap();
+  constrnorm_=fabs(minallgap);
 #endif
-    }
-  }
-
-  // compute local constraint norm as a L-inf-norm
-  locnorm = gapvector.NormInf();
-  btsollocnorm = btsolgapvector.NormInf();
-
-  // communicate among all procs to find the global constraint norm
-  Comm().MaxAll(&locnorm,&globnorm,1);
-  Comm().MaxAll(&btsollocnorm,&btsolglobnorm,1);
-
-    //update penalty parameter: uncomment these lines  if necessary
-    //(only possible for AUGMENTED LAGRANGE strategy)
-//  bool updatepp = false;
-//  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(GeneralContactParameters(),"STRATEGY");
-//  if (soltype==INPAR::CONTACT::solution_auglag)
-//      updatepp = IncreaseCurrentpp(globnorm);
 
    // print results to screen
   Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
-  if (Comm().MyPID()==0 && cnorm==NULL && ioparams.get<int>("STDOUTEVRY",0))
+  if (Comm().MyPID()==0 && ioparams.get<int>("STDOUTEVRY",0))
   {
-    std::cout << std::endl << "*********************************************"<<std::endl;
-    std::cout << "Total Contact Energy = " << totpenaltyenergy_ << std::endl;
-    std::cout << "Global Constraint Norm = " << globnorm << std::endl;
-    std::cout << "Global BTS Constraint Norm = " << btsolglobnorm << std::endl;
-    std::cout << "BTB-Penalty parameter = " << currentpp_ << std::endl;
-    std::cout << "BTS-Penalty parameter = " << btspp_ << std::endl;
-    std::cout<<"*********************************************"<<std::endl;
+    std::cout << std::endl << "     ************************BTB*************************"<<std::endl;
+    std::cout << "      Penalty parameter         = " << currentpp_ << std::endl;
+    std::cout << "      Minimal current Gap       = " << minallgap << std::endl;
+    std::cout << "      Minimal total unconv. Gap = " << mintotalsimunconvgap_ << std::endl;
+    std::cout << "      Minimal current rel. Gap  = " << minallrelgap << std::endl;
+    std::cout << "      Current Constraint Norm   = " << constrnorm_ << std::endl;
+    std::cout << "      Maximal current Gap       = " << maxallgap << std::endl;
+    std::cout << "      Maximal current rel. Gap  = " << maxallrelgap << std::endl;
+    if ((int)btsolpairs_.size())
+    {
+      std::cout << std::endl << "     ************************BTS*************************"<<std::endl;
+      std::cout << "      BTS-Penalty parameter = " << btspp_ << std::endl;
+      std::cout << "      Current Constraint Norm = " << btsolconstrnorm_ << std::endl;
+    }
+    std::cout<<"      ****************************************************"<<std::endl;
   }
 
-  // update class variable
-  if(cnorm==NULL) //=standard case
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Update contact constraint norm                            popp 04/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::UpdateConstrNorm()
+{
+  //Next we want to find out the maximal and minimal gap
+  //We have to distinguish between maximal and minimal gap, since our penalty
+  //force law can already become active for positive gaps.
+  double maxgap = 0.0;
+  double maxallgap = 0.0;
+  double mingap = 0.0;
+  double minallgap = 0.0;
+  double maxrelgap = 0.0;
+  double maxallrelgap = 0.0;
+  double minrelgap = 0.0;
+  double minallrelgap = 0.0;
+
+  //Clear class variable
+  totpenaltyenergy_=0.0;
+
+  // loop over all pairs to find all gaps
+  for (int i=0;i<(int)pairs_.size();++i)
   {
-    constrnorm_ = globnorm;
-    btsolconstrnorm_ = btsolglobnorm;
+    // only relevant if current pair is active
+    if (pairs_[i]->GetContactFlag() == true)
+    {
+      //Update penalty energy
+      //TODO: error, falls nicht linpen law
+      totpenaltyenergy_ += pairs_[i]->GetEnergy();
+
+      //get smaller radius of the two elements:
+      double smallerradius=0.0;
+      double radius1=BEAMCONTACT::CalcEleRadius(pairs_[i]->Element1());
+      double radius2=BEAMCONTACT::CalcEleRadius(pairs_[i]->Element2());
+      if(radius1<radius2)
+        smallerradius=radius1;
+      else
+        smallerradius=radius2;
+
+      std::vector<double> pairgaps = pairs_[i]->GetGap();
+      for(int i=0;i<(int)pairgaps.size();i++)
+      {
+        double gap = pairgaps[i];
+
+        double relgap = gap/smallerradius;
+
+        if (gap>maxgap)
+          maxgap = gap;
+
+        if (gap<mingap)
+          mingap = gap;
+
+        if (relgap>maxrelgap)
+          maxrelgap = relgap;
+
+        if (relgap<minrelgap)
+          minrelgap = relgap;
+      }
+    }
   }
-  else //=necessary for statmech
-    *cnorm = globnorm;
+
+  //So far, we only have the processor local extrema, but we want the extrema of the whole problem
+  //As long as the beam contact discretization is full overlapping, all pairs are stored in all procs and
+  //don't need this procedure. However, for future applications (i.e. when abstain from a fully overlapping
+  //discretization) it might be useful.
+  Comm().MaxAll(&maxgap,&maxallgap,1);
+  Comm().MinAll(&mingap,&minallgap,1);
+  Comm().MaxAll(&maxrelgap,&maxallrelgap,1);
+  Comm().MinAll(&minrelgap,&minallrelgap,1);
+
+  //So far, we have determined the extrema of the current time step. Now, we want to determine the
+  //extrema of the total simulation:
+  if (maxallgap>maxtotalsimgap_)
+    maxtotalsimgap_ = maxallgap;
+
+  if (minallgap<mintotalsimgap_)
+    mintotalsimgap_ = minallgap;
+
+  if (maxallrelgap>maxtotalsimrelgap_)
+    maxtotalsimrelgap_ = maxallrelgap;
+
+  if (minallrelgap<mintotalsimrelgap_)
+    mintotalsimrelgap_ = minallrelgap;
+
+  //Set class variable
+#ifdef RELCONSTRTOL
+  constrnorm_=fabs(minallrelgap);
+#else
+  constrnorm_=fabs(minallgap);
+#endif
+
+  //TODO: Adapt this, as soon as we have a concrete implementation of beam-to-solid contact element pairs
+  btsolconstrnorm_ = 0.0;
+
+   // print results to screen
+  Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+  if (Comm().MyPID()==0 && ioparams.get<int>("STDOUTEVRY",0))
+  {
+    std::cout << std::endl << "      ***********************************BTB************************************"<<std::endl;
+    std::cout << "      Penalty parameter         = " << currentpp_ << std::endl;
+    std::cout << "      Minimal current Gap       = " << minallgap << std::endl;
+    std::cout << "      Minimal total Gap         = " << mintotalsimgap_ << std::endl;
+    std::cout << "      Minimal total unconv. Gap = " << mintotalsimunconvgap_ << std::endl;
+    std::cout << "      Minimal current rel. Gap  = " << minallrelgap << std::endl;
+    std::cout << "      Current Constraint Norm   = " << constrnorm_ << std::endl;
+    std::cout << "      Minimal total rel. Gap    = " << mintotalsimrelgap_ << std::endl;
+    std::cout << "      Maximal current Gap       = " << maxallgap << std::endl;
+    std::cout << "      Maximal total Gap         = " << maxtotalsimgap_ << std::endl;
+    std::cout << "      Maximal current rel. Gap  = " << maxallrelgap << std::endl;
+    std::cout << "      Maximal total rel. Gap    = " << maxtotalsimrelgap_ << std::endl;
+    if ((int)btsolpairs_.size())
+    {
+      std::cout << std::endl << "     ***********************************BTS************************************"<<std::endl;
+      std::cout << "      BTS-Penalty parameter = " << btspp_ << std::endl;
+      std::cout << "      Current Constraint Norm = " << btsolconstrnorm_ << std::endl;
+    }
+    std::cout<<"      **************************************************************************"<<std::endl;
+  }
 
   return;
 }
@@ -2634,7 +2743,10 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
   {
     // begin output
     if (Comm().MyPID()==0)
-      std::cout << "\nActive contact set--------------------------------------------------------------\n";
+    {
+      std::cout << "\n      Active contact set--------------------------------------------------------\n";
+      printf("      ID1            ID2              xi     eta    angle   gap         force \n");
+    }
     Comm().Barrier();
 
     // loop over all pairs
@@ -2643,10 +2755,6 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
       // check if this pair is active
       if (pairs_[i]->GetContactFlag())
       {
-        // get coordinates of contact point of each element
-        Epetra_SerialDenseVector x1 = pairs_[i]->GetX1();
-        Epetra_SerialDenseVector x2 = pairs_[i]->GetX2();
-
         // make sure to print each pair only once
         // (TODO: this is not yet enough...)
         int firsteleid = (pairs_[i]->Element1())->Id();
@@ -2655,16 +2763,21 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
         // abbreviations
         int id1 = (pairs_[i]->Element1())->Id();
         int id2 = (pairs_[i]->Element2())->Id();
-        double gap = pairs_[i]->GetGap();
-        double lm = pairs_[i]->Getlmuzawa() - currentpp_ * pairs_[i]->GetGap();
-        double force = pairs_[i]->GetContactForce();
+        std::vector<double> gaps = pairs_[i]->GetGap();
+        std::vector<double> forces = pairs_[i]->GetContactForce();
+        std::vector<double> angles = pairs_[i]->GetContactAngle();
+        std::vector<std::pair<double,double> > closestpoints = pairs_[i]->GetClosestPoint();
+        std::pair<int,int> numsegments = pairs_[i]->GetNumSegments();
+        std::vector<std::pair<int,int> > segmentids = pairs_[i]->GetSegmentIds();
 
         // print some output (use printf-method for formatted output)
         if (firstisinrowmap)
         {
-          printf("ACTIVE PAIR: %d & %d \t gap: %e \t force: %e \t lm: %e \n",id1,id2,gap,force,lm);
-          //printf("x1 = %e %e %e \t x2 = %e %e %e \n",x1[0],x1[1],x1[2],x2[0],x2[1],x2[2]);
-          fflush(stdout);
+          for(int j=0;j<(int)gaps.size();j++)
+          {
+            printf("      %-6d (%2d/%-2d) %-6d (%2d/%-2d)   %-6.2f %-6.2f %-7.2f %-11.2e %-11.2e \n",id1,segmentids[j].first+1,numsegments.first,id2,segmentids[j].second+1,numsegments.second,closestpoints[j].first,closestpoints[j].second,angles[j]/M_PI*180.0,gaps[j],forces[j]);
+            fflush(stdout);
+          }
         }
       }
     }
@@ -2776,7 +2889,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   Epetra_SerialDenseVector theta(3);
   Epetra_SerialDenseMatrix R(3,3);
 
-  double eleradius = CalcEleRadius(thisele);
+  double eleradius = BEAMCONTACT::CalcEleRadius(thisele);
 
   // declaring variable for color of elements
   double color = 1.0;
@@ -2943,7 +3056,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
   Epetra_SerialDenseMatrix R(3,3);
   Epetra_SerialDenseMatrix coord(3,2);
 
-  double eleradius = CalcEleRadius(thisele);
+  double eleradius = BEAMCONTACT::CalcEleRadius(thisele);
 
   // declaring variable for color of elements
   double color = 1.0;
@@ -3765,44 +3878,6 @@ void CONTACT::Beam3cmanager::SetElementTypeAndDistype(DRT::Element* ele1)
 }
 
 /*----------------------------------------------------------------------*
- |  Calculate beam radius (or get sphere radius)             meier 02/14|
- *----------------------------------------------------------------------*/
-double CONTACT::Beam3cmanager::CalcEleRadius(const DRT::Element* ele)
-{
-  double eleradius = 0.0;
-
-  const DRT::ElementType & eot = ele->ElementType();
-
-  if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(ele);
-    eleradius =sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-  }
-  if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ii*>(ele);
-    eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-  }
-  if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3eb* thisbeam = static_cast<const DRT::ELEMENTS::Beam3eb*>(ele);
-    eleradius = sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
-  }
-  if(eot == DRT::ELEMENTS::Beam3ebtorType::Instance())
-  {
-    const DRT::ELEMENTS::Beam3ebtor* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ebtor*>(ele);
-    eleradius = sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
-  }
-  if(eot == DRT::ELEMENTS::RigidsphereType::Instance())
-  {
-    const DRT::ELEMENTS::Rigidsphere* thissphere = static_cast<const DRT::ELEMENTS::Rigidsphere*>(ele);
-    eleradius = thissphere->Radius();
-  }
-
-  return eleradius;
-}
-
-/*----------------------------------------------------------------------*
  | Is element midpoint distance smaller than search radius?  meier 02/14|
  *----------------------------------------------------------------------*/
 bool CONTACT::Beam3cmanager::CloseMidpointDistance(const DRT::Element* ele1, const DRT::Element* ele2, std::map<int,LINALG::Matrix<3,1> >& currentpositions, const double sphericalsearchradius)
@@ -3813,7 +3888,7 @@ bool CONTACT::Beam3cmanager::CloseMidpointDistance(const DRT::Element* ele1, con
   LINALG::Matrix<3,1> diffvector(true);
 
   // get midpoint position of element 1
-  if (ele1->NumNode() == 2)   // 2-noded beam element
+  if (ele1->NumNode() == 2)   //2-noded beam element
   {
     const DRT::Node* node1ele1 = ele1->Nodes()[0];
     const DRT::Node* node2ele1 = ele1->Nodes()[1];
@@ -3821,7 +3896,7 @@ bool CONTACT::Beam3cmanager::CloseMidpointDistance(const DRT::Element* ele1, con
     for (int i=0;i<3;++i)
       midpos1(i) = 0.5*((currentpositions[node1ele1->Id()])(i)+(currentpositions[node2ele1->Id()])(i));
   }
-  else if (ele1->NumNode() == 1)  // rigidsphere element
+  else if (ele1->NumNode() == 1)  //rigidsphere element
   {
     const DRT::Node* node1ele1 = ele1->Nodes()[0];
 
@@ -3830,7 +3905,7 @@ bool CONTACT::Beam3cmanager::CloseMidpointDistance(const DRT::Element* ele1, con
   }
 
   // get midpoint position of element 2
-  if (ele2->NumNode() == 2)   // 2-noded beam element
+  if (ele2->NumNode() == 2)   //2-noded beam element
   {
     const DRT::Node* node1ele2 = ele2->Nodes()[0];
     const DRT::Node* node2ele2 = ele2->Nodes()[1];
@@ -3838,7 +3913,7 @@ bool CONTACT::Beam3cmanager::CloseMidpointDistance(const DRT::Element* ele1, con
     for (int i=0;i<3;++i)
       midpos2(i) = 0.5*((currentpositions[node1ele2->Id()])(i)+(currentpositions[node2ele2->Id()])(i));
   }
-  else if (ele2->NumNode() == 1)  // rigidsphere element
+  else if (ele2->NumNode() == 1)  //rigidsphere element
   {
     const DRT::Node* node1ele2 = ele2->Nodes()[0];
 

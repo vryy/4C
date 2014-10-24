@@ -42,7 +42,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
                                                                      const std::map<int,int>& dofoffsetmap,
                                                                      DRT::Element* element1,
                                                                      DRT::Element* element2,
-                                                                     Teuchos::ParameterList beamcontactparams):
+                                                                     Teuchos::ParameterList& beamcontactparams):
 pdiscret_(pdiscret),
 cdiscret_(cdiscret),
 dofoffsetmap_(dofoffsetmap),
@@ -173,23 +173,13 @@ radius2_(0.0)
     //TODO: Here we need a warning in case we have no additive bounding box extrusion value!
   }
 
-  searchboxinc_ = 0.0;
-  {
-    std::vector<double> extval(0);
-    std::istringstream PL(Teuchos::getNumericStringParameter(beamcontactparams,"BEAMS_EXTVAL"));
-    std::string word;
-    char* input;
-    while (PL >> word)
-      extval.push_back(std::strtod(word.c_str(), &input));
-    if((int)extval.size()>2)
-      dserror("BEAMS_EXTVAL should contain no more than two values. Check your input file.");
-    if(extval.size()==1)
-      searchboxinc_ = extval.at(0);
-    else
-      searchboxinc_ = std::max(extval.at(0),extval.at(1));
-  }
-  if(searchboxinc_==0.0)
-    dserror("Input parameter BEAMS_EXTVAL not set. Choose an (additive) bounding box extrusion value!");
+  searchboxinc_=BEAMCONTACT::DetermineSearchboxInc(beamcontactparams);
+
+  if(searchboxinc_<0.0)
+    dserror("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
+
+  if (DRT::INPUT::IntegralValue<int>(bcparams_,"BEAMS_NEWGAP") and !DRT::INPUT::IntegralValue<int>(beamcontactparams, "BEAMS_ADDITEXT"))
+    dserror("New gap function only possible when the flag BEAMS_ADDITEXT is set true!");
 
   int penaltylaw = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(beamcontactparams,"BEAMS_PENALTYLAW");
   if(penaltylaw != INPAR::BEAMCONTACT::pl_lp and penaltylaw != INPAR::BEAMCONTACT::pl_qp)
@@ -211,22 +201,6 @@ radius2_(0.0)
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  copy-constructor (public)                                meier 01/14|
- *----------------------------------------------------------------------*/
-template<const int numnodes , const int numnodalvalues>
-CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(const Beam3contactnew& old):
-pdiscret_(old.pdiscret_),
-cdiscret_(old.cdiscret_),
-dofoffsetmap_(old.dofoffsetmap_)
-{
-  dserror("ERROR: Copy constructor incomplete");
-  return;
-}
-/*----------------------------------------------------------------------*
- |  end: copy-constructor
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
  |  Evaluate the element (public)                             meier 02/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
@@ -234,7 +208,7 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate( LINALG::Spars
                                                                    Epetra_Vector& fint,
                                                                    const double& pp,
                                                                    std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap,
-                                                                   Teuchos::ParameterList timeintparams)
+                                                                   Teuchos::ParameterList& timeintparams)
 {
   //**********************************************************************
   // Evaluation of contact forces and stiffness
@@ -2970,6 +2944,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateOrthogonalityCo
   }
   else //smoothed
   {
+    std::cout << "Warning: The smoothing procedure is not consistent linearized so far! Thereto, the quantities lin_xi and "
+        "lin_eta have to be calculated consistent to the smoothed orthogonality condition below!" << std::endl;
     for (int i=0;i<3;i++)
     {
       f(0) += delta_r(i)*t1(i) / norm_delta_r;
@@ -3482,7 +3458,7 @@ template<const int numnodes , const int numnodalvalues>
 void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Updatelmuzawa(const double& currentpp)
 {
   // only update for active pairs, else reset
-  if (contactflag_) lmuzawa_ -=  currentpp * GetGap();
+  if (contactflag_) lmuzawa_ -=  currentpp * GetGap()[0];
   else              lmuzawa_ = 0.0;
 
   return;
@@ -3807,66 +3783,6 @@ double CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetJacobi(DRT::Elemen
   }
 
   return jacobi;
-}
-
-Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Impl( const int numnodes,
-                                                                      const int numnodalvalues,
-                                                                      const DRT::Discretization& pdiscret,
-                                                                      const DRT::Discretization& cdiscret,
-                                                                      const std::map<int,int>& dofoffsetmap,
-                                                                      DRT::Element* element1,
-                                                                      DRT::Element* element2,
-                                                                      Teuchos::ParameterList beamcontactparams)
-{
-
-  switch (numnodalvalues)
-  {
-    case 1:
-    {
-      switch (numnodes)
-      {
-        case 2:
-        {
-          return Teuchos::rcp (new CONTACT::Beam3contactnew<2,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beamcontactparams));
-        }
-        case 3:
-        {
-          return Teuchos::rcp (new CONTACT::Beam3contactnew<3,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beamcontactparams));
-        }
-        case 4:
-        {
-          return Teuchos::rcp (new CONTACT::Beam3contactnew<4,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beamcontactparams));
-        }
-        case 5:
-        {
-          return Teuchos::rcp (new CONTACT::Beam3contactnew<5,1>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beamcontactparams));
-        }
-        default:
-          dserror("No valid template parameter for the number of nodes (numnodes = 2,3,4,5 for Reissner beams) available!");
-          break;
-      }
-      break;
-    }
-    case 2:
-    {
-      switch (numnodes)
-      {
-        case 2:
-        {
-          return Teuchos::rcp (new CONTACT::Beam3contactnew<2,2>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beamcontactparams));
-        }
-        default:
-          dserror("No valid template parameter for the number of nodes (only numnodes = 2 for Kirchhoff beams valid so far) available!");
-          break;
-      }
-      break;
-    }
-    default:
-      dserror("No valid template parameter for the Number of nodal values (numnodalvalues = 1 for Reissner beams, numnodalvalues = 2 for Kirchhoff beams) available!");
-      break;
-  }
-  return Teuchos::null;
-
 }
 
 #ifdef FADCHECKS
