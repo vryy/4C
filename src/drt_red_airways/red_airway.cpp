@@ -4,11 +4,11 @@
 \brief
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
-            </pre>
+            089 - 289-15255
+</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -52,6 +52,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirwayType::Create( const int id, c
 }
 
 
+/*--------------------------------------------------------------------  *
+ | Read RED_AIRWAY element line and add element specific parameters     |
+ |                                                             (public) |
+ |                                                           roth 10/14 |
+ *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["RED_AIRWAY"];
@@ -125,6 +130,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::RedAirway::Shape() const
   case  3: return line3;
   default:
     dserror("unexpected number of nodes %d", NumNode());
+    break;
   }
   return dis_none;
 }
@@ -262,7 +268,6 @@ bool DRT::ELEMENTS::RedAirway::VisData(const std::string& name, std::vector<doub
 
   return false;
 }
-
 
 
 /*----------------------------------------------------------------------*

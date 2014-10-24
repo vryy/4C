@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file red_airway_resulttest.H
+
+\brief testing of Red_Airway calculation results
+
+<pre>
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15255
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef RED_AIRWAY_RESULTTEST_H
 #define RED_AIRWAY_RESULTTEST_H

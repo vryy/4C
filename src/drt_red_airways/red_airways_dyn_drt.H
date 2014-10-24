@@ -5,14 +5,13 @@
 
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/
-/************/
 #ifndef RED_AIRWAYS_DRT_DRT_H
 #define RED_AIRWAYS_DRT_DRT_H
 
@@ -33,4 +32,3 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
 
 
 #endif  /* #ifndef RED_AIRWAYS_DRT_DRT_H */
-

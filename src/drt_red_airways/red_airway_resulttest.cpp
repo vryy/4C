@@ -2,13 +2,13 @@
 /*!
 \file red_airway_resulttest.cpp
 
-\brief testing of Red_Ariway calculation results
+\brief testing of Red_Airway calculation results
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 */
 /*----------------------------------------------------------------------*/

@@ -566,6 +566,10 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_isovolHUdependentneohooke.cpp
   src/drt_patspec/patspec.cpp
   src/drt_mat/maxwell_0d_acinus.cpp
+  src/drt_mat/maxwell_0d_acinus_NeoHookean.cpp
+  src/drt_mat/maxwell_0d_acinus_Exponential.cpp
+  src/drt_mat/maxwell_0d_acinus_DoubleExponential.cpp
+  src/drt_mat/maxwell_0d_acinus_Ogden.cpp
   src/drt_mat/hemoglobin_0d_O2_saturation.cpp
   src/drt_mat/air_0d_O2_saturation.cpp
   src/drt_mat/particle_mat.cpp

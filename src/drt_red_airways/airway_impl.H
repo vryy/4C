@@ -4,10 +4,10 @@
 \brief Internal implementation of airway_impl element
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 */
 /*----------------------------------------------------------------------*/

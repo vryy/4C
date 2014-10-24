@@ -108,6 +108,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::RedInterAcinarDep::Shape() const
   case  3: return line3;
   default:
     dserror("unexpected number of nodes %d", NumNode());
+    break;
   }
   return dis_none;
 }

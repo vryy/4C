@@ -2,10 +2,10 @@
 \file red_airway.H
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -24,9 +24,6 @@ Maintainer: Mahmoud Ismail
 
 
 // forward declarations
-//struct _MATERIAL;
-
-
 namespace DRT
 {
 // forward declarations
@@ -117,8 +114,8 @@ public:
   virtual int NumLine() const
   {if (NumNode()==2) return 1;
       else {
-	  dserror("Could not determine number of lines");
-	  return -1;
+          dserror("Could not determine number of lines");
+          return -1;
       }
   }
 
@@ -196,24 +193,9 @@ public:
         element dofs that are condensed internally should NOT be considered.
   */
   virtual int NumDofPerElement() const
-    {
-#if 0
-      if (elemType_ == "RLC")
-      {
-        return 1;
-      }
-      if (elemType_ == "ViscoElasticRLC")
-      {
-        return 2;
-      }
-      else
-      {
-        return 0;
-      }
-#else
-      return 0;
-#endif
-    }
+  {
+    return 0;
+  }
 
   /*!
   \brief Print this element
@@ -534,8 +516,8 @@ public:
   virtual int NumLine() const
   {if (NumNode()==2) return 1;
       else {
-	  dserror("Could not determine number of lines");
-	  return -1;
+          dserror("Could not determine number of lines");
+          return -1;
       }
   }
 
@@ -788,6 +770,8 @@ public:
   //! get element parameters
   void           getParams(std::string name, int    & var);
 
+  const std::map<std::string, double> getAllParams(){return elemParams_;}
+
 private:
 
   //! action parameters recognized by acinus
@@ -935,8 +919,8 @@ public:
   virtual int NumLine() const
   {if (NumNode()==2) return 1;
       else {
-	  dserror("Could not determine number of lines");
-	  return -1;
+          dserror("Could not determine number of lines");
+          return -1;
       }
   }
 
@@ -1313,8 +1297,8 @@ public:
   virtual int NumLine() const
   {if (NumNode()==2) return 1;
       else {
-	  dserror("Could not determine number of lines");
-	  return -1;
+          dserror("Could not determine number of lines");
+          return -1;
       }
   }
 

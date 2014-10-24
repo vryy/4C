@@ -1,14 +1,14 @@
 /*!----------------------------------------------------------------------
 \file red_airways_dyn_drt.cpp
 \brief Main control routine for reduced dimensional airways network
- (time) integration. Calls
+ (time) integration.
 
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -31,13 +31,11 @@ Maintainer: Mahmoud Ismail
 
 
 /*----------------------------------------------------------------------*
- * Main control routine for reduced dimensional airway network including
- * various solvers:
- *
- *        o
- *
+ * Main control routine for reduced dimensional airway network including|
+ * various solvers                                                      |
+ *                                                                      |
+ *                                                                      |
  *----------------------------------------------------------------------*/
-
 void dyn_red_airways_drt()
 {
   dyn_red_airways_drt(false);
@@ -45,110 +43,89 @@ void dyn_red_airways_drt()
 
 Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool CoupledTo3D)
 {
-#if 1
-
   if(DRT::Problem::Instance()->DoesExistDis("red_airway")==false)
   {
     return Teuchos::null;
   }
-#endif
-  // -------------------------------------------------------------------
-  // access the discretization
-  // -------------------------------------------------------------------
+
+  // 1. Access the discretization
   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
   actdis = DRT::Problem::Instance()->GetDis("red_airway");
 
-  // -------------------------------------------------------------------
-  // set degrees of freedom in the discretization
-  // -------------------------------------------------------------------
+  //Set degrees of freedom in the discretization
   if (!actdis->Filled())
   {
     actdis->FillComplete();
   }
 
-  // -------------------------------------------------------------------
-  // If discretization is empty, then return empty time integration
-  // -------------------------------------------------------------------
+  //If discretization is empty, then return empty time integration
   if (actdis->NumGlobalElements()<1)
   {
     return Teuchos::null;
   }
 
-  // -------------------------------------------------------------------
-  // context for output and restart
-  // -------------------------------------------------------------------
+  // 2. Context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter>  output = actdis->Writer();
   output->WriteMesh(0,0.0);
 
-  // -------------------------------------------------------------------
-  // set some pointers and variables
-  // -------------------------------------------------------------------
-  // const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
-  //  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
+  // 3. Set pointers and variables for ParameterList rawdyn
+  const Teuchos::ParameterList& rawdyn = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
 
+  //Print default parameters
   if (actdis->Comm().MyPID()==0)
+  {
     DRT::INPUT::PrintDefaultParameters(IO::cout, rawdyn);
+  }
 
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  // get the solver number
+  // 4. Create a solver
+  //Get the solver number
   const int linsolvernumber = rawdyn.get<int>("LINEAR_SOLVER");
-  // check if the present solver has a valid solver number
+  //Check if the present solver has a valid solver number
   if (linsolvernumber == (-1))
+  {
     dserror("no linear solver defined. Please set LINEAR_SOLVER in REDUCED DIMENSIONAL AIRWAYS DYNAMIC to a valid number!");
+  }
+  //Create the solver
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp( new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                                    actdis->Comm(),
                                                    DRT::Problem::Instance()->ErrorFile()->Handle()),
-                                    false);
+                                                   false);
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  // -------------------------------------------------------------------
-  // set parameters in list required for all schemes
-  // -------------------------------------------------------------------
+  // 5. Set parameters in list required for all schemes
   Teuchos::ParameterList airwaystimeparams;
 
-  // -------------------------------------- number of degrees of freedom
-  // number of degrees of freedom
+  //Number of degrees of freedom
   const int ndim = DRT::Problem::Instance()->NDim();
   airwaystimeparams.set<int>              ("number of degrees of freedom" ,1*ndim);
 
-  // -------------------------------------------------- time integration
-  // the default time step size
+  //Time step size
   airwaystimeparams.set<double>           ("time step size"           ,rawdyn.get<double>("TIMESTEP"));
-  // maximum number of timesteps
+  //Maximum number of timesteps
   airwaystimeparams.set<int>              ("max number timesteps"     ,rawdyn.get<int>("NUMSTEP"));
 
-  // ----------------------------------------------- restart and output
-  // restart
+  //Restart
   airwaystimeparams.set                  ("write restart every"       ,rawdyn.get<int>("RESTARTEVRY"));
-  // solution output
+  //Solution output
   airwaystimeparams.set                  ("write solution every"      ,rawdyn.get<int>("UPRES"));
 
-  // ----------------------------------------------- solver parameters
-  // solver type
+  //Solver type
   airwaystimeparams.set                  ("solver type"             ,rawdyn.get<std::string>("SOLVERTYPE"));
-  // tolerance
+  //Tolerance
   airwaystimeparams.set                  ("tolerance"               ,rawdyn.get<double>("TOLERANCE"));
-  // maximum number of iterations
+  //Maximum number of iterations
   airwaystimeparams.set                  ("maximum iteration steps" ,rawdyn.get<int>("MAXITERATIONS"));
-  // solveScatra
+  //SolveScatra
   if (rawdyn.get<string>("SOLVESCATRA")=="yes")
     airwaystimeparams.set                  ("SolveScatra" ,true);
   else
     airwaystimeparams.set                  ("SolveScatra" ,false);
 
-  //------------------------------------------------------------------
-  // create all vectors and variables associated with the time
+  // 6. Create all vectors and variables associated with the time
   // integration (call the constructor);
   // the only parameter from the list required here is the number of
   // velocity degrees of freedom
-  //------------------------------------------------------------------
-
-
-  Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> airwayimplicit
-    =
+  Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> airwayimplicit =
     Teuchos::rcp(new AIRWAY::RedAirwayImplicitTimeInt(actdis,*solver,airwaystimeparams,*output));
 
   // Initialize state save vectors
@@ -157,35 +134,32 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
     airwayimplicit->InitSaveState();
   }
 
-  // initial field from restart or calculated by given function
-
+  //Initial field from restart or calculated by given function
   const int restart = DRT::Problem::Instance()->Restart();
   if (restart && !CoupledTo3D)
   {
-    // read the restart information, set vectors and variables
+    //Read the restart information, set vectors and variables
     airwayimplicit->ReadRestart(restart);
   }
-  else
-  {
 
-  }
-
+  //Handle errors
   airwaystimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
   if (!CoupledTo3D)
   {
-    // call time-integration (or stationary) scheme
+    //Call time-integration scheme for 0D problem
     Teuchos::RCP<Teuchos::ParameterList> param_temp;
     airwayimplicit->Integrate();
 
+    //Create resulttest
     Teuchos::RCP<DRT::ResultTest> resulttest
       = Teuchos::rcp(new AIRWAY::RedAirwayResultTest(*airwayimplicit));
 
+    //Resulttest for 0D problem and testing
     DRT::Problem::Instance()->AddFieldTest(resulttest);
     DRT::Problem::Instance()->TestAll(actdis->Comm());
 
     return airwayimplicit;
-    //    return  Teuchos::null;
   }
   else
   {
@@ -222,7 +196,7 @@ void redairway_tissue_dyn()
   DRT::Problem::Instance()->AddFieldTest(redairway_tissue->RedAirwayField()->CreateFieldTest());
   DRT::Problem::Instance()->AddFieldTest(redairway_tissue->StructureField()->CreateFieldTest());
 
-  // do the actual testing
+  //Do the actual testing
   DRT::Problem::Instance()->TestAll(actdis->Comm());
 
 }

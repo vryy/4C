@@ -5,10 +5,10 @@
 \brief Internal implementation of RedAcinus element
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -52,6 +52,7 @@ DRT::ELEMENTS::RedAcinusImplInterface* DRT::ELEMENTS::RedAcinusImplInterface::Im
   }
   default:
     dserror("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
+    break;
   }
   return NULL;
 }
@@ -83,39 +84,26 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec3_epetra,
   Teuchos::RCP<MAT::Material> mat)
 {
-  //  const int   myrank  = discretization.Comm().MyPID();
-
-  //  const int numnode = iel;
   const int elemVecdim = elevec1_epetra.Length () ;
   std::vector<int>::iterator it_vcr;
-
-  // construct views
-  //  LINALG::Matrix<1*iel,1*iel> elemat1(elemat1_epetra.A(),true);
-  //  LINALG::Matrix<1*iel,    1> elevec1(elevec1_epetra.A(),true);
-  // elemat2, elevec2, and elevec3 are never used anyway
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
   //----------------------------------------------------------------------
-
   // get time-step size
   const double dt = params.get<double>("time step size");
-
   // get time
   const double time = params.get<double>("total time");
 
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
   //----------------------------------------------------------------------
-
-
   // flag for higher order elements
-  //  bool higher_order_ele = ele->isHigherOrderElement(distype);
+  // bool higher_order_ele = ele->isHigherOrderElement(distype);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
-
   Teuchos::RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
   Teuchos::RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
   Teuchos::RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
@@ -208,6 +196,8 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
 
   double Ao = 0.0;
   ele->getParams("Area",Ao);
+
+  //Put zeros on second line of matrix and rhs in case of interacinar linker
   if (myial[1] > 0.0)
   {
     elemat1_epetra(1,0)=0.0;
@@ -243,9 +233,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
   //  Teuchos::RCP<Epetra_Vector> a_volume      = params.get<Teuchos::RCP<Epetra_Vector> >("acini_volume");
   Teuchos::RCP<Epetra_Vector> a_e_volume    = params.get<Teuchos::RCP<Epetra_Vector> >("acini_e_volume");
 
-  //  std::vector<int>::iterator it = lm.begin();
-
-  //std::vector<int> lmowner;
   std::vector<int> lmstride;
   Teuchos::RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
   ele->LocationVector(discretization,lm,*lmowner,lmstride);
@@ -274,7 +261,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
   //--------------------------------------------------------------------
   // get the generation numbers
   //--------------------------------------------------------------------
-  //  if(myrank == ele->Owner())
   for (int i = 0; i<2; i++)
   {
     if(ele->Nodes()[i]->GetCondition("RedAirwayEvalLungVolCond"))
@@ -361,6 +347,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
   }
 }//AcinusImpl::Initial
 
+
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  |                                                                      |
@@ -378,350 +365,40 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
   double                                   time,
   double                                   dt)
 {
-  //  const int elemVecdim = epnp.Length () ;
-  double E1 = 0.0;
-  double E2 = 0.0;
-  double Rt = 0.0;
-  double Ra = 0.0;
-  if(material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus)
+
+  // Decide which Acinus material should be used
+  if((material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_neohookean) ||
+      (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_exponential) ||
+      (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_doubleexponential) ||
+      (material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_ogden))
   {
-    // get actual material
-    const MAT::Maxwell_0d_acinus* actmat = static_cast<const MAT::Maxwell_0d_acinus*>(material.get());
-    E1 = actmat->Stiffness1();
-    E2 = actmat->Stiffness2();
-    Rt = actmat->Viscosity1();
-    Ra = actmat->Viscosity2();
+    double VolAcinus;
+    ele->getParams("AcinusVolume",VolAcinus);
+    double volAlvDuct;
+    ele->getParams("AlveolarDuctVolume",volAlvDuct);
+    const double NumOfAcini = double(floor(VolAcinus/volAlvDuct));
+
+    const Teuchos::RCP<MAT::Maxwell_0d_acinus> acinus_mat = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(ele->Material());
+
+    //Evaluate material law for acinus
+    acinus_mat->Evaluate(epnp,
+                         epn,
+                         epnm,
+                         sysmat,
+                         rhs,
+                         params,
+                         NumOfAcini,
+                         volAlvDuct,
+                         time,
+                         dt);
   }
   else
   {
-    dserror("Material law is not a Newtonia fluid");
-    exit(1);
-  }
-
-  // check here, if we really have an acinus !!
-
-  rhs.Scale(0.0);
-  sysmat.Scale(0.0);
-
-
-  double q_out    = params.get<double>("qout_n");
-
-  // get the generation number
-  int generation = 0;
-  ele->getParams("Generation",generation);
-
-
-  /********** START HERE ************/
-
-  // -------------------------------------------------------------------
-  // Adding the acinus model if Prescribed
-  // -------------------------------------------------------------------
-
-  double acin_vnp = params.get<double>("acin_vnp");
-  double acin_vn  = params.get<double>("acin_vn");
-
-
-  //------------------------------------------------------------------
-  // Evaluate the number of acini on the end of an outlet.
-  // This is hard coded for now, but will be fixed later
-  //
-  // For now Schroters model is assumed to be Vmodel = 1mm^3
-  // Thus we should be given the total-acini-volume/total-t-bronchi-area
-  // to calculate the number of Schroters acini at each outlet
-  //------------------------------------------------------------------
-
-  double qnp = params.get<double>("qin_np");
-  double qn  = params.get<double>("qin_n");
-  double qnm = params.get<double>("qin_nm");
-
-
-  //----------------------------------------------------------------
-  // Read in the material information
-  //----------------------------------------------------------------
-  double VolAcinus;
-  ele->getParams("AcinusVolume",VolAcinus);
-  double volAlvDuct;
-  ele->getParams("AlveolarDuctVolume",volAlvDuct);
-  //  std::cout<<"Acinus Vol: "<<VolAcinus<<std::endl;
-  //  std::cout<<"AlvDuc Vol: "<<volAlvDuct<<std::endl;
-  const double NumOfAcini = double(floor(VolAcinus/volAlvDuct));
-
-  if (NumOfAcini < 1.0)
-  {
-    dserror("Acinus condition at node (%d) has zero acini",ele->Id());
-  }
-
-
-  double p1nm = epnm(0);
-  double p1n  = epn(0);
-
-  double p2nm = epnm(1);
-  double p2n  = epn(1);
-
-  double vnp= acin_vnp;
-  double vn = acin_vn;
-
-  if (ele->Type() ==  "NeoHookean")
-  {
-    const double Kp_np = 1.0/(E1*dt);
-    const double Kp_n  = 1.0/(E1*dt);
-
-    sysmat(0,0) = -1.0*(Kp_np)*NumOfAcini; sysmat(0,1) =  1.0*(Kp_np)*NumOfAcini;
-    sysmat(1,0) =  1.0*(Kp_np)*NumOfAcini; sysmat(1,1) = -1.0*(Kp_np)*NumOfAcini;
-
-    rhs(0)      = -1.0*(Kp_n*(p1n-p2n))*NumOfAcini;
-    rhs(1)      =  1.0*(Kp_n*(p1n-p2n))*NumOfAcini;
-  }
-  else if (ele->Type() ==  "KelvinVoigt")
-  {
-    const double Kp_np = 2.0/(E1*dt) + 1.0/Rt;
-    const double Kp_n  = 2.0/(E1*dt) - 1.0/Rt;
-
-    sysmat(0,0)  = -1.0*(Kp_np*NumOfAcini); sysmat(0,1)  =  1.0*(Kp_np*NumOfAcini);
-    sysmat(1,0)  =  1.0*(Kp_np*NumOfAcini); sysmat(1,1)  = -1.0*(Kp_np*NumOfAcini);
-
-    rhs(0)       = -1.0*(q_out + p1n*NumOfAcini * Kp_n);
-    rhs(1)       =  1.0*(q_out + p1n*NumOfAcini * Kp_n);
-  }
-  else if (ele->Type() ==  "ViscoElastic_2dof")
-  {
-    const double Kp_np = E2/dt + Rt/(dt*dt);
-    const double Kp_n  = E2/dt + 2.0*Rt/(dt*dt);
-    const double Kp_nm = -Rt/(dt*dt);
-    const double Kq_np = E1*E2 + Rt*(E1 + E2)/dt;
-    const double Kq_n  = -Rt*(E1+E2)/dt;
-
-    sysmat(0,0) = -1.0*( Kp_np/Kq_np)*NumOfAcini; sysmat(0,1) =  1.0*( Kp_np/Kq_np)*NumOfAcini;
-    sysmat(1,0) =  1.0*( Kp_np/Kq_np)*NumOfAcini; sysmat(1,1) = -1.0*( Kp_np/Kq_np)*NumOfAcini;
-
-    rhs(0)      = -1.0*((Kp_n*(p1n-p2n) + Kp_nm*(p1nm-p2nm))*NumOfAcini/Kq_np + Kq_n/Kq_np*qn);
-    rhs(1)      =  1.0*((Kp_n*(p1n-p2n) + Kp_nm*(p1nm-p2nm))*NumOfAcini/Kq_np + Kq_n/Kq_np*qn);
-
-  }
-  else if (ele->Type() ==  "ViscoElastic_3dof")
-  {
-    const double Kp_np = Rt/(dt*dt) + E2/dt;
-    const double Kp_n  = -2.0*Rt/(dt*dt) - E2/dt;
-    const double Kp_nm = Rt/(dt*dt);
-
-    const double Kq_np = Ra*Rt/(dt*dt) + (E1*Rt + E2*Ra + E2*Rt)/dt + E1*E2;
-    const double Kq_n  = -2.0*Ra*Rt/(dt*dt) - (E1*Rt + E2*Ra + E2*Rt)/dt;
-    const double Kq_nm = Ra*Rt/(dt*dt);
-
-    sysmat(0,0) = -1.0*( Kp_np/Kq_np)*NumOfAcini; sysmat(0,1) =  1.0*( Kp_np/Kq_np)*NumOfAcini;
-    sysmat(1,0) =  1.0*( Kp_np/Kq_np)*NumOfAcini; sysmat(1,1) = -1.0*( Kp_np/Kq_np)*NumOfAcini;
-
-    rhs(0)      = -1.0*(-(Kp_n*(p1n-p2n) + Kp_nm*(p1nm-p2nm))*NumOfAcini/Kq_np + (Kq_n*qn + Kq_nm*qnm)/Kq_np);
-    rhs(1)      =  1.0*(-(Kp_n*(p1n-p2n) + Kp_nm*(p1nm-p2nm))*NumOfAcini/Kq_np + (Kq_n*qn + Kq_nm*qnm)/Kq_np);
-
-  }
-  else if (ele->Type() ==  "Exponential")
-  {
-    const double Vo  = volAlvDuct;
-    double dvnp= (vnp/NumOfAcini)- Vo;
-    double dvn = (vn /NumOfAcini)- Vo;
-
-    //------------------------------------------------------------
-    // V  = A + B*exp(-K*P)
-    //
-    // The P-V curve is fitted to create the following
-    // P1 = E1.(V-Vo)
-    //
-    // E1 = a + b.(V-Vo) + c.exp(d.(V-Vo))
-    //------------------------------------------------------------
-
-    double kp_np = Rt/(E2*dt)+1;
-    double kp_n  =-Rt/(E2*dt);
-    double kq_np = Rt*Ra/(E2*dt) + (Ra+Rt);
-    double kq_n  =-Rt*Ra/(E2*dt);
-
-    double term_nonlin = 0.0;
-
-    //------------------------------------------------------------
-    // for now the (a,b,c,d) components are not read from the
-    // input file
-    //------------------------------------------------------------
-    double a = 6449.0 ;
-    double b = 33557.7;
-    double c = 6.5158;
-    double d = 47.9892;
-
-    ele->getParams("E1_0",a);
-    ele->getParams("E1_LIN",b);
-    ele->getParams("E1_EXP",c);
-    ele->getParams("TAU",d);
-
-    //------------------------------------------------------------
-    // get the terms assosciated with the nonlinear behavior of
-    // E1
-    //------------------------------------------------------------
-    double pnpi = 0.0;
-    double pnpi2= 0.0;
-    double dpnpi_dt = 0.0;
-    double dpnpi2_dt= 0.0;
-
-    // componets of linearized E1
-    pnpi      = (a + b*dvnp + c*exp(d*dvnp))*dvnp;
-    pnpi2     = (a + 2*b*dvnp + c*exp(d*dvnp)*(d*dvnp+1));
-
-    // componets of linearized d(E1)/dt
-    dpnpi_dt  = (a+2*b*dvnp+c*exp(d*dvnp)*(1+d*dvnp))*(dvnp-dvn)/dt;
-    dpnpi2_dt = (2*b+d*c*exp(d*dvnp)*(1+d*dvnp) + c*d*exp(d*dvnp))*(dvnp-dvn)/dt + (a+2*b*dvnp+c*exp(d*dvnp)*(1+d*dvnp))/dt;
-
-    term_nonlin = pnpi + pnpi2*(-(dvnp) +(qn/NumOfAcini)*dt/2 + dvn);
-    kq_np = kq_np + pnpi2/2*dt;
-    term_nonlin = term_nonlin + dpnpi_dt*Rt/E2  + dpnpi2_dt*Rt/E2 *(-(dvnp)+(qnp/NumOfAcini)*dt/2 + dvn);
-    kq_np = kq_np + dpnpi2_dt*Rt/E2/2*dt;
-
-    sysmat(0,0) = -1.0*( kp_np/kq_np)*NumOfAcini;   sysmat(0,1) =  1.0*( kp_np/kq_np)*NumOfAcini;
-    sysmat(1,0) =  1.0*( kp_np/kq_np)*NumOfAcini;   sysmat(1,1) = -1.0*( kp_np/kq_np)*NumOfAcini;
-
-    rhs(0)      = -1.0*(-(kp_n*(p1n-p2n) - term_nonlin)*NumOfAcini/kq_np +( kq_n*qn)/kq_np);
-    rhs(1)      =  1.0*(-(kp_n*(p1n-p2n) - term_nonlin)*NumOfAcini/kq_np +( kq_n*qn)/kq_np);
-
-  }
-  else if (ele->Type() ==  "DoubleExponential")
-  {
-    const double Vo  = volAlvDuct;
-    double dvnp= (vnp/NumOfAcini)- Vo;
-    double dvn = (vn /NumOfAcini)- Vo;
-
-    //------------------------------------------------------------
-    // V  = A + B*exp(-K*P)
-    //
-    // The P-V curve is fitted to create the following
-    // P1 = E1.(V-Vo)
-    //
-    // E1 = a + b.(V-Vo) + c.exp(d.(V-Vo))
-    //------------------------------------------------------------
-    double kp_np = Rt/(E2*dt)+1.0;
-    double kp_n  =-Rt/(E2*dt);
-    double kq_np = Rt*Ra/(E2*dt) + (Ra+Rt);
-    double kq_n  =-Rt*Ra/(E2*dt);
-
-    double term_nonlin = 0.0;
-    //------------------------------------------------------------
-    // for now the (a,b,c,d) components are not read from the
-    // input file
-    //------------------------------------------------------------
-    // OLD VALUES
-    //        double a = 6449.0 ;
-    //        double b = 33557.7;
-    //        double c = 6.5158;
-    //        double d = 47.9892;
-
-    // NEW VALUES
-    double a = 6510.99;
-    double b = 3.5228E04;
-    double c = 6.97154E-06;
-    double d = 144.716;
-
-    double a2= 0.0;
-    double b2= 0.0;
-    double c2= 38000.0*1.4;
-    double d2=-90.0000;
-
-    ele->getParams("E1_01"  ,a);
-    ele->getParams("E1_LIN1",b);
-    ele->getParams("E1_EXP1",c);
-    ele->getParams("TAU1"   ,d);
-
-    ele->getParams("E1_02"  ,a2);
-    ele->getParams("E1_LIN2",b2);
-    ele->getParams("E1_EXP2",c2);
-    ele->getParams("TAU2"   ,d2);
-
-    //------------------------------------------------------------
-    // get the terms assosciated with the nonlinear behavior of
-    // E1
-    //------------------------------------------------------------
-    double pnpi = 0.0;
-    double pnpi2= 0.0;
-    double dpnpi_dt = 0.0;
-    double dpnpi2_dt= 0.0;
-
-    // componets of linearized E1
-    pnpi      = (a + b *dvnp + c *exp(d *dvnp))*dvnp;
-    pnpi     += (a2+ b2*dvnp + c2*exp(d2*dvnp))*dvnp;
-
-    pnpi2     = (a + 2.0*b *dvnp + c *exp(d *dvnp)*(d *dvnp+1.0));
-    pnpi2    += (a2+ 2.0*b2*dvnp + c2*exp(d2*dvnp)*(d2*dvnp+1.0));
-
-    // componets of linearized d(E1)/dt
-    dpnpi_dt  = (a +2.0*b *dvnp+c *exp(d *dvnp)*(1.0+d *dvnp))*(dvnp-dvn)/dt;
-    dpnpi_dt += (a2+2.0*b2*dvnp+c2*exp(d2*dvnp)*(1.0+d2*dvnp))*(dvnp-dvn)/dt;
-
-    dpnpi2_dt = (2.0*b +d *c *exp(d *dvnp)*(1.0+d *dvnp) + c *d *exp(d *dvnp))*(dvnp-dvn)/dt + (a +2.0*b *dvnp+c *exp(d *dvnp)*(1.0+d *dvnp))/dt;
-    dpnpi2_dt+= (2.0*b2+d2*c2*exp(d2*dvnp)*(1.0+d2*dvnp) + c2*d2*exp(d2*dvnp))*(dvnp-dvn)/dt + (a2+2.0*b2*dvnp+c2*exp(d2*dvnp)*(1.0+d2*dvnp))/dt;
-
-    // Add up the nonlinear terms
-
-
-
-    //---------------
-    term_nonlin = pnpi + pnpi2*(-(dvnp) +(qn/NumOfAcini)*dt/2.0 + dvn);
-    kq_np = kq_np + pnpi2/2.0*dt;
-    term_nonlin = term_nonlin + dpnpi_dt*Rt/E2  + dpnpi2_dt*Rt/E2 *(-(dvnp)+(qnp/NumOfAcini)*dt/2.0 + dvn);
-    kq_np = kq_np + dpnpi2_dt*Rt/E2/2.0*dt;
-
-    sysmat(0,0) = -1.0*( kp_np/kq_np)*NumOfAcini; sysmat(0,1) =  1.0*( kp_np/kq_np)*NumOfAcini;
-    sysmat(1,0) =  1.0*( kp_np/kq_np)*NumOfAcini; sysmat(1,1) = -1.0*( kp_np/kq_np)*NumOfAcini;
-
-    rhs(0)      = -1.0*((- kp_n*(p1n-p2n) + term_nonlin)*NumOfAcini/kq_np +(kq_n*qn)/kq_np);
-    rhs(1)      =  1.0*((- kp_n*(p1n-p2n) + term_nonlin)*NumOfAcini/kq_np +(kq_n*qn)/kq_np);
-  }
-  /* Acinus Type "VolumetricOgden": continuum mechanics derivation of cauchy stress (=hydrostatic pressure)
-     for Ogden material for purely volumetric deformation                                  (croth 08/2014)*/
-  else if (ele->Type() ==  "VolumetricOgden")
-  {
-    //Variables for acinus
-    const double Vo  = volAlvDuct;
-    double vi_n  = (acin_vn/NumOfAcini);
-    double qi_n  = (qn /NumOfAcini);
-    double qi_np = (qnp/NumOfAcini);
-
-    //Parameters kappa and beta
-    double kappa = 0.0;
-    double beta  = 0.0;
-    ele->getParams("kappa",kappa);
-    ele->getParams("beta",beta);
-
-    //Linear branches of the Maxwell model (E2, B=R_t, B_a=R_a), notation according to interacinar dependency paper
-    double Kp_np  =  Rt/(E2*dt)+1.0;
-    double Kp_n   = -Rt/(E2*dt);
-    double Kq_np  =  Rt*Ra/(E2*dt)+Rt+Ra;
-    double Kq_n   = -Rt*Ra/(E2*dt);
-    double rhsLin = -Kp_n*(p1n-p2n) + Kq_n*qi_n;
-
-    //Branch E_1 of the Maxwell model: Hydrostatic pressure (=Cauchy stress) for Ogden material
-    // P_1  = P_c + P_d
-    // where P_c = (kappa/beta)*(lambda^(-3))
-    //       P_d =-(kappa/beta)*(lambda^(-3-3*beta))
-    //       \lambda is the volumetric strain ratio, \lambda = (V/Vo)^(1/3)
-    double vi_np = qi_np*dt+vi_n;
-    double Kq_npNL = (Rt/E2) * (-kappa*Vo/(pow(vi_np,2.0)*beta) +
-                                   (beta+1.0)*kappa*(pow(Vo/(vi_np),beta+1.0))/((vi_np)*beta));
-    double rhsNL   = (Vo/vi_n) * (kappa/beta) * (1-pow((Vo/vi_n),beta));
-
-    //To Do: FD-Check
-
-    //add linearisation part to system matrix
-    Kq_np += Kq_npNL;
-
-    //Build the system matrix for \boldsymbol{K} * \boldsymbol{P} = \boldsymbol{Q}
-    sysmat(0,0) = -1.0*( Kp_np/Kq_np)*NumOfAcini;    sysmat(0,1) =  1.0*( Kp_np/Kq_np)*NumOfAcini;
-    sysmat(1,0) =  1.0*( Kp_np/Kq_np)*NumOfAcini;    sysmat(1,1) = -1.0*( Kp_np/Kq_np)*NumOfAcini;
-
-    //Build the corresponding right hand side
-    rhs(0)      = -1.0*((rhsLin+rhsNL)*NumOfAcini/Kq_np);
-    rhs(1)      =  1.0*((rhsLin+rhsNL)*NumOfAcini/Kq_np);
-  }
-  else
-  {
-    dserror("[%s] is not defined as a reduced dimensional lung acinus material",ele->Type().c_str());
+    dserror("Material law is not a valid reduced dimensional lung acinus material.");
     exit(1);
   }
 }
+
 
 /*----------------------------------------------------------------------*
  |  Evaluate the values of the degrees of freedom           ismail 01/10|
@@ -741,8 +418,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
   // get total time
   const double time = params.get<double>("total time");
 
-  // get time-step size
-  //  const double dt = params.get<double>("time step size");
 
   // the number of nodes
   const int numnode = lm.size();
@@ -759,9 +434,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
 
   // create objects for element arrays
   Epetra_SerialDenseVector epnp(numnode);
-
-  //get time step size
-  //  const double dt = params.get<double>("time step size");
 
   //get all values at the last computed time step
   for (int i=0;i<numnode;++i)
@@ -1036,28 +708,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           // ----------------------------------------------------------
           int numOfElems = (ele->Nodes()[i])->NumElement();
           BCin /= double(numOfElems);
-
-          // get rhs
-          //          Teuchos::RCP<Epetra_Vector> rhs  = params.get<Teuchos::RCP<Epetra_Vector> >("rhs");
-          //          if (rhs==Teuchos::null)
-          //          {
-          //            dserror("Cannot get state vector 'rhs'");
-          //            exit(1);
-          //          }
-
-          // set pressure at node i
-          //          int    gid;
-          //          double val;
-
-          //          gid =  lm[i];
-          //          std::cout<<"FLOW in: "<<BCin<<" with old rhs: "<<rhs(i)<<" With "<<numOfElems<<" elements"<<std::endl;
           rhs(i) += -BCin + rhs(i);
-
-          //          rhs->ReplaceGlobalValues(1,&val,&gid);
         }
         else
         {
-          dserror("precribed [%s] is not defined for reduced acinuss",Bc.c_str());
+          dserror("prescribed [%s] is not defined for reduced acinuss",Bc.c_str());
           exit(1);
         }
 
@@ -1102,9 +757,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           gid = lm[i];
           val = 1;
           dbctog->ReplaceGlobalValues(1,&val,&gid);
-
-          //          const double* X = ele->Nodes()[i]->X();
-          //          printf("WARNING: node(%d) is free on [%f,%f,%f] \n",gid+1,X[0],X[1],X[2]);
         }
       } // END of if there is no BC but the node still is at the terminal
 
@@ -1126,33 +778,25 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
   Teuchos::RCP<MAT::Material>   material)
 
 {
-
-  //  const int numnode = iel;
   const int elemVecdim = lm.size() ;
-//  std::vector<int>::iterator it_vcr;
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
   //----------------------------------------------------------------------
-
   // get time-step size
   const double dt = params.get<double>("time step size");
-
   // get time
   const double time = params.get<double>("total time");
 
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
   //----------------------------------------------------------------------
-
-
   // flag for higher order elements
   //  bool higher_order_ele = ele->isHigherOrderElement(distype);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
-
   Teuchos::RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
   Teuchos::RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
   Teuchos::RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
@@ -1242,8 +886,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
   double qn = (*qin_n  )[ele->LID()];
   double qnp= -1.0*(sysmat(0,0)*epnp(0) + sysmat(0,1)*epnp(1) - rhs(0));
 
-  //  ele->setVars("flow_in",qin);
-  //  ele->setVars("flow_out",qout);
   int gid = ele->Id();
 
   qin_np  -> ReplaceGlobalValues(1,&qnp,&gid);
@@ -1306,12 +948,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
 {
   const int   myrank  = discretization.Comm().MyPID();
 
-  // get total time
-  //  const double time = params.get<double>("total time");
-
-  // get time-step size
-  //  const double dt = params.get<double>("time step size");
-
   // the number of nodes
   const int numnode = lm.size();
   std::vector<int>::iterator it_vcr;
@@ -1327,9 +963,6 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
 
   // create objects for element arrays
   Epetra_SerialDenseVector epnp(numnode);
-
-  //get time step size
-  //  const double dt = params.get<double>("time step size");
 
   //get all values at the last computed time step
   for (int i=0;i<numnode;++i)
@@ -1675,13 +1308,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(
   std::vector<int>&            lm,
   Teuchos::RCP<MAT::Material>           material)
 {
-//  const int   myrank  = discretization.Comm().MyPID();
 
   Teuchos::RCP<Epetra_Vector> qin_np   = params.get<Teuchos::RCP<Epetra_Vector> >("qin_np");
-
   Teuchos::RCP<Epetra_Vector> qout_np  = params.get<Teuchos::RCP<Epetra_Vector> >("qout_np");
 
-  //  Teuchos::RCP<Epetra_Vector> scatran = params.get<Teuchos::RCP<Epetra_Vector> >("scatran");
   Teuchos::RCP<const Epetra_Vector> scatran  = discretization.GetState("scatranp");
 
   Teuchos::RCP<Epetra_Vector> e1scatranp = params.get<Teuchos::RCP<Epetra_Vector> >("e1scatranp");

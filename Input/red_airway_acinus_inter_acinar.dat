@@ -58,7 +58,7 @@ NDSURF                          0
 NDVOL                           0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.00001523 DENSITY 0.000001176 GAMMA 1.0
-MAT 2 MAT_0D_MAXWELL_ACINUS Stiffness1 14647.50 Stiffness2 5352.59 Viscosity1 3285.38 Viscosity2 188.023
+MAT 2 MAT_0D_MAXWELL_ACINUS_EXPONENTIAL Stiffness1 14647.50 Stiffness2 5352.59 Viscosity1 3285.38 Viscosity2 188.023
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1500.0*sin(2*(t)*pi/1)+1500.0 t1 0.0 t2 100.0
 ----------------------------------------------------------------------CURVE2

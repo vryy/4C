@@ -4,11 +4,11 @@
 \brief
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
-            </pre>
+            089 - 289-15255
+</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -51,6 +51,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAcinusType::Create( const int id, c
 }
 
 
+/*--------------------------------------------------------------------  *
+ | Read RED_ACINUS element line and add element specific parameters     |
+ |                                                             (public) |
+ |                                                           roth 10/14 |
+ *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RedAcinusType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["RED_ACINUS"];
@@ -91,6 +96,7 @@ data_()
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      ismail 01/10|
  |  id             (in)  this element's global id                       |
@@ -106,6 +112,7 @@ generation_(old.generation_)
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of RedAcinus and return pointer             |
  |  to it                                                      (public) |
@@ -116,6 +123,7 @@ DRT::Element* DRT::ELEMENTS::RedAcinus::Clone() const
   DRT::ELEMENTS::RedAcinus* newelement = new DRT::ELEMENTS::RedAcinus(*this);
   return newelement;
 }
+
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
@@ -129,9 +137,11 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::RedAcinus::Shape() const
   case  3: return line3;
   default:
     dserror("unexpected number of nodes %d", NumNode());
+    break;
   }
   return dis_none;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -253,6 +263,7 @@ void DRT::ELEMENTS::RedAcinus::VisNames(std::map<std::string,int>& names)
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
@@ -264,7 +275,6 @@ bool DRT::ELEMENTS::RedAcinus::VisData(const std::string& name, std::vector<doub
 
   return false;
 }
-
 
 
 /*----------------------------------------------------------------------*
@@ -283,6 +293,7 @@ void DRT::ELEMENTS::RedAcinus::getParams(std::string name, double & var)
   var = elemParams_[name];
 
 }
+
 
 /*----------------------------------------------------------------------*
  |  Get element parameters (public)                        ismail 03/11 |

@@ -1689,12 +1689,77 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
-  // 0D Acinar material
+  // 0D Acinar material base
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS",
                                             "0D acinar material",
                                             INPAR::MAT::m_0d_maxwell_acinus));
+
+    AddNamedReal(m,"Stiffness1","first stiffness");
+    AddNamedReal(m,"Stiffness2","second stiffness");
+    AddNamedReal(m,"Viscosity1","first viscosity");
+    AddNamedReal(m,"Viscosity2","second viscosity");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+
+  /*--------------------------------------------------------------------*/
+    // 0D NeoHookean Acinar material
+    {
+      Teuchos::RCP<MaterialDefinition> m
+        = Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS_NEOHOOKEAN",
+                                              "0D acinar material neohookean",
+                                              INPAR::MAT::m_0d_maxwell_acinus_neohookean));
+
+      AddNamedReal(m,"Stiffness1","first stiffness");
+      AddNamedReal(m,"Stiffness2","second stiffness");
+      AddNamedReal(m,"Viscosity1","first viscosity");
+      AddNamedReal(m,"Viscosity2","second viscosity");
+
+      AppendMaterialDefinition(matlist,m);
+    }
+
+    /*--------------------------------------------------------------------*/
+    // 0D Exponential Acinar material
+    {
+      Teuchos::RCP<MaterialDefinition> m
+        = Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS_EXPONENTIAL",
+                                              "0D acinar material exponential",
+                                              INPAR::MAT::m_0d_maxwell_acinus_exponential));
+
+      AddNamedReal(m,"Stiffness1","first stiffness");
+      AddNamedReal(m,"Stiffness2","second stiffness");
+      AddNamedReal(m,"Viscosity1","first viscosity");
+      AddNamedReal(m,"Viscosity2","second viscosity");
+
+      AppendMaterialDefinition(matlist,m);
+    }
+
+    /*--------------------------------------------------------------------*/
+    // 0D Exponential Acinar material
+    {
+      Teuchos::RCP<MaterialDefinition> m
+        = Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS_DOUBLEEXPONENTIAL",
+                                              "0D acinar material doubleexponential",
+                                              INPAR::MAT::m_0d_maxwell_acinus_doubleexponential));
+
+      AddNamedReal(m,"Stiffness1","first stiffness");
+      AddNamedReal(m,"Stiffness2","second stiffness");
+      AddNamedReal(m,"Viscosity1","first viscosity");
+      AddNamedReal(m,"Viscosity2","second viscosity");
+
+      AppendMaterialDefinition(matlist,m);
+    }
+
+  /*--------------------------------------------------------------------*/
+  // 0D Ogden Acinar material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_0D_MAXWELL_ACINUS_OGDEN",
+                                            "0D acinar material ogden",
+                                            INPAR::MAT::m_0d_maxwell_acinus_ogden));
 
     AddNamedReal(m,"Stiffness1","first stiffness");
     AddNamedReal(m,"Stiffness2","second stiffness");

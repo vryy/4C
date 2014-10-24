@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -14,12 +14,14 @@ Maintainer: Mahmoud Ismail
 #include "red_airway.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_mat/maxwell_0d_acinus.H"
 
 using namespace DRT::UTILS;
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+| Read in the RED_AIRWAY elements                                       |
+*-----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
                                            const std::string& distype,
                                            DRT::INPUT::LineDefinition* linedef)
@@ -28,14 +30,15 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
   if (ndim!=3)
      dserror("Problem defined as %dd, but found Reduced dimensional AIRWAY element.",ndim);
 
-  // read number of material model
+  //Read number of material model
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-
+  //Read the element type, the element specific variables and store them to elemParams_
   linedef->ExtractString("TYPE",elemType_);
-  if (elemType_ == "Resistive" || elemType_ == "InductoResistive" || elemType_ == "ComplientResistive" || elemType_ == "RLC" || elemType_ == "ViscoElasticRLC" || elemType_ =="ConvectiveViscoElasticRLC")
+  if (elemType_ == "Resistive" || elemType_ == "InductoResistive" || elemType_ == "ComplientResistive"
+      || elemType_ == "RLC" || elemType_ == "ViscoElasticRLC" || elemType_ =="ConvectiveViscoElasticRLC")
   {
     linedef->ExtractString("Resistance",resistance_);
     linedef->ExtractString("ElemSolvingType",elemsolvingType_);
@@ -50,7 +53,6 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
     linedef->ExtractDouble("WallThickness",tw);
     linedef->ExtractDouble("Area",A);
     linedef->ExtractInt("Generation",generation);
-
 
     // Correct the velocity profile power
     // this is because the 2.0 is the minimum energy consumtive laminar profile
@@ -77,15 +79,19 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
   }
   else
   {
-    dserror("Reading type of RED_AIRWAY element failed: ComplientResistive/PoiseuilleResistive/TurbulentPoiseuilleResistive/InductoResistive/RLC/ViscoElasticRLC/ConvectiveViscoElasticRLC");
+    dserror("Reading type of RED_AIRWAY element failed. Possible types: ComplientResistive/"
+        "PoiseuilleResistive/TurbulentPoiseuilleResistive/InductoResistive/RLC/ViscoElasticRLC/"
+        "ConvectiveViscoElasticRLC");
     exit(1);
   }
 
   return true;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+| Read in the RED_ACINUS elements                                       |
+*-----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedAcinus::ReadElement(const std::string& eletype,
                                            const std::string& distype,
                                            DRT::INPUT::LineDefinition* linedef)
@@ -94,14 +100,15 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(const std::string& eletype,
   if (ndim!=3)
     dserror("Problem defined as %dd, but found Reduced dimensional ACINUS element.",ndim);
 
-  // read number of material model
+  //Read number of material model
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-
+  //Read the element type, the element specific variables and store them to elemParams_
   linedef->ExtractString("TYPE",elemType_);
-  if (elemType_ == "Exponential" || elemType_ == "DoubleExponential" || elemType_ == "NeoHookean"|| elemType_ == "VolumetricOgden")
+  if (elemType_ == "NeoHookean" || elemType_ == "Exponential" || elemType_ == "DoubleExponential"
+      || elemType_ == "VolumetricOgden")
   {
     double acinusVol, alveolarDuctVol, A;
     const int generation = -1;
@@ -114,68 +121,25 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(const std::string& eletype,
     elemParams_["Area"]               = A;
     generation_                       = generation;
 
+    //Setup material, calls overloaded function Setup(linedef) for each Maxwell_0d_acinus material
+    Teuchos::RCP<MAT::Material> mat = Material();
+    Teuchos::RCP<MAT::Maxwell_0d_acinus> acinus_mat = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(Material());
+    acinus_mat->Setup(linedef);
   }
   else
   {
-    dserror("Reading type of Acinare element failed: Exponential/DoubleExponential/NeoHookean/VolumetricOgden");
+    dserror("Reading type of RED_ACINUS element failed. Possible types: NeoHookean/ Exponential"
+        "/ DoubleExponential/ VolumetricOgden");
     exit(1);
-  }
-
-  if(elemType_ == "Exponential")
-  {
-    double E1_0, E1_lin, E1_exp, Tau;
-    linedef->ExtractDouble("E1_0" ,E1_0);
-    linedef->ExtractDouble("E1_LIN",E1_lin);
-    linedef->ExtractDouble("E1_EXP",E1_exp);
-    linedef->ExtractDouble("TAU" , Tau);
-
-    elemParams_["E1_0"  ] = E1_0;
-    elemParams_["E1_LIN"] = E1_lin;
-    elemParams_["E1_EXP"] = E1_exp;
-    elemParams_["TAU"   ] = Tau;
-  }
-  else if(elemType_ == "DoubleExponential")
-  {
-    double E1_01, E1_lin1, E1_exp1, Tau1;
-    linedef->ExtractDouble("E1_01" ,E1_01);
-    linedef->ExtractDouble("E1_LIN1",E1_lin1);
-    linedef->ExtractDouble("E1_EXP1",E1_exp1);
-    linedef->ExtractDouble("TAU1" , Tau1);
-    elemParams_["E1_01"  ] = E1_01;
-    elemParams_["E1_LIN1"] = E1_lin1;
-    elemParams_["E1_EXP1"] = E1_exp1;
-    elemParams_["TAU1"   ] = Tau1;
-
-    double E1_02, E1_lin2, E1_exp2, Tau2;
-    linedef->ExtractDouble("E1_02" ,E1_02);
-    linedef->ExtractDouble("E1_LIN2",E1_lin2);
-    linedef->ExtractDouble("E1_EXP2",E1_exp2);
-    linedef->ExtractDouble("TAU2" , Tau2);
-    elemParams_["E1_02"  ] = E1_02;
-    elemParams_["E1_LIN2"] = E1_lin2;
-    elemParams_["E1_EXP2"] = E1_exp2;
-    elemParams_["TAU2"   ] = Tau2;
-  }
-  else if(elemType_ == "VolumetricOgden")
-  {
-    double kappa, beta;
-    linedef->ExtractDouble("KAPPA",kappa);
-    linedef->ExtractDouble("BETA",beta);
-    elemParams_["kappa"]              = kappa;
-    elemParams_["beta"]               = beta;
-  }
-  else
-  {
-    // do nothing
   }
 
   return true;
 }
 
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+| Read in the RED_ACINAR_INTER_DEP elements                             |
+*-----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedInterAcinarDep::ReadElement(const std::string& eletype,
                                                    const std::string& distype,
                                                    DRT::INPUT::LineDefinition* linedef)
@@ -192,15 +156,17 @@ bool DRT::ELEMENTS::RedInterAcinarDep::ReadElement(const std::string& eletype,
   return true;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+| Read in the Scatra elements                                           |
+*-----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedAirBloodScatra::ReadElement(const std::string& eletype,
                                                    const std::string& distype,
                                                    DRT::INPUT::LineDefinition* linedef)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   if (ndim!=3)
-    dserror("Problem defined as %dd, but found Reduced dimensional INTER ACINAR DEPENDENCE element.",ndim);
+    dserror("Problem defined as %dd, but found Reduced dimensional Scatra element.",ndim);
 
   // read number of material model
   const int generation = -2;
@@ -222,15 +188,16 @@ bool DRT::ELEMENTS::RedAirBloodScatra::ReadElement(const std::string& eletype,
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+| Read in the Scatra elements                                           |
+*-----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedAirBloodScatraLine3::ReadElement(const std::string& eletype,
                                                    const std::string& distype,
                                                    DRT::INPUT::LineDefinition* linedef)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   if (ndim!=3)
-    dserror("Problem defined as %dd, but found Reduced dimensional INTER ACINAR DEPENDENCE element.",ndim);
+    dserror("Problem defined as %dd, but found Reduced dimensional Scatra element.",ndim);
 
   double diff = 0.0;
   linedef->ExtractDouble("DiffusionCoefficient",diff);

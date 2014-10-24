@@ -134,6 +134,11 @@
 #include "../drt_acou/acou_visc_ele.H"
 #include "../drt_inv_analysis/smc_particle.H"
 #include "../drt_mat/activefiber.H"
+#include "../drt_mat/maxwell_0d_acinus.H"
+#include "../drt_mat/maxwell_0d_acinus_NeoHookean.H"
+#include "../drt_mat/maxwell_0d_acinus_Exponential.H"
+#include "../drt_mat/maxwell_0d_acinus_DoubleExponential.H"
+#include "../drt_mat/maxwell_0d_acinus_Ogden.H"
 
 
 std::string DRT::ParObjectList()
@@ -295,6 +300,11 @@ std::string DRT::ParObjectList()
     << MAT::TopOptDensType::Instance().Name() << " "
     << MAT::AcousticMatType::Instance().Name() << " "
     << MAT::AcousticViscMatType::Instance().Name() << " "
+    << MAT::Maxwell_0d_acinusType::Instance().Name() << " "
+    << MAT::Maxwell_0d_acinusNeoHookeanType::Instance().Name() << " "
+    << MAT::Maxwell_0d_acinusExponentialType::Instance().Name() << " "
+    << MAT::Maxwell_0d_acinusDoubleExponentialType::Instance().Name() << " "
+    << MAT::Maxwell_0d_acinusOgdenType::Instance().Name() << " "
     << MORTAR::MortarNodeType::Instance().Name() << " "
     << MORTAR::MortarElementType::Instance().Name() << " "
     << MORTAR::MortarElementGeoDecouplType::Instance().Name() << " "

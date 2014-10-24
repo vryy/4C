@@ -5,10 +5,10 @@
 \brief Internal implementation of RedAirway element
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -51,6 +51,7 @@ DRT::ELEMENTS::RedAirwayImplInterface* DRT::ELEMENTS::RedAirwayImplInterface::Im
   }
   default:
     dserror("shape %d (%d nodes) not supported", red_airway->Shape(), red_airway->NumNode());
+    break;
   }
   return NULL;
 }
@@ -82,48 +83,29 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec3_epetra,
   Teuchos::RCP<MAT::Material> mat)
 {
-  //  const int   myrank  = discretization.Comm().MyPID();
-
-  //  const int numnode = iel;
   const int elemVecdim = elevec1_epetra.Length () ;
   std::vector<int>::iterator it_vcr;
-
-  // construct views
-  //  LINALG::Matrix<1*iel,1*iel> elemat1(elemat1_epetra.A(),true);
-  //  LINALG::Matrix<1*iel,    1> elevec1(elevec1_epetra.A(),true);
-  // elemat2, elevec2, and elevec3 are never used anyway
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
   //----------------------------------------------------------------------
-
   // get time-step size
   const double dt = params.get<double>("time step size");
-
   // get time
   const double time = params.get<double>("total time");
 
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
   //----------------------------------------------------------------------
-
-
   // flag for higher order elements
-  //  bool higher_order_ele = ele->isHigherOrderElement(distype);
+  // bool higher_order_ele = ele->isHigherOrderElement(distype);
 
   // ---------------------------------------------------------------------
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
-
   Teuchos::RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
   Teuchos::RCP<const Epetra_Vector> pn   = discretization.GetState("pn");
   Teuchos::RCP<const Epetra_Vector> pnm  = discretization.GetState("pnm");
-
-  // REMOVED_FOR_UPGRADE  Teuchos::RCP<const Epetra_Vector> acinar_vnp  = discretization.GetState("acinar_vnp");
-  // REMOVED_FOR_UPGRADE  Teuchos::RCP<const Epetra_Vector> acinar_vn   = discretization.GetState("acinar_vn");
-
-  //  Teuchos::RCP<const Epetra_Vector> acinar_e_vnp  = discretization.GetState("acinar_vnp");
-  //  Teuchos::RCP<const Epetra_Vector> acinar_e_vn   = discretization.GetState("acinar_vn");
 
   Teuchos::RCP<Epetra_Vector> acinar_e_vnp  = params.get<Teuchos::RCP<Epetra_Vector> >("acinar_vnp");
   Teuchos::RCP<Epetra_Vector> acinar_e_vn   = params.get<Teuchos::RCP<Epetra_Vector> >("acinar_vn");
@@ -187,11 +169,8 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   elem_params.set<double>("volnp"  ,(*volm_np)[ele->LID()]);
   elem_params.set<double>("voln"  ,(*volm_n)[ele->LID()]);
 
-  // REMOVED_FOR_UPGRADE  elem_params.set<Epetra_SerialDenseVector>("acin_vnp" ,e_acin_vnp);
-  // REMOVED_FOR_UPGRADE  elem_params.set<Epetra_SerialDenseVector>("acin_vn"  ,e_acin_vn );
   elem_params.set<double>("acin_vnp" ,e_acin_e_vnp);
   elem_params.set<double>("acin_vn"  ,e_acin_e_vn );
-
 
   elem_params.set<double>("lungVolume_np",params.get<double>("lungVolume_np"));
   elem_params.set<double>("lungVolume_n",params.get<double>("lungVolume_n"));
@@ -210,7 +189,6 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
          elem_params,
          time,
          dt);
-
 
   return 0;
 }
@@ -238,7 +216,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
 
   Teuchos::RCP<Epetra_Vector> generations   = params.get<Teuchos::RCP<Epetra_Vector> >("generations");
 
-  // REMOVED_FOR_UPGRADE  Teuchos::RCP<Epetra_Vector> a_volume      = params.get<Teuchos::RCP<Epetra_Vector> >("acini_volume");
   Teuchos::RCP<Epetra_Vector> a_e_volume    = params.get<Teuchos::RCP<Epetra_Vector> >("acini_e_volume");
   Teuchos::RCP<Epetra_Vector> elemVolume    = params.get<Teuchos::RCP<Epetra_Vector> >("elemVolume");
 
@@ -256,13 +233,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
     e2scatranp           = params.get<Teuchos::RCP<Epetra_Vector> >("e2scatranp");
   }
 
-  //vector<int> lmowner;
   std::vector<int> lmstride;
   Teuchos::RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
   ele->LocationVector(discretization,lm,*lmowner,lmstride);
 
   // Calculate the length of airway element
-
   const double L = this->GetElementLength(ele);
 
   //--------------------------------------------------------------------
@@ -275,14 +250,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
     p0np->ReplaceGlobalValues(1,&val,&gid);
     p0n ->ReplaceGlobalValues(1,&val,&gid);
     p0nm->ReplaceGlobalValues(1,&val,&gid);
-
-  /*{
-      double val2 = 0.0;
-      ele->getParams("Area",A);
-
-      val2 = sqrt(A/M_PI);
-      radii->ReplaceGlobalValues(1,&val2,&gid);
-      }*/
   }
   {
     int    gid = lm[1];
@@ -442,7 +409,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 {
   double dens = 0.0;
   double visc = 0.0;
-  //  const int elemVecdim = epnp.Length () ;
 
   if(material->MaterialType() == INPAR::MAT::m_fluid)
   {
@@ -457,14 +423,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   }
   else
   {
-    dserror("Material law is not a Newtonia fluid");
+    dserror("Material law is not a Newtonian fluid");
     exit(1);
   }
 
   rhs.Scale(0.0);
   sysmat.Scale(0.0);
-
-  // check here, if we really have an airway !!
 
   // Calculate the length of airway element
   const double L=this->GetElementLength(ele);
@@ -483,7 +447,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   // get element information
   double Ao     = 0.0;
   double A      = 0.0;
-  //double An     = 0.0;
   double velPow = 0.0;
 
   ele->getParams("Area",Ao);
@@ -493,23 +456,23 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   if (ele->ElemSolvingType() == "Linear")
   {
     A = Ao;
-//    An= Ao;
   }
   else if (ele->ElemSolvingType() == "NonLinear")
   {
     A = params.get<double>("volnp")/L;
-//    An= params.get<double>("voln")/L;
   }
   else
   {
     dserror("[%s] is not a defined ElemSolvingType of a RED_AIRWAY element",ele->ElemSolvingType().c_str());
   }
+
   // Get airway branch length
   double l_branch = 0.0;
   ele->getParams("BranchLength",l_branch);
 
   if (l_branch < 0.0)
     l_branch = L;
+
   // evaluate Poiseuille resistance
   double Rp = 2.0*(2.0+velPow)*PI*visc*L/(pow(A,2));
 
@@ -579,6 +542,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       break;
     default:
       gamma = 0.327;
+      break;
     }
     //-----------------------------------------------------------------
     // resistance evaluated using Pedley's model from :
@@ -654,6 +618,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       break;
     default:
       gamma = 0.327;
+      break;
     }
     //-----------------------------------------------------------------
     // resistance evaluated using Pedley's model from :
@@ -778,19 +743,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   }
   else if(ele->Type() == "ConvectiveViscoElasticRLC")
   {
-#if 0
-      std::cout<<"I: "      <<I<<std::endl;
-      std::cout<<"C: "      <<C<<std::endl;
-      std::cout<<"R: "      <<R<<std::endl;
-      std::cout<<"Rconv: "  <<Rconv<<std::endl;
-      std::cout<<"Rvisc: "  <<Rvis<<std::endl;
-      std::cout<<"Pext_n: " <<pextn<<std::endl;
-      std::cout<<"Pext_np: "<<pextnp<<std::endl;
-#endif
+
   }
   else
   {
-    dserror("[%s] is not an implimented elements yet",(ele->Type()).c_str());
+    dserror("[%s] is not an implemented element yet",(ele->Type()).c_str());
     exit(1);
   }
 
@@ -845,9 +802,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
   // create objects for element arrays
   Epetra_SerialDenseVector epn(numnode);
 
-  //get time step size
-  //  const double dt = params.get<double>("time step size");
-
   //get all values at the last computed time step
   for (int i=0;i<numnode;++i)
   {
@@ -861,7 +815,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
   // ---------------------------------------------------------------------------------
   // Resolve the BCs
   // ---------------------------------------------------------------------------------
-
   for(int i = 0; i<ele->NumNode(); i++)
   {
     if (ele->Nodes()[i]->Owner()== myrank)
@@ -1092,7 +1045,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
             exit(1);
           }
 
-
           // set pressure at node i
           int    gid;
           double val;
@@ -1166,8 +1118,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           val = 1;
           dbctog->ReplaceGlobalValues(1,&val,&gid);
 
-          //          const double* X = ele->Nodes()[i]->X();
-          //          printf("WARNING: node(%d) is free on [%f,%f,%f] \n",gid+1,X[0],X[1],X[2]);
         }
       } // END of if there is no BC but the node still is at the terminal
 
@@ -1188,13 +1138,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   std::vector<int>&            lm,
   Teuchos::RCP<MAT::Material>   material)
 {
-  //  const int numnode = iel;
   const int elemVecdim = lm.size() ;
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
   //----------------------------------------------------------------------
-
   // get time-step size
   const double dt = params.get<double>("time step size");
 
@@ -1299,15 +1247,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
          time,
          dt);
 
-
-//  double qoutn = (*qout_n )[ele->LID()];
-
   double qinnp = -1.0*(sysmat(0,0)*epnp(0) + sysmat(0,1)*epnp(1) - rhs(0));
   double qoutnp=  1.0*(sysmat(1,0)*epnp(0) + sysmat(1,1)*epnp(1) - rhs(1));
 
-
-  //  ele->setVars("flow_in",qin);
-  //  ele->setVars("flow_out",qout);
   int gid = ele->Id();
 
   qin_np  -> ReplaceGlobalValues(1,&qinnp,&gid);
@@ -1395,9 +1337,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
   // get total time
    const double time = params.get<double>("total time");
 
-  // get time-step size
-  //  const double dt = params.get<double>("time step size");
-
   // the number of nodes
   const int numnode = lm.size();
   std::vector<int>::iterator it_vcr;
@@ -1413,9 +1352,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
 
   // create objects for element arrays
   Epetra_SerialDenseVector epnp(numnode);
-
-  //get time step size
-  //  const double dt = params.get<double>("time step size");
 
   //get all values at the last computed time step
   for (int i=0;i<numnode;++i)
@@ -1513,6 +1449,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
     } // END of if node is available on this processor
   } // End of node i has a condition
 }
+
 
 /*----------------------------------------------------------------------*
  |  calculate the ammount of fluid mixing inside a          ismail 02/13|

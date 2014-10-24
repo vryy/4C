@@ -3,10 +3,10 @@
 \brief Control routine for reduced airway solvers,
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 *----------------------------------------------------------------------*/
 #include <stdio.h>
@@ -25,22 +25,15 @@ Maintainer: Mahmoud Ismail
 
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    ismail 01/10|
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-
 AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization>  actdis,
                                                            LINALG::Solver  &         solver,
                                                            Teuchos::ParameterList&   params,
                                                            IO::DiscretizationWriter& output)
   :
-  // call constructor for "nontrivial" objects
+  //Call constructor for "nontrivial" objects
   discret_(actdis),
   solver_ (solver),
   params_ (params),
@@ -52,15 +45,13 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   coupledTo3D_(false)
 {
 
-  // -------------------------------------------------------------------
-  // get the processor ID from the communicator
-  // -------------------------------------------------------------------
+  //Get the processor ID from the communicator
   myrank_  = discret_->Comm().MyPID();
 
-  // time measurement: initialization
+  //Time measurement: initialization
   if(!coupledTo3D_)
   {
-    // time measurement: initialization
+    //Time measurement: initialization
     TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
   }
 
@@ -208,8 +199,6 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
 
   // Vectors used for solution process
   // ---------------------------------
-
-
   // right hand side vector and right hand side corrector
   rhs_     = LINALG::CreateVector(*dofrowmap,true);
 
@@ -865,23 +854,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     LINALG::ApplyDirichlettoSystem(sysmat_,pnp_,rhs_,bcval_,dbctog_);
   }
 
-#if 0 // Exporting some values for debugging purposes
-
-    {
-      std::cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<std::endl;
-      Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-      if (A_debug != Teuchos::null)
-      {
-        // print to screen
-        (A_debug->EpetraMatrix())->Print(std::cout);
-      }
-      std::cout<<"Map is: ("<<myrank_<<")"<<std::endl<<*(discret_->DofRowMap())<<std::endl;
-      std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
-    }
-    std::cout<<"rhs: "<<*rhs_<<std::endl;
-
-#endif
-
   //-------solve for total new velocities and pressures
   // get cpu time
   const double tcpusolve = Teuchos::Time::wallTime();
@@ -892,22 +864,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
       TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
     }
 
-#if 0 // Exporting some values for debugging purposes
-
-    Teuchos::RCP<LINALG::SparseMatrix> A_debug = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-    if (A_debug != Teuchos::null)
-    {
-      // print to screen
-      (A_debug->EpetraMatrix())->Print(std::cout);
-    }
-    //#else
-    std::cout<<"DOF row map"<<*(discret_->DofRowMap())<<std::endl;
-    std::cout<<"bcval: "<<*bcval_<<std::endl;
-    std::cout<<"bctog: "<<*dbctog_<<std::endl;
-    std::cout<<"pnp: "<<*pnp_<<std::endl;
-    std::cout<<"rhs: "<<*rhs_<<std::endl;
-
-#endif
     // call solver
     solver_.Solve(sysmat_->EpetraOperator(),pnp_,rhs_,true,true);
   }
@@ -951,10 +907,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     eleparams.set("qout_np",qout_np_);
     eleparams.set("elemVolumen",elemVolumen_);
     eleparams.set("elemVolumenp",elemVolumenp_);
-
-    //    acini_e_volumenp_->PutScalar(0.0);
-    //    acini_e_volume_strain_->PutScalar(0.0);
-
     eleparams.set("acinar_vnp_strain",acini_e_volume_strain_);
     eleparams.set("acinar_vnp",acini_e_volumenp_);
 
@@ -1035,12 +987,6 @@ Some detials!!
 */
 void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
-#if 0
-  if (fmod(time_,4.0) < 2.1 && fmod(time_,4.0) >= 2.0)
-  {
-    return;
-  }
-#endif
   //---------------------------------------------------------------------
   // Get the largest CFL number in the airways to scale down
   // the time if CFL>1

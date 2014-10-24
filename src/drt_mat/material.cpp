@@ -75,6 +75,10 @@ Maintainer: Lena Wiechert
 #include "structporo_reaction.H"
 #include "spring.H"
 #include "maxwell_0d_acinus.H"
+#include "maxwell_0d_acinus_NeoHookean.H"
+#include "maxwell_0d_acinus_Exponential.H"
+#include "maxwell_0d_acinus_DoubleExponential.H"
+#include "maxwell_0d_acinus_Ogden.H"
 #include "hemoglobin_0d_O2_saturation.H"
 #include "air_0d_O2_saturation.H"
 #include "particle_mat.H"
@@ -484,6 +488,34 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Maxwell_0d_acinus(curmat));
     MAT::PAR::Maxwell_0d_acinus* params = static_cast<MAT::PAR::Maxwell_0d_acinus*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_0d_maxwell_acinus_neohookean:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Maxwell_0d_acinus_NeoHookean(curmat));
+    MAT::PAR::Maxwell_0d_acinus_NeoHookean* params = static_cast<MAT::PAR::Maxwell_0d_acinus_NeoHookean*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_0d_maxwell_acinus_exponential:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::Maxwell_0d_acinus_Exponential(curmat));
+      MAT::PAR::Maxwell_0d_acinus_Exponential* params = static_cast<MAT::PAR::Maxwell_0d_acinus_Exponential*>(curmat->Parameter());
+      return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_0d_maxwell_acinus_doubleexponential:
+  {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::Maxwell_0d_acinus_DoubleExponential(curmat));
+      MAT::PAR::Maxwell_0d_acinus_DoubleExponential* params = static_cast<MAT::PAR::Maxwell_0d_acinus_DoubleExponential*>(curmat->Parameter());
+      return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_0d_maxwell_acinus_ogden:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Maxwell_0d_acinus_Ogden(curmat));
+    MAT::PAR::Maxwell_0d_acinus_Ogden* params = static_cast<MAT::PAR::Maxwell_0d_acinus_Ogden*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_0d_o2_hemoglobin_saturation:

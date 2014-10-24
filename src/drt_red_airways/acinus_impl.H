@@ -6,10 +6,10 @@
 \brief Internal implementation of acinus_impl element
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -31,9 +31,9 @@ namespace DRT
     /// Interface base class for acinus_impl
     /*!
       This class exists to provide a common interface for all template
-      versions of acinus_impl. The only function
-      this class actually defines is Impl, which returns a pointer to
-      the appropriate version of acinus_impl.
+      versions of acinus_impl. The only function this class actually
+      defines is Impl, which returns a pointer to the appropriate version
+      of acinus_impl.
     */
     class RedAcinusImplInterface
     {

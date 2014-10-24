@@ -4,10 +4,10 @@
 \brief
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::RedAirway::Evaluate(Teuchos::ParameterList& params,
   }
 
 /*
-Here must add the steps for evaluating an element
+Here one must add the steps for evaluating an element
 */
   Teuchos::RCP<MAT::Material> mat = Material();
 
@@ -252,13 +252,19 @@ Here must add the steps for evaluating an element
   }
   break;
   default:
-    dserror("Unkown type of action for reduced dimensional airways");
+    dserror("Unknown type of action for reduced dimensional airways");
+    break;
   }// end of switch(act)
 
   return 0;
 } // end of DRT::ELEMENTS::RedAirway::Evaluate
 
 
+/*----------------------------------------------------------------------*
+ |  do nothing (public)                                     ismail 01/10|
+ |                                                                      |
+ |  The function is just a dummy.                                       |
+ *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedAirway::EvaluateNeumann(Teuchos::ParameterList& params,
                                               DRT::Discretization& discretization,
                                               DRT::Condition& condition,
@@ -268,6 +274,7 @@ int DRT::ELEMENTS::RedAirway::EvaluateNeumann(Teuchos::ParameterList& params,
 {
   return 0;
 }
+
 
 /*----------------------------------------------------------------------*
  |  do nothing (public)                                     ismail 01/10|
@@ -284,13 +291,16 @@ int DRT::ELEMENTS::RedAirway::EvaluateDirichlet(Teuchos::ParameterList& params,
 }
 
 
-// get optimal gaussrule for discretization type
+/*----------------------------------------------------------------------*
+ | get optimal gaussrule for discretisation type                        |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
 GaussRule1D DRT::ELEMENTS::RedAirway::getOptimalGaussrule(const DiscretizationType& distype)
 {
 
   DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule1D_undefined;
   switch (distype)
-    {
+  {
     case line2:
       rule = DRT::UTILS::intrule_line_2point;
       break;
@@ -298,13 +308,17 @@ GaussRule1D DRT::ELEMENTS::RedAirway::getOptimalGaussrule(const DiscretizationTy
       rule = DRT::UTILS::intrule_line_3point;
       break;
     default:
-    dserror("unknown number of nodes for gaussrule initialization");
-    }
+      dserror("unknown number of nodes for gaussrule initialization");
+      break;
+  }
   return rule;
 }
 
 
-// check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
+/*----------------------------------------------------------------------*
+ | Check, whether higher order derivatives for shape functions          |
+ | (dxdx, dxdy, ...) are necessary|                                     |
+ *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedAirway::isHigherOrderElement(
   const DRT::Element::DiscretizationType  distype) const
 {
@@ -319,6 +333,7 @@ bool DRT::ELEMENTS::RedAirway::isHigherOrderElement(
        break;
     default:
       dserror("distype unknown!");
+      break;
   }
   return hoel;
 }

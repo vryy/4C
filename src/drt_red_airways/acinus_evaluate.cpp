@@ -4,10 +4,10 @@
 \brief
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -90,7 +90,7 @@ int DRT::ELEMENTS::RedAcinus::Evaluate(Teuchos::ParameterList& params,
   }
 
 /*
-Here must add the steps for evaluating an element
+Here one must add the steps for evaluating an element
 */
   Teuchos::RCP<MAT::Material> mat = Material();
 
@@ -248,12 +248,18 @@ Here must add the steps for evaluating an element
   break;
   default:
     dserror("Unkown type of action for reduced dimensional acinuss");
+    break;
   }// end of switch(act)
 
   return 0;
 } // end of DRT::ELEMENTS::RedAcinus::Evaluate
 
 
+/*----------------------------------------------------------------------*
+ |  do nothing (public)                                     ismail 09/12|
+ |                                                                      |
+ |  The function is just a dummy.                                       |
+ *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedAcinus::EvaluateNeumann(Teuchos::ParameterList& params,
                                               DRT::Discretization& discretization,
                                               DRT::Condition& condition,
@@ -263,6 +269,7 @@ int DRT::ELEMENTS::RedAcinus::EvaluateNeumann(Teuchos::ParameterList& params,
 {
   return 0;
 }
+
 
 /*----------------------------------------------------------------------*
  |  do nothing (public)                                     ismail 09/12|
@@ -279,10 +286,12 @@ int DRT::ELEMENTS::RedAcinus::EvaluateDirichlet(Teuchos::ParameterList& params,
 }
 
 
-// get optimal gaussrule for discretization type
+/*----------------------------------------------------------------------*
+ | get optimal gaussrule for discretisation type                        |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
 GaussRule1D DRT::ELEMENTS::RedAcinus::getOptimalGaussrule(const DiscretizationType& distype)
 {
-
   DRT::UTILS::GaussRule1D rule = DRT::UTILS::intrule1D_undefined;
   switch (distype)
     {
@@ -293,15 +302,19 @@ GaussRule1D DRT::ELEMENTS::RedAcinus::getOptimalGaussrule(const DiscretizationTy
       rule = DRT::UTILS::intrule_line_3point;
       break;
     default:
-    dserror("unknown number of nodes for gaussrule initialization");
+      dserror("unknown number of nodes for gaussrule initialization");
+      break;
     }
   return rule;
 }
 
 
-// check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
+/*----------------------------------------------------------------------*
+ | Check, whether higher order derivatives for shape functions          |
+ | (dxdx, dxdy, ...) are necessary|                                     |
+ *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedAcinus::isHigherOrderElement(
-  const DRT::Element::DiscretizationType  distype) const
+                               const DRT::Element::DiscretizationType  distype) const
 {
   bool hoel = true;
   switch (distype)
@@ -313,8 +326,8 @@ bool DRT::ELEMENTS::RedAcinus::isHigherOrderElement(
        hoel = false;
        break;
     default:
-      dserror("distype unknown!");
+       dserror("distype unknown!");
+       break;
   }
   return hoel;
 }
-
