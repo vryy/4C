@@ -18,7 +18,7 @@ Maintainer: Sudhakar
 #include "crack_tolerance.H"
 #include "crackUtils.H"
 #include "SplitHexIntoTwoWedges.H"
-#include "interaction_int.H"
+//#include "interaction_int.H"
 
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/matpar_bundle.H"
