@@ -21,7 +21,7 @@ Maintainer: Sebastian Kehl
 #include "objective_funct.H"
 #include "regularization_base.H"
 
-#include "../drt_adapter/ad_str_structure.H"
+#include "../drt_adapter/ad_str_timeloop.H"
 #include "timint_adjoint.H"
 
 #include "../drt_io/io_control.H"
@@ -41,7 +41,7 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* standard constructor                                      keh 09/14  */
 /*----------------------------------------------------------------------*/
-STR::INVANA::InvanaAugLagr::InvanaAugLagr():
+INVANA::InvanaAugLagr::InvanaAugLagr():
   InvanaBase(),
 dis_(Teuchos::null),
 disdual_(Teuchos::null),
@@ -67,7 +67,7 @@ fprestart_(0)
 /*----------------------------------------------------------------------*/
 /* Setup                                                     keh 09/14  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::InvanaAugLagr::Setup()
+void INVANA::InvanaAugLagr::Setup()
 {
   if (not Discret()->Filled() || not Discret()->HaveDofs())
     dserror("Discretisation is not complete or has no dofs!");
@@ -105,7 +105,7 @@ void STR::INVANA::InvanaAugLagr::Setup()
 /*----------------------------------------------------------------------*/
 /* MStep EpetraVector to EpetraMultiVector                   keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::InvanaAugLagr::MStepEpetraToEpetraMulti(Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > mstepvec,
+void INVANA::InvanaAugLagr::MStepEpetraToEpetraMulti(Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > mstepvec,
                                                             Teuchos::RCP<Epetra_MultiVector> multivec)
 {
   for (int i=0; i<msteps_; i++)
@@ -115,7 +115,7 @@ void STR::INVANA::InvanaAugLagr::MStepEpetraToEpetraMulti(Teuchos::RCP<DRT::UTIL
 /*----------------------------------------------------------------------*/
 /* Mstep double to std::vector<double>                       keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::InvanaAugLagr::MStepDToStdVecD(Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > mstepvec,
+void INVANA::InvanaAugLagr::MStepDToStdVecD(Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > mstepvec,
                                                  std::vector<double>* stdvec)
 {
   for (int i=0; i<msteps_; i++)
@@ -126,7 +126,7 @@ void STR::INVANA::InvanaAugLagr::MStepDToStdVecD(Teuchos::RCP<DRT::UTILS::TimInt
 /*----------------------------------------------------------------------*/
 /* solve primal problem                                      keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::InvanaAugLagr::SolveForwardProblem()
+void INVANA::InvanaAugLagr::SolveForwardProblem()
 {
   // use the same control file for every run since usually the last one is of interest
   Discret()->Writer()->OverwriteResultFile();
@@ -178,7 +178,7 @@ void STR::INVANA::InvanaAugLagr::SolveForwardProblem()
 /*----------------------------------------------------------------------*/
 /* solve dual problem                                       keh 10/13   */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::InvanaAugLagr::SolveAdjointProblem()
+void INVANA::InvanaAugLagr::SolveAdjointProblem()
 {
   //Setup RHS for the adjoints
   Teuchos::RCP<Epetra_Vector> objgrad = Teuchos::rcp(new Epetra_Vector(*(Discret()->DofRowMap()),true));
@@ -199,7 +199,7 @@ void STR::INVANA::InvanaAugLagr::SolveAdjointProblem()
   }
 
   //initialize adjoint time integration with RHS as input
-  STR::TimIntAdjoint timintadj = TimIntAdjoint(Discret());
+  STR::TimIntAdjoint timintadj = STR::TimIntAdjoint(Discret());
   timintadj.SetupAdjoint(adjrhs, mtime, dis_, time_);
 
   // adjoint time integration
@@ -213,7 +213,7 @@ void STR::INVANA::InvanaAugLagr::SolveAdjointProblem()
 /*----------------------------------------------------------------------*/
 /* evaluate the value and/or gradient of the problem        keh 10/13   */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double* val, Teuchos::RCP<Epetra_MultiVector> gradient)
+void INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double* val, Teuchos::RCP<Epetra_MultiVector> gradient)
 {
   Matman()->ReplaceParams(sol);
   ResetDiscretization();
@@ -234,7 +234,7 @@ void STR::INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double*
 /*----------------------------------------------------------------------*/
 /* evaluate gradient of the objective function              keh 10/13   */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol, Teuchos::RCP<Epetra_MultiVector> gradient)
+void INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol, Teuchos::RCP<Epetra_MultiVector> gradient)
 {
   //zero out gradient vector initially
   gradient->Scale(0.0);
@@ -264,7 +264,7 @@ void STR::INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol,
 /*----------------------------------------------------------------------*/
 /* Reset the discretization                                 keh 10/13   */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::InvanaAugLagr::ResetDiscretization()
+void INVANA::InvanaAugLagr::ResetDiscretization()
 {
   Teuchos::ParameterList p;
   p.set("action","calc_struct_reset_all");
@@ -274,7 +274,7 @@ void STR::INVANA::InvanaAugLagr::ResetDiscretization()
 /*----------------------------------------------------------------------*/
 /* Evaluate the objective function                          keh 10/13   */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::InvanaAugLagr::EvaluateError(const Epetra_MultiVector& sol, double* val)
+void INVANA::InvanaAugLagr::EvaluateError(const Epetra_MultiVector& sol, double* val)
 {
   *val=0.0;
 

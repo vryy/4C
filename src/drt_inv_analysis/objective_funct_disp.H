@@ -23,9 +23,6 @@ namespace DRT
   class Discretization;
 }
 
-namespace STR
-{
-
 namespace INVANA
 {
 
@@ -104,6 +101,5 @@ public:
 
 }; // class ObjectiveFunctDisp
 }  // namespace INVANA
-}  // namespace STR
 
 #endif // OBJECTIVE_FUNCT_DISP_H

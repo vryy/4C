@@ -10,7 +10,7 @@ DIM                             3
 MATERIALS                       2
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+PROBLEMTYP                      Inverse_Analysis
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

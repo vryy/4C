@@ -33,9 +33,6 @@ namespace LINALG
   class MultiMapExtractor;
 }
 
-namespace STR
-{
-
 namespace INVANA
 {
   /*!
@@ -273,7 +270,6 @@ private:
 
 };
 }  // namespace INVANA
-}  // namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif

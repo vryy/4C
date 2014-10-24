@@ -25,14 +25,14 @@ Maintainer: Jonas Biehler
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 
 
-STR::INVANA::SMCParticleType STR::INVANA::SMCParticleType::instance_;
+INVANA::SMCParticleType INVANA::SMCParticleType::instance_;
 
 
 
-DRT::ParObject* STR::INVANA::SMCParticleType::Create( const std::vector<char> & data )
+DRT::ParObject* INVANA::SMCParticleType::Create( const std::vector<char> & data )
 {
   int dummysize =1;
-  STR::INVANA::SMCParticle * my_particle =new STR::INVANA::SMCParticle(dummysize);
+  INVANA::SMCParticle * my_particle =new INVANA::SMCParticle(dummysize);
   my_particle->Unpack(data);
   return my_particle;
 }
@@ -41,7 +41,7 @@ DRT::ParObject* STR::INVANA::SMCParticleType::Create( const std::vector<char> & 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
 /*----------------------------------------------------------------------*/
-STR::INVANA::SMCParticle::SMCParticle(int numparams)
+INVANA::SMCParticle::SMCParticle(int numparams)
 {
   weightprop_=0.0;
   weight_=0.0;
@@ -63,7 +63,7 @@ STR::INVANA::SMCParticle::SMCParticle(int numparams)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       biehler 10/13|
  *----------------------------------------------------------------------*/
-STR::INVANA::SMCParticle::SMCParticle(const STR::INVANA::SMCParticle& old):
+INVANA::SMCParticle::SMCParticle(const INVANA::SMCParticle& old):
 ParObject(old),
 weightprop_(old.weightprop_),
 weight_(old.weight_),
@@ -88,9 +88,9 @@ position_(old.position_)
  |  Deep copy this instance and return pointer to it (public)           |
  |                                                         biehler 10/13|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<STR::INVANA::SMCParticle> STR::INVANA::SMCParticle::Clone() const
+Teuchos::RCP<INVANA::SMCParticle> INVANA::SMCParticle::Clone() const
 {
-  Teuchos::RCP<STR::INVANA::SMCParticle> newparticle = Teuchos::rcp(new STR::INVANA::SMCParticle(*this));
+  Teuchos::RCP<INVANA::SMCParticle> newparticle = Teuchos::rcp(new INVANA::SMCParticle(*this));
   return newparticle;
 }
 
@@ -99,7 +99,7 @@ Teuchos::RCP<STR::INVANA::SMCParticle> STR::INVANA::SMCParticle::Clone() const
  |  Pack data                                                  (public) |
  |                                                         biehler 10/13|
  *----------------------------------------------------------------------*/
-void STR::INVANA::SMCParticle::Pack(DRT::PackBuffer& data) const
+void INVANA::SMCParticle::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -135,7 +135,7 @@ void STR::INVANA::SMCParticle::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                         biehler 10/13|
  *----------------------------------------------------------------------*/
-void STR::INVANA::SMCParticle::Unpack(const std::vector<char>& data)
+void INVANA::SMCParticle::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
@@ -172,7 +172,7 @@ void STR::INVANA::SMCParticle::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  << operator                                             biehler 10/13|
  *----------------------------------------------------------------------*/
-std::ostream& operator << (std::ostream& os, const STR::INVANA::SMCParticle& particle)
+std::ostream& operator << (std::ostream& os, const INVANA::SMCParticle& particle)
 {
   particle.Print(os);
   return os;
@@ -181,7 +181,7 @@ std::ostream& operator << (std::ostream& os, const STR::INVANA::SMCParticle& par
 /*----------------------------------------------------------------------*
  |  print current position an weight of this particle (public)biehler 10/13|
  *----------------------------------------------------------------------*/
-void STR::INVANA::SMCParticle::Print(std::ostream& os) const
+void INVANA::SMCParticle::Print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Particle   weight: " << weight_ << " normweight: "  << normweight_ << "position: ";
@@ -194,12 +194,12 @@ void STR::INVANA::SMCParticle::Print(std::ostream& os) const
   return;
 }
 
-void STR::INVANA::SMCParticle::SetPosition(std::vector<double> new_position)
+void INVANA::SMCParticle::SetPosition(std::vector<double> new_position)
 {
   position_= new_position;
 }
 
-void STR::INVANA::SMCParticle::SetPositionProp(std::vector<double> new_position)
+void INVANA::SMCParticle::SetPositionProp(std::vector<double> new_position)
 {
   positionprop_= new_position;
 }
@@ -214,12 +214,12 @@ void STR::INVANA::SMCParticle::SetPositionProp(std::vector<double> new_position)
 ////  LogPrior_= log_prior;
 //}
 
-void STR::INVANA::SMCParticle::ComputeWeightProp(double gamma)
+void INVANA::SMCParticle::ComputeWeightProp(double gamma)
 {
   weightprop_=weight_ + gamma*LogLikeProp_ - LogLikeGamma_;
 }
 
-void STR::INVANA::SMCParticle::AcceptReweightProp(double gamma)
+void INVANA::SMCParticle::AcceptReweightProp(double gamma)
 {
 
   weightold_=weight_;
@@ -232,7 +232,7 @@ void STR::INVANA::SMCParticle::AcceptReweightProp(double gamma)
   LogLike_=LogLikeProp_;
 }
 
-void STR::INVANA::SMCParticle::AcceptMoveProp()
+void INVANA::SMCParticle::AcceptMoveProp()
 {
   LogLikeGammaOld_=LogLikeGamma_;
   LogLikeGamma_=LogLikeGammaProp_;

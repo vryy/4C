@@ -19,9 +19,6 @@ Maintainer: Sebastian Kehl
 #include "regularization_base.H"
 
 
-namespace STR
-{
-
 namespace INVANA
 
 {
@@ -109,7 +106,6 @@ namespace INVANA
 
   };
 
-}
 }
 
 /*----------------------------------------------------------------------*/

@@ -26,8 +26,6 @@ namespace DRT
 class Discretization;
 }
 
-namespace STR
-{
 namespace INVANA
 {
 // forward declarations
@@ -78,7 +76,6 @@ private:
 
 };
 } //namespace INVANA
-} //namespace STR
 
 
 #endif

@@ -31,29 +31,29 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* standard constructor                                      keh 08/14  */
 /*----------------------------------------------------------------------*/
-STR::INVANA::InvanaFactory::InvanaFactory()
+INVANA::InvanaFactory::InvanaFactory()
 {;}
 
-Teuchos::RCP<STR::INVANA::InvanaBase> STR::INVANA::InvanaFactory::Create(Teuchos::RCP<DRT::Discretization> discret,const Teuchos::ParameterList& invp)
+Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(Teuchos::RCP<DRT::Discretization> discret,const Teuchos::ParameterList& invp)
 {
 
   Teuchos::RCP<InvanaBase> optprob=Teuchos::null;
 
   // similarity measure
-  Teuchos::RCP<STR::INVANA::ObjectiveFunct> objfunct=Teuchos::null;
-  switch (DRT::INPUT::IntegralValue<INPAR::STR::StatInvObjFunctType>(invp,"OBJECTIVEFUNCT"))
+  Teuchos::RCP<INVANA::ObjectiveFunct> objfunct=Teuchos::null;
+  switch (DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvObjFunctType>(invp,"OBJECTIVEFUNCT"))
   {
-    case INPAR::STR::stat_inv_obj_disp:
+    case INPAR::INVANA::stat_inv_obj_disp:
     {
-      objfunct = Teuchos::rcp(new STR::INVANA::ObjectiveFunctDisp(discret));
+      objfunct = Teuchos::rcp(new INVANA::ObjectiveFunctDisp(discret));
     }
     break;
-    case INPAR::STR::stat_inv_obj_surfcurr:
+    case INPAR::INVANA::stat_inv_obj_surfcurr:
     {
-      objfunct = Teuchos::rcp(new STR::INVANA::ObjectiveFunctSurfCurrRepresentation(discret));
+      objfunct = Teuchos::rcp(new INVANA::ObjectiveFunctSurfCurrRepresentation(discret));
     }
     break;
-    case INPAR::STR::stat_inv_obj_none:
+    case INPAR::INVANA::stat_inv_obj_none:
     {
       dserror("choose some type of objective function");
     }
@@ -61,17 +61,17 @@ Teuchos::RCP<STR::INVANA::InvanaBase> STR::INVANA::InvanaFactory::Create(Teuchos
   }
 
   // parameterization
-  Teuchos::RCP<STR::INVANA::MatParManager> matman = Teuchos::null;
-  switch(DRT::INPUT::IntegralValue<INPAR::STR::StatInvMatParametrization>(invp,"PARAMETRIZATION"))
+  Teuchos::RCP<INVANA::MatParManager> matman = Teuchos::null;
+  switch(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvMatParametrization>(invp,"PARAMETRIZATION"))
   {
-    case INPAR::STR::stat_inv_mp_elementwise:
+    case INPAR::INVANA::stat_inv_mp_elementwise:
     {
-      matman = Teuchos::rcp(new STR::INVANA::MatParManagerPerElement(discret));
+      matman = Teuchos::rcp(new INVANA::MatParManagerPerElement(discret));
     }
     break;
-    case INPAR::STR::stat_inv_mp_uniform:
+    case INPAR::INVANA::stat_inv_mp_uniform:
     {
-      matman = Teuchos::rcp(new STR::INVANA::MatParManagerUniform(discret));
+      matman = Teuchos::rcp(new INVANA::MatParManagerUniform(discret));
     }
     break;
     default:
@@ -81,19 +81,19 @@ Teuchos::RCP<STR::INVANA::InvanaBase> STR::INVANA::InvanaFactory::Create(Teuchos
   matman->Setup();
 
   // regularization!
-  Teuchos::RCP<STR::INVANA::RegularizationBase> regman = Teuchos::null;
-  switch(DRT::INPUT::IntegralValue<INPAR::STR::StatInvRegularization>(invp,"REGULARIZATION"))
+  Teuchos::RCP<INVANA::RegularizationBase> regman = Teuchos::null;
+  switch(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvRegularization>(invp,"REGULARIZATION"))
   {
-    case INPAR::STR::stat_inv_reg_none:
+    case INPAR::INVANA::stat_inv_reg_none:
       break;
-    case INPAR::STR::stat_inv_reg_tikhonov:
+    case INPAR::INVANA::stat_inv_reg_tikhonov:
     {
-      regman = Teuchos::rcp(new STR::INVANA::RegularizationTikhonov(invp));
+      regman = Teuchos::rcp(new INVANA::RegularizationTikhonov(invp));
     }
     break;
-    case INPAR::STR::stat_inv_reg_totalvariation:
+    case INPAR::INVANA::stat_inv_reg_totalvariation:
     {
-      regman = Teuchos::rcp(new STR::INVANA::RegularizationTotalVariation(invp));
+      regman = Teuchos::rcp(new INVANA::RegularizationTotalVariation(invp));
     }
     break;
   }
@@ -104,11 +104,11 @@ Teuchos::RCP<STR::INVANA::InvanaBase> STR::INVANA::InvanaFactory::Create(Teuchos
   }
 
   // optimization algorithm
-  STR::INVANA::OptimizerFactory optimizerfac;
-  Teuchos::RCP<STR::INVANA::OptimizerBase> opti = optimizerfac.Create(invp);
+  INVANA::OptimizerFactory optimizerfac;
+  Teuchos::RCP<INVANA::OptimizerBase> opti = optimizerfac.Create(invp);
 
   // in here comes the switch for various optimization problems. So far only augmented lagrange functional
-  optprob = Teuchos::rcp(new STR::INVANA::InvanaAugLagr());
+  optprob = Teuchos::rcp(new INVANA::InvanaAugLagr());
 
   // here some checks of valid combinations of objective functions, parametrizations and
   // regularizations should come

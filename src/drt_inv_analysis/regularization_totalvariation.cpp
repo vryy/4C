@@ -29,7 +29,7 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* standard constructor                                     keh 10/14   */
 /*----------------------------------------------------------------------*/
-STR::INVANA::RegularizationTotalVariation::RegularizationTotalVariation(const Teuchos::ParameterList& invp) :
+INVANA::RegularizationTotalVariation::RegularizationTotalVariation(const Teuchos::ParameterList& invp) :
   RegularizationBase(invp),
 eps_(invp.get<double>("TVD_EPS")),
 adjacency_(Teuchos::null)
@@ -40,7 +40,7 @@ adjacency_(Teuchos::null)
 /*----------------------------------------------------------------------*/
 /* Setup                                                    keh 10/14   */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::RegularizationTotalVariation::Setup()
+void INVANA::RegularizationTotalVariation::Setup()
 {
   adjacency_ = connectivity_->AdjacencyMatrix();
 
@@ -50,7 +50,7 @@ void STR::INVANA::RegularizationTotalVariation::Setup()
 /*----------------------------------------------------------------------*/
 /* Evaluate                                                 keh 10/14   */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::RegularizationTotalVariation::Evaluate(const Epetra_MultiVector& theta, double* value)
+void INVANA::RegularizationTotalVariation::Evaluate(const Epetra_MultiVector& theta, double* value)
 {
   // check if the map of theta is the row map of the adjacency matrix
   if (not theta.Map().SameAs(adjacency_->RowMap()))
@@ -99,7 +99,7 @@ void STR::INVANA::RegularizationTotalVariation::Evaluate(const Epetra_MultiVecto
   return;
 }
 
-void STR::INVANA::RegularizationTotalVariation::EvaluateGradient(const Epetra_MultiVector& theta, Teuchos::RCP<Epetra_MultiVector> gradient)
+void INVANA::RegularizationTotalVariation::EvaluateGradient(const Epetra_MultiVector& theta, Teuchos::RCP<Epetra_MultiVector> gradient)
 {
   // check if the map of theta is the row map of the adjacency matrix
   if (not theta.Map().SameAs(adjacency_->RowMap()))

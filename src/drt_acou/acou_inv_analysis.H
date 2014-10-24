@@ -50,13 +50,11 @@ namespace IO
 {
   class DiscretizationWriter;
 }
-namespace STR
+namespace INVANA
 {
-  namespace INVANA
-  {
-    class MatParManager;
-  }
+  class MatParManager;
 }
+
 
 namespace DRT
 {
@@ -173,7 +171,7 @@ private:
   Teuchos::RCP<Epetra_Vector> adjoint_w_;
 
   //! material handling done by the MatParManager from Sebastian Kehl
-  Teuchos::RCP<STR::INVANA::MatParManager> matman_;
+  Teuchos::RCP<INVANA::MatParManager> matman_;
 
   //! gradient of the objective function
   Teuchos::RCP<Epetra_MultiVector> objgrad_;

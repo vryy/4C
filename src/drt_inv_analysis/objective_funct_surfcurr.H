@@ -31,9 +31,6 @@ namespace LINALG
   class SerialDenseMatrix;
 }
 
-namespace STR
-{
-
 namespace INVANA
 {
 
@@ -71,7 +68,7 @@ private:
   //! vector of single surface objective functions
   //! 'std::vector wrap' to account for for measurement
   //! for more than the last time step in the future
-  std::vector< std::vector<Teuchos::RCP<STR::INVANA::ObjectiveFunctSurfCurr> > > currents_;
+  std::vector< std::vector<Teuchos::RCP<INVANA::ObjectiveFunctSurfCurr> > > currents_;
 
 
 public:
@@ -265,6 +262,5 @@ public:
 
 }; // class ObjectiveFunctSurfCurr
 }  // namespace INVANA
-}  // namespace STR
 
 #endif // OBJECTIVE_FUNCT_SURFCURR_H

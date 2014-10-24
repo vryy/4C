@@ -27,14 +27,14 @@ Maintainer: Sebastian Kehl
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_comm/comm_utils.H"
 
-STR::INVANA::MatParManagerUniform::MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret)
+INVANA::MatParManagerUniform::MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret)
    :MatParManager(discret)
 {}
 
 /*----------------------------------------------------------------------*/
 /* Setup                                                    keh 10/14   */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManagerUniform::Setup()
+void INVANA::MatParManagerUniform::Setup()
 {
   paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(NumParams(),NumParams(),0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
   int numeleperproc=0;
@@ -55,18 +55,18 @@ void STR::INVANA::MatParManagerUniform::Setup()
   InitParams();
 }
 
-void STR::INVANA::MatParManagerUniform::FillParameters(Teuchos::RCP<Epetra_MultiVector> params)
+void INVANA::MatParManagerUniform::FillParameters(Teuchos::RCP<Epetra_MultiVector> params)
 {
   for (int i=0; i<NumParams(); i++)
     (*params)(i)->PutScalar((*(*optparams_)(0))[i]);
 }
 
-void STR::INVANA::MatParManagerUniform::InitParameters(int parapos, double val)
+void INVANA::MatParManagerUniform::InitParameters(int parapos, double val)
 {
   optparams_->ReplaceGlobalValue(parapos,0,val);
 }
 
-void STR::INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
+void INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
                                                          double val,
                                                          int elepos,
                                                          int paraposglobal,
@@ -80,7 +80,7 @@ void STR::INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_Mul
   if (success!=0) dserror("error code %d", success);
 }
 
-void STR::INVANA::MatParManagerUniform::Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint)
+void INVANA::MatParManagerUniform::Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint)
 {
   std::vector<double> val(dfint->MyLength(),0.0);
   Discret()->Comm().SumAll((*dfint)(0)->Values(),&val[0],dfint->MyLength());

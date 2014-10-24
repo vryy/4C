@@ -16,9 +16,6 @@ Maintainer: Sebastian Kehl
 #include "Epetra_MultiVector.h"
 
 
-namespace STR
-{
-
 namespace INVANA
 {
 
@@ -31,6 +28,5 @@ void MVNorm(const Epetra_MultiVector& avector, const Epetra_Map& uniquemap, int 
 void MVDotProduct(const Epetra_MultiVector& avector, const Epetra_MultiVector& bvector, const Epetra_Map& uniquemap, double* result);
 
 }  // namespace INVANA
-}  // namespace STR
 
 #endif /*INVANA_UTILS_H_*/

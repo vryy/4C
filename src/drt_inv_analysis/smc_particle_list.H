@@ -32,9 +32,6 @@ namespace DRT
 
 /*----------------------------------------------------------------------*/
 //! Material parameters manager
-namespace STR
-{
-
 namespace INVANA
 
 {
@@ -87,7 +84,7 @@ namespace INVANA
     void CheckReweight(double & gamma);
 
     //! \brief get the ith particle
-    Teuchos::RCP<STR::INVANA::SMCParticle> GetParticle(int position_number);
+    Teuchos::RCP<INVANA::SMCParticle> GetParticle(int position_number);
 
     //! \brief update particle data after accepted reweighting step
     void AcceptReweightProp();
@@ -209,8 +206,6 @@ namespace INVANA
   }; //EOF class
 
 } // EOF INVANA
-
-} // EOF STR
 
 
 #endif

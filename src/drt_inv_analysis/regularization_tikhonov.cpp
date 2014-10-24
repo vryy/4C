@@ -23,22 +23,22 @@
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-STR::INVANA::RegularizationTikhonov::RegularizationTikhonov( const Teuchos::ParameterList& invp) :
+INVANA::RegularizationTikhonov::RegularizationTikhonov( const Teuchos::ParameterList& invp) :
   RegularizationBase(invp)
 {
   return;
 }
 
-void STR::INVANA::RegularizationTikhonov::Evaluate(const Epetra_MultiVector& theta, double* value)
+void INVANA::RegularizationTikhonov::Evaluate(const Epetra_MultiVector& theta, double* value)
 {
   double val = 0.0;
-  STR::INVANA::MVNorm(theta, *(connectivity_->MapExtractor()->FullMap()), 2, &val);
+  INVANA::MVNorm(theta, *(connectivity_->MapExtractor()->FullMap()), 2, &val);
   *value += 0.5 * weight_ * val * val;
 
   return;
 }
 
-void STR::INVANA::RegularizationTikhonov::EvaluateGradient(const Epetra_MultiVector& theta, Teuchos::RCP<Epetra_MultiVector> gradient)
+void INVANA::RegularizationTikhonov::EvaluateGradient(const Epetra_MultiVector& theta, Teuchos::RCP<Epetra_MultiVector> gradient)
 {
   gradient->Update(weight_, theta, 1.0);
 

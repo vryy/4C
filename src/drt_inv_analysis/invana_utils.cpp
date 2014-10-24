@@ -21,7 +21,7 @@ Maintainer: Sebastian Kehl
 /* Compute norm of two vectors stored in                    keh 03/14   */
 /* multivector format for storage reasons only                          */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MVNorm(const Epetra_MultiVector& avector, const Epetra_Map& uniquemap, int anorm, double* result)
+void INVANA::MVNorm(const Epetra_MultiVector& avector, const Epetra_Map& uniquemap, int anorm, double* result)
 {
   Epetra_SerialDenseVector vnorm(avector.NumVectors());
 
@@ -45,7 +45,7 @@ void STR::INVANA::MVNorm(const Epetra_MultiVector& avector, const Epetra_Map& un
 /* Compute dot product of two vectors stored in             keh 03/14   */
 /* multivector format for storage reasons only                          */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MVDotProduct(const Epetra_MultiVector& avector, const Epetra_MultiVector& bvector, const Epetra_Map& uniquemap, double* result)
+void INVANA::MVDotProduct(const Epetra_MultiVector& avector, const Epetra_MultiVector& bvector, const Epetra_Map& uniquemap, double* result)
 {
   dsassert(avector.NumVectors()==bvector.NumVectors(), "give proper multivectors!");
 

@@ -70,7 +70,8 @@ typedef enum _PROBLEM_TYP
      prb_two_phase_flow,     // two phase flow problem using the fluid and levelset modules
      prb_fluid_xfem_ls,      // xfluid calculations using levelset for cut.
      prb_fpssi,              // fluid porous structure scatra scatra interaction
-     prb_uq                  // uncertainty quantification
+     prb_uq,                 // uncertainty quantification
+     prb_invana              // inverse analysis of structures(so far)
 } PROBLEM_TYP;
 
 

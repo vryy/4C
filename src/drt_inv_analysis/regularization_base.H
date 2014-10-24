@@ -35,9 +35,6 @@ namespace DRT
   class Discretization;
 }
 
-namespace STR
-{
-
 namespace INVANA
 {
 
@@ -102,7 +99,6 @@ protected:
 
 };
 
-}
 }
 
 /*----------------------------------------------------------------------*/

@@ -22,7 +22,7 @@ namespace ACOU
 {
 
 /*----------------------------------------------------------------------*/
-class PatMatParManagerUniform : public STR::INVANA::MatParManagerUniform
+class PatMatParManagerUniform : public INVANA::MatParManagerUniform
 {
 public:
 
@@ -38,7 +38,7 @@ public:
 };
 
 /*----------------------------------------------------------------------*/
-class PatMatParManagerPerElement : public STR::INVANA::MatParManagerPerElement
+class PatMatParManagerPerElement : public INVANA::MatParManagerPerElement
 {
 public:
 

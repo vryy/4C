@@ -34,7 +34,6 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_mlmc.H"
 #include "stru_resulttest.H"
 #include "str_invanalysis.H"
-#include "str_statinvanalysis.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
@@ -48,45 +47,27 @@ Maintainer: Alexander Popp
 void caldyn_drt()
 {
   // get input lists
-  const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
-  const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  // major switch to different time integrators
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
+  {
+  case INPAR::STR::dyna_statics:
+  case INPAR::STR::dyna_genalpha:
+  case INPAR::STR::dyna_onesteptheta:
+  case INPAR::STR::dyna_gemm:
+  case INPAR::STR::dyna_expleuler:
+  case INPAR::STR::dyna_centrdiff:
+  case INPAR::STR::dyna_ab2:
+  case INPAR::STR::dyna_euma:
+  case INPAR::STR::dyna_euimsto:
+  case INPAR::STR::dyna_statmech:
+    dyn_nlnstructural_drt();
+    break;
+  default:
+    dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+    break;
+  }
 
-  // do we want to do inverse analysis?
-  if (DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(iap,"INV_ANALYSIS")
-      != INPAR::STR::inv_none)
-  {
-    STR::invanalysis();
-  }
-  // do we want to do statistical inverse analysis?
-  else if (DRT::INPUT::IntegralValue<INPAR::STR::StatInvAnalysisType>(statinvp,"STAT_INV_ANALYSIS")
-     != INPAR::STR::stat_inv_none)
-  {
-    STR::statinvanalysis();
-  }
-  else
-  {
-    // get input lists
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-    // major switch to different time integrators
-    switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
-    {
-    case INPAR::STR::dyna_statics:
-    case INPAR::STR::dyna_genalpha:
-    case INPAR::STR::dyna_onesteptheta:
-    case INPAR::STR::dyna_gemm:
-    case INPAR::STR::dyna_expleuler:
-    case INPAR::STR::dyna_centrdiff:
-    case INPAR::STR::dyna_ab2:
-    case INPAR::STR::dyna_euma:
-    case INPAR::STR::dyna_euimsto:
-    case INPAR::STR::dyna_statmech:
-      dyn_nlnstructural_drt();
-      break;
-    default:
-      dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
-      break;
-    }
-  }
   return;
 }
 

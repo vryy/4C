@@ -21,7 +21,7 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* standard constructor                                      keh 09/14  */
 /*----------------------------------------------------------------------*/
-STR::INVANA::InvanaBase::InvanaBase():
+INVANA::InvanaBase::InvanaBase():
 discret_(Teuchos::null),
 objfunct_(Teuchos::null),
 matman_(Teuchos::null),
@@ -30,12 +30,12 @@ optimizer_(Teuchos::null),
 isinit_(false)
 {;}
 
-void STR::INVANA::InvanaBase::Init(Teuchos::RCP<DRT::Discretization> discret,
-                                   Teuchos::RCP<STR::INVANA::ObjectiveFunct> objfunct,
-                                   Teuchos::RCP<STR::INVANA::MatParManager> matman,
-                                   Teuchos::RCP<STR::INVANA::RegularizationBase> regman,
-                                   Teuchos::RCP<STR::INVANA::OptimizerBase> optimizer,
-                                   Teuchos::RCP<STR::INVANA::InvanaBase> optprob)
+void INVANA::InvanaBase::Init(Teuchos::RCP<DRT::Discretization> discret,
+                                   Teuchos::RCP<INVANA::ObjectiveFunct> objfunct,
+                                   Teuchos::RCP<INVANA::MatParManager> matman,
+                                   Teuchos::RCP<INVANA::RegularizationBase> regman,
+                                   Teuchos::RCP<INVANA::OptimizerBase> optimizer,
+                                   Teuchos::RCP<INVANA::InvanaBase> optprob)
 {
   discret_=discret;
   objfunct_=objfunct;
@@ -49,12 +49,12 @@ void STR::INVANA::InvanaBase::Init(Teuchos::RCP<DRT::Discretization> discret,
   isinit_=true;
 }
 
-const Epetra_MultiVector& STR::INVANA::InvanaBase::InitialGuess()
+const Epetra_MultiVector& INVANA::InvanaBase::InitialGuess()
 {
   return matman_->InitialParams();
 }
 
-void STR::INVANA::InvanaBase::Solve(int restart)
+void INVANA::InvanaBase::Solve(int restart)
 {
   if (!isinit_) dserror("InvanaBase is not inititialzed. Call Init() first");
 
@@ -64,27 +64,27 @@ void STR::INVANA::InvanaBase::Solve(int restart)
   return;
 }
 
-const Epetra_Comm& STR::INVANA::InvanaBase::Comm()
+const Epetra_Comm& INVANA::InvanaBase::Comm()
 {
   return discret_->Comm();
 }
 
-Teuchos::RCP<Epetra_Map> STR::INVANA::InvanaBase::VectorRowLayout()
+Teuchos::RCP<Epetra_Map> INVANA::InvanaBase::VectorRowLayout()
 {
   return matman_->ParamLayoutMapUnique();
 }
 
-Teuchos::RCP<Epetra_Map> STR::INVANA::InvanaBase::VectorColLayout()
+Teuchos::RCP<Epetra_Map> INVANA::InvanaBase::VectorColLayout()
 {
   return matman_->ParamLayoutMap();
 }
 
-double STR::INVANA::InvanaBase::NumVectors()
+double INVANA::InvanaBase::NumVectors()
 {
   return matman_->NumVectors();
 }
 
-Teuchos::RCP<DRT::ResultTest> STR::INVANA::InvanaBase::CreateFieldTest()
+Teuchos::RCP<DRT::ResultTest> INVANA::InvanaBase::CreateFieldTest()
 {
   return Teuchos::rcp(new InvanaResultTest(*this));
 }

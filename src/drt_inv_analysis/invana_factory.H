@@ -24,9 +24,6 @@ namespace DRT
 class Discretization;
 }
 
-namespace STR
-{
-
 namespace INVANA
 {
 
@@ -48,11 +45,10 @@ public:
   virtual ~InvanaFactory() {;};
 
   //! Return a reference to the optimization problem
-  Teuchos::RCP<STR::INVANA::InvanaBase> Create(Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& invp);
+  Teuchos::RCP<INVANA::InvanaBase> Create(Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& invp);
 
 
 };
 }  // namespace INVANA
-}  // namespace STR
 
 #endif /*INVANA_FACTORY_H_*/

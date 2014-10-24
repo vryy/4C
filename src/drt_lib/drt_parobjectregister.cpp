@@ -304,7 +304,7 @@ std::string DRT::ParObjectList()
     << MAT::ActiveFiberType::Instance().Name() << " "
     // only compile this on the workstation as kaisers boost version is outdated an cant run this code
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
-    << STR::INVANA::SMCParticleType::Instance().Name() << " "
+    << INVANA::SMCParticleType::Instance().Name() << " "
 #else
  // no code here
 #endif

@@ -33,9 +33,6 @@ namespace DRT
 class ResultTest;
 }
 
-namespace STR
-{
-
 namespace INVANA
 {
 
@@ -255,6 +252,5 @@ private:
 
 };
 }  // namespace INVANA
-}  // namespace STR
 
 #endif /*OPTIMIZER_BASE_H_*/

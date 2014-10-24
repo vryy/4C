@@ -33,8 +33,6 @@ namespace DRT
 }
 /*----------------------------------------------------------------------*/
 //! Material parameters manager
-namespace STR
-{
 
 namespace INVANA
 
@@ -64,10 +62,10 @@ namespace INVANA
   SMCParticle(int numparams);
 
   //! brief Copy Constructor Makes a deep copy of a ParticleNode
-  SMCParticle(const STR::INVANA::SMCParticle& old);
+  SMCParticle(const INVANA::SMCParticle& old);
 
   //! brief clone particle and return rcp to this particle
-  Teuchos::RCP<STR::INVANA::SMCParticle> Clone() const;
+  Teuchos::RCP<INVANA::SMCParticle> Clone() const;
 
   //! brief Return unique ParObject id. every class implementing ParObject needs a unique id defined at the
   //! top of drt_lib/drt_parobject.H.
@@ -169,8 +167,7 @@ namespace INVANA
 
 } // EOF INVANA
 
-} // EOF STR
-std::ostream& operator << (std::ostream& os, const STR::INVANA::SMCParticle& particle);
+std::ostream& operator << (std::ostream& os, const INVANA::SMCParticle& particle);
 
 #endif
 

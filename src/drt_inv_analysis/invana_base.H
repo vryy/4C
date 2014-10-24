@@ -32,9 +32,6 @@ namespace DRT
   class Discretization;
 }
 
-namespace STR
-{
-
 namespace INVANA
 {
 class ObjectiveFunct;
@@ -87,11 +84,11 @@ public:
     optprob - a reference to itself to be passed to the optimization algorithm.
   */
   void Init(Teuchos::RCP<DRT::Discretization> discret,
-            Teuchos::RCP<STR::INVANA::ObjectiveFunct> objfunct,
-            Teuchos::RCP<STR::INVANA::MatParManager> matman,
-            Teuchos::RCP<STR::INVANA::RegularizationBase> regman,
-            Teuchos::RCP<STR::INVANA::OptimizerBase> optimizer,
-            Teuchos::RCP<STR::INVANA::InvanaBase> optprob);
+            Teuchos::RCP<INVANA::ObjectiveFunct> objfunct,
+            Teuchos::RCP<INVANA::MatParManager> matman,
+            Teuchos::RCP<INVANA::RegularizationBase> regman,
+            Teuchos::RCP<INVANA::OptimizerBase> optimizer,
+            Teuchos::RCP<INVANA::InvanaBase> optprob);
 
   //! Setup of the derived classes.
   virtual void Setup() = 0;
@@ -114,16 +111,16 @@ public:
   Teuchos::RCP<DRT::Discretization> Discret() {return discret_;}
 
   //! a reference to the objective function
-  Teuchos::RCP<STR::INVANA::ObjectiveFunct> ObjectiveFunct() {return objfunct_;}
+  Teuchos::RCP<INVANA::ObjectiveFunct> ObjectiveFunct() {return objfunct_;}
 
   //! a reference to the material parameter manager
-  Teuchos::RCP<STR::INVANA::MatParManager> Matman(){return matman_; }
+  Teuchos::RCP<INVANA::MatParManager> Matman(){return matman_; }
 
   //! a reference to the regularization of the objective function
-  Teuchos::RCP<STR::INVANA::RegularizationBase> Regman(){return regman_; }
+  Teuchos::RCP<INVANA::RegularizationBase> Regman(){return regman_; }
 
   //! a reference to the optimization algorithm
-  Teuchos::RCP<STR::INVANA::OptimizerBase> Optimizer(){return optimizer_; }
+  Teuchos::RCP<INVANA::OptimizerBase> Optimizer(){return optimizer_; }
 
   //! initial guess to be used by the optimizer
   const Epetra_MultiVector& InitialGuess();
@@ -149,16 +146,16 @@ private:
   Teuchos::RCP<DRT::Discretization> discret_;
 
   //! objective function to be optimized
-  Teuchos::RCP<STR::INVANA::ObjectiveFunct> objfunct_;
+  Teuchos::RCP<INVANA::ObjectiveFunct> objfunct_;
 
   //! handler for calls to the parametrization
-  Teuchos::RCP<STR::INVANA::MatParManager> matman_;
+  Teuchos::RCP<INVANA::MatParManager> matman_;
 
   //! handler for calls to the regularization
-  Teuchos::RCP<STR::INVANA::RegularizationBase> regman_;
+  Teuchos::RCP<INVANA::RegularizationBase> regman_;
 
   //! optimization algorithm to solve the optimization problem
-  Teuchos::RCP<STR::INVANA::OptimizerBase> optimizer_;
+  Teuchos::RCP<INVANA::OptimizerBase> optimizer_;
 
   //! initialization bool
   bool isinit_;
@@ -167,6 +164,5 @@ private:
 
 };
 }  // namespace INVANA
-}  // namespace STR
 
 #endif /*INVANA_BASE_H_*/

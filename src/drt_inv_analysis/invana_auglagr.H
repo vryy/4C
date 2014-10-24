@@ -27,9 +27,6 @@ template<typename > class TimIntMStep;
 }
 }
 
-namespace STR
-{
-
 namespace INVANA
 {
 class ObjectiveFunct;
@@ -114,6 +111,5 @@ private:
 
 };
 } // namespace INVANA
-} // namespace STR
 
 #endif /*INVANA_AUGLAGR_H_*/

@@ -18,8 +18,6 @@ Maintainer: Jonas Biehler
 
 #include "optimizer_base.H"
 
-namespace STR
-{
 namespace INVANA
 {
 // forward declaration
@@ -91,7 +89,6 @@ private:
 
 };
 }  // namespace INVANA
-}  // namespace STR
 
 #endif /*OPTIMIZER_MC_H*/
 #else

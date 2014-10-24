@@ -21,7 +21,7 @@ Maintainer: Sebastian Kehl
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-STR::INVANA::OptimizerBase::OptimizerBase(const Teuchos::ParameterList& invp):
+INVANA::OptimizerBase::OptimizerBase(const Teuchos::ParameterList& invp):
 numvecs_(0),
 restartevry_(invp.get<int>("RESTARTEVRY")),
 maxiter_(invp.get<int>("MAXITER")),
@@ -45,7 +45,7 @@ isinit_(false)
   return;
 }
 
-void STR::INVANA::OptimizerBase::Init(Teuchos::RCP<Epetra_Map> layoutrowmap, Teuchos::RCP<Epetra_Map> layoutcolmap, int numvecs, Teuchos::RCP<InvanaBase> optprob)
+void INVANA::OptimizerBase::Init(Teuchos::RCP<Epetra_Map> layoutrowmap, Teuchos::RCP<Epetra_Map> layoutcolmap, int numvecs, Teuchos::RCP<InvanaBase> optprob)
 {
   numvecs_=numvecs;
   solrowmap_=layoutrowmap;
@@ -73,17 +73,17 @@ void STR::INVANA::OptimizerBase::Init(Teuchos::RCP<Epetra_Map> layoutrowmap, Teu
 
 }
 
-void STR::INVANA::OptimizerBase::SetInitialGuess()
+void INVANA::OptimizerBase::SetInitialGuess()
 {
   sol_->Scale(1.0,optprob_->InitialGuess());
 }
 
-void STR::INVANA::OptimizerBase::Evaluate(double* val, Teuchos::RCP<Epetra_MultiVector> gradient)
+void INVANA::OptimizerBase::Evaluate(double* val, Teuchos::RCP<Epetra_MultiVector> gradient)
 {
   optprob_->Evaluate(*sol_,val,gradient);
 }
 
-void STR::INVANA::OptimizerBase::UpdateSolution(const Epetra_MultiVector& toadd)
+void INVANA::OptimizerBase::UpdateSolution(const Epetra_MultiVector& toadd)
 {
   sol_o_->Scale(1.0, *sol_);
   sol_->Update(1.0,toadd,1.0);
@@ -92,7 +92,7 @@ void STR::INVANA::OptimizerBase::UpdateSolution(const Epetra_MultiVector& toadd)
 /*----------------------------------------------------------------------*/
 /* reset to last set of material parameters                  keh 03/14  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::OptimizerBase::UndoUpdateSolution()
+void INVANA::OptimizerBase::UndoUpdateSolution()
 {
   sol_->Scale(1.0, *sol_o_);
 }

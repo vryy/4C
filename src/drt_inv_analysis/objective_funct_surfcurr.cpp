@@ -21,7 +21,7 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* standard constructor of current representation                       */
 /*----------------------------------------------------------------------*/
-STR::INVANA::ObjectiveFunctSurfCurrRepresentation::ObjectiveFunctSurfCurrRepresentation(Teuchos::RCP<DRT::Discretization> discret):
+INVANA::ObjectiveFunctSurfCurrRepresentation::ObjectiveFunctSurfCurrRepresentation(Teuchos::RCP<DRT::Discretization> discret):
 sourcedis_(discret),
 targetdis_(Teuchos::null)
 {
@@ -82,7 +82,7 @@ targetdis_(Teuchos::null)
 /*----------------------------------------------------------------------*/
 /* find step of measurement according to given time          keh 10/14  */
 /*----------------------------------------------------------------------*/
-int STR::INVANA::ObjectiveFunctSurfCurrRepresentation::FindStep(double time)
+int INVANA::ObjectiveFunctSurfCurrRepresentation::FindStep(double time)
 {
   // find step of the evaluation according to time:
   int step=-1;
@@ -99,7 +99,7 @@ int STR::INVANA::ObjectiveFunctSurfCurrRepresentation::FindStep(double time)
 /*----------------------------------------------------------------------*/
 /* Evaluate value of the objective function                  keh 11/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::ObjectiveFunctSurfCurrRepresentation::Evaluate(Teuchos::RCP<Epetra_Vector> state,
+void INVANA::ObjectiveFunctSurfCurrRepresentation::Evaluate(Teuchos::RCP<Epetra_Vector> state,
                                                                  double time,
                                                                  double& val)
 {
@@ -123,7 +123,7 @@ void STR::INVANA::ObjectiveFunctSurfCurrRepresentation::Evaluate(Teuchos::RCP<Ep
 /* Evaluate the gradient of the objective function                      */
 /* w.r.t the displacements                                   keh 11/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::ObjectiveFunctSurfCurrRepresentation::EvaluateGradient(Teuchos::RCP<Epetra_Vector> state,
+void INVANA::ObjectiveFunctSurfCurrRepresentation::EvaluateGradient(Teuchos::RCP<Epetra_Vector> state,
                                                                          double time,
                                                                          Teuchos::RCP<Epetra_Vector> gradient)
 {
@@ -142,7 +142,7 @@ void STR::INVANA::ObjectiveFunctSurfCurrRepresentation::EvaluateGradient(Teuchos
   }
 }
 
-void STR::INVANA::ObjectiveFunctSurfCurrRepresentation::SetScale(double sigmaW)
+void INVANA::ObjectiveFunctSurfCurrRepresentation::SetScale(double sigmaW)
 {
   for(int i=0; i<(int)currents_[0].size(); ++i)
   {
@@ -154,7 +154,7 @@ void STR::INVANA::ObjectiveFunctSurfCurrRepresentation::SetScale(double sigmaW)
 /*----------------------------------------------------------------------*/
 /* standard constructor for a surface current                keh 11/13  */
 /*----------------------------------------------------------------------*/
-STR::INVANA::ObjectiveFunctSurfCurr::ObjectiveFunctSurfCurr(Teuchos::RCP<DRT::Discretization> sourcedis,
+INVANA::ObjectiveFunctSurfCurr::ObjectiveFunctSurfCurr(Teuchos::RCP<DRT::Discretization> sourcedis,
                                                             Teuchos::RCP<DRT::Discretization> targetdis,
                                                             DRT::Condition* sourcecond,
                                                             DRT::Condition* targetcond):
@@ -199,7 +199,7 @@ targetmapred_(Teuchos::null)
 /*----------------------------------------------------------------------*/
 /* buid unique map of tris in conditions                     keh 11/13  */
 /*----------------------------------------------------------------------*/
-const Epetra_Map STR::INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(DRT::Condition* cond, Teuchos::RCP<DRT::Discretization> dis)
+const Epetra_Map INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(DRT::Condition* cond, Teuchos::RCP<DRT::Discretization> dis)
 {
   // get total number of elements in this condition
   int lnumele = cond->Geometry().size();
@@ -244,7 +244,7 @@ const Epetra_Map STR::INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(DRT::Con
   return elemap;
 }
 
-void  STR::INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterMaterialConfig(DRT::Condition* cond,
+void  INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterMaterialConfig(DRT::Condition* cond,
                                                                              Teuchos::RCP<DRT::Discretization> discret,
                                                                              std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* normals,
                                                                              std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* centers)
@@ -324,7 +324,7 @@ void  STR::INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterMaterialConfig(DRT
   }
 }
 
-void  STR::INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterSpatialConfig(DRT::Condition* cond,
+void  INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterSpatialConfig(DRT::Condition* cond,
                                                                             Teuchos::RCP<DRT::Discretization> discret,
                                                                             std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* normals,
                                                                             std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* centers,
@@ -467,7 +467,7 @@ void  STR::INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterSpatialConfig(DRT:
   }
 }
 
-void STR::INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenter(LINALG::SerialDenseMatrix& x,
+void INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenter(LINALG::SerialDenseMatrix& x,
                                                               Epetra_SerialDenseMatrix& n,
                                                               Epetra_SerialDenseMatrix& c)
 {
@@ -483,7 +483,7 @@ void STR::INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenter(LINALG::SerialDens
 
 }
 
-void STR::INVANA::ObjectiveFunctSurfCurr::ComputeNormalDeriv(LINALG::SerialDenseMatrix& x,
+void INVANA::ObjectiveFunctSurfCurr::ComputeNormalDeriv(LINALG::SerialDenseMatrix& x,
                                                              Epetra_SerialDenseMatrix& dn)
 {
   // derivative of normal (wich is the cross product of vector made up from point coordinates in x, see function
@@ -542,7 +542,7 @@ void STR::INVANA::ObjectiveFunctSurfCurr::ComputeNormalDeriv(LINALG::SerialDense
 
 }
 
-void STR::INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > data)
+void INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > data)
 {
   std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator it;
 
@@ -553,7 +553,7 @@ void STR::INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(std::map<int,Teuchos
   }
 }
 
-void STR::INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(std::map<int,std::vector<int> > data)
+void INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(std::map<int,std::vector<int> > data)
 {
   std::map<int,std::vector<int> >::iterator it;
 
@@ -567,7 +567,7 @@ void STR::INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(std::map<int,std::ve
   }
 }
 
-void STR::INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(Epetra_Vector& vec)
+void INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(Epetra_Vector& vec)
 {
   std::cout << "print values of EpetraVector " << std::endl;
   for (int i=0; i<vec.MyLength(); i++)
@@ -576,7 +576,7 @@ void STR::INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(Epetra_Vector& vec)
   }
 }
 
-double STR::INVANA::ObjectiveFunctSurfCurr::Convolute(std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n1,
+double INVANA::ObjectiveFunctSurfCurr::Convolute(std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n1,
                                                       std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
                                                       std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
                                                       std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
@@ -603,7 +603,7 @@ double STR::INVANA::ObjectiveFunctSurfCurr::Convolute(std::map<int,Teuchos::RCP<
   return val;
 }
 
-void STR::INVANA::ObjectiveFunctSurfCurr::DerivComponent2(Teuchos::RCP<Epetra_Vector> lgradient,
+void INVANA::ObjectiveFunctSurfCurr::DerivComponent2(Teuchos::RCP<Epetra_Vector> lgradient,
                                                           std::map<int,std::vector<int> >& facetdofmap,
                                                           std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n1,
                                                           std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
@@ -642,7 +642,7 @@ void STR::INVANA::ObjectiveFunctSurfCurr::DerivComponent2(Teuchos::RCP<Epetra_Ve
   }
 }
 
-void STR::INVANA::ObjectiveFunctSurfCurr::DerivComponent3(Teuchos::RCP<Epetra_Vector> lgradient,
+void INVANA::ObjectiveFunctSurfCurr::DerivComponent3(Teuchos::RCP<Epetra_Vector> lgradient,
                                                           std::map<int,std::vector<int> >& facetdofmap,
                                                           std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n1,
                                                           std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
@@ -673,7 +673,7 @@ void STR::INVANA::ObjectiveFunctSurfCurr::DerivComponent3(Teuchos::RCP<Epetra_Ve
   }
 }
 
-void STR::INVANA::ObjectiveFunctSurfCurr::DerivComponent1(Teuchos::RCP<Epetra_Vector> lgradient,
+void INVANA::ObjectiveFunctSurfCurr::DerivComponent1(Teuchos::RCP<Epetra_Vector> lgradient,
                                                           std::map<int,std::vector<int> >& facetdofmap,
                                                           std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& dn1,
                                                           std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
@@ -702,7 +702,7 @@ void STR::INVANA::ObjectiveFunctSurfCurr::DerivComponent1(Teuchos::RCP<Epetra_Ve
   }
 }
 
-double STR::INVANA::ObjectiveFunctSurfCurr::WSpaceNorm()
+double INVANA::ObjectiveFunctSurfCurr::WSpaceNorm()
 {
   // the structural integrity component of the target is already precomputed
   double val=structinttarget_;
@@ -730,7 +730,7 @@ double STR::INVANA::ObjectiveFunctSurfCurr::WSpaceNorm()
   return val;
 }
 
-void STR::INVANA::ObjectiveFunctSurfCurr::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector> gradient)
+void INVANA::ObjectiveFunctSurfCurr::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector> gradient)
 {
   // we need a dof row map reduced to proc0 to be able to fill gradient data into the correct
   // global dof and then distribute it afterwards
@@ -791,12 +791,12 @@ void STR::INVANA::ObjectiveFunctSurfCurr::GradientWSpaceNorm(Teuchos::RCP<Epetra
 
 }
 
-inline double STR::INVANA::ObjectiveFunctSurfCurr::kernel(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y)
+inline double INVANA::ObjectiveFunctSurfCurr::kernel(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y)
 {
   return exp(-((x(0,0)-y(0,0))*(x(0,0)-y(0,0))+(x(1,0)-y(1,0))*(x(1,0)-y(1,0))+(x(2,0)-y(2,0))*(x(2,0)-y(2,0)))/sigmaW2_);
 }
 
-Epetra_SerialDenseMatrix STR::INVANA::ObjectiveFunctSurfCurr::kernelderiv(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y, int fid)
+Epetra_SerialDenseMatrix INVANA::ObjectiveFunctSurfCurr::kernelderiv(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y, int fid)
 {
   double val=-(2.0/(3.0*sigmaW2_))*kernel(x,y);
 
@@ -822,7 +822,7 @@ Epetra_SerialDenseMatrix STR::INVANA::ObjectiveFunctSurfCurr::kernelderiv(Epetra
   return deriv;
 }
 
-inline double STR::INVANA::ObjectiveFunctSurfCurr::dotp(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y)
+inline double INVANA::ObjectiveFunctSurfCurr::dotp(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y)
 {
   return x(0,0)*y(0,0)+x(1,0)*y(1,0)+x(2,0)*y(2,0);
 }

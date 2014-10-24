@@ -22,7 +22,7 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* constructor                                                keh 01/13 */
 /*----------------------------------------------------------------------*/
-STR::INVANA::OptimizerGradDesc::OptimizerGradDesc(const Teuchos::ParameterList& invp):
+INVANA::OptimizerGradDesc::OptimizerGradDesc(const Teuchos::ParameterList& invp):
 OptimizerBase(invp),
 p_(Teuchos::null),
 step_(Teuchos::null)
@@ -30,7 +30,7 @@ step_(Teuchos::null)
 
 /*----------------------------------------------------------------------*/
 /* setup algorithm specific stuff */
-void STR::INVANA::OptimizerGradDesc::Setup()
+void INVANA::OptimizerGradDesc::Setup()
 {
   p_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), numvecs_, true));
   step_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), numvecs_, true));
@@ -40,7 +40,7 @@ void STR::INVANA::OptimizerGradDesc::Setup()
 /*----------------------------------------------------------------------*/
 /* optimization loop                                          keh 01/13 */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::OptimizerGradDesc::Integrate()
+void INVANA::OptimizerGradDesc::Integrate()
 {
   if (!IsInit()) dserror("OpimizerBase is not inititialzed. Call Init() first");
 
@@ -109,7 +109,7 @@ void STR::INVANA::OptimizerGradDesc::Integrate()
 /*----------------------------------------------------------------------*/
 /* do a line search based on armijo rule                      keh 03/14 */
 /*----------------------------------------------------------------------*/
-int STR::INVANA::OptimizerGradDesc::EvaluateArmijoRule(double* tauopt, int* numsteps)
+int INVANA::OptimizerGradDesc::EvaluateArmijoRule(double* tauopt, int* numsteps)
 {
   int i=0;
   int imax=20;
@@ -197,7 +197,7 @@ int STR::INVANA::OptimizerGradDesc::EvaluateArmijoRule(double* tauopt, int* nums
 /*----------------------------------------------------------------------*/
 /* quadratic model                                            keh 10/13 */
 /*----------------------------------------------------------------------*/
-int STR::INVANA::OptimizerGradDesc::polymod(double e_o, double dfp, double tau_n, double e_n, double blow, double bhigh, double* tauopt)
+int INVANA::OptimizerGradDesc::polymod(double e_o, double dfp, double tau_n, double e_n, double blow, double bhigh, double* tauopt)
 {
   double lleft=tau_n*blow;
   double lright=tau_n*bhigh;
@@ -213,7 +213,7 @@ int STR::INVANA::OptimizerGradDesc::polymod(double e_o, double dfp, double tau_n
 /*----------------------------------------------------------------------*/
 /* cubic model                                               keh 10/13 */
 /*----------------------------------------------------------------------*/
-int STR::INVANA::OptimizerGradDesc::polymod(double e_o, double dfp, double tau_n, double e_n, double blow, double bhigh, double tau_l, double e_l, double* tauopt)
+int INVANA::OptimizerGradDesc::polymod(double e_o, double dfp, double tau_n, double e_n, double blow, double bhigh, double tau_l, double e_l, double* tauopt)
 {
   double lleft=tau_n*blow;
   double lright=tau_n*bhigh;
@@ -245,7 +245,7 @@ int STR::INVANA::OptimizerGradDesc::polymod(double e_o, double dfp, double tau_n
 /*----------------------------------------------------------------------*/
 /* print step information                                     keh 01/13 */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::OptimizerGradDesc::PrintOptStep(double tauopt, int numsteps)
+void INVANA::OptimizerGradDesc::PrintOptStep(double tauopt, int numsteps)
 {
   if (OptProb()->Comm().MyPID())
     return;
@@ -260,7 +260,7 @@ void STR::INVANA::OptimizerGradDesc::PrintOptStep(double tauopt, int numsteps)
 
 /*----------------------------------------------------------------------*/
 /* print line search step */
-void STR::INVANA::OptimizerGradDesc::PrintLSStep(double tauopt, int numstep)
+void INVANA::OptimizerGradDesc::PrintLSStep(double tauopt, int numstep)
 {
 
   if (OptProb()->Comm().MyPID()==0)
@@ -276,7 +276,7 @@ void STR::INVANA::OptimizerGradDesc::PrintLSStep(double tauopt, int numstep)
 /*----------------------------------------------------------------------*/
 /* print final results                                       kehl 01/13 */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::OptimizerGradDesc::Summarize()
+void INVANA::OptimizerGradDesc::Summarize()
 {
   //std::cout << "the final vector of parameters: " << std::endl;
   //std::cout << *(Matman()->GetParams()) << std::endl;
@@ -287,7 +287,7 @@ void STR::INVANA::OptimizerGradDesc::Summarize()
 /*----------------------------------------------------------------------*/
 /* Read restart                                               keh 03/14 */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::OptimizerGradDesc::ReadRestart(int run)
+void INVANA::OptimizerGradDesc::ReadRestart(int run)
 {
   IO::DiscretizationReader reader(OptProb()->Discret(),RestartFromFile(),run);
 
@@ -309,7 +309,7 @@ void STR::INVANA::OptimizerGradDesc::ReadRestart(int run)
 /*----------------------------------------------------------------------*/
 /* Write restart                                              keh 03/14 */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::OptimizerGradDesc::WriteRestart()
+void INVANA::OptimizerGradDesc::WriteRestart()
 {
   if (not OptProb()->Comm().MyPID())
     std::cout << "Writing invana restart for step " << runc_ <<  std::endl;

@@ -22,8 +22,6 @@ namespace DRT
   }
 }
 
-namespace STR
-{
 namespace INVANA
 {
 
@@ -110,6 +108,5 @@ private:
 
 };
 }  // namespace INVANA
-}  // namespace STR
 
 #endif /*OPTIMIZER_LBFGS_H*/

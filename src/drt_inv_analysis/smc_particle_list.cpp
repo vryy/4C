@@ -33,7 +33,7 @@ Maintainer: Jonas Biehler
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
-STR::INVANA::SMCParticleList::SMCParticleList(int numparticles , int numparams)
+INVANA::SMCParticleList::SMCParticleList(int numparticles , int numparams)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
   // deal with communicators
@@ -163,7 +163,7 @@ STR::INVANA::SMCParticleList::SMCParticleList(int numparticles , int numparams)
 
 }
 
-void STR::INVANA::SMCParticleList::Initialize(int seed)
+void INVANA::SMCParticleList::Initialize(int seed)
 {
   // modify seed
   seed =seed*1000*(mygroup_+1);
@@ -204,7 +204,7 @@ void STR::INVANA::SMCParticleList::Initialize(int seed)
 }
 
 
-void STR::INVANA::SMCParticleList::UpdateNormalizedWeights()
+void INVANA::SMCParticleList::UpdateNormalizedWeights()
 {
   if(!globalmypid_)
   {
@@ -236,7 +236,7 @@ void STR::INVANA::SMCParticleList::UpdateNormalizedWeights()
   }
 }
 
-void STR::INVANA::SMCParticleList::ComputeGamma()
+void INVANA::SMCParticleList::ComputeGamma()
 {
 
   int i=0;
@@ -292,7 +292,7 @@ void STR::INVANA::SMCParticleList::ComputeGamma()
       ComputeESSProp(gamma_);
     }
 }
-void STR::INVANA::SMCParticleList::ComputeESSProp(double gamma)
+void INVANA::SMCParticleList::ComputeESSProp(double gamma)
 {
   // determine ESSpop
   double max_weight=0;
@@ -332,7 +332,7 @@ void STR::INVANA::SMCParticleList::ComputeESSProp(double gamma)
   }
 
 }
-void STR::INVANA::SMCParticleList::ComputeESSProp()
+void INVANA::SMCParticleList::ComputeESSProp()
 {
   // determine ESSprop
   double max_weight=0;
@@ -372,7 +372,7 @@ void STR::INVANA::SMCParticleList::ComputeESSProp()
 
 }
 
-Teuchos::RCP<STR::INVANA::SMCParticle> STR::INVANA::SMCParticleList::GetParticle(int position_number)
+Teuchos::RCP<INVANA::SMCParticle> INVANA::SMCParticleList::GetParticle(int position_number)
 {
   // we want this function to return the correct particle
   // to cases 1. We need a local particle 2. all particles are on group 0 and we need the global
@@ -385,7 +385,7 @@ Teuchos::RCP<STR::INVANA::SMCParticle> STR::INVANA::SMCParticleList::GetParticle
     return global_plist_map_[mygroupparticles_ids_->at(position_number)];
 }
 
-void STR::INVANA::SMCParticleList::CheckReweight(double & gamma)
+void INVANA::SMCParticleList::CheckReweight(double & gamma)
 {
   GatherAllParticles();
   double gammatemp=-10E6;
@@ -428,7 +428,7 @@ void STR::INVANA::SMCParticleList::CheckReweight(double & gamma)
 
 }
 
-void STR::INVANA::SMCParticleList::Resampling()
+void INVANA::SMCParticleList::Resampling()
 {
   if(!globalmypid_)
   {
@@ -469,7 +469,7 @@ void STR::INVANA::SMCParticleList::Resampling()
         k++;
       }
       // we need to create a new particle other wise multiple Teuchos::RCP might end up on the same data
-      Teuchos::RCP<STR::INVANA::SMCParticle> my_particle = global_plist_map_.at(k)->Clone();
+      Teuchos::RCP<INVANA::SMCParticle> my_particle = global_plist_map_.at(k)->Clone();
       temp_plist_map.insert( std::pair <int,Teuchos::RCP<SMCParticle> >(i,my_particle));
     }
 
@@ -488,7 +488,7 @@ void STR::INVANA::SMCParticleList::Resampling()
 }
 
 
-void STR::INVANA::SMCParticleList::PrintToScreen(int numproc)
+void INVANA::SMCParticleList::PrintToScreen(int numproc)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
   int myrank = problem->GetNPGroup()->LocalComm()->MyPID();
@@ -512,7 +512,7 @@ void STR::INVANA::SMCParticleList::PrintToScreen(int numproc)
   }
 }
 
-void STR::INVANA::SMCParticleList::GatherAndPrintToScreen()
+void INVANA::SMCParticleList::GatherAndPrintToScreen()
 {
   GatherAllParticles();
   if(!globalmypid_)
@@ -536,7 +536,7 @@ void STR::INVANA::SMCParticleList::GatherAndPrintToScreen()
   DistributeAllParticles();
 }
 
-void STR::INVANA::SMCParticleList::WriteToFile(bool new_file)
+void INVANA::SMCParticleList::WriteToFile(bool new_file)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
   std::string filename = problem->OutputControlFile()->FileName();
@@ -586,7 +586,7 @@ void STR::INVANA::SMCParticleList::WriteToFile(bool new_file)
  }
 
 
-void STR::INVANA::SMCParticleList::AcceptReweightProp()
+void INVANA::SMCParticleList::AcceptReweightProp()
 {
   if(!globalmypid_)
   {
@@ -601,7 +601,7 @@ void STR::INVANA::SMCParticleList::AcceptReweightProp()
 
 }
 
-void STR::INVANA::SMCParticleList::PropMove(int seed)
+void INVANA::SMCParticleList::PropMove(int seed)
 {
   // modify seed
   seed =seed+1000*(mygroup_+1);
@@ -627,7 +627,7 @@ void STR::INVANA::SMCParticleList::PropMove(int seed)
   }
 }
 
-void STR::INVANA::SMCParticleList::CalcLogPriorProp()
+void INVANA::SMCParticleList::CalcLogPriorProp()
 {
 
   // use namespace rmath because the version in namespace boost is old and not working
@@ -653,7 +653,7 @@ void STR::INVANA::SMCParticleList::CalcLogPriorProp()
 }
 
 
-void STR::INVANA::SMCParticleList::GatherAllParticles()
+void INVANA::SMCParticleList::GatherAllParticles()
 {
   gcomm_->Barrier();
   gcomm_->Barrier();
@@ -682,7 +682,7 @@ void STR::INVANA::SMCParticleList::GatherAllParticles()
 }
 
 
-void STR::INVANA::SMCParticleList::DistributeAllParticles()
+void INVANA::SMCParticleList::DistributeAllParticles()
 {
   gcomm_->Barrier();
   gcomm_->Barrier();

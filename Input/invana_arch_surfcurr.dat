@@ -8,7 +8,7 @@ created by pre_exodus
 //NODES       204
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Structure
+PROBLEMTYP                      Inverse_Analysis
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0

@@ -20,7 +20,7 @@ namespace INPAR
 {
 
   /// Input parameters for Inverse Analysis
-  namespace STR
+  namespace INVANA
   {
     enum StatInvRegularization
     {
@@ -55,7 +55,7 @@ namespace INPAR
       stat_inv_obj_surfcurr      // based on a current representation of surfaces
     };
 
-  }  // namespace STR
+  }  // namespace INVANA
 
 }  // namespace INPAR
 

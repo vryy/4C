@@ -27,9 +27,6 @@ namespace DRT
   class Discretization;
 }
 
-namespace STR
-{
-
 namespace INVANA
 {
 
@@ -73,6 +70,5 @@ private:
 
 };
 }  // namespace INVANA
-}  // namespace STR
 
 #endif

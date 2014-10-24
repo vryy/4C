@@ -68,6 +68,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Crack"] =                                     prb_crack;
     string2prbtype["Two_Phase_Flow"] =                            prb_two_phase_flow;
     string2prbtype["UQ"] =                                        prb_uq;
+    string2prbtype["Inverse_Analysis"] =                          prb_invana;
   }
 
   return string2prbtype;

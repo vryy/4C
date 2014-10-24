@@ -40,6 +40,7 @@ Maintainer: Michael Gee
 #ifdef HAVE_FFTW
   #include "../drt_mlmc/drt_uq_dyn.H"
 #endif
+#include "../drt_inv_analysis/invana_cal_drt.H"
 
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
@@ -191,6 +192,10 @@ void ntacal()
       dserror("Uncertainty Quantification only works with FFTW ");
 #endif
     break;
+
+    case prb_invana:
+      invana_cal();
+      break;
 
     default:
       dserror("solution of unknown problemtyp %d requested", DRT::Problem::Instance()->ProblemType());

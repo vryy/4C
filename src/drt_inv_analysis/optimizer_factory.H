@@ -23,8 +23,6 @@ namespace Teuchos
 {
 class ParameterList;
 }
-namespace STR
-{
 
 namespace INVANA
 {
@@ -47,11 +45,10 @@ public:
   virtual ~OptimizerFactory() {};
 
   //! Return a reference to the optimization problem
-  Teuchos::RCP<STR::INVANA::OptimizerBase> Create(const Teuchos::ParameterList& invp);
+  Teuchos::RCP<INVANA::OptimizerBase> Create(const Teuchos::ParameterList& invp);
 
 
 };
 }  // namespace INVANA
-}  // namespace STR
 
 #endif /*OPTIMIZER_FACTORY_H_*/

@@ -19,7 +19,7 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* standard constructor                                                 */
 /*----------------------------------------------------------------------*/
-STR::INVANA::ObjectiveFunctDisp::ObjectiveFunctDisp(Teuchos::RCP<DRT::Discretization> discret):
+INVANA::ObjectiveFunctDisp::ObjectiveFunctDisp(Teuchos::RCP<DRT::Discretization> discret):
 discret_(discret),
 dofrowmap_(discret->DofRowMap())
 {
@@ -34,7 +34,7 @@ dofrowmap_(discret->DofRowMap())
 /*----------------------------------------------------------------------*/
 /* read monitor file                                        keh 10/13   */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::ObjectiveFunctDisp::ReadMonitor(std::string monitorfilename)
+void INVANA::ObjectiveFunctDisp::ReadMonitor(std::string monitorfilename)
 {
   int myrank = discret_->Comm().MyPID(); //only for print out
 
@@ -166,7 +166,7 @@ void STR::INVANA::ObjectiveFunctDisp::ReadMonitor(std::string monitorfilename)
 /*----------------------------------------------------------------------*/
 /* find step of measurement according to given time          keh 10/14  */
 /*----------------------------------------------------------------------*/
-int STR::INVANA::ObjectiveFunctDisp::FindStep(double time)
+int INVANA::ObjectiveFunctDisp::FindStep(double time)
 {
   // find step of the evaluation according to time:
   int step=-1;
@@ -183,7 +183,7 @@ int STR::INVANA::ObjectiveFunctDisp::FindStep(double time)
 /*----------------------------------------------------------------------*/
 /* Evaluate value of the objective function                  keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::ObjectiveFunctDisp::Evaluate(Teuchos::RCP<Epetra_Vector> state,
+void INVANA::ObjectiveFunctDisp::Evaluate(Teuchos::RCP<Epetra_Vector> state,
                                                double time,
                                                double& val)
 {
@@ -207,7 +207,7 @@ void STR::INVANA::ObjectiveFunctDisp::Evaluate(Teuchos::RCP<Epetra_Vector> state
 /* Evaluate the gradient of the objective function                      */
 /* w.r.t the displacements                                   keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::ObjectiveFunctDisp::EvaluateGradient(Teuchos::RCP<Epetra_Vector> state,
+void INVANA::ObjectiveFunctDisp::EvaluateGradient(Teuchos::RCP<Epetra_Vector> state,
                                                        double time,
                                                        Teuchos::RCP<Epetra_Vector> gradient)
 {

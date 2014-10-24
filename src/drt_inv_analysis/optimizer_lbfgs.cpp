@@ -24,7 +24,7 @@ Maintainer: Sebastian Kehl
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-STR::INVANA::OptimizerLBFGS::OptimizerLBFGS(const Teuchos::ParameterList& invp):
+INVANA::OptimizerLBFGS::OptimizerLBFGS(const Teuchos::ParameterList& invp):
   OptimizerBase(invp),
 initscal_(DRT::INPUT::IntegralValue<bool>(invp, "LBFGSINITSCAL")),
 ssize_(invp.get<int>("SIZESTORAGE")),
@@ -37,7 +37,7 @@ step_(Teuchos::null)
 
 /*----------------------------------------------------------------------*/
 /* setup algorithm specific stuff */
-void STR::INVANA::OptimizerLBFGS::Setup()
+void INVANA::OptimizerLBFGS::Setup()
 {
   ssize_=ssize_*numvecs_;
   actsize_=0;
@@ -51,7 +51,7 @@ void STR::INVANA::OptimizerLBFGS::Setup()
 
 /*----------------------------------------------------------------------*/
 /* do the optimization loop*/
-void STR::INVANA::OptimizerLBFGS::Integrate()
+void INVANA::OptimizerLBFGS::Integrate()
 {
   if (!IsInit()) dserror("OpimizerBase is not inititialzed. Call Init() first");
 
@@ -134,7 +134,7 @@ void STR::INVANA::OptimizerLBFGS::Integrate()
 
 /*----------------------------------------------------------------------*/
 /* do a line search based on armijo rule */
-int STR::INVANA::OptimizerLBFGS::EvaluateArmijoRule(double* tauopt, int* numsteps)
+int INVANA::OptimizerLBFGS::EvaluateArmijoRule(double* tauopt, int* numsteps)
 {
   int i=0;
   int imax=20;
@@ -230,7 +230,7 @@ int STR::INVANA::OptimizerLBFGS::EvaluateArmijoRule(double* tauopt, int* numstep
 
 /*----------------------------------------------------------------------*/
 /* quadratic model */
-int STR::INVANA::OptimizerLBFGS::polymod(double e_o, double dfp, double tau_n, double e_n, double blow, double bhigh, double* tauopt)
+int INVANA::OptimizerLBFGS::polymod(double e_o, double dfp, double tau_n, double e_n, double blow, double bhigh, double* tauopt)
 {
   double lleft=tau_n*blow;
   double lright=tau_n*bhigh;
@@ -244,7 +244,7 @@ int STR::INVANA::OptimizerLBFGS::polymod(double e_o, double dfp, double tau_n, d
 
 /*----------------------------------------------------------------------*/
 /* cubic model model */
-int STR::INVANA::OptimizerLBFGS::polymod(double e_o, double dfp, double tau_n, double e_n, double blow, double bhigh, double tau_l, double e_l, double* tauopt)
+int INVANA::OptimizerLBFGS::polymod(double e_o, double dfp, double tau_n, double e_n, double blow, double bhigh, double tau_l, double e_l, double* tauopt)
 {
   double lleft=tau_n*blow;
   double lright=tau_n*bhigh;
@@ -277,7 +277,7 @@ int STR::INVANA::OptimizerLBFGS::polymod(double e_o, double dfp, double tau_n, d
 
 /*----------------------------------------------------------------------*/
 /* store vectors*/
-void STR::INVANA::OptimizerLBFGS::StoreVectors()
+void INVANA::OptimizerLBFGS::StoreVectors()
 {
   if (runc_*numvecs_<=ssize_) // we have "<=" since we do not store the first run
   {
@@ -305,7 +305,7 @@ void STR::INVANA::OptimizerLBFGS::StoreVectors()
 
 /*----------------------------------------------------------------------*/
 /* compute new direction*/
-void STR::INVANA::OptimizerLBFGS::ComputeDirection()
+void INVANA::OptimizerLBFGS::ComputeDirection()
 {
   p_->Update(1.0,GetGradientView(),0.0);
   std::vector<double> alpha;
@@ -387,7 +387,7 @@ void STR::INVANA::OptimizerLBFGS::ComputeDirection()
 
 /*----------------------------------------------------------------------*/
 /* print optimization step */
-void STR::INVANA::OptimizerLBFGS::PrintOptStep(double tauopt, int numsteps)
+void INVANA::OptimizerLBFGS::PrintOptStep(double tauopt, int numsteps)
 {
   double stepincr;
   MVNorm(*step_,SolLayoutMapUnique(),0,&stepincr);
@@ -407,7 +407,7 @@ void STR::INVANA::OptimizerLBFGS::PrintOptStep(double tauopt, int numsteps)
 
 /*----------------------------------------------------------------------*/
 /* print line search step */
-void STR::INVANA::OptimizerLBFGS::PrintLSStep(double tauopt, int numstep)
+void INVANA::OptimizerLBFGS::PrintLSStep(double tauopt, int numstep)
 {
 
   if (OptProb()->Comm().MyPID()==0)
@@ -422,7 +422,7 @@ void STR::INVANA::OptimizerLBFGS::PrintLSStep(double tauopt, int numstep)
 
 /*----------------------------------------------------------------------*/
 /* print final results*/
-void STR::INVANA::OptimizerLBFGS::Summarize()
+void INVANA::OptimizerLBFGS::Summarize()
 {
   //std::cout << "the final vector of parameters: " << std::endl;
   //std::cout << *(Matman()->GetParams()) << std::endl;
@@ -433,7 +433,7 @@ void STR::INVANA::OptimizerLBFGS::Summarize()
 /*----------------------------------------------------------------------*/
 /* Read restart                                               keh 03/14 */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::OptimizerLBFGS::ReadRestart(int run)
+void INVANA::OptimizerLBFGS::ReadRestart(int run)
 {
   IO::DiscretizationReader reader(OptProb()->Discret(),RestartFromFile(),run);
 
@@ -473,7 +473,7 @@ void STR::INVANA::OptimizerLBFGS::ReadRestart(int run)
 /*----------------------------------------------------------------------*/
 /* Write restart                                              keh 03/14 */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::OptimizerLBFGS::WriteRestart()
+void INVANA::OptimizerLBFGS::WriteRestart()
 {
   if (not OptProb()->Comm().MyPID())
     std::cout << "Writing invana restart for step " << runc_ <<  std::endl;

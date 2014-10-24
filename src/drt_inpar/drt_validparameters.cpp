@@ -1350,10 +1350,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       "MonteCarlo",
                                       "LBFGS"),
                                     tuple<int>(
-                                      INPAR::STR::stat_inv_none,
-                                      INPAR::STR::stat_inv_graddesc,
-                                      INPAR::STR::stat_inv_mc,
-                                      INPAR::STR::stat_inv_lbfgs),
+                                      INPAR::INVANA::stat_inv_none,
+                                      INPAR::INVANA::stat_inv_graddesc,
+                                      INPAR::INVANA::stat_inv_mc,
+                                      INPAR::INVANA::stat_inv_lbfgs),
                                     &statinvp);
 
   // initial scaling for the LBFGS algorithm
@@ -1374,10 +1374,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       "elementwise",
                                       "uniform"),
                                     tuple<int>(
-                                      INPAR::STR::stat_inv_mp_none,
-                                      INPAR::STR::stat_inv_mp_smoothkernel,
-                                      INPAR::STR::stat_inv_mp_elementwise,
-                                      INPAR::STR::stat_inv_mp_uniform),
+                                      INPAR::INVANA::stat_inv_mp_none,
+                                      INPAR::INVANA::stat_inv_mp_smoothkernel,
+                                      INPAR::INVANA::stat_inv_mp_elementwise,
+                                      INPAR::INVANA::stat_inv_mp_uniform),
                                     &statinvp);
 
   // want some regularization
@@ -1388,9 +1388,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       "tikhonov",
                                       "totalvariation"),
                                     tuple<int>(
-                                      INPAR::STR::stat_inv_reg_none,
-                                      INPAR::STR::stat_inv_reg_tikhonov,
-                                      INPAR::STR::stat_inv_reg_totalvariation),
+                                      INPAR::INVANA::stat_inv_reg_none,
+                                      INPAR::INVANA::stat_inv_reg_tikhonov,
+                                      INPAR::INVANA::stat_inv_reg_totalvariation),
                                     &statinvp);
 
   // want some regularization
@@ -1401,9 +1401,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       "displacements",
                                       "surfcurr"),
                                     tuple<int>(
-                                      INPAR::STR::stat_inv_obj_none,
-                                      INPAR::STR::stat_inv_obj_disp,
-                                      INPAR::STR::stat_inv_obj_surfcurr),
+                                      INPAR::INVANA::stat_inv_obj_none,
+                                      INPAR::INVANA::stat_inv_obj_disp,
+                                      INPAR::INVANA::stat_inv_obj_surfcurr),
                                     &statinvp);
 
   // scaling of objective function

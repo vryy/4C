@@ -15,8 +15,7 @@ Maintainer: Sebastian Kehl
 
 #include "optimizer_base.H"
 
-namespace STR
-{
+
 namespace INVANA
 {
 
@@ -84,6 +83,5 @@ private:
 
 };
 }  // namespace INVANA
-}  // namespace STR
 
 #endif /*OPTIMIZER_GRADDESC_H*/

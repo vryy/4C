@@ -18,9 +18,6 @@
 /* headers */
 #include "regularization_base.H"
 
-namespace STR
-{
-
 namespace INVANA
 
 {
@@ -66,7 +63,6 @@ public:
 
 };
 
-}
 }
 
 /*----------------------------------------------------------------------*/

@@ -26,7 +26,7 @@ Maintainer: Sebastian Kehl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-STR::INVANA::InvanaResultTest::InvanaResultTest(InvanaBase& ia)
+INVANA::InvanaResultTest::InvanaResultTest(InvanaBase& ia)
   : DRT::ResultTest("INVANA"),
     ia_(ia)
 {
@@ -38,7 +38,7 @@ STR::INVANA::InvanaResultTest::InvanaResultTest(InvanaBase& ia)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::INVANA::InvanaResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void INVANA::InvanaResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
   std::string dis;
@@ -82,7 +82,7 @@ void STR::INVANA::InvanaResultTest::TestElement(DRT::INPUT::LineDefinition& res,
   }
 }
 
-void STR::INVANA::InvanaResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void INVANA::InvanaResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // get the quantity to test
   std::string quantity;
@@ -91,7 +91,7 @@ void STR::INVANA::InvanaResultTest::TestSpecial(DRT::INPUT::LineDefinition& res,
   double result=0.0;
 
   if (quantity == "gradient")
-    STR::INVANA::MVNorm(ia_.Optimizer()->GetGradientView(),ia_.Optimizer()->SolLayoutMapUnique(),2,&result);
+    INVANA::MVNorm(ia_.Optimizer()->GetGradientView(),ia_.Optimizer()->SolLayoutMapUnique(),2,&result);
   else if (quantity == "error")
     result=ia_.Optimizer()->GetObjFunctValView();
   else

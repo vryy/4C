@@ -20,7 +20,7 @@ Maintainer: Sebastian Kehl
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-STR::INVANA::RegularizationBase::RegularizationBase(const Teuchos::ParameterList& invp) :
+INVANA::RegularizationBase::RegularizationBase(const Teuchos::ParameterList& invp) :
 discret_(Teuchos::null),
 connectivity_(Teuchos::null),
 weight_(0.0)
@@ -30,7 +30,7 @@ weight_(0.0)
   return;
 }
 
-void STR::INVANA::RegularizationBase::Init(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<ConnectivityData> connectivity)
+void INVANA::RegularizationBase::Init(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<ConnectivityData> connectivity)
 {
   discret_=discret;
   connectivity_=connectivity;

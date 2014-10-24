@@ -16,9 +16,6 @@ Maintainer: Sebastian Kehl
 #include "Teuchos_RCP.hpp"
 #include "Epetra_MultiVector.h"
 
-namespace STR
-{
-
 namespace INVANA
 {
 
@@ -61,6 +58,5 @@ public:
 
 }; // class ObjectiveFunct
 }  // namespace INVANA
-}  // namespace STR
 
 #endif // OBJECTIVE_FUNCT_H_

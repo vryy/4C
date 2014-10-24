@@ -28,7 +28,7 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* constructor                                               keh 10/13  */
 /*----------------------------------------------------------------------*/
-STR::INVANA::MatParManager::MatParManager(Teuchos::RCP<DRT::Discretization> discret):
+INVANA::MatParManager::MatParManager(Teuchos::RCP<DRT::Discretization> discret):
 optparams_(Teuchos::null),
 optparams_o_(Teuchos::null),
 optparams_initial_(Teuchos::null),
@@ -53,7 +53,7 @@ params_(Teuchos::null)
 /*----------------------------------------------------------------------*/
 /* Get initial set of material parameters                    keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::InitParams()
+void INVANA::MatParManager::InitParams()
 {
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
@@ -97,7 +97,7 @@ void STR::INVANA::MatParManager::InitParams()
 /*----------------------------------------------------------------------*/
 /* Setup map of material parameters to be optimized          keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::SetupMatOptMap()
+void INVANA::MatParManager::SetupMatOptMap()
 {
   const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
 
@@ -160,7 +160,7 @@ void STR::INVANA::MatParManager::SetupMatOptMap()
 /*----------------------------------------------------------------------*/
 /* bring current set of parameters to the material           keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::SetParams()
+void INVANA::MatParManager::SetParams()
 {
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
@@ -197,7 +197,7 @@ void STR::INVANA::MatParManager::SetParams()
 /*----------------------------------------------------------------------*/
 /* update material parameters and keep them as "old"         keh 03/14  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::UpdateParams(Teuchos::RCP<Epetra_MultiVector> toadd)
+void INVANA::MatParManager::UpdateParams(Teuchos::RCP<Epetra_MultiVector> toadd)
 {
   optparams_o_->Scale(1.0, *optparams_);
   optparams_->Update(1.0,*toadd,1.0);
@@ -209,7 +209,7 @@ void STR::INVANA::MatParManager::UpdateParams(Teuchos::RCP<Epetra_MultiVector> t
 /*----------------------------------------------------------------------*/
 /* replace material parameters AND DONT touch old ones       keh 03/14  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::ReplaceParams(const Epetra_MultiVector& toreplace)
+void INVANA::MatParManager::ReplaceParams(const Epetra_MultiVector& toreplace)
 {
   optparams_->Update(1.0,toreplace,0.0);
 
@@ -220,7 +220,7 @@ void STR::INVANA::MatParManager::ReplaceParams(const Epetra_MultiVector& torepla
 /*----------------------------------------------------------------------*/
 /* reset to last set of material parameters                  keh 03/14  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::ResetParams()
+void INVANA::MatParManager::ResetParams()
 {
   optparams_->Scale(1.0, *optparams_o_);
 
@@ -231,7 +231,7 @@ void STR::INVANA::MatParManager::ResetParams()
 /*----------------------------------------------------------------------*/
 /* evaluate gradient based on dual solution                  keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate)
+void INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate)
 {
   Teuchos::RCP<const Epetra_Vector> disdual = discret_->GetState("dual displacement");
 
@@ -315,7 +315,7 @@ void STR::INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_Multi
 /*----------------------------------------------------------------------*/
 /* evaluate gradient based on FD                             keh 01/14  */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint)
+void INVANA::MatParManager::EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint)
 {
   if (discret_->Comm().NumProc()>1) dserror("this does probably not run in parallel");
 
@@ -413,7 +413,7 @@ void STR::INVANA::MatParManager::EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfi
 /*----------------------------------------------------------------------*/
 /* return vector index of an elements material parameter     keh 10/13  */
 /*----------------------------------------------------------------------*/
-int STR::INVANA::MatParManager::GetParameterLocation(int eleid, std::string name)
+int INVANA::MatParManager::GetParameterLocation(int eleid, std::string name)
 {
   int loc = -1;
 
@@ -451,7 +451,7 @@ return loc;
 /*----------------------------------------------------------------------*/
 /* build blockwise connectivity graphs                      keh 10/14   */
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<STR::INVANA::ConnectivityData> STR::INVANA::MatParManager::GetConnectivityData()
+Teuchos::RCP<INVANA::ConnectivityData> INVANA::MatParManager::GetConnectivityData()
 {
   int maxbw=6;  // based on connectivity for hex8 elements
   Teuchos::RCP<Epetra_CrsMatrix> graph = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*(paramapextractor_->FullMap()),maxbw,false));
@@ -477,7 +477,7 @@ Teuchos::RCP<STR::INVANA::ConnectivityData> STR::INVANA::MatParManager::GetConne
 /*----------------------------------------------------------------------*/
 /* build blockwise connectivity graphs                      keh 10/14   */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManager::FillAdjacencyMatrix(const Epetra_Map& elerowmap, int blockid, Teuchos::RCP<Epetra_CrsMatrix> graph)
+void INVANA::MatParManager::FillAdjacencyMatrix(const Epetra_Map& elerowmap, int blockid, Teuchos::RCP<Epetra_CrsMatrix> graph)
 {
   // if not implemented for the specific parameterizations no graph exists
   //graph=Teuchos::null;

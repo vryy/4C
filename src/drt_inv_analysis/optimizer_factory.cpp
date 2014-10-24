@@ -23,33 +23,33 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* standard constructor                                      keh 08/14  */
 /*----------------------------------------------------------------------*/
-STR::INVANA::OptimizerFactory::OptimizerFactory()
+INVANA::OptimizerFactory::OptimizerFactory()
 {;}
 
-Teuchos::RCP<STR::INVANA::OptimizerBase> STR::INVANA::OptimizerFactory::Create(const Teuchos::ParameterList& invp)
+Teuchos::RCP<INVANA::OptimizerBase> INVANA::OptimizerFactory::Create(const Teuchos::ParameterList& invp)
 {
 
   Teuchos::RCP<OptimizerBase> opti=Teuchos::null;
 
-  switch(DRT::INPUT::IntegralValue<INPAR::STR::StatInvAnalysisType>(invp,"STAT_INV_ANALYSIS"))
+  switch(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvAnalysisType>(invp,"STAT_INV_ANALYSIS"))
   {
 
-    case INPAR::STR::stat_inv_graddesc:
+    case INPAR::INVANA::stat_inv_graddesc:
     {
-      opti = Teuchos::rcp(new STR::INVANA::OptimizerGradDesc(invp));
+      opti = Teuchos::rcp(new INVANA::OptimizerGradDesc(invp));
     }
     break;
 
-    case INPAR::STR::stat_inv_lbfgs:
+    case INPAR::INVANA::stat_inv_lbfgs:
     {
-      opti = Teuchos::rcp(new STR::INVANA::OptimizerLBFGS(invp));
+      opti = Teuchos::rcp(new INVANA::OptimizerLBFGS(invp));
     }
     break;
-    case INPAR::STR::stat_inv_mc:
+    case INPAR::INVANA::stat_inv_mc:
     {
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 {
-        opti = Teuchos::rcp(new STR::INVANA::OptimizerMC(invp));
+        opti = Teuchos::rcp(new INVANA::OptimizerMC(invp));
 }
 #else
         dserror("Install new Boost version");

@@ -27,14 +27,14 @@ Maintainer: Sebastian Kehl
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_comm/comm_utils.H"
 
-STR::INVANA::MatParManagerPerElement::MatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret)
+INVANA::MatParManagerPerElement::MatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret)
    :MatParManager(discret)
 {}
 
 /*----------------------------------------------------------------------*/
 /* Setup                                                    keh 10/14   */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManagerPerElement::Setup()
+void INVANA::MatParManagerPerElement::Setup()
 {
   // temp map to keep correspondence of parameter block position and eleids
   // used to build the mapextractor and the various maps to keep track of parameters and elements
@@ -110,7 +110,7 @@ void STR::INVANA::MatParManagerPerElement::Setup()
 
 }
 
-void STR::INVANA::MatParManagerPerElement::FillParameters(Teuchos::RCP<Epetra_MultiVector> params)
+void INVANA::MatParManagerPerElement::FillParameters(Teuchos::RCP<Epetra_MultiVector> params)
 {
   params->PutScalar(0.0);
 
@@ -127,7 +127,7 @@ void STR::INVANA::MatParManagerPerElement::FillParameters(Teuchos::RCP<Epetra_Mu
   }
 }
 
-void STR::INVANA::MatParManagerPerElement::InitParameters(int parapos, double val)
+void INVANA::MatParManagerPerElement::InitParameters(int parapos, double val)
 {
   Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*paramapextractor_->Map(parapos), false));
   tmp->PutScalar(val);
@@ -136,7 +136,7 @@ void STR::INVANA::MatParManagerPerElement::InitParameters(int parapos, double va
 
 }
 
-void STR::INVANA::MatParManagerPerElement::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
+void INVANA::MatParManagerPerElement::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
                                                             double val,
                                                             int elepos,
                                                             int paraposglobal,
@@ -153,7 +153,7 @@ void STR::INVANA::MatParManagerPerElement::ContractGradient(Teuchos::RCP<Epetra_
 /*----------------------------------------------------------------------*/
 /* build blockwise connectivity graphs                      keh 10/14   */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& paramrowmap, int lblockid, Teuchos::RCP<Epetra_CrsMatrix> graph)
+void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& paramrowmap, int lblockid, Teuchos::RCP<Epetra_CrsMatrix> graph)
 {
   /*------------------------------------------------------------------- */
   // STEP 1: loop elements in elerowmap and store map of faces(vector

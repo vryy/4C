@@ -30,7 +30,7 @@ Maintainer: Jonas Biehler
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
-STR::INVANA::OptimizerMC::OptimizerMC(const Teuchos::ParameterList& invp):
+INVANA::OptimizerMC::OptimizerMC(const Teuchos::ParameterList& invp):
   OptimizerBase(invp)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -45,7 +45,7 @@ STR::INVANA::OptimizerMC::OptimizerMC(const Teuchos::ParameterList& invp):
 
 /*----------------------------------------------------------------------*/
 /* decide for an optimization algorithm*/
-void STR::INVANA::OptimizerMC::Integrate()
+void INVANA::OptimizerMC::Integrate()
 {
   // create particle list
   int numparticles=120;
@@ -95,13 +95,13 @@ void STR::INVANA::OptimizerMC::Integrate()
 
 /*----------------------------------------------------------------------*/
 /* do the update of the parameter vector */
-void STR::INVANA::OptimizerMC::UpdateOptStep(Epetra_MultiVector* objgrad, int nstep)
+void INVANA::OptimizerMC::UpdateOptStep(Epetra_MultiVector* objgrad, int nstep)
 {
   dserror("this needs to be filled");
   return;
 }
 
-void STR::INVANA::OptimizerMC::PropReweight(Teuchos::RCP<SMCParticleList> my_particles, int iteration)
+void INVANA::OptimizerMC::PropReweight(Teuchos::RCP<SMCParticleList> my_particles, int iteration)
 {
   for(int i=0;i<my_particles->GetNumParticles() ;i++)
   {
@@ -121,17 +121,17 @@ void STR::INVANA::OptimizerMC::PropReweight(Teuchos::RCP<SMCParticleList> my_par
     }
   }
  }
-void STR::INVANA::OptimizerMC::CheckReweight(Teuchos::RCP<SMCParticleList> my_particles, double& gamma)
+void INVANA::OptimizerMC::CheckReweight(Teuchos::RCP<SMCParticleList> my_particles, double& gamma)
 {
   my_particles->CheckReweight(gamma);
 }
-void STR::INVANA::OptimizerMC::PropMove(Teuchos::RCP <SMCParticleList> my_particle_list, int seed)
+void INVANA::OptimizerMC::PropMove(Teuchos::RCP <SMCParticleList> my_particle_list, int seed)
 {
   my_particle_list->PropMove(seed);
   my_particle_list->CalcLogPriorProp();
 }
 
-void STR::INVANA::OptimizerMC::CheckPropMove(Teuchos::RCP <SMCParticleList> my_particle_list, int seed)
+void INVANA::OptimizerMC::CheckPropMove(Teuchos::RCP <SMCParticleList> my_particle_list, int seed)
 {
   double alpha=0;
   int counter=0;
@@ -191,7 +191,7 @@ void STR::INVANA::OptimizerMC::CheckPropMove(Teuchos::RCP <SMCParticleList> my_p
 }
 
 
-double STR::INVANA::OptimizerMC::LogLike(SMCParticle my_particle, bool eval_prop_pos)
+double INVANA::OptimizerMC::LogLike(SMCParticle my_particle, bool eval_prop_pos)
 {
     // ad some point we need to call the forward problem here. for now we use 2dim Gauss
     double abs_pos_squared = 0;
@@ -214,7 +214,7 @@ double STR::INVANA::OptimizerMC::LogLike(SMCParticle my_particle, bool eval_prop
 
 }
 
-double STR::INVANA::OptimizerMC::LogLikeRealForwardProblem(SMCParticle my_particle, bool eval_prop_pos)
+double INVANA::OptimizerMC::LogLikeRealForwardProblem(SMCParticle my_particle, bool eval_prop_pos)
 {
 
 
@@ -243,7 +243,7 @@ double STR::INVANA::OptimizerMC::LogLikeRealForwardProblem(SMCParticle my_partic
 }
 
 
-int STR::INVANA::OptimizerMC::SetMatParamsBasedOnParticle(SMCParticle my_particle,bool eval_prop_pos)
+int INVANA::OptimizerMC::SetMatParamsBasedOnParticle(SMCParticle my_particle,bool eval_prop_pos)
 {
   std::vector<double> my_position(my_particle.GetSizeOfPosition(),0.0);
 
@@ -273,7 +273,7 @@ int STR::INVANA::OptimizerMC::SetMatParamsBasedOnParticle(SMCParticle my_particl
 /*----------------------------------------------------------------------*/
 /* Read restart                                               keh 03/14 */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::OptimizerMC::ReadRestart(int run)
+void INVANA::OptimizerMC::ReadRestart(int run)
 {
   dserror("no restart for MC optimization yet");
   return;
@@ -283,7 +283,7 @@ void STR::INVANA::OptimizerMC::ReadRestart(int run)
 /*----------------------------------------------------------------------*/
 /* Write restart                                              keh 03/14 */
 /*----------------------------------------------------------------------*/
-void STR::INVANA::OptimizerMC::WriteRestart()
+void INVANA::OptimizerMC::WriteRestart()
 {
   dserror("no restart for MC optimization yet");
   return;
