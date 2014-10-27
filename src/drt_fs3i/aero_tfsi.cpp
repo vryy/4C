@@ -600,7 +600,7 @@ int FS3I::AeroTFSI::ReceiveAeroData(
   else
   {
     // for testing without INCA --> patch test
-    // loading of a flat plate coupled at x=[0.1, 0.3], y=0 and z=[0,0.008]
+    // loading of a flat plate coupled at x=[0.1, 0.3], y=0 and z=[0,0.05]
     // with a constant load in y-direction and represented with 8 triangles
     lengthRecv = 8*13; // 8 tris with 13 doubles each
     receivebuf.resize(lengthRecv);
