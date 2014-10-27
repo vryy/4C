@@ -2,35 +2,6 @@
 \file drt_exporter.H
 
 <pre>
--------------------------------------------------------------------------
-                 BACI finite element library subsystem
-            Copyright (2008) Technical University of Munich
-
-Under terms of contract T004.008.000 there is a non-exclusive license for use
-of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library is proprietary software. It must not be published, distributed,
-copied or altered in any form or any media without written permission
-of the copyright holder. It may be used under terms and conditions of the
-above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library may solemnly used in conjunction with the BACI contact library
-for purposes described in the above mentioned contract.
-
-This library contains and makes use of software copyrighted by Sandia Corporation
-and distributed under LGPL licence. Licensing does not apply to this or any
-other third party software used here.
-
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
-                   or
-                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
-
-http://www.lnm.mw.tum.de
-
--------------------------------------------------------------------------
-</pre>
-
-<pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -183,7 +154,7 @@ public:
   */
   template<typename T> void Export(std::map<int,std::set<T> >& data);
 
-  // 																														nagler 07/2012
+  //                                                             nagler 07/2012
   /*!
   \brief Communicate a map of sets of some basic data type T and U
 
@@ -426,7 +397,7 @@ public:
 
   /*!
   \brief performs an allreduce operation on all processors
-  		 and sends the result to all processors
+       and sends the result to all processors
 
   \param sendbuff (input): buffer containing data that has to be sent
   \param recvbuff (output): buffer containing received data
@@ -791,7 +762,7 @@ private:
   };
 
 /// Concrete helper class that handles maps of plain old data (POD) objects
-/// 																												 nagler 07/2012
+///                                                          nagler 07/2012
   template<typename T, typename U>
   class PODMapExporterHelper : public ExporterHelper
   {
@@ -810,7 +781,7 @@ private:
       typename std::map<int,std::map<T,U> >::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
       {
-      	ParObject::AddtoPack(sendblock,curr->second);
+        ParObject::AddtoPack(sendblock,curr->second);
         return true;
       }
       return false;
@@ -872,7 +843,7 @@ template<typename T> void DRT::Exporter::Export(std::map<int,std::set<T> >& data
  *----------------------------------------------------------------------*/
 template<typename T, typename U> void DRT::Exporter::Export(std::map<int,std::map<T,U> >& data)
 {
-	PODMapExporterHelper<T,U> helper(data);
+  PODMapExporterHelper<T,U> helper(data);
   GenericExport(helper);
 }
 

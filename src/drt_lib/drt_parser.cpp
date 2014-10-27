@@ -10,35 +10,6 @@
        are declared here.
 
 <pre>
--------------------------------------------------------------------------
-                 BACI finite element library subsystem
-            Copyright (2008) Technical University of Munich
-
-Under terms of contract T004.008.000 there is a non-exclusive license for use
-of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library is proprietary software. It must not be published, distributed,
-copied or altered in any form or any media without written permission
-of the copyright holder. It may be used under terms and conditions of the
-above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library may solemnly used in conjunction with the BACI contact library
-for purposes described in the above mentioned contract.
-
-This library contains and makes use of software copyrighted by Sandia Corporation
-and distributed under LGPL licence. Licensing does not apply to this or any
-other third party software used here.
-
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
-                   or
-                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
-
-http://www.lnm.mw.tum.de
-
--------------------------------------------------------------------------
-</pre>
-
-<pre>
 Maintainer: Burkhard Bornemann
             bornemann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -107,121 +78,121 @@ void DRT::PARSER::Lexer::Lexan()
     {
       if (isdigit(t))
       {
-	str_ = &(funct_[pos_-1]);
-	while (isdigit(t))
-	{
-	  t = GetNext();
-	}
-	if ((t != '.') && (t != 'E') && (t != 'e'))
-	{
-	  if (t != EOF)
-	  {
-	    pos_--;
-	  }
-	  integer_ = atoi(str_);
-	  tok_ = tok_int;
-	  return;
-	}
-	if (t == '.')
-	{
-	  t = GetNext();
-	  if (isdigit(t))
-	  {
-	    while (isdigit(t))
-	    {
-	      t = GetNext();
-	    }
-	  }
-	  else
-	  {
-	    dserror("no digits after point at pos %d", pos_);
-	  }
-	}
-	if ((t == 'E') || (t == 'e'))
-	{
-	  t = GetNext();
-	  if ((t == '-') || (t == '+'))
-	  {
-	    t = GetNext();
-	  }
-	  if (isdigit(t))
-	  {
-	    while (isdigit(t))
-	    {
-	      t = GetNext();
-	    }
-	  }
-	  else
-	  {
-	    dserror("no digits after exponent at pos %d", pos_);
-	  }
-	}
-	if (t != EOF)
-	{
-	  pos_--;
-	}
-	real_ = strtod(str_, NULL);
-	tok_ = tok_real;
-	return;
+  str_ = &(funct_[pos_-1]);
+  while (isdigit(t))
+  {
+    t = GetNext();
+  }
+  if ((t != '.') && (t != 'E') && (t != 'e'))
+  {
+    if (t != EOF)
+    {
+      pos_--;
+    }
+    integer_ = atoi(str_);
+    tok_ = tok_int;
+    return;
+  }
+  if (t == '.')
+  {
+    t = GetNext();
+    if (isdigit(t))
+    {
+      while (isdigit(t))
+      {
+        t = GetNext();
+      }
+    }
+    else
+    {
+      dserror("no digits after point at pos %d", pos_);
+    }
+  }
+  if ((t == 'E') || (t == 'e'))
+  {
+    t = GetNext();
+    if ((t == '-') || (t == '+'))
+    {
+      t = GetNext();
+    }
+    if (isdigit(t))
+    {
+      while (isdigit(t))
+      {
+        t = GetNext();
+      }
+    }
+    else
+    {
+      dserror("no digits after exponent at pos %d", pos_);
+    }
+  }
+  if (t != EOF)
+  {
+    pos_--;
+  }
+  real_ = strtod(str_, NULL);
+  tok_ = tok_real;
+  return;
       }
       else if (isalpha(t) || (t == '_'))
       {
-	str_ = &(funct_[pos_-1]);
-	while (isalnum(t) || (t == '_'))
-	{
-	  t = GetNext();
-	}
-	if (t != EOF)
-	{
-	  pos_--;
-	}
-	tok_ = tok_name;
-	integer_ = &(funct_[pos_]) - str_;  // length of operator name, e.g. 'sin' has '3'
-	return;
+  str_ = &(funct_[pos_-1]);
+  while (isalnum(t) || (t == '_'))
+  {
+    t = GetNext();
+  }
+  if (t != EOF)
+  {
+    pos_--;
+  }
+  tok_ = tok_name;
+  integer_ = &(funct_[pos_]) - str_;  // length of operator name, e.g. 'sin' has '3'
+  return;
       }
       else if (t == '+')
       {
-	tok_ = tok_add;
-	return;
+  tok_ = tok_add;
+  return;
       }
       else if (t == '-')
       {
-	tok_ = tok_sub;
-	return;
+  tok_ = tok_sub;
+  return;
       }
       else if (t == '*')
       {
-	tok_ = tok_mul;
-	return;
+  tok_ = tok_mul;
+  return;
       }
       else if (t == '/')
       {
-	tok_ = tok_div;
-	return;
+  tok_ = tok_div;
+  return;
       }
       else if (t == '^')
       {
-	tok_ = tok_pow;
-	return;
+  tok_ = tok_pow;
+  return;
       }
       else if (t == '(')
       {
-	tok_ = tok_lpar;
-	return;
+  tok_ = tok_lpar;
+  return;
       }
       else if (t == ')')
       {
-	tok_ = tok_rpar;
-	return;
+  tok_ = tok_rpar;
+  return;
       }
       else
       {
-	if (t >= 32)
-	  dserror("unexpected char '%c' at pos %d", t, pos_);
-	else
-	  dserror("unexpected char '%d' at pos %d", t, pos_);
-	tok_ = tok_none;
-	return;
+  if (t >= 32)
+    dserror("unexpected char '%c' at pos %d", t, pos_);
+  else
+    dserror("unexpected char '%d' at pos %d", t, pos_);
+  tok_ = tok_none;
+  return;
       }
     }
   }

@@ -1,57 +1,28 @@
- /*!
- \file drt_utils_local_connectivity_matrices.cpp
+/*!----------------------------------------------------------------------
+\file drt_utils_local_connectivity_matrices.cpp
 
- \brief Provide a node numbering scheme together with a set of shape functions
+\brief Provide a node numbering scheme together with a set of shape functions
 
- <pre>
--------------------------------------------------------------------------
-                 BACI finite element library subsystem
-            Copyright (2008) Technical University of Munich
+The surface mapping gives the node numbers such that the 2D shape functions can be used
+Nodal mappings describe the relation between volume, surface and line node numbering.
+They should be used as the only reference for such relationships.
+The corresponding graphics and a detailed description can be found in the Baci guide in the Convention chapter.
+The numbering of lower order elements is included in the higher order element, such that
+e.g. the hex8 volume element uses only the first 8 nodes of the hex27 mapping
 
-Under terms of contract T004.008.000 there is a non-exclusive license for use
-of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
+!!!!
+The corresponding graphics and a detailed description can be found
+in the Baci guide in the Convention chapter.
+!!!!
 
-This library is proprietary software. It must not be published, distributed,
-copied or altered in any form or any media without written permission
-of the copyright holder. It may be used under terms and conditions and of the
-above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library may solemnly used in conjunction with the BACI contact library
-for purposes described in the above mentioned contract.
-
-This library contains and makes use of software copyrighted by Sandia Corporation
-and distributed under LGPL licence. Licensing does not apply to this or any
-other third party software used here.
-
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
-                   or
-                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
-
-http://www.lnm.mw.tum.de
-
--------------------------------------------------------------------------
+<pre>
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
 </pre>
 
-Provided are 1D, 2D and 3D shape functions
-
- The surface mapping gives the node numbers such that the 2D shape functions can be used
- Nodal mappings describe the relation between volume, surface and line node numbering.
- They should be used as the only reference for such relationships.
- The corresponding graphics and a detailed description can be found in the Baci guide in the Convention chapter.
- The numbering of lower order elements is included in the higher order element, such that
- e.g. the hex8 volume element uses only the first 8 nodes of the hex27 mapping
-
- !!!!
- The corresponding graphics and a detailed description can be found
- in the Baci guide in the Convention chapter.
- !!!!
-
- \author Axel Gerstenberger
- gerstenberger@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15236
- */
-
+*----------------------------------------------------------------------*/
 #include "drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_dserror.H"
 
@@ -159,7 +130,7 @@ std::vector<int> DRT::UTILS::getNumberOfSurfaceElementCornerNodes(
         }
         case DRT::Element::tet4: case DRT::Element::tet10:
         {
-        	const int nSurf = 4;
+            const int nSurf = 4;
             const int nCornerNode = 3;
             for(int i = 0; i < nSurf; i++)
                 surfNodeMap.push_back(nCornerNode);
@@ -1002,10 +973,10 @@ std::vector<int> DRT::UTILS::getSurfaces(
     else if(distype == DRT::Element::tet4 ||  distype == DRT::Element::tet10 )
     {
         const double tetcoord = rst(0)+rst(1)+rst(2);
-        if(fabs(rst(1))         < TOL)  	surfaces.push_back(0);
+        if(fabs(rst(1))         < TOL)    surfaces.push_back(0);
         if(fabs(tetcoord-1.0)   < 3*TOL)  surfaces.push_back(1);
-        if(fabs(rst(0))         < TOL)  	surfaces.push_back(2);
-        if(fabs(rst(2))         < TOL)  	surfaces.push_back(3);
+        if(fabs(rst(0))         < TOL)    surfaces.push_back(2);
+        if(fabs(rst(2))         < TOL)    surfaces.push_back(3);
     }
     else
         dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
@@ -1045,10 +1016,10 @@ std::vector<int> DRT::UTILS::getLines(
   else if(distype == DRT::Element::tet4 ||  distype == DRT::Element::tet10)
   {
     const double tcoord = 1.0 - rst(0) - rst(1) - rst(2);
-    if(fabs(rst(1)) < TOL && fabs(rst(2)) < TOL)      	lines.push_back(0);
+    if(fabs(rst(1)) < TOL && fabs(rst(2)) < TOL)        lines.push_back(0);
     if(fabs(rst(2)) < TOL && fabs(tcoord) < 3*TOL)      lines.push_back(1);
-    if(fabs(rst(0)) < TOL && fabs(rst(2)) < TOL)      	lines.push_back(2);
-    if(fabs(rst(0)) < TOL && fabs(rst(1)) < TOL)      	lines.push_back(3);
+    if(fabs(rst(0)) < TOL && fabs(rst(2)) < TOL)        lines.push_back(2);
+    if(fabs(rst(0)) < TOL && fabs(rst(1)) < TOL)        lines.push_back(3);
     if(fabs(rst(1)) < TOL && fabs(tcoord) < 3*TOL)      lines.push_back(4);
     if(fabs(rst(0)) < TOL && fabs(tcoord) < 3*TOL)      lines.push_back(5);
   }
@@ -1089,7 +1060,7 @@ int DRT::UTILS::getNode(
     }
     case DRT::Element::tet4 : case DRT::Element::tet10 :
     {
-      if	   (fabs(rst(0)    ) < TOL && fabs(rst(1)    ) < TOL && fabs(rst(2)    ) < TOL)      node = 0;  // 0 0 0
+      if     (fabs(rst(0)    ) < TOL && fabs(rst(1)    ) < TOL && fabs(rst(2)    ) < TOL)      node = 0;  // 0 0 0
       else if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)    ) < TOL && fabs(rst(2)    ) < TOL)      node = 1;  // 1 0 0
       else if(fabs(rst(0)    ) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)    ) < TOL)      node = 2;  // 0 1 0
       else if(fabs(rst(0)    ) < TOL && fabs(rst(1)    ) < TOL && fabs(rst(2)-1.0) < TOL)      node = 3;  // 0 0 1
@@ -1707,31 +1678,31 @@ void DRT::UTILS::getCornerNodeIndices(
     const int&                                  hoindex,
     const DRT::Element::DiscretizationType      distype )
 {
-	switch(distype)
-	{
-		case DRT::Element::tri6:
-		{
-			if      (hoindex==3) { index1 = 0; index2 = 1; }
-			else if (hoindex==4) { index1 = 1; index2 = 2; }
-			else if (hoindex==5) { index1 = 2; index2 = 0; }
-			else dserror("no valid tri6 edge found");
-			break;
-		}
-		case DRT::Element::quad8:
-		case DRT::Element::quad9:
-		{
-			if      (hoindex==4) { index1 = 0; index2 = 1; }
-	    else if (hoindex==5) { index1 = 1; index2 = 2; }
-			else if (hoindex==6) { index1 = 2; index2 = 3; }
-			else if (hoindex==7) { index1 = 3; index2 = 0; }
-			else dserror("no valid quad8/9 edge found");
-			break;
-		}
-		default:
-				dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
-	}
+  switch(distype)
+  {
+    case DRT::Element::tri6:
+    {
+      if      (hoindex==3) { index1 = 0; index2 = 1; }
+      else if (hoindex==4) { index1 = 1; index2 = 2; }
+      else if (hoindex==5) { index1 = 2; index2 = 0; }
+      else dserror("no valid tri6 edge found");
+      break;
+    }
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+    {
+      if      (hoindex==4) { index1 = 0; index2 = 1; }
+      else if (hoindex==5) { index1 = 1; index2 = 2; }
+      else if (hoindex==6) { index1 = 2; index2 = 3; }
+      else if (hoindex==7) { index1 = 3; index2 = 0; }
+      else dserror("no valid quad8/9 edge found");
+      break;
+    }
+    default:
+        dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
+  }
 
-	return;
+  return;
 }
 
 

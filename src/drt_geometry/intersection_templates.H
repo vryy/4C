@@ -4,43 +4,13 @@
 \brief collection of templated methods in intersection computations
 
 <pre>
--------------------------------------------------------------------------
-                 BACI finite element library subsystem
-            Copyright (2008) Technical University of Munich
-
-Under terms of contract T004.008.000 there is a non-exclusive license for use
-of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library is proprietary software. It must not be published, distributed,
-copied or altered in any form or any media without written permission
-of the copyright holder. It may be used under terms and conditions and of the
-above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library may solemnly used in conjunction with the BACI contact library
-for purposes described in the above mentioned contract.
-
-This library contains and makes use of software copyrighted by Sandia Corporation
-and distributed under LGPL licence. Licensing does not apply to this or any
-other third party software used here.
-
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
-                   or
-                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
-
-http://www.lnm.mw.tum.de
-
--------------------------------------------------------------------------
-</pre>
-
-
-<pre>
 Maintainer: Ursula Mayer
             mayer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
 </pre>
 
- *----------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 
 
 #ifndef INTERSECTION_TEMPLATES_H_
@@ -59,7 +29,7 @@ namespace GEO
  */
 template <unsigned length>
 bool isNaN(
-    const LINALG::Matrix<length,1>&		xsi)
+    const LINALG::Matrix<length,1>&  xsi)
 {
   for(unsigned i = 0; i < length; i++)
   {
@@ -72,14 +42,14 @@ bool isNaN(
 /*!
     \brief checks if intersection point lies within a surface and line element
  */
-template<	DRT::Element::DiscretizationType surftype,
+template<  DRT::Element::DiscretizationType surftype,
 class V1,
 class V2,
 class V3>
 static inline bool intersectionPointInElements(
-    const V1&        							xsi,
-    const V2&        							upLimit,
-    const V3&        							loLimit)
+    const V1&                      xsi,
+    const V2&                      upLimit,
+    const V3&                      loLimit)
 {
   switch (surftype)
   {
@@ -192,10 +162,10 @@ static inline void updateRHSForCSI(
 /*!
     \brief checks if intersection point lies within a surface element
  */
-template<	DRT::Element::DiscretizationType surftype,
+template<  DRT::Element::DiscretizationType surftype,
 class V >
 static inline bool intersectionPointInElementsRCI(
-    const V&        							xsi)
+    const V&                      xsi)
 {
   switch (surftype)
   {
@@ -244,9 +214,9 @@ class M,
 class V>
 static inline void updateAForRCINormal(
     LINALG::Matrix<3,3>&                        A,
-    const V&                  					xsi,
+    const V&                            xsi,
     const std::vector<LINALG::Matrix<3,1> >&         normal,
-    const M&            						xyze_surfaceElement,
+    const M&                        xyze_surfaceElement,
     const bool                                  onBoundary
 )
 {
@@ -310,11 +280,11 @@ template< DRT::Element::DiscretizationType surftype,
 class M,
 class V>
 static inline void updateRHSForRCINormal(
-    LINALG::Matrix<3,1>&                	b,
-    const V&            					xsi,
-    const std::vector<LINALG::Matrix<3,1> >&   	normal,
-    const M&      							xyze_surfaceElement,
-    const bool                            	onBoundary)
+    LINALG::Matrix<3,1>&                  b,
+    const V&                      xsi,
+    const std::vector<LINALG::Matrix<3,1> >&     normal,
+    const M&                    xyze_surfaceElement,
+    const bool                              onBoundary)
 {
   const int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<surftype>::numNodePerElement;
   static LINALG::Matrix<numNodesSurface,1> surfaceFunct;
@@ -416,10 +386,10 @@ template< DRT::Element::DiscretizationType linetype,
 class V,
 class M>
 static inline void updateRHSForRCIPlane(
-    LINALG::Matrix<3,1>&                  	b,
-    const V&            					xsi,
-    const std::vector<LINALG::Matrix<3,1> >&   	plane,
-    const M&            					xyze_lineElement)
+    LINALG::Matrix<3,1>&                    b,
+    const V&                      xsi,
+    const std::vector<LINALG::Matrix<3,1> >&     plane,
+    const M&                      xyze_lineElement)
 {
   const int numNodesLine = DRT::UTILS::DisTypeToNumNodePerEle<linetype>::numNodePerElement;
   const int numNodesSurface = 4;
@@ -518,7 +488,7 @@ bool computeRecoveryPlaneT(
 
     \return true if plane intersects with the line element or false otherwise
  */
-template<	class M,
+template<  class M,
 class V>
 bool computeRecoveryPlane(
     const DRT::Element*                 lineElement,

@@ -3,35 +3,6 @@
 \brief A set of degrees of freedom
 
 <pre>
--------------------------------------------------------------------------
-                 BACI finite element library subsystem
-            Copyright (2008) Technical University of Munich
-
-Under terms of contract T004.008.000 there is a non-exclusive license for use
-of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library is proprietary software. It must not be published, distributed,
-copied or altered in any form or any media without written permission
-of the copyright holder. It may be used under terms and conditions of the
-above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library may solemnly used in conjunction with the BACI contact library
-for purposes described in the above mentioned contract.
-
-This library contains and makes use of software copyrighted by Sandia Corporation
-and distributed under LGPL licence. Licensing does not apply to this or any
-other third party software used here.
-
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
-                   or
-                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
-
-http://www.lnm.mw.tum.de
-
--------------------------------------------------------------------------
-</pre>
-
-<pre>
 Maintainer: Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -242,8 +213,8 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
   // bandwidth optimization is implemented here and works. It though leads to
   // a totally different dof numbering (mixed between elements and nodes) and therefore
-  // currently crashes the I/O of results. 
-  // Bandwidth opt seems to be also performed by most of our direct solvers 
+  // currently crashes the I/O of results.
+  // Bandwidth opt seems to be also performed by most of our direct solvers
   // (umfpack, superlu) and does not matter that much in iterative methods.
   // So currently, we do not support bw, but might want to turn this on at some
   // later time.
@@ -277,11 +248,11 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
     for (int i=0; i<elerowgids->Map().NumMyElements(); ++i)
       (*elerowgids)[i] = ssizeelerowgids[elerowgids->Comm().MyPID()] + i;
-    
+
     // export elerowgids to column map elecolgids
     Teuchos::RCP<Epetra_IntVector> elecolgids = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
     LINALG::Export(*elerowgids,*elecolgids);
-    
+
     // Build a rowmap that contains node and element gids
     // Consider only elements that have dofs
     std::vector<int> mygids(0,0);
@@ -292,9 +263,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       if (NumDofPerElement(*dis.lColElement(i)) != 0)
         mygids.push_back((*elerowgids)[i]);
     }
-    
+
     Epetra_Map rowmapcombo(-1,(int)mygids.size(),&mygids[0],0,dis.Comm());
-    
+
     // Loop Nodes and Elements and build a common nodal-elemental connectivity graph
     // Consider only elementsw rthat have dofs
     Teuchos::RCP<Epetra_FECrsGraph> graphcombo =
@@ -354,8 +325,8 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 //    cout << rowmapcombo; fflush(stdout); rowmapcombo.Comm().Barrier();
 //    fflush(stdout); rowmapcombo.Comm().Barrier(); cout << permutation; fflush(stdout);
 //    rowmapcombo.Comm().Barrier();
-//    exit(0);    
-    
+//    exit(0);
+
 #if 0
     for (int i=0; i<dis.Comm().NumProc(); ++i)
     {
@@ -368,13 +339,13 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       dis.Comm().Barrier();
     }
 #endif
-    
-        
+
+
     // Assign dofs to nodes using the permuted node gids
     // These two fields use the unpermuted gids and lids
     Epetra_IntVector numdfrownodes(*dis.NodeRowMap());
     Epetra_IntVector idxrownodes(*dis.NodeRowMap());
-    
+
     int numrownodes = dis.NumMyRowNodes();
     for (int i=0; i<numrownodes; ++i)
     {
@@ -446,7 +417,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     int numdf = numdfrowelements[i];
     if (lid==-1 && numdf) dserror("Cannot find element lid in rowmapcombo");
     int dof = count + ( permutegid-minelementgid )*maxelementnumdf;
-    // in case the element does not have any dofs the following is wrong, 
+    // in case the element does not have any dofs the following is wrong,
     // but it won't matter, since numdf==0
     idxrowelements[i] = dof;
 //    std::vector<int> & test = nodedofset[permutegid];
@@ -611,7 +582,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   // Now finally we have everything in place to build the maps.
   int numrownodes = dis.NumMyRowNodes();
   int numrowelements = dis.NumMyRowElements();
-  
+
   std::vector<int> localrowdofs;
   std::vector<int> localcoldofs;
   localrowdofs.reserve( numrownodes*maxnodenumdf + numrowelements*maxelementnumdf );
@@ -681,7 +652,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     std::vector<int> & dofs = i->second;
     std::copy( dofs.begin(), dofs.end(), std::back_inserter( localcoldofs ) );
   }
-  
+
   // in case of bandwidth optimization we have to sort localrowdofs and
   // localcoldofs in ascending order for the optimization to take effect.
   // the linear solver will operate in local ids, so it does not care for
@@ -702,7 +673,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
   // tell all proxies
   NotifyAssigned();
-  
+
   count = dofrowmap_->MaxAllGID() + 1;
   return count;
 }

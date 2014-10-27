@@ -1,56 +1,28 @@
- /*!
- \file drt_utils_local_connectivity_matrices.H
+/*!----------------------------------------------------------------------
+\file drt_utils_local_connectivity_matrices.H
 
- \brief Provide a node numbering scheme together with a set of shape functions
-
- <pre>
--------------------------------------------------------------------------
-                 BACI finite element library subsystem
-            Copyright (2008) Technical University of Munich
-
-Under terms of contract T004.008.000 there is a non-exclusive license for use
-of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library is proprietary software. It must not be published, distributed,
-copied or altered in any form or any media without written permission
-of the copyright holder. It may be used under terms and conditions and of the
-above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library may solemnly used in conjunction with the BACI contact library
-for purposes described in the above mentioned contract.
-
-This library contains and makes use of software copyrighted by Sandia Corporation
-and distributed under LGPL licence. Licensing does not apply to this or any
-other third party software used here.
-
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
-                   or
-                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
-
-http://www.lnm.mw.tum.de
-
--------------------------------------------------------------------------
-</pre>
+\brief Provide a node numbering scheme together with a set of shape functions
 
 The surface mapping gives the node numbers such that the 2D shape functions can be used
- Nodal mappings describe the relation between volume, surface and line node numbering.
- They should be used as the only reference for such relationships.
- The corresponding graphics and a detailed description can be found in the Baci guide in the Convention chapter.
- The numbering of lower order elements is included in the higher order element, such that
- e.g. the hex8 volume element uses only the first 8 nodes of the hex27 mapping
+Nodal mappings describe the relation between volume, surface and line node numbering.
+They should be used as the only reference for such relationships.
+The corresponding graphics and a detailed description can be found in the Baci guide in the Convention chapter.
+The numbering of lower order elements is included in the higher order element, such that
+e.g. the hex8 volume element uses only the first 8 nodes of the hex27 mapping
 
- !!!!
- The corresponding graphics and a detailed description can be found
- in the Baci guide in the Convention chapter.
- !!!!
+!!!!
+The corresponding graphics and a detailed description can be found
+in the Baci guide in the Convention chapter.
+!!!!
 
- \author Axel Gerstenberger
- gerstenberger@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15236
+<pre>
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
 
- */
-
+*----------------------------------------------------------------------*/
 #ifndef DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 #define DRT_UTILS_LOCAL_CONNECTIVITY_MATRICES_H
 
@@ -694,11 +666,11 @@ namespace UTILS
     );
 
   /*!
-	\brief    Returns the indices of the element corner nodes lying
+  \brief    Returns the indices of the element corner nodes lying
             adjacent to a specified higher order (edge) node index
             for each discretization type
 
-	*/
+  */
   void getCornerNodeIndices(
     int&                                        index1,     ///< index of corner node
     int&                                        index2,     ///< index of corner node

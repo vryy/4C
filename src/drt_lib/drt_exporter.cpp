@@ -3,35 +3,6 @@
 \brief
 
 <pre>
--------------------------------------------------------------------------
-                 BACI finite element library subsystem
-            Copyright (2008) Technical University of Munich
-
-Under terms of contract T004.008.000 there is a non-exclusive license for use
-of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library is proprietary software. It must not be published, distributed,
-copied or altered in any form or any media without written permission
-of the copyright holder. It may be used under terms and conditions of the
-above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library may solemnly used in conjunction with the BACI contact library
-for purposes described in the above mentioned contract.
-
-This library contains and makes use of software copyrighted by Sandia Corporation
-and distributed under LGPL licence. Licensing does not apply to this or any
-other third party software used here.
-
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
-                   or
-                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
-
-http://www.lnm.mw.tum.de
-
--------------------------------------------------------------------------
-</pre>
-
-<pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -298,10 +269,10 @@ void DRT::Exporter::Receive(const int source,const int tag,
 
 #ifdef PARALLEL
 /*----------------------------------------------------------------------*
- |  reduce all (public)                                		  umay 10/07|
+ |  reduce all (public)                                       umay 10/07|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::Allreduce(std::vector<int>& sendbuff, std::vector<int>& recvbuff,
-								MPI_Op mpi_op)
+                MPI_Op mpi_op)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
@@ -309,8 +280,8 @@ void DRT::Exporter::Allreduce(std::vector<int>& sendbuff, std::vector<int>& recv
   int length = (int) sendbuff.size();
   if (length>(int)recvbuff.size()) recvbuff.resize(length);
 
-  MPI_Allreduce( 	&(sendbuff[0]), &(recvbuff[0]), length,
-  					MPI_INT, mpi_op, comm->Comm() );
+  MPI_Allreduce(   &(sendbuff[0]), &(recvbuff[0]), length,
+            MPI_INT, mpi_op, comm->Comm() );
   return;
 }
 #endif

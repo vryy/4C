@@ -6,35 +6,6 @@
        ('1.0', 'pi', etc) operations ('+', '-', 'sin', etc.).
        The parsed expression is organised in a syntax tree whose nodes
        can either hold an operation or a literal.
-
-<pre>
--------------------------------------------------------------------------
-                 BACI finite element library subsystem
-            Copyright (2008) Technical University of Munich
-
-Under terms of contract T004.008.000 there is a non-exclusive license for use
-of this work by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library is proprietary software. It must not be published, distributed,
-copied or altered in any form or any media without written permission
-of the copyright holder. It may be used under terms and conditions of the
-above mentioned license by or on behalf of Rolls-Royce Ltd & Co KG, Germany.
-
-This library may solemnly used in conjunction with the BACI contact library
-for purposes described in the above mentioned contract.
-
-This library contains and makes use of software copyrighted by Sandia Corporation
-and distributed under LGPL licence. Licensing does not apply to this or any
-other third party software used here.
-
-Questions? Contact Dr. Michael W. Gee (gee@lnm.mw.tum.de)
-                   or
-                   Prof. Dr. Wolfgang A. Wall (wall@lnm.mw.tum.de)
-
-http://www.lnm.mw.tum.de
-
--------------------------------------------------------------------------
-</pre>
 <pre>
 Maintainer: Burkhard Bornemann
             bornemann@lnm.mw.tum.de
@@ -332,23 +303,22 @@ SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
       case 'y':
       case 'z':
       case 't':
-	lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_variable,NULL,NULL);
-	lhs->v_.variable = str_[0];
-	Lexan();
-	break;
+        lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_variable,NULL,NULL);
+        lhs->v_.variable = str_[0];
+        Lexan();
+        break;
       default:
-	break;
+        break;
       }
     }
     if (lhs==NULL)
     {
-      if ((integer_ == 2) &&
-	  (std::strncmp("pi", str_, integer_)==0))
+      if ((integer_ == 2) && (std::strncmp("pi", str_, integer_)==0))
       {
-	lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_number,NULL,NULL);
-	lhs->v_.number = M_PI;
-	Lexan();
-	break;
+        lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_number,NULL,NULL);
+        lhs->v_.number = M_PI;
+        Lexan();
+        break;
       }
       else
       {
@@ -387,10 +357,10 @@ SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
           break;
         }
         else
-	{
-	  str_[integer_] = '\0';
-	  dserror("unknown function '%s'", str_);
-	}
+        {
+          str_[integer_] = '\0';
+          dserror("unknown function '%s'", str_);
+        }
       }
     }
     break;
@@ -604,7 +574,7 @@ T Parser<T>::Interpret(SyntaxTreeNode<T>* node)
     //else if (node->function_=="ceil") res = ceil(arg);
     else if (node->function_=="fabs") res = fabs(arg);
     //else if (node->function_=="floor") res = floor(arg);
-    else if (node->function_=="heaviside") 
+    else if (node->function_=="heaviside")
     {
       if(arg>0)
       {
