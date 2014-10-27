@@ -407,26 +407,6 @@ const bool NLNSOL::FAS::NlnLevel::IsCoarsestLevel() const
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector>
-NLNSOL::FAS::NlnLevel::EvaluateCoarseLevelResidual
-(
-  const Epetra_MultiVector& x,
-  const Epetra_MultiVector& fhatbar
-) const
-{
-  if (not IsInit()) { dserror("Init() has not been called, yet."); }
-  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
-
-  Teuchos::RCP<Epetra_MultiVector> f =
-      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
-
-  int err = f->Update(1.0, fhatbar, 1.0);
-  if (err != 0) { dserror("Failed!"); }
-
-  return f;
-}
-
-/*----------------------------------------------------------------------------*/
 bool NLNSOL::FAS::NlnLevel::ConvergenceCheck(
     const Epetra_MultiVector& f
     ) const

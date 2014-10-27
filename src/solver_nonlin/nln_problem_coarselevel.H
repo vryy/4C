@@ -46,8 +46,8 @@ namespace NLNSOL
    *  handles prolongation to fine and restriction to coarse level and calls the
    *  respective fine level routines (Evaluate(), ConvergenceCheck(), ...).
    *
-   *  \sa NLNSOL::NlnProblem()
-   *  \sa NLNSOL::FAS::NlnAMGHierarchy()
+   *  \sa NlnProblem
+   *  \sa FAS::NlnAMGHierarchy
    *
    *  \author mayr.mt \date 06/2014
    */

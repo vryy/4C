@@ -104,11 +104,9 @@ namespace FAS
      *
      *  \return integer error code (set to zero if successful)
      *
-     *  \sa ProlongateToNextFinerLevel
-     *  \sa NLNSOL::FAS::NlnPrec::ProlongateToFineLevel
+     *  \sa ProlongateToNextFinerLevel()
      *
-     *  \author mayr.mt
-     *  \date 10/2013
+     *  \author mayr.mt \date 10/2013
      */
     virtual int RestrictToNextCoarserLevel(
         Teuchos::RCP<Epetra_MultiVector>& vec ///< vector to be restricted
@@ -121,32 +119,12 @@ namespace FAS
      *
      *  \return integer error code (set to zero if successful)
      *
-     *  \sa RestrictToNextCoarserLevel
-     *  \sa NLNSOL::FAS::NlnPrec::RestrictToCoarseLevel
-     *
-     *  \author mayr.mt
-     *  \date 11/2013
-     */
-    virtual int ProlongateToNextFinerLevel(
-        Teuchos::RCP<Epetra_MultiVector>& vec ///< vector to be prolongated
-        ) const;
-
-    /*! \brief Calculate full approximation of coarse level residual
-     *
-     *  Full approximation of coarse level residual is calculated as
-     *  \f$f(x) - \hat{f}(\bar{x}) + \bar{f}\f$. Therefore, \f$\bar{x}$ and
-     *  \f$\bar{f}\f$ are constant. \f$f\f$ has to be evaluated variationally.
-     *
-     *  \return Full approximation of coarse level residual as
-     *  Teuchos::RCP<Epetra_Vector>
-     *
-     *  \sa NLNSOL::FAS::NlnPrec::EvaluateFVariationally
+     *  \sa RestrictToNextCoarserLevel()
      *
      *  \author mayr.mt \date 11/2013
      */
-    virtual Teuchos::RCP<Epetra_MultiVector> EvaluateCoarseLevelResidual(
-        const Epetra_MultiVector& x, ///< current solution
-        const Epetra_MultiVector& fhatbar ///< residual correction \f$-\hat{F}+\bar{F}\f$
+    virtual int ProlongateToNextFinerLevel(
+        Teuchos::RCP<Epetra_MultiVector>& vec ///< vector to be prolongated
         ) const;
 
     //@}

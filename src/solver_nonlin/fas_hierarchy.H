@@ -64,8 +64,8 @@ namespace NLNSOL
      *  Level transfer (ProlongateToFineLevel(), RestrictToCurrentLevel()) is
      *  managed by this class.
      *
-     *  \sa NLNSOL::NlnOperatorFas()
-     *  \sa NLNSOL::FAS::NlnLevel()
+     *  \sa NLNSOL::NlnOperatorFas
+     *  \sa NLNSOL::FAS::NlnLevel
      *
      *  \author mayr.mt \date 06/2014
      */
