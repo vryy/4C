@@ -25,6 +25,7 @@ Maintainer: Georg Hammerl
 #include "ad_str_fpsiwrapper.H"
 #include "ad_str_statmech.H"
 #include "ad_str_multiscale.H"
+#include "ad_str_invana.H"
 
 #include "../drt_lib/drt_utils_timintmstep.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -172,10 +173,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       = Teuchos::rcp(new Teuchos::ParameterList (problem->MultiLevelMonteCarloParams()));
   // Needed for reduced restart output
   xparams->set<int>("REDUCED_OUTPUT",Teuchos::getIntegralValue<int>((*mlmcp),"REDUCED_OUTPUT"));
-
-  //dual problems need the primal results which need to be stored therefore
-  const Teuchos::ParameterList& ivap = problem->StatInverseAnalysisParams();
-  xparams->set<int>("MSTEPEVRY",Teuchos::getIntegralValue<int>(ivap,"MSTEPS"));
 
   sdyn.set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
 
@@ -515,6 +512,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     case prb_statmech:
     {
       structure_ = (Teuchos::rcp(new StructureStatMech(tmpstr)));
+    }
+    break;
+    case prb_invana:
+    {
+      structure_ = (Teuchos::rcp(new StructureInvana(tmpstr)));
     }
     break;
     default:

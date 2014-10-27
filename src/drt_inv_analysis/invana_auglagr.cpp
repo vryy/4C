@@ -21,7 +21,7 @@ Maintainer: Sebastian Kehl
 #include "objective_funct.H"
 #include "regularization_base.H"
 
-#include "../drt_adapter/ad_str_timeloop.H"
+#include "../drt_adapter/ad_str_invana.H"
 #include "timint_adjoint.H"
 
 #include "../drt_io/io_control.H"
@@ -140,7 +140,8 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
     case INPAR::STR::dyna_statics:
     {
       ADAPTER::StructureBaseAlgorithm adapterbase(sdyn,const_cast<Teuchos::ParameterList&>(sdyn), Discret());
-      Teuchos::RCP<ADAPTER::Structure> structadaptor = adapterbase.StructureField();
+      Teuchos::RCP<ADAPTER::StructureInvana> structadaptor =
+          Teuchos::rcp_dynamic_cast<ADAPTER::StructureInvana>(adapterbase.StructureField());
 
       // do restart but the one which is explicitly given in the INVERSE ANALYSIS section
       if (fprestart_)
@@ -151,8 +152,8 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
       structadaptor->Integrate();
 
       // get displacement and time
-      MStepEpetraToEpetraMulti(structadaptor->DispMStep(), dis_);
-      MStepDToStdVecD(structadaptor->TimeMStep(), &time_);
+      MStepEpetraToEpetraMulti(structadaptor->DispSteps(), dis_);
+      MStepDToStdVecD(structadaptor->TimeSteps(), &time_);
 
       break;
     }

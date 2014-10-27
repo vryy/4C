@@ -798,12 +798,6 @@ namespace STR
     //! Access to scaling matrix for STC
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0 ;
 
-    //! extract displacements (! not only (*dis_)(0) but all time steps)
-    virtual Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > DispMStep() { return dis_; };
-
-    //! times for all the steps
-    virtual Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > TimeMStep() { return time_; };
-
 
     //@}
 
