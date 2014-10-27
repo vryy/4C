@@ -52,7 +52,15 @@ namespace STR
    *        with \b implicit time integration
    *
    * <h3> About </h3>
-   * The implicit time integrator object is a derivation of the base time integrators with an eye towards implicit time integration. #TimIntImpl provides the environment needed to execute implicit integrators. This is chiefly the non-linear solution technique, e.g., Newton-Raphson iteration. These iterative solution techniques require a set of control parameters which are stored within this object. It is up to derived object to implement the time-space discretised residuum and its tangent. This object provides some utility functions to obtain various force vectors necessary in the calculation of the force residual in the derived time integrators.
+   * The implicit time integrator object is a derivation of the base time
+   * integrators with an eye towards implicit time integration. #TimIntImpl
+   * provides the environment needed to execute implicit integrators. This is
+   * chiefly the non-linear solution technique, e.g., Newton-Raphson iteration.
+   * These iterative solution techniques require a set of control parameters
+   * which are stored within this object. It is up to derived object to
+   * implement the time-space discretised residuum and its tangent. This object
+   * provides some utility functions to obtain various force vectors necessary
+   * in the calculation of the force residual in the derived time integrators.
    *
    * \author bborn
    * \date 06/08
