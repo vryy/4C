@@ -636,7 +636,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_ale_crack.cpp
   src/drt_adapter/ad_ale_fluid.cpp
   src/drt_adapter/ad_ale_fpsi.cpp
-  src/drt_adapter/ad_ale_fs.cpp
   src/drt_adapter/ad_ale_fsi.cpp
   src/drt_adapter/ad_ale_wear.cpp
   src/drt_adapter/ad_ale_wrapper.cpp

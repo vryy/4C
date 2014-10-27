@@ -32,7 +32,7 @@ namespace LINALG
 namespace ADAPTER
 {
   class Coupling;
-  class AleFSWrapper;
+  class AleFluidWrapper;
 }
 
 namespace NOX
@@ -60,7 +60,7 @@ namespace FSI
 
     BlockPreconditioningMatrixFS(const LINALG::MultiMapExtractor& maps,
                                  ::ADAPTER::Fluid& fluid,
-                                 ::ADAPTER::AleFSWrapper& ale,
+                                 ::ADAPTER::AleFluidWrapper& ale,
                                  int symmetric,
                                  double omega=1.0,
                                  int iterations=1,
@@ -143,7 +143,7 @@ namespace FSI
     /// construction
     OverlappingBlockMatrixFS(const LINALG::MultiMapExtractor& maps,
                              ::ADAPTER::Fluid& fluid,
-                             ::ADAPTER::AleFSWrapper& ale,
+                             ::ADAPTER::AleFluidWrapper& ale,
                              bool structuresplit,
                              int symmetric,
                              double omega=1.0,
@@ -172,7 +172,7 @@ namespace FSI
     bool structuresplit_;
 
     ::ADAPTER::Fluid&     fluid_;
-    ::ADAPTER::AleFSWrapper &  ale_;
+    ::ADAPTER::AleFluidWrapper &  ale_;
 
   };
 
@@ -205,7 +205,7 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
 
     /// access to ale field
-    const Teuchos::RCP<ADAPTER::AleFSWrapper>& AleField() { return ale_; }
+    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& AleField() { return ale_; }
 
   protected:
 
@@ -243,7 +243,7 @@ namespace FSI
     Teuchos::RCP< ::ADAPTER::Fluid> fluid_;
 
     /// underlying ale of the FS problem
-    Teuchos::RCP< ::ADAPTER::AleFSWrapper> ale_;
+    Teuchos::RCP< ::ADAPTER::AleFluidWrapper> ale_;
   };
 
 

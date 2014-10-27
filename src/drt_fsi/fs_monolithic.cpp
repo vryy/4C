@@ -1,7 +1,7 @@
 
 #include "fs_monolithic.H"
 #include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/ad_ale_fs.H"
+#include "../drt_adapter/ad_ale_fluid.H"
 
 #include "fsi_matrixtransform.H"
 
@@ -41,9 +41,9 @@ FSI::MonolithicBaseFS::MonolithicBaseFS(const Epetra_Comm& comm,
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale")));
-  ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFSWrapper>(ale->AleField());
+  ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField());
   if(ale_ == Teuchos::null)
-     dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
+     dserror("cast from ADAPTER::Ale to ADAPTER::AleFluidWrapper failed");
 
   coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 }
@@ -1098,7 +1098,7 @@ NOX::Abstract::Group::ReturnType NOX::FSI::GroupFS::computeNewton(Teuchos::Param
  *----------------------------------------------------------------------*/
 FSI::BlockPreconditioningMatrixFS::BlockPreconditioningMatrixFS(const LINALG::MultiMapExtractor& maps,
                                                                 ADAPTER::Fluid& fluid,
-                                                                ADAPTER::AleFSWrapper& ale,
+                                                                ADAPTER::AleFluidWrapper& ale,
                                                                 int symmetric,
                                                                 double omega,
                                                                 int iterations,
@@ -1224,7 +1224,7 @@ void FSI::BlockPreconditioningMatrixFS::LocalBlockRichardson(Teuchos::RCP<LINALG
  *----------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrixFS::OverlappingBlockMatrixFS(const LINALG::MultiMapExtractor& maps,
                                                         ADAPTER::Fluid& fluid,
-                                                        ADAPTER::AleFSWrapper& ale,
+                                                        ADAPTER::AleFluidWrapper& ale,
                                                         bool structuresplit,
                                                         int symmetric,
                                                         double omega,

@@ -21,7 +21,6 @@ Maintainer: Matthias Mayr
 #include "ad_ale_fsi.H"
 #include "ad_ale_wear.H"
 #include "ad_ale_xffsi.H"
-#include "ad_ale_fs.H"
 #include "../drt_ale_new/ale.H"
 
 #include "../drt_inpar/drt_validparameters.H"
@@ -291,10 +290,6 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
     break;
   }
   case prb_freesurf:
-  {
-    ale_ = Teuchos::rcp(new ADAPTER::AleFSWrapper(ale));
-    break;
-  }
   case prb_fluid_ale:
   case prb_fluid_fluid_ale:
   {
