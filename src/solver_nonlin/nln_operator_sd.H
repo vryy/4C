@@ -49,7 +49,7 @@ namespace NLNSOL
 {
   /*! \brief Steepest-descent algorithm as nonlinear preconditioner
    *
-   *  \sa NLNSOL::NlnOperatorBase()
+   *  \sa NlnOperatorBase
    *
    *  \author mayr.mt \date 08/2014
    */

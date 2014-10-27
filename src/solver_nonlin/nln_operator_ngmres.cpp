@@ -104,7 +104,7 @@ void NLNSOL::NlnOperatorNGmres::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
   linesearch_ = linesearchfactory.Create(
-      Params().sublist("NGMRES: Line Search"));
+      Params().sublist("Nonlinear Operator: Line Search"));
 
   return;
 }
@@ -423,8 +423,8 @@ const double NLNSOL::NlnOperatorNGmres::ComputeStepLength(
     const Epetra_MultiVector& x, const Epetra_MultiVector& inc,
     double fnorm2) const
 {
-  linesearch_->Init(NlnProblem(), Params().sublist("NGMRES: Line Search"), x,
-      inc, fnorm2);
+  linesearch_->Init(NlnProblem(),
+      Params().sublist("Nonlinear Operator: Line Search"), x, inc, fnorm2);
   linesearch_->Setup();
   return linesearch_->ComputeLSParam();
 }

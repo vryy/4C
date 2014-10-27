@@ -92,7 +92,7 @@ void NLNSOL::NlnOperatorNewton::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
   linesearch_ = linesearchfactory.Create(
-      Params().sublist("Newton: Line Search"));
+      Params().sublist("Nonlinear Operator: Line Search"));
 
   return;
 }
@@ -199,8 +199,8 @@ const double NLNSOL::NlnOperatorNewton::ComputeStepLength(
     const Epetra_MultiVector& x, const Epetra_MultiVector& inc,
     double fnorm2) const
 {
-  linesearch_->Init(NlnProblem(), Params().sublist("Newton: Line Search"), x,
-      inc, fnorm2);
+  linesearch_->Init(NlnProblem(),
+      Params().sublist("Nonlinear Operator: Line Search"), x, inc, fnorm2);
   linesearch_->Setup();
   return linesearch_->ComputeLSParam();
 }

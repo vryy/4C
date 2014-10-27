@@ -25,6 +25,8 @@ Maintainer: Matthias Mayr
 // baci
 #include "nln_operator_base.H"
 
+#include "../drt_inpar/inpar_solver_nonlin.H"
+
 #include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------------*/
@@ -55,7 +57,19 @@ namespace NLNSOL
 {
   /*! \brief Nonlinear Conjugate Gradient as nonlinear preconditioner
    *
-   *  \sa NLNSOL::NlnOperatorBase()
+   *  <h3>References:</h3>
+   *  <ul>
+   *  <li>[1] Shewchuk, J. R.: An Introduction to the Conjugate Gradient
+   *          Method Without the Agonizing Pain (1994) </li>
+   *  <li>[2] Hager, W. W. and Zhang, H.: A survey of nonlinear conjugate
+   *          gradient methods, Pacific Journal of Optimization (2), issue 1,
+   *          pp. 35-58, 2006</li>
+   *  <li>[3] Gee, M. W and Tuminaro, R. S.: Nonlinear algebraic multigrid for
+   *          constrained solid mechanics problems, Sandia National
+   *          Laboratories, Technical Report Nr. SAND2006-2256, 2006 </li>
+   *  </ul>
+   *
+   *  \sa NlnOperatorBase
    *
    *  \author mayr.mt \date 06/2014
    */
@@ -87,9 +101,11 @@ namespace NLNSOL
 
     /*! \brief Apply the preconditioner
      *
-     * \return Integer error code, set to 0 if successful.
+     *  Implementation follows reference [1].
      *
-     * \author mayr.mt \date 03/2014
+     *  \return Integer error code, set to 0 if successful.
+     *
+     *  \author mayr.mt \date 03/2014
      */
     virtual int ApplyInverse(
         const Epetra_MultiVector& f, ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
@@ -115,15 +131,6 @@ namespace NLNSOL
 
   private:
 
-    //! Possible formulas that can be used to compute the parameter \f$\beta\f$
-    enum BetaType
-    {
-      beta_none,
-      beta_fletcherreeves,
-      beta_polakribiere,
-      beta_hestenesstiefel,
-    };
-
     //! @name Setup
     //@{
 
@@ -135,8 +142,11 @@ namespace NLNSOL
 
     //@}
 
-    //! Apply the preconditioner once
-    virtual void ApplyPreconditioner
+    /*! \brief Apply the preconditioner once
+     *
+     *  \return integer error code, set to 0 if successful
+     */
+    virtual int ApplyPreconditioner
     (
         const Epetra_MultiVector& f, ///< residual
         Epetra_MultiVector& x ///< solution
@@ -157,28 +167,39 @@ namespace NLNSOL
      *  \author mayr \date 11/2013
      */
     virtual void ComputeBeta(double& beta, ///< parameter to be computed
-        const Epetra_MultiVector& fnew,  ///< most recent residual
-        const Epetra_MultiVector& fold   ///< residual from previous iteration
+        Teuchos::RCP<const Epetra_MultiVector> fnew, ///< most recent residual
+        Teuchos::RCP<const Epetra_MultiVector> fold, ///< residual from previous iteration
+        Teuchos::RCP<const Epetra_MultiVector> s, ///< most recent preconditioned residual
+        Teuchos::RCP<const Epetra_MultiVector> sold ///< preconditioned residual from previous iteration
         ) const;
 
     /*! \brief Compute the parameter beta according to Fletcher-Reeves formula
      *
-     *  \f$ \beta_{k+1}^{FR} = \frac{f_{k+1}^Tf_{k+1}}{f_{k}^Tf_{k}} \f$
+     *  \f[ \beta_{k+1}^{FR} = \frac{f_{k+1}^TM^{-1}f_{k+1}}{f_{k}^TM^{-1}f_{k}} \f]
+     *
+     *  \Note This is the same as in linear CG.
      *
      *  \author mayr \date 11/2013
      */
     virtual void ComputeBetaFletcherReeves(double& beta, ///< parameter to be computed
-        const Epetra_MultiVector& fnew, ///< most recent residual
-        const Epetra_MultiVector& fold ///< residual from previous iteration
+        Teuchos::RCP<const Epetra_MultiVector> fnew, ///< most recent residual
+        Teuchos::RCP<const Epetra_MultiVector> fold, ///< residual from previous iteration
+        Teuchos::RCP<const Epetra_MultiVector> s, ///< most recent preconditioned residual
+        Teuchos::RCP<const Epetra_MultiVector> sold ///< preconditioned residual from previous iteration
         ) const;
 
     /*! \brief Compute the parameter beta according to Polak-Ribiere formula
      *
-     *  \f$ \beta_{k+1}^{PR} = \frac{f_{k+1}^T\left(f_{k+1}-f_{k}\right)}{\vert f_{k}\vert^2} \f$
+     *  \f[ \beta_{k+1}^{PR} = \frac{f_{k+1}^TM^{-1}\left(f_{k+1}-f_{k}\right)}{f_{k}^TM^{-1}f_{k}} \f]
      *
      *  \author mayr \date 11/2013
      */
-    virtual void ComputeBetaPolakRibiere(double& beta) const;
+    virtual void ComputeBetaPolakRibiere(double& beta, ///< parameter to be computed
+        Teuchos::RCP<const Epetra_MultiVector> fnew, ///< most recent residual
+        Teuchos::RCP<const Epetra_MultiVector> fold, ///< residual from previous iteration
+        Teuchos::RCP<const Epetra_MultiVector> s, ///< most recent preconditioned residual
+        Teuchos::RCP<const Epetra_MultiVector> sold ///< preconditioned residual from previous iteration
+        ) const;
 
     /*! \brief Compute the parameter beta according to Hestenes-Stiefel formula
      *
@@ -200,7 +221,10 @@ namespace NLNSOL
     //@}
 
     //! Formula that is used to compute the parameter \f$\beta\f$
-    BetaType betatype_;
+    INPAR::NLNSOL::NONLINCG::BetaType betatype_;
+
+    //! Restart the iteration every #restartevery_ iterations
+    int restartevery_;
 
   }; // class NlnOperatorNonlinCG
 } // namespace NLNSOL

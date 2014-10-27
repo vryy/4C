@@ -52,6 +52,7 @@ NLNSOL::NlnProblem::NlnProblem()
   noxgrp_(Teuchos::null),
   jac_(Teuchos::null),
   tolresl2_(0.0),
+  lengthscaling_(true),
   printconvcheck_(false)
 {
   return;
@@ -74,6 +75,7 @@ void NLNSOL::NlnProblem::Init(const Epetra_Comm& comm,
 
   // read some parameters from parameter list and store them separately
   tolresl2_ = Params().get<double>("Nonlinear Problem: Tol Res L2");
+  lengthscaling_ = Params().get<bool>("Nonlinear Problem: Length Scaled Norms");
   printconvcheck_ =
       Params().get<bool>("Nonlinear Problem: Print Convergence Check");
 
@@ -187,7 +189,9 @@ bool NLNSOL::NlnProblem::ConvergenceCheck(const Epetra_MultiVector& f,
   // ---------------------------------------------------------------------------
   int err = f.Norm2(&fnorm2);
   if (err != 0) { dserror("Failed!"); }
-  fnorm2 /= sqrt(f.GlobalLength());
+
+  if (lengthscaling_)
+    fnorm2 /= sqrt(f.GlobalLength());
   // ---------------------------------------------------------------------------
 
   // ---------------------------------------------------------------------------
@@ -259,9 +263,9 @@ Teuchos::RCP<Epetra_Operator> NLNSOL::NlnProblem::GetJacobianOperator()
   if (jac_.is_null())
     dserror("Jacobian operator 'jac_' has not been initialized, yet.");
 
-  // check if Jacobian operator is valid
-  if (not NOXGroup().isJacobian())
-    dserror("Jacobian operator is not up-to-date.");
+//  // check if Jacobian operator is valid
+//  if (not NOXGroup().isJacobian())
+//    dserror("Jacobian operator is not up-to-date.");
 
   return jac_->EpetraOperator();
 }

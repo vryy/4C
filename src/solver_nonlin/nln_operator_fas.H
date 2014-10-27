@@ -69,7 +69,19 @@ namespace NLNSOL
    *  NLNSOL::FAS::AMGHierarchy in a collection of NLNSOL::FAS::NlnLevel
    *  objects.
    *
-   *  \sa NLNSOL::NlnOperatorBase()
+   *  <h3>References:</h3>
+   *  <ul>
+   *  <li>[1] Briggs, W. L., Van Henson, E. and McCormick, S. F: A Multigrid
+   *          Tutorial, SIAM, ed. 2, 2000 </li>
+   *  <li>[2] Gee, M. W and Tuminaro, R. S.: Nonlinear algebraic multigrid for
+   *          constrained solid mechanics problems, Sandia National
+   *          Laboratories, Technical Report Nr. SAND2006-2256, 2006 </li>
+   *  <li>[3] Wiesner, T. A., Gee, M. W, Prokopenko, A. and Hu, J.: The MueLu
+   *          Tutorial, Sandia National Laboratories, Technical Report, 2014
+   *          </li>
+   *  </ul>
+   *
+   *  \sa NlnOperatorBase
    *
    *  \author mayr.mt \date 06/2014
    */

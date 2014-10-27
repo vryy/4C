@@ -49,7 +49,7 @@ namespace NLNSOL
 {
   /*! \brief Use inverse of diagonal of Jacobian as preconditioner
    *
-   *  \sa NLNSOL::NlnOperatorBase()
+   *  \sa NlnOperatorBase
    *
    *  \author mayr.mt \date 10/2014
    */

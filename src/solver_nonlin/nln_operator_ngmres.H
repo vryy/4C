@@ -72,18 +72,17 @@ namespace NLNSOL
    *  Basically, a linear system is not required. Evaluation of the residual is
    *  sufficient.
    *
-   *
    *  <h3> References </h3>
+   *  <ul>
+   *  <li>[1] Washio, T. and Oosterlee, C. W.: Krylov subspace acceleration for
+   *          nonlinear multigrid schemes, Electronic Transactions on Numerical
+   *          Analysis, Vol. 6, pp. 271 - 290, 1997 </li>
+   *  <li>[2] Sterck, Hans De: A Nonlinear GMRES Optimization Algorithm for
+   *          Canonical Tensor Decomposition, SIAM J. Sci. Comput., Vol. 34,
+   *          pp. A1351-1379, 2012 </li>
+   *  </ul>
    *
-   *  - Washio, T. and Oosterlee, C. W.: Krylov subspace acceleration for
-   *  nonlinear multigrid schemes, Electronic Transactions on Numerical
-   *  Analysis, Vol. 6, pp. 271 - 290, 1997
-   *
-   *  - Sterck, Hans De: A Nonlinear GMRES Optimization Algorithm for
-   *  Canonical Tensor Decomposition, SIAM J. Sci. Comput., Vol. 34, pp. A1351-
-   *  1379, 2012
-   *
-   * \sa NLNSOL::NlnOperatorBase()
+   * \sa NlnOperatorBase
    *
    *  \author mayr.mt \date 03/2014
    */

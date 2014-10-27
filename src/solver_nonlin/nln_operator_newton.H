@@ -56,7 +56,7 @@ namespace NLNSOL
 {
   /*! \brief Newton-type algorithm as nonlinear preconditioner
    *
-   *  \sa NLNSOL::NlnOperatorBase()
+   *  \sa NlnOperatorBase
    *
    *  \author mayr.mt \date 06/2014
    */

@@ -67,7 +67,7 @@ namespace NLNSOL
    *  NLNSOL::NlnProblem acts on the DofRowMap() of the (fine) level, only. For
    *  coarse level representations, we use NLNSOL::NlnProblemCoarseLevel().
    *
-   *  \sa NLNSOL::NlnProblemCoarseLevel()
+   *  \sa NlnProblemCoarseLevel
    *
    *  \author mayr.mt \date 06/2014
    */
@@ -245,11 +245,14 @@ namespace NLNSOL
      */
     Teuchos::RCP<LINALG::SparseOperator> jac_;
 
-    //! @name Tolerances for convergence check
+    //! @name Convergence check
     //@{
 
     //! residual L2-norm tolerance
     double tolresl2_;
+
+    //! Do we scale norms by \f$\sqrt{n}\f$?
+    bool lengthscaling_;
 
     //@}
 

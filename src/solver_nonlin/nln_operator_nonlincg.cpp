@@ -42,7 +42,8 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 NLNSOL::NlnOperatorNonlinCG::NlnOperatorNonlinCG()
 : linesearch_(Teuchos::null),
-  betatype_(NLNSOL::NlnOperatorNonlinCG::beta_none)
+  betatype_(INPAR::NLNSOL::NONLINCG::beta_none),
+  restartevery_(50)
 {
   return;
 }
@@ -56,7 +57,19 @@ void NLNSOL::NlnOperatorNonlinCG::Setup()
   SetupLineSearch();
   SetupPreconditioner();
 
-  betatype_ = beta_fletcherreeves; // ToDo: Read this from input file/parameter list
+  // Determine the type of beta to be used
+  const std::string betatype =
+      Params().get<std::string>("Nonlinear CG: Beta Type");
+  if (betatype == "fletcherreeves")
+    betatype_ = INPAR::NLNSOL::NONLINCG::beta_fletcherreeves;
+  else if (betatype == "polakribiere")
+    betatype_ = INPAR::NLNSOL::NONLINCG::beta_polakribiere;
+  else if (betatype == "hestenesstiefel")
+    betatype_ = INPAR::NLNSOL::NONLINCG::beta_hestenesstiefel;
+  else
+    dserror("'%s' is an unknown type for the parameter beta", betatype.c_str());
+
+  restartevery_ = Params().get<int>("Nonlinear CG: Restart Every Iterations");
 
   // Setup() has been called
   SetIsSetup();
@@ -68,8 +81,8 @@ void NLNSOL::NlnOperatorNonlinCG::Setup()
 void NLNSOL::NlnOperatorNonlinCG::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
-  linesearch_ =
-      linesearchfactory.Create(Params().sublist("Nonlinear CG: Line Search"));
+  linesearch_ = linesearchfactory.Create(
+      Params().sublist("Nonlinear Operator: Line Search"));
 
   return;
 }
@@ -103,7 +116,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
   // ---------------------------------------------------------------------------
   double alpha = 1.0; // line search parameter
   double beta = 1.0; // parameter for update of search direction
-  double fnorm2 = 1.0e+12;
+  double fnorm2 = 1.0e+12; // L2-norm of residual
   int iter = 0; // iteration counter
 
   // ---------------------------------------------------------------------------
@@ -114,17 +127,26 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
   NlnProblem()->ComputeF(x, *fnew);
 
-  // prepare vector for residual from previous iteration
+  // prepare vector for residual from previous iteration (needed for beta)
   Teuchos::RCP<Epetra_MultiVector> fold =
       Teuchos::rcp(new Epetra_MultiVector(*fnew));
 
-  // compute preconditioned search direction
-  Teuchos::RCP<Epetra_MultiVector> p = Teuchos::rcp(new Epetra_MultiVector(x));
-  ApplyPreconditioner(*fnew, x);
-  p->Update(1.0, x, -1.0);
+  // Apply preconditioner to obtain search direction
+  Teuchos::RCP<Epetra_MultiVector> s = Teuchos::rcp(new Epetra_MultiVector(x));
+  err = ApplyPreconditioner(*fnew, *s);
+  if (err != 0) { dserror("ApplyPreconditioner() failed."); }
+  err = s->Update(-1.0, x, 1.0);
+  if (err != 0) { dserror("Update failed."); }
 
+  // prepare vector for preconditioned residual from previous iteration
+  Teuchos::RCP<Epetra_MultiVector> sold =
+      Teuchos::rcp(new Epetra_MultiVector(*s));
+
+  // prepare vector for search direction
+  Teuchos::RCP<Epetra_MultiVector> p = Teuchos::rcp(new Epetra_MultiVector(*s));
+
+  // do an initial convergence check
   bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
-
   PrintIterSummary(iter, fnorm2);
 
   // ---------------------------------------------------------------------------
@@ -139,29 +161,46 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
     err = x.Update(alpha, *p, 1.0);
     if (err != 0) { dserror("Update failed."); }
 
-    // evaluate residual
+    // update quantities from previous iteration
     err = fold->Update(1.0, *fnew, 0.0);
     if (err != 0) { dserror("Update failed."); }
+    err = sold->Update(1.0, *s, 0.0);
+    if (err != 0) { dserror("Update failed."); }
+
+    // evaluate residual
     NlnProblem()->ComputeF(x, *fnew);
     converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
 
-    // compute beta
-    ComputeBeta(beta, *fnew, *fold);
-
-    Teuchos::RCP<Epetra_MultiVector> pnew =
-        Teuchos::rcp(new Epetra_MultiVector(p->Map(), true));
-
     // compute preconditioned search direction
-    pnew->Update(1.0, x, 0.0);
-    ApplyPreconditioner(*fnew, x);
-    pnew->Update(1.0, x, -1.0);
-
-    // Update
-    err = p->Update(1.0, *pnew, beta);
+    err = s->Update(1.0, x, 0.0);
+    if (err != 0) { dserror("Update failed."); }
+    err = ApplyPreconditioner(*fnew, *s);
+    if (err != 0) { dserror("ApplyPreconditioner() failed."); }
+    err = s->Update(-1.0, x, 1.0);
     if (err != 0) { dserror("Update failed."); }
 
-    ++iter;
+    ComputeBeta(beta, fnew, fold, s, sold);
 
+    /* Account for possible restart:  We restart CG every #restartevery_
+     * iterations or if beta <= 0.0. */
+    if ((iter % restartevery_ == 0) or (beta <= 0.0))
+    {
+      beta = 0.0;
+
+      if (Comm().MyPID() == 0)
+      {
+        IO::cout << "   Restart " << Label()
+                 << " in iteration " << iter
+                 << IO::endl;
+      }
+    }
+
+    // Update search direction
+    err = p->Update(1.0, *s, beta);
+    if (err != 0) { dserror("Update failed."); }
+
+    // finish current iteration
+    ++iter;
     PrintIterSummary(iter, fnorm2);
   }
 
@@ -172,35 +211,39 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner(
+int NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner(
     const Epetra_MultiVector& f, Epetra_MultiVector& x) const
 {
   if (nlnprec_.is_null())
     dserror("Nonlinear preconditioner has not been initialized, yet. "
         "Has SetupPreconditioner() been called?");
 
-  nlnprec_->ApplyInverse(f, x);
+  // ToDo (mayr) Move this safety check to debug version
+  if (not f.Map().PointSameAs(x.Map())) { dserror("Maps do not match"); }
 
-  return;
+  return nlnprec_->ApplyInverse(f, x);
 }
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorNonlinCG::ComputeBeta(double& beta,
-    const Epetra_MultiVector& fnew, const Epetra_MultiVector& fold) const
+    Teuchos::RCP<const Epetra_MultiVector> fnew,
+    Teuchos::RCP<const Epetra_MultiVector> fold,
+    Teuchos::RCP<const Epetra_MultiVector> s,
+    Teuchos::RCP<const Epetra_MultiVector> sold) const
 {
   // compute beta based on user's choice
   switch (betatype_)
   {
-  case beta_none:
+  case INPAR::NLNSOL::NONLINCG::beta_none:
     dserror("Formula how to compute beta has not been set, yet.");
     break;
-  case beta_fletcherreeves:
-    ComputeBetaFletcherReeves(beta, fnew, fold);
+  case INPAR::NLNSOL::NONLINCG::beta_fletcherreeves:
+    ComputeBetaFletcherReeves(beta, fnew, fold, s, sold);
     break;
-  case beta_polakribiere:
-    ComputeBetaPolakRibiere(beta);
+  case INPAR::NLNSOL::NONLINCG::beta_polakribiere:
+    ComputeBetaPolakRibiere(beta, fnew, fold, s, sold);
     break;
-  case beta_hestenesstiefel:
+  case INPAR::NLNSOL::NONLINCG::beta_hestenesstiefel:
     ComputeBetaHestenesStiefel(beta);
     break;
   default:
@@ -216,14 +259,17 @@ void NLNSOL::NlnOperatorNonlinCG::ComputeBeta(double& beta,
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorNonlinCG::ComputeBetaFletcherReeves(double& beta,
-    const Epetra_MultiVector& fnew, const Epetra_MultiVector& fold) const
+    Teuchos::RCP<const Epetra_MultiVector> fnew,
+    Teuchos::RCP<const Epetra_MultiVector> fold,
+    Teuchos::RCP<const Epetra_MultiVector> s,
+    Teuchos::RCP<const Epetra_MultiVector> sold) const
 {
   // compute numerator of beta
-  fnew.Dot(fnew, &beta);
+  fnew->Dot(*s, &beta);
 
   // compute denominator of beta
   double denominator = 1.0;
-  fold.Dot(fold, &denominator);
+  fold->Dot(*sold, &denominator);
 
   // divide by the denominator
   beta /= denominator;
@@ -232,9 +278,24 @@ void NLNSOL::NlnOperatorNonlinCG::ComputeBetaFletcherReeves(double& beta,
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::NlnOperatorNonlinCG::ComputeBetaPolakRibiere(double& beta) const
+void NLNSOL::NlnOperatorNonlinCG::ComputeBetaPolakRibiere(double& beta,
+    Teuchos::RCP<const Epetra_MultiVector> fnew,
+    Teuchos::RCP<const Epetra_MultiVector> fold,
+    Teuchos::RCP<const Epetra_MultiVector> s,
+    Teuchos::RCP<const Epetra_MultiVector> sold) const
 {
-  dserror("Not implemented, yet.");
+  // compute numerator of beta
+  double num1 = 0.0;
+  double num2 = 0.0;
+  fnew->Dot(*s, &num1);
+  fnew->Dot(*sold, &num2);
+
+  // compute denominator of beta
+  double denominator = 0.0;
+  fold->Dot(*sold, &denominator);
+
+  // compute beta
+  beta = (num1 - num2) / denominator;
 
   return;
 }
@@ -252,8 +313,8 @@ const double NLNSOL::NlnOperatorNonlinCG::ComputeStepLength(
     const Epetra_MultiVector& x, const Epetra_MultiVector& inc,
     double fnorm2) const
 {
-  linesearch_->Init(NlnProblem(), Params().sublist("Nonlinear CG: Line Search"),
-      x, inc, fnorm2);
+  linesearch_->Init(NlnProblem(),
+      Params().sublist("Nonlinear Operator: Line Search"), x, inc, fnorm2);
   linesearch_->Setup();
   return linesearch_->ComputeLSParam();
 }
