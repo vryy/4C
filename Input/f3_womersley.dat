@@ -83,7 +83,7 @@ THETA                           0.66                          // Time integratio
 TIMEINTEGR                      One_Step_Theta                // One_Step_Theta BDF2
 NONLINEARBC                     yes
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        classic_lin                   // classic_lin,incr_lin,springs
+ALE_TYPE                        solid
 RESULTSEVRY                     1
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 DYNAMICTYP                      OneStepTheta

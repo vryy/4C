@@ -5638,11 +5638,6 @@ void FLD::FluidImplicitTimeInt::PrintStabilizationDetails() const
 
       std::cout << "\n\nEDGE-BASED (EOS) fluid stabilizations " << "\n";
 
-      std::cout << "+---------------------------------------------------------------------------------+\n";
-      std::cout << "|  WARNING: edge-based stabilization requires face discretization                 |\n";
-      std::cout << "|           face discretization currently only available for pure fluid problems  |\n";
-      std::cout << "+---------------------------------------------------------------------------------+\n";
-
       std::cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<std::string>("EOS_PRES")      <<"\n";
       std::cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<std::string>("EOS_CONV_STREAM")      <<"\n";
       std::cout <<  "                    " << "EOS_CONV_CROSS       = " << stabparams_edgebased->get<std::string>("EOS_CONV_CROSS")      <<"\n";

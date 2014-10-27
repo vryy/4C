@@ -17,7 +17,8 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "ad_fld_fluid_ale.H"
-#include "../drt_ale/ale_utils_mapextractor.H"
+#include "ad_ale_fluid.H"
+
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "adapter_coupling.H"
 #include "../drt_inpar/inpar_fsi.H"
@@ -26,41 +27,46 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                             std::string condname)
-  : fluid_(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true),
-    ale_(prbdyn, DRT::Problem::Instance()->GetDis("ale"))
+  : fluid_(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true)
 {
+  Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(prbdyn,DRT::Problem::Instance()->GetDis("ale")));
+  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField());
+
+//  if (ale_ == Teuchos::null)
+//    dserror("Failed to cast to problem-specific ALE-wrapper");
+
   const int ndim = DRT::Problem::Instance()->NDim();
   icoupfa_ = Teuchos::rcp(new Coupling());
   icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                     FluidField().Interface()->FSICondMap(),
-                                   *AleField().Discretization(),
-                                    AleField().Interface()->FSICondMap(),
+                                   *AleField()->Discretization(),
+                                    AleField()->Interface()->FSICondMap(),
                                    condname,
                                    ndim);
 
   fscoupfa_ = Teuchos::rcp(new Coupling());
   fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                      FluidField().Interface()->FSCondMap(),
-                                    *AleField().Discretization(),
-                                     AleField().Interface()->FSCondMap(),
+                                    *AleField()->Discretization(),
+                                     AleField()->Interface()->FSCondMap(),
                                     "FREESURFCoupling",
                                     ndim);
 
   aucoupfa_ = Teuchos::rcp(new Coupling());
   aucoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
                                      FluidField().Interface()->AUCondMap(),
-                                    *AleField().Discretization(),
-                                     AleField().Interface()->AUCondMap(),
+                                    *AleField()->Discretization(),
+                                     AleField()->Interface()->AUCondMap(),
                                     "ALEUPDATECoupling",
                                     ndim);
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
 
   coupfa_ = Teuchos::rcp(new Coupling());
   coupfa_->SetupCoupling(*FluidField().Discretization(),
-                         *AleField().Discretization(),
+                         *AleField()->Discretization(),
                          *fluidnodemap,
                          *alenodemap,
                          ndim);
@@ -68,7 +74,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
   FluidField().SetMeshMap(coupfa_->MasterDofMap());
 
   // the ale matrix might be build just once
-  AleField().BuildSystemMatrix();
+  AleField()->CreateSystemMatrix();
 }
 
 
@@ -93,7 +99,7 @@ const FLD::UTILS::MapExtractor& ADAPTER::FluidAle::Interface() const
 void ADAPTER::FluidAle::PrepareTimeStep()
 {
   FluidField().PrepareTimeStep();
-  AleField().PrepareTimeStep();
+  AleField()->PrepareTimeStep();
 }
 
 
@@ -102,7 +108,7 @@ void ADAPTER::FluidAle::PrepareTimeStep()
 void ADAPTER::FluidAle::Update()
 {
   FluidField().Update();
-  AleField().Update();
+  AleField()->Update();
 }
 
 
@@ -111,7 +117,7 @@ void ADAPTER::FluidAle::Update()
 void ADAPTER::FluidAle::Output()
 {
   FluidField().StatisticsAndOutput();
-  AleField().Output();
+  AleField()->Output();
 }
 
 
@@ -120,7 +126,7 @@ void ADAPTER::FluidAle::Output()
 double ADAPTER::FluidAle::ReadRestart(int step)
 {
   FluidField().ReadRestart(step);
-  AleField().ReadRestart(step);
+  AleField()->ReadRestart(step);
   return FluidField().Time();
 }
 
@@ -135,7 +141,7 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   if (idisp!=Teuchos::null)
   {
     // if we have values at the interface we need to apply them
-    AleField().ApplyInterfaceDisplacements(FluidToAle(idisp));
+    AleField()->ApplyInterfaceDisplacements(FluidToAle(idisp));
     if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
     {
       FluidField().ApplyInterfaceVelocities(ivel);
@@ -147,7 +153,7 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
     Teuchos::RCP<Epetra_Vector> audispnp = FluidField().Interface()->ExtractAUCondVector(dispnp);
-    AleField().ApplyAleUpdateDisplacements(aucoupfa_->MasterToSlave(audispnp));
+    AleField()->ApplyAleUpdateDisplacements(aucoupfa_->MasterToSlave(audispnp));
   }
 
   // Update the free-surface part
@@ -155,7 +161,7 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
     Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().Interface()->ExtractFSCondVector(dispnp);
-    AleField().ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
+    AleField()->ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 
   // Note: We do not look for moving ale boundaries (outside the coupling
@@ -163,8 +169,8 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   // Dirichlet conditions the according fluid Dirichlet conditions will not
   // notice.
 
-  AleField().Solve();
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().Dispnp());
+  AleField()->Solve();
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
   FluidField().ApplyMeshDisplacement(fluiddisp);
 
   // no computation of fluid velocities in case only structure and ALE are to compute
@@ -184,7 +190,7 @@ void ADAPTER::FluidAle::ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp,
   if (idisp!=Teuchos::null)
   {
     // if we have values at the interface we need to apply them
-    AleField().ApplyInterfaceDisplacements(FluidToAle(idisp));
+    AleField()->ApplyInterfaceDisplacements(FluidToAle(idisp));
     if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
     {
       FluidField().ApplyInterfaceVelocities(ivel);
@@ -195,10 +201,10 @@ void ADAPTER::FluidAle::ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp,
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
     Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().Interface()->ExtractFSCondVector(dispnp);
-    AleField().ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
+    AleField()->ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().Dispnp());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
   FluidField().ApplyMeshDisplacement(fluiddisp);
 
 }
@@ -214,10 +220,10 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::RelaxationSolve(Teuchos::RCP<Epet
   // trial vector only.
 
   // grid velocity
-  AleField().ApplyInterfaceDisplacements(FluidToAle(idisp));
+  AleField()->ApplyInterfaceDisplacements(FluidToAle(idisp));
 
-  AleField().Solve();
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().Dispnp());
+  AleField()->Solve();
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
   fluiddisp->Scale(1./dt);
 
   FluidField().ApplyMeshVelocity(fluiddisp);

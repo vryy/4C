@@ -20,6 +20,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
+#include "../drt_adapter/ad_ale_fluid.H"
 
 #include "fsi_utils.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -75,7 +76,7 @@ FSI::StructureALE::StructureALE(const Epetra_Comm& comm)
     matchingnodes_ = false;
     coupsfm_->Setup( StructureField()->Discretization(),
                      MBFluidField().Discretization(),
-                     (dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField().Discretization(),
+                     (dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField()->WriteAccessDiscretization(),
                      coupleddof,
                      "FSICoupling",
                      comm,

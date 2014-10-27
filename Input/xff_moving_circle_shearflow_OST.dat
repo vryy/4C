@@ -65,7 +65,7 @@ LINEAR_SOLVER                   2
 TIMESTEP                        1.0
 NUMSTEP                         40
 MAXTIME                         1
-ALE_TYPE                        classic_lin
+ALE_TYPE                        springs
 RESULTSEVRY                     1
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         100000

@@ -38,8 +38,8 @@ const Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::AleXFFsiWrapper::GetDBCM
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void ADAPTER::AleXFFsiWrapper::Evaluate(
-    Teuchos::RCP<const Epetra_Vector> stepinc
-    )
+  Teuchos::RCP<const Epetra_Vector> stepinc
+)
 {
   AleFsiWrapper::Evaluate(stepinc, ALENEW::UTILS::MapExtractor::dbc_set_x_ff);
 
@@ -52,8 +52,6 @@ void ADAPTER::AleXFFsiWrapper::Evaluate(
 /*----------------------------------------------------------------------------*/
 int ADAPTER::AleXFFsiWrapper::Solve()
 {
-  AleFsiWrapper::CreateSystemMatrix();
-
   AleFsiWrapper::Evaluate(Teuchos::null, ALENEW::UTILS::MapExtractor::dbc_set_x_fsi);
 
   int err = AleFsiWrapper::Solve();

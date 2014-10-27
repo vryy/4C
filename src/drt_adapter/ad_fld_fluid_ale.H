@@ -24,13 +24,13 @@ Maintainer: Ulrich Kuettler
 
 #include "ad_fld_moving_boundary.H"
 #include "ad_fld_base_algorithm.H"
-#include "../drt_ale/ale.H"
 
 namespace ADAPTER
 {
   // forward declarations
 
   class Coupling;
+  class AleFluidWrapper;
 
 
   /// fluid on ale
@@ -46,8 +46,7 @@ namespace ADAPTER
     const Fluid& FluidField() const { return fluid_.FluidField(); }
 
     /// ale field
-    ALE::Ale& AleField() { return ale_.AleField(); }
-    const ALE::Ale& AleField() const { return ale_.AleField(); }
+    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& AleField() const { return ale_; }
 
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
     virtual const FLD::UTILS::MapExtractor& Interface() const;
@@ -96,7 +95,9 @@ namespace ADAPTER
   private:
 
     FluidBaseAlgorithm fluid_;
-    ALE::AleBaseAlgorithm ale_;
+
+    /// problem-specific ALE-wrapper
+    Teuchos::RCP<ADAPTER::AleFluidWrapper>  ale_;
 
     /// coupling of fluid and ale (whole field)
     Teuchos::RCP<Coupling>               coupfa_;

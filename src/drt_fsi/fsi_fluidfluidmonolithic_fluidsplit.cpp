@@ -82,14 +82,6 @@ void FSI::FluidFluidMonolithicFluidSplit::Update()
 
   // update fields
   FSI::MonolithicFluidSplit::Update();
-
-  // build ale system matrix for the next time step. Here first we
-  // update the vectors then we set the fluid-fluid dirichlet values
-  // in buildsystemmatrix
-  if (relaxing_ale)
-  {
-    AleField()->CreateSystemMatrix(AleField()->Interface());
-  }
 }
 
 /*----------------------------------------------------------------------*/

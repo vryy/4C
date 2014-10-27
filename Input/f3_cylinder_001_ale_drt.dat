@@ -44,7 +44,7 @@ MAXTIME                         0.1
 NUMSTEP                         2
 TIMESTEP                        0.05
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        classic_lin
+ALE_TYPE                        springs
 LINEAR_SOLVER                   2
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE

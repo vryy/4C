@@ -16,6 +16,7 @@ Maintainer: Matthias Mayr
 
 #include "ad_ale.H"
 #include "ad_ale_crack.H"
+#include "ad_ale_fluid.H"
 #include "ad_ale_fpsi.H"
 #include "ad_ale_fsi.H"
 #include "ad_ale_wear.H"
@@ -196,6 +197,22 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
     {
        ale_ = Teuchos::rcp(new ADAPTER::AleXFFsiWrapper(ale));
     }
+    else if (coupling == fsi_iter_stagg_AITKEN_rel_force
+             or coupling == fsi_iter_stagg_AITKEN_rel_param
+             or coupling == fsi_iter_stagg_CHEB_rel_param
+             or coupling == fsi_iter_stagg_MFNK_FD
+             or coupling == fsi_iter_stagg_MFNK_FSI
+             or coupling == fsi_iter_stagg_MPE
+             or coupling == fsi_iter_stagg_NLCG
+             or coupling == fsi_iter_stagg_Newton_FD
+             or coupling == fsi_iter_stagg_Newton_I
+             or coupling == fsi_iter_stagg_RRE
+             or coupling == fsi_iter_stagg_fixed_rel_param
+             or coupling == fsi_iter_stagg_steep_desc
+             or coupling == fsi_iter_stagg_steep_desc_force)
+    {
+      ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
+    }
     else
     {
       dserror("No ALE adapter available yet for your chosen FSI coupling "
@@ -276,6 +293,12 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
   case prb_freesurf:
   {
     ale_ = Teuchos::rcp(new ADAPTER::AleFSWrapper(ale));
+    break;
+  }
+  case prb_fluid_ale:
+  case prb_fluid_fluid_ale:
+  {
+    ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
     break;
   }
   default:

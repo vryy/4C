@@ -60,12 +60,6 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1.0
 UPRES                           1
 LINEAR_SOLVER                   1
------------------------------------------------------------------ALE DYNAMIC
-TIMESTEP                        1.0
-NUMSTEP                         40
-MAXTIME                         1.0
-ALE_TYPE                        classic_lin
-RESULTSEVRY                     1
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 AZCONV                          AZ_r0
