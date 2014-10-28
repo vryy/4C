@@ -84,7 +84,7 @@ LINEAR_SOLVER                   2
 TIMESTEP                        0.05
 NUMSTEP                         200
 MAXTIME                         5.0
-ALE_TYPE                        classic_lin
+ALE_TYPE                        springs
 RESULTSEVRY                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Freesurface_Solver
@@ -2889,8 +2889,8 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 583 QUANTITY velx VALUE 4.60378226825617701e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 583 QUANTITY vely VALUE 4.27499232085827643e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 583 QUANTITY pressure VALUE 4.41716561048191977e+02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 583 QUANTITY velx VALUE 4.59754163086645296e-02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 583 QUANTITY vely VALUE 4.26622870738608689e-02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 583 QUANTITY pressure VALUE 4.41845808746345256e+02 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END
