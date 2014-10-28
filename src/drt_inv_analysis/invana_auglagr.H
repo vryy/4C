@@ -109,6 +109,10 @@ private:
   //! restart of the forward problem
   int fprestart_;
 
+  //! number of optimization algorithm iterations
+  //! before using parameter continuation
+  int itertopc_;
+
 };
 } // namespace INVANA
 

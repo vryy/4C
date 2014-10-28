@@ -32,8 +32,7 @@ STDOUTEVRY                      1
 -------------------------------------------------------STAT INVERSE ANALYSIS
 STAT_INV_ANALYSIS               LBFGS
 MONITORFILE                     invana_cube2by2.mon
-MSTEPS                          yes
-INV_LIST                        1
+ITERTOPC                        100
 PARAMLIST                       1 YOUNG BETA
 MAXITER                         0
 STEPSIZE                        1.0

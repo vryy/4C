@@ -267,6 +267,9 @@ namespace ADAPTER {
     //! Sets the current time \f$t_{n}\f$
     virtual void SetTime(const double time) = 0;
 
+    //! Sets the current step \f$n+1\f$
+    virtual void SetStepn(int step) = 0;
+
     //! Sets the target time \f$t_{n+1}\f$ of this time step
     virtual void SetTimen(const double time) = 0;
 

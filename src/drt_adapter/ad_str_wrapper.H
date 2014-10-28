@@ -180,6 +180,10 @@ namespace ADAPTER
     virtual void SetTimen(const double time)
     { structure_->SetTimen(time); }
 
+    //! Sets the target step \f$n+1\f$
+    virtual void SetStepn(int step)
+    { return structure_->SetStepn(step);}
+
     //! Return current time \f$t_{n}\f$
     virtual double TimeOld() const
     { return structure_->TimeOld(); }

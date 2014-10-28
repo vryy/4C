@@ -26,7 +26,7 @@ ADAPTER::StructureInvana::StructureInvana(Teuchos::RCP<Structure> structure):
 stime_(Teuchos::null),
 sdis_(Teuchos::null),
 svel_(Teuchos::null),
-sizestorage_(0)
+singlesteponly_(false)
 {
   stime_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, 0.0));
   sdis_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), false));
@@ -38,18 +38,44 @@ sizestorage_(0)
 void ADAPTER::StructureInvana::ResizeStorage()
 {
   // resize storage
-  stime_->Resize(-(sizestorage_-1), 0, 0.0);
+  stime_->Resize(-(Step()-1), 0, 0.0);
   // -> time is already stored for the next time step
-  sdis_->Resize(-(sizestorage_-1), 0, DofRowMapView(), false);
-  svel_->Resize(-(sizestorage_-1), 0, DofRowMapView(), false);
+  sdis_->Resize(-(Step()-1), 0, DofRowMapView(), true);
+  svel_->Resize(-(Step()-1), 0, DofRowMapView(), true);
+
+  return;
+}
+
+void ADAPTER::StructureInvana::SetTimeStepStateOld(double time, int step,
+    Teuchos::RCP<Epetra_Vector> disp,
+    Teuchos::RCP<Epetra_Vector> vel)
+{
+  singlesteponly_=true;
+  SetTimen(time);
+  SetStepn(step);
+  WriteAccessDispnp()->Update(1.0,*disp,0.0);
+  WriteAccessVelnp()->Update(1.0,*vel,0.0);
+
+  // to stop after this step:
+  double timemax=time+Dt();
+  SetTimeEnd(timemax);
+}
+
+void ADAPTER::StructureInvana::PrePredict()
+{
+  if (singlesteponly_)
+  {
+    // do what was not done in the update of the previous
+    // loop during a standard integrate()-call since we only
+    // do this timestep
+    Update();
+  }
 
   return;
 }
 
 void ADAPTER::StructureInvana::PostPredict()
 {
-  sizestorage_+=1;
-
   ResizeStorage();
 
   return;

@@ -131,6 +131,9 @@ public:
   //! return the unique map of the vector layout
   const Epetra_Map& SolLayoutMapUnique(){return *solrowmap_;}
 
+  //! current run counter
+  int Runc(){return runc_;}
+
   /*----------------------------------------------------------------------*/
   //! general access functions
 

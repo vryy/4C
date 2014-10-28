@@ -141,6 +141,7 @@ int INVANA::OptimizerLBFGS::EvaluateArmijoRule(double* tauopt, int* numsteps)
   double c1=1.0e-4;
   //double c2=0.4;
   double tau_max=1.0e10;
+  double tau_min=1.0e-10;
   double gnorm=0.0;
 
   // "last"/"intermediate" values for cubic model
@@ -162,7 +163,7 @@ int INVANA::OptimizerLBFGS::EvaluateArmijoRule(double* tauopt, int* numsteps)
   // step based on current stepsize
   step_->Update(tau_n, *p_, 0.0);
 
-  while (i<imax && tau_n<tau_max)
+  while ( i<imax && tau_n<tau_max && tau_n>tau_min )
   {
     //make a step
     UpdateSolution(*step_);
@@ -327,6 +328,7 @@ void INVANA::OptimizerLBFGS::ComputeDirection()
       aa += a;
       bb += b;
     }
+    if (aa < 1.0e-16) std::cout << "first aa is small " << 1/aa*bb << std::endl;
     alpha.push_back(1/aa*bb);
 
     ind=0;
@@ -351,6 +353,7 @@ void INVANA::OptimizerLBFGS::ComputeDirection()
       nom += nomi;
       denom += denomi;
     }
+    if (denom < 1.0e-16) std::cout << "denom is small" << std::endl;
     double gamma=nom/denom;
     p_->Scale(gamma);
   }
@@ -370,7 +373,7 @@ void INVANA::OptimizerLBFGS::ComputeDirection()
       aa += a;
       bb += b;
     }
-
+    if (aa < 1.0e-16) std::cout << "second aa is small" << std::endl;
     beta=1/aa*bb;
     double alphac=alpha.back();
     alpha.pop_back();

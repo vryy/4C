@@ -29,9 +29,17 @@ namespace ADAPTER
     /// constructor
     explicit StructureInvana(Teuchos::RCP<Structure> structure);
 
+    virtual void PrePredict();
+
     virtual void PostPredict();
 
     virtual void PostUpdate();
+
+    //! prepare timestep to be integrated
+    //! set quantities of the step before
+    void SetTimeStepStateOld(double time,int step,
+        Teuchos::RCP<Epetra_Vector> disp,
+        Teuchos::RCP<Epetra_Vector> vel);
 
     Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > DispSteps(){return sdis_;}
 
@@ -53,8 +61,8 @@ namespace ADAPTER
     //! veclocities
     Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > svel_;
 
-    //! number of steps stored
-    int sizestorage_;
+    //! integrate single step only
+    bool singlesteponly_;
 
   };
 

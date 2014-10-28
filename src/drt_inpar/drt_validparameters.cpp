@@ -1419,16 +1419,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "datfile containing target discretization",
                   &statinvp);
 
-  // indicate whether to store results of the primal problem when using adjoints
-  setStringToIntegralParameter<int>("MSTEPS","NO",
-                                    "Store intermediate results of the primal problem?",
-                                    yesnotuple,yesnovalue,&statinvp);
-
-  // list of materials to be optimized
-  setNumericStringParameter("INV_LIST","-1",
-                            "IDs of materials that have to be fitted",
-                            &statinvp);
-
   // list of parameters for the respective material
   StringParameter("PARAMLIST","none",
                   "list of std::string of parameters to be optimized, order as in INV_LIST e.g. 1 YOUNG BETA",
@@ -1436,6 +1426,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // number of optimization steps
   IntParameter("MAXITER",100,"max iterations for inverse analysis",&statinvp);
+
+  // number of optimization steps before using
+  // parameter continuation in the forward problem
+  IntParameter("ITERTOPC",10,"iterations before parameter continuation in the forward problem",&statinvp);
 
   // stepsize for deterministic gradient based schemes
   DoubleParameter("STEPSIZE",1.0,"stepsize for the gradient descent scheme",&statinvp);

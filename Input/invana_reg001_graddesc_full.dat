@@ -35,9 +35,8 @@ STDOUTEVRY                      0
 STAT_INV_ANALYSIS               GradientDescent
 RESTARTEVRY                     2
 FPRESTART                       0
-MSTEPS                          yes
+ITERTOPC                        100
 MONITORFILE                     invana_full.monitor
-INV_LIST                        1
 PARAMLIST                       1 YOUNG BETA
 MAXITER                         10
 STEPSIZE                        1.0

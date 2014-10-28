@@ -29,14 +29,14 @@ FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-WRITE_TO_SCREEN                 yes
+WRITE_TO_SCREEN                 no
 STDOUTEVRY                      0
 -------------------------------------------------------STAT INVERSE ANALYSIS
 STAT_INV_ANALYSIS               LBFGS //GradientDescent
+LBFGSINITSCAL                   yes
+ITERTOPC                        100
 RESTARTEVRY                     50
-MSTEPS                          yes
 MONITORFILE                     invana_full.monitor
-INV_LIST                        1 2
 PARAMLIST                       1 YOUNG BETA 2 YOUNG BETA
 MAXITER                         100
 STEPSIZE                        1.0
@@ -65,7 +65,7 @@ NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-09
 TOLRES                          1.0E-09
-ADAPTCONV                       yes
+ADAPTCONV                       no
 ADAPTCONV_BETTER                0.01
 MAXITER                         150
 UZAWAPARAM                      1.0

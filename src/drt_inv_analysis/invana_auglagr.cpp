@@ -20,6 +20,7 @@ Maintainer: Sebastian Kehl
 #include "matpar_manager.H"
 #include "objective_funct.H"
 #include "regularization_base.H"
+#include "optimizer_base.H"
 
 #include "../drt_adapter/ad_str_invana.H"
 #include "timint_adjoint.H"
@@ -46,7 +47,8 @@ INVANA::InvanaAugLagr::InvanaAugLagr():
 dis_(Teuchos::null),
 disdual_(Teuchos::null),
 msteps_(0),
-fprestart_(0)
+fprestart_(0),
+itertopc_(10)
 {
   const Teuchos::ParameterList& sdyn  = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& invp = DRT::Problem::Instance()->StatInverseAnalysisParams();
@@ -60,7 +62,8 @@ fprestart_(0)
   for (int i=0; i< msteps_; i++)
     time_[i] = (i+1)*timestep;
 
-  fprestart_ = invp.get<int>("FPRESTART"); //this is supposed to be the forward problem restart
+  fprestart_ = invp.get<int>("FPRESTART");
+  itertopc_ = invp.get<int>("ITERTOPC");
 
 }
 
@@ -149,6 +152,24 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
         dserror("Restarting from within a timestep of the forward problem needs some tweaking first!");
         structadaptor->ReadRestart(fprestart_);
       }
+
+      if (Optimizer()->Runc()>itertopc_)
+      {
+        std::vector<double> mtime = ObjectiveFunct()->MeasuredTime();
+        for (int i=0; i<(int)time_.size(); i++)
+        {
+          //find whether measurements exist for this simulation timestep
+          int mstep=ObjectiveFunct()->FindStep(time_[i]);
+          if (mstep!=-1)
+          {
+            structadaptor->SetTimeStepStateOld(time_[i]-structadaptor->Dt(),i,
+                Teuchos::rcp((*dis_)(i),false),
+                Teuchos::rcp((*dis_)(i),false)); // veln ist not used so far so just put disn
+            structadaptor->Integrate();
+          }
+        }
+      }
+
       structadaptor->Integrate();
 
       // get displacement and time

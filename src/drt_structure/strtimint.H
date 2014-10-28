@@ -816,6 +816,9 @@ namespace STR
     //! Sets the target time \f$t_{n+1}\f$ of this time step
     virtual void SetTimen(const double time) { timen_ = time; }
 
+    //! Sets the current step \f$n+1\f$
+    virtual void SetStepn(int step) { stepn_=step; }
+
     //! Get upper limit of time range of interest
     virtual double GetTimeEnd() const { return timemax_; }
 

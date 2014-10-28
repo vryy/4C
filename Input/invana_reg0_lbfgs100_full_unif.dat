@@ -34,9 +34,8 @@ STDOUTEVRY                      0
 -------------------------------------------------------STAT INVERSE ANALYSIS
 STAT_INV_ANALYSIS               LBFGS //GradientDescent
 RESTARTEVRY                     1
-MSTEPS                          yes
+ITERTOPC                        100
 MONITORFILE                     invana_full.monitor
-INV_LIST                        1 2
 PARAMLIST                       1 YOUNG BETA 2 YOUNG BETA
 MAXITER                         100
 STEPSIZE                        1.0
