@@ -3793,6 +3793,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeSubgridScaleVelocity(
       momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)
                        -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)-densaf_*bodyforce_(rr)-generalbodyforce_(rr);
     }
+
+    // add consistency terms for MFS if applicable
+    MultfracSubGridScalesConsistentResidual();
   }
   else
   {
@@ -3842,6 +3845,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeSubgridScaleVelocity(
         momres_old_(rr) = densaf_*conv_old_(rr)+gradp_(rr)-2*visceff_*visc_old_(rr)
                          +reacoeff_*velint_(rr)-rhsmom_(rr);
       }
+
+      // add consistency terms for MFS if applicable
+      MultfracSubGridScalesConsistentResidual();
     }
   }
 

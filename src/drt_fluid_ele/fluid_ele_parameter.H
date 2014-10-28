@@ -173,6 +173,7 @@ public:
   double MfsIsConservative() const {return mfs_is_conservative_;};
   double AdaptCsgsPhi() const {return adapt_Csgs_phi_;};
   void SetCsgsPhi(double meanCai){meanCai_ = meanCai; return;};
+  bool ConsistentMFSResidual() const {return consistent_mfs_residual_;};
 
   /*----------------------------------------------------*/
   //! @name loma parameters
@@ -345,6 +346,7 @@ protected:
   bool mfs_is_conservative_;
   bool adapt_Csgs_phi_;
   double meanCai_;
+  bool consistent_mfs_residual_;
 
   /*----------------------------------------------------*/
   //! @name loma parameters

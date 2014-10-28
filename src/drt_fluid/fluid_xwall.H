@@ -63,15 +63,13 @@ public:
   // get output vector of enriched dofs
   Teuchos::RCP<Epetra_Vector> GetOutputVector(Teuchos::RCP<Epetra_Vector>   vel);
 
-  // zero out enriched dofs of a row vector
-  void ZeroEnrDofs(Teuchos::RCP<Epetra_Vector>   vec);
-
   // returns, if Properties for GenAlpha have to be updated
   void UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual,int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln, FluidImplicitTimeInt& fluid);
 
   // returns tauw of discret_
   Teuchos::RCP<Epetra_Vector>   GetTauw();
 
+  void AssembleOnesOnDiagonal(Teuchos::RCP<LINALG::SparseMatrix> Sep);
 protected:
 
   // set element params for xwall EnrichmentType, distributed for xwall discretization
@@ -264,6 +262,9 @@ private:
 
   //! smoothing through aggregation of residual
   bool smooth_res_aggregation_;
+
+  //! smoothing through aggregation of residual
+  bool mfs_fs_;
 
   //! switch from gradient-based to residual-based calculation of tauw
   int switch_step_;

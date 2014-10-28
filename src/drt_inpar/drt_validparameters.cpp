@@ -4724,6 +4724,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("SMOOTH_TAUW","No","Flag to switch on smoothing of the residual before calculating tauw",&fdyn_wallmodel);
 
+  BoolParameter("Enr_MFS_Fine_Scale","No","Flag to add the enrichment part to the fine scale velocity. if no: enrichment part of coarse scales",&fdyn_wallmodel);
+
   IntParameter(
     "ML_SOLVER",
     -1,
@@ -4856,6 +4858,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("ADAPT_CSGS_PHI","No","Flag to (de)activate adaption of CsgsD to CsgsB.",&fdyn_turbmfs);
 
   BoolParameter("NEAR_WALL_LIMIT_CSGS_PHI","No","Flag to (de)activate near-wall limit for scalar field.",&fdyn_turbmfs);
+
+  BoolParameter("CONSISTENT_FLUID_RESIDUAL","No","Flag to (de)activate the consistency term for residual-based stabilization.",&fdyn_turbmfs);
 
   DoubleParameter(
     "C_DIFF",

@@ -927,6 +927,8 @@ protected:
       const double &                         timefacfac,
       const double &                         rhsfac);
 
+  void MultfracSubGridScalesConsistentResidual();
+
   void FineScaleSimilaritySubGridViscosityTerm(
       LINALG::Matrix<nsd_,nen_> &  velforce,
       const double &               fssgviscfac);

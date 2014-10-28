@@ -4080,7 +4080,11 @@ void FLD::FluidImplicitTimeInt::AVM3GetScaleSeparationMatrix()
   Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep_->RowMap(),false);
   Sep_->ExtractDiagonalCopy(*diag);
   diag->Update(1.0,*tmp,1.0);
+  //Hint: ReplaceDiagonalValues doesn't do anything if nothing in graph before
   Sep_->ReplaceDiagonalValues(*diag);
+
+  if (xwall_ != Teuchos::null)
+    xwall_->AssembleOnesOnDiagonal(Sep_);
 
   //complete scale-separation matrix and check maps
   Sep_->Complete(Sep_->DomainMap(),Sep_->RangeMap());

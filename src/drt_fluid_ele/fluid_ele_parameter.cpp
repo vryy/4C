@@ -79,6 +79,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     mfs_is_conservative_(false),
     adapt_Csgs_phi_(false),
     meanCai_(0.0),
+    consistent_mfs_residual_(false),
     update_mat_(false),
     conti_supg_(true),
     conti_cross_(INPAR::FLUID::cross_stress_stab_none),
@@ -600,6 +601,8 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
        mfs_is_conservative_ = true;
       else
        mfs_is_conservative_ = false;
+
+      consistent_mfs_residual_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"CONSISTENT_FLUID_RESIDUAL");
     }
     else if (physical_turbulence_model == "Vreman")
     {

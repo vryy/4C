@@ -161,6 +161,16 @@ FLD::XWall::XWall(
   if(smooth_res_aggregation_ && tauwcalctype_ == INPAR::FLUID::gradient)
     dserror("smoothing of tauw works only for residual-based tauw, as the residual is smoothed");
 
+  mfs_fs_ = DRT::INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"),"Enr_MFS_Fine_Scale");
+
+  std::string physmodel = params_->sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL","no_model");
+  if(physmodel != "Multifractal_Subgrid_Scales" && mfs_fs_)
+    dserror("can only include enrichment in fine scale vel if mfs is active");
+  Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
+  const std::string scale_sep = modelparams->get<std::string>("SCALE_SEPARATION");
+  if (scale_sep != "algebraic_multigrid_operator" && mfs_fs_)
+    dserror("enrichment can only be fine-scale velocity if the AVM3 method is used");
+
   SepEnr_=Teuchos::null;
 
 
@@ -181,6 +191,7 @@ FLD::XWall::XWall(
     std::cout << "Smooth tau_w:                 " << smooth_res_aggregation_ << std::endl;
     std::cout << "Solver for tau_w smoothing:   " << params_->sublist("WALL MODEL").get<int>("ML_SOLVER") << std::endl;
     std::cout << "Solver for projection:        " << params_->sublist("WALL MODEL").get<int>("PROJECTION_SOLVER") << std::endl;
+    std::cout << "Enrichment fine scale vel:    " << mfs_fs_ << std::endl;
     std::cout << std::endl;
     std::cout << "WARNING: ramp functions are used to treat fluid Neumann inflow conditions" << std::endl;
     std::cout << "WARNING: ramp functions are used to treat fluid Mortar coupling conditions" << std::endl;
@@ -924,8 +935,7 @@ void FLD::XWall::SetupL2Projection()
       if(nsdim!=4)
         dserror("Wrong Nullspace dimension for XWall");
       int lrowdofs = discret_->DofRowMap()->NumMyElements();
-    //  std::cout << "lrowdofs  " << lrowdofs << std::endl;
-    //std::cout << "check the nullspace for mfs" << std::endl;
+
       for (int j=0; j<discret_->NodeRowMap()->NumMyElements();++j)
       {
         int xwallgid = discret_->NodeRowMap()->GID(j);
@@ -1836,36 +1846,6 @@ void FLD::XWall::AdaptMLNullspace(const Teuchos::RCP<LINALG::Solver>&   solver)
 }
 
 /*----------------------------------------------------------------------*
- |  Zero Enriched dofs of row vector                           bk 09/14 |
- *----------------------------------------------------------------------*/
-void FLD::XWall::ZeroEnrDofs(Teuchos::RCP<Epetra_Vector>   vec)
-{
-  for (int j=0; j<xwallrownodemap_->NumMyElements();++j)
-  {
-    int xwallgid = xwallrownodemap_->GID(j);
-
-    if (not discret_->NodeRowMap()->MyGID(xwallgid)) //just in case
-      dserror("not on proc");
-    {
-      DRT::Node* xwallnode = discret_->gNode(xwallgid);
-      if(!xwallnode) dserror("Cannot find node");
-
-      int firstgdofid=discret_->Dof(xwallnode,0);
-
-      int err =     vec->ReplaceGlobalValue(firstgdofid+4,0,0.0);
-          err +=     vec->ReplaceGlobalValue(firstgdofid+5,0,0.0);
-          err +=     vec->ReplaceGlobalValue(firstgdofid+6,0,0.0);
-          err +=     vec->ReplaceGlobalValue(firstgdofid+7,0,0.0);
-
-       if (err!=0)
-         dserror("something went wrong");
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Calculate MK for residual-based stabilization parameter    bk 09/14 |
  *----------------------------------------------------------------------*/
 void FLD::XWall::CalcMK()
@@ -1998,6 +1978,56 @@ void   FLD::XWall::OverwriteTransferedValues()
 
     LINALG::Export(*inctauwtmp,*inctauw_);
     LINALG::Export(*tauwtmp,*tauw_);
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble ones on diagonal of separation matrix             bk 10/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XWall::AssembleOnesOnDiagonal(Teuchos::RCP<LINALG::SparseMatrix> Sep)
+{
+  if(mfs_fs_)
+  {
+    if(myrank_==0)
+      std::cout << "adapt scale separation matrix for xwall" << std::endl;
+    Sep->UnComplete();
+    for (int j=0; j<xwallrownodemap_->NumMyElements();++j)
+    {
+      int xwallgid = xwallrownodemap_->GID(j);
+
+      if (not discret_->NodeRowMap()->MyGID(xwallgid)) //just in case
+        dserror("not on proc");
+      {
+        DRT::Node* xwallnode = discret_->gNode(xwallgid);
+        if(!xwallnode) dserror("Cannot find node");
+
+        //make sure that periodic nodes are not assembled twice
+        std::vector<DRT::Condition*> periodiccond;
+        xwallnode->GetCondition("SurfacePeriodic",periodiccond);
+
+        bool includedofs=true;
+        if (not periodiccond.empty())
+        {
+          for (unsigned numcondper=0;numcondper<periodiccond.size();++numcondper)
+          {
+            const std::string* mymasterslavetoggle
+              = periodiccond[numcondper]->Get<std::string>("Is slave periodic boundary condition");
+            if(*mymasterslavetoggle=="Slave")
+            {
+              includedofs=false;
+            }
+          }
+        }
+        if (includedofs)
+        {
+          int firstgdofid=discret_->Dof(xwallnode,0);
+          Sep->Assemble(1.0,firstgdofid+4,firstgdofid+4);
+          Sep->Assemble(1.0,firstgdofid+5,firstgdofid+5);
+          Sep->Assemble(1.0,firstgdofid+6,firstgdofid+6);
+        }
+      }
+    }
   }
   return;
 }

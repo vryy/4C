@@ -1645,6 +1645,80 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::MultfracSubGridScalesReynolds
 }
 
 
+//----------------------------------------------------------------------
+// concistency terms for residual-based stabilization           bk 10/14
+//----------------------------------------------------------------------
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::MultfracSubGridScalesConsistentResidual()
+{
+
+  if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales && fldpara_->ConsistentMFSResidual())
+  {
+    if(not fldparatimint_->IsGenalpha())
+      dserror("please check the implementation of the consistent residual for mfs for your time-integrator!");
+
+    LINALG::Matrix<nsd_,1>              velforce(true);
+
+      /* cross-stress term of residual */
+      /*
+               /                                      \
+              |                                        |
+              | ( du o nabla u + u o nabla du )        |
+              |                                        |
+               \                                      /
+      */
+      velforce(0,0) += densaf_
+                      * (velint_(0,0) * mffsvderxy_(0,0)
+                        +velint_(1,0) * mffsvderxy_(0,1)
+                        +velint_(2,0) * mffsvderxy_(0,2)
+                        +mffsvelint_(0,0) * vderxy_(0,0)
+                        +mffsvelint_(1,0) * vderxy_(0,1)
+                        +mffsvelint_(2,0) * vderxy_(0,2));
+      velforce(1,0) += densaf_
+                      * (velint_(0,0) * mffsvderxy_(1,0)
+                        +velint_(1,0) * mffsvderxy_(1,1)
+                        +velint_(2,0) * mffsvderxy_(1,2)
+                        +mffsvelint_(0,0) * vderxy_(1,0)
+                        +mffsvelint_(1,0) * vderxy_(1,1)
+                        +mffsvelint_(2,0) * vderxy_(1,2));
+      velforce(2,0) += densaf_
+                      * (velint_(0,0) * mffsvderxy_(2,0)
+                        +velint_(1,0) * mffsvderxy_(2,1)
+                        +velint_(2,0) * mffsvderxy_(2,2)
+                        +mffsvelint_(0,0) * vderxy_(2,0)
+                        +mffsvelint_(1,0) * vderxy_(2,1)
+                        +mffsvelint_(2,0) * vderxy_(2,2));
+
+
+      /* reynolds-stress term of residual */
+      /*
+               /                       \
+              |                         |
+              | ( du o nabla du)        |
+              |                         |
+               \                       /
+      */
+      velforce(0,0) += densaf_
+                      * (mffsvelint_(0,0) * mffsvderxy_(0,0)
+                        +mffsvelint_(1,0) * mffsvderxy_(0,1)
+                        +mffsvelint_(2,0) * mffsvderxy_(0,2));
+      velforce(1,0) += densaf_
+                      * (mffsvelint_(0,0) * mffsvderxy_(1,0)
+                        +mffsvelint_(1,0) * mffsvderxy_(1,1)
+                        +mffsvelint_(2,0) * mffsvderxy_(1,2));
+      velforce(2,0) += densaf_
+                      * (mffsvelint_(0,0) * mffsvderxy_(2,0)
+                        +mffsvelint_(1,0) * mffsvderxy_(2,1)
+                        +mffsvelint_(2,0) * mffsvderxy_(2,2));
+
+    for (int rr=0;rr<nsd_;++rr)
+    {
+      momres_old_(rr)+=velforce(rr);
+    }
+  }
+  return;
+}
+
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::FineScaleSimilaritySubGridViscosityTerm(
     LINALG::Matrix<nsd_,nen_> &             velforce,

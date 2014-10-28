@@ -1716,6 +1716,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
         momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)
                        -2*visceff_*visc_old_(rr)-densaf_*bodyforce_(rr)-generalbodyforce_(rr);
       }
+      // add consistency terms for MFS if applicable
+      MultfracSubGridScalesConsistentResidual();
     }
     else
     {
@@ -1731,6 +1733,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
                          +fldparatimint_->Theta()*(densaf_*conv_old_(rr)+gradp_(rr)
                          -2*visceff_*visc_old_(rr)))-rhsmom_(rr);
       }
+      // add consistency terms for MFS if applicable
+      MultfracSubGridScalesConsistentResidual();
     }
 
 
