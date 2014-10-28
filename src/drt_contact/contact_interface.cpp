@@ -3682,7 +3682,8 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal,bool usePoroL
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
                                        LINALG::SparseMatrix& linmglobal,
-                                       bool usePoroLM)
+                                       bool usePoroLM,
+                                       bool onlyD)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -3812,6 +3813,8 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
       dserror("ERROR: AssembleLinDM: Not all DISP slave entries of DerivD considered!");
     /******************************** Finished with LinDMatrix **********/
 
+    if(onlyD)
+      continue;
 
     /********************************************** LinMMatrix **********/
     // loop over all master nodes in the DerivM-map of the current LM slave node

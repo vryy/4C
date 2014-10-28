@@ -1768,6 +1768,38 @@ void MORTAR::MortarInterface::SetState(const std::string& statename,
     SetElementAreas();
   }
 
+  if (statename == "lm")
+  {
+    // alternative method to get vec to full overlap
+    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(
+        new Epetra_Vector(*idiscret_->DofColMap(), false));
+    LINALG::Export(*vec, *global);
+
+    // loop over all nodes to set current displacement
+    // (use fully overlapping column map)
+    for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
+    {
+      MORTAR::MortarNode* node =
+          dynamic_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
+      const int numdof = node->NumDof();
+      std::vector<double> mydisp(numdof);
+      std::vector<int> lm(numdof);
+
+      for (int j = 0; j < numdof; ++j)
+        lm[j] = node->Dofs()[j];
+
+      DRT::UTILS::ExtractMyValues(*global, mydisp, lm);
+
+      // add mydisp[2]=0 for 2D problems
+      if (mydisp.size() < 3)
+        mydisp.resize(3);
+
+      // set current configuration
+      for (int j = 0; j < 3; ++j)
+        node->MoData().lm()[j] = mydisp[j];
+    }
+  }
+
   if (statename == "olddisplacement")
   {
     // alternative method to get vec to full overlap

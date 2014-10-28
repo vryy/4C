@@ -17,12 +17,18 @@ Maintainer: Philipp Farah
 #include "../drt_contact/contact_interface.H"
 #include "../drt_contact/contact_node.H"
 #include "../drt_contact/contact_element.H"
+#include "../drt_contact/contact_integrator.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_sparsematrix.H"
+
+#include "../drt_inpar/inpar_contact.H"
+
+#include <Epetra_Vector.h>
 
 
 /*----------------------------------------------------------------------*
@@ -98,16 +104,25 @@ void ADAPTER::CouplingNonLinMortar::Setup(
   else
   {
     // Fill maps based on condition for master side (masterdis != slavedis)
-    DRT::UTILS::FindConditionObjects(*masterdis, masternodes, mastergnodes, masterelements, couplingcond);
+//    if(masterdis!=Teuchos::null)
+//      DRT::UTILS::FindConditionObjects(*masterdis, masternodes, mastergnodes, masterelements, couplingcond);
 
     // Fill maps based on condition for slave side (masterdis != slavedis)
-    DRT::UTILS::FindConditionObjects(*slavedis, slavenodes, slavegnodes, slaveelements, couplingcond);
+    if(slavedis!=Teuchos::null)
+      DRT::UTILS::FindConditionObjects(*slavedis, slavenodes, slavegnodes, slaveelements, couplingcond);
   }
 
   // get mortar coupling parameters
-  const Teuchos::ParameterList& inputmortar = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& inputmortar = DRT::Problem::Instance()->MortarCouplingParams();\
+  const Teuchos::ParameterList& meshtying = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& wearlist  = DRT::Problem::Instance()->WearParams();
+
   Teuchos::ParameterList input;
   input.setParameters(inputmortar);
+  input.setParameters(meshtying);
+  input.setParameters(wearlist);
+
+  input.set<int>("PROBTYPE", INPAR::CONTACT::other);
 
   // is this a nurbs problem?
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();
@@ -121,7 +136,7 @@ void ADAPTER::CouplingNonLinMortar::Setup(
     input.set<bool>("NURBS",false);
 
   // check for invalid parameter values
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
     if(myrank_== 0) dserror("Mortar coupling adapter only works for dual shape functions");
   if (DRT::INPUT::IntegralValue<int>(input,"LM_NODAL_SCALE")==true)
     if(myrank_== 0) dserror("Mortar coupling adapter does not work with LM_NODAL_SCALE");
@@ -187,7 +202,7 @@ void ADAPTER::CouplingNonLinMortar::Setup(
       {
         // get the gid of the coupled dof (size dof)
         // and store it in the vector dofids containing only coupled dofs (size numcoupleddof)
-        dofids[ii] = masterdis->Dof(node)[k];
+        dofids[ii] = masterdis->Dof(0,node)[k];
         ii +=1;
       }
     }
@@ -212,7 +227,7 @@ void ADAPTER::CouplingNonLinMortar::Setup(
       {
         // get the gid of the coupled dof (size dof)
         // and store it in the vector dofids containing only coupled dofs (size numcoupleddof)
-        dofids[ii] = slavedis->Dof(node)[k]+dofoffset;
+        dofids[ii] = slavedis->Dof(0,node)[k]+dofoffset;
         ii += 1;
       }
     }
@@ -312,9 +327,75 @@ void ADAPTER::CouplingNonLinMortar::Setup(
   // store interface
   interface_ = interface;
 
+  D_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
+  DLin_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  M_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
+  MLin_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
   return;
 }
 
 
+/*----------------------------------------------------------------------*
+ |  setup for nonlinear mortar framework                     farah 10/14|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::Evaluate(const std::string& statename,
+    const Teuchos::RCP<Epetra_Vector> vec,
+    bool onlyD)
+{
+  interface_->SetState(statename,vec);
+  interface_->Initialize();
+  interface_->Evaluate();
+  interface_->AssembleDM(*D_,*M_,onlyD);
+
+  return;
+}
 
 
+/*----------------------------------------------------------------------*
+ |  setup for nonlinear mortar framework                     farah 10/14|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::PrintInterface(std::ostream& os)
+{
+  interface_->Print(os);
+}
+
+
+/*----------------------------------------------------------------------*
+ |  setup for nonlinear mortar framework                     farah 10/14|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::IntegrateD(const std::string& statename,
+    const Teuchos::RCP<Epetra_Vector> vec,
+    const Teuchos::RCP<Epetra_Vector> veclm)
+{
+  D_->Zero();
+  DLin_->Zero();
+
+  interface_->SetState(statename,vec);
+  interface_->SetState("lm",veclm);
+
+  interface_->Initialize();
+  interface_->SetElementAreas();
+
+  for (int j=0; j<interface_->SlaveColElements()->NumMyElements(); ++j)
+  {
+    int gid = interface_->SlaveColElements()->GID(j);
+    DRT::Element* ele = interface_->Discret().gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find ele with gid %",gid);
+    CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
+
+    Teuchos::RCP<CONTACT::CoIntegrator> integrator =
+        Teuchos::rcp(new CONTACT::CoIntegrator(interface_->IParams(),cele->Shape(),*comm_));
+
+    integrator->IntegrateD(*cele,*comm_,true);
+  }
+
+  interface_->AssembleDM(*D_,*M_,true);
+
+  interface_->AssembleLinDM(*DLin_,*MLin_,false,true);
+
+ // std::cout<<*DLin_<<std::endl;
+ // interface_->FDCheckMortarDDeriv();
+
+ // dserror("haaalt stop");
+  return;
+}

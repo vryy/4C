@@ -2605,7 +2605,8 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
  |  Integrate D                                              farah 09/14|
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
-    const Epetra_Comm& comm)
+    const Epetra_Comm& comm,
+    bool lin)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -2649,6 +2650,23 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
   LINALG::SerialDenseVector lmval(nrow);
   LINALG::SerialDenseMatrix lmderiv(nrow,ndof-1);
 
+  int linsize = 0;
+  for (int i=0;i<nrow;++i)
+  {
+    CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
+    linsize += cnode->GetLinsize();
+  }
+
+  // prepare directional derivative of dual shape functions
+  // this is necessary for all slave element types except tri3
+  bool duallin = false;
+  std::vector<std::vector<GEN::pairedvector<int,double> > > dualmap(nrow,std::vector<GEN::pairedvector<int,double> >(nrow,ndof*nrow));
+  if ((sele.Shape()!=MORTAR::MortarElement::tri3 || sele.MoData().DerivDualShape()!=Teuchos::null))
+  {
+    duallin = true;
+    sele.DerivShapeDual(dualmap);
+  }
+
   //*************************************************************************
   //                loop over all Gauss points for integration
   //*************************************************************************
@@ -2667,6 +2685,11 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
 
     // evaluate the two slave side Jacobians
     double dxdsxi = sele.Jacobian(sxi);
+
+    // evaluate linearizations *******************************************
+    // evaluate the slave Jacobian derivative
+    GEN::pairedvector<int,double> jacslavemap(nrow*ndof+linsize);
+    sele.DerivJacobian(sxi,jacslavemap);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     sele.EvaluateShapeLagMult(INPAR::MORTAR::shape_dual,sxi,lmval,lmderiv,nrow);
@@ -2711,7 +2734,53 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
         }
       }
     }
+
+    if(lin)
+    {
+      typedef GEN::pairedvector<int,double>::const_iterator _CI;
+
+      //lin
+      for (int iter=0; iter<nrow; ++iter)
+      {
+        MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[iter]);
+        if (!mymrtrnode)
+          dserror("ERROR: IntegrateDerivCell3D: Null pointer!");
+
+        const int sgid   = mymrtrnode->Id();
+        std::map<int,double>& ddmap_jj = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
+
+        // integrate LinD
+        for (int k=0; k<nrow; ++k)
+        {
+          double fac = 0.0;
+
+          // (1) Lin(Phi) - dual shape functions
+          if (duallin)
+          {
+            for (int m=0; m<nrow; ++m)
+            {
+              fac = wgt*sval[m]*sval[k]*dxdsxi;
+              for (_CI p=dualmap[iter][m].begin(); p!=dualmap[iter][m].end(); ++p)
+              {
+                ddmap_jj[p->first] += fac*(p->second);
+              }
+            }
+          }
+
+          // (4) Lin(dsxideta) - intcell GP Jacobian
+          fac = wgt*lmval[iter]*sval[k];
+          for (_CI p=jacslavemap.begin(); p!=jacslavemap.end(); ++p)
+          {
+            ddmap_jj[p->first] += fac*(p->second);
+          }
+
+        } // loop over slave nodes
+      }
+    }
   } // End Loop over all GP
+
+  sele.MoData().ResetDualShape();
+  sele.MoData().ResetDerivDualShape();
 
   return;
 }

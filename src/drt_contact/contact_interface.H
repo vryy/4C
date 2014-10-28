@@ -437,7 +437,8 @@ public:
   */
   virtual void AssembleLinDM(LINALG::SparseMatrix& lindglobal,
                              LINALG::SparseMatrix& linmglobal,
-                             bool usePoroLM = false);
+                             bool usePoroLM = false,
+                             bool onlyD     = false);
 
 
   /*!

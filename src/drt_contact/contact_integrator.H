@@ -800,7 +800,8 @@ public:
 
    */
   void IntegrateD(MORTAR::MortarElement& sele,
-      const Epetra_Comm& comm);
+      const Epetra_Comm& comm,
+      bool lin = false);
 
   /*!
    \brief Build all integrals and linearizations on a 1D slave /
