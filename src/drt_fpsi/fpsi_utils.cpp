@@ -185,6 +185,10 @@ them.
   if (aledis->NumGlobalNodes()==0) // ALE discretization still empty
   {
     DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+    // setup material in every ALE element
+    Teuchos::ParameterList params;
+    params.set<std::string>("action", "setup_material");
+    aledis->Evaluate(params);
   }
   else  // ALE discretization already filled
   {

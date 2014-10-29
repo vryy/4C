@@ -100,6 +100,11 @@ void fluid_ale_drt()
   if (aledis->NumGlobalNodes()==0)
   {
     DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(fluiddis,aledis);
+    // setup material in every ALE element
+    Teuchos::ParameterList params;
+    params.set<std::string>("action", "setup_material");
+    aledis->Evaluate(params);
+
   }
   else  // filled ale discretization
   {
@@ -386,6 +391,10 @@ void fluid_fluid_ale_drt()
   if (aledis->NumGlobalNodes()==0)
   {
     DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(embfluiddis,aledis);
+    // setup material in every ALE element
+    Teuchos::ParameterList params;
+    params.set<std::string>("action", "setup_material");
+    aledis->Evaluate(params);
   }
   else  // ale discretization in input file
     dserror("Providing an ALE mesh is not supported for this problemtype.");
@@ -600,6 +609,10 @@ void fluid_fluid_fsi_drt()
   if (aledis->NumGlobalNodes()==0)
   {
     DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(embfluiddis,aledis);
+    // setup material in every ALE element
+    Teuchos::ParameterList params;
+    params.set<std::string>("action", "setup_material");
+    aledis->Evaluate(params);
   }
   else  // ale discretization in input file
     dserror("Providing an ALE mesh is not supported for problemtype Fluid_Fluid_FSI.");
@@ -785,6 +798,10 @@ void fluid_freesurf_drt()
   if (aledis->NumGlobalNodes()==0)
   {
     DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(fluiddis,aledis);
+    // setup material in every ALE element
+    Teuchos::ParameterList params;
+    params.set<std::string>("action", "setup_material");
+    aledis->Evaluate(params);
   }
   else  // filled ale discretization
   {
@@ -873,6 +890,10 @@ void fsi_ale_drt()
   if (aledis->NumGlobalNodes() == 0) // empty ale discretization
   {
     DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(fluiddis, aledis);
+    // setup material in every ALE element
+    Teuchos::ParameterList params;
+    params.set<std::string>("action", "setup_material");
+    aledis->Evaluate(params);
   }
   else  // filled ale discretization (i.e. read from input file)
   {

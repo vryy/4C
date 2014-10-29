@@ -46,8 +46,9 @@ CHARELELENGTH_PC                root_of_volume
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 ALE_TYPE                        solid
+MAXITER                          10
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         1.0
+MAXTIME                         1
 TIMESTEP                        0.1
 NUMSTEP                         10
 UPRES                           1
@@ -7030,17 +7031,18 @@ NODE 2244 COORD 0.000000000000000e+000 -2.000000000000000e-003 0.000000000000000
 2048 ALE2 QUAD4 1676 1669 1564 1567 MAT 2
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 250.0 NUE 0.0 DENS 500.0
+MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 5 DENS 0
+MAT 5 ELAST_CoupNeoHooke YOUNG 250.0 NUE 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 //CURVE1 on Explicit FUNC f(t)=exp(1-1:t) c1 1.0 c2 1.0
 CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1834 QUANTITY dispx VALUE -3.35273417603385818e-05 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 1834 QUANTITY dispy VALUE -3.63800947014412642e-04 TOLERANCE 1e-9
-FLUID DIS fluid NODE 2155 QUANTITY vely VALUE 3.43355116927776538e-04 TOLERANCE 1e-8
-FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE -2.45587858190825757e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1834 QUANTITY dispx VALUE -3.34920672276418737e-05 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 1834 QUANTITY dispy VALUE -3.63727504237473982e-04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 2155 QUANTITY vely VALUE 3.43128636138521307e-04 TOLERANCE 1e-8
+FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE -2.45498696659764972e-03 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

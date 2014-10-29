@@ -102,6 +102,10 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   if (aledis->NumGlobalNodes()==0)
   {
     DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+    // setup material in every ALE element
+    Teuchos::ParameterList params;
+    params.set<std::string>("action", "setup_material");
+    aledis->Evaluate(params);
   }
   else
     dserror("Providing an ALE mesh is not supported for problemtype FS3I.");

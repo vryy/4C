@@ -310,19 +310,56 @@ private:
       bool incremental,
       std::vector<double>& displacements);
 
-  void static_ke_nonlinear(DRT::Discretization& dis,
-      const std::vector<int> &lm,
-      Epetra_SerialDenseMatrix *sys_mat, Epetra_SerialDenseVector& residual,
-      const std::vector<double>& my_dispnp,
-      Teuchos::ParameterList &params);
+  /*! \brief evaluate element quantities for nonlinear case
+   *
+   *  we can handle st.venant kirchoff material and many materials
+   *  from the elast hyper toolbox.
+   *
+   *  \note this routine was copied from DRT::ELEMENTS::Wall1
+   */
+  void static_ke_nonlinear(
+      const std::vector<int> & lm,
+      const std::vector<double> & disp,
+      Epetra_SerialDenseMatrix * stiffmatrix, Epetra_SerialDenseVector * force,
+      Teuchos::ParameterList& params);
+
+
+  void CallMatGeoNonl(
+      const Epetra_SerialDenseVector& strain, ///< Green-Lagrange strain vector
+      Epetra_SerialDenseMatrix& stress,///< stress vector
+      Epetra_SerialDenseMatrix& C,///< elasticity matrix
+      const int numeps,///< number of strains
+      Teuchos::RCP<const MAT::Material> material,///< the material data
+      Teuchos::ParameterList& params///< element parameter list
+      );
+
+  void MaterialResponse3dPlane(
+      Epetra_SerialDenseMatrix& stress,
+      Epetra_SerialDenseMatrix& C,
+      const Epetra_SerialDenseVector& strain,
+      Teuchos::ParameterList& params);
+
+  void MaterialResponse3d(
+    LINALG::Matrix<6,1>* stress,
+    LINALG::Matrix<6,6>* cmat,
+    const LINALG::Matrix<6,1>* glstrain,
+    Teuchos::ParameterList& params
+    );
+
+  void GreenLagrangePlane3d(
+    const Epetra_SerialDenseVector& glplane,
+    LINALG::Matrix<6, 1>& gl3d);
 
   void edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
-                     double* length, double* sin_alpha, double* cos_alpha);
-  double ale2_area_tria(const Epetra_SerialDenseMatrix& xyze, int i, int j, int k);
-  void ale2_tors_spring_tri3(Epetra_SerialDenseMatrix* sys_mat, const Epetra_SerialDenseMatrix& xyze);
-  void ale2_tors_spring_quad4(Epetra_SerialDenseMatrix* sys_mat, const Epetra_SerialDenseMatrix& xyze);
+      double* length, double* sin_alpha, double* cos_alpha);
+  double ale2_area_tria(const Epetra_SerialDenseMatrix& xyze, int i, int j,
+      int k);
+  void ale2_tors_spring_tri3(Epetra_SerialDenseMatrix* sys_mat,
+      const Epetra_SerialDenseMatrix& xyze);
+  void ale2_tors_spring_quad4(Epetra_SerialDenseMatrix* sys_mat,
+      const Epetra_SerialDenseMatrix& xyze);
   void ale2_torsional(int i, int j, int k, const Epetra_SerialDenseMatrix& xyze,
-                      Epetra_SerialDenseMatrix* k_torsion);
+      Epetra_SerialDenseMatrix* k_torsion);
 
 
   void ale2_jacobianmatrix(const Epetra_SerialDenseMatrix& xrefe,
@@ -341,6 +378,59 @@ private:
       Epetra_SerialDenseMatrix& greenlag, Epetra_SerialDenseMatrix& deriv,
       Epetra_SerialDenseMatrix& xji, const std::vector<double>& my_dispnp);
 
+
+  void CalcBOpLin(Epetra_SerialDenseMatrix& boplin,
+      Epetra_SerialDenseMatrix& deriv,
+      Epetra_SerialDenseMatrix& xjm,
+      double& det,
+      const int iel
+      );
+
+  void BOpLinCure(
+      Epetra_SerialDenseMatrix& b_cure,
+      const Epetra_SerialDenseMatrix& boplin,
+      const Epetra_SerialDenseVector& F,
+      const int numeps, const int nd);
+
+  void JacobianMatrix(
+    const Epetra_SerialDenseMatrix& xrefe,
+    const Epetra_SerialDenseMatrix& deriv,
+    Epetra_SerialDenseMatrix& xjm,
+    double* det,
+    const int iel
+    );
+
+  void DefGrad(
+      Epetra_SerialDenseVector& F,
+      Epetra_SerialDenseVector& strain,
+      const Epetra_SerialDenseMatrix& xrefe,
+      const Epetra_SerialDenseMatrix& xcure,
+      Epetra_SerialDenseMatrix& boplin,
+      const int iel
+      );
+
+  void Kg(
+      Epetra_SerialDenseMatrix& estif,
+      const Epetra_SerialDenseMatrix& boplin,
+      const Epetra_SerialDenseMatrix& stress,
+      const double fac,
+      const int nd,
+      const int numeps);
+
+  void Keu(
+      Epetra_SerialDenseMatrix& estif,
+      const Epetra_SerialDenseMatrix& b_cure,
+      const Epetra_SerialDenseMatrix& C,
+      const double fac,
+      const int nd,
+      const int numeps);
+
+  void Fint(
+      const Epetra_SerialDenseMatrix& stress,
+      const Epetra_SerialDenseMatrix& b_cure,
+      Epetra_SerialDenseVector& intforce,
+      const double fac,
+      const int nd);
 
   //! action parameters recognized by ale2
   enum ActionType

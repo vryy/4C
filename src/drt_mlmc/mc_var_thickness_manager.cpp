@@ -68,7 +68,13 @@ discret_(discret)
   if (discret_->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
   // clone ale mesh from structure discretization
   if (aledis->NumGlobalNodes()==0)
+  {
     DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(discret_,aledis);
+    // setup material in every ALE element
+    Teuchos::ParameterList params;
+    params.set<std::string>("action", "setup_material");
+    aledis->Evaluate(params);
+  }
   else
     dserror("Reading an ALE mesh from the input file is not supported for this problem type.");
 

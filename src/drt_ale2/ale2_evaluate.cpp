@@ -83,7 +83,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-      static_ke_nonlinear(discretization,lm,&elemat1,elevec1,my_dispnp,params);
+      static_ke_nonlinear(lm,my_dispnp,&elemat1,&elevec1,params);
 
       break;
     }
@@ -758,52 +758,62 @@ void DRT::ELEMENTS::Ale2::static_ke(DRT::Discretization& dis,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2::static_ke_nonlinear(
-    DRT::Discretization& dis,
-    const std::vector<int> &lm,
-    Epetra_SerialDenseMatrix *sys_mat,
-    Epetra_SerialDenseVector& residual,
-    const std::vector<double>& my_dispnp,
-    Teuchos::ParameterList &params)
+    const std::vector<int>                    & lm         ,
+    const std::vector<double>                 & disp       ,
+    Epetra_SerialDenseMatrix             * stiffmatrix,
+    Epetra_SerialDenseVector             * force      ,
+    Teuchos::ParameterList& params )
 {
-  // declaration of variables
-  const DiscretizationType distype = this->Shape();
-  const int numnode = NumNode(); // number of nodes
-  const int numdf   = 2; // number of degrees of freedom
-  const int nd      = numnode * numdf; // number of nodal degrees of freedom
-  double det        = 0.0; // jacobian determinant wrt. xrefe
-  Epetra_SerialDenseVector funct(numnode); // shape functions
-  Epetra_SerialDenseMatrix deriv(2, numnode); // shape function derivatives
-  Epetra_SerialDenseMatrix xjm(2, 2); // jacobian matrix wrt. xrefe
-  Epetra_SerialDenseMatrix xji(2, 2); // inverse of jacobian matrix wrt. xrefe
-  Epetra_SerialDenseMatrix boplin(4, nd); // blin operator
-  Epetra_SerialDenseMatrix b_cure(4, nd); // blin operator in current configuration
-  Epetra_SerialDenseMatrix F(2, 2); // deformation gradient
-  Epetra_SerialDenseMatrix strain(2, 2); // strains
-  Epetra_SerialDenseMatrix stress(4, 4); // stresses
-  Epetra_SerialDenseMatrix C(4, 4); // constitutive matrix
-  Epetra_SerialDenseMatrix stiffmatrix(nd, nd); // stiffness matrix
-  Epetra_SerialDenseVector force(nd); // force vector
+  const int numnode = NumNode();
+  const int numdf   = 2;
+  const int nd      = numnode*numdf;
 
-  // --------------------------------------------------
-  // Now do the nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(2);
-  Epetra_SerialDenseVector              weights(numnode);
 
-  if(distype==DRT::Element::nurbs4
-     ||
-     distype==DRT::Element::nurbs9)
+   // general arrays
+  Epetra_SerialDenseVector funct(numnode);
+  Epetra_SerialDenseMatrix deriv;
+  deriv.Shape(2,numnode);
+  Epetra_SerialDenseMatrix xjm;
+  xjm.Shape(2,2);
+  Epetra_SerialDenseMatrix boplin;
+  boplin.Shape(4,2*numnode);
+  Epetra_SerialDenseVector F;
+  F.Size(4);
+  Epetra_SerialDenseVector strain;
+  strain.Size(4);
+  double det;
+  Epetra_SerialDenseMatrix xrefe(2,numnode);
+  Epetra_SerialDenseMatrix xcure(2,numnode);
+  const int numeps = 4;
+  Epetra_SerialDenseMatrix b_cure;
+  b_cure.Shape(numeps,nd);
+  Epetra_SerialDenseMatrix stress;
+  stress.Shape(4,4);
+  Epetra_SerialDenseMatrix C;
+  C.Shape(4,4);
+
+
+  /*------- get integraton data ---------------------------------------- */
+  const DiscretizationType distype = Shape();
+
+  // gaussian points
+  const DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
+
+  /*----------------------------------------------------- geometry update */
+  for (int k=0; k<numnode; ++k)
   {
-    DRT::NURBS::NurbsDiscretization* nurbsdis
-      =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+    xrefe(0,k) = Nodes()[k]->X()[0];
+    xrefe(1,k) = Nodes()[k]->X()[1];
+    xcure(0,k) = xrefe(0,k) + disp[k*numdf+0];
+    xcure(1,k) = xrefe(1,k) + disp[k*numdf+1];
 
-    bool zero_sized=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+  }
 
-    if(zero_sized)
-    {
-      return;
-    }
-
+  /*--------------------------------- get node weights for nurbs elements */
+  Epetra_SerialDenseVector weights(numnode);
+  if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs9)
+  {
     for (int inode=0; inode<numnode; ++inode)
     {
       DRT::NURBS::ControlPoint* cp
@@ -814,22 +824,11 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(
     }
   }
 
-  // get element node coordinates and calculate current configuration
-  Epetra_SerialDenseMatrix xrefe(2, numnode); // reference configuration
-  for (int k = 0; k < numnode; ++k)
-  {
-    xrefe(0, k) = Nodes()[k]->X()[0];
-    xrefe(1, k) = Nodes()[k]->X()[1];
-  }
 
-  // gaussian points
-  const DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
-
-  // integration loop
-  for (int ip = 0; ip < intpoints.nquad; ++ip)
+  /*=================================================== integration loops */
+  for (int ip=0; ip<intpoints.nquad; ++ip)
   {
-    // get gausspoints and integration weight
+    /*================================== gaussian point and weight at it */
     const double e1 = intpoints.qxg[ip][0];
     const double e2 = intpoints.qxg[ip][1];
     const double wgt = intpoints.qwgt[ip];
@@ -839,141 +838,50 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(
        &&
        distype != DRT::Element::nurbs9)
     {
-      // shape functions and their derivatives for polynomials
+    // shape functions and their derivatives for polynomials
       DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
       DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
     }
     else
     {
       // nurbs version
-      Epetra_SerialDenseVector gp(2);
-      gp(0)=e1;
-      gp(1)=e2;
-
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
-        (funct  ,
-         deriv  ,
-         gp     ,
-         myknots,
-         weights,
-         distype);
+      dserror("Not implemented yet!");
     }
 
-    // compute jacobian matrix wrt. xrefe
-    ale2_jacobianmatrix(xrefe, deriv, xjm, &det, numnode);
-    double fac = wgt * det;
+    /*--------------------------------------- compute jacobian Matrix */
+    JacobianMatrix(xrefe,deriv,xjm,&det,numnode);
 
-    // calculate shape function derivatives wrt. xrefe
-    Epetra_SerialDenseMatrix bop_temp(2, numnode);
-    ale2_bop(bop_temp, deriv, xjm, xji, numnode);
+    /*------------------------------------ integration factor  -------*/
+    const double fac = wgt * det;
+    /*----------------------------------- calculate operator Blin  ---*/
+    CalcBOpLin(boplin,deriv,xjm,det,numnode);
+    //cout.precision(16);
+    /*------------ calculate defgrad F^u, Green-Lagrange-strain E^u --*/
+    DefGrad(F,strain,xrefe,xcure,boplin,numnode);
 
-    // fill blin operator
-    for (int j = 0; j < numnode; j++)
-    {
-      boplin(0, 2 * j)     = bop_temp(0, j);
-      boplin(1, 2 * j + 1) = bop_temp(1, j);
-      boplin(2, 2 * j)     = bop_temp(1, j);
-      boplin(3, 2 * j + 1) = bop_temp(0, j);
-    }
 
-    // calculate deformation gradient F and Green-Lagrange deformations
-    ale2_greenlag(F, strain, deriv, xji, my_dispnp);
+    /*-calculate defgrad F in matrix notation and Blin in current conf.*/
+    BOpLinCure(b_cure,boplin,F,numeps,nd);
 
-    // write the deformation gradient F in matrix notation
-    Epetra_SerialDenseMatrix Fmatrix(4, 4);
-    Fmatrix(0, 0) = F(0, 0);
-    Fmatrix(0, 2) = 0.5 * F(0, 1);
-    Fmatrix(0, 3) = 0.5 * F(0, 1);
-    Fmatrix(1, 1) = F(1, 1);
-    Fmatrix(1, 2) = 0.5 * F(1, 0);
-    Fmatrix(1, 3) = 0.5 * F(1, 0);
-    Fmatrix(2, 1) = F(0, 1);
-    Fmatrix(2, 2) = 0.5 * F(0, 0);
-    Fmatrix(2, 3) = 0.5 * F(0, 0);
-    Fmatrix(3, 0) = F(1, 0);
-    Fmatrix(3, 2) = 0.5 * F(1, 1);
-    Fmatrix(3, 3) = 0.5 * F(1, 1);
 
-    // calculate b_cure operator
-    int err = b_cure.Multiply('T', 'N', 1.0, Fmatrix, boplin, 0.0);
-    if (err != 0)
-      dserror("Multiply failed");
+    CallMatGeoNonl(strain,stress,C,numeps,Material(),params);
 
-    // make 3D equivalent of Green-Lagrange strain
-    LINALG::Matrix<6, 1> gl(false);
-    gl(0) = strain(0, 0); // E_{11}
-    gl(1) = strain(1, 1); // E_{22}
-    gl(2) = 0.0; // E_{33}
-    gl(3) = strain(0, 1) + strain(1, 0); // 2*E_{12}=E_{12}+E_{21}
-    gl(4) = 0.0; // 2*E_{23}
-    gl(5) = 0.0; // 2*E_{31}
 
-    // call 3D stress response under plain strain
-    LINALG::Matrix<6, 1> pk2(true); // Piola-Kirchhoff 2 stresses (must be zerofied!)
-    LINALG::Matrix<6, 6> cmat(true); // constitutive matrix (must be zerofied!)
-    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<
-        MAT::So3Material>(Material(), true);
-    so3mat->Evaluate(NULL, &gl, params, &pk2, &cmat, Id());
 
-    // transform 2nd Piola-Kirchhoff stress back to 2d stress matrix
-    memset(stress.A(), 0, stress.M() * stress.N() * sizeof(double)); // set all values to zero
-    stress(0, 0) = stress(3, 3) = pk2(0); // S_{11}
-    stress(1, 1) = stress(2, 2) = pk2(1); // S_{22}
-    stress(0, 2) = stress(1, 3) = stress(3, 1) = stress(2, 0) = pk2(3); // S_{12}
+    /*---------------------- geometric part of stiffness matrix kg ---*/
+    if (stiffmatrix) Kg(*stiffmatrix,boplin,stress,fac,nd,numeps);
 
-    // transform elasticity matrix  back to 2d matrix
-    C(0, 0) = cmat(0, 0); // C_{1111}
-    C(0, 1) = cmat(0, 1); // C_{1122}
-    C(0, 2) = cmat(0, 3); // C_{1112}
-    C(0, 3) = cmat(0, 3); // C_{1112} = C_{1121}
+    /*------------------ elastic+displacement stiffness matrix keu ---*/
+    if (stiffmatrix) Keu(*stiffmatrix,b_cure,C,fac,nd,numeps);
 
-    C(1, 0) = cmat(1, 0); // C_{2211}
-    C(1, 1) = cmat(1, 1); // C_{2222}
-    C(1, 2) = cmat(1, 3); // C_{2212}
-    C(1, 3) = cmat(1, 3); // C_{2221} = C_{2212}
+    /*--------------- nodal forces fi from integration of stresses ---*/
+    if (force) Fint(stress,b_cure,*force,fac,nd);
 
-    C(2, 0) = cmat(3, 0); // C_{1211}
-    C(2, 1) = cmat(3, 1); // C_{1222}
-    C(2, 2) = cmat(3, 3); // C_{1212}
-    C(2, 3) = cmat(3, 3); // C_{1221} = C_{1212}
 
-    C(3, 0) = cmat(3, 0); // C_{2111} = C_{1211}
-    C(3, 1) = cmat(3, 1); // C_{2122} = C_{1222}
-    C(3, 2) = cmat(3, 3); // C_{2112} = C_{1212}
-    C(3, 3) = cmat(3, 3); // C_{2121} = C_{1212}
+  } // for (int ip=0; ip<totngp; ++ip)
 
-    // geometric part of stiffness matrix k_g perform B^T * SIGMA * B * fac
-    Epetra_SerialDenseMatrix dumdum(4, nd); // temporary variable
-    err = dumdum.Multiply('N', 'N', 1.0, stress, boplin, 0.0);
-    if (err != 0)
-      dserror("Multiply failed");
-    err = (*sys_mat).Multiply('T', 'N', fac, boplin, dumdum, 1.0);
-    if (err != 0)
-      dserror("Multiply failed");
-
-    // linear stiffness matrix k_eu perform B_cure^T * C * B_cure * fac
-    err = dumdum.Multiply('N', 'N', 1.0, C, b_cure, 0.0);
-    if (err != 0)
-      dserror("Multiply failed");
-    err = (*sys_mat).Multiply('T', 'N', fac, b_cure, dumdum, 1.0);
-    if (err != 0)
-      dserror("Multiply failed");
-
-    // compute residual forces
-    Epetra_SerialDenseMatrix stress_vec(4, 1); // stress vector
-    stress_vec(0, 0) = stress(0, 0);
-    stress_vec(1, 0) = stress(1, 1);
-    stress_vec(2, 0) = stress(0, 2);
-    stress_vec(3, 0) = stress(0, 2);
-
-    // perform B_cure^T * S * fac
-    err = (residual).Multiply('T', 'N', fac, b_cure, stress_vec, 1.0);
-    if (err != 0)
-      dserror("Multiply failed");
-  }
   return;
 }
-
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 static void ale2_min_jaco(DRT::Element::DiscretizationType distyp,
@@ -1250,6 +1158,8 @@ void DRT::ELEMENTS::Ale2::ale2_bop(Epetra_SerialDenseMatrix& bop,
   return;
 }
 
+
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2::ale2_greenlag(
@@ -1295,3 +1205,385 @@ void DRT::ELEMENTS::Ale2::ale2_greenlag(
   return;
 }
 
+
+void DRT::ELEMENTS::Ale2::CalcBOpLin(Epetra_SerialDenseMatrix& boplin,
+                                     Epetra_SerialDenseMatrix& deriv,
+                                     Epetra_SerialDenseMatrix& xjm,
+                                     double& det,
+                                     const int iel)
+{
+
+  double dum;
+  double xji[2][2];
+  /*---------------------------------------------- inverse of jacobian ---*/
+  dum = 1.0/det;
+  xji[0][0] = xjm(1,1)* dum;
+  xji[0][1] =-xjm(0,1)* dum;
+  xji[1][0] =-xjm(1,0)* dum;
+  xji[1][1] = xjm(0,0)* dum;
+  /*----------------------------- get operator boplin of global derivatives -*/
+  /*-------------- some comments, so that even fluid people are able to
+   understand this quickly :-)
+   the Boplin looks like
+       | Nk,x    0   |
+       |   0    Nk,y |
+       | Nk,y    0   |
+       |  0     Nk,x |
+  */
+  for (int inode=0; inode<iel; inode++)
+  {
+    int dnode = inode*2;
+
+    boplin(0,dnode+0) = deriv(0,inode)*xji[0][0] + deriv(1,inode)*xji[0][1];
+    boplin(1,dnode+1) = deriv(0,inode)*xji[1][0] + deriv(1,inode)*xji[1][1];
+    boplin(2,dnode+0) = boplin(1,dnode+1);
+    boplin(3,dnode+1) = boplin(0,dnode+0);
+  } /* end of loop over nodes */
+  return;
+}
+
+
+/*-----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::JacobianMatrix(
+  const Epetra_SerialDenseMatrix& xrefe,
+  const Epetra_SerialDenseMatrix& deriv,
+  Epetra_SerialDenseMatrix& xjm,
+  double* det,
+  const int iel
+)
+{
+  memset(xjm.A(),0,xjm.N()*xjm.M()*sizeof(double));
+
+  for (int k=0; k<iel; k++)
+  {
+    xjm(0,0) += deriv(0,k) * xrefe(0,k);
+    xjm(0,1) += deriv(0,k) * xrefe(1,k);
+    xjm(1,0) += deriv(1,k) * xrefe(0,k);
+    xjm(1,1) += deriv(1,k) * xrefe(1,k);
+  }
+
+/*------------------------------------------ determinant of jacobian ---*/
+  *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
+
+  if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n",*det,Id());
+/*----------------------------------------------------------------------*/
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::DefGrad(Epetra_SerialDenseVector& F,
+                           Epetra_SerialDenseVector& strain,
+                           const Epetra_SerialDenseMatrix& xrefe,
+                           const Epetra_SerialDenseMatrix& xcure,
+                           Epetra_SerialDenseMatrix& boplin,
+                           const int iel)
+{
+  /*------------------calculate defgrad --------- (Summenschleife->+=) ---*
+  defgrad looks like:
+
+        |  1 + Ux,X  |
+        |  1 + Uy,Y  |
+        |      Ux,Y  |
+        |      Uy,X  |
+  */
+
+  memset(F.A(),0,F.N()*F.M()*sizeof(double));
+
+  F[0] = 1;
+  F[1] = 1;
+  for (int inode=0; inode<iel; inode++)
+  {
+     F[0] += boplin(0,2*inode)   * (xcure(0,inode) - xrefe(0,inode));  // F_11
+     F[1] += boplin(1,2*inode+1) * (xcure(1,inode) - xrefe(1,inode));  // F_22
+     F[2] += boplin(2,2*inode)   * (xcure(0,inode) - xrefe(0,inode));  // F_12
+     F[3] += boplin(3,2*inode+1) * (xcure(1,inode) - xrefe(1,inode));  // F_21
+  } /* end of loop over nodes */
+
+  /*-----------------------calculate Green-Lagrange strain E -------------*/
+  strain[0] = 0.5 * (F[0] * F[0] + F[3] * F[3] - 1.0);  // E_11
+  strain[1] = 0.5 * (F[2] * F[2] + F[1] * F[1] - 1.0);  // E_22
+  strain[2] = 0.5 * (F[0] * F[2] + F[3] * F[1]);        // E_12
+  strain[3] = strain[2];                                // E_21
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::Kg(Epetra_SerialDenseMatrix& estif,
+                                 const Epetra_SerialDenseMatrix& boplin,
+                                 const Epetra_SerialDenseMatrix& stress,
+                                 const double fac,
+                                 const int nd,
+                                 const int numeps)
+{
+  /*---------------------------------------------- perform B^T * SIGMA * B*/
+  for(int i=0; i<nd; i++)
+     for(int j=0; j<nd; j++)
+      for(int r=0; r<numeps; r++)
+         for(int m=0; m<numeps; m++)
+            estif(i,j) += boplin(r,i)*stress(r,m)*boplin(m,j)*fac;
+
+  return;
+
+}
+
+/*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::Keu(Epetra_SerialDenseMatrix& estif,
+                                  const Epetra_SerialDenseMatrix& b_cure,
+                                  const Epetra_SerialDenseMatrix& C,
+                                  const double fac,
+                                  const int nd,
+                                  const int numeps)
+{
+
+  /*------------- perform B_cure^T * D * B_cure, whereas B_cure = F^T * B */
+  for(int i=0; i<nd; i++)
+     for(int j=0; j<nd; j++)
+        for(int k=0; k<numeps; k++)
+           for(int m=0; m<numeps; m++)
+             estif(i,j) +=  b_cure(k,i)*C(k,m)*b_cure(m,j)*fac;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::Fint(const Epetra_SerialDenseMatrix& stress,
+                                   const Epetra_SerialDenseMatrix& b_cure,
+                                   Epetra_SerialDenseVector& intforce,
+                                   const double fac,
+                                   const int nd)
+
+{
+  Epetra_SerialDenseVector st;
+  st.Size(4);
+
+  st[0] = fac * stress(0,0);
+  st[1] = fac * stress(1,1);
+  st[2] = fac * stress(0,2);
+  st[3] = fac * stress(0,2);
+
+  for(int i=0; i<nd; i++)
+    for(int j=0; j<4; j++)
+      intforce[i] += b_cure(j,i)*st[j];
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::CallMatGeoNonl(
+  const Epetra_SerialDenseVector& strain,  ///< Green-Lagrange strain vector
+  Epetra_SerialDenseMatrix& stress,  ///< stress vector
+  Epetra_SerialDenseMatrix& C,  ///< elasticity matrix
+  const int numeps,  ///< number of strains
+  Teuchos::RCP<const MAT::Material> material,  ///< the material data
+  Teuchos::ParameterList& params ///< element parameter list
+)
+{
+
+  /*--------------------------- call material law -> get tangent modulus--*/
+  switch(material->MaterialType())
+  {
+    case INPAR::MAT::m_stvenant:/*----------------------- linear elastic ---*/
+    {
+      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(material.get());
+      double ym = actmat->Youngs();
+      double pv = actmat->PoissonRatio();
+
+  /*----------- material-tangente - plane strain, rotational symmetry ---*/
+
+      const double c1=ym/(1.0+pv);
+      const double b1=c1*pv/(1.0-2.0*pv);
+      const double a1=b1+c1;
+
+      C(0,0)=a1;
+      C(0,1)=b1;
+      C(0,2)=0.;
+      C(0,3)=0.;
+
+      C(1,0)=b1;
+      C(1,1)=a1;
+      C(1,2)=0.;
+      C(1,3)=0.;
+
+      C(2,0)=0.;
+      C(2,1)=0.;
+      C(2,2)=c1/2.;
+      C(2,3)=c1/2.;
+
+      C(3,0)=0.;
+      C(3,1)=0.;
+      C(3,2)=c1/2;
+      C(3,3)=c1/2;
+
+
+      /*-------------------------- evaluate 2.PK-stresses -------------------*/
+      /*------------------ Summenschleife -> += (2.PK stored as vector) ------*/
+
+      Epetra_SerialDenseVector svector;
+      svector.Size(3);
+
+      for (int k=0; k<3; k++)
+      {
+        for (int i=0; i<numeps; i++)
+        {
+          svector(k) += C(k,i) * strain(i);
+        }
+      }
+      /*------------------ 2.PK stored as matrix -----------------------------*/
+      stress(0,0)=svector(0);
+      stress(0,2)=svector(2);
+      stress(1,1)=svector(1);
+      stress(1,3)=svector(2);
+      stress(2,0)=svector(2);
+      stress(2,2)=svector(1);
+      stress(3,1)=svector(2);
+      stress(3,3)=svector(0);
+
+
+      break;
+    }
+    case INPAR::MAT::m_elasthyper: // general hyperelastic matrial (bborn, 06/09)
+    {
+      MaterialResponse3dPlane(stress,C,strain,params);
+      break;
+    }
+    default:
+    {
+      dserror("Invalid type of material law for wall element");
+      break;
+    }
+  } // switch(material->MaterialType())
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::MaterialResponse3dPlane(
+  Epetra_SerialDenseMatrix& stress,
+  Epetra_SerialDenseMatrix& C,
+  const Epetra_SerialDenseVector& strain,
+  Teuchos::ParameterList& params )
+{
+  // make 3d equivalent of Green-Lagrange strain
+  LINALG::Matrix<6,1> gl(false);
+  GreenLagrangePlane3d(strain,gl);
+
+  // call 3d stress response
+  LINALG::Matrix<6,1> pk2(true);  // must be zerofied!!!
+  LINALG::Matrix<6,6> cmat(true);  // must be zerofied!!!
+  MaterialResponse3d(&pk2, &cmat, &gl,params);
+
+// we have plain strain
+
+  // transform 2nd Piola--Kirchhoff stress back to 2d stress matrix
+  memset(stress.A(), 0, stress.M()*stress.N()*sizeof(double));  // zerofy
+  stress(0,0) = stress(3,3) = pk2(0);  // S_{11}
+  stress(1,1) = stress(2,2) = pk2(1);  // S_{22}
+  stress(0,2) = stress(1,3) = stress(3,1) = stress(2,0) = pk2(3); // S_{12}
+
+  // transform elasticity matrix  back to 2d matrix
+  C(0,0) = cmat(0,0);  // C_{1111}
+  C(0,1) = cmat(0,1);  // C_{1122}
+  C(0,2) = cmat(0,3);  // C_{1112}
+  C(0,3) = cmat(0,3);  // C_{1112} = C_{1121}
+
+  C(1,0) = cmat(1,0);  // C_{2211}
+  C(1,1) = cmat(1,1);  // C_{2222}
+  C(1,2) = cmat(1,3);  // C_{2212}
+  C(1,3) = cmat(1,3);  // C_{2221} = C_{2212}
+
+  C(2,0) = cmat(3,0);  // C_{1211}
+  C(2,1) = cmat(3,1);  // C_{1222}
+  C(2,2) = cmat(3,3);  // C_{1212}
+  C(2,3) = cmat(3,3);  // C_{1221} = C_{1212}
+
+  C(3,0) = cmat(3,0);  // C_{2111} = C_{1211}
+  C(3,1) = cmat(3,1);  // C_{2122} = C_{1222}
+  C(3,2) = cmat(3,3);  // C_{2112} = C_{1212}
+  C(3,3) = cmat(3,3);  // C_{2121} = C_{1212}
+
+  // leave this dump
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::MaterialResponse3d(
+  LINALG::Matrix<6,1>* stress,
+  LINALG::Matrix<6,6>* cmat,
+  const LINALG::Matrix<6,1>* glstrain,
+  Teuchos::ParameterList& params
+  )
+{
+
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  if(so3mat == Teuchos::null)
+    dserror("cast to So3Material failed!");
+
+  so3mat->Evaluate(NULL,glstrain,params,stress,cmat,Id());
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------*
+*-----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::GreenLagrangePlane3d(
+  const Epetra_SerialDenseVector& glplane, LINALG::Matrix<6, 1>& gl3d)
+{
+  gl3d(0) = glplane(0);             // E_{11}
+  gl3d(1) = glplane(1);             // E_{22}
+  gl3d(2) = 0.0;                    // E_{33}
+  gl3d(3) = glplane(2)+glplane(3);  // 2*E_{12}=E_{12}+E_{21}
+  gl3d(4) = 0.0;                    // 2*E_{23}
+  gl3d(5) = 0.0;                    // 2*E_{31}
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------*
+*-----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::BOpLinCure(
+    Epetra_SerialDenseMatrix& b_cure,
+    const Epetra_SerialDenseMatrix& boplin, const Epetra_SerialDenseVector& F,
+    const int numeps, const int nd)
+{
+
+
+     Epetra_SerialDenseMatrix Fmatrix;
+     Fmatrix.Shape(4,4);
+
+
+  /*---------------------------write Vector F as a matrix Fmatrix*/
+
+     Fmatrix(0,0) = F[0];
+     Fmatrix(0,2) = 0.5 * F[2];
+     Fmatrix(0,3) = 0.5 * F[2];
+     Fmatrix(1,1) = F[1];
+     Fmatrix(1,2) = 0.5 * F[3];
+     Fmatrix(1,3) = 0.5 * F[3];
+     Fmatrix(2,1) = F[2];
+     Fmatrix(2,2) = 0.5 * F[0];
+     Fmatrix(2,3) = 0.5 * F[0];
+     Fmatrix(3,0) = F[3];
+     Fmatrix(3,2) = 0.5 * F[1];
+     Fmatrix(3,3) = 0.5 * F[1];
+
+    /*-------------------------------------------------int_b_cure operator*/
+      memset(b_cure.A(),0,b_cure.N()*b_cure.M()*sizeof(double));
+      for(int i=0; i<numeps; i++)
+        for(int j=0; j<nd; j++)
+          for(int k=0; k<numeps; k++)
+            b_cure(i,j) += Fmatrix(k,i)*boplin(k,j);
+    /*----------------------------------------------------------------*/
+
+  return;
+}
