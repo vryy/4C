@@ -18,6 +18,7 @@
 
 #include "scatra_ele_calc.H"
 
+//forward declarations
 namespace MAT
 {
 class ScatraMat;
@@ -27,6 +28,9 @@ namespace DRT
 {
 namespace ELEMENTS
 {
+
+class ScaTraEleDiffManagerPoro;
+
 
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcPoro : public virtual ScaTraEleCalc<distype>
@@ -100,6 +104,38 @@ protected:
 //     const int                     numdofpernode
 //   );
 
+  //! read element coordinates, assuming they are all 3D and then project to the respective lower dimensional space
+  virtual void ReadElementCoordinatesAndProject(
+      const DRT::ELEMENTS::Transport*     ele
+  );
+
+  //! extract element based or nodal values
+  //  return extracted values of phinp
+  virtual std::vector<double> ExtractElementAndNodeValues(
+    DRT::ELEMENTS::Transport*  ele,
+    Teuchos::ParameterList&    params,
+    DRT::Discretization&       discretization,
+    const std::vector<int>&    lm
+  );
+
+  //! get the material parameters
+  virtual void GetMaterialParams(
+    const DRT::Element* ele,       //!< the element we are dealing with
+    double&             densn,     //!< density at t_(n)
+    double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+    double&             densam,    //!< density at t_(n+alpha_M)
+    Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
+    Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
+    double&             visc,       //!< fluid viscosity
+    const int           iquad=-1    //!< id of current gauss point (default = -1)
+  );
+
+  //! compute porosity based on solid, fluid and (potentially) scatra solution
+  virtual void ComputePorosity(
+      const DRT::Element* ele,       //!< the element we are dealing with
+      Teuchos::RCP<ScaTraEleDiffManager> diffmanager  //!< diffusion manager handling diffusivity / diffusivities
+    );
+
   //! material ScaTra
   virtual void MatScaTra(
     const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
@@ -113,25 +149,67 @@ protected:
     const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
 
-  double GetPorosityAtGP(const int  iquad);
 
+  //! set diffusivity for poro scatra problem (i.e. scale by porosity)
   void SetDiffusivity(const Teuchos::RCP<const MAT::ScatraMat>& material,
                      const int                                 k,
                      Teuchos::RCP<ScaTraEleDiffManager>        diffmanager,
                      const double                              scale);
 
+  //! set reaction coefficient for poro scatra problem (i.e. scale by porosity)
   void SetReaCoefficient(const Teuchos::RCP<const MAT::ScatraMat>& material,
                         const int                                 k,
                         Teuchos::RCP<ScaTraEleReaManager>         reamanager,
                         const double                              scale);
 
+  //! set densisties for poro scatra problem (i.e. scale by porosity)
   void SetDensities(double  porosity,
                    double& densn,    //!< density at t_(n)
                    double& densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
                    double& densam   //!< density at t_(n+alpha_M));
                    );
 
+  /*========================================================================*/
+  //! @name Galerkin approximation and related
+  /*========================================================================*/
+
+  //! initial node coordinates
+  LINALG::Matrix<my::nsd_,my::nen_> xyze0_;
+
 };
+
+/// ScaTraEleDiffManagerPoro implementation
+/*!
+  This class keeps all poro-specific transport parameter needed for the evaluation of an element. The
+  ScaTraEleDiffManagerPoro is derived from the standard ScaTraEleDiffManager.
+*/
+class ScaTraEleDiffManagerPoro : public ScaTraEleDiffManager
+{
+  public:
+
+    ScaTraEleDiffManagerPoro(int numscal):
+    ScaTraEleDiffManager(numscal),
+    porosity_(0.0)
+    {return;}
+
+    ~ScaTraEleDiffManagerPoro(){};
+
+    void SetPorosity(double porosity)
+    {
+      porosity_=porosity;
+    }
+
+    double GetPorosity() const
+    {
+      return porosity_;
+    }
+
+  protected:
+
+    //! porosity at gauss point
+    double porosity_;
+};
+
 }
 }
 

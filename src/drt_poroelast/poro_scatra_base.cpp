@@ -14,6 +14,7 @@
 
 #include "poro_scatra_base.H"
 #include "poro_base.H"
+#include "poroelast_utils.H"
 
 #include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_inpar/inpar_scatra.H"
@@ -100,6 +101,10 @@ void POROELAST::PORO_SCATRA_Base::SetupDiscretizations(const Epetra_Comm& comm)
   {
     // create the fluid scatra discretization
     DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroScatraCloneStrategy>(structdis,scatradis);
+
+    // assign materials. Order is important here!
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,scatradis);
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(fluiddis,scatradis);
   }
   else
   dserror("Structure AND ScaTra discretization present. This is not supported.");
@@ -162,7 +167,8 @@ void POROELAST::PORO_SCATRA_Base::SetVelocityFields()
       poro_->FluidField()->Velnp(), //velocity
       Teuchos::null, //fsvel
       Teuchos::null, //dofset
-      poro_->FluidField()->Discretization()); //discretization
+      poro_->FluidField()->Discretization(), //discretization
+      true); //set pressure
 }
 
 /*----------------------------------------------------------------------*

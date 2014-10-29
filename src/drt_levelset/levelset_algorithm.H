@@ -68,7 +68,7 @@ namespace SCATRA
 
     /// time loop
     void TimeLoop();
-    
+
     /// output solution and restart data to file
     void Output(const int num =0);
 
@@ -87,6 +87,7 @@ namespace SCATRA
       Teuchos::RCP<const Epetra_Vector> fsvel,
       Teuchos::RCP<const DRT::DofSet>   dofset,
       Teuchos::RCP<DRT::Discretization> dis,
+      bool setpressure=false,
       bool init=false);
 
     const Teuchos::RCP<const Epetra_Vector> GetNodalCurvature()
@@ -181,8 +182,8 @@ namespace SCATRA
     double thetareinit_;
 
   private:
-    
-    /// add parameters depending of the problem, i.e., loma, level-set, ... 
+
+    /// add parameters depending of the problem, i.e., loma, level-set, ...
     void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params);
 
     /// add parameters depending on the problem, i.e., loma, level-set, ... with special modifications for
@@ -215,7 +216,7 @@ namespace SCATRA
 
     /// clean necessary modifications to solve reinitialization equation within existing framework (helper function for ReinitEq())
     void FinishTimeLoopReinit();
-    
+
     /// setup the variables to do a new reinitialization time step (helper function for ReinitEq())
     void PrepareTimeStepReinit();
 

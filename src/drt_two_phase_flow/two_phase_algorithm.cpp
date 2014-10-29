@@ -492,6 +492,7 @@ void TWOPHASEFLOW::Algorithm::SetFluidValuesInScaTra(bool init)
         FluidField().Discretization()->GetDofSetProxy(),
         //FluidField().DofSet(),
         FluidField().Discretization(),
+        false,
         init);
   else // temporary solution, since level-set algorithm does not yet support gen-alpha
   {

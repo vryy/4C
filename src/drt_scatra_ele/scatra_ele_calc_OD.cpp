@@ -111,7 +111,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
   DRT::Element*                         ele, ///< the element those matrix is calculated
   Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
-  const int                             ndofpernodemesh
+  const int                             ndofpernodemesh ///< number of DOF of mesh displacement field
   )
 {
   //----------------------------------------------------------------------
@@ -326,7 +326,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODFluid(
   DRT::Element*                         ele, ///< the element those matrix is calculated
   Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
-  const int                             numdofpernode_fluid
+  const int                             numdofpernode_fluid ///< number of DOF of fluid field
   )
 {
   //----------------------------------------------------------------------

@@ -92,10 +92,17 @@ void POROELAST::PORO_SCATRA_Part_2WC::ReadRestart(int restart)
 
     SetTimeStep(PoroField()->Time(), restart);
 
+//    // Material pointers to other field were deleted during ReadRestart().
+//    // They need to be reset.
+//    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
+//                                                      PoroField()->FluidField()->Discretization());
+
     // Material pointers to other field were deleted during ReadRestart().
     // They need to be reset.
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
-                                                      PoroField()->FluidField()->Discretization());
+                                                      ScaTraField()->Discretization());
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->FluidField()->Discretization(),
+                                                      ScaTraField()->Discretization());
   }
 }
 

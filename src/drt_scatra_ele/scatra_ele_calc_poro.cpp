@@ -16,9 +16,11 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/scatra_mat.H"
+#include "../drt_mat/matlist.H"
 
 //#include "scatra_ele_parameter.H"
 //
@@ -28,9 +30,12 @@
 //#include "scatra_ele_action.H"
 //#include "scatra_ele.H"
 
+#include "scatra_ele.H"
+
 #include "scatra_ele_calc_poro.H"
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcPoro<distype> * DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(
@@ -57,6 +62,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype> * DRT::ELEMENTS::ScaTraEleCalcPoro<dis
 
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Done()
@@ -68,16 +74,18 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(const int numdofpernode,const int numscal)
   : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal)
 {
-
+  // initialization of diffusion manager (override initialization in base class)
+  my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerPoro(my::numscal_));
 }
 
-///*----------------------------------------------------------------------*
-// * Action type: Evaluate
+// /*----------------------------------------------------------------------*
+// * Action type: Evaluate                                    vuong 07/14 |
 // *----------------------------------------------------------------------*/
 //template <DRT::Element::DiscretizationType distype>
 //int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Evaluate(
@@ -148,7 +156,91 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(const int numdofper
 //}
 
 /*----------------------------------------------------------------------*
- |  Material ScaTra                                           |
+ | read element coordinates, assuming they are all 3D and then project to
+ | the respective lower dimensional space                vuong 10/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ReadElementCoordinatesAndProject(
+    const DRT::ELEMENTS::Transport*  ele
+    )
+{
+  //call base class
+  my::ReadElementCoordinatesAndProject(ele);
+
+  //copy initial node position
+  xyze0_= my::xyze_;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | extract element based or nodal values                     ehrl 12/13 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValues(
+  DRT::ELEMENTS::Transport*  ele,
+  Teuchos::ParameterList&    params,
+  DRT::Discretization&       discretization,
+  const std::vector<int>&    lm
+)
+{
+  const Teuchos::RCP<Epetra_MultiVector> pre = params.get< Teuchos::RCP<Epetra_MultiVector> >("pressure field");
+  LINALG::Matrix<1,my::nen_> eprenp;
+  DRT::UTILS::ExtractMyNodeBasedValues(ele,eprenp,pre,1);
+
+  //pressure values
+  for (int i=0;i<my::nen_;++i)
+  {
+    my::eprenp_(i) = eprenp(0,i);
+  }
+
+  return my::ExtractElementAndNodeValues(ele,params,discretization,lm);
+}
+
+/*----------------------------------------------------------------------*
+ |  get the material constants  (protected)                  vuong 10/14|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetMaterialParams(
+  const DRT::Element* ele,       //!< the element we are dealing with
+  double&             densn,     //!< density at t_(n)
+  double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+  double&             densam,    //!< density at t_(n+alpha_M)
+  Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager
+  Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
+  double&             visc,      //!< fluid viscosity
+  const int           iquad      //!< id of current gauss point
+  )
+{
+  //calculate gauss point porosity from fluid and solid and (potentially) scatra solution
+  ComputePorosity(ele,diffmanager);
+
+  // get the material
+  Teuchos::RCP<MAT::Material> material = ele->Material();
+
+  // get diffusivity / diffusivities
+  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  {
+    const Teuchos::RCP<const MAT::MatList>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
+    if (actmat->NumMat() < my::numscal_) dserror("Not enough materials in MatList.");
+
+    for (int k = 0;k<my::numscal_;++k)
+    {
+      int matid = actmat->MatID(k);
+      Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
+
+      my::Materials(singlemat,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    }
+  }
+  else
+    my::Materials(material,0,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+
+  return;
+} //ScaTraEleCalcPoro::GetMaterialParams
+
+/*----------------------------------------------------------------------*
+ |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
@@ -166,7 +258,11 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
   if(iquad==-1)
     dserror("no gauss point given for evaluation of scatra material. Check your input file.");
 
-  const double porosity = GetPorosityAtGP(iquad);
+  Teuchos::RCP<ScaTraEleDiffManagerPoro> porodiffmanager
+   = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerPoro>(diffmanager);
+
+  //read the porosity from the diffusion manager
+  const double porosity = porodiffmanager->GetPorosity();
 
   const Teuchos::RCP<const MAT::ScatraMat>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
@@ -184,28 +280,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
 } // ScaTraEleCalcPoro<distype>::MatScaTra
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetPorosityAtGP(const int  iquad)
-{
-  //access structure discretization
-  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->GetDis("structure");
-  //get corresponding fluid element (it has the same global ID as the scatra element)
-  DRT::Element* structele = structdis->gElement(my::eid_);
-  if (structele == NULL)
-    dserror("Structure element %i not on local processor", my::eid_);
-
-  const Teuchos::RCP<const MAT::StructPoro>& structmat
-            = Teuchos::rcp_dynamic_cast<const MAT::StructPoro>(structele->Material());
-  if(structmat == Teuchos::null)
-    dserror("invalid structure material for poroelasticity");
-
-  return structmat->GetPorosityAtGP(iquad);
-}
-
-
-/*----------------------------------------------------------------------*
+ |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDiffusivity(
@@ -220,6 +295,7 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDiffusivity(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetReaCoefficient(
@@ -235,6 +311,7 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetReaCoefficient(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDensities(
@@ -244,9 +321,83 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDensities(
     double& densam
     )
 {
+  //all densities are scaled by the porosity
   densn = porosity;
   densnp = porosity;
   densam = porosity;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  get the material constants  (protected)                  vuong 10/14|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
+    const DRT::Element* ele,       //!< the element we are dealing with
+    Teuchos::RCP<ScaTraEleDiffManager> diffmanager  //!< diffusion manager handling diffusivity / diffusivities
+  )
+{
+  Teuchos::RCP<ScaTraEleDiffManagerPoro> porodiffmanager
+   = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerPoro>(diffmanager);
+
+  if(porodiffmanager==Teuchos::null)
+    dserror("cast to ScaTraEleDiffManagerPoro failed!");
+
+  //gauss point displacements
+  LINALG::Matrix<my::nsd_,1> dispint(false);
+  dispint.Multiply(my::edispnp_,my::funct_);
+
+  //------------------------get determinant of Jacobian dX / ds
+  // transposed jacobian "dX/ds"
+  LINALG::Matrix<my::nsd_,my::nsd_> xjm0;
+  xjm0.MultiplyNT(my::deriv_,xyze0_);
+
+  // inverse of transposed jacobian "ds/dX"
+  LINALG::Matrix<my::nsd_,my::nsd_> xji0(true);
+  const double det0= xjm0.Determinant();
+
+  my::xjm_.MultiplyNT(my::deriv_,my::xyze_);
+  const double det = my::xjm_.Determinant();
+
+  // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
+  const double J = det/det0;
+
+  //fluid pressure at gauss point
+  const double pres = my::eprenp_.Dot(my::funct_);
+
+  //empty parameter list
+  Teuchos::ParameterList             params;
+
+  if(ele->NumMaterial()<2)
+    dserror("no secondary material available");
+
+  //here we rely that the structure material has been added as second material
+  Teuchos::RCP< MAT::StructPoro > structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele->Material(1));
+  if(structmat==Teuchos::null)
+    dserror("cast to MAT::StructPoro failed!");
+
+  //just evaluate the first scalar (used only in case of reactive porosity)
+  //TODO: extend to multiple scalars
+  const double phinp = my::ephinp_[0].Dot(my::funct_);
+  params.set<double>("scalar",phinp);
+
+  //use structure material to evaluate porosity
+  double porosity=0.0;
+  structmat->ComputePorosity( params,
+                              pres,
+                              J,
+                              -1,
+                              porosity,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              false);
+
+  //save porosity in diffusion manager for later access
+  porodiffmanager->SetPorosity(porosity);
 
   return;
 }

@@ -124,7 +124,8 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
   // (export to column map necessary for parallel evaluation)
   discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
   discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-  discret_->AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
+  discret_->AddMultiVectorToParameterList(eleparams,"acceleration field",acc_);
+  discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
 
   // provide displacement field in case of ALE
   if (isale_) discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);

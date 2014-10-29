@@ -280,7 +280,8 @@ private:
   Teuchos::RCP<Epetra_Vector>                   myphidtam_;
   //! all my (solution) vectors needed for element evaluation
   Teuchos::RCP<Epetra_MultiVector>     myscatraconvel_;
-  Teuchos::RCP<Epetra_MultiVector>     myscatraaccpre_;
+  Teuchos::RCP<Epetra_MultiVector>     myscatraacc_;
+  Teuchos::RCP<Epetra_MultiVector>     myscatrapre_;
   Teuchos::RCP<Epetra_MultiVector>     myscatrafsvel_;
 
 

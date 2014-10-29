@@ -131,7 +131,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   // (export to column map necessary for parallel evaluation)
   discret_->AddMultiVectorToParameterList(params,"convective velocity field",convel_);
   discret_->AddMultiVectorToParameterList(params,"velocity field",vel_);
-  discret_->AddMultiVectorToParameterList(params,"acceleration/pressure field",accpre_);
+  discret_->AddMultiVectorToParameterList(params,"acceleration field",acc_);
+  discret_->AddMultiVectorToParameterList(params,"pressure field",pre_);
 
   //provide displacement field in case of ALE
   params.set("isale",isale_);
@@ -237,7 +238,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       // (export to column map necessary for parallel evaluation)
       discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
       discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-      discret_->AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
+      discret_->AddMultiVectorToParameterList(eleparams,"acceleration field",acc_);
+      discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
       // and provide fine-scale velocity for multifractal subgrid-scale modeling only
       if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
         discret_->AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
@@ -604,7 +606,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     // (export to column map necessary for parallel evaluation)
     discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
     discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-    discret_->AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
+    discret_->AddMultiVectorToParameterList(eleparams,"acceleration field",acc_);
+    discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
 
     //provide displacement field in case of ALE
     if (isale_)
@@ -1041,7 +1044,8 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   // (export to column map necessary for parallel evaluation)
   discret_->AddMultiVectorToParameterList(condparams,"convective velocity field",convel_);
   discret_->AddMultiVectorToParameterList(condparams,"velocity field",vel_);
-  discret_->AddMultiVectorToParameterList(condparams,"acceleration/pressure field",accpre_);
+  discret_->AddMultiVectorToParameterList(condparams,"acceleration field",acc_);
+  discret_->AddMultiVectorToParameterList(condparams,"pressure field",pre_);
   if (isale_) discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
   // clear state

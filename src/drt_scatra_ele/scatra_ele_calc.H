@@ -146,7 +146,7 @@ namespace ELEMENTS
 
     //! extract element based or nodal values
     //  return extracted values of phinp
-    std::vector<double> ExtractElementAndNodeValues(
+    virtual std::vector<double> ExtractElementAndNodeValues(
       DRT::ELEMENTS::Transport*  ele,
       Teuchos::ParameterList&    params,
       DRT::Discretization&       discretization,

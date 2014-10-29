@@ -208,7 +208,8 @@ void MAT::StructPoroReaction::Reaction(double cnp, Teuchos::ParameterList& param
   double time = params.get<double>("total time",-1.0);
 
   if(time==-1.0)
-    dserror("time step or total time not available");
+    return;
+//    dserror("time step or total time not available");
 
  // double k = 1.0;
   double tau = 200.0*cnp;///(cnp+k);

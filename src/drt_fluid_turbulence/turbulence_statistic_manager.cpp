@@ -1009,7 +1009,8 @@ namespace FLD
 
           // further scatra fields
           scatrafieldvecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",myscatraconvel_));
-          scatrafieldvecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("acceleration/pressure field",myscatraaccpre_));
+          scatrafieldvecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("acceleration field",myscatraacc_));
+          scatrafieldvecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("pressure field",myscatrapre_));
 
           if (params_->sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC")!= "No"
               or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
@@ -1632,7 +1633,8 @@ namespace FLD
     myphiaf_ = scatra_timeint->Phiaf();
     myphiam_ = scatra_timeint->Phiam();
     myscatraconvel_ = scatra_timeint->ConVel();
-    myscatraaccpre_ = scatra_timeint->ConAccPre();
+    myscatraacc_ = scatra_timeint->ConAcc();
+    myscatrapre_ = scatra_timeint->Pre();
     myscatrafsvel_ = scatra_timeint->ConFsVel();
     myscatrahist_ = scatra_timeint->Hist();
     myphidtam_ = scatra_timeint->Phidtam();

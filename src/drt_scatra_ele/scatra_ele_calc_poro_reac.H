@@ -51,6 +51,18 @@ public:
 
 protected:
 
+  //! get the material parameters
+  virtual void GetMaterialParams(
+    const DRT::Element* ele,       //!< the element we are dealing with
+    double&             densn,     //!< density at t_(n)
+    double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+    double&             densam,    //!< density at t_(n+alpha_M)
+    Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
+    Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
+    double&             visc,       //!< fluid viscosity
+    const int           iquad=-1    //!< id of current gauss point (default = -1)
+  );
+
   //! material ScaTra
   virtual void MatScaTra(
     const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material

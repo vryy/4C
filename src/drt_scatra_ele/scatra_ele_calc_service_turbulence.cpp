@@ -1459,18 +1459,21 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
   // get data required for subgrid-scale velocity: acceleration and pressure
   if (scatrapara_->RBSubGrVel())
   {
-    const Teuchos::RCP<Epetra_MultiVector> accpre = params.get< Teuchos::RCP<Epetra_MultiVector> >("acceleration/pressure field");
-    LINALG::Matrix<nsd_+1,nen_> eaccprenp;
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,eaccprenp,accpre,nsd_+1);
+    const Teuchos::RCP<Epetra_MultiVector> acc = params.get< Teuchos::RCP<Epetra_MultiVector> >("acceleration field");
+    const Teuchos::RCP<Epetra_MultiVector> pre = params.get< Teuchos::RCP<Epetra_MultiVector> >("pressure field");
+    LINALG::Matrix<nsd_,nen_> eaccnp;
+    LINALG::Matrix<1,nen_> eprenp;
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,eaccnp,acc,nsd_);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,eprenp,pre,nsd_);
 
     // split acceleration and pressure values
     for (int i=0;i<nen_;++i)
     {
       for (int j=0;j<nsd_;++j)
       {
-        eaccnp_(j,i) = eaccprenp(j,i);
+        eaccnp_(j,i) = eaccnp(j,i);
       }
-      eprenp_(i) = eaccprenp(nsd_,i);
+      eprenp_(i) = eprenp(0,i);
     }
   }
 

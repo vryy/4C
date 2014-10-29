@@ -902,6 +902,7 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
                                                                                               FluidField().FsVel(),
                                                                                               FluidField().DofSet(),
                                                                                               FluidField().Discretization(),
+                                                                                              false,
                                                                                               init);
       else // temporary solution, since level-set algorithm does not yet support gen-alpha
       {
@@ -931,6 +932,7 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
                                                                                               FluidField().FsVel(),
                                                                                               FluidField().DofSet(),
                                                                                               FluidField().Discretization(),
+                                                                                              false,
                                                                                               init);
       else // temporary solution, since level-set algorithm does not yet support gen-alpha
       {

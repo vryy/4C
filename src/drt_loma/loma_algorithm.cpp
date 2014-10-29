@@ -317,7 +317,7 @@ void LOMA::Algorithm::OuterLoop()
 //  if (special_flow_ == "loma_channel_flow_of_height_2" && Step() < samstart_ )
 //       itmax_ = 1;
 //  else itmax_ = itmaxpre_;
-  
+
   // maximum number of iterations tolerance for outer iteration
   // reduced number of iterations for turbulent flow: only before sampling
   if (special_flow_ != "no" && Step() < samstart_ )
@@ -463,7 +463,8 @@ void LOMA::Algorithm::SetFluidValuesInScaTra()
                                    Teuchos::null,
                                    FluidField().FsVel(),
                                    Teuchos::null,
-                                   FluidField().Discretization());
+                                   FluidField().Discretization(),
+                                   true);
   }
   break;
   case INPAR::FLUID::timeint_one_step_theta:
@@ -474,7 +475,8 @@ void LOMA::Algorithm::SetFluidValuesInScaTra()
                                    Teuchos::null,
                                    FluidField().FsVel(),
                                    Teuchos::null,
-                                   FluidField().Discretization());
+                                   FluidField().Discretization(),
+                                   true);
   }
   break;
   default:

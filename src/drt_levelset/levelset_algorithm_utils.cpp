@@ -60,10 +60,11 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(
   Teuchos::RCP<const Epetra_Vector> fsvel,
   Teuchos::RCP<const DRT::DofSet>   dofset,
   Teuchos::RCP<DRT::Discretization> dis,
+  bool setpressure,
   bool init)
 {
   // call routine of base class
-  ScaTraTimIntImpl::SetVelocityField(convvel, acc, vel, fsvel, dofset, dis);
+  ScaTraTimIntImpl::SetVelocityField(convvel, acc, vel, fsvel, dofset, dis, setpressure);
 
   // manipulate velocity field away from the interface
   if (extract_interface_vel_)
@@ -99,7 +100,7 @@ void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(Teuchos::
     discret_->SetState("phizero", initialphireinit_);
     // TODO: RM if not needed
     discret_->SetState("phin", phin_);
-    
+
 #ifndef USE_PHIN_FOR_VEL
   if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
     CalcNodeBasedReinitVel();
@@ -374,7 +375,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
 
             // in case of further distypes, move the following block to a templated function
             {
-              // get number of element nodes 
+              // get number of element nodes
               const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
               //get number of space dimensions
               const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -1117,11 +1118,18 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
 
   // acceleration and pressure required for computation of subgrid-scale
   // velocity (always four components per node)
-  if (accpre_ != Teuchos::null)
+  if (acc_ != Teuchos::null)
   {
-    oldMulti = accpre_;
-    accpre_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,4,true));
-    LINALG::Export(*oldMulti, *accpre_);
+    oldMulti = acc_;
+    acc_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    LINALG::Export(*oldMulti, *acc_);
+  }
+
+  if (pre_ != Teuchos::null)
+  {
+    oldMulti = pre_;
+    pre_ = LINALG::CreateVector(*noderowmap,true);
+    LINALG::Export(*oldMulti, *pre_);
   }
 
   if (dispnp_ != Teuchos::null)

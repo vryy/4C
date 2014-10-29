@@ -104,6 +104,21 @@ namespace MAT
     In addition it provides poro specific functions, as giving the constitutive law
     for the porosity.
 
+    Main methods of this material are the ComputePorosity(...) methods, providing
+    the porosity and its derivatives. If the constitutive law is a governing equation
+    itself (for poro P1 elements, for instance), the material evaluates the
+    consitutive law itself and its derivatives in the ConstituitiveDerivatives(...)
+    methods.
+    All other Evaluate() methods are basically passed through to the underlying
+    structure material.
+
+    The poro material can save the porosity gauss point wise. Therefore it
+    has an additional setup method, giving the number of gauss points. This is
+    only (!) meant for post processing/visualization processes! The gauss point
+    wise saved porosity must not be used during simulation as it is not
+    guaranteed (and actually not the case) that the gauss point numbering
+    is the same for every element (especially for e.g. fluid and solid elements).
+
    \author vuong 10/14
    */
   class StructPoro: public So3Material
@@ -175,20 +190,7 @@ namespace MAT
         return params_->matid_;
       }
 
-      /// return porosity at gausspoints
-      Teuchos::RCP<std::vector<double> > Porosity() const
-      {
-        return porosity_;
-      }
-
-      /// return porosity at gausspoints of surface element
-      std::vector<double> SurfPorosity(int surfnum) const
-      {
-        dsassert(surfporosity_!=Teuchos::null,"surface porosity has not been evaluated");
-        return (*surfporosity_)[surfnum];
-      }
-
-      /// return porosity average
+      /// return porosity average (for post processing only!)
       double PorosityAv() const;
 
       /// return bulk modulus
@@ -209,7 +211,7 @@ namespace MAT
         return params_->initporosity_;
       }
 
-      /// return time deriviative of reference porosity (only nonzero with reaction)
+      /// return time derivative of reference porosity (only nonzero with reaction)
       virtual double RefPorosityTimeDeriv() const
       {
         return 0.0;
@@ -305,12 +307,6 @@ namespace MAT
       virtual MAT::PAR::Parameter* Parameter() const
       {
         return params_;
-      }
-
-      /// Return porosity evaluated at some gauss point.           %urrecha 04/12
-      double GetPorosityAtGP(int gp) const
-      {
-        return porosity_->at(gp);
       }
 
       //! @name Evaluation methods

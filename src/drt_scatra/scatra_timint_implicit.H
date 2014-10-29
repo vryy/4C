@@ -167,7 +167,8 @@ public:
     Teuchos::RCP<const Epetra_Vector> vel,     //!< velocity vector
     Teuchos::RCP<const Epetra_Vector> fsvel,   //!< fine-scale velocity vector
     Teuchos::RCP<const DRT::DofSet>   dofset,  //!< dofset pointer
-    Teuchos::RCP<DRT::Discretization> dis);    //!< fluid/structure discretization
+    Teuchos::RCP<DRT::Discretization> dis,     //!< fluid/structure discretization
+    bool setpressure=false);
 
   //! read restart data
   virtual void ReadRestart(int step) = 0;
@@ -258,7 +259,9 @@ public:
   Teuchos::RCP<Epetra_MultiVector> Disp() { return dispnp_; }
 
   //! return scalar field acceleration/history of convective velocity field at time step n+1
-  Teuchos::RCP<Epetra_MultiVector> ConAccPre() { return accpre_; }
+  Teuchos::RCP<Epetra_MultiVector> ConAcc() { return acc_; }
+
+  Teuchos::RCP<Epetra_MultiVector> Pre() { return pre_; }
 
   //! return scalar field fine-scale convective velocity at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConFsVel() { return fsvel_; }
@@ -935,7 +938,8 @@ protected:
   Teuchos::RCP<Epetra_MultiVector> fsvel_;
 
   //! acceleration and pressure required for computation of subgrid-scale velocity
-  Teuchos::RCP<Epetra_MultiVector> accpre_;
+  Teuchos::RCP<Epetra_MultiVector> acc_;
+  Teuchos::RCP<Epetra_Vector> pre_;
 
   //! displacements at time n+1 for ALE formulation
   Teuchos::RCP<Epetra_MultiVector> dispnp_;

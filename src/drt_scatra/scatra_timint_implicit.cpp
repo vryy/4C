@@ -129,7 +129,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   vel_(Teuchos::null),
   convel_(Teuchos::null),
   fsvel_(Teuchos::null),
-  accpre_(Teuchos::null),
+  acc_(Teuchos::null),
+  pre_(Teuchos::null),
   dispnp_(Teuchos::null),
   cdvel_(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
   densific_(0,0.0),
@@ -299,8 +300,8 @@ void SCATRA::ScaTraTimIntImpl::Init()
   vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
 
   // acceleration and pressure required for computation of subgrid-scale
-  // velocity (always four components per node)
-  accpre_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_+1,true));
+  acc_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
+  pre_ = LINALG::CreateVector(*noderowmap,true);
 
   if (isale_)
   {
@@ -1040,7 +1041,8 @@ Teuchos::RCP<const Epetra_Vector> acc,
 Teuchos::RCP<const Epetra_Vector> vel,
 Teuchos::RCP<const Epetra_Vector> fsvel,
 Teuchos::RCP<const DRT::DofSet>   dofset,
-Teuchos::RCP<DRT::Discretization> dis)
+Teuchos::RCP<DRT::Discretization> dis,
+bool setpressure)
 {
   //---------------------------------------------------------------------------
   // preliminaries
@@ -1066,7 +1068,8 @@ Teuchos::RCP<DRT::Discretization> dis)
 
   // boolean indicating whether acceleration vector exists
   // -> if yes, subgrid-scale velocity may need to be computed on element level
-  bool sgvelswitch = (acc != Teuchos::null);
+  //bool sgvelswitch = (acc != Teuchos::null);
+  const bool accswitch = (acc != Teuchos::null);
 
   // boolean indicating whether fine-scale velocity vector exists
   // -> if yes, multifractal subgrid-scale modeling is applied
@@ -1165,7 +1168,7 @@ Teuchos::RCP<DRT::Discretization> dis)
       //-----------------------------------------------------------------------
       // get acceleration, if required
       //-----------------------------------------------------------------------
-      if (sgvelswitch)
+      if (accswitch)
       {
         // get value of corresponding acceleration component
         double acceleration = (*acc)[lid];
@@ -1174,8 +1177,8 @@ Teuchos::RCP<DRT::Discretization> dis)
         if (havetorotate) acceleration = FLD::GetComponentOfRotatedVectorField(index,acc,lid,rotangle);
 
         // insert acceleration value into node-based vector
-        err = accpre_->ReplaceMyValue(lnodeid,index,acceleration);
-        if (err != 0) dserror("Error while inserting value into vector accpre_!");
+        err = acc_->ReplaceMyValue(lnodeid,index,acceleration);
+        if (err != 0) dserror("Error while inserting value into vector acc_!");
       }
 
       //-----------------------------------------------------------------------
@@ -1198,8 +1201,11 @@ Teuchos::RCP<DRT::Discretization> dis)
     //-------------------------------------------------------------------------
     // transfer of pressure dofs, if required
     //-------------------------------------------------------------------------
-    if (sgvelswitch)
+    if (setpressure)
     {
+      if(convvel==Teuchos::null)
+        dserror("Velocity state is Teuchos::null. Velocity state is needed to extract pressure from");
+
       // get global and local ID
       const int gid = nodedofs[numdim];
       // const int lid = dofrowmap->LID(gid);
@@ -1210,8 +1216,8 @@ Teuchos::RCP<DRT::Discretization> dis)
       double pressure = (*convvel)[lid];
 
       // insert pressure value into node-based vector
-      err = accpre_->ReplaceMyValue(lnodeid,numdim,pressure);
-      if (err != 0) dserror("Error while inserting value into vector accpre_!");
+      err = pre_->ReplaceMyValue(lnodeid,0,pressure);
+      if (err != 0) dserror("Error while inserting value into vector pre_!");
     }
 
   }
@@ -2347,7 +2353,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // (export to column map necessary for parallel evaluation)
   discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
   discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-  discret_->AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
+  discret_->AddMultiVectorToParameterList(eleparams,"acceleration field",acc_);
+  discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
   // and provide fine-scale velocity for multifractal subgrid-scale modeling only
   if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
     discret_->AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);

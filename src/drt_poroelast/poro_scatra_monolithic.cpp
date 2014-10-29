@@ -14,6 +14,7 @@
 
 
 #include "poro_base.H"
+#include "poroelast_utils.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_adapter/ad_fld_poro.H"
@@ -134,6 +135,13 @@ void POROELAST::PORO_SCATRA_Mono::ReadRestart(int restart)
       AddDofSets(true);
 
     SetTimeStep(PoroField()->Time(), restart);
+
+    // Material pointers to other field were deleted during ReadRestart().
+    // They need to be reset.
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
+                                                      ScaTraField()->Discretization());
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->FluidField()->Discretization(),
+                                                      ScaTraField()->Discretization());
   }
 }
 
@@ -1196,6 +1204,10 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatScatra()
       sparams_struct,
       "dispnp",
       ScaTraField()->Disp());
+  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
+      sparams_struct,
+      "pressure field",
+      ScaTraField()->Pre());
 
   ScaTraField()->Discretization()->ClearState();
   ScaTraField()->Discretization()->SetState(0,"hist",ScaTraField()->Hist());
@@ -1246,6 +1258,10 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatScatra()
       sparams_fluid,
       "dispnp",
       ScaTraField()->Disp());
+  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
+      sparams_fluid,
+      "pressure field",
+      ScaTraField()->Pre());
 
   ScaTraField()->Discretization()->ClearState();
   ScaTraField()->Discretization()->SetState(0,"hist",ScaTraField()->Hist());
