@@ -29,8 +29,9 @@ svel_(Teuchos::null),
 singlesteponly_(false)
 {
   stime_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, 0.0));
-  sdis_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), false));
-  svel_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), false));
+  // initialize to zero!! ResizeStorage only initializes the new vectors
+  sdis_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  svel_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 }
 
 /*----------------------------------------------------------------------*/

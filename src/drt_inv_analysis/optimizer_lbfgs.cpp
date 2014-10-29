@@ -328,7 +328,6 @@ void INVANA::OptimizerLBFGS::ComputeDirection()
       aa += a;
       bb += b;
     }
-    if (aa < 1.0e-16) std::cout << "first aa is small " << 1/aa*bb << std::endl;
     alpha.push_back(1/aa*bb);
 
     ind=0;
@@ -353,7 +352,6 @@ void INVANA::OptimizerLBFGS::ComputeDirection()
       nom += nomi;
       denom += denomi;
     }
-    if (denom < 1.0e-16) std::cout << "denom is small" << std::endl;
     double gamma=nom/denom;
     p_->Scale(gamma);
   }
@@ -373,7 +371,6 @@ void INVANA::OptimizerLBFGS::ComputeDirection()
       aa += a;
       bb += b;
     }
-    if (aa < 1.0e-16) std::cout << "second aa is small" << std::endl;
     beta=1/aa*bb;
     double alphac=alpha.back();
     alpha.pop_back();
