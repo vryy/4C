@@ -24,6 +24,9 @@ ADAPTER::AleFluidWrapper::AleFluidWrapper(Teuchos::RCP<Ale> ale)
   // create the FSI interface
   interface_ = Teuchos::rcp(new ALENEW::UTILS::MapExtractor);
   interface_->Setup(*Discretization());
+  // extend dirichlet map by the dof
+  if (interface_->FSICondRelevant())
+    SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_part_fsi,interface_);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -38,7 +41,11 @@ ADAPTER::AleFluidWrapper::Interface() const
 /*----------------------------------------------------------------------------*/
 int ADAPTER::AleFluidWrapper::Solve()
 {
-  Evaluate();
+  if (interface_->FSICondRelevant())
+    Evaluate(Teuchos::null,ALENEW::UTILS::MapExtractor::dbc_set_part_fsi);
+  else
+    Evaluate();
+
   int err = AleWrapper::Solve();
   UpdateIter();
 

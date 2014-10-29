@@ -558,6 +558,7 @@ void ALENEW::Ale::SetupDBCMapEx(
   }
   case ALENEW::UTILS::MapExtractor::dbc_set_x_fsi:
   case ALENEW::UTILS::MapExtractor::dbc_set_biofilm:
+  case ALENEW::UTILS::MapExtractor::dbc_set_part_fsi:
   {
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
     condmaps.push_back(interface->FSICondMap());

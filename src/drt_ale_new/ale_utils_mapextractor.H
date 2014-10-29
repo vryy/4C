@@ -48,11 +48,12 @@ namespace UTILS
     /// application-specific types of Dirichlet sets
     enum AleDBCSetType
     {
-      dbc_set_std     = 0, ///< type of Dirichlet set in standard ALE-FSI
-      dbc_set_x_ff    = 1, ///< Dirichlet sets include fluid-fluid-interface DOF (during Newton iteration of XFFSI)
-      dbc_set_x_fsi   = 2, ///< Dirichlet sets include ALE-sided FSI interface DOF (in ALE-relaxation step of XFFSI)
-      dbc_set_biofilm = 3, ///< type of Dirichlet set for biofilm applications
-      dbc_set_count   = 4  ///< total number of types
+      dbc_set_std      = 0, ///< type of Dirichlet set in standard ALE-FSI
+      dbc_set_x_ff     = 1, ///< Dirichlet sets include fluid-fluid-interface DOF (during Newton iteration of XFFSI)
+      dbc_set_x_fsi    = 2, ///< Dirichlet sets include ALE-sided FSI interface DOF (in ALE-relaxation step of XFFSI)
+      dbc_set_biofilm  = 3, ///< type of Dirichlet set for biofilm applications
+      dbc_set_part_fsi = 4, ///< type of Dirichlet set for partitioned FSI
+      dbc_set_count    = 5  ///< total number of types
     };
 
     /// setup the whole thing
