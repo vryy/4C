@@ -310,7 +310,8 @@ private:
       bool incremental,
       std::vector<double>& displacements);
 
-  void static_ke_nonlinear( const std::vector<int> &lm,
+  void static_ke_nonlinear(DRT::Discretization& dis,
+      const std::vector<int> &lm,
       Epetra_SerialDenseMatrix *sys_mat, Epetra_SerialDenseVector& residual,
       const std::vector<double>& my_dispnp,
       Teuchos::ParameterList &params);

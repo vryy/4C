@@ -59,9 +59,16 @@ void ALE::UTILS::AleCloneStrategy::CheckMaterialType(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
-  INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
-  if (mtype != INPAR::MAT::m_stvenant)
-    dserror("Material with ID %d is not admissible for ALE elements",matid);
+  INPAR::MAT::MaterialType mtype =
+      DRT::Problem::Instance()->Materials()->ById(matid)->Type();
+
+  if (mtype != INPAR::MAT::m_elasthyper and
+      mtype != INPAR::MAT::m_stvenant)
+  {
+    dserror("ERROR: Illegal material type for ALE. Only materials allowed that do "
+        "not store Gauss point data and do not need additional data from the "
+        "element line definition.");
+  }
 }
 
 

@@ -61,7 +61,8 @@ SEMI_SMOOTH_CT                  100
 SYSTEM                          saddlepoint
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
+MAXITER                         5
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     standard
 SEARCH_ALGORITHM                BinaryTree
@@ -93,20 +94,11 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 0.0 -2.2
 ----------------------------------------------------------------------CURVE2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 1.2 1.2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.21322214706112924e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.50727579405892623e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 1.66983972703718523e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.31076379491025020e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.21853683143212182e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.50398706310225067e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 1.67314718402393654e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.30666038136642007e-03 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  12

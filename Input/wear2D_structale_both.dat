@@ -60,7 +60,7 @@ SEMI_SMOOTH_CN                  100
 SEMI_SMOOTH_CT                  100
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        incr_lin
+ALE_TYPE                        springs
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
@@ -91,20 +91,11 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 0.0 -2.2
 ----------------------------------------------------------------------CURVE2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 1.2 1.2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.08674392072183323e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 7.38580486668069525e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 6.75849992286314816e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 9.92533439848414245e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 4.59844264043263173e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.54633833686096678e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 1.43452393308944881e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.41705546983743047e-02 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          14

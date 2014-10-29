@@ -20,6 +20,8 @@ Maintainer: Philipp Farah
 #include "../drt_mortar/mortar_manager_base.H"
 
 #include "../drt_ale/ale.H"
+#include "../drt_adapter/ad_ale.H"
+#include "../drt_adapter/ad_ale_wear.H"
 
 #include "../drt_contact/meshtying_contact_bridge.H"
 #include "../drt_contact/contact_wear_lagrange_strategy.H"
@@ -58,14 +60,19 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
       DRT::Problem::Instance()->GetDis("structure")));
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureField());
 
-  // create ale
-  Teuchos::RCP<ALE::AleBaseAlgorithm> ale = Teuchos::rcp(new ALE::AleBaseAlgorithm(
-          DRT::Problem::Instance()->StructuralDynamicParams(),
-          DRT::Problem::Instance()->GetDis("ale")));
-  ale_ = ale->AleFieldrcp();
-
   if(structure_ == Teuchos::null)
     dserror("ERROR: cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
+
+  // ask base algorithm for the ale time integrator
+  Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(
+      DRT::Problem::Instance()->StructuralDynamicParams(),
+      DRT::Problem::Instance()->GetDis("ale")));
+  ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleWearWrapper>(ale->AleField());
+  if(ale_ == Teuchos::null)
+     dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
+
+  // create empty operator
+  ale_->CreateSystemMatrix();
 
   // contact/meshtying manager
   cmtman_= StructureField()->MeshtyingContactBridge()->ContactManager();
@@ -104,21 +111,10 @@ WEAR::Algorithm::~Algorithm()
  *----------------------------------------------------------------------*/
 void WEAR::Algorithm::CheckInput()
 {
-  Teuchos::ParameterList apara = DRT::Problem::Instance()->AleDynamicParams();
-  Teuchos::ParameterList cpara = interfaces_[0]->IParams();
-
-  int aletype = DRT::INPUT::IntegralValue<int>(apara, "ALE_TYPE");
-  INPAR::CONTACT::WearConf wconf = DRT::INPUT::IntegralValue<
-      INPAR::CONTACT::WearConf>(DRT::Problem::Instance()->WearParams(),
-      "WEARCOEFF_CONF");
-
-  if (aletype == INPAR::ALE::incr_lin and
-      wconf   == INPAR::CONTACT::wear_conf_mat)
-    dserror("ERROR: ALE-type and wear configuration not compatible!");
-
-  if (aletype == INPAR::ALE::classic_lin and
-      wconf   == INPAR::CONTACT::wear_conf_sp)
-    dserror("ERROR: ALE-type and wear configuration not compatible!");
+//  Teuchos::ParameterList apara = DRT::Problem::Instance()->AleDynamicParams();
+//
+//  INPAR::ALE::AleDynamic aletype =
+//      DRT::INPUT::IntegralValue<INPAR::ALE::AleDynamic>(apara, "ALE_TYPE");
 
   return;
 }

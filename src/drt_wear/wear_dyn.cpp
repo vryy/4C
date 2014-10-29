@@ -45,8 +45,8 @@ void wear_dyn_drt(int restart)
 
   //check if quasistatic analysis
   if(sdyn.get<std::string>("DYNAMICTYP")!= "Statics")
-    dserror ("Structure with ale only for quasistatic analysis so in new sti so far.");
-  
+    dserror ("ERROR: Structure with ale only for quasistatic analysis so in new sti so far.");
+
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
   structdis = DRT::Problem::Instance()->GetDis("structure");
@@ -59,13 +59,14 @@ void wear_dyn_drt(int restart)
   if (!aledis->Filled()) aledis->FillComplete();
 
   // we use the structure discretization as layout for the ale discretization
-  if (structdis->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
-  
+  if (structdis->NumGlobalNodes()==0)
+    dserror("ERROR: Structure discretization is empty!");
+
   // clone ale mesh from structure discretization
   if (aledis->NumGlobalNodes()==0)
     DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(structdis,aledis);
   else
-    dserror("Reading an ALE mesh from the input file is not supported for this problem type.");
+    dserror("ERROR: Reading an ALE mesh from the input file is not supported for this problem type.");
   // ***********************************************************
 
   Teuchos::RCP<WEAR::Algorithm> stru_ale = Teuchos::null;
@@ -82,7 +83,7 @@ void wear_dyn_drt(int restart)
     stru_ale = Teuchos::rcp(new WEAR::Partitioned(comm));
   }
   else
-    dserror("Choosen algorithm not supported");
+    dserror("ERROR: Chosen algorithm not supported");
 
   // read restart before joining the time loop
   if (restart!=0)
@@ -90,7 +91,7 @@ void wear_dyn_drt(int restart)
 
   // solve the whole problem
   stru_ale->TimeLoop();
-  
+
   // summarize the performance measurements
   Teuchos::TimeMonitor::summarize();
 

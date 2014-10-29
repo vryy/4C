@@ -62,7 +62,8 @@ SEMI_SMOOTH_CT                  100
 SYSTEM                          condensed
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
+MAXITER                         5
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
@@ -103,10 +104,10 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 1.2 1.2
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 2.00882532090166597e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.49813998345948024e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 8.56628080083790631e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.46586885640237804e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.99275447609090233e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.49918923682793599e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 8.79978551040803275e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.46633114334347812e-02 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          16

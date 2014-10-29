@@ -186,6 +186,11 @@ int ALENEW::Ale::Solve()
 
   // ToDo (mayr) Why can't we use rhs_ instead of local variable rhs???
   int errorcode = solver_->Solve(sysmat_->EpetraOperator(), disi_, rhs, true);
+
+  // calc norm
+  disi_->Norm2(&normdisi_);
+  normdisi_ /= sqrt(disi_->GlobalLength());
+
   return errorcode;
 }
 
@@ -207,18 +212,18 @@ void ALENEW::Ale::Update()
 /*----------------------------------------------------------------------------*/
 const bool ALENEW::Ale::Converged(const int iter)
 {
+  if(iter==0)
+    normdisi_ = 0.0;
+
   bool converged=false;
   // determine norms
   double res_norm;
-  double inc_norm;
   residual_->Norm2(&res_norm);
-  disi_->Norm2(&inc_norm);
   res_norm /= sqrt(residual_->GlobalLength());
-  inc_norm /= sqrt(disi_->GlobalLength());
   if(discret_->Comm().MyPID()==0)
-    std::cout << "ITER: " << iter << "  RES NORM: " << res_norm << " DISP NORM: " << inc_norm << std::endl;
+    std::cout << "ITER: " << iter << "  RES NORM: " << res_norm << " DISP NORM: " << normdisi_ << std::endl;
 
-  if(res_norm < tolres_ && inc_norm < toldisp_)
+  if(res_norm < tolres_ && normdisi_ < toldisp_)
   {
     converged=true;
   }
@@ -470,13 +475,13 @@ void ALENEW::Ale::PrepareTimeStep()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::TimeStep()
+void ALENEW::Ale::TimeStep(ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type)
 {
   bool converged = false;
   int iter = 0;
   while(!converged && iter < maxiter_)
   {
-    Evaluate();
+    Evaluate(Teuchos::null,dbc_type);
 
     if(Converged(iter))
     {
@@ -566,6 +571,17 @@ void ALENEW::Ale::SetupDBCMapEx(
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
 
     dbcmaps_[dbc_type] =
+        Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
+    break;
+  }
+  case ALENEW::UTILS::MapExtractor::dbc_set_wear:
+  {
+    std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+    condmaps.push_back(interface->AleWearCondMap());
+    condmaps.push_back(dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std]->CondMap());
+
+    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+    dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_wear] =
         Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
     break;
   }

@@ -41,6 +41,7 @@ namespace ADAPTER
 {
   class Structure;
   class FSIStructureWrapper;
+  class AleWearWrapper;
   class coupling;
 }
 
@@ -94,7 +95,7 @@ namespace WEAR
     Teuchos::RCP<ADAPTER::FSIStructureWrapper> StructureField(){return structure_;}
 
     //! access to ALE field
-    ALE::Ale& AleField() { return *ale_; }
+    ADAPTER::AleWearWrapper& AleField() { return *ale_; }
 
   protected:
 
@@ -102,7 +103,7 @@ namespace WEAR
 
     //! @name Underlying fields
     Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>      structure_;  //! underlying structure
-    Teuchos::RCP<ALE::Ale>                             ale_;        //! underlying ALE
+    Teuchos::RCP<ADAPTER::AleWearWrapper>              ale_;        //! underlying ALE
     //@}
 
     Teuchos::RCP<MORTAR::ManagerBase>                  cmtman_;        // contact manager

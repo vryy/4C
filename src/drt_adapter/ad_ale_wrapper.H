@@ -167,6 +167,12 @@ public:
     return ale_->Integrate();
   }
 
+  virtual void TimeStep(ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type = ALENEW::UTILS::MapExtractor::dbc_set_std)
+  {
+    ale_->TimeStep(dbc_type);
+    return;
+  }
+
   //! set time step size
   virtual void SetDt(const double dtnew)
   {

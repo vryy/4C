@@ -283,7 +283,6 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
     ale_ = Teuchos::rcp(new ADAPTER::AleCrackWrapper(ale));
     break;
   }
-  // Todo (farah) is this the correct problemtype for wear problems?
   case prb_struct_ale:
   {
     ale_ = Teuchos::rcp(new ADAPTER::AleWearWrapper(ale));

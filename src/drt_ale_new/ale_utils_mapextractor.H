@@ -53,7 +53,8 @@ namespace UTILS
       dbc_set_x_fsi    = 2, ///< Dirichlet sets include ALE-sided FSI interface DOF (in ALE-relaxation step of XFFSI)
       dbc_set_biofilm  = 3, ///< type of Dirichlet set for biofilm applications
       dbc_set_part_fsi = 4, ///< type of Dirichlet set for partitioned FSI
-      dbc_set_count    = 5  ///< total number of types
+      dbc_set_wear     = 5, ///< type of Dirichlet set for wear application
+      dbc_set_count    = 6  ///< total number of types
     };
 
     /// setup the whole thing

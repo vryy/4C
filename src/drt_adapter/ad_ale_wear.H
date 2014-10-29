@@ -23,6 +23,16 @@
 #include "ad_ale_wrapper.H"
 
 /*----------------------------------------------------------------------------*/
+/* forward declarations */
+namespace ALENEW
+{
+namespace UTILS
+{
+  class MapExtractor;
+}
+}
+
+/*----------------------------------------------------------------------------*/
 /* class definitions */
 namespace ADAPTER
 {
@@ -42,6 +52,9 @@ public:
   virtual ~AleWearWrapper(){}
 
   //@}
+
+  //! communicate object at the interface
+  Teuchos::RCP<const ALENEW::UTILS::MapExtractor> Interface() const;
 
   //! add ALE wear condition vector
   void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)

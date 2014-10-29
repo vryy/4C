@@ -63,7 +63,8 @@ SEMI_SMOOTH_CT                  50
 SYSTEM                          condensed
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
+MAXITER                         5
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree
@@ -93,19 +94,10 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 0.0 2.0
 ----------------------------------------------------------------------CURVE2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 -1.0
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR -1.0 -1.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 155 QUANTITY dispmx VALUE -1.15735348369098903e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 155 QUANTITY dispmy VALUE -1.15735348367117900e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 155 QUANTITY dispmz VALUE  2.29825797746092880e-01 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 155 QUANTITY dispmx VALUE -1.15537906129517566e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmy VALUE -1.15537906131173169e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 155 QUANTITY dispmz VALUE  2.29678553457480172e-01 TOLERANCE 1e-7
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          2

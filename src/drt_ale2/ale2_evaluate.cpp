@@ -83,7 +83,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-      static_ke_nonlinear(lm,&elemat1,elevec1,my_dispnp,params);
+      static_ke_nonlinear(discretization,lm,&elemat1,elevec1,my_dispnp,params);
 
       break;
     }
@@ -116,26 +116,26 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
       break;
     }
     case setup_material:
-   {
-     // get material
-     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<
-         MAT::So3Material>(mat, true);
+    {
+      // get material
+      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<
+          MAT::So3Material>(mat, true);
 
-     if (so3mat->MaterialType() != INPAR::MAT::m_elasthyper
-         and so3mat->MaterialType() != INPAR::MAT::m_stvenant) // ToDo (mayr): allow only materials without history
-     {
-       dserror("Illegal material type for ALE. Only materials allowed that do "
-           "not store Gauss point data and do not need additional data from the "
-           "element line definition.");
-     }
+      if (so3mat->MaterialType() != INPAR::MAT::m_elasthyper
+          and so3mat->MaterialType() != INPAR::MAT::m_stvenant) // ToDo (mayr): allow only materials without history
+      {
+        dserror("Illegal material type for ALE. Only materials allowed that do "
+            "not store Gauss point data and do not need additional data from the "
+            "element line definition.");
+      }
 
-     if (so3mat->MaterialType() == INPAR::MAT::m_elasthyper)
-     {
-       so3mat = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(mat, true);
-       so3mat->Setup(0, NULL);
-     }
-     break; // no setup for St-Venant / classic_lin required
-   }
+      if (so3mat->MaterialType() == INPAR::MAT::m_elasthyper)
+      {
+        so3mat = Teuchos::rcp_dynamic_cast<MAT::ElastHyper>(mat, true);
+        so3mat->Setup(0, NULL);
+      }
+      break; // no setup for St-Venant / classic_lin required
+    }
     default:
     {
       dserror("Unknown type of action for Ale2");
@@ -757,16 +757,20 @@ void DRT::ELEMENTS::Ale2::static_ke(DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int> &lm,
-    Epetra_SerialDenseMatrix *sys_mat, Epetra_SerialDenseVector& residual,
-    const std::vector<double>& my_dispnp, Teuchos::ParameterList &params)
+void DRT::ELEMENTS::Ale2::static_ke_nonlinear(
+    DRT::Discretization& dis,
+    const std::vector<int> &lm,
+    Epetra_SerialDenseMatrix *sys_mat,
+    Epetra_SerialDenseVector& residual,
+    const std::vector<double>& my_dispnp,
+    Teuchos::ParameterList &params)
 {
   // declaration of variables
   const DiscretizationType distype = this->Shape();
   const int numnode = NumNode(); // number of nodes
-  const int numdf = 2; // number of degrees of freedom
-  const int nd = numnode * numdf; // number of nodal degrees of freedom
-  double det = 0.0; // jacobian determinant wrt. xrefe
+  const int numdf   = 2; // number of degrees of freedom
+  const int nd      = numnode * numdf; // number of nodal degrees of freedom
+  double det        = 0.0; // jacobian determinant wrt. xrefe
   Epetra_SerialDenseVector funct(numnode); // shape functions
   Epetra_SerialDenseMatrix deriv(2, numnode); // shape function derivatives
   Epetra_SerialDenseMatrix xjm(2, 2); // jacobian matrix wrt. xrefe
@@ -780,19 +784,42 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int> &lm,
   Epetra_SerialDenseMatrix stiffmatrix(nd, nd); // stiffness matrix
   Epetra_SerialDenseVector force(nd); // force vector
 
-  // check element shape
-  if (distype == nurbs4 or distype == nurbs9)
-    dserror("No nurbs support in the nonlinear ALE");
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(2);
+  Epetra_SerialDenseVector              weights(numnode);
+
+  if(distype==DRT::Element::nurbs4
+     ||
+     distype==DRT::Element::nurbs9)
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+
+    bool zero_sized=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+
+    if(zero_sized)
+    {
+      return;
+    }
+
+    for (int inode=0; inode<numnode; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+
+      weights(inode) = cp->W();
+    }
+  }
 
   // get element node coordinates and calculate current configuration
   Epetra_SerialDenseMatrix xrefe(2, numnode); // reference configuration
-  Epetra_SerialDenseMatrix xcure(2, numnode); // current configuration
   for (int k = 0; k < numnode; ++k)
   {
     xrefe(0, k) = Nodes()[k]->X()[0];
     xrefe(1, k) = Nodes()[k]->X()[1];
-    xcure(0, k) = xrefe(0, k) + my_dispnp[k * numdf + 0];
-    xcure(1, k) = xrefe(1, k) + my_dispnp[k * numdf + 1];
   }
 
   // gaussian points
@@ -808,8 +835,29 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int> &lm,
     const double wgt = intpoints.qwgt[ip];
 
     // get values of shape functions and derivatives in the gausspoint
-    DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
-    DRT::UTILS::shape_function_2D_deriv1(deriv, e1, e2, distype);
+    if(distype != DRT::Element::nurbs4
+       &&
+       distype != DRT::Element::nurbs9)
+    {
+      // shape functions and their derivatives for polynomials
+      DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+    }
+    else
+    {
+      // nurbs version
+      Epetra_SerialDenseVector gp(2);
+      gp(0)=e1;
+      gp(1)=e2;
+
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+        (funct  ,
+         deriv  ,
+         gp     ,
+         myknots,
+         weights,
+         distype);
+    }
 
     // compute jacobian matrix wrt. xrefe
     ale2_jacobianmatrix(xrefe, deriv, xjm, &det, numnode);
@@ -822,9 +870,9 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int> &lm,
     // fill blin operator
     for (int j = 0; j < numnode; j++)
     {
-      boplin(0, 2 * j) = bop_temp(0, j);
+      boplin(0, 2 * j)     = bop_temp(0, j);
       boplin(1, 2 * j + 1) = bop_temp(1, j);
-      boplin(2, 2 * j) = bop_temp(1, j);
+      boplin(2, 2 * j)     = bop_temp(1, j);
       boplin(3, 2 * j + 1) = bop_temp(0, j);
     }
 
@@ -1204,11 +1252,13 @@ void DRT::ELEMENTS::Ale2::ale2_bop(Epetra_SerialDenseMatrix& bop,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::ale2_greenlag(Epetra_SerialDenseMatrix& defgrad,
-    Epetra_SerialDenseMatrix& greenlag, Epetra_SerialDenseMatrix& deriv,
-    Epetra_SerialDenseMatrix& xji, const std::vector<double>& my_dispnp)
+void DRT::ELEMENTS::Ale2::ale2_greenlag(
+    Epetra_SerialDenseMatrix& defgrad,
+    Epetra_SerialDenseMatrix& greenlag,
+    Epetra_SerialDenseMatrix& deriv,
+    Epetra_SerialDenseMatrix& xji,
+    const std::vector<double>& my_dispnp)
 {
-
   Epetra_SerialDenseMatrix displacements(NumNode(), 2); // displacements
   Epetra_SerialDenseMatrix rcg(2, 2); // right Cauchy-Green tensor
 

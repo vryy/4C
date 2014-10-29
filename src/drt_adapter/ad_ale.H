@@ -138,6 +138,9 @@ public:
   //! Return target time \f$t_{n+1}\f$
   virtual double Time() const = 0;
 
+  //! Evaluate time step
+  virtual void TimeStep(ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type= ALENEW::UTILS::MapExtractor::dbc_set_std) = 0;
+
   //! Get time step size \f$\Delta t_n\f$
   virtual double Dt() const = 0;
 

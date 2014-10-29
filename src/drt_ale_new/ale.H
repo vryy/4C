@@ -186,7 +186,7 @@ public:
   /// start a new time step
   virtual void PrepareTimeStep();
 
-  virtual void TimeStep();
+  virtual void TimeStep(ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type = ALENEW::UTILS::MapExtractor::dbc_set_std);
 
   /// write output
   virtual void Output();
@@ -396,10 +396,12 @@ private:
    */
   Teuchos::RCP<Epetra_Vector> rhs_;
 
-  Teuchos::RCP<Epetra_Vector> dispnp_; ///< unknown solution at \f$t_{n+1}\f$
-  Teuchos::RCP<Epetra_Vector> dispn_; ///< known solution at \f$t_{n}\f$
-  Teuchos::RCP<Epetra_Vector> disi_; ///< iterative displacement increment
-  Teuchos::RCP<const Epetra_Vector> zeros_; ///< zero vector for dbc handling
+  Teuchos::RCP<Epetra_Vector>    dispnp_; ///< unknown solution at \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector>    dispn_;  ///< known solution at \f$t_{n}\f$
+  Teuchos::RCP<Epetra_Vector>    disi_;  ///< iterative displacement increment
+  double                         normdisi_;///< norm of iterative displacement increment
+  Teuchos::RCP<const Epetra_Vector>    zeros_;  ///< zero vector for dbc handling
+
   //@}
 
   //! @name map extractors

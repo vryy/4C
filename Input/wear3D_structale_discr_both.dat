@@ -63,7 +63,8 @@ SEMI_SMOOTH_CT                  100
 SYSTEM                          Saddlepoint
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        incr_lin
+ALE_TYPE                        solid
+MAXITER                         5
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     standard
 SEARCH_ALGORITHM                BinaryTree
@@ -96,20 +97,10 @@ CURVE1 on EXPR FUNC 0 t1 51 t2 53
 CURVE2 on EXPR FUNC t t1 0.0 t2 1
 CURVE2 on EXPR FUNC 1 t1 1.0 t2 51
 CURVE2 on EXPR FUNC 1-(t-51) t1 51 t2 53
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 37 QUANTITY dispmx VALUE 1.34601762015036829e-05 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 37 QUANTITY dispmy VALUE 8.20811507190666312e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 40 QUANTITY dispmy VALUE 2.44281851592677984e-03 TOLERANCE 1e-8
-
+STRUCTURE DIS structure NODE 37 QUANTITY dispmx VALUE 1.44493563827397440e-05 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 37 QUANTITY dispmy VALUE 8.07412936562190708e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 40 QUANTITY dispmy VALUE 2.17530018469308528e-03 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -455,9 +446,5 @@ NODE 150    COORD  -8.6602540378443837e-01  -9.9999999999999978e-01  5.000000000
    62 SOLIDH8 HEX8  147 149 150 148 134 138 139 135    MAT 1 KINEM nonlinear EAS none
    63 SOLIDH8 HEX8  145 148 143 144 130 135 125 128    MAT 1 KINEM nonlinear EAS none
    64 SOLIDH8 HEX8  148 150 142 143 135 139 124 125    MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ---------------------------------------------------------------END
 // END
