@@ -20,6 +20,7 @@ Maintainer: Sudhakar
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_fs3i/biofilm_fsi_utils.H"
+#include "../drt_lib/drt_utils.H"
 
 #include "../drt_ale_new/ale_utils_clonestrategy.H"
 #include "../drt_ale_new/ale_utils_mapextractor.H"
@@ -177,7 +178,7 @@ void DRT::CRACK::aleCrack::ALE_Solve()
   for( int i=0; i<ale_str->MyLength(); i++ )
     (*ale_str)[i] = (*ale_final)[i];
 
-  FS3I::Biofilm::UTILS::updateMaterialConfigWithALE_Disp( structdis_, ale_str );
+  DRT::UTILS::UpdateMaterialConfigWithDispVector(structdis_,ale_str);
 }
 
 /*---------------------------------------------------------------------------------------------------*

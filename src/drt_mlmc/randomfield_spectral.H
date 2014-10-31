@@ -50,15 +50,6 @@ private:
   //! \brief dimension of stochastic field
   int dim_;
 
-  enum PROBABILITY_DISTRIBUTIONS
-  {
-    normal,
-    lognormal,
-    beta,
-  };
-  //! \brief target marginal pdf of random field
-  PROBABILITY_DISTRIBUTIONS marginal_pdf_;
-
   enum correlation_structure_
   {
     exponential,
@@ -136,10 +127,12 @@ public:
   void CreateNewSample(unsigned int seed);
 
   //! \brief get value of random field at a specific location
-  //double EvalFieldAtLocation(std::vector<double> location, bool writetofile, bool output);
+  double EvalFieldAtLocation(std::vector<double> location,
+      double paracont_parameter, bool writetofile, bool output);
 
   //! \brief get value of random field at a specific location
-  double EvalFieldAtLocation(std::vector<double> location, double paracont_parameter,  bool writetofile, bool output);
+  double EvalFieldAtLocation(std::vector<double> location,
+      double paracont_parameter, double local_mean, bool writetofile, bool output);
 
   //! \brief write random field To file
   void WriteRandomFieldToFile();

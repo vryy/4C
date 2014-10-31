@@ -1532,73 +1532,92 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
 
   /* parameters for multi-level monte carlo */
-  Teuchos::ParameterList& mlmcp = list->sublist("MULTI LEVEL MONTE CARLO",false,"");
+  Teuchos::ParameterList& mlmcp = list->sublist("MULTI LEVEL MONTE CARLO",
+      false, "");
 
   //setStringToIntegralParameter<int>("MLMC","no",
-  //                                  "perform multi level monte carlo analysis",
-   //                                 yesnotuple,yesnovalue,&mlmcp);
-  IntParameter("NUMRUNS",200,"Number of Monte Carlo runs",&mlmcp);
+  // "perform multi level monte carlo analysis",
+  // yesnotuple,yesnovalue,&mlmcp);
+  IntParameter("NUMRUNS", 200, "Number of Monte Carlo runs", &mlmcp);
 
-  IntParameter("START_RUN",0,"Run to start calculating the difference to lower level", &mlmcp);
+  IntParameter("START_RUN", 0,
+      "Run to start calculating the difference to lower level", &mlmcp);
+
+  IntParameter("INITRANDOMSEED", 1000, "Random seed for first Monte Carlo run",
+      &mlmcp);
 
 
-  IntParameter("INITRANDOMSEED",1000,"Random seed for first Monte Carlo run",&mlmcp);
+  setStringToIntegralParameter<int>("REDUCED_OUTPUT", "NO",
+      "Write reduced Coarse Level Output, i.e. no mesh stresses, just disp",
+      yesnotuple, yesnovalue, &mlmcp);
 
+  IntParameter("CONTNUMMAXTRIALS", 8,
+      "Half stepsize CONTNUMMAXTRIALS times before giving up", &mlmcp);
 
-  setStringToIntegralParameter<int>("REDUCED_OUTPUT","NO",
-                                    "Write reduced Coarse Level Output, i.e. no mesh stresses, just disp",
-                                    yesnotuple,yesnovalue,&mlmcp);
+  setStringToIntegralParameter<int>("FWDPROBLEM", "structure",
+      "WHICH KIND OF FORWARD DO WE WANT",
+      tuple<std::string>("structure", "red_airways"),
+      tuple<int>(INPAR::MLMC::structure, INPAR::MLMC::red_airways), &mlmcp);
 
-  IntParameter("CONTNUMMAXTRIALS",8,"Half stepsize CONTNUMMAXTRIALS times before giving up",&mlmcp);
-
-  setStringToIntegralParameter<int>("FWDPROBLEM","structure","WHICH KIND OF FORWARD DO WE WANT",
-                               tuple<std::string>("structure",
-                                                  "red_airways"),
-                               tuple<int>(INPAR::MLMC::structure,INPAR::MLMC::red_airways), &mlmcp);
-
-  setStringToIntegralParameter<int>("UQSTRATEGY","MC_PLAIN","WHICH UQ STRATEGY WILL BE USED",
-                               tuple<std::string>("MC_PLAIN","mc_plain",
-                                                  "MC_PARAMETERCONTINUATION","mc_parametercontinuation",
-                                                  "MC_SCALEDTHICKNESS","mc_scaledthickness"),
-                               tuple<int>(INPAR::MLMC::mc_plain,INPAR::MLMC::mc_plain,
-                                 INPAR::MLMC::mc_paracont,INPAR::MLMC::mc_paracont,
-                                 INPAR::MLMC::mc_scaledthick,INPAR::MLMC::mc_scaledthick), &mlmcp);
+  setStringToIntegralParameter<int>(
+      "UQSTRATEGY",
+      "MC_PLAIN",
+      "WHICH UQ STRATEGY WILL BE USED",
+      tuple<std::string>("MC_PLAIN", "mc_plain", "MC_PARAMETERCONTINUATION",
+          "mc_parametercontinuation", "MC_SCALEDTHICKNESS",
+          "mc_scaledthickness"),
+      tuple<int>(INPAR::MLMC::mc_plain, INPAR::MLMC::mc_plain,
+          INPAR::MLMC::mc_paracont, INPAR::MLMC::mc_paracont,
+          INPAR::MLMC::mc_scaledthick, INPAR::MLMC::mc_scaledthick), &mlmcp);
 
   IntParameter("NUMCONTSTEPS",2,"Number of continuation steps",&mlmcp);
 
+   // list of materials with stochastic constitutive parameters and
+  // the stochastic parameters for the respective material
+  StringParameter(
+      "PARAMLIST",
+      "none",
+      "list of std::string of parameters that are to be modelled as random fields, 1 YOUNG BETA",
+      &mlmcp);
+  setNumericStringParameter("OUTPUT_ELEMENT_IDS", "-1",
+      "Set ID's of Output Elements, default is -1 which is none", &mlmcp);
 
-   // list of materials with stochastic constitutive parameters and the stochastic parameters for the respective material
-   StringParameter("PARAMLIST","none",
-                   "list of std::string of parameters that are to be modelled as random fields, 1 YOUNG BETA",
-                   &mlmcp);
-   setNumericStringParameter("OUTPUT_ELEMENT_IDS","-1",
-                               "Set ID's of Output Elements, default is -1 which is none",
-                               &mlmcp);
-
-   setStringToIntegralParameter<int>("WRITE_RV_TO_FILE","NO",
-                                     "Write random variables used for random field generation to file",
-                                     yesnotuple,yesnovalue,&mlmcp);
-
+  setStringToIntegralParameter<int>("WRITE_RV_TO_FILE", "NO",
+      "Write random variables used for random field generation to file",
+      yesnotuple, yesnovalue, &mlmcp);
 
   // For variable geometry/wall thickness
-  setStringToIntegralParameter<int>("RANDOMGEOMETRY","No",
-                                      "Do consider random geometry/wall thickness",
-                                      yesnotuple,yesnovalue,&mlmcp);
+  setStringToIntegralParameter<int>("RANDOMGEOMETRY", "No",
+      "Do consider random geometry/wall thickness", yesnotuple, yesnovalue,
+      &mlmcp);
 
-  DoubleParameter("INITIALTHICKNESS",10.,"wall thickness in input file",&mlmcp);
+  // For variable geometry/wall thickness
+  setStringToIntegralParameter<int>("MEAN_GEO_FROM_ALE_POINTDBC", "No",
+      "Read in mean from point dbc conds", yesnotuple, yesnovalue, &mlmcp);
 
-  // Legecay input parameters for multilevel mc
-  IntParameter("WRITESTATS",1000,"Write statistics to file every WRITESTATS (only for polongated Dis)",&mlmcp);
+  IntParameter("NUMALESTEPS", 1,
+      "How many ALE steps do we want to use to compute uncertain geometry",
+      &mlmcp);
+
+  DoubleParameter("INITIALTHICKNESS", 10., "wall thickness in input file",
+      &mlmcp);
+
+  // Legacy input parameters for multilevel mc
+  IntParameter("WRITESTATS", 1000,
+      "Write statistics to file every WRITESTATS (only for polongated Dis)",
+      &mlmcp);
 
   // keep this input parameter incase we want to read in another discretization (thats all it does at the moment)
-  setStringToIntegralParameter<int>("PROLONGATERES","No",
-                                    "Prolongate Displacements to finest Discretization",
-                                    yesnotuple,yesnovalue,&mlmcp);
+  setStringToIntegralParameter<int>("PROLONGATERES", "No",
+      "Prolongate Displacements to finest Discretization", yesnotuple,
+      yesnovalue, &mlmcp);
 
   // additional inputfile which should be read (currently not used, but we want to keep the feature for now)
-  StringParameter("DISCRETIZATION_FOR_PROLONGATION","filename.dat",
-                  "filename of.dat file which contains discretization to which the results are prolongated",
-                   &mlmcp);
+  StringParameter(
+      "DISCRETIZATION_FOR_PROLONGATION",
+      "filename.dat",
+      "filename of.dat file which contains discretization to which the results are prolongated",
+      &mlmcp);
 
 
   /*----------------------------------------------------------------------*/

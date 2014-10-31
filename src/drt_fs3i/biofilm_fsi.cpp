@@ -690,11 +690,13 @@ void FS3I::BiofilmFSI::FluidAleSolve()
   //change nodes reference position of the fluid field
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->AleField()->WriteAccessDispnp());
   Teuchos::RCP<DRT::Discretization> fluiddis = fsi_->FluidField().Discretization();
-  FS3I::Biofilm::UTILS::updateMaterialConfigWithALE_Disp(fluiddis, fluiddisp);
+  DRT::UTILS::UpdateMaterialConfigWithDispVector(fluiddis,fluiddisp);
+
+
 
   //change nodes reference position also for the fluid ale field
   Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->AleField()->WriteAccessDispnp();
-  FS3I::Biofilm::UTILS::updateMaterialConfigWithALE_Disp(fluidaledis, fluidaledisp);
+  DRT::UTILS::UpdateMaterialConfigWithDispVector(fluidaledis,fluidaledisp);
 
   //change nodes reference position also for scatra fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[0];
@@ -737,11 +739,11 @@ void FS3I::BiofilmFSI::StructAleSolve()
   //change nodes reference position of the structure field
   Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->WriteAccessDispnp());
   Teuchos::RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
-  FS3I::Biofilm::UTILS::updateMaterialConfigWithALE_Disp(structdis, structdisp);
+  DRT::UTILS::UpdateMaterialConfigWithDispVector(structdis,structdisp);
   structdis->FillComplete(false, true, true);
 
   //change nodes reference position also for the struct ale field
-  FS3I::Biofilm::UTILS::updateMaterialConfigWithALE_Disp(structaledis, ale_->WriteAccessDispnp());
+  DRT::UTILS::UpdateMaterialConfigWithDispVector(structaledis,ale_->WriteAccessDispnp());
 
   //change nodes reference position also for scatra structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];

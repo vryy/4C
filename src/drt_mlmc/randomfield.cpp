@@ -24,6 +24,7 @@ Maintainer: Jonas Biehler
 #include "../drt_inpar/inpar_mlmc.H"
 
 UQ::RandomField::RandomField(Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& rfp)
+  :marginal_pdf_(none)
 {
  // initialize some common parameters
 

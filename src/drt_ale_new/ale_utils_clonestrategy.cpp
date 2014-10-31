@@ -44,6 +44,7 @@ ALENEW::UTILS::AleCloneStrategy::ConditionsToCopy()
   conditions_to_copy.insert(std::pair<std::string,std::string>("AleWear","AleWear"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("AleLocsys","Locsys"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("Mortar","Mortar"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("UncertainSurface","UncertainSurface"));
 
   return conditions_to_copy;
 }

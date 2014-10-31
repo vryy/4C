@@ -158,7 +158,7 @@ UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
     my_thickness_manager_=Teuchos::null;
 
 
-  //legecay stuff from multilevel mc
+  //legecay stuff from multilevel monte carlo
   if(0)
   {
     // init vectors to store mean stresses and displacements
@@ -233,7 +233,6 @@ void UQ::MLMC::Integrate()
     ResetPrestress();
     const double t1 = Teuchos::Time::wallTime();
     my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),1.0,false);
-
     if(stoch_wall_thickness_)
     {
       my_thickness_manager_->SetUpThickness((random_seed+(unsigned int)numb_run_),1.0,false);
@@ -363,10 +362,6 @@ void UQ::MLMC::Integrate()
   IO::cout<<"\n=================Time  Measurement================"<<IO::endl;
   IO::cout<<"Total runtime:\t"<<std::setprecision(4)<<t6-t0<<"\ts"<<IO::endl;
   IO::cout<<"=================================================="<<IO::endl;
-  //if(0)
-  //{
-  //  WriteStatOutput();
-  //}
   return;
 }
 /*----------------------------------------------------------------------*/

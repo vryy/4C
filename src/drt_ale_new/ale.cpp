@@ -96,11 +96,6 @@ ALENEW::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
     discret_->GetCondition("Locsys", locsysconditions);
     if (locsysconditions.size())
     {
-      // Only 'classic_lin' and 'springs' are supported for use with locsys.
-      // If you want to use locsys with another ALE type, just copy from 'classic_lin'
-      if (not ((aletype_==INPAR::ALE::classic_lin) || (aletype_==INPAR::ALE::springs)))
-        dserror("Only ALE types 'classic_lin' and 'springs' are supported for use with locsys conditions.");
-
       // Initialize locsys manager
       locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
     }

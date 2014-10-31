@@ -667,6 +667,13 @@ void runEnsightVtuFilter(PostProblem    &problem)
           StructureFilter writer(field, problem.outname(), problem.stresstype(), problem.straintype());
           writer.WriteFiles();
         }
+        else if(disname.compare("ale") == 0)
+        {
+          PostField* field = problem.get_discretization(i);
+          AleFilter writer(field, problem.outname());
+          writer.WriteFiles();
+          break;
+        }
         else
         {
            dserror("Unknown discretization type for problem type UQ");

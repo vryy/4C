@@ -101,12 +101,14 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
   // Output for these problems are not necessary because we write
   // restart data at each time step for visualization
   bool write_output = true;
-  if (probtype == prb_crack or probtype == prb_fsi_crack)
+  if (probtype == prb_crack or probtype == prb_fsi_crack or probtype == prb_uq)
     write_output = false;
 
-  if (write_output)
-    output->WriteMesh(0, 0.0);
 
+  if (write_output)
+  {
+    output->WriteMesh(0, 0.0);
+  }
   // ---------------------------------------------------------------------------
   // set some pointers and variables
   // ---------------------------------------------------------------------------
@@ -286,6 +288,11 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
   case prb_struct_ale:
   {
     ale_ = Teuchos::rcp(new ADAPTER::AleWearWrapper(ale));
+    break;
+  }
+  case prb_uq:
+  {
+    ale_ = ale;
     break;
   }
   case prb_freesurf:

@@ -54,7 +54,21 @@ public:
   virtual void CreateNewSample(unsigned int seed) =0;
 
   //! \brief get value of random field at a specific location
-  virtual double EvalFieldAtLocation(std::vector<double> location, double paracont_parameter, bool writetofile, bool output)=0 ;
+  virtual double EvalFieldAtLocation(
+      std::vector<double> location,
+      double paracont_parameter,
+      bool writetofile,
+      bool output
+      )=0 ;
+
+  //! \brief get value of random field at a specific location
+  virtual double EvalFieldAtLocation(
+      std::vector<double> location,
+      double local_mean,
+      double paracont_parameter,
+      bool writetofile,
+      bool output
+      )=0 ;
 
   //! \brief write random field To file
   //virtual  void WriteRandomFieldToFile()=0;
@@ -68,7 +82,13 @@ public:
   //! \brief compute bounding box of discretization
   virtual void ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret);
 
-public:
+  bool IsGaussian(){if(marginal_pdf_==normal) return true; else return false;}
+
+  const double LowerBound() {return rf_lower_bound_;}
+
+  const double UpperBound() {return rf_upper_bound_;}
+
+  const bool IsBounded() {return is_bounded_; }
 
 protected:
  //! \brief which proc am I on
@@ -91,6 +111,16 @@ protected:
 
  //! \brief upper cutoff threshold
  double rf_upper_bound_;
+
+ enum PROBABILITY_DISTRIBUTIONS
+ {
+   normal,
+   lognormal,
+   beta,
+   none,
+ };
+ //! \brief target marginal pdf of random field
+ PROBABILITY_DISTRIBUTIONS marginal_pdf_;
 
 private:
 

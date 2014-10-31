@@ -48,7 +48,20 @@ class RandomFieldFourier : public RandomField
   void SayHello();
 
   //! \brief get value of random field at a specific location
-  double EvalFieldAtLocation(std::vector<double> location, double paracont_parameter, bool writetofile, bool output);
+  double EvalFieldAtLocation(
+      std::vector<double> location,
+      double paracont_parameter,
+      bool writetofile,
+      bool output
+      );
+
+  //! \brief get value of random field at a specific location
+  double EvalFieldAtLocation(
+      std::vector<double> location,
+      double paracont_parameter,
+      double local_mean,
+      bool writetofile,
+      bool output);
 
   //! \brief return dimension of random field (either 2 or 3)
   int Dimension() {return dim_;}
@@ -71,14 +84,6 @@ private:
 
   //! \brief dimension of stochastic field
   int dim_;
-
-  enum PROBABILITY_DISTRIBUTIONS
-  {
-    normal,
-    lognormal,
-  };
-  //! \brief target marginal pdf of random field
-  PROBABILITY_DISTRIBUTIONS marginal_pdf_;
 
   //! properties of first order probability distribution
   double mean_;

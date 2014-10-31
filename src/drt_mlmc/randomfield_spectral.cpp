@@ -929,6 +929,14 @@ void UQ::RandomFieldSpectral::TranslateToNonGaussian()
       break;
   }
 }
+
+double UQ::RandomFieldSpectral::EvalFieldAtLocation(
+    std::vector<double> location, double local_mean, double paracont_parameter,
+    bool writetofile, bool output)
+{
+  dserror("EvalFieldAtLocation with local mean value as aurgument not implemented for spectral field!");
+  return -1.0;
+}
 // Overloaded function to translate single point only
 void UQ::RandomFieldSpectral::TranslateToNonGaussian( double *value)
 {

@@ -8,22 +8,22 @@ Maintainer: Jonas Biehler
             biehler@lnm.mw.tum.de
             089 - 28915276
 </pre>
+*/
+/*----------------------------------------------------------------------------*/
 
-!*/
-
-
+/*----------------------------------------------------------------------------*/
 #ifdef HAVE_FFTW
 #ifndef MC_VAR_THICKNESS_MANAGER_H_
 #define MC_VAR_THICKNESS_MANAGER_H_
 
-/*----------------------------------------------------------------------*/
-/* headers */
-
+/*----------------------------------------------------------------------------*/
+/* header inclusions */
 #include "Epetra_MultiVector.h"
 #include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_ale/ale.H"
-// forward declarations
+
+/*----------------------------------------------------------------------------*/
+/* forward declarations */
 namespace DRT
 {
   class Discretization;
@@ -34,104 +34,168 @@ namespace LINALG
   class MultiMapExtractor;
 }
 
-
+namespace ADAPTER
+{
+  class Ale;
+  class Coupling;
+}
 namespace UQ
 {
-
 class RandomField;
-/*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------------*/
+/* definition of classes */
 class MCVarThicknessManager
 {
 public:
 
-  //! Constructor
-  MCVarThicknessManager(Teuchos::RCP<DRT::Discretization> discret,const int my_thickness_field_id);
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+  */
+  MCVarThicknessManager(
+      Teuchos::RCP<DRT::Discretization> discret, ///< discretization
+      const int my_thickness_field_id);          ///< id of random field
 
   //! Destructor
   ~MCVarThicknessManager(){};
 
-  //brief create new realization of all random fields and push parameters down to material
-  void SetUpThickness(unsigned int myseed, double para_cont_parameter, bool reuse_rf);
+  //@}
+
+  //!brief create new realization of all random fields and push parameters down to material
+  void SetUpThickness(
+      unsigned int myseed,
+      double para_cont_parameter,
+      bool reuse_rf
+      );
 
   //brief compute new set of random Phase angles/ new realizations of all random fields
-  void CreateNewRealizationOfRandomField(unsigned int myseed);
+  void CreateNewRealizationOfRandomField(
+      unsigned int myseed         ///< random seed for generation of random phase angles
+      );
 
-  //brief write all random variables that are used for the simulation of stochastic processes to file
-  void WriteRandomVariablesToFile(std::string filename, int numrun);
-
-  //! brief reset geometry
+  //! \brief reset discretization to its original state
   void ResetGeometry();
 
-  //! brief evaluate underlying randomfield at a specific location
-  double EvalThicknessAtLocation(std::vector<double> myloc, double para_cont_parameter);
+  /*! \brief Evaluate random field for variable wall thickness
+  *
+  */
+  double EvalThicknessAtLocation(
+      std::vector<double> myloc,  ///< spatial location at which random field is evaluated
+      double para_cont_parameter  ///< parameter continuation parameter for blending over thickness
+      );
 
+  //! brief return constant part of global, initial wall thickness
   double InitialThickness(){return initial_wall_thickness_;};
-
 
 private:
 
-  //! brief set ALE displacement conditions to move the uncertain surface
-  void ModifyConditions( const std::map<int, std::vector<double> >& ale_bc_nodes);
+  /*! brief add point dirichlet conditions to ale discretization
+  *
+  * Add the given node ids and displacement conditions to ale discretization
+  * Type of the condition added is PointDirichlet
+  * For each node, a separate condition is added. This is helpful to identify
+  * these conditions later and delete them at appropriate time
+  */
+  void AddPointDBCToAleDiscretization(
+      const std::map<int, std::vector<double> >& ale_bc_nodes_val,  ///< dbc values
+      const std::map<int, std::vector<int> >& ale_bc_nodes_onoff,   ///< dbc on off toggle
+      const std::map<int, std::vector<int> >& ale_bc_nodes_curve,   ///< dbc curves
+      const std::map<int, std::vector<int> >& ale_bc_nodes_funct    ///< dbc functions
+      );
 
-  //! brief add the given node ids and Displacement conditions to discretization
-  void AddConditions( Teuchos::RCP<DRT::Discretization> discret,
-                                           const std::map<int, std::vector<double> >& ale_bc_nodes );
 
-  //! brief Delete all Dirichlet conditions that has only one associated node
-  void DeleteConditions( Teuchos::RCP<DRT::Discretization> discret );
-
-  //! brief Build ALE system matrix and solve the system
-  void ALESolve();
-
-  //! brief perform all necessary ALE steps
-  void ALEStep( const std::map<int, std::vector<double> >& ale_bc_nodes);
-
-  //! change position of uncertain surface nodes and perform ALE step to
-  // adjust position of all nodes in the wall
-  void SetThickness(double para_cont_parameter);
+  /*! brief Delete all point dirichlet conditions from ale discretization
+   *
+   * Delete all DBC point condition that have only one associated node.
+   * These are the conditions that we added to move the uncertain surface around
+  */
+  void DeletePointDBCConditionsFromAleDiscretization();
 
   //! brief create new random field based on input data
-  Teuchos::RCP<RandomField> CreateRandomField(int random_field_id, unsigned int myseed);
+  Teuchos::RCP<RandomField> CreateRandomField(
+      int random_field_id,
+      unsigned int myseed
+      );
 
-  //! brief compute surface normal for all nodes in uncertain surface condition
-  //! to accomplish this task this function creates a mortar interface using
-  //  a special setup routine from the mortar adapter and then extracts
-  // the surface normals computed by the mortar interface.
-  // To create a mortar interface just to compute surface normals is probably a bit of an
-  // overkill, however it works well with little implementational effort. Furthermore,
-  // we only need to do this once in a UQ simulation and thus efficiency is not an issue here
+  void ComputeNewAleDBCFromRF();
+
+  /*! brief Change position of uncertain surface nodes using ALE
+   *  Change the geometry of the structure discretization based on random field.
+   *  Therefor, an ALE discretization is used to which point DBCs are applied.
+   *  After solving the ALE field, the resulting displacement field is used to
+   *  update the reference configuarion of the structure
+   */
+  void ModifyGeometryBasedOnRF(const unsigned int myseed);
+
+
+  /*! \brief Compute surface normal for all nodes in uncertain surface condition.
+  *
+  * To accomplish this task this function creates a mortar interface using
+  * a special setup routine from the mortar adapter and then extracts
+  * the surface normals computed by the mortar interface.
+  * To create a mortar interface just to compute surface normals is probably a bit of an
+  * overkill, however it works well with little implementational effort. Furthermore,
+  * we only need to do this once in a UQ simulation and thus efficiency is not an issue here
+  */
   void ComputeNormals();
 
-  //! structure discretization for convenience
+
+  //! brief structure discretization for convenience
   Teuchos::RCP<DRT::Discretization> discret_;
 
-  //! underlying ALE
-  Teuchos::RCP<ALE::Ale>   ale_;
+  //! bief ale discretization for convenience
+  Teuchos::RCP<DRT::Discretization> aledis_;
 
-  //! random field to model wall thickness
-  Teuchos::RCP<RandomField>  randomfield_;
+  //! brief random field to model wall thickness
+  Teuchos::RCP<RandomField> randomfield_;
 
-  const std::vector<int>* my_uncert_nodeids_;
+  //! brief vector with all nodes subject to uncertainty
+  std::vector<int> my_uncert_nodeids_;
 
-  //! total number of nodes in uncertain surface condition
+  //! brief total number of nodes in uncertain surface condition
   int my_uncert_nnodes_;
 
-  //! original node positions of all nodes in uncertain surface condition (redundant on all procs)
-  std::map<int,std::vector<double > >  my_uncertain_nodes_org_pos_;
+  //! brief original node positions of all nodes in uncertain surface condition (redundant on all procs)
+  std::map<int, std::vector<double> > my_uncertain_nodes_org_pos_;
 
-  //! delta in node positions of all nodes in uncertain surface condition based on random field (redundant on all procs)
-  std::map<int,std::vector<double > >  my_uncertain_nodes_pos_;
+  //! brief onoff toggle vector for point dbc
+  std::map<int, std::vector<int> > my_uncertain_nodes_dbc_onoff_;
 
-  //! averaged nodal normals of all nodes in uncertain surface condition (redundant on all procs)
-  std::map<int,std::vector<double> >  my_uncertain_nodes_normals_;
+  //! brief value vector for point dbc which contains local mean value of RF
+  std::map<int, std::vector<double> > my_uncertain_nodes_dbc_val_;
 
-  // store initial geometry of the whole discretization, needed for reset
+  //! brief curve vector for point dbc
+  std::map<int, std::vector<int> > my_uncertain_nodes_dbc_curve_;
+
+  //! brief funct vector for point dbc
+  std::map<int, std::vector<int> > my_uncertain_nodes_dbc_funct_;
+
+  //! brief  delta in node positions of all nodes in uncertain surface condition based on random field
+  std::map<int, std::vector<double> > my_uncertain_nodes_delta_pos_;
+
+  //! brief store initial geometry of the whole discretization, needed for reset
   Teuchos::RCP<Epetra_Vector> org_geom_;
 
-  // brief initial wall thickness (asssumed uniform on geometry)
+  //! brief initial wall thickness (asssumed uniform on geometry)
   double initial_wall_thickness_;
 
-};
+  //! brief Use mean local wall thickness based on condition input
+  bool use_mean_field_from_cond_;
+
+  //! coupling of structure and ale (whole field)
+  Teuchos::RCP<ADAPTER::Coupling> coupsa_;
+
+  /*! brief averaged nodal normals of all nodes in uncertain surface condition
+  *
+  *  These nodal normals are currently computed using the structure
+  *  discretization. It is assumed that node IDs of structure and
+  *  ALE discretization are the same
+  */
+  std::map<int, std::vector<double> > my_uncertain_nodes_normals_;
+
+  };
 } // namespace MLMC
 
 
