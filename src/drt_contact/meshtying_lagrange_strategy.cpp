@@ -245,16 +245,14 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
   // (1) get master positions on global level
   //**********************************************************************
   // fill Xmaster first
-  Teuchos::RCP<Epetra_Vector> Xmaster = LINALG::CreateVector(*gmdofrowmap_,
-      true);
+  Teuchos::RCP<Epetra_Vector> Xmaster = LINALG::CreateVector(*gmdofrowmap_,true);
   AssembleCoords("master", true, Xmaster);
 
   //**********************************************************************
   // (2) solve for modified slave positions on global level
   //**********************************************************************
   // initialize modified slave positions
-  Teuchos::RCP<Epetra_Vector> Xslavemod = LINALG::CreateVector(*gsdofrowmap_,
-      true);
+  Teuchos::RCP<Epetra_Vector> Xslavemod = LINALG::CreateVector(*gsdofrowmap_,true);
 
   // shape function type
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<
@@ -305,8 +303,7 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
     else if (shapefcn == INPAR::MORTAR::shape_standard)
     {
       // create linear problem
-      Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*gsdofrowmap_,
-          true);
+      Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*gsdofrowmap_,true);
       mmatrix_->Multiply(false, *Xmaster, *rhs);
 
       // solve with default solver

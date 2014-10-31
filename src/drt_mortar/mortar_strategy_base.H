@@ -178,7 +178,6 @@ class StrategyBase
     virtual void EvaluateReferenceState(int step,const Teuchos::RCP<Epetra_Vector> vec) = 0;
     virtual void EvaluateRelMov() = 0;
     virtual void EvaluateRelMovPredict() = 0;
-    virtual void ForceRefConfig() = 0;
     virtual bool Friction() = 0;
     virtual void InitEvalInterface() = 0;
     virtual void InitMortar() = 0;

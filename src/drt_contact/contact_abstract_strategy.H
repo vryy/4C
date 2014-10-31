@@ -651,12 +651,6 @@ public:
   virtual void PrintActiveSet();
 
   /*!
-   \brief Evaluate contact forces with respect to reference configuration
-
-   */
-  virtual void ForceRefConfig();
-
-  /*!
    \brief Visualize contact stuff with gmsh
 
    \param step (in): current time step index

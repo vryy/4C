@@ -421,7 +421,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void OutputWear() {}
     void RedistributeContact(Teuchos::RCP<Epetra_Vector> dis) {}
     void ResetActiveSet() {}
-    void ForceRefConfig() {}
     void SaveReferenceState(Teuchos::RCP<Epetra_Vector> dis) {}
     void UpdateActiveSet() {}
     void UpdateActiveSetSemiSmooth() {}

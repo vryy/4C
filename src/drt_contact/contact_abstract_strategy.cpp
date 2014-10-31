@@ -19,7 +19,6 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_wear.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_io/io.H"
@@ -1166,20 +1165,15 @@ void CONTACT::CoAbstractStrategy::AssembleMortar()
 void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
     const Teuchos::RCP<Epetra_Vector> vec)
 {
-#ifndef CONTACTFORCEREFCONFIG
-
   // only before the first time step
-  if (step != 0)
-    return;
+  if (step != 0) return;
 
   // flag for initualization of contact with nodal gaps
-  bool initcontactbygap = DRT::INPUT::IntegralValue<int>(Params(),
-      "INITCONTACTBYGAP");
+  bool initcontactbygap = DRT::INPUT::IntegralValue<int>(Params(),"INITCONTACTBYGAP");
 
   // only do something for frictional case
   // or for initialization of initial contact set with nodal gap
-  if (!friction_ and !initcontactbygap)
-    return;
+  if (!friction_ and !initcontactbygap) return;
 
   // set state and do mortar calculation
   SetState("displacement", vec);
@@ -1196,21 +1190,15 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
       // merge active sets and slip sets of all interfaces
       // (these maps are NOT allowed to be overlapping !!!)
       interface_[i]->BuildActiveSet(true);
-      gactivenodes_ = LINALG::MergeMap(gactivenodes_,
-          interface_[i]->ActiveNodes(), false);
-      gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(),
-          false);
-      gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(),
-          false);
-      gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(),
-          false);
+      gactivenodes_ = LINALG::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
+      gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
+      gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(), false);
+      gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(), false);
 
       if (friction_)
       {
-        gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(),
-            false);
-        gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(),
-            false);
+        gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
+        gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
         gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
       }
     }
@@ -1225,8 +1213,7 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
 
     // error if no nodes are initialized to active
     if (gactivenodes_->NumGlobalElements() == 0)
-      dserror(
-          "ERROR: No active nodes: Choose bigger value for INITCONTACTGAPVALUE!");
+      dserror("ERROR: No active nodes: Choose bigger value for INITCONTACTGAPVALUE!");
   }
 
   // store contact state to contact nodes (active or inactive)
@@ -1258,60 +1245,6 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
   // (during EvalRefState the interface has been evaluated once)
   tunbalance_.resize(0);
   eunbalance_.resize(0);
-
-#else
-
-  if(step!=0) return;
-
-  // set state and do mortar calculation
-  SetState("displacement",vec);
-  InitMortar();
-  InitEvalInterface();
-  AssembleMortar();
-
-  //----------------------------------------------------------------------
-  // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
-  //----------------------------------------------------------------------
-  // Concretely, we apply the following transformations:
-  // D         ---->   D * T^(-1)
-  //----------------------------------------------------------------------
-  if (Dualquadslave3d())
-  {
-    // modify dmatrix_
-    Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
-    dmatrix_ = temp;
-  }
-
-  // dump mortar Matrix D
-  // this is always the matrix from the reference configuration,
-  // also in the restart case
-  dmatrix_->Dump("DREF");
-
-  // only continue for frictional case
-  if (!friction_) return;
-
-  // store contact state to contact nodes (active or inactive)
-  if(friction_)
-  StoreNodalQuantities(MORTAR::StrategyBase::activeold);
-
-  // store D and M to old ones
-  StoreDM("old");
-
-  // store nodal entries from D and M to old ones
-  if(friction_)
-  StoreToOld(MORTAR::StrategyBase::dm);
-
-  // evaluate relative movement
-  // needed because it is not called in the predictor of the
-  // lagrange multiplier strategy
-  if(friction_)
-  EvaluateRelMov();
-
-  // reset unbalance factors for redistribution
-  // (during EvalRefState the interface has been evaluated once)
-  tunbalance_.resize(0);
-  eunbalance_.resize(0);
-#endif
 
   return;
 }
@@ -2481,9 +2414,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
     {
       FILE* MyFile = NULL;
       std::ostringstream filename;
-      const std::string filebase =
-          DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
-      filename << filebase << ".interface";
+      filename << "interface.txt";
       MyFile = fopen(filename.str().c_str(), "at+");
 
       if (MyFile)
@@ -2531,52 +2462,6 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
       fflush(stdout);
     }
   }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | evaluate contact forces w.r.t. reference configuration     mgit 07/10|
- *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::ForceRefConfig()
-{
-  // multiply current D matrix with current LM
-  Teuchos::RCP<Epetra_Vector> forcecurr = Teuchos::rcp(
-      new Epetra_Vector(*gsdofrowmap_));
-  dmatrix_->Multiply(false, *z_, *forcecurr);
-
-  // read mortar matrix D of reference configuration
-  Teuchos::RCP<LINALG::SparseMatrix> dref = Teuchos::rcp(
-      new LINALG::SparseMatrix(*gsdofrowmap_, 10));
-  std::string inputname = "DREF";
-  dref->Load(Comm(), inputname);
-  dref->Complete();
-
-  // LM in reference / current configuration
-  Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(
-      new Epetra_Vector(*gsdofrowmap_));
-  Teuchos::RCP<Epetra_Vector> zcurr = Teuchos::rcp(new Epetra_Vector(*z_));
-
-  // solve with default solver
-  LINALG::Solver solver(Comm());
-  solver.Solve(dref->EpetraOperator(), zref, forcecurr, true);
-
-  // store reference LM into global vector and nodes
-  z_ = zref;
-  StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
-
-  // print message
-  if (Comm().MyPID() == 0)
-    std::cout
-        << "\n**** First output is w.r.t. the reference configuration! ****"
-        << std::endl;
-
-  // print active set
-  PrintActiveSet();
-
-  // restore current LM into global vector and nodes
-  z_ = zcurr;
-  StoreNodalQuantities(MORTAR::StrategyBase::lmupdate);
 
   return;
 }

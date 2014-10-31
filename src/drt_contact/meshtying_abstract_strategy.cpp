@@ -20,7 +20,6 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -1074,8 +1073,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
     {
       FILE* MyFile = NULL;
       std::ostringstream filename;
-      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
-      filename << filebase << ".interface";
+      filename << "interface.txt";
       MyFile = fopen(filename.str().c_str(), "at+");
 
       if (MyFile)

@@ -34,7 +34,6 @@ Maintainer: Alexander Popp
 //#define CONTACTTIME               /* flag for contact time measurement */
 //#define CONTACTSTATUS             /* flag for contact segmentation measurement */
 //#define CONTACTEIG                /* flag for eigenvalue+condition analysis */
-//#define CONTACTFORCEREFCONFIG     /* flag for evaluation of forces in ref. config. */
 //#define CONTACTFDNORMAL           /* flag for FD check of normal derivative */
 //#define CONTACTFDMORTARD          /* flag for FD check of mortar matrix D */
 //#define CONTACTFDMORTARM          /* flag for FD check of mortar matrix M */
