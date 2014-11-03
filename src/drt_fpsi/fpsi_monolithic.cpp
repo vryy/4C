@@ -60,7 +60,7 @@ Maintainer: Andreas Rauch
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
 // ALE includes
-#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 // OTHER includes
 #include "../drt_constraint/constraint_manager.H"

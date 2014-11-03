@@ -37,7 +37,7 @@
 #include "../drt_fsi/fsi_utils.H"
 
 #include "../drt_fsi/fsi_algorithm.H"
-#include "../drt_ale_new/ale_utils_clonestrategy.H"
+#include "../drt_ale/ale_utils_clonestrategy.H"
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 
 //INPAR includes
@@ -184,7 +184,7 @@ them.
   //3.- Create ALE elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0) // ALE discretization still empty
   {
-    DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(fluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");

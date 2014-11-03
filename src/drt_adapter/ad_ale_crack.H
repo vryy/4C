@@ -24,7 +24,7 @@ Maintainer: Sudhakar
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace ALENEW
+namespace ALE
 {
 namespace UTILS
 {

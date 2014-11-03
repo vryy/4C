@@ -13,8 +13,8 @@
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#ifndef ALENEW_H_
-#define ALENEW_H_
+#ifndef ALE_H_
+#define ALE_H_
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
@@ -56,17 +56,17 @@ namespace IO
 class DiscretizationWriter;
 } // namespace IO
 
-namespace ALENEW
+namespace ALE
 {
 namespace UTILS
 {
 class MapExtractor;
 } // namespace UTILS
-} // namespace ALENEW
+} // namespace ALE
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
-namespace ALENEW
+namespace ALE
 {
 /*! \brief ALE time integration
  *
@@ -135,7 +135,7 @@ public:
    *
    */
   void CreateSystemMatrix(
-      Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface = Teuchos::null //!< interface
+      Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null //!< interface
       );
 
   /*! \brief evaluate and assemble residual #residual_ and jacobian matrix #sysmat_
@@ -146,8 +146,8 @@ public:
    */
   virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc =
       Teuchos::null, ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
-      ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type =
-          ALENEW::UTILS::MapExtractor::dbc_set_std ///< application-specific type of Dirichlet set
+      ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
+          ALE::UTILS::MapExtractor::dbc_set_std ///< application-specific type of Dirichlet set
       );
 
   /// solve this time step with currently applied interface displacements
@@ -186,7 +186,7 @@ public:
   /// start a new time step
   virtual void PrepareTimeStep();
 
-  virtual void TimeStep(ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type = ALENEW::UTILS::MapExtractor::dbc_set_std);
+  virtual void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type = ALE::UTILS::MapExtractor::dbc_set_std);
 
   /// write output
   virtual void Output();
@@ -296,10 +296,10 @@ public:
    * together with an application key; by passing this key to routines like evaluate,
    * an adapter classes can assure, that its very own Dirichlet map extractor is used.
    */
-  void SetupDBCMapEx(ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type =
-      ALENEW::UTILS::MapExtractor::dbc_set_std, //!< application-specific type of Dirichlet set
-      Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface = Teuchos::null, //!< interface for creation of additional, application-specific Dirichlet map extractors
-      Teuchos::RCP<const ALENEW::UTILS::XFluidFluidMapExtractor> xff_interface =
+  void SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
+      ALE::UTILS::MapExtractor::dbc_set_std, //!< application-specific type of Dirichlet set
+      Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null, //!< interface for creation of additional, application-specific Dirichlet map extractors
+      Teuchos::RCP<const ALE::UTILS::XFluidFluidMapExtractor> xff_interface =
           Teuchos::null //!< interface for creation of a Dirichlet map extractor, taylored to XFFSI
       );
 
@@ -307,8 +307,8 @@ public:
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
   const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(
-      ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type =
-          ALENEW::UTILS::MapExtractor::dbc_set_std //!< application-specific type of Dirichlet set
+      ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
+          ALE::UTILS::MapExtractor::dbc_set_std //!< application-specific type of Dirichlet set
       )
   {
     return dbcmaps_[dbc_type];
@@ -448,8 +448,8 @@ private:
 
   //@}
 
-}; // class ALENEW
+}; // class ALE
 
-} // namespace ALENEW
+} // namespace ALE
 
-#endif /* ALENEW_H_ */
+#endif /* ALE_H_ */

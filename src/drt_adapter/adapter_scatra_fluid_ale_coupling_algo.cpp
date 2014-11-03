@@ -17,7 +17,7 @@ Maintainer: Georg Bauer
 #include "adapter_scatra_fluid_ale_coupling_algo.H"
 #include "adapter_coupling.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 

@@ -26,7 +26,7 @@ Maintainer: Matthias Mayr
 #include <Epetra_Operator.h>
 
 #include "../drt_inpar/inpar_ale.H"
-#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
@@ -64,11 +64,11 @@ namespace ADAPTER
 /*! \brief General ALE field interface
  *
  *  Base class for ALE field implementations. A pure ALE problem just needs the
- *  simple ALE time integrator ALENEW::Ale whereas coupled problems need wrap
+ *  simple ALE time integrator ALE::Ale whereas coupled problems need wrap
  *  the ALE field in an ALE adapter that provides problem specific ALE
  *  functionalities.
  *
- *  \sa ALENEW::Ale
+ *  \sa ALE::Ale
  *  \sa ADAPTER::Structure, ADAPTER::Fluid
  *
  *  \author mayr.mt \date 10/2014
@@ -118,16 +118,16 @@ public:
 
   //! Return MapExtractor for Dirichlet boundary conditions
   virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(
-  ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type ///< type of dbc set
+  ALE::UTILS::MapExtractor::AleDBCSetType dbc_type ///< type of dbc set
   ) = 0;
 
   //@}
 
   /// setup Dirichlet boundary condition map extractor
   virtual void SetupDBCMapEx(
-    ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type,  //!< application-specific type of Dirichlet set
-    Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface,  //!< interface for creation of additional, application-specific Dirichlet map extractors
-    Teuchos::RCP<const ALENEW::UTILS::XFluidFluidMapExtractor> xff_interface  //!< interface for creation of a Dirichlet map extractor, taylored to XFFSI
+    ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,  //!< application-specific type of Dirichlet set
+    Teuchos::RCP<const ALE::UTILS::MapExtractor> interface,  //!< interface for creation of additional, application-specific Dirichlet map extractors
+    Teuchos::RCP<const ALE::UTILS::XFluidFluidMapExtractor> xff_interface  //!< interface for creation of a Dirichlet map extractor, taylored to XFFSI
   ) = 0;
 
   //! @name Time step helpers
@@ -139,7 +139,7 @@ public:
   virtual double Time() const = 0;
 
   //! Evaluate time step
-  virtual void TimeStep(ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type= ALENEW::UTILS::MapExtractor::dbc_set_std) = 0;
+  virtual void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type= ALE::UTILS::MapExtractor::dbc_set_std) = 0;
 
   //! Get time step size \f$\Delta t_n\f$
   virtual double Dt() const = 0;
@@ -166,7 +166,7 @@ public:
    */
   virtual void Evaluate(
     Teuchos::RCP<const Epetra_Vector>          disiterinc, ///< step increment such that \f$ x_{n+1}^{k+1} = x_{n}^{converged}+ stepinc \f$
-    ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type   ///< application-specific type of Dirichlet set
+    ALE::UTILS::MapExtractor::AleDBCSetType dbc_type   ///< application-specific type of Dirichlet set
   ) = 0;
 
   //! iterative update of solution after solving the linear system
@@ -233,7 +233,7 @@ public:
    *
    */
   virtual void CreateSystemMatrix(
-    Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface = Teuchos::null) = 0;
+    Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null) = 0;
 
 };
 

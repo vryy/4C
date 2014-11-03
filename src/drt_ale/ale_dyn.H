@@ -13,10 +13,10 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 
-#ifndef ALENEW_DYN_H
-#define ALENEW_DYN_H
+#ifndef ALE_DYN_H
+#define ALE_DYN_H
 
 void dyn_ale_new_drt();
 
-#endif /* ALENEW_DYN_H */
+#endif /* ALE_DYN_H */
 

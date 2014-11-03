@@ -24,7 +24,7 @@
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace ALENEW
+namespace ALE
 {
 namespace UTILS
 {
@@ -54,7 +54,7 @@ public:
   //@}
 
   //! communicate object at the interface
-  Teuchos::RCP<const ALENEW::UTILS::MapExtractor> Interface() const;
+  Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;
 
   //! add ALE wear condition vector
   void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
@@ -64,7 +64,7 @@ public:
 
 private:
 
-  Teuchos::RCP<ALENEW::UTILS::MapExtractor> interface_;
+  Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
 
 }; // class AleWearWrapper
 } // namespace ADAPTER

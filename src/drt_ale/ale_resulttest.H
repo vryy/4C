@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#ifndef ALENEW_RESULTTEST_H
-#define ALENEW_RESULTTEST_H
+#ifndef ALE_RESULTTEST_H
+#define ALE_RESULTTEST_H
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
@@ -30,14 +30,14 @@ namespace DRT
   class Discretization;
 }
 
-namespace ALENEW
+namespace ALE
 {
 class Ale;
 }
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
-namespace ALENEW
+namespace ALE
 {
 
 /// Result test subclass for linear ale algorithm
@@ -45,7 +45,7 @@ class AleResultTest : public DRT::ResultTest
 {
 public:
 
-  AleResultTest(ALENEW::Ale& ale);
+  AleResultTest(ALE::Ale& ale);
 
   /// our version of nodal value tests
   /*!
@@ -66,4 +66,4 @@ private:
 
 }
 
-#endif /* ALENEW_RESULTTEST_H */
+#endif /* ALE_RESULTTEST_H */

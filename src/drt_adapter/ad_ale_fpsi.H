@@ -47,14 +47,14 @@ public:
   void ApplyFSIInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp);
 
   //! communicate object at the interface
-  Teuchos::RCP<const ALENEW::UTILS::MapExtractor> Interface() const;
+  Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;
 
   //@}
 
 private:
 
   //! interface map extractor
-  Teuchos::RCP<ALENEW::UTILS::MapExtractor> interface_;
+  Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
 
 
 }; // class AleFpsiWrapper

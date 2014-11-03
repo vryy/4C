@@ -24,7 +24,7 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace ALENEW
+namespace ALE
 {
 namespace UTILS
 {
@@ -62,7 +62,7 @@ public:
   //@}
 
   //! communicate object at the interface
-  Teuchos::RCP<const ALENEW::UTILS::MapExtractor> Interface() const;
+  Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;
 
   //! apply interface displacements
   void ApplyInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp)
@@ -78,7 +78,7 @@ public:
 
 private:
 
-  Teuchos::RCP<ALENEW::UTILS::MapExtractor> interface_;
+  Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
 
 }; // class AleFsiWrapper
 } // namespace ADAPTER

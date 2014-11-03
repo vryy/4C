@@ -21,7 +21,7 @@
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
 #include "ad_ale_fsi.H"
-#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 /*----------------------------------------------------------------------------*/
 /* class definitions */
@@ -73,7 +73,7 @@ public:
 private:
 
   /// map extractor for the fluid-fluid interface dof
-  Teuchos::RCP<ALENEW::UTILS::XFluidFluidMapExtractor> xff_interface_;
+  Teuchos::RCP<ALE::UTILS::XFluidFluidMapExtractor> xff_interface_;
 
 }; // class AleXFFsiWrapper
 } // namespace ADAPTER

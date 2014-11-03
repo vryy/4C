@@ -11,7 +11,7 @@
 #include "fsi_nox_newton.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"

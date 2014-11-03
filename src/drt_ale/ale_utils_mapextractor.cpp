@@ -19,7 +19,7 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool overlapping)
+void ALE::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool overlapping)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;
@@ -37,7 +37,7 @@ void ALENEW::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool ove
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int> > ALENEW::UTILS::MapExtractor::ConditionedElementMap(const DRT::Discretization& dis) const
+Teuchos::RCP<std::set<int> > ALE::UTILS::MapExtractor::ConditionedElementMap(const DRT::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int> > condelements = DRT::UTILS::ConditionedElementMap(dis,"FSICoupling");
   Teuchos::RCP<std::set<int> > condelements2 = DRT::UTILS::ConditionedElementMap(dis,"FREESURFCoupling");
@@ -60,7 +60,7 @@ Teuchos::RCP<std::set<int> > ALENEW::UTILS::MapExtractor::ConditionedElementMap(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::UTILS::XFluidFluidMapExtractor::Setup(const DRT::Discretization& dis)
+void ALE::UTILS::XFluidFluidMapExtractor::Setup(const DRT::Discretization& dis)
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   DRT::UTILS::MultiConditionSelector mcs;

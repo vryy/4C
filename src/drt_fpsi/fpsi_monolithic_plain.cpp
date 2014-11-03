@@ -42,7 +42,7 @@ Maintainer: Andreas Rauch
 #include "../drt_structure/stru_aux.H"
 
 //ALE includes
-#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 //LINALG includes
 #include "../linalg/linalg_utils.H"
@@ -302,9 +302,9 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
     const int &fidx_fsi = FLD::UTILS::MapExtractor::cond_fsi;
     const int &fidx_fpsi = FLD::UTILS::MapExtractor::cond_fpsi;
 
-    const int &aidx_other = ALENEW::UTILS::MapExtractor::cond_other;
-    const int &aidx_fsi   = ALENEW::UTILS::MapExtractor::cond_fsi;
-    const int &aidx_fpsi  = ALENEW::UTILS::MapExtractor::cond_fpsi;
+    const int &aidx_other = ALE::UTILS::MapExtractor::cond_other;
+    const int &aidx_fsi   = ALE::UTILS::MapExtractor::cond_fsi;
+    const int &aidx_fpsi  = ALE::UTILS::MapExtractor::cond_fpsi;
 
     // FPSI Couplings
     const ADAPTER::Coupling& coupsa_fpsi        =   StructureAleCoupling_FPSI();

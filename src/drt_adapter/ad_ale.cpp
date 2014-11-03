@@ -21,7 +21,7 @@ Maintainer: Matthias Mayr
 #include "ad_ale_fsi.H"
 #include "ad_ale_wear.H"
 #include "ad_ale_xffsi.H"
-#include "../drt_ale_new/ale.H"
+#include "../drt_ale/ale.H"
 
 #include "../drt_inpar/drt_validparameters.H"
 
@@ -75,7 +75,7 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
     Teuchos::RCP<DRT::Discretization> actdis)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer(
-      "ALENEW::AleBaseAlgorithm::SetupAle");
+      "ALE::AleBaseAlgorithm::SetupAle");
   Teuchos::TimeMonitor monitor(*t);
 
   // what's the current problem type?
@@ -161,8 +161,8 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
 
 
   // create the ALE time integrator
-  Teuchos::RCP < ALENEW::Ale > ale = Teuchos::rcp(
-      new ALENEW::Ale(actdis, solver, adyn, output));
+  Teuchos::RCP < ALE::Ale > ale = Teuchos::rcp(
+      new ALE::Ale(actdis, solver, adyn, output));
 
   /* determine problem type and then wrap the ALE time integrator into a
    * problem-specific wrapper */

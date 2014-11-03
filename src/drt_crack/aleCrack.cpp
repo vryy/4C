@@ -22,8 +22,8 @@ Maintainer: Sudhakar
 #include "../drt_fs3i/biofilm_fsi_utils.H"
 #include "../drt_lib/drt_utils.H"
 
-#include "../drt_ale_new/ale_utils_clonestrategy.H"
-#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/ad_ale_crack.H"
 
 
@@ -37,7 +37,7 @@ DRT::CRACK::aleCrack::aleCrack( Teuchos::RCP<DRT::Discretization> dis )
   aledis = DRT::Problem::Instance()->GetDis("ale");
   if (!aledis->Filled()) aledis->FillComplete();
 
-  DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(structdis_,aledis);
+  DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(structdis_,aledis);
   if( aledis->NumGlobalElements() == 0 )
     dserror( "No elements found in ALE discretization" );
 
@@ -153,7 +153,7 @@ void DRT::CRACK::aleCrack::modifyConditions( const std::map<int, std::vector<dou
 
   // just adding the Conditions alone do not get the work done
   // we need to build the Dirichlet boundary condition maps again for these conditions to be implemented
-  ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type = ALENEW::UTILS::MapExtractor::dbc_set_std;
+  ALE::UTILS::MapExtractor::AleDBCSetType dbc_type = ALE::UTILS::MapExtractor::dbc_set_std;
   ale_->SetupDBCMapEx( dbc_type );
 }
 

@@ -14,8 +14,8 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#ifndef ALENEW_UTILS_MAPEXTRACTOR_H
-#define ALENEW_UTILS_MAPEXTRACTOR_H
+#ifndef ALE_UTILS_MAPEXTRACTOR_H
+#define ALE_UTILS_MAPEXTRACTOR_H
 
 #include "../linalg/linalg_mapextractor.H"
 
@@ -24,7 +24,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace ALENEW
+namespace ALE
 {
 namespace UTILS
 {

@@ -26,7 +26,7 @@ Maintainer: Andreas Rauch
 #include "../drt_poroelast/poro_base.H"
 
 //ALE includes
-#include "../drt_ale_new/ale.H"
+#include "../drt_ale/ale.H"
 #include "../drt_adapter/ad_ale_fpsi.H"
 
 //ADAPTER includes

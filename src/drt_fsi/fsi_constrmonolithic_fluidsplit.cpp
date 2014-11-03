@@ -8,7 +8,7 @@
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/ad_ale_fsi.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"

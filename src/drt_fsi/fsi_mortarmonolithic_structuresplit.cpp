@@ -32,7 +32,7 @@ Maintainer: Matthias Mayr
 #include "../linalg/linalg_utils.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
-#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_constraint/constraint_manager.H"

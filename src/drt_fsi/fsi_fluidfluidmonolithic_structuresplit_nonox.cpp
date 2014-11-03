@@ -29,7 +29,7 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
-#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/ad_ale_xffsi.H"
 #include "../drt_inpar/inpar_xfem.H"
 

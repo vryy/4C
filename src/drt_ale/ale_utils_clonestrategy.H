@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-#ifndef ALENEW_UTILS_CLONESTRATEGY_H
-#define ALENEW_UTILS_CLONESTRATEGY_H
+#ifndef ALE_UTILS_CLONESTRATEGY_H
+#define ALE_UTILS_CLONESTRATEGY_H
 
 /*----------------------------------------------------------------------------*/
 /*header inclusions */
@@ -32,7 +32,7 @@ namespace DRT
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
-namespace ALENEW
+namespace ALE
 {
   namespace UTILS
   {
@@ -75,6 +75,6 @@ namespace ALENEW
 
     }; // class AleCloneStrategy
   } // namespace UTILS
-} // namespace ALENEW
+} // namespace ALE
 
-#endif /* ALENEW_UTILS_CLONESTRATEGY_H */
+#endif /* ALE_UTILS_CLONESTRATEGY_H */

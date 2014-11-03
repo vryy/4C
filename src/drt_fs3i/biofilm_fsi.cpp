@@ -26,8 +26,8 @@ http://www.lnm.mw.tum.de
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
-#include "../drt_ale_new/ale_utils_clonestrategy.H"
-#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../linalg/linalg_utils.H"
@@ -61,8 +61,8 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
 
   if (structaledis->NumGlobalNodes()==0)
   {
-    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALENEW::UTILS::AleCloneStrategy> > alecreator =
-        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALENEW::UTILS::AleCloneStrategy>() );
+    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleCloneStrategy> > alecreator =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>() );
     alecreator->CreateMatchingDiscretization(structdis,structaledis,11);
   }
   if (comm.MyPID()==0)
@@ -80,10 +80,10 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
      dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
 
   // create fluid-ALE Dirichlet Map Extractor for FSI step
-  ale_->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_std);
+  ale_->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_std);
 
   // create fluid-ALE Dirichlet Map Extractor for growth step
-  ale_->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_biofilm, ale_->Interface());
+  ale_->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_biofilm, ale_->Interface());
 
   //---------------------------------------------------------------------
   // set up couplings
@@ -196,10 +196,10 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   tangtractiontwo_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
 
   // create fluid-ALE Dirichlet Map Extractor for growth step
-  fsi_->AleField()->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_std, Teuchos::null);
+  fsi_->AleField()->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_std, Teuchos::null);
 
   // create fluid-ALE Dirichlet Map Extractor for FSI step
-  fsi_->AleField()->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_biofilm, fsi_->AleField()->Interface());
+  fsi_->AleField()->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_biofilm, fsi_->AleField()->Interface());
 
 }
 
@@ -681,7 +681,7 @@ void FS3I::BiofilmFSI::FluidAleSolve()
   }
 
   fsi_->AleField()->CreateSystemMatrix(Teuchos::null);
-  fsi_->AleField()->Evaluate(Teuchos::null, ALENEW::UTILS::MapExtractor::dbc_set_biofilm);
+  fsi_->AleField()->Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
   int error = fsi_->AleField()->Solve();
   if (error == 1)
     dserror("Could not solve fluid ALE in biofilm FS3I!");
@@ -730,7 +730,7 @@ void FS3I::BiofilmFSI::StructAleSolve()
   }
 
   ale_->CreateSystemMatrix(Teuchos::null);
-  ale_->Evaluate(Teuchos::null, ALENEW::UTILS::MapExtractor::dbc_set_biofilm);
+  ale_->Evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
   int error = ale_->Solve();
   if (error == 1)
     dserror("Could not solve fluid ALE in biofilm FS3I!");

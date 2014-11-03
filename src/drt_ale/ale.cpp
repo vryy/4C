@@ -41,7 +41,7 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ALENEW::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
+ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
               Teuchos::RCP<LINALG::Solver> solver,
               Teuchos::RCP<Teuchos::ParameterList> params,
               Teuchos::RCP<IO::DiscretizationWriter> output)
@@ -106,8 +106,8 @@ ALENEW::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::CreateSystemMatrix(
-  Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface
+void ALE::Ale::CreateSystemMatrix(
+  Teuchos::RCP<const ALE::UTILS::MapExtractor> interface
 )
 {
   if (interface == Teuchos::null)
@@ -125,9 +125,9 @@ void ALENEW::Ale::CreateSystemMatrix(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::Evaluate(
+void ALE::Ale::Evaluate(
   Teuchos::RCP<const Epetra_Vector> stepinc,
-  ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type
+  ALE::UTILS::MapExtractor::AleDBCSetType dbc_type
 )
 {
   // We save the current solution here. This will not change the
@@ -173,7 +173,7 @@ void ALENEW::Ale::Evaluate(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int ALENEW::Ale::Solve()
+int ALE::Ale::Solve()
 {
   // We need the negative residual here as right hand side of the linear problem
   Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(*residual_));
@@ -191,21 +191,21 @@ int ALENEW::Ale::Solve()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::UpdateIter()
+void ALE::Ale::UpdateIter()
 {
   dispnp_->Update(1.0, *disi_, 1.0);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::Update()
+void ALE::Ale::Update()
 {
   dispn_->Update(1.0, *dispnp_, 0.0);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const bool ALENEW::Ale::Converged(const int iter)
+const bool ALE::Ale::Converged(const int iter)
 {
   if(iter==0)
     normdisi_ = 0.0;
@@ -227,7 +227,7 @@ const bool ALENEW::Ale::Converged(const int iter)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::EvaluateElements()
+void ALE::Ale::EvaluateElements()
 {
   sysmat_->Zero();
 
@@ -254,7 +254,7 @@ void ALENEW::Ale::EvaluateElements()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const std::string ALENEW::Ale::ElementActionString(const enum INPAR::ALE::AleDynamic name)
+const std::string ALE::Ale::ElementActionString(const enum INPAR::ALE::AleDynamic name)
 {
   switch (name)
   {
@@ -275,7 +275,7 @@ const std::string ALENEW::Ale::ElementActionString(const enum INPAR::ALE::AleDyn
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::Preconditioner> ALENEW::Ale::ConstPreconditioner()
+Teuchos::RCP<LINALG::Preconditioner> ALE::Ale::ConstPreconditioner()
 {
   /*if(incremental_==true)
     dserror("Do not use constant preconditioner in an incremental formulation");
@@ -285,7 +285,7 @@ Teuchos::RCP<LINALG::Preconditioner> ALENEW::Ale::ConstPreconditioner()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::CreatePreconditioner(bool full)
+void ALE::Ale::CreatePreconditioner(bool full)
 {
   if (full)
   {
@@ -327,28 +327,28 @@ void ALENEW::Ale::CreatePreconditioner(bool full)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ALENEW::Ale::DofRowMap() const
+Teuchos::RCP<const Epetra_Map> ALE::Ale::DofRowMap() const
 {
   return Teuchos::rcp(discret_->DofRowMap(),false);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ALENEW::Ale::SystemMatrix()
+Teuchos::RCP<LINALG::SparseMatrix> ALE::Ale::SystemMatrix()
 {
   return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> ALENEW::Ale::BlockSystemMatrix()
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ALE::Ale::BlockSystemMatrix()
 {
   return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int ALENEW::Ale::Integrate()
+int ALE::Ale::Integrate()
 {
   const double eps = 1.0e-12; // add eps to prevent stopping one step too early due to memory trash on last digits
   while (step_ < numstep_ and time_ <= maxtime_ + eps)
@@ -364,7 +364,7 @@ int ALENEW::Ale::Integrate()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::Output()
+void ALE::Ale::Output()
 {
   /*  We need ALE output only in case of pure ALE problems. If fluid is present,
    *  the fluid field writes its own displacement field as output.
@@ -392,7 +392,7 @@ void ALENEW::Ale::Output()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::OutputState(bool& datawritten)
+void ALE::Ale::OutputState(bool& datawritten)
 {
   // write output data
   output_->NewStep(step_,time_);
@@ -403,7 +403,7 @@ void ALENEW::Ale::OutputState(bool& datawritten)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::OutputRestart(bool& datawritten)
+void ALE::Ale::OutputRestart(bool& datawritten)
 {
   // write restart data
   output_->NewStep(step_,time_);
@@ -427,7 +427,7 @@ void ALENEW::Ale::OutputRestart(bool& datawritten)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::ReadRestart(const int step)
+void ALE::Ale::ReadRestart(const int step)
 {
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
@@ -439,7 +439,7 @@ void ALENEW::Ale::ReadRestart(const int step)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::PrepareTimeStep()
+void ALE::Ale::PrepareTimeStep()
 {
   step_ += 1;
   time_ += dt_;
@@ -463,14 +463,14 @@ void ALENEW::Ale::PrepareTimeStep()
   eleparams.set("delta time", dt_);
 
   // Apply Dirichlet boundary conditions on provided state vector
-  ALENEW::Ale::ApplyDirichletBC(eleparams, dispnp_, Teuchos::null, Teuchos::null, false);
+  ALE::Ale::ApplyDirichletBC(eleparams, dispnp_, Teuchos::null, Teuchos::null, false);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::TimeStep(ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type)
+void ALE::Ale::TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
 {
   bool converged = false;
   int iter = 0;
@@ -509,7 +509,7 @@ void ALENEW::Ale::TimeStep(ALENEW::UTILS::MapExtractor::AleDBCSetType dbc_type)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::PrintTimeStepHeader() const
+void ALE::Ale::PrintTimeStepHeader() const
 {
   IO::cout << "TIME: " << time_ << "/" << maxtime_
            << "  DT = " << dt_
@@ -519,10 +519,10 @@ void ALENEW::Ale::PrintTimeStepHeader() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::SetupDBCMapEx(
-  ALENEW::UTILS::MapExtractor::AleDBCSetType      dbc_type,
-  Teuchos::RCP<const ALENEW::UTILS::MapExtractor> interface,
-  Teuchos::RCP<const ALENEW::UTILS::XFluidFluidMapExtractor> xff_interface
+void ALE::Ale::SetupDBCMapEx(
+  ALE::UTILS::MapExtractor::AleDBCSetType      dbc_type,
+  Teuchos::RCP<const ALE::UTILS::MapExtractor> interface,
+  Teuchos::RCP<const ALE::UTILS::XFluidFluidMapExtractor> xff_interface
 )
 {
   // set fixed nodes (conditions != 0 are not supported right now). hahn: Why?!
@@ -532,51 +532,51 @@ void ALENEW::Ale::SetupDBCMapEx(
 
   // some consistency checks
   if (interface == Teuchos::null &&
-      dbc_type != ALENEW::UTILS::MapExtractor::dbc_set_std && dbc_type != ALENEW::UTILS::MapExtractor::dbc_set_x_ff)
+      dbc_type != ALE::UTILS::MapExtractor::dbc_set_std && dbc_type != ALE::UTILS::MapExtractor::dbc_set_x_ff)
     dserror("For non-standard use of SetupDBCMapEx, please provide a valid ALE::UTILS::MapExtractor.");
 
-  if (xff_interface == Teuchos::null && dbc_type == ALENEW::UTILS::MapExtractor::dbc_set_x_ff)
+  if (xff_interface == Teuchos::null && dbc_type == ALE::UTILS::MapExtractor::dbc_set_x_ff)
     dserror("For non-standard use of SetupDBCMapEx with fluid-fluid coupling, please provide a XFluidFluidMapExtractor.");
   // REMARK: for all applications, setup of the standard Dirichlet sets is done in the ctor of this class
 
   switch (dbc_type)
   {
-  case ALENEW::UTILS::MapExtractor::dbc_set_std:
-    dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std] = Teuchos::rcp(new LINALG::MapExtractor());
+  case ALE::UTILS::MapExtractor::dbc_set_std:
+    dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std] = Teuchos::rcp(new LINALG::MapExtractor());
     ApplyDirichletBC(eleparams, dispnp_, Teuchos::null, Teuchos::null, true);
     break;
-  case ALENEW::UTILS::MapExtractor::dbc_set_x_ff:
+  case ALE::UTILS::MapExtractor::dbc_set_x_ff:
   {
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
     condmaps.push_back(xff_interface->XFluidFluidCondMap());
-    condmaps.push_back(dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std]->CondMap());
+    condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
 
-    dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_x_ff] =
+    dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_x_ff] =
         Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
     break;
   }
-  case ALENEW::UTILS::MapExtractor::dbc_set_x_fsi:
-  case ALENEW::UTILS::MapExtractor::dbc_set_biofilm:
-  case ALENEW::UTILS::MapExtractor::dbc_set_part_fsi:
+  case ALE::UTILS::MapExtractor::dbc_set_x_fsi:
+  case ALE::UTILS::MapExtractor::dbc_set_biofilm:
+  case ALE::UTILS::MapExtractor::dbc_set_part_fsi:
   {
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
     condmaps.push_back(interface->FSICondMap());
-    condmaps.push_back(dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std]->CondMap());
+    condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
 
     dbcmaps_[dbc_type] =
         Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
     break;
   }
-  case ALENEW::UTILS::MapExtractor::dbc_set_wear:
+  case ALE::UTILS::MapExtractor::dbc_set_wear:
   {
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
     condmaps.push_back(interface->AleWearCondMap());
-    condmaps.push_back(dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std]->CondMap());
+    condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
 
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-    dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_wear] =
+    dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_wear] =
         Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
     break;
   }
@@ -590,14 +590,14 @@ void ALENEW::Ale::SetupDBCMapEx(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ALENEW::Ale::CreateFieldTest()
+Teuchos::RCP<DRT::ResultTest> ALE::Ale::CreateFieldTest()
 {
-  return Teuchos::rcp(new ALENEW::AleResultTest(*this));
+  return Teuchos::rcp(new ALE::AleResultTest(*this));
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::ApplyDirichletBC
+void ALE::Ale::ApplyDirichletBC
 (
   Teuchos::ParameterList& params,
   Teuchos::RCP<Epetra_Vector> systemvector,   //!< (may be Teuchos::null)
@@ -624,7 +624,7 @@ void ALENEW::Ale::ApplyDirichletBC
   if (recreatemap)
   {
     discret_->EvaluateDirichlet(params, systemvector, systemvectord, systemvectordd,
-                                Teuchos::null, dbcmaps_[ALENEW::UTILS::MapExtractor::dbc_set_std]);
+                                Teuchos::null, dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]);
   }
   else
   {
@@ -650,7 +650,7 @@ void ALENEW::Ale::ApplyDirichletBC
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::Reset()
+void ALE::Ale::Reset()
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -662,7 +662,7 @@ void ALENEW::Ale::Reset()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::ResetStep()
+void ALE::Ale::ResetStep()
 {
   dispnp_ ->Update(1.0, *dispn_,0.0);
 
@@ -671,7 +671,7 @@ void ALENEW::Ale::ResetStep()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::ResetTime(const double dtold)
+void ALE::Ale::ResetTime(const double dtold)
 {
   time_=time_-dtold;
   step_=step_-1;
@@ -681,7 +681,7 @@ void ALENEW::Ale::ResetTime(const double dtold)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALENEW::Ale::SetDt(const double dtnew)
+void ALE::Ale::SetDt(const double dtnew)
 {
   dt_ = dtnew;
 
@@ -690,7 +690,7 @@ void ALENEW::Ale::SetDt(const double dtnew)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::SparseMatrix> ALENEW::Ale::GetLocSysTrafo() const
+Teuchos::RCP<const LINALG::SparseMatrix> ALE::Ale::GetLocSysTrafo() const
 {
   if (locsysman_ != Teuchos::null)
     return locsysman_->Trafo();

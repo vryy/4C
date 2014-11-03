@@ -57,8 +57,8 @@ Maintainer: Philipp Farah
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
 
-#include "../drt_ale_new/ale_utils_mapextractor.H"
-#include "../drt_ale_new/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
+#include "../drt_ale/ale_utils_mapextractor.H"
 
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
@@ -1602,7 +1602,7 @@ void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
 //    //AleField().ApplyInterfaceDisplacements(idisale_global);
 //
 //    // solve time step
-//    AleField().TimeStep(ALENEW::UTILS::MapExtractor::dbc_set_wear);
+//    AleField().TimeStep(ALE::UTILS::MapExtractor::dbc_set_wear);
 //
 //    AleField().WriteAccessDispnp()->Update(1.0, *(dispnpstru), 1.0);
 
@@ -1616,7 +1616,7 @@ void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
     AleField().ApplyInterfaceDisplacements(idisale_global);
 
     // solve time step
-    AleField().TimeStep(ALENEW::UTILS::MapExtractor::dbc_set_wear);
+    AleField().TimeStep(ALE::UTILS::MapExtractor::dbc_set_wear);
   }
   // classical lin in mat. conf --> not correct at all
   else if (wconf == INPAR::CONTACT::wear_conf_mat)
@@ -1625,7 +1625,7 @@ void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
     AleField().ApplyInterfaceDisplacements(idisale_global);
 
     // solve time step
-    AleField().TimeStep(ALENEW::UTILS::MapExtractor::dbc_set_wear);
+    AleField().TimeStep(ALE::UTILS::MapExtractor::dbc_set_wear);
   }
   else
     dserror("ERROR: Chosen wear configuration not supported!");

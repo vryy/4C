@@ -18,7 +18,7 @@ Maintainer: Andreas Ehrl
 #include "elch_moving_boundary_algorithm.H"
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
-#include "../drt_ale_new/ale_utils_clonestrategy.H"
+#include "../drt_ale/ale_utils_clonestrategy.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
@@ -135,7 +135,7 @@ void elch_dyn(int restart)
       if (aledis->NumGlobalNodes()==0)
       {
         // clone ALE discretization from fluid discretization
-        DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(fluiddis,aledis);
+        DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
 
         // setup material in every ALE element
         Teuchos::ParameterList params;

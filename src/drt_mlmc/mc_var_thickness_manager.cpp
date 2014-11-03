@@ -29,7 +29,7 @@ Maintainer: Jonas Biehler
 #include "randomfield_fourier.H"
 #include "randomfield_spectral.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_ale_new/ale_utils_clonestrategy.H"
+#include "../drt_ale/ale_utils_clonestrategy.H"
 #include "../drt_adapter/ad_ale_wrapper.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
@@ -98,7 +98,7 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
   // clone ale mesh from structure discretization
   if (aledis_->NumGlobalNodes() == 0)
   {
-    DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(discret_,
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(discret_,
         aledis_);
     // setup material in every ALE element
     Teuchos::ParameterList params;
@@ -545,7 +545,7 @@ void UQ::MCVarThicknessManager::ModifyGeometryBasedOnRF(const unsigned int mysee
        my_uncertain_nodes_dbc_funct_);
 
   // since we potentially changed the DB conditions we have to rebuild
-  my_ale_timint->SetupDBCMapEx(ALENEW::UTILS::MapExtractor::dbc_set_std,
+  my_ale_timint->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_std,
       Teuchos::null, Teuchos::null);
 
   // check whether locsys condition is in place to move nodes in normal dir

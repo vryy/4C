@@ -16,7 +16,7 @@ Maintainer: Michael Gee
 #include "../drt_structure/stru_dyn_nln_drt.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
 #include "../drt_scatra/scatra_dyn.H"
-#include "../drt_ale_new/ale_dyn.H"
+#include "../drt_ale/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
 #include "../drt_fs3i/fs3i_dyn.H"
 #include "../drt_levelset/levelset_dyn.H"

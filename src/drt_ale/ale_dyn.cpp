@@ -32,7 +32,7 @@ void dyn_ale_new_drt()
   Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("ale");
 
   // -------------------------------------------------------------------
-  // ask ALENEW::AleBaseAlgorithm for the ale time integrator
+  // ask ALE::AleBaseAlgorithm for the ale time integrator
   // -------------------------------------------------------------------
   Teuchos::RCP< ::ADAPTER::AleNewBaseAlgorithm> ale =
       Teuchos::rcp(new ::ADAPTER::AleNewBaseAlgorithm(DRT::Problem::Instance()->AleDynamicParams(), actdis));
