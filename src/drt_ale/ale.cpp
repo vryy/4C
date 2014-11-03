@@ -56,7 +56,6 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
     dt_(params_->get<double>("TIMESTEP")),
     writerestartevery_(params->get<int>("RESTARTEVRY")),
     writeresultsevery_(params->get<int>("RESULTSEVRY")),
-    incremental_(true),
     sysmat_(Teuchos::null),
     residual_(Teuchos::null),
     rhs_(Teuchos::null),
@@ -242,7 +241,6 @@ void ALE::Ale::EvaluateElements()
 
   // action for elements
   eleparams.set<std::string>("action", ElementActionString(aletype_));
-  eleparams.set<bool>("incremental", incremental_);
 
   discret_->SetState("dispnp", dispnp_);
 

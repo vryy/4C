@@ -291,13 +291,6 @@ public:
 
 private:
 
-  void static_ke(
-      DRT::Discretization& dis,
-      std::vector<int>& lm,
-      Epetra_SerialDenseMatrix* sys_mat, Epetra_SerialDenseVector& residual,
-      bool incremental, std::vector<double>& my_dispnp,
-      Teuchos::ParameterList& params);
-
   void static_ke_laplace(
       DRT::Discretization& dis,
       std::vector<int>& lm,
@@ -307,7 +300,6 @@ private:
 
   void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
       Epetra_SerialDenseVector& residual,
-      bool incremental,
       std::vector<double>& displacements);
 
   /*! \brief evaluate element quantities for nonlinear case
@@ -360,24 +352,6 @@ private:
       const Epetra_SerialDenseMatrix& xyze);
   void ale2_torsional(int i, int j, int k, const Epetra_SerialDenseMatrix& xyze,
       Epetra_SerialDenseMatrix* k_torsion);
-
-
-  void ale2_jacobianmatrix(const Epetra_SerialDenseMatrix& xrefe,
-      const Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& xjm,
-      double* det, const int numnode);
-
-  void ale2_jacobianmatrix_cure(const Epetra_SerialDenseMatrix& xcure,
-      const Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& xjm_cure,
-      double* det_cure, const int numnode);
-
-  void ale2_bop(Epetra_SerialDenseMatrix& bop, Epetra_SerialDenseMatrix& deriv,
-      Epetra_SerialDenseMatrix& xjm, Epetra_SerialDenseMatrix& xji,
-      const int numnode);
-
-  void ale2_greenlag(Epetra_SerialDenseMatrix& defgrad,
-      Epetra_SerialDenseMatrix& greenlag, Epetra_SerialDenseMatrix& deriv,
-      Epetra_SerialDenseMatrix& xji, const std::vector<double>& my_dispnp);
-
 
   void CalcBOpLin(Epetra_SerialDenseMatrix& boplin,
       Epetra_SerialDenseMatrix& deriv,
@@ -440,11 +414,6 @@ private:
     calc_ale_springs, ///< compute stiffness based on springs algorithm on last time step configuration
     calc_ale_laplace,///< compute stiffness based on laplacian smoothing based on initial configuration
     setup_material, ///< Setup material in case of ElastHyper Tool Box
-
-    // old types will be removed in the near future
-    calc_ale_lin, ///< compute stiffness based on linear elastic solid at current configuration
-    calc_ale_lin_fixed_ref, ///< compute stiffness based on linear elastic solid in initial configuration
-    calc_ale_springs_fixed_ref ///< compute stiffness based on springs algorithm on initial configuration
   };
 
   //! don't want = operator

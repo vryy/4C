@@ -335,10 +335,6 @@ public:
     calc_ale_node_normal,///< Calculate boundary node normal
     ba_calc_ale_node_normal, ///< Calculate boundary node normal TODO (@ HAHN unused action please fix me!)
     setup_material, ///< Setup material in case of ElastHyper Tool Box
-    // old types will be removed in the near future
-    calc_ale_lin, ///< compute stiffness based on linear elastic solid at current configuration
-    calc_ale_lin_fixed_ref, ///< compute stiffness based on linear elastic solid in initial configuration
-    calc_ale_springs_fixed_ref ///< compute stiffness based on springs algorithm on initial configuration
   };
 
 private:
@@ -366,23 +362,17 @@ public:
 
   virtual void static_ke_spring(Ale3* ele, Epetra_SerialDenseMatrix& sys_mat,
       Epetra_SerialDenseVector& residual,
-      bool incremental, const std::vector<double>& displacements) = 0;
-
-  virtual void static_ke(Ale3* ele, DRT::Discretization& discretization,
-      std::vector<int>& lm, Epetra_SerialDenseMatrix& sys_mat,
-      Epetra_SerialDenseVector& residual, bool incremental,
-      std::vector<double>& my_dispnp,
-      Teuchos::ParameterList& params) = 0;
+      const std::vector<double>& displacements) = 0;
 
   virtual void static_ke_nonlinear(Ale3* ele, DRT::Discretization& discretization,
       std::vector<int>& lm, Epetra_SerialDenseMatrix& sys_mat,
-      Epetra_SerialDenseVector& residual, bool incremental,
+      Epetra_SerialDenseVector& residual,
       std::vector<double>& my_dispnp,
       Teuchos::ParameterList& params)=0;
 
   virtual void static_ke_laplace(Ale3* ele, DRT::Discretization& dis,
       Epetra_SerialDenseMatrix& sys_mat, Epetra_SerialDenseVector& residual,
-      bool incremental, std::vector<double>& my_dispnp,
+      std::vector<double>& my_dispnp,
       Teuchos::RCP<MAT::Material> material, Teuchos::ParameterList& params) = 0;
 
     virtual void ElementNodeNormal(Ale3*                      ele,
@@ -413,7 +403,6 @@ public:
     DRT::Discretization&       dis,
     Epetra_SerialDenseMatrix&  sys_mat,
     Epetra_SerialDenseVector&  residual,
-    bool                       incremental,
     std::vector<double>&       my_dispnp,
     Teuchos::RCP<MAT::Material> material,
     Teuchos::ParameterList&    params);
@@ -421,18 +410,11 @@ public:
   void static_ke_spring(Ale3*                     ele,
                         Epetra_SerialDenseMatrix& sys_mat,
                         Epetra_SerialDenseVector& residual,
-                        bool incremental,
                         const std::vector<double>& displacements);
-
-  void static_ke(Ale3* ele, DRT::Discretization& discretization,
-      std::vector<int>& lm, Epetra_SerialDenseMatrix& sys_mat,
-      Epetra_SerialDenseVector& residual, bool incremental,
-      std::vector<double>& my_dispnp,
-      Teuchos::ParameterList& params);
 
   void static_ke_nonlinear(Ale3* ele, DRT::Discretization& discretization,
       std::vector<int>& lm, Epetra_SerialDenseMatrix& sys_mat,
-      Epetra_SerialDenseVector& residual, bool incremental,
+      Epetra_SerialDenseVector& residual,
       std::vector<double>& my_dispnp,
       Teuchos::ParameterList& params);
 

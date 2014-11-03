@@ -118,23 +118,16 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
 {
   DRT::ELEMENTS::Ale3::ActionType act = Ale3::none;
 
-  bool incremental = params.get("incremental",false);
   // get the action required
   std::string action = params.get<std::string>("action","none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_ale_laplace")
       act = Ale3::calc_ale_laplace;
-  else if ( (action == "calc_ale_lin_stiff" && incremental) )
-     act = Ale3::calc_ale_lin;
-  else if ( (action == "calc_ale_lin_stiff" && !incremental) )
-    act = Ale3::calc_ale_lin_fixed_ref;
   else if (action == "calc_ale_solid")
       act = Ale3::calc_ale_solid;
-  else if (action == "calc_ale_spring" || action == "calc_ale_springs" )
+  else if (action == "calc_ale_springs" )
     act = Ale3::calc_ale_springs;
-  else if (action == "calc_ale_spring_fixed_ref")
-    act = Ale3::calc_ale_springs_fixed_ref;
   else if (action == "calc_ale_node_normal")
     act = Ale3::calc_ale_node_normal;
   else if (action == "setup_material")
@@ -150,42 +143,18 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
   case calc_ale_laplace:
   {
     std::vector<double> my_dispnp;
-    bool incremental = params.get<bool>("incremental");
-    if (incremental)
-    {
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-      my_dispnp.resize(lm.size());
-      DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
-    }
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    my_dispnp.resize(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
     Ale3_Impl_Interface::Impl(this)->static_ke_laplace(
                            this,
                            discretization,
                            elemat1,
                            elevec1,
-                           incremental,
                            my_dispnp,
                            mat,
                            params);
-
-    break;
-  }
-  case calc_ale_lin:
-  {
-    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-    std::vector<double> my_dispnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
-
-    Ale3_Impl_Interface::Impl(this)->static_ke(this, discretization, lm,
-        elemat1, elevec1, true, my_dispnp, params);
-
-    break;
-  }
-  case calc_ale_lin_fixed_ref:
-  {
-    std::vector<double> my_dispnp(lm.size(), 0.0);
-    Ale3_Impl_Interface::Impl(this)->static_ke(this, discretization, lm,
-        elemat1, elevec1, false, my_dispnp, params);
 
     break;
   }
@@ -196,7 +165,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
     Ale3_Impl_Interface::Impl(this)->static_ke_nonlinear(this, discretization, lm,
-        elemat1, elevec1, true, my_dispnp, params);
+        elemat1, elevec1, my_dispnp, params);
 
     break;
   }
@@ -206,19 +175,10 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     std::vector<double> my_dispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-    Ale3_Impl_Interface::Impl(this)->static_ke_spring(this,elemat1,elevec1,true,my_dispnp);
+    Ale3_Impl_Interface::Impl(this)->static_ke_spring(this,elemat1,elevec1,my_dispnp);
 
     break;
   }
-
-  case calc_ale_springs_fixed_ref:
-  {
-    std::vector<double> my_dispnp(lm.size(),0.0);
-    Ale3_Impl_Interface::Impl(this)->static_ke_spring(this,elemat1,elevec1,false,my_dispnp);
-
-    break;
-  }
-
   case calc_ale_node_normal:
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
@@ -935,7 +895,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
     Epetra_SerialDenseMatrix& sys_mat_epetra,
-    Epetra_SerialDenseVector& residual, bool incremental,
+    Epetra_SerialDenseVector& residual,
     const std::vector<double>& displacements)
 {
   LINALG::Matrix<3*iel,3*iel> sys_mat(sys_mat_epetra.A(),true);
@@ -955,14 +915,12 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
     xyze(2,i)=x[2];
   }
 
-  if (incremental)
+  // update spatial configuration
+  for(int i=0;i<iel;i++)
   {
-    for(int i=0;i<iel;i++)
-    {
-      xyze(0,i) += displacements[3*i];
-      xyze(1,i) += displacements[3*i+1];
-      xyze(2,i) += displacements[3*i+2];
-    }
+    xyze(0,i) += displacements[3*i];
+    xyze(1,i) += displacements[3*i+1];
+    xyze(2,i) += displacements[3*i+2];
   }
 
 //lineal springs from all corner nodes to all corner nodes
@@ -1369,205 +1327,10 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(Ale3* ele,
-    DRT::Discretization& dis, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& sys_mat_epetra,
-    Epetra_SerialDenseVector& residual, bool incremental,
-    std::vector<double>& my_dispnp, Teuchos::ParameterList& params)
-{
-  const int nd  = 3 * iel;
-  // A view to sys_mat_epetra
-  LINALG::Matrix<nd,nd> sys_mat(sys_mat_epetra.A(),true);
-
-  //  get material using class StVenantKirchhoff
-  if (ele->Material()->MaterialType()!=INPAR::MAT::m_stvenant)
-    dserror("stvenant material expected but got type %d", ele->Material()->MaterialType());
-  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(ele->Material().get());
-
-  LINALG::Matrix<3,iel> xyze;
-
-  // get node coordinates
-  DRT::Node** nodes = ele->Nodes();
-  for(int i=0;i<iel;i++)
-  {
-    const double* x = nodes[i]->X();
-    xyze(0,i)=x[0];
-    xyze(1,i)=x[1];
-    xyze(2,i)=x[2];
-  }
-
-  if (incremental)
-  {
-    for(int i=0;i<iel;i++)
-    {
-      xyze(0,i) += my_dispnp[3*i+0];
-      xyze(1,i) += my_dispnp[3*i+1];
-      xyze(2,i) += my_dispnp[3*i+2];
-    }
-  }
-
-  // --------------------------------------------------
-  // Now do the nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(3);
-  LINALG::Matrix<iel,1> weights(iel);
-
-  if (distype == DRT::Element::nurbs8 || distype == DRT::Element::nurbs27)
-  {
-    DRT::NURBS::NurbsDiscretization* nurbsdis
-      =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
-
-    bool zero_size=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
-
-    if(zero_size)
-    {
-      return;
-    }
-
-    for (int inode=0; inode<iel; ++inode)
-    {
-      DRT::NURBS::ControlPoint* cp
-        =
-        dynamic_cast<DRT::NURBS::ControlPoint* > (ele->Nodes()[inode]);
-
-      weights(inode) = cp->W();
-    }
-  }
-
-  /*----------------------------------------- declaration of variables ---*/
-  LINALG::Matrix<iel,1  > funct;
-  LINALG::Matrix<3,  iel> deriv;
-  LINALG::Matrix<3,  3  > xjm;
-  LINALG::Matrix<3,  3  > xji;
-  LINALG::Matrix<6,  nd > bop;
-  LINALG::Matrix<6,  6  > D(true);
-
-  double vol=0.;
-
-  // gaussian points
-  const DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
-  const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule);
-
-  // integration loops
-  for (int iquad=0;iquad<intpoints.nquad;iquad++)
-  {
-    const double e1 = intpoints.qxg[iquad][0];
-    const double e2 = intpoints.qxg[iquad][1];
-    const double e3 = intpoints.qxg[iquad][2];
-
-
-    // get values of shape functions and derivatives in the gausspoint
-    if (distype != DRT::Element::nurbs8 && distype != DRT::Element::nurbs27)
-    {
-      // shape functions and their derivatives for polynomials
-      DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
-      DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
-    }
-    else
-    {
-      // nurbs version
-      Epetra_SerialDenseVector gp(3);
-      gp(0) = e1;
-      gp(1) = e2;
-      gp(2) = e3;
-
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots,
-          weights, distype);
-    }
-
-    // compute jacobian matrix
-
-    // determine jacobian at point r,s,t
-    xjm.MultiplyNT(deriv,xyze);
-
-    // determinant and inverse of jacobian
-    const double det = xji.Invert(xjm);
-
-    // calculate element volume
-    const double fac = intpoints.qwgt[iquad]*det;
-    vol += fac;
-
-    // get operator b of global derivatives
-    for (int i=0; i<iel; i++)
-    {
-      const int node_start = i*3;
-
-      // [h1,h2,h3] is the i-th column in (xji * deriv), but that
-      // matrix is not calculated, because it is never needed.
-      const double hr = deriv(0,i);
-      const double hs = deriv(1,i);
-      const double ht = deriv(2,i);
-
-      const double h1 = xji(0,0)*hr + xji(0,1)*hs + xji(0,2)*ht;
-      const double h2 = xji(1,0)*hr + xji(1,1)*hs + xji(1,2)*ht;
-      const double h3 = xji(2,0)*hr + xji(2,1)*hs + xji(2,2)*ht;
-
-      bop(0,node_start+0) = h1 ;
-      bop(0,node_start+1) = 0.0;
-      bop(0,node_start+2) = 0.0;
-      bop(1,node_start+0) = 0.0;
-      bop(1,node_start+1) = h2 ;
-      bop(1,node_start+2) = 0.0;
-      bop(2,node_start+0) = 0.0;
-      bop(2,node_start+1) = 0.0;
-      bop(2,node_start+2) = h3 ;
-      bop(3,node_start+0) = h2 ;
-      bop(3,node_start+1) = h1 ;
-      bop(3,node_start+2) = 0.0;
-      bop(4,node_start+0) = 0.0;
-      bop(4,node_start+1) = h3 ;
-      bop(4,node_start+2) = h2 ;
-      bop(5,node_start+0) = h3 ;
-      bop(5,node_start+1) = 0.0;
-      bop(5,node_start+2) = h1 ;
-    }
-
-    // call material law
-    actmat->SetupCmat(D);
-
-    // elastic stiffness matrix ke
-    //ale3_keku(estif,bop,D,fac,nd);
-
-    // Again what we really have here is a matrix multiplication. For
-    // each j db is the j-th column of D * bop, so the whole
-    // calculation is sys_mat += bop^T * D * bop.
-    // (If you got the impression (or know) that this description is
-    // wrong, don't believe me. I just read the code and tried to
-    // figure out what it does.)
-    for (int j=0; j<nd; j++) {
-      double dum;
-      double db[6];
-      for (int k=0; k<6; k++) {
-        db[k] = 0.0;
-        for (int l=0; l<6; l++)
-          db[k] += D(k,l)*bop(l,j)*fac ;
-      }
-      for (int i=0; i<nd; i++) {
-        dum = 0.0;
-        for (int m=0; m<6; m++)
-          dum = dum + bop(m,i)*db[m] ;
-        sys_mat(i,j) += dum;
-      }
-    }
-  }
-
-  residual.Scale(0.0);
-  for(int i =0; i< 3*iel; ++i)
-  {
-    for(int j=0; j<3*iel; ++j)
-    {
-      residual[i]+=(sys_mat)(i,j)*my_dispnp[j];
-    }
-  }
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
     DRT::Discretization& dis, std::vector<int>& lm,
     Epetra_SerialDenseMatrix& sys_mat_epetra,
-    Epetra_SerialDenseVector& residual, bool incremental,
+    Epetra_SerialDenseVector& residual,
     std::vector<double>& my_dispnp, Teuchos::ParameterList& params)
 {
 
@@ -1790,7 +1553,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele,
     DRT::Discretization& dis, Epetra_SerialDenseMatrix& sys_mat_epetra,
-    Epetra_SerialDenseVector& residual, bool incremental,
+    Epetra_SerialDenseVector& residual,
     std::vector<double>& my_dispnp, Teuchos::RCP<MAT::Material> material,
     Teuchos::ParameterList& params)
 {
@@ -1825,14 +1588,12 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele,
     xyze(2,i)=x[2];
   }
 
-  if (incremental)
+  // update spatial configuration
+  for(int i=0;i<iel;i++)
   {
-    for(int i=0;i<iel;i++)
-    {
-      xyze(0,i) += my_dispnp[3*i+0];
-      xyze(1,i) += my_dispnp[3*i+1];
-      xyze(2,i) += my_dispnp[3*i+2];
-    }
+    xyze(0,i) += my_dispnp[3*i+0];
+    xyze(1,i) += my_dispnp[3*i+1];
+    xyze(2,i) += my_dispnp[3*i+2];
   }
 
   // --------------------------------------------------

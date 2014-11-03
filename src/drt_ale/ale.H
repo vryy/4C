@@ -366,7 +366,6 @@ private:
   double dt_; ///< time step size
   int writerestartevery_; ///< write restart every n steps
   int writeresultsevery_; ///< write results every n steps
-  bool incremental_; ///< incremental ale yes/no?
   //@}
 
   //! @name matrices, vectors

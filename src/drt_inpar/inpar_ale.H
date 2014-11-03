@@ -28,12 +28,8 @@ namespace INPAR
   {
     // old types
     none,
-    classic_lin, // will die
-    incr_lin, // will die
     laplace,
     springs,
-    springs_fixed_ref, // will die
-    // new type
     solid,
   };
   /// Handling of non-converged nonlinear solver

@@ -5089,14 +5089,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TIMESTEP",0.1,"",&adyn);
   IntParameter("NUMSTEP",41,"",&adyn);
   DoubleParameter("MAXTIME",4.0,"",&adyn);
-  setStringToIntegralParameter<int>("ALE_TYPE","classic_lin","ale mesh movement algorithm",
-                               tuple<std::string>("classic_lin","incr_lin","solid","laplace","springs","springs_fixed_ref"),
-                               tuple<int>(INPAR::ALE::classic_lin,
-                                   INPAR::ALE::incr_lin,
-                                   INPAR::ALE::solid,
+  setStringToIntegralParameter<int>("ALE_TYPE","solid","ale mesh movement algorithm",
+                               tuple<std::string>("solid","laplace","springs"),
+                               tuple<int>(INPAR::ALE::solid,
                                    INPAR::ALE::laplace,
-                                   INPAR::ALE::springs,
-                                   INPAR::ALE::springs_fixed_ref),
+                                   INPAR::ALE::springs),
                                &adyn);
   IntParameter("MAXITER",1,"Maximum number of newton iterations.",&adyn);
   DoubleParameter("TOLRES",1.0e-06,"Absolute tolerance for length scaled L2 residual norm ",&adyn);
