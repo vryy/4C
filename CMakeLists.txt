@@ -1689,15 +1689,6 @@ set(OBJS_DRT_T3CL_LIB
   src/drt_truss3cl/truss3cl_input.cpp
 )
 set(OBJS_DRT_ALEALG
-  src/drt_ale/ale.cpp
-  src/drt_ale/ale_dyn.cpp
-  src/drt_ale/ale_laplace.cpp
-  src/drt_ale/ale_lin.cpp
-  src/drt_ale/ale_resulttest.cpp
-  src/drt_ale/ale_springs.cpp
-  src/drt_ale/ale_springs_fixed_ref.cpp
-  src/drt_ale/ale_utils_mapextractor.cpp
-  src/drt_ale/ale_utils_clonestrategy.cpp
   src/drt_ale_new/ale.cpp
   src/drt_ale_new/ale_dyn.cpp
   src/drt_ale_new/ale_resulttest.cpp
