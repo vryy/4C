@@ -20,6 +20,8 @@ Maintainer: Anna Birzle
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
+#include "elasthyper.H"
+
 // forward declaration due to avoid header definition
 namespace MAT
 {
@@ -39,7 +41,8 @@ namespace MAT
     /// Storage map of hyperelastic summands.
 
 
-    class ViscoElastHyper : public Parameter
+  class ViscoElastHyper : public MAT::PAR::ElastHyper
+//    class ViscoElastHyper : public Parameter
     {
 
       friend class MAT::ViscoElastHyper;
@@ -56,23 +59,6 @@ namespace MAT
 
       /// destructor
       virtual ~ViscoElastHyper() { ; }
-
-      /// @name material parameters
-      //@{
-
-//       /// provide access to material/summand by its ID
-//       Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(
-//         const int id  ///< ID to look for in collection of summands
-//         ) const;
-
-      /// length of material list
-      const int nummat_;
-
-      /// the list of material IDs
-      const std::vector<int>* matids_;
-
-      /// material mass density
-      const double density_;
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -128,7 +114,7 @@ private:
   /// \date 05/09
   class Material;
 
-  class ViscoElastHyper : public So3Material
+  class ViscoElastHyper : public MAT::ElastHyper
   {
   public:
 
@@ -185,27 +171,6 @@ private:
       return isinitvis_&&(histartstresscurr_!=Teuchos::null);
     }
 
-    /// number of materials
-    virtual int NumMat() const { return params_->nummat_; }
-
-    /// deliver material ID of index i'th potential summand in collection
-    virtual int MatID(
-      const unsigned index  ///< index i
-      ) const;
-
-    /// provide access to material by its ID
-//     virtual Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const { return params_->MaterialById(id); }
-
-    /// material mass density
-    virtual double Density() const { return params_->density_; }
-
-    /// a shear modulus equivalent
-    virtual double ShearMod() const;
-
-    /// evaluate strain energy function
-    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain, ///< Green-Lagrange strain
-                              double& psi);                        ///< Strain energy function
-
     /// hyperelastic stress response plus elasticity tensor
     virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///< Deformation gradient
                           const LINALG::Matrix<6,1>* glstrain,///< Green-Lagrange strain
@@ -217,64 +182,11 @@ private:
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     virtual void ResetAll(const int numgp);
-    virtual void SetupTimeVariables();
+    virtual void SetupTimeVariables(){;};
 
     virtual void Update();
 
-    /// setup patient-specific AAA stuff
-    virtual void SetupAAA(Teuchos::ParameterList& params);
-
-    /// return if isotropic not splitted formulation
-    virtual bool IsotropicPrincipal() const { return isoprinc_;}
-
-    /// return if isotropic and splitted formulation
-    virtual bool IsotropicModified() const { return isomod_;}
-
-    /// return if anisotropic not splitted formulation
-    virtual bool AnisotropicPrincipal() const { return anisoprinc_;}
-
-    /// return if anisotropic and splitted formulation
-    virtual bool AnisotropicModified() const { return anisomod_;}
-
-    /// return if isotropic, splitted and viscous formulation
-    virtual bool IsotropicModifiedVisco() const { return isomodvisco_;}
-
-    /// return if viscous-genmax (ssl-model) formulation
-    virtual bool ViscoGenMax() const { return viscogenmax_;}
-
-    /// get fiber vectors
-    virtual void GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs);
-
-    /// evaluate fiber directions from locsys and alignment angle, pull back
-    virtual void EvaluateFiberVecs
-    (
-      const double newgamma,   ///< new angle
-      const LINALG::Matrix<3,3>& locsys,   ///< local coordinate system
-      const LINALG::Matrix<3,3>& defgrd   ///< deformation gradient
-    );
-
-    /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
-
-    /// Return names of visualization data
-    virtual void VisNames(std::map<std::string,int>& names);
-
-    /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
-
   protected:
-    /// calculates the kinematic quantities and tensors used afterwards
-    virtual void EvaluateKinQuant(
-      const LINALG::Matrix<6,1>& glstrain,
-      LINALG::Matrix<6,1>& id2,
-      LINALG::Matrix<6,1>& scg,
-      LINALG::Matrix<6,1>& rcg,
-      LINALG::Matrix<6,1>& icg,
-      LINALG::Matrix<6,6>& id4,
-      LINALG::Matrix<6,6>& id4sharp,
-      LINALG::Matrix<3,1>& prinv,
-      LINALG::Matrix<3,1>& modinv);
-
     /// calculates the kinematic quantities and tensors used afterwards for viscos part
     virtual void EvaluateKinQuantVis(
       LINALG::Matrix<6,1> rcg,
@@ -286,16 +198,6 @@ private:
       LINALG::Matrix<7,1>& modrateinv
       );
 
-    /// calculates the factors associated to the hyperelastic laws
-    virtual void EvaluateGammaDelta(
-        LINALG::Matrix<3,1> prinv,
-        LINALG::Matrix<3,1> modinv,
-        LINALG::Matrix<3,1>& gamma,
-        LINALG::Matrix<8,1>& delta,
-        LINALG::Matrix<3,1>& modgamma,
-        LINALG::Matrix<5,1>& moddelta
-        );
-
     /// calculates the factors associated to the viscos laws
     virtual void EvaluateMyXi(
         LINALG::Matrix<3,1> modinv,
@@ -303,35 +205,6 @@ private:
         LINALG::Matrix<33,1>& modxi,
         LINALG::Matrix<7,1>& modrateinv,
         Teuchos::ParameterList& params
-        );
-
-    /// calculates the isotropic stress and elasticity tensor for coupled configuration
-    virtual void EvaluateIsotropicPrinc(
-        LINALG::Matrix<6,1>& stressisoprinc,
-        LINALG::Matrix<6,6>& cmatisoprinc,
-        LINALG::Matrix<6,1> scg,
-        LINALG::Matrix<6,1> id2,
-        LINALG::Matrix<6,1> icg,
-        LINALG::Matrix<6,6> id4sharp,
-        LINALG::Matrix<3,1> gamma,
-        LINALG::Matrix<8,1> delta
-        );
-
-    /// calculates the isotropic stress and elasticity tensor for decoupled configuration
-    virtual void EvaluateIsotropicMod(
-        LINALG::Matrix<6,1>& stressisomodiso,
-        LINALG::Matrix<6,1>& stressisomodvol,
-        LINALG::Matrix<6,6>& cmatisomodiso,
-        LINALG::Matrix<6,6>& cmatisomodvol,
-        LINALG::Matrix<6,1> rcg,
-        LINALG::Matrix<6,1> id2,
-        LINALG::Matrix<6,1> icg,
-        LINALG::Matrix<6,6> id4,
-        LINALG::Matrix<6,6> id4sharp,
-        LINALG::Matrix<3,1> modinv,
-        LINALG::Matrix<3,1> prinv,
-        LINALG::Matrix<3,1> modgamma,
-        LINALG::Matrix<5,1> moddelta
         );
 
     /// calculates the isotropic stress and elasticity tensor for viscous decoupled configuration
@@ -364,149 +237,6 @@ private:
         double beta,
         Teuchos::ParameterList& params
         );
-
-    /// calculates the anisotropic stress and elasticity tensor for coupled configuration
-    virtual void EvaluateAnisotropicPrinc(
-        LINALG::Matrix<6,1>& stressanisoprinc,
-        LINALG::Matrix<6,6>& cmatanisoprinc,
-        LINALG::Matrix<6,1> rcg,
-        Teuchos::ParameterList& params
-        );
-
-    /// calculates the anisotropic stress and elasticity tensor for decoupled configuration
-    virtual void EvaluateAnisotropicMod(
-        LINALG::Matrix<6,1>& stressanisoprinc,
-        LINALG::Matrix<6,6>& cmatanisoprinc,
-        LINALG::Matrix<6,1> rcg,
-        LINALG::Matrix<6,1> icg,
-        LINALG::Matrix<3,1> prinv
-        );
-
-    /// calculate principal invariants
-    virtual void InvariantsPrincipal(
-      LINALG::Matrix<3,1>& prinv,  ///< principal invariants
-      const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-      );
-
-    /// calculate modified invariants
-    virtual void InvariantsModified(
-      LINALG::Matrix<3,1>& modinv,  ///< modified invariants
-      const LINALG::Matrix<3,1>& prinv  ///< principal invariants
-      );
-
-    /// calculate principal stretches \f$\lambda_\alpha\f$ and material principal directions
-    void StretchesPrincipal(
-     LINALG::Matrix<3,1>& prstr,  ///< principal stretches
-     LINALG::Matrix<3,3>& prdir,  ///< principal directions, stored col-by-col
-     const LINALG::Matrix<6,1>& rcg);  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-
-
-    /// calculate modified principal stretches \f$\bar{\lambda}_\alpha\f$
-    void StretchesModified(
-     LINALG::Matrix<3,1>& modstr,  ///< modified principal stretches
-     const LINALG::Matrix<3,1>& prstr  ///< principal stretches
-     );
-
-    /// determine if at least one summand uses principal stretches
-    bool HaveCoefficientsStretchesPrincipal();
-
-    /// determine if at least one summand uses modified principal stretches
-    bool HaveCoefficientsStretchesModified();
-
-    /// Determine PK2 stress response and material elasticity tensor
-    /// due to energy densities (MAT::ELASTIC::Summand) described
-    /// in (modified) principal stretches.
-    ///
-    /// The stress response is achieved by collecting the coefficients
-    /// \f$\gamma_\alpha\f$ and \f$\delta_{\alpha\beta}\f$ due to
-    /// MAT::ELASTIC::Summand::AddCoefficientsStretchesPrincipal()
-    /// (and/or \f$\bar{\gamma}_\alpha\f$ and \f$\bar{\delta}_{\alpha\beta}\f$
-    /// due to MAT::ELASTIC::Summand::AddCoefficientsStretchesModified()).
-    /// The collected coefficients build the principal 2nd Piola--Kirchhoff
-    /// stresses which are transformed into ordinary Cartesian co-ordinates
-    /// applying the principal directions. Similarly, the elasticity
-    /// 4-tensor is obtained.
-    ///
-    /// Please note, unlike suggested by Holzapfel, p 263-264, the modified
-    /// coefficients are transformed to unmodified coefficients and than added
-    /// onto the respective quantities. The transformation goes along the following
-    /// lines. The first derivatives or \f$\gamma_\alpha\f$ coefficients are related
-    /// to the modified coefficients \f$\bar{\gamma}_\alpha\f$ via the chain rule
-    ///\f[
-    ///   \gamma_\alpha
-    ///   = \frac{\partial \Psi(\boldsymbol{\lambda})}{\partial\lambda_\alpha}
-    ///   = \frac{\partial \Psi(\bar{\boldsymbol{\lambda}})}{\partial \bar{\lambda}_\eta}
-    ///   \, \frac{\partial \bar{\lambda}_\eta}{\partial\lambda_\alpha}
-    ///   = \bar{\gamma}_\eta \, \frac{\partial \bar{\lambda}_\eta}{\partial\lambda_\alpha}
-    ///\f]
-    /// utilising Holzapfel Eq (6.142):
-    ///\f[
-    ///   \frac{\partial\bar{\lambda}_\alpha}{\partial\lambda_\beta}
-    ///   = J^{-1/3} \Big( 1_{\alpha\beta} - \frac{1}{3} \lambda_\alpha \lambda_\beta^{-1} \Big)
-    ///\f]
-    /// in which Kronecker's delta is denoted \f$1_{\alpha\beta}\f$.
-    /// Likewise (and once without Holzapfel), the second derivatives \f$\delta_{\alpha\beta}\f$ can
-    /// be recovered directly by knowledge of the modified coefficients
-    /// \f$\bar{\gamma}_\alpha\f$ and \f$\bar{\delta}_{\alpha\beta}\f$, i.e.
-    ///\f[
-    ///   \delta_{\alpha\beta}
-    ///   = \frac{\partial^2\Psi(\boldsymbol{\lambda})}{\partial\lambda_\alpha \partial\lambda_\beta}
-    ///   = \frac{\partial^2\Psi(\bar{\boldsymbol{\lambda}})}{\partial\bar{\lambda}_\eta\partial\bar{\lambda}_\epsilon}
-    ///     \, \frac{\partial \bar{\lambda}_\eta}{\partial\lambda_\alpha}
-    ///     \, \frac{\partial \bar{\lambda}_\epsilon}{\partial\lambda_\beta}
-    ///   + \frac{\partial \Psi(\bar{\boldsymbol{\lambda}})}{\partial \bar{\lambda}_\eta}
-    ///     \, \frac{\partial^2 \bar{\lambda}_\eta}{\partial\lambda_\alpha\partial\lambda_\beta}
-    ///   = \bar{\delta}_{\eta\epsilon}
-    ///     \, \frac{\partial \bar{\lambda}_\eta}{\partial\lambda_\alpha}
-    ///     \, \frac{\partial \bar{\lambda}_\epsilon}{\partial\lambda_\beta}
-    ///   + \bar{\gamma}_\eta
-    ///     \, \frac{\partial^2 \bar{\lambda}_\eta}{\partial\lambda_\alpha\partial\lambda_\beta}
-    ///\f]
-    /// with
-    ///\f[
-    ///   \frac{\partial^2 \bar{\lambda}_\alpha}{\partial\lambda_\beta\partial\lambda_\eta}
-    ///   = -\frac{1}{3} J^{-1/3} \Big(
-    ///     1_{\alpha\beta} \lambda_\eta^{-1}
-    ///     + 1_{\alpha\eta}\lambda_\beta^{-1}
-    ///     - \big( 1_{\beta\eta} + \frac{1}{3} \big) \lambda_\alpha \lambda_\beta^{-1} \lambda_\eta^{-1}
-    ///   \Big)
-    ///\f]
-    ///
-    /// <h3>References</h3>
-    /// See Holzapfel, p 245-246, p 257-259, p 263-264
-    ///
-    /// \author bborn
-    /// \date 08/09
-
-    virtual void ResponseStretches(
-    LINALG::Matrix<6,6>& cmat,  ///< material elasticity matrix
-    LINALG::Matrix<6,1>& stress,  ///< 2nd Piola-Kirchhoff stress vector
-    const LINALG::Matrix<6,1> rcg,  ///< Right Cauchy-Green tensor
-    const bool& havecoeffstrpr,  ///< true, if at least one summand is based on pr.stretches
-    const bool& havecoeffstrmod  ///< true, if at least one summand is based on mod.pr.stretches
-    );
-
-    /// Flags to specify the formulations
-    bool isoprinc_; ///< global indicator for isotropic principal formulation
-    bool isomod_; ///< global indicator for isotropic splitted formulation
-    bool anisoprinc_ ; ///< global indicator for anisotropic principal formulation
-    bool anisomod_ ; ///< global indicator for anisotropic splitted formulation
-    bool isomodvisco_ ; ///< global indicator for isotropic splitted viscous formulation
-    bool viscogenmax_ ; ///< global indicator for viscous contribution according the SLS-Model
-
-    /// @name Voigt index arrays
-    //@{
-    static const int VOIGT6ROW_[];  ///< 6-Voigt row index of corresponding 2-tensor
-    static const int VOIGT6COL_[];  ///< 6-Voigt column index of corresponding 2-tensor
-    static const int VOIGT3X3SYM_[]; ///< go from symmtric 2-tensor index pair to 6-Voigt index
-                                     ///< by [3*i+j] for any i,j=0,1,2
-    //@}
-
-    /// my material parameters
-    MAT::PAR::ViscoElastHyper* params_;
-
-    /// map to materials/potential summands
-    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsum_;
 
   private:
 
