@@ -298,6 +298,7 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
   case prb_freesurf:
   case prb_fluid_ale:
   case prb_fluid_fluid_ale:
+  case prb_elch:
   {
     ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
     break;

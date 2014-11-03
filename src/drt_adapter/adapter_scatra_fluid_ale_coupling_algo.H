@@ -18,7 +18,8 @@ Maintainer: Georg Bauer
 #ifndef ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
 #define ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_H
 
-#include "../drt_ale/ale.H"
+//#include "../drt_ale/ale.H"
+#include "ad_ale_fluid.H"
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 
 
@@ -44,7 +45,7 @@ namespace ADAPTER
    */
   class ScaTraFluidAleCouplingAlgorithm :
         public ADAPTER::ScaTraFluidCouplingAlgorithm,
-        public ALE::AleBaseAlgorithm
+        public ADAPTER::AleNewBaseAlgorithm
   {
   public:
 
@@ -71,6 +72,9 @@ namespace ADAPTER
         const bool pseudotransient
         );
 
+    /// access to ale field
+    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& AleField() { return ale_; }
+
   protected:
 
     //! @name Transfer helpers
@@ -88,6 +92,9 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
 
   private:
+
+    /// ALE-fluid wrapper
+    Teuchos::RCP<AleFluidWrapper> ale_;
 
     /// coupling of fluid and ale (whole field)
     Teuchos::RCP<Coupling>               coupfa_;

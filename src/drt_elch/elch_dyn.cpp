@@ -18,7 +18,7 @@ Maintainer: Andreas Ehrl
 #include "elch_moving_boundary_algorithm.H"
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
-#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "../drt_ale_new/ale_utils_clonestrategy.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
@@ -134,7 +134,9 @@ void elch_dyn(int restart)
       // create ale elements only if the ale discretization is empty
       if (aledis->NumGlobalNodes()==0)
       {
-        DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+        // clone ALE discretization from fluid discretization
+        DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(fluiddis,aledis);
+
         // setup material in every ALE element
         Teuchos::ParameterList params;
         params.set<std::string>("action", "setup_material");
@@ -163,7 +165,7 @@ void elch_dyn(int restart)
 
       // perform the result test
       problem->AddFieldTest(elch->FluidField().CreateFieldTest());
-      problem->AddFieldTest(elch->AleField().CreateFieldTest());
+      problem->AddFieldTest(elch->AleField()->CreateFieldTest());
       problem->AddFieldTest(elch->CreateScaTraFieldTest());
       problem->TestAll(comm);
     }

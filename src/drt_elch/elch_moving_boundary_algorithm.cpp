@@ -198,7 +198,7 @@ void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
   }
 
   FluidField().PrepareTimeStep();
-  AleField().PrepareTimeStep();
+  AleField()->PrepareTimeStep();
 
   // prepare time step
   /* remark: initial velocity field has been transferred to scalar transport field in constructor of
@@ -279,7 +279,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
 void ELCH::MovingBoundaryAlgorithm::Update()
 {
   FluidField().Update();
-  AleField().Update();
+  AleField()->Update();
   ScaTraField()->Update();
 
   // perform time shift of interface displacement
@@ -317,7 +317,7 @@ void ELCH::MovingBoundaryAlgorithm::Output()
 
   // now the other physical fiels
   ScaTraField()->Output();
-  AleField().Output();
+  AleField()->Output();
 
   return;
 }
@@ -396,7 +396,7 @@ void ELCH::MovingBoundaryAlgorithm::ReadRestart(int step)
 {
   ScaTraFluidCouplingAlgorithm::ReadRestart(step);
 
-  AleField().ReadRestart(step); // add reading of ALE restart data
+  AleField()->ReadRestart(step); // add reading of ALE restart data
 
   // finally read isdispn which was written to the fluid restart data
   IO::DiscretizationReader reader(FluidField().Discretization(),step);
