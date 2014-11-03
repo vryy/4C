@@ -1900,13 +1900,6 @@ void FLD::XFluidFluid::Init()
   //if(alefluid_ || coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring)
   aledispnp_ = LINALG::CreateVector(*aledofrowmap_,true);
 
-  if (alefluid_)
-  {
-    aledispn_  = LINALG::CreateVector(*aledofrowmap_,true);
-    aledispnm_ = LINALG::CreateVector(*aledofrowmap_,true);
-    gridv_  = LINALG::CreateVector(*aledofrowmap_,true);
-  }
-
   if (monolithicfluidfluidfsi_)
     aledispnpoldstate_ = LINALG::CreateVector(*aledofrowmap_,true);
 
@@ -1976,8 +1969,18 @@ void FLD::XFluidFluid::Init()
   if (restart)
   {
     ReadRestartEmb(restart);
-    LINALG::Export(*aledispn_,idispcol);
   }
+
+  if (alefluid_)
+  {
+    aledispn_  = LINALG::CreateVector(*aledofrowmap_,true);
+    aledispnm_ = LINALG::CreateVector(*aledofrowmap_,true);
+    gridv_  = LINALG::CreateVector(*aledofrowmap_,true);
+
+    if (restart)
+      LINALG::Export(*aledispn_,idispcol);
+  }
+
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
 
 
