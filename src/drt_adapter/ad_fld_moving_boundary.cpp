@@ -46,6 +46,7 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     }
     case prb_fluid_xfem:
     case prb_fsi_xfem:
+    case prb_fpsi_xfem:
     case prb_fsi_crack:
     case prb_immersed_fsi:
     {

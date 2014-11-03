@@ -339,6 +339,32 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
         break;
     }
+    case prb_fpsi_xfem:
+    {
+      std::string basename = problem.outname();
+
+      std::cout << "  Structural Field" << std::endl;
+      PostField* structfield = problem.get_discretization(0);
+      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      std::cout << "  Porofluid Field" << std::endl;
+      PostField* porofluidfield = problem.get_discretization(1);
+      FluidFilter porofluidwriter(porofluidfield, basename);
+      porofluidwriter.WriteFiles();
+
+      std::cout << "  Fluid Field" << std::endl;
+      PostField* fluidfield = problem.get_discretization(2);
+      FluidFilter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+
+      std::cout << "  Interface Field" << std::endl;
+      PostField* ifacefield = problem.get_discretization(3);
+      InterfaceFilter ifacewriter(ifacefield, basename);
+      ifacewriter.WriteFiles();
+
+      break;
+    }
     case prb_fluid_xfem:
     {
         std::cout << "Output FLUID-XFEM Problem" << std::endl;

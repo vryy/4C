@@ -31,10 +31,10 @@ namespace ADAPTER
     virtual ~FPSIStructureWrapper() { ; }
 
     /// extract interface displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn(bool FPSI);
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispn(bool FPSI = false);
 
     /// extract interface displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp(bool FPSI);
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp(bool FPSI = false);
   };
 }
 #endif

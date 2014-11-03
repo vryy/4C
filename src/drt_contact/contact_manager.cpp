@@ -1081,7 +1081,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   {
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::structalewear);
   }
-  else if (problemtype == prb_poroelast or problemtype == prb_fpsi)
+  else if (problemtype == prb_poroelast or problemtype == prb_fpsi or problemtype == prb_fpsi_xfem)
   {
     cparams.set<int> ("PROBTYPE",INPAR::CONTACT::poro);
     //porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!

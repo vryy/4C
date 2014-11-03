@@ -1182,4 +1182,10 @@ void xfsi_drt()
   Teuchos::TimeMonitor::summarize();
 }
 
-
+/*----------------------------------------------------------------------*/
+// entry point for FPSI using XFEM in DRT
+/*----------------------------------------------------------------------*/
+void xfpsi_drt()
+{
+  dserror("FPSI_XFEM: xfpsi_drt() not commited yet, will be done soon! - 11/14 Ager");
+}

@@ -93,7 +93,9 @@ void ntacal()
     case prb_fsi_crack:
       xfsi_drt();
       break;
-
+    case prb_fpsi_xfem:
+      xfpsi_drt();
+      break;
     case prb_gas_fsi:
     case prb_biofilm_fsi:
     case prb_thermo_fsi:

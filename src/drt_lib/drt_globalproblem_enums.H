@@ -25,6 +25,7 @@ typedef enum _PROBLEM_TYP
      prb_none,               // not a problem at all
      prb_fsi,                // fluid structure interaction problem
      prb_fsi_xfem,           // fluid structure interaction problem including XFEM interfaces
+     prb_fpsi_xfem,          // fluid poro structure interaction problem including XFEM interfaces (atm just for FSI Interface!)
      prb_fsi_lung,           // airway fsi problem with attached parenchyma balloon
      prb_fsi_redmodels,      // fluid structure interaction problem
      prb_gas_fsi,            // fsi with gas transport

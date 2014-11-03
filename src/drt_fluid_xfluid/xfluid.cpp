@@ -1877,7 +1877,7 @@ void FLD::XFluid::XFluidState::CutAndSetDofSet(Teuchos::RCP<XFEM::FluidWizard> w
   dofset_->MinGID(xfluid_.minnumdofsets_); // set the minimal GID of xfem dis
   xfluid_.discret_->ReplaceDofSet( dofset_, true );
 
-  xfluid_.discret_->FillComplete();
+  xfluid_.discret_->FillComplete(true,false,false);
 
   //print all dofsets
   xfluid_.discret_->GetDofSetProxy()->PrintAllDofsets(xfluid_.discret_->Comm());
@@ -2488,19 +2488,20 @@ void FLD::XFluid::CheckXFluidParams() const
 
   if( probtype == prb_fluid_xfem or
       probtype == prb_fsi_xfem  or
+      probtype == prb_fpsi_xfem or
       probtype == prb_fsi_crack )
   {
     // check some input configurations
 
-    if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack) and xfluid_mov_bound_ != INPAR::XFEM::XFSIMovingBoundary)
+    if( (probtype == prb_fsi_xfem or probtype == prb_fpsi_xfem or probtype == prb_fsi_crack) and xfluid_mov_bound_ != INPAR::XFEM::XFSIMovingBoundary)
       dserror("INPUT CHECK: choose xfsi_moving_boundary!!! for prb_fsi_xfem");
     if( probtype == prb_fluid_xfem  and xfluid_mov_bound_ == INPAR::XFEM::XFSIMovingBoundary)
       dserror("INPUT CHECK: do not choose xfsi_moving_boundary!!! for prb_fluid_xfem");
-    if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack) and interface_disp_  != INPAR::XFEM::interface_disp_by_fsi)
+    if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack or probtype == prb_fpsi_xfem) and interface_disp_  != INPAR::XFEM::interface_disp_by_fsi)
       dserror("INPUT CHECK: choose interface_disp_by_fsi for prb_fsi_xfem");
     if( probtype == prb_fluid_xfem  and interface_disp_  == INPAR::XFEM::interface_disp_by_fsi )
       dserror("INPUT CHECK: do not choose interface_disp_by_fsi for prb_fluid_xfem");
-    if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack) and interface_vel_   != INPAR::XFEM::interface_vel_by_disp )
+    if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack or probtype == prb_fpsi_xfem) and interface_vel_   != INPAR::XFEM::interface_vel_by_disp )
       dserror("INPUT CHECK: do you want to use !interface_vel_by_disp for prb_fsi_xfem?");
   }
 
@@ -2508,7 +2509,7 @@ void FLD::XFluid::CheckXFluidParams() const
   if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_weak_DBC and coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
     dserror("no non-xfluid sided COUPLING_STRATEGY possible");
 
-  if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack) and params_->get<int>("COUPALGO") == fsi_iter_xfem_monolithic )
+  if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack or probtype == prb_fpsi_xfem) and params_->get<int>("COUPALGO") == fsi_iter_xfem_monolithic )
   {
     if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
       dserror("INPUT CHECK: please choose XFLUID_SIDED_COUPLING for monolithic XFSI problems!");

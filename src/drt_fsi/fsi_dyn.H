@@ -25,6 +25,7 @@ void fluid_fluid_fsi_drt();
 void fluid_freesurf_drt();
 void fsi_ale_drt();
 void xfsi_drt();
+void xfpsi_drt();
 
 
 #endif
