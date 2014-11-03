@@ -40,7 +40,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 
-#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "../drt_ale_new/ale_utils_clonestrategy.H"
 #include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_lib/drt_condition_utils.H"
@@ -101,7 +101,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   //---------------------------------------------------------------------
   if (aledis->NumGlobalNodes()==0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(fluiddis,aledis);
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");

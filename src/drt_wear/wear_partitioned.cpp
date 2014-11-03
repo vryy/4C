@@ -57,8 +57,7 @@ Maintainer: Philipp Farah
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
 
-#include "../drt_ale/ale_utils_mapextractor.H"
-#include "../drt_ale/ale.H"
+#include "../drt_ale_new/ale_utils_mapextractor.H"
 #include "../drt_ale_new/ale_utils_mapextractor.H"
 
 #include "../drt_adapter/adapter_coupling.H"

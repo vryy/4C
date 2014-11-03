@@ -20,9 +20,6 @@ Maintainer: Sudhakar
 #include "SplitHexIntoTwoWedges.H"
 #include "initiateCrack.H"
 
-#include "../drt_ale/ale_utils_clonestrategy.H"
-#include "../drt_ale/ale.H"
-
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 

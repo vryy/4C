@@ -18,7 +18,7 @@ Maintainer: Philipp Farah
 #include "wear_dyn.H"
 #include "wear_partitioned.H"
 
-#include "../drt_ale/ale_utils_clonestrategy.H"
+#include "../drt_ale_new/ale_utils_clonestrategy.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -65,7 +65,7 @@ void wear_dyn_drt(int restart)
   // clone ale mesh from structure discretization
   if (aledis->NumGlobalNodes()==0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(structdis,aledis);
+    DRT::UTILS::CloneDiscretization<ALENEW::UTILS::AleCloneStrategy>(structdis,aledis);
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");

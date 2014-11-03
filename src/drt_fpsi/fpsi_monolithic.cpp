@@ -61,7 +61,6 @@ Maintainer: Andreas Rauch
 
 // ALE includes
 #include "../drt_ale_new/ale_utils_mapextractor.H"
-#include "../drt_ale/ale_lin.H"
 
 // OTHER includes
 #include "../drt_constraint/constraint_manager.H"

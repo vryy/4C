@@ -19,7 +19,6 @@ Maintainer: Philipp Farah
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mortar/mortar_manager_base.H"
 
-#include "../drt_ale/ale.H"
 #include "../drt_adapter/ad_ale.H"
 #include "../drt_adapter/ad_ale_wear.H"
 
