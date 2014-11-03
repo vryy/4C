@@ -136,6 +136,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         probtype == prb_fluid_xfem or
         probtype == prb_combust or
         probtype == prb_fsi_crack or
+        (probtype == prb_fpsi_xfem and disname == "fluid")or
         probtype == prb_fluid_xfem_ls)
     {
       actdis->FillComplete(false,false,false);
@@ -308,6 +309,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
 
   // compute null space information
   if (probtype != prb_fsi_xfem and
+      probtype != prb_fpsi_xfem and
       probtype != prb_fluid_xfem and
       probtype != prb_combust and
       probtype != prb_fluid_fluid and
@@ -373,28 +375,29 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE")
       != INPAR::FLUID::loma)
     dserror("Input parameter PHYSICAL_TYPE in section FLUID DYNAMIC needs to be 'Loma' for low-Mach-number flow and Thermo-fluid-structure interaction!");
-  if ((   probtype == prb_poroelast
-       or probtype == prb_poroscatra
-       or probtype == prb_fpsi )
-       and disname == "porofluid")
-  {
-    const Teuchos::ParameterList& pedyn    = DRT::Problem::Instance()->PoroelastDynamicParams();
-    fluidtimeparams->set<int>("Physical Type",DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn,"PHYSICAL_TYPE"));
-    if (fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro and
-        fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro_p1 and
-        fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro_p2 )
-        dserror("Input parameter PHYSICAL_TYPE in section POROELASTICITY DYNAMIC needs to be 'Poro' or 'Poro_P1' for poro-elasticity!");
+  if (( probtype == prb_poroelast
+        or probtype == prb_poroscatra
+        or probtype == prb_fpsi
+        or probtype == prb_fpsi_xfem)
+        and disname == "porofluid")
+      {
+        const Teuchos::ParameterList& pedyn    = DRT::Problem::Instance()->PoroelastDynamicParams();
+        fluidtimeparams->set<int>("Physical Type",DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn,"PHYSICAL_TYPE"));
+        if (fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro and
+            fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro_p1 and
+            fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro_p2 )
+            dserror("Input parameter PHYSICAL_TYPE in section POROELASTICITY DYNAMIC needs to be 'Poro' or 'Poro_P1' for poro-elasticity!");
 
     fluidtimeparams->set<int>("Time DisType Conti",DRT::INPUT::IntegralValue<INPAR::POROELAST::TimeDisTypeConti>(pedyn,"TIME_DISTYPE_CONTI"));
-  }
+      }
 
   // now, set general parameters required for all problems
   SetGeneralParameters(fluidtimeparams,prbdyn,fdyn);
 
-  // and, finally, add problem specific parameters
+   // and, finally, add problem specific parameters
 
   // for poro problems, use POROUS-FLOW STABILIZATION
-  if ((probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi) and disname == "porofluid")
+  if ((probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or probtype == prb_fpsi_xfem) and disname == "porofluid")
     fluidtimeparams->sublist("RESIDUAL-BASED STABILIZATION")    = fdyn.sublist("POROUS-FLOW STABILIZATION");
 
   // add some loma specific parameters
@@ -406,6 +409,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   // ----------------------------- sublist for general xfem-specific parameters
   if (   probtype == prb_fluid_xfem
       or probtype == prb_fsi_xfem
+      or (probtype == prb_fpsi_xfem and disname == "fluid")
       or probtype == prb_fluid_fluid
       or probtype == prb_fluid_fluid_ale
       or probtype == prb_fluid_fluid_fsi
@@ -463,6 +467,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       probtype == prb_thermo_fsi or
       probtype == prb_fluid_fluid_fsi or
       probtype == prb_fsi_xfem or
+      (probtype == prb_fpsi_xfem and disname == "fluid") or
       probtype == prb_fsi_crack or
       probtype == prb_fsi_redmodels)
   {
@@ -529,7 +534,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   }
 
   // sanity checks and default flags
-  if ( probtype == prb_fsi_xfem or probtype == prb_fsi_crack )
+  if ( probtype == prb_fsi_xfem or probtype == prb_fsi_crack or (probtype == prb_fpsi_xfem and disname == "fluid"))
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -544,7 +549,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   }
 
   // sanity checks and default flags
-  if ( probtype == prb_fluid_xfem or probtype == prb_fsi_xfem or probtype == prb_fsi_crack )
+  if ( probtype == prb_fluid_xfem or probtype == prb_fsi_xfem or probtype == prb_fsi_crack or (probtype == prb_fpsi_xfem and disname == "fluid") )
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
@@ -559,7 +564,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
 
   if ( probtype == prb_poroelast or
        probtype == prb_poroscatra or
-      (probtype == prb_fpsi and disname == "porofluid")
+      (probtype == prb_fpsi and disname == "porofluid") or
+      (probtype == prb_fpsi_xfem and disname == "porofluid")
      )
   {
     const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
@@ -660,7 +666,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       }
     }
 
-    if (probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi)
+    if (probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or (probtype == prb_fpsi_xfem and disname == "porofluid"))
       dirichletcond = false;
 
     //------------------------------------------------------------------
@@ -862,6 +868,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_poroelast:
     case prb_poroscatra:
     case prb_fpsi:
+    case prb_fpsi_xfem:
     {
       Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
       if(disname == "porofluid")
@@ -876,6 +883,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       }
       else if(disname == "fluid")
       {
+        if (probtype == prb_fpsi)
+        {
         if(timeint == INPAR::FLUID::timeint_stationary)
           tmpfluid = Teuchos::rcp(new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
         else if(timeint == INPAR::FLUID::timeint_one_step_theta)
@@ -883,6 +892,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         else
           dserror("Unknown time integration for this fluid problem type\n");
         fluid_ = Teuchos::rcp(new FluidFPSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
+        }
+        else if (probtype == prb_fpsi_xfem)
+        {
+          Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
+          Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
+          fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, solver, fluidtimeparams, output));
+        }
       }
     }
     break;
