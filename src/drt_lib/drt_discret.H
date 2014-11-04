@@ -995,6 +995,9 @@ public:
   /// return all conditions defined on this discretization
   virtual std::multimap<std::string,Teuchos::RCP<Condition> >& GetAllConditions(){ return condition_; }
 
+  /// Set new nodes to a condition & build geometry new
+  virtual void ModifyCondition(const std::string& name, std::vector<int>& nodegid, bool buildgeom = true);
+
   //@}
 
   //! @name Parallel (re)distribution

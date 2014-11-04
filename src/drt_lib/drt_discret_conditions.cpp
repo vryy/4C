@@ -634,3 +634,16 @@ void DRT::Discretization::FindAssociatedEleIDs(Teuchos::RCP<DRT::Condition> cond
   }
 }
 
+/*--------------------------------------------------------------------------*
+|  Set new nodes to a condition & build geometry new            (public)    |
+|                                                                ager 11/14 |
+ *-------------------------------------------------------------------------*/
+void DRT::Discretization::ModifyCondition(const std::string& condname, std::vector<int>& nodegid, bool buildgeom)
+{
+  if (!Filled()) dserror("FillComplete was not called on this discretization");
+  DRT::Condition* cond = GetCondition(condname);
+  cond->Delete("Node Ids");
+  cond->Add("Node Ids", nodegid);
+  if (buildgeom) BoundaryConditionsGeometry();
+}
+
