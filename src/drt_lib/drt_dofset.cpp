@@ -456,6 +456,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
     int minnodegid = dis.NodeRowMap()->MinAllGID();
     maxnodenumdf = numdfrownodes.MaxValue();
+    GetReservedMaxNumDofperNode(maxnodenumdf); //XFEM::FluidDofSet set to const number!
 
     for (int i=0; i<numrownodes; ++i)
     {

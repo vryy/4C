@@ -1867,8 +1867,8 @@ void FLD::XFluid::XFluidState::CutAndSetDofSet(Teuchos::RCP<XFEM::FluidWizard> w
 
   //--------------------------------------------------------------------------------------
   // set the new dofset after cut
-  int maxNumMyReservedDofs = xfluid_.discret_->NumGlobalNodes()*(xfluid_.maxnumdofsets_)*4;
-  dofset_ = wizard->DofSet(maxNumMyReservedDofs);
+  int maxNumMyReservedDofsperNode = (xfluid_.maxnumdofsets_)*4;
+  dofset_ = wizard->DofSet(maxNumMyReservedDofsperNode);
 
   const int restart = DRT::Problem::Instance()->Restart();
   if ((xfluid_.step_ < 1) or restart)

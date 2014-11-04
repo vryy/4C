@@ -330,6 +330,9 @@ protected:
   /// Notify proxies of reset
   void NotifyReset();
 
+  ///Get Reserved Max Number Dofs per Node
+  virtual void GetReservedMaxNumDofperNode(int& maxnodenumdf){return;};
+
   //@}
 
   /// filled flag

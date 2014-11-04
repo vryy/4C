@@ -34,9 +34,9 @@ Maintainer: Benedikt Schott and Magnus Winter
 /*-------------------------------------------------------------*
 * creates a new fluid dofset                                   *
 *--------------------------------------------------------------*/
-Teuchos::RCP<XFEM::FluidDofSet> XFEM::FluidWizard::DofSet(int maxNumMyReservedDofs)
+Teuchos::RCP<XFEM::FluidDofSet> XFEM::FluidWizard::DofSet(int maxNumMyReservedDofsperNode)
 {
-  return Teuchos::rcp( new FluidDofSet( this , maxNumMyReservedDofs, backdis_ ) );
+  return Teuchos::rcp( new FluidDofSet( this , maxNumMyReservedDofsperNode, backdis_ ) );
 }
 
 /*-------------------------------------------------------------*

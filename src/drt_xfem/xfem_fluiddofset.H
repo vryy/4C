@@ -14,10 +14,12 @@ namespace XFEM
   {
   public:
 
-    FluidDofSet( FluidWizard * wizard , int numMyReservedDofs , const DRT::Discretization& dis)
-      : FixedSizeDofSet(numMyReservedDofs), wizard_( wizard ), dis_ (dis)
+    FluidDofSet( FluidWizard * wizard , int numMyReservedDofsperNode, const DRT::Discretization& dis)
+      : FixedSizeDofSet(numMyReservedDofsperNode*dis.NumGlobalNodes()),
+        numMyReservedDofsperNode_(numMyReservedDofsperNode),
+        wizard_( wizard ),
+        dis_(dis)
     {
-
     }
 
     void Dof( const DRT::Node * node, int nodaldofset, std::vector<int> & dofs ) const;
@@ -68,8 +70,24 @@ namespace XFEM
 
   protected:
 
+    /// Number of reserved dofs per node
+    int numMyReservedDofsperNode_;
+
     /// get number of nodal dofs for this element at this node
     virtual int NumDofPerNode( const DRT::Node & node ) const;
+
+    ///Get Reserved Max Number Dofs per Node
+    virtual void GetReservedMaxNumDofperNode(int& maxnodenumdf)
+    {
+      if (maxnodenumdf > numMyReservedDofsperNode_)
+      {
+        dserror("FixedSizeDofSet::GetReservedMaxNumDofperNode: Not enought Dofs reserved!!!");
+        return;
+      }
+      maxnodenumdf = numMyReservedDofsperNode_;
+
+      return;
+    }
 
   private:
 

@@ -94,10 +94,10 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   // estimate (and reserve) the maximum number of dof
   // (nodes)*4*(max. number of xfem-dofsets p. node)
-  const int maxNumMyReservedDofs = xfluid.bgdis_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
+  const int maxNumMyReservedDofsperNode = (xfluid.maxnumdofsets_)*4;
 
   // ask fluid wizard for new background fluid dofset
-  dofset_ = wizard_->DofSet(maxNumMyReservedDofs);
+  dofset_ = wizard_->DofSet(maxNumMyReservedDofsperNode);
 
   // get minimal GID
   const int restart = DRT::Problem::Instance()->Restart();

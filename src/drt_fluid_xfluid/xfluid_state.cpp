@@ -242,8 +242,8 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
 
   //--------------------------------------------------------------------------------------
   // set the new dofset after cut
-  const int maxNumMyReservedDofs = discret->NumGlobalNodes()*(maxnumdofsets_)*4;
-  dofset_ = wizard_->DofSet(maxNumMyReservedDofs);
+  const int maxNumMyReservedDofsperNode = (maxnumdofsets_)*4;
+  dofset_ = wizard_->DofSet(maxNumMyReservedDofsperNode);
 
   const int restart = DRT::Problem::Instance()->Restart();
 
