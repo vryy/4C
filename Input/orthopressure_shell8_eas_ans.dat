@@ -113,7 +113,7 @@ DUMPING_PERIOD                  0
 TIMESTEP                        0.1
 NUMSTEP                         200
 MAXTIME                         5.0
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
 RESULTSEVRY                     1
 -----------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1

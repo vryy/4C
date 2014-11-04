@@ -8,7 +8,7 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 3D wear contact
-// - structure-ale approach -- ale: classic_lin
+// - structure-ale approach -- ale: solid
 // - discrete wear algorithm
 // - first-order interpolation (Hex8 elements)
 // - dual Lagrange multiplier interpolation

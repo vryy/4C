@@ -4,7 +4,7 @@
 // 089 - 289-10362
 //
 -------------------------------------------------------------TITLE
-pure ale mesh motion problem in 2D using the classic_lin formulation
+pure ale mesh motion problem in 2D using the solid formulation
 ------------------------------------------------------PROBLEM SIZE
 DIM                             2
 -----------------------------------------------------DISCRETISATION

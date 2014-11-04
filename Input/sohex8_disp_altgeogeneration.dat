@@ -73,7 +73,7 @@ STARTFUNCNO                     2
 TIMESTEP                        0.1
 NUMSTEP                         41
 MAXTIME                         4.0
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
 RESULTSEVRY                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

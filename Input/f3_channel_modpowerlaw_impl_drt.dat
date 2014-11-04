@@ -19,7 +19,7 @@ DIM                             3
 MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        classic_lin
+ALE_TYPE                        solid
 MAXTIME                         4
 NUMSTEP                         41
 RESULTSEVRY                     1

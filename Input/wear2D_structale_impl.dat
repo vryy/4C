@@ -8,7 +8,7 @@ General Data File BACI
 ============================================================================
 -----------------------------------------------------------------------TITLE
 2D wear contact ironing
-// - structure-ale approach -- ale: classic_lin
+// - structure-ale approach -- ale: solid
 // - implicit wear algorithm
 // - first-order interpolation (quad4 elements)
 // - dual Lagrange multiplier interpolation
