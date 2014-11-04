@@ -1554,6 +1554,7 @@ set(OBJS_SOLVER_NONLIN
   src/solver_nonlin/nln_operator_dinverse.cpp
   src/solver_nonlin/nln_operator_factory.cpp
   src/solver_nonlin/nln_operator_fas.cpp
+  src/solver_nonlin/nln_operator_linprec.cpp
   src/solver_nonlin/nln_operator_ngmres.cpp
   src/solver_nonlin/nln_operator_newton.cpp
   src/solver_nonlin/nln_operator_nonlincg.cpp

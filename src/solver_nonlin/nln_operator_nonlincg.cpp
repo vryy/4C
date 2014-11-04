@@ -162,22 +162,18 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
     if (err != 0) { dserror("Update failed."); }
 
     // update quantities from previous iteration
-    err = fold->Update(1.0, *fnew, 0.0);
-    if (err != 0) { dserror("Update failed."); }
-    err = sold->Update(1.0, *s, 0.0);
-    if (err != 0) { dserror("Update failed."); }
+    fold->Update(1.0, *fnew, 0.0);
+    sold->Update(1.0, *s, 0.0);
 
     // evaluate residual
     NlnProblem()->ComputeF(x, *fnew);
     converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
 
     // compute preconditioned search direction
-    err = s->Update(1.0, x, 0.0);
-    if (err != 0) { dserror("Update failed."); }
+    s->Update(1.0, x, 0.0);
     err = ApplyPreconditioner(*fnew, *s);
     if (err != 0) { dserror("ApplyPreconditioner() failed."); }
-    err = s->Update(-1.0, x, 1.0);
-    if (err != 0) { dserror("Update failed."); }
+    s->Update(-1.0, x, 1.0);
 
     ComputeBeta(beta, fnew, fold, s, sold);
 
@@ -196,8 +192,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
     }
 
     // Update search direction
-    err = p->Update(1.0, *s, beta);
-    if (err != 0) { dserror("Update failed."); }
+    p->Update(1.0, *s, beta);
 
     // finish current iteration
     ++iter;
@@ -218,8 +213,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner(
     dserror("Nonlinear preconditioner has not been initialized, yet. "
         "Has SetupPreconditioner() been called?");
 
-  // ToDo (mayr) Move this safety check to debug version
-  if (not f.Map().PointSameAs(x.Map())) { dserror("Maps do not match"); }
+  dsassert(f.Map().PointSameAs(x.Map()), "Maps do not match");
 
   return nlnprec_->ApplyInverse(f, x);
 }

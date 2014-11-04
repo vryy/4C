@@ -29,6 +29,7 @@ Maintainer: Matthias Mayr
 /* forward declarations */
 
 class Epetra_Comm;
+class Epetra_Map;
 class Epetra_MultiVector;
 class Epetra_Operator;
 
@@ -183,6 +184,9 @@ namespace NLNSOL
 
     //! Returns a character string describing the operator
     virtual const char* Label() const { return "NLNSOL::NlnProblem"; }
+
+    //! Returns reference to DOF row map of underlying problem
+    virtual const Epetra_Map& DofRowMap() const;
 
     //@}
 

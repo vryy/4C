@@ -23,6 +23,7 @@ Maintainer: Matthias Mayr
 #include "nln_operator_dinverse.H"
 #include "nln_operator_factory.H"
 #include "nln_operator_fas.H"
+#include "nln_operator_linprec.H"
 #include "nln_operator_ngmres.H"
 #include "nln_operator_newton.H"
 #include "nln_operator_nonlincg.H"
@@ -66,6 +67,10 @@ NLNSOL::NlnOperatorFactory::Create(const Teuchos::ParameterList& params)
   else if (optype == "Inverse Diagonal")
   {
     return Teuchos::rcp(new NLNSOL::NlnOperatorDInverse());
+  }
+  else if (optype == "Linear Preconditioner")
+  {
+    return Teuchos::rcp(new NLNSOL::NlnOperatorLinPrec());
   }
   else
   {

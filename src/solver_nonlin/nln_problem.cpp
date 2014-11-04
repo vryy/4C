@@ -18,6 +18,7 @@ Maintainer: Matthias Mayr
 
 // Epetra
 #include <Epetra_Comm.h>
+#include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 #include <Epetra_Vector.h>
@@ -268,4 +269,15 @@ Teuchos::RCP<Epetra_Operator> NLNSOL::NlnProblem::GetJacobianOperator()
 //    dserror("Jacobian operator is not up-to-date.");
 
   return jac_->EpetraOperator();
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const Epetra_Map& NLNSOL::NlnProblem::DofRowMap() const
+{
+  // check if Jacobian operator has already been set
+  if (jac_.is_null())
+    dserror("Jacobian operator 'jac_' has not been initialized, yet.");
+
+  return jac_->OperatorRangeMap();
 }
