@@ -163,17 +163,6 @@ namespace ELASTIC
         std::vector<LINALG::Matrix<3,1> >& fibervecs ///< vector of all fiber vectors
     );
 
-    /// Read FIBER1
-    void ReadFiber1(
-        DRT::INPUT::LineDefinition* linedef
-    );
-
-    /// Read RAD-AXI-CIR
-    void ReadRadAxiCir(
-        DRT::INPUT::LineDefinition* linedef,
-        LINALG::Matrix<3,3>& locsys
-    );
-
     /// Indicator for formulation
     virtual void SpecifyFormulation(
         bool& isoprinc, ///< global indicator for isotropic principal formulation

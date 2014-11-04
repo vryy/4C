@@ -366,3 +366,55 @@ void MAT::ELASTIC::Summand::SetupStructuralTensor(
   structural_tensor(4) = fiber_vector(1)*fiber_vector(2);
   structural_tensor(5) = fiber_vector(0)*fiber_vector(2);
 }
+
+/*----------------------------------------------------------------------*
+ * Function which reads in the given fiber value due to the
+ * FIBER1 nomenclature
+ *----------------------------------------------------------------------*/
+void MAT::ELASTIC::Summand::ReadFiber(
+    DRT::INPUT::LineDefinition* linedef,
+    std::string specifier,
+    LINALG::Matrix<3,1> &fiber_vector
+)
+{
+  std::vector<double> fiber1;
+  linedef->ExtractDoubleVector(specifier,fiber1);
+  double f1norm=0.;
+  //normalization
+  for (int i = 0; i < 3; ++i)
+  {
+    f1norm += fiber1[i]*fiber1[i];
+  }
+  f1norm = sqrt(f1norm);
+
+  // fill final fiber vector
+  for (int i = 0; i < 3; ++i)
+    fiber_vector(i) = fiber1[i]/f1norm;
+}
+
+/*----------------------------------------------------------------------*
+ * Function which reads in the given fiber value due to the
+ * CIR-AXI-RAD nomenclature
+ *----------------------------------------------------------------------*/
+void MAT::ELASTIC::Summand::ReadRadAxiCir(
+    DRT::INPUT::LineDefinition* linedef,
+    LINALG::Matrix<3,3>& locsys
+)
+{
+    // read local (cylindrical) cosy-directions at current element
+    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+    LINALG::Matrix<3,1> fiber_rad;
+    LINALG::Matrix<3,1> fiber_axi;
+    LINALG::Matrix<3,1> fiber_cir;
+
+    ReadFiber(linedef,"RAD",fiber_rad);
+    ReadFiber(linedef,"AXI",fiber_axi);
+    ReadFiber(linedef,"CIR",fiber_cir);
+
+    for (int i=0; i<3; ++i)
+    {
+      locsys(i,0) = fiber_rad(i);
+      locsys(i,1) = fiber_axi(i);
+      locsys(i,2) = fiber_cir(i);
+    }
+}

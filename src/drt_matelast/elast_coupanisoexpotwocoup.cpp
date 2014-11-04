@@ -112,7 +112,8 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::Setup(DRT::INPUT::LineDefinition* lined
     else if ( linedef->HaveNamed("FIBER1") )
     {
       // Read in of fiber data and setting fiber data
-      ReadFiber12(linedef);
+      ReadFiber(linedef, "FIBER1", a1_);
+      ReadFiber(linedef, "FIBER2", a2_);
       SetupStructuralTensor(a1_,A1_);
       SetupStructuralTensor(a2_,A2_);
       A1A2_.MultiplyNT(a1_,a2_);
@@ -198,81 +199,6 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::GetFiberVecs(
 {
   fibervecs.push_back(a1_);
   fibervecs.push_back(a2_);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-// Function which reads in the given fiber value due to the FIBER1 nomenclature
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::ReadFiber12(
-    DRT::INPUT::LineDefinition* linedef
-)
-{
-  std::vector<double> fiber1;
-  linedef->ExtractDoubleVector("FIBER1",fiber1);
-  double f1norm=0.;
-  //normalization
-  for (int i = 0; i < 3; ++i)
-  {
-    f1norm += fiber1[i]*fiber1[i];
-  }
-  f1norm = sqrt(f1norm);
-
-  std::vector<double> fiber2;
-  linedef->ExtractDoubleVector("FIBER2",fiber2);
-  double f2norm=0.;
-  //normalization
-  for (int i = 0; i < 3; ++i)
-  {
-    f2norm += fiber2[i]*fiber2[i];
-  }
-  f2norm = sqrt(f2norm);
-
-  // fill final fiber vector
-  for (int i = 0; i < 3; ++i)
-  {
-    a1_(i) = fiber1[i]/f1norm;
-    a2_(i) = fiber2[i]/f2norm;
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-// Function which reads in the given fiber value due to the CIR-AXI-RAD nomenclature
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::ReadRadAxiCir(
-    DRT::INPUT::LineDefinition* linedef,
-    LINALG::Matrix<3,3>& locsys
-)
-{
-  // fibers aligned in local element cosy with gamma around circumferential direction
-  // -> check whether element supports local element cosy
-  if (linedef->HaveNamed("RAD") and
-      linedef->HaveNamed("AXI") and
-      linedef->HaveNamed("CIR"))
-  {
-    // read local (cylindrical) cosy-directions at current element
-    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-    std::vector<double> rad;
-    std::vector<double> axi;
-    std::vector<double> cir;
-
-    linedef->ExtractDoubleVector("RAD",rad);
-    linedef->ExtractDoubleVector("AXI",axi);
-    linedef->ExtractDoubleVector("CIR",cir);
-    double radnorm=0.; double axinorm=0.; double cirnorm=0.;
-
-    for (int i = 0; i < 3; ++i)
-    {
-      radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
-    }
-    radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
-
-    for (int i=0; i<3; ++i)
-    {
-      locsys(i,0) = rad[i]/radnorm;
-      locsys(i,1) = axi[i]/axinorm;
-      locsys(i,2) = cir[i]/cirnorm;
-    }
-  }
 }
 
 /*----------------------------------------------------------------------*/

@@ -517,6 +517,19 @@ namespace MAT
           LINALG::Matrix<6,1> &structural_tensor
       );
 
+      /// Read FIBERn
+      void ReadFiber(
+          DRT::INPUT::LineDefinition* linedef,
+          std::string kenner,
+          LINALG::Matrix<3,1> &fiber_vector
+      );
+
+      /// Read RAD-AXI-CIR
+      void ReadRadAxiCir(
+          DRT::INPUT::LineDefinition* linedef,
+          LINALG::Matrix<3,3>& locsys
+      );
+
       /// Indicator for the chosen formulations
       virtual void SpecifyFormulation(
           bool& isoprinc_, ///< global indicator for anisotropy
