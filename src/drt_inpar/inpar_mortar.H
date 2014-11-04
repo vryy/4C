@@ -95,12 +95,13 @@ namespace INPAR
       parredist_dynamic    ///< dynamic redistribution
     };
 
-    // Type of integration procedure
+    /// Type of integration procedure
+    /// (this enum represents the input file parameter INTTYPE)
     enum IntType
     {
-      inttype_segments,       ///< segmentation of mortar interface
-      inttype_elements,       ///< fast, elementwise integration
-      inttype_elements_BS     ///< fast, elementwise intgration with Boundary Segmentation
+      inttype_segments,    ///< segmentation of mortar interface
+      inttype_elements,    ///< fast, elementwise integration
+      inttype_elements_BS  ///< fast, elementwise intgration with boundary segmentation
     };
   }  // namespace MORTAR
 

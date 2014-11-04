@@ -52,9 +52,9 @@ constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>
     friction_ = true;
 
   // set wear contact status
-  INPAR::CONTACT::WearLaw wlaw =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(icontact,"WEARLAW");
-  if (wlaw != INPAR::CONTACT::wear_none)
+  INPAR::WEAR::WearLaw wlaw =
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(icontact,"WEARLAW");
+  if (wlaw != INPAR::WEAR::wear_none)
     wear_ = true;
 
   // set thermo-structure-interaction with contact

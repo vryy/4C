@@ -17,7 +17,7 @@ Maintainer: Alexander Popp
 // forward declarations
 
 /*!
- \brief CONTACT: namespace of the baci contact and meshtying algorithms
+ \brief CONTACT: namespace of the BACI contact and meshtying algorithms
 
  */
 namespace CONTACT

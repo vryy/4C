@@ -32,32 +32,32 @@ Maintainer: Philipp Farah
 CONTACT::CoInterpolator::CoInterpolator(Teuchos::ParameterList& params) :
 iparams_(params),
 pwslip_(DRT::INPUT::IntegralValue<int>(iparams_,"GP_SLIP_INCR")),
-wearlaw_(DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(iparams_,"WEARLAW")),
+wearlaw_(DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(iparams_,"WEARLAW")),
 wearimpl_(false),
-wearside_(INPAR::CONTACT::wear_slave),
-weartype_(INPAR::CONTACT::wear_expl),
-wearshapefcn_(INPAR::CONTACT::wear_shape_standard),
+wearside_(INPAR::WEAR::wear_slave),
+weartype_(INPAR::WEAR::wear_expl),
+wearshapefcn_(INPAR::WEAR::wear_shape_standard),
 wearcoeff_(-1.0),
 wearcoeffm_(-1.0),
 sswear_(DRT::INPUT::IntegralValue<int>(iparams_,"SSWEAR")),
 ssslip_(iparams_.get<double>("SSSLIP"))
 {
   // wear specific
-  if(wearlaw_!=INPAR::CONTACT::wear_none)
+  if(wearlaw_!=INPAR::WEAR::wear_none)
   {
     // set wear contact status
-    INPAR::CONTACT::WearType wtype = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(params,"WEARTYPE");
-    if (wtype == INPAR::CONTACT::wear_impl)
+    INPAR::WEAR::WearType wtype = DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(params,"WEARTYPE");
+    if (wtype == INPAR::WEAR::wear_impl)
       wearimpl_ = true;
 
     // wear surface
-    wearside_ = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(iparams_,"BOTH_SIDED_WEAR");
+    wearside_ = DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(iparams_,"BOTH_SIDED_WEAR");
 
     // wear algorithm
-    weartype_ = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(iparams_,"WEARTYPE");
+    weartype_ = DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(iparams_,"WEARTYPE");
 
     // wear shape function
-    wearshapefcn_ = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearShape>(iparams_,"WEAR_SHAPEFCN");
+    wearshapefcn_ = DRT::INPUT::IntegralValue<INPAR::WEAR::WearShape>(iparams_,"WEAR_SHAPEFCN");
 
     // wear coefficient
     wearcoeff_ = iparams_.get<double>("WEARCOEFF");
@@ -205,7 +205,7 @@ void CONTACT::CoInterpolator::Interpolate2D(MORTAR::MortarElement& sele,
                    snodes, linsize, dmxi);
 
         // calculate node-wise wear (prim. var.)
-        if(weartype_ == INPAR::CONTACT::wear_discr)
+        if(weartype_ == INPAR::WEAR::wear_discr)
           nwTE2D(*mynode, area, jumpval, dslipmatrix);
       }//End hit ele
     }//End Loop over all Master Elements
@@ -654,7 +654,7 @@ void CONTACT::CoInterpolator::nwWear2D(CoNode& mynode,
   //****************************************************************
   //   linearization for implicit algorithms
   //****************************************************************
-  if((wearimpl_ || weartype_ == INPAR::CONTACT::wear_discr) and  abs(jumpval)>1e-12)
+  if((wearimpl_ || weartype_ == INPAR::WEAR::wear_discr) and  abs(jumpval)>1e-12)
   {
     // lin. abs(x) = x/abs(x) * lin x.
     double xabsx  = (jumpval/abs(jumpval)) * lm_lin;

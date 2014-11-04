@@ -39,7 +39,7 @@ class SerialDenseMatrix;
 }
 
 /*!
- \brief CONTACT: namespace of the BACI contact problems
+ \brief CONTACT: namespace of the BACI contact and meshtying algorithms
 
  */
 namespace CONTACT
@@ -195,11 +195,11 @@ protected:
   bool                                             pwslip_;      // point-wise evaluated slip increment
 
   // wear inputs from parameter list
-  INPAR::CONTACT::WearLaw                          wearlaw_;     // type of wear law
+  INPAR::WEAR::WearLaw                          wearlaw_;     // type of wear law
   bool                                             wearimpl_;    // flag for implicit wear algorithm
-  INPAR::CONTACT::WearSide                         wearside_;    // definition of wear surface
-  INPAR::CONTACT::WearType                         weartype_;    // definition of contact wear algorithm
-  INPAR::CONTACT::WearShape                        wearshapefcn_;// type of wear shape function
+  INPAR::WEAR::WearSide                         wearside_;    // definition of wear surface
+  INPAR::WEAR::WearType                         weartype_;    // definition of contact wear algorithm
+  INPAR::WEAR::WearShape                        wearshapefcn_;// type of wear shape function
   double                                           wearcoeff_;   // wear coefficient
   double                                           wearcoeffm_;  // wear coefficient master
   bool                                             sswear_;      // flag for steady state wear

@@ -927,7 +927,7 @@ public:
    \brief Return the Wear shape fcn type (wear weighting...)
 
    */
-  INPAR::CONTACT::WearShape WearShapeFcn()
+  INPAR::WEAR::WearShape WearShapeFcn()
   {
     return wearshapefcn_;
   }
@@ -936,7 +936,7 @@ public:
    \brief Return type of wear surface definition
 
    */
-  INPAR::CONTACT::WearSide WearSide()
+  INPAR::WEAR::WearSide WearSide()
   {
     return wearside_;
   }
@@ -945,7 +945,7 @@ public:
    \brief Return type of wear algorithm
 
    */
-  INPAR::CONTACT::WearType WearType()
+  INPAR::WEAR::WearType WearType()
   {
     return weartype_;
   }
@@ -1058,11 +1058,11 @@ protected:
     bool                                             gpslip_;      // gp-wise evaluated slip increment
 
     // wear inputs from parameter list
-    INPAR::CONTACT::WearLaw                          wearlaw_;     // type of wear law
+    INPAR::WEAR::WearLaw                          wearlaw_;     // type of wear law
     bool                                             wearimpl_;    // flag for implicit wear algorithm
-    INPAR::CONTACT::WearSide                         wearside_;    // definition of wear surface
-    INPAR::CONTACT::WearType                         weartype_;    // definition of contact wear algorithm
-    INPAR::CONTACT::WearShape                        wearshapefcn_;// type of wear shape function
+    INPAR::WEAR::WearSide                         wearside_;    // definition of wear surface
+    INPAR::WEAR::WearType                         weartype_;    // definition of contact wear algorithm
+    INPAR::WEAR::WearShape                        wearshapefcn_;// type of wear shape function
     bool                                             sswear_;      // flag for steady state wear
     double                                           wearcoeff_;   // wear coefficient
     double                                           wearcoeffm_;  // wear coefficient master

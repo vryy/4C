@@ -68,15 +68,15 @@ constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>
     friction_ = true;
 
   // set wear contact status
-  INPAR::CONTACT::WearLaw wlaw = DRT::INPUT::IntegralValue<
-      INPAR::CONTACT::WearLaw>(Params(), "WEARLAW");
-  if (wlaw != INPAR::CONTACT::wear_none)
+  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearLaw>(Params(), "WEARLAW");
+  if (wlaw != INPAR::WEAR::wear_none)
     wear_ = true;
 
   // discrete both-sided wear for active set output
-  INPAR::CONTACT::WearSide wside = DRT::INPUT::IntegralValue<
-      INPAR::CONTACT::WearSide>(Params(), "BOTH_SIDED_WEAR");
-  if (wside == INPAR::CONTACT::wear_both_discr)
+  INPAR::WEAR::WearSide wside = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearSide>(Params(), "BOTH_SIDED_WEAR");
+  if (wside == INPAR::WEAR::wear_both_discr)
     wbdiscr_ = true;
 
   // set thermo-structure-interaction with contact

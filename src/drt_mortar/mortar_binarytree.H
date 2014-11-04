@@ -36,6 +36,8 @@ namespace MORTAR
 // forward declarations
 
 //! @name Enums and Friends
+
+/// Type of binary tree node
 enum BinaryTreeNodeType
 {
   SLAVE_INNER,        ///< indicates a slave inner node (has children)

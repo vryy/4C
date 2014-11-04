@@ -75,15 +75,15 @@ public:
   \brief Return type of wear surface definition
 
   */
-  INPAR::CONTACT::WearSide WearSide()
-      { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR"); }
+  INPAR::WEAR::WearSide WearSide()
+      { return DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR"); }
 
   /*!
   \brief Return type of wear surface definition
 
   */
-  INPAR::CONTACT::WearType WearType()
-      { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(imortar_,"WEARTYPE"); }
+  INPAR::WEAR::WearType WearType()
+      { return DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(imortar_,"WEARTYPE"); }
 
   //@}
 

@@ -33,6 +33,10 @@ namespace LINALG
 namespace MORTAR
 {
 
+/*!
+\brief A subclass of DRT::ElementType that adds mortar element type specific methods
+
+*/
 class MortarElementType : public DRT::ElementType
 {
 public:

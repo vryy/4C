@@ -26,6 +26,10 @@ Maintainer: Alexander Popp
 namespace MORTAR
 {
 
+/*!
+\brief A subclass of DRT::ElementType that adds mortar element type specific methods
+
+*/
 class MortarElementGeoDecouplType : public DRT::ElementType
 {
 public:

@@ -780,6 +780,15 @@ protected:
 };
 // class Coupling3dManager
 
+/*!
+ \brief A class representing the framework for mortar coupling of ONE
+ slave element and SEVERAL master elements of a mortar interface in
+ 3D with QUADRATIC ELEMENTS. Concretely, this class simply sub-divides
+ elements and then stores several Coupling3d objects.
+
+ \author popp (popp@lnm.mw.tum.de)
+*/
+
 class Coupling3dQuadManager
 {
 

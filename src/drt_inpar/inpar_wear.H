@@ -19,7 +19,7 @@ Maintainer: Philipp Farah
 namespace INPAR
 {
   /// Input parameters for structural wear
-  namespace CONTACT
+  namespace WEAR
   {
     /// Type of contact wear law
     /// (this enum represents the input file parameter WEAR)
@@ -73,12 +73,13 @@ namespace INPAR
     };
 
     /// Definition of configuration for wear coefficient
+    /// (this enum represents the input file parameter WEARCOEFF_CONF)
     enum WearConf
     {
       wear_conf_mat,
       wear_conf_sp
     };
-  }  // namespace CONTACT
+  }  // namespace WEAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/

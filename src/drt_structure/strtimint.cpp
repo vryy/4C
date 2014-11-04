@@ -2500,12 +2500,6 @@ void STR::TimInt::OutputContact()
   // only for contact / meshtying simulations
   if (HaveContactMeshtying())
   {
-    // THIS IS FOR DEBUGGING ONLY!!!
-    // print contact forces with respect to reference configuration
-  #ifdef CONTACTFORCEREFCONFIG
-    cman_->GetStrategy().ForceRefConfig();
-  #endif
-
     // print active set
     cmtbridge_->GetStrategy().PrintActiveSet();
 

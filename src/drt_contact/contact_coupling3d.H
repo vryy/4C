@@ -169,9 +169,9 @@ public:
    \brief Return type of wear surface definition
 
    */
-  INPAR::CONTACT::WearType WearType()
+  INPAR::WEAR::WearType WearType()
   {
-    return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(imortar_,"WEARTYPE");
+    return DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(imortar_,"WEARTYPE");
   }
 
   //@}

@@ -1967,24 +1967,24 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       tuple<std::string>("None","none",
                          "Archard","archard"),
       tuple<int>(
-                 INPAR::CONTACT::wear_none, INPAR::CONTACT::wear_none,
-                 INPAR::CONTACT::wear_archard, INPAR::CONTACT::wear_archard),
+                 INPAR::WEAR::wear_none, INPAR::WEAR::wear_none,
+                 INPAR::WEAR::wear_archard, INPAR::WEAR::wear_archard),
       &wear);
 
   setStringToIntegralParameter<int>("WEARCOEFF_CONF","material","configuration in which wcoeff is defined",
       tuple<std::string>("material","mat",
                          "spatial","sp"),
       tuple<int>(
-                 INPAR::CONTACT::wear_conf_mat, INPAR::CONTACT::wear_conf_mat,
-                 INPAR::CONTACT::wear_conf_sp, INPAR::CONTACT::wear_conf_sp),
+                 INPAR::WEAR::wear_conf_mat, INPAR::WEAR::wear_conf_mat,
+                 INPAR::WEAR::wear_conf_sp, INPAR::WEAR::wear_conf_sp),
       &wear);
 
   setStringToIntegralParameter<int>("WEAR_SHAPEFCN","std","Type of employed set of shape functions for wear",
         tuple<std::string>("Dual", "dual",
                            "Standard", "standard", "std"),
         tuple<int>(
-                INPAR::CONTACT::wear_shape_dual, INPAR::CONTACT::wear_shape_dual,
-                INPAR::CONTACT::wear_shape_standard, INPAR::CONTACT::wear_shape_standard, INPAR::CONTACT::wear_shape_standard),
+                INPAR::WEAR::wear_shape_dual, INPAR::WEAR::wear_shape_dual,
+                INPAR::WEAR::wear_shape_standard, INPAR::WEAR::wear_shape_standard, INPAR::WEAR::wear_shape_standard),
         &wear);
 
   DoubleParameter("WEARCOEFF",0.0,"Wear coefficient for slave surface",&wear);
@@ -2003,9 +2003,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                            "Mapping","mapping", "map",
                            "bothdiscr","bd", "sm"),
         tuple<int>(
-                INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave, INPAR::CONTACT::wear_slave,
-                INPAR::CONTACT::wear_both_map, INPAR::CONTACT::wear_both_map,INPAR::CONTACT::wear_both_map,
-                INPAR::CONTACT::wear_both_discr, INPAR::CONTACT::wear_both_discr,INPAR::CONTACT::wear_both_discr),
+                INPAR::WEAR::wear_slave, INPAR::WEAR::wear_slave, INPAR::WEAR::wear_slave,
+                INPAR::WEAR::wear_both_map, INPAR::WEAR::wear_both_map,INPAR::WEAR::wear_both_map,
+                INPAR::WEAR::wear_both_discr, INPAR::WEAR::wear_both_discr,INPAR::WEAR::wear_both_discr),
         &wear);
 
   setStringToIntegralParameter<int>("WEARTYPE","explicit","Definition of wear algorithm",
@@ -2013,9 +2013,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                            "expl","Expl", "explicit",
                            "discrete","wear_discrete", "wd"),
         tuple<int>(
-                INPAR::CONTACT::wear_impl, INPAR::CONTACT::wear_impl, INPAR::CONTACT::wear_impl,
-                INPAR::CONTACT::wear_expl, INPAR::CONTACT::wear_expl,INPAR::CONTACT::wear_expl,
-                INPAR::CONTACT::wear_discr, INPAR::CONTACT::wear_discr, INPAR::CONTACT::wear_discr),
+                INPAR::WEAR::wear_impl, INPAR::WEAR::wear_impl, INPAR::WEAR::wear_impl,
+                INPAR::WEAR::wear_expl, INPAR::WEAR::wear_expl,INPAR::WEAR::wear_expl,
+                INPAR::WEAR::wear_discr, INPAR::WEAR::wear_discr, INPAR::WEAR::wear_discr),
         &wear);
 
   setStringToIntegralParameter<int>("WEAR_COUPALGO","stagg","Definition of wear (ALE) coupling algorithm",
@@ -2023,17 +2023,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                            "iterstagg","is",
                            "monolithic","mono"),
         tuple<int>(
-                INPAR::CONTACT::wear_stagg, INPAR::CONTACT::wear_stagg,
-                INPAR::CONTACT::wear_iterstagg, INPAR::CONTACT::wear_iterstagg,
-                INPAR::CONTACT::wear_monolithic, INPAR::CONTACT::wear_monolithic),
+                INPAR::WEAR::wear_stagg, INPAR::WEAR::wear_stagg,
+                INPAR::WEAR::wear_iterstagg, INPAR::WEAR::wear_iterstagg,
+                INPAR::WEAR::wear_monolithic, INPAR::WEAR::wear_monolithic),
         &wear);
 
   setStringToIntegralParameter<int>("WEAR_TIMESCALE","equal","Definition wear time scale compares to std. time scale",
         tuple<std::string>("equal","e",
                            "different","d"),
         tuple<int>(
-                INPAR::CONTACT::wear_time_equal, INPAR::CONTACT::wear_time_equal,
-                INPAR::CONTACT::wear_time_different, INPAR::CONTACT::wear_time_different),
+                INPAR::WEAR::wear_time_equal, INPAR::WEAR::wear_time_equal,
+                INPAR::WEAR::wear_time_different, INPAR::WEAR::wear_time_different),
         &wear);
 
   /*----------------------------------------------------------------------*/

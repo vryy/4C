@@ -55,32 +55,32 @@ sswear_(DRT::INPUT::IntegralValue<int>(Params(),"SSWEAR"))
   }
 
   // set wear contact status
-  INPAR::CONTACT::WearType wtype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(Params(),"WEARTYPE");
-  INPAR::CONTACT::WearSide wside =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(Params(),"BOTH_SIDED_WEAR");
-  INPAR::CONTACT::WearTimeScale wtime =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearTimeScale>(Params(),"WEAR_TIMESCALE");
+  INPAR::WEAR::WearType wtype =
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(Params(),"WEARTYPE");
+  INPAR::WEAR::WearSide wside =
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(Params(),"BOTH_SIDED_WEAR");
+  INPAR::WEAR::WearTimeScale wtime =
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearTimeScale>(Params(),"WEAR_TIMESCALE");
 
-  if (wtype == INPAR::CONTACT::wear_impl)
+  if (wtype == INPAR::WEAR::wear_impl)
     wearimpl_ = true;
   else
     wearimpl_=false;
 
   // set wear contact discretization
-  if (wtype == INPAR::CONTACT::wear_discr)
+  if (wtype == INPAR::WEAR::wear_discr)
     weardiscr_ = true;
   else
     weardiscr_=false;
 
   // both sided wear for discrete wear
-  if (wside == INPAR::CONTACT::wear_both_discr)
+  if (wside == INPAR::WEAR::wear_both_discr)
     wearbothdiscr_=true;
   else
     wearbothdiscr_=false;
 
   // different wear timescales?
-  if (wtime == INPAR::CONTACT::wear_time_different)
+  if (wtime == INPAR::WEAR::wear_time_different)
     weartimescales_=true;
   else
     weartimescales_=false;
@@ -187,8 +187,8 @@ void CONTACT::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
     // ****************************************************
     // both-sided wear specific
     // ****************************************************
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(Params(),"BOTH_SIDED_WEAR")
-        == INPAR::CONTACT::wear_both_map)
+    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(Params(),"BOTH_SIDED_WEAR")
+        == INPAR::WEAR::wear_both_map)
     {
       gminvolvednodes_ = LINALG::MergeMap(gminvolvednodes_, interface_[i]->InvolvedNodes(), false);
       gminvolveddofs_  = LINALG::MergeMap(gminvolveddofs_, interface_[i]->InvolvedDofs(), false);
@@ -387,7 +387,7 @@ void CONTACT::WearLagrangeStrategy::AssembleMortar()
     // only assemble D2 for both-sided wear --> unweights the
     // weighted wear increment in master side
     // --> based on weak dirichlet bc!
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(Params(),"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(Params(),"BOTH_SIDED_WEAR") != INPAR::WEAR::wear_slave)
       interface_[i]->AssembleD2(*d2matrix_);
 
     //************************************************************
@@ -1519,12 +1519,12 @@ void CONTACT::WearLagrangeStrategy::CondenseWearDiscr(Teuchos::RCP<LINALG::Spars
                                                    Teuchos::RCP<Epetra_Vector>& gact)
 {
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
-  INPAR::CONTACT::WearShape wearshapefcn = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearShape>(Params(),"WEAR_SHAPEFCN");
+  INPAR::WEAR::WearShape wearshapefcn = DRT::INPUT::IntegralValue<INPAR::WEAR::WearShape>(Params(),"WEAR_SHAPEFCN");
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
     dserror("Condensation only for dual LM");
-  if (wearshapefcn != INPAR::CONTACT::wear_shape_dual)
+  if (wearshapefcn != INPAR::WEAR::wear_shape_dual)
     dserror("Condensation only for dual wear");
 
   // get stick map
@@ -2540,8 +2540,8 @@ void CONTACT::WearLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::Sparse
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
 
   // get wear shapefunction type
-  INPAR::CONTACT::WearShape wearshapefcn =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearShape>(Params(),"WEAR_SHAPEFCN");
+  INPAR::WEAR::WearShape wearshapefcn =
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearShape>(Params(),"WEAR_SHAPEFCN");
 
   /**********************************************************************/
   /* export weighted gap vector to gactiveN-map                         */
@@ -2663,9 +2663,9 @@ void CONTACT::WearLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::Sparse
   {
     if(sswear_)
     {
-      if(wearshapefcn == INPAR::CONTACT::wear_shape_dual)
+      if(wearshapefcn == INPAR::WEAR::wear_shape_dual)
         ematrix_->Complete(*gactiven_,*gactiven_); // quadr. matrix --> for dual shapes --> diag.
-      else if (wearshapefcn == INPAR::CONTACT::wear_shape_standard)
+      else if (wearshapefcn == INPAR::WEAR::wear_shape_standard)
         ematrix_->Complete(*gsdofnrowmap_,*gactiven_); // quadr. matrix --> for dual shapes --> diag.
       else
         dserror("chosen shape fnc for wear not supported!");
@@ -2678,9 +2678,9 @@ void CONTACT::WearLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::Sparse
     }
     else
     {
-      if(wearshapefcn == INPAR::CONTACT::wear_shape_dual)
+      if(wearshapefcn == INPAR::WEAR::wear_shape_dual)
         ematrix_->Complete(*gslipn_,*gslipn_); // quadr. matrix --> for dual shapes --> diag.
-      else if (wearshapefcn == INPAR::CONTACT::wear_shape_standard)
+      else if (wearshapefcn == INPAR::WEAR::wear_shape_standard)
         ematrix_->Complete(*gsdofnrowmap_,*gslipn_); // quadr. matrix --> for dual shapes --> diag.
       else
         dserror("ERROR: chosen shape fnc for wear not supported!");
@@ -4186,8 +4186,8 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
      * unweight the resulting vector by D_2^-1*w_2~ and get the final
      * unweighted wear vector.
      **********************************************************************/
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(Params(),"BOTH_SIDED_WEAR")
-        == INPAR::CONTACT::wear_both_map)
+    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(Params(),"BOTH_SIDED_WEAR")
+        == INPAR::WEAR::wear_both_map)
     {
       // different wear coefficients on both sides...
       double wearcoeff_s = Params().get<double>("WEARCOEFF", 0.0);
@@ -5172,8 +5172,8 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
 
     // for both-sided wear
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(scontact_,"BOTH_SIDED_WEAR")
-        == INPAR::CONTACT::wear_both_map)
+    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(scontact_,"BOTH_SIDED_WEAR")
+        == INPAR::WEAR::wear_both_map)
     {
       gminvolvednodes_ = LINALG::MergeMap(gminvolvednodes_, interface_[i]->InvolvedNodes(), false);
       gminvolveddofs_  = LINALG::MergeMap(gminvolveddofs_, interface_[i]->InvolvedDofs(), false);

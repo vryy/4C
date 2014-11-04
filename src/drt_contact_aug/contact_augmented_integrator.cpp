@@ -283,7 +283,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle3D(
 
   // contact with wear
   bool wear = false;
-  if(wearlaw_!= INPAR::CONTACT::wear_none)
+  if(wearlaw_!= INPAR::WEAR::wear_none)
     wear = true;
 
   int msize   = meles.size();
@@ -399,7 +399,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle3D(
         LINALG::SerialDenseMatrix lm2deriv(nmnode,2,true);
 
         // evaluate Lagrange multiplier shape functions (on slave element)
-        if (WearSide() != INPAR::CONTACT::wear_slave)
+        if (WearSide() != INPAR::WEAR::wear_slave)
           meles[nummaster]->EvaluateShapeLagMult(ShapeFcn(),mxi,lm2val,lm2deriv,nmnode);
 
         // project Gauss point onto master element

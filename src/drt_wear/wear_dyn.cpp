@@ -78,13 +78,13 @@ void wear_dyn_drt(int restart)
   Teuchos::RCP<WEAR::Algorithm> stru_ale = Teuchos::null;
 
   // structure ale object
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearCoupAlgo>(wearpara,"WEAR_COUPALGO")
-      ==  INPAR::CONTACT::wear_stagg)
+  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara,"WEAR_COUPALGO")
+      ==  INPAR::WEAR::wear_stagg)
   {
     stru_ale = Teuchos::rcp(new WEAR::Partitioned(comm));
   }
-  else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearCoupAlgo>(wearpara,"WEAR_COUPALGO")
-      ==  INPAR::CONTACT::wear_iterstagg)
+  else if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearCoupAlgo>(wearpara,"WEAR_COUPALGO")
+      ==  INPAR::WEAR::wear_iterstagg)
   {
     stru_ale = Teuchos::rcp(new WEAR::Partitioned(comm));
   }

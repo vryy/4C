@@ -444,8 +444,8 @@ public:
    \brief Get type of wear shapefnct
 
    */
-   INPAR::CONTACT::WearShape WearShapeFcn()
-       { return DRT::INPUT::IntegralValue<INPAR::CONTACT::WearShape>(imortar_,"WEAR_SHAPEFCN"); }
+   INPAR::WEAR::WearShape WearShapeFcn()
+       { return DRT::INPUT::IntegralValue<INPAR::WEAR::WearShape>(imortar_,"WEAR_SHAPEFCN"); }
 
 protected:
 

@@ -119,15 +119,15 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
   // get input par.
   INPAR::CONTACT::SolvingStrategy stype = DRT::INPUT::IntegralValue<
       INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
-  INPAR::CONTACT::WearLaw wlaw = DRT::INPUT::IntegralValue<
-      INPAR::CONTACT::WearLaw>(cparams, "WEARLAW");
-  INPAR::CONTACT::WearType wtype = DRT::INPUT::IntegralValue<
-      INPAR::CONTACT::WearType>(cparams, "WEARTYPE");
+  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
+  INPAR::WEAR::WearType wtype = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearType>(cparams, "WEARTYPE");
   INPAR::CONTACT::ConstraintDirection constr_direction =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(cparams,"CONSTRAINT_DIRECTIONS");
 
   bool friplus = false;
-  if ((wlaw != INPAR::CONTACT::wear_none)
+  if ((wlaw != INPAR::WEAR::wear_none)
       || (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
     friplus = true;
 
@@ -357,7 +357,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
     Teuchos::RCP<CONTACT::CoInterface> newinterface=Teuchos::null;
     if (stype==INPAR::CONTACT::solution_augmented)
       newinterface=Teuchos::rcp(new CONTACT::AugmentedInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
-    else if(wlaw!=INPAR::CONTACT::wear_none)
+    else if(wlaw!=INPAR::WEAR::wear_none)
       newinterface=Teuchos::rcp(new CONTACT::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else
       newinterface = Teuchos::rcp(new CONTACT::CoInterface(groupid1, Comm(), dim, icparams, isself[0],redundant));
@@ -591,10 +591,10 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf) :
 
   // create WearLagrangeStrategy for wear as non-distinct quantity
   if ( stype == INPAR::CONTACT::solution_lagmult &&
-       wlaw  != INPAR::CONTACT::wear_none &&
-      (wtype == INPAR::CONTACT::wear_expl ||
-       wtype == INPAR::CONTACT::wear_impl ||
-       wtype == INPAR::CONTACT::wear_discr))
+       wlaw  != INPAR::WEAR::wear_none &&
+      (wtype == INPAR::WEAR::wear_expl ||
+       wtype == INPAR::WEAR::wear_impl ||
+       wtype == INPAR::WEAR::wear_discr))
   {
     strategy_ = Teuchos::rcp(new WearLagrangeStrategy(Discret(), cparams, interfaces, dim, comm_, alphaf, maxdof));
   }
@@ -721,7 +721,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // adhesive contact
   // *********************************************************************
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(contact,"ADHESION") != INPAR::CONTACT::adhesion_none
-      and DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist, "WEARLAW") != INPAR::CONTACT::wear_none)
+      and DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none)
     dserror("ERROR: Adhesion combined with wear not yet tested!");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(contact,"ADHESION") != INPAR::CONTACT::adhesion_none
@@ -791,7 +791,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (mortar.get<double>("SEARCH_PARAM") == 0.0 && Comm().MyPID() == 0)
     std::cout << ("Warning: Contact search called without inflation of bounding volumes\n") << std::endl;
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(wearlist,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(wearlist,"BOTH_SIDED_WEAR") != INPAR::WEAR::wear_slave)
     std::cout << ("\n \n Warning: Contact with both-sided wear is still experimental !") << std::endl;
 
 
@@ -877,7 +877,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") != INPAR::MORTAR::lagmult_undefined)
       dserror("ERROR: Consistent dual shape functions in boundary elements only for linear shape functions.");
 
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist, "WEARLAW") != INPAR::CONTACT::wear_none
+    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none
         && DRT::INPUT::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
       dserror("ERROR: Frictionless first contact step with wear not yet implemented");
 
@@ -893,7 +893,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
     if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
         || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
-        && DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist, "WEARLAW")!= INPAR::CONTACT::wear_none)
+        && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")!= INPAR::WEAR::wear_none)
       dserror("ERROR: Mesh adaptive cn and ct not yet implemented for wear");
 
     // *********************************************************************
@@ -918,28 +918,28 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // *********************************************************************
     // contact with wear
     // *********************************************************************
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist, "WEARLAW") == INPAR::CONTACT::wear_none &&
+    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") == INPAR::WEAR::wear_none &&
         wearlist.get<double>("WEARCOEFF") != 0.0)
       dserror("ERROR: Wear coefficient only necessary in the context of wear.");
 
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_none
-        && DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist, "WEARLAW")  != INPAR::CONTACT::wear_none)
+        && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")  != INPAR::WEAR::wear_none)
       dserror("ERROR: Wear models only applicable to frictional contact.");
 
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist, "WEARLAW") != INPAR::CONTACT::wear_none &&
+    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none &&
         wearlist.get<double>("WEARCOEFF") <= 0.0)
       dserror("ERROR: No valid wear coefficient provided, must be equal or greater 0.0");
 
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist, "WEARLAW") != INPAR::CONTACT::wear_none
+    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none
         && DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true)
       dserror("ERROR: Combination of LM_NODAL_SCALE and WEAR not (yet) implemented.");
 
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult
-        && DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist, "WEARLAW")     != INPAR::CONTACT::wear_none)
+        && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")     != INPAR::WEAR::wear_none)
       dserror("ERROR: Wear model only applicable in combination with Lagrange multiplier strategy.");
 
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_tresca
-        && DRT::INPUT::IntegralValue<INPAR::CONTACT::WearLaw>(wearlist, "WEARLAW")  != INPAR::CONTACT::wear_none)
+        && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")  != INPAR::WEAR::wear_none)
       dserror("ERROR: Wear only for Coulomb friction!");
 
     // *********************************************************************

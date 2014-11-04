@@ -24,7 +24,7 @@ namespace DRT
 }
 
 /*!
-\brief CONTACT: namespace of the baci contact algorithms
+\brief CONTACT: namespace of the BACI contact and meshtying algorithms
 
 */
 namespace CONTACT

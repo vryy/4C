@@ -44,25 +44,25 @@ CONTACT::CoInterface(id,comm,dim,icontact,selfcontact,redundant),
 sswear_(DRT::INPUT::IntegralValue<int>(icontact,"SSWEAR"))
 {
   // set wear contact status
-  INPAR::CONTACT::WearType wtype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(icontact,"WEARTYPE");
+  INPAR::WEAR::WearType wtype =
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(icontact,"WEARTYPE");
 
-  INPAR::CONTACT::WearSide wside =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(icontact,"BOTH_SIDED_WEAR");
+  INPAR::WEAR::WearSide wside =
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(icontact,"BOTH_SIDED_WEAR");
 
-  if (wtype == INPAR::CONTACT::wear_impl)
+  if (wtype == INPAR::WEAR::wear_impl)
     wearimpl_ = true;
   else
     wearimpl_=false;
 
   // set wear contact discretization
-  if (wtype == INPAR::CONTACT::wear_discr)
+  if (wtype == INPAR::WEAR::wear_discr)
     weardiscr_ = true;
   else
     weardiscr_=false;
 
   // set wear contact discretization
-  if (wside == INPAR::CONTACT::wear_both_discr)
+  if (wside == INPAR::WEAR::wear_both_discr)
     wearbothdiscr_ = true;
   else
     wearbothdiscr_=false;
@@ -165,12 +165,12 @@ void CONTACT::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal,
         double val = colcurr->second;
 
         // do not assemble zeros into m matrix
-        if (WearShapeFcn() == INPAR::CONTACT::wear_shape_standard)
+        if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
         {
           if (abs(val)>1.0e-12) eglobal.Assemble(val,row,col);
           ++k;
         }
-        else if (WearShapeFcn() == INPAR::CONTACT::wear_shape_dual)
+        else if (WearShapeFcn() == INPAR::WEAR::wear_shape_dual)
         {
           if (col==row)
             if (abs(val)>1.0e-12) eglobal.Assemble(val,row,col);
@@ -202,8 +202,8 @@ void CONTACT::WearInterface::AssembleTE_Master(LINALG::SparseMatrix& tglobal,
   if (!lComm())
     return;
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") !=
-      INPAR::CONTACT::wear_both_discr)
+  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR") !=
+      INPAR::WEAR::wear_both_discr)
     dserror("ERROR: AssembleTE_Master only for discr both-sided wear!");
 
   //*******************************************************
@@ -283,12 +283,12 @@ void CONTACT::WearInterface::AssembleTE_Master(LINALG::SparseMatrix& tglobal,
         double val = colcurr->second;
 
         // do not assemble zeros into m matrix
-        if (WearShapeFcn() == INPAR::CONTACT::wear_shape_standard)
+        if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
         {
           if (abs(val)>1.0e-12) eglobal.FEAssemble(val,row,col);
           ++k;
         }
-        else if (WearShapeFcn() == INPAR::CONTACT::wear_shape_dual)
+        else if (WearShapeFcn() == INPAR::WEAR::wear_shape_dual)
         {
           if (col==row)
             if (abs(val)>1.0e-12) eglobal.FEAssemble(val,row,col);
@@ -3367,8 +3367,8 @@ void CONTACT::WearInterface::AssembleD2(LINALG::SparseMatrix& dglobal)
    *  dirichlet bound. cond on master side !!! *                *
    **************************************************************/
 
-//  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") ==
-//      INPAR::CONTACT::wear_slave)
+//  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR") ==
+//      INPAR::WEAR::wear_slave)
 //    dserror("ERROR: AssembleD2 only for mapped both-sided wear!");
 
   //*******************************************************
@@ -3818,8 +3818,8 @@ bool CONTACT::WearInterface::BuildActiveSet(bool init)
 
   // *******************************************************
   // loop over all master nodes - both-sided wear specific
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR")
-      == INPAR::CONTACT::wear_both_map)
+  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR")
+      == INPAR::WEAR::wear_both_map)
   {
     // The node and dof map of involved master nodes for both-sided wear should have an
     // analog distribution as the master node row map. Therefore, we loop over
@@ -3866,8 +3866,8 @@ bool CONTACT::WearInterface::BuildActiveSet(bool init)
   activedofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)mydofgids.size(),&mydofgids[0],0,Comm()));
 
   // create map for all involved master nodes -- both-sided wear specific
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR")
-      == INPAR::CONTACT::wear_both_map)
+  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR")
+      == INPAR::WEAR::wear_both_map)
   {
     involvednodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)mymnodegids.size(),&mymnodegids[0],0,Comm()));
     involveddofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)mymdofgids.size(),&mymdofgids[0],0,Comm()));
@@ -4222,8 +4222,8 @@ void CONTACT::WearInterface::FillComplete(int maxdof, bool newghosting)
   // here we need a datacontainer for the masternodes too
   // they have to know their involved nodes/dofs
   //***********************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR")
-      != INPAR::CONTACT::wear_slave)
+  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR")
+      != INPAR::WEAR::wear_slave)
   {
     const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
 
@@ -4646,7 +4646,7 @@ void CONTACT::WearInterface::Initialize()
   //**************************************************
   // for both-sided wear
   //**************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") == INPAR::CONTACT::wear_both_map)
+  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR") == INPAR::WEAR::wear_both_map)
   {
     const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
 
@@ -4801,8 +4801,8 @@ void CONTACT::WearInterface::Initialize()
   }
 
   // for both-sided wear with discrete wear
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") ==
-      INPAR::CONTACT::wear_both_discr)
+  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR") ==
+      INPAR::WEAR::wear_both_discr)
   {
     const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
 
@@ -5016,7 +5016,7 @@ void CONTACT::WearInterface::SetElementAreas()
   else
   {
     // for both-sided wear we need element areas of master elements --> colelements
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::CONTACT::wear_slave)
+    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::WEAR::wear_slave)
     {
       for (int i=0;i<idiscret_->NumMyColElements();++i)
       {

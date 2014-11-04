@@ -25,9 +25,9 @@ namespace INPAR
     /// (this enum represents the input file parameter BEAMS_STRATEGY)
     enum Strategy
     {
-      bstr_none,         ///< no beam contact
-      bstr_penalty,       ///< penalty method
-      bstr_uzawa         ///< uzawa method
+      bstr_none,        ///< no beam contact
+      bstr_penalty,     ///< penalty method
+      bstr_uzawa        ///< uzawa method
     };
 
     /// Application of a smoothed tangent field
@@ -38,10 +38,12 @@ namespace INPAR
       bsm_cpp           ///< smoothing only for the closest point projection; element evaluation without smoothing"
     };
 
+    /// Application of a contact damping force
+    /// (this enum represents the input file parameter BEAMS_DAMPING)
     enum Damping
     {
-      bd_no,           ///< no damping force
-      bd_yes           ///< application of a contact damping force
+      bd_no,            ///< no damping force
+      bd_yes            ///< application of a contact damping force
     };
 
     /// Application of a smoothed tangent field
@@ -57,7 +59,7 @@ namespace INPAR
       pl_lpep         ///< linear penalty law with exponential regularization for positive gaps
     };
 
-    /// Beam Contact Octree  and Bounding Box Type
+    /// Beam Contact Octree and Bounding Box Type
     /// (this enum represents the input file parameter BEAMS_OCTREEBBOX)
     enum OctreeType
     {

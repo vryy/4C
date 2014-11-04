@@ -174,13 +174,13 @@ void WEAR::Algorithm::CreateMaterialInterface()
   // get input par.
   INPAR::CONTACT::SolvingStrategy stype = DRT::INPUT::IntegralValue<
       INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
-  INPAR::CONTACT::WearLaw wlaw = DRT::INPUT::IntegralValue<
-      INPAR::CONTACT::WearLaw>(cparams, "WEARLAW");
+  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
   INPAR::CONTACT::ConstraintDirection constr_direction =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(cparams,"CONSTRAINT_DIRECTIONS");
 
   bool friplus = false;
-  if ((wlaw != INPAR::CONTACT::wear_none)
+  if ((wlaw != INPAR::WEAR::wear_none)
       || (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
     friplus = true;
 
@@ -410,7 +410,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
     Teuchos::RCP<CONTACT::CoInterface> newinterface=Teuchos::null;
     if (stype==INPAR::CONTACT::solution_augmented)
       newinterface=Teuchos::rcp(new CONTACT::AugmentedInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
-    else if(wlaw!=INPAR::CONTACT::wear_none)
+    else if(wlaw!=INPAR::WEAR::wear_none)
       newinterface=Teuchos::rcp(new CONTACT::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else
       newinterface = Teuchos::rcp(new CONTACT::CoInterface(groupid1, Comm(), dim, icparams, isself[0],redundant));

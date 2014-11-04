@@ -23,6 +23,10 @@ Maintainer: Alexander Popp
 namespace MORTAR
 {
 
+/*!
+\brief A subclass of DRT::ParObjectType that adds mortar element type specific methods
+
+*/
 class MortarNodeType: public DRT::ParObjectType
 {
 public:

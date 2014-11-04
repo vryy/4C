@@ -79,21 +79,22 @@ namespace INPAR
       errornorms_thicksphere ///< error norms for thick pressurized sphere problem
     };
 
-    // problemtype to avoid use of drt_globalproblem.H
-    enum Problemtype
-    {
-      structure,
-      tsi,
-      structalewear,
-      poro,
-      other
-    };
-
-    // formulation of constraint equations
+    /// Type of formulation of constraint equations
+    /// (this enum represents the input file parameter CONSTRAINT_DIRECTIONS)
     enum ConstraintDirection
     {
-      constr_ntt,
-      constr_xyz
+      constr_ntt,            ///< local normal and tangential coordinates
+      constr_xyz             ///< global Cartesian coordinates
+    };
+
+    /// Local definition of problemtype to avoid use of drt_globalproblem.H
+    enum Problemtype
+    {
+      structure,             ///< structural contact problem
+      tsi,                   ///< coupled TSI problem with contact
+      structalewear,         ///< wear problem including ALE shape changes
+      poro,                  ///< poroelasticity problem with contact
+      other                  ///< other problemtypes
     };
 
   }  // namespace CONTACT
