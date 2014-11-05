@@ -279,7 +279,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   {
     DRT::Node* currparticle = particledis_->lRowNode(i);
     // fill particle position
-    static LINALG::Matrix<3,1> particleposition;
+    static LINALG::Matrix<3,1> particleposition(false);
     std::vector<int> lm_b = particledis_->Dof(currparticle);
     int posx = bubblepos->Map().LID(lm_b[0]);
     for (int d=0; d<dim; ++d)

@@ -880,7 +880,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
  | compare vectors from different parallel baci runs        ghamm 10/14 |
  |                                                                      |
  | You can add COMM_UTILS::CompareVectors([insert any Epetra_MultiVector|
- | here]); in your code which will lead to a comparison                 |
+ | here], name_of_vector); in your code which will lead to a comparison |
  | of the given vector for different executables and/or configurations  |
  | command for starting this feature:                                   |
  | mpirun -np 1 ./baci-release -nptype=diffgroup0 input.dat xxx_ser : -np 3 ./other-baci-release -nptype=diffgroup1 other-input.dat xxx_par
@@ -893,13 +893,22 @@ void COMM_UTILS::NPDuplicateDiscretization(
  | Note: you need to add the CompareVectors method in both executables  |
  | at the same position in the code                                     |
  *----------------------------------------------------------------------*/
-void COMM_UTILS::CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec)
+void COMM_UTILS::CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, const char* name)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
   Teuchos::RCP<COMM_UTILS::NestedParGroup> group = problem->GetNPGroup();
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
+  MPI_Comm mpi_lcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(lcomm)->GetMpiComm();
   MPI_Comm mpi_gcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm)->GetMpiComm();
+
+  int result = -1;
+  MPI_Comm_compare(mpi_gcomm, mpi_lcomm, &result);
+  if(result == 0)
+  {
+    IO::cout << "WARNING:: Vectors " << name << " cannot be compared because second baci run is missing" << IO::endl;
+    return;
+  }
 
   // do stupid conversion from Epetra_BlockMap to Epetra_Map
   const Epetra_BlockMap& vecblockmap = vec->Map();
@@ -947,7 +956,7 @@ void COMM_UTILS::CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec)
       maxdiff = std::max(maxdiff, difference);
     }
     if (maxdiff > 1.0e-14)
-      dserror("vectors do not match, maximum difference between entries is: %lf", maxdiff);
+      dserror("vectors %s do not match, maximum difference between entries is: %lf", name, maxdiff);
     else
       IO::cout << "compared vectors of length: " << mylength << " are identical." << IO::endl;
   }

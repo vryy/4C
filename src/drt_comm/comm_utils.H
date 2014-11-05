@@ -64,7 +64,7 @@ namespace COMM_UTILS
                                  Teuchos::RCP<Epetra_MpiComm> icomm);
 
   //! comparison of two vectors from parallel baci runs for debugging reason
-  void CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec);
+  void CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, const char* name);
 
   //! transform Epetra_Comm to Teuchos::Comm, Teuchos::RCP version
   template<class datatype>

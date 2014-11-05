@@ -110,6 +110,7 @@ MAT 2 MAT_Particle DENSITY 1.3 INITRADIUS 0.01 NUE 0.0 YOUNG 1.0
 CURVE1 on EXPR FUNC (0.5*(1-cos(pi*t/0.1))) t1 0.0 t2 0.1
 CURVE1 on EXPR FUNC 1 t1 0.1 t2 1000.0
 ----------------------------------------------------------------------CURVE2
+CURVE2 on EXPR FUNC 0.1+5.0*t    t1 0.0 t2 1000.0
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
@@ -123,7 +124,7 @@ NDPOINT                         0
 NDLINE                          0
 NDSURF                          1
 NDVOL                           1
-NDPARTICLE                      3
+NDPARTICLE                      4
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //                              outersurface
@@ -132,16 +133,21 @@ E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 DVOL                            1
 //                              fluidvolume
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
+-------------------------------------------DESIGN PARTICLE DIRICH CONDITIONS
+DPARTICLE  1
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 -0.4 0.001 CURVE 2 none none FUNCT 0 0 0
 --------------------------------------DESIGN PARTICLE INIT RADIUS CONDITIONS
-DPARTICLE                       3
+DPARTICLE                       4
 E 1 - SCALAR 17.0 FUNCT 2
 E 2 - SCALAR 20.1 FUNCT 2
 E 3 - SCALAR 10.1 FUNCT 2
+E 4 - SCALAR 0.1 FUNCT 2
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
 NODE 1 DPARTICLE 1
 NODE 2 DPARTICLE 2
 NODE 3 DPARTICLE 3
+NODE 4 DPARTICLE 4
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
@@ -2515,6 +2521,7 @@ NODE 1638 DVOL 1
 PARTICLE 1 COORD -100.0000000000000000e-02 10.5000000000000000e-02 0.0000000000000000e+00
 PARTICLE 2 COORD -70.0000000000000000e-02 -55.0000000000000000e-02 0.0000000000000000e+00
 PARTICLE 3 COORD 0.0000000000000000e-02 40.0000000000000000e-02 0.0000000000000000e-02
+PARTICLE 4 COORD 10.0000000000000000e-02 -40.0000000000000000e-02 0.1000000000000000e-02
 NODE 1 COORD 2.3333333333333335e+00 2.7200464103316337e-16 -3.3333333333333337e-01
 NODE 2 COORD 2.3026385601871766e+00 -2.2633611733456163e-01 -3.3333333333333304e-01
 NODE 3 COORD 2.1583382533233446e+00 -2.0005829772591754e-01 -3.3333333333333337e-01
@@ -5412,6 +5419,7 @@ FLUID DIS fluid NODE 202 QUANTITY pressure VALUE 0.0 TOLERANCE 1e-12
 FLUID DIS fluid ELEMENT 202 QUANTITY voidfraction VALUE 0.0 TOLERANCE 1e-12
 FLUID DIS fluid ELEMENT 314 QUANTITY voidfraction VALUE 6.94750123236629897e-03 TOLERANCE 1e-12
 FLUID DIS fluid ELEMENT 348 QUANTITY voidfraction VALUE 9.10535239458763225e-03 TOLERANCE 1e-12
+FLUID DIS fluid ELEMENT 757 QUANTITY voidfraction VALUE 7.04089910768527702e-07 TOLERANCE 1e-12
 FLUID DIS fluid ELEMENT 764 QUANTITY voidfraction VALUE 3.75786920482445441e-01 TOLERANCE 1e-11
 FLUID DIS fluid ELEMENT 774 QUANTITY voidfraction VALUE 1.99436155213300825e-01 TOLERANCE 1e-12
 FLUID DIS fluid ELEMENT 969 QUANTITY voidfraction VALUE 2.28398735527342440e-06 TOLERANCE 1e-12

@@ -28,6 +28,7 @@ Maintainer: Georg Hammerl
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
+#include <Epetra_FEVector.h>
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 11/12 |
@@ -210,6 +211,21 @@ namespace CAVITATION
       );
 
     //@}
+
+    /// test for overlap of the XAABB of bubble and element
+    bool XAABBoverlap(
+      DRT::Element* ele,
+      const double influence,
+      LINALG::Matrix<3,1> particleposition
+      );
+
+    /// assign bubble volume to the underlying fluid element
+    void AssignSmallBubbles(
+      const double bubblevol,
+      const LINALG::Matrix<3,1> particleposition,
+      const std::vector<int> insideeles,
+      Teuchos::RCP<Epetra_FEVector> void_volumes
+      );
 
   private:
     //! @name cavitation related stuff

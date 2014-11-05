@@ -24,8 +24,8 @@ Maintainer: Georg Hammerl
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/intersection_math.H"
-
-#include <Epetra_FEVector.h>
+#include "../drt_geometry/element_coordtrafo.H"
+#include "../drt_geometry/position_array.H"
 
 
 /*----------------------------------------------------------------------*
@@ -75,8 +75,8 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
     ConvertGidToijk(binId, ijk);
 
     // minimal bin size
-    double minbin = bin_size_[0];
-    for(int dim=1; dim<3; ++dim)
+    double minbin = std::numeric_limits<double>::max();
+    for(int dim=0; dim<3; ++dim)
       minbin = std::min(minbin, bin_size_[dim]);
 
     // scaling factor in order to account for influence of bubble
@@ -124,114 +124,133 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
       }
 
       // get particle radius and influence of bubble
-      double r_p = (*particleradius)[ particledis_->NodeRowMap()->LID(currparticle->Id()) ];
+      double r_p = (*particleradius)[ particleradius->Map().LID(currparticle->Id()) ];
       double influence = scale*r_p;
 
-      double vol_influence;
+      // bubble volume which is assigned to fluid elements
+      const double bubblevol = 4.0/3.0*M_PI*pow(r_p,3.0);
 
-      // variable to store not yet normalized volume for each fluid element
-      std::map<int, double> volumefraction;
+      // store all elements in which the bubble might be located fully inside
+      std::vector<int> insideeles;
 
-      bool surfaceoverlap;
-
-      // do while volume is not negative which is important for overlapping surfaces/points of bubble and fluid
-      do
+      // check for very small bubbles whose volume can be directly assigned to a
+      // single fluid element
       {
-        surfaceoverlap = false;
-        vol_influence = 0.0;
-
-        // loop over set neighboring fluideles
-        for (std::set<DRT::Element*>::const_iterator ineighbor=neighboringfluideles.begin(); ineighbor!=neighboringfluideles.end(); ++ineighbor)
+        const int elelid = ele_volume_->Map().LID((*neighboringfluideles.begin())->Id());
+        const double charactelelength = std::pow((*ele_volume_)[elelid], 1.0/3.0);
+        // heuristic criterion of 1/20th of the characteristic fluid element length
+        if (influence < 0.05*charactelelength)
         {
-          DRT::Element* ele = *ineighbor;
-
-          // get bounding box of current element
-          double xaabb[6] = { std::numeric_limits<double>::max(),  std::numeric_limits<double>::max(),
-                              std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(),
-                             -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
-          for (int inode=0; inode<ele->NumNode(); ++inode)
+        // loop all surrounding fluid elements and find possible candidates for assigning
+          for (std::set<DRT::Element*>::const_iterator ineighbor=neighboringfluideles.begin(); ineighbor!=neighboringfluideles.end(); ++ineighbor)
           {
-            const DRT::Node* node  = ele->Nodes()[inode];
-            const double* coord = node->X();
-            for (size_t i = 0; i < 3; ++i)
-            {
-              xaabb[i+0] = std::min(xaabb[i+0], coord[i]);
-              xaabb[i+3] = std::max(xaabb[i+3], coord[i]);
-            }
+            DRT::Element* ele = *ineighbor;
+            const bool xaabboverlap = XAABBoverlap(ele, influence, particleposition);
+            if(xaabboverlap == true)
+              insideeles.push_back(ele->Id());
           }
+          // assign to the correct fluid element
+          AssignSmallBubbles(bubblevol, particleposition, insideeles, void_volumes);
 
-          double bubblesurface[6] = {particleposition(0)+influence, particleposition(1)+influence,
-                                     particleposition(2)+influence, particleposition(0)-influence,
-                                     particleposition(1)-influence, particleposition(2)-influence};
+          continue; // with next particle in this bin
+        }
+      }
 
-          bool boundingbox = true;
-          // test whether the bounding box of the fluid element touches the bubbleinfluence
-          for(int dim=0; dim<3; ++dim)
-          {
-            if(xaabb[dim] - GEO::TOL7 > bubblesurface[dim] or xaabb[dim+3] + GEO::TOL7 < bubblesurface[dim+3])
-            {
-              boundingbox = false;
-              break;
-            }
-          }
-
-          double vol_ele = 0.0;
-          if(boundingbox == true)
-          {
-            switch(void_frac_strategy_)
-            {
-            case INPAR::CAVITATION::analytical_constpoly:
-            case INPAR::CAVITATION::analytical_quadraticpoly:
-            {
-              DoAnalyticalIntegration(ele, particleposition, influence, vol_ele, surfaceoverlap);
-
-              // in case of polynomial influence, twisted surfaces and tight cut situations,
-              // the polynomial can become negative very close to the bubble influence area
-              if(vol_ele < 0.0)
-                vol_ele = 0.0;
-            }
-            break;
-            case INPAR::CAVITATION::gaussian_integration:
-            {
-              DoGaussianIntegration(ele, particleposition, influence, vol_ele);
-            }
-            break;
-            default:
-              dserror("void fraction calculation strategy does not exist");
-            break;
-            }
-
-            // in case of tight cuts, rerun neighboring ele loop with slightly smaller influence
-            if(surfaceoverlap == true)
-            {
-              influence *= 0.999;
-              break;
-            }
-
-            // safety check
-            if(vol_ele < 0.0)
-              dserror("negative volume occured during void fraction computation");
-
-            // sum and store volume for each fluid element
-            vol_influence += vol_ele;
-            volumefraction[ele->Id()] = vol_ele;
-          } // end if boundingbox
-
-        } // end loop neighboring eles
-
-      } while(surfaceoverlap == true);
-
-      // normalize with volume of bubble divided by volume of influence
-      double normalization = 4.0/3.0*M_PI*pow(r_p,3.0) / vol_influence;
-      // assemble void volume of fluid elements
-      for(std::map<int, double>::const_iterator iter=volumefraction.begin(); iter!=volumefraction.end(); ++iter)
+      // process larger bubbles whose volume is distributed among the surrounding fluid elements
       {
-        double val = iter->second * normalization;
+        double vol_influence = 0.0;
 
-        // do assembly of void fraction into fluid
-        int err = void_volumes->SumIntoGlobalValues(1, &(iter->first), &val);
-        if (err<0)
-          dserror("summing into Epetra_FEVector failed");
+        // variable to store not yet normalized volume for each fluid element
+        std::map<int, double> volumefraction;
+        bool surfaceoverlap = false;
+
+        // do while volume is not negative which is important for overlapping surfaces/points of bubble and fluid
+        do
+        {
+          // reset variables if necessary
+          if(surfaceoverlap == true)
+          {
+            insideeles.clear();
+            volumefraction.clear();
+            vol_influence = 0.0;
+            surfaceoverlap = false;
+          }
+
+          // loop over surrounding fluid elements
+          for (std::set<DRT::Element*>::const_iterator ineighbor=neighboringfluideles.begin(); ineighbor!=neighboringfluideles.end(); ++ineighbor)
+          {
+            DRT::Element* ele = *ineighbor;
+
+            const bool xaabboverlap = XAABBoverlap(ele, influence, particleposition);
+
+            double vol_ele = 0.0;
+            if(xaabboverlap == true)
+            {
+              // store element id
+              insideeles.push_back(ele->Id());
+              switch(void_frac_strategy_)
+              {
+              case INPAR::CAVITATION::analytical_constpoly:
+              case INPAR::CAVITATION::analytical_quadraticpoly:
+              {
+                DoAnalyticalIntegration(ele, particleposition, influence, vol_ele, surfaceoverlap);
+
+                // in case of polynomial influence, twisted surfaces and tight cut situations,
+                // the polynomial can become negative very close to the bubble influence area
+                if(vol_ele < 0.0)
+                  vol_ele = 0.0;
+              }
+              break;
+              case INPAR::CAVITATION::gaussian_integration:
+              {
+                DoGaussianIntegration(ele, particleposition, influence, vol_ele);
+              }
+              break;
+              default:
+                dserror("void fraction calculation strategy does not exist");
+              break;
+              }
+
+              // in case of tight cuts, rerun neighboring ele loop with slightly smaller influence
+              if(surfaceoverlap == true)
+              {
+                influence *= 0.999;
+                break;
+              }
+
+              // safety check
+              if(vol_ele < 0.0)
+                dserror("negative volume occured during void fraction computation");
+
+              // sum and store volume for each fluid element
+              vol_influence += vol_ele;
+              volumefraction[ele->Id()] = vol_ele;
+            } // end if xaabboverlap
+
+          } // end loop neighboring eles
+
+        } while(surfaceoverlap == true);
+
+        if(vol_influence != 0.0)
+        {
+          // normalize with volume of bubble divided by volume of influence
+          const double normalization = bubblevol / vol_influence;
+          // assemble void volume of fluid elements
+          for(std::map<int, double>::const_iterator iter=volumefraction.begin(); iter!=volumefraction.end(); ++iter)
+          {
+            const double val = iter->second * normalization;
+
+            // do assembly of void fraction into fluid
+            int err = void_volumes->SumIntoGlobalValues(1, &(iter->first), &val);
+            if (err<0)
+              dserror("summing into Epetra_FEVector failed");
+          }
+        }
+        else
+        {
+          AssignSmallBubbles(bubblevol, particleposition, insideeles, void_volumes);
+        }
+
       }
 
     } // loop over particles in one bin
@@ -361,8 +380,8 @@ void CAVITATION::Algorithm::DoAnalyticalIntegration(
     bool boundingbox = true;
 
     LINALG::Matrix<3,1> n, r, p;
-    r.Update(1,surfacenodes[0],-1,surfacenodes[2]);
-    p.Update(1,surfacenodes[1],-1,surfacenodes[3%numsurfacenodes]);
+    r.Update(1.0,surfacenodes[0],-1.0,surfacenodes[2]);
+    p.Update(1.0,surfacenodes[1],-1.0,surfacenodes[3%numsurfacenodes]);
 
     //calculate normalvector n with cross product of diagonals r,p
     n(0) = r(1)*p(2)-r(2)*p(1);
@@ -993,6 +1012,112 @@ void CAVITATION::Algorithm::EvaluateTwoPointsQuadraticPoly(
     s = 27.0/(8.0*pow(influence,6.0));
     vol_ele +=
         s*g*(((-20*pow(c,3)*pow(d,3)*pow(f,2) - 45*a*pow(c,2)*pow(d,4)*pow(f,2) - 36*pow(a,2)*c*pow(d,5)*pow(f,2) - 10*pow(a,3)*pow(d,6)*pow(f,2) - 60*b*pow(c,2)*pow(d,3)*pow(f,3) - 90*a*b*c*pow(d,4)*pow(f,3) - 36*pow(a,2)*b*pow(d,5)*pow(f,3) - 60*pow(b,2)*c*pow(d,3)*pow(f,4) - 45*a*pow(b,2)*pow(d,4)*pow(f,4) - 20*pow(b,3)*pow(d,3)*pow(f,5) + 20*pow(c,3)*pow(d,3)*pow(influence,2) + 45*a*pow(c,2)*pow(d,4)*pow(influence,2) + 36*pow(a,2)*c*pow(d,5)*pow(influence,2) + 10*pow(a,3)*pow(d,6)*pow(influence,2) + 60*b*pow(c,2)*pow(d,3)*f*pow(influence,2) + 90*a*b*c*pow(d,4)*f*pow(influence,2) + 36*pow(a,2)*b*pow(d,5)*f*pow(influence,2) + 60*pow(c,3)*d*pow(f,2)*pow(influence,2) + 90*a*pow(c,2)*pow(d,2)*pow(f,2)*pow(influence,2) + 60*(1 + pow(a,2))*c*pow(d,3)*pow(f,2)* pow(influence,2) + 60*pow(b,2)*c*pow(d,3)*pow(f,2)*pow(influence,2) + 15*a*(3 + pow(a,2))*pow(d,4)* pow(f,2)*pow(influence,2) + 45*a*pow(b,2)*pow(d,4)*pow(f,2)*pow(influence,2) + 180*b*pow(c,2)*d*pow(f,3)*pow(influence,2) + 180*a*b*c*pow(d,2)*pow(f,3)*pow(influence,2) + 60*(1 + pow(a,2))*b*pow(d,3)*pow(f,3)*pow(influence,2) + 20*pow(b,3)*pow(d,3)*pow(f,3)* pow(influence,2) + 180*pow(b,2)*c*d*pow(f,4)*pow(influence,2) + 90*a*pow(b,2)*pow(d,2)*pow(f,4)* pow(influence,2) + 60*pow(b,3)*d*pow(f,5)*pow(influence,2) - 60*pow(c,3)*d*pow(influence,4) - 90*a*pow(c,2)*pow(d,2)*pow(influence,4) - 60*(1 + pow(a,2))*c*pow(d,3)*pow(influence,4) - 15*a*(3 + pow(a,2))*pow(d,4)*pow(influence,4) - 180*b*pow(c,2)*d*f*pow(influence,4) - 180*a*b*c*pow(d,2)*f*pow(influence,4) - 60*(1 + pow(a,2))*b*pow(d,3)*f*pow(influence,4) - 180*c*d*pow(f,2)*pow(influence,4) - 180*pow(b,2)*c*d*pow(f,2)*pow(influence,4) - 90*a*pow(d,2)*pow(f,2)*pow(influence,4) - 90*a*pow(b,2)*pow(d,2)*pow(f,2)*pow(influence,4) - 180*b*d*pow(f,3)*pow(influence,4) - 60*pow(b,3)*d*pow(f,3)*pow(influence,4) + 180*c*d*pow(influence,6) + 90*a*pow(d,2)*pow(influence,6) + 180*b*d*f*pow(influence,6)) + (-30*pow(c,3)*pow(d,2)*e*pow(f,2) - 90*a*pow(c,2)*pow(d,3)*e*pow(f,2) - 90*pow(a,2)*c*pow(d,4)*e*pow(f,2) - 30*pow(a,3)*pow(d,5)*e*pow(f,2) - 90*b*pow(c,2)*pow(d,2)*e*pow(f,3) - 180*a*b*c*pow(d,3)*e*pow(f,3) - 90*pow(a,2)*b*pow(d,4)*e*pow(f,3) - 90*pow(b,2)*c*pow(d,2)*e*pow(f,4) - 90*a*pow(b,2)*pow(d,3)*e*pow(f,4) - 30*pow(b,3)*pow(d,2)*e*pow(f,5) - 20*pow(c,3)*pow(d,3)*f*g - 45*a*pow(c,2)*pow(d,4)*f*g - 36*pow(a,2)*c*pow(d,5)*f*g - 10*pow(a,3)*pow(d,6)*f*g - 90*b*pow(c,2)*pow(d,3)*pow(f,2)*g - 135*a*b*c*pow(d,4)*pow(f,2)*g - 54*pow(a,2)*b*pow(d,5)*pow(f,2)*g - 120*pow(b,2)*c*pow(d,3)*pow(f,3)*g - 90*a*pow(b,2)*pow(d,4)*pow(f,3)*g - 50*pow(b,3)*pow(d,3)*pow(f,4)*g + 30*pow(c,3)*pow(d,2)*e*pow(influence,2) + 90*a*pow(c,2)*pow(d,3)*e*pow(influence,2) + 90*pow(a,2)*c*pow(d,4)*e*pow(influence,2) + 30*pow(a,3)*pow(d,5)*e*pow(influence,2) + 90*b*pow(c,2)*pow(d,2)*e*f*pow(influence,2) + 180*a*b*c*pow(d,3)*e*f*pow(influence,2) + 90*pow(a,2)*b*pow(d,4)*e*f*pow(influence,2) + 30*pow(c,3)*e*pow(f,2)*pow(influence,2) + 90*a*pow(c,2)*d*e*pow(f,2)*pow(influence,2) + 90*c*pow(d,2)*e*pow(f,2)*pow(influence,2) + 90*pow(a,2)*c*pow(d,2)*e*pow(f,2)*pow(influence,2) + 90*pow(b,2)*c*pow(d,2)*e*pow(f,2)* pow(influence,2) + 90*a*pow(d,3)*e*pow(f,2)*pow(influence,2) + 30*pow(a,3)*pow(d,3)*e*pow(f,2)* pow(influence,2) + 90*a*pow(b,2)*pow(d,3)*e*pow(f,2)*pow(influence,2) + 90*b*pow(c,2)*e*pow(f,3)*pow(influence,2) + 180*a*b*c*d*e*pow(f,3)*pow(influence,2) + 90*b*pow(d,2)*e*pow(f,3)*pow(influence,2) + 90*pow(a,2)*b*pow(d,2)*e*pow(f,3)*pow(influence,2) + 30*pow(b,3)*pow(d,2)*e*pow(f,3)*pow(influence,2) + 90*pow(b,2)*c*e*pow(f,4)*pow(influence,2) + 90*a*pow(b,2)*d*e*pow(f,4)*pow(influence,2) + 30*pow(b,3)*e*pow(f,5)*pow(influence,2) + 30*b*pow(c,2)*pow(d,3)*g*pow(influence,2) + 45*a*b*c*pow(d,4)*g*pow(influence,2) + 18*pow(a,2)*b*pow(d,5)*g*pow(influence,2) + 60*pow(c,3)*d*f*g*pow(influence,2) + 90*a*pow(c,2)*pow(d,2)*f*g*pow(influence,2) + 60*c*pow(d,3)*f*g*pow(influence,2) + 60*pow(a,2)*c*pow(d,3)*f*g*pow(influence,2) + 60*pow(b,2)*c*pow(d,3)*f*g*pow(influence,2) + 45*a*pow(d,4)*f*g*pow(influence,2) + 15*pow(a,3)*pow(d,4)*f*g*pow(influence,2) + 45*a*pow(b,2)*pow(d,4)*f*g*pow(influence,2) + 270*b*pow(c,2)*d*pow(f,2)*g*pow(influence,2) + 270*a*b*c*pow(d,2)*pow(f,2)*g*pow(influence,2) + 90*b*pow(d,3)*pow(f,2)*g*pow(influence,2) + 90*pow(a,2)*b*pow(d,3)*pow(f,2)*g*pow(influence,2) + 30*pow(b,3)*pow(d,3)*pow(f,2)*g*pow(influence,2) + 360*pow(b,2)*c*d*pow(f,3)*g*pow(influence,2) + 180*a*pow(b,2)*pow(d,2)*pow(f,3)*g* pow(influence,2) + 150*pow(b,3)*d*pow(f,4)*g*pow(influence,2) - 30*pow(c,3)*e*pow(influence,4) - 90*a*pow(c,2)*d*e*pow(influence,4) - 90*c*pow(d,2)*e*pow(influence,4) - 90*pow(a,2)*c*pow(d,2)*e*pow(influence,4) - 90*a*pow(d,3)*e*pow(influence,4) - 30*pow(a,3)*pow(d,3)*e*pow(influence,4) - 90*b*pow(c,2)*e*f*pow(influence,4) - 180*a*b*c*d*e*f*pow(influence,4) - 90*b*pow(d,2)*e*f*pow(influence,4) - 90*pow(a,2)*b*pow(d,2)*e*f*pow(influence,4) - 90*c*e*pow(f,2)*pow(influence,4) - 90*pow(b,2)*c*e*pow(f,2)*pow(influence,4) - 90*a*d*e*pow(f,2)*pow(influence,4) - 90*a*pow(b,2)*d*e*pow(f,2)*pow(influence,4) - 90*b*e*pow(f,3)*pow(influence,4) - 30*pow(b,3)*e*pow(f,3)*pow(influence,4) - 90*b*pow(c,2)*d*g*pow(influence,4) - 90*a*b*c*pow(d,2)*g*pow(influence,4) - 30*b*pow(d,3)*g*pow(influence,4) - 30*pow(a,2)*b*pow(d,3)*g*pow(influence,4) - 180*c*d*f*g*pow(influence,4) - 180*pow(b,2)*c*d*f*g*pow(influence,4) - 90*a*pow(d,2)*f*g*pow(influence,4) - 90*a*pow(b,2)*pow(d,2)*f*g*pow(influence,4) - 270*b*d*pow(f,2)*g*pow(influence,4) - 90*pow(b,3)*d*pow(f,2)*g*pow(influence,4) + 90*c*e*pow(influence,6) + 90*a*d*e*pow(influence,6) + 90*b*e*f*pow(influence,6) + 90*b*d*g*pow(influence,6)) + ((-60*pow(c,3)*d*pow(e,2)*pow(f,2) - 270*a*pow(c,2)*pow(d,2)*pow(e,2)*pow(f,2) - 360*pow(a,2)*c*pow(d,3)*pow(e,2)*pow(f,2) - 150*pow(a,3)*pow(d,4)*pow(e,2)*pow(f,2) - 180*b*pow(c,2)*d*pow(e,2)*pow(f,3) - 540*a*b*c*pow(d,2)*pow(e,2)*pow(f,3) - 360*pow(a,2)*b*pow(d,3)*pow(e,2)*pow(f,3) - 180*pow(b,2)*c*d*pow(e,2)*pow(f,4) - 270*a*pow(b,2)*pow(d,2)*pow(e,2)*pow(f,4) - 60*pow(b,3)*d*pow(e,2)*pow(f,5) - 120*pow(c,3)*pow(d,2)*e*f*g - 360*a*pow(c,2)*pow(d,3)*e*f*g - 360*pow(a,2)*c*pow(d,4)*e*f*g - 120*pow(a,3)*pow(d,5)*e*f*g - 540*b*pow(c,2)*pow(d,2)*e*pow(f,2)*g - 1080*a*b*c*pow(d,3)*e*pow(f,2)* g - 540*pow(a,2)*b*pow(d,4)*e*pow(f,2)*g - 720*pow(b,2)*c*pow(d,2)*e* pow(f,3)*g - 720*a*pow(b,2)*pow(d,3)*e*pow(f,3)*g - 300*pow(b,3)*pow(d,2)*e*pow(f,4)*g - 20*pow(c,3)*pow(d,3)*pow(g,2) - 45*a*pow(c,2)*pow(d,4)*pow(g,2) - 36*pow(a,2)*c*pow(d,5)*pow(g,2) - 10*pow(a,3)*pow(d,6)*pow(g,2) - 180*b*pow(c,2)*pow(d,3)*f*pow(g,2) - 270*a*b*c*pow(d,4)*f*pow(g,2) - 108*pow(a,2)*b*pow(d,5)*f*pow(g,2) - 360*pow(b,2)*c*pow(d,3)*pow(f,2)*pow(g,2) - 270*a*pow(b,2)*pow(d,4)*pow(f,2)*pow(g,2) - 200*pow(b,3)*pow(d,3)*pow(f,3)*pow(g,2) + 60*pow(c,3)*d*pow(e,2)*pow(influence,2) + 270*a*pow(c,2)*pow(d,2)*pow(e,2)*pow(influence,2) + 360*pow(a,2)*c*pow(d,3)*pow(e,2)*pow(influence,2) + 150*pow(a,3)*pow(d,4)*pow(e,2)*pow(influence,2) + 180*b*pow(c,2)*d*pow(e,2)*f*pow(influence,2) + 540*a*b*c*pow(d,2)*pow(e,2)*f*pow(influence,2) + 360*pow(a,2)*b*pow(d,3)*pow(e,2)*f* pow(influence,2) + 90*a*pow(c,2)*pow(e,2)*pow(f,2)*pow(influence,2) + 180*c*d*pow(e,2)*pow(f,2)* pow(influence,2) + 180*pow(a,2)*c*d*pow(e,2)*pow(f,2)*pow(influence,2) + 180*pow(b,2)*c*d*pow(e,2)*pow(f,2)*pow(influence,2) + 270*a*pow(d,2)*pow(e,2)*pow(f,2)* pow(influence,2) + 90*pow(a,3)*pow(d,2)*pow(e,2)*pow(f,2)*pow(influence,2) + 270*a*pow(b,2)*pow(d,2)*pow(e,2)*pow(f,2)*pow(influence,2) + 180*a*b*c*pow(e,2)*pow(f,3)* pow(influence,2) + 180*b*d*pow(e,2)*pow(f,3)*pow(influence,2) + 180*pow(a,2)*b*d*pow(e,2)* pow(f,3)*pow(influence,2) + 60*pow(b,3)*d*pow(e,2)*pow(f,3)*pow(influence,2) + 90*a*pow(b,2)*pow(e,2)*pow(f,4)*pow(influence,2) + 180*b*pow(c,2)*pow(d,2)*e*g*pow(influence,2) + 360*a*b*c*pow(d,3)*e*g*pow(influence,2) + 180*pow(a,2)*b*pow(d,4)*e*g*pow(influence,2) + 120*pow(c,3)*e*f*g*pow(influence,2) + 360*a*pow(c,2)*d*e*f*g*pow(influence,2) + 360*c*pow(d,2)*e*f*g*pow(influence,2) + 360*pow(a,2)*c*pow(d,2)*e*f*g*pow(influence,2) + 360*pow(b,2)*c*pow(d,2)*e*f*g*pow(influence,2) + 360*a*pow(d,3)*e*f*g*pow(influence,2) + 120*pow(a,3)*pow(d,3)*e*f*g*pow(influence,2) + 360*a*pow(b,2)*pow(d,3)*e*f*g* pow(influence,2) + 540*b*pow(c,2)*e*pow(f,2)*g*pow(influence,2) + 1080*a*b*c*d*e*pow(f,2)*g*pow(influence,2) + 540*b*pow(d,2)*e*pow(f,2)*g* pow(influence,2) + 540*pow(a,2)*b*pow(d,2)*e*pow(f,2)*g*pow(influence,2) + 180*pow(b,3)*pow(d,2)*e*pow(f,2)*g*pow(influence,2) + 720*pow(b,2)*c*e*pow(f,3)*g* pow(influence,2) + 720*a*pow(b,2)*d*e*pow(f,3)*g*pow(influence,2) + 300*pow(b,3)*e*pow(f,4)*g*pow(influence,2) + 60*pow(c,3)*d*pow(g,2)*pow(influence,2) + 90*a*pow(c,2)*pow(d,2)*pow(g,2)*pow(influence,2) + 60*c*pow(d,3)*pow(g,2)*pow(influence,2) + 60*pow(a,2)*c*pow(d,3)*pow(g,2)*pow(influence,2) + 60*pow(b,2)*c*pow(d,3)*pow(g,2)*pow(influence,2) + 45*a*pow(d,4)*pow(g,2)*pow(influence,2) + 15*pow(a,3)*pow(d,4)*pow(g,2)*pow(influence,2) + 45*a*pow(b,2)*pow(d,4)*pow(g,2)*pow(influence,2) + 540*b*pow(c,2)*d*f*pow(g,2)*pow(influence,2) + 540*a*b*c*pow(d,2)*f*pow(g,2)*pow(influence,2) + 180*b*pow(d,3)*f*pow(g,2)*pow(influence,2) + 180*pow(a,2)*b*pow(d,3)*f*pow(g,2)*pow(influence,2) + 60*pow(b,3)*pow(d,3)*f*pow(g,2)* pow(influence,2) + 1080*pow(b,2)*c*d*pow(f,2)*pow(g,2)*pow(influence,2) + 540*a*pow(b,2)*pow(d,2)*pow(f,2)*pow(g,2)*pow(influence,2) + 600*pow(b,3)*d*pow(f,3)*pow(g,2)* pow(influence,2) - 90*a*pow(c,2)*pow(e,2)*pow(influence,4) - 180*c*d*pow(e,2)*pow(influence,4) - 180*pow(a,2)*c*d*pow(e,2)*pow(influence,4) - 270*a*pow(d,2)*pow(e,2)*pow(influence,4) - 90*pow(a,3)*pow(d,2)*pow(e,2)*pow(influence,4) - 180*a*b*c*pow(e,2)*f*pow(influence,4) - 180*b*d*pow(e,2)*f*pow(influence,4) - 180*pow(a,2)*b*d*pow(e,2)*f*pow(influence,4) - 90*a*pow(e,2)*pow(f,2)*pow(influence,4) - 90*a*pow(b,2)*pow(e,2)*pow(f,2)*pow(influence,4) - 180*b*pow(c,2)*e*g*pow(influence,4) - 360*a*b*c*d*e*g*pow(influence,4) - 180*b*pow(d,2)*e*g*pow(influence,4) - 180*pow(a,2)*b*pow(d,2)*e*g*pow(influence,4) - 360*c*e*f*g*pow(influence,4) - 360*pow(b,2)*c*e*f*g*pow(influence,4) - 360*a*d*e*f*g*pow(influence,4) - 360*a*pow(b,2)*d*e*f*g*pow(influence,4) - 540*b*e*pow(f,2)*g*pow(influence,4) - 180*pow(b,3)*e*pow(f,2)*g*pow(influence,4) - 180*c*d*pow(g,2)*pow(influence,4) - 180*pow(b,2)*c*d*pow(g,2)*pow(influence,4) - 90*a*pow(d,2)*pow(g,2)*pow(influence,4) - 90*a*pow(b,2)*pow(d,2)*pow(g,2)*pow(influence,4) - 540*b*d*f*pow(g,2)*pow(influence,4) - 180*pow(b,3)*d*f*pow(g,2)*pow(influence,4) + 90*a*pow(e,2)*pow(influence,6) + 180*b*e*g*pow(influence,6)))/3 + ((-10*pow(c,3)*pow(e,3)*pow(f,2) - 90*a*pow(c,2)*d*pow(e,3)*pow(f,2) - 180*pow(a,2)*c*pow(d,2)*pow(e,3)*pow(f,2) - 100*pow(a,3)*pow(d,3)*pow(e,3)*pow(f,2) - 30*b*pow(c,2)*pow(e,3)*pow(f,3) - 180*a*b*c*d*pow(e,3)*pow(f,3) - 180*pow(a,2)*b*pow(d,2)*pow(e,3)*pow(f,3) - 30*pow(b,2)*c*pow(e,3)*pow(f,4) - 90*a*pow(b,2)*d*pow(e,3)*pow(f,4) - 10*pow(b,3)*pow(e,3)*pow(f,5) - 60*pow(c,3)*d*pow(e,2)*f*g - 270*a*pow(c,2)*pow(d,2)*pow(e,2)*f*g - 360*pow(a,2)*c*pow(d,3)*pow(e,2)*f*g - 150*pow(a,3)*pow(d,4)*pow(e,2)*f*g - 270*b*pow(c,2)*d*pow(e,2)*pow(f,2)*g - 810*a*b*c*pow(d,2)*pow(e,2)*pow(f,2)* g - 540*pow(a,2)*b*pow(d,3)*pow(e,2)*pow(f,2)*g - 360*pow(b,2)*c*d*pow(e,2)*pow(f,3)*g - 540*a*pow(b,2)*pow(d,2)*pow(e,2)*pow(f,3)* g - 150*pow(b,3)*d*pow(e,2)*pow(f,4)*g - 30*pow(c,3)*pow(d,2)*e*pow(g,2) - 90*a*pow(c,2)*pow(d,3)*e*pow(g,2) - 90*pow(a,2)*c*pow(d,4)*e*pow(g,2) - 30*pow(a,3)*pow(d,5)*e*pow(g,2) - 270*b*pow(c,2)*pow(d,2)*e*f*pow(g,2) - 540*a*b*c*pow(d,3)*e*f*pow(g,2) - 270*pow(a,2)*b*pow(d,4)*e*f*pow(g,2) - 540*pow(b,2)*c*pow(d,2)*e*pow(f,2)*pow(g,2) - 540*a*pow(b,2)*pow(d,3)*e*pow(f,2)* pow(g,2) - 300*pow(b,3)*pow(d,2)*e*pow(f,3)*pow(g,2) - 30*b*pow(c,2)*pow(d,3)*pow(g,3) - 45*a*b*c*pow(d,4)*pow(g,3) - 18*pow(a,2)*b*pow(d,5)*pow(g,3) - 120*pow(b,2)*c*pow(d,3)*f*pow(g,3) - 90*a*pow(b,2)*pow(d,4)*f*pow(g,3) - 100*pow(b,3)*pow(d,3)*pow(f,2)*pow(g,3) + 10*pow(c,3)*pow(e,3)*pow(influence,2) + 90*a*pow(c,2)*d*pow(e,3)*pow(influence,2) + 180*pow(a,2)*c*pow(d,2)*pow(e,3)*pow(influence,2) + 100*pow(a,3)*pow(d,3)*pow(e,3)*pow(influence,2) + 30*b*pow(c,2)*pow(e,3)*f*pow(influence,2) + 180*a*b*c*d*pow(e,3)*f*pow(influence,2) + 180*pow(a,2)*b*pow(d,2)*pow(e,3)*f*pow(influence,2) + 30*c*pow(e,3)*pow(f,2)*pow(influence,2) + 30*pow(a,2)*c*pow(e,3)*pow(f,2)*pow(influence,2) + 30*pow(b,2)*c*pow(e,3)*pow(f,2)*pow(influence,2) + 90*a*d*pow(e,3)*pow(f,2)*pow(influence,2) + 30*pow(a,3)*d*pow(e,3)*pow(f,2)*pow(influence,2) + 90*a*pow(b,2)*d*pow(e,3)*pow(f,2)*pow(influence,2) + 30*b*pow(e,3)*pow(f,3)*pow(influence,2) + 30*pow(a,2)*b*pow(e,3)*pow(f,3)*pow(influence,2) + 10*pow(b,3)*pow(e,3)*pow(f,3)*pow(influence,2) + 90*b*pow(c,2)*d*pow(e,2)*g*pow(influence,2) + 270*a*b*c*pow(d,2)*pow(e,2)*g* pow(influence,2) + 180*pow(a,2)*b*pow(d,3)*pow(e,2)*g*pow(influence,2) + 90*a*pow(c,2)*pow(e,2)*f*g*pow(influence,2) + 180*c*d*pow(e,2)*f*g*pow(influence,2) + 180*pow(a,2)*c*d*pow(e,2)*f*g*pow(influence,2) + 180*pow(b,2)*c*d*pow(e,2)*f*g* pow(influence,2) + 270*a*pow(d,2)*pow(e,2)*f*g*pow(influence,2) + 90*pow(a,3)*pow(d,2)*pow(e,2)*f*g*pow(influence,2) + 270*a*pow(b,2)*pow(d,2)*pow(e,2)*f*g* pow(influence,2) + 270*a*b*c*pow(e,2)*pow(f,2)*g*pow(influence,2) + 270*b*d*pow(e,2)*pow(f,2)*g*pow(influence,2) + 270*pow(a,2)*b*d*pow(e,2)*pow(f,2)*g* pow(influence,2) + 90*pow(b,3)*d*pow(e,2)*pow(f,2)*g*pow(influence,2) + 180*a*pow(b,2)*pow(e,2)*pow(f,3)*g*pow(influence,2) + 30*pow(c,3)*e*pow(g,2)*pow(influence,2) + 90*a*pow(c,2)*d*e*pow(g,2)*pow(influence,2) + 90*c*pow(d,2)*e*pow(g,2)*pow(influence,2) + 90*pow(a,2)*c*pow(d,2)*e*pow(g,2)*pow(influence,2) + 90*pow(b,2)*c*pow(d,2)*e*pow(g,2)* pow(influence,2) + 90*a*pow(d,3)*e*pow(g,2)*pow(influence,2) + 30*pow(a,3)*pow(d,3)*e*pow(g,2)* pow(influence,2) + 90*a*pow(b,2)*pow(d,3)*e*pow(g,2)*pow(influence,2) + 270*b*pow(c,2)*e*f*pow(g,2)*pow(influence,2) + 540*a*b*c*d*e*f*pow(g,2)* pow(influence,2) + 270*b*pow(d,2)*e*f*pow(g,2)*pow(influence,2) + 270*pow(a,2)*b*pow(d,2)*e*f*pow(g,2)*pow(influence,2) + 90*pow(b,3)*pow(d,2)*e*f*pow(g,2)* pow(influence,2) + 540*pow(b,2)*c*e*pow(f,2)*pow(g,2)*pow(influence,2) + 540*a*pow(b,2)*d*e*pow(f,2)*pow(g,2)*pow(influence,2) + 300*pow(b,3)*e*pow(f,3)*pow(g,2)* pow(influence,2) + 90*b*pow(c,2)*d*pow(g,3)*pow(influence,2) + 90*a*b*c*pow(d,2)*pow(g,3)* pow(influence,2) + 30*b*pow(d,3)*pow(g,3)*pow(influence,2) + 30*pow(a,2)*b*pow(d,3)*pow(g,3)* pow(influence,2) + 10*pow(b,3)*pow(d,3)*pow(g,3)*pow(influence,2) + 360*pow(b,2)*c*d*f*pow(g,3)* pow(influence,2) + 180*a*pow(b,2)*pow(d,2)*f*pow(g,3)*pow(influence,2) + 300*pow(b,3)*d*pow(f,2)*pow(g,3)*pow(influence,2) - 30*c*pow(e,3)*pow(influence,4) - 30*pow(a,2)*c*pow(e,3)*pow(influence,4) - 90*a*d*pow(e,3)*pow(influence,4) - 30*pow(a,3)*d*pow(e,3)*pow(influence,4) - 30*b*pow(e,3)*f*pow(influence,4) - 30*pow(a,2)*b*pow(e,3)*f*pow(influence,4) - 90*a*b*c*pow(e,2)*g*pow(influence,4) - 90*b*d*pow(e,2)*g*pow(influence,4) - 90*pow(a,2)*b*d*pow(e,2)*g*pow(influence,4) - 90*a*pow(e,2)*f*g*pow(influence,4) - 90*a*pow(b,2)*pow(e,2)*f*g*pow(influence,4) - 90*c*e*pow(g,2)*pow(influence,4) - 90*pow(b,2)*c*e*pow(g,2)*pow(influence,4) - 90*a*d*e*pow(g,2)*pow(influence,4) - 90*a*pow(b,2)*d*e*pow(g,2)*pow(influence,4) - 270*b*e*f*pow(g,2)*pow(influence,4) - 90*pow(b,3)*e*f*pow(g,2)*pow(influence,4) - 90*b*d*pow(g,3)*pow(influence,4) - 30*pow(b,3)*d*pow(g,3)*pow(influence,4)))/2 + (-9*a*pow(c,2)*pow(e,4)*pow(f,2) - 36*pow(a,2)*c*d*pow(e,4)*pow(f,2) - 30*pow(a,3)*pow(d,2)*pow(e,4)*pow(f,2) - 18*a*b*c*pow(e,4)*pow(f,3) - 36*pow(a,2)*b*d*pow(e,4)*pow(f,3) - 9*a*pow(b,2)*pow(e,4)*pow(f,4) - 8*pow(c,3)*pow(e,3)*f*g - 72*a*pow(c,2)*d*pow(e,3)*f*g - 144*pow(a,2)*c*pow(d,2)*pow(e,3)*f*g - 80*pow(a,3)*pow(d,3)*pow(e,3)*f*g - 36*b*pow(c,2)*pow(e,3)*pow(f,2)*g - 216*a*b*c*d*pow(e,3)*pow(f,2)*g - 216*pow(a,2)*b*pow(d,2)*pow(e,3)*pow(f,2)*g - 48*pow(b,2)*c*pow(e,3)*pow(f,3)*g - 144*a*pow(b,2)*d*pow(e,3)*pow(f,3)*g - 20*pow(b,3)*pow(e,3)*pow(f,4)*g - 12*pow(c,3)*d*pow(e,2)*pow(g,2) - 54*a*pow(c,2)*pow(d,2)*pow(e,2)*pow(g,2) - 72*pow(a,2)*c*pow(d,3)*pow(e,2)*pow(g,2) - 30*pow(a,3)*pow(d,4)*pow(e,2)*pow(g,2) - 108*b*pow(c,2)*d*pow(e,2)*f*pow(g,2) - 324*a*b*c*pow(d,2)*pow(e,2)*f* pow(g,2) - 216*pow(a,2)*b*pow(d,3)*pow(e,2)*f*pow(g,2) - 216*pow(b,2)*c*d*pow(e,2)*pow(f,2)*pow(g,2) - 324*a*pow(b,2)*pow(d,2)*pow(e,2)*pow(f,2)* pow(g,2) - 120*pow(b,3)*d*pow(e,2)*pow(f,3)*pow(g,2) - 36*b*pow(c,2)*pow(d,2)*e*pow(g,3) - 72*a*b*c*pow(d,3)*e*pow(g,3) - 36*pow(a,2)*b*pow(d,4)*e*pow(g,3) - 144*pow(b,2)*c*pow(d,2)*e*f*pow(g,3) - 144*a*pow(b,2)*pow(d,3)*e*f*pow(g,3) - 120*pow(b,3)*pow(d,2)*e*pow(f,2)*pow(g,3) - 12*pow(b,2)*c*pow(d,3)*pow(g,4) - 9*a*pow(b,2)*pow(d,4)*pow(g,4) - 20*pow(b,3)*pow(d,3)*f*pow(g,4) + 9*a*pow(c,2)*pow(e,4)*pow(influence,2) + 36*pow(a,2)*c*d*pow(e,4)*pow(influence,2) + 30*pow(a,3)*pow(d,2)*pow(e,4)*pow(influence,2) + 18*a*b*c*pow(e,4)*f*pow(influence,2) + 36*pow(a,2)*b*d*pow(e,4)*f*pow(influence,2) + 9*a*pow(e,4)*pow(f,2)*pow(influence,2) + 3*pow(a,3)*pow(e,4)*pow(f,2)*pow(influence,2) + 9*a*pow(b,2)*pow(e,4)*pow(f,2)*pow(influence,2) + 12*b*pow(c,2)*pow(e,3)*g*pow(influence,2) + 72*a*b*c*d*pow(e,3)*g*pow(influence,2) + 72*pow(a,2)*b*pow(d,2)*pow(e,3)*g*pow(influence,2) + 24*c*pow(e,3)*f*g*pow(influence,2) + 24*pow(a,2)*c*pow(e,3)*f*g*pow(influence,2) + 24*pow(b,2)*c*pow(e,3)*f*g*pow(influence,2) + 72*a*d*pow(e,3)*f*g*pow(influence,2) + 24*pow(a,3)*d*pow(e,3)*f*g*pow(influence,2) + 72*a*pow(b,2)*d*pow(e,3)*f*g*pow(influence,2) + 36*b*pow(e,3)*pow(f,2)*g*pow(influence,2) + 36*pow(a,2)*b*pow(e,3)*pow(f,2)*g*pow(influence,2) + 12*pow(b,3)*pow(e,3)*pow(f,2)*g*pow(influence,2) + 18*a*pow(c,2)*pow(e,2)*pow(g,2)*pow(influence,2) + 36*c*d*pow(e,2)*pow(g,2)*pow(influence,2) + 36*pow(a,2)*c*d*pow(e,2)*pow(g,2)*pow(influence,2) + 36*pow(b,2)*c*d*pow(e,2)*pow(g,2)*pow(influence,2) + 54*a*pow(d,2)*pow(e,2)*pow(g,2)*pow(influence,2) + 18*pow(a,3)*pow(d,2)*pow(e,2)*pow(g,2)*pow(influence,2) + 54*a*pow(b,2)*pow(d,2)*pow(e,2)*pow(g,2)* pow(influence,2) + 108*a*b*c*pow(e,2)*f*pow(g,2)*pow(influence,2) + 108*b*d*pow(e,2)*f*pow(g,2)*pow(influence,2) + 108*pow(a,2)*b*d*pow(e,2)*f*pow(g,2)* pow(influence,2) + 36*pow(b,3)*d*pow(e,2)*f*pow(g,2)*pow(influence,2) + 108*a*pow(b,2)*pow(e,2)*pow(f,2)*pow(g,2)*pow(influence,2) + 36*b*pow(c,2)*e*pow(g,3)*pow(influence,2) + 72*a*b*c*d*e*pow(g,3)*pow(influence,2) + 36*b*pow(d,2)*e*pow(g,3)*pow(influence,2) + 36*pow(a,2)*b*pow(d,2)*e*pow(g,3)*pow(influence,2) + 12*pow(b,3)*pow(d,2)*e*pow(g,3)*pow(influence,2) + 144*pow(b,2)*c*e*f*pow(g,3)*pow(influence,2) + 144*a*pow(b,2)*d*e*f*pow(g,3)* pow(influence,2) + 120*pow(b,3)*e*pow(f,2)*pow(g,3)*pow(influence,2) + 36*pow(b,2)*c*d*pow(g,4)*pow(influence,2) + 18*a*pow(b,2)*pow(d,2)*pow(g,4)*pow(influence,2) + 60*pow(b,3)*d*f*pow(g,4)*pow(influence,2) - 9*a*pow(e,4)*pow(influence,4) - 3*pow(a,3)*pow(e,4)*pow(influence,4) - 12*b*pow(e,3)*g*pow(influence,4) - 12*pow(a,2)*b*pow(e,3)*g*pow(influence,4) - 18*a*pow(e,2)*pow(g,2)*pow(influence,4) - 18*a*pow(b,2)*pow(e,2)*pow(g,2)*pow(influence,4) - 36*b*e*pow(g,3)*pow(influence,4) - 12*pow(b,3)*e*pow(g,3)*pow(influence,4)) + ((-18*pow(a,2)*c*pow(e,5)*pow(f,2) - 30*pow(a,3)*d*pow(e,5)*pow(f,2) - 18*pow(a,2)*b*pow(e,5)*pow(f,3) - 45*a*pow(c,2)*pow(e,4)*f*g - 180*pow(a,2)*c*d*pow(e,4)*f*g - 150*pow(a,3)*pow(d,2)*pow(e,4)*f*g - 135*a*b*c*pow(e,4)*pow(f,2)*g - 270*pow(a,2)*b*d*pow(e,4)*pow(f,2)*g - 90*a*pow(b,2)*pow(e,4)*pow(f,3)*g - 10*pow(c,3)*pow(e,3)*pow(g,2) - 90*a*pow(c,2)*d*pow(e,3)*pow(g,2) - 180*pow(a,2)*c*pow(d,2)*pow(e,3)*pow(g,2) - 100*pow(a,3)*pow(d,3)*pow(e,3)*pow(g,2) - 90*b*pow(c,2)*pow(e,3)*f*pow(g,2) - 540*a*b*c*d*pow(e,3)*f*pow(g,2) - 540*pow(a,2)*b*pow(d,2)*pow(e,3)*f* pow(g,2) - 180*pow(b,2)*c*pow(e,3)*pow(f,2)*pow(g,2) - 540*a*pow(b,2)*d*pow(e,3)*pow(f,2)*pow(g,2) - 100*pow(b,3)*pow(e,3)*pow(f,3)*pow(g,2) - 90*b*pow(c,2)*d*pow(e,2)*pow(g,3) - 270*a*b*c*pow(d,2)*pow(e,2)*pow(g,3) - 180*pow(a,2)*b*pow(d,3)*pow(e,2)*pow(g,3) - 360*pow(b,2)*c*d*pow(e,2)*f*pow(g,3) - 540*a*pow(b,2)*pow(d,2)*pow(e,2)*f*pow(g,3) - 300*pow(b,3)*d*pow(e,2)*pow(f,2)* pow(g,3) - 90*pow(b,2)*c*pow(d,2)*e*pow(g,4) - 90*a*pow(b,2)*pow(d,3)*e* pow(g,4) - 150*pow(b,3)*pow(d,2)*e*f*pow(g,4) - 10*pow(b,3)*pow(d,3)*pow(g,5) + 18*pow(a,2)*c*pow(e,5)*pow(influence,2) + 30*pow(a,3)*d*pow(e,5)*pow(influence,2) + 18*pow(a,2)*b*pow(e,5)*f*pow(influence,2) + 45*a*b*c*pow(e,4)*g*pow(influence,2) + 90*pow(a,2)*b*d*pow(e,4)*g*pow(influence,2) + 45*a*pow(e,4)*f*g*pow(influence,2) + 15*pow(a,3)*pow(e,4)*f*g*pow(influence,2) + 45*a*pow(b,2)*pow(e,4)*f*g*pow(influence,2) + 30*c*pow(e,3)*pow(g,2)*pow(influence,2) + 30*pow(a,2)*c*pow(e,3)*pow(g,2)*pow(influence,2) + 30*pow(b,2)*c*pow(e,3)*pow(g,2)*pow(influence,2) + 90*a*d*pow(e,3)*pow(g,2)*pow(influence,2) + 30*pow(a,3)*d*pow(e,3)*pow(g,2)*pow(influence,2) + 90*a*pow(b,2)*d*pow(e,3)*pow(g,2)*pow(influence,2) + 90*b*pow(e,3)*f*pow(g,2)*pow(influence,2) + 90*pow(a,2)*b*pow(e,3)*f*pow(g,2)*pow(influence,2) + 30*pow(b,3)*pow(e,3)*f*pow(g,2)*pow(influence,2) + 90*a*b*c*pow(e,2)*pow(g,3)*pow(influence,2) + 90*b*d*pow(e,2)*pow(g,3)*pow(influence,2) + 90*pow(a,2)*b*d*pow(e,2)*pow(g,3)*pow(influence,2) + 30*pow(b,3)*d*pow(e,2)*pow(g,3)*pow(influence,2) + 180*a*pow(b,2)*pow(e,2)*f*pow(g,3)* pow(influence,2) + 90*pow(b,2)*c*e*pow(g,4)*pow(influence,2) + 90*a*pow(b,2)*d*e*pow(g,4)* pow(influence,2) + 150*pow(b,3)*e*f*pow(g,4)*pow(influence,2) + 30*pow(b,3)*d*pow(g,5)*pow(influence,2)))/3 + ((-10*pow(a,3)*pow(e,6)*pow(f,2) - 72*pow(a,2)*c*pow(e,5)*f*g - 120*pow(a,3)*d*pow(e,5)*f*g - 108*pow(a,2)*b*pow(e,5)*pow(f,2)*g - 45*a*pow(c,2)*pow(e,4)*pow(g,2) - 180*pow(a,2)*c*d*pow(e,4)*pow(g,2) - 150*pow(a,3)*pow(d,2)*pow(e,4)*pow(g,2) - 270*a*b*c*pow(e,4)*f*pow(g,2) - 540*pow(a,2)*b*d*pow(e,4)*f*pow(g,2) - 270*a*pow(b,2)*pow(e,4)*pow(f,2)*pow(g,2) - 60*b*pow(c,2)*pow(e,3)*pow(g,3) - 360*a*b*c*d*pow(e,3)*pow(g,3) - 360*pow(a,2)*b*pow(d,2)*pow(e,3)*pow(g,3) - 240*pow(b,2)*c*pow(e,3)*f*pow(g,3) - 720*a*pow(b,2)*d*pow(e,3)*f*pow(g,3) - 200*pow(b,3)*pow(e,3)*pow(f,2)*pow(g,3) - 180*pow(b,2)*c*d*pow(e,2)*pow(g,4) - 270*a*pow(b,2)*pow(d,2)*pow(e,2)*pow(g,4) - 300*pow(b,3)*d*pow(e,2)*f*pow(g,4) - 60*pow(b,3)*pow(d,2)*e*pow(g,5) + 10*pow(a,3)*pow(e,6)*pow(influence,2) + 36*pow(a,2)*b*pow(e,5)*g*pow(influence,2) + 45*a*pow(e,4)*pow(g,2)*pow(influence,2) + 15*pow(a,3)*pow(e,4)*pow(g,2)*pow(influence,2) + 45*a*pow(b,2)*pow(e,4)*pow(g,2)*pow(influence,2) + 60*b*pow(e,3)*pow(g,3)*pow(influence,2) + 60*pow(a,2)*b*pow(e,3)*pow(g,3)*pow(influence,2) + 20*pow(b,3)*pow(e,3)*pow(g,3)*pow(influence,2) + 90*a*pow(b,2)*pow(e,2)*pow(g,4)*pow(influence,2) + 60*pow(b,3)*e*pow(g,5)*pow(influence,2)))/ 7 - (pow(e,2)*g*(10*pow(a,3)*pow(e,4)*f + 18*pow(a,2)*c*pow(e,3)*g + 30*pow(a,3)*d*pow(e,3)*g + 54*pow(a,2)*b*pow(e,3)*f*g + 45*a*b*c*pow(e,2)*pow(g,2) + 90*pow(a,2)*b*d*pow(e,2)*pow(g,2) + 90*a*pow(b,2)*pow(e,2)*f*pow(g,2) + 30*pow(b,2)*c*e*pow(g,3) + 90*a*pow(b,2)*d*e*pow(g,3) + 50*pow(b,3)*e*f*pow(g,3) + 30*pow(b,3)*d*pow(g,4)))/4 - (pow(e,3)*pow(g,2)*(10*pow(a,3)*pow(e,3) + 36*pow(a,2)*b*pow(e,2)*g + 45*a*pow(b,2)*e*pow(g,2) + 20*pow(b,3)*pow(g,3)))/9))/180;
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | test for overlap of the XAABB of bubble and element     ghamm 11/14  |
+ *----------------------------------------------------------------------*/
+bool CAVITATION::Algorithm::XAABBoverlap(
+  DRT::Element* ele,
+  const double influence,
+  LINALG::Matrix<3,1> particleposition
+  )
+{
+  // get bounding box of current element
+  double xaabb[6] = { std::numeric_limits<double>::max(),  std::numeric_limits<double>::max(),
+                      std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(),
+                     -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
+  for (int inode=0; inode<ele->NumNode(); ++inode)
+  {
+    const DRT::Node* node  = ele->Nodes()[inode];
+    const double* coord = node->X();
+    for (size_t i = 0; i < 3; ++i)
+    {
+      xaabb[i+0] = std::min(xaabb[i+0], coord[i]);
+      xaabb[i+3] = std::max(xaabb[i+3], coord[i]);
+    }
+  }
+
+  double bubblesurface[6] = {particleposition(0)+influence, particleposition(1)+influence,
+                             particleposition(2)+influence, particleposition(0)-influence,
+                             particleposition(1)-influence, particleposition(2)-influence};
+
+  bool overlap = true;
+  // test whether the bounding box of the fluid element touches the bubble influence
+  for(int dim=0; dim<3; ++dim)
+  {
+    if(xaabb[dim] - GEO::TOL7 > bubblesurface[dim] or xaabb[dim+3] + GEO::TOL7 < bubblesurface[dim+3])
+    {
+      overlap = false;
+      break;
+    }
+  }
+
+  return overlap;
+}
+
+
+/*----------------------------------------------------------------------*
+ | assign bubble volume to the underlying fluid element    ghamm 11/14  |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::AssignSmallBubbles(
+  const double bubblevol,
+  const LINALG::Matrix<3,1> particleposition,
+  const std::vector<int> insideeles,
+  Teuchos::RCP<Epetra_FEVector> void_volumes
+  )
+{
+  // safety check
+  if(insideeles.size() < 1)
+    dserror("no underlying fluid element for void fraction computation found.");
+
+  // a very small bubble was processed which cannot be resolved with volume integration
+  // just add the contribution to the underlying fluid element
+  if(insideeles.size() == 1)
+  {
+    // do assembly of void fraction into fluid
+    int err = void_volumes->SumIntoGlobalValues(1, &insideeles[0], &bubblevol);
+    if (err<0)
+      dserror("summing into Epetra_FEVector failed");
+#ifdef DEBUG
+    DRT::Element* fluidele = fluiddis_->gElement(insideeles[0]);
+    const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
+
+    static LINALG::Matrix<3,1> dummy(false);
+    // get coordinates of the particle position in parameter space of the element
+    bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, dummy);
+
+    if(insideele == false)
+      dserror("bubble is expected to lie inside this fluid element");
+#endif
+  }
+  else
+  {
+    bool insideele = false;
+    for(size_t i=0; i<insideeles.size(); ++i)
+    {
+      DRT::Element* fluidele = fluiddis_->gElement(insideeles[i]);
+      const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
+
+      static LINALG::Matrix<3,1> dummy(false);
+      // get coordinates of the particle position in parameter space of the element
+      insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, dummy);
+
+      if(insideele == true)
+      {
+        // do assembly of void fraction into fluid
+        int err = void_volumes->SumIntoGlobalValues(1, &insideeles[i], &bubblevol);
+        if (err<0)
+          dserror("summing into Epetra_FEVector failed");
+        break;
+      }
+    }
+    if(insideele == false)
+      dserror("void fraction could not be assigned to an underlying fluid element.");
   }
 
   return;

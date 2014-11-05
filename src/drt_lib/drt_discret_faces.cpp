@@ -379,9 +379,6 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
     dsassert(slave_peid == -1 || slave_peid == gElement(slave_peid)->Id(), "Internal error");
 
     // check for potential periodic boundary conditions and connect respective faces/elements
-    // do we have pbcs? check this first
-    if (col_pbcmapmastertoslave != Teuchos::null)
-    {
     std::map<int, std::vector<int> >::iterator masternodes = col_pbcmapmastertoslave->begin();
     if (masternodes != col_pbcmapmastertoslave->end())
     {
@@ -978,7 +975,6 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
           }
         }
       }
-    }
     }
 
     // create faces
