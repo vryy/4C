@@ -88,13 +88,6 @@ FLD::Boxfilter::Boxfilter(
     reynoldsstress_ = true;
     modeled_subgrid_stress_ = true;
   }
-//  if (vreman_dynamic_)
-//  {
-//    strainrate_ = true;
-//    expression_ = true;
-//    alphaij_ = true;
-//    alpha2_ = true;
-//  }
   if (apply_box_filter_)
   {
     velocity_ = true;
@@ -158,7 +151,7 @@ void FLD::Boxfilter::InitializeVremanScatra(
 {
   scatradiscret_ = scatradis;
   scatratype_ = scatratype;
-  
+
   phi_=true;
   phi2_=true;
   phiexpression_=true;
@@ -298,11 +291,8 @@ void FLD::Boxfilter::ApplyBoxFilter(
     DRT::Element* ele = discret_->lColElement(nele);
 
     // provide vectors for filtered quantities
-    //if(velocity_)
       Teuchos::RCP<std::vector<double> > vel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
-    //if(reynoldsstress_)
       Teuchos::RCP<std::vector<std::vector<double> > > reynoldsstress_hat = Teuchos::rcp(new std::vector<std::vector<double> >);
-    //if(modeled_subgrid_stress_)
       Teuchos::RCP<std::vector<std::vector<double> > > modeled_subgrid_stress = Teuchos::rcp(new std::vector<std::vector<double> >);
     // set to dimensions
     if(reynoldsstress_)
@@ -500,11 +490,8 @@ void FLD::Boxfilter::ApplyBoxFilter(
         (alphaij_val[rr]).resize(3);
     }
     // loma specific quantities
-    //if (densvelocity_)
     std::vector<double> dens_vel_val(3);
-    //if (density_)
     double dens_val;
-    //if(densstrainrate_)
     double dens_strainrate_val;
     double expression_val;
     double alpha2_val;
@@ -1417,7 +1404,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
   {
     // get a rowmap for the dofs
     const Epetra_Map* dofrowmap = scatradiscret_->DofRowMap();
-    
+
     // as we want to identify nodes at walls,
     // we have to be sure that fluid and scatra are still matching
     if (not scatradiscret_->NodeRowMap()->SameAs(*(discret_->NodeRowMap())))
@@ -1439,7 +1426,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
       if (dbccond.size()>0)
       {
 #if DEBUG
-        if ((lnode->X()[0]!=fluidlnode->X()[0]) or 
+        if ((lnode->X()[0]!=fluidlnode->X()[0]) or
             (lnode->X()[1]!=fluidlnode->X()[1]) or
             (lnode->X()[2]!=fluidlnode->X()[2]))
           dserror("Nodes do not match.");
@@ -1546,8 +1533,6 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
                 }
               } // end loop jdim
             }
-
-
 
             // alternative: see comment in ApplyBoxFilter() for velocity field
             //double drtval = ((*((*filtered_dens_rateofstrain_temp_)(idim)))[lnodeid])/thisvol;

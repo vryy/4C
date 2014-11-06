@@ -202,17 +202,10 @@ void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList&  extraparams)
   double Dt=0.0;
   double dt_numerator_volumeav=0.0;
   double dt_denominator_volumeav=0.0;
-  //int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
-  //const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-  //const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
   int idscatra = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra);
   const MAT::PAR::Parameter* matscatra = DRT::Problem::Instance()->Materials()->ParameterById(idscatra);
   const MAT::PAR::ScatraMat* actmatscatra = static_cast<const MAT::PAR::ScatraMat*>(matscatra);
-  //const Teuchos::RCP<const MAT::ScatraMat>& actmatscatra = static_cast<const MAT::ScatraMat>(matscatra);
-  //double dens = actmat->density_;
-  //double visc = actmat->viscosity_/dens;
   double diffus = MAT::PAR::ScatraMat(*actmatscatra).GetParameter(actmatscatra->diff,-1);// actmatscatra->diffusivity_;
-  //double Sc=visc/diffus;
 
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_vreman_params_scatra;
@@ -239,8 +232,7 @@ void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList&  extraparams)
   //Dt does not contain Cv, since Cv cancells out during the calculation of the subgrid diffusivity
 
   Teuchos::ParameterList *  modelparams_scatra =&(extraparams.sublist("TURBULENCE MODEL"));
-//  if (discret_->Comm().MyPID()==0)
-//    std::cout<< Dt << std::endl;
+
   modelparams_scatra->set<double>("Dt_vreman",Dt);
   params_.set<double>("Dt_vreman",Dt);
   return;

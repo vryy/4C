@@ -1249,7 +1249,6 @@ void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
       }
     }
 
-    //std::cout << (*alphaij_hat)[0][1] << "   " << (*alphaij_hat)[1][0] << std::endl;
   }
 
   return;

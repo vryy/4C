@@ -552,7 +552,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaij =
             params.get<Teuchos::RCP<Epetra_MultiVector> >("col_filtered_alphaij");
         // pointer to class FluidEleParameter (access to the general parameter)
-        // required? Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
         Teuchos::RCP<Epetra_Vector> col_filtered_expression = Teuchos::null;
         Teuchos::RCP<Epetra_Vector> col_filtered_alpha2 = Teuchos::null;
         col_filtered_expression = params.get<Teuchos::RCP<Epetra_Vector> >("col_filtered_expression");
@@ -596,11 +595,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         }
         }
 
-
-        // set all values in parameter list
-        //params.set<double>("ele_Cv_numerator",cv_numerator);
-        //params.set<double>("ele_Cv_denominator",cv_denominator);
-        //params.set<double>("ele_Cv_volume",volume);
         elevec1(0)=cv_numerator;
         elevec1(1)=cv_denominator;
       } // end if(nsd == 3)

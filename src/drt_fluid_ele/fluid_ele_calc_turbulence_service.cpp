@@ -459,12 +459,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcSubgrVisc(
         else
         {
           double Cv=Cs_delta_sq; //the variable of Cs_delta_sq has only been used to get the Vreman constant here.
-          //std::cout << Cv << std::endl;
+
           sgvisc_= densaf_ * Cv * sqrt(bbeta / alphavreman);
         }
       }
 
-      //std::cout << hkypow2 << "," << sgvisc_ << "," << pow(vol,(1.0/3.0)) * cs * pow(vol,(1.0/3.0)) * cs * rateofstrain << std::endl;
+
     }
     else
       dserror("Vreman model only for nsd_==3");
