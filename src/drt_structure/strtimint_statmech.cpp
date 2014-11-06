@@ -82,6 +82,10 @@ isconverged_(false)
   //in case that beam contact is activated by respective input parameter, a Beam3cmanager object is created
   InitializeBeamContact();
 
+  //temporary safety check -> will be removed when time loop is reorganized
+  if(DRT::Problem::Instance()->ProblemType() != prb_statmech)
+    dserror("Due to current reorganizing of the time loop: Set your PROBLEMTYP to StatMech");
+
   return;
 } // STR::TimIntStatMech::TimIntStatMech()
 
