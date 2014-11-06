@@ -84,9 +84,6 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
 {
   GeneralSetup();
 
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
-
   // create combined map
   CreateCombinedDofRowMap();
 
