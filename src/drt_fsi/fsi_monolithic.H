@@ -45,6 +45,7 @@ namespace DRT
 namespace FSI
 {
   class FSIResultTest;
+  class OverlappingBlockMatrix;
 
   namespace UTILS
   {
@@ -950,6 +951,10 @@ namespace FSI
     virtual void PrepareTimeStep();
 
   protected:
+
+    /// create the composed system matrix
+    void CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlockMatrix>& mat,
+                            bool structuresplit);
 
     /*! Put three field vectors together to a monolithic vector
      *

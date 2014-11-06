@@ -108,18 +108,10 @@ void FSI::FluidFluidMonolithicStructureSplit::PrepareTimeStep()
   // we have to refresh the block system matrix:
   // 1. rebuild the merged DOF map & update map extractor for combined
   // Dirichlet maps
-  //FSI::MonolithicStructureSplit::CreateCombinedDofRowMap();
-  //SetupDBCMapExtractor();
-  // 2. refresh the fsi block system matrix
-  // (structure and ALE-maps are unaffected)
-  // Todo:
-  // currently, there is no option in LINALG::BlockSparseMatrixBase, that allows
-  // reallocation of single SparseMatrix blocks and change of the underlying MultiMapExtractor
-  // something like: SystemMatrix()->RefreshBlocks(Extractor());
-  // so as a temporary solution we reallocate the whole system matrix:
-  // together with step 1, this is accomplished in SetupSystem(),
-  // where also the costly setup of ADAPTER::Coupling takes place
-  FSI::MonolithicStructureSplit::SetupSystem();
+  FSI::MonolithicStructureSplit::CreateCombinedDofRowMap();
+  SetupDBCMapExtractor();
+  FSI::MonolithicStructureSplit::CreateSystemMatrix();
+
 }
 
 /*----------------------------------------------------------------------*/

@@ -139,6 +139,9 @@ namespace FSI
 
   protected:
 
+    /// create the composed system matrix
+    void CreateSystemMatrix(bool structuresplit);
+
     virtual void Output();
 
     /// start a new time step

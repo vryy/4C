@@ -47,6 +47,8 @@ Maintainer: Matthias Mayr
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
 
+#include "fsi_overlapprec.H"
+#include "fsi_overlapprec_fsiamg.H"
 
 /*----------------------------------------------------------------------*/
 // Note: The order of calling the three BaseAlgorithm-constructors is
@@ -1046,3 +1048,102 @@ void FSI::BlockMonolithic::PrepareTimeStep()
   precondreusecount_ = 0;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::BlockMonolithic::CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlockMatrix>& mat,
+                                              bool structuresplit)
+{
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+
+  std::vector<int> pciter;
+  std::vector<double> pcomega;
+  std::vector<int> spciter;
+  std::vector<double> spcomega;
+  std::vector<int> fpciter;
+  std::vector<double> fpcomega;
+  std::vector<int> apciter;
+  std::vector<double> apcomega;
+  std::vector<std::string> blocksmoother;
+  std::vector<double> schuromega;
+  {
+    int    word1;
+    double word2;
+    {
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"PCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"PCOMEGA"));
+      while (pciterstream >> word1)
+        pciter.push_back(word1);
+      while (pcomegastream >> word2)
+        pcomega.push_back(word2);
+    }
+    {
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"STRUCTPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"STRUCTPCOMEGA"));
+      while (pciterstream >> word1)
+        spciter.push_back(word1);
+      while (pcomegastream >> word2)
+        spcomega.push_back(word2);
+    }
+    {
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"FLUIDPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"FLUIDPCOMEGA"));
+      while (pciterstream >> word1)
+        fpciter.push_back(word1);
+      while (pcomegastream >> word2)
+        fpcomega.push_back(word2);
+    }
+    {
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"ALEPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"ALEPCOMEGA"));
+      while (pciterstream >> word1)
+        apciter.push_back(word1);
+      while (pcomegastream >> word2)
+        apcomega.push_back(word2);
+    }
+    {
+      std::string word;
+      std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsimono,"BLOCKSMOOTHER"));
+      while (blocksmootherstream >> word)
+        blocksmoother.push_back(word);
+    }
+    {
+      std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsimono,"SCHUROMEGA"));
+      while (blocksmootherstream >> word2)
+        schuromega.push_back(word2);
+    }
+  }
+
+  INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
+
+  // create block system matrix
+  switch(linearsolverstrategy)
+  {
+  case INPAR::FSI::PreconditionedKrylov:
+  case INPAR::FSI::FSIAMG:
+     mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
+                                   Extractor(),
+                                   *StructureField(),
+                                   FluidField(),
+                                   *AleField(),
+                                   structuresplit,
+                                   DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
+                                   blocksmoother,
+                                   schuromega,
+                                   pcomega,
+                                   pciter,
+                                   spcomega,
+                                   spciter,
+                                   fpcomega,
+                                   fpciter,
+                                   apcomega,
+                                   apciter,
+                                   DRT::INPUT::IntegralValue<int>(fsimono,"FSIAMGANALYZE"),
+                                   linearsolverstrategy,
+                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
+    break;
+  default:
+    dserror("Unsupported type of monolithic solver");
+    break;
+  }
+}

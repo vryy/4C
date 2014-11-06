@@ -239,100 +239,13 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     SetupDBCMapExtractor();
     // -------------------------------------------------------------------------
 
-    std::vector<int> pciter;
-    std::vector<double> pcomega;
-    std::vector<int> spciter;
-    std::vector<double> spcomega;
-    std::vector<int> fpciter;
-    std::vector<double> fpcomega;
-    std::vector<int> apciter;
-    std::vector<double> apcomega;
-    std::vector<std::string> blocksmoother;
-    std::vector<double> schuromega;
-    {
-      int    word1;
-      double word2;
-      {
-        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "PCITER"));
-        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "PCOMEGA"));
-        while (pciterstream >> word1)
-          pciter.push_back(word1);
-        while (pcomegastream >> word2)
-          pcomega.push_back(word2);
-      }
-      {
-        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "STRUCTPCITER"));
-        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "STRUCTPCOMEGA"));
-        while (pciterstream >> word1)
-          spciter.push_back(word1);
-        while (pcomegastream >> word2)
-          spcomega.push_back(word2);
-      }
-      {
-        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "FLUIDPCITER"));
-        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "FLUIDPCOMEGA"));
-        while (pciterstream >> word1)
-          fpciter.push_back(word1);
-        while (pcomegastream >> word2)
-          fpcomega.push_back(word2);
-      }
-      {
-        std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono, "ALEPCITER"));
-        std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono, "ALEPCOMEGA"));
-        while (pciterstream >> word1)
-          apciter.push_back(word1);
-        while (pcomegastream >> word2)
-          apcomega.push_back(word2);
-      }
-      {
-        std::string word;
-        std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsimono, "BLOCKSMOOTHER"));
-        while (blocksmootherstream >> word)
-          blocksmoother.push_back(word);
-      }
-      {
-        std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsimono, "SCHUROMEGA"));
-        while (blocksmootherstream >> word2)
-          schuromega.push_back(word2);
-      }
-    }
-
     // enable debugging
     if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT") & 2)
     {
       pcdbg_ = Teuchos::rcp(new UTILS::MonolithicDebugWriter(*this));
     }
 
-    // create block system matrix
-    switch(linearsolverstrategy_)
-    {
-    case INPAR::FSI::PreconditionedKrylov:
-    case INPAR::FSI::FSIAMG:
-      systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
-                                     Extractor(),
-                                     *StructureField(),
-                                     FluidField(),
-                                     *AleField(),
-                                     false,
-                                     DRT::INPUT::IntegralValue<int>(fsimono, "SYMMETRICPRECOND"),
-                                     blocksmoother,
-                                     schuromega,
-                                     pcomega,
-                                     pciter,
-                                     spcomega,
-                                     spciter,
-                                     fpcomega,
-                                     fpciter,
-                                     apcomega,
-                                     apciter,
-                                     DRT::INPUT::IntegralValue<int>(fsimono, "FSIAMGANALYZE"),
-                                     linearsolverstrategy_,
-                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
-      break;
-    default:
-      dserror("Unsupported type of monolithic solver");
-      break;
-    }
+    CreateSystemMatrix();
 
     if(aleproj_ != INPAR::FSI::ALEprojection_none)
     {
@@ -2103,4 +2016,11 @@ bool FSI::MortarMonolithicFluidSplit::SetAccepted() const
     accepted = true;
 
   return accepted;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MortarMonolithicFluidSplit::CreateSystemMatrix()
+{
+  FSI::BlockMonolithic::CreateSystemMatrix(systemmatrix_,false);
 }

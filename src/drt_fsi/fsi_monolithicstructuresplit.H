@@ -166,6 +166,9 @@ namespace FSI
 
   protected:
 
+    /// create the composed system matrix
+    void CreateSystemMatrix();
+
     /// setup solver for global block system
     Teuchos::RCP<NOX::Epetra::LinearSystem>
     CreateLinearSystem(Teuchos::ParameterList& nlParams,

@@ -194,6 +194,9 @@ namespace FSI
 
   protected:
 
+    /// create the composed system matrix
+    void CreateSystemMatrix();
+
     virtual void Update();
 
     virtual void Output();

@@ -526,3 +526,87 @@ FSI::ConstrMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
   return combo;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::ConstrMonolithic::CreateSystemMatrix(bool structuresplit)
+{
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+
+  // get the PCITER from inputfile
+  std::vector<int> pciter;
+  std::vector<double> pcomega;
+  std::vector<int> spciter;
+  std::vector<double> spcomega;
+  std::vector<int> fpciter;
+  std::vector<double> fpcomega;
+  std::vector<int> apciter;
+  std::vector<double> apcomega;
+  {
+    int    word1;
+    double word2;
+    {
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"PCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"PCOMEGA"));
+      while (pciterstream >> word1)
+        pciter.push_back(word1);
+      while (pcomegastream >> word2)
+        pcomega.push_back(word2);
+    }
+    {
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"STRUCTPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"STRUCTPCOMEGA"));
+      while (pciterstream >> word1)
+        spciter.push_back(word1);
+      while (pcomegastream >> word2)
+        spcomega.push_back(word2);
+    }
+    {
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"FLUIDPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"FLUIDPCOMEGA"));
+      while (pciterstream >> word1)
+        fpciter.push_back(word1);
+      while (pcomegastream >> word2)
+        fpcomega.push_back(word2);
+    }
+    {
+      std::istringstream pciterstream(Teuchos::getNumericStringParameter(fsimono,"ALEPCITER"));
+      std::istringstream pcomegastream(Teuchos::getNumericStringParameter(fsimono,"ALEPCOMEGA"));
+      while (pciterstream >> word1)
+        apciter.push_back(word1);
+      while (pcomegastream >> word2)
+        apcomega.push_back(word2);
+    }
+  }
+
+  //-----------------------------------------------------------------------------
+  // create block system matrix
+  //-----------------------------------------------------------------------------
+
+  switch(linearsolverstrategy_)
+  {
+  case INPAR::FSI::PreconditionedKrylov:
+    systemmatrix_ = Teuchos::rcp(new ConstrOverlappingBlockMatrix(Extractor(),
+                                                                *StructureField(),
+                                                                FluidField(),
+                                                                *AleField(),
+                                                                structuresplit,
+                                                                DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
+                                                                pcomega[0],
+                                                                pciter[0],
+                                                                spcomega[0],
+                                                                spciter[0],
+                                                                fpcomega[0],
+                                                                fpciter[0],
+                                                                apcomega[0],
+                                                                apciter[0],
+                                                                DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+  break;
+  case INPAR::FSI::FSIAMG:
+  default:
+    dserror("Unsupported type of monolithic solver! Only Preconditioned Krylov supported!");
+  break;
+  }
+}
