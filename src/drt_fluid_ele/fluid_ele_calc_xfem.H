@@ -282,8 +282,9 @@ private:
           double &                           NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
           const LINALG::Matrix<my::nsd_,1>&  normal,                        ///< interface-normal vector
           const double                       h_k,                           ///< characteristic element length
-          const double                       NIT_visc_stab_fac              ///< Nitsche's viscous scaling part of penalty term
- );
+          const double                       NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
+          bool                               error_calc = false             ///< when called in error calculation, don't add the inflow terms
+  );
 
   //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
   void PatchLocationVector(

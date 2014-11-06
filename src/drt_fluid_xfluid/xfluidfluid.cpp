@@ -1966,10 +1966,6 @@ void FLD::XFluidFluid::Init()
   const int restart = DRT::Problem::Instance()->Restart();
   Epetra_Vector idispcol( *boundarydis_->DofColMap() );
   idispcol.PutScalar( 0.0 );
-  if (restart)
-  {
-    ReadRestartEmb(restart);
-  }
 
   if (alefluid_)
   {
@@ -1979,6 +1975,11 @@ void FLD::XFluidFluid::Init()
 
     if (restart)
       LINALG::Export(*aledispn_,idispcol);
+  }
+
+  if (restart)
+  {
+    ReadRestartEmb(restart);
   }
 
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );

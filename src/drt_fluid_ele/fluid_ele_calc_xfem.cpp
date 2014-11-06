@@ -961,12 +961,19 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         flux_u_err.Multiply(grad_u_err,normal);
         flux_p_err.Update(p_err,normal,0.0);
 
-
-        // interface errors
-        // 1.   || nu^(+1/2) (u - u*) ||_H1/2(Gamma)             =  broken H1/2 Sobolev norm for boundary/coupling condition
-        // 2.   || nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)   =  standard H-1/2 Sobolev norm for normal flux (velocity part)
-        // 3.   || nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)         =  standard H-1/2 Sobolev norm for normal flux (pressure part)
-
+        /*
+         * Scaling of interface error norms:
+         *
+         *                       (1)           (2)          (3)
+         *                    /  \mu    \rho             h * \rho         \
+         *  NIT :=  \gamma * |    --  +  -- * |u|_inf  + ----------------- |
+         *                    \   h      6               12 * \theta * dt /
+         *
+         *                             interface errors
+         *  1.   || NIT * (u_b - u_e - u_jump) ||_L_2(Gamma)        =  broken H1/2 Sobolev norm for boundary/coupling condition
+         *  2.   || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  standard H-1/2 Sobolev norm for normal flux (velocity part)
+         *  3.   || (p_b - p_e)*n ||_H-1/2(Gamma)         =  standard H-1/2 Sobolev norm for normal flux (pressure part)
+         */
         double u_err_squared      = 0.0;
         double flux_u_err_squared = 0.0;
         double flux_p_err_squared = 0.0;
@@ -980,9 +987,11 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         }
 
         // interface errors
-        ele_interf_norms[0] += 1.0/h_k * my::visc_ * u_err_squared;
+        double nit_stabfac = 0.0;
+        NIT_Compute_FullPenalty_Stabfac(nit_stabfac,normal,h_k,NIT_Compute_ViscPenalty_Stabfac(distype,1/h_k),true);
+        ele_interf_norms[0] += nit_stabfac * u_err_squared;
         ele_interf_norms[1] += h_k     * my::visc_ * flux_u_err_squared;
-        ele_interf_norms[2] += h_k     / my::visc_ * flux_p_err_squared;
+        ele_interf_norms[2] += h_k     * flux_p_err_squared;
 
       } // end loop gauss points of boundary cell
     } // end loop boundary cells of side
@@ -1242,15 +1251,12 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
                      mat);
 
         //--------------------------------------------
-        // zero velocity jump for fluidfluidcoupling
-        LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
 
         // from side element (not embedded!)
         LINALG::Matrix<my::nsd_,1> ivelint(true);
         si->GetInterfaceVel(ivelint);
 
         u_err.Update(1.0, my::velint_, -1.0, ivelint, 0.0); // u_backgr - u_emb
-        u_err.Update(-1.0, ivelint_WDBC_JUMP, 1.0);         // u_backgr - u_emb - u_jump
 
         LINALG::Matrix<my::nsd_,my::nsd_> grad_u_side(true);
         emb->GetInterfaceVelGrad(grad_u_side);
@@ -1265,10 +1271,19 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
         flux_u_err.Multiply(grad_u_err,normal);
         flux_p_err.Update(p_err,normal,0.0);
 
-        // interface errors
-        // 1.   || nu^(+1/2) (u_b - u_e - u_jump) ||_H1/2(Gamma)             =  broken H1/2 Sobolev norm for boundary/coupling condition
-        // 2.   || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  standard H-1/2 Sobolev norm for normal flux (velocity part)
-        // 3.   || nu^(-1/2) (p_b - p_e)*n ||_H-1/2(Gamma)         =  standard H-1/2 Sobolev norm for normal flux (pressure part)
+        /*
+         * Scaling of interface error norms:
+         *
+         *                       (1)           (2)          (3)
+         *                    /  \mu    \rho             h * \rho         \
+         *  NIT :=  \gamma * |    --  +  -- * |u|_inf  + ----------------- |
+         *                    \   h      6               12 * \theta * dt /
+         *
+         *                             interface errors
+         *  1.   || NIT * (u_b - u_e - u_jump) ||_L_2(Gamma)        =  broken H1/2 Sobolev norm for boundary/coupling condition
+         *  2.   || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  standard H-1/2 Sobolev norm for normal flux (velocity part)
+         *  3.   || (p_b - p_e)*n ||_H-1/2(Gamma)         =  standard H-1/2 Sobolev norm for normal flux (pressure part)
+         */
 
         double u_err_squared      = 0.0;
         double flux_u_err_squared = 0.0;
@@ -1283,9 +1298,11 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
         }
 
         // interface errors
-        ele_interf_norms[0] += 1.0/h_k * my::visc_ * u_err_squared;
+        double nit_stabfac = 0.0;
+        NIT_Compute_FullPenalty_Stabfac(nit_stabfac,normal,h_k,NIT_Compute_ViscPenalty_Stabfac(distype,1/h_k),true);
+        ele_interf_norms[0] += nit_stabfac * u_err_squared;
         ele_interf_norms[1] += h_k     * my::visc_ * flux_u_err_squared;
-        ele_interf_norms[2] += h_k     / my::visc_ * flux_p_err_squared;
+        ele_interf_norms[2] += h_k     * flux_p_err_squared;
       } // end loop gauss points of boundary cell
     } // end loop boundary cells of side
   } // end loop cut sides
@@ -3462,7 +3479,8 @@ void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
     double &                           NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
     const LINALG::Matrix<my::nsd_,1>&  normal,                        ///< interface-normal vector
     const double                       h_k,                           ///< characteristic element length
-    const double                       NIT_visc_stab_fac              ///< Nitsche's viscous scaling part of penalty term
+    const double                       NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
+    bool                               error_calc                     ///< when called in error calculation, don't add the inflow terms
 )
 {
   //------------------------------------------------------------------------------
@@ -3536,7 +3554,7 @@ void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
 
   if ((fldparaxfem_->ConvStabScaling() == INPAR::XFEM::ConvStabScaling_none &&
        fldparaxfem_->XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_none) ||
-       fldparaxfem_->XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_only_averaged)
+       fldparaxfem_->XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_only_averaged || error_calc)
     return;
 
   const double veln_normal = my::velint_.Dot(normal);
@@ -3566,7 +3584,7 @@ void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
 
   NIT_inflow_stab *= my::densaf_;
 
-  // Todo: it is planned to add the inflow contributions independent from the max. option!
+  // Todo (kruse): it is planned to add the inflow contributions independent from the max. option!
   // This version is only kept to shift the adaption of test results to a single commit.
   if (fldparaxfem_->MassConservationCombination() == INPAR::XFEM::MassConservationCombination_max)
   {

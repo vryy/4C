@@ -1361,9 +1361,6 @@ void XFEM::XFluidFluidTimeIntegration::FindSearchRadius()
   // Todo: tets are not yet supported by this framework!
   minradius_ =  searchradius_fac_*max_diameter;
 
-
-  std::cout << minradius_ << std::endl;
-
 }//FindSearchRadius
 
 // -------------------------------------------------------------------
