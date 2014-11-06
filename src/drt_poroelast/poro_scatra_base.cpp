@@ -199,11 +199,11 @@ void POROELAST::PORO_SCATRA_Base::AddDofSets(bool replace)
   if(PoroField()->HasSubmeshes())
   {
     // build a proxy of the structure discretization for the scatra field
-    structdofset = structdis->GetDofSetProxy(structdis->NodeColMap(),structdis->ElementColMap());
+    structdofset = structdis->GetDofSetSubProxy();
     // build a proxy of the fluid discretization for the scatra field
-    fluiddofset = fluiddis->GetDofSetProxy(fluiddis->NodeColMap(),fluiddis->ElementColMap());
+    fluiddofset = fluiddis->GetDofSetSubProxy();
     // build a proxy of the scatra discretization for the structure/fluid field
-    scatradofset = scatradis->GetDofSetProxy(scatradis->NodeColMap(),scatradis->ElementColMap());
+    scatradofset = scatradis->GetDofSetSubProxy();
   }
   else
   {

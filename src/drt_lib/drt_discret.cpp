@@ -562,10 +562,9 @@ int DRT::Discretization::BuildDofSetAuxProxy(int numdofpernode, std::vector<int>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy(const Epetra_Map* subcolnodes,
-                                                              const Epetra_Map* subcoleles )
+Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetSubProxy()
 {
-  return Teuchos::rcp(new DofSetSubProxy(&*dofsets_[0],subcolnodes,subcoleles));
+  return Teuchos::rcp(new DofSetSubProxy(&*dofsets_[0],nodecolmap_,elecolmap_));
 }
 
 

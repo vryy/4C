@@ -507,9 +507,9 @@ void POROELAST::PoroBase::AddDofSets(bool replace)
   if(submeshes_)
   {
     // build a proxy of the structure discretization for the fluid field (the structure disc. is the bigger one)
-    structdofset = structdis->GetDofSetProxy(structdis->NodeColMap(),structdis->ElementColMap());
+    structdofset = structdis->GetDofSetSubProxy();
     // build a proxy of the fluid discretization for the structure field
-    fluiddofset = fluiddis->GetDofSetProxy(fluiddis->NodeColMap(),fluiddis->ElementColMap());
+    fluiddofset = fluiddis->GetDofSetSubProxy();
   }
   else
   {

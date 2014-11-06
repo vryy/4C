@@ -32,8 +32,8 @@ namespace DRT
 
     */
     explicit DofSetSubProxy(DofSet* dofset,
-                          const Epetra_Map* subcolnodes,
-                          const Epetra_Map* subcoleles);
+                            Teuchos::RCP<Epetra_Map>& subcolnodes,
+                            Teuchos::RCP<Epetra_Map>& subcolele);
 
     /*!
     \brief Destructor
@@ -178,10 +178,10 @@ namespace DRT
   private:
 
     //! map containing all node GIDs of this (sub)dofset
-    const Epetra_Map*                 subcolnodes_;
+     Teuchos::RCP<Epetra_Map>                 subcolnodes_;
 
     //! map containing all element GIDs of this (sub)dofset
-    const Epetra_Map*                 subcoleles_;
+     Teuchos::RCP<Epetra_Map>                 subcoleles_;
 
   };
 }

@@ -18,13 +18,13 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::DofSetSubProxy::DofSetSubProxy(DofSet* dofset,
-                               const Epetra_Map* subcolnodes,
-                               const Epetra_Map* subcoleles)
+                                    Teuchos::RCP<Epetra_Map>& subcolnodes,
+                                    Teuchos::RCP<Epetra_Map>& subcoleles)
   : DofSetProxy(dofset),
     subcolnodes_(subcolnodes),
     subcoleles_(subcoleles)
 {
-  if(subcolnodes_==NULL or subcoleles_==NULL)
+  if(subcolnodes_==Teuchos::null or subcoleles_==Teuchos::null)
     dserror("no node or element map provided for DofSetSubProxy");
 }
 
@@ -32,8 +32,8 @@ DRT::DofSetSubProxy::DofSetSubProxy(DofSet* dofset,
  *----------------------------------------------------------------------*/
 void DRT::DofSetSubProxy::NotifyReset()
 {
-  subcolnodes_ = NULL;
-  subcoleles_ = NULL;
+//  subcolnodes_ = NULL;
+//  subcoleles_ = NULL;
 
   // clear my Teuchos::rcps.
   DofSetProxy::NotifyReset();

@@ -503,8 +503,7 @@ public:
   /*!
   \brief Get proxy to main dof set for special case of partial dof sets.
   */
-  virtual Teuchos::RCP<DofSet> GetDofSetProxy(const Epetra_Map* subcolnodes,
-                                              const Epetra_Map* subcoleles );
+  virtual Teuchos::RCP<DofSet> GetDofSetSubProxy();
 
   /*!
   \brief Get degree of freedom row map (Filled()==true prerequisite)
