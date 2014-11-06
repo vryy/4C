@@ -87,7 +87,7 @@ protected:
       const int                                                     numdf,
       const int                                                     from,
       const bool                                                    fillzeros
-      ) const;
+      );
 
   //! Write a single result step
   virtual void WriteNodalResultStep(
@@ -97,7 +97,7 @@ protected:
       const std::string&                                            groupname,
       const std::string&                                            name,
       const int                                                     numdf
-      ) const;
+      );
 
   //! Write a single result step
   virtual void WriteElementResultStep(
@@ -108,11 +108,10 @@ protected:
      const std::string&                                            name,
      const int                                                     numdf,
      const int                                                     from
-     ) const;
+     );
 
   //! write the geometry of one time step
   virtual void WriteGeo();
-
 
   //! origin of the ImageData-grid
   double origin_[3];
@@ -128,6 +127,9 @@ protected:
 
   //! Mapping between nodeids and their position on an ImageData-grid in a (z*Ny+y)*Nx+x form
   std::map<int,int> idmapping_;
+
+  //! Mapping between elementids and their position on an ImageData-grid in a (z*Ny+y)*Nx+x form
+  std::map<int,int> eidmapping_;
 };
 
 #endif

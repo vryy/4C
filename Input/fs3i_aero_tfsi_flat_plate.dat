@@ -144,7 +144,7 @@ LOWER_BOUND 0.1 -0.01 0.0
 UPPER_BOUND 0.3 0.0 0.05
 INTERVALS   4 3 1
 ELEMENTS    SOLIDH8 HEX8 MAT 1 KINEM nonlinear EAS none
----------------------------------------------------THERMO ELEMENTS
+PARTITION   auto
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 15 QUANTITY dispx VALUE 0.0 TOLERANCE 1.0e-12
 STRUCTURE DIS structure NODE 15 QUANTITY dispy VALUE -6.49459632496894124e-05 TOLERANCE 1.0e-12

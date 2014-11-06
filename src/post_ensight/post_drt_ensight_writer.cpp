@@ -1871,7 +1871,7 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
                                          std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
                                          const std::string& groupname,
                                          const std::string& name,
-                                         const int numdf) const
+                                         const int numdf)
 {
   const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
   WriteNodalResultStep(file,data,resultfilepos,groupname,name,numdf);
@@ -1888,7 +1888,7 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
                                          std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
                                          const std::string& groupname,
                                          const std::string& name,
-                                         const int numdf) const
+                                         const int numdf)
 {
   //-------------------------------------------
   // write some key words and read result data
@@ -2139,7 +2139,7 @@ void EnsightWriter::WriteElementResultStep(
   const std::string& name,
   const int numdf,
   const int from
-  ) const
+  )
 {
   const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
   WriteElementResultStep(file, data, resultfilepos, groupname, name, numdf, from);
@@ -2164,7 +2164,7 @@ void EnsightWriter::WriteElementResultStep(
   const std::string &name,
   const int numdf,
   const int from
-  ) const
+  )
 {
 
   //-------------------------------------------

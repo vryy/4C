@@ -61,8 +61,8 @@ const std::string& VtiWriter::WriterOpeningTag() const
   static std::string tag;
   std::stringstream stream;
   stream << "<ImageData WholeExtent=\""
-         << globalextent_[0] << " " << globalextent_[1] << " " << globalextent_[2] << " "
-         << globalextent_[3] << " " << globalextent_[4] << " " << globalextent_[5]
+         << localextent_[0] << " " << localextent_[1] << " " << localextent_[2] << " "
+         << localextent_[3] << " " << localextent_[4] << " " << localextent_[5]
          << "\" Origin=\""
          << origin_[0] << " " << origin_[1] << " " << origin_[2]
          << "\" Spacing=\""
@@ -104,7 +104,7 @@ const std::vector<std::string>& VtiWriter::WriterPPieceTags() const
       stream << "<Piece Extent=\""
              << allextents[i][0] << " " << allextents[i][1] << " " << allextents[i][2] << " "
              << allextents[i][3] << " " << allextents[i][4] << " " << allextents[i][5]
-             << "\" Source=\"" << filenamebase_ << "-" << i << ".vti\"/>";
+             << "\" Source=\"" << filenamebase_ << "-" << std::setfill('0') << std::setw(npdigits_) << i << ".vti\"/>";
       tags.push_back(stream.str());
     }
   }
@@ -136,14 +136,7 @@ VtiWriter::WriteGeo()
               << localextent_[0] << " " << localextent_[1] << " " << localextent_[2] << " "
               << localextent_[3] << " " << localextent_[4] << " " << localextent_[5]
               << "\">\n";
-
-  // start the scalar fields that will later be written
-  currentout_ << "  <PointData Scalars=\"scalars\">\n";
-
-
-  if (myrank_ == 0) {
-    currentmasterout_ << "    <PPointData Scalars=\"scalars\">\n";
-  }
+  return;
 }
 
 
@@ -157,7 +150,7 @@ VtiWriter::WriteDofResultStep(
     const std::string& name,
     const int numdf,
     const int from,
-    const bool fillzeros) const
+    const bool fillzeros)
 {
   if (myrank_==0 && timestep_ == 0)
     std::cout << "writing dof-based field " << name <<std::endl;
@@ -168,6 +161,9 @@ VtiWriter::WriteDofResultStep(
   // on the row elements, so need to get the DofColMap to have this access
   const Epetra_Map* colmap = dis->DofColMap(0);
   const Epetra_BlockMap& vecmap = data->Map();
+
+  //TODO: wic, once the vtu pressure writer is fixed, apply the same solution here.
+  const int offset = (fillzeros) ? 0 : vecmap.MinAllGID()-dis->DofRowMap(0)->MinAllGID();
 
   Teuchos::RCP<Epetra_Vector> ghostedData;
   if (colmap->SameAs(vecmap))
@@ -186,8 +182,8 @@ VtiWriter::WriteDofResultStep(
     solution.resize(ncomponents*((localextent_[1]-localextent_[0]+1)*(localextent_[3]-localextent_[2]+1)*(localextent_[5]-localextent_[4]+1)));
 
   std::vector<int> nodedofs;
-  for (int e=0; e<dis->NumMyRowElements(); ++e) {
-    const DRT::Element* ele = dis->lRowElement(e);
+  for (int e=0; e<dis->NumMyColElements(); ++e) {
+    const DRT::Element* ele = dis->lColElement(e);
 
     for (int n=0; n<ele->NumNode(); ++n) {
       nodedofs.clear();
@@ -200,7 +196,7 @@ VtiWriter::WriteDofResultStep(
       dis->Dof(ele->Nodes()[n], nodedofs);
 
       for (int d=0; d<numdf; ++d) {
-        const int lid = ghostedData->Map().LID(nodedofs[d+from]);
+        const int lid = ghostedData->Map().LID(nodedofs[d+from]+offset);
         if (lid > -1) {
           solution[inpos+d] = (*ghostedData)[lid];
         } else {
@@ -213,7 +209,21 @@ VtiWriter::WriteDofResultStep(
     }
   }
 
+  // start the scalar fields that will later be written
+  if (currentPhase_ == INIT) {
+    currentout_ << "  <PointData>\n"; // Scalars=\"scalars\">\n";
+    if (myrank_ == 0) {
+      currentmasterout_ << "    <PPointData>\n"; // Scalars=\"scalars\">\n";
+    }
+    currentPhase_ = POINTS;
+  }
+
+  if (currentPhase_ != POINTS)
+    dserror("Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
+
   this->WriteSolutionVector(solution, ncomponents, name, file);
+
+  return;
 }
 
 
@@ -225,7 +235,7 @@ VtiWriter::WriteNodalResultStep(
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
     const std::string& groupname,
     const std::string& name,
-    const int numdf) const
+    const int numdf)
 {
   if (myrank_==0 && timestep_ == 0)
     std::cout << "writing node-based field " << name <<std::endl;
@@ -254,8 +264,8 @@ VtiWriter::WriteNodalResultStep(
 
   std::vector<double> solution(ncomponents*((localextent_[1]-localextent_[0]+1)*(localextent_[3]-localextent_[2]+1)*(localextent_[5]-localextent_[4]+1)));
 
-  for (int e=0; e<dis->NumMyRowElements(); ++e) {
-    const DRT::Element* ele = dis->lRowElement(e);
+  for (int e=0; e<dis->NumMyColElements(); ++e) {
+    const DRT::Element* ele = dis->lColElement(e);
 
     for (int n=0; n<ele->NumNode(); ++n) {
       const int gid   = ele->Nodes()[n]->Id();
@@ -277,7 +287,21 @@ VtiWriter::WriteNodalResultStep(
     }
   }
 
+  // start the scalar fields that will later be written
+  if (currentPhase_ == INIT) {
+    currentout_ << "  <PointData>\n"; // Scalars=\"scalars\">\n";
+    if (myrank_ == 0) {
+      currentmasterout_ << "    <PPointData>\n"; // Scalars=\"scalars\">\n";
+    }
+    currentPhase_ = POINTS;
+  }
+
+  if (currentPhase_ != POINTS)
+    dserror("Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
+
   this->WriteSolutionVector(solution, ncomponents, name, file);
+
+  return;
 }
 
 
@@ -290,7 +314,7 @@ VtiWriter::WriteElementResultStep(
     const std::string& groupname,
     const std::string& name,
     const int numdf,
-    const int from) const
+    const int from)
 {
   if (myrank_==0 && timestep_ == 0)
     std::cout << "writing element-based field " << name << std::endl;
@@ -299,37 +323,55 @@ VtiWriter::WriteElementResultStep(
 
   const int ncomponents = (numdf > 1 && numdf == field_->problem()->num_dim())? 3 : numdf;
 
-  std::vector<double> solution(ncomponents*((localextent_[1]-localextent_[0]+1)*(localextent_[3]-localextent_[2]+1)*(localextent_[5]-localextent_[4]+1)));
+  std::vector<double> solution(ncomponents*((localextent_[1]-localextent_[0])*(localextent_[3]-localextent_[2])*(localextent_[5]-localextent_[4])), 0.0);
 
   const int numcol = data->NumVectors();
   if (numdf+from > numcol)
     dserror("violated column range of Epetra_MultiVector: %d",numcol);
 
   Teuchos::RCP<Epetra_MultiVector> importedData;
-  if (dis->ElementRowMap()->SameAs(data->Map()))
+  if (dis->ElementColMap()->SameAs(data->Map()))
     importedData = data;
   else {
-    importedData = Teuchos::rcp(new Epetra_MultiVector(*dis->ElementRowMap(),
+    importedData = Teuchos::rcp(new Epetra_MultiVector(*dis->ElementColMap(),
                                                        data->NumVectors(),
                                                        false));
     LINALG::Export(*data,*importedData);
   }
 
-  for (int e=0; e<dis->NumMyRowElements(); ++e) {
-    const DRT::Element* ele = dis->lRowElement(e);
-    for (int n=0; n<ele->NumNode(); ++n) {
-      const int ngid  = ele->Nodes()[n]->Id();
-      const int inpos = ncomponents*idmapping_.find(ngid)->second;
-      for (int d=0; d<numdf; ++d) {
-        Epetra_Vector* column = (*importedData)(d+from);
-        solution[inpos+d] = (*column)[e];
-      }
-      for (int d=numdf; d<ncomponents; ++d)
-        solution[inpos+d] = 0.0;
+  for (int e=0; e<dis->NumMyColElements(); ++e) {
+    const DRT::Element* ele = dis->lColElement(e);
+    const int egid = ele->Id();
+    const int inpos = ncomponents*(eidmapping_.find(egid)->second);
+    for (int d=0; d<numdf; ++d) {
+      Epetra_Vector* column = (*importedData)(d+from);
+      solution[inpos+d] = (*column)[e];
     }
   }
 
+  // start the scalar fields that will later be written
+  if (currentPhase_ == POINTS) {
+    // end the scalar fields
+    currentout_ << "  </PointData>\n";
+    if (myrank_ == 0) {
+      currentmasterout_ << "    </PPointData>\n";
+    }
+  }
+
+  if (currentPhase_ == INIT || currentPhase_ == POINTS) {
+    currentout_ << "  <CellData>\n"; // Scalars=\"scalars\">\n";
+    if (myrank_ == 0) {
+      currentmasterout_ << "    <PCellData>\n"; // Scalars=\"scalars\">\n";
+    }
+    currentPhase_ = CELLS;
+  }
+
+  if (currentPhase_ != CELLS)
+    dserror("Cannot write cell data at this stage. Most likely cell and point data fields are mixed.");
+
   this->WriteSolutionVector(solution, ncomponents, name, file);
+
+  return;
 }
 
 
@@ -340,8 +382,8 @@ void VtiWriter::WriterPrepTimestep()
   // collect all possible values of the x-, y- and z-coordinate
   typedef std::set<double, less_tol<double> > set_tol;
   set_tol collected_coords[3];
-  for (int n=0; n<dis->NumMyRowNodes(); ++n) {
-    const double* coord = dis->lRowNode(n)->X();
+  for (int n=0; n<dis->NumMyColNodes(); ++n) {
+    const double* coord = dis->lColNode(n)->X();
     for (int i=0; i<3; ++i)
       collected_coords[i].insert(coord[i]);
   }
@@ -381,12 +423,31 @@ void VtiWriter::WriterPrepTimestep()
   int nx = localextent_[1]-localextent_[0]+1;
   int ny = localextent_[3]-localextent_[2]+1;
   idmapping_.clear();
-  for (int n=0; n<dis->NumMyRowNodes(); ++n) {
-    const double* coord = dis->lRowNode(n)->X();
+  for (int n=0; n<dis->NumMyColNodes(); ++n) {
+    const double* coord = dis->lColNode(n)->X();
     int i = round((coord[0]-lorigin[0])/spacing_[0]);
     int j = round((coord[1]-lorigin[1])/spacing_[1]);
     int k = round((coord[2]-lorigin[2])/spacing_[2]);
-    idmapping_[dis->NodeRowMap()->GID(n)] = (k*ny+j)*nx+i;
+    idmapping_[dis->NodeColMap()->GID(n)] = (k*ny+j)*nx+i;
+  }
+
+  // create element id mapping by the coordinates of the lowest node coordinate
+  nx = localextent_[1]-localextent_[0];
+  ny = localextent_[3]-localextent_[2];
+  eidmapping_.clear();
+  for (int e=0; e<dis->NumMyColElements(); ++e) {
+    const DRT::Element* ele = dis->lColElement(e);
+    double mincoord[] = {std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), std::numeric_limits<double>::max()};
+    for (int n=0; n<ele->NumNode(); ++n) {
+      const double* coord = ele->Nodes()[n]->X();
+      mincoord[0] = std::min(mincoord[0], coord[0]);
+      mincoord[1] = std::min(mincoord[1], coord[1]);
+      mincoord[2] = std::min(mincoord[2], coord[2]);
+    }
+    int i = round((mincoord[0]-lorigin[0])/spacing_[0]);
+    int j = round((mincoord[1]-lorigin[1])/spacing_[1]);
+    int k = round((mincoord[2]-lorigin[2])/spacing_[2]);
+    eidmapping_[dis->ElementColMap()->GID(e)] = (k*ny+j)*nx+i;
   }
   return;
 }

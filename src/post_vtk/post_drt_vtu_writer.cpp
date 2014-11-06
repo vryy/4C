@@ -239,7 +239,7 @@ VtuWriter::WriteDofResultStep(
     const std::string& name,
     const int numdf,
     const int from,
-    const bool fillzeros) const
+    const bool fillzeros)
 {
   if (myrank_==0 && timestep_ == 0)
     std::cout << "writing dof-based field " << name <<std::endl;
@@ -298,7 +298,7 @@ VtuWriter::WriteDofResultStep(
   }
   dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
-  WriteSolutionVector(solution, ncomponents, name, file);
+  this->WriteSolutionVector(solution, ncomponents, name, file);
 }
 
 
@@ -310,7 +310,7 @@ VtuWriter::WriteNodalResultStep(
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
     const std::string& groupname,
     const std::string& name,
-    const int numdf) const
+    const int numdf)
 {
   if (myrank_==0 && timestep_ == 0)
     std::cout << "writing node-based field " << name <<std::endl;
@@ -370,7 +370,7 @@ VtuWriter::WriteNodalResultStep(
   }
   dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
-  WriteSolutionVector(solution, ncomponents, name, file);
+  this->WriteSolutionVector(solution, ncomponents, name, file);
 }
 
 
@@ -383,7 +383,7 @@ VtuWriter::WriteElementResultStep(
     const std::string& groupname,
     const std::string& name,
     const int numdf,
-    const int from) const
+    const int from)
 {
   if (myrank_==0 && timestep_ == 0)
     std::cout << "writing element-based field " << name << std::endl;
@@ -429,5 +429,5 @@ VtuWriter::WriteElementResultStep(
   }
   dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
-  WriteSolutionVector(solution, ncomponents, name, file);
+  this->WriteSolutionVector(solution, ncomponents, name, file);
 }

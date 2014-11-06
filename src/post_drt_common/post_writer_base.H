@@ -129,7 +129,7 @@ public:
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
     const std::string& groupname,
     const std::string& name,
-    const int numdf) const = 0;
+    const int numdf) = 0;
 
   /*!
    \brief Write one step of an element result
@@ -141,7 +141,7 @@ public:
     const std::string& groupname,
     const std::string& name,
     const int numdf,
-    const int from) const = 0;
+    const int from) = 0;
 
 protected:
   PostField* field_;

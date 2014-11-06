@@ -26,6 +26,9 @@ Maintainer: Karl-Robert Wichmann
 
 #include <Epetra_Time.h>
 
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+#include <boost/algorithm/string.hpp>
+#endif
 
 namespace DRT
 {
@@ -86,6 +89,8 @@ void DomainReader::Partition(int* nodeoffset)
   const int myrank  = comm_->MyPID();
   const int numproc = comm_->NumProc();
 
+  bool autopartition = true;
+
   DRT::INPUT::ElementDefinition ed;
   ed.SetupValidElementLines();
 
@@ -134,6 +139,20 @@ void DomainReader::Partition(int* nodeoffset)
             t >> elementtype_ >> distype_;
             getline(t, elearguments_);
           }
+          else if (key == "PARTITION")
+          {
+            std::string tmp;
+            t >> tmp;
+#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
+            boost::algorithm::to_lower(tmp);
+#endif
+            if (tmp == "auto")
+              autopartition = true;
+            else if (tmp == "structured")
+              autopartition = false;
+            else
+              dserror("Invalid argument for PARTITION in DOMAIN reader. Valid options are \"auto\" and \"structured\".");
+          }
           else
             dserror("Unknown Key in DOMAIN section");
         }
@@ -147,6 +166,7 @@ void DomainReader::Partition(int* nodeoffset)
     comm_->Broadcast(lower_bound_, sizeof(lower_bound_)/sizeof(lower_bound_[0]), 0);
     comm_->Broadcast(upper_bound_, sizeof(upper_bound_)/sizeof(upper_bound_[0]), 0);
     comm_->Broadcast(   interval_,       sizeof(interval_)/sizeof(interval_[0]), 0);
+    comm_->Broadcast(reinterpret_cast<int*>(&autopartition), 1, 0);
 
     std::vector<char> data;
     if (myrank == 0)
@@ -187,10 +207,73 @@ void DomainReader::Partition(int* nodeoffset)
       dserror("intervals in domain reader must be greater than zero");
   }
 
-  // split ele ids
+  // Create initial (or final) map of row elements
   int numnewele = interval_[0]*interval_[1]*interval_[2];
-  roweles_ = Teuchos::rcp(new Epetra_Map(numnewele,0,*comm_));
+  if (autopartition) // linear map
+  {
+    roweles_ = Teuchos::rcp(new Epetra_Map(numnewele,0,*comm_));
+  }
+  else // fancy final box map
+  {
+    std::vector<int> factors;
+    int nproc = numproc;
+    for (int fac = 2; fac < nproc+1;)
+    {
+      if (nproc % fac == 0)
+      {
+        factors.push_back(fac);
+        nproc /= fac;
+      }
+      else
+      {
+        fac++;
+      }
+    }
+    if (nproc != 1)
+      dserror("Could not split numproc.");
 
+    unsigned int subdivisions[] = {1,1,1};
+    const double dinterval[]    = {static_cast<double>(interval_[0]), static_cast<double>(interval_[1]), static_cast<double>(interval_[2])};
+    for (std::vector<int>::const_reverse_iterator fac = factors.rbegin(); fac != factors.rend(); ++fac)
+    {
+      const double ratios[] = {dinterval[0]/subdivisions[0], dinterval[1]/subdivisions[1], dinterval[2]/subdivisions[2]};
+      if (ratios[0] >= ratios[1] && ratios[0] >= ratios[2])
+        subdivisions[0] *= *fac;
+      else if (ratios[1] >= ratios[0] && ratios[1] >= ratios[2])
+        subdivisions[1] *= *fac;
+      else if (ratios[2] >= ratios[0] && ratios[2] >= ratios[1])
+        subdivisions[2] *= *fac;
+    }
+
+    if (myrank == 0)
+      IO::cout << "Determined domain subdivision to: " << subdivisions[0] << "x" << subdivisions[1] << "x" << subdivisions[2] << "\n";
+
+    unsigned int xranges[subdivisions[0]+1ul];
+    for (size_t i=0; i<subdivisions[0]+1ul; ++i)
+      xranges[i] = std::max(0, std::min(interval_[0], static_cast<int>(round(i*dinterval[0]/subdivisions[0])) ));
+
+    unsigned int yranges[subdivisions[1]+1ul];
+    for (size_t i=0; i<subdivisions[1]+1ul; ++i)
+      yranges[i] = std::max(0, std::min(interval_[1], static_cast<int>(round(i*dinterval[1]/subdivisions[1])) ));
+
+    unsigned int zranges[subdivisions[2]+1ul];
+    for (size_t i=0; i<subdivisions[2]+1ul; ++i)
+      zranges[i] = std::max(0, std::min(interval_[2], static_cast<int>(round(i*dinterval[2]/subdivisions[2])) ));
+
+    const unsigned int mysection[] = {myrank%subdivisions[0], (myrank/subdivisions[0])%subdivisions[1], myrank/(subdivisions[0]*subdivisions[1])};
+    const int nummynewele          = (xranges[mysection[0]+1]-xranges[mysection[0]])*(yranges[mysection[1]+1]-yranges[mysection[1]])*(zranges[mysection[2]+1]-zranges[mysection[2]]);
+    int mynewele[nummynewele];
+
+    size_t idx = 0;
+    for (size_t iz=zranges[mysection[2]]; iz<zranges[mysection[2]+1]; ++iz)
+      for (size_t iy=yranges[mysection[1]]; iy<yranges[mysection[1]+1]; ++iy)
+        for (size_t ix=xranges[mysection[0]]; ix<xranges[mysection[0]+1]; ++ix)
+          mynewele[idx++] = (iz*interval_[1]+iy)*interval_[0]+ix;
+
+    roweles_ = Teuchos::rcp(new Epetra_Map(-1,nummynewele,mynewele,0,*comm_));
+  }
+
+  // Create the actual elements according to the row map
   for (int lid = 0; lid < roweles_->NumMyElements(); ++lid)
   {
     int eleid = roweles_->GID(lid);
@@ -251,13 +334,24 @@ void DomainReader::Partition(int* nodeoffset)
     dis_->AddElement(ele);
   }
 
+  // redistribute the elements
+  if (autopartition)
+  {
 #if defined(PARMETIS)
-  rownodes_ = Teuchos::null;
-  colnodes_ = Teuchos::null;
-  DRT::UTILS::PartUsingParMetis(dis_,roweles_,rownodes_,colnodes_,comm_,!reader_.MyOutputFlag());
+    rownodes_ = Teuchos::null;
+    colnodes_ = Teuchos::null;
+    DRT::UTILS::PartUsingParMetis(dis_,roweles_,rownodes_,colnodes_,comm_,!reader_.MyOutputFlag());
 #else
-  dserror("We need parmetis.");
+    dserror("We need parmetis.");
 #endif
+  }
+  else // do not destroy our manual partitioning
+  {
+    Teuchos::RCP<const Epetra_CrsGraph> graph = DRT::UTILS::BuildGraph(dis_, roweles_,
+        rownodes_, comm_, !reader_.MyOutputFlag());
+    colnodes_ = Teuchos::rcp(new Epetra_Map(-1, graph->ColMap().NumMyElements(),
+        graph->ColMap().MyGlobalElements(),0,*comm_));
+  }
 
 
   // now we have all elements in a linear map roweles
@@ -272,6 +366,7 @@ void DomainReader::Partition(int* nodeoffset)
   // export to the column map / create ghosting of elements
   dis_->ExportColumnElements(*coleles_);
 
+  // Create the nodes according to their elements
   // number of nodes per direction
   const size_t nx = interval_[0]+1;
   const size_t ny = interval_[1]+1;

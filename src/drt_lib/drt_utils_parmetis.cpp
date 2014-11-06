@@ -440,7 +440,7 @@ Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::BuildGraph(
 
 
   // now we need to communicate and add the remote entries
-  for (int proc=0; proc<numproc; ++proc)
+  for (int proc=numproc-1; proc>=0; --proc)
   {
     std::vector<int> recvnodes;
     int size = 0;

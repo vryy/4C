@@ -106,7 +106,7 @@ CONVCHECK                       L_2_norm
 CONVFORM                        convective
 //
 // Tolerance for convergence check
-CONVTOL                         1e-08
+CONVTOL                         1e-12
 //
 // Time integration factor
 GAMMA                           1
@@ -519,7 +519,7 @@ TOL_VEL_RES_L2                  1e-06
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 //
 // Tolerance for iteration over fields
-CONVTOL                         1e-6
+CONVTOL                         1e-10
 //
 // Coupling Method Mortar (mtr) or conforming nodes at interface
 //                              MTR,Mtr,mtr,conforming
@@ -1068,7 +1068,7 @@ AZSOLVE                         GMRES
 AZSUB                           300
 //
 // tolerance in (un)scaled residual
-AZTOL                           1e-08
+AZTOL                           1e-12
 //
 // damping parameter for BGS2X2 preconditioner block1
 BGS2X2_BLOCK1_DAMPING           1
@@ -1641,16 +1641,16 @@ TIMESTEP                        0.05
 TOLCONSTR                       1e-08
 //
 // tolerance in the displacement norm for the newton iteration
-TOLDISP                         1e-10
+TOLDISP                         1e-12
 //
 // tolerance in the incompressible residual norm for the newton iteration
-TOLINCO                         1e-08
+TOLINCO                         1e-10
 //
 // tolerance in pressure norm for the newton iteration
-TOLPRE                          1e-08
+TOLPRE                          1e-10
 //
 // tolerance in the residual norm for the newton iteration
-TOLRES                          1e-10
+TOLRES                          1e-12
 //
 //                              uzawa,simple,direct
 UZAWAALGO                       direct
@@ -2412,8 +2412,8 @@ FUNCT1 EXPR 0 0 0 FUNCTION 10*(y-1)
 // ADJOINT DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
 // OPTI DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
 // FSI NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
-STRUCTURE DIS structure NODE 22 QUANTITY dispx VALUE -3.10720892837233027e-04 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 22 QUANTITY dispy VALUE 2.58248808961706738e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 500 QUANTITY pressure VALUE -1.09850263423890739e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 500 QUANTITY velx VALUE -5.84984115138628968e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 500 QUANTITY vely VALUE -1.07096757220554339e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 22 QUANTITY dispx VALUE -3.10527382943322509e-04 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 22 QUANTITY dispy VALUE  2.58228799458276662e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 500 QUANTITY pressure VALUE -8.94685072024776519e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 500 QUANTITY velx     VALUE -5.84882305078221684e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 500 QUANTITY vely     VALUE -1.07044425305789767e-01 TOLERANCE 1e-9

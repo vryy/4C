@@ -398,14 +398,14 @@ protected:
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
     const std::string& groupname,
     const std::string& name,
-    const int numdf) const;
+    const int numdf);
   virtual void WriteNodalResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
     const std::string& groupname,
     const std::string& name,
-    const int numdf) const;
+    const int numdf);
   void WriteElementDOFResultStep(
     std::ofstream& file,
     PostResult& result,
@@ -421,7 +421,7 @@ protected:
     const std::string& groupname,
     const std::string& name,
     const int numdf,
-    const int from) const;
+    const int from);
   virtual void WriteElementResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
@@ -429,7 +429,7 @@ protected:
     const std::string& groupname,
     const std::string& name,
     const int numdf,
-    const int from) const;
+    const int from);
   void WriteIndexTable(
     std::ofstream& file,
     const std::vector<std::ofstream::pos_type>& filepos) const;

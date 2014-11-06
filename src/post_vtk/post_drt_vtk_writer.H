@@ -146,7 +146,7 @@ protected:
       const int                                                     numdf,
       const int                                                     from,
       const bool                                                    fillzeros
-      ) const = 0;
+      ) = 0;
 
   //! Write a single result step
   virtual void WriteNodalResultStep(
@@ -156,7 +156,7 @@ protected:
       const std::string&                                            groupname,
       const std::string&                                            name,
       const int                                                     numdf
-      ) const = 0;
+      ) = 0;
 
   //! Write a single result step
   virtual void WriteElementResultStep(
@@ -167,7 +167,7 @@ protected:
      const std::string&                                            name,
      const int                                                     numdf,
      const int                                                     from
-     ) const = 0;
+     ) = 0;
 
   //! write the geometry of one time step
   virtual void WriteGeo() = 0;
@@ -253,6 +253,10 @@ protected:
     dserror("Functionality currently not implemented");
   }
 
+  enum Phase {INIT, POINTS, CELLS, FINAL};
+
+  Phase currentPhase_;
+
   //! Output stream for current time step
   std::ofstream currentout_;
 
@@ -261,6 +265,10 @@ protected:
 
   //! Part of the filename w/ timestep w/out processor id
   std::string filenamebase_;
+
+  unsigned int ntdigits_;
+
+  unsigned int npdigits_;
 
   //! Time value for the current time step
   double time_;

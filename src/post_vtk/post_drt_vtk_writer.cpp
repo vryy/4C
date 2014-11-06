@@ -17,11 +17,17 @@ Maintainer: Martin Kronbichler
 
 #include "post_drt_vtk_writer.H"
 
+#include <iomanip>
 #include <boost/filesystem.hpp>
 
 #include "../post_drt_common/post_drt_common.H"
 #include "../pss_full/pss_cpp.h"
 #include "../drt_lib/drt_discret.H"
+
+
+// deactivate for ascii output. Only do this for debugging.
+//#define BIN_VTK_OUT
+
 
 namespace LIBB64
 {
@@ -206,6 +212,7 @@ VtkWriter::VtkWriter(PostField* field,
                      const std::string &filename)
 :
     PostWriterBase(field, filename),
+    currentPhase_(INIT),
     time_ (std::numeric_limits<double>::min()),
     timestep_ (0),
     cycle_ (std::numeric_limits<int>::max())
@@ -274,7 +281,23 @@ VtkWriter::WriteVtkFooter()
   if (!currentout_)
     dserror("Invalid output stream");
 
-  currentout_ << "  </PointData>\n";
+  // end the scalar fields
+  if (currentPhase_ == POINTS) {
+    currentout_ << "  </PointData>\n";
+    if (myrank_ == 0) {
+      currentmasterout_ << "    </PPointData>\n";
+    }
+    currentPhase_ = FINAL;
+  } else if (currentPhase_ == CELLS) {
+    currentout_ << "  </CellData>\n";
+    if (myrank_ == 0) {
+      currentmasterout_ << "    </PCellData>\n";
+    }
+    currentPhase_ = FINAL;
+  } else {
+    dserror("No data was written or writer was already in final phase.");
+  }
+
   currentout_ << "</Piece>\n";
 
   currentout_ << "</" << this->WriterString() << ">\n";
@@ -291,7 +314,6 @@ VtkWriter::WriteVtkFooter()
     if (numproc_ != ppiecetags.size())
       dserror("Incorrect number of Pieces.");
 
-    currentmasterout_ << "    </PPointData>\n";
     for (pptags_type::const_iterator it = ppiecetags.begin(); it != ppiecetags.end(); ++it)
       currentmasterout_ << "    " << *it << "\n";
     currentmasterout_ << "  </P" << this->WriterString() << ">\n";
@@ -364,9 +386,15 @@ VtkWriter::WriteSolutionVector (const std::vector<double> &solution,
   file << "    <DataArray type=\"Float64\" Name=\"" << name << "\"";
   if (ncomponents > 1)
     file << " NumberOfComponents=\"" << ncomponents << "\"";
+#ifdef BIN_VTK_OUT
   file << " format=\"binary\">\n";
-
   LIBB64::writeCompressedBlock(solution, file);
+#else
+  file << " format=\"ascii\">\n";
+  for (std::vector<double>::const_iterator it = solution.begin(); it != solution.end(); ++it)
+    file << std::setprecision(15) << std::scientific << *it << " ";
+  file << std::resetiosflags(std::ios::scientific);
+#endif
 
   file << "    </DataArray>\n";
 
@@ -459,23 +487,32 @@ VtkWriter::WriteFiles(PostFilterBase &filter)
 
   // timesteps when the solution is written
   const std::vector<double> soltime = result.get_result_times(field_->name());
-  unsigned int ntdigits = LIBB64::ndigits(soltime.size());
-  unsigned int npdigits = LIBB64::ndigits(field_->discretization()->Comm().NumProc());
+  ntdigits_ = LIBB64::ndigits(soltime.size());
+  npdigits_ = LIBB64::ndigits(field_->discretization()->Comm().NumProc());
   std::vector<std::pair<double, std::string> > filenames;
 
   const std::string dirname = filename_ + "-files";
   boost::filesystem::create_directories(dirname);
 
   for (timestep_=0; timestep_<(int)soltime.size(); ++timestep_) {
+
     this->WriterPrepTimestep();
 
-    filenamebase_ = field_->name() + "-" + LIBB64::int2string(timestep_,ntdigits);
+    {
+      std::ostringstream tmpstream;
+      tmpstream << field_->name() << "-" << std::setfill('0') << std::setw(ntdigits_) << timestep_;
+      filenamebase_ = tmpstream.str();
+    }
+
     time_ = soltime[timestep_];
     filenames.push_back(std::pair<double,std::string>(time_, filenamebase_+this->WriterPSuffix()));
 
-    currentout_.close();
-    currentout_.open((dirname + "/" + filenamebase_ + "-" +
-        LIBB64::int2string(myrank_,npdigits) + this->WriterSuffix()).c_str());
+    {
+      std::ostringstream tmpstream;
+      tmpstream << dirname << "/" << filenamebase_ << "-" << std::setfill('0') << std::setw(npdigits_) << myrank_ << this->WriterSuffix();
+      currentout_.close();
+      currentout_.open(tmpstream.str().c_str());
+    }
 
     if (myrank_ == 0) {
       currentmasterout_.close();

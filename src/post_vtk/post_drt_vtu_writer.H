@@ -84,7 +84,7 @@ protected:
       const int                                                     numdf,
       const int                                                     from,
       const bool                                                    fillzeros
-      ) const;
+      );
 
   //! Write a single result step
   virtual void WriteNodalResultStep(
@@ -94,7 +94,7 @@ protected:
       const std::string&                                            groupname,
       const std::string&                                            name,
       const int                                                     numdf
-      ) const;
+      );
 
   //! Write a single result step
   virtual void WriteElementResultStep(
@@ -105,7 +105,7 @@ protected:
      const std::string&                                            name,
      const int                                                     numdf,
      const int                                                     from
-     ) const;
+     );
 
   //! write the geometry of one time step
   virtual void WriteGeo();
