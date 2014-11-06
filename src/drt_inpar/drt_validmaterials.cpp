@@ -1256,6 +1256,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"K","linear constant");
     AddNamedReal(m,"D1","exponential constant for fiber invariant");
     AddNamedReal(m,"D2","exponential constant for system");
+    AddNamedReal(m,"ACTIVETHRES","Deformation threshold for activating fibers. Default:"
+        " 1.0 (off at compression); If 0.0 (always active)",1.0,true);
     AddNamedReal(m,"GAMMA","angle",0.0,true);
     AddNamedInt(m,"INIT","initialization modus for fiber alignment", 1, true);
     AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);

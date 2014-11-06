@@ -31,6 +31,7 @@ MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(
   k_(matdata->GetDouble("K")),
   d1_(matdata->GetDouble("D1")),
   d2_(matdata->GetDouble("D2")),
+  activethres_(matdata->GetDouble("ACTIVETHRES")),
   gamma_(matdata->GetDouble("GAMMA")),
   init_(matdata->GetInt("INIT")),
   adapt_angle_(matdata->GetInt("ADAPT_ANGLE"))
@@ -131,6 +132,7 @@ void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(
   double k=params_->k_;
   double d1=params_->d1_;
   double d2=params_->d2_;
+  double activethres=params_->activethres_;
 
   if (d2<=1.0)
   {
@@ -149,14 +151,14 @@ void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(
   // Compute stress and material update
   // Beware that the fiber will be turned off in case of compression
   double gamma = 0.0;
-  if (I4 > 1.0)
+  if (I4 > activethres )
   {
     gamma = 2.0 * k * d2 * d1 * pow_I4_d1m1 * pow( pow_I4_d1 - 1.0 , d2 - 1.0);
   }
   stress.Update(gamma, A_, 1.0);
 
   double delta = 0.0;
-  if (I4 > 1.0)
+  if (I4 >  activethres)
   {
     delta = 4.0 * k * d2 * (d2-1) * d1*pow_I4_d1m1*d1*pow_I4_d1m1 *pow( pow_I4_d1 - 1.0 ,d2-2.0) +
             4.0 * k * d2 * d1 * (d1-1.0) * pow_I4_d1m2 * pow( pow_I4_d1 - 1.0,d2-1.0);

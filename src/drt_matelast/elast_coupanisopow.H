@@ -54,6 +54,8 @@ namespace ELASTIC
       double d1_;
       /// exponential factor for ((I4)^{d1}-1)
       double d2_;
+      /// Deformation threshold where fibers are active.
+      double activethres_;
       /// angle between circumferential and fiber direction (used for cir, axi, rad nomenclature)
       double gamma_;
       /// fiber initalization status
