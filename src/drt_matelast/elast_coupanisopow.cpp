@@ -144,25 +144,34 @@ void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(
   I4 =  A_(0)*rcg(0) + A_(1)*rcg(1) + A_(2)*rcg(2)
       + A_(3)*rcg(3) + A_(4)*rcg(4) + A_(5)*rcg(5);
 
-
+  double lambda4     = pow(I4,0.5);
   double pow_I4_d1   = pow(I4,d1);
   double pow_I4_d1m1 = pow(I4,d1-1.0);
   double pow_I4_d1m2 = pow(I4,d1-2.0);
   // Compute stress and material update
-  // Beware that the fiber will be turned off in case of compression
+  // Beware that the fiber will be turned off in case of compression under activethres.
+  // Hence, some compression (i.e. activethres<1.0) could be allow since the fibers are embedded in the matrix
+  // and at usually at the microscale not fibers are allowed in the same given direction by FIBER1
   double gamma = 0.0;
-  if (I4 > activethres )
+  double delta = 0.0;
+  if (lambda4 > activethres)
   {
-    gamma = 2.0 * k * d2 * d1 * pow_I4_d1m1 * pow( pow_I4_d1 - 1.0 , d2 - 1.0);
+    // Coefficient for residual
+    if (pow_I4_d1>1.0)
+    {
+      gamma = 2.0 * k * d2 * d1 * pow_I4_d1m1 * pow(  pow_I4_d1 - 1.0, d2 - 1.0);
+      // Coefficient for matrix
+      delta = 4.0 * k * d2 * (d2-1) * d1*pow_I4_d1m1*d1*pow_I4_d1m1 *pow( pow_I4_d1 - 1.0 ,d2-2.0) +
+            4.0 * k * d2 * d1 * (d1-1.0) * pow_I4_d1m2 * pow(  pow_I4_d1 - 1.0,d2-1.0);
+    }else
+    {
+      gamma = -2.0 * k * d2 * d1 * pow_I4_d1m1 * pow(  1.0 - pow_I4_d1, d2 - 1.0); // Note minus sign at the beginning
+      // Coefficient for matrix
+      delta = 4.0 * k * d2 * (d2-1) * d1*pow_I4_d1m1*d1*pow_I4_d1m1 *pow( 1.0 - pow_I4_d1 ,d2-2.0) - // Note minus sign
+            4.0 * k * d2 * d1 * (d1-1.0) * pow_I4_d1m2 * pow(  1.0 - pow_I4_d1 ,d2-1.0);
+    }
   }
   stress.Update(gamma, A_, 1.0);
-
-  double delta = 0.0;
-  if (I4 >  activethres)
-  {
-    delta = 4.0 * k * d2 * (d2-1) * d1*pow_I4_d1m1*d1*pow_I4_d1m1 *pow( pow_I4_d1 - 1.0 ,d2-2.0) +
-            4.0 * k * d2 * d1 * (d1-1.0) * pow_I4_d1m2 * pow( pow_I4_d1 - 1.0,d2-1.0);
-  }
   cmat.MultiplyNT(delta, A_, A_, 1.0);
 
 }
