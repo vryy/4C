@@ -818,13 +818,6 @@ void HomIsoTurbForcing::CalculateForcing(const int step)
       }
     }
 
-
-//    for (std::size_t rr = 0; rr < energyspectrum_np_->size(); rr++)
-//    {
-//      std::cout << std::setprecision(12) << (*energyspectrum_np_)[rr] << std::endl;
-//    }
-//    dserror("ENDE");
-
     //--------------------------------------------------------
     // forcing factor from energy spectrum
     //--------------------------------------------------------
