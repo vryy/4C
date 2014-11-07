@@ -145,6 +145,7 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     Teuchos::RCP<Epetra_Vector>        fs_;          // slave side effective forces (needed for LM)
     Teuchos::RCP<LINALG::SparseMatrix> invd_;        // inverse of Mortar matrix D (needed for LM)
     Teuchos::RCP<LINALG::SparseMatrix> ksn_;         // stiffness block K_sn (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> ksm_;         // stiffness block K_sm (needed for LM)
     Teuchos::RCP<LINALG::SparseMatrix> kss_;         // stiffness block K_ss (needed for LM)
 
 }; // class MtLagrangeStrategy

@@ -486,6 +486,7 @@ ksm,    ksn, kms, kmm, kmn, kns, knm, knn;
     // store some stuff for static condensation of LM
     fs_ = fs;
     ksn_ = ksn;
+    ksm_ = ksm;
     kss_ = kss;
 
     //***************************************************************************
@@ -526,18 +527,21 @@ ksm,    ksn, kms, kmm, kmn, kns, knm, knn;
     kmnmod->Add(*kmnadd, false, 1.0, 1.0);
     kmnmod->Complete(kmn->DomainMap(), kmn->RowMap());
 
-    // kmm: add T(mbar)*ksm + T(mbar)*kss*mbar
+    // kmm: add T(mbar)*ksm + kms*mbar + T(mbar)*kss*mbar
     Teuchos::RCP<LINALG::SparseMatrix> kmmmod = Teuchos::rcp(
         new LINALG::SparseMatrix(*gmdofrowmap_, 100));
     kmmmod->Add(*kmm, false, 1.0, 1.0);
     Teuchos::RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhatmatrix_,
         true, *ksm, false, false, false, true);
     kmmmod->Add(*kmmadd, false, 1.0, 1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kmstemp = LINALG::MLMultiply(*mhatmatrix_,
-        true, *kss, false, false, false, true);
-    Teuchos::RCP<LINALG::SparseMatrix> kmmadd2 = LINALG::MLMultiply(*kmstemp,
+    Teuchos::RCP<LINALG::SparseMatrix> kmmadd2 = LINALG::MLMultiply(*kms,
         false, *mhatmatrix_, false, false, false, true);
     kmmmod->Add(*kmmadd2, false, 1.0, 1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> kmmtemp = LINALG::MLMultiply(*kss,
+        false, *mhatmatrix_, false, false, false, true);
+    Teuchos::RCP<LINALG::SparseMatrix> kmmadd3 = LINALG::MLMultiply(*mhatmatrix_,
+        true, *kmmtemp, false, false, false, true);
+    kmmmod->Add(*kmmadd3, false, 1.0, 1.0);
     kmmmod->Complete(kmm->DomainMap(), kmm->RowMap());
 
     // fn: subtract kns*inv(D)*g
@@ -905,6 +909,8 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     Teuchos::RCP<Epetra_Vector> mod = Teuchos::rcp(
         new Epetra_Vector(*gsdofrowmap_));
     kss_->Multiply(false, *disis, *mod);
+    z_->Update(-1.0, *mod, 1.0);
+    ksm_->Multiply(false, *disim, *mod);
     z_->Update(-1.0, *mod, 1.0);
     ksn_->Multiply(false, *disin, *mod);
     z_->Update(-1.0, *mod, 1.0);
