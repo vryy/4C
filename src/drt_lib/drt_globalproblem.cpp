@@ -1414,7 +1414,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
+      nodereader.AddParticleReader(particledis, reader, "PARTICLE");
       break;
     }
 
@@ -1467,7 +1467,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("particle", particledis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
+    nodereader.AddParticleReader(particledis, reader, "PARTICLE");
     break;
   }
 
@@ -1709,9 +1709,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
         DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
-    // there are no elements available for particle simulations
-    // section with --DUMMY ELEMENTS in dat file must not be filled
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
+    nodereader.AddParticleReader(particledis, reader, "PARTICLE");
 
     break;
   }
@@ -1728,10 +1726,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("fluid", fluiddis);
     AddDis("particle", particledis);
 
-    // section with --DUMMY ELEMENTS in dat file must not be filled
     nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
         DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(),"GEOMETRY"), 0);
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
+    nodereader.AddParticleReader(particledis, reader, "PARTICLE");
 
     break;
   }
@@ -1749,7 +1746,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("particle", particledis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
+    nodereader.AddParticleReader(particledis, reader, "PARTICLE");
     break;
   }
   case prb_np_support:

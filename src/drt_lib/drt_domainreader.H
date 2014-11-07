@@ -77,7 +77,7 @@ public:
     Create empty discretization and append it to given field.
 
     \param dis (i) the new discretization
-    \param comm (i) our communicator
+    \param reader (i) the dat file reader
     \param sectionname (i) the section that contains the element lines
    */
   DomainReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader, std::string sectionname);
@@ -87,7 +87,7 @@ public:
     Create empty discretization and append it to given field.
 
     \param dis (i) the new discretization
-    \param comm (i) our communicator
+    \param reader (i) the dat file reader
     \param sectionname (i) the section that contains the element lines
     \param elementtype (i) element type name to read in this discretization
    */
@@ -98,7 +98,7 @@ public:
     Create empty discretization and append it to given field.
 
     \param dis (i) the new discretization
-    \param comm (i) our communicator
+    \param reader (i) the dat file reader
     \param sectionname (i) the section that contains the element lines
     \param elementtypes (i) element type names to read in this discretization
    */
@@ -177,6 +177,38 @@ protected:
 
   /// further arguments to the elements to be created
   std::string elearguments_;
+};
+
+
+/*----------------------------------------------------------------------*/
+/*!
+Particle discretizations do not need elements. Hence, the functionality
+of the domain reader must be specified for particles separately
+
+\author ghamm
+\date 11/14
+*/
+/*----------------------------------------------------------------------*/
+class ParticleDomainReader : public DomainReader
+{
+public:
+  /// construct particle reader for a given field
+  /*!
+    Create empty discretization and append it to given field.
+
+    \param dis (i) the new discretization
+    \param reader (i) the dat file reader
+   */
+  ParticleDomainReader(Teuchos::RCP<Discretization> dis, const DatFileReader& reader, std::string sectionname);
+
+  //! Destructor
+  virtual ~ParticleDomainReader(){ ; }
+
+protected:
+
+  /// partition particles
+  virtual void Partition(int* nodeoffset);
+
 };
 
 }

@@ -25,6 +25,8 @@ NodeReader::NodeReader(const DRT::INPUT::DatFileReader& reader, std::string sect
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void NodeReader::AddAdvancedReader(Teuchos::RCP<Discretization> dis,
     const DRT::INPUT::DatFileReader& reader,
     const std::string&               sectionname,
@@ -55,11 +57,14 @@ void NodeReader::AddAdvancedReader(Teuchos::RCP<Discretization> dis,
   }
   default:
     dserror("Unknown geometry source");
+    break;
   }
   return;
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void NodeReader::AddAdvancedReader(Teuchos::RCP<Discretization> dis,
     const DRT::INPUT::DatFileReader& reader,
     const std::string&               sectionname,
@@ -68,6 +73,24 @@ void NodeReader::AddAdvancedReader(Teuchos::RCP<Discretization> dis,
 {
   std::set<std::string> dummy;
   AddAdvancedReader(dis, reader, sectionname, dummy, geometrysource, geofilepath);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void NodeReader::AddParticleReader(Teuchos::RCP<Discretization> dis,
+    const DRT::INPUT::DatFileReader& reader,
+    const std::string&               sectionname)
+{
+  // add particle specific element reader
+  Teuchos::RCP<ElementReader> er = Teuchos::rcp(new DRT::INPUT::ParticleReader(dis, reader));
+  ereader_.push_back(er);
+  // add particle specific domain reader
+  std::string fullsectionname("--"+sectionname+" DOMAIN");
+  Teuchos::RCP<DomainReader> dr = Teuchos::rcp(new DRT::INPUT::ParticleDomainReader(dis, reader, fullsectionname));
+  dreader_.push_back(dr);
+
   return;
 }
 

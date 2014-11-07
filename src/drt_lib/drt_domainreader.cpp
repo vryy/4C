@@ -22,6 +22,7 @@ Maintainer: Karl-Robert Wichmann
 #include "drt_utils_parallel.H"
 #include "drt_discret.H"
 #include "drt_parobject.H"
+#include "../drt_particle/particle_node.H"
 #include "../drt_io/io_pstream.H"
 
 #include <Epetra_Time.h>
@@ -44,8 +45,17 @@ DomainReader::DomainReader(Teuchos::RCP<Discretization> dis,
     reader_(reader),
     comm_(reader.Comm()),
     sectionname_(sectionname),
-    dis_(dis)
+    dis_(dis),
+    elementtype_(""),
+    distype_(""),
+    elearguments_("")
 {
+  for(size_t i = 0; i<sizeof(lower_bound_)/sizeof(lower_bound_[0]); ++i)
+  {
+    lower_bound_[i] = 0.0;
+    upper_bound_[i] = 0.0;
+    interval_[i] = 0;
+  }
 }
 
 
@@ -59,9 +69,18 @@ DomainReader::DomainReader(Teuchos::RCP<Discretization> dis,
     reader_(reader),
     comm_(reader.Comm()),
     sectionname_(sectionname),
-    dis_(dis)
+    dis_(dis),
+    elementtype_(""),
+    distype_(""),
+    elearguments_("")
 {
   elementtypes_.insert(elementtype);
+  for(size_t i = 0; i<sizeof(lower_bound_)/sizeof(lower_bound_[0]); ++i)
+  {
+    lower_bound_[i] = 0.0;
+    upper_bound_[i] = 0.0;
+    interval_[i] = 0;
+  }
 }
 
 
@@ -75,10 +94,19 @@ DomainReader::DomainReader(Teuchos::RCP<Discretization> dis,
     reader_(reader),
     comm_(reader.Comm()),
     sectionname_(sectionname),
-    dis_(dis)
+    dis_(dis),
+    elementtype_(""),
+    distype_(""),
+    elearguments_("")
 {
   std::copy(elementtypes.begin(),elementtypes.end(),
             std::inserter(elementtypes_,elementtypes_.begin()));
+  for(size_t i = 0; i<sizeof(lower_bound_)/sizeof(lower_bound_[0]); ++i)
+  {
+    lower_bound_[i] = 0.0;
+    upper_bound_[i] = 0.0;
+    interval_[i] = 0;
+  }
 }
 
 
@@ -157,6 +185,10 @@ void DomainReader::Partition(int* nodeoffset)
             dserror("Unknown Key in DOMAIN section");
         }
       }
+    }
+    else
+    {
+      dserror("No DOMAIN specified but box geometry selected!");
     }
   }
 
@@ -426,6 +458,141 @@ void DomainReader::Complete()
     IO::cout << time.ElapsedTime() << " secs" << IO::endl;
 
   DRT::UTILS::PrintParallelDistribution(*dis_);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+ParticleDomainReader::ParticleDomainReader(Teuchos::RCP<Discretization> dis,
+                               const DRT::INPUT::DatFileReader& reader,
+                               std::string sectionname)
+  : DomainReader(dis, reader, sectionname)
+{}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ParticleDomainReader::Partition(int* nodeoffset)
+{
+  const int myrank  = comm_->MyPID();
+  const int numproc = comm_->NumProc();
+
+  Epetra_Time time(*comm_);
+
+  std::string inputfile_name = reader_.MyInputfileName();
+
+  bool haveparticledomain = true;
+  // all reading is done on proc 0
+  if (myrank==0)
+  {
+    if (!reader_.MyOutputFlag())
+      IO::cout << "Entering domain generation mode for " << name_
+          << " discretization ...\nCreate and partition elements      in...."
+          << IO::endl;
+
+    // open input file at the right position
+    std::ifstream file(inputfile_name.c_str());
+    std::ifstream::pos_type pos = reader_.ExcludedSectionPosition(sectionname_);
+    if (pos!=std::ifstream::pos_type(-1))
+    {
+      file.seekg(pos);
+
+      // read domain info
+      std::string line;
+      for (int i=0; getline(file, line); ++i)
+      {
+        if (line.find("--")==0)
+        {
+          break;
+        }
+        else
+        {
+          std::istringstream t;
+          t.str(line);
+          std::string key;
+          t >> key;
+          if (key == "LOWER_BOUND")
+            t >> lower_bound_[0] >> lower_bound_[1] >> lower_bound_[2];
+          else if (key == "UPPER_BOUND")
+            t >> upper_bound_[0] >> upper_bound_[1] >> upper_bound_[2];
+          else if (key == "INTERVALS")
+            t >> interval_[0] >> interval_[1] >> interval_[2];
+          else
+            dserror("Unknown Key in DOMAIN section");
+        }
+      }
+    }
+    else
+    {
+      haveparticledomain = false;
+    }
+  }
+
+  // check whether a particle domain is specified
+  comm_->Broadcast(reinterpret_cast<int*>(&haveparticledomain), 1, 0);
+  if(haveparticledomain == false)
+    return;
+
+  // broadcast
+  if (numproc > 1)
+  {
+    comm_->Broadcast(lower_bound_, sizeof(lower_bound_)/sizeof(lower_bound_[0]), 0);
+    comm_->Broadcast(upper_bound_, sizeof(upper_bound_)/sizeof(upper_bound_[0]), 0);
+    comm_->Broadcast(   interval_,       sizeof(interval_)/sizeof(interval_[0]), 0);
+  }
+
+  // safety checks
+  for (int i=0; i<3; ++i)
+  {
+    if (lower_bound_[i] >= upper_bound_[i])
+      dserror("lower bound in domain reader must be smaller than upper bound");
+
+    if (interval_[i] <= 0)
+      dserror("intervals in domain reader must be greater than zero");
+  }
+
+  // split node ids
+  int numnewnodes = interval_[0]*interval_[1]*interval_[2];
+  rownodes_ = Teuchos::rcp(new Epetra_Map(numnewnodes,*nodeoffset,*comm_));
+
+  // number of nodes per direction
+  const size_t nx = interval_[0];
+  const size_t ny = interval_[1];
+  int maxgid = -1;
+
+  // as we are using a distributed row node map, the nodes are directly created on the
+  // correct processors
+  for (int lid = 0; lid < rownodes_->NumMyElements(); ++lid)
+  {
+    const int gid = rownodes_->GID(lid);
+    maxgid = std::max(gid, maxgid);
+
+    const int posid = gid - *nodeoffset;
+    dsassert(posid >= 0, "Tried to access a node gid that was not on this proc");
+    size_t i = posid%nx;
+    size_t j = (posid/nx)%ny;
+    size_t k = posid/(nx*ny);
+
+    double coords[3];
+    coords[0] = static_cast<double>(i)/(interval_[0]-1)*(upper_bound_[0]-lower_bound_[0])+lower_bound_[0];
+    coords[1] = static_cast<double>(j)/(interval_[1]-1)*(upper_bound_[1]-lower_bound_[1])+lower_bound_[1];
+    coords[2] = static_cast<double>(k)/(interval_[2]-1)*(upper_bound_[2]-lower_bound_[2])+lower_bound_[2];
+
+    Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(gid,coords,myrank));
+
+    // create particle and add to discretization
+    Teuchos::RCP<DRT::Node> particle = Teuchos::rcp(new PARTICLE::ParticleNode(gid,coords,myrank));
+    dis_->AddNode(particle);
+  }
+
+  comm_->MaxAll(&maxgid, nodeoffset, 1);
+
+  if (!myrank && reader_.MyOutputFlag() == 0)
+    IO::cout << "............................................... "
+        << std::setw(10) << std::setprecision(5) << std::scientific
+        << time.ElapsedTime() << " secs" << IO::endl;
+
+  return;
 }
 
 }

@@ -960,6 +960,7 @@ void DatFileReader::ReadDat()
   exclude.push_back("--THERMO DOMAIN");
   exclude.push_back("--ACOUSTIC ELEMENTS");
   exclude.push_back("--ACOUSTIC DOMAIN");
+  exclude.push_back("--PARTICLE DOMAIN");
 
   Teuchos::RCP<Epetra_Comm> comm = comm_;
 

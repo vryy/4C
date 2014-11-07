@@ -41,7 +41,7 @@ public:
   /*!
    * \brief Adds the selected element/domain/file reader to this nodereader
    *
-   * \param dir            [in] This discretization will be passed on
+   * \param dis            [in] This discretization will be passed on
    * \param reader         [in] This reader will be passed on
    * \param sectionname    [in] This will be passed on element/domain readers only (not used for file reader)
    * \param elementtypes   [in] This set of types will be passed on
@@ -61,7 +61,7 @@ public:
    * This is a version without specific elementtypes. It just calls the full
    * version with a dummy set.
    *
-   * \param dir            [in] This discretization will be passed on
+   * \param dis            [in] This discretization will be passed on
    * \param reader         [in] This reader will be passed on
    * \param sectionname    [in] This will be passed on element/domain readers only (not used for file reader)
    * \param geometrysource [in] selects which reader will be created
@@ -72,6 +72,20 @@ public:
       const std::string&               sectionname,
       const INPAR::GeometryType        geometrysource,
       const std::string*               geofilepath);
+
+  /*!
+   * \brief Adds a particle reader to this nodereader
+   *
+   * This is a version specific for particles
+   *
+   * \param dis            [in] This discretization will be passed on
+   * \param reader         [in] This reader will be passed on
+   * \param sectionname    [in] This will be passed on element/domain readers only (not used for file reader)
+   */
+  void AddParticleReader(Teuchos::RCP<Discretization> dis,
+      const DRT::INPUT::DatFileReader& reader,
+      const std::string&               sectionname
+      );
 
   /// do the actual reading
   /*!
