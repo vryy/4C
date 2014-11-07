@@ -50,7 +50,7 @@ namespace DRT
 \brief A class to manage a discretization in parallel
 
 A discretization describes a discretized physical domain including any
-boundary conditions. This is a huge concept that includes four different partsmy
+boundary conditions. This is a huge concept that includes four different parts:
 
 - a mesh consisting of elements and nodes
 - a number of sets of degrees of freedom (dofsets)
@@ -73,7 +73,7 @@ oftentimes called gid. Global ids are arbitrary numbers. Apart from the fact
 that these numbers are unique there comes no guarantee whatsoever with these
 numbers. You must never use the numerical value of a gid.
 
-In addition to the gids there are local id, called lids. These are always
+In addition to the gids there are local ids, called lids. These are always
 consecutive numbers starting from 0. Local ids just count local items. See
 Epetra_Map for details.
 
@@ -647,7 +647,7 @@ public:
   Will not return any ghosted element.
   This is an individual call and Filled()=true is a prerequisite
 
-  \return Adress of element if element is owned by calling proc
+  \return Address of element if element is owned by calling proc
   */
   virtual inline DRT::Element* lRowElement(int lid) const
   {
@@ -664,7 +664,7 @@ public:
   Will also return any ghosted element.
   This is an individual call and Filled()=true is a prerequisite
 
-  \return Adress of element if element is stored by calling proc
+  \return Address of element if element is stored by calling proc
   */
   virtual inline DRT::Element* lColElement(int lid) const
   {
@@ -688,7 +688,7 @@ public:
   Will return row or column node, ghosted or  not.
   This is an individual call
 
-  \return Adress of node if node is stored on calling proc
+  \return Address of node if node is stored on calling proc
   */
   virtual DRT::Node* gNode(int gid) const;
 
@@ -699,7 +699,7 @@ public:
   Will not return any ghosted node.
   This is an individual call and Filled()=true is a prerequisite
 
-  \return Adress of node if node is owned and stored by calling proc
+  \return Address of node if node is owned and stored by calling proc
   */
   virtual inline DRT::Node* lRowNode(int lid) const
   {
@@ -717,7 +717,7 @@ public:
   Will return any node stored on this proc.
   This is an individual call and Filled()=true is a prerequisite
 
-  \return Adress of node if node is stored by calling proc
+  \return Address of node if node is stored by calling proc
   */
   virtual inline DRT::Node* lColNode(int lid) const
   {
@@ -1647,7 +1647,7 @@ public:
   This method considers all conditions in condition_ with the names
   matching the user-provided string condstring.
   It takes a current time from the parameter list params named "total time"
-  and evaluates the appropiate time curves at that time for each
+  and evaluates the appropriate time curves at that time for each
   condition separately. If "total time" is not included
   in the parameters, no time curves are used.
 

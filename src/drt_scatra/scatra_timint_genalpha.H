@@ -141,6 +141,9 @@ protected:
   /// add parameters specific for time-integration scheme
   void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
 
+  //! add interface state vector specific for time-integration scheme
+  void AddTimeIntegrationSpecificInterfaceVector();
+
   /// write additional data required for restart
   void OutputRestart();
 
@@ -171,7 +174,6 @@ protected:
   double alphaF_;
   double gamma_;
   double genalphafac_;
-
 }; // class TimIntGenAlpha
 
 } // namespace SCATRA

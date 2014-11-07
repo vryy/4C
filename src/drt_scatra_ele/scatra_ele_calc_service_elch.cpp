@@ -673,6 +673,212 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
 } //ScaTraImpl<distype>::CalculateElectricPotentialField
 
 
+/*----------------------------------------------------------------------------------------*
+ | finite difference check on element level (for debugging only) (protected)   fang 10/14 |
+ *----------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(
+  DRT::Element*                              ele,
+  Epetra_SerialDenseMatrix&                  emat,
+  Epetra_SerialDenseVector&                  erhs,
+  Epetra_SerialDenseVector&                  subgrdiff
+  )
+{
+  // screen output
+  std::cout << "FINITE DIFFERENCE CHECK FOR ELEMENT " << ele->Id();
+
+  // make a copy of state variables to undo perturbations later
+  std::vector<LINALG::Matrix<my::nen_,1> > ephinp_original(my::numscal_);
+  for(int k=0; k<my::numscal_; ++k)
+    for(int i=0; i<my::nen_; ++i)
+      ephinp_original[k](i,0) = my::ephinp_[k](i,0);
+  LINALG::Matrix<my::nen_,1> epotnp_original(true);
+  for(int i=0; i<my::nen_; ++i)
+    epotnp_original(i) = epotnp_(i);
+
+  // generalized-alpha time integration requires a copy of history variables as well
+  std::vector<LINALG::Matrix<my::nen_,1> > ehist_original(my::numscal_);
+  if(my::scatraparatimint_->IsGenAlpha())
+  {
+    for(int k=0; k<my::numscal_; ++k)
+      for(int i=0; i<my::nen_; ++i)
+        ehist_original[k](i,0)  = my::ehist_[k](i,0);
+  }
+
+  // initialize element matrix and vectors for perturbed state
+  Epetra_SerialDenseMatrix emat_dummy(emat);
+  Epetra_SerialDenseVector erhs_perturbed(erhs);
+  Epetra_SerialDenseVector subgrdiff_dummy(subgrdiff);
+
+  // initialize counter for failed finite difference checks
+  unsigned counter(0);
+
+  // initialize tracking variable for maximum absolute and relative errors
+  double maxabserr(0.);
+  double maxrelerr(0.);
+
+  // loop over columns of element matrix by first looping over nodes and then over dofs at each node
+  for(int inode=0; inode<my::nen_; ++inode)
+  {
+    for(int idof=0; idof<my::numdofpernode_; ++idof)
+    {
+      // number of current column of element matrix
+      unsigned col = inode*my::numdofpernode_+idof;
+
+      // clear element matrix and vectors for perturbed state
+      emat_dummy.Scale(0.0);
+      erhs_perturbed.Scale(0.0);
+      subgrdiff_dummy.Scale(0.0);
+
+      // fill state vectors with original state variables
+      for(int k=0; k<my::numscal_; ++k)
+        for(int i=0; i<my::nen_; ++i)
+          my::ephinp_[k](i,0) = ephinp_original[k](i,0);
+      for(int i=0; i<my::nen_; ++i)
+        epotnp_(i) = epotnp_original(i);
+      if(my::scatraparatimint_->IsGenAlpha())
+        for(int k=0; k<my::numscal_; ++k)
+          for(int i=0; i<my::nen_; ++i)
+            my::ehist_[k](i,0)  = ehist_original[k](i,0);
+
+      // impose perturbation
+      if(my::scatraparatimint_->IsGenAlpha())
+      {
+        // perturbation on concentration
+        if(idof < my::numscal_)
+        {
+          // perturbation of phi(n+alphaF), not of phi(n+1) => scale epsilon by factor alphaF
+          my::ephinp_[idof](inode,0) += my::scatraparatimint_->AlphaF() * my::scatrapara_->FDCheckEps();
+
+          // perturbation of phi(n+alphaF) by alphaF*epsilon corresponds to perturbation of phidtam (stored in ehist_)
+          // by alphaM*epsilon/(gamma*dt); note: alphaF/timefac = alphaM/(gamma*dt)
+          my::ehist_[idof](inode,0) += my::scatraparatimint_->AlphaF() / my::scatraparatimint_->TimeFac() * my::scatrapara_->FDCheckEps();
+        }
+
+        // perturbation on electric potential
+        else
+          epotnp_(inode) += my::scatraparatimint_->AlphaF() * my::scatrapara_->FDCheckEps();
+      }
+      else
+      {
+        // perturbation on concentration
+        if(idof < my::numscal_)
+          my::ephinp_[idof](inode,0) += my::scatrapara_->FDCheckEps();
+        else
+          epotnp_(inode) += my::scatrapara_->FDCheckEps();
+      }
+
+      // calculate element right-hand side vector for perturbed state
+      Sysmat(ele,emat_dummy,erhs_perturbed,subgrdiff_dummy);
+
+      // Now we compare the difference between the current entries in the element matrix
+      // and their finite difference approximations according to
+      // entries ?= (-erhs_perturbed + erhs_original) / epsilon
+
+      // Note that the element right-hand side equals the negative element residual.
+      // To account for errors due to numerical cancellation, we additionally consider
+      // entries - erhs_original / epsilon ?= -erhs_perturbed / epsilon
+
+      // Note that we still need to evaluate the first comparison as well. For small entries in the element
+      // matrix, the second comparison might yield good agreement in spite of the entries being wrong!
+      for(int row=0; row<my::numdofpernode_*my::nen_; ++row)
+      {
+        // get current entry in original element matrix
+        const double entry = emat(row,col);
+
+        // finite difference suggestion (first divide by epsilon and then subtract for better conditioning)
+        const double fdval = -erhs_perturbed(row) / my::scatrapara_->FDCheckEps() + erhs(row) / my::scatrapara_->FDCheckEps();
+
+        // confirm accuracy of first comparison
+        if(abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
+          dserror("Finite difference check involves values too close to numerical zero!");
+
+        // absolute and relative errors in first comparison
+        const double abserr1 = entry - fdval;
+        if(abs(abserr1) > abs(maxabserr))
+          maxabserr = abserr1;
+        double relerr1(0.);
+        if(abs(entry) > 1.e-17)
+          relerr1 = abserr1 / abs(entry);
+        else if(abs(fdval) > 1.e-17)
+          relerr1 = abserr1 / abs(fdval);
+        if(abs(relerr1) > abs(maxrelerr))
+          maxrelerr = relerr1;
+
+        // evaluate first comparison
+        if(abs(relerr1) > my::scatrapara_->FDCheckTol())
+        {
+          if(!counter)
+            std::cout << " --> FAILED AS FOLLOWS:" << std::endl;
+          std::cout << "emat[" << row << "," << col << "]:  " << entry << "   ";
+          std::cout << "finite difference suggestion:  " << fdval << "   ";
+          std::cout << "absolute error:  " << abserr1 << "   ";
+          std::cout << "relative error:  " << relerr1 << std::endl;
+
+          counter++;
+        }
+
+        // first comparison OK
+        else
+        {
+          // left-hand side in second comparison
+          const double left  = entry - erhs(row) / my::scatrapara_->FDCheckEps();
+
+          // right-hand side in second comparison
+          const double right = -erhs_perturbed(row) / my::scatrapara_->FDCheckEps();
+
+          // confirm accuracy of second comparison
+          if(abs(right) > 1.e-17 and abs(right) < 1.e-15)
+            dserror("Finite difference check involves values too close to numerical zero!");
+
+          // absolute and relative errors in second comparison
+          const double abserr2 = left - right;
+          if(abs(abserr2) > abs(maxabserr))
+            maxabserr = abserr2;
+          double relerr2(0.);
+          if(abs(left) > 1.e-17)
+            relerr2 = abserr2 / abs(left);
+          else if(abs(right) > 1.e-17)
+            relerr2 = abserr2 / abs(right);
+          if(abs(relerr2) > abs(maxrelerr))
+            maxrelerr = relerr2;
+
+          // evaluate second comparison
+          if(abs(relerr2) > my::scatrapara_->FDCheckTol())
+          {
+            if(!counter)
+              std::cout << " --> FAILED AS FOLLOWS:" << std::endl;
+            std::cout << "emat[" << row << "," << col << "]-erhs[" << row << "]/eps:  " << left << "   ";
+            std::cout << "-erhs_perturbed[" << row << "]/eps:  " << right << "   ";
+            std::cout << "absolute error:  " << abserr2 << "   ";
+            std::cout << "relative error:  " << relerr2 << std::endl;
+
+            counter++;
+          }
+        }
+      }
+    }
+  }
+
+  // screen output in case finite difference check is passed
+  if(!counter)
+    std::cout << " --> PASSED WITH MAXIMUM ABSOLUTE ERROR " << maxabserr << " AND MAXIMUM RELATIVE ERROR " << maxrelerr << std::endl;
+
+  // undo perturbations of state variables
+  for(int k=0; k<my::numscal_; ++k)
+    for(int i=0; i<my::nen_; ++i)
+      my::ephinp_[k](i,0) = ephinp_original[k](i,0);
+  for(int i=0; i<my::nen_; ++i)
+    epotnp_(i) = epotnp_original(i);
+  if(my::scatraparatimint_->IsGenAlpha())
+    for(int k=0; k<my::numscal_; ++k)
+      for(int i=0; i<my::nen_; ++i)
+        my::ehist_[k](i,0)  = ehist_original[k](i,0);
+
+  return;
+}
+
+
 // template classes
 
 // 1D elements

@@ -204,8 +204,8 @@ namespace INPAR
       consistency_l2_projection_lumped
     };
 
-    /// type of method for improving consistency of stabilized methods
-    enum Kinetics
+    /// type of boundary kinetics
+    enum BoundaryKinetics
     {
       butler_volmer,
       butler_volmer_yang1997,
@@ -215,6 +215,12 @@ namespace INPAR
       butler_volmer_bard,
       nernst,
       zero
+    };
+
+    /// type of scatra-scatra interface kinetics
+    enum S2IKinetics
+    {
+      s2i_constperm
     };
 
     /// type of method for improving consistency of stabilized methods
@@ -229,8 +235,15 @@ namespace INPAR
       initpotcalc_no,
       initpotcalc_yes
     };
-  }  // namespace SCATRA
 
+    /// type of finite difference check
+    enum FDCheck
+    {
+      fdcheck_none,
+      fdcheck_local,
+      fdcheck_global
+    };
+  }  // namespace SCATRA
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/

@@ -51,7 +51,7 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
   if (action == SCATRA::set_general_scatra_parameter)
   {
     DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
-    scatrapara->SetElementGeneralScaTraParameter(p,dis.Comm().MyPID());
+    scatrapara->SetElementGeneralScaTraParameters(p,dis.Comm().MyPID());
   }
   else if (action == SCATRA::set_turbulence_scatra_parameter)
   {
@@ -86,7 +86,7 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
   {
     DRT::ELEMENTS::ScaTraEleParameterLsReinit* scatrapara = DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance();
     // set general parameters first
-    scatrapara->SetElementGeneralScaTraParameter(p,dis.Comm().MyPID());
+    scatrapara->SetElementGeneralScaTraParameters(p,dis.Comm().MyPID());
     // set additional problem-dependent parameters
     scatrapara->SetElementLsReinitScaTraParameter(p);
   }
@@ -94,7 +94,7 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
   {
     DRT::ELEMENTS::ScaTraEleParameterElch* scatrapara = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
     // set general parameters first
-    scatrapara->SetElementGeneralScaTraParameter(p,dis.Comm().MyPID());
+    scatrapara->SetElementGeneralScaTraParameters(p,dis.Comm().MyPID());
     // set additional problem-dependent parameters
     scatrapara->SetElementElchScaTraParameter(p,dis.Comm().MyPID());
 

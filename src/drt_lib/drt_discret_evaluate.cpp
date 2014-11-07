@@ -786,7 +786,7 @@ void DRT::Discretization::EvaluateCondition
         // to the condition geometry
         std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
 
-        // Evaluate Loadcurve if defined. Put current load factor in parameterlist
+        // Evaluate Loadcurve if defined. Put current load factor in parameter list
         const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
         int curvenum = -1;
         if (curve) curvenum = (*curve)[0];
@@ -794,7 +794,7 @@ void DRT::Discretization::EvaluateCondition
         if (curvenum>=0 && usetime)
           curvefac = Problem::Instance()->Curve(curvenum).f(time);
 
-        // Get ConditionID of current condition if defined and write value in parameterlist
+        // Get ConditionID of current condition if defined and write value in parameter list
         const std::vector<int>*    CondIDVec  = cond.Get<std::vector<int> >("ConditionID");
         if (CondIDVec)
         {
@@ -819,11 +819,11 @@ void DRT::Discretization::EvaluateCondition
           // of the dofs this condition is meant to assemble into.
           // These dofs do not need to be the same as the dofs of the element
           // (this is the standard case, though). Special boundary conditions,
-          // like weak dirichlet conditions, assemble into the dofs of the parent element.
+          // like weak Dirichlet conditions, assemble into the dofs of the parent element.
           curr->second->LocationVector(*this,la,false,condstring,params);
 
           // get dimension of element matrices and vectors
-          // Reshape element matrices and vectors and init to zero
+          // Reshape element matrices and vectors and initialize to zero
           strategy.ClearElementStorage( la[row].Size(), la[col].Size() );
 
           // call the element specific evaluate method
@@ -853,6 +853,7 @@ void DRT::Discretization::EvaluateCondition
       }
     }
   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+
   return;
 } // end of DRT::Discretization::EvaluateCondition
 

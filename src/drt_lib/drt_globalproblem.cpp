@@ -643,7 +643,7 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   // test for each condition definition (input file condition section)
   // - read all conditions that match the definition
   // - add the nodal clouds to the conditions
-  // - add the conditions to the appropiate discretizations
+  // - add the conditions to the appropriate discretizations
   //
   // Note that this will reset (un-FillComplete) the discretizations.
   for (unsigned c=0; c<condlist.size(); ++c)

@@ -8,11 +8,11 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Convection-Diffusion-Migration in 1D using a stabilized FEM
+created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
-//ELEMENTS                        10
-//NODES                           11
-DIM                             1
+ELEMENTS                        5
+NODES                           11
+//DIM                             1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
 RESTART                         0
@@ -27,12 +27,15 @@ NUMTHERMDIS                     0
 SCATRATYPE                      Elch
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
-TIMEINTEGR                      Stationary
+TIMEINTEGR                      Gen_Alpha
 UPRES                           1
-RESTARTEVRY                     1000
-NUMSTEP                         101                           // series of stationary solutions from Pe=0 up to Pe=200
-MAXTIME                         1000
-TIMESTEP                        1.0
+RESTARTEVRY                     7                   // test writing of restart data
+NUMSTEP                         10                  // series of stationary solutions from Pe=0 up to Pe=200
+MAXTIME                         1000.0
+TIMESTEP                        0.5
+ALPHA_F                         0.666666
+ALPHA_M                         0.833333
+GAMMA                           0.666666
 THETA                           0.66
 VELOCITYFIELD                   function_and_curve
 VELFUNCNO                       1
@@ -41,14 +44,17 @@ INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 FSSUGRDIFF                      No
 WRITEFLUX                       No
+FDCHECK                         global
+FDCHECKEPS                      1.e-8
+FDCHECKTOL                      1.e-4
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-STABTYPE                        SUPG
+STABTYPE                        SUPG //residual_based
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 CONSISTENCY                     no
 EVALUATION_MAT                  element_center
-EVALUATION_TAU                  element_center
+EVALUATION_TAU                  integration_point //element_center
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-ITEMAX                          150
+ITEMAX                          3                             // abort solution process -> be able to test influence of the matrix as well!
 CONVTOL                         1e-09
 ----------------------------------------------------------------ELCH CONTROL
 ELCHTYPE                        Nernst_Planck
@@ -84,16 +90,15 @@ FUNCT2 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 0.0 // el. potential
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE 1.00672772040393887e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 11 QUANTITY phi1 VALUE 1.0e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 10 QUANTITY phi2 VALUE 2.00882795252882662e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 11 QUANTITY phi2 VALUE 1.13253012048192758e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 10 QUANTITY phi3 VALUE 2.00420046424977594e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 11 QUANTITY phi3 VALUE 2.06506024096385588e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 10 QUANTITY phi4 VALUE 1.01954353874395931e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 11 QUANTITY phi4 VALUE 1.0e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 10 QUANTITY phi5 VALUE -1.95193467972860184e-02 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 11 QUANTITY phi5 VALUE -2.15585649068619628e-02 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE 1.0e-01 TOLERANCE 1e-10 // Dirichlet node at right corner
+SCATRA DIS scatra NODE 9 QUANTITY phi1 VALUE 9.16134993897404160e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 8 QUANTITY phi1 VALUE 8.22180478972785456e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 8 QUANTITY phi2 VALUE 1.81002851360154371e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 9 QUANTITY phi2 VALUE 1.90766795211058438e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 8 QUANTITY phi4 VALUE 7.42779740312726089e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 9 QUANTITY phi4 VALUE 8.64325144425127312e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 8 QUANTITY phi5 VALUE -5.21150522389382032e-04 TOLERANCE 1e-13
+SCATRA DIS scatra NODE 9 QUANTITY phi5 VALUE -4.41075801998320918e-04 TOLERANCE 1e-13
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          0
@@ -107,36 +112,31 @@ E 1 - NUMDOF 5 ONOFF 1 1 1 1 1 VAL 1.0 2.0 2.0 1.0 0.0 CURVE none none none none
 E 2 - NUMDOF 5 ONOFF 1 0 0 1 0 VAL 0.1 0.0 0.0 0.1 0.0 CURVE none none none none none FUNCT 0 0 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
-NODE 11 DNODE 2
+NODE 10 DNODE 2
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 ----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
-NODE 1 COORD 0.00000000e+00 0.00000000e+00 0.00000000e+00
-NODE 2 COORD 1.00000001e-01 0.00000000e+00 0.00000000e+00
-NODE 3 COORD 2.00000003e-01 0.00000000e+00 0.00000000e+00
-NODE 4 COORD 3.00000012e-01 0.00000000e+00 0.00000000e+00
-NODE 5 COORD 4.00000006e-01 0.00000000e+00 0.00000000e+00
-NODE 6 COORD 5.00000000e-01 0.00000000e+00 0.00000000e+00
-NODE 7 COORD 6.00000024e-01 0.00000000e+00 0.00000000e+00
-NODE 8 COORD 6.99999988e-01 0.00000000e+00 0.00000000e+00
-NODE 9 COORD 8.00000012e-01 0.00000000e+00 0.00000000e+00
-NODE 10 COORD 8.99999976e-01 0.00000000e+00 0.00000000e+00
-NODE 11 COORD 1.00000000e+00 0.00000000e+00 0.00000000e+00
+NODE 1 COORD 0.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 2 COORD 2.0000000000000001e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 3 COORD 1.0000000000000001e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 4 COORD 4.0000000000000002e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 5 COORD 3.0000000000000004e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 6 COORD 6.0000000000000009e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 7 COORD 5.0000000000000000e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 8 COORD 8.0000000000000004e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 9 COORD 7.0000000000000007e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 10 COORD 1.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 11 COORD 9.0000000000000002e-01 0.0000000000000000e+00 0.0000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
-1 TRANSP LINE2 1 2 MAT 4
-2 TRANSP LINE2 2 3 MAT 4
-3 TRANSP LINE2 3 4 MAT 4
-4 TRANSP LINE2 4 5 MAT 4
-5 TRANSP LINE2 5 6 MAT 4
-6 TRANSP LINE2 6 7 MAT 4
-7 TRANSP LINE2 7 8 MAT 4
-8 TRANSP LINE2 8 9 MAT 4
-9 TRANSP LINE2 9 10 MAT 4
-10 TRANSP LINE2 10 11 MAT 4
+1 TRANSP LINE3 1 2 3 MAT 4
+2 TRANSP LINE3 2 4 5 MAT 4
+3 TRANSP LINE3 4 6 7 MAT 4
+4 TRANSP LINE3 6 8 9 MAT 4
+5 TRANSP LINE3 8 10 11 MAT 4
 -------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

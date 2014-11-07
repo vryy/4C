@@ -112,7 +112,7 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coup
   //    - resulting system matrix is easy to solve
 
   // these options were deleted (ehrl 19.06.2013)
-  // since the implementation was only temporarily and not well tested
+  // since the implementation was only temporary and not well tested
   // c) Saddle point system sparse matrix (sps_coupled)
   // d) Saddle point system block matrix (sps_pc)
 
@@ -1106,7 +1106,7 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
    // r_n [0]
    // r_m [1]
    // r_s [2]
-  
+
   Teuchos::RCP<Epetra_Vector> resnew = LINALG::CreateVector(*dofrowmap_,true);
 
   // r_m: add P^T*r_s
@@ -1126,18 +1126,18 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   // r_m: insert Dirichlet boundary conditions
   if (dconmaster_==true and firstnonliniter_==true)
     fm_mod->Update(-1.0, *dcmm, 1.0);
-  
+
   // export additions to r_m subvector to r_new
   Teuchos::RCP<Epetra_Vector> fm_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
   LINALG::Export(*fm_mod,*fm_modexp);
   resnew->Update(1.0,*fm_modexp,1.0);
-  
+
   // export r_m subvector to r_new
   Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
   LINALG::Export(*(splitres[1]),*fmexp);
   resnew->Update(1.0,*fmexp,1.0);
 
-  
+
   // r_n: add K_ns*vp_i^s
   Teuchos::RCP<LINALG::SparseMatrix> knm = Teuchos::rcp(new LINALG::SparseMatrix(*(splitmatrix[2])));
   //LINALG::SparseMatrix& knm = *(splitmatrix[2]);
@@ -1380,17 +1380,17 @@ void FLD::Meshtying::UpdateSlaveDOF(
     fs_mod->Update(1.0, *fsdc_mod, 1.0);
   }
 
-  // export interior degrees of freedom 
+  // export interior degrees of freedom
   Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
   LINALG::Export(*(splitinc[0]),*fnexp);
   incnew->Update(1.0,*fnexp,1.0);
 
-  // export master degrees of freedom 
+  // export master degrees of freedom
   Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
   LINALG::Export(*(splitinc[1]),*fmexp);
   incnew->Update(1.0,*fmexp,1.0);
 
-  // export slave degrees of freedom 
+  // export slave degrees of freedom
   Teuchos::RCP<Epetra_Vector> fs_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
   LINALG::Export(*fs_mod,*fs_modexp);
   incnew->Update(1.0,*fs_modexp,1.0);

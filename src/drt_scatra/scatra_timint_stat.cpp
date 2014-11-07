@@ -13,12 +13,17 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_stat.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
+
+#include "../drt_adapter/adapter_coupling.H"
+
+#include "../drt_io/io.H"
+
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
+
+#include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
-#include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
@@ -64,10 +69,10 @@ void SCATRA::TimIntStationary::Init()
   // set element parameters
   // -------------------------------------------------------------------
   // note: - this has to be done before element routines are called
-  //       - order is important here: for savety checks in SetElementGeneralScaTraParameter(),
-  //         we have to konw the time-integration parameters
+  //       - order is important here: for safety checks in SetElementGeneralScaTraParameters(),
+  //         we have to know the time-integration parameters
   SetElementTimeParameter();
-  SetElementGeneralScaTraParameter();
+  SetElementGeneralScaTraParameters();
   SetElementTurbulenceParameter();
 
   // setup krylov
@@ -171,15 +176,27 @@ void SCATRA::TimIntStationary::AVM3Separation()
 }
 
 
-/*----------------------------------------------------------------------*
- | add parameters specific for time-integration scheme         vg 11/08 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*
+ | add global state vectors specific for time-integration scheme   vg 11/08 |
+ *--------------------------------------------------------------------------*/
 void SCATRA::TimIntStationary::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
 {
-  //SetElementTimeParameter();
-
   discret_->SetState("hist",hist_);
   discret_->SetState("phinp",phinp_);
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------*
+ | add interface state vector specific for time-integration scheme   fang 11/14 |
+ *------------------------------------------------------------------------------*/
+void SCATRA::TimIntStationary::AddTimeIntegrationSpecificInterfaceVector()
+{
+  // set interface state vector iphinp_ with transformed dof values and add to discretization
+  imaps_->InsertVector(icoup_->SlaveToMaster(maps_->ExtractVector(*phinp_,2)),0,iphinp_);
+  imaps_->InsertVector(icoup_->MasterToSlave(maps_->ExtractVector(*phinp_,1)),1,iphinp_);
+  discret_->SetState("iphinp",iphinp_);
 
   return;
 }

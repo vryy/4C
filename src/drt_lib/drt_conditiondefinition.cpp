@@ -573,7 +573,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::DirichletNeumannBundle::Read(Conditi
  | IntRealBundle::Constructor()                               ehrl 09/12|
  *----------------------------------------------------------------------*/
 //TODO: More general formulation possible (A. Ehrl)
-//      DirichleNeumannBundle can be replaced by a more general IntRealBundle
+//      DirichletNeumannBundle can be replaced by a more general IntRealBundle
 DRT::INPUT::IntRealBundle::IntRealBundle
 (
   std::string name,
@@ -840,7 +840,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::CondCompBundleSelector::Read(Conditi
   const int model = condition->GetInt(stringcomp_->Name());
 
   // check if model defined in the condition match model defined in CondCompBundle
-  // savety check, if models in condcomp_ are ordered in the same way as the enum defined by you
+  // safety check, if models in condcomp_ are ordered in the same way as the enum defined by you
   if(model != condcomp_[model]->Model())
     dserror("The model defined in your dat-file does not match the model type stored for the CondCompBundle.\n"
         "Probably, the order of the CondCompBundle in std::vector<CondCompBundle> does not match \n"

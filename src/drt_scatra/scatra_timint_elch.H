@@ -66,11 +66,8 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! @name general framework
   /*========================================================================*/
 
-  //! set elch-specific parameter
-  void SetElementGeneralScaTraParameter();
-
-  //! Set elch-specific parameter with deactivated stabilization
-  virtual void SetElementGeneralScaTraParameterDeactivatedStab();
+  //! Set elch-specific parameters
+  void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams);
 
   //! contains the nonlinear iteration loop
   void NonlinearSolve();
@@ -173,7 +170,7 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   bool ApplyGalvanostaticControl();
 
   //! compute contribution of electrode kinetics to eq. system
-  void EvaluateSolutionDependingBC(
+  void EvaluateElectrodeBoundaryConditions(
     Teuchos::RCP<LINALG::SparseOperator> matrix, //!< system matrix
     Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
   );

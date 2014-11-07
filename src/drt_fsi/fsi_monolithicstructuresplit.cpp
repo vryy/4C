@@ -383,14 +383,14 @@ void FSI::MonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
    * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
    *
    */
-  // ----------adressing term 1
+  // ----------addressing term 1
   rhs = Teuchos::rcp(new Epetra_Vector(sig.RowMap(),true));
   sig.Apply(*ddgpred_,*rhs);
 
   Extractor().AddVector(*rhs,0,f);
   // ----------end of term 1
 
-  // ----------adressing term 2
+  // ----------addressing term 2
   rhs = Teuchos::rcp(new Epetra_Vector(sig.RowMap(),true));
   sig.Apply(*FluidToStruct(fveln),*rhs);
   rhs->Scale(-Dt());

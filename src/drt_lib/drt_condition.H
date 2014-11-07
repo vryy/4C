@@ -169,7 +169,7 @@ public:
     ElectroRepulsion_Potential_Surface,
     ElectroRepulsion_Potential_Line,
     BeamPotential_LineChargeDensity,
-    ElectrodeKinetics,
+    ElchBoundaryKinetics,
     SurfacePermeability,
     TransportNeumannInflow,
     FluidNeumannInflow,
@@ -206,6 +206,7 @@ public:
     VolumetricSurfaceFlowCond,
     VolumetricFlowBorderNodes,
     ThermoConvections,
+    S2ICoupling,
     ScaTraFluxCalc,
     ScaTraCoupling,
     SpringDashpot,
@@ -317,7 +318,7 @@ public:
   /*!
   \brief Return unique ParObject id
 
-  every class imploementing ParObject needs a unique id defined at the
+  every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
   virtual int UniqueParObjectId() const { return ConditionObjectType::Instance().UniqueParObjectId(); }

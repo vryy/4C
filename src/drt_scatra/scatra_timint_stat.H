@@ -118,6 +118,9 @@ protected:
   /// add parameters specific for time-integration scheme
   void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
 
+  //! add interface state vector specific for time-integration scheme
+  void AddTimeIntegrationSpecificInterfaceVector();
+
   /// dynamic Smagorinsky model
   void DynamicComputationOfCs() {dserror("no turbulence in stationary flows!"); return;};
 

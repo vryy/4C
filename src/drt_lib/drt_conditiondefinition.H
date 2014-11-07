@@ -201,7 +201,7 @@ namespace INPUT
   {
   public:
 
-    /// constuct a condition component that reads a int variable
+    /// construct a condition component that reads a int variable
     /*!
       A int value is expected in the dat file.
 
@@ -238,7 +238,7 @@ namespace INPUT
   {
   public:
 
-    /// constuct a condition component that reads a vector of int variables
+    /// construct a condition component that reads a vector of int variables
     /*!
       A number of int values are expected in the dat file.
 
@@ -279,7 +279,7 @@ namespace INPUT
   {
   public:
 
-    /// constuct a condition component that reads a double variable
+    /// construct a condition component that reads a double variable
     /*!
       A double value is expected in the dat file.
 
@@ -390,7 +390,7 @@ namespace INPUT
       and the drt_validconditions.cpp
 
       Attention: number of type real is passed to int vector -> numbers after dot are ignored
-                 number of type int is passed to real vector -> number is interpreded as a real
+                 number of type int is passed to real vector -> number is interpreted as a real
 
       \param name variable name in DRT::Condition
       \param intcomp expected number of condition components per Int/Real-VectorConditionComponent
@@ -398,14 +398,20 @@ namespace INPUT
              (optional: Teuchos::null -> no separator)
       \param intvectcomp vector containing various IntVectorConditionComponents:
              - number of IntVectorConditionComponents in intvectcomp is defined in drt_validconditions.cpp
-             - number of condition components in a IntVectorConditionComponent is defined by intcom
+             - number of condition components in a IntVectorConditionComponent is defined by intcomp
+               (i.e., the integer called "length" indicating the length of IntVectorConditionComponent
+               in the constructor of IntVectorConditionComponent can be specified arbitrarily and is eventually
+               overwritten by the integer stored in intcomp)
              - if you do not want to have any IntVectorConditionComponent:
                pass an empty "std:vector<Teuchos::RCP<IntVectorConditionComponent> > object" to the constructor
       \param realsepcomp vector defining an optional separator for the different RealVectorConditionComponents
              (optional: Teuchos::null -> no separator)
       \param realvectcomp vector containing various RealVectorConditionComponents:
              - number of RealVectorConditionComponents in realvectcomp is defined in drt_validconditions.cpp
-             - number of condition components in a RealVectorConditionComponent is defined by intcom
+             - number of condition components in a RealVectorConditionComponent is defined by intcomp
+               (i.e., the integer called "length" indicating the length of RealVectorConditionComponent
+               in the constructor of RealVectorConditionComponent can be specified arbitrarily and is eventually
+               overwritten by the integer stored in intcomp)
              - if you do not want to have any RealVectorConditionComponent:
                pass an empty "std:vector<Teuchos::RCP<RealVectorConditionComponent> > object" to the constructor
      */
@@ -613,7 +619,7 @@ namespace INPUT
 
   /// add a separator followed by a single integer value
   /*!
-    The name on the input line becames the name used to put the int value into DRT::Condition.
+    The name on the input line becomes the name used to put the int value into DRT::Condition.
    */
   inline void AddNamedInt(Teuchos::RCP<ConditionDefinition> conddef, std::string name)
   {
@@ -623,7 +629,7 @@ namespace INPUT
 
   /// add a separator followed by a single real value
   /*!
-    The name on the input line becames the name used to put the value into DRT::Condition.
+    The name on the input line becomes the name used to put the value into DRT::Condition.
    */
   inline void AddNamedReal(Teuchos::RCP<ConditionDefinition> conddef, std::string name)
   {
@@ -633,7 +639,7 @@ namespace INPUT
 
   /// add a separator followed by a single real value
   /*!
-    The name on the input line becames the name used to put the value into DRT::Condition.
+    The name on the input line becomes the name used to put the value into DRT::Condition.
    */
   inline void AddNamedVector(Teuchos::RCP<ConditionDefinition> conddef, const std::string name, const int size)
   {

@@ -5,10 +5,10 @@
 \brief evaluation of scatra boundary terms at integration points
 
 <pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
+Maintainer: Andreas Ehrl
+            ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15252
 </pre>
  */
 /*----------------------------------------------------------------------*/
@@ -72,7 +72,7 @@ private:
       Epetra_SerialDenseVector&           elevec1);
 
   //! evaluate an electrode kinetics boundary condition
-  void EvaluateElectrodeKinetics(
+  void EvaluateElchBoundaryKinetics(
      const DRT::Element*          ele,              ///< the actual boundary element
      Epetra_SerialDenseMatrix&    emat,             ///< element-matrix
      Epetra_SerialDenseVector&    erhs,             ///< element-rhs
@@ -89,7 +89,7 @@ private:
   );
 
   //! evaluate elch electrode kinetics
-  void CalcElchElectrodeKinetics(
+  void CalcElchBoundaryKinetics(
       DRT::ELEMENTS::TransportBoundary* ele,
       Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,

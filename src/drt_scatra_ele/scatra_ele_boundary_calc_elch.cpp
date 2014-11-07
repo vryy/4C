@@ -119,9 +119,9 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
 
   switch (action)
   {
-  case SCATRA::bd_calc_elch_electrode_kinetics:
+  case SCATRA::bd_calc_elch_boundary_kinetics:
   {
-    CalcElchElectrodeKinetics(ele,
+    CalcElchBoundaryKinetics(ele,
         params,
         discretization,
         lm,
@@ -417,7 +417,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
  | calculate elch electrode kinetics boundary terms               ehrl  |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetics(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics(
     DRT::ELEMENTS::TransportBoundary* ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
@@ -456,7 +456,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
 
     // get current condition
     Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
-    if (cond == Teuchos::null) dserror("Cannot access condition 'ElectrodeKinetics'");
+    if (cond == Teuchos::null) dserror("Cannot access condition 'ElchBoundaryKinetics'");
 
     // access parameters of the condition
     const int                 kinetics = cond->GetInt("kinetic model");
@@ -543,7 +543,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchElectrodeKinetic
 
       if(zerocur==0)
       {
-        EvaluateElectrodeKinetics(
+        EvaluateElchBoundaryKinetics(
             ele,
             elemat1_epetra,
             elevec1_epetra,
@@ -623,7 +623,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
     dserror("Element parameter SCATRATYPE has not been set!");
 
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
-    if (cond == Teuchos::null) dserror("Cannot access condition 'ElectrodeKinetics'");
+    if (cond == Teuchos::null) dserror("Cannot access condition 'ElchBoundaryKinetics'");
 
   const int  kinetics = cond->GetInt("kinetic model");
 
@@ -735,7 +735,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
  | evaluate an electrode kinetics boundary condition (private) gjb 01/09|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetics(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKinetics(
     const DRT::Element*               ele,
     Epetra_SerialDenseMatrix&         emat,
     Epetra_SerialDenseVector&         erhs,
@@ -1447,7 +1447,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeKinetic
   } // end loop over scalars
 
   return;
-} // ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics()
+} // ScaTraBoundaryImpl<distype>::EvaluateElchBoundaryKinetics()
 
 
 /*----------------------------------------------------------------------*

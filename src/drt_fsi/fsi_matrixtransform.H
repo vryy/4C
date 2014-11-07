@@ -166,7 +166,7 @@ namespace FSI
       \param colmap    (i) col map of full source block matrix
       \param src       (i) source matrix
       \param scale     (i) scaling factor to be applied
-      \param converter (i) src to dst abstaction on ADAPTER::Coupling
+      \param converter (i) src to dst abstraction on ADAPTER::Coupling
       \param dst     (i/o) destination matrix
       \param exactmatch (i) do not drop any source values if true
       \param addmatrix (i) remove current dst values if false
@@ -243,8 +243,8 @@ namespace FSI
 
       \param src          (i) source matrix
       \param scale        (i) scaling factor to be applied
-      \param rowconverter (i) src to dst abstaction on ADAPTER::Coupling
-      \param colconverter (i) src to dst abstaction on ADAPTER::Coupling
+      \param rowconverter (i) src to dst abstraction on ADAPTER::Coupling
+      \param colconverter (i) src to dst abstraction on ADAPTER::Coupling
       \param dst        (i/o) destination matrix
       \param exactmatch   (i) do not drop any source values if true
       \param addmatrix    (i) remove current dst values if false

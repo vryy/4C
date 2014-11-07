@@ -990,7 +990,7 @@ void fsi_ale_drt()
         fsi->ReadRestart(restart);
       }
 
-      // now do the coupling setup an create the combined dofmap
+      // now do the coupling setup and create the combined dofmap
       fsi->SetupSystem();
 
       // here we go...

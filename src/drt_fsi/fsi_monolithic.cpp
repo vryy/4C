@@ -423,6 +423,8 @@ void FSI::Monolithic::TimeloopConstDt(const Teuchos::RCP<NOX::Epetra::Interface:
     Update();
     Output();
   }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -508,6 +510,8 @@ void FSI::Monolithic::PrepareTimeloop()
         dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
     }
   }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/

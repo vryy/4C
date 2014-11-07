@@ -50,17 +50,17 @@ namespace ADAPTER
     The idea is simple: We have a master dof map that describes the
     distribution of the master's interface dofs. And we have a slave
     dof map that describes the distribution of the slave's interface
-    dofs. Both maps, however, live in there respective
+    dofs. Both maps, however, live in their respective
     communicator. We cannot transfer data between them. Furthermore
     the dof gids are totally independent of each other.
 
     So we build a mapping between the nodes from both meshes during
     the setup phase. This establishes the connection. From that
-    connection we deduce (in a somewhat painful way) a permutated
-    master dof map and a permutated slave dof map. These permutated
+    connection we deduce (in a somewhat painful way) a permuted
+    master dof map and a permuted slave dof map. These permuted
     maps are bound to have the same layout as the normal maps from the
     other side. So we can exchange dof values between fields by simply
-    copying from a normal Epetra_Vector to the permutated
+    copying from a normal Epetra_Vector to the permuted
     Epetra_Vector from the other side without actually looking at the
     respective maps. Afterwards the communication happens within one
     field in the usual fashion. So the transfer functions
@@ -265,7 +265,7 @@ namespace ADAPTER
       \param masterdis   (i) master side mesh
       \param slavedis    (i) slave side mesh
       \param masternodes (i/o) all master node gids. on output those that have a match
-      \param permslavenodes (o) slave node gids permutated to match master node gids
+      \param permslavenodes (o) slave node gids permuted to match master node gids
       \param slavenodes (i) slave node gids
       \param matchall (i) bool indicating match of all slave and master nodes
      */
@@ -299,7 +299,7 @@ namespace ADAPTER
 
     /** \name Fundamental dof maps */
     //@{
-    /// We keep the master and slave dof map as well as permutated versions
+    /// We keep the master and slave dof map as well as permuted versions
     /// that match the respective other side.
 
     Teuchos::RCP<const Epetra_Map> masterdofmap_;

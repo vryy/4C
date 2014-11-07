@@ -1381,7 +1381,7 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
   // NODES
   //********************************************************************
   // need row and column maps of slave and master nodes separately so we
-  // can easily adress them
+  // can easily address them
   {
     std::vector<int> sc; // slave column map
     std::vector<int> sr; // slave row map

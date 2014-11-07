@@ -5352,10 +5352,24 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for scalar transport/elch...",&scatradyn);
   //IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with SIMPLER)...",&scatradyn);
 
-  // flag for natural convection effects
+  // parameters for natural convection effects
   BoolParameter("NATURAL_CONVECTION","No","Include natural convection effects",&scatradyn);
   IntParameter("NATCONVITEMAX",10,"Maximum number of outer iterations for natural convection",&scatradyn);
   DoubleParameter("NATCONVCONVTOL",1e-6,"Convergence check tolerance for outer loop for natural convection",&scatradyn);
+
+  // parameters for finite difference check
+  setStringToIntegralParameter<int>("FDCHECK", "none", "flag for finite difference check: none, local, or global",
+                                    tuple<std::string>(
+                                      "none",
+                                      "local",    // perform finite difference check on element level
+                                      "global"),  // perform finite difference check on time integrator level
+                                    tuple<int>(
+                                        INPAR::SCATRA::fdcheck_none,
+                                        INPAR::SCATRA::fdcheck_local,
+                                        INPAR::SCATRA::fdcheck_global),
+                                    &scatradyn);
+  DoubleParameter("FDCHECKEPS",1.e-6,"dof perturbation magnitude for finite difference check (1.e-6 seems to work very well, whereas smaller values don't)",&scatradyn);
+  DoubleParameter("FDCHECKTOL",1.e-6,"relative tolerance for finite difference check",&scatradyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(

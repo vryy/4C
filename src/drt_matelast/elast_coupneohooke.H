@@ -106,8 +106,8 @@ namespace ELASTIC
   ///\f]
   ///
   /// \f$ c=\frac {\mu}{2} = \frac {\text{Young's modulus}}{4(1+\nu)} \f$
-  /// and \f$\mu\f$ and \f$\nu\f$ beeing the shear modulus
-  /// and the Poisson's ratio, respectivly.
+  /// and \f$\mu\f$ and \f$\nu\f$ denoting the shear modulus
+  /// and the Poisson's ratio, respectively.
   ///
   /// [1] Holzapfel, G. A., Nonlinear Solid Mechanics, 2002
   ///

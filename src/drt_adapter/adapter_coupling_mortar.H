@@ -43,7 +43,7 @@ namespace ADAPTER
   /*!
     This is a generic class used to couple any non-matching meshes
     (or more general: discretizations) at interfaces. The current
-    applications in BACI emcompass FSI coupling algorithms (i.e. to
+    applications in BACI encompass FSI coupling algorithms (i.e. to
     interpolate between fluid and structure fields at the interface)
     and fluid mesh tying algorithms (i.e. to couple non-matching
     Eulerian fluid meshes). All the hard work is actually done by
@@ -72,7 +72,7 @@ namespace ADAPTER
 
     //! setup the machinery (generalized version)
     /// master and slave discretization are identical for sliding ale and fluid/scatra meshtying
-    /// ale discretization is Techos::null for  sliding ale and fluid/scatra meshtying
+    /// ale discretization is Teuchos::null for sliding ale and fluid/scatra meshtying
     void Setup( Teuchos::RCP<DRT::Discretization>   masterdis,      ///> master discretization
                 Teuchos::RCP<DRT::Discretization>   slavedis,       ///> slave discretization
                 Teuchos::RCP<DRT::Discretization>   aledis,         ///> ale discretization

@@ -422,6 +422,18 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
 
     break;
   }
+  case SCATRA::bd_calc_s2icoupling:
+  {
+    EvaluateS2ICoupling(ele,
+        params,
+        discretization,
+        lm,
+        elemat1_epetra,
+        elemat2_epetra,
+        elevec1_epetra);
+
+    break;
+  }
   default:
   {
     dserror("Not acting on this boundary action. Forgot implementation?");
@@ -1114,6 +1126,111 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
 
   return;
 } // ScaTraBoundaryImpl<distype>::
+
+
+/*----------------------------------------------------------------------*
+ | evaluate scatra-scatra interface coupling condition       fang 10/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
+    const DRT::Element*         ele,              ///< current boundary element
+    Teuchos::ParameterList&     params,           ///< parameter list
+    DRT::Discretization&        discretization,   ///< discretization
+    std::vector<int>&           lm,               ///< location vector
+    Epetra_SerialDenseMatrix&   emat,             ///< element matrix
+    Epetra_SerialDenseMatrix&   eauxmat,          ///< auxiliary element matrix (for coupling terms)
+    Epetra_SerialDenseVector&   erhs              ///< element right-hand side
+    )
+{
+  // get global and interface state vectors
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> iphinp = discretization.GetState("iphinp");
+  if (phinp == Teuchos::null or iphinp == Teuchos::null) dserror("Cannot get state vector 'phinp' or 'iphinp'!");
+
+  // extract local nodal values on present and opposite side of scatra-scatra interface
+  std::vector<double> ephinpvec(lm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,ephinpvec,lm);
+  std::vector<LINALG::Matrix<nen_,1> > ephinp(numscal_);
+  std::vector<double> eauxphinpvec(lm.size());
+  DRT::UTILS::ExtractMyValues(*iphinp,eauxphinpvec,lm);
+  std::vector<LINALG::Matrix<nen_,1> > eauxphinp(numscal_);
+  for(int inode=0; inode<nen_; ++inode)
+  {
+    for(int k=0; k<numscal_; ++k)
+    {
+      ephinp[k](inode,0) = ephinpvec[inode*numscal_+k];
+      eauxphinp[k](inode,0) = eauxphinpvec[inode*numscal_+k];
+    }
+  }
+
+  // get current scatra-scatra interface coupling condition and access associated kinetic model
+  Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+  if(s2icondition == Teuchos::null)
+    dserror("Cannot access scatra-scatra interface coupling condition!");
+  const int kineticmodel = s2icondition->GetInt("kinetic model");
+
+  // integration points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+
+    // evaluate overall integration factors
+    const double timefacfac = scatraparamstimint_->TimeFac()*fac;
+    const double timefacrhsfac = scatraparamstimint_->TimeFacRhs()*fac;
+    if (timefacfac < 0. or timefacrhsfac < 0.)
+      dserror("Integration factor is negative!");
+
+    // loop over scalars
+    for(int k=0; k<numscal_; ++k)
+    {
+      // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
+      const double phiint = funct_.Dot(ephinp[k]);
+      const double auxphiint = funct_.Dot(eauxphinp[k]);
+
+      // compute matrix and vector contributions according to kinetic model for current scatra-scatra interface coupling condition
+      switch(kineticmodel)
+      {
+        // constant permeability model
+        case INPAR::SCATRA::s2i_constperm:
+        {
+          // access real vector of constant permeabilities
+          const std::vector<double>* permeabilities = s2icondition->GetMutable<std::vector<double> >("permeabilities");
+          if(permeabilities == NULL)
+            dserror("Cannot access vector of permeabilities for scatra-scatra interface coupling!");
+          if(permeabilities->size() != (unsigned) numscal_)
+            dserror("Number of permeabilities does not match number of scalars!");
+
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const int fvi = vi*numscal_+k;
+
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              emat(fvi,ui*numscal_+k) += funct_(vi)*(*permeabilities)[k]*funct_(ui)*timefacfac;
+              eauxmat(fvi,ui*numscal_+k) -= funct_(vi)*(*permeabilities)[k]*funct_(ui)*timefacfac;
+            }
+
+            erhs[fvi] -= funct_(vi)*(*permeabilities)[k]*(phiint-auxphiint)*timefacrhsfac;
+          }
+
+          break;
+        }
+
+        default:
+        {
+          dserror("Unknown kinetic model for scatra-scatra interface coupling!");
+          break;
+        }
+      }
+    } // end of loop over scalars
+  } // end of loop over integration points
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*

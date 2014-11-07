@@ -181,7 +181,7 @@ namespace DRT
     {
     public:
 
-      /// constuct a separator component that does read a string without setting a variable
+      /// construct a separator component that does read a string without setting a variable
       SeparatorMaterialComponent(
         std::string separator,
         std::string description,
@@ -229,7 +229,7 @@ namespace DRT
     {
     public:
 
-      /// constuct a material component that reads a int variable
+      /// construct a material component that reads a int variable
       ///
       ///  A int value is expected in the dat file.
       explicit IntMaterialComponent(
@@ -276,7 +276,7 @@ namespace DRT
     {
     public:
 
-      /// constuct a material component that reads a vector of int variables
+      /// construct a material component that reads a vector of int variables
       ///
       /// A vector of int values are expected in the dat file.
       IntVectorMaterialComponent(
@@ -286,7 +286,7 @@ namespace DRT
         bool optional=false  ///< whether this material component can be skipped
         );
 
-      /// constuct a material component that reads a vector of int variables
+      /// construct a material component that reads a vector of int variables
       ///
       /// A vector of int values are expected in the dat file.
       IntVectorMaterialComponent(
@@ -335,7 +335,7 @@ namespace DRT
     {
     public:
 
-      /// constuct a material component that reads a double variable
+      /// construct a material component that reads a double variable
       ///
       ///  A double value is expected in the dat file.
       RealMaterialComponent(
@@ -376,7 +376,7 @@ namespace DRT
     {
     public:
 
-      /// constuct a material component that reads a vector of double variables
+      /// construct a material component that reads a vector of double variables
       ///
       ///  A number of double values are expected in the dat file.
       RealVectorMaterialComponent(
@@ -386,7 +386,7 @@ namespace DRT
         bool optional=false
         );
 
-      /// constuct a material component that reads a vector of double variables
+      /// construct a material component that reads a vector of double variables
       ///
       /// A vector of int values are expected in the dat file.
       RealVectorMaterialComponent(

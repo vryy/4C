@@ -133,6 +133,14 @@ protected:
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >&  vm    //!< rcp to variable manager Elch
   ){return;};
 
+  //! finite difference check for debugging purposes
+  void FDCheck(
+    DRT::Element*                              ele,          //!< the element we are dealing with
+    Epetra_SerialDenseMatrix&                  emat,         //!< element matrix to calculate
+    Epetra_SerialDenseVector&                  erhs,         //!< element rhs to calculate
+    Epetra_SerialDenseVector&                  subgrdiff     //!< subgrid-diff.-scaling vector
+  );
+
   /*========================================================================*/
   //! @name material and related functions
   /*========================================================================*/

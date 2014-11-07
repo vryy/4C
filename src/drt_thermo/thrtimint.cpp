@@ -40,7 +40,7 @@ void THR::TimInt::Logo()
   std::cout << "      _______________________________" << std::endl;
   std::cout << "  ===(_________|_|_|_|_|_37°C_|_|____)" << std::endl;
   std::cout << std::endl;
-  
+
 }  // Logo()
 
 
@@ -565,7 +565,7 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0, "residual temperature", zeros_);
   discret_->SetState(0, "temperature", (*temp_)(0));
-  
+
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
@@ -759,9 +759,9 @@ void THR::TimInt::ApplyForceExternalConv(
   discret_->ClearState();
   discret_->SetState(0,"old temperature", tempn);  // T_n (*temp_)(0)
   discret_->SetState(0,"temperature", temp);  // T_{n+1} tempn_
-    
+
   // get load vector
-  // use general version of EvaluateCondition(), following the example set by ScaTra::EvaluateElectrodeKinetics()
+  // use general version of EvaluateCondition()
   std::string condstring("ThermoConvections");
   discret_->EvaluateCondition(p,tang,Teuchos::null,fext,Teuchos::null,Teuchos::null,condstring);
   discret_->ClearState();

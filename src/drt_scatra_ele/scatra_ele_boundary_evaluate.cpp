@@ -38,26 +38,26 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
     dserror("Element parameter SCATRATYPE has not been set!");
 
   // we assume here, that numdofpernode is equal for every node within
-    // the discretization and does not change during the computations
-    const int numdofpernode = this->NumDofPerNode(*(this->Nodes()[0]));
-    int numscal = numdofpernode;
+  // the discretization and does not change during the computations
+  const int numdofpernode = this->NumDofPerNode(*(this->Nodes()[0]));
+  int numscal = numdofpernode;
 
-    if (scatratype==INPAR::SCATRA::scatratype_elch)
+  if (scatratype==INPAR::SCATRA::scatratype_elch)
+  {
+    numscal -= 1;
+
+    // get the material of the first element
+    // we assume here, that the material is equal for all elements in this discretization
+    // get the parent element including its material
+    const DRT::ELEMENTS::TransportBoundary* transele = static_cast<const DRT::ELEMENTS::TransportBoundary*>(this);
+    Teuchos::RCP<MAT::Material> material = transele->ParentElement()->Material();
+    if (material->MaterialType() == INPAR::MAT::m_elchmat)
     {
-      numscal -= 1;
+      const MAT::ElchMat* actmat = dynamic_cast<const MAT::ElchMat*>(material.get());
 
-      // get the material of the first element
-      // we assume here, that the material is equal for all elements in this discretization
-      // get the parent element including its material
-      const DRT::ELEMENTS::TransportBoundary* transele = static_cast<const DRT::ELEMENTS::TransportBoundary*>(this);
-      Teuchos::RCP<MAT::Material> material = transele->ParentElement()->Material();
-      if (material->MaterialType() == INPAR::MAT::m_elchmat)
-      {
-        const MAT::ElchMat* actmat = dynamic_cast<const MAT::ElchMat*>(material.get());
-
-        numscal = actmat->NumScal();
-      }
+      numscal = actmat->NumScal();
     }
+  }
 
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport

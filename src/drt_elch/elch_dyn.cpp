@@ -114,9 +114,7 @@ void elch_dyn(int restart)
 
     // create scatra elements if the scatra discretization is empty
     if (scatradis->NumGlobalNodes()==0)
-    {
       DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,scatradis);
-    }
     else
       dserror("Fluid AND ScaTra discretization present. This is not supported.");
 

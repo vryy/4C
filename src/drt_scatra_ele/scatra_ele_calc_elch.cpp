@@ -105,19 +105,11 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
   // calculate element coefficient matrix and rhs
   //--------------------------------------------------------------------------------
 
-  Sysmat(
-    ele,
-    elemat1_epetra,
-    elevec1_epetra,
-    elevec2_epetra);
+  Sysmat(ele,elemat1_epetra,elevec1_epetra,elevec2_epetra);
 
-//  if(my::eid_==10)
-//  {
-//  std::cout << "matrix: " << std::endl;
-//  std::cout <<  elemat1_epetra << std::endl;
-//  std::cout << "vector: " << std::endl;
-//  std::cout <<  elevec1_epetra << std::endl;
-//  }
+  // perform finite difference check on element level
+  if(my::scatrapara_->FDCheck() == INPAR::SCATRA::fdcheck_local and ele->Owner() == discretization.Comm().MyPID())
+    FDCheck(ele,elemat1_epetra,elevec1_epetra,elevec2_epetra);
 
   // for certain ELCH problem formulations we have to provide
   // additional flux terms / currents across Dirichlet boundaries

@@ -35,6 +35,9 @@ DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter()
   is_conservative_(false),
   writeflux_(INPAR::SCATRA::flux_no),
   writefluxids_(Teuchos::null),
+  fdcheck_(INPAR::SCATRA::fdcheck_none),
+  fdcheckeps_(0.),
+  fdchecktol_(0.),
   stabtype_(INPAR::SCATRA::stabtype_no_stabilization),
   whichtau_(INPAR::SCATRA::tau_zero),
   charelelength_(INPAR::SCATRA::streamlength),
@@ -79,7 +82,7 @@ DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter()
 //----------------------------------------------------------------------*
 //  set general parameters                                   ehrl 04/10 |
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralScaTraParameter(
+void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralScaTraParameters(
   Teuchos::ParameterList& params,
   int myrank )
 {
@@ -185,6 +188,11 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralScaTraParameter(
 
   if (sgvel_ and scatratype_ == INPAR::SCATRA::scatratype_levelset)
     dserror("CalcSubgrVelocityLevelSet not available anymore");
+
+  // get quantities for finite difference check
+  fdcheck_ = DRT::INPUT::get<INPAR::SCATRA::FDCheck>(params,"fdcheck");
+  fdcheckeps_ = params.get<double>("fdcheckeps");
+  fdchecktol_ = params.get<double>("fdchecktol");
 
   return;
 }

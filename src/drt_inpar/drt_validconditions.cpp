@@ -860,6 +860,86 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(pointmrtrsym);
 
 
+  /*--------------------------------------------------------------------*/
+  // scatra-scatra interface coupling
+  {
+    // definition of scatra-scatra interface coupling line condition
+    Teuchos::RCP<ConditionDefinition> lines2i =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING LINE CONDITIONS",
+                                             "S2ICoupling",
+                                             "Scatra-scatra line interface coupling",
+                                             DRT::Condition::S2ICoupling,
+                                             true,
+                                             DRT::Condition::Line));
+
+    // definition of scatra-scatra interface coupling surface condition
+    Teuchos::RCP<ConditionDefinition> surfs2i =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING SURF CONDITIONS",
+                                             "S2ICoupling",
+                                             "Scatra-scatra surface interface coupling",
+                                             DRT::Condition::S2ICoupling,
+                                             true,
+                                             DRT::Condition::Surface));
+
+    // equip condition definitions with input file line components
+    std::vector<Teuchos::RCP<ConditionComponent> > s2icomponents;
+
+    {
+      // interface ID
+      s2icomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
+
+      // interface side
+      s2icomponents.push_back(Teuchos::rcp(new StringConditionComponent("Side","This",
+            Teuchos::tuple<std::string>("This","Other"),
+            Teuchos::tuple<std::string>("This","Other"))));
+
+      // kinetic models for scatra-scatra interface
+      std::vector<Teuchos::RCP<CondCompBundle> > kineticmodels;
+
+      {
+        // constant permeability
+        std::vector<Teuchos::RCP<ConditionComponent> > constperm;
+        constperm.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));                // total number of existing scalars
+        std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp;                           // empty vector --> no separators for integer vectors needed
+        std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp;                          // empty vector --> no integer vectors needed
+        std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepcomp;
+        realsepcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("permeabilities")));       // string separator in front of real permeability vector in input file line
+        std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp;
+        realvectcomp.push_back(Teuchos::rcp(new RealVectorConditionComponent("permeabilities",0)));   // real vector of constant permeabilities
+        constperm.push_back(Teuchos::rcp(new IntRealBundle(
+            "permeabilities",
+            Teuchos::rcp(new IntConditionComponent("numscal")),
+            intsepcomp,
+            intvectcomp,
+            realsepcomp,
+            realvectcomp
+        )));
+
+        kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("ConstantPermeability",constperm,INPAR::SCATRA::s2i_constperm)));
+      }
+
+      // insert kinetic models into vector with input file line components
+      s2icomponents.push_back(Teuchos::rcp(new CondCompBundleSelector(
+          "kinetic models for scatra-scatra interface coupling",
+          Teuchos::rcp(new StringConditionComponent(
+             "kinetic model",
+             "ConstantPermeability",
+             Teuchos::tuple<std::string>("ConstantPermeability"),
+             Teuchos::tuple<int>(INPAR::SCATRA::s2i_constperm))),
+          kineticmodels)));
+    }
+
+    // insert input file line components into condition definitions
+    for (unsigned i=0; i<s2icomponents.size(); ++i)
+    {
+      lines2i->AddComponent(s2icomponents[i]);
+      surfs2i->AddComponent(s2icomponents[i]);
+    }
+
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(lines2i);
+    condlist.push_back(surfs2i);
+  }
 
 
   /*--------------------------------------------------------------------*/
@@ -2693,7 +2773,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
 
   /*--------------------------------------------------------------------*/
-   // Electrode kinetics (Electrochemistry)
+  // Electrode kinetics as boundary condition on electrolyte (Electrochemistry)
   {
     std::vector<Teuchos::RCP<CondCompBundle> > reactionmodel;
 
@@ -2805,7 +2885,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                                               bvbard,
                                                               INPAR::SCATRA::butler_volmer_bard)));
 
-    // Nernst  equation:
+    // Nernst equation:
     std::vector<Teuchos::RCP<ConditionComponent> > nernst;
     nernst.push_back(Teuchos::rcp(new SeparatorConditionComponent("e0")));
     nernst.push_back(Teuchos::rcp(new RealConditionComponent("e0")));
@@ -2870,16 +2950,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
     Teuchos::RCP<ConditionDefinition> lineelec =
       Teuchos::rcp(new ConditionDefinition("ELECTRODE KINETICS LINE CONDITIONS",
-                                           "ElectrodeKinetics",
+                                           "ElchBoundaryKinetics",
                                            "Line Electrode Kinetics",
-                                           DRT::Condition::ElectrodeKinetics,
+                                           DRT::Condition::ElchBoundaryKinetics,
                                            true,
                                            DRT::Condition::Line));
     Teuchos::RCP<ConditionDefinition> surfelec =
       Teuchos::rcp(new ConditionDefinition("ELECTRODE KINETICS SURF CONDITIONS",
-                                           "ElectrodeKinetics",
+                                           "ElchBoundaryKinetics",
                                            "Surface Electrode Kinetics",
-                                           DRT::Condition::ElectrodeKinetics,
+                                           DRT::Condition::ElchBoundaryKinetics,
                                            true,
                                            DRT::Condition::Surface));
 

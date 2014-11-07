@@ -269,7 +269,7 @@ private:
     There are strange algorithms that need to split a large sparse matrix into
     blocks. Such things happen, e.g., in FSI calculations with internal and
     interface splits, in fluid projection preconditioners or in contact
-    simulations with slave and master sides. Unfortunatelly spliting a huge
+    simulations with slave and master sides. Unfortunately splitting a huge
     sparse matrix in (possibly) many blocks is nontrivial and expensive. So
     the idea here is to assemble into a block matrix in the first place.
 
@@ -345,7 +345,7 @@ public:
 
     This default implementation solves the ghost entry problem by remembering
     all ghost entries during the assembly in a private map. Afterwards
-    Complete() needs to be called that finds the appropiate block for each
+    Complete() needs to be called that finds the appropriate block for each
     ghost entry by communication an finally assembles these entries.
 
     This is the most general, most expensive implementation. You are
@@ -471,7 +471,7 @@ LINALG::BlockSparseMatrix<Strategy>::BlockSparseMatrix(const MultiMapExtractor& 
     bool explicitdirichlet,
     bool savegraph)
 : BlockSparseMatrixBase(domainmaps,rangemaps,npr,explicitdirichlet,savegraph),
-// this was necessary, otherwise ambigous with copy constructor of Strategy
+// this was necessary, otherwise ambiguous with copy constructor of Strategy
 Strategy((LINALG::BlockSparseMatrixBase&)(*this))
 {
 }

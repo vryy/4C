@@ -38,7 +38,7 @@ ALE::UTILS::AleCloneStrategy::ConditionsToCopy()
   conditions_to_copy.insert(std::pair<std::string,std::string>("StructAleCoupling","StructAleCoupling"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("LinePeriodic","LinePeriodic"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("SurfacePeriodic","SurfacePeriodic"));
-  conditions_to_copy.insert(std::pair<std::string,std::string>("ElectrodeKinetics","ElectrodeKinetics"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("ElchBoundaryKinetics","ElchBoundaryKinetics"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("XFEMCoupling","XFEMCoupling"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("FluidFluidCoupling","FluidFluidCoupling"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("AleWear","AleWear"));

@@ -46,7 +46,7 @@ void DRT::ELEMENTS::MeshfreeTransportType::PreEvaluate(
   if (action == SCATRA::set_general_scatra_parameter)
   {
     DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
-    scatrapara->SetElementGeneralScaTraParameter(p,dis.Comm().MyPID());
+    scatrapara->SetElementGeneralScaTraParameters(p,dis.Comm().MyPID());
   }
   else if (action == SCATRA::set_time_parameter)
   {

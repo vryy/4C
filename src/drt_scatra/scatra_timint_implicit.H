@@ -51,6 +51,11 @@ Maintainer: Andreas Ehrl
 
 class PeriodicBoundaryConditions;
 
+namespace ADAPTER
+{
+  class Coupling;
+}
+
 namespace DRT
 {
   class Discretization;
@@ -68,6 +73,7 @@ namespace LINALG
   class Solver;
   class SparseMatrix;
   class MapExtractor;
+  class MultiMapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
   class KrylovProjector;
@@ -78,6 +84,14 @@ namespace FLD
   class Meshtying;
   class DynSmagFilter;
   class Vreman;
+}
+
+namespace FSI
+{
+  namespace UTILS
+  {
+    class MatrixColTransform;
+  }
 }
 
 
@@ -220,6 +234,9 @@ public:
   //! Calculate the reconstructed nodal gradient of phi
   Teuchos::RCP<Epetra_MultiVector> GetGradientAtNodes();
 
+  //! finite difference check for scalar transport system matrix
+  void FDCheck();
+
   /*--- query and output ---------------------------------------------------*/
 
   //! Provide enum of time integration scheme
@@ -347,8 +364,7 @@ public:
   //! compute parameters of the Input voltage to use for the double layer current density
   virtual void ComputeTimeDerivPot0(const bool init) = 0;
 
-  //! compute values at intermediate time steps (required for
-  //generalized-alpha) ? rename?
+  //! compute values at intermediate time steps (required for generalized-alpha) ? rename?
   virtual void ComputeIntermediateValues() = 0;
 
   //! compute density field from concentration(s) for natural convection
@@ -426,11 +442,25 @@ public:
   //! calculate initial field for electric potential based on ion concentrations (ELCH)
   virtual void CalcInitialPotentialField(){return;};
 
-  //! compute contribution of electrode kinetics to eq. system
-  virtual void EvaluateSolutionDependingBC(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< system matrix
-    Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
+  //! compute contributions of solution-depending boundary and interface conditions to global system of equations
+  void EvaluateSolutionDependingConditions(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
+    Teuchos::RCP<LINALG::SparseOperator> auxiliarymatrix,   //!< auxiliary matrix for interface coupling terms
+    Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
+  );
+
+  //! evaluate electrode boundary conditions
+  virtual void EvaluateElectrodeBoundaryConditions(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,   //!< system matrix
+    Teuchos::RCP<Epetra_Vector>          rhs             //!< rhs vector
   ){return;};
+
+  //! evaluate scatra-scatra interface coupling conditions
+  void EvaluateS2ICoupling(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
+    Teuchos::RCP<LINALG::SparseOperator> auxiliarymatrix,   //!< auxiliary matrix for coupling terms
+    Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
+  );
 
   //! output of all electrode information to screen and/or file (default: 2x true)
   virtual Teuchos::RCP< std::vector<double> > OutputElectrodeInfo(
@@ -532,20 +562,23 @@ protected:
   //! set time for evaluation of Neumann boundary conditions
   virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
 
-  //! Set general element parameter including stabilization
-  virtual void SetElementGeneralScaTraParameter();
+  //! Set general element parameters
+  void SetElementGeneralScaTraParameters(bool calcinitialtimederiv = false);
 
-  //! Set general element parameter with deactivated stabilization
-  virtual void SetElementGeneralScaTraParameterDeactivatedStab();
+  //! Set additional problem-specific parameters for non-standard scalar transport problems (electrochemistry etc.)
+  virtual void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams){return;};
 
   //! Set element parameter specific for turbulence
-  void SetElementTurbulenceParameter();
+  void SetElementTurbulenceParameter(bool calcinitialtimederiv = false);
 
   //! Deactivate element parameter specific for turbulence
   void SetElementTurbulenceParameterDeactivated();
 
   //! setup natural convection
   virtual void SetupNatConv();
+
+  //! perform setup of scatra-scatra interface coupling
+  void SetupS2ICoupling();
 
   /*========================================================================*/
   //! @name general framework
@@ -567,8 +600,11 @@ protected:
     const enum INPAR::SCATRA::FluxType fluxtype //!< switch for flux calculation
   );
 
-  //! add parameters specific for time-integration scheme
+  //! add global state vectors specific for time-integration scheme
   virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false) = 0;
+
+  //! add interface state vector specific for time-integration scheme
+  virtual void AddTimeIntegrationSpecificInterfaceVector() = 0;
 
   /*--- calculate and update -----------------------------------------------*/
 
@@ -820,7 +856,8 @@ protected:
 
   //! solvertype and flags for nonlinear (always incremental) and (linear) incremental solver
   INPAR::SCATRA::SolverType solvtype_;
-  //! incremental or linear full solving ? rename -> is_incremental_
+
+  //! incremental or linear full solving? rename -> is_incremental_
   bool incremental_;
 
   //! flag indicating if initial velocity field has been set
@@ -831,6 +868,9 @@ protected:
 
   //! LOMA-specific parameter: turbulence model
   enum INPAR::FLUID::TurbModelAction turbmodel_;
+
+  //! flag indicating scatra-scatra coupling
+  bool s2icoupling_;
 
   /*--- query and output ---------------------------------------------------*/
 
@@ -857,6 +897,15 @@ protected:
 
   //! boolean to write state vectore to matlab file (input parameter)
   const bool output_state_matlab_;
+
+  //! flag for finite difference check
+  INPAR::SCATRA::FDCheck fdcheck_;
+
+  //! perturbation magnitude for finite difference check
+  const double fdcheckeps_;
+
+  //! relative tolerance for finite difference check
+  const double fdchecktol_;
 
   /*========================================================================*/
   //! @name Time, time-step, and iteration variables
@@ -907,6 +956,8 @@ protected:
   Teuchos::RCP<Epetra_Vector> phinp_;
   //! phi at meshfree nodes (for non-interpolatory meshfree basis functions)
   Teuchos::RCP<Epetra_Vector> phiatmeshfreenodes_;
+  //! phi at times n+1 at scatra-scatra interface
+  Teuchos::RCP<Epetra_Vector> iphinp_;
 
   //! time derivative of phi at times n
   Teuchos::RCP<Epetra_Vector> phidtn_;
@@ -1000,8 +1051,24 @@ protected:
   //! coupling of fluid-fluid at an internal interface
   Teuchos::RCP<FLD::Meshtying> meshtying_;
 
-  // options for meshtying
+  //! options for meshtying
   enum INPAR::FLUID::MeshTying msht_;
+
+  //! global map extractor for interface problems
+  Teuchos::RCP<LINALG::MultiMapExtractor> maps_;
+
+  //! interface map extractor for interface problems
+  Teuchos::RCP<LINALG::MapExtractor> imaps_;
+
+  //! interface coupling adapter
+  Teuchos::RCP<ADAPTER::Coupling> icoup_;
+
+  //! auxiliary system matrix for coupling terms (either sparse matrix or block sparse matrix)
+  Teuchos::RCP<LINALG::SparseOperator> auxmat_;
+
+  //! transformation operators for auxiliary system matrix
+  Teuchos::RCP<FSI::UTILS::MatrixColTransform> imastertoslavetransform_;
+  Teuchos::RCP<FSI::UTILS::MatrixColTransform> islavetomastertransform_;
 
   /*========================================================================*/
   //! @name AVM3 variables
@@ -1068,7 +1135,7 @@ protected:
   //! flag for potential boundary condition due to convective heat transfer
   bool convheatrans_;
 
-  //! flag for potentially skiping computation of initial time derivative
+  //! flag for potentially skipping computation of initial time derivative
   bool skipinitder_;
 
   /*========================================================================*/

@@ -41,7 +41,7 @@ FLD::LESScaleSeparation::LESScaleSeparation(
  }
  default:
  {
-   dserror("Unkonwn filter type for les!");
+   dserror("Unknown filter type for les!");
    break;
  }
  }

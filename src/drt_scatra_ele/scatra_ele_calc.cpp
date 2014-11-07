@@ -134,36 +134,11 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::Evaluate(
   // calculate element coefficient matrix and rhs
   //--------------------------------------------------------------------------------
 
-  Sysmat(
-    ele,
-    elemat1_epetra,
-    elevec1_epetra,
-    elevec2_epetra);
+  Sysmat(ele,elemat1_epetra,elevec1_epetra,elevec2_epetra);
 
-#if 0
-  // for debugging of matrix entries
-  if((ele->Id()==2) and (time < 1.3 and time > 1.1))
-  {
-    FDcheck(
-      ele,
-      elemat1_epetra,
-      elevec1_epetra,
-      elevec2_epetra,
-      time,
-      dt,
-      timefac,
-      alphaF,
-      whichassgd,
-      whichfssgd,
-      assgd,
-      fssgd,
-      turbmodel_,
-      Cs,
-      tpn,
-      frt,
-      scatratype);
-  }
-#endif
+  // perform finite difference check on element level
+  if(scatrapara_->FDCheck() == INPAR::SCATRA::fdcheck_local and ele->Owner() == discretization.Comm().MyPID())
+    FDCheck(ele,elemat1_epetra,elevec1_epetra,elevec2_epetra);
 
   // ---------------------------------------------------------------------
   // output values of Prt, diffeff and Cs_delta_sq_Prt (channel flow only)
@@ -372,10 +347,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractTurbulenceApproach(
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
-  DRT::Element*                         ele, ///< the element whose matrix is calculated
-  Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
-  Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
-  Epetra_SerialDenseVector&             subgrdiff ///< subgrid-diff.-scaling vector
+  DRT::Element*                         ele,        ///< the element whose matrix is calculated
+  Epetra_SerialDenseMatrix&             emat,       ///< element matrix to calculate
+  Epetra_SerialDenseVector&             erhs,       ///< element rhs to calculate
+  Epetra_SerialDenseVector&             subgrdiff   ///< subgrid-diff.-scaling vector
   )
 {
   //----------------------------------------------------------------------

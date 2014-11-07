@@ -2,7 +2,7 @@
 /*!
 \file drt_condition_selector.cpp
 
-\brief Split conditions into map extrators
+\brief Split conditions into map extractors
 
 <pre>
 Maintainer: Martin Kronbichler
@@ -131,7 +131,7 @@ void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretizatio
 {
   SetupCondDofSets(dis);
 
-  // Find all non-conditioned dofs by substracting all conditioned ones.
+  // Find all non-conditioned dofs by subtracting all conditioned ones.
 
   std::set<int> otherdofset(fullmap.MyGlobalElements(),
                             fullmap.MyGlobalElements() + fullmap.NumMyElements());

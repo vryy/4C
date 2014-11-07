@@ -13,16 +13,22 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_implicit.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
 
-#include "../linalg/linalg_solver.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_adapter/adapter_coupling.H"
 
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_timecurve.H"
+
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+
+#include "../drt_scatra_ele/scatra_ele_action.H"
+
+#include "../linalg/linalg_solver.H"
+
 #include "turbulence_hit_scalar_forcing.H"
 
 // for AVM3 solver:
@@ -636,7 +642,6 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     sysmat_->Complete();
   }
 
-  // what's next?
   return;
 } // SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble
 
@@ -662,14 +667,11 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve()
 
   // reset the matrix (and its graph!) since we solved
   // a very special problem here that has a different sparsity pattern
-  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
-    BlockSystemMatrix()->Reset();
-  else
-    SystemMatrix()->Reset();
+  sysmat_->Reset();
+
   // reset the solver as well
   solver_->Reset();
 
-  // that's it
   return;
 } // SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve
 
@@ -963,6 +965,7 @@ void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
   }
   return;
 } // SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList
+
 
 /*----------------------------------------------------------------------*
  | compute outward pointing unit normal vectors at given b.c.  gjb 01/09|
@@ -1827,3 +1830,175 @@ bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int          itnum,
 
   return stopnonliniter;
 } // SCATRA::ScaTraTimIntImplicit::ConvergenceCheck
+
+
+/*----------------------------------------------------------------------------------------------*
+ | finite difference check for scalar transport system matrix (for debugging only)   fang 10/14 |
+ *----------------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::FDCheck()
+{
+  // initial screen output
+  if(myrank_ == 0)
+    std::cout << std::endl << "FINITE DIFFERENCE CHECK FOR SCATRA SYSTEM MATRIX" << std::endl;
+
+  // make a copy of state variables to undo perturbations later
+  Teuchos::RCP<Epetra_Vector> phinp_original = Teuchos::rcp(new Epetra_Vector(*phinp_));
+
+  // make a copy of system matrix as Epetra_CrsMatrix
+  Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
+  if(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_) != Teuchos::null)
+    sysmat_original = (new LINALG::SparseMatrix(*(Teuchos::rcp_static_cast<LINALG::SparseMatrix>(sysmat_))))->EpetraMatrix();
+  else if(Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_) != Teuchos::null)
+    sysmat_original = (new LINALG::SparseMatrix(*(Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase>(sysmat_)->Merge())))->EpetraMatrix();
+  else
+    dserror("Type of system matrix unknown!");
+  sysmat_original->FillComplete();
+
+  // make a copy of system right-hand side vector
+  Teuchos::RCP<Epetra_Vector> rhs_original = Teuchos::rcp(new Epetra_Vector(*residual_));
+
+  // initialize counter for system matrix entries with failing finite difference check
+  int counter(0);
+
+  // initialize tracking variable for maximum absolute and relative errors
+  double maxabserr(0.);
+  double maxrelerr(0.);
+
+  for (int col=0; col<sysmat_original->NumGlobalCols(); ++col)
+  {
+    // fill state vector with original state variables
+    phinp_->Update(1.,*phinp_original,0.);
+
+    // impose perturbation
+    phinp_->SumIntoGlobalValue(col,0,fdcheckeps_);
+
+    // carry perturbation over to state vectors at intermediate time stages if necessary
+    ComputeIntermediateValues();
+
+    // calculate element right-hand side vector for perturbed state
+    AssembleMatAndRHS();
+
+    // Now we compare the difference between the current entries in the system matrix
+    // and their finite difference approximations according to
+    // entries ?= (residual_perturbed - residual_original) / epsilon
+
+    // Note that the residual_ vector actually denotes the right-hand side of the linear
+    // system of equations, i.e., the negative system residual.
+    // To account for errors due to numerical cancellation, we additionally consider
+    // entries + residual_original / epsilon ?= residual_perturbed / epsilon
+
+    // Note that we still need to evaluate the first comparison as well. For small entries in the system
+    // matrix, the second comparison might yield good agreement in spite of the entries being wrong!
+    for(int row=0; row<discret_->DofRowMap()->NumMyElements(); ++row)
+    {
+      // get current entry in original system matrix
+      double entry(0.);
+      int length = sysmat_original->NumMyEntries(row);
+      int numentries;
+      std::vector<double> values(length);
+      std::vector<int> indices(length);
+      sysmat_original->ExtractMyRowCopy(row,length,numentries,&values[0],&indices[0]);
+      for(int ientry=0; ientry<length; ++ientry)
+      {
+        if(sysmat_original->ColMap().GID(indices[ientry]) == col)
+        {
+          entry = values[ientry];
+          break;
+        }
+      }
+
+      // finite difference suggestion (first divide by epsilon and then add for better conditioning)
+      const double fdval = -(*residual_)[row] / fdcheckeps_ + (*rhs_original)[row] / fdcheckeps_;
+
+      // confirm accuracy of first comparison
+      if(abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
+        dserror("Finite difference check involves values too close to numerical zero!");
+
+      // absolute and relative errors in first comparison
+      const double abserr1 = entry - fdval;
+      if(abs(abserr1) > maxabserr)
+        maxabserr = abs(abserr1);
+      double relerr1(0.);
+      if(abs(entry) > 1.e-17)
+        relerr1 = abserr1 / abs(entry);
+      else if(abs(fdval) > 1.e-17)
+        relerr1 = abserr1 / abs(fdval);
+      if(abs(relerr1) > maxrelerr)
+        maxrelerr = abs(relerr1);
+
+      // evaluate first comparison
+      if(abs(relerr1) > fdchecktol_)
+      {
+        std::cout << "sysmat[" << row << "," << col << "]:  " << entry << "   ";
+        std::cout << "finite difference suggestion:  " << fdval << "   ";
+        std::cout << "absolute error:  " << abserr1 << "   ";
+        std::cout << "relative error:  " << relerr1 << std::endl;
+
+        counter++;
+      }
+
+      // first comparison OK
+      else
+      {
+        // left-hand side in second comparison
+        const double left  = entry - (*rhs_original)[row] / fdcheckeps_;
+
+        // right-hand side in second comparison
+        const double right = -(*residual_)[row] / fdcheckeps_;
+
+        // confirm accuracy of second comparison
+        if(abs(right) > 1.e-17 and abs(right) < 1.e-15)
+          dserror("Finite difference check involves values too close to numerical zero!");
+
+        // absolute and relative errors in second comparison
+        const double abserr2 = left - right;
+        if(abs(abserr2) > maxabserr)
+          maxabserr = abs(abserr2);
+        double relerr2(0.);
+        if(abs(left) > 1.e-17)
+          relerr2 = abserr2 / abs(left);
+        else if(abs(right) > 1.e-17)
+          relerr2 = abserr2 / abs(right);
+        if(abs(relerr2) > maxrelerr)
+          maxrelerr = abs(relerr2);
+
+        // evaluate second comparison
+        if(abs(relerr2) > fdchecktol_)
+        {
+          std::cout << "sysmat[" << row << "," << col << "]-rhs[" << row << "]/eps:  " << left << "   ";
+          std::cout << "-rhs_perturbed[" << row << "]/eps:  " << right << "   ";
+          std::cout << "absolute error:  " << abserr2 << "   ";
+          std::cout << "relative error:  " << relerr2 << std::endl;
+
+          counter++;
+        }
+      }
+    }
+  }
+
+  // communicate tracking variables
+  discret_->Comm().SumAll(&counter,&counter,1);
+  discret_->Comm().MaxAll(&maxabserr,&maxabserr,1);
+  discret_->Comm().MaxAll(&maxrelerr,&maxrelerr,1);
+
+  // final screen output
+  if(myrank_ == 0)
+  {
+    if(counter)
+    {
+      printf("--> FAILED AS LISTED ABOVE WITH %d CRITICAL MATRIX ENTRIES IN TOTAL\n\n",counter);
+      dserror("Finite difference check failed for scalar transport system matrix!");
+    }
+    else
+      printf("--> PASSED WITH MAXIMUM ABSOLUTE ERROR %+12.5e AND MAXIMUM RELATIVE ERROR %+12.5e\n\n",maxabserr,maxrelerr);
+  }
+
+  // undo perturbations of state variables
+  phinp_->Update(1.,*phinp_original,0.);
+  ComputeIntermediateValues();
+
+  // recompute system matrix and right-hand side vector based on original state variables
+  AssembleMatAndRHS();
+
+  return;
+}

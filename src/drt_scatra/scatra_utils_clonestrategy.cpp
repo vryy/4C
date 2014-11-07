@@ -47,7 +47,7 @@ std::map<std::string,std::string> SCATRA::ScatraFluidCloneStrategy::ConditionsTo
   conditions_to_copy.insert(std::pair<std::string,std::string>("SurfaceNeumann","FluidSurfaceNeumann"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("VolumeNeumann","FluidVolumeNeumann"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("KrylovSpaceProjection","KrylovSpaceProjection"));
-  conditions_to_copy.insert(std::pair<std::string,std::string>("ElectrodeKinetics","ElectrodeKinetics"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("ElchBoundaryKinetics","ElchBoundaryKinetics"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("ScaTraFluxCalc","ScaTraFluxCalc"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("Initfield","Initfield"));
 

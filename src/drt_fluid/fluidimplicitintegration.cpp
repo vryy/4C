@@ -6392,7 +6392,7 @@ void FLD::FluidImplicitTimeInt::SetupMeshtying()
   bool alldofcoupled = params_->get<bool>("ALLDOFCOUPLED");
 
   // meshtying: all dofs (velocity + pressure) are coupled
-  //            -> vector of length velocity dofs (numdim_) + pressure dof initialiued with ones
+  //            -> vector of length velocity dofs (numdim_) + pressure dof initialized with ones
   // coupleddof [1, 1, 1, 1]
   std::vector<int> coupleddof(numdim_+1, 1);
 
@@ -6400,7 +6400,7 @@ void FLD::FluidImplicitTimeInt::SetupMeshtying()
   {
     // meshtying: only velocity dofs are coupled
     // meshtying: all dofs (velocity + pressure) are coupled
-    //            -> vector of length velocity dofs (numdim_) + pressure dof initialiued with ones
+    //            -> vector of length velocity dofs (numdim_) + pressure dof initialized with ones
     //            -> last entry (pressure) is set to zero -> pressure is not included into the coupling algorithm
     // coupleddof [1, 1, 1, 0]
     coupleddof[numdim_]=0;

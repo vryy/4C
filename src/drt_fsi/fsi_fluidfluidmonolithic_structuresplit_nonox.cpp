@@ -192,13 +192,13 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
      *
      */
 
-    // ----------adressing term 1
+    // ----------addressing term 1
     rhs = Teuchos::rcp(new Epetra_Vector(sig.RowMap(),true));
     sig.Apply(*ddgpred_,*rhs);
 
     Extractor().AddVector(*rhs,0,f);
 
-    // ----------adressing term 2
+    // ----------addressing term 2
     rhs = Teuchos::rcp(new Epetra_Vector(sig.RowMap(),true));
     Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
     sig.Apply(*FluidToStruct(fveln),*rhs);

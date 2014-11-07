@@ -66,11 +66,11 @@ public:
   //! @name general elch parameters
   /*--------------------------------------------------------*/
 
-  INPAR::ELCH::ElchType ElchType(){return elchtype_;};
+  const INPAR::ELCH::ElchType ElchType(){return elchtype_;};
 
-  INPAR::ELCH::EquPot EquPot(){return equpot_;};
+  const INPAR::ELCH::EquPot EquPot(){return equpot_;};
 
-  double FRT(){return frt_;};
+  const double FRT(){return frt_;};
 
   /*--------------------------------------------------------------*/
   //! @name elch parameters for Nernst-Planck formulation
@@ -80,9 +80,9 @@ public:
   //! @name elch parameters for diffusion-conduction formulation
   /*--------------------------------------------------------------*/
 
-  bool CurSolVar(){return cursolvar_;};
+  const bool CurSolVar(){return cursolvar_;};
 
-  bool DiffusionCoeffBased(){return diffusioncoefbased_;};
+  const bool DiffusionCoeffBased(){return diffusioncoefbased_;};
 
   const double NewmanConstA(){return newmanconsta_;};
 

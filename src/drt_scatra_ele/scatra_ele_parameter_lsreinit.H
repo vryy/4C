@@ -56,12 +56,12 @@ public:
   //! @name access-routines
   /*========================================================================*/
 
-  INPAR::SCATRA::SmoothedSignType SignType(){return signtype_;};
-  INPAR::SCATRA::CharEleLengthReinit CharEleLengthReinit(){return charelelengthreinit_;};
-  double InterfaceThicknessFac(){return interfacethicknessfac_;};
-  bool UseProjectedVel(){return useprojectedreinitvel_;};
-  INPAR::SCATRA::LinReinit LinForm(){return linform_;};
-  INPAR::SCATRA::ArtDiff ArtDiff(){return artdiff_;};
+  const INPAR::SCATRA::SmoothedSignType SignType(){return signtype_;};
+  const INPAR::SCATRA::CharEleLengthReinit CharEleLengthReinit(){return charelelengthreinit_;};
+  const double InterfaceThicknessFac(){return interfacethicknessfac_;};
+  const bool UseProjectedVel(){return useprojectedreinitvel_;};
+  const INPAR::SCATRA::LinReinit LinForm(){return linform_;};
+  const INPAR::SCATRA::ArtDiff ArtDiff(){return artdiff_;};
 
 private:
 

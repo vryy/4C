@@ -302,7 +302,7 @@ void ADAPTER::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
 {
   // we expect to get maps of exactly the same shape
   if (not masternodemap->PointSameAs(*permslavenodemap))
-    dserror("master and permutated slave node maps do not match");
+    dserror("master and permuted slave node maps do not match");
 
   // export master nodes to slave node distribution
 
@@ -324,7 +324,7 @@ void ADAPTER::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
     Teuchos::rcp(new Epetra_Map(-1, permmasternodevec->MyLength(), permmasternodevec->Values(), 0, masterdis.Comm()));
 
   if (not slavenodemap->PointSameAs(*permmasternodemap))
-    dserror("slave and permutated master node maps do not match");
+    dserror("slave and permuted master node maps do not match");
 
   masternodevec = Teuchos::null;
   permmasternodevec = Teuchos::null;
@@ -421,10 +421,10 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
 
   dofs.clear();
 
-  // permutated dof map according to a given permutated node map
+  // permuted dof map according to a given permuted node map
   permdofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, dis.Comm()));
 
-  // prepare communication plan to create a dofmap out of a permutated
+  // prepare communication plan to create a dofmap out of a permuted
   // dof map
   exporter = Teuchos::rcp(new Epetra_Export(*permdofmap, *dofmap));
 }

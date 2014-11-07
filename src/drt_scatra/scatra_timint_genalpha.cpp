@@ -13,17 +13,26 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_genalpha.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
+
 #include "turbulence_hit_scalar_forcing.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_TimeMonitor.hpp>
-#include "../drt_io/io.H"
-#include "../linalg/linalg_solver.H"
+
+#include "../drt_adapter/adapter_coupling.H"
+
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
-#include "../drt_lib/drt_globalproblem.H"
+
 #include "../drt_inpar/drt_validparameters.H"
 
+#include "../drt_io/io.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+
+#include "../drt_scatra_ele/scatra_ele_action.H"
+
+#include "../linalg/linalg_solver.H"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       vg 11/08 |
@@ -89,10 +98,10 @@ void SCATRA::TimIntGenAlpha::Init()
   // set element parameters
   // -------------------------------------------------------------------
   // note: - this has to be done before element routines are called
-  //       - order is important here: for savety checks in SetElementGeneralScaTraParameter(),
-  //         we have to konw the time-integration parameters
+  //       - order is important here: for safety checks in SetElementGeneralScaTraParameters(),
+  //         we have to know the time-integration parameters
   SetElementTimeParameter();
-  SetElementGeneralScaTraParameter();
+  SetElementGeneralScaTraParameters();
   SetElementTurbulenceParameter();
 
   // for initializing phiaf_, phiam based on the initial field that was
@@ -171,17 +180,6 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forcedincrementalsolve
 }
 
 
-/*--------------------------------------------------------------------------*
- | set time for evaluation of POINT -Neumann boundary conditions   vg 12/08 |
- *--------------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(
-  Teuchos::ParameterList& params)
-{
-  params.set("total time",time_-(1-alphaF_)*dta_);
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/
@@ -205,6 +203,17 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameterBackwardEuler()
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
+  return;
+}
+
+
+/*--------------------------------------------------------------------------*
+ | set time for evaluation of POINT -Neumann boundary conditions   vg 12/08 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(
+  Teuchos::ParameterList& params)
+{
+  params.set("total time",time_-(1-alphaF_)*dta_);
   return;
 }
 
@@ -323,9 +332,9 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCv()
 }
 
 
-/*----------------------------------------------------------------------*
- | add parameters specific for time-integration scheme         vg 11/08 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*
+ | add global state vectors specific for time-integration scheme   vg 11/08 |
+ *--------------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
 {
   discret_->SetState("phinp",phiaf_);
@@ -337,6 +346,20 @@ void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificVectors(bool forcedincrem
     discret_->SetState("hist",hist_);
     discret_->SetState("phin",phin_);
   }
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------*
+ | add interface state vector specific for time-integration scheme   fang 11/14 |
+ *------------------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificInterfaceVector()
+{
+  // set interface state vector iphinp_ with transformed dof values and add to discretization
+  imaps_->InsertVector(icoup_->SlaveToMaster(maps_->ExtractVector(*phiaf_,2)),0,iphinp_);
+  imaps_->InsertVector(icoup_->MasterToSlave(maps_->ExtractVector(*phiaf_,1)),1,iphinp_);
+  discret_->SetState("iphinp",iphinp_);
 
   return;
 }
@@ -473,7 +496,7 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
   Teuchos::ParameterList eleparams;
 
   // standard general element parameter without stabilization
-  SetElementGeneralScaTraParameterDeactivatedStab();
+  SetElementGeneralScaTraParameters(true);
 
   // we also have to modify the time-parameter list (incremental solve)
   // actually we do not need a time integration scheme for calculating the initial time derivatives,
@@ -483,18 +506,15 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
   SetElementTimeParameterBackwardEuler();
 
   // deactivate turbulence settings
-  SetElementTurbulenceParameterDeactivated();
+  SetElementTurbulenceParameter(true);
 
   // compute time derivative of phi at time t=0
   CalcInitialPhidt();
 
   // and finally undo our temporary settings
-  SetElementGeneralScaTraParameter();
+  SetElementGeneralScaTraParameters();
   SetElementTimeParameter();
   SetElementTurbulenceParameter();
 
   return;
 }
-
-
-

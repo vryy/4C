@@ -647,7 +647,7 @@ public:
   /*!
   \brief Return the location vector of this element
 
-  The method computes degrees of freedom this element adresses.
+  The method computes degrees of freedom this element addresses.
   Degree of freedom ordering is as follows:<br>
   First all degrees of freedom of adjacent nodes are numbered in
   local nodal order, then the element internal degrees of freedom are

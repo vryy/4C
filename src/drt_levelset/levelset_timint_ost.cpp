@@ -140,6 +140,11 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrepareFirstTimeStep()
             Teuchos::tuple<int>(INPAR::SCATRA::artdiff_none),
             &eleparams.sublist("REINITIALIZATION"));
 
+    // parameters for finite difference check
+    eleparams.set<int>("fdcheck",fdcheck_);
+    eleparams.set<double>("fdcheckeps",fdcheckeps_);
+    eleparams.set<double>("fdchecktol",fdchecktol_);
+
     // call standard loop over elements
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 

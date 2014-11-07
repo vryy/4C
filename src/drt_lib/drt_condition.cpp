@@ -175,7 +175,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==FlowRateThroughSurface_3D)     os << "Monitor flow rate through a surface interface: ";
   else if (Type()==ImpulsRateThroughSurface_3D)   os << "Monitor impuls rate through a interface: ";
   else if (Type()==FluidNeumannInflow)            os << "Fluid Neumann inflow: ";
-  else if (Type()==ElectrodeKinetics)             os << "ElectrodeKinetics boundary condition: ";
+  else if (Type()==ElchBoundaryKinetics)          os << "Electrode kinetics as boundary condition: ";
   else if (Type()==ArtJunctionCond)               os << "Artery junction boundary condition";
   else if (Type()==ArtWriteGnuplotCond)           os << "Artery write gnuplot format condition";
   else if (Type()==ArtPrescribedCond)             os << "Artery prescribed boundary condition";

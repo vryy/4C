@@ -342,7 +342,7 @@ public:
     \endcode
 
   \note This template will let you experience one of the most kryptic error messages
-        (at link time) you have ever seen if you try to use it with other data types then
+        (at link time) you have ever seen if you try to use it with other data types than
         mentioned above. The same holds for the case where you did not get the
         syntax absolutely correct.
 
@@ -409,7 +409,7 @@ public:
     \endcode
 
   \note This template will let you experience one of the most kryptic error messages
-        (at link time) you have ever seen if you try to use it with other data types then
+        (at link time) you have ever seen if you try to use it with other data types than
         mentioned above. The same holds for the case where you did not get the
         syntax absolutely correct.
 

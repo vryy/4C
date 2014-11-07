@@ -140,21 +140,22 @@ void SCATRA::ScaTraTimIntElch::InitSystemMatrix()
 
     Teuchos::ParameterList& diffcondparams = elchparams_->sublist("DIFFCOND");
 
-    // currrent is a solution variable
+    // current is a solution variable
     if(DRT::INPUT::IntegralValue<int>(diffcondparams,"CURRENT_SOLUTION_VAR"))
     {
       // shape of local row element(0) -> number of space dimensions
-      //int dim = DRT::Problem::Instance()->NDim();
+      // int dim = DRT::Problem::Instance()->NDim();
       int dim = DRT::UTILS::getDimension(discret_->lRowElement(0)->Shape());
       // number of concentrations transported is numdof-1-nsd
       numscal_ -= dim;
     }
 
-    // The diffusion-conduction formulation does not support all options of the Nernst-Plack formulation
+    // The diffusion-conduction formulation does not support all options of the Nernst-Planck formulation
     // Let's check for valid options
     if(elchtype_==INPAR::ELCH::elchtype_diffcond)
       ValidParameterDiffCond();
   }
+
   // set up the concentration-el.potential splitter
   splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
   FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
@@ -225,86 +226,20 @@ void SCATRA::ScaTraTimIntElch::SetupMeshtying()
 
 
 /*----------------------------------------------------------------------*
- | set all general parameters for element                    ehrl 11/13 |
+ | set elch-specific element parameters                      fang 11/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::SetElementGeneralScaTraParameter()
+void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams)
 {
-  Teuchos::ParameterList eleparams;
-
+  // overwrite action type
   eleparams.set<int>("action",SCATRA::set_elch_scatra_parameter);
 
-  // set type of scalar transport problem
-  eleparams.set<int>("scatratype",scatratype_);
-
-  // general scatra parameter
-  eleparams.set<int>("form of convective term",convform_);
-  eleparams.set("isale",isale_);
-
-  // set flag for writing the flux vector fields
-  eleparams.set<int>("writeflux",writeflux_);
-  //! set vector containing ids of scalars for which flux vectors are calculated
-  eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
-
-  // parameters for stabilization
-  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
-  // general elch parameter
+  // general elch parameters
   eleparams.set<double>("frt",INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*(elchparams_->get<double>("TEMPERATURE"))));
   eleparams.set<int>("elchtype",elchtype_);
   eleparams.set<int>("equpot",equpot_);
 
   // parameters for diffusion-conduction formulation
   eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
-
-  // call standard loop over elements
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-  return;
-}
-
-/*--------------------------------------------------------------------------*
- | set all general parameters for element with deactivated stab. ehrl 06/14 |
- *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::SetElementGeneralScaTraParameterDeactivatedStab()
-{
-  Teuchos::ParameterList eleparams;
-
-  eleparams.set<int>("action",SCATRA::set_elch_scatra_parameter);
-
-  // set type of scalar transport problem
-  eleparams.set<int>("scatratype",scatratype_);
-
-  eleparams.set<int>("form of convective term",convform_);
-  eleparams.set("isale",isale_);
-
-  // set flag for writing the flux vector fields
-  eleparams.set<int>("writeflux",writeflux_);
-  //! set vector containing ids of scalars for which flux vectors are calculated
-  eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
-
-  // parameters for stabilization
-  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-  Teuchos::setStringToIntegralParameter<int>("STABTYPE",
-      "no_stabilization",
-      "type of stabilization (if any)",
-      Teuchos::tuple<std::string>("no_stabilization"),
-      Teuchos::tuple<std::string>("Do not use any stabilization"),
-      Teuchos::tuple<int>(INPAR::SCATRA::stabtype_no_stabilization),
-      &eleparams.sublist("STABILIZATION"));
-  DRT::INPUT::BoolParameter("SUGRVEL","no","potential incorporation of subgrid-scale velocity",&eleparams.sublist("STABILIZATION"));
-  DRT::INPUT::BoolParameter("ASSUGRDIFF","no",
-        "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) term",&eleparams.sublist("STABILIZATION"));
-
-  // general elch parameter
-  eleparams.set<double>("frt",INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*(elchparams_->get<double>("TEMPERATURE"))));
-  eleparams.set<int>("elchtype",elchtype_);
-  eleparams.set<int>("equpot",equpot_);
-
-  // parameters for diffusion-conduction formulation
-  eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
-
-  // call standard loop over elements
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   return;
 }
@@ -620,7 +555,7 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputElectrodeInf
   Teuchos::RCP< std::vector<double> > firstelectkin = Teuchos::rcp(new std::vector<double>(3, 0.0));
 
   // evaluate the following type of boundary conditions:
-  std::string condname("ElectrodeKinetics");
+  std::string condname("ElchBoundaryKinetics");
   std::vector<DRT::Condition*> cond;
   discret_->GetCondition(condname,cond);
 
@@ -722,7 +657,7 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
 
   // set action for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",SCATRA::bd_calc_elch_electrode_kinetics);
+  eleparams.set<int>("action",SCATRA::bd_calc_elch_boundary_kinetics);
   eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("calc_status",true); // just want to have a status ouput!
 
@@ -765,7 +700,7 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   eleparams.set("currentresidual",0.0);
 
   // would be nice to have a EvaluateScalar for conditions!!!
-  discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,"ElectrodeKinetics",condid);
+  discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,"ElchBoundaryKinetics",condid);
 
   // get integral of current on this proc
   double currentintegral = eleparams.get<double>("currentintegral");
@@ -1021,7 +956,7 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
 {
   // access electrode kinetics condition
   std::vector<DRT::Condition*> Elchcond;
-  discret_->GetCondition("ElectrodeKinetics",Elchcond);
+  discret_->GetCondition("ElchBoundaryKinetics",Elchcond);
   int numcond = Elchcond.size();
 
   for(int icond = 0; icond < numcond; icond++)
@@ -1108,7 +1043,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     // the values should match your initial field at the boundary!
     ApplyDirichletBC(time_,phin_,Teuchos::null);
 
-    // contributions due to Neumann b.c. or ElectrodeKinetics b.c.
+    // contributions due to Neumann b.c. or ElchBoundaryKinetics b.c.
     // have to be summed up here, and applied
     // as a current flux condition at the potential field!
 
@@ -1178,10 +1113,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 
     // reset the matrix (and its graph!) since we solved
     // a very special problem here that has a different sparsity pattern
-    if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
-      BlockSystemMatrix()->Reset();
-    else
-      SystemMatrix()->Reset();
+    sysmat_->Reset();
   }
 
   // go on!
@@ -1253,7 +1185,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       ComputeTimeDerivPot0(false);
 
     std::vector<DRT::Condition*> cond;
-    discret_->GetCondition("ElectrodeKinetics",cond);
+    discret_->GetCondition("ElchBoundaryKinetics",cond);
     if (!cond.empty())
     {
       const unsigned condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
@@ -1572,21 +1504,21 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
 /*----------------------------------------------------------------------*
  | evaluate contribution of electrode kinetics to eq. system  gjb 02/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingBC(
+void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryConditions(
     Teuchos::RCP<LINALG::SparseOperator> matrix,
     Teuchos::RCP<Epetra_Vector>          rhs
 )
 {
-  // time measurement: evaluate condition 'ElectrodeKinetics'
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElectrodeKinetics'");
+  // time measurement: evaluate condition 'ElchBoundaryKinetics'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElchBoundaryKinetics'");
 
   discret_->ClearState();
 
-  // create an parameter list
+  // create parameter list
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action",SCATRA::bd_calc_elch_electrode_kinetics);
+  condparams.set<int>("action",SCATRA::bd_calc_elch_boundary_kinetics);
   condparams.set<int>("scatratype",scatratype_);
   condparams.set("frt",frt_); // factor F/RT
   condparams.set("isale",isale_);
@@ -1594,23 +1526,23 @@ void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingBC(
   // parameters for Elch/DiffCond formulation
   condparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
 
-  if (isale_)   //provide displacement field in case of ALE
+  if (isale_)   // provide displacement field in case of ALE
     discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
   // add element parameters and set state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
-  std::string condstring("ElectrodeKinetics");
-  // evaluate ElectrodeKinetics conditions at time t_{n+1} or t_{n+alpha_F}
+  std::string condstring("ElchBoundaryKinetics");
+  // evaluate ElchBoundaryKinetics conditions at time t_{n+1} or t_{n+alpha_F}
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
   discret_->ClearState();
 
-  //Add linearization of NernstCondition to system matrix
+  // Add linearization of NernstCondition to system matrix
   if(ektoggle_!=Teuchos::null)
     LinearizationNernstCondition();
 
   return;
-} // ScaTraTimIntElch::EvaluateSolutionDependingBC
+} // ScaTraTimIntElch::EvaluateElectrodeBoundaryConditions
 
 
 /*----------------------------------------------------------------------*
@@ -1618,8 +1550,10 @@ void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingBC(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
 {
-  // Blank rows with Nernst -BC (inclusive diagonal entry)
+  // Blank rows with Nernst-BC (inclusive diagonal entry)
   // Nernst-BC is a additional constraint coupled to the original system of equation
+  if(!sysmat_->Filled())
+    sysmat_->Complete();
   sysmat_->ApplyDirichlet(ektoggle_,false);
   LINALG::ApplyDirichlettoSystem(increment_,residual_,zeros_,ektoggle_);
 
@@ -1641,8 +1575,8 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
   // we need here concentration at t+np
   discret_->SetState("phinp",phinp_);
 
-  std::string condstring("ElectrodeKinetics");
-  // evaluate ElectrodeKinetics conditions at time t_{n+1} or t_{n+alpha_F}
+  std::string condstring("ElchBoundaryKinetics");
+  // evaluate ElchBoundaryKinetics conditions at time t_{n+1} or t_{n+alpha_F}
   // phinp (view to phinp)
   discret_->EvaluateCondition(condparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condstring);
   discret_->ClearState();

@@ -210,6 +210,14 @@ namespace ELEMENTS
       const int                                    iquad      //!< id of current Gauss point
     );
 
+    //! finite difference check for debugging purposes
+    virtual void FDCheck(
+      DRT::Element*                              ele,          //!< the element we are dealing with
+      Epetra_SerialDenseMatrix&                  emat,         //!< element matrix to calculate
+      Epetra_SerialDenseVector&                  erhs,         //!< element rhs to calculate
+      Epetra_SerialDenseVector&                  subgrdiff     //!< subgrid-diff.-scaling vector
+    );
+
     /*========================================================================*/
     //! @name routines for additional element evaluations (called from EvaluateService)
     /*========================================================================*/

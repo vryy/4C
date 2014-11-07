@@ -92,6 +92,11 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters()
   // set level-set reitialization specific parameters
   eleparams.sublist("REINITIALIZATION") = levelsetparams_->sublist("REINITIALIZATION");
 
+  // parameters for finite difference check
+  eleparams.set<int>("fdcheck",fdcheck_);
+  eleparams.set<double>("fdcheckeps",fdcheckeps_);
+  eleparams.set<double>("fdchecktol",fdchecktol_);
+
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
@@ -210,7 +215,7 @@ void SCATRA::LevelSetAlgorithm::FinishTimeLoopReinit()
   // reset time-integration parameters for element evaluation
   SetElementTimeParameter();
   // reset general parameters for element evaluation
-  SetElementGeneralScaTraParameter();
+  SetElementGeneralScaTraParameters();
   SetElementTurbulenceParameter();
 
 //  {
@@ -320,7 +325,7 @@ void SCATRA::LevelSetAlgorithm::PrepareTimeStepReinit()
   // -------------------------------------------------------------------
   SetOldPartOfRighthandside();
   SetReinitializationElementTimeParameters();
-  
+
   // -------------------------------------------------------------------
   // compute node-based velocity field
   // -------------------------------------------------------------------
@@ -378,7 +383,7 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
 #else
     discret_->SetState("phinp", phinp_);
 #endif
-    
+
     // call loop over elements
     discret_->Evaluate(eleparams,sysmat_,residual_);
     discret_->ClearState();
@@ -531,13 +536,13 @@ void SCATRA::LevelSetAlgorithm::UpdateReinit(
 {
   // allows for aborting reinitialization loop if reinitialization does not further improve the gradient
   // TODO name nicht gut
-  INPAR::SCATRA::ReInitialStationaryCheck reinit_stationary_check 
+  INPAR::SCATRA::ReInitialStationaryCheck reinit_stationary_check
       = INPAR::SCATRA::reinit_stationarycheck_L1normintegrated;
   //TODO: get from parameters
   //  = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReInitialStationaryCheck>(combustdynreinit_->sublist("COMBUSTION PDE REINITIALIZATION"),"STATIONARY_CHECK");
 
   double actgraderr = EvaluateGradientNormError();
-  
+
   if((actgraderr >= oldgraderr) and
       reinit_stationary_check == INPAR::SCATRA::reinit_stationarycheck_L1normintegrated)
   {
@@ -547,7 +552,7 @@ void SCATRA::LevelSetAlgorithm::UpdateReinit(
      stoploop = true;
      // and keep the phinp from the last reinitialization step
      phinp_->Update(1.0,*phin_,0.0);
-     
+
      return;
   }
   else
