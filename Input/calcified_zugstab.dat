@@ -1,3 +1,4 @@
+//
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -46,8 +47,8 @@ PREDICT                         ConstDisVelAcc                // ConstDis ConstD
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
-TOLDISP                         1.0E-03
-TOLRES                          1.0E-03
+TOLDISP                         1.0e-10// results computed with 1.0e-12
+TOLRES                          1.0e-04// results computed with 1.0e-05
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 MAXITER                         100
@@ -444,8 +445,8 @@ NODE 99 COORD 10.0 10.0 -50.0
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -7.6226655299e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE -5.9142292419e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 40 QUANTITY dispx VALUE -4.1277016841e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -7.62266552989902119e-02 TOLERANCE 1e-11
+STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE -5.91422924190382407e-02 TOLERANCE 1e-11
+STRUCTURE DIS structure NODE 40 QUANTITY dispx VALUE -4.12770168416671246e-02 TOLERANCE 1e-11
 -------------------------------------------------------------------------END
 //                              END

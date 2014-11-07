@@ -864,13 +864,17 @@ void MAT::ElastHyper::EvaluateIsotropicMod(
   // modified right Cauchy-Green
   LINALG::Matrix<6,1> modrcg(true);
   modrcg.Update(modscale,rcg);
+  LINALG::Matrix<6,1> modscg(modrcg);
+  for (int i=3; i<6; ++i) modscg(i) *=.5;
+  LINALG::Matrix<6,1> scg(rcg);
+  for (int i=3; i<6; ++i) scg(i)*=.5;
 
   // 2nd Piola Kirchhoff stresses
 
   // isochoric contribution
   LINALG::Matrix<6,1> modstress(true);
   modstress.Update(modgamma(0), id2);
-  modstress.Update(modgamma(1), modrcg, 1.0);
+  modstress.Update(modgamma(1), modscg, 1.0);
   // build 4-tensor for projection as 6x6 tensor
   LINALG::Matrix<6,6> Projection;
   Projection.MultiplyNT(1./3., icg, rcg);
@@ -891,10 +895,10 @@ void MAT::ElastHyper::EvaluateIsotropicMod(
   // contribution: Id \otimes Id
   modcmat.MultiplyNT(moddelta(0), id2, id2);
   // contribution: Id \otimes C + C \otimes Id
-  modcmat.MultiplyNT(moddelta(1), id2, modrcg, 1.0);
-  modcmat.MultiplyNT(moddelta(1), rcg, id2, 1.0);
+  modcmat.MultiplyNT(moddelta(1), id2, modscg, 1.0);
+  modcmat.MultiplyNT(moddelta(1), scg, id2, 1.0);
   // contribution: C \otimes C
-  modcmat.MultiplyNT(moddelta(2), rcg, modrcg, 1.0);
+  modcmat.MultiplyNT(moddelta(2), scg, modscg, 1.0);
   // contribution: Id4^#
   modcmat.Update(moddelta(3), id4sharp, 1.0);
   //scaling
@@ -906,9 +910,7 @@ void MAT::ElastHyper::EvaluateIsotropicMod(
   modcmat.Clear();
   modcmat.MultiplyNT(-1.0/3.0,icg,icg);
   AddtoCmatHolzapfelProduct(modcmat, icg, 1.0);
-  LINALG::Matrix<1,1> tracemat;
-  tracemat.MultiplyTN(2./3.*std::pow(modinv(2),-2./3.),modstress,rcg);
-  cmatisomodiso.Update(tracemat(0,0),modcmat,1.0);
+  cmatisomodiso.Update(2./3.*std::pow(modinv(2),-2./3.)*modstress.Dot(rcg),modcmat,1.0);
   //contribution: -2/3 (Cinv \otimes S_iso + S_iso \otimes Cinv)
   cmatisomodiso.MultiplyNT(-2./3.,icg,stressisomodiso,1.0);
   cmatisomodiso.MultiplyNT(-2./3.,stressisomodiso,icg,1.0);
