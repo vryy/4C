@@ -113,7 +113,7 @@ void NLNSOL::NlnProblem::ComputeF(const Epetra_MultiVector& x,
 
   // set most recent solution to NOX group
   Teuchos::RCP<Epetra_Vector> xtemp = Teuchos::rcp(new Epetra_Vector(*(x(0))));
-  NOX::Epetra::Vector noxvec(xtemp, NOX::Epetra::Vector::CreateView);
+  NOX::Epetra::Vector noxvec(xtemp, NOX::Epetra::Vector::CreateCopy); // ToDo (mayr) Change back to CreateView some day?
   NOXGroup().setX(noxvec);
 
   // ask time integrator to evaluate residual and apply DBCs etc.
