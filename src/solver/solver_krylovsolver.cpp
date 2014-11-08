@@ -209,7 +209,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
 #ifdef HAVE_MueLu
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuPreconditioner( outfile_, Params().sublist("MueLu Parameters") ) );
 #else
-      dserror("MueLu only available in DEV version of BACI with Trilinos Q1/2012 or newer.");
+      dserror("MueLu only available in DEV version of BACI with Trilinos Q1/2014 or newer.");
 #endif
     }
     else if ( Params().isSublist("MueLu (Contact) Parameters") )
