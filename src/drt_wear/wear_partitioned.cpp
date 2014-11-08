@@ -1575,7 +1575,7 @@ void WEAR::Partitioned::AdvectionMap(double* XMat, double* XMesh,
 void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
 {
   // get info about ale dynamic
-  INPAR::ALE::AleDynamic aletype =
+  //INPAR::ALE::AleDynamic aletype =
       DRT::INPUT::IntegralValue<INPAR::ALE::AleDynamic>(ParamsAle(),
           "ALE_TYPE");
 
