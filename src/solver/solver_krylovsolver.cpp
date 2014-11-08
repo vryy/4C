@@ -47,7 +47,7 @@
 #include "solver_muelucontactpreconditioner3.H"
 #include "solver_muelucontactsppreconditioner.H"
 #include "solver_muelucontactpenaltypreconditioner.H"
-#endif 
+#endif
 #ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
 #endif
@@ -55,7 +55,7 @@
 #ifdef HAVE_MueLu
 #ifdef HAVE_Trilinos_Q1_2014
 #include "solver_amgnxn_preconditioner.H"
-#endif 
+#endif
 #endif
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -135,20 +135,20 @@ bool LINALG::SOLVER::KrylovSolver::AllowReusePreconditioner(
     // if the active set has changed we have to rebuild the preconditioner
     if(linSysParams->isSublist("Linear System properties")) {
       Teuchos::ParameterList & linSystemProps = linSysParams->sublist("Linear System properties");
-      
-      if(linSystemProps.isParameter("contact activeDofMap")) {
-	Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
-	epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact activeDofMap");
 
-	if(epActiveDofMap->NumMyElements() != nActiveDofs_) {
-	  nActiveDofs_ = epActiveDofMap->NumMyElements(); // store last number of active DOFs
-	  bAllowReuse = false; // active set has changed -> force preconditioner to be rebuilt
-	}
-	else {
-	  // active set has not changed. preconditioner may be reused
-	  // check other criteria
-	  nActiveDofs_ = epActiveDofMap->NumMyElements(); // store last number of active DOFs
-	}
+      if(linSystemProps.isParameter("contact activeDofMap")) {
+        Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
+        epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact activeDofMap");
+
+        if(epActiveDofMap->NumMyElements() != nActiveDofs_) {
+          nActiveDofs_ = epActiveDofMap->NumMyElements(); // store last number of active DOFs
+          bAllowReuse = false; // active set has changed -> force preconditioner to be rebuilt
+        }
+        else {
+          // active set has not changed. preconditioner may be reused
+          // check other criteria
+          nActiveDofs_ = epActiveDofMap->NumMyElements(); // store last number of active DOFs
+        }
       }
     }
   }
@@ -346,7 +346,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
 #else
       dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer.");
 #endif
-#endif 
+#endif
     }
     else if ( Params().isSublist("AMGnxn Parameters") )
     {
@@ -387,7 +387,7 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<E
   data_->setDefaultVerbLevel(Teuchos::VERB_NONE);
 #ifdef HAVE_Trilinos_Q3_2013
   data_->setlib(Xpetra::UseEpetra);
-#endif 
+#endif
   data_->Set("A",xOp);
 
 
