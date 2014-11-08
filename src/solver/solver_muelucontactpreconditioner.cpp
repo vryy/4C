@@ -288,14 +288,14 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory(/*dropFact*/));
   UCAggFact->SetFactory("Graph", dropFact);
   UCAggFact->SetFactory("DofsPerNode", dropFact);
-  UCAggFact->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
+  UCAggFact->SetParameter("aggregation: max selected neighbors",Teuchos::ParameterEntry(maxNbrAlreadySelected));
 #ifdef HAVE_Trilinos_Q1_2014
-  UCAggFact->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
-  UCAggFact->SetParameter("MaxNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg));
+  UCAggFact->SetParameter("aggregation: min agg size",Teuchos::ParameterEntry(minPerAgg));
+  UCAggFact->SetParameter("aggregation: max agg size",Teuchos::ParameterEntry(maxPerAgg));
 #else
-  UCAggFact->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg));
+  UCAggFact->SetParameter("aggregation: min agg size",Teuchos::ParameterEntry(maxPerAgg));
 #endif
-  UCAggFact->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
+  UCAggFact->SetParameter("aggregation: ordering",Teuchos::ParameterEntry("graph"));
   UCAggFact->SetParameter("UseOnePtAggregationAlgorithm",Teuchos::ParameterEntry(true));
   UCAggFact->SetParameter("OnePt aggregate map name", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
   UCAggFact->SetFactory("OnePt aggregate map factory", MueLu::NoFactory::getRCP());
@@ -367,7 +367,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   // coarse level smoother/solver
   //Teuchos::RCP<SmootherFactory> coarsestSmooFact;
-  //coarsestSmooFact = MueLu::MLParameterListInterpreter<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetSmootherFactory(params, "coarse"); 
+  //coarsestSmooFact = MueLu::MLParameterListInterpreter<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetSmootherFactory(params, "coarse");
   Teuchos::RCP<SmootherFactory> coarsestSmooFact;
   coarsestSmooFact = GetContactCoarsestSolverFactory(params);
 
@@ -381,7 +381,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
     //params.set("smoother: pre or post","pre"); // only pre-smoothing
     Teuchos::ParameterList pp(params);
     //pp.set("smoother: pre or post","pre");
-    
+
     vecManager[i] = Teuchos::rcp(new FactoryManager());
 
     // fine/intermedium level smoother

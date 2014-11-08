@@ -124,7 +124,7 @@ void LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup( bool create,
 
     // Setup MueLu Hierarchy
     Teuchos::RCP<Hierarchy> H = SetupHierarchy(mllist_, mueluOp, nspVector);
-    
+
     // set preconditioner
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
 
@@ -167,7 +167,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
 
   // set DofsPerNode in A operator
   A->SetFixedBlockSize(nDofsPerNode);
-  
+
   // translate verbosity parameter
   Teuchos::EVerbosityLevel eVerbLevel = Teuchos::VERB_NONE;
   if(verbosityLevel == 0)  eVerbLevel = Teuchos::VERB_NONE;
@@ -208,12 +208,13 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   // Coalesce and drop factory with constant number of Dofs per freedom
   Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory(/*segAFact*//*,nspFact*/));
   dropFact->SetFactory("A",segAFact);  // expert option
-  
+
   // aggregation factory
   Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory(/*dropFact*/));
   UCAggFact->SetMinNodesPerAggregate(minPerAgg);
   UCAggFact->SetMaxNeighAlreadySelected(maxNbrAlreadySelected);
-  UCAggFact->SetOrdering(MueLu::AggOptions::GRAPH);
+  UCAggFact->SetOrdering("graph");
+  //UCAggFact->SetOrdering(MueLu::AggOptions::GRAPH);
 
   // transfer operators (PG-AMG)
   /*Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory(UCAggFact,nspFact,segAFact));

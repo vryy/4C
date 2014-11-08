@@ -333,14 +333,14 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<CoalesceDropFactory> dropFact11 = Teuchos::rcp(new CoalesceDropFactory());
     //dropFact11->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
     Teuchos::RCP<UncoupledAggregationFactory> UCAggFact11 = Teuchos::rcp(new UncoupledAggregationFactory());
-    UCAggFact11->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
+    UCAggFact11->SetParameter("aggregation: max selected neighbors",Teuchos::ParameterEntry(maxNbrAlreadySelected));
 #ifdef HAVE_Trilinos_Q1_2014
-    UCAggFact11->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
-    UCAggFact11->SetParameter("MaxNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg));
+    UCAggFact11->SetParameter("aggregation: min agg size",Teuchos::ParameterEntry(minPerAgg));
+    UCAggFact11->SetParameter("aggregation: max agg size",Teuchos::ParameterEntry(maxPerAgg));
 #else
-    UCAggFact11->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(maxPerAgg));
+    UCAggFact11->SetParameter("aggregation: min agg size",Teuchos::ParameterEntry(maxPerAgg));
 #endif
-    UCAggFact11->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
+    UCAggFact11->SetParameter("aggregation: ordering",Teuchos::ParameterEntry("graph"));
     UCAggFact11->SetParameter("UseIsolatedNodeAggregationAlgorithm",Teuchos::ParameterEntry(false));
 
 
