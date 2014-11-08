@@ -26,6 +26,7 @@ Maintainer: Jonas Biehler
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
+#ifdef HAVE_FFTW
 
 void UQ::MLMC::WriteStdVectorToFile(std::vector<double> myvector, std::string FileNameWithPath)
 {
@@ -273,3 +274,5 @@ void UQ::MLMC::CalcStatStressDisp(Teuchos::RCP< Epetra_MultiVector> curr_stress,
   m2_var_strain_->Multiply(1.0,*delta_strain_,*m2_helper_var_strain_ ,1.0);
   var_strain_->Update(1.0/(numb_run_),*m2_var_strain_,0.0);
 }
+
+#endif

@@ -13,6 +13,9 @@ Maintainer: Jonas Biehler
 
 /*----------------------------------------------------------------------------*/
 /* headers */
+
+#ifdef HAVE_FFTW
+
 #include "mc_var_thickness_manager.H"
 #include "../drt_inpar/inpar_mlmc.H"
 #include "../drt_lib/drt_discret.H"
@@ -600,3 +603,4 @@ void UQ::MCVarThicknessManager::ComputeNormals()
   LINALG::GatherAll(my_uncertain_nodes_normals_, discret_->Comm());
 }
 
+#endif /* #ifdef HAVE_FFTW */

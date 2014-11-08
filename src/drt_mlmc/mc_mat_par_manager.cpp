@@ -15,6 +15,9 @@ Maintainer: Jonas Biehler
 
 /*----------------------------------------------------------------------*/
 /* headers */
+
+#ifdef HAVE_FFTW
+
 #include "mc_mat_par_manager.H"
 #include "../drt_inpar/inpar_mlmc.H"
 #include "../drt_lib/drt_discret.H"
@@ -32,7 +35,6 @@ Maintainer: Jonas Biehler
 #include "randomfield.H"
 #include "randomfield_fourier.H"
 #include "randomfield_spectral.H"
-
 
 /*----------------------------------------------------------------------*/
 /* constructor                                               jb 05/14   */
@@ -366,3 +368,5 @@ Teuchos::RCP<UQ::RandomField> UQ::MCMatParManager::CreateRandomField(int random_
   }
   return test;
 }
+
+#endif /* #ifdef HAVE_FFTW */
