@@ -11,11 +11,9 @@ Created on: Feb 27, 2014
 *----------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2014
 
 #include <iostream>
 
-//#include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_PtrDecl.hpp>
 #include <Teuchos_XMLParameterListHelpers.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
@@ -642,5 +640,4 @@ void  LINALG::SOLVER::BlockSmoother_Operator::Setup()
 
 
 #endif // HAVE_MueLu
-#endif // HAVE_Trilinos_Q1_2014
 

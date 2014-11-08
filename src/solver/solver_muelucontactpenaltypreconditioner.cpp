@@ -7,7 +7,6 @@
 
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -22,7 +21,6 @@
 #include <Teuchos_DefaultComm.hpp>
 
 // Xpetra
-//#include <Xpetra_MultiVector.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
 
@@ -32,7 +30,6 @@
 #include <MueLu_TrilinosSmoother.hpp>
 
 #include <MueLu_CoalesceDropFactory.hpp>
-//#include <MueLu_UCAggregationFactory.hpp>
 #include <MueLu_UncoupledAggregationFactory.hpp>
 #include <MueLu_TentativePFactory.hpp>
 #include <MueLu_PgPFactory.hpp>
@@ -44,18 +41,9 @@
 #include <MueLu_NullspaceFactory.hpp>
 #include <MueLu_IfpackSmoother.hpp>
 #include <MueLu_DirectSolver.hpp>
-//#include <MueLu_SegregationAFilterFactory.hpp>
-//#include <MueLu_SegregationATransferFactory.hpp> // TODO remove me
 #include <MueLu_Aggregates.hpp>
 
 #include <MueLu_AggregationExportFactory.hpp>
-
-//#include <MueLu_MLParameterListInterpreter_decl.hpp>
-
-// header files for default types, must be included after all other MueLu/Xpetra headers
-//#include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-
-//#include <MueLu_UseShortNames.hpp>
 
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
 
@@ -99,8 +87,8 @@ void LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup( bool create,
     //const bool domuelupreconditioner = mllist_.get<bool>("LINALG::MueLu_Preconditioner",false);
 
     // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
-    Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
-    Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO,LMO>(mueluA));
+    Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
+    Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO>(mueluA));
 
     // prepare nullspace vector for MueLu
     int numdf = mllist_.get<int>("PDE equations",-1);
@@ -201,8 +189,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   // create factories
 
   // prepare (filtered) A Factory
-  Teuchos::RCP<SingleLevelFactoryBase> segAFact = Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>(/*"A", NULL, map_extractor*/));
-  // TODO fix me
+  Teuchos::RCP<SingleLevelFactoryBase> segAFact = Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node>(/*"A", NULL, map_extractor*/));
   dserror("TODO: fix segAFact. line 206 in solver_muelucontactpenaltypreconditioner.cpp");
 
   // Coalesce and drop factory with constant number of Dofs per freedom
@@ -237,10 +224,10 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   AcFact->SetFactory("R",RFact);
 
   // write out aggregates
-  //Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",UCAggFact.get(), dropFact.get(),NULL /*amalgFact is not segAFact.get()*/));
+  //Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>("aggs_level%LEVELID_proc%PROCID.out",UCAggFact.get(), dropFact.get(),NULL /*amalgFact is not segAFact.get()*/));
   //AcFact->AddTransferFactory(aggExpFact);
 
-  Teuchos::RCP<MueLu::ContactTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cTransFact = Teuchos::rcp(new MueLu::ContactTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>(PFact));
+  Teuchos::RCP<MueLu::ContactTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node> > cTransFact = Teuchos::rcp(new MueLu::ContactTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node>(PFact));
   AcFact->AddTransferFactory(cTransFact);
 
   // setup smoothers
@@ -336,7 +323,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactPenaltyPreconditioner::GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact) {
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LINALG::SOLVER::MueLuContactPenaltyPreconditioner::GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact) {
 
   char levelchar[11];
   sprintf(levelchar,"(level %d)",level);
@@ -401,9 +388,9 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
       ifpackList.set<int>("fact: level-of-fill", (int)smolevelsublist.get<double>("smoother: ifpack level-of-fill"));
       ifpackList.set("partitioner: overlap", smolevelsublist.get<int>("smoother: ifpack overlap"));
       //int overlap = smolevelsublist.get<int>("smoother: ifpack overlap");
-      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(ifpackType, ifpackList,smolevelsublist.get<int>("smoother: ifpack overlap")/*,AFact*/);
+      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node>(ifpackType, ifpackList,smolevelsublist.get<int>("smoother: ifpack overlap")/*,AFact*/);
       smooProto->SetFactory("A", AFact);
-      //smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, overlap, AFact) );
+      //smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node>("SlaveDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, overlap, AFact) );
     }
     else
       TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLuContactPenaltyPreconditioner::GetContactSmootherFactory: unknown ML smoother type " + type + " (IFPACK) not supported by MueLu. Only ILU is supported.");
@@ -432,7 +419,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactPenaltyPreconditioner::GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LINALG::SOLVER::MueLuContactPenaltyPreconditioner::GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
 
   std::string type = ""; // use default defined by AmesosSmoother or Amesos2Smoother
 
@@ -491,7 +478,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     if(ifpackType == "ILU") {
       ifpackList.set<int>("fact: level-of-fill", (int)paramList.get<double>("coarse: ifpack level-of-fill"));
       ifpackList.set("partitioner: overlap", paramList.get<int>("coarse: ifpack overlap"));
-      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(ifpackType, ifpackList, paramList.get<int>("coarse: ifpack overlap")/*, AFact*/);
+      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node>(ifpackType, ifpackList, paramList.get<int>("coarse: ifpack overlap")/*, AFact*/);
       smooProto->SetFactory("A", AFact);
     }
     else
@@ -535,6 +522,5 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   return SmooFact;
 }
 
-#endif //#ifdef HAVE_Trilinos_Q1_2013
 #endif
 

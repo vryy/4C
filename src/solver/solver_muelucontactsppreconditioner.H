@@ -9,7 +9,6 @@
 #define SOLVER_MUELUCONTACTSPPRECONDITIONER_H_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
 
 #include "solver_preconditionertype.H"
 
@@ -31,10 +30,6 @@
 
 // BACI includes
 #include "../linalg/linalg_blocksparsematrix.H"
-
-/*class HHierarchy;
-class OOperator;
-class MMultiVector;*/
 
 namespace LINALG
 {
@@ -67,25 +62,25 @@ namespace LINALG
       void Write(const Teuchos::RCP<Hierarchy> & H);
 
       //! function interprets ML parameter lists
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetBlockSmootherFactory(const Teuchos::ParameterList & paramList, int level);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetBlockSmootherFactory(const Teuchos::ParameterList & paramList, int level);
 
       //! function interprets coarse ML parameter list
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetCoarsestBlockSmootherFactory(const Teuchos::ParameterList & paramList);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetCoarsestBlockSmootherFactory(const Teuchos::ParameterList & paramList);
 
       //! function interprets ML parameter lists for creating a indefinite block diagonal level smoother
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetUzawaSmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse = false);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetUzawaSmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse = false);
 
       //! function interprets ML parameter lists for creating a indefinite block diagonal level smoother
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetIndefBlockedDiagonalSmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse = false);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetIndefBlockedDiagonalSmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse = false);
 
       //! function interprets ML parameter lists for creating a SIMPLE level smoother
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetSIMPLESmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse = false);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetSIMPLESmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse = false);
 
       //! function interprets ML parameter lists for creating a Braess Sarazin level smoother
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetBraessSarazinSmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse = false);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetBraessSarazinSmootherFactory(const Teuchos::ParameterList & paramList, bool bCoarse = false);
 
       //! function interprets ML parameter lists for creating a Braess Sarazin level smoother
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > InterpretBACIList2MueLuSmoother(const Teuchos::ParameterList& paramList, Teuchos::RCP<FactoryBase> AFact);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > InterpretBACIList2MueLuSmoother(const Teuchos::ParameterList& paramList, Teuchos::RCP<FactoryBase> AFact);
 
       //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);
 
@@ -104,7 +99,6 @@ namespace LINALG
   }
 }
 
-#endif //#ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 

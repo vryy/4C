@@ -1,12 +1,17 @@
-/*
- * solver_muelucontactpreconditioner2.cpp
- *
- *  Created on: Sep 7, 2012
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file solver_muelucontactpreconditioner2.cpp
 
+<pre>
+Maintainer: Dr.-Ing. Francesc Verdugo
+            verdugo@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15262
+</pre>
+
+Created on: Sep 7, 2012
+Author: wiesner
+*----------------------------------------------------------------------*/
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -21,7 +26,6 @@
 #include <Teuchos_DefaultComm.hpp>
 
 // Xpetra
-//#include <Xpetra_MultiVector.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
 
@@ -119,8 +123,8 @@ void LINALG::SOLVER::MueLuContactPreconditioner2::Setup( bool create,
     Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
 
     // wrap Epetra_CrsMatrix to Xpetra::Operator for use in MueLu
-    Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
-    Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO,LMO>(mueluA));
+    Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO> > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
+    Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO>(mueluA));
 
     // prepare nullspace vector for MueLu
     int numdf = mllist_.get<int>("PDE equations",-1);
@@ -165,8 +169,8 @@ void LINALG::SOLVER::MueLuContactPreconditioner2::Setup( bool create,
     coarseLevel0->print(*out);*/
 
     // wrap Epetra_CrsMatrix to Xpetra::Operator for use in MueLu
-    Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
-    Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO,LMO>(mueluA));
+    Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
+    Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO>(mueluA));
 
     // prepare nullspace vector for MueLu
     int numdf = mllist_.get<int>("PDE equations",-1);
@@ -358,9 +362,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   int maxLevels = 10;       // multigrid prameters
   //double agg_threshold = 0.0;   // aggregation parameters
   double agg_damping = 4/3;
-#ifdef HAVE_Trilinos_Q1_2014
   int    minPerAgg = 3;       // optimal for 2d
-#endif
   int    maxPerAgg = 27;       // optimal for 3d
   int    maxNbrAlreadySelected = 0;
   std::string agg_type = "Uncoupled";
@@ -377,9 +379,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   if(params.isParameter("aggregation: damping factor"))     agg_damping         = params.get<double>("aggregation: damping factor");
   //if(params.isParameter("aggregation: smoothing sweeps"))   agg_smoothingsweeps = params.get<int>   ("aggregation: smoothing sweeps");
   if(params.isParameter("aggregation: type"))               agg_type            = params.get<std::string> ("aggregation: type");
-#ifdef HAVE_Trilinos_Q1_2014
   if(params.isParameter("aggregation: min nodes per aggregate")) minPerAgg           = params.get<int>("aggregation: min nodes per aggregate");
-#endif
   if(params.isParameter("aggregation: nodes per aggregate"))     maxPerAgg           = params.get<int>("aggregation: nodes per aggregate");
   if(params.isParameter("muelu reuse: strategy"))           reuseStrategy       = params.get<std::string>("muelu reuse: strategy");
 #ifdef HAVE_MUELU_ISORROPIA
@@ -432,10 +432,12 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   Teuchos::RCP<Factory> segregatedAFact = Teuchos::null;
   if(bSegregateAggregates) {
     segregatedAFact =
-         Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>());
+         Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node>());
     segregatedAFact->SetParameter("Input matrix name",Teuchos::ParameterEntry(std::string("A")));
     segregatedAFact->SetParameter("Map block 1 name",Teuchos::ParameterEntry(std::string("SlaveDofMap")));
     segregatedAFact->SetParameter("Map block 2 name",Teuchos::ParameterEntry(std::string("MasterDofMap")));
+    segregatedAFact->SetParameter("Map block 1 factory",Teuchos::ParameterEntry(std::string("NoFactory")));
+    segregatedAFact->SetParameter("Map block 2 factory",Teuchos::ParameterEntry(std::string("NoFactory")));
   }
 
   // Coalesce and drop factory with constant number of Dofs per freedom
@@ -444,18 +446,13 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   if(bSegregateAggregates) dropFact->SetFactory("A",segregatedAFact); // if segregated aggregates are wished, set A factory here
 
   // aggregation factory
-  Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory(/*dropFact*/));
+  Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory());
   UCAggFact->SetFactory("Graph", dropFact);
   UCAggFact->SetFactory("DofsPerNode", dropFact);
   UCAggFact->SetParameter("aggregation: max selected neighbors",Teuchos::ParameterEntry(maxNbrAlreadySelected));
-#ifdef HAVE_Trilinos_Q1_2014
   UCAggFact->SetParameter("aggregation: min agg size",Teuchos::ParameterEntry(minPerAgg));
   UCAggFact->SetParameter("aggregation: max agg size",Teuchos::ParameterEntry(maxPerAgg));
-#else
-  UCAggFact->SetParameter("aggregation: min agg size",Teuchos::ParameterEntry(maxPerAgg)); // confusing
-#endif
-  //UCAggFact->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
-  UCAggFact->SetParameter("aggregation: ordering",Teuchos::ParameterEntry("graph"));
+  UCAggFact->SetParameter("aggregation: ordering",Teuchos::ParameterEntry(std::string("graph")));
 
   if(xSingleNodeAggMap != Teuchos::null) { // declare single node aggregates
     UCAggFact->SetParameter("UseOnePtAggregationAlgorithm",Teuchos::ParameterEntry(true));
@@ -485,7 +482,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
     RFact = Teuchos::rcp( new TransPFactory() );
   } else if (agg_damping > 0.0) {
     // smoothed aggregation (SA-AMG)
-    PFact  = Teuchos::rcp( new MueLu::SelectiveSaPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>() );
+    PFact  = Teuchos::rcp( new MueLu::SelectiveSaPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>() );
 
     // feed SelectiveSAPFactory with information
     PFact->SetFactory("P",PtentFact);
@@ -535,7 +532,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
 
   // write out aggregates
 #if 0
-  Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>());
+  Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>());
   aggExpFact->SetParameter("Output filename",Teuchos::ParameterEntry(std::string("aggs_%TIMESTEP(%ITER)_level%LEVELID_proc%PROCID.out")));
   if(params.isSublist("Linear System properties")) {
       const Teuchos::ParameterList & linSystemProps = params.sublist("Linear System properties");
@@ -550,22 +547,30 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
 
   // transfer maps to coarser grids
   if(xSingleNodeAggMap != Teuchos::null) {
-    Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory("SingleNodeAggDofMap", MueLu::NoFactory::getRCP()));
+    Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory());
+    cmTransFact->SetParameter("map: factory", Teuchos::ParameterEntry(std::string("NoFactory")));
+    cmTransFact->SetParameter("map: name", Teuchos::ParameterEntry(std::string("SingleNodeAggDofMap")));
     cmTransFact->SetFactory("P", PtentFact);
     AcFact->AddTransferFactory(cmTransFact);
   }
   if(xSlaveDofMap != Teuchos::null) { // needed for ContactAFilterFactory, IterationAFactory
-    Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory("SlaveDofMap", MueLu::NoFactory::getRCP()));
+    Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory());
+    cmTransFact->SetParameter("map: factory", Teuchos::ParameterEntry(std::string("NoFactory")));
+    cmTransFact->SetParameter("map: name", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
     cmTransFact->SetFactory("P", PtentFact);
     AcFact->AddTransferFactory(cmTransFact);
   }
   if(xMasterDofMap != Teuchos::null) { // needed for ContactAFilterFactory
-    Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory("MasterDofMap", MueLu::NoFactory::getRCP()));
+    Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory());
+    cmTransFact->SetParameter("map: factory", Teuchos::ParameterEntry(std::string("NoFactory")));
+    cmTransFact->SetParameter("map: name", Teuchos::ParameterEntry(std::string("MasterDofMap")));
     cmTransFact->SetFactory("P", PtentFact);
     AcFact->AddTransferFactory(cmTransFact);
   }
   if(xNearZeroDiagMap != Teuchos::null) {
-    Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory("NearZeroDiagMap", MueLu::NoFactory::getRCP()));
+    Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory());
+    cmTransFact->SetParameter("map: factory", Teuchos::ParameterEntry(std::string("NoFactory")));
+    cmTransFact->SetParameter("map: name", Teuchos::ParameterEntry(std::string("NearZeroDiagMap")));
     cmTransFact->SetFactory("P", PtentFact);
     AcFact->AddTransferFactory(cmTransFact);
   }
@@ -591,18 +596,15 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
     rebAmalgFact->SetFactory("A", AcFact);
 
     // create amalgamated "Partition"
-    Teuchos::RCP<MueLu::IsorropiaInterface<LO, GO, NO, LMO> > isoInterface = Teuchos::rcp(new MueLu::IsorropiaInterface<LO, GO, NO, LMO>());
+    Teuchos::RCP<MueLu::IsorropiaInterface<LO, GO, NO> > isoInterface = Teuchos::rcp(new MueLu::IsorropiaInterface<LO, GO, NO>());
     isoInterface->SetFactory("A", AcFact);
     isoInterface->SetFactory("UnAmalgamationInfo", rebAmalgFact);
 
     // create "Partition" by unamalgamtion
-    Teuchos::RCP<MueLu::RepartitionInterface<LO, GO, NO, LMO> > repInterface = Teuchos::rcp(new MueLu::RepartitionInterface<LO, GO, NO, LMO>());
+    Teuchos::RCP<MueLu::RepartitionInterface<LO, GO, NO> > repInterface = Teuchos::rcp(new MueLu::RepartitionInterface<LO, GO, NO>());
     repInterface->SetFactory("A", AcFact);
     repInterface->SetFactory("AmalgamatedPartition", isoInterface);
-#ifdef HAVE_Trilinos_Q1_2014
-#else
-    repInterface->SetFactory("UnAmalgamationInfo", rebAmalgFact);
-#endif
+    // repInterface->SetFactory("UnAmalgamationInfo", rebAmalgFact); // not necessary?
 
     // Repartitioning (creates "Importer" from "Partition")
     RepartitionFact = Teuchos::rcp(new RepartitionFactory());
@@ -627,7 +629,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
     RebalancedRFact->SetParameter("type", Teuchos::ParameterEntry(std::string("Restriction")));
     RebalancedRFact->SetFactory("R", RFact);
     RebalancedRFact->SetFactory("Nullspace", PtentFact);
-    if(reuseStrategy == "Ptent") RebalancedRFact->DisableMultipleCheckGlobally(); // TODO check this!!
+    if(reuseStrategy == "Ptent") RebalancedRFact->DisableMultipleCheckGlobally();
 
     // Compute Ac from rebalanced P and R
     RebalancedAFact = Teuchos::rcp(new RebalanceAcFactory());
@@ -712,7 +714,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupSmooth
   h->GetLevel(0)->Delete("A",singleNodeAFact_.get());
   singleNodeAFact_ = Teuchos::null;  // delete the old singleNodeAFact_ if there was one before
   if(xSingleNodeAggMap != Teuchos::null) {
-    singleNodeAFact_ = Teuchos::rcp(new MueLu::IterationAFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap",MueLu::NoFactory::getRCP()));
+    singleNodeAFact_ = Teuchos::rcp(new MueLu::IterationAFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node>(/*"SingleNodeAggDofMap",MueLu::NoFactory::getRCP()*/));
+    singleNodeAFact_->SetParameter("map: name", Teuchos::ParameterEntry(std::string("SingleNodeAggDofMap")));
+    singleNodeAFact_->SetParameter("map: factory", Teuchos::ParameterEntry(std::string("NoFactory")));
     // keep singleNodeAFact since it's needed in the solution phase by MyTrilinosSmoother
     h->GetLevel(0)->Keep("A",singleNodeAFact_.get());
   }
@@ -780,7 +784,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactPreconditioner2::GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact) {
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LINALG::SOLVER::MueLuContactPreconditioner2::GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact) {
 
   char levelchar[11];
   sprintf(levelchar,"(level %d)",level);
@@ -807,7 +811,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
       ifpackList.set("relaxation: damping factor", smolevelsublist.get<double>("smoother: damping factor"));
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Jacobi");
-    smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );
+    smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node>("SingleNodeAggDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );
   } else if(type == "Gauss-Seidel") {
     if(smolevelsublist.isParameter("smoother: sweeps"))
       ifpackList.set<int>("relaxation: sweeps", smolevelsublist.get<int>("smoother: sweeps"));
@@ -815,7 +819,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
       ifpackList.set("relaxation: damping factor", smolevelsublist.get<double>("smoother: damping factor"));
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Gauss-Seidel");
-    smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );
+    smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node>("SingleNodeAggDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );
   } else if (type == "symmetric Gauss-Seidel") {
     if(smolevelsublist.isParameter("smoother: sweeps"))
       ifpackList.set<int>("relaxation: sweeps", smolevelsublist.get<int>("smoother: sweeps"));
@@ -823,13 +827,13 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
       ifpackList.set("relaxation: damping factor", smolevelsublist.get<double>("smoother: damping factor"));
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Symmetric Gauss-Seidel");
-    smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );
+    smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node>("SingleNodeAggDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );
     //std::cout << "built symm GS: " << smooProto << std::endl;
   } else if (type == "Chebyshev") {
     ifpackType = "CHEBYSHEV";
     if(smolevelsublist.isParameter("smoother: sweeps"))
       ifpackList.set("chebyshev: degree", smolevelsublist.get<int>("smoother: sweeps"));
-    smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );
+    smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node>("SingleNodeAggDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );
     // TODO what about the other parameters
   } else if(type == "IFPACK") {
 #ifdef HAVE_MUELU_IFPACK
@@ -839,8 +843,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
       ifpackList.set<int>("fact: level-of-fill", (int)smolevelsublist.get<double>("smoother: ifpack level-of-fill"));
       ifpackList.set("partitioner: overlap", smolevelsublist.get<int>("smoother: ifpack overlap"));
       int overlap = smolevelsublist.get<int>("smoother: ifpack overlap");
-      //smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(ifpackType, ifpackList,smolevelsublist.get<int>("smoother: ifpack overlap"),AFact);
-      smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, overlap, AFact) );
+      //smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node>(ifpackType, ifpackList,smolevelsublist.get<int>("smoother: ifpack overlap"),AFact);
+      smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node>("SingleNodeAggDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, overlap, AFact) );
     }
     else
       TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: unknown ML smoother type " + type + " (IFPACK) not supported by MueLu. Only ILU is supported.");
@@ -869,7 +873,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactPreconditioner2::GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LINALG::SOLVER::MueLuContactPreconditioner2::GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
 
   std::string type = ""; // use default defined by AmesosSmoother or Amesos2Smoother
 
@@ -928,7 +932,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     if(ifpackType == "ILU") {
       ifpackList.set<int>("fact: level-of-fill", (int)paramList.get<double>("coarse: ifpack level-of-fill"));
       ifpackList.set("partitioner: overlap", paramList.get<int>("coarse: ifpack overlap"));
-      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(ifpackType, ifpackList, paramList.get<int>("coarse: ifpack overlap"), AFact);
+      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node>(ifpackType, ifpackList, paramList.get<int>("coarse: ifpack overlap"), AFact);
     }
     else*/
     //  TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: unknown ML smoother type " + type + " (IFPACK) not supported by MueLu. Only ILU is supported.");
@@ -937,8 +941,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
       ifpackList.set<int>("fact: level-of-fill", (int)paramList.get<double>("coarse: ifpack level-of-fill"));
       ifpackList.set("partitioner: overlap", paramList.get<int>("coarse: ifpack overlap"));
       //int overlap = paramList.get<int>("coarse: ifpack overlap");
-      //smooProto = Teuchos::rcp( new MueLu::PermutingSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, overlap, AFact) );
-      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(ifpackType, ifpackList, paramList.get<int>("coarse: ifpack overlap"));
+      //smooProto = Teuchos::rcp( new MueLu::PermutingSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node>("SingleNodeAggDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, overlap, AFact) );
+      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node>(ifpackType, ifpackList, paramList.get<int>("coarse: ifpack overlap"));
       smooProto->SetFactory("A", AFact);
     }
     else
@@ -983,6 +987,5 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   return SmooFact;
 }
 
-#endif // #ifdef HAVE_Trilinos_Q1_2013
 #endif // #ifdef HAVE_MueLu
 

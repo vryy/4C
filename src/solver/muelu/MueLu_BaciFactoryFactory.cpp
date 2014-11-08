@@ -1,14 +1,16 @@
-#ifdef HAVE_MueLu
-
 #include "MueLu_ExplicitInstantiation.hpp"
 
-#include "muelu_ContactSPAggregationFactory_def.hpp"
+#include "MueLu_BaciFactoryFactory_def.hpp"
 
-template class MueLu::ContactSPAggregationFactory<double, int, int, Kokkos::DefaultNode::DefaultNodeType>;
+#ifdef HAVE_MueLu
+
+#ifdef HAVE_MUELU_INST_DOUBLE_INT_INT
+template class MueLu::BaciFactoryFactory<double, int, int>;
+#endif
 
 #ifdef HAVE_MUELU_INST_DOUBLE_INT_LONGLONGINT
 # ifdef HAVE_TEUCHOS_LONG_LONG_INT
-template class MueLu::ContactSPAggregationFactory<double, int, long long int, Kokkos::DefaultNode::DefaultNodeType>;
+template class MueLu::BaciFactoryFactory<double, int, long long int>;
 # else
 # warning To compile MueLu with 'long long int' support, please turn on Teuchos_ENABLE_LONG_LONG_INT
 # endif
@@ -17,9 +19,10 @@ template class MueLu::ContactSPAggregationFactory<double, int, long long int, Ko
 #ifdef HAVE_MUELU_INST_COMPLEX_INT_INT
 # ifdef HAVE_TEUCHOS_COMPLEX
 #include <complex>
-template class MueLu::ContactSPAggregationFactory<std::complex<double>, int, int, Kokkos::DefaultNode::DefaultNodeType>;
+template class MueLu::BaciFactoryFactory<std::complex<double>, int, int>;
 # else
 # warning To compile MueLu with 'complex' support, please turn on Teuchos_ENABLE_COMPLEX
 # endif
 #endif
-#endif // HAVE_MueLu
+
+#endif /* HAVE_MueLu */

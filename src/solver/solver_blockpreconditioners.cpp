@@ -7,7 +7,7 @@
 
 #include "../drt_lib/drt_dserror.H"
 
-#ifdef HAVE_Trilinos_Q1_2014
+#ifdef HAVE_MueLu
 #include <Xpetra_StridedMap.hpp>
 #include <Xpetra_MapExtractor.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
@@ -22,7 +22,7 @@
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
-#endif
+#endif // HAVE_MueLu
 
 #include "solver_blockpreconditioners.H"
 
@@ -48,7 +48,7 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
 {
   SetupLinearProblem( matrix, x, b );
 
-#ifdef HAVE_Trilinos_Q1_2014
+#ifdef HAVE_MueLu
 
   if ( create )
   {
@@ -165,7 +165,7 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
 
       Teuchos::RCP<MueLu::Level> Finest = H->GetLevel(0);
       Finest->setDefaultVerbLevel(Teuchos::VERB_HIGH);
-      Finest->Set("A",Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> >(bOp));
+      Finest->Set("A",Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> >(bOp));
 
       Finest->Set("Nullspace1",nspVector1);
       Finest->Set("Nullspace2",nspVector2);
@@ -260,7 +260,7 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
 
       Teuchos::RCP<MueLu::Level> Finest = H->GetLevel(0);
       Finest->setDefaultVerbLevel(Teuchos::VERB_HIGH);
-      Finest->Set("A",Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> >(bOp));
+      Finest->Set("A",Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> >(bOp));
 
       Finest->Set("Nullspace1",nspVector1);
       Finest->Set("Nullspace2",nspVector2);
@@ -280,7 +280,7 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup( bool create,
     }
   }
 #else
-      dserror("MueLuBlockPreconditioner only available with Trilinos Q1/2014 or later.");
+      dserror("MueLuBlockPreconditioner only available with MueLu enabled.");
 #endif
 }
 
@@ -436,24 +436,24 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
     //else if(!params_.isSublist("Inverse1") || !params_.isSublist("Inverse2"))
     else if (gen) // For a general 2x2 block matrix.  This uses MueLu for AMG, not ML.
     {
-    
+
       // Remark: we are going to ignore everything which is in the params_ > "CheapSIMPLE Parameters" sublist
       // We need only two sublists, params_ > "Inverse1" and params_ > "Inverse2" containing a "MueLu Parameters" sublist.
       // The "MueLu Parameters" sublist should contain the usual stuff:
       // "xml file","PDE equations","null space: dimension" and "nullspace"
-    
+
 
       Teuchos::RCP<BlockSparseMatrixBase> A = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
       if (A==Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
-      
+
       // Check if we provide everything
       if (not params_.isSublist("Inverse1"))
         dserror("Inverse1 sublist of params_ not found");
       if (not params_.isSublist("Inverse2"))
         dserror("Inverse2 sublist of params_ not found");
-      Teuchos::ParameterList& sublist1 = params_.sublist("Inverse1"); 
-      Teuchos::ParameterList& sublist2 = params_.sublist("Inverse2"); 
+      Teuchos::ParameterList& sublist1 = params_.sublist("Inverse1");
+      Teuchos::ParameterList& sublist2 = params_.sublist("Inverse2");
       if (not sublist1.isSublist("MueLu Parameters"))
         dserror("MueLu Parameters sublist of sublist1 not found");
       else
@@ -483,9 +483,9 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
           dserror("xml file not provided for block 2 of 2");
       }
 
-      P_ = Teuchos::rcp(new 
+      P_ = Teuchos::rcp(new
           LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,sublist1,sublist2,outfile_));
-    
+
     }
     else
     {

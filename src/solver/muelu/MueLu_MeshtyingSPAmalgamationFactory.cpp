@@ -1,5 +1,4 @@
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -23,5 +22,4 @@ template class MueLu::MeshtyingSPAmalgamationFactory<std::complex<double>, int, 
 # warning To compile MueLu with 'complex' support, please turn on Teuchos_ENABLE_COMPLEX
 # endif
 #endif
-#endif // Q1/2013
 #endif // HAVE_MueLu

@@ -54,7 +54,6 @@
 #define MUELU_MYTRILINOSSMOOTHER_DECL_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -81,8 +80,8 @@ namespace MueLu {
     @brief Class that encapsulates external library smoothers. Autoselection of Ifpack or Ifpack2 according to the underlying linear algebra library.
   */
 
-  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType, class LocalMatOps = typename Kokkos::DefaultKernels<void,LocalOrdinal,Node>::SparseOps> //TODO: or BlockSparseOp ?
-  class MyTrilinosSmoother : public SmootherPrototype<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>
+  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType>
+  class MyTrilinosSmoother : public SmootherPrototype<Scalar,LocalOrdinal,GlobalOrdinal,Node>
   {
 #undef MUELU_MYTRILINOSSMOOTHER_SHORT
 #include "MueLu_UseShortNames.hpp"
@@ -93,7 +92,7 @@ namespace MueLu {
     //@{
 
     //! @brief Constructor
-    MyTrilinosSmoother(std::string const & mapName, const Teuchos::RCP<const FactoryBase> & mapFact, std::string const & type = "", Teuchos::ParameterList const & paramList = Teuchos::ParameterList(), LO const &overlap=0, Teuchos::RCP<FactoryBase> AFact = Teuchos::null);
+    MyTrilinosSmoother(std::string const & mapName, const Teuchos::RCP<const FactoryBase> & mapFact, std::string const & type = "", Teuchos::ParameterList const & paramList = Teuchos::ParameterList(), LO const &overlap=0, Teuchos::RCP<const FactoryBase> AFact = Teuchos::null);
 
     //! Destructor
     virtual ~MyTrilinosSmoother() { }
@@ -114,11 +113,8 @@ namespace MueLu {
     void Setup(Level &currentLevel);
 
     //! TrilinosSmoother cannot be applied. Apply() always returns a RuntimeError exception.
-#ifdef HAVE_Trilinos_Q3_2013
     void Apply(MultiVector &X, MultiVector const &B, bool InitialGuessIsZero=false) const;
-#else
-    void Apply(MultiVector &X, MultiVector const &B, bool const &InitialGuessIsZero=false) const;
-#endif
+    //void Apply(MultiVector &X, MultiVector const &B, bool const &InitialGuessIsZero=false) const;
 
     //@}
 
@@ -160,7 +156,7 @@ namespace MueLu {
     LO overlap_;
 
     //! A Factory
-    Teuchos::RCP<FactoryBase> AFact_;
+    Teuchos::RCP<const FactoryBase> AFact_;
 
     //
     // Underlying Smoother
@@ -173,7 +169,6 @@ namespace MueLu {
 
 } // namespace MueLu
 
-#endif //#ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #define MUELU_MYTRILINOSSMOOTHER_SHORT

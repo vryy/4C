@@ -6,7 +6,6 @@
  */
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
 
 #include <MueLu_ConfigDefs.hpp>
 
@@ -24,7 +23,6 @@
 #include <MueLu_HierarchyHelpers.hpp>
 #include <MueLu_VerboseObject.hpp>
 
-#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 // Aztec headers
@@ -39,7 +37,7 @@
 #include "solver_aztecsolver_projectedresidual.H"
 #include "../linalg/linalg_krylov_projector.H"
 
-// Read a parameter value from a paraeter list and copy it into a new parameter list (with another parameter name)
+// Read a parameter value from a parameter list and copy it into a new parameter list (with another parameter name)
 #define LINALG_COPY_PARAM(paramList, paramStr, varType, defaultValue, outParamList, outParamStr) \
   if (paramList.isParameter(paramStr))                                  \
     outParamList.set<varType>(outParamStr, paramList.get<varType>(paramStr)); \
@@ -84,12 +82,10 @@ void LINALG::SOLVER::AztecSolver::Setup(
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>( matrix );
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
   permutationStrategy_ = azlist.get<std::string>("permutation strategy","none");
   diagDominanceRatio_ = azlist.get<double>("diagonal dominance ratio", 1.0);
   if (permutationStrategy_ == "none") bAllowPermutation_  = false;
   else bAllowPermutation_ = true;
-#endif
 #endif
 
   // decide whether we recreate preconditioners
@@ -142,7 +138,6 @@ void LINALG::SOLVER::AztecSolver::Setup(
   ///////////////////////////////////////////////////////////////////////
   ////////////////////////////////////// permutation stuff
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
   if(bAllowPermutation_) {
     // extract (user-given) additional information about linear system from
     // "Aztec Parameters" -> "Linear System properties"
@@ -175,14 +170,11 @@ void LINALG::SOLVER::AztecSolver::Setup(
     // do not permute null space to preserve pattern of null space for transfer operators
     // important e.g. for one pt aggregates?
   } else {
-#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
     b_ = b;
     A_ = matrix; // we cannot use A, since it could be Teuchos::null (for blocked operators)
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
   }
-#endif
 #endif
   x_ = x;
   ////
@@ -366,7 +358,6 @@ int LINALG::SOLVER::AztecSolver::Solve()
 #endif
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
     GlobalOrdinal rowperm  = 0;
     GlobalOrdinal colperm  = 0;
     GlobalOrdinal lrowperm = 0;
@@ -398,7 +389,6 @@ int LINALG::SOLVER::AztecSolver::Solve()
               A_->OperatorRangeMap().NumGlobalElements(),(int)status[AZ_its],status[AZ_solve_time],rowperm,colperm,lrowperm,lcolperm,nonDiagDomRows,nonPermutedZeros,PermutedZeros,bPermuteLinearSystem_ ? 1 : 0,NonPermutedNearZeros,PermutedNearZeros);
       fflush(outfile_);
     }
-#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
   ncall_ += 1;

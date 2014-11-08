@@ -9,7 +9,6 @@
 #define MUELU_SELECTIVESAPFACTORY_DEF_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
 
 #include <Epetra_RowMatrixTransposer.h>
 
@@ -34,8 +33,8 @@
 
 namespace MueLu {
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  Teuchos::RCP<const ParameterList> SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const ParameterList& paramList) const {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  Teuchos::RCP<const ParameterList> SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::GetValidParameterList(const ParameterList& paramList) const {
     Teuchos::RCP<ParameterList> validParamList = rcp(new ParameterList());
 
     validParamList->set< Scalar >                         ("Damping factor",          4./3, "Smoothed-Aggregation damping factor");
@@ -47,14 +46,11 @@ namespace MueLu {
     validParamList->set< const std::string >              ("NearZeroDiagMapName","", "Name of row map with nearly zero entries on diagonal of A");
     validParamList->set< Teuchos::RCP<const FactoryBase> >("NearZeroDiagMapFactory",Teuchos::null, "Factory for row map of Dofs generating \"NearZeroDiagMapName\"");
 
-    //validParamList->set< bool >("bPerformSmoothing",true, "boolean flag to turn on/off smoothing of transfer operator basis functions. If set to false, the unsmoothed tentative transfer operator is used. This is to switch between smoothed and unsmoothed transfer operators on different multigrid levels and therefore it's more flexible than PA-AMG.");
-    // validParamList->set                       ("Diagonal view",      "current", "Diagonal view used during the prolongator smoothing process");
-
     return validParamList;
   }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &fineLevel, Level &coarseLevel) const {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::DeclareInput(Level &fineLevel, Level &coarseLevel) const {
     Input(fineLevel, "A");
 
     // Get default tentative prolongator factory
@@ -64,13 +60,13 @@ namespace MueLu {
     coarseLevel.DeclareInput("P", initialPFact.get(), this); // --
   }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Build(Level& fineLevel, Level &coarseLevel) const {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(Level& fineLevel, Level &coarseLevel) const {
     return BuildP(fineLevel, coarseLevel);
   }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::BuildP(Level &fineLevel, Level &coarseLevel) const {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::BuildP(Level &fineLevel, Level &coarseLevel) const {
     FactoryMonitor m(*this, "Prolongator smoothing", coarseLevel);
 
     typedef typename Teuchos::ScalarTraits<SC>::magnitudeType Magnitude;
@@ -130,15 +126,9 @@ namespace MueLu {
         bool optimizeStorage=true;  // false
         //FIXME but once fixed, reenable the next line.
         if (A->getRowMap()->lib() == Xpetra::UseTpetra) optimizeStorage=false;
-#if HAVE_Trilinos_Q3_2013 //HAVE_Trilinos_Q1_2014
         Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
         AP = Utils::Multiply(*A, false, *Ptent, false,*fos, doFillComplete, optimizeStorage);
-//#elif defined(HAVE_Trilinos_Q3_2013)
-//        Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
-//        AP = Utils::Multiply(*A, false, *Ptent, false,*fos, doFillComplete, optimizeStorage,false /* use Xpetra matrix-matrix multiply */);
-#else
-        AP = Utils::Multiply(*A, false, *Ptent, false, doFillComplete, optimizeStorage);
-#endif
+        //AP = Utils::Multiply(*A, false, *Ptent, false, doFillComplete, optimizeStorage);
         //Utils::Write("AP.mat", *AP);
       }
 
@@ -165,11 +155,8 @@ namespace MueLu {
         sumAll(A->getRowMap()->getComm(), (LocalOrdinal)bSkipDamping, globalbSkipDamping);
 #endif
 
-#ifdef HAVE_Trilinos_Q3_2013
         Utils::MyOldScaleMatrix(*AP, diag, true, doFillComplete, optimizeStorage); //scale matrix with reciprocal of diag
-#else
-        Utils::MyOldScaleMatrix(AP, diag, true, doFillComplete, optimizeStorage); //scale matrix with reciprocal of diag
-#endif
+        //Utils::MyOldScaleMatrix(AP, diag, true, doFillComplete, optimizeStorage); //scale matrix with reciprocal of diag
         //Utils::Write("DinvAP.mat", *AP);
       }
 
@@ -211,12 +198,8 @@ namespace MueLu {
 
           bool doTranspose=false;
           bool PtentHasFixedNnzPerRow=true;
-#ifdef HAVE_Trilinos_Q3_2013
           Utils2::TwoMatrixAdd(*Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), *AP, doTranspose, -dampingFactor/lambdaMax, finalP,GetOStream(Statistics2,0), PtentHasFixedNnzPerRow);
-#else
-          Utils2::TwoMatrixAdd(Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), AP, doTranspose, -dampingFactor/lambdaMax, finalP, PtentHasFixedNnzPerRow);
-#endif
-
+          //Utils2::TwoMatrixAdd(Ptent, doTranspose, Teuchos::ScalarTraits<Scalar>::one(), AP, doTranspose, -dampingFactor/lambdaMax, finalP, PtentHasFixedNnzPerRow);
         }
 
         {
@@ -244,12 +227,8 @@ namespace MueLu {
     else
       {
         // prolongation factory is in restriction mode
-#ifdef HAVE_Trilinos_Q3_2013
         Teuchos::RCP<Matrix> R = Utils2::Transpose(*finalP, true); // use Utils2 -> specialization for double
-#else
-        Teuchos::RCP<Matrix> R = Utils2::Transpose(finalP, true); // use Utils2 -> specialization for double
-#endif
-        //Teuchos::RCP<Matrix> R = MyTranspose(finalP, true);
+        //Teuchos::RCP<Matrix> R = Utils2::Transpose(finalP, true); // use Utils2 -> specialization for double
         Set(coarseLevel, "R", R);
 
         ///////////////////////// EXPERIMENTAL
@@ -259,8 +238,8 @@ namespace MueLu {
 
   } //Build()
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::FixAPproduct(Level &fineLevel, Level &coarseLevel, Teuchos::RCP<Matrix> & A, Teuchos::RCP<Matrix> & DinvAP) const {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> > SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::FixAPproduct(Level &fineLevel, Level &coarseLevel, Teuchos::RCP<Matrix> & A, Teuchos::RCP<Matrix> & DinvAP) const {
     // 1) extract NonSmoothRowMap from Level
     // TODO: move this code to Build function
     const ParameterList & pL = GetParameterList();
@@ -352,7 +331,6 @@ namespace MueLu {
 #endif
 
     // 4) remove columns from DinvAP
-#if 1
 
     // replace columns
 
@@ -392,66 +370,16 @@ namespace MueLu {
     DinvAP->fillComplete(DinvAP->getDomainMap(), DinvAP->getRangeMap());
 
     return DinvAP;
-#else
-     // create new empty Operator
-     Teuchos::RCP<CrsMatrixWrap> Aout = Teuchos::rcp(new CrsMatrixWrap(DinvAP->getRowMap(),DinvAP->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile));
 
-     //GetOStream(Statistics1, 0) << "avoid transfer operator smoothing for " << coarseNonSmoothedMap->getGlobalNumElements() << "/" << DinvAP->getDomainMap()->getGlobalNumElements() << " transfer operator basis functions" << std::endl;
-
-     Teuchos::ArrayRCP<const Scalar > gDinvAPColVecData = gDinvAPColVec->getData(0);
-
-     // loop over local rows
-     for(size_t row=0; row<DinvAP->getNodeNumRows(); row++) {
-         // get global row id
-         GlobalOrdinal grid = DinvAP->getRowMap()->getGlobalElement(row); // global row id
-
-         // extract data from current row (grid)
-         Teuchos::ArrayView<const LocalOrdinal> indices;
-         Teuchos::ArrayView<const Scalar> vals;
-         DinvAP->getLocalRowView(row, indices, vals);
-
-         // just copy all column entries whose global id is not in cleardofgids
-         Teuchos::ArrayRCP<GlobalOrdinal> indout(indices.size(),Teuchos::ScalarTraits<GlobalOrdinal>::zero());
-         Teuchos::ArrayRCP<Scalar> valout(indices.size(),Teuchos::ScalarTraits<Scalar>::zero());
-
-         for(size_t i=0; i<(size_t)indices.size(); i++) {
-           GlobalOrdinal gcid = DinvAP->getColMap()->getGlobalElement(indices[i]); // LID -> GID (column)
-
-           if(gDinvAPColVecData[indices[i]] > 0.0) {
-             // skip this column, explicitely set the value to zero // TODO we can just skip this completely
-             indout [i] = gcid;
-             valout [i] = 0.0;
-           }
-           else {
-             // keep the column entry
-             indout [i] = gcid;
-             valout [i] = vals[i];
-           }
-         }
-
-         // fill Aout wiht new row/column entries
-         Aout->insertGlobalValues(grid, indout.view(0,indout.size()), valout.view(0,valout.size()));
-
-     }
-
-     Aout->fillComplete(DinvAP->getDomainMap(), DinvAP->getRangeMap());
-
-     ///////////////////////// EXPERIMENTAL
-     // copy block size information
-     if(DinvAP->IsView("stridedMaps")) Aout->CreateView("stridedMaps", DinvAP);
-     ///////////////////////// EXPERIMENTAL
-
-     return Aout;
-#endif
   }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  Teuchos::RCP<Xpetra::Matrix<double, int, int> > SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::MyTranspose(Teuchos::RCP<Xpetra::Matrix<double, int, int> > const &Op, bool const & optimizeTranspose) const
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  Teuchos::RCP<Xpetra::Matrix<double, int, int> > SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::MyTranspose(Teuchos::RCP<Xpetra::Matrix<double, int, int> > const &Op, bool const & optimizeTranspose) const
   {
    Teuchos::TimeMonitor tm(*Teuchos::TimeMonitor::getNewTimer("My Transpose"));
 
     Teuchos::RCP<Epetra_CrsMatrix> epetraOp;
-    epetraOp = MueLu::Utils<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Op2NonConstEpetraCrs(Op);
+    epetraOp = MueLu::Utils<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Op2NonConstEpetraCrs(Op);
 
     Epetra_RowMatrixTransposer et(&*epetraOp);
     Epetra_CrsMatrix *A;
@@ -472,150 +400,21 @@ namespace MueLu {
 
   } //Transpose
 
-#if 0 // outdated
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node> > SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::BuildUnsmoothedBasisFunctionMap(Level &fineLevel, Level &coarseLevel) const {
-
-    const ParameterList & pL = GetParameterList();
-
-    const std::string NonSmoothedRowMapName = pL.get<std::string >("NonSmoothRowMapName");
-    if(NonSmoothedRowMapName == "")
-      return Teuchos::null; // the full transfer operator shall be smoothed
-
-    Teuchos::RCP<const FactoryBase> NonSmoothedRowMapFact = GetFactory("NonSmoothRowMapFactory");
-
-    Teuchos::RCP<const Map> NonSmoothedRowMap = fineLevel.Get< Teuchos::RCP<const Map> >(NonSmoothedRowMapName, NonSmoothedRowMapFact.get());
-
-    //Teuchos::RCP<const Map> NonSmoothedRowMap = pL.get<Teuchos::RCP<const Map> >("NonSmoothRowMap");
-
-    // Get default tentative prolongator factory
-    // Getting it that way ensure that the same factory instance will be used for both SaPFactory and NullspaceFactory.
-    // -- Warning: Do not use directly initialPFact_. Use initialPFact instead everywhere!
-    Teuchos::RCP<const FactoryBase> initialPFact = GetFactory("P");
-    if (initialPFact == Teuchos::null) { initialPFact = coarseLevel.GetFactoryManager()->GetFactory("Ptent"); }
-
-    // Level Get
-    Teuchos::RCP<Matrix> Ptent = coarseLevel.Get< Teuchos::RCP<Matrix> >("P", initialPFact.get());
-
-    std::vector<GlobalOrdinal > coarseMapGids;
-
-    // loop over all rows of Ptent
-    for(size_t row=0; row<Ptent->getNodeNumRows(); row++) {
-        // get global row id
-        GlobalOrdinal grid = Ptent->getRowMap()->getGlobalElement(row); // global row id
-
-        if(NonSmoothedRowMap->isNodeGlobalElement(grid)) {
-          // extract data from current row (grid)
-          //size_t nnz = Ain->getNumEntriesInLocalRow(row);
-          Teuchos::ArrayView<const LocalOrdinal> indices;
-          Teuchos::ArrayView<const Scalar> vals;
-          Ptent->getLocalRowView(row, indices, vals);
-
-          for(size_t i=0; i<(size_t)indices.size(); i++) {
-            if(vals[i] != 0.0) {  // TODO this is not necessary
-              GlobalOrdinal gcid = Ptent->getColMap()->getGlobalElement(indices[i]); // LID -> GID (column)
-              coarseMapGids.push_back(gcid);
-            }
-          }
-        }
-    }
-
-    Teuchos::ArrayView<GlobalOrdinal> coarseMapGidsView (&coarseMapGids[0],coarseMapGids.size());
-
-    Teuchos::RCP<const Map> coarseNonSmoothedMap = MapFactory::Build(NonSmoothedRowMap->lib(),
-        Teuchos::OrdinalTraits<Xpetra::global_size_t>::invalid(),
-        coarseMapGidsView,
-        Ptent->getColMap()->getIndexBase(),
-        Ptent->getColMap()->getComm());
-
-    return coarseNonSmoothedMap;
-  }
-
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::RemoveColumnEntries(Teuchos::RCP<Matrix> & matrix, Teuchos::RCP<const Map> coarseNonSmoothedMap) const {
-    // extract the original matrix A
-    Teuchos::RCP<Matrix> Ain = matrix;
-
-    // create new empty Operator
-    Teuchos::RCP<CrsMatrixWrap> Aout = Teuchos::rcp(new CrsMatrixWrap(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile));
-
-    GetOStream(Statistics1, 0) << "avoid transfer operator smoothing for " << coarseNonSmoothedMap->getGlobalNumElements() << "/" << Ain->getDomainMap()->getGlobalNumElements() << " transfer operator basis functions" << std::endl;
-
-    // loop over local rows
-    for(size_t row=0; row<Ain->getNodeNumRows(); row++) {
-        // get global row id
-        GlobalOrdinal grid = Ain->getRowMap()->getGlobalElement(row); // global row id
-
-        // extract data from current row (grid)
-        Teuchos::ArrayView<const LocalOrdinal> indices;
-        Teuchos::ArrayView<const Scalar> vals;
-        Ain->getLocalRowView(row, indices, vals);
-
-        // just copy all column entries whose global id is not in cleardofgids
-        Teuchos::ArrayRCP<GlobalOrdinal> indout(indices.size(),Teuchos::ScalarTraits<GlobalOrdinal>::zero());
-        Teuchos::ArrayRCP<Scalar> valout(indices.size(),Teuchos::ScalarTraits<Scalar>::zero());
-
-        Teuchos::ArrayRCP<GlobalOrdinal>  GIDList(1);
-        Teuchos::ArrayRCP<int> nodeIDList(GIDList.size());
-
-        for(size_t i=0; i<(size_t)indices.size(); i++) {
-          GlobalOrdinal gcid = Ain->getColMap()->getGlobalElement(indices[i]); // LID -> GID (column)
-
-          if(coarseNonSmoothedMap->isNodeGlobalElement(gcid)) {
-            // skip this column, explicitely set the value to zero // TODO we can just skip this completely
-            indout [i] = gcid;
-            valout [i] = 0.0;
-          }
-          else {
-            // in cleardofmap gcid is not stored on this proc
-            // check whether gcid is in cleardofmap but on another proc
-            /*GIDList[0] = gcid;
-            Xpetra::LookupStatus checkOtherNodes = coarseNonSmoothedMap->getRemoteIndexList(GIDList(), nodeIDList());
-            if(checkOtherNodes == Xpetra::AllIDsPresent) {
-              // gcid is in cleardofmap, but on another processor
-              // skip it, explicitely set the value to zero
-              indout [i] = gcid;
-              valout [i] = 0.0;
-            } else {*/
-              // keep the column entry
-              indout [i] = gcid;
-              valout [i] = vals[i];
-            //}
-          }
-        }
-
-        // fill Aout wiht new row/column entries
-        Aout->insertGlobalValues(grid, indout.view(0,indout.size()), valout.view(0,valout.size()));
-
-    }
-
-    Aout->fillComplete(Ain->getDomainMap(), Ain->getRangeMap());
-
-    ///////////////////////// EXPERIMENTAL
-    // copy block size information
-    if(Ain->IsView("stridedMaps")) Aout->CreateView("stridedMaps", Ain);
-    ///////////////////////// EXPERIMENTAL
-
-    return Aout;
-  }
-#endif
-
   // deprecated
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::SetDampingFactor(Scalar dampingFactor) {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::SetDampingFactor(Scalar dampingFactor) {
     SetParameter("Damping factor", ParameterEntry(dampingFactor)); // revalidate
   }
 
   // deprecated
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  Scalar SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetDampingFactor() {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  Scalar SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::GetDampingFactor() {
     const ParameterList & pL = GetParameterList();
     return pL.get<Scalar>("Damping factor");
   }
 
 } //namespace MueLu
 
-#endif //#ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #endif /* MUELU_SELECTIVESAPFACTORY_DEF_HPP_ */

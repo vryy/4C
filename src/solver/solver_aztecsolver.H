@@ -13,10 +13,6 @@ Created on: Jul 4, 2011
 #define SOLVER_AZTECSOLVER_H_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
-
-//#include <Xpetra_Matrix.hpp>
-//#include <Xpetra_MapFactory.hpp>
 
 #include <MueLu_PermutationFactory_fwd.hpp>
 #include <MueLu_FactoryBase_fwd.hpp>
@@ -25,7 +21,7 @@ Created on: Jul 4, 2011
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
-#endif // HAVE_Trilinos_Q1_2013
+
 #endif // HAVE_MueLu
 
 #include "solver_krylovsolver.H"
@@ -72,19 +68,6 @@ namespace LINALG
       Teuchos::RCP<AztecOO_StatusTestProjResNorm>    aztest_norm2_;
       // ! a test combination (for norm2 and maxiter)
       Teuchos::RCP<AztecOO_StatusTestCombo>          aztest_combo_;
-
-
-#if 0
-      //! an aztex maxiter status test
-      Teuchos::RCP<AztecOO_StatusTestMaxIters>       aztest_maxiter_;
-      //! an aztec 2-norm convergence test
-      Teuchos::RCP<AztecOO_StatusTestResNorm>        aztest_norm2_;
-      //! an aztec inf-norm convergence test
-      Teuchos::RCP<AztecOO_StatusTestResNorm>        aztest_norminf_;
-      // ! combination of the above tests
-      Teuchos::RCP<AztecOO_StatusTestCombo>          aztest_combo1_;
-      Teuchos::RCP<AztecOO_StatusTestCombo>          aztest_combo2_;
-#endif
 
     };
   }

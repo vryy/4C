@@ -25,25 +25,24 @@
 #include "MueLu_Level.hpp"
 #include "MueLu_Monitor.hpp"
 
-#ifndef HAVE_Trilinos_Q1_2014
-#define sumAll(rcpComm, in, out)                                        \
-  Teuchos::reduceAll(*rcpComm, Teuchos::REDUCE_SUM, in, Teuchos::outArg(out));
-#endif
+// already defined in MueLu_Utilities_decl.hpp
+/*#define sumAll(rcpComm, in, out)                                        \
+  Teuchos::reduceAll(*rcpComm, Teuchos::REDUCE_SUM, in, Teuchos::outArg(out));*/
 
 namespace MueLu {
 
-template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::ContactSPAggregationFactory(Teuchos::RCP<const FactoryBase> aggregatesFact, Teuchos::RCP<const FactoryBase> amalgFact)
+template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::ContactSPAggregationFactory(Teuchos::RCP<const FactoryBase> aggregatesFact, Teuchos::RCP<const FactoryBase> amalgFact)
 : aggregatesFact_(aggregatesFact), amalgFact_(amalgFact), AFact_(MueLu::NoFactory::getRCP())
   {
 
   }
 
-template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::~ContactSPAggregationFactory() {}
+template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::~ContactSPAggregationFactory() {}
 
-template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-Teuchos::RCP<const Teuchos::ParameterList> ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const Teuchos::ParameterList& paramList) const {
+template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+Teuchos::RCP<const Teuchos::ParameterList> ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::GetValidParameterList(const Teuchos::ParameterList& paramList) const {
   Teuchos::RCP<Teuchos::ParameterList> validParamList = Teuchos::rcp(new Teuchos::ParameterList());
 
   // TODO remove aggregatesFact_, amalgFact_
@@ -55,8 +54,8 @@ Teuchos::RCP<const Teuchos::ParameterList> ContactSPAggregationFactory<Scalar, L
   return validParamList;
 }
 
-template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &currentLevel) const {
+template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::DeclareInput(Level &currentLevel) const {
   currentLevel.DeclareInput("A", AFact_.get(), this);
   currentLevel.DeclareInput("Aggregates", aggregatesFact_.get(), this);
   currentLevel.DeclareInput("UnAmalgamationInfo", amalgFact_.get(), this);
@@ -65,16 +64,16 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
 
 }
 
-template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Build(Level & currentLevel) const {
+template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(Level & currentLevel) const {
   typedef Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node> Map;
   typedef Xpetra::Vector<LocalOrdinal, LocalOrdinal, GlobalOrdinal, Node> LOVector;
-  typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> Matrix;
-  typedef Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> CrsMatrix;
-  typedef Xpetra::BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> BlockedCrsMatrix;
+  typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> Matrix;
+  typedef Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> CrsMatrix;
+  typedef Xpetra::BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> BlockedCrsMatrix;
   typedef Xpetra::StridedMap<LocalOrdinal, GlobalOrdinal, Node> StridedMap;
   typedef Xpetra::MapFactory<LocalOrdinal, GlobalOrdinal, Node> MapFactory;
-  typedef MueLu::Aggregates<LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> Aggregates;
+  typedef MueLu::Aggregates<LocalOrdinal, GlobalOrdinal, Node> Aggregates;
 
   //Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
   //slaveDofMap->describe(*fos,Teuchos::VERB_EXTREME);
@@ -135,25 +134,15 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   Teuchos::RCP<const Map> lagrDofMap = A01->getDomainMap();
   GlobalOrdinal gMaxLagrNodeId = AmalgamationFactory::DOFGid2NodeId(
       lagrDofMap->getMaxAllGlobalIndex(),
-#ifndef HAVE_Trilinos_Q3_2013
-      Teuchos::null /* parameter not used */,
-#endif
       lagr_blockdim,
       lagr_offset
-#ifdef HAVE_Trilinos_Q2_2013
       , 0 /*indexBase*/
-#endif
   );
   GlobalOrdinal gMinLagrNodeId = AmalgamationFactory::DOFGid2NodeId(
       lagrDofMap->getMinAllGlobalIndex(),
-#ifndef HAVE_Trilinos_Q3_2013
-      Teuchos::null /* parameter not used */,
-#endif
       lagr_blockdim,
       lagr_offset
-#ifdef HAVE_Trilinos_Q2_2013
       , 0 /*indexBase*/
-#endif
   );
 
   // generate locally replicated vector for mapping Lagrange node ids to displacement node ids
@@ -177,14 +166,9 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
       // translate displacement dof id to displacement node id
       GlobalOrdinal disp_nodeId = AmalgamationFactory::DOFGid2NodeId(
           disp_grid,
-#ifndef HAVE_Trilinos_Q3_2013
-          Teuchos::null /* parameter not used */,
-#endif
           disp_blockdim,
           disp_offset
-#ifdef HAVE_Trilinos_Q2_2013
           , 0 /*indexBase*/
-#endif
           );
 
       Teuchos::ArrayView<const LocalOrdinal> lagr_indices;
@@ -195,14 +179,9 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
         GlobalOrdinal lagr_gcid = A01->getColMap()->getGlobalElement(lagr_indices[i]);
         GlobalOrdinal lagr_nodeId = AmalgamationFactory::DOFGid2NodeId(
             lagr_gcid,
-#ifndef HAVE_Trilinos_Q3_2013
-            Teuchos::null /* parameter not used */,
-#endif
             lagr_blockdim,
             lagr_offset
-#ifdef HAVE_Trilinos_Q2_2013
             , 0 /*indexBase*/
-#endif
             );
 
         TEUCHOS_TEST_FOR_EXCEPTION(Teuchos::as<GlobalOrdinal>(local_lagrNodeId2dispNodeId.size())<lagr_nodeId-gMinLagrNodeId,Exceptions::BadCast,"MueLu::ContactSPAggregationFactory::Build(): lagrNodeId2dispNodeId.size()<lagr_nodeId-gMinLagrNodeId. error.");
@@ -216,18 +195,8 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   }
 
   GlobalOrdinal lagrNodeId2dispNodeId_size = Teuchos::as<GlobalOrdinal>(local_lagrNodeId2dispNodeId.size());
-  Teuchos::reduceAll(*comm /**A01->getColMap()->getComm()*/,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&local_lagrNodeId2dispNodeId[0],&lagrNodeId2dispNodeId[0]);
-  Teuchos::reduceAll(*comm /**A01->getColMap()->getComm()*/,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&local_lagrNodeId2dispAggId[0],&lagrNodeId2dispAggId[0]);
-
-  //Teuchos::reduceAll(*comm /**A01->getColMap()->getComm()*/,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&lagrNodeId2dispNodeId[0],&lagrNodeId2dispNodeId[0]);
-  //Teuchos::reduceAll(*comm /**A01->getColMap()->getComm()*/,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&lagrNodeId2dispAggId[0],&lagrNodeId2dispAggId[0]);
-  //Teuchos::reduceAll(*comm /**A01->getColMap()->getComm()*/,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&lagrNodeId2dispNodeId[0],Teuchos::outArg(&lagrNodeId2dispNodeId[0]));
-  //Teuchos::reduceAll(*comm /**A01->getColMap()->getComm()*/,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&lagrNodeId2dispAggId[0],Teuchos::outArg(&lagrNodeId2dispAggId[0]));
-
-  //Teuchos::outArg()
-  /*for(size_t t = 0; t<lagrNodeId2dispNodeId.size(); t++) {
-    std::cout << "PROC: " << myRank << " t=" << t << " lagrNodeId=" << t+gMinLagrNodeId << " corr dispNodeId=" << lagrNodeId2dispNodeId[t] << " dispAggId=" << lagrNodeId2dispAggId[t] << std::endl;
-  }*/
+  Teuchos::reduceAll(*comm,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&local_lagrNodeId2dispNodeId[0],&lagrNodeId2dispNodeId[0]);
+  Teuchos::reduceAll(*comm,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&local_lagrNodeId2dispAggId[0],&lagrNodeId2dispAggId[0]);
 
   // build node map for Lagrange multipliers
   // generate "artificial nodes" for lagrange multipliers
@@ -240,13 +209,8 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
     GlobalOrdinal lagr_nodeId =
         AmalgamationFactory::DOFGid2NodeId(
           lagr_grid,
-#ifndef HAVE_Trilinos_Q3_2013
-          Teuchos::null /* parameter not used */,
-#endif
           lagr_blockdim, lagr_offset
-#ifdef HAVE_Trilinos_Q2_2013
           , 0 /*indexBase*/
-#endif
           );
     lagr_Nodes.push_back(lagr_nodeId);
   }
@@ -256,12 +220,11 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
 
   // define node map for Lagrange multipliers
   Teuchos::RCP<const Map > lagr_NodeMap = MapFactory::Build(A01->getRowMap()->lib(),
-                                                Teuchos::OrdinalTraits<Xpetra::global_size_t>::invalid(), // TODO fix me
+                                                Teuchos::OrdinalTraits<Xpetra::global_size_t>::invalid(),
                                                 lagr_Nodes,
                                                 A01->getRowMap()->getIndexBase(),
-                                                /*A01->getRowMap()->getComm()*/comm);
+                                                comm);
 
-  //lagr_NodeMap->describe(*fos,Teuchos::VERB_EXTREME);
 
   // build processor local map: dispAggId2lagrAggId
   // generate new aggregegate ids if necessary (independent on each processor)
@@ -269,7 +232,6 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
   // Build aggregates using the lagrange multiplier node map
   Teuchos::RCP<Aggregates> aggregates = Teuchos::rcp(new Aggregates(lagr_NodeMap));
   aggregates->setObjectLabel("UC (slave)");
-  //aggregates->SetNumAggregates(Teuchos::as<LocalOrdinal>(dispAggId2lagAggId.size())); // dont forget to set number of new aggregates
 
   // extract aggregate data structures to fill
   Teuchos::ArrayRCP<LocalOrdinal> vertex2AggId = aggregates->GetVertex2AggId()->getDataNonConst(0);

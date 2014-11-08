@@ -12,7 +12,6 @@ Created on: Aug 11, 2014
 
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2014
 
 #include <iostream>
 
@@ -64,7 +63,7 @@ verbosity_        (verbosity       )
 
 int LINALG::SOLVER::AMGnxn_Hierarchies::GetNumLevels(int block)
 {
-  return H_block_[block]->GetNumberOfLevels();
+  return H_block_[block]->GetNumLevels();
 }
 
 /*------------------------------------------------------------------------------*/
@@ -174,7 +173,7 @@ void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
   NumLevelMin_ =  10000000;
   for(int block=0;block<NumBlocks_;block++)
   {
-    int NumLevel_this_block = H_block_[block]->GetNumberOfLevels();
+    int NumLevel_this_block = H_block_[block]->GetNumLevels();
     if (NumLevel_this_block > NumLevelMax_)
       NumLevelMax_ = NumLevel_this_block;
     if (NumLevel_this_block < NumLevelMin_)
@@ -189,7 +188,7 @@ void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
   for(int block=0;block<NumBlocks_;block++)
   {
 
-    int NumLevel_this_block = H_block_[block]->GetNumberOfLevels();
+    int NumLevel_this_block = H_block_[block]->GetNumLevels();
     std::vector<Teuchos::RCP<SparseMatrix> > A_level(NumLevel_this_block,Teuchos::null);
     std::vector<Teuchos::RCP<SparseMatrix> > P_level(NumLevel_this_block-1,Teuchos::null);
     std::vector<Teuchos::RCP<SparseMatrix> > R_level(NumLevel_this_block-1,Teuchos::null);
@@ -211,7 +210,7 @@ void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
       if (this_level->IsAvailable("A"))
       {
         myA    = this_level->Get< Teuchos::RCP<Matrix> >("A");
-        myAcrs = MueLu::Utils<double,int,int,Node,LocalMatOps>::Op2NonConstEpetraCrs(myA);
+        myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
         myAspa = Teuchos::rcp(new SparseMatrix(*myAcrs,explicitdirichlet,savegraph));
         A_level[level] = myAspa;
       }
@@ -245,7 +244,7 @@ void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
         if (this_level->IsAvailable("P"))
         {
           myA    = this_level->Get< Teuchos::RCP<Matrix> >("P");
-          myAcrs = MueLu::Utils<double,int,int,Node,LocalMatOps>::Op2NonConstEpetraCrs(myA);
+          myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
           myAspa = Teuchos::rcp(new SparseMatrix(*myAcrs,explicitdirichlet,savegraph));
           P_level[level-1]=myAspa;
         }
@@ -255,7 +254,7 @@ void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
         if (this_level->IsAvailable("R"))
         {
           myA = this_level->Get< Teuchos::RCP<Matrix> >("R");
-          myAcrs =MueLu::Utils<double,int,int,Node,LocalMatOps>::Op2NonConstEpetraCrs(myA);
+          myAcrs =MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
           myAspa = Teuchos::rcp(new SparseMatrix(*myAcrs,explicitdirichlet,savegraph));
           R_level[level-1]=myAspa;
         }
@@ -303,18 +302,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
   Teuchos::RCP<CrsMatrix> mueluA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A_crs));
   Teuchos::RCP<CrsMatrixWrap> mueluA_wrap = Teuchos::rcp(new CrsMatrixWrap(mueluA));
   Teuchos::RCP<Matrix> mueluOp = Teuchos::rcp_dynamic_cast<Matrix>(mueluA_wrap);
-#ifdef HAVE_MY_LOCAL_TRILINOS
   mueluOp->SetFixedBlockSize(numdf,offsetFineLevel);
-#else
-  mueluOp->SetFixedBlockSize(numdf);
-  if (block > 0 and numdf > 1)
-  {
-    std::cout << "======================================================" << std::endl;
-    std::cout << " WARNING: The number of dof per node in the second    " << std::endl;
-    std::cout << " block is > 1: Expect bugs!!!!                        " << std::endl;
-    std::cout << "======================================================" << std::endl;
-  }
-#endif
 
   // Prepare null space vector for MueLu
   Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
@@ -368,7 +356,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
   mueLuFactory.SetupHierarchy(*H);
 
   // Recover information about the maps
-  int NumLevel_block = H->GetNumberOfLevels();
+  int NumLevel_block = H->GetNumLevels();
   Teuchos::RCP<Level>        this_level = Teuchos::null;
   Teuchos::RCP<Matrix>              myA = Teuchos::null;
   Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
@@ -378,7 +366,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
     if (this_level->IsAvailable("A"))
     {
       myA    = this_level->Get< Teuchos::RCP<Matrix> >("A"); //Matrix
-      myAcrs = MueLu::Utils<double,int,int,Node,LocalMatOps>::Op2NonConstEpetraCrs(myA);
+      myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
     }
     else
       dserror("Error in extracting A");
@@ -574,7 +562,7 @@ void LINALG::SOLVER::AMGnxn_MonolithicHierarchy::Setup()
     std::cout << "number of levels = " << NumLevels_ << std::endl;
     for(int i=0;i<NumBlocks_;i++)
       std::cout << "block " << i << ": number of levels = "
-        << GetHierarchies()->GetH(i)->GetNumberOfLevels() << std::endl;
+        << GetHierarchies()->GetH(i)->GetNumLevels() << std::endl;
   }
 
 
@@ -777,4 +765,3 @@ Teuchos::RCP<LINALG::SOLVER::Richardson_Vcycle_Operator> LINALG::SOLVER::AMGnxn_
 
 
 #endif // HAVE_MueLu
-#endif // HAVE_Trilinos_Q1_2014

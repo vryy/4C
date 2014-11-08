@@ -1,20 +1,24 @@
-/*
- * MueLu_ContactAFilterFactory_def.hpp
- *
- *  Created on: Jan 16, 2012
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file MueLu_ContactAFilterFactory_def.hpp
 
+<pre>
+Maintainer: Dr.-Ing. Francesc Verdugo
+            verdugo@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15262
+</pre>
+
+Created on: Jan 16, 2012
+Author: wiesner
+*----------------------------------------------------------------------*/
 #ifndef MUELU_CONTACTAFILTERFACTORY_DEF_HPP_
 #define MUELU_CONTACTAFILTERFACTORY_DEF_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
 
 #include "muelu_ContactAFilterFactory_decl.hpp"
 
 #include <Xpetra_Matrix.hpp>
-//#include <Xpetra_CrsMatrixWrap.hpp>
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MatrixFactory.hpp>
 #include <Xpetra_VectorFactory.hpp>
@@ -22,8 +26,8 @@
 
 #include "MueLu_Level.hpp"
 #include "MueLu_Monitor.hpp"
+#include "MueLu_FactoryManager.hpp"
 
-#if 1
 namespace MueLu {
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
@@ -43,10 +47,13 @@ namespace MueLu {
     validParamList->set< Teuchos::RCP<const FactoryBase> >("Input matrix factory", Teuchos::null, "Generating factory of the input matrix.");
 
     validParamList->set< std::string >           ("Map block 1 name", "SlaveDofMap", "Name of part 1 of map to be splitted.");
-    validParamList->set< Teuchos::RCP<const FactoryBase> >("Map block 1 factory", MueLu::NoFactory::getRCP(), "Generating factory of part 1 of map to be segregated.");
-
     validParamList->set< std::string >           ("Map block 2 name", "MasterDofMap", "Name of part 2 of map to be splitted.");
-    validParamList->set< Teuchos::RCP<const FactoryBase> >("Map block 2 factory", MueLu::NoFactory::getRCP(), "Generating factory of part 2 of map to be segregated.");
+    validParamList->set< std::string >           ("Map block 1 factory", "null", "Name of generating factory for 'Map block 1 name'");
+    validParamList->set< std::string >           ("Map block 2 factory", "null", "Name of generating factory for 'Map block 2 name'");
+
+    // This does not work
+    //validParamList->set< Teuchos::RCP<const FactoryBase> >("Map block 1 factory", MueLu::NoFactory::getRCP(), "Generating factory of part 1 of map to be segregated.");
+    //validParamList->set< Teuchos::RCP<const FactoryBase> >("Map block 2 factory", MueLu::NoFactory::getRCP(), "Generating factory of part 2 of map to be segregated.");
 
     return validParamList;
   }
@@ -60,12 +67,32 @@ namespace MueLu {
     currentLevel.DeclareInput(inputName,inputFactory.get(),this);
 
     std::string blockName1                       = pL.get<std::string> ("Map block 1 name");
-    Teuchos::RCP<const FactoryBase> blockFactory1= GetFactory          ("Map block 1 factory");
-    currentLevel.DeclareInput(blockName1,blockFactory1.get(),this);
+    std::string blockFactName1                   = pL.get<std::string> ("Map block 1 factory");
+    if(blockFactName1 == "NoFactory") {
+      currentLevel.DeclareInput(blockName1,MueLu::NoFactory::getRCP().get(),this);
+    } else if (blockFactName1 != "null") {
+      Teuchos::RCP<const FactoryBase> blockFact1 = currentLevel.GetFactoryManager()->GetFactory(blockFactName1);
+      currentLevel.DeclareInput(blockName1,blockFact1.get(),this);
+    } else {
+      currentLevel.DeclareInput(blockName1,NULL,this);
+    }
+
+    //Teuchos::RCP<const FactoryBase> blockFactory1= GetFactory          ("Map block 1 factory");
+    //currentLevel.DeclareInput(blockName1,blockFactory1.get(),this);
 
     std::string blockName2                       = pL.get<std::string> ("Map block 2 name");
-    Teuchos::RCP<const FactoryBase> blockFactory2= GetFactory          ("Map block 2 factory");
-    currentLevel.DeclareInput(blockName2,blockFactory2.get(),this);
+    std::string blockFactName2                   = pL.get<std::string> ("Map block 2 factory");
+    if(blockFactName2 == "NoFactory") {
+      currentLevel.DeclareInput(blockName2,MueLu::NoFactory::getRCP().get(),this);
+    } else if (blockFactName2 != "null") {
+      Teuchos::RCP<const FactoryBase> blockFact2 = currentLevel.GetFactoryManager()->GetFactory(blockFactName2);
+      currentLevel.DeclareInput(blockName2,blockFact2.get(),this);
+    } else {
+      currentLevel.DeclareInput(blockName2,NULL,this);
+    }
+
+    //Teuchos::RCP<const FactoryBase> blockFactory2= GetFactory          ("Map block 2 factory");
+    //currentLevel.DeclareInput(blockName2,blockFactory2.get(),this);
   }
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
@@ -77,8 +104,23 @@ namespace MueLu {
     std::string blockName1 = pL.get<std::string> ("Map block 1 name");
     std::string blockName2 = pL.get<std::string> ("Map block 2 name");
     Teuchos::RCP<const FactoryBase> inputFactory = GetFactory  ("Input matrix factory");
-    Teuchos::RCP<const FactoryBase> blockFactory1 = GetFactory ("Map block 1 factory");
-    Teuchos::RCP<const FactoryBase> blockFactory2 = GetFactory ("Map block 2 factory");
+    //Teuchos::RCP<const FactoryBase> blockFactory1 = GetFactory ("Map block 1 factory");
+    //Teuchos::RCP<const FactoryBase> blockFactory2 = GetFactory ("Map block 2 factory");
+
+    Teuchos::RCP<const FactoryBase> blockFactory1 = Teuchos::null;
+    Teuchos::RCP<const FactoryBase> blockFactory2 = Teuchos::null;
+    std::string blockFactName1 = pL.get<std::string> ("Map block 1 factory");
+    if(blockFactName1 == "NoFactory") {
+      blockFactory1 = MueLu::NoFactory::getRCP();
+    } else if (blockFactName1 != "null") {
+      blockFactory1 = currentLevel.GetFactoryManager()->GetFactory(blockFactName1);
+    }
+    std::string blockFactName2 = pL.get<std::string> ("Map block 2 factory");
+    if(blockFactName2 == "NoFactory") {
+      blockFactory2 = MueLu::NoFactory::getRCP();
+    } else if (blockFactName2 != "null") {
+      blockFactory2 = currentLevel.GetFactoryManager()->GetFactory(blockFactName2);
+    }
 
     // fetch map with slave Dofs from Level
     Teuchos::RCP<const Map> DofMap1 = currentLevel.Get< Teuchos::RCP<const Map> >(blockName1,blockFactory1.get());
@@ -127,7 +169,6 @@ namespace MueLu {
         // get global row id
         GlobalOrdinal grid = Ain->getRowMap()->getGlobalElement(row); // global row id
 
-        // check in which submap of mapextractor grid belongs to
         isBlock1 = DofMap1->isNodeGlobalElement(grid);
         isBlock2 = DofMap2->isNodeGlobalElement(grid);
 
@@ -203,164 +244,6 @@ namespace MueLu {
   }
 } // namespace MueLu
 
-#else  // OLD version with map extractor
-
-namespace MueLu {
-
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::ContactAFilterFactory(const std::string& ename, const FactoryBase* fac, Teuchos::RCP<const MapExtractorClass>& rangeMaps)
-    : varName_(ename), factory_(fac), threshold_(0.0), mapextractor_(rangeMaps)
-  {
-
-  }
-
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::~ContactAFilterFactory() {}
-
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &currentLevel) const {
-    currentLevel.DeclareInput(varName_,factory_,this);
-    currentLevel.DeclareInput("SegAMapExtractor", MueLu::NoFactory::get(),this);
-  }
-
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Build(Level & currentLevel) const {
-    typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> OOperator; //TODO
-    typedef Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> CrsOOperator; //TODO
-    typedef Xpetra::VectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> VectorFactoryClass;
-
-    Monitor m(*this, "A filtering (contact)");
-
-    if (currentLevel.IsAvailable("SegAMapExtractor", MueLu::NoFactory::get())==false) {
-      GetOStream(Runtime0, 0) << "ContactAFilterFactory::Build(): Use user provided map extractor with " << mapextractor_->NumMaps() << " submaps for segregation filter for " << varName_ << std::endl;
-      currentLevel.Set("SegAMapExtractor", mapextractor_, MueLu::NoFactory::get());
-    }
-
-    // fetch map extractor from level
-    Teuchos::RCP<const MapExtractorClass> mapextractor = currentLevel.Get< Teuchos::RCP<const MapExtractorClass> >("SegAMapExtractor",MueLu::NoFactory::get());
-
-    // extract maps from mapextractor:                        // TODO: write a more common class for n distinct submaps in mapextractor (not just 2)
-    Teuchos::RCP<const Map> mastermap = mapextractor->getMap(0);
-    Teuchos::RCP<const Map> slavemap  = mapextractor->getMap(1);
-
-    Teuchos::RCP<OOperator> Ain = currentLevel.Get< Teuchos::RCP<OOperator> >(varName_, factory_);
-
-    Teuchos::RCP<Vector> blockVectorRowMap = VectorFactoryClass::Build(Ain->getRowMap());
-    blockVectorRowMap->putScalar(-1.0);         // -1.0 denotes that this Dof is not a master or slave dof
-
-    // use master map as source map (since all GIDs are uniquely owned by its corresponding proc
-    // use column map of current matrix Ain as target map
-    // define Xpetra::Import object
-    Teuchos::RCP<Vector> blockVectorMaster = VectorFactoryClass::Build(mastermap); blockVectorMaster->putScalar(0);
-    Teuchos::RCP<Vector> blockVectorSlave  = VectorFactoryClass::Build(slavemap);  blockVectorSlave->putScalar(1);
-    mapextractor->InsertVector(blockVectorMaster, 0, blockVectorRowMap);
-    mapextractor->InsertVector(blockVectorSlave,  1, blockVectorRowMap);
-
-    Teuchos::RCP<const Import> importer = ImportFactory::Build(Ain->getRowMap(), Ain->getColMap());
-    Teuchos::RCP<Vector> blockVectorColMap = VectorFactoryClass::Build(Ain->getColMap());
-    blockVectorColMap->putScalar(-1.0);         // -1.0 denotes that this Dof is not a master or slave dof
-    blockVectorColMap->doImport(*blockVectorRowMap,*importer,Xpetra::INSERT);
-
-    // create new empty Operator
-    Teuchos::RCP<CrsOOperator> Aout = Teuchos::rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME
-
-    // loop over local rows
-    for(size_t row=0; row<Ain->getNodeNumRows(); row++) {
-        // get global row id
-        GlobalOrdinal grid = Ain->getRowMap()->getGlobalElement(row); // global row id
-
-        // check in which submap of mapextractor grid belongs to
-        LocalOrdinal rowBlockId = -Teuchos::ScalarTraits<LocalOrdinal>::one();
-        for (size_t bb=0; bb<mapextractor->NumMaps(); bb++) {
-            const Teuchos::RCP<const Map> cmap = mapextractor->getMap(bb);
-            if (cmap->isNodeGlobalElement(grid)) {
-                rowBlockId = bb;
-                break;
-            }
-        }
-
-        // rowBlockId can be
-        // -1:  grid is not in one of the submaps of mapextractor
-        // >=0: grid is in one of the submaps of mapextractor
-
-
-        size_t nnz = Ain->getNumEntriesInLocalRow(row);
-
-        Teuchos::ArrayView<const LocalOrdinal> indices;
-        Teuchos::ArrayView<const Scalar> vals;
-        Ain->getLocalRowView(row, indices, vals);
-
-        TEUCHOS_TEST_FOR_EXCEPTION(Teuchos::as<size_t>(indices.size()) != nnz, Exceptions::RuntimeError, "MueLu::ThresholdAFilterFactory::Build: number of nonzeros not equal to number of indices? Error.");
-
-
-        // just copy all values in output
-        Teuchos::ArrayRCP<GlobalOrdinal> indout(indices.size(),Teuchos::ScalarTraits<GlobalOrdinal>::zero());
-        Teuchos::ArrayRCP<Scalar> valout(indices.size(),Teuchos::ScalarTraits<Scalar>::zero());
-        size_t nNonzeros = 0;
-
-        for(size_t i=0; i<(size_t)indices.size(); i++) {
-            GlobalOrdinal gcid = Ain->getColMap()->getGlobalElement(indices[i]); // LID -> GID (column)
-
-            Teuchos::ArrayRCP< const Scalar > colBlockData = blockVectorColMap->getData(0);
-
-            LocalOrdinal colBlockId = Teuchos::as<LocalOrdinal>(colBlockData[indices[i]]); // LID -> colBlockID
-
-            // colBlockId can be
-            // -1:  indices[i] is not in one of the submaps of mapextractor
-            // >=0: indices[i] is in one of the submaps of mapextractor
-
-            // check if mapextractor has grid
-            if (rowBlockId >= 0) {
-                // check if we have to filter columns
-                if((colBlockId > -1 && colBlockId == rowBlockId) ||  // skip all entries with rowBlockId != colBlockId if colBlockId >= 0
-                    colBlockId == -1) {
-                    indout [nNonzeros] = gcid;
-                    valout [nNonzeros] = vals[i];
-                    nNonzeros++;
-                }
-            } else {
-                indout [nNonzeros] = gcid;
-                valout [nNonzeros] = vals[i];
-                nNonzeros++;
-            }
-        }
-        indout.resize(nNonzeros);
-        valout.resize(nNonzeros);
-	
-        Aout->insertGlobalValues(Ain->getRowMap()->getGlobalElement(row), indout.view(0,indout.size()), valout.view(0,valout.size()));
-    }
-
-    Aout->fillComplete(Ain->getDomainMap(), Ain->getRangeMap());
-
-    // copy block size information
-    Aout->SetFixedBlockSize(Ain->GetFixedBlockSize());
-    
-    GetOStream(Statistics0, 0) << "Nonzeros in " << varName_ << "(input): " << Ain->getGlobalNumEntries() << ", Nonzeros after filtering " << varName_ << " (parameter: " << threshold_ << "): " << Aout->getGlobalNumEntries() << std::endl;
-
-    currentLevel.Set(varName_, Teuchos::rcp_dynamic_cast<OOperator>(Aout), this);
-
-  }
-
-  /*template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  bool  ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::IsGlobalId(Teuchos::RCP<const Map> & map, GlobalOrdinal gid) const {
-    std::vector<GlobalOrdinal> global_id(1);
-    global_id[0] = gid;
-    const Teuchos::ArrayView<const LocalOrdinal> global_id_view(&global_id[0],global_id.size());
-
-    std::vector<int> node_id(global_id.size(),-1);
-    const Teuchos::ArrayView<int> node_id_view(&node_id[0],node_id.size());
-
-    map->getRemoteIndexList(global_id_view, node_id_view);
-    if (node_id[0] != -1) {
-        return true;
-    }
-    return false;
-  }*/
-
-} // namespace MueLu
-#endif
-
-#endif // #ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #endif /* MUELU_CONTACTAFILTERFACTORY_DEF_HPP_ */

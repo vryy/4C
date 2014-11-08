@@ -6,25 +6,19 @@
  */
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
-
 #include <MueLu_ConfigDefs.hpp>
-
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <Xpetra_MapFactory.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>
-
 #include <MueLu.hpp>
 #include <MueLu_FactoryBase.hpp>
 #include <MueLu_PermutationFactory.hpp>
 #include <MueLu_SmootherPrototype.hpp>
 #include <MueLu_SmootherFactory.hpp>
-#include <MueLu_DirectSolver.hpp>    // TODO remove me
+#include <MueLu_DirectSolver.hpp>
 #include <MueLu_HierarchyHelpers.hpp>
 #include <MueLu_VerboseObject.hpp>
-
-#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #include <Epetra_Comm.h>
@@ -44,19 +38,13 @@
 #include "solver_muelupreconditioner.H"
 #include "solver_muelucontactpreconditioner.H"
 #include "solver_muelucontactpreconditioner2.H"
-#include "solver_muelucontactpreconditioner3.H"
 #include "solver_muelucontactsppreconditioner.H"
 #include "solver_muelucontactpenaltypreconditioner.H"
-#endif
+#include "solver_amgnxn_preconditioner.H"
+#endif  // HAVE_MueLu
 #ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
-#endif
-
-#ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2014
-#include "solver_amgnxn_preconditioner.H"
-#endif
-#endif
+#endif // HAVE_TEKO
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -70,7 +58,6 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver( const Epetra_Comm & comm,
     outfile_( outfile ),
     ncall_( 0 )
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
     ,
     bAllowPermutation_( false ),
     bPermuteLinearSystem_( false ),
@@ -78,12 +65,9 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver( const Epetra_Comm & comm,
     diagDominanceRatio_( 1.0 ),
     PermFact_( Teuchos:: null )
 #endif
-#endif
 {
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
   data_ = Teuchos::rcp(new Level());
-#endif
 #endif
 }
 
@@ -97,9 +81,7 @@ LINALG::SOLVER::KrylovSolver::~KrylovSolver()
   b_              = Teuchos::null;
   nActiveDofs_    = 0;
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
   data_           = Teuchos::null;
-#endif
 #endif
 }
 
@@ -209,61 +191,31 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
 #ifdef HAVE_MueLu
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuPreconditioner( outfile_, Params().sublist("MueLu Parameters") ) );
 #else
-      dserror("MueLu only available in DEV version of BACI with Trilinos Q1/2014 or newer.");
+      dserror("MueLu only available with most recent version of Trilinos");
 #endif
     }
     else if ( Params().isSublist("MueLu (Contact) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
-      ////////////////////////////// EXPERIMENTAL
-      //Params().sublist("MueLu (Contact) Parameters").set("time-step",Params().get<int>("time-step"));
-      //Params().sublist("MueLu (Contact) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
-      ////////////////////////////// EXPERIMENTAL
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner( outfile_, Params().sublist("MueLu (Contact) Parameters") ) );
 #else
-      dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer. needs the HAVE_Trilinos_Q1_2013 flag.");
-#endif
-#else
-      dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer. needs the HAVE_Trilinos_Q1_2013 flag.");
+      dserror("MueLu (Contact) preconditioner only available with most recent version of Trilinos");
 #endif
     }
     else if ( Params().isSublist("MueLu (Contact2) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
-      ////////////////////////////// EXPERIMENTAL
-      //Params().sublist("MueLu (Contact2) Parameters").set("time-step",Params().get<int>("time-step"));
-      //Params().sublist("MueLu (Contact2) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
-      ////////////////////////////// EXPERIMENTAL
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner2( outfile_, Params().sublist("MueLu (Contact2) Parameters") ) );
 #else
-      dserror("MueLu (Contact2) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer. needs the HAVE_Trilinos_Q1_2013 flag.");
-#endif
-#endif
-    }
-    else if ( Params().isSublist("MueLu (Contact3) Parameters") )
-    {
-#ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
-      ////////////////////////////// EXPERIMENTAL
-      //Params().sublist("MueLu (Contact2) Parameters").set("time-step",Params().get<int>("time-step"));
-      //Params().sublist("MueLu (Contact2) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
-      ////////////////////////////// EXPERIMENTAL
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner3( outfile_, Params().sublist("MueLu (Contact3) Parameters") ) );
-#else
-      dserror("MueLu (Contact3) preconditioner only available in DEV version of BACI with Trilinos Q4/2012 or newer. needs the HAVE_Trilinos_Q1_2013 flag.");
-#endif
+      dserror("MueLu (Contact2) preconditioner only available with most recent Trilinos version.");
 #endif
     }
     else if ( Params().isSublist("MueLu (PenaltyContact) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPenaltyPreconditioner( outfile_, Params().sublist("MueLu (PenaltyContact) Parameters") ) );
 #else
-      dserror("MueLu (PenaltyContact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer.");
-#endif
+      dserror("MueLu (PenaltyContact) preconditioner only available with most recent version of Trilinons.");
 #endif
     }
     else if (azlist.get<int>("AZ_precond") == AZ_none)  // FIXME Attention: this is dangerous.
@@ -331,33 +283,23 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
 #ifdef HAVE_MueLu
       preconditioner_ = Teuchos::rcp( new MueLuBlockPreconditioner( outfile_, Params().sublist("MueLu Parameters") ) );
 #else
-      dserror("MueLu AMG preconditioner for blocked systems only available in Trilinos Q1/2014 or newer.");
+      dserror("MueLu AMG preconditioner for blocked systems only available with most recent Trilinos version.");
 #endif
     }
     else if ( Params().isSublist("MueLu (Contact) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
-      ////////////////////////////// EXPERIMENTAL
-      //Params().sublist("MueLu (Contact) Parameters").set("time-step",Params().get<int>("time-step"));
-      //Params().sublist("MueLu (Contact) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
-      ////////////////////////////// EXPERIMENTAL
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactSpPreconditioner( outfile_, Params().sublist("MueLu (Contact) Parameters") ) );
 #else
-      dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer.");
-#endif
+      dserror("MueLu (Contact) preconditioner only available with most recent Trilinos version");
 #endif
     }
     else if ( Params().isSublist("AMGnxn Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2014
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::AMGnxn_Preconditioner(outfile_,Params()) );
 #else
-      dserror("AMGnxn preconditioner only works with Trilinos Q1_2014 or newer");
-#endif
-#else
-      dserror("AMGnxn preconditioner only works if MueLu is activated");
+      dserror("AMGnxn preconditioner only works with most recent Trilinos version");
 #endif
     }
     else
@@ -373,7 +315,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
 }
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<Epetra_CrsMatrix>& A, const Teuchos::RCP<Epetra_Map> & epSlaveDofMap)
@@ -385,9 +326,7 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<E
   xOp->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
 
   data_->setDefaultVerbLevel(Teuchos::VERB_NONE);
-#ifdef HAVE_Trilinos_Q3_2013
   data_->setlib(Xpetra::UseEpetra);
-#endif
   data_->Set("A",xOp);
 
 
@@ -453,7 +392,6 @@ void LINALG::SOLVER::KrylovSolver::PermuteLinearSystem(const Teuchos::RCP<Epetra
   Teuchos::RCP<const Epetra_CrsMatrix> epPermPMatrix  = GetOperator("permP",  PermFact_);             // row permutation matrix
   Teuchos::RCP<const Epetra_CrsMatrix> epPermScalingMatrix = GetOperator("permScaling",PermFact_); // leftScaling matrix
 
-#if 1
   // P_trafo*b
   Teuchos::RCP<Epetra_MultiVector> btemp1 = Teuchos::rcp(new Epetra_MultiVector(*b));
   epPermPMatrix->Multiply(false, *b, *btemp1);
@@ -466,16 +404,6 @@ void LINALG::SOLVER::KrylovSolver::PermuteLinearSystem(const Teuchos::RCP<Epetra
   b_ = b;   // note b is permuted
   A_ = xEpPermCrsMat;//xEpPermCrsMat->getEpetra_CrsMatrixNonConst();
 
-#else
-  Teuchos::RCP<Epetra_MultiVector> btemp1 = Teuchos::rcp(new Epetra_MultiVector(*b));
-  epPermScalingMatrix->Multiply(false, *b, *btemp1);
-
-  // set
-  // b_ = permP * b;
-  // A_ = permQ^T * A * permP
-  b_ = btemp1;   // note b is permuted
-  A_ = xEpPermCrsMat;//xEpPermCrsMat->getEpetra_CrsMatrixNonConst();
-#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -609,12 +537,7 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(cons
       NonDiagonalDominantGIDs_view,
       0, comm);
 
-  /*int verbosity = Params().sublist("Aztec Parameters").get<int>("verbosity");
-  if(verbosity>0)
-    *fos << "PermutedAztecSolver: found " << NonDiagonalDominantGIDsMap->getGlobalNumElements() << " non-digaonal dominant entries." << std::endl;*/
-
   return NonDiagonalDominantGIDsMap;
-
 }
 
 //----------------------------------------------------------------------------------
@@ -661,10 +584,6 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(const Te
       Teuchos::OrdinalTraits<int>::invalid(),
       zeroGids_view,
       0, comm);
-
-  /*int verbosity = Params().sublist("Aztec Parameters").get<int>("verbosity");
-  if(verbosity>0)
-    *fos << "PermutedAztecSolver: found " << zeroDiagonalMap->getGlobalNumElements() << " (near) zero diagonal entries." << std::endl;*/
 
   return zeroDiagonalMap;
 }
@@ -869,7 +788,6 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::SOLVER::KrylovSolver::GetOperatorNonConst
   return xEpPermScalCrsMat->getEpetra_CrsMatrixNonConst();
 }
 
-#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 

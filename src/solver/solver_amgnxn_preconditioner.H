@@ -13,7 +13,6 @@ Created on: Feb 27, 2014
 #define AMGNXN_OPERATOR_H
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2014
 
 #include "Epetra_MultiVector.h"
 #include "Epetra_Operator.h"
@@ -264,5 +263,4 @@ namespace SOLVER
 } // namespace SOLVER
 
 #endif // HAVE_MueLu
-#endif // HAVE_Trilinos_Q1_2014
 #endif // AMGNXN_OPERATOR_H

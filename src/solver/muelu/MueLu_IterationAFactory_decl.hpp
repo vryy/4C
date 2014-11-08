@@ -39,7 +39,7 @@ namespace MueLu {
 
   */
 
-  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType, class LocalMatOps = typename Kokkos::DefaultKernels<void,LocalOrdinal,Node>::SparseOps>
+  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType>
   class IterationAFactory : public SingleLevelFactoryBase {
 #undef MUELU_ITERATIONAFACTORY_SHORT
     #include "MueLu_UseShortNames.hpp"
@@ -49,7 +49,7 @@ namespace MueLu {
     //@{
 
     //! Constructor.
-    IterationAFactory(const std::string mapName, const Teuchos::RCP<const FactoryBase> & mapFact);
+    IterationAFactory();
 
     //! Destructor.
     virtual ~IterationAFactory();
@@ -57,6 +57,7 @@ namespace MueLu {
 
     //! Input
     //@{
+    RCP<const ParameterList> GetValidParameterList() const;
 
     void DeclareInput(Level &currentLevel) const;
 
@@ -71,9 +72,6 @@ namespace MueLu {
     //@}
 
   private:
-
-    const std::string mapName_;
-    const Teuchos::RCP<const FactoryBase> mapFact_;
 
   }; // class IterationAFactory
 

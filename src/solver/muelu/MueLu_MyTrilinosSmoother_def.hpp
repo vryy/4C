@@ -54,7 +54,6 @@
 #define MUELU_MYTRILINOSSMOOTHER_DEF_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
 
 #include "MueLu_MyTrilinosSmoother_decl.hpp"
 
@@ -70,14 +69,14 @@
 
 namespace MueLu {
 
-  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::MyTrilinosSmoother(std::string const & mapName, const Teuchos::RCP<const FactoryBase> & mapFact, std::string const & type, Teuchos::ParameterList const & paramList, LO const &overlap, Teuchos::RCP<FactoryBase> AFact)
+  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node>
+  MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node>::MyTrilinosSmoother(std::string const & mapName, const Teuchos::RCP<const FactoryBase> & mapFact, std::string const & type, Teuchos::ParameterList const & paramList, LO const &overlap, Teuchos::RCP<const FactoryBase> AFact)
     : mapName_(mapName), mapFact_(mapFact), type_(type), paramList_(paramList), overlap_(overlap), AFact_(AFact)
   {
     TEUCHOS_TEST_FOR_EXCEPTION(overlap_ < 0, Exceptions::RuntimeError, "overlap_ < 0");
 
     if(type_ == "ILU") {
-      s_ = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(type_, paramList_,overlap_);
+      s_ = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node>(type_, paramList_,overlap_);
       s_->SetFactory("A", AFact_);
     } else {
       s_ = Teuchos::rcp(new TrilinosSmoother(type_, paramList_, overlap_));
@@ -87,14 +86,14 @@ namespace MueLu {
     TEUCHOS_TEST_FOR_EXCEPTION(s_ == Teuchos::null, Exceptions::RuntimeError, "MueLu::MyTrilinosSmoother: failed to create TrilinosSmoother.");
   }
 
-  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &currentLevel) const {
+  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node>
+  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node>::DeclareInput(Level &currentLevel) const {
     currentLevel.DeclareInput(mapName_, mapFact_.get());
     s_->DeclareInput(currentLevel); // call explicitely DeclareInput
   }
 
-  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Setup(Level &currentLevel) {
+  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node>
+  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Setup(Level &currentLevel) {
     //FactoryMonitor m(*this, "Setup Smoother");
     Monitor m(*this, "Setup MyTrilinosSmoother");
 
@@ -112,12 +111,9 @@ namespace MueLu {
     SmootherPrototype::IsSetup(true);
   }
 
-  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-#ifdef HAVE_Trilinos_Q3_2013
-  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Apply(MultiVector &X, MultiVector const &B, bool InitialGuessIsZero) const {
-#else
-  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Apply(MultiVector &X, MultiVector const &B, bool const &InitialGuessIsZero) const {
-#endif
+  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node>
+  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Apply(MultiVector &X, MultiVector const &B, bool InitialGuessIsZero) const {
+  //void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Apply(MultiVector &X, MultiVector const &B, bool const &InitialGuessIsZero) const {
     TEUCHOS_TEST_FOR_EXCEPTION(SmootherPrototype::IsSetup() == false, Exceptions::RuntimeError, "MueLu::AmesosSmoother::Apply(): Setup() has not been called");
     TEUCHOS_TEST_FOR_EXCEPTION(s_ == Teuchos::null, Exceptions::RuntimeError, "IsSetup() == true but s_ == Teuchos::null. This does not make sense");
 
@@ -145,21 +141,21 @@ namespace MueLu {
     s_->Apply(X, *Btemp, InitialGuessIsZero);
   }
 
-  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  Teuchos::RCP<MueLu::SmootherPrototype<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Copy() const {
+  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node>
+  Teuchos::RCP<MueLu::SmootherPrototype<Scalar, LocalOrdinal, GlobalOrdinal, Node> > MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Copy() const {
     return Teuchos::rcp( new MyTrilinosSmoother(*this) );
   }
 
-  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  std::string MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::description() const {
+  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node>
+  std::string MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node>::description() const {
     std::ostringstream out;
     out << SmootherPrototype::description();
     out << "{type = " << type_ << "}";
     return out.str();
   }
 
-  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::print(Teuchos::FancyOStream &out, const VerbLevel verbLevel) const {
+  template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node>
+  void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node>::print(Teuchos::FancyOStream &out, const VerbLevel verbLevel) const {
 
     MUELU_DESCRIBE;
 
@@ -180,7 +176,6 @@ namespace MueLu {
 
 } // namespace MueLu
 
-#endif // #ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #endif /* MUELU_MYTRILINOSSMOOTHER_DEF_HPP_ */

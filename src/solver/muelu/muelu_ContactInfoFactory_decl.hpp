@@ -22,11 +22,11 @@ namespace MueLu {
     @class ContactAFilterFactory class.
     @brief special factory for exporting nullspace inforation in vtk format. Can be used together with the MueLuAggregationExportFactory.
            Extend aggregation information by using e.g. "cat output0.vtk agg_info_0.vtk >> aggregation0.vtk"
-    
+
 
   */
 
-  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType, class LocalMatOps = typename Kokkos::DefaultKernels<void,LocalOrdinal,Node>::SparseOps>
+  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType>
   class ContactInfoFactory : public TwoLevelFactoryBase {
 #undef MUELU_CONTACTINFOFACTORY_SHORT
     #include "MueLu_UseShortNames.hpp"

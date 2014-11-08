@@ -20,35 +20,73 @@
 
 #include "MueLu_Level.hpp"
 #include "MueLu_Monitor.hpp"
+#include "MueLu_FactoryManagerBase.hpp"
 
 namespace MueLu {
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  IterationAFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::IterationAFactory(const std::string mapName,const Teuchos::RCP<const FactoryBase> & mapFact)
-      : mapName_(mapName), mapFact_(mapFact)
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  IterationAFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node >::IterationAFactory(/*const std::string mapName,const Teuchos::RCP<const FactoryBase> & mapFact*/)
+  // : mapName_(mapName), mapFact_(mapFact)
   {
 
   }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  IterationAFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::~IterationAFactory() {}
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  IterationAFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node >::~IterationAFactory() {}
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void IterationAFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &currentLevel) const {
-    Input(currentLevel, "A");
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  RCP<const ParameterList> IterationAFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::GetValidParameterList() const {
+    RCP<ParameterList> validParamList = rcp(new ParameterList());
 
-    currentLevel.DeclareInput(mapName_, mapFact_.get(), this);
+    validParamList->setEntry ("map: name", Teuchos::ParameterEntry(std::string("")));
+    validParamList->setEntry ("map: factory", Teuchos::ParameterEntry(std::string("null")));
+    validParamList->set< RCP<const FactoryBase> >(std::string("A"),Teuchos::null,"Input matrix A the filter is applied to");
+
+    return validParamList;
   }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void IterationAFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Build(Level & currentLevel) const {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void IterationAFactory< Scalar, LocalOrdinal, GlobalOrdinal, Node >::DeclareInput(Level &currentLevel) const {
+    Input(currentLevel, "A");
+
+    const ParameterList & pL = GetParameterList();
+    std::string mapFactName = pL.get<std::string>("map: factory");
+    std::string mapName     = pL.get<std::string>("map: name");
+
+    // check whether user has provided a specific name for the MapFactory
+    Teuchos::RCP<const FactoryBase> mapFact = Teuchos::null;
+    if (mapFactName == "NoFactory") {
+      mapFact = MueLu::NoFactory::getRCP();
+    }
+    else if (mapFactName != "null") {
+      mapFact = currentLevel.GetFactoryManager()->GetFactory(mapFactName);
+    }
+
+    currentLevel.DeclareInput(mapName, mapFact.get(), this);
+  }
+
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void IterationAFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node >::Build(Level & currentLevel) const {
 
     Monitor m(*this, "IterationAFactory");
+
+    const ParameterList & pL = GetParameterList();
+    std::string mapFactName = pL.get<std::string>("map: factory");
+    std::string mapName     = pL.get<std::string>("map: name");
+
+    // check whether user has provided a specific name for the MapFactory
+    Teuchos::RCP<const FactoryBase> mapFact = Teuchos::null;
+    if (mapFactName == "NoFactory") {
+      mapFact = MueLu::NoFactory::getRCP();
+    }
+    else if (mapFactName != "null") {
+      mapFact = currentLevel.GetFactoryManager()->GetFactory(mapFactName);
+    }
 
     // extract dof map from Level class
     // the dof map contains all global DOF ids that shall be handled as Dirichlet boundaries
     // i.e. zero out the corresponding lines in matrix A and put a 1.0 on the diagonal
-    Teuchos::RCP<const Map> fixeddofmap = currentLevel.Get<Teuchos::RCP<const Map> >(mapName_, mapFact_.get());
+    Teuchos::RCP<const Map> fixeddofmap = currentLevel.Get<Teuchos::RCP<const Map> >(mapName, mapFact.get());
 
     // extract the original matrix A
     Teuchos::RCP<Matrix> Ain = Get< Teuchos::RCP<Matrix> >(currentLevel, "A");  // corresponding Get call to Input

@@ -12,7 +12,6 @@ Created on: Feb 27, 2014
 #ifndef AMGNXN_VCYCLE_H
 #define AMGNXN_VCYCLE_H
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2014
 
 // Trilinos includes
 #include "Epetra_MultiVector.h"
@@ -84,5 +83,4 @@ namespace LINALG
 } // namespace SOLVER
 
 #endif // HAVE_MueLu
-#endif // HAVE_Trilinos_Q1_2014
 #endif // AMGNXN_OPERATOR_H

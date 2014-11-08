@@ -49,14 +49,14 @@ Maintainer: Tobias Wiesner
 #include <MueLu_SmootherFactory.hpp>
 
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
-#ifdef HAVE_Trilinos_Q1_2013
-#include <MueLu_ParameterListInterpreter.hpp> // TODO: move into MueLu.hpp
-#endif
+#include <MueLu_ParameterListInterpreter.hpp>
 
 #include <MueLu_AggregationExportFactory.hpp>
 
 
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
+
+#include "muelu/MueLu_BaciFactoryFactory_decl.hpp" // Baci specific MueLu factories with xml interface
 
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
@@ -71,6 +71,18 @@ LINALG::SOLVER::MueLuPreconditioner::MueLuPreconditioner( FILE * outfile, Teucho
   : PreconditionerType( outfile ),
     mllist_( mllist )
 {
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::SOLVER::MueLuPreconditioner::replaceAll(std::string& str, const std::string& from, const std::string& to) {
+  if(from.empty())
+    return;
+  size_t start_pos = 0;
+  while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+    str.replace(start_pos, from.length(), to);
+    start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+  }
 }
 
 //----------------------------------------------------------------------------------
@@ -100,14 +112,13 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
     //const bool domuelupreconditioner = mllist_.get<bool>("LINALG::MueLu_Preconditioner",false);
 
     // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
-    Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
-    Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO,LMO>(mueluA));
+    Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
+    Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO>(mueluA));
 
     // remove unsupported flags
     mllist_.remove("aggregation: threshold",false); // no support for aggregation: threshold TODO
 
-#if 0
-
+#if 0 // helper routine to export null space vectors (adapt file name by hand)
     std::cout << "*** EXPORT nullspace: BEGIN ***" << std::endl;
     // DO NOT COMMIT THIS STUFF
     // write out nullspace
@@ -138,7 +149,7 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
     std::cout << "*** EXPORT nullspace: END ***" << std::endl;
 #endif
 
-#if 0
+#if 0 // helper routine to export matrix and RHS
     // DO NOT COMMIT THIS STUFF
     LINALG::PrintMatrixInMatlabFormat("F.out",*A,true);
 
@@ -175,15 +186,22 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
     //std::vector<Teuchos::RCP<FactoryBase> > vec;
     //vec.push_back(aggExpFact);
 
-#ifdef HAVE_Trilinos_Q1_2013
+
+    // read MueLu parameters from XML file (if provided as file name in the STRATIMIKOS_XMLFILE parameter in the solver block of the dat file)
     if(mllist_.isParameter("xml file") && mllist_.get<std::string>("xml file") != "none"){
       // use parameters from user-provided XML file
+
+      // xxd -i ${INPUT_FILE_NAME} | sed s/}\;/,0x00}\;/ > ${INPUT_FILE_PATH}.h
+      /*#include "test.xml.h"
+      std::string test_xml_string (reinterpret_cast<char*>(test_xml));
+      std::cout << test_xml_string << std::endl << std::endl;*/
+
+
 
       // use xml file for generating hierarchy
       std::string xmlFileName = mllist_.get<std::string>("xml file");
       Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
       *fos << "Use XML file " << xmlFileName << " for generating MueLu multigrid hierarchy" << std::endl;
-
 
       // prepare nullspace vector for MueLu
       int numdf = mllist_.get<int>("PDE equations",-1);
@@ -192,7 +210,6 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
       Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
 
       Teuchos::RCP<MultiVector> nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
-      // TODO check whether parameter "nullspace" is available
       Teuchos::RCP<std::vector<double> > nsdata = mllist_.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
 
       for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
@@ -205,41 +222,49 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
 
       mueluOp->SetFixedBlockSize(numdf);
 
-      ParameterListInterpreter mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()));
+      Teuchos::RCP<MueLu::BaciFactoryFactory<Scalar, GlobalOrdinal, LocalOrdinal, Node> > myFactFact = Teuchos::rcp(new MueLu::BaciFactoryFactory<Scalar, GlobalOrdinal, LocalOrdinal, Node>());
+      ParameterListInterpreter mueLuFactory(xmlFileName,*(mueluOp->getRowMap()->getComm()),myFactFact);
 
       Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
       H->SetDefaultVerbLevel(MueLu::Extreme);
       H->GetLevel(0)->Set("A", mueluOp);
       H->GetLevel(0)->Set("Nullspace", nspVector);
-#ifdef HAVE_Trilinos_Q3_2013
       H->GetLevel(0)->setlib(Xpetra::UseEpetra);
       H->setlib(Xpetra::UseEpetra);
-#endif
+
+      // provide extra data from outside
+      registerEpetraMapinMueLuLevel(mllist_, std::string("contact masterDofMap"), *H);
+      registerEpetraMapinMueLuLevel(mllist_, std::string("contact slaveDofMap"), *H);
+      registerEpetraMapinMueLuLevel(mllist_, std::string("contact activeDofMap"), *H);
+      registerEpetraMapinMueLuLevel(mllist_, std::string("contact innerDofMap"), *H);
+      registerMapinMueLuLevel(mllist_, std::string("non diagonal-dominant row map"), *H);
+      registerMapinMueLuLevel(mllist_, std::string("near-zero diagonal row map"), *H);
 
       mueLuFactory.SetupHierarchy(*H);
+
+      /*Teuchos::RCP<Teuchos::FancyOStream> out = fancyOStream(Teuchos::rcpFromRef(std::cout));
+      H->GetLevel(0)->print(*out,MueLu::Extreme);
+      H->GetLevel(1)->print(*out,MueLu::Extreme);
+      H->GetLevel(2)->print(*out,MueLu::Extreme);*/
 
       // set preconditioner
       P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
 
     } else {
-#endif
+
       // Standard case: use ML parameters from dat file
 
       // Setup MueLu Hierarchy
       MLParameterListInterpreter mueLuFactory(mllist_/*, vec*/);
       Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
       H->GetLevel(0)->Set("A", mueluOp);
-#ifdef HAVE_Trilinos_Q3_2013
       H->GetLevel(0)->setlib(Xpetra::UseEpetra);
       H->setlib(Xpetra::UseEpetra);
-#endif
       mueLuFactory.SetupHierarchy(*H);
 
       // set preconditioner
       P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
-#ifdef HAVE_Trilinos_Q1_2013
-    }
-#endif
+    } // if (xml file)
   } // if (create)
 }
 

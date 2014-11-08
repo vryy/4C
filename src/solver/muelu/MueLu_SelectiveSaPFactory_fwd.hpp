@@ -10,10 +10,9 @@
 
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
 
 namespace MueLu {
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   class SelectiveSaPFactory;
 }
 
@@ -21,7 +20,6 @@ namespace MueLu {
 #define MUELU_SELECTIVESAPFACTORY_SHORT
 #endif
 
-#endif // #ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #endif /* MUELU_SELECTIVESAPFACTORY_FWD_HPP_ */

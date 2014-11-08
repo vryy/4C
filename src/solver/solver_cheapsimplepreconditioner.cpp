@@ -16,7 +16,6 @@ Maintainer: Tobias Wiesner
 #include <ml_MultiLevelPreconditioner.h>
 #ifdef HAVE_MueLu
 #include <MueLu.hpp>
-#ifdef HAVE_Trilinos_Q1_2014
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <MueLu_RAPFactory.hpp>
 #include <MueLu_TrilinosSmoother.hpp>
@@ -25,9 +24,8 @@ Maintainer: Tobias Wiesner
 #include <MueLu_SaPFactory.hpp>
 #include <MueLu_VerbosityLevel.hpp>
 #include <MueLu_SmootherFactory.hpp>
-#include <MueLu_ParameterListInterpreter.hpp> // TODO: move into MueLu.hpp
+#include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_AggregationExportFactory.hpp>
-#endif
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
@@ -206,8 +204,8 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
       Teuchos::RCP<Epetra_CrsMatrix> Pmatrix = Teuchos::rcp(new Epetra_CrsMatrix(*A00));
 
       // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
-      Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix));
-      Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO,LMO>(mueluA));
+      Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO> > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix));
+      Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO>(mueluA));
 
       // Create MueLu preconditioner:  using ML like input or xml files
       Teuchos::RCP<Hierarchy> H = Teuchos::null;
@@ -222,11 +220,10 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
       }
       else
       {
-#ifdef HAVE_Trilinos_Q1_2014
         // Exctract info from list
         int numdf = MueLuList.get<int>("PDE equations",-1);
         int dimns = MueLuList.get<int>("null space: dimension",-1);
-        Teuchos::RCP<std::vector<double> > nsdata = 
+        Teuchos::RCP<std::vector<double> > nsdata =
           MueLuList.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
         if(numdf<1 or dimns<1)
           dserror("Error: PDE equations or null space dimension wrong.");
@@ -234,7 +231,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
           dserror("Error: null space data is empty");
         // Convert null space to muelu format
         Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
-        Teuchos::RCP< MultiVector > nspVector = 
+        Teuchos::RCP< MultiVector > nspVector =
           Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build
           (rowMap,dimns,true);
         for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
@@ -254,9 +251,6 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
         H->GetLevel(0)->setlib(Xpetra::UseEpetra);
         H->setlib(Xpetra::UseEpetra);
         mueLuFactory.SetupHierarchy(*H);
-#else 
-        dserror("Compile baci with Trilinos Q1 2014");
-#endif
       }
 
       // set preconditioner
@@ -290,8 +284,8 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
       Teuchos::RCP<Epetra_CrsMatrix> Pmatrix = Teuchos::rcp(new Epetra_CrsMatrix(*A11));
 
       // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
-      Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO,LMO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix));
-      Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO,LMO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO,LMO>(mueluA));
+      Teuchos::RCP<Xpetra::CrsMatrix<SC,LO,GO,NO > > mueluA  = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix));
+      Teuchos::RCP<Xpetra::Matrix<SC,LO,GO,NO> >   mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC,LO,GO,NO>(mueluA));
 
       // Create MueLu preconditioner:  using ML like input or xml files
       Teuchos::RCP<Hierarchy> H = Teuchos::null;
@@ -306,11 +300,10 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
       }
       else
       {
-#ifdef HAVE_Trilinos_Q1_2014
         // Exctract info from list
         int numdf = MueLuList.get<int>("PDE equations",-1);
         int dimns = MueLuList.get<int>("null space: dimension",-1);
-        Teuchos::RCP<std::vector<double> > nsdata = 
+        Teuchos::RCP<std::vector<double> > nsdata =
           MueLuList.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
         if(numdf<1 or dimns<1)
           dserror("Error: PDE equations or null space dimension wrong.");
@@ -318,7 +311,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
           dserror("Error: null space data is empty");
         // Convert null space to muelu format
         Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
-        Teuchos::RCP< MultiVector > nspVector = 
+        Teuchos::RCP< MultiVector > nspVector =
           Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build
           (rowMap,dimns,true);
         for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
@@ -338,9 +331,6 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Epetra_
         H->GetLevel(0)->setlib(Xpetra::UseEpetra);
         H->setlib(Xpetra::UseEpetra);
         mueLuFactory.SetupHierarchy(*H);
-#else 
-        dserror("Compile baci with Trilinos Q1 2014");
-#endif
       }
 
       // set preconditioner

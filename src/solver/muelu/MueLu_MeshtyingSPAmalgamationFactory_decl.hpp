@@ -9,7 +9,6 @@
 #define MUELU_MESHTYINGSPAMALGAMATIONFACTORY_DECL_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
 
 #include <Xpetra_Matrix_fwd.hpp>
 #include <Xpetra_Map_fwd.hpp>
@@ -74,7 +73,6 @@ namespace MueLu {
 } // namespace MueLu
 
 #define MUELU_MESHTYINGSPAMALGAMATIONFACTORY_SHORT
-#endif // Q1/2013
 #endif // HAVE_MueLu
 
 

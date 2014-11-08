@@ -15,7 +15,7 @@
 #include "MueLu_SingleLevelFactoryBase.hpp"
 #include "MueLu_ThresholdAFilterFactory_fwd.hpp"
 
-#include <Xpetra_MapExtractorFactory.hpp> // why no forward declarations in Xpetra?
+//#include <Xpetra_MapExtractorFactory.hpp> // why no forward declarations in Xpetra?
 
 namespace MueLu {
 
@@ -25,22 +25,25 @@ namespace MueLu {
 
   */
 
-  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType, class LocalMatOps = typename Kokkos::DefaultKernels<void,LocalOrdinal,Node>::SparseOps>
+  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType>
   class ContactASlaveDofFilterFactory : public SingleLevelFactoryBase {
 #undef MUELU_CONTACTASLAVEDOFFILTERFACTORY_SHORT
     #include "MueLu_UseShortNames.hpp"
 
-    typedef Xpetra::MapExtractor<Scalar, LocalOrdinal, GlobalOrdinal, Node> MapExtractorClass; // TODO move me to ShortNames...
+    //typedef Xpetra::MapExtractor<Scalar, LocalOrdinal, GlobalOrdinal, Node> MapExtractorClass; // TODO move me to ShortNames...
 
   public:
     //! @name Constructors/Destructors.
     //@{
 
     //! Constructor.
-    ContactASlaveDofFilterFactory(Teuchos::RCP<const FactoryBase> AFact = Teuchos::null);
+    ContactASlaveDofFilterFactory(/*Teuchos::RCP<const FactoryBase> AFact = Teuchos::null*/);
 
     //! Destructor.
     virtual ~ContactASlaveDofFilterFactory();
+
+    RCP<const ParameterList> GetValidParameterList() const;
+
     //@}
 
     //! Input
@@ -59,12 +62,6 @@ namespace MueLu {
     //@}
 
   private:
-
-    Teuchos::RCP<const FactoryBase> AFact_;
-    //bool IsGlobalId(Teuchos::RCP<const Map> & map, GlobalOrdinal gid) const;
-
-    //Teuchos::RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
-
 
   }; // class ContactASlaveDofFilterFactory
 

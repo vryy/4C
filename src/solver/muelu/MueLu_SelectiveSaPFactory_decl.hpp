@@ -9,7 +9,6 @@
 #define MUELU_SELECTIVESAPFACTORY_DECL_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
 
 #include <string>
 
@@ -38,7 +37,7 @@ namespace MueLu {
     @ingroup MueLuTransferClasses
   */
 
-  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType, class LocalMatOps = typename Kokkos::DefaultKernels<void,LocalOrdinal,Node>::SparseOps> //TODO: or BlockSparseOp ?
+  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType>
   class SelectiveSaPFactory : public PFactory {
 #undef MUELU_SELECTIVESAPFACTORY_SHORT
 #include "MueLu_UseShortNames.hpp"
@@ -105,19 +104,13 @@ namespace MueLu {
 
   private:
     Teuchos::RCP<Xpetra::Matrix<double, int, int> > MyTranspose(Teuchos::RCP<Xpetra::Matrix<double, int, int> > const &Op, bool const & optimizeTranspose) const;
-    /*
-    Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node> > BuildUnsmoothedBasisFunctionMap(Level &fineLevel, Level &coarseLevel) const;
-    Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > RemoveColumnEntries(Teuchos::RCP<Matrix> & matrix, Teuchos::RCP<const Map> coarseNonSmoothedMap) const;
-    */
-
-    Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > FixAPproduct(Level &fineLevel, Level &coarseLevel,Teuchos::RCP<Matrix> & A, Teuchos::RCP<Matrix> & DinvAP) const;
+    Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> > FixAPproduct(Level &fineLevel, Level &coarseLevel,Teuchos::RCP<Matrix> & A, Teuchos::RCP<Matrix> & DinvAP) const;
   }; //class SelectiveSaPFactory
 
 } //namespace MueLu
 
 #define MUELU_SELECTIVESAPFACTORY_SHORT
 
-#endif // #ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #endif /* MUELU_SELECTIVESAPFACTORY_DECL_HPP_ */

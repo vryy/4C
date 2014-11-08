@@ -124,7 +124,6 @@ macro(codetesting arg)
 endmacro(codetesting)
 
 ###------------------------------------------------------------------ List of tests
-##if(NOT TRILINOS_DEV)
 baci_test(acou_1d_dirk23 1 "")
 baci_test(acou_pat_1d_impl 1 "")
 baci_test(acou_pat_1d_impl 2 "" minimal)
@@ -1750,10 +1749,6 @@ cut_test(2)
 if (HAVE_MueLu)
 baci_test(f2_drivencavity20x20_muelu_drt 1 "")
 baci_test(f2_drivencavity20x20_muelu_drt 2 "")
-endif (HAVE_MueLu)
-
-if (HAVE_MueLu)
-if (HAVE_Trilinos_Q1_2014)
 
 # contact (condensed formulation, different permutation)
 baci_test(contact3D_lin_duallagr_algebr_contact1 1 "")
@@ -1787,8 +1782,6 @@ baci_test(f2_drivencavity20x20_muelu_xml_PGAMG 2 "")
 # testing the AMGnxn with a TSI problem
 baci_test(tsi_simplrocketnozzle_monolithic_amgnxn_AMGBGS 2 "")
 
-
-endif (HAVE_Trilinos_Q1_2014)
 
 endif (HAVE_MueLu)
 

@@ -1517,7 +1517,6 @@ set(OBJS_SOLVER
   src/solver/solver_muelupreconditioner.cpp
   src/solver/solver_muelucontactpreconditioner.cpp
   src/solver/solver_muelucontactpreconditioner2.cpp
-  src/solver/solver_muelucontactpreconditioner3.cpp
   src/solver/solver_muelucontactsppreconditioner.cpp
   src/solver/solver_muelucontactpenaltypreconditioner.cpp
   src/solver/solver_tekopreconditioner.cpp
@@ -1536,6 +1535,7 @@ set(OBJS_SOLVER
   src/solver/muelu/MueLu_SelectiveSaPFactory.cpp
   src/solver/muelu/MueLu_MeshtyingSPAmalgamationFactory.cpp
   src/solver/muelu/MueLu_ContactSPRepartitionInterface.cpp
+  src/solver/muelu/MueLu_BaciFactoryFactory.cpp
   src/solver/solver_amgnxn_preconditioner.cpp
   src/solver/solver_amgnxn_vcycle.cpp
   src/solver/solver_amgnxn_hierarchies.cpp

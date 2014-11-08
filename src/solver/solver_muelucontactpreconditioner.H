@@ -14,7 +14,6 @@ Created on: Jan 11, 2012
 #define SOLVER_MUELUCONTACTPRECONDITIONER_H_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
 
 #include "solver_preconditionertype.H"
 
@@ -57,10 +56,10 @@ namespace LINALG
     private:
 
       //! function interprets ML parameter lists for creating contact level smoothers
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
 
       //! function interprets ML parameter lists for creating contact coarse solver
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact = Teuchos::null);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact = Teuchos::null);
 
       // private Setup routine for MueLu Multigrid hierarchy
       Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Matrix> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
@@ -77,7 +76,6 @@ namespace LINALG
   }
 }
 
-#endif // #ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 

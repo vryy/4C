@@ -6,7 +6,6 @@
  */
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
 
 #include <MueLu_ConfigDefs.hpp>
 
@@ -20,10 +19,9 @@
 #include <MueLu_PermutationFactory.hpp>
 #include <MueLu_SmootherPrototype.hpp>
 #include <MueLu_SmootherFactory.hpp>
-#include <MueLu_DirectSolver.hpp>    // remove me
+#include <MueLu_DirectSolver.hpp>
 #include <MueLu_HierarchyHelpers.hpp>
 #include <MueLu_VerboseObject.hpp>
-#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 // Belos headers
@@ -92,12 +90,10 @@ void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matr
   Teuchos::ParameterList& belist = Params().sublist("Belos Parameters");
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
   permutationStrategy_ = belist.get<std::string>("permutation strategy","none");
   diagDominanceRatio_ = belist.get<double>("diagonal dominance ratio", 1.0);
   if (permutationStrategy_ == "none") bAllowPermutation_  = false;
   else bAllowPermutation_ = true;
-#endif
 #endif
 
   int reuse = belist.get("reuse",0);
@@ -144,7 +140,6 @@ void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matr
 
   ////////////////////////////////////// permutation stuff
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
   if(bAllowPermutation_) {
     // extract (user-given) additional information about linear system from
     // "Aztec Parameters" -> "Linear System properties"
@@ -169,20 +164,12 @@ void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matr
     // b_ = permP * b;
     // A_ = permQ^T * A * permP
     PermuteLinearSystem(A,b);
-
-    // calculate (permQT)^T * b_f where b_f is the fine level null space (multi)vector
-    //PermuteNullSpace(A);  // TODO think about this
-    // do not permute null space to preserve pattern of null space for transfer operators
-    // important e.g. for one pt aggregates?
   } else {
-#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
     b_ = b;
     A_ = matrix; // we cannot use A here, since it could be Teuchos::null (for blocked operators);
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
   }
-#endif
 #endif
   x_ = x;
 
@@ -243,7 +230,6 @@ int LINALG::SOLVER::BelosSolver::Solve()
   }
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
   GlobalOrdinal rowperm  = 0;
   GlobalOrdinal colperm  = 0;
   GlobalOrdinal lrowperm = 0;
@@ -276,7 +262,6 @@ int LINALG::SOLVER::BelosSolver::Solve()
             A_->OperatorRangeMap().NumGlobalElements(),(int)newSolver->getNumIters(),-1.0,rowperm,colperm,lrowperm,lcolperm,nonDiagDomRows,nonPermutedZeros,PermutedZeros,bPermuteLinearSystem_ ? 1 : 0,NonPermutedNearZeros,PermutedNearZeros);
     fflush(outfile_);
   }
-#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
   ncall_ += 1; // increment counter of solver calls

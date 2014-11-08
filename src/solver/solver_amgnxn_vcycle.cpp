@@ -12,7 +12,6 @@ Created on: Feb 27, 2014
 
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2014
 
 #include <iostream>
 
@@ -243,4 +242,3 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::Apply(
 
 
 #endif // HAVE_MueLu
-#endif // HAVE_Trilinos_Q1_2014

@@ -9,7 +9,6 @@
 #define MUELU_MESHTYINGSPAMALGAMATIONFACTORY_FWD_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
 
 namespace MueLu {
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
@@ -20,7 +19,6 @@ namespace MueLu {
 #define MUELU_MESHTYINGSPAMALGAMATIONFACTORY_SHORT
 #endif
 
-#endif // Q1/2013
 #endif // HAVE_MueLu
 
 #endif /* MUELU_MESHTYINGSPAMALGAMATIONFACTORY_FWD_HPP_ */

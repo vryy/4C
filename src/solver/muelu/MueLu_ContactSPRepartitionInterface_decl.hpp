@@ -9,7 +9,6 @@
 #define MUELU_CONTACTSPREPARTITIONINTERFACE_DECL_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
 
 #include <Xpetra_Map.hpp>
 #include <Xpetra_Matrix.hpp>
@@ -26,6 +25,9 @@
 #include "MueLu_AmalgamationInfo_fwd.hpp"
 #include "MueLu_Utilities_fwd.hpp"
 
+// header files for default types, must be included after all other MueLu/Xpetra headers
+#include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
+#include <MueLu_UseShortNames.hpp>
 
 namespace MueLu {
 
@@ -45,7 +47,6 @@ namespace MueLu {
             class LocalMatOps = typename KokkosClassic::DefaultKernels<void,LocalOrdinal,Node>::SparseOps>
   class ContactSPRepartitionInterface : public SingleLevelFactoryBase {
 
-    typedef double Scalar; // FIXME
 #undef MUELU_CONTACTSPREPARTITIONINTERFACE_SHORT
 #include "MueLu_UseShortNames.hpp"
 
@@ -87,5 +88,4 @@ namespace MueLu {
 #define MUELU_CONTACTSPREPARTITIONINTERFACE_SHORT
 
 #endif // HAVE_MueLu
-#endif // Have Muelu
 #endif /* MUELU_CONTACTSPREPARTITIONINTERFACE_DECL_HPP_ */

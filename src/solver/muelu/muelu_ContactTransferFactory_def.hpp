@@ -22,26 +22,26 @@
 
 namespace MueLu {
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  ContactTransferFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::ContactTransferFactory(Teuchos::RCP<FactoryBase> PtentFact)
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  ContactTransferFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::ContactTransferFactory(Teuchos::RCP<FactoryBase> PtentFact)
   : PtentFact_(PtentFact)
     {
 
     }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  ContactTransferFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::~ContactTransferFactory() {}
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  ContactTransferFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::~ContactTransferFactory() {}
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void ContactTransferFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &fineLevel, Level &coarseLevel) const {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void ContactTransferFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::DeclareInput(Level &fineLevel, Level &coarseLevel) const {
     //fineLevel.DeclareInput(varName_,factory_,this);
     coarseLevel.DeclareInput("P", PtentFact_.get(),this);
     fineLevel.DeclareInput("SegAMapExtractor", MueLu::NoFactory::get(),this);
   }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void ContactTransferFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Build(Level & fineLevel, Level & coarseLevel) const {
-    typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> OperatorClass;
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void ContactTransferFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(Level & fineLevel, Level & coarseLevel) const {
+    typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> OperatorClass;
     typedef Xpetra::MapFactory<LocalOrdinal, GlobalOrdinal, Node> MapFactoryClass;
     typedef Xpetra::Vector<Scalar, LocalOrdinal, GlobalOrdinal, Node> VectorClass;
     typedef Xpetra::VectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> VectorFactoryClass;

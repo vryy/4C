@@ -23,26 +23,37 @@
 
 namespace MueLu {
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  ContactASlaveDofFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::ContactASlaveDofFilterFactory(Teuchos::RCP<const FactoryBase> AFact)
-    : AFact_(AFact)
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  ContactASlaveDofFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::ContactASlaveDofFilterFactory()
   {
 
   }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  ContactASlaveDofFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::~ContactASlaveDofFilterFactory() {}
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  ContactASlaveDofFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::~ContactASlaveDofFilterFactory() {}
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void ContactASlaveDofFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &currentLevel) const {
-    currentLevel.DeclareInput("A",AFact_.get(),this);
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  RCP<const ParameterList> ContactASlaveDofFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::GetValidParameterList() const {
+    RCP<ParameterList> validParamList = rcp(new ParameterList());
+
+    validParamList->set< RCP<const FactoryBase> >("A", Teuchos::null, "Generating factory of the matrix A used for filtering slave-master coupling DOFs.");
+
+    return validParamList;
+  }
+
+
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void ContactASlaveDofFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::DeclareInput(Level &currentLevel) const {
+
+    RCP<const FactoryBase> AFact = GetFactory("A");
+    currentLevel.DeclareInput("A",AFact.get(),this);
     currentLevel.DeclareInput("SlaveDofMap", MueLu::NoFactory::get(),this);
   }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void ContactASlaveDofFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Build(Level & currentLevel) const {
-    typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> OOperator; //TODO
-    typedef Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> CrsOOperator; //TODO
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void ContactASlaveDofFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(Level & currentLevel) const {
+    typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> OOperator;
+    typedef Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node> CrsOOperator;
     //typedef Xpetra::VectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> VectorFactoryClass;
     typedef Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node> MapClass;
 
@@ -54,7 +65,8 @@ namespace MueLu {
     Teuchos::RCP<const MapClass> slavedofmap = currentLevel.Get<Teuchos::RCP<const MapClass> >("SlaveDofMap", MueLu::NoFactory::get());
 
     // extract the original matrix A
-    Teuchos::RCP<OOperator> Ain = currentLevel.Get< Teuchos::RCP<OOperator> >("A", AFact_.get());
+   RCP<const FactoryBase> AFact = GetFactory("A");
+    Teuchos::RCP<OOperator> Ain = currentLevel.Get< Teuchos::RCP<OOperator> >("A", AFact.get());
 
     // create new empty Operator
     Teuchos::RCP<CrsOOperator> Aout = Teuchos::rcp(new CrsOOperator(Ain->getRowMap(),Ain->getGlobalMaxNumRowEntries(),Xpetra::StaticProfile)); //FIXME

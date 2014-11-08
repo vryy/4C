@@ -9,7 +9,6 @@
 #define MUELU_CONCTACTSPREPARTITIONINTERFACE_FWD_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
 
 namespace MueLu {
   template <class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
@@ -20,7 +19,6 @@ namespace MueLu {
 #define MUELU_CONTACTSPREPARTITIONINTERFACE_SHORT
 #endif
 
-#endif
 #endif
 
 #endif /* MUELU_CONCTACTSPREPARTITIONINTERFACE_FWD_HPP_ */

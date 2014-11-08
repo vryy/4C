@@ -120,10 +120,8 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   Teuchos::RCP<Epetra_CrsMatrix> mymatrix = Teuchos::rcp(A, false);
 
   // wrap Epetra_CrsMatrix to Xpetra::Matrix
-  Teuchos::RCP<Xpetra::CrsMatrix<double,int,int,Node,LocalMatOps> > mueluA =
-      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(mymatrix));
-  Teuchos::RCP<Xpetra::Matrix<double,int,int,Node,LocalMatOps> > mueluOp =
-      Teuchos::rcp(new Xpetra::CrsMatrixWrap<double,int,int,Node,LocalMatOps>(mueluA));
+  Teuchos::RCP<Xpetra::CrsMatrix<double,int,int,Node> > mueluA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(mymatrix));
+  Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<double,int,int,Node>(mueluA));
 
   // ---------------------------------------------------------------------------
   // Setup MueLue Hierarchy based on user specified parameters
@@ -157,7 +155,7 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
 
     // extract matrix
     Teuchos::RCP<Matrix> myMatrix = muelulevel->Get<Teuchos::RCP<Matrix> >("A");
-    myAcrs = MueLu::Utils<double,int,int,Node,LocalMatOps>::Op2NonConstEpetraCrs(myMatrix);
+    myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myMatrix);
     myA = Teuchos::rcp(new LINALG::SparseMatrix(myAcrs, false, true, LINALG::SparseMatrix::CRS_MATRIX));
 
     // extract transfer operators
@@ -165,11 +163,11 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
     {
       // restriction operator
       Teuchos::RCP<Matrix> myRestrictor = muelulevel->Get<Teuchos::RCP<Matrix> >("R");
-      myR = MueLu::Utils<double,int,int,Node,LocalMatOps>::Op2NonConstEpetraCrs(myRestrictor);
+      myR = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myRestrictor);
 
       // prolongation operator
       Teuchos::RCP<Matrix> myProlongator = muelulevel->Get<Teuchos::RCP<Matrix> >("P");
-      myP = MueLu::Utils<double,int,int,Node,LocalMatOps>::Op2NonConstEpetraCrs(myProlongator);
+      myP = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myProlongator);
 
     }
 

@@ -12,7 +12,6 @@ Created on: Feb 27, 2014
 
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2014
 
 #include <iostream>
 
@@ -351,7 +350,7 @@ void LINALG::SOLVER::MueluSmootherWrapper::Apply
 
   // Convert to Epetra
   const Teuchos::RCP<Epetra_MultiVector>& Ye =
-    MueLu::Utils<double,int,int,Node,LocalMatOps>::MV2NonConstEpetraMV(Yx);
+    MueLu::Utils<double,int,int,Node>::MV2NonConstEpetraMV(Yx);
   Y.Update(1.0,*Ye,0.0);
 
   return;
@@ -2055,4 +2054,3 @@ LINALG::SOLVER::DirectSolverWrapperFactory::Create()
 
 
 #endif // HAVE_MueLu
-#endif // HAVE_Trilinos_Q1_2014

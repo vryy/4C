@@ -9,7 +9,6 @@
 #define SOLVER_MUELUCONTACTPRECONDITIONER2_H_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
 
 #include "solver_preconditionertype.H"
 
@@ -56,10 +55,10 @@ namespace LINALG
     private:
 
       //! function interprets ML parameter lists for creating contact level smoothers
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
 
       //! function interprets ML parameter lists for creating contact coarse solver
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact = Teuchos::null);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact = Teuchos::null);
 
       //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);
 
@@ -90,12 +89,11 @@ namespace LINALG
       Teuchos::Array<Teuchos::RCP<FactoryManager> > vecManager_;
 
       /// A Factory which shall be reused by MyTrilinosSmoother
-      Teuchos::RCP<FactoryBase> singleNodeAFact_;
+      Teuchos::RCP<Factory> singleNodeAFact_;
     };
   }
 }
 
-#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #endif /* SOLVER_MUELUCONTACTPRECONDITIONER2_H_ */

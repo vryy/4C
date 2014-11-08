@@ -1,5 +1,4 @@
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2013
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -24,5 +23,4 @@ template class MueLu::ContactAFilterFactory<std::complex<double>, int, int, Kokk
 # endif
 #endif
 
-#endif // #ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu

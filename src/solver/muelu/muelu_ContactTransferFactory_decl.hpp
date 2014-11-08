@@ -26,7 +26,7 @@ namespace MueLu {
 
   */
 
-  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType, class LocalMatOps = typename Kokkos::DefaultKernels<void,LocalOrdinal,Node>::SparseOps>
+  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType>
   class ContactTransferFactory : public TwoLevelFactoryBase {
 #undef MUELU_CONTACTTRANSFERFACTORY_SHORT
     #include "MueLu_UseShortNames.hpp"

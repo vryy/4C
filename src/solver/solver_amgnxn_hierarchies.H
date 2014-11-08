@@ -12,7 +12,6 @@ Created on: Aug 11, 2014
 #ifndef AMGNXN_HIERARCHIES_H
 #define AMGNXN_HIERARCHIES_H
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q1_2014
 
 #include "Epetra_MultiVector.h"
 #include "Epetra_Operator.h"
@@ -150,5 +149,4 @@ namespace LINALG
 } // namespace SOLVER
 
 #endif // HAVE_MueLu
-#endif // HAVE_Trilinos_Q1_2014
 #endif // AMGNXN_HIERARCHIES_H

@@ -9,7 +9,6 @@
 
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_Trilinos_Q3_2013
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -27,5 +26,4 @@ template class MueLu::ContactSPRepartitionInterface<int, long long int, KokkosCl
 # endif
 #endif
 
-#endif
 #endif
