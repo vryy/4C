@@ -88,17 +88,6 @@ if (DEBUGCUTLIBRARY)
   add_definitions("-DDEBUGCUTLIBRARY")
 endif (DEBUGCUTLIBRARY)
 
-#option (TRILINOS_DEV "Turn on advanced functionality from most recent Trilinos packages" OFF)
-#if (TRILINOS_DEV)
-#  add_definitions("-DTRILINOS_DEV")
-#endif (TRILINOS_DEV)
-
-option (HAVE_Stratimikos "Turn on Stratimikos support" OFF)
-if (HAVE_Stratimikos)
-  MESSAGE("II Turn on support for Stratimikos")
-  add_definitions("-DHAVE_STRATIMIKOS")
-endif (HAVE_Stratimikos)
-
 option (HAVE_TEKO "Turn on Teko support (needs Teko and Stratimikos to be compiled within Trilinos)" OFF)
 if (HAVE_TEKO)
   MESSAGE("II Turn on support for Teko")
@@ -111,52 +100,7 @@ if (HAVE_MueLu)
   add_definitions("-DHAVE_MueLu")
 endif (HAVE_MueLu)
 
-#option (HAVE_Trilinos_Q3_2014 "Turn on experimental code which is available with Q3/2014" OFF)
-#if (HAVE_Trilinos_Q3_2014)
-#  MESSAGE("II Enable experimental features from Trilinos Q3/2014")
-#  add_definitions("-DHAVE_MueLu")
-#  add_definitions("-DHAVE_Trilinos_Q1_2013")
-#  add_definitions("-DHAVE_Trilinos_Q2_2013")
-#  add_definitions("-DHAVE_Trilinos_Q3_2013")
-#  add_definitions("-DHAVE_Trilinos_Q1_2014")
-#  add_definitions("-DHAVE_Trilinos_Q3_2014")
-#endif (HAVE_Trilinos_Q3_2014)
-
-#option (HAVE_Trilinos_Q1_2014 "Turn on experimental code which is available with Q1/2014" OFF)
-#if (HAVE_Trilinos_Q1_2014)
-#  MESSAGE("II Enable experimental features from Trilinos Q1/2014")
-#  add_definitions("-DHAVE_MueLu")
-#  add_definitions("-DHAVE_Trilinos_Q1_2013")
-#  add_definitions("-DHAVE_Trilinos_Q2_2013")
-#  add_definitions("-DHAVE_Trilinos_Q3_2013")
-#  add_definitions("-DHAVE_Trilinos_Q1_2014")
-#endif (HAVE_Trilinos_Q1_2014)
-
-#option (HAVE_Trilinos_Q3_2013 "Turn on experimental code which is available with Q3/2013" OFF)
-#if (HAVE_Trilinos_Q3_2013)
-#  MESSAGE("II Enable experimental features from Trilinos Q3/2013")
-#  add_definitions("-DHAVE_MueLu")
-#  add_definitions("-DHAVE_Trilinos_Q1_2013")
-#  add_definitions("-DHAVE_Trilinos_Q2_2013")
-#  add_definitions("-DHAVE_Trilinos_Q3_2013")
-#endif (HAVE_Trilinos_Q3_2013)
-
-#option (HAVE_Trilinos_Q2_2013 "Turn on experimental code which is available with Q2/2013" OFF)
-#if (HAVE_Trilinos_Q2_2013)
-#  MESSAGE("II Enable experimental features from Trilinos Q2/2013")
-#  add_definitions("-DHAVE_MueLu")
-#  add_definitions("-DHAVE_Trilinos_Q1_2013")
-#  add_definitions("-DHAVE_Trilinos_Q2_2013")
-#endif (HAVE_Trilinos_Q2_2013)
-
-#option (HAVE_Trilinos_Q1_2013 "Turn on experimental code which is available with Q1/2013" OFF)
-#if (HAVE_Trilinos_Q1_2013)
-#  MESSAGE("II Enable experimental features from Trilinos Q1/2013")
-#  add_definitions("-DHAVE_MueLu")
-#  add_definitions("-DHAVE_Trilinos_Q1_2013")
-#endif (HAVE_Trilinos_Q1_2013)
-
-option (HAVE_Stratimikos "Turn on Stratimikos support (needs Stratimikos to be compiled within Trilinos" ON)
+option (HAVE_Stratimikos "Turn on Stratimikos support (needs Stratimikos to be compiled within Trilinos" OFF)
 if (HAVE_Stratimikos)
   MESSAGE("II Turn on support for Stratimikos")
   add_definitions("-DHAVE_Stratimikos")
@@ -239,21 +183,21 @@ ENDFOREACH()
 
 # these are the fedora 8 with openmpi paths
 
-if (NOT MPI_DIR)
-  set (MPI_DIR "/usr")  # standard path for MPI in Fedora 8
-endif (NOT MPI_DIR)
+#if (NOT MPI_DIR)
+#  set (MPI_DIR "/usr")  # standard path for MPI in Fedora 8
+#endif (NOT MPI_DIR)
 
-if (NOT INCLUDE_INSTALL_DIR)
-  set ( INCLUDE_INSTALL_DIR "/lnm/lib/fc8/openmpi/include" )
-endif (NOT INCLUDE_INSTALL_DIR)
+#if (NOT INCLUDE_INSTALL_DIR)
+#  set ( INCLUDE_INSTALL_DIR "/lnm/lib/fc8/openmpi/include" )
+#endif (NOT INCLUDE_INSTALL_DIR)
 
-if (NOT LIB_INSTALL_DIR)
-  set ( LIB_INSTALL_DIR "/lnm/lib/fc8/openmpi/lib" )
-endif (NOT LIB_INSTALL_DIR)
+#if (NOT LIB_INSTALL_DIR)
+#  set ( LIB_INSTALL_DIR "/lnm/lib/fc8/openmpi/lib" )
+#endif (NOT LIB_INSTALL_DIR)
 
-if (NOT Trilinos_DIR)
-  set ( Trilinos_DIR "/lnm/lib/fc8/openmpi/trilinos" )
-endif (NOT Trilinos_DIR)
+#if (NOT Trilinos_DIR)
+#  set ( Trilinos_DIR "/lnm/lib/fc8/openmpi/trilinos" )
+#endif (NOT Trilinos_DIR)
 
 ###------------------------------------------------------------------ External Libraries
 
@@ -350,12 +294,6 @@ if (Trilinos_FOUND)
     ${Trilinos_TPL_LIBRARIES}
     ${LIBRARIES}
     )
-
-# define of which library we are using - for compatibility checks
-#if (Trilinos_VERSION STREQUAL "10.1d")
-#add_definitions("-DTRILINOS_10_1d")
-#else ()
-#endif ()
 endif (Trilinos_FOUND)
 
 find_package(Netcdf REQUIRED)
@@ -2255,30 +2193,13 @@ include(CTest)
 
 ###------------------------------------------------------------------ Unit Tests
 
-#if(NOT TRILINOS_DEV)
-#message("Trilinos_DEV not set ")
-#  if (NOT ACML_FOUND )  ## cut_test not available on kaiser
-#    add_executable(cut_test  EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
-#    target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES}
-#    drt_lib_utils
-#    drt_lib_io
-#    linalg
-#    ${LIBRARIES}
-#    )
-#    add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
-#  endif(NOT ACML_FOUND)
-#else()
-# linker command for Q3/2012 Trilinos or newer
-  #if (NOT ACML_FOUND )  ## cut_test not available on kaiser
-    add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
-    target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchoscore ${LAPACK_LIBRARIES}
+add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
+target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchoscore ${LAPACK_LIBRARIES}
     drt_lib_utils
     drt_lib_io
     linalg
     ${LIBRARIES}
-    )
-    add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
-  #endif(NOT ACML_FOUND)
-#endif(NOT TRILINOS_DEV)
+)
+add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
 
 include (TestingFramework.cmake)
