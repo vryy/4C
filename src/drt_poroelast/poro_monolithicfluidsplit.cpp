@@ -473,7 +473,7 @@ void POROELAST::MonolithicFluidSplit::ExtractFieldVectors(
 /*----------------------------------------------------------------------*/
 /* Recover the Lagrange multiplier at the interface    vuong 01/12      */
 /*----------------------------------------------------------------------*/
-void POROELAST::MonolithicFluidSplit::RecoverLagrangeMultiplier()
+void POROELAST::MonolithicFluidSplit::RecoverLagrangeMultiplierAfterTimeStep()
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicFluidSplit::RecoverLagrangeMultiplier");
 

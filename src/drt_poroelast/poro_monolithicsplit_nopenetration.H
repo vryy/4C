@@ -65,6 +65,12 @@ namespace POROELAST
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
 
+    //! take current results for converged and save for next time step
+    virtual void Update();
+
+    /// read restart data
+    virtual void ReadRestart(int restart);
+
   protected:
     //! @name Apply current field state to system
 
@@ -78,11 +84,11 @@ namespace POROELAST
 
     /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each iteration step
     /// (i.e. condensed forces onto the structure) needed for rhs in next time step
-    void RecoverLagrangeMultiplier_iter(Teuchos::RCP<const Epetra_Vector> x);
+    virtual void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x);
 
     /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
     /// (i.e. condensed forces onto the structure) needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplier();
+    virtual void RecoverLagrangeMultiplierAfterTimeStep();
 
     //! output
     virtual void Output();
@@ -117,6 +123,9 @@ namespace POROELAST
     Teuchos::RCP<LINALG::SparseMatrix> k_Dn_;
 
     Teuchos::RCP<LINALG::SparseMatrix> k_lambdainvD_;
+
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> k_porodisp_;
+    Teuchos::RCP<LINALG::SparseOperator> k_porofluid_;
 
     Teuchos::RCP<Epetra_Vector> nopenetration_rhs_;
 

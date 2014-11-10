@@ -297,6 +297,19 @@ protected:
       Epetra_SerialDenseVector&      elevec1);
 
   /*!
+  \brief apply no penetration boundary condition
+         (templated by discretization type of parent element)
+  */
+  template <DRT::Element::DiscretizationType pdistype>
+  void NoPenetrationMatAndRHS(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&        params,
+      DRT::Discretization&           discretization,
+      std::vector<int>&              lm,
+      Epetra_SerialDenseMatrix&      elemat1,
+      Epetra_SerialDenseVector&      elevec1);
+
+  /*!
   \brief apply no penetration boundary condition (Off Diagonal terms)
          This method applies no penetration boundary condition using Lagrange Multipliers.
          (see poro_monolithicsplit_nopenetration.cpp for control method)
@@ -314,6 +327,77 @@ protected:
       std::vector<int>&              lm,
       Epetra_SerialDenseMatrix&      elemat1,
       Epetra_SerialDenseMatrix&      elemat2);
+
+  /*!
+  \brief apply no penetration boundary condition (Off Diagonal terms)
+         (templated by discretization type of parent element)
+  */
+  template <DRT::Element::DiscretizationType pdistype>
+  void NoPenetrationMatOD(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&        params,
+      DRT::Discretization&           discretization,
+      std::vector<int>&              lm,
+      Epetra_SerialDenseMatrix&      elemat1,
+      Epetra_SerialDenseMatrix&      elemat2);
+
+  /*!
+  \brief apply no penetration boundary condition (Off Diagonal terms)
+         This method applies no penetration boundary condition using Lagrange Multipliers.
+         (see poro_monolithicsplit_nopenetration.cpp for control method)
+
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element. Linearization of constraint w.r.t pressure part ofporosity
+  */
+  void NoPenetrationMatODPoroPres(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&        params,
+      DRT::Discretization&           discretization,
+      std::vector<int>&              lm,
+      Epetra_SerialDenseMatrix&      elemat1);
+
+  /*!
+  \brief apply no penetration boundary condition (Off Diagonal terms)
+         (templated by discretization type of parent element)
+  */
+  template <DRT::Element::DiscretizationType pdistype>
+  void NoPenetrationMatODPoroPres(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&        params,
+      DRT::Discretization&           discretization,
+      std::vector<int>&              lm,
+      Epetra_SerialDenseMatrix&      elemat1);
+
+  /*!
+  \brief apply no penetration boundary condition (Off Diagonal terms)
+         This method applies no penetration boundary condition using Lagrange Multipliers.
+         (see poro_monolithicsplit_nopenetration.cpp for control method)
+
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element. Linearization of constraint w.r.t displacement part ofporosity
+  */
+  void NoPenetrationMatODPoroDisp(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&        params,
+      DRT::Discretization&           discretization,
+      std::vector<int>&              lm,
+      Epetra_SerialDenseMatrix&      elemat1);
+
+  /*!
+  \brief apply no penetration boundary condition (Off Diagonal terms)
+         (templated by discretization type of parent element)
+  */
+  template <DRT::Element::DiscretizationType pdistype>
+  void NoPenetrationMatODPoroDisp(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&        params,
+      DRT::Discretization&           discretization,
+      std::vector<int>&              lm,
+      Epetra_SerialDenseMatrix&      elemat1);
 
 
   /*!

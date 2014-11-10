@@ -265,5 +265,5 @@ void POROELAST::MonolithicSplit::Solve()
 
   // recover Lagrange multiplier \lambda_\Gamma at the interface at the end of each time step
   // (i.e. condensed forces onto the structure) needed for rhs in next time step
-  RecoverLagrangeMultiplier();
+  RecoverLagrangeMultiplierAfterTimeStep();
 }

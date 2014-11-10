@@ -21,7 +21,7 @@
 
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                             gjb 01/09 |
+ |  evaluate the element (public)                            vuong 11/13 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(
     Teuchos::ParameterList&   params,
@@ -55,6 +55,8 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(
   case FLD::poro_prescoupl:
   case FLD::poro_splitnopenetration:
   case FLD::poro_splitnopenetration_OD:
+  case FLD::poro_splitnopenetration_ODdisp:
+  case FLD::poro_splitnopenetration_ODpres:
   case FLD::fpsi_coupling:
   {
   DRT::ELEMENTS::FluidBoundaryFactory::ProvideImpl(Shape(),impltype)->EvaluateAction(
@@ -88,7 +90,7 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(
 }
 
 /*----------------------------------------------------------------------*
- |  Get degrees of freedom used by this element                (public) |
+ |  Get degrees of freedom used by this element      (public) vuong 11/13 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidPoroBoundary::LocationVector(
     const Discretization&    dis,
@@ -105,6 +107,7 @@ void DRT::ELEMENTS::FluidPoroBoundary::LocationVector(
   case FLD::poro_boundary:
   case FLD::fpsi_coupling:
   case FLD::calc_flowrate:
+  case FLD::poro_splitnopenetration_ODdisp:
     // special cases: the boundary element assembles also into
     // the inner dofs of its parent element
     // note: using these actions, the element will get the parent location vector

@@ -524,7 +524,7 @@ void FPSI::Monolithic::TimeStep()
       dserror("Newton found no convergence in %d iterations", iter_);
     }
 
-    PoroField()->RecoverLagrangeMultiplier();
+    PoroField()->RecoverLagrangeMultiplierAfterTimeStep();
 
     // recover Lagrange multiplier \lambda_{\Gamma} at the interface at the end of each time step
     // (i.e. condensed traction/forces onto the structure) needed for rhs in next time step

@@ -23,7 +23,6 @@
 #include "poro_base.H"
 #include "poroelast_utils.H"
 
-//#include "../linalg/linalg_mapextractor.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -203,11 +202,11 @@ namespace POROELAST
 
       /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
       /// (i.e. condensed forces onto the structure) needed for rhs in next time step
-      virtual void RecoverLagrangeMultiplier(){return;};
+      virtual void RecoverLagrangeMultiplierAfterTimeStep(){return;};
 
       /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each iteration step
       /// (i.e. condensed forces onto the structure) needed for rhs in next time step
-      virtual void RecoverLagrangeMultiplier_iter(Teuchos::RCP<const Epetra_Vector> x);
+      virtual void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x);
 
       //Setup solver for monolithic system
       virtual bool SetupSolver();

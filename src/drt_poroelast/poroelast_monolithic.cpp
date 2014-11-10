@@ -194,7 +194,7 @@ void POROELAST::Monolithic::Solve()
     // increment equilibrium loop index
 
     //Recover Lagrangean Multiplier in Newton Iteration (for contact & contact no penetration!)
-    RecoverLagrangeMultiplier_iter(iterinc_);
+    RecoverLagrangeMultiplierAfterNewtonStep(iterinc_);
 
     iter_ += 1;
   } // end equilibrium loop
@@ -1931,7 +1931,7 @@ Teuchos::RCP<const Epetra_Map> POROELAST::Monolithic::DofRowMapFluid()
 /*----------------------------------------------------------------------*
 | Recover the Lagrange multipliers for contact          ager 07/14      |
 *----------------------------------------------------------------------*/
-void POROELAST::Monolithic::RecoverLagrangeMultiplier_iter(Teuchos::RCP<const Epetra_Vector> x)
+void POROELAST::Monolithic::RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x)
 {
   if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
    {

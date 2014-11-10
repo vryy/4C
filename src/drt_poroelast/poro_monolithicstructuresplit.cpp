@@ -451,9 +451,9 @@ void POROELAST::MonolithicStructureSplit::ExtractFieldVectors(
 /*----------------------------------------------------------------------*/
 /* Recover the Lagrange multiplier at the interface   vuong 01/12 */
 /*----------------------------------------------------------------------*/
-void POROELAST::MonolithicStructureSplit::RecoverLagrangeMultiplier()
+void POROELAST::MonolithicStructureSplit::RecoverLagrangeMultiplierAfterTimeStep()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicStructureSplit::RecoverLagrangeMultiplier");
+  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicStructureSplit::RecoverLagrangeMultiplierAfterTimeStep");
   if(evaluateinterface_)
   {
     // get time integration parameter of structural time integrator
