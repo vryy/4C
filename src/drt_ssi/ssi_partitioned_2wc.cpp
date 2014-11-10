@@ -28,27 +28,36 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
     scaincnp_(Teuchos::rcp(new Epetra_Vector(*(scatra_->ScaTraField()->Phinp())))),
     dispincnp_(Teuchos::rcp(new Epetra_Vector(*(structure_()->Dispnp()))))
 {
-    // build a proxy of the structure discretization for the scatra field
-    Teuchos::RCP<DRT::DofSet> structdofset
-      = structure_->Discretization()->GetDofSetProxy();
-    // build a proxy of the temperature discretization for the structure field
-    Teuchos::RCP<DRT::DofSet> scatradofset
-      = scatra_->ScaTraField()->Discretization()->GetDofSetProxy();
+  // build a proxy of the structure discretization for the scatra field
+  Teuchos::RCP<DRT::DofSet> structdofset
+    = structure_->Discretization()->GetDofSetProxy();
+  // build a proxy of the temperature discretization for the structure field
+  Teuchos::RCP<DRT::DofSet> scatradofset
+    = scatra_->ScaTraField()->Discretization()->GetDofSetProxy();
 
-    // check if scatra field has 2 discretizations, so that coupling is possible
-    if (scatra_->ScaTraField()->Discretization()->AddDofSet(structdofset)!=1)
-      dserror("unexpected dof sets in scatra field");
-    if (structure_->Discretization()->AddDofSet(scatradofset)!=1)
-      dserror("unexpected dof sets in structure field");
+  // check if scatra field has 2 discretizations, so that coupling is possible
+  if (scatra_->ScaTraField()->Discretization()->AddDofSet(structdofset)!=1)
+    dserror("unexpected dof sets in scatra field");
+  if (structure_->Discretization()->AddDofSet(scatradofset)!=1)
+    dserror("unexpected dof sets in structure field");
 
-    if (DRT::INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE")){
-      dserror("Different time stepping for two way coupling not implemented yet.");
-    }
+  if (DRT::INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE")){
+    dserror("Different time stepping for two way coupling not implemented yet.");
+  }
 
-    const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
-    // Get the parameters for the ConvergenceCheck
-    itmax_ = ssicontrol.get<int>("ITEMAX"); // default: =10
-    ittol_ = ssicontrol.get<double>("CONVTOL"); // default: =1e-6
+  const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
+  // Get the parameters for the ConvergenceCheck
+  itmax_ = ssicontrol.get<int>("ITEMAX"); // default: =10
+  ittol_ = ssicontrol.get<double>("CONVTOL"); // default: =1e-6
+
+  //do some checks
+  {
+    INPAR::SCATRA::ConvForm convform
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams,"CONVFORM");
+    if ( convform != INPAR::SCATRA::convform_conservative )
+      dserror("If the scalar tranport problem is solved on the deforming domain, the conservative form must be"
+          "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR TRANSPORT DYNAMIC section!");
+  }
 }
 
 /*----------------------------------------------------------------------*/

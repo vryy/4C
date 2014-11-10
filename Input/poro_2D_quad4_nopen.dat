@@ -2,7 +2,7 @@
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus
+poro 2D test case for no penetration condition with lagrange multipliers
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    20
 //NODES       33

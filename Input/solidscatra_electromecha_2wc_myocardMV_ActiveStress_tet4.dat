@@ -109,6 +109,7 @@ WRITEFLUX                       No
 MATID                           1
 SKIPINITDER                     yes
 SCATRATYPE                      Cardiac_Monodomain
+CONVFORM                        conservative
 
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          10

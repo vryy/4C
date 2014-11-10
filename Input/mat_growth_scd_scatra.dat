@@ -47,7 +47,7 @@ ALPHA_F                         0.5
 ALPHA_M                         0.5
 BLOCKPRECOND                    NO
 CALCERROR                       No
-CONVFORM                        convective
+CONVFORM                        conservative
 CONV_HEAT_TRANS                 no
 FSSUGRDIFF                      No
 GAMMA                           0.5
@@ -99,10 +99,11 @@ CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no
+MASSLIN                         standard
 MAXITER                         50
 MAXTIME                         100.0
 MINITER                         0
@@ -130,6 +131,8 @@ UZAWAALGO                       uzawa
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
+------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           1.0
 --------------------------------------------------------SSI CONTROL
 CONVTOL                         1e-06
 COUPALGO                        two_way
@@ -197,10 +200,10 @@ FUNCT1 EXPR 0 0.0 0 FUNCTION    1.0 //y+0.2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 2.48421911469705499e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE 2.48332510982870736e-02 TOLERANCE 1e-6
-SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 1.33306349175202543e+00 TOLERANCE 1e-6
-SCATRA DIS scatra NODE 200 QUANTITY phi VALUE 9.55040438265561065e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 2.36441349541266499e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE 2.31791591765357109e-02 TOLERANCE 1e-6
+SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 1.22793768582815743e+00 TOLERANCE 1e-6
+SCATRA DIS scatra NODE 200 QUANTITY phi VALUE 8.31468888528263061e-01 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          8

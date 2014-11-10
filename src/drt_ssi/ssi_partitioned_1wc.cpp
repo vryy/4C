@@ -123,6 +123,15 @@ SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(const Epetra_Comm& com
   // check if scatra field has 2 discretizations, so that coupling is possible
   if (scatra_->ScaTraField()->Discretization()->AddDofSet(structdofset)!=1)
     dserror("unexpected dof sets in scatra field");
+
+  //do some checks
+  {
+    INPAR::SCATRA::ConvForm convform
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams,"CONVFORM");
+    if ( convform != INPAR::SCATRA::convform_conservative )
+      dserror("If the scalar tranport problem is solved on the deforming domain, the conservative form must be"
+          "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR TRANSPORT DYNAMIC section!");
+  }
 }
 
 /*----------------------------------------------------------------------*/
