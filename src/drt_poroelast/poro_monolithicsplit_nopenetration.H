@@ -35,6 +35,11 @@ namespace FSI
   }
 }
 
+namespace ADAPTER
+{
+  class CouplingNonLinMortar;
+}
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -120,6 +125,9 @@ namespace POROELAST
     //! transform object for k_D matrix \f$D\f$
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> k_invD_transform_;
 
+    //! transform object for linearization of k_D matrix \f$D\f$
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform> k_DLin_transform_;
+
     /// @name Some quantities to recover the Langrange multiplier at the end of each iteration step
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
@@ -137,6 +145,8 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Vector> rhs_fgcur_;
 
     //@}
+
+    Teuchos::RCP<ADAPTER::CouplingNonLinMortar> mortar_adapter_;
   };
 
 }

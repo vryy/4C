@@ -54,7 +54,6 @@ void SSI::SSI_Part::SetScatraSolution()
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Part::SetVelocityFields()
 {
-
   scatra_->ScaTraField()->SetVelocityField(
       zeros_, //convective vel.
       Teuchos::null, //acceleration

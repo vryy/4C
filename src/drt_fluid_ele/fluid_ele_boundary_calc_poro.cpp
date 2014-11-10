@@ -180,7 +180,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::ELEME
         discretization,
         lm,
         elemat1,
-        elemat2,
         elevec1);
     break;
   }
@@ -935,9 +934,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       for (int node=0;node<nenparent;++node)
       {
         normalderiv(0,my::nsd_*node)   += 0.;
-        normalderiv(0,my::nsd_*node+1) += my::deriv_(0,node) * my::funct_(node) * fac;
+        normalderiv(0,my::nsd_*node+1) += my::deriv_(0,node);
 
-        normalderiv(1,my::nsd_*node)   += -my::deriv_(0,node) * my::funct_(node) * fac;
+        normalderiv(1,my::nsd_*node)   += -my::deriv_(0,node);
         normalderiv(1,my::nsd_*node+1) += 0.;
       }
 
@@ -2947,9 +2946,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
       for (int node=0;node<my::bdrynen_;++node)
       {
         normalderiv(0,my::nsd_*node)   += 0.;
-        normalderiv(0,my::nsd_*node+1) += my::deriv_(0,node) * my::funct_(node) ;
+        normalderiv(0,my::nsd_*node+1) += my::deriv_(0,node);
 
-        normalderiv(1,my::nsd_*node)   += -my::deriv_(0,node) * my::funct_(node) ;
+        normalderiv(1,my::nsd_*node)   += -my::deriv_(0,node);
         normalderiv(1,my::nsd_*node+1) += 0.;
       }
 
@@ -3029,7 +3028,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
                                                  DRT::Discretization&             discretization,
                                                  std::vector<int>&                lm,
                                                  Epetra_SerialDenseMatrix&        k_fluid,
-                                                 Epetra_SerialDenseMatrix&        k_D,
                                                  Epetra_SerialDenseVector&        rhs)
 {
   // This function is only implemented for 3D
@@ -3121,7 +3119,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   // --------------------------------------------------
 
   //! array for shape functions for boundary element
-  LINALG::Matrix<my::bdrynen_,1> dualfunct(true);
+  //LINALG::Matrix<my::bdrynen_,1> dualfunct(true);
 
   //allocate convective velocity at gauss point
   LINALG::Matrix<my::nsd_,1> convvel(true);
@@ -3135,12 +3133,12 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
                                                     intpoints,gpid,&myknots,&weights,
                                                     IsNurbs<distype>::isnurbs);
 
-    double Axi[3];
-    for(int i=0;i<my::bdrynsd_;i++)
-      Axi[i] = my::xsi_(i);
-    for(int i=my::bdrynsd_;i<3;i++)
-      Axi[i] = 0.0;
-    VOLMORTAR::UTILS::dual_shape_function<distype>(dualfunct,Axi,*ele);
+//    double Axi[3];
+//    for(int i=0;i<my::bdrynsd_;i++)
+//      Axi[i] = my::xsi_(i);
+//    for(int i=my::bdrynsd_;i<3;i++)
+//      Axi[i] = 0.0;
+//    VOLMORTAR::UTILS::dual_shape_function<distype>(dualfunct,Axi,*ele);
 
     // dxyzdrs vector -> normal which is not normalized
     LINALG::Matrix<my::bdrynsd_,my::nsd_> dxyzdrs(0.0);
@@ -3162,8 +3160,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
         rhs(inode*my::nsd_) -=
             my::funct_(inode) * my::unitnormal_(idof) * convvel(idof) * my::fac_;
 
-        k_D(inode*my::nsd_+idof,inode*my::nsd_+idof) +=
-            dualfunct(inode)* my::funct_(inode) * my::fac_;
+//        k_D(inode*my::nsd_+idof,inode*my::nsd_+idof) +=
+//            dualfunct(inode)* my::funct_(inode) * my::fac_;
       }
 
       for (int nnod=0;nnod<my::bdrynen_;nnod++)
@@ -3208,6 +3206,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
   double timescale = params.get<double>("timescale",-1.0);
   if(timescale == -1.0)
    dserror("no timescale parameter in parameter list");
+
+  //reset timescale in stationary case
+  if(my::fldparatimint_->IsStationary())
+    timescale=0.0;
 
   // displacements
   Teuchos::RCP<const Epetra_Vector>      dispnp;
@@ -3439,7 +3441,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
          tangent2deriv(2,3*node+idim)   =
              normalderiv(0,3*node+idim)*tangent1(1)+my::unitnormal_(0)*tangent1deriv(1,3*node+idim)
-           - normalderiv(0,3*node+idim)*tangent1(1)-my::unitnormal_(0)*tangent1deriv(1,3*node+idim);
+           - normalderiv(1,3*node+idim)*tangent1(0)-my::unitnormal_(1)*tangent1deriv(0,3*node+idim);
        }
      }
 
@@ -3449,9 +3451,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
      for (int node=0;node<my::bdrynen_;++node)
      {
        normalderiv(0,my::nsd_*node)   += 0.;
-       normalderiv(0,my::nsd_*node+1) += my::deriv_(0,node) * my::funct_(node) ;
+       normalderiv(0,my::nsd_*node+1) += my::deriv_(0,node);
 
-       normalderiv(1,my::nsd_*node)   += -my::deriv_(0,node) * my::funct_(node) ;
+       normalderiv(1,my::nsd_*node)   += -my::deriv_(0,node);
        normalderiv(1,my::nsd_*node+1) += 0.;
      }
 

@@ -20,6 +20,8 @@
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/adapter_coupling_nonlin_mortar.H"
+
 //
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
@@ -54,11 +56,15 @@ POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epet
   k_D_transform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
   k_invD_transform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
 
+  k_DLin_transform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
+
   // Recovering of Lagrange multiplier happens on fluid field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));
   lambdanp_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));
 
   k_Dn_ = Teuchos::null;
+
+  mortar_adapter_ = Teuchos::rcp(new ADAPTER::CouplingNonLinMortar);
 
   return;
 }
@@ -113,6 +119,17 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
 
   // build map of dofs subjected to a DBC of whole problem
   BuildCombinedDBCMap();
+
+  {
+    const int ndim = DRT::Problem::Instance()->NDim();
+    std::vector<int> coupleddof (ndim+1,1);
+    coupleddof[ndim]=0;
+
+    mortar_adapter_->Setup(StructureField()->Discretization(),
+                           FluidField()->Discretization(),
+                           coupleddof,
+                           "FSICoupling");
+  }
 } // SetupSystem()
 
 /*----------------------------------------------------------------------*
@@ -291,8 +308,6 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix(LINALG::BlockSpa
   //just to play it save ...
   mat.Reset();
 
-  /*----------------------------------------------------------------------*/
-
   // build block matrix
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here.
@@ -386,6 +401,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
   //reset
   k_fluid_->Zero();
   k_D_->Zero();
+  k_invD_->Zero();
   k_struct_->Zero();
   k_lambda_->Zero();
   nopenetration_rhs_->Scale(0.0);
@@ -410,6 +426,9 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
     FluidField()->Discretization()->SetState(0,"velnp",FluidField()->Velnp());
     FluidField()->Discretization()->SetState(0,"scaaf",FluidField()->Scaaf());
 
+    FluidField()->Discretization()->SetState(0,"lambda",
+        FluidField()->Interface()->InsertFSICondVector(StructureToFluidAtInterface(lambdanp_)));
+
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of FluidField:
     // fluiddofset = 0, structdofset = 1
@@ -418,7 +437,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
         0,              // fluiddofset for row
         0,              // fluiddofset for column
         k_fluid_,
-        tmp_k_D,
+        Teuchos::null,
         nopenetration_rhs_,
         Teuchos::null,
         Teuchos::null
@@ -427,6 +446,11 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
 
     FluidField()->Discretization()->ClearState();
   }
+
+  Teuchos::RCP<Epetra_Vector> disp_interface =
+      FluidField()->Interface()->ExtractFSICondVector(FluidField()->Dispnp());
+  mortar_adapter_->IntegrateD("displacement",disp_interface,StructureToFluidAtInterface(lambdanp_));
+  tmp_k_D = mortar_adapter_->DMatrix();
 
   //fill off diagonal blocks
   {
@@ -486,7 +510,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
     if ((*diag)[i]==0.0)
       {
       (*diag)[i]=1.0;
-      std::cout << "--- --- --- WARNING: D-Matrix Diagonal Element is zero!!! --- --- ---" << std::endl;
+      std::cout << "--- --- --- WARNING: D-Matrix Diagonal Element "<<i <<" is zero!!! --- --- ---" << std::endl;
       }
 
   // scalar inversion of diagonal values
@@ -512,8 +536,20 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
                         *k_invD_,
                         false);
 
-
   double stiparam = StructureField()->TimIntParam();
+
+  Teuchos::RCP<LINALG::SparseMatrix> tmp_k_DLin = mortar_adapter_->DLinMatrix();
+  tmp_k_DLin->Complete();
+
+  //Transform also column map of D-Matrix
+  (*k_DLin_transform_)(*FluidField()->Interface()->FSICondMap(),
+                    FluidField()->BlockSystemMatrix()->Matrix(1,1).ColMap(),
+                      *tmp_k_DLin,
+                      1.0-stiparam, // *= b
+                      ADAPTER::CouplingSlaveConverter(*icoupfs_),
+                      (Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase> (k_fs))->Matrix(1,1),
+                      true,
+                      true);
 
   k_lambda_->Complete(*StructureField()->Interface()->FSICondMap(),*FluidField()->Interface()->FSICondMap());
   k_invD_->Complete(*FluidField()->Interface()->FSICondMap(),*StructureField()->Interface()->FSICondMap());
@@ -521,7 +557,6 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
   //Calculate 1/b*Tangent*invD
   k_lambdainvD_  = LINALG::MLMultiply(*k_lambda_,*k_invD_,true);
   k_lambdainvD_->Scale(1.0/(1.0-stiparam)); // *= 1/b
-
   return;
 }
 

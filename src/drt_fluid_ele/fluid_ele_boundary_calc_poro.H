@@ -294,7 +294,6 @@ protected:
       DRT::Discretization&           discretization,
       std::vector<int>&              lm,
       Epetra_SerialDenseMatrix&      elemat1,
-      Epetra_SerialDenseMatrix&      elemat2,
       Epetra_SerialDenseVector&      elevec1);
 
   /*!

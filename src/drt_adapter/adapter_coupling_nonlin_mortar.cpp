@@ -142,10 +142,10 @@ void ADAPTER::CouplingNonLinMortar::Setup(
     if(myrank_== 0) dserror("Mortar coupling adapter does not work with LM_NODAL_SCALE");
 
   // check for parallel redistribution (only if more than 1 proc)
-  bool parredist = false;
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST")
-      != INPAR::MORTAR::parredist_none)
-    if (comm_->NumProc()>1) parredist = true;
+//  bool parredist = false;
+//  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST")
+//      != INPAR::MORTAR::parredist_none)
+//    if (comm_->NumProc()>1) parredist = true;
 
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   const int dim = DRT::Problem::Instance()->NDim();
@@ -312,17 +312,17 @@ void ADAPTER::CouplingNonLinMortar::Setup(
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
   //**********************************************************************
-  if (parredist && comm_->NumProc()>1)
-  {
-    // redistribute optimally among all procs
-    interface->Redistribute(1);
-
-    // call fill complete again
-    interface->FillComplete();
-
-    // print parallel distribution again
-    interface->PrintParallelDistribution(1);
-  }
+//  if (parredist && comm_->NumProc()>1)
+//  {
+//    // redistribute optimally among all procs
+//    interface->Redistribute(1);
+//
+//    // call fill complete again
+//    interface->FillComplete();
+//
+//    // print parallel distribution again
+//    interface->PrintParallelDistribution(1);
+//  }
 
   // store interface
   interface_ = interface;
@@ -369,6 +369,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateD(const std::string& statename,
 {
   D_->Zero();
   DLin_->Zero();
+  M_->Zero();
+  MLin_->Zero();
 
   interface_->SetState(statename,vec);
   interface_->SetState("lm",veclm);
@@ -393,9 +395,5 @@ void ADAPTER::CouplingNonLinMortar::IntegrateD(const std::string& statename,
 
   interface_->AssembleLinDM(*DLin_,*MLin_,false,true);
 
- // std::cout<<*DLin_<<std::endl;
- // interface_->FDCheckMortarDDeriv();
-
- // dserror("haaalt stop");
   return;
 }

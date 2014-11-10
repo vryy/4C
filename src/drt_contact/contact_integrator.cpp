@@ -2661,7 +2661,9 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
   // this is necessary for all slave element types except tri3
   bool duallin = false;
   std::vector<std::vector<GEN::pairedvector<int,double> > > dualmap(nrow,std::vector<GEN::pairedvector<int,double> >(nrow,ndof*nrow));
-  if ((sele.Shape()!=MORTAR::MortarElement::tri3 || sele.MoData().DerivDualShape()!=Teuchos::null))
+  if ((sele.Shape()!=MORTAR::MortarElement::tri3  and
+       sele.Shape()!=MORTAR::MortarElement::line2) ||
+       sele.MoData().DerivDualShape()!=Teuchos::null)
   {
     duallin = true;
     sele.DerivShapeDual(dualmap);
@@ -10639,7 +10641,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
 
     for (int k=0;k<3;++k)
     {
-      dncoupgp[mrtrnode->Dofs()[k]] += sval[z] * gpn[k] * timefac;
+      dncoupgp[mrtrnode->Dofs()[k]] += porosity * sval[z] * gpn[k] * timefac;
       for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
         {
           dncoupgp[p->first] -= porosity * gpn[k] * sderiv(z,0) * mrtrnode->CoPoroData().fvel()[k] * (p->second);
