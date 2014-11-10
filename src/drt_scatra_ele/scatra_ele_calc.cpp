@@ -945,6 +945,9 @@ const double DRT::ELEMENTS::ScaTraEleCalc<distype>::EvalShapeFuncAndDerivsAtEleC
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
   const double vol = EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0);
 
+  //shape function at element center
+  funct_elementcenter_ = funct_;
+
   return vol;
 
 } //ScaTraImpl::EvalShapeFuncAndDerivsAtEleCenter

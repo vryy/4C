@@ -1043,6 +1043,8 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,nen_> xyze_;
     //! array for shape functions
     LINALG::Matrix<nen_,1> funct_;
+    //! array for shape function at element center
+    LINALG::Matrix<nen_,1> funct_elementcenter_;
     //! array for shape function derivatives w.r.t r,s,t
     LINALG::Matrix<nsd_,nen_> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t

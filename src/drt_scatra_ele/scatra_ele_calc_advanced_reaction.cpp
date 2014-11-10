@@ -734,17 +734,21 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
   // dynamic cast to Advanced_Reaction-specific reaction manager
   Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(reamanager);
 
+  LINALG::Matrix<my::nen_,1> functint = my::funct_;
+  if (not my::scatrapara_->MatGP())
+    functint = my::funct_elementcenter_;
+
   for (int j=0; j<my::numscal_ ;j++)
   {
     const double fac_reac        = timefacfac*densnp*( reamanager->GetReaCoeffDerivMatrix(k,j)*phinp - reamanageradvreac->GetReaBodyForceDerivMatrix(k,j) );
-    const double timetaufac_reac = timetaufac*densnp*reamanager->GetReaCoeffDerivMatrix(k,j)*phinp;
+    const double timetaufac_reac = timetaufac*densnp*( reamanager->GetReaCoeffDerivMatrix(k,j)*phinp - reamanageradvreac->GetReaBodyForceDerivMatrix(k,j) );
 
     //----------------------------------------------------------------
     // standard Galerkin reactive term
     //----------------------------------------------------------------
     for (int vi=0; vi<my::nen_; ++vi)
     {
-      const double v = fac_reac*my::funct_(vi);
+      const double v = fac_reac*functint(vi);
       const int fvi = vi*my::numdofpernode_+k;
 
       for (int ui=0; ui<my::nen_; ++ui)
@@ -764,7 +768,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
       // convective stabilization of reactive term (in convective form)
       for (int vi=0; vi<my::nen_; ++vi)
       {
-        const double v = densreataufac*(conv(vi)+sgconv(vi)+my::scatrapara_->USFEMGLSFac()*1.0/my::scatraparatimint_->TimeFac()*my::funct_(vi));
+        const double v = densreataufac*(conv(vi)+sgconv(vi)+my::scatrapara_->USFEMGLSFac()*1.0/my::scatraparatimint_->TimeFac()*functint(vi));
         const int fvi = vi*my::numdofpernode_+k;
 
         for (int ui=0; ui<my::nen_; ++ui)
@@ -800,7 +804,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
       // reactive stabilization of convective (in convective form) and reactive term
       for (int vi=0; vi<my::nen_; ++vi)
       {
-        const double v = densreataufac*my::funct_(vi);
+        const double v = densreataufac*functint(vi);
         const int fvi = vi*my::numdofpernode_+k;
 
         for (int ui=0; ui<my::nen_; ++ui)
@@ -834,7 +838,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
         // reactive stabilization of transient term
         for (int vi=0; vi<my::nen_; ++vi)
         {
-          const double v = my::scatrapara_->USFEMGLSFac()*taufac*densnp*reamanager->GetReaCoeff(k)*densnp*my::funct_(vi);
+          const double v = my::scatrapara_->USFEMGLSFac()*taufac*densnp*reamanager->GetReaCoeff(k)*densnp*functint(vi);
           const int fvi = vi*my::numdofpernode_+k;
 
           for (int ui=0; ui<my::nen_; ++ui)
