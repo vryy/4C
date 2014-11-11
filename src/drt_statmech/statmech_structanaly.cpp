@@ -68,9 +68,9 @@ void STATMECH::StatMechManager::OutputNodalPositions(const Epetra_Vector&      d
     {
       DRT::Node* colnode = discret_->lColNode(i);
       std::vector<int> dofnode = discret_->Dof(colnode);
-      posnode <<std::scientific<<std::setprecision(8) << colnode->X()[dofnode[0]]+discol[dofnode[0]]<<"\t"
-                                                      << colnode->X()[dofnode[1]]+discol[dofnode[1]]<<"\t"
-                                                      << colnode->X()[dofnode[1]]+discol[dofnode[2]]<<std::endl;
+      posnode <<std::scientific<<std::setprecision(8) << colnode->X()[0]+discol[dofnode[0]]<<"\t"
+                                                      << colnode->X()[1]+discol[dofnode[1]]<<"\t"
+                                                      << colnode->X()[2]+discol[dofnode[2]]<<std::endl;
     }
     fputs(posnode.str().c_str(), fp);
     fclose(fp);
