@@ -828,6 +828,32 @@ void POROELAST::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   // open outstringstream
   std::ostringstream oss;
 
+  PrintNewtonIterHeaderStream(oss);
+
+  // add solution time
+  oss << std::setw(14)<< "wct";
+  // finish oss
+  oss << std::ends;
+
+  // print to screen (could be done differently...)
+  if (ofile==NULL)
+  dserror("no ofile available");
+  fprintf(ofile, "%s\n", oss.str().c_str());
+
+  // print it, now
+  fflush(ofile);
+
+  // nice to have met you
+  return;
+}  // PrintNewtonIterHeader()
+
+
+/*----------------------------------------------------------------------*
+ | print Newton-Raphson iteration to screen and error file              |
+ | originally by lw 12/07, tk 01/08                                     |
+ *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::PrintNewtonIterHeaderStream(std::ostringstream& oss)
+{
   oss<<"------------------------------------------------------------"<<std::endl;
   oss<<"                   Newton-Raphson Scheme                    "<<std::endl;
   oss<<"                NormRES "<<VectorNormString(vectornormfres_);
@@ -922,9 +948,22 @@ void POROELAST::Monolithic::PrintNewtonIterHeader(FILE* ofile)
       break;
   }
 
-  // add solution time
-  oss << std::setw(14)<< "wct";
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ | print Newton-Raphson iteration to screen                       |
+ | originally by lw 12/07, tk 01/08                                     |
+ *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::PrintNewtonIterText(FILE* ofile)
+{
+  // open outstringstream
+  std::ostringstream oss;
+
+  PrintNewtonIterTextStream(oss);
+
+  // add solution time
+  oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.ElapsedTime();
   // finish oss
   oss << std::ends;
 
@@ -938,18 +977,15 @@ void POROELAST::Monolithic::PrintNewtonIterHeader(FILE* ofile)
 
   // nice to have met you
   return;
-}  // PrintNewtonIterHeader()
 
+}  // PrintNewtonIterText
 
 /*----------------------------------------------------------------------*
  | print Newton-Raphson iteration to screen             vuong 01/12     |
  | originally by lw 12/07, tk 01/08                                     |
  *----------------------------------------------------------------------*/
-void POROELAST::Monolithic::PrintNewtonIterText(FILE* ofile)
+void POROELAST::Monolithic::PrintNewtonIterTextStream(std::ostringstream& oss)
 {
-  // open outstringstream
-  std::ostringstream oss;
-
   // enter converged state etc
   oss << std::setw(7) << iter_;
 
@@ -1014,24 +1050,7 @@ void POROELAST::Monolithic::PrintNewtonIterText(FILE* ofile)
     break;
   }
 
-  // add solution time
-  oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.ElapsedTime();
-
-  // finish oss
-  oss << std::ends;
-
-  // print to screen (could be done differently...)
-  if (ofile==NULL)
-  dserror("no ofile available");
-  fprintf(ofile, "%s\n", oss.str().c_str());
-
-  // print it, now
-  fflush(ofile);
-
-  // nice to have met you
-  return;
-
-}  // PrintNewtonIterText
+}
 
 /*----------------------------------------------------------------------*
  | print statistics of converged NRI                   vuong 01/12       |
@@ -1737,7 +1756,8 @@ bool POROELAST::Monolithic::SetupSolver()
   const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
     solverparams, "SOLVER");
 
-  directsolve_ = (solvertype == INPAR::SOLVER::umfpack);
+  directsolve_ = (   solvertype == INPAR::SOLVER::umfpack
+                  or solvertype == INPAR::SOLVER::superlu);
 
   if (directsolve_)
   {
@@ -1974,11 +1994,10 @@ void POROELAST::Monolithic::SetPoroContactStates(Teuchos::RCP<const Epetra_Vecto
 
 
       //To get pressure dofs into first structural component!!! - any idea for nice implementation?
-      Teuchos::RCP<Epetra_Vector> fpres = Teuchos::rcp(new Epetra_Vector(*FluidField()->ExtractPressurePart(FluidField()->Velnp())));
+      Teuchos::RCP<const Epetra_Vector> fpres = FluidField()->ExtractPressurePart(FluidField()->Velnp());
       Teuchos::RCP<Epetra_Vector> modfpres = Teuchos::rcp(new Epetra_Vector(*FluidField()->VelocityRowMap(),true));
 
       int* mygids = fpres->Map().MyGlobalElements();
-      //fpres->Map().Print(std::cout);
       double* val = fpres->Values();
       for (int i = 0; i < fpres->MyLength() ; ++i)
       {
@@ -2020,7 +2039,6 @@ void POROELAST::Monolithic::EvalPoroContact()
 
         //Evaluate Poro Contact Condensation for K_sf
         costrategy.EvaluatePoroContact(k_sf);
-
 
         //Assign modified matrixes & vectors
         systemmatrix_->Assign(0,1,Copy,*k_sf);

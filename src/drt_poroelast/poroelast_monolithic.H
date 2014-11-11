@@ -79,7 +79,7 @@ namespace POROELAST
       virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) ;
 
       //! setup newton solver
-      void SetupNewton();
+      virtual void SetupNewton();
 
       //! @name Access methods for subclasses
 
@@ -176,17 +176,23 @@ namespace POROELAST
 
       //! print to screen information about residual forces and displacements
       //! \author lw (originally) \date 12/07
-      void PrintNewtonIter();
+      virtual void PrintNewtonIter();
 
       //! contains text to PrintNewtonIter
       //! \author lw (originally) \date 12/07
-      void PrintNewtonIterText(FILE* ofile //!< output file handle
+      virtual void PrintNewtonIterText(FILE* ofile //!< output file handle
           );
+
+      //! contains text to PrintNewtonIter
+      virtual void PrintNewtonIterTextStream(std::ostringstream& oss);
 
       //! contains header to PrintNewtonIter
       //! \author lw (originally) \date 12/07
-      void PrintNewtonIterHeader(FILE* ofile //!< output file handle
+      virtual void PrintNewtonIterHeader(FILE* ofile //!< output file handle
           );
+
+      //! contains header to PrintNewtonIter
+      virtual void PrintNewtonIterHeaderStream(std::ostringstream& oss);
 
       //! print statistics of converged Newton-Raphson iteration
       void PrintNewtonConv();
@@ -329,7 +335,7 @@ namespace POROELAST
 
       //@}
 
-    private:
+//    private:
 
       //! build block vector from field vectors, e.g. rhs, increment vector
       void SetupVector(Epetra_Vector &f, //!< vector of length of all dofs

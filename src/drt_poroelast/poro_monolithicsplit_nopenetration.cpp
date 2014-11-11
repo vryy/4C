@@ -96,7 +96,7 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
   // Switch fluid to interface split block matrix
   FluidField()->UseBlockMatrix(true);
 
-  //setup couling objects, system and coupling matrixes
+  //setup coupling objects, system and coupling matrixes
   SetupCouplingAndMatrixes();
 
   // build map of dofs subjected to a DBC of whole problem
@@ -774,3 +774,36 @@ void POROELAST::MonolithicSplitNoPenetration::ReadRestart(int restart)
   }
 }
 
+/*----------------------------------------------------------------------*
+ *                                                    vuong 11/14        |
+ *----------------------------------------------------------------------*/
+void POROELAST::MonolithicSplitNoPenetration::PrintNewtonIterHeaderStream(std::ostringstream& oss)
+{
+  Monolithic::PrintNewtonIterHeaderStream(oss);
+
+  oss <<std::setw(20)<< "abs-crhs-res";
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *                                                    vuong 11/14        |
+ *----------------------------------------------------------------------*/
+void POROELAST::MonolithicSplitNoPenetration::PrintNewtonIterTextStream(std::ostringstream& oss)
+{
+  Monolithic::PrintNewtonIterTextStream(oss);
+
+  oss << std::setw(22) << std::setprecision(5) << std::scientific << normrhs_nopenetration_;
+}
+
+/*----------------------------------------------------------------------*
+ *                                                    vuong 11/14        |
+ *----------------------------------------------------------------------*/
+void POROELAST::MonolithicSplitNoPenetration::BuildCovergenceNorms()
+{
+  Monolithic::BuildCovergenceNorms();
+
+  normrhs_nopenetration_ = UTILS::CalculateVectorNorm(vectornormfres_,nopenetration_rhs_);
+
+  return;
+}

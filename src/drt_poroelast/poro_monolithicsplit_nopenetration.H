@@ -71,6 +71,13 @@ namespace POROELAST
     /// read restart data
     virtual void ReadRestart(int restart);
 
+    //! contains text to PrintNewtonIter
+    virtual void PrintNewtonIterTextStream(std::ostringstream& oss);
+
+    //! contains header to PrintNewtonIter
+    virtual void PrintNewtonIterHeaderStream(std::ostringstream& oss);
+
+
   protected:
     //! @name Apply current field state to system
 
@@ -99,9 +106,9 @@ namespace POROELAST
     //! start a new time step
     virtual void PrepareTimeStep();
 
-    //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto the structure)
-    //! evalutated at actual iteration step \f$t_{n+1}\f$ but needed for next iteration step
-    Teuchos::RCP<Epetra_Vector> lambdanp_;
+    //! convergence check for Newton solver
+    virtual void BuildCovergenceNorms();
+
     //@}
   private:
 
@@ -137,6 +144,12 @@ namespace POROELAST
     //! transform object for linearization of k_D matrix \f$D\f$
     Teuchos::RCP<FSI::UTILS::MatrixColTransform> k_DLin_transform_;
 
+    //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto the structure)
+    //! evalutated at actual iteration step \f$t_{n+1}\f$ but needed for next iteration step
+    Teuchos::RCP<Epetra_Vector> lambdanp_;
+
+    //@}
+
     /// @name Some quantities to recover the Langrange multiplier at the end of each iteration step
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
@@ -153,6 +166,12 @@ namespace POROELAST
 
     Teuchos::RCP<Epetra_Vector> rhs_fgcur_;
 
+    //@}
+
+    //! @name Iterative solution technique
+
+    //!< norm of no-penetration constraint
+    double normrhs_nopenetration_;
     //@}
 
     Teuchos::RCP<ADAPTER::CouplingNonLinMortar> mortar_adapter_;
