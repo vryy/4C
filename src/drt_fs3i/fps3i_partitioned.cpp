@@ -47,7 +47,6 @@
 #include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include "../drt_inpar/inpar_scatra.H"
-#include "../drt_scatra/scatra_utils_mapextractor.H"
 
 #include "fps3i_partitioned.H"
 

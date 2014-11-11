@@ -19,7 +19,6 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
-#include "../drt_scatra/scatra_utils_mapextractor.H"
 
 
 // forward declarations
