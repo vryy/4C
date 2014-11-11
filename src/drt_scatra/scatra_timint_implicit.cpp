@@ -147,6 +147,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   pre_(Teuchos::null),
   dispnp_(Teuchos::null),
   cdvel_(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
+  wss_(Teuchos::null),
+  pressure_(Teuchos::null),
+  meanconc_(Teuchos::null),
   densific_(0,0.0),
   c0_(0,0.0),
   discret_(actdis),
@@ -311,6 +314,9 @@ void SCATRA::ScaTraTimIntImpl::Init()
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   convel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
   vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
+  wss_ = LINALG::CreateVector(*dofrowmap,true);
+  pressure_ = LINALG::CreateVector(*dofrowmap,true);
+  meanconc_ = LINALG::CreateVector(*dofrowmap,true);
 
   // acceleration and pressure required for computation of subgrid-scale
   acc_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
@@ -1085,6 +1091,141 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
   return;
 
 } // ScaTraImplicitTimeInt::SetVelocityField
+
+
+/*----------------------------------------------------------------------*
+ | Set Wall Shear Stresses                                hemmler 05/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetWallShearStresses(Teuchos::RCP<const Epetra_Vector> wss, Teuchos::RCP<const DRT::DofSet>   dofset, Teuchos::RCP<DRT::Discretization> dis)
+{
+  // We have to be sure that everything is still matching.
+  if (not dis->NodeRowMap()->SameAs(*(discret_->NodeRowMap())))
+    dserror("Fluid/Poro and Scatra noderowmaps are NOT identical. Emergency!");
+
+  //---------------------------------------------------------------------------
+  // transfer of dofs
+  // (We rely on the fact that the scatra discretization is a clone of the
+  // fluid or poro mesh, respectively, meaning that a scatra node has the
+  // same local (and global) ID as its corresponding fluid/structure node.)
+  //---------------------------------------------------------------------------
+  // loop over all local nodes of scatra discretization
+  for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+  {
+    // get local fluid/poro node with the same lnodeid
+    DRT::Node* lnode = dis->lRowNode(lnodeid);
+
+    // care for the slave nodes of rotationally symm. periodic boundary conditions
+    double rotangle(0.0);
+    bool havetorotate = FLD::IsSlaveNodeOfRotSymPBC(lnode,rotangle);
+
+    // get degrees of freedom associated with this fluid/poro node
+    // two particular cases have to be considered:
+    // - in non-XFEM case, the first dofset is always considered, allowing for
+    //   using multiple dof sets, e.g., for structure-based scalar transport
+    // - for XFEM, a different nodeset is required
+    std::vector<int> nodedofs;
+    if (dofset == Teuchos::null) nodedofs = dis->Dof(0,lnode);
+    else                         nodedofs = (*dofset).Dof(lnode);
+
+    // determine number of space dimensions
+    const int numdim = DRT::Problem::Instance()->NDim();
+
+    //-------------------------------------------------------------------------
+    // transfer of wss dofs
+    //-------------------------------------------------------------------------
+    double tmp=0;
+
+    for (int index=0;index < numdim; ++index)
+    {
+      // get global and local ID
+      const int gid = nodedofs[index];
+      const int lid = wss->Map().LID(gid);
+      if (lid < 0) dserror("Local ID not found in map for given global ID!");
+
+      //-----------------------------------------------------------------------
+      // get wss and calculate the euclidean norm
+      //-----------------------------------------------------------------------
+      double WallShearStress = (*wss)[lid];
+
+      // component of rotated vector field
+      if (havetorotate)  WallShearStress = FLD::GetComponentOfRotatedVectorField(index,wss,lid,rotangle);
+
+      // insert WSS of Fluid discretization in Map of Scatra discretization
+      //squares of the euclidean norm
+      tmp+=WallShearStress*WallShearStress;
+    }
+
+    //for case of multi scalars
+    for(int i=0;i<numscal_;i++)
+    {
+      (*wss_)[lnodeid * numscal_ + i]=sqrt(tmp);  //square root of euclidean norm
+    }
+  } //for
+
+  return;
+} // ScaTraTimIntImpl::SetWallShearStresses
+
+
+/*----------------------------------------------------------------------*
+ | Set Pressure Field                                     hemmler 05/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetPressureFields(Teuchos::RCP<const Epetra_Vector> pres, Teuchos::RCP<const DRT::DofSet>   dofset, Teuchos::RCP<DRT::Discretization> dis)
+{
+  if (not dis->NodeRowMap()->SameAs(*(discret_->NodeRowMap())))
+    dserror("Fluid/Structure and Scatra noderowmaps are NOT identical. Emergency!");
+
+  //---------------------------------------------------------------------------
+  // transfer of dofs
+  // (We rely on the fact that the scatra discretization is a clone of the
+  // fluid or structure mesh, respectively, meaning that a scatra node has the
+  // same local (and global) ID as its corresponding fluid/structure node.)
+  //---------------------------------------------------------------------------
+  // loop over all local nodes of scatra discretization
+  for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+  {
+    // get local fluid/structure node with the same lnodeid
+    DRT::Node* lnode = dis->lRowNode(lnodeid);
+
+    // get degrees of freedom associated with this fluid/structure node
+    // two particular cases have to be considered:
+    // - in non-XFEM case, the first dofset is always considered, allowing for
+    //   using multiple dof sets, e.g., for structure-based scalar transport
+    // - for XFEM, a different nodeset is required
+    std::vector<int> nodedofs;
+    if (dofset == Teuchos::null) nodedofs = dis->Dof(0,lnode);
+    else                         nodedofs = (*dofset).Dof(lnode);
+
+    // determine number of space dimensions
+    const int numdim = DRT::Problem::Instance()->NDim();
+
+    //-------------------------------------------------------------------------
+    // transfer of pressure dofs
+    //-------------------------------------------------------------------------
+    // get global and local ID
+    const int gid = nodedofs[numdim]; //this entry corresponds to the pressure
+    // const int lid = dofrowmap->LID(gid);
+    const int lid = pres->Map().LID(gid);
+    if (lid < 0) dserror("Local ID not found in map for given global ID!");
+
+    // insert pressure of Fluid discretization in Map of Scatra discretization
+    for(int i=0;i<numscal_;i++)
+    {
+      (*pressure_)[lnodeid * numscal_ + i]=(*pres)[lid];
+    }
+
+  } //for
+
+  return;
+}// ScaTraTimIntImpl::SetPressureFields
+
+/*----------------------------------------------------------------------*
+ | Set Pressure Field                                     hemmler 05/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetMeanConcentration(Teuchos::RCP<Epetra_Vector> MeanConc)
+{
+meanconc_=MeanConc;
+return;
+} // ScaTraTimIntImpl::SetMeanConcentration
 
 
 /*----------------------------------------------------------------------*
@@ -2773,6 +2914,11 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   return;
 } // ScaTraTimIntImpl::NonlinearSolve
 
+
+void SCATRA::ScaTraTimIntImpl::ManipulateScaTraType( INPAR::SCATRA::ScaTraType new_ScaTraType)
+{
+  scatratype_=new_ScaTraType;
+}
 
 /*----------------------------------------------------------------------*
  | check if to stop the nonlinear iteration                    gjb 09/08|

@@ -476,9 +476,9 @@ E 6 - 1 structure conforming fsi_real
 --------------------------------------DESIGN SCATRA COUPLING SURF CONDITIONS
 DSURF                           2
 //                              fluid_interface
-E 5 - COUPID 1 FIELDNUM 1 PERMCOEF 1.0
+E 5 - NUMSCAL 1 ONOFF 1 COUPID 1 PERMCOEF 1.0 CONDUCT 0.0 FILTR 0.0 WSSONOFF 0 WSSCOEFFS 0.0 0.0 0.0
 //                              struct_interface
-E 6 - COUPID 1 FIELDNUM 2 PERMCOEF 1.0
+E 6 - NUMSCAL 1 ONOFF 1 COUPID 1 PERMCOEF 1.0 CONDUCT 0.0 FILTR 0.0 WSSONOFF 0 WSSCOEFFS 0.0 0.0 0.0
 ------------------------------DESIGN BIOFILM GROWTH COUPLING SURF CONDITIONS
 DSURF                           2
 //                              fluid_interface

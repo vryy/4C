@@ -62,7 +62,7 @@ void fs3i_dyn()
       fs3i = Teuchos::rcp(new FS3I::AeroTFSI(comm));
     }
     break;
-    case prb_fpssi:
+    case prb_fps3i:
     {
       fs3i = Teuchos::rcp(new FS3I::PartFPS3I_1WC(comm));
     }
@@ -75,6 +75,9 @@ void fs3i_dyn()
   // read the restart information, set vectors and variables ---
   // be careful, dofmaps might be changed here in a Redistribute call
   fs3i->ReadRestart();
+
+  // if running in parallel one  in the case of FPS3I needs to redistribute the interface after restarting
+  fs3i->RedistributeInterface();
 
   // now do the coupling and create combined dofmaps
   fs3i->SetupSystem();

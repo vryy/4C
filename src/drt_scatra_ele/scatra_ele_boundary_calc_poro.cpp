@@ -4,12 +4,12 @@
 
 \brief evaluation of scatra boundary terms at integration points
 
-<pre>
-Maintainer: Andreas Rauch
-            rauch@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
+ <pre>
+   Maintainer: Moritz Thon & Andre Hemmler
+               thon@mhpc.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-10364
+ </pre>
  */
 /*----------------------------------------------------------------------*/
 
@@ -18,7 +18,7 @@ Maintainer: Andreas Rauch
 #include "scatra_ele_action.H"
 #include "scatra_ele.H"
 
-#include "../drt_lib/drt_globalproblem.H" // for curves and functions
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
@@ -27,6 +27,7 @@ Maintainer: Andreas Rauch
 #include "../drt_geometry/position_array.H"
 
 /*----------------------------------------------------------------------*
+ |  Singleton access method                               hemmler 07/14 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype> * DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Instance(const int numdofpernode, const int numscal, bool create )
@@ -49,6 +50,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype> * DRT::ELEMENTS::ScaTraEleBoun
 }
 
 /*----------------------------------------------------------------------*
+ |  Clean up                                              hemmler 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Done()
@@ -60,6 +62,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
+ |  Private constructor                                   hemmler 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ScaTraEleBoundaryCalcPoro(const int numdofpernode, const int numscal)
@@ -70,6 +73,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ScaTraEleBoundaryCalcPoro(con
 }
 
 /*----------------------------------------------------------------------*
+ |  Evaluate boundary action                              hemmler 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
@@ -91,20 +95,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
 
   switch (action)
   {
-  case SCATRA::bd_calc_fpssi_conditions:
-  {
-    EvaluateFPSSICoupling(ele,
-                          params,
-                          discretization,
-                          lm,
-                          elemat1_epetra,
-                          elemat2_epetra,
-                          elevec1_epetra,
-                          elevec2_epetra,
-                          elevec3_epetra);
-    break;
-  }
-  default:
+  case SCATRA::bd_calc_fps3i_conditions:
+  case SCATRA::bd_calc_surface_permeability:
   {
     DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(ele,
                                                                params,
@@ -118,32 +110,17 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
                                                                elevec3_epetra);
     break;
   }
-  break;
+  default:
+  {
+    dserror("unknown action parameter");
+    break;
+  }
   } // switch action
 
   return 0;
 }
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateFPSSICoupling(
-      DRT::ELEMENTS::TransportBoundary* ele,
-      Teuchos::ParameterList&           params,
-      DRT::Discretization&              discretization,
-      std::vector<int>&                 lm,
-      Epetra_SerialDenseMatrix&         elemat1_epetra,
-      Epetra_SerialDenseMatrix&         elemat2_epetra,
-      Epetra_SerialDenseVector&         elevec1_epetra,
-      Epetra_SerialDenseVector&         elevec2_epetra,
-      Epetra_SerialDenseVector&         elevec3_epetra)
-{
-  // integrations points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-}
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 // template classes
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::quad4>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<DRT::Element::quad8>;

@@ -100,7 +100,7 @@ void ntacal()
     case prb_biofilm_fsi:
     case prb_thermo_fsi:
     case prb_tfsi_aero:
-    case prb_fpssi:
+    case prb_fps3i:
       fs3i_dyn();
       break;
 

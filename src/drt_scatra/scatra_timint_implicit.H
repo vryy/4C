@@ -184,6 +184,18 @@ public:
     Teuchos::RCP<DRT::Discretization> dis,     //!< fluid/structure discretization
     bool setpressure=false);
 
+  void SetWallShearStresses(
+      Teuchos::RCP<const Epetra_Vector> wss,
+      Teuchos::RCP<const DRT::DofSet>   dofset,
+      Teuchos::RCP<DRT::Discretization> dis);
+
+  void SetPressureFields(
+      Teuchos::RCP<const Epetra_Vector> pres,
+      Teuchos::RCP<const DRT::DofSet>   dofset,
+      Teuchos::RCP<DRT::Discretization> dis);
+
+  void SetMeanConcentration(Teuchos::RCP<Epetra_Vector> MeanConc);
+
   //! read restart data
   virtual void ReadRestart(int step) = 0;
 
@@ -497,8 +509,14 @@ public:
 
   //! compute contribution of permeable surface/interface
   void SurfacePermeability(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< ?
-    Teuchos::RCP<Epetra_Vector>          rhs     //!< ?
+    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< system matrix
+    Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
+  );
+
+  //! interface for fps3i problem
+  void KedemKatchalsky(
+    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< system matrix
+    Teuchos::RCP<Epetra_Vector> rhs             //!< rhs vector
   );
 
   /*========================================================================*/
@@ -516,6 +534,9 @@ public:
 
   //! set scatra structure displacement vector due to biofilm growth
   void SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp);
+
+  //needed for multifield problems (e.g.fps3i) with different scatratypes in the different fields
+  void ManipulateScaTraType(INPAR::SCATRA::ScaTraType new_ScaTraType);
 
   /*========================================================================*/
   //! @name  not classified method - to be kept clean!!!
@@ -997,6 +1018,15 @@ protected:
 
   //! type of velocity field ? rename!!!
   const INPAR::SCATRA::VelocityField cdvel_;
+
+  //! Euclidean norm of wall shear stress
+  Teuchos::RCP<Epetra_Vector> wss_;
+
+  //! pressure
+  Teuchos::RCP<Epetra_Vector> pressure_;
+
+  //! mean concentration in interface bewteen a scatracoupling (needed for instance for type fps3i)
+  Teuchos::RCP<Epetra_Vector> meanconc_;
 
   /*========================================================================*/
   //! @name coefficients and related

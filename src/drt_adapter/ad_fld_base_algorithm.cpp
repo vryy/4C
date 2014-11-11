@@ -378,6 +378,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   if (( probtype == prb_poroelast
         or probtype == prb_poroscatra
         or probtype == prb_fpsi
+        or probtype == prb_fps3i
         or probtype == prb_fpsi_xfem)
         and disname == "porofluid")
       {
@@ -397,7 +398,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
    // and, finally, add problem specific parameters
 
   // for poro problems, use POROUS-FLOW STABILIZATION
-  if ((probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or probtype == prb_fpsi_xfem) and disname == "porofluid")
+  if ((probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or probtype == prb_fps3i or probtype == prb_fpsi_xfem) and disname == "porofluid")
     fluidtimeparams->sublist("RESIDUAL-BASED STABILIZATION")    = fdyn.sublist("POROUS-FLOW STABILIZATION");
 
   // add some loma specific parameters
@@ -565,6 +566,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   if ( probtype == prb_poroelast or
        probtype == prb_poroscatra or
       (probtype == prb_fpsi and disname == "porofluid") or
+      (probtype == prb_fps3i and disname == "porofluid") or
       (probtype == prb_fpsi_xfem and disname == "porofluid")
      )
   {
@@ -574,7 +576,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     fluidtimeparams->set<bool>("shape derivatives",false);
     fluidtimeparams->set<bool>("conti partial integration", DRT::INPUT::IntegralValue<int>(porodyn,"CONTIPARTINT"));
   }
-  else if (probtype == prb_fpsi and disname == "fluid")
+  else if ((probtype == prb_fpsi and disname == "fluid")
+      or (probtype == prb_fps3i and disname == "fluid")
+      )
   {
     if (timeint == INPAR::FLUID::timeint_stationary)
       dserror("Stationary fluid solver not allowed for FPSI.");
@@ -666,7 +670,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       }
     }
 
-    if (probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or (probtype == prb_fpsi_xfem and disname == "porofluid"))
+    if (probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or probtype == prb_fps3i or (probtype == prb_fpsi_xfem and disname == "porofluid"))
       dirichletcond = false;
 
     //------------------------------------------------------------------
@@ -868,6 +872,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_poroelast:
     case prb_poroscatra:
     case prb_fpsi:
+    case prb_fps3i:
     case prb_fpsi_xfem:
     {
       Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
@@ -883,7 +888,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       }
       else if(disname == "fluid")
       {
-        if (probtype == prb_fpsi)
+        if (probtype == prb_fpsi or probtype == prb_fps3i)
         {
         if(timeint == INPAR::FLUID::timeint_stationary)
           tmpfluid = Teuchos::rcp(new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));

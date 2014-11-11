@@ -872,6 +872,58 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   return;
 } // SCATRA::ScaTraTimIntImpl::SurfacePermeability
 
+/*----------------------------------------------------------------------------*
+ |  Kedem & Katchalsky second membrane equation                  hemmler 07/14 |
+ |  see e.g. Kedem, O. T., and A. Katchalsky. "Thermodynamic analysis of the permeability of biological membranes to non-electrolytes." Biochimica et biophysica Acta 27 (1958): 229-246.
+ *----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
+    Teuchos::RCP<LINALG::SparseOperator> matrix,
+    Teuchos::RCP<Epetra_Vector> rhs
+    )
+{
+  // time measurement: evaluate condition 'SurfacePermeability'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ScaTraCoupling'");
+
+  // create parameter list
+  Teuchos::ParameterList condparams;
+
+  // action for elements
+  condparams.set<int>("action",SCATRA::bd_calc_fps3i_conditions);
+  condparams.set<int>("scatratype",scatratype_);
+
+  // provide displacement field in case of ALE
+  condparams.set("isale",isale_);
+  if (isale_) discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+
+  // add element parameters according to time-integration scheme
+  AddTimeIntegrationSpecificVectors();
+
+  // provide velocity field
+  // (export to column map necessary for parallel evaluation)
+  discret_->AddMultiVectorToParameterList(condparams,"velocity field",convel_);
+
+  // set scalar values needed by elements
+  discret_->SetState("WallShearStress",wss_);
+  discret_->SetState("Pressure",pressure_);
+
+  discret_->SetState("MeanConcentration",meanconc_);
+
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"ScaTraCoupling");
+  discret_->ClearState();
+
+  matrix->Complete();
+
+  double scaling = 1.0/ResidualScaling();
+
+  rhs->Scale(scaling);
+  matrix->Scale(scaling);
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::KedemKatchalsky
+
 
 /*----------------------------------------------------------------------*
  |                                                      rasthofer 03/14 |

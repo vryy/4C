@@ -87,6 +87,9 @@ class MonolithicBase : public FPSI_Base
     // read restart data
     virtual void ReadRestart(int step);
 
+    // redistribute FPSI interface if running on parallel
+    void RedistributeInterface();
+
     // start a new time step
     virtual void PrepareTimeStep();
 
@@ -157,7 +160,9 @@ class MonolithicBase : public FPSI_Base
     virtual Teuchos::RCP<Epetra_Vector> SmallStructToFluid_FPSI   (Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> StructToAle_FPSI          (Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> AleToStruct_FPSI          (Teuchos::RCP<const Epetra_Vector> iv) const;
+ public://this one is needed in case of FPS3I
     virtual Teuchos::RCP<Epetra_Vector> FluidToPorofluid_FPSI     (Teuchos::RCP<const Epetra_Vector> iv) const;
+ protected:
     virtual Teuchos::RCP<Epetra_Vector> PorofluidToFluid_FPSI     (Teuchos::RCP<const Epetra_Vector> iv) const;
 
     virtual Teuchos::RCP<Epetra_Vector> FluidToAle                (Teuchos::RCP<const Epetra_Vector> iv) const;
@@ -317,6 +322,8 @@ public:
   // extractor to communicate between full monolithic map and block maps
   const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
+  void SetConductivity(double conduct);
+
   // extractor to communicate between (fluid + fluid_fpsi) + fsi map and block mapss
   const LINALG::MultiMapExtractor& Extractor_FluidFPSI_FSI() const { return fluidfpsi_fsi_rowdofmap_; }
 
@@ -445,6 +452,9 @@ private:
     Epetra_Time timer_;
 
    bool isfirsttimestep_;
+
+   //hydraulic conductivity (needed for coupling in case of probtype fps3i)
+   double conductivity_;
 
 protected:
    bool   islinesearch_;

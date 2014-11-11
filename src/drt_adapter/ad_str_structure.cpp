@@ -484,6 +484,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     case prb_poroelast:
     case prb_poroscatra:
     case prb_fpsi:
+    case prb_fps3i:
     case prb_fpsi_xfem:
     {
       const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();

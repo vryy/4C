@@ -1,15 +1,16 @@
-/*!----------------------------------------------------------------------
+  /*!----------------------------------------------------------------------
 \file fps3i_partitioned_1wc.H
 \brief H-file associated with algorithmic routines for partitioned
-       solution approaches to fluid-structure-scalar-scalar interaction
-       (FS3I) specifically related to one-way-coupled problem
+       solution approaches to fluid-porous-structure-scalar-scalar interaction
+       (FPS3I) specifically related to one-way-coupled problem
        configurations
 
-<pre>
-Maintainers: Moritz Thon
-             thon@mhpc.mw.tum.de
-             089/289-10324
-</pre>
+ <pre>
+   Maintainer: Moritz Thon & Andre Hemmler
+               thon@mhpc.mw.tum.de
+               http://www.mhpc.mw.tum.de
+               089 - 289-10364
+ </pre>
 
 *----------------------------------------------------------------------*/
 
@@ -17,30 +18,37 @@ Maintainers: Moritz Thon
 #ifndef FPS3I_PART_1WC_H
 #define FPS3I_PART_1WC_H
 
-#include "fs3i_partitioned.H"
+#include "fps3i_partitioned.H"
+
 
 namespace FS3I
 {
-  class PartFPS3I_1WC : public PartFS3I
+  class PartFPS3I_1WC : public PartFPS3I
   {
   public:
 
+    //! constructor of one-way coupled FPS3I
     PartFPS3I_1WC(const Epetra_Comm& comm);
 
+    //! Destructor of one-way coupled FPS3I
     virtual ~PartFPS3I_1WC(){};
 
+    /// timeloop of coupled problem
     virtual void Timeloop();
 
-    //! This is actually a fpsi step
-    void DoFSIStep();
+    /// FPSI step
+    void DoFPSIStep();
 
+    /// Scatra step
     void DoScatraStep();
 
+    //! routine for preparing time step
     virtual void PrepareTimeStep();
 
+    //! check convergence of monolithic ScaTra problem
     virtual bool ScatraConvergenceCheck(int itnum);
-  };
 
+  };
 }
 
 #endif

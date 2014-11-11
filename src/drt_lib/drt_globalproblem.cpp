@@ -1610,7 +1610,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
-  case prb_fpssi:
+  case prb_fps3i:
   {
     // create empty discretizations
     structdis     = Teuchos::rcp(new DRT::Discretization("structure",  reader.Comm()));

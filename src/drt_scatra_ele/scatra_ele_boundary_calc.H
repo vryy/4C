@@ -152,6 +152,13 @@ public:
                               Epetra_SerialDenseVector&         elevec1_epetra
                               );
 
+
+  //!computes the factor for the wall shear stress dependent interface flux
+  std::vector<double> WSSinfluence(
+      std::vector<double>  ewss,          ///<vector of euclidean norm of shear stress tensor of each node of the element
+      const bool           wssonoff,      ///<flag if WSS has influence on interface permeability
+      const std::vector<double>* coeffs); ///<coefficients of the log law to determine the influence of WSS on concentration flux
+
   protected:
 
   //! calculate normal vectors
@@ -187,6 +194,32 @@ public:
       Epetra_SerialDenseVector&   erhs              ///< element right-hand side
   );
 
+    //! evaluate Kedem-Katchalsky interface condition
+    void EvaluateKedemKatchalsky(
+        const DRT::Element*        ele,         ///< the actual boundary element
+        const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
+        const std::vector<double>& ephinp,      ///< scalar values at element nodes
+        const std::vector<double>& epressure,   ///< pressure values at element nodes
+        const std::vector<double>& ephibar,   ///< mean concentration values at element nodes
+        const std::vector<double>& f_wss,     ///< factor for WSS at element nodes
+        Epetra_SerialDenseMatrix&  emat,        ///< element-matrix
+        Epetra_SerialDenseVector&  erhs,        ///< element-rhs
+        const double               timefac,     ///< time factor
+        const std::vector<int>*    onoff,         ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
+        const double               perm,         ///< surface/interface permeability coefficient
+        const double               conductivity, ///< hydraulic conductivity at interface
+        const double               sigma, ///< Staverman filtration coefficient at interface
+        DRT::Discretization&       discretization
+    );
+
+     //! integral of shape functions over boundary surface
+     void IntegrateShapeFunctions(
+         const DRT::Element*       ele,    ///< the actual boundary element
+         Teuchos::ParameterList&   params, ///< the parameter list
+         Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
+         const bool                addarea ///< flag for area calculation
+     );
+
   //! evaluate surface/interface permeability
   void EvaluateSurfacePermeability(
       const DRT::Element*        ele,    ///< current boundary element
@@ -196,14 +229,6 @@ public:
       const double               timefac,///< time factor
       const double               perm    ///< surface/interface permeability coefficient
   );
-
-   //! integral of shape functions over boundary surface
-   void IntegrateShapeFunctions(
-       const DRT::Element*       ele,    ///< current boundary element
-       Teuchos::ParameterList&   params, ///< the parameter list
-       Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
-       const bool                addarea ///< flag for area calculation
-   );
 
   //! integral of normal diffusive flux and velocity over boundary surface
   void NormDiffFluxAndVelIntegral(

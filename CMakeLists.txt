@@ -945,9 +945,10 @@ set(OBJS_DRT_FSI_XFEM
   src/drt_fsi_xfem/fsi_xfem_algorithm.cpp
 )
 set(OBJS_DRT_FS3I
+  src/drt_fs3i/fs3i.cpp
   src/drt_fs3i/fs3i_dyn.cpp
   src/drt_fs3i/fs3i_partitioned.cpp
-  src/drt_fs3i/fs3i_partitioned_service.cpp
+  src/drt_fs3i/fps3i_partitioned.cpp
   src/drt_fs3i/fs3i_partitioned_1wc.cpp
   src/drt_fs3i/fps3i_partitioned_1wc.cpp
   src/drt_fs3i/fs3i_partitioned_2wc.cpp

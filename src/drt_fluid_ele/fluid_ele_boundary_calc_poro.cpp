@@ -614,6 +614,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     dserror("invalid structure material for poroelasticity");
   }
 
+   //what's the current problem type?
+  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  double Lp=0.0;
+  if(probtype==prb_fps3i)
+  {
+     //get the conductivity of membrane at the interface
+     Lp= params.get<double>("membrane conductivity");
+  }
+
   // get coordinates of gauss points w.r.t. local parent coordinate system
   LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad,my::nsd_);
   LINALG::Matrix<my::nsd_,my::nsd_>  derivtrafo(true);
@@ -880,6 +889,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
         for (int idof2=0;idof2<my::nsd_;idof2++)
         {
           tangentialderiv1(idof,(node*my::nsd_)+idof2) -= (tangential1(idof,0)*tangential1(idof2,0)*pderiv(0,node))/(pow(normoftangential1,3.0));
+
           tangentialderiv2(idof,(node*my::nsd_)+idof2) -= (tangential2(idof,0)*tangential2(idof2,0)*pderiv(1,node))/(pow(normoftangential2,3.0));//TODO: is that right??? should be two times tangential 2 !!! ChrAg ...check later
         }
       }
@@ -1301,6 +1311,20 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                 )*survivor(nnod)
 
                     )*pfunct(inode)*tangentialfac*my::fac_*timefac;
+
+                if(probtype==prb_fps3i)
+                                {
+                                  /*
+                                            d(w o n,(u-vs) o n) / d(ds)
+
+                                            evaluated on PoroField(): sign flip*/
+
+                                  elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::nsd_)+idof3) +=
+                                       (
+                                            (-u_minus_vs_normalderiv(0,nnod*my::nsd_+idof2) * pfunct(inode) *my::fac_*timefac* survivor(nnod)
+                                            + pfunct(inode) * my::unitnormal_(idof2) * timescale * pfunct(nnod) *my::fac_*timefac)/(Lp)
+                                       );
+                                }
               }// idof3
             }
             else if (discretization.Name() == "fluid")
@@ -1341,6 +1365,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                       tangential1(idof2)*tangential1(idof3) +
                       tangential2(idof2)*tangential2(idof3)
                   )*pfunct(nnod)*pfunct(inode)*tangentialfac*my::fac_*timefac;
+              if(probtype==prb_fps3i)
+                {
+                    /*
+                         d(w o n,(u-vs) o n) / d(u)
+
+                         evaluated on FluidField(): no sign flip */
+                    elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::numdofpernode_)+idof3)  -=
+                        my::fac_*timefac * pfunct(inode) * my::unitnormal_(idof2) * pfunct(nnod)/(Lp);
+                }
             }
           }// block Fluid_Fluid
 
@@ -1576,9 +1609,18 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
          */
         for (int idof2=0;idof2<my::nsd_;idof2++)
         {
-          elevec1(inode*my::numdofpernode_+idof2)-= (  pfunct(inode)*tangential1(idof2)*tangentialvelocity1(0,0)
+          elevec1(inode*my::numdofpernode_+idof2)-= ( pfunct(inode)*tangential1(idof2)*tangentialvelocity1(0,0)
               + pfunct(inode)*tangential2(idof2)*tangentialvelocity2(0,0)
           )*tangentialfac*rhsfac*survivor(inode);
+
+          // in case of FPS3I we have to add the first Kedem-Katchalsky equation to prescribe the volume flux
+          // see e.g. Kedem, O. T., and A. Katchalsky. "Thermodynamic analysis of the permeability of biological membranes to non-electrolytes." Biochimica et biophysica Acta 27 (1958): 229-246.
+          //TODO: One could think of not using this equation, i.e. having L_p -> inf (Thon)
+          if(probtype==prb_fps3i)
+            {
+              //evaluated on fluid field --> no sign flip
+              elevec1(inode*my::numdofpernode_+idof2)-= rhsfac*survivor(inode)* pfunct(inode) * normal_u_minus_vs/(Lp);
+            }
         }
       } // block fluidfluid
 

@@ -1,81 +1,106 @@
 /*!----------------------------------------------------------------------
-\file fs3i_partitioned_1wc.cpp
-\brief Algorithmic routines for partitioned solution approaches to
-       fluid-structure-scalar-scalar interaction (FS3I) specifically
-       related to one-way-coupled problem configurations
+\file fps3i_partitioned_1wc.cpp
+\brief H-file associated with algorithmic routines for partitioned
+       solution approaches to fluid-porous-structure-scalar-scalar interaction
+       (FPS3I) specifically related to one-way-coupled problem
+       configurations
 
-<pre>
-Maintainers: Lena Yoshihara & Volker Gravemeier
-             {yoshihara,vgravem}@lnm.mw.tum.de
-             089/289-15303,-15245
-</pre>
+ <pre>
+   Maintainer: Moritz Thon & Andre Hemmler
+               thon@mhpc.mw.tum.de
+               http://www.mhpc.mw.tum.de
+               089 - 289-10364
+ </pre>
 
 *----------------------------------------------------------------------*/
-
-
-#include "fps3i_partitioned_1wc.H"
-
+#include <Teuchos_TimeMonitor.hpp>
 #include "../drt_fsi/fsi_monolithic.H"
 #include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
+#include "../drt_fpsi/fpsi_utils.H"
+#include "../drt_fpsi/fpsi_monolithic.H"
+#include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_lib/drt_colors.H"
+#include "../drt_lib/drt_condition_selector.H"
+#include "../drt_io/io_control.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
+#include "../drt_adapter/adapter_coupling.H"
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+#include "../drt_scatra/scatra_utils_clonestrategy.H"
+
+#include "../drt_poroelast/poroelast_monolithic.H"
+
+#include "../drt_fluid/fluidimplicitintegration.H"
+#include "../drt_fluid/fluid_utils.H"
+#include "../drt_fluid/fluidresulttest.H"
+
+#include "fps3i_partitioned_1wc.H"
+
+/*----------------------------------------------------------------------*
+ |  Constructor                                           hemmler 07/14 |
+ *----------------------------------------------------------------------*/
 FS3I::PartFPS3I_1WC::PartFPS3I_1WC(const Epetra_Comm& comm)
-  :PartFS3I(comm)
+  :PartFPS3I(comm)
 {
-  // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<DRT::DofSet> scatradofset
-    = scatravec_[1]->ScaTraField()->Discretization()->GetDofSetProxy();
+  // build a proxy of the poro (structure) discretization for the scatra field
+  Teuchos::RCP<DRT::DofSet> structdofset
+    = fpsi_->PoroField()->StructureField()->Discretization()->GetDofSetProxy();
 
   // check if scatra field has 2 discretizations, so that coupling is possible
-  if (fsi_->StructureField()->Discretization()->AddDofSet(scatradofset)!=1)
+  if (scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(structdofset)!=1)
     dserror("unexpected dof sets in structure field");
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  Timeloop                                              hemmler 07/14 |
+ *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I_1WC::Timeloop()
 {
   // output of initial state
   ScatraOutput();
-
-  fsi_->PrepareTimeloop();
+  fpsi_->PrepareTimeloop();
 
   while (NotFinished())
   {
     IncrementTimeAndStep();
-    SetStructScatraSolution();
-    DoFSIStep();
-    SetFSISolution();
+
+    DoFPSIStep(); //TODO: One could think about skipping the very costly FSI/FPSI calculation for the case that it is stationary at some point (Thon)
+    SetFPSISolution(); //write FPSI solution into scatra field
     DoScatraStep();
   }
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::PartFPS3I_1WC::DoFSIStep()
+/*----------------------------------------------------------------------*
+ |  FPSI step                                             hemmler 07/14 |
+ *----------------------------------------------------------------------*/
+void FS3I::PartFPS3I_1WC::DoFPSIStep()
 {
-  fsi_->PrepareTimeStep();
-  fsi_->TimeStep(fsi_);
-  fsi_->PrepareOutput();
-  fsi_->Update();
-  fsi_->Output();
+  fpsi_->PrepareTimeStep();
+  fpsi_->SetupNewton();
+  fpsi_->TimeStep();
+  fpsi_->PrepareOutput();
+  fpsi_->Update();
+  fpsi_->Output();
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  Scatra step                                           hemmler 07/14 |
+ *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I_1WC::DoScatraStep()
 {
   if (Comm().MyPID()==0)
   {
-    std::cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
+    std::cout<<"\n***********************\n SCALAR TRANSPORT SOLVER \n***********************\n";
   }
 
   // first scatra field is associated with fluid, second scatra field is
@@ -99,18 +124,18 @@ void FS3I::PartFPS3I_1WC::DoScatraStep()
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  Prepare time step                                     hemmler 07/14 |
+ *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I_1WC::PrepareTimeStep()
 {
   // set mesh displacement field for present time step
   SetMeshDisp();
 
-  // set velocity fields from fluid and structure solution
+  // set velocity fields from fluid and poro solution
   // for present time step
   SetVelocityFields();
-
-  // prepare time step for both fluid- and structure-based scatra field
+  // prepare time step for both fluid- and poro-based scatra field
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
@@ -119,8 +144,9 @@ void FS3I::PartFPS3I_1WC::PrepareTimeStep()
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ |  Check of convergence of scatra solver                 hemmler 07/14 |
+ *----------------------------------------------------------------------*/
 bool FS3I::PartFPS3I_1WC::ScatraConvergenceCheck(const int itnum)
 {
   const Teuchos::ParameterList& fs3icontrol = DRT::Problem::Instance()->FS3IControlParams();
@@ -217,7 +243,7 @@ bool FS3I::PartFPS3I_1WC::ScatraConvergenceCheck(const int itnum)
   }
   break;
   default:
-    dserror("Illegal ScaTra solvertype in FS3I");
+    dserror("Illegal ScaTra solvertype in FPS3I");
     break;
   }
   return false;

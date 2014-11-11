@@ -205,48 +205,37 @@ them.
   SetupLocalInterfaceFacingElementMap(*fluiddis,*porofluiddis,"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
   SetupLocalInterfaceFacingElementMap(*porofluiddis,*fluiddis,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
 
-  if(comm.NumProc() > 1 and problem->Restart() == 0)
-  {
-    //ChrAg ... check if for mpi additional if is required :-)
-    RedistributeInterface(fluiddis,*porofluiddis,"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
-    RedistributeInterface(aledis,*porofluiddis,"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
-    RedistributeInterface(porofluiddis,*fluiddis,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
-    RedistributeInterface(structdis,*fluiddis,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
-
-    // Material pointers need to be reset after redistribution.
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,porofluiddis);
-  }
   //4.- get coupling algorithm
     Teuchos::RCP<FPSI::FPSI_Base> fpsi_algo = Teuchos::null;
     int coupling = DRT::INPUT::IntegralValue<int>(fpsidynparams,"COUPALGO");
     switch (coupling)
+    {
+      case fpsi_monolithic_plain:
       {
-        case fpsi_monolithic_plain:
+        fpsi_algo = Teuchos::rcp(new FPSI::Monolithic_Plain(comm,fpsidynparams,poroelastdynparams));
+        break;
+      } // case monolithic
+      case partitioned:
+      {
+        dserror("Partitioned solution scheme not implemented for FPSI, yet. "
+                "Make sure that the parameter COUPALGO is set to 'fpsi_monolithic_plain', "
+                "and the parameter PARITIONED is set to 'monolithic'. ");
+        INPAR::FPSI::PartitionedCouplingMethod method;
+        method = DRT::INPUT::IntegralValue<INPAR::FPSI::PartitionedCouplingMethod>(fpsidynparams,"PARTITIONED");
+        if(method == INPAR::FPSI::RobinNeumann )
         {
-          fpsi_algo = Teuchos::rcp(new FPSI::Monolithic_Plain(comm,fpsidynparams,poroelastdynparams));
-          break;
-        } // case monolithic
-        case partitioned:
-        {
-          dserror("Partitioned solution scheme not implemented for FPSI, yet. "
-                  "Make sure that the parameter COUPALGO is set to 'fpsi_monolithic_plain', "
-                  "and the parameter PARITIONED is set to 'monolithic'. ");
-          INPAR::FPSI::PartitionedCouplingMethod method;
-          method = DRT::INPUT::IntegralValue<INPAR::FPSI::PartitionedCouplingMethod>(fpsidynparams,"PARTITIONED");
-          if(method == INPAR::FPSI::RobinNeumann )
-          {
-            fpsi_algo = Teuchos::rcp(new FPSI::RobinNeumann(comm,fpsidynparams));
-          }
-          else
-          {
-            dserror("Only RobinNeumann algorithm available for partitioned FPSI !!!\n"
-                    "Set 'PARTITIONED' to 'RobinNeumann' in input file.");
-          }
-          break;
+          fpsi_algo = Teuchos::rcp(new FPSI::RobinNeumann(comm,fpsidynparams));
         }
-      } // switch(coupling)
+        else
+        {
+          dserror("Only RobinNeumann algorithm available for partitioned FPSI !!!\n"
+                  "Set 'PARTITIONED' to 'RobinNeumann' in input file.");
+        }
+        break;
+      }
+    } // switch(coupling)
 
-    return fpsi_algo;
+  return fpsi_algo;
 }
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<          FINISHED          >>>>>>>>>>>>>>>>>>>>>>>

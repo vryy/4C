@@ -44,6 +44,7 @@ private:
   /// private constructor since we are singleton
   ScaTraEleBoundaryCalcPoro(const int numdofpernode, const int numscal);
 
+  /// Evaluate Boundary Action
   int EvaluateAction(
       DRT::ELEMENTS::TransportBoundary* ele,
       Teuchos::ParameterList&           params,
@@ -55,17 +56,6 @@ private:
       Epetra_SerialDenseVector&         elevec2_epetra,
       Epetra_SerialDenseVector&         elevec3_epetra
   );
-
-  void EvaluateFPSSICoupling(
-      DRT::ELEMENTS::TransportBoundary* ele,
-      Teuchos::ParameterList&           params,
-      DRT::Discretization&              discretization,
-      std::vector<int>&                 lm,
-      Epetra_SerialDenseMatrix&         elemat1_epetra,
-      Epetra_SerialDenseMatrix&         elemat2_epetra,
-      Epetra_SerialDenseVector&         elevec1_epetra,
-      Epetra_SerialDenseVector&         elevec2_epetra,
-      Epetra_SerialDenseVector&         elevec3_epetra);
 
 }; // class ScaTraEleBoundaryCalcPoro
 

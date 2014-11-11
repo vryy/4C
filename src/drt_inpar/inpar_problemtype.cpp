@@ -55,7 +55,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Poroelasticity"] =                            prb_poroelast;
     string2prbtype["Poroelastic_scalar_transport"] =              prb_poroscatra;
     string2prbtype["Fluid_Porous_Structure_Interaction"] =        prb_fpsi;
-    string2prbtype["Fluid_Porous_Structure_Scalar_Interaction"] = prb_fpssi;
+    string2prbtype["Fluid_Porous_Structure_Scalar_Scalar_Interaction"] = prb_fps3i;
     string2prbtype["Immersed_FSI"] =                              prb_immersed_fsi;
     string2prbtype["Structure_Scalar_Interaction"] =              prb_ssi;
     string2prbtype["NP_Supporting_Procs"] =                       prb_np_support;

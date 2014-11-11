@@ -590,7 +590,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       break;
     }
-    case prb_fpssi:
+    case prb_fps3i:
     {
       std::string basename = problem.outname();
 

@@ -87,43 +87,31 @@ void fpsi_drt()
   Teuchos::RCP<FPSI::UTILS> FPSI_UTILS = FPSI::UTILS::Instance();
 
   //3.- Creation of Poroelastic + Fluid problem. (Discretization called inside)
-  Teuchos::RCP<FPSI::FPSI_Base> fpsi_ = Teuchos::null;
-  fpsi_ = FPSI_UTILS->SetupDiscretizations(comm, fpsidynparams,poroelastdynparams);
+  Teuchos::RCP<FPSI::FPSI_Base> fpsi = Teuchos::null;
+  fpsi = FPSI_UTILS->SetupDiscretizations(comm, fpsidynparams,poroelastdynparams);
 
   //3.1- Read restart if needed.
   const int restartstep = problem->Restart();
   if (restartstep)
   {
-    fpsi_->ReadRestart(restartstep);
-
-    Teuchos::RCP<std::map<int,int> > Fluid_PoroFluid_InterfaceMap = FPSI_UTILS->Get_Fluid_PoroFluid_InterfaceMap();
-    Teuchos::RCP<std::map<int,int> > PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->Get_PoroFluid_Fluid_InterfaceMap();
-
-    if(comm.NumProc() > 1)
-    {
-      FPSI_UTILS->RedistributeInterface(problem->GetDis("fluid")    ,*problem->GetDis("porofluid"),"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
-      FPSI_UTILS->RedistributeInterface(problem->GetDis("ale")      ,*problem->GetDis("porofluid"),"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
-      FPSI_UTILS->RedistributeInterface(problem->GetDis("porofluid"),*problem->GetDis("fluid")    ,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
-      FPSI_UTILS->RedistributeInterface(problem->GetDis("structure"),*problem->GetDis("fluid")    ,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
-
-      // Material pointers need to be reset after redistribution.
-      POROELAST::UTILS::SetMaterialPointersMatchingGrid(problem->GetDis("structure"),
-                                                        problem->GetDis("porofluid"));
-    }
+    fpsi->ReadRestart(restartstep);
   }
+
+  //3.2.- redistribute the FPSI interface
+  fpsi->RedistributeInterface();
 
   //////////////////////////////////
  //4.- Run of the actual problem.//
 //////////////////////////////////
 
   // 4.1.- Coupling and creation of combined dofmap
-  fpsi_->SetupSystem();
+  fpsi->SetupSystem();
   // 4.2.- Solve the whole problem
-  fpsi_->Timeloop();
+  fpsi->Timeloop();
   Teuchos::TimeMonitor::summarize();
 
   // 5. - perform the result test
-  fpsi_->TestResults(comm);
+  fpsi->TestResults(comm);
 
 
   return;

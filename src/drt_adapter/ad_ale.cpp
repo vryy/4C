@@ -276,6 +276,7 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
     break;
   }
   case prb_fpsi:
+  case prb_fps3i:
   {
     ale_ = Teuchos::rcp(new ADAPTER::AleFpsiWrapper(ale));
     break;

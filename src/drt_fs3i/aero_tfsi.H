@@ -82,6 +82,9 @@ namespace FS3I
     /// read restart
     virtual void ReadRestart();
 
+    /// redistribute the  FPSI interface, if running on parallel. Just needed in the case of FPS3I
+    void RedistributeInterface() {;} ;
+
     /// setup of the tsi system, mainly the two underlying discretizations
     virtual void SetupSystem();
 

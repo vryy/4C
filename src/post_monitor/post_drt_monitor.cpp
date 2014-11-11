@@ -2001,6 +2001,7 @@ int main(int argc, char** argv)
     case prb_fluid_xfem_ls:
     case prb_fluid:
     case prb_fluid_redmodels:
+    case prb_fps3i:
     {
       if(infieldtype == "scatra")
       {

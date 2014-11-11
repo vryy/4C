@@ -8,7 +8,6 @@ Maintainer: Andreas Rauch
 </pre>
 
 *----------------------------------------------------------------------*/
-#include "fpsi_partitioned.H"
 #include "../drt_inpar/inpar_fpsi.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_coupling.H"
@@ -18,12 +17,10 @@ Maintainer: Andreas Rauch
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_io/io_control.H"
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-#include <Epetra_Operator.h>
+// FPSI includes
+#include "fpsi_utils.H"
+#include "fpsi_partitioned.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FPSI::Partitioned::Partitioned(const Epetra_Comm& comm,
@@ -206,12 +203,33 @@ void FPSI::Partitioned::TimeUpdateAndOutput()
 /*----------------------------------------------------------------------*/
 void FPSI::Partitioned::ReadRestart(int restartstep)
 {
-  if(restartstep)
-  {
-    poroelast_subproblem_     -> ReadRestart(restartstep);
+  poroelast_subproblem_     -> ReadRestart(restartstep);
 
-    time_ = fluid_subproblem_->  ReadRestart(restartstep);
-    SetTimeStep(time_,restartstep);
+  time_ = fluid_subproblem_->  ReadRestart(restartstep);
+  SetTimeStep(time_,restartstep);
+}
+
+/*----------------------------------------------------------------------*
+ | redistribute the FPSI interface                           thon 11/14 |
+ *----------------------------------------------------------------------*/
+void FPSI::Partitioned::RedistributeInterface()
+{
+  DRT::Problem* problem = DRT::Problem::Instance();
+  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
+  Teuchos::RCP<FPSI::UTILS> FPSI_UTILS = FPSI::UTILS::Instance();
+
+  if(comm.NumProc() > 1) //if we have more than one processor, we need to redistribute at the FPSI interface
+  {
+    Teuchos::RCP<std::map<int,int> > Fluid_PoroFluid_InterfaceMap = FPSI_UTILS->Get_Fluid_PoroFluid_InterfaceMap();
+    Teuchos::RCP<std::map<int,int> > PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->Get_PoroFluid_Fluid_InterfaceMap();
+
+    FPSI_UTILS->RedistributeInterface(problem->GetDis("fluid")    ,*problem->GetDis("porofluid"),"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
+    FPSI_UTILS->RedistributeInterface(problem->GetDis("ale")      ,*problem->GetDis("porofluid"),"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
+    FPSI_UTILS->RedistributeInterface(problem->GetDis("porofluid"),*problem->GetDis("fluid")    ,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
+    FPSI_UTILS->RedistributeInterface(problem->GetDis("structure"),*problem->GetDis("fluid")    ,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
+
+    // Material pointers need to be reset after redistribution.
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(problem->GetDis("structure"), problem->GetDis("porofluid"));
   }
 }
 

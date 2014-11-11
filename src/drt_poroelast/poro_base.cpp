@@ -73,7 +73,9 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
       PartOfMultifieldProblem_(false),
       matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->PoroelastDynamicParams(),"MATCHINGGRID"))
 {
-  if(DRT::Problem::Instance()->ProblemType()==prb_fpsi)
+  if(DRT::Problem::Instance()->ProblemType()==prb_fpsi or
+     DRT::Problem::Instance()->ProblemType()==prb_fps3i
+     )
     PartOfMultifieldProblem_=true;
 
   // access the structural discretization
