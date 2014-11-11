@@ -191,8 +191,19 @@ public:
    */
   int NumGaussPoints( DRT::Element::DiscretizationType shape );
 
-  void DumpGmshGaussPoints( const std::vector<std::vector<double> >&gauspts);
+  /*!
+  \brief Write Geometry of volumecell together with gauss points produced from moment fitting method into GMSH output
+   */
+  void DumpGmshGaussPointsMomFit( const std::vector<std::vector<double> >&gauspts);
 
+  /*!
+  \brief Write Geometry of volumecell together with gauss points produced from tessellation into GMSH output
+   */
+  void DumpGmshGaussPointsTessellation();
+
+  /*!
+  \brief Write Geometry of volumecell into GMSH output
+   */
   void DumpGmsh(std::ofstream& filename);
 
   /*!

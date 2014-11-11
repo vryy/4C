@@ -643,29 +643,93 @@ void GEO::CUT::VolumeCell::DumpGmsh( std::ofstream& file )
 }
 
 /*--------------------------------------------------------------------------------------------------------*
-        write the boundaries of volumecell and the positions of Gauss points for visualization
-        a separate file with "side" prefix is generated for every volumecell as the gausspoint
-        distribution can be clearly seen
+        write the boundaries of volumecell and the positions of Gauss points when using
+        Moment fitting for visualization a separate file with "Mom_volcell" prefix is generated
+        for every volumecell as the gausspoint distribution can be clearly seen
 *---------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::VolumeCell::DumpGmshGaussPoints(const std::vector<std::vector<double> >&gauspts)
+void GEO::CUT::VolumeCell::DumpGmshGaussPointsMomFit(const std::vector<std::vector<double> >&gauspts)
 {
 
   static int sideno = 0;
   sideno++;
 
   std::stringstream str;
-  str << "side" << sideno << ".pos";
+  str << "Mom_volcell" << sideno << ".pos";
   std::ofstream file( str.str().c_str() );
 
   DumpGmsh(file);
 
-  file<<"Geometry.PointSize=6.0;\n";      // Increase the point size
-  int pointno=1;
+  file<<"View \" Gauss Points \" {\n";
   for(unsigned i=0;i<gauspts.size();i++)
   {
-     file<<"Point("<<pointno<<")={"<<gauspts[i][0]<<","<<gauspts[i][1]<<","<<gauspts[i][2]<<","<<"1"<<"};"<<std::endl;
-     pointno++;
+    file<<"SP("<<gauspts[i][0]<<","<<gauspts[i][1]<<","<<gauspts[i][2]<<",1){0.0};\n";
   }
+  file<<"};\n";
+  file<<"View[PostProcessing.NbViews-1].ColorTable = { {0,0,0} };\n"; // Changing color to black
+  file<<"View[PostProcessing.NbViews-1].Light=0;\n";    // Disable the lighting
+  file<<"View[PostProcessing.NbViews-1].ShowScale=0;\n";  // Disable legend
+  file<<"View[PostProcessing.NbViews-1].PointSize = 4.0;"; // fix point size
+  file.close();
+}
+
+/*--------------------------------------------------------------------------------------------------------*
+        write the boundaries of volumecell and the positions of Gauss points for visualization
+        a separate file when using tessellation
+*---------------------------------------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::DumpGmshGaussPointsTessellation()
+{
+  static int sideno = 0;
+  sideno++;
+
+  std::stringstream str;
+  str << "MTes_volcell" << sideno << ".pos";
+  std::ofstream file( str.str().c_str() );
+
+  DumpGmsh(file);
+
+  Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
+                  Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
+
+  const plain_integrationcell_set & cells = IntegrationCells();
+  for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+  {
+    GEO::CUT::IntegrationCell * ic = *i;
+    switch ( ic->Shape() )
+    {
+    case DRT::Element::hex8:
+    {
+      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( ic );
+      gpc->Append( gp );
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( ic );
+      gpc->Append( gp );
+      break;
+    }
+    default:
+    {
+      dserror("Include this element here");
+      break;
+    }
+    }
+  }
+
+  DRT::UTILS::GaussIntegration gpv( gpc );
+
+  file<<"View \" Gauss Points \" {\n";
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=gpv.begin(); iquad!=gpv.end(); ++iquad )
+  {
+    const LINALG::Matrix<3,1> eta( iquad.Point() );
+    file<<"SP("<<eta(0,0)<<","<<eta(1,0)<<","<<eta(2,0)<<",1){0.0};\n";
+  }
+
+  file<<"};\n";
+  file<<"View[PostProcessing.NbViews-1].ColorTable = { {0,0,0} };\n"; // Changing color to black
+  file<<"View[PostProcessing.NbViews-1].Light=0;\n";    // Disable the lighting
+  file<<"View[PostProcessing.NbViews-1].ShowScale=0;\n";  // Disable legend
+  file<<"View[PostProcessing.NbViews-1].PointSize = 4.0;"; // fix point size
   file.close();
 }
 
@@ -1040,7 +1104,6 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
                                                  bool include_inner,
                                                  INPAR::CUT::BCellGaussPts BCellgausstype)
 {
-
   //position is used to decide whether the ordering of points are in clockwise or not
   const GEO::CUT::Point::PointPosition posi = Position();
 

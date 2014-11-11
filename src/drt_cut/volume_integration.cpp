@@ -54,7 +54,7 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
       if(rhs_mom.InfNorm()>1e-5 && rhs_mom(0)<0.0)
         dserror("negaive volume in base function integration. is ordering of vertices right?");
     }
-    
+
   }
 
   /*double intee = rhs_mom(56)+rhs_mom(68)+rhs_mom(72)+rhs_mom(83);
@@ -707,29 +707,29 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
 void GEO::CUT::VolumeIntegration::OnLine(std::vector<double>inter1,std::vector<double>inter2,
                 std::vector<std::vector<double> >&linePts,int num)
 {
-	std::vector<double> left,right;
-	if(inter1[0]<inter2[0])
-	{
+  std::vector<double> left,right;
+  if(inter1[0]<inter2[0])
+  {
     left = inter1;
     right = inter2;
-	}
-	else
-	{
+  }
+  else
+  {
     left = inter2;
     right = inter1;
-	}
-	double xlen = right[0]-left[0];
-	inter1[0] = left[0]+0.05*xlen;
-	inter2[0] = right[0]-0.05*xlen;
-	double xdiff = (inter2[0]-inter1[0])/(num-1);
-	for(int i=0;i<num;i++)
-	{
+  }
+  double xlen = right[0]-left[0];
+  inter1[0] = left[0]+0.05*xlen;
+  inter2[0] = right[0]-0.05*xlen;
+  double xdiff = (inter2[0]-inter1[0])/(num-1);
+  for(int i=0;i<num;i++)
+  {
     std::vector<double> temp(3);
     temp[0] = inter1[0]+i*xdiff;
     temp[1] = inter1[1];
     temp[2] = inter1[2];
     linePts.push_back(temp);
-	}
+  }
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*
@@ -766,8 +766,8 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
   Epetra_SerialDenseVector weights;
   while(1)
   {
-    	gaus_pts_.clear();
-    	wei = compute_Gaussian_points(numeach);
+      gaus_pts_.clear();
+      wei = compute_Gaussian_points(numeach);
 
       if(wei)
       {
@@ -789,76 +789,76 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
           SixthOrderAdditionalTerms(moment_matrix,rhs_moment);
   #endif
 
-			//if all the elements in a row of the moment fitting matrix are zero, then the row has to be deleted
-			//this ensures non-zero diagonal elements in the matrix
+      //if all the elements in a row of the moment fitting matrix are zero, then the row has to be deleted
+      //this ensures non-zero diagonal elements in the matrix
       // REquires further checking
-			/*vector<int> deleteRowNos;
-			for(unsigned row=0;row<moment_matrix.size();row++)
-			{
-				bool deleteRow=true;
-				for(unsigned col=0;col!=moment_matrix[0].size();col++)
-				{
-					if(fabs(moment_matrix[row][col])>1e-8)
-					{
-						deleteRow = false;
-						break;
-					}
-				}
-				if(deleteRow==true)
-					deleteRowNos.push_back(row);
-			}
+      /*vector<int> deleteRowNos;
+      for(unsigned row=0;row<moment_matrix.size();row++)
+      {
+        bool deleteRow=true;
+        for(unsigned col=0;col!=moment_matrix[0].size();col++)
+        {
+          if(fabs(moment_matrix[row][col])>1e-8)
+          {
+            deleteRow = false;
+            break;
+          }
+        }
+        if(deleteRow==true)
+          deleteRowNos.push_back(row);
+      }
 
-			if(deleteRowNos.size()!=0)
-			{
-				for(unsigned row=0;row<deleteRowNos.size();row++)
-				{
-					int delno = deleteRowNos[row]-row;
-	//				std::cout<<delno<<"\n";
-					moment_matrix.erase(moment_matrix.begin()+delno);
-				}
-			}*/
+      if(deleteRowNos.size()!=0)
+      {
+        for(unsigned row=0;row<deleteRowNos.size();row++)
+        {
+          int delno = deleteRowNos[row]-row;
+  //        std::cout<<delno<<"\n";
+          moment_matrix.erase(moment_matrix.begin()+delno);
+        }
+      }*/
 
       LeastSquares least(moment_matrix,rhs_moment);
       weights.Size(moment_matrix[0].size());
       weights = least.linear_least_square();
-		}
-		else							//the considered volumecell has negligible volume and can be eliminated
-		{
-			gaus_pts_.clear();
-			std::vector<double> zer(3);
-			zer[0]=0.0;zer[1]=0.0;zer[2]=0.0;
-			gaus_pts_.push_back(zer);
-			weights.Size(1);
-			weights(0) = 0.0;
-			break;
-		}
+    }
+    else              //the considered volumecell has negligible volume and can be eliminated
+    {
+      gaus_pts_.clear();
+      std::vector<double> zer(3);
+      zer[0]=0.0;zer[1]=0.0;zer[2]=0.0;
+      gaus_pts_.push_back(zer);
+      weights.Size(1);
+      weights(0) = 0.0;
+      break;
+    }
 
-		Epetra_SerialDenseVector err(num_func_);
-		for(int i=0;i<num_func_;i++)
-		{
-			err(i) = 0.0;
-			for(unsigned j=0;j<gaus_pts_.size();j++)
-			{
-				err(i) += weights(j)*base_function(gaus_pts_[j],i+1);
-			}
-			if(fabs(rhs_moment(i))>1e-8)
-				err(i) = (err(i)-rhs_moment(i))/rhs_moment(i);
-			else
-				err(i) = err(i)-rhs_moment(i);
-		}
+    Epetra_SerialDenseVector err(num_func_);
+    for(int i=0;i<num_func_;i++)
+    {
+      err(i) = 0.0;
+      for(unsigned j=0;j<gaus_pts_.size();j++)
+      {
+        err(i) += weights(j)*base_function(gaus_pts_[j],i+1);
+      }
+      if(fabs(rhs_moment(i))>1e-8)
+        err(i) = (err(i)-rhs_moment(i))/rhs_moment(i);
+      else
+        err(i) = err(i)-rhs_moment(i);
+    }
 
 #if 0 //call the computation of error when integrating specific functions
-		ErrorForSpecificFunction(rhs_moment,weights,numeach);
+    ErrorForSpecificFunction(rhs_moment,weights,numeach);
 #endif
 
-		const double maxError = err.InfNorm();
+    const double maxError = err.InfNorm();
 #ifdef DEBUGCUTLIBRARY
-		std::cout<<"max error = "<<maxError<<"\n";
+    std::cout<<"max error = "<<maxError<<"\n";
 #endif
-		if(maxError<1e-10 || numeach==13)
-			break;
-		else
-			numeach++;
+    if(maxError<1e-10 || numeach==13)
+      break;
+    else
+      numeach++;
     break;
 
   }
@@ -877,125 +877,125 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 //Writes the Geometry of volumecell and location of Gauss points in GMSH format output file
 void GEO::CUT::VolumeIntegration::GaussPointGmsh()
 {
-  volcell_->DumpGmshGaussPoints(gaus_pts_);
+  volcell_->DumpGmshGaussPointsMomFit(gaus_pts_);
 }
 
 //compute integration of x+y,y+z and x+z values from the integration of x, y and z values
 void GEO::CUT::VolumeIntegration::FirstOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
 {
-	unsigned int i = mat.size(),kk=mat[0].size();
-	//no of additional elements is n(n+1)/2 where n=(no_of_monomials-1). Here no_of monomials=3=>(x,y,z)
-	rhs.Resize(i+3);
-	mat.resize(i+3,std::vector<double>(kk));
-	unsigned int ibegin=1,iend=3;//the row numbers that contain the first order terms in rhs
-	for(unsigned j=ibegin;j<=iend;j++)
-	{
-		for(unsigned k=j+1;k<=iend;k++)
-		{
-			rhs(i) = rhs(j)+rhs(k);
-			for(unsigned m=0;m<mat[0].size();m++)
-				mat[i][m] = mat[j][m]+mat[k][m];
-			i++;
-		}
-	}
+  unsigned int i = mat.size(),kk=mat[0].size();
+  //no of additional elements is n(n+1)/2 where n=(no_of_monomials-1). Here no_of monomials=3=>(x,y,z)
+  rhs.Resize(i+3);
+  mat.resize(i+3,std::vector<double>(kk));
+  unsigned int ibegin=1,iend=3;//the row numbers that contain the first order terms in rhs
+  for(unsigned j=ibegin;j<=iend;j++)
+  {
+    for(unsigned k=j+1;k<=iend;k++)
+    {
+      rhs(i) = rhs(j)+rhs(k);
+      for(unsigned m=0;m<mat[0].size();m++)
+        mat[i][m] = mat[j][m]+mat[k][m];
+      i++;
+    }
+  }
 }
 
 //integration of linear combination of second order terms like x^2+xy+y^2+yz
 void GEO::CUT::VolumeIntegration::SecondOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
 {
-	unsigned int i = mat.size(),kk=mat[0].size();
-	rhs.Resize(i+15);
-	mat.resize(i+15,std::vector<double>(kk));
-	unsigned int ibegin=4,iend=9;//the row numbers that contain the second order terms in rhs
-	for(unsigned j=ibegin;j<=iend;j++)
-	{
-		for(unsigned k=j+1;k<=iend;k++)
-		{
-			rhs(i) = rhs(j)+rhs(k);
-			for(unsigned m=0;m<mat[0].size();m++)
-				mat[i][m] = mat[j][m]+mat[k][m];
-			i++;
-		}
-	}
+  unsigned int i = mat.size(),kk=mat[0].size();
+  rhs.Resize(i+15);
+  mat.resize(i+15,std::vector<double>(kk));
+  unsigned int ibegin=4,iend=9;//the row numbers that contain the second order terms in rhs
+  for(unsigned j=ibegin;j<=iend;j++)
+  {
+    for(unsigned k=j+1;k<=iend;k++)
+    {
+      rhs(i) = rhs(j)+rhs(k);
+      for(unsigned m=0;m<mat[0].size();m++)
+        mat[i][m] = mat[j][m]+mat[k][m];
+      i++;
+    }
+  }
 }
 
 //integration of linear combination of third order terms x^3+xyz
 void GEO::CUT::VolumeIntegration::ThirdOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
 {
-	unsigned int i = mat.size(),kk=mat[0].size();
-	rhs.Resize(i+45);
-	mat.resize(i+45,std::vector<double>(kk));
-	unsigned int ibegin=10,iend=19;//the row numbers that contain the third order terms in rhs
-	for(unsigned j=ibegin;j<=iend;j++)
-	{
-		for(unsigned k=j+1;k<=iend;k++)
-		{
-			rhs(i) = rhs(j)+rhs(k);
-			for(unsigned m=0;m<mat[0].size();m++)
-				mat[i][m] = mat[j][m]+mat[k][m];
-			i++;
-		}
-	}
+  unsigned int i = mat.size(),kk=mat[0].size();
+  rhs.Resize(i+45);
+  mat.resize(i+45,std::vector<double>(kk));
+  unsigned int ibegin=10,iend=19;//the row numbers that contain the third order terms in rhs
+  for(unsigned j=ibegin;j<=iend;j++)
+  {
+    for(unsigned k=j+1;k<=iend;k++)
+    {
+      rhs(i) = rhs(j)+rhs(k);
+      for(unsigned m=0;m<mat[0].size();m++)
+        mat[i][m] = mat[j][m]+mat[k][m];
+      i++;
+    }
+  }
 }
 
 void GEO::CUT::VolumeIntegration::FourthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
 {
-	unsigned int i = mat.size(),kk=mat[0].size();
-	rhs.Resize(i+105);
-	mat.resize(i+105,std::vector<double>(kk));
-	unsigned int ibegin=20,iend=34;//the row numbers that contain the fourth order terms in rhs
-	for(unsigned j=ibegin;j<=iend;j++)
-	{
-		for(unsigned k=j+1;k<=iend;k++)
-		{
-			rhs(i) = rhs(j)+rhs(k);
-			for(unsigned m=0;m<mat[0].size();m++)
-				mat[i][m] = mat[j][m]+mat[k][m];
-			i++;
-		}
-	}
+  unsigned int i = mat.size(),kk=mat[0].size();
+  rhs.Resize(i+105);
+  mat.resize(i+105,std::vector<double>(kk));
+  unsigned int ibegin=20,iend=34;//the row numbers that contain the fourth order terms in rhs
+  for(unsigned j=ibegin;j<=iend;j++)
+  {
+    for(unsigned k=j+1;k<=iend;k++)
+    {
+      rhs(i) = rhs(j)+rhs(k);
+      for(unsigned m=0;m<mat[0].size();m++)
+        mat[i][m] = mat[j][m]+mat[k][m];
+      i++;
+    }
+  }
 }
 
 void GEO::CUT::VolumeIntegration::FifthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
 {
-	unsigned int i = mat.size(),kk=mat[0].size();
-	rhs.Resize(i+210);
-	mat.resize(i+210,std::vector<double>(kk));
-	unsigned int ibegin=35,iend=55;//the row numbers that contain the fifth order terms in rhs
-	for(unsigned j=ibegin;j<=iend;j++)
-	{
-		for(unsigned k=j+1;k<=iend;k++)
-		{
-			rhs(i) = rhs(j)+rhs(k);
-			for(unsigned m=0;m<mat[0].size();m++)
-				mat[i][m] = mat[j][m]+mat[k][m];
-			i++;
-		}
-	}
+  unsigned int i = mat.size(),kk=mat[0].size();
+  rhs.Resize(i+210);
+  mat.resize(i+210,std::vector<double>(kk));
+  unsigned int ibegin=35,iend=55;//the row numbers that contain the fifth order terms in rhs
+  for(unsigned j=ibegin;j<=iend;j++)
+  {
+    for(unsigned k=j+1;k<=iend;k++)
+    {
+      rhs(i) = rhs(j)+rhs(k);
+      for(unsigned m=0;m<mat[0].size();m++)
+        mat[i][m] = mat[j][m]+mat[k][m];
+      i++;
+    }
+  }
 }
 
 void GEO::CUT::VolumeIntegration::SixthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
 {
-	unsigned int i = mat.size(),kk=mat[0].size();
-	rhs.Resize(i+561);
-	mat.resize(i+561,std::vector<double>(kk));
-	unsigned int ibegin=56,iend=83;//the row numbers that contain the fifth order terms in rhs
-	for(unsigned j=ibegin;j<=iend;j++)
-	{
-		for(unsigned k=j+1;k<=iend;k++)
-		{
-			rhs(i) = rhs(j)+rhs(k);
-			for(unsigned m=0;m<mat[0].size();m++)
-				mat[i][m] = mat[j][m]+mat[k][m];
-			i++;
-		}
-	}
+  unsigned int i = mat.size(),kk=mat[0].size();
+  rhs.Resize(i+561);
+  mat.resize(i+561,std::vector<double>(kk));
+  unsigned int ibegin=56,iend=83;//the row numbers that contain the fifth order terms in rhs
+  for(unsigned j=ibegin;j<=iend;j++)
+  {
+    for(unsigned k=j+1;k<=iend;k++)
+    {
+      rhs(i) = rhs(j)+rhs(k);
+      for(unsigned m=0;m<mat[0].size();m++)
+        mat[i][m] = mat[j][m]+mat[k][m];
+      i++;
+    }
+  }
 }
 
 /*  Computes the error introduced by the generated integration rule for integrating some specific functions
     Used only in post-processing    */
 void GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(Epetra_SerialDenseVector rhs_moment,
-		Epetra_SerialDenseVector weights,int numeach)
+    Epetra_SerialDenseVector weights,int numeach)
 {
   static std::vector<int> gausSize;
   gausSize.push_back(gaus_pts_.size());
@@ -1004,12 +1004,12 @@ void GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(Epetra_SerialDenseVec
 
   double chek = 0.0,val=0.0;
   /*for(unsigned i=0;i<gaus_pts_.size();i++)
-	{
+  {
     double xx = gaus_pts_[i][0];
     double yy = gaus_pts_[i][1];
     double zz = gaus_pts_[i][2];
     chek += (pow(xx,6)+xx*pow(yy,4)*zz+xx*xx*yy*yy*zz*zz+pow(zz,6))*weights(i);
-	}
+  }
   std::cout<<"MOMENT FITTING :: Integral value = "<<chek<<"\n";*/
 
   chek = 0.0;
@@ -1021,59 +1021,59 @@ void GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(Epetra_SerialDenseVec
   error[0] = (val-chek)/val;
 
   chek = 0.0;
-	for(unsigned i=0;i<gaus_pts_.size();i++)
-	{
-	  chek += 2*weights(i)*gaus_pts_[i][0]+3*weights(i)*gaus_pts_[i][1]+5*weights(i)*gaus_pts_[i][2];
-	}
-	val = 2*rhs_moment(1)+3*rhs_moment(2)+5*rhs_moment(3);
-	error[1] = (val-chek)/val;
+  for(unsigned i=0;i<gaus_pts_.size();i++)
+  {
+    chek += 2*weights(i)*gaus_pts_[i][0]+3*weights(i)*gaus_pts_[i][1]+5*weights(i)*gaus_pts_[i][2];
+  }
+  val = 2*rhs_moment(1)+3*rhs_moment(2)+5*rhs_moment(3);
+  error[1] = (val-chek)/val;
 
   chek = 0.0;
-	for(unsigned i=0;i<gaus_pts_.size();i++)
-	{
-	  chek += weights(i)*(gaus_pts_[i][0]*gaus_pts_[i][0]-gaus_pts_[i][0]*gaus_pts_[i][1]+gaus_pts_[i][1]*gaus_pts_[i][2]+
-				 gaus_pts_[i][2]*gaus_pts_[i][2]);
-	}
-	val = rhs_moment(4)-rhs_moment(5)+rhs_moment(8)+rhs_moment(9);
-	error[2] = (val-chek)/val;
+  for(unsigned i=0;i<gaus_pts_.size();i++)
+  {
+    chek += weights(i)*(gaus_pts_[i][0]*gaus_pts_[i][0]-gaus_pts_[i][0]*gaus_pts_[i][1]+gaus_pts_[i][1]*gaus_pts_[i][2]+
+         gaus_pts_[i][2]*gaus_pts_[i][2]);
+  }
+  val = rhs_moment(4)-rhs_moment(5)+rhs_moment(8)+rhs_moment(9);
+  error[2] = (val-chek)/val;
 
-	chek = 0.0;
-	for(unsigned i=0;i<gaus_pts_.size();i++)
-	{
-		 chek += weights(i)*(pow(gaus_pts_[i][0],3)+gaus_pts_[i][0]*gaus_pts_[i][1]*gaus_pts_[i][2]+pow(gaus_pts_[i][1],3));
-	}
-	val = rhs_moment(10)+rhs_moment(14)+rhs_moment(16);
-	error[3] = (val-chek)/val;
+  chek = 0.0;
+  for(unsigned i=0;i<gaus_pts_.size();i++)
+  {
+     chek += weights(i)*(pow(gaus_pts_[i][0],3)+gaus_pts_[i][0]*gaus_pts_[i][1]*gaus_pts_[i][2]+pow(gaus_pts_[i][1],3));
+  }
+  val = rhs_moment(10)+rhs_moment(14)+rhs_moment(16);
+  error[3] = (val-chek)/val;
 
-	chek = 0.0;
-	for(unsigned i=0;i<gaus_pts_.size();i++)
-	{
-		 chek += weights(i)*(pow(gaus_pts_[i][0],4)-7*gaus_pts_[i][0]*gaus_pts_[i][1]*gaus_pts_[i][1]+pow(gaus_pts_[i][2],3));
-	}
-	val = rhs_moment(20)-7*rhs_moment(13)+rhs_moment(19);
-	error[4] = (val-chek)/val;
+  chek = 0.0;
+  for(unsigned i=0;i<gaus_pts_.size();i++)
+  {
+     chek += weights(i)*(pow(gaus_pts_[i][0],4)-7*gaus_pts_[i][0]*gaus_pts_[i][1]*gaus_pts_[i][1]+pow(gaus_pts_[i][2],3));
+  }
+  val = rhs_moment(20)-7*rhs_moment(13)+rhs_moment(19);
+  error[4] = (val-chek)/val;
 
-	chek = 0.0;
-	for(unsigned i=0;i<gaus_pts_.size();i++)
-	{
-		 chek += weights(i)*(pow(gaus_pts_[i][1],5)+gaus_pts_[i][0]*pow(gaus_pts_[i][2],4)+pow(gaus_pts_[i][2],5));
-	}
-	val = rhs_moment(50)+rhs_moment(49)+rhs_moment(55);
-	error[5] = (val-chek)/val;
+  chek = 0.0;
+  for(unsigned i=0;i<gaus_pts_.size();i++)
+  {
+     chek += weights(i)*(pow(gaus_pts_[i][1],5)+gaus_pts_[i][0]*pow(gaus_pts_[i][2],4)+pow(gaus_pts_[i][2],5));
+  }
+  val = rhs_moment(50)+rhs_moment(49)+rhs_moment(55);
+  error[5] = (val-chek)/val;
 
-	chek = 0.0;
-	for(unsigned i=0;i<gaus_pts_.size();i++)
-	{
-		 chek += weights(i)*(pow(gaus_pts_[i][0],6)+pow(gaus_pts_[i][1],6)+pow(gaus_pts_[i][2],6)+pow(gaus_pts_[i][0],2)*pow(gaus_pts_[i][1],2)
-				 *pow(gaus_pts_[i][2],2)+gaus_pts_[i][0]*pow(gaus_pts_[i][1],5));
-	}
-	val = rhs_moment(56)+rhs_moment(77)+rhs_moment(83)+rhs_moment(68)+rhs_moment(71);
-	error[6] = (val-chek)/val;
+  chek = 0.0;
+  for(unsigned i=0;i<gaus_pts_.size();i++)
+  {
+     chek += weights(i)*(pow(gaus_pts_[i][0],6)+pow(gaus_pts_[i][1],6)+pow(gaus_pts_[i][2],6)+pow(gaus_pts_[i][0],2)*pow(gaus_pts_[i][1],2)
+         *pow(gaus_pts_[i][2],2)+gaus_pts_[i][0]*pow(gaus_pts_[i][1],5));
+  }
+  val = rhs_moment(56)+rhs_moment(77)+rhs_moment(83)+rhs_moment(68)+rhs_moment(71);
+  error[6] = (val-chek)/val;
 
-	errAccu.push_back(error);
+  errAccu.push_back(error);
 
-	if(numeach==18)
-	{
+  if(numeach==18)
+  {
     std::string filename="wrong";
     std::ofstream file;
 
@@ -1090,7 +1090,7 @@ void GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(Epetra_SerialDenseVec
       file<<"\n";
     }
     file.close();
-	}
+  }
 
 }
 
