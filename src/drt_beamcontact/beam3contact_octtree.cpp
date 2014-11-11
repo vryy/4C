@@ -2283,153 +2283,43 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, Teuc
   }
   else  // standard procedure without periodic boundary conditions
   {
-    // first points and directional vectors of the bounding boxes
-    LINALG::Matrix<3,1> v;
-    LINALG::Matrix<3,1> w;
-    // angle between the bounding boxes
-    double alpha = 0.0;
-    for(int k=0; k<(int)v.M(); k++) // first BB
-      v(k) = (*allbboxes_)[k+3][bboxid0]-(*allbboxes_)[k][bboxid0];
-    if(bboxlimits!=Teuchos::null) //second BB
+    LINALG::TMatrix<double,3,1> t1(true);
+    LINALG::TMatrix<double,3,1> t2(true);
+    LINALG::TMatrix<double,3,1> r1_a;
+    LINALG::TMatrix<double,3,1> r1_b;
+    LINALG::TMatrix<double,3,1> r2_a;
+    LINALG::TMatrix<double,3,1> r2_b;
+    //Distance at which intersection happens
+    double distancelimit = (bbox0diameter+bbox1diameter)/2.0;
+
+    for(int i=0; i<(int)r1_a.M(); i++)
     {
-      for(int k=0; k<(int)v.M(); k++)
-        w(k) = (*bboxlimits)(k+3,0)-(*bboxlimits)(k,0);
-    }
-    else
-    {
-      for(int k=0; k<(int)v.M(); k++)
-        w(k) = (*allbboxes_)[k+3][bboxid1]-(*allbboxes_)[k][bboxid1];
+      r1_a(i) = (*allbboxes_)[i][bboxid0];
+      r1_b(i) = (*allbboxes_)[i+3][bboxid0];
+      r2_a(i) = (*allbboxes_)[i][bboxid1];
+      r2_b(i) = (*allbboxes_)[i+3][bboxid1];
     }
 
-    if(fabs(v.Dot(w))/(v.Norm2()*w.Norm2()) > 1.0 - 1.0e-12)
-      alpha = 0;
-    else
-      alpha = acos(fabs(v.Dot(w))/(v.Norm2()*w.Norm2()));
+    t1 = BEAMCONTACT::DiffVector(r1_b,r1_a);
+    t2 = BEAMCONTACT::DiffVector(r2_b,r2_a);
+    double angle = BEAMCONTACT::CalcAngle(t1,t2);
 
     // non-parallel case
-    if(alpha>1e-10)
+    if(angle>ANGLETOL)
     {
-      LINALG::Matrix<3,1> x;
-      LINALG::Matrix<3,1> y;
-
-      for(int k=0; k<(int)v.M(); k++)
-        x(k) = (*allbboxes_)[k][bboxid0];
-      if(bboxlimits!=Teuchos::null)
-      {
-        for(int k=0; k<(int)v.M(); k++)
-          y(k) = (*bboxlimits)(k,0);
-      }
-      else
-      {
-        for(int k=0; k<(int)v.M(); k++)
-          y(k) = (*allbboxes_)[k][bboxid1];
-      }
-
-      //note: d = abs(dot(y-x,n))
-      LINALG::Matrix<3,1> yminusx = y;
-      yminusx -= x;
-
-      // binormal vector
-      LINALG::Matrix<3,1> n;
-      n(0) = v(1)*w(2)-v(2)*w(1);
-      n(1) = v(2)*w(0)-v(0)*w(2);
-      n(2) = v(0)*w(1)-v(1)*w(0);
-      n.Scale(1.0/n.Norm2());
-
-      int index0 = 1;
-      int index1 = 2;
-      for(int k=0; k<(int)n.M(); k++)
-      {
-        if(n(k)>1e-12)
-          break;
-        else
-          index0 = (k+1)%3;
-      }
-      index1 = (index0+1)%3;
-
-      // 1. distance criterium
-      double d = yminusx.Dot(n);
-
-      if (fabs(d)<=(bbox0diameter+bbox1diameter)/2.0)
-      {
-        // 2. Do the two bounding boxes actually intersect?
-        double lbb0 = v.Norm2();
-        double lbb1 = w.Norm2();
-        v.Scale(1.0/lbb0);
-        w.Scale(1.0/lbb1);
-        // shifting the point on the second line by d*n facilitates the calculation of the mu and lambda (segment lengths)
-        for(int k=0; k<(int)y.M(); k++)
-          y(k) = y(k) - d * n(k);
-        // line-wise check of the segment lengths
-        double mu = (v(index1)*(y(index0)-x(index0))-v(index0)*(y(index1)-x(index1)))/(v(index0)*w(index1)-v(index1)*w(index0));
-        if(mu>=0 && mu<=lbb0)
-        {
-          double lambda = (y(index0)-x(index0)+w(index0)*mu)/v(index0);
-          if(lambda>=0 && lambda<=lbb1)
-            intersection = true;
-        }
-      }
+      std::pair<double,double> closestpoints(std::make_pair(0.0,0.0));
+      bool etaset=false;
+      intersection = BEAMCONTACT::IntersectArbitraryCylinders(r1_a,r1_b,r2_a,r2_b,distancelimit,closestpoints,etaset);
+      if(intersection)
+        std::cout<<"===============WindSchief: gefunden!"<<std::endl;
     }
     else // parallel case
     {
-      LINALG::Matrix<3,1> x;
-      LINALG::Matrix<3,1> v;
-      LINALG::Matrix<3,1> yminusx;
-      for(int k=0; k<(int)x.M();k++)
-      {
-        x(k) = (*allbboxes_)[k][bboxid0];
-        v(k) = (*allbboxes_)[k+3][bboxid0]-x(k);
-      }
-      if(bboxlimits!=Teuchos::null)
-      {
-        for(int k=0; k<(int)x.M();k++)
-          yminusx(k) = (*bboxlimits)(k,0)-x(k);
-      }
-      else
-      {
-        for(int k=0; k<(int)x.M();k++)
-          yminusx(k) = (*allbboxes_)[k][bboxid1]-x(k);
-      }
-      double phi = 0.0;
-          if(fabs(v.Dot(yminusx)/(v.Norm2()*yminusx.Norm2())) > 1.0 - 1.0e-12)
-            phi = 0.0;
-          else
-            phi = acos(fabs(v.Dot(yminusx)/(v.Norm2()*yminusx.Norm2())));
-
-      double d = yminusx.Norm2()*sin(phi);
-      if(fabs(d)<(bbox0diameter+bbox1diameter)/2.0)
-      {
-        // distance between first point of first BB and second point of second BB
-        double d2 = 0.0;
-        // length of first and second BB
-        double l0 = v.Norm2();
-        double l1 = 0.0;
-        if(bboxlimits!=Teuchos::null)
-        {
-          for(int k=0; k<(int)x.M(); k++)
-          {
-            d2 += ((*bboxlimits)(k,0) - x(k))*((*bboxlimits)(k,0) - x(k));
-            l1 += ((*bboxlimits)(k+3,0) - (*bboxlimits)(k,0))*((*bboxlimits)(k+3,0) - (*bboxlimits)(k,0));
-          }
-        }
-        else
-        {
-          for(int k=0; k<(int)x.M(); k++)
-          {
-            d2 += ((*allbboxes_)[k+3][bboxid1] - x(k))*((*allbboxes_)[k+3][bboxid1] - x(k));
-            l1 += ((*allbboxes_)[k+3][bboxid1] - (*allbboxes_)[k][bboxid1])*((*allbboxes_)[k+3][bboxid1] - (*allbboxes_)[k][bboxid1]);
-          }
-        }
-        d2 = sqrt(d2);
-        l1 = sqrt(l1);
-        if(d2<=l0+l1)
-        {
-          intersection = true;
-        }
-      }
+      intersection = BEAMCONTACT::IntersectParallelCylinders(r1_a,r1_b,r2_a,r2_b,distancelimit);
+      if(intersection)
+        std::cout<<"===============Parallel: gefunden!"<<std::endl;
     }
   }
-
   return intersection;
 }
 
