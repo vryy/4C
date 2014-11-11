@@ -407,7 +407,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeVoidFraction(
 //                       INTEGRATION LOOP
 //------------------------------------------------------------------
   DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
-  if (nsd_ == 3)
+  if (nsd_ == 3 && distype == DRT::Element::hex8)
   {
     const int gp_per_dir = params.get<int>("gp_per_dir");
     switch(gp_per_dir)
@@ -430,14 +430,30 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeVoidFraction(
     case 6:
       gaussrule = DRT::UTILS::intrule_hex_216point;
     break;
-    case 7:
-      gaussrule = DRT::UTILS::intrule_hex_343point;
+    }
+  }
+  else if (nsd_ == 3 && distype == DRT::Element::tet4)
+  {
+    const int gp_per_dir = params.get<int>("gp_per_dir");
+    switch(gp_per_dir)
+    {
+    case 1:
+      gaussrule = DRT::UTILS::intrule_tet_1point;
     break;
-    case 8:
-      gaussrule = DRT::UTILS::intrule_hex_512point;
+    case 2:
+      gaussrule = DRT::UTILS::intrule_tet_4point;
     break;
-    case 9:
-      gaussrule = DRT::UTILS::intrule_hex_729point;
+    case 3:
+      gaussrule = DRT::UTILS::intrule_tet_5point;
+    break;
+    case 4:
+      gaussrule = DRT::UTILS::intrule_tet_11point;
+    break;
+    case 5:
+      gaussrule = DRT::UTILS::intrule_tet_24point;
+    break;
+    case 6:
+      gaussrule = DRT::UTILS::intrule_tet_45point;
     break;
     }
   }

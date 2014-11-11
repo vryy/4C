@@ -18,6 +18,7 @@ Maintainer: Georg Hammerl
 #include "cavitation_algorithm.H"
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_adapter/ad_fld_fluid.H"
+#include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 #include "../drt_lib/drt_discret.H"
@@ -113,7 +114,7 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
       DRT::Node* currparticle = particles[iparticle];
 
       // fill particle position
-      LINALG::Matrix<3,1> particleposition;
+      LINALG::Matrix<3,1> particleposition(false);
       std::vector<int> lm_b = particledis_->Dof(currparticle);
       // convert dof of particle into correct local id in this Epetra_Vector
       int posx = bubblepos->Map().LID(lm_b[0]);
@@ -124,7 +125,7 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
       }
 
       // get particle radius and influence of bubble
-      double r_p = (*particleradius)[ particleradius->Map().LID(currparticle->Id()) ];
+      const double r_p = (*particleradius)[ particleradius->Map().LID(currparticle->Id()) ];
       double influence = scale*r_p;
 
       // bubble volume which is assigned to fluid elements
@@ -265,7 +266,7 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
   void_volumes->ReciprocalMultiply(1.0, *ele_volume_, *void_volumes, 0.0);
 
   // apply void fraction to fluid
-  fluid_->SetVoidVolume(void_volumes);
+  Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_)->SetVoidVolume(void_volumes);
 
   return;
 }

@@ -220,9 +220,6 @@ namespace ADAPTER {
     /// set initial flow field
     virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno) = 0;
 
-    /// set void fraction for cavitation problems
-    virtual void SetVoidVolume(Teuchos::RCP<Epetra_MultiVector> voidvolume) = 0;
-
     /// apply external forces to the fluid
     virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) = 0;
 

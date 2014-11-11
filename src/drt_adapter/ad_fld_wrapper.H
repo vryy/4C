@@ -91,8 +91,6 @@ public:
   { return fluid_->SetInitialFlowField(initfield, startfuncno); }
   virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno)
   { return fluid_->SetInitialPorosityField(initfield, startfuncno); };
-  virtual void SetVoidVolume(Teuchos::RCP<Epetra_MultiVector> voidvolume)
-  { return fluid_->SetVoidVolume(voidvolume); } ;
   virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext)
   { return fluid_->ApplyExternalForces(fext); };
   virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
