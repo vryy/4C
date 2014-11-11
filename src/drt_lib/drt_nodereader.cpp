@@ -374,7 +374,8 @@ void NodeReader::Read()
   for (size_t i=0; i<dreader_.size(); ++i)
   {
     // communicate node offset to all procs
-    comm_->MaxAll(&maxnodeid, &maxnodeid, 1);
+    int lmaxnodeid = maxnodeid;
+    comm_->MaxAll(&lmaxnodeid, &maxnodeid, 1);
     dreader_[i]->Partition(&maxnodeid);
     maxnodeid++;
   }
@@ -384,7 +385,8 @@ void NodeReader::Read()
     dreader_[i]->Complete();
   }
 
-  comm_->MaxAll(&maxnodeid, &maxnodeid, 1);
+  int lmaxnodeid = maxnodeid;
+  comm_->MaxAll(&lmaxnodeid, &maxnodeid, 1);
   if( (maxnodeid < numproc) && (numnodes != 0) )
     dserror("Bad idea: Simulation with %d procs for problem with %d nodes", numproc, maxnodeid);
 

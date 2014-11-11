@@ -1564,7 +1564,8 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
 
   // since it is possible that the nonlinear solution fails only on some procs
   // we need to communicate the error
-  Discretization()->Comm().MaxAll(&nonlin_error, &nonlin_error, 1);
+  int lnonlin_error = nonlin_error;
+  Discretization()->Comm().MaxAll(&lnonlin_error, &nonlin_error, 1);
 
   INPAR::STR::ConvergenceStatus status = static_cast<INPAR::STR::ConvergenceStatus>(nonlin_error);
 
