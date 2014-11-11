@@ -58,7 +58,7 @@ ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 LINEAR_SOLVER                   1
-GMSH_OUTPUT                     yes
+GMSH_OUTPUT                     no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION

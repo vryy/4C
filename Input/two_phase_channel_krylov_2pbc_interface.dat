@@ -115,7 +115,7 @@ CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-14
 UPRES                           1
-GMSH_OUTPUT                     yes
+GMSH_OUTPUT                     no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

@@ -35,12 +35,12 @@ RESTARTEVRY                     10
 START_THETA                     1.0
 THETA                           1.0
 TIMEINTEGR                      Af_Gen_Alpha
-ALPHA_F   1.0
-ALPHA_M   1.0
-GAMMA   0.5
+ALPHA_F                         1.0
+ALPHA_M                         1.0
+GAMMA                           0.5
 TIMESTEP                        3.0e-4
-UPRES                           1
-GMSH_OUTPUT                     yes
+UPRES                           5
+GMSH_OUTPUT                     no
 NONLINEARBC                     no
 ----------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 GRAD_DIV                        yes

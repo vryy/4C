@@ -36,7 +36,7 @@ NUMSTEP                         8
 RESTARTEVRY                     10
 TIMESTEP                        0.05
 UPRES                           1
-INTERFACE_THICKNESS  0.0
+INTERFACE_THICKNESS             0.0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 ADAPTCONV                       yes
@@ -109,8 +109,6 @@ EXPLPREDICT   no //sonst Probleme
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 DEFINITION_TAU                  Taylor_Hughes_Zarins
-----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK

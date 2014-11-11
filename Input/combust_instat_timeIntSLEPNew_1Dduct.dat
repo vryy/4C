@@ -87,7 +87,7 @@ PREDICTOR                       steady_state
 MAXTIME                         0.36
 NUMSTEP                         18
 TIMESTEP                        0.02
-GMSH_OUTPUT                     yes
+GMSH_OUTPUT                     no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 TDS                             quasistatic
