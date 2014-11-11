@@ -86,7 +86,7 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  Yes
+GMSH_DEBUG_OUT                  No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR

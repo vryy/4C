@@ -132,7 +132,7 @@ EXPLPREDICT no //sonst Probleme
 STABTYPE                        SUPG
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  Yes
+GMSH_DEBUG_OUT                  No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK

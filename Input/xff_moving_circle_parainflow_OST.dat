@@ -117,7 +117,7 @@ COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTa
 COUPLING_STRATEGY               xfluid_sided_coupling
 XFF_CONV_STAB_SCALING           none
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  Yes
+GMSH_DEBUG_OUT                  No
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
 -------------------------------------------------------------------MATERIALS

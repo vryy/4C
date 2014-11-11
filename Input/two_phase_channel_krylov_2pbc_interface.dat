@@ -96,7 +96,7 @@ SUGRVEL                         No
 --------------------------------------------------------------------SOLVER 9
 SOLVER                          Aztec_MSR
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  yes
+GMSH_DEBUG_OUT                  no
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 PHYSICAL_TYPE                   Incompressible

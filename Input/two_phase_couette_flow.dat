@@ -115,7 +115,7 @@ XFEMTIMEINT_ENR                 QuasiStatic
 REFINEMENT                      yes
 REFINEMENTLEVEL                 1
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  yes
+GMSH_DEBUG_OUT                  no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK

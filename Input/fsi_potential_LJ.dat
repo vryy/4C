@@ -178,7 +178,7 @@ THETA                           0.5
 -----------------------------------------------------------------SEARCH TREE
 TREE_TYPE                       quadtree2d
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  Yes
+GMSH_DEBUG_OUT                  No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 AZBDIAG                         0

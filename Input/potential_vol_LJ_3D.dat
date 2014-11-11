@@ -79,7 +79,7 @@ THETA                           0.5
 -----------------------------------------------------------------SEARCH TREE
 TREE_TYPE                       octree3d
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  Yes
+GMSH_DEBUG_OUT                  No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 AZBDIAG                         0
