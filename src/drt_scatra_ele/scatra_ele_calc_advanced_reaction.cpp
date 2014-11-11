@@ -736,7 +736,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
 
   LINALG::Matrix<my::nen_,1> functint = my::funct_;
   if (not my::scatrapara_->MatGP())
-    functint = my::funct_elementcenter_;
+    functint = funct_elementcenter_;
 
   for (int j=0; j<my::numscal_ ;j++)
   {
@@ -921,6 +921,22 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::SetAdvancedReactionTerms(
   }
 
 }
+
+/*----------------------------------------------------------------------*
+ | evaluate shape functions and derivatives at ele. center   jhoer 11/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+const double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::EvalShapeFuncAndDerivsAtEleCenter()
+{
+  const double vol = my::EvalShapeFuncAndDerivsAtEleCenter();
+
+  //shape function at element center
+  funct_elementcenter_ = my::funct_;
+
+  return vol;
+
+} //ScaTraImpl::EvalShapeFuncAndDerivsAtEleCenter
+
 
 // template classes
 

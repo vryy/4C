@@ -230,11 +230,15 @@ protected:
       const double                            scale=1.0
   );
 
+  //! evaluate shape functions and their derivatives at element center
+  virtual const double EvalShapeFuncAndDerivsAtEleCenter();
+
   int numcond_;                              //!< number of homogenous scatra coupling conditions
   std::vector<std::vector<int> > stoich_;    //!< vector containing the stoichometrie
   std::vector<double> reaccoeff_;             //!< constant by which the reaction coefficient is multiplied
   std::vector<MAT::PAR::reaction_coupling> couplingtype_;///how to calculate the different couplings
   std::vector<double> reacstart_;             //!< constant by which the reaction starts
+  LINALG::Matrix<my::nen_,1> funct_elementcenter_; //! array for shape function at element center
 
 }; //end ScaTraEleCalcAdvReac
 
