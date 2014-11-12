@@ -14,6 +14,7 @@ Maintainer: Michael Gee
 
 #include "drt_dserror.H"
 #include <mpi.h>
+#include <string.h>
 
 #ifdef THROWELEMENTERRORS
 
