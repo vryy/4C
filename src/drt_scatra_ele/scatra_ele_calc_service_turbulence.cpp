@@ -1623,7 +1623,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
     // special case (computation of fine-scale subgrid diffusivity for non-incremental
     // solver -> only artificial subgrid diffusivity) not considered here
     Epetra_SerialDenseVector  elevec1_epetra_subgrdiff_dummy;
-    if (scatrapara_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp,diffmanager_->GetIsotropicDiff(0),convelint);
+    if (scatrapara_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp,diffmanager_->GetIsotropicDiff(0),scatravarmanager_->ConVel());
 
     // calculation of stabilization parameter at element center
     CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp,convelint,vol);
@@ -1680,22 +1680,17 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
     if (scatrapara_->MatGP())
       GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
 
+    SetInternalVariablesForMatAndRHS();
+
     // get velocity at integration point
-    LINALG::Matrix<nsd_,1> velint(true);
-    LINALG::Matrix<nsd_,1> convelint(true);
-    velint.Multiply(evelnp_,funct_);
-    convelint.Multiply(econvelnp_,funct_);
+    const LINALG::Matrix<nsd_,1>& convelint = scatravarmanager_->ConVel();
 
     // scalar at integration point at time step n+1
-    const double phinp = funct_.Dot(ephinp_[0]);
+    const double& phinp = scatravarmanager_->Phinp(0);
 
     // gradient of current scalar value at integration point
     LINALG::Matrix<nsd_,1> gradphi(true);
     gradphi.Multiply(derxy_,ephinp_[0]);
-
-    // convective term using current scalar value
-    double conv_phi(0.0);
-    conv_phi = convelint.Dot(gradphi);
 
     // diffusive part used in stabilization terms
     double diff_phi(0.0);
@@ -1721,10 +1716,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
     LINALG::Matrix<nsd_,1> fsgradphi(true);
     if (scatrapara_->FSSGD())
       fsgradphi.Multiply(derxy_,fsphinp_[0]);
-
-    // get history data (or acceleration)
-    double hist(0.0);
-    hist = funct_.Dot(ehist_[0]);
 
     double rhsint(0.0);
     GetRhsInt(rhsint,densnp,0);
@@ -1770,7 +1761,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
       // special case (computation of fine-scale subgrid diffusivity for non-incremental
       // solver -> only artificial subgrid diffusivity) not considered here
       Epetra_SerialDenseVector  elevec1_epetra_subgrdiff_dummy;
-      if (scatrapara_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp,diffmanager_->GetIsotropicDiff(0),convelint);
+      if (scatrapara_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp,diffmanager_->GetIsotropicDiff(0),scatravarmanager_->ConVel());
 
       // calculation of subgrid-scale velocity at integration point if required
       if (scatrapara_->RBSubGrVel())
@@ -1829,7 +1820,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
 
     // compute residual of scalar transport equation and
     // subgrid-scale part of scalar
-    CalcResidualAndSubgrScalar(0,scatrares,sgphi,densam,densnp,phinp,hist,conv_phi,diff_phi,rea_phi,rhsint,tau[0]);
+    CalcResidualAndSubgrScalar(0,scatrares,sgphi,densam,densnp,scatravarmanager_,diff_phi,rea_phi,rhsint,tau[0]);
 
     // not supported anymore
     // update material parameters based on inclusion of subgrid-scale

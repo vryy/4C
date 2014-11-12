@@ -358,8 +358,8 @@ class ScaTraEleInternalVariableManagerElchNP : public ScaTraEleInternalVariableM
 
     typedef ScaTraEleInternalVariableManagerElch<NSD,NEN> vm;
 
-    ScaTraEleInternalVariableManagerElchNP(int numscal, int nsd, DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
-      ScaTraEleInternalVariableManagerElch<NSD,NEN>(numscal,nsd,elchpara),
+    ScaTraEleInternalVariableManagerElchNP(int numscal, DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
+      ScaTraEleInternalVariableManagerElch<NSD,NEN>(numscal,elchpara),
       // constant internal variables
       // empty
 

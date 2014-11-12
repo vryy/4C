@@ -35,6 +35,7 @@ protected:
 private:
 
   typedef ScaTraEleCalc<distype> my;
+  typedef ScaTraEleInternalVariableManager <my::nsd_,my::nen_>  varmanager;
 
 public:
   virtual ~ScaTraEleCalcAdvReac() {}
@@ -204,7 +205,6 @@ protected:
     const MAT::PAR::reaction_coupling  couplingtype    //!<type of coupling the stoichometry coefficients
     );
 
-
   //! calculation of reactive element matrix
   virtual void CalcMatReact(
     Epetra_SerialDenseMatrix&          emat,        //!< element matrix to be filled
@@ -213,9 +213,8 @@ protected:
     const double                       timetaufac,  //!< domain-integration factor times time-integration factor times tau
     const double                       taufac,      //!< domain-integration factor times tau
     const double                       densnp,      //!< density at time_(n+1)
-    const double                       phinp,       //!< scalar at time_(n+1)
+    Teuchos::RCP< varmanager >         varmanager,  //!< variable manager
     Teuchos::RCP<ScaTraEleReaManager>  reamanager,  //!< reaction manager
-    const LINALG::Matrix<my::nen_,1>&      conv,        //!< convective operator
     const LINALG::Matrix<my::nen_,1>&      sgconv,      //!< subgrid-scale convective operator
     const LINALG::Matrix<my::nen_,1>&      diff         //!< laplace term
   );

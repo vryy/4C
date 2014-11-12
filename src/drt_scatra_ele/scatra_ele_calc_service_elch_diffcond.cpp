@@ -202,7 +202,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectRHSFromCalcRHSLin
 
   // fac->-fac to change sign of rhs
   if (my::scatraparatimint_->IsIncremental())
-     my::CalcRHSLinMass(erhs,k,0.0,-fac,0.0,dmedc->GetPhasePoro(0),phinp,0.0);
+     my::CalcRHSLinMass(erhs,k,0.0,-fac,0.0,dmedc->GetPhasePoro(0),myelch::varmanager_);
   else
     dserror("Must be incremental!");
 

@@ -40,7 +40,8 @@ DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofper
   elchpara_ = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(my::scatrapara_);
 
   // initialize internal variable manager
-  varmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElch<my::nsd_, my::nen_>(my::numscal_,my::nsd_,elchpara_));
+  varmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElch<my::nsd_, my::nen_>(my::numscal_,elchpara_));
+  my::scatravarmanager_ = varmanager_;
 
   if(not my::scatraparatimint_->IsIncremental())
     dserror("Since the ion-transport equations are non-linear, it can be solved only incrementally!!");
@@ -188,7 +189,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
   if (not my::scatrapara_->TauGP())
   {
     // set internal variables at element center
-    varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,epotnp_,my::econvelnp_);
+    varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,my::ephin_,epotnp_,my::econvelnp_,my::ehist_);
 
     PrepareStabilization(tau,tauderpot,varmanager_,dme,densnp,vol);
   }
@@ -209,9 +210,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
     if (my::scatrapara_->MatGP())
       this->GetMaterialParams(ele,densn,densnp,densam,dme,my::reamanager_,visc,iquad);
 
-    // set internal variables at Gauss point
-    varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,epotnp_,my::econvelnp_);
-    SetFormulationSpecificInternalVariables(dme,varmanager_);
+    SetInternalVariablesForMatAndRHS();
 
     //-------------------------------------------------------------------------------------
     // calculate stabilization parameters (one per transported scalar) at integration point
@@ -429,6 +428,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcRhsPotEquENC(
   return;
 }
 
+/*------------------------------------------------------------------------------*
+ | set internal variables                                          vuong 11/14  |
+ *------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::SetInternalVariablesForMatAndRHS()
+{
+  // set internal variables at Gauss point
+  varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,my::ephin_,epotnp_,my::econvelnp_,my::ehist_);
+
+  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
+  SetFormulationSpecificInternalVariables(dme,varmanager_);
+  return;
+}
 
 // template classes
 

@@ -162,9 +162,11 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype>::CalcRHSDiff(
   const int                                k,
   const double                             rhsfac,
   Teuchos::RCP<ScaTraEleDiffManager>       diffmanager,
-  const LINALG::Matrix<my::nsd_,1>&        gradphi
+  Teuchos::RCP< varmanager >               varmanager
   )
 {
+  const LINALG::Matrix<my::nsd_,1>&        gradphi = varmanager->GradPhi(k);
+
   // dynamic cast to anisotropic diffusion manager
   Teuchos::RCP<ScaTraEleDiffManagerAniso<my::nsd_> > diffmanageraniso = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerAniso<my::nsd_> >(diffmanager);
 

@@ -268,7 +268,7 @@ protected:
     Epetra_SerialDenseVector&         sigma       //!< conductivity of all single ions + overall electrolyte solution
   ){return;};
 
-  // Solving for electric potential field : Calculate Matrix and Rhs
+  //! Solving for electric potential field : Calculate Matrix and Rhs
   virtual void CalcMatAndRhsElectricPotentialField(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
     const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
@@ -277,6 +277,9 @@ protected:
     const double                      fac,        //!< integration factor
     Teuchos::RCP<ScaTraEleDiffManagerElch>& dme   //!< diffusion manager
   ){return;};
+
+  //! set internal variables
+  virtual void SetInternalVariablesForMatAndRHS();
 
   /*========================================================================*/
   //! @name flags and enums
@@ -361,25 +364,20 @@ class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
   (class ScaTraEleInternalVariableManagerElchNP and class ScaTraEleInternalVariableManagerElchDiffCond).
 */
 template<int NSD, int NEN>
-class ScaTraEleInternalVariableManagerElch
+class ScaTraEleInternalVariableManagerElch: public ScaTraEleInternalVariableManager<NSD, NEN>
 {
+  typedef ScaTraEleInternalVariableManager<NSD, NEN> my;
   public:
 
-    ScaTraEleInternalVariableManagerElch(int numscal, int nsd,DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
-      numscal_(numscal),
-      nsd_(nsd),
+    ScaTraEleInternalVariableManagerElch(int numscal,DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
+      ScaTraEleInternalVariableManager<NSD, NEN>(numscal),
       // constant internal variables
       faraday_(INPAR::ELCH::faraday_const),
       epsilon_(INPAR::ELCH::epsilon_const),
       frt_(elchpara->FRT()),
       // internal variables evaluated at the Gauss point
-      gradphi_(numscal),
-      conint_(numscal),
       conintinv_(numscal),
       gradpot_(true),
-      convelint_(true),
-      conv_(true),
-      convphi_(numscal),
       sgconv_(true),
       migvelint_(true)
     {return;}
@@ -391,11 +389,16 @@ class ScaTraEleInternalVariableManagerElch
       LINALG::Matrix<NEN,1>&                   funct,      //!< array for shape functions
       LINALG::Matrix<NSD,NEN>&                 derxy,      //!< global derivatives of shape functions w.r.t x,y,z
       std::vector<LINALG::Matrix<NEN,1> >&     ephinp,     //!< nodal concentration values at t_(n+1) or t_(n+alpha_F)
+      std::vector<LINALG::Matrix<NEN,1> >&     ephin,     //!< nodal electric potential values at t_(n+1) or t_(n+alpha_F)
       LINALG::Matrix<NEN,1>&                   epotnp,     //!< nodal electric potential values at t_(n+1) or t_(n+alpha_F)
 //      LINALG::Matrix<NSD,NEN>&                 evelnp,     //!< nodal velocity values at t_(n+1) or t_(n+alpha_F)
-      LINALG::Matrix<NSD,NEN>&                 econvelnp   //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+      LINALG::Matrix<NSD,NEN>&                 econvelnp,   //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+      std::vector<LINALG::Matrix<NEN,1> >& ehist //!< history vector of transported scalars
     )
     {
+      //call base class (scatra)
+      my::SetInternalVariables(funct,derxy,ephinp,ephin,econvelnp,ehist);
+
       // loop over all transported scalars
       // get concentration of transported scalar k at integration point
       // evaluation of all concentrations is necessary at this point since
@@ -403,30 +406,15 @@ class ScaTraEleInternalVariableManagerElch
       // -> concentration depending material parameters for the diffusion-convection formulation
       // -> avoiding of possible errors (concentration was always defined as a vector where only one
       //    entry was filled)
-      for (int k = 0; k < numscal_; ++k)
+      for (int k = 0; k < my::numscal_; ++k)
       {
-        // calculate concentration at GP at t_(n+1) or t_(n+alpha_F)
-        conint_[k] = funct.Dot(ephinp[k]);
         // calculate 1/concentration at GP at t_(n+1) or t_(n+alpha_F)
-        conintinv_[k] = 1/conint_[k];
-        // calculate gradient of concentration at GP at t_(n+1) or t_(n+alpha_F)
-        gradphi_[k].Multiply(derxy,ephinp[k]);
+        conintinv_[k] = 1/my::phinp_[k];
       }
       // calculate gradient of electric potential at GP at t_(n+1) or t_(n+alpha_F)
       gradpot_.Multiply(derxy,epotnp);
       // calculate velocity at GP at t_(n+1) or t_(n+alpha_F)
 //      velint_.Multiply(evelnp,funct);
-      // calculate convective velocity at GP at t_(n+1) or t_(n+alpha_F)
-      convelint_.Multiply(econvelnp,funct);
-      // convective part in convective form at t_(n+1) or t_(n+alpha_F): rho*u_x*N,x+ rho*u_y*N,y
-      conv_.MultiplyTN(derxy,convelint_);
-
-      // convective term using current scalar value at t_(n+1) or t_(n+alpha_F)
-      for (int k = 0; k < numscal_;++k)
-      {
-        //convphi_[k] = convelint_.Dot(gradphi_[k]);
-        convphi_[k] = conv_.Dot(ephinp[k]);
-      }
 
       //! migration velocity vector (divided by D_k*z_k) at t_(n+1) or t_(n+alpha_F): -F/(RT) \grad{\Phi}
       migvelint_.Multiply(-frt_,derxy,epotnp);
@@ -447,40 +435,27 @@ class ScaTraEleInternalVariableManagerElch
   /*========================================================================*/
 
     //! return gradient of phi for species k at GP
-    const LINALG::Matrix<NSD,1> GradPhi(const int k){return gradphi_[k];};
+    const LINALG::Matrix<NSD,1>& GradPhi (const int k) const {return my::GradPhi(k);};
     //! return gradient of phi for all species in a vector at GP
-    const std::vector<LINALG::Matrix<NSD,1> > GradPhi(){return gradphi_;};
+    const std::vector<LINALG::Matrix<NSD,1> >& GradPhi() const {return my::gradphi_;};
     //! return concentration of species k at GP
-    const double ConInt(const int k){return conint_[k];};
+    const double& ConInt(const int k) const {return my::Phinp(k);};
     //! return 1/concentration of species k at GP
-    const double ConIntInv(const int k){return conintinv_[k];};
+    const double& ConIntInv(const int k) const {return conintinv_[k];};
     //! return 1/concentration of all species in a vector at GP
-    const std::vector<double> ConIntInv(){return conintinv_;};
+    const std::vector<double>& ConIntInv() const {return conintinv_;};
     //! return gradient of electric potential at GP
-    const LINALG::Matrix<NSD,1> GradPot(){return gradpot_;};
+    const LINALG::Matrix<NSD,1>& GradPot() const {return gradpot_;};
     //! return velocity at GP
 //    const LINALG::Matrix<NSD,1> VelInt(){return velint_;};
     //! return convective velocity at GP
-    const LINALG::Matrix<NSD,1> ConVelInt(){return convelint_;};
-    //! return convective part in convective form: u_x*N,x + u_y*N,y + u_z*N,z
-    const LINALG::Matrix<NEN,1> Conv(){return conv_;};
-    //! return convective contribution: conv_.Dot(ephinp[k])
-    const double ConvPhi(const int k ){return convphi_[k];};
+    const LINALG::Matrix<NSD,1>& ConVelInt() const {return my::ConVel();};
     //! return subgrid velocity
-    const LINALG::Matrix<NEN,1> SGConv(){return sgconv_;};
+    const LINALG::Matrix<NEN,1>& SGConv() const {return sgconv_;};
     //! return migration velocity vector (divided by D_k*z_k): -F/(RT) \grad{\Phi}
-    const LINALG::Matrix<NSD,1> MigVelInt(){return migvelint_;};
+    const LINALG::Matrix<NSD,1>& MigVelInt() const{return migvelint_;};
 
   protected:
-
-  /*========================================================================*/
-  //! @name number of scalars and number of dof's
-  /*========================================================================*/
-
-    //! number of scalars
-    int numscal_;
-    //! number of space dimensions
-    int nsd_;
 
   /*========================================================================*/
   //! @name constant internal variables
@@ -499,26 +474,17 @@ class ScaTraEleInternalVariableManagerElch
   //! @name internal variables evaluated at element center or Gauss point
   /*========================================================================*/
 
-    //! gradient of concentration at GP
-    std::vector<LINALG::Matrix<NSD,1> > gradphi_;
-    //! concentration at GP
-    std::vector<double> conint_;
     //! 1/concentration at GP
     std::vector<double> conintinv_;
     //! gradient of electric potential at integration point
     LINALG::Matrix<NSD,1> gradpot_;
     //! velocity at GP
 //    LINALG::Matrix<NSD,1> velint_;
-    //! convective velocity at GP
-    LINALG::Matrix<NSD,1> convelint_;
-    //! convective part in convective form: u_x*N,x + u_y*N,y + u_z*N,z
-    LINALG::Matrix<NEN,1> conv_;
-    //! convective contribution
-    std::vector<double> convphi_;
     // subgrid velocity
     LINALG::Matrix<NEN,1> sgconv_;
     //! migration velocity vector (divided by D_k*z_k): -F/(RT) \grad{\Phi}
     LINALG::Matrix<NSD,1> migvelint_;
+
 };
 
 }

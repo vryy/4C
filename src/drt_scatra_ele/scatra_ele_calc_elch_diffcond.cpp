@@ -84,8 +84,8 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(con
   equpot_= myelch::elchpara_->EquPot();
 
   // initialize internal variable manager
-  myelch::varmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>(my::numscal_,my::nsd_,myelch::elchpara_));
-
+  myelch::varmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>(my::numscal_,myelch::elchpara_));
+  my::scatravarmanager_ = myelch::varmanager_;
   return;
 }
 
@@ -246,7 +246,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   //----------------------------------------------------------------
 
   // 2a)  element matrix: convective term
-  my::CalcMatConv(emat,k,timefacfac,dmedc->GetPhasePoro(0),vmdc->Conv(),vmdc->SGConv());
+  my::CalcMatConv(emat,k,timefacfac,dmedc->GetPhasePoro(0),vmdc,vmdc->SGConv());
 
   // 2b)  element matrix: diffusion term
   //      i)  constant diffusion coefficient
@@ -304,7 +304,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   //-----------------------------------------------------------------------
 
   if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
-    this->CalcRHSLinMass(erhs,k,rhsfac,fac,dmedc->GetPhasePoro(0),dmedc->GetPhasePoro(0),vmdc->ConInt(k),hist);
+    this->CalcRHSLinMass(erhs,k,rhsfac,fac,dmedc->GetPhasePoro(0),dmedc->GetPhasePoro(0),vmdc);
 
   // adaption of rhs with respect to time integration
   my::ComputeRhsInt(rhsint,dmedc->GetPhasePoro(0),dmedc->GetPhasePoro(0),hist);
@@ -313,10 +313,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   my::CalcRHSHistAndSource(erhs,k,fac,rhsint);
 
   // 3a) element rhs: convective term
-  my::CalcRHSConv(erhs,k,rhsfac*dmedc->GetPhasePoro(0),vmdc->ConvPhi(k));
+  my::CalcRHSConv(erhs,k,rhsfac*dmedc->GetPhasePoro(0),vmdc);
 
   // 3b) element rhs: diffusion term
-  my::CalcRHSDiff(erhs,k,rhsfac*dmedc->GetPhasePoroTort(0),dmedc,vmdc->GradPhi(k));
+  my::CalcRHSDiff(erhs,k,rhsfac*dmedc->GetPhasePoroTort(0),dmedc,vmdc);
 
   // 3c) element rhs: electrical conduction term (transport equation)
   //     equation for current is inserted in the mass transport equation

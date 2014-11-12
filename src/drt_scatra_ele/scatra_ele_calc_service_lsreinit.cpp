@@ -212,7 +212,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatCorrection(
     DerivSignFunction(deriv_sign,charelelength,phizero);
 
     // scalar at integration point at time step n+1
-    const double phinp = my::funct_.Dot(my::ephinp_[0]);
+    my::SetInternalVariablesForMatAndRHS();
 
     //------------------------------------------------
     // element matrix
@@ -229,7 +229,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatCorrection(
     if (my::scatraparatimint_->IsGenAlpha())
      dserror("Not supported by this implementation!");
     // note: this function computes phinp at integration point
-    my::CalcRHSLinMass(erhs,0,0.0,-fac,1.0,1.0,phinp,0.0); //sign has to be changed!!!!
+    my::CalcRHSLinMass(erhs,0,0.0,-fac,1.0,1.0,my::scatravarmanager_); //sign has to be changed!!!!
 
     // penalty term
     CalcRHSPenalty(erhs,fac,penalty,deriv_sign,norm_gradphizero);

@@ -161,15 +161,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
     if (scatrapara_->MatGP())
       GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc,iquad);
 
-    // get velocity at integration point
-    //LINALG::Matrix<nsd_,1> velint(true);
-    LINALG::Matrix<nsd_,1> convelint(true);
-    //velint.Multiply(evelnp_,funct_);
-    convelint.Multiply(econvelnp_,funct_);
-
-    // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-    LINALG::Matrix<nen_,1> conv(true);
-    conv.MultiplyTN(derxy_,convelint);
+    SetInternalVariablesForMatAndRHS();
 
     // velocity divergence required for conservative form
     double vdiv(0.0);
@@ -186,21 +178,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
     // loop all scalars
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
-      // scalar at integration point at time step n+1
-      const double phinp = funct_.Dot(ephinp_[k]);
-      // scalar at integration point at time step n
-      const double phin = funct_.Dot(ephin_[k]);
-
-      // gradient of current scalar value at integration point
-      static LINALG::Matrix<nsd_,1> gradphi(true);
-      gradphi.Multiply(derxy_,ephinp_[k]);
-
-      static LINALG::Matrix<nsd_,1> refgradphi(true);
-      refgradphi.Multiply(xjm_,gradphi);
-
-      // convective term using current scalar value
-      double conv_phi(0.0);
-      conv_phi = convelint.Dot(gradphi);
 
       // diffusive part used in stabilization terms
       double diff_phi(0.0);
@@ -216,7 +193,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
 
       // reactive part of the form: (reaction coefficient)*phi
       double rea_phi(0.0);
-      rea_phi = densnp*phinp*reamanager_->GetReaCoeff(k);
+      rea_phi = densnp*scatravarmanager_->Phinp(k)*reamanager_->GetReaCoeff(k);
 
       // get history data (or acceleration)
       double hist(0.0);
@@ -247,9 +224,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
                                   sgphi,
                                   densam,
                                   densnp,
-                                  phinp,
-                                  hist,
-                                  conv_phi,
+                                  scatravarmanager_,
                                   diff_phi,
                                   rea_phi,
                                   rhsint,
@@ -262,7 +237,17 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
       //----------------------------------------------------------------
 
       if (scatraparatimint_->IsIncremental() and not scatraparatimint_->IsStationary())
-        CalcLinMassODMesh(emat,k,ndofpernodemesh,rhsfac,fac,densam,densnp,phinp,hist,J,dJ_dmesh);
+        CalcLinMassODMesh(emat,
+            k,
+            ndofpernodemesh,
+            rhsfac,
+            fac,
+            densam,
+            densnp,
+            scatravarmanager_->Phinp(k),
+            scatravarmanager_->Hist(k),
+            J,
+            dJ_dmesh);
 
       // the order of the following three functions is important
       // and must not be changed
@@ -270,25 +255,20 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
 
       RecomputeScatraResForRhs( scatrares,
                                 k,
-                                convelint,
-                                gradphi,
                                 diff,
                                 densn,
                                 densnp,
-                                conv_phi,
                                 rea_phi,
-                                phin,
+                                scatravarmanager_,
                                 reamanager_,
                                 rhsint);
 
-      RecomputeConvPhiForRhs( conv_phi,
+      RecomputeConvPhiForRhs(
                               k,
+                              scatravarmanager_,
                               sgvelint,
-                              gradphi,
                               densnp,
                               densn,
-                              phinp,
-                              phin,
                               vdiv);
 
       //----------------------------------------------------------------
@@ -299,12 +279,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
       //----------------------------------------------------------------
       // standard Galerkin terms - convective term
       //----------------------------------------------------------------
-      CalcConvODMesh(emat,k,ndofpernodemesh,fac,rhsfac,densnp,J,gradphi,convelint);
+      CalcConvODMesh(emat,k,ndofpernodemesh,fac,rhsfac,densnp,J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel());
 
       //----------------------------------------------------------------
       // standard Galerkin terms  --  diffusive term
       //----------------------------------------------------------------
-      CalcDiffODMesh(emat,k,ndofpernodemesh,fac,rhsfac,J,gradphi,convelint,dJ_dmesh,diffmanager_);
+      CalcDiffODMesh(emat,k,ndofpernodemesh,fac,rhsfac,J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel(),dJ_dmesh,diffmanager_);
 
       //----------------------------------------------------------------
       // standard Galerkin terms  -- "shapederivatives" reactive term
@@ -569,7 +549,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcHistAndSourceODMesh(
 }
 
 /*-------------------------------------------------------------------- *
- |  standard Galerkin convective term (OD mesh)   vuong 08/14 |
+ |  standard Galerkin convective term (OD mesh)            vuong 08/14 |
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcConvODMesh(

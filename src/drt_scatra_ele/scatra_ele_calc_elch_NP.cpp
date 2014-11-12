@@ -65,7 +65,8 @@ DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::ScaTraEleCalcElchNP(const int numdo
   : DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(numdofpernode,numscal)
 {
   // initialize internal variable manager
-  myelch::varmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchNP<my::nsd_, my::nen_>(my::numscal_,my::nsd_,myelch::elchpara_));
+  myelch::varmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchNP<my::nsd_, my::nen_>(my::numscal_,myelch::elchpara_));
+  my::scatravarmanager_ = myelch::varmanager_;
 
   return;
 }
@@ -117,7 +118,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   //------------------------------------------------------------------------
 
   // 2a) element matrix: standard Galerkin convective term due to fluid flow
-  my::CalcMatConv(emat,k,timefacfac,1.,vmnp->Conv(),vmnp->SGConv());
+  my::CalcMatConv(emat,k,timefacfac,1.,vmnp,vmnp->SGConv());
 
   // 2b) element matrix: additional terms in conservative formulation if needed
   if (my::scatrapara_->IsConservative())
@@ -188,7 +189,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
 
   // 4a) element rhs: standard Galerkin contributions from non-history part of instationary term if needed
   if (not my::scatraparatimint_->IsStationary())
-    my::CalcRHSLinMass(erhs,k,rhsfac,fac,1.,1.,vmnp->ConInt(k),hist);
+    my::CalcRHSLinMass(erhs,k,rhsfac,fac,1.,1.,vmnp);
 
   // 4b) element rhs: standard Galerkin contributions from rhsint vector (contains body force vector and history vector)
   // need to adapt rhsint vector to time integration scheme first
@@ -199,7 +200,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
 
   // 4d) element rhs: standard Galerkin convective term
-  my::CalcRHSConv(erhs,k,rhsfac,vmnp->ConvPhi(k));
+  my::CalcRHSConv(erhs,k,rhsfac,vmnp);
 
   // 4e) element rhs: additional terms in conservative formulation if needed
   if (my::scatrapara_->IsConservative())
@@ -213,7 +214,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   CalcRhsConvStab(erhs,k,rhstaufac,dme,vmnp->Conv(),vmnp->MigConv(),residual);
 
   // 4g) element rhs: standard Galerkin diffusion term
-  my::CalcRHSDiff(erhs,k,rhsfac,dme,vmnp->GradPhi(k));
+  my::CalcRHSDiff(erhs,k,rhsfac,dme,vmnp);
 
   // 4h) element rhs: stabilization of diffusive term
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available

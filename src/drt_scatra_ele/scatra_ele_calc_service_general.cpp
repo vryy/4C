@@ -955,8 +955,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
     //------------ get values of variables at integration point
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
+      SetInternalVariablesForMatAndRHS();
+
       // get phi at integration point for all scalars
-      double phiint = funct_.Dot(ephinp_[k]);
+      const double& phiint = scatravarmanager_->Phinp(k);
 
       // get velocity at integration point
       LINALG::Matrix<nsd_,1> velint(true);
@@ -986,7 +988,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
       }
 
       // calculation of stabilization parameter at integration point
-      if (scatrapara_->TauGP()) CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol);
+      if (scatrapara_->TauGP()) CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol);
 
       const double fac_tau = fac*tau[k];
 
@@ -1004,7 +1006,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
       {
         // subgrid-scale velocity (dummy)
         LINALG::Matrix<nen_,1> sgconv(true);
-        CalcMatMassStab(emat,k,fac_tau,densam,densnp,conv,sgconv,diff);
+        CalcMatMassStab(emat,k,fac_tau,densam,densnp,scatravarmanager_,sgconv,diff);
 
         // remove convective stabilization of inertia term
         for (int vi=0; vi<nen_; ++vi)
@@ -1043,7 +1045,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CorrectRHSFromCalcRHSLinMass(
 {
   // fac->-fac to change sign of rhs
   if (scatraparatimint_->IsIncremental())
-     CalcRHSLinMass(erhs,k,0.0,-fac,0.0,densnp,phinp,0.0);
+     CalcRHSLinMass(erhs,k,0.0,-fac,0.0,densnp,scatravarmanager_);
   else
     dserror("Must be incremental!");
 

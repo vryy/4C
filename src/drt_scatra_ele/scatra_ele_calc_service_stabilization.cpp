@@ -837,20 +837,25 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcArtificialDiff(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcResidualAndSubgrScalar(
-  const int      k,          //!< index of current scalar
-  double&        scatrares,  //!< residual of convection-diffusion-reaction eq
-  double&        sgphi,      //!< residual-based subgrid-scale scalar
-  const double   densam,     //!< density at t_(n+am)
-  const double   densnp,     //!< density at t_(n+1)
-  const double   phinp,      //!< scalar at t_(n+1)
-  const double   hist,       //!< history of time integration
-  const double   conv_phi,   //!< convective contribution
-  const double   diff_phi,   //!< diffusive contribution
-  const double   rea_phi,    //!< reactive contribution
-  const double   rhsint,     //!< rhs at gauss point
-  const double   tau         //!< the stabilisation parameter
+  const int                   k,          //!< index of current scalar
+  double&                     scatrares,  //!< residual of convection-diffusion-reaction eq
+  double&                     sgphi,      //!< residual-based subgrid-scale scalar
+  const double                densam,     //!< density at t_(n+am)
+  const double                densnp,     //!< density at t_(n+1)
+  Teuchos::RCP< varmanager >  varmanager, //! variable manager
+  const double                diff_phi,   //!< diffusive contribution
+  const double                rea_phi,    //!< reactive contribution
+  const double                rhsint,     //!< rhs at gauss point
+  const double                tau         //!< the stabilisation parameter
   )
 {
+  // scalar at t_(n+1)
+  const double   phinp = varmanager->Phinp(k);
+  // history of time integration
+  const double   hist = varmanager->Hist(k);
+  // convective contribution
+  const double   conv_phi = varmanager->ConvPhi(k);
+
   if (scatraparatimint_->IsGenAlpha())
   {
     // time derivative stored on history variable

@@ -38,6 +38,7 @@ namespace DRT
     private:
 
       typedef ScaTraEleCalc<distype> my;
+      typedef ScaTraEleInternalVariableManager <my::nsd_,my::nen_>  varmanager;
 
     public:
 
@@ -140,14 +141,13 @@ namespace DRT
       Teuchos::RCP<ScaTraEleDiffManager>    diffmanager  //!< diffusion manager
     );
 
-
     //! standard Galerkin diffusive term on right hand side
     virtual void CalcRHSDiff(
         Epetra_SerialDenseVector&           erhs,        //!< element vector to be filled
         const int                           k,           //!< index of current scalar
         const double                        rhsfac,      //!< time-integration factor for rhs times domain-integration factor
         Teuchos::RCP<ScaTraEleDiffManager>  diffmanager, //!< diffusion manager
-        const LINALG::Matrix<my::nsd_,1>&   gradphi      //!< scalar gradient at Gauss point
+        Teuchos::RCP< varmanager >          varmanager   //!< variable manager
     );
 
     };

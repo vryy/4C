@@ -718,17 +718,18 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
   const double                       timetaufac,
   const double                       taufac,
   const double                       densnp,
-  const double                       phinp,
+  Teuchos::RCP< varmanager >         varmanager,
   Teuchos::RCP<ScaTraEleReaManager>  reamanager,
-  const LINALG::Matrix<my::nen_,1>&      conv,
   const LINALG::Matrix<my::nen_,1>&      sgconv,
   const LINALG::Matrix<my::nen_,1>&      diff
   )
 {
   // -----------------first care for Term K(c)*(\partial_c c)=Id*K(c)--------------------------------------
 
-  my::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,phinp,reamanager,conv,sgconv,diff);
+  my::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,varmanager,reamanager,sgconv,diff);
 
+  const double&                       phinp = varmanager->Phinp(k);
+  const LINALG::Matrix<my::nen_,1>&   conv  = varmanager->Conv();
 
   // -----------------second care for Term (\partial_c K(c)) .* c - (\partial_c f_{reabody}(c))------------
 

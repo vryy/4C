@@ -525,11 +525,10 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     // set all Gauss point quantities
     //--------------------------------------------------------------------
 
+    my::SetInternalVariablesForMatAndRHS();
+
     // gradient of current scalar value at integration point
-    LINALG::Matrix<my::nsd_,1> gradphinp(true);
-    gradphinp.Multiply(my::derxy_,my::ephinp_[0]);
-    // scalar at integration point at time step n+1
-    const double phinp = my::funct_.Dot(my::ephinp_[0]);
+    const LINALG::Matrix<my::nsd_,1>& gradphinp = my::scatravarmanager_->GradPhi(0);
 
     // initial phi at integration point
     double phizero = 0.0;
@@ -539,7 +538,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     gradphizero.Multiply(my::derxy_,ephizero_[0]);
 
     // scalar at integration point at time step n
-    const double phin = my::funct_.Dot(my::ephin_[0]);
+    const double& phin = my::scatravarmanager_->Phin(0);
 
 #if 0 // OLD but running
     // gradient of current scalar value Gauss point
@@ -688,7 +687,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
       double scatrares = 0.0;
       // subgrid scalar (dummy)
       double sgphi = 0.0;
-      my::CalcResidualAndSubgrScalar(0,scatrares,sgphi,1.0,1.0,phinp,hist,conv_phi,diff_phi,0.0,signphi,tau);
+      my::CalcResidualAndSubgrScalar(0,scatrares,sgphi,1.0,1.0,my::scatravarmanager_,diff_phi,0.0,signphi,tau);
 
       // compute artificial diffusion
       // diffusion coefficient has been explicitly set to zero
@@ -726,7 +725,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     double sgphi(0.0);
     // compute residual of scalar transport equation and
     // subgrid-scale part of scalar
-    my::CalcResidualAndSubgrScalar(0,scatrares,sgphi,1.0,1.0,phinp,hist,conv_phi,diff_phi,0.0,signphi,tau);
+    my::CalcResidualAndSubgrScalar(0,scatrares,sgphi,1.0,1.0,my::scatravarmanager_,diff_phi,0.0,signphi,tau);
 
     //----------------------------------------------------------------
     // evaluation of matrix and rhs
@@ -749,7 +748,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->LinForm() == INPAR::SCATRA::newton)
     {
       if (my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-        my::CalcMatMassStab(emat,0,taufac,1.0,1.0,conv,sgconv,diff);
+        my::CalcMatMassStab(emat,0,taufac,1.0,1.0,my::scatravarmanager_,sgconv,diff);
     }
 
     //----------------------------------------------------------------
@@ -757,14 +756,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     //----------------------------------------------------------------
 
     if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->LinForm() == INPAR::SCATRA::newton)
-      my::CalcMatConv(emat,0,timefacfac,1.0,conv,sgconv);
+      my::CalcMatConv(emat,0,timefacfac,1.0,my::scatravarmanager_,sgconv);
 
     // convective stabilization of convective term (in convective form)
     // transient stabilization of convective term (in convective form)
     if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->LinForm() == INPAR::SCATRA::newton)
     {
       if(my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-        my::CalcMatTransConvDiffStab(emat,0,timetaufac,1.0,conv,sgconv,diff);
+        my::CalcMatTransConvDiffStab(emat,0,timetaufac,1.0,my::scatravarmanager_,sgconv,diff);
     }
 
 
@@ -786,13 +785,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     double rhstaufac = my::scatraparatimint_->TimeFacRhsTau() * taufac;
 
     // linearization of transient term
-    my::CalcRHSLinMass(erhs,0,rhsfac,fac,1.0,1.0,phinp,hist);
+    my::CalcRHSLinMass(erhs,0,rhsfac,fac,1.0,1.0,my::scatravarmanager_);
 
     // the order of the following three functions is important
     // and must not be changed
     my::ComputeRhsInt(rhsint,1.0,1.0,hist);
     double rea_phi(0.0); // dummy
-    my::RecomputeScatraResForRhs(scatrares,0,convelint,gradphinp,diff,1.0,1.0,conv_phi,rea_phi,phin,my::reamanager_,rhsint);
+    my::RecomputeScatraResForRhs(scatrares,0,diff,1.0,1.0,rea_phi,my::scatravarmanager_,my::reamanager_,rhsint);
     // note: the third function is not required here, since we neither have a subgrid velocity
     //       nor a conservative form
 
@@ -800,7 +799,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     my::CalcRHSHistAndSource(erhs,0,fac,rhsint);
 
     // linearization of convective term
-    my::CalcRHSConv(erhs,0,rhsfac,conv_phi);
+    my::CalcRHSConv(erhs,0,rhsfac,my::scatravarmanager_);
 
     // linearization of diffusive term
     if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ArtDiff()
@@ -813,7 +812,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
 
     // linearization of stabilization terms
     if (my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-      my::CalcRHSTransConvDiffStab(erhs,0,rhstaufac,1.0,scatrares,conv,sgconv,diff);
+      my::CalcRHSTransConvDiffStab(erhs,0,rhstaufac,1.0,scatrares,my::scatravarmanager_,sgconv,diff);
 
   } // end: loop all Gauss points
 

@@ -750,8 +750,8 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
 
     typedef ScaTraEleInternalVariableManagerElch<NSD,NEN> vm;
 
-    ScaTraEleInternalVariableManagerElchDiffCond(int numscal, int nsd,DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
-      ScaTraEleInternalVariableManagerElch<NSD,NEN>(numscal,nsd,elchpara),
+    ScaTraEleInternalVariableManagerElchDiffCond(int numscal,DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
+      ScaTraEleInternalVariableManagerElch<NSD,NEN>(numscal,elchpara),
       // constant internal variables
       invf_(1/vm::faraday_),
       rtf_(1/vm::frt_),
@@ -786,7 +786,7 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
       // Calculate divergence of current desity
       // since it is a summation it is important to set curdiv to zero
       curdiv_=0.0;
-      for (int idim = 0; idim <vm::nsd_; ++idim)
+      for (int idim = 0; idim <NSD; ++idim)
       {
         LINALG::Matrix<NSD,NSD> curderxy(true);
         curderxy.MultiplyNT(ecurnp,derxy);

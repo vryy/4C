@@ -33,6 +33,9 @@ namespace ELEMENTS
   class ScaTraEleDiffManager;
   class ScaTraEleReaManager;
 
+  template<int NSD, int NEN>
+  class ScaTraEleInternalVariableManager;
+
   /// Scatra element implementation
   /*!
     This internal class keeps all the working arrays needed to
@@ -138,6 +141,8 @@ namespace ELEMENTS
      // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
      static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
+     typedef ScaTraEleInternalVariableManager <nsd_,nen_>  varmanager;
+
   protected:
 
     /*========================================================================*/
@@ -209,6 +214,9 @@ namespace ELEMENTS
       const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, //!< integration points
       const int                                    iquad      //!< id of current Gauss point
     );
+
+    //! set internal variables
+    virtual void SetInternalVariablesForMatAndRHS();
 
     //! finite difference check for debugging purposes
     virtual void FDCheck(
@@ -409,31 +417,29 @@ namespace ELEMENTS
 
     //! calculation of residual and residual-based subgrid-scale scalar for stabilization
     void CalcResidualAndSubgrScalar(
-      const int      k,          //!< index of current scalar
-      double&        scatrares,  //!< residual of convection-diffusion-reaction eq
-      double&        sgphi,      //!< residual-based subgrid-scale scalar
-      const double   densam,     //!< density at t_(n+am)
-      const double   densnp,     //!< density at t_(n+1)
-      const double   phinp,      //!< scalar at t_(n+1)
-      const double   hist,       //!< history of time integartion
-      const double   conv_phi,   //!< convective contribution
-      const double   diff_phi,   //!< diffusive contribution
-      const double   rea_phi,    //!< reactive contribution
-      const double   rhsint,     //!< rhs at integration point
-      const double   tau         //!< the stabilisation parameter
+      const int                   k,          //!< index of current scalar
+      double&                     scatrares,  //!< residual of convection-diffusion-reaction eq
+      double&                     sgphi,      //!< residual-based subgrid-scale scalar
+      const double                densam,     //!< density at t_(n+am)
+      const double                densnp,     //!< density at t_(n+1)
+      Teuchos::RCP< varmanager >  varmanager, //! variable manager
+      const double                diff_phi,   //!< diffusive contribution
+      const double                rea_phi,    //!< reactive contribution
+      const double                rhsint,     //!< rhs at integration point
+      const double                tau         //!< the stabilisation parameter
     );
 
     //! calculate artificial diffusivity
     void CalcArtificialDiff(
-      const double                  vol,        //!< element volume
-      const int                     k,          //!< id of current scalar
-      Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager
-      const double                  densnp,     //!< density at t_(n+1)
-      const LINALG::Matrix<nsd_,1>& convelint,  //!< convective velocity at integration point
-      const LINALG::Matrix<nsd_,1>& gradphi,    //!< scalar gradient
-      const double                  conv_phi,   //!< convective contribution
-      const double                  scatrares,  //!< residual of convection-diffusion-reaction eq
-      const double                  tau         //!< the stabilisation parameter
+      const double                        vol,        //!< element volume
+      const int                           k,          //!< id of current scalar
+      Teuchos::RCP<ScaTraEleDiffManager>  diffmanager,  //!< diffusion manager
+      const double                        densnp,     //!< density at t_(n+1)
+      const LINALG::Matrix<nsd_,1>&       convelint,  //!< convective velocity at integration point
+      const LINALG::Matrix<nsd_,1>&       gradphi,    //!< scalar gradient
+      const double                        conv_phi,   //!< convective contribution
+      const double                        scatrares,  //!< residual of convection-diffusion-reaction eq
+      const double                        tau         //!< the stabilisation parameter
     );
 
     //! calculate subgrid-scale velocity
@@ -693,7 +699,7 @@ namespace ELEMENTS
       const int                     k,           //!< index of current scalar
       const double                  timefacfac,  //!< domain-integration factor times time-integration factor
       const double                  densnp,      //!< density at time_(n+1)
-      const LINALG::Matrix<nen_,1>& conv,        //!< convective operator
+      Teuchos::RCP< varmanager >    varmanager,  //!< variable manager
       const LINALG::Matrix<nen_,1>& sgconv       //!< subgrid-scale convective operator
     );
 
@@ -720,7 +726,7 @@ namespace ELEMENTS
       const int                     k,           //!< index of current scalar
       const double                  timetaufac,  //!< domain-integration factor times time-integration factor times tau
       const double                  densnp,      //!< density  at time_(n+1)
-      const LINALG::Matrix<nen_,1>& conv,        //!< convective operator
+      Teuchos::RCP< varmanager >    varmanager,  //!< variable manager
       const LINALG::Matrix<nen_,1>& sgconv,      //!< subgrid-scale convective operator
       const LINALG::Matrix<nen_,1>& diff         //!< laplace term
     );
@@ -740,7 +746,7 @@ namespace ELEMENTS
       const double                  taufac,      //!< domain-integration factor times tau
       const double                  densam,      //!< density at time_(n+am)
       const double                  densnp,      //!< density at time_(n+1)
-      const LINALG::Matrix<nen_,1>& conv,        //!< convective operator
+      Teuchos::RCP< varmanager >    varmanager,  //!< variable manager
       const LINALG::Matrix<nen_,1>& sgconv,      //!< subgrid-scale convective operator
       const LINALG::Matrix<nen_,1>& diff         //!< laplace term
     );
@@ -753,9 +759,8 @@ namespace ELEMENTS
       const double                       timetaufac,  //!< domain-integration factor times time-integration factor times tau
       const double                       taufac,      //!< domain-integration factor times tau
       const double                       densnp,      //!< density at time_(n+1)
-      const double                       phinp,       //!< scalar at time_(n+1)
+      Teuchos::RCP< varmanager >         varmanager,  //!< variable manager
       Teuchos::RCP<ScaTraEleReaManager>  reamanager,  //!< reaction manager
-      const LINALG::Matrix<nen_,1>&      conv,        //!< convective operator
       const LINALG::Matrix<nen_,1>&      sgconv,      //!< subgrid-scale convective operator
       const LINALG::Matrix<nen_,1>&      diff         //!< laplace term
     );
@@ -768,8 +773,7 @@ namespace ELEMENTS
       const double                  fac,         //!< domain-integration factor
       const double                  densam,      //!< density at time_(n+am)
       const double                  densnp,      //!< density at time_(n+1)
-      const double                  phinp,       //!< scalar at time_(n+1)
-      const double                  hist         //!< history of time integartion
+      Teuchos::RCP< varmanager >    varmanager   //!< variable manager
     );
 
     //! adaption of rhs with respect to time integration
@@ -784,28 +788,22 @@ namespace ELEMENTS
     void RecomputeScatraResForRhs(
       double&                       scatrares,  //!< residual of convection-diffusion-reaction eq
       const int                     k,          //!< index of current scalar
-      const LINALG::Matrix<nsd_,1>&  convelint, //!< convective velocity at Gauss point
-      LINALG::Matrix<nsd_,1>&        gradphi,   //!< scalar gradient at Gauss point
       const LINALG::Matrix<nen_,1>&  diff,      //!< laplace term
       const double                  densn,      //!< density at time_(n)
       const double                  densnp,     //!< density at time_(n+1)
-      double&                       conv_phi,   //!< convective contribution
       double&                       rea_phi,    //!< reactive contribution
-      const double                  phin,       //!< scalar at time_(n)
+      Teuchos::RCP< varmanager >    varmanager,   //!< variable manager
       Teuchos::RCP<ScaTraEleReaManager> reamanager,  //!< reaction manager
       const double                  rhsint      //!< rhs at Gauss point
     );
 
     //! adaption of convective term for rhs
     virtual void RecomputeConvPhiForRhs(
-      double&                       conv_phi,   //!< convective contribution
       const int                     k,          //!< index of current scalar
+      Teuchos::RCP< varmanager >    varmanager,   //!< variable manager
       const LINALG::Matrix<nsd_,1>&  sgvelint,  //!< subgrid-scale velocity at Gauss point
-      const LINALG::Matrix<nsd_,1>&  gradphi,   //!< scalar gradient at Gauss point
       const double                  densnp,     //!< density at time_(n+1)
       const double                  densn,      //!< density at time_(n)
-      const double                  phinp,      //!< scalar at time_(n+1)
-      const double                  phin,       //!< scalar at time_(n)
       const double                  vdiv       //!< velocity divergence
     );
 
@@ -822,7 +820,7 @@ namespace ELEMENTS
       Epetra_SerialDenseVector&     erhs,        //!< element vector to be filled
       const int                     k,           //!< index of current scalar
       const double                  rhsfac,      //!< time-integration factor for rhs times domain-integration factor
-      const double                  conv_phi     //!< convective contribution
+      Teuchos::RCP< varmanager >    varmanager   //!< variable manager
     );
 
     //! standard Galerkin diffusive term on right hand side
@@ -831,7 +829,7 @@ namespace ELEMENTS
       const int                     k,           //!< index of current scalar
       const double                  rhsfac,      //!< time-integration factor for rhs times domain-integration factor
       Teuchos::RCP<ScaTraEleDiffManager>  diffmanager,  //!< diffusion manager
-      const LINALG::Matrix<nsd_,1>& gradphi      //!< scalar gradient at Gauss point
+      Teuchos::RCP< varmanager >    varmanager   //!< variable manager
     );
 
     //! transient, convective and diffusive stabilization terms on right hand side
@@ -841,7 +839,7 @@ namespace ELEMENTS
       const double                  rhstaufac,   //!< time-integration factor for rhs times domain-integration factor times tau
       const double                  densnp,     //!< density at time_(n+1)
       const double                  scatrares,   //!< residual of convection-diffusion-reaction eq
-      const LINALG::Matrix<nen_,1>& conv,        //!< convective operator
+      Teuchos::RCP< varmanager >    varmanager,  //!< variable manager
       const LINALG::Matrix<nen_,1>& sgconv,      //!< subgrid-scale convective operator
       const LINALG::Matrix<nen_,1>& diff         //!< laplace term
     );
@@ -873,11 +871,9 @@ namespace ELEMENTS
       const int                     k,           //!< index of current scalar
       const double                  rhsfac,      //!< time-integration factor for rhs times domain-integration factor
       const double                  densnp,      //!< density at time_(n+1)
-      const LINALG::Matrix<nsd_,1>  convelint,   //!< convective velocity
+      Teuchos::RCP< varmanager >    varmanager,  //!< variable manager
       const LINALG::Matrix<nsd_,1>  mfsggradphi, //!< gradient of multifractal fine-scale scalar
       const LINALG::Matrix<nsd_,1>  mfsgvelint,  //!< multifractal fine-scale velocity
-      const LINALG::Matrix<nsd_,1>  gradphi,     //!< scalar gradient
-      const double                  phinp,       //!< scalar at time_(n+1)
       const double                  mfssgphi,    //!< multifractal fine-scale scalar
       const double                  mfsvdiv      //!< divergence of fine-scale velocity
     );
@@ -1073,6 +1069,9 @@ namespace ELEMENTS
 
     int eid_;
 
+    //! variable manager for gauss point values
+    Teuchos::RCP<ScaTraEleInternalVariableManager <nsd_,nen_> > scatravarmanager_;
+
   };
 
 
@@ -1189,6 +1188,123 @@ namespace ELEMENTS
       //! flag for reaction
       bool include_me_;
     };
+
+  /// ScaTraEleInternalVariableManager implementation
+  /*!
+    This class manages all internal variables needed for the evaluation of an element.
+
+    All formulation-specific internal variables are stored and managed by a class derived from this class.
+  */
+  template<int NSD, int NEN>
+  class ScaTraEleInternalVariableManager
+  {
+    public:
+
+    ScaTraEleInternalVariableManager(int numscal):
+      phinp_(numscal,0.0),
+      phin_(numscal,0.0),
+      convelint_(true),
+      conv_(true),
+      gradphi_(numscal),
+      conv_phi_(numscal),
+      hist_(numscal),
+      numscal_(numscal)
+      {return;}
+
+    virtual ~ScaTraEleInternalVariableManager(){};
+
+    // compute and set internal variables
+    void SetInternalVariables(
+        LINALG::Matrix<NEN,1>& funct,  //! array for shape functions
+        LINALG::Matrix<NSD,NEN>& derxy, //! global derivatives of shape functions w.r.t x,y,z
+        std::vector<LINALG::Matrix<NEN,1> >& ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
+        std::vector<LINALG::Matrix<NEN,1> >& ephin,  //! scalar at t_(n)
+        LINALG::Matrix<NSD,NEN>& econvelnp, //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+        std::vector<LINALG::Matrix<NEN,1> >& ehist //! history vector of transported scalars
+    )
+    {
+      // convective velocity
+      convelint_.Multiply(econvelnp,funct);
+      // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+      conv_.MultiplyTN(derxy,convelint_);
+
+      for (int k = 0; k < numscal_; ++k)
+      {
+        // calculate scalar at t_(n+1) or t_(n+alpha_F)
+        phinp_[k] = funct.Dot(ephinp[k]);
+        // calculate scalar at t_(n)
+        phin_[k] = funct.Dot(ephin[k]);
+        // spatial gradient of current scalar value
+        gradphi_[k].Multiply(derxy,ephinp[k]);
+        // convective term
+        conv_phi_[k] = convelint_.Dot(gradphi_[k]);
+        // history data (or acceleration)
+        hist_[k] = funct.Dot(ehist[k]);
+      }
+
+      return;
+    };
+
+  /*========================================================================*/
+  //! @name return methods for internal variables
+  /*========================================================================*/
+
+    //! return convective velocity
+    virtual const double& Phinp(const int k) const {return phinp_[k];};
+    //! return convective velocity
+    virtual const double& Phin(const int k) const {return phin_[k];};
+    //! return convective velocity
+    virtual const LINALG::Matrix<NSD,1>& ConVel() const {return convelint_;};
+    //! return convective part in convective form
+    virtual const LINALG::Matrix<NEN,1>& Conv() const {return conv_;};
+    //! return spatial gradient of current scalar value
+    virtual const LINALG::Matrix<NSD,1>& GradPhi(const int k) const {return gradphi_[k];};
+    //! return convective term of current scalar value
+    virtual const double& ConvPhi(const int k) const {return conv_phi_[k];};
+    //! return convective term of current scalar value
+    virtual const double& Hist(const int k) const {return hist_[k];};
+
+    /*========================================================================*/
+    //! @name set methods for internal variables
+    /*========================================================================*/
+    //! set spatial gradient of current scalar value
+    virtual void SetGradPhi(const int k,LINALG::Matrix<NSD,1>& gradphi) {gradphi_[k] = gradphi;};
+    //! set convective term of current scalar value
+    virtual void SetConvPhi(const int k,double conv_phi) {conv_phi_[k] = conv_phi;};
+    //! set convective term of current scalar value
+    virtual void AddToConvPhi(const int k,double conv_phi) {conv_phi_[k] += conv_phi;};
+    //! set convective term of current scalar value
+    virtual void ScaleConvPhi(const int k,double scale) {conv_phi_[k] *= scale;};
+
+  protected:
+
+  /*========================================================================*/
+  //! @name internal variables evaluated at element center or Gauss point
+  /*========================================================================*/
+
+    //! scalar at t_(n+1) or t_(n+alpha_F)
+    std::vector<double> phinp_;
+    //! scalar at t_(n)
+    std::vector<double> phin_;
+    //! convective velocity
+    LINALG::Matrix<NSD,1> convelint_;
+    //! convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
+    LINALG::Matrix<NEN,1> conv_;
+    //! spatial gradient of current scalar value
+    std::vector<LINALG::Matrix<NSD,1> > gradphi_;
+    //! convective term
+    std::vector<double> conv_phi_;
+    //! history data (or acceleration)
+    std::vector<double> hist_;
+
+  /*========================================================================*/
+  //! @name number of scalars
+  /*========================================================================*/
+
+    //! number of scalars
+    const int numscal_;
+
+  };
 
   }
 }

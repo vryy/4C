@@ -182,9 +182,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
         this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc,iquad);
 
       // set internal variables
-      varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,epotnp_,my::econvelnp_);
-
-      SetFormulationSpecificInternalVariables(dme,varmanager_);
+      SetInternalVariablesForMatAndRHS();
 
       // access control parameter for flux calculation
       INPAR::SCATRA::FluxType fluxtype = elchpara_->WriteFlux();
@@ -661,7 +659,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
     this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc,iquad);
 
     // set internal variables
-    varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,epotnp_,my::econvelnp_);
+    varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,my::ephin_,epotnp_,my::econvelnp_,my::ehist_);
 
     SetFormulationSpecificInternalVariables(dme,varmanager_);
 
