@@ -502,6 +502,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
    * may exceed the capacity even of a server hard disk; thus, we rewind the error file in each time step so that the amount of data
    * does not increase after the first time step any longer*/
   Teuchos::ParameterList params = DRT::Problem::Instance()->StructuralDynamicParams();
+  int numstep = params.get<int>("NUMSTEP", -1);
   bool printerr = params.get<bool> ("print to err", false);
   FILE* errfile = params.get<FILE*> ("err file", NULL);
   if (printerr)
@@ -844,8 +845,6 @@ void STATMECH::StatMechManager::Output(const int                            ndim
     break;
     case INPAR::STATMECH::statout_viscoelasticity:
     {
-      Teuchos::ParameterList sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-      int numstep = sdyn.get<int>("NUMSTEP", -1);
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
       if ((time>=starttime && istep<numstep && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-10)
       {
@@ -889,8 +888,6 @@ void STATMECH::StatMechManager::Output(const int                            ndim
     break;
     case INPAR::STATMECH::statout_networkrelax:
     {
-      Teuchos::ParameterList sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-      int numstep = sdyn.get<int>("NUMSTEP", -1);
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
       if ((time>=starttime && istep<numstep && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
       {
@@ -907,8 +904,6 @@ void STATMECH::StatMechManager::Output(const int                            ndim
     break;
     case INPAR::STATMECH::statout_networkcreep:
     {
-      Teuchos::ParameterList sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-      int numstep = sdyn.get<int>("NUMSTEP", -1);
       if ((time>=starttime && istep<numstep && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-10)
       {
         if(!dbcnodesets_.size())
@@ -928,8 +923,6 @@ void STATMECH::StatMechManager::Output(const int                            ndim
     break;
     case INPAR::STATMECH::statout_networkdispfield:
     {
-      Teuchos::ParameterList sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-      int numstep = sdyn.get<int>("NUMSTEP", -1);
       if ((time>=starttime && istep<numstep && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-10)
       {
           std::ostringstream dispfilename;
@@ -938,6 +931,14 @@ void STATMECH::StatMechManager::Output(const int                            ndim
           nodeposfilename << outputrootpath_ << "/StatMechOutput/NodePositions_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
           OutputNodalDisplacements(dis, dispfilename);
           OutputNodalPositions(dis,nodeposfilename);
+
+          INPAR::STATMECH::NBCType nbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::NBCType>(statmechparams_,"NBCTYPE");
+          if(nbctype == INPAR::STATMECH::nbctype_randompointforce)
+          {
+            std::ostringstream forcefilename;
+            forcefilename << outputrootpath_ <<"/StatMechOutput/PointForces.dat";
+            OutputNeumannPointForce(time,forcefilename);
+          }
       }
     }
     break;

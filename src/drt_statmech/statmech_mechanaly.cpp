@@ -25,6 +25,7 @@ Maintainer: Kei Müller
 #include "../drt_truss3cl/truss3cl.H"
 #include "../drt_beam3cl/beam3cl.H"
 #include "../drt_torsion3/torsion3.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*------------------------------------------------------------------------------*                                                 |
 | Viscoelasticity ouput                                  (public) mueller 11/12|
@@ -245,6 +246,47 @@ void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra
     }
     discret_->Comm().Barrier();
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | output of internal forces in material coords  (private) mueller 11/14|
+ *----------------------------------------------------------------------*/
+void STATMECH::StatMechManager::OutputNeumannPointForce(const double&             time,
+                                                        const std::ostringstream& filename)
+{
+  std::stringstream fileneumanptforce;
+
+  for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
+  {
+    if(pid==discret_->Comm().MyPID())
+    {
+      int nodesetindex = timeintervalstep_-bctimeindex_;
+      if (discret_->NodeRowMap()->MyGID(nbcnodesets_[nodesetindex][0]))
+      {
+        FILE* fp = NULL;
+        fp = fopen(filename.str().c_str(), "a");
+        // necessary adjustment beyond the first timeintervalstep_ since timeintervalstep_ does not mark the current position in actiontime_
+        // but the next position to reach (hence --).
+        if((int)nbcnodesets_.size()==1)
+          nodesetindex = 0;
+        else
+        {
+          if(timeintervalstep_>1)// && timeintervalstep_<(int)actiontime_->size())
+            nodesetindex--;
+        }
+        int curvenum = statmechparams_.get<int>("NBCCURVENUMBER", 0)-1;
+        double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        double amp = statmechparams_.get<double>("NBCFORCEAMP",0.0);
+        fileneumanptforce <<std::scientific<<std::setprecision(8)<<time<<"\t"<<nbcnodesets_[nodesetindex][0]<<"\t"<<amp*curvefac<<std::endl;
+        fputs(fileneumanptforce.str().c_str(), fp);
+        fclose(fp);
+      }
+    }
+    discret_->Comm().Barrier();
+  }
+
 
   return;
 }

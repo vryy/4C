@@ -2040,7 +2040,6 @@ void  STATMECH::StatMechManager::GmshOutputPointNeumann(const Epetra_Vector&    
           int oscdir = statmechparams_.get<int>("DBCDISPDIR",0)-1;
           int curvenum = statmechparams_.get<int>("NBCCURVENUMBER", 0)-1;
           double nbcamp = statmechparams_.get<double>("NBCFORCEAMP",0.0);
-          int nodesetindex = timeintervalstep_-bctimeindex_;
           LINALG::Matrix<3,1> tip(position);
           tip(oscdir) += 0.25*nbcamp*(DRT::Problem::Instance()->Curve(curvenum).f(time));
           gmshfilecontent << "SL(" << std::scientific;

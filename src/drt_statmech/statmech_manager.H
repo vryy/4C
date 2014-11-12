@@ -708,6 +708,10 @@ protected:
   void OutputElementMaterialInternalForces(const Epetra_Vector&      disrow,
                                            const std::ostringstream& filename);
 
+  //! \brief output of Neumann forces and application point
+  void OutputNeumannPointForce(const double&             time,
+                               const std::ostringstream& filename);
+
   //! \brief simply returns the number of free, one-bonded, and two-bonded crosslink molecules
   void CrosslinkCount(const std::ostringstream& filename);
 
