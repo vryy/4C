@@ -304,6 +304,7 @@ void STATMECH::StatMechManager::ApplyNeumannValueStatMech(Teuchos::ParameterList
       const int lid = systemvector->Map().LID(gid);
       if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
       (*systemvector)[lid] += val[j]*curvefac;
+//      std::cout<<"Proc "<<discret_->Comm().MyPID()<<": Neumann value on Node "<<actnode->Id()<<" = "<<val[j]*curvefac<<std::endl;
     }
   }
   return;
