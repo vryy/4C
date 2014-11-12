@@ -1516,7 +1516,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
       std::ostringstream filename;
       filename << StatMechRootPath() <<"/GmshOutput/InitLinks.pos";
       Epetra_Vector disrow(*discret_->DofRowMap(), true);
-      GmshOutput(disrow,filename,0);
+      GmshOutput(disrow,filename,0,0.0);
     }
     if(beamcmanager!=Teuchos::null && DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_octree)
       // "-2" for initial octree output

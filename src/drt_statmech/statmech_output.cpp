@@ -480,7 +480,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
   {
     std::ostringstream filename;
     filename << outputrootpath_<<"/GmshOutput/network000000.pos";
-    GmshOutput(dis,filename,istep);
+    GmshOutput(dis,filename,istep,0.0);
   }
 
   return;
@@ -1052,9 +1052,9 @@ void STATMECH::StatMechManager::Output(const int                            ndim
 
     //calling method for writing Gmsh output
     if(beamcmanager!=Teuchos::null)
-      GmshOutput(dis,filename,istep,beamcmanager);
+      GmshOutput(dis,filename,istep,time,beamcmanager);
     else
-      GmshOutput(dis,filename,istep);
+      GmshOutput(dis,filename,istep,time);
   }
 
   return;

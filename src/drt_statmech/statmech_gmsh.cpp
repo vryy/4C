@@ -25,12 +25,17 @@ Maintainer: Kei Müller
 #include "../drt_beam3cl/beam3cl.H"
 #include "../drt_torsion3/torsion3.H"
 #include "../drt_rigidsphere/rigidsphere.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
  | writing Gmsh data for current step                 public)cyron 01/09|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostringstream& filename, const int& step, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager)
+void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector&                 disrow,
+                                           const std::ostringstream&            filename,
+                                           const int&                           step,
+                                           const double&                        time,
+                                           Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   /*the following method writes output data for Gmsh into file with name "filename"; all line elements are written;
    * the nodal displacements are handed over in the variable "dis"; note: in case of parallel computing only
@@ -488,7 +493,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
   double color = 0.125;
   GmshOutputCrosslinkDiffusion(color, &filename, disrow);
   // plot Neumann nodes
-  GmshOutputPointNeumann(disrow, &filename, color);
+  GmshOutputPointNeumann(disrow, &filename, time, color);
 
   discret_->Comm().Barrier();
 
@@ -763,10 +768,11 @@ void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialD
 void STATMECH::StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matrix<3,1>* boxcenter,
                                               std::vector<double>& dimension,
                                               const std::ostringstream *filename,
-                                              bool barrier)
+                                              bool barrier,
+                                              int pid)
 {
   // plot the periodic box in case of periodic boundary conditions (first processor)
-  if (periodlength_->at(0) > 0.0 && discret_->Comm().MyPID() == 0)
+  if (periodlength_->at(0) > 0.0 && discret_->Comm().MyPID() == pid)
   {
     FILE *fp = fopen(filename->str().c_str(), "a");
     std::stringstream gmshfilefooter;
@@ -1983,7 +1989,8 @@ void STATMECH::StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_Ser
  *----------------------------------------------------------------------*/
 void  STATMECH::StatMechManager::GmshOutputPointNeumann(const Epetra_Vector&      disrow,
                                                         const std::ostringstream* filename,
-                                                        double&                   color)
+                                                        const double&             time,
+                                                        const double&             color)
 {
   // do output to file in c-style
   if(!nbcnodesets_.empty())
@@ -2024,11 +2031,23 @@ void  STATMECH::StatMechManager::GmshOutputPointNeumann(const Epetra_Vector&    
           for(int i=0; i<(int)position.M(); i++)
             position(i) = (*nodepositions)[i][bspotcolmap_->LID(nbcnodesets_[nodesetindex][0])];
           std::vector<double> boxsize(3, 1.5*statmechparams_.get<double>("R_LINK",0.1));
-          GmshOutputBox(beadcolor,&position,boxsize,filename, false);
+          GmshOutputBox(beadcolor,&position,boxsize,filename, false, discret_->Comm().MyPID());
           gmshfilecontent << "SP(" << std::scientific;
           gmshfilecontent<< position(0)<< ","
                          << position(1) << ","
                          << position(2) << ")" << "{" << std::scientific << beadcolor << "," << beadcolor << "};" << std::endl;
+          // direction and amplitude of the force
+          int oscdir = statmechparams_.get<int>("DBCDISPDIR",0)-1;
+          int curvenum = statmechparams_.get<int>("NBCCURVENUMBER", 0)-1;
+          double nbcamp = statmechparams_.get<double>("NBCFORCEAMP",0.0);
+          int nodesetindex = timeintervalstep_-bctimeindex_;
+          LINALG::Matrix<3,1> tip(position);
+          tip(oscdir) += 0.25*nbcamp*(DRT::Problem::Instance()->Curve(curvenum).f(time));
+          gmshfilecontent << "SL(" << std::scientific;
+          gmshfilecontent << position(0) << "," << position(1) << "," << position(2) << "," << tip(0) << ","<< tip(1) << "," << tip(2);
+          gmshfilecontent << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
+          std::vector<double> tipsize(3,0.025);
+          GmshOutputBox(beadcolor, &tip, tipsize, filename, false, discret_->Comm().MyPID());
         }
       }
       break;

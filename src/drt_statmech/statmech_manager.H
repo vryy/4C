@@ -207,6 +207,7 @@ public:
   void GmshOutput(const Epetra_Vector&                 disrow,
                   const std::ostringstream&            filename,
                   const int&                           step,
+                  const double&                        time,
                   Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
 
   /*! \brief gmsh output in case of periodic boundary conditions
@@ -758,7 +759,8 @@ protected:
   void GmshOutputBox(double color, LINALG::Matrix<3,1>* boxcenter,
                      std::vector<double>&               dimension,
                      const std::ostringstream           *filename,
-                     bool                               barrier=true);
+                     bool                               barrier=true,
+                     int                                pid = 0);
 
   //! \brief gmsh output for crosslink molecule diffusion
   void GmshOutputCrosslinkDiffusion(double                   color,
@@ -818,7 +820,8 @@ protected:
   //! \brief Gmsh Output of Point Neumann nodes
   void GmshOutputPointNeumann(const Epetra_Vector&      disrow,
                               const std::ostringstream* filename,
-                              double&                   color);
+                              const double&             time,
+                              const double&             color);
 
 
   /*! \brief Handles Crosslinker diffusion
