@@ -191,29 +191,44 @@ void STATMECH::StatMechManager::GetNBCNodes(Teuchos::ParameterList&          par
         int N = statmechparams_.get<int>("NUMNBCNODES",0);
         if(N<=0)  dserror("Provide the number of Neumann nodes by means of the input parameter NUMNBCNODES (>0)!");
 
-        // find node closest to COG
         if(N==1)
         {
-          // calculate center of gravity
-          LINALG::Matrix<3,1> cog(true);
-          for(int i=0; i<nodeposcol->MyLength(); i++)
-            for(int j=0; j<nodeposcol->NumVectors(); j++)
-              cog(j) += (*nodeposcol)[j][i];
-          cog.Scale(1.0/(double)(nodeposcol->MyLength()));
+          // partition volume into subvolumes using a bin search
+          std::vector<int> searchres(3,10);
+          Teuchos::RCP<STATMECH::SEARCH::BinSearch> binsearch = Teuchos::rcp(new STATMECH::SEARCH::BinSearch(discret_,*periodlength_,searchres));
+          binsearch->AssignPositionsToBins(nodeposcol);
+          std::vector<STATMECH::SEARCH::BinSearch::Bin> bins = binsearch->GetAllBins();
 
+          int maxnodesinbin = -1;
+          int maxbin = -1;
+          for(int i=0; i< (int)bins.size(); i++)
+          {
+            if(maxnodesinbin<bins[i].NumBinMembers())
+            {
+              maxnodesinbin = bins[i].NumBinMembers();
+              maxbin = i;
+            }
+          }
+          // calculate subcenter of gravity in the found bin
+          LINALG::Matrix<3,1> subcog(true);
+          std::vector<int> nodesinbin = bins[maxbin].GetBinMembers();
+          for(int i=0; i<(int)nodesinbin.size(); i++)
+            for(int j=0; j<nodeposcol->NumVectors(); j++)
+              subcog(j) += (*nodeposcol)[j][nodesinbin[i]];
+          subcog.Scale(1.0/(double)maxbin);
           // all processors should arrive at the same node (also a check for consistency!)
           double dmin = 1e9;
           std::vector<int> nodecolid(1,-1);
           if(nodeposcol==Teuchos::null) dserror("No nodal positions supplied!");
 
-          for(int i=0; i<nodeposcol->MyLength(); i++)
+          for(int i=0; i<(int)nodesinbin.size(); i++)
           {
-            double disti = sqrt(((*nodeposcol)[0][i]-cog(0))*((*nodeposcol)[0][i]-cog(0))+
-                                ((*nodeposcol)[1][i]-cog(1))*((*nodeposcol)[1][i]-cog(1))+
-                                ((*nodeposcol)[2][i]-cog(2))*((*nodeposcol)[2][i]-cog(2)));
+            double disti = sqrt(((*nodeposcol)[0][nodesinbin[i]]-subcog(0))*((*nodeposcol)[0][nodesinbin[i]]-subcog(0))+
+                                ((*nodeposcol)[1][nodesinbin[i]]-subcog(1))*((*nodeposcol)[1][nodesinbin[i]]-subcog(1))+
+                                ((*nodeposcol)[2][nodesinbin[i]]-subcog(2))*((*nodeposcol)[2][nodesinbin[i]]-subcog(2)));
             if(disti<dmin)
             {
-              nodecolid[0] = nodeposcol->Map().GID(i);
+              nodecolid[0] = nodeposcol->Map().GID(nodesinbin[i]);
               dmin = disti;
             }
           }
@@ -222,6 +237,35 @@ void STATMECH::StatMechManager::GetNBCNodes(Teuchos::ParameterList&          par
           int summed = -1;
           discret_->Comm().SumAll(&procid,&summed,1);
           if(summed!=discret_->Comm().NumProc()*procid) dserror("Wrong check sum! Either communication went wrong or your column map node vector is incorrect!");
+
+//          // calculate center of gravity
+//          if(nodeposcol==Teuchos::null) dserror("No nodal positions supplied!");
+//          LINALG::Matrix<3,1> cog(true);
+//          for(int i=0; i<nodeposcol->MyLength(); i++)
+//            for(int j=0; j<nodeposcol->NumVectors(); j++)
+//              cog(j) += (*nodeposcol)[j][i];
+//          cog.Scale(1.0/(double)(nodeposcol->MyLength()));
+//
+//          // all processors should arrive at the same node (also a check for consistency!)
+//          double dmin = 1e9;
+//          std::vector<int> nodecolid(1,-1);
+//
+//          for(int i=0; i<nodeposcol->MyLength(); i++)
+//          {
+//            double disti = sqrt(((*nodeposcol)[0][i]-cog(0))*((*nodeposcol)[0][i]-cog(0))+
+//                                ((*nodeposcol)[1][i]-cog(1))*((*nodeposcol)[1][i]-cog(1))+
+//                                ((*nodeposcol)[2][i]-cog(2))*((*nodeposcol)[2][i]-cog(2)));
+//            if(disti<dmin)
+//            {
+//              nodecolid[0] = nodeposcol->Map().GID(i);
+//              dmin = disti;
+//            }
+//          }
+//          // check
+//          int procid = nodecolid[0];
+//          int summed = -1;
+//          discret_->Comm().SumAll(&procid,&summed,1);
+//          if(summed!=discret_->Comm().NumProc()*procid) dserror("Wrong check sum! Either communication went wrong or your column map node vector is incorrect!");
 
           nbcnodesets_.push_back(nodecolid);
 
@@ -303,8 +347,10 @@ void STATMECH::StatMechManager::ApplyNeumannValueStatMech(Teuchos::ParameterList
       const int gid = dofs[j];
       const int lid = systemvector->Map().LID(gid);
       if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+//      std::cout<<"1) Proc "<<discret_->Comm().MyPID()<<": fext["<<dofs[j]<<"] = "<<(*systemvector)[lid] <<std::endl;
       (*systemvector)[lid] += val[j]*curvefac;
-//      std::cout<<"Proc "<<discret_->Comm().MyPID()<<": Neumann value on Node "<<actnode->Id()<<" = "<<val[j]*curvefac<<std::endl;
+//      std::cout<<"  2) Proc "<<discret_->Comm().MyPID()<<": Neumann increment on Node "<<actnode->Id()<<" = "<<val[j]*curvefac<<std::endl;
+//      std::cout<<"    3) Proc "<<discret_->Comm().MyPID()<<": fext["<<dofs[j]<<"] = "<<(*systemvector)[lid] <<std::endl;
     }
   }
   return;

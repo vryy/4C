@@ -36,8 +36,8 @@ namespace SEARCH
 // object for octree-type search
 class Octree
 {
-	public:
-	//! \brief constructor
+  public:
+  //! \brief constructor
   Octree(Teuchos::RCP<std::vector<double> > periodlength,
          Teuchos::RCP<DRT::Discretization> discret,
          Teuchos::RCP<Epetra_Map> bspotrowmap,
@@ -56,7 +56,7 @@ class Octree
     LINALG::Matrix<6,1> limits;
     public:
     //Constructor
-    OctreeNode(LINALG::Matrix<6,1>& inlimits); //
+    OctreeNode(LINALG::Matrix<6,1>& inlimits);
     //Destructor
     virtual ~OctreeNode() {};
 
@@ -147,6 +147,7 @@ class BinSearch
         ~Bin() {};
         const int& GetBinID() const {return binid_;}
         const std::vector<int>& GetBinMembers() const {return binmembers_;}
+        const int NumBinMembers() const {return (const int)binmembers_.size();}
         void AddMember(const int& memberid);
       private:
         int binid_;
@@ -167,6 +168,8 @@ class BinSearch
     const std::vector<int> GetSurroundingBins(const std::vector<int> indices);
 
     bool HaveBin(const int& binid);
+
+    const std::vector<Bin>& GetAllBins() const {return bins_;}
 
   private:
 
