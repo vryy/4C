@@ -1985,7 +1985,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
                         false);
 
     // flowrate = uint o normal
-    const double flowrate = ( my::velint_.Dot(my::unitnormal_)//- gridvelint.Dot(my::unitnormal_)
+    const double flowrate = ( my::velint_.Dot(my::unitnormal_)- gridvelint.Dot(my::unitnormal_)
         ) * porosity_gp;
 
     // store flowrate at first dof of each node
