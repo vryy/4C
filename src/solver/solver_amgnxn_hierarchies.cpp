@@ -344,6 +344,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
   // Add offset for the finest level
   Teuchos::ParameterList& MatrixList = paramListFromXml.sublist("Matrix");
   MatrixList.set<int>("DOF offset",offsetFineLevel);
+  MatrixList.set<int>("number of equations",numdf);
 
   // Build up hierarchy
   ParameterListInterpreter mueLuFactory(paramListFromXml);
