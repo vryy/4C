@@ -24,7 +24,6 @@ RESTART                         0
 NUMSTRUCDIS                     0
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 THERM_HEATFLUX                  Initial  // None, Current, Initial
 THERM_TEMPERATURE               Yes

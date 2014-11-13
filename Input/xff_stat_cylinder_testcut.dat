@@ -16,7 +16,6 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 FILESTEPS                       1
 FLUID_SOL                       Yes

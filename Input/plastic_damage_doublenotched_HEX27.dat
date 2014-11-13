@@ -57,7 +57,6 @@ NUMTHERMDIS                     0
 FILESTEPS                       1000
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      yes
-OUTPUT_GID                      No
 PREFIX_GROUP_ID                 No
 STDOUTEVRY                      1
 STRUCT_COUPLING_STRESS          No

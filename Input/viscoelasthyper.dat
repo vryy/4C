@@ -21,7 +21,6 @@ STRUCTURE DIS structure NODE 15 QUANTITY dispy VALUE -1.07594063903314746e-01 TO
 STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE 6.46209916210210511e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 21 QUANTITY dispy VALUE -5.37965550977025989e-02 TOLERANCE 1e-6
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      Yes
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   cauchy

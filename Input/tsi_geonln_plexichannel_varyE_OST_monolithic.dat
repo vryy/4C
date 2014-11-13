@@ -46,7 +46,6 @@ NUMTHERMDIS                     1
 FILESTEPS                       1000
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
 PREFIX_GROUP_ID                 No
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes

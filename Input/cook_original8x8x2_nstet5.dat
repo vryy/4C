@@ -7,7 +7,6 @@ DIM                             3
 --------------------------------------------------------------DISCRETISATION
 NUMSTRUCDIS                     1
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy                        // Cauchy 2PK

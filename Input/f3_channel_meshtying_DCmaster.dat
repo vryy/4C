@@ -22,7 +22,6 @@ FLUID_STRESS                    Yes
 FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         Yes
 OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No

@@ -29,7 +29,6 @@ FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes                             // Yes,No,yes,no,YES,NO
 STRUCT_STRAIN                   no //GL // No,no,NO,Yes,yes,YES,EA,ea,GL,gl

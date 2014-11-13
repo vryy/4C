@@ -19,7 +19,6 @@ PROBLEMTYP                      Ale
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      yes
 FILESTEPS                       1000
 STDOUTEVRY                      1

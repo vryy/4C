@@ -31,7 +31,6 @@ FLUID_STRESS                    No
 FLUID_VIS                       No
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 THERM_HEATFLUX                  No

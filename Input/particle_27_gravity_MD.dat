@@ -21,7 +21,6 @@ RESTART                         0
 //RESTART                       950
 SHAPEFCT                        Meshfree
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No

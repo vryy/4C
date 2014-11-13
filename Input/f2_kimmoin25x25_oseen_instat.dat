@@ -20,7 +20,6 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 FLUID_SOL                       Yes
 FILESTEPS                       1000

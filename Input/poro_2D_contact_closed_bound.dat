@@ -23,7 +23,6 @@ PROBLEMTYP                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  No

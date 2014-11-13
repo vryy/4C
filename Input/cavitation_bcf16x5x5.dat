@@ -18,7 +18,6 @@ DIM                             3
 PROBLEMTYP Cavitation //Particle
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No

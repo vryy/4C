@@ -19,7 +19,6 @@ NUMDF                           6
 PROBLEMTYP                      Two_Phase_Flow
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No

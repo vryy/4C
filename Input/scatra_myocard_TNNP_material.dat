@@ -17,7 +17,6 @@ DIM                             3
 PROBLEMTYP                      Cardiac_Monodomain
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No

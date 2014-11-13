@@ -39,7 +39,6 @@ NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
 THERM_HEATFLUX                  Current
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Current

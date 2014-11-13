@@ -20,7 +20,6 @@ DIM           2
 PROBLEMTYP                      Acoustics
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 ------------------------------------------------------------ACOUSTIC DYNAMIC
 LINEAR_SOLVER                   1

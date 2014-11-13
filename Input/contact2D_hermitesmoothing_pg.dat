@@ -31,7 +31,6 @@ NUMAIRWAYSDIS                   0
 PROBLEMTYP                      Structure
 RESTART                         0
 -----------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes

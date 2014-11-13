@@ -35,7 +35,6 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   no
 ----------------------------------------------------------STRUCTURAL DYNAMIC

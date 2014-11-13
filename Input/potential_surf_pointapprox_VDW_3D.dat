@@ -33,7 +33,6 @@ FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
 STRUCT_DISP                     Yes
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No

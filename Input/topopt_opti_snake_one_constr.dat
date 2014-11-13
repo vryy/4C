@@ -21,7 +21,6 @@ DIM                             2
 PROBLEMTYP                      Fluid_Top_Opt
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No

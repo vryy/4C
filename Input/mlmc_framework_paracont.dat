@@ -28,7 +28,6 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy                        // Cauchy 2PK

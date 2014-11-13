@@ -32,7 +32,6 @@ FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
 OUTPUT_BIN                      Yes
-OUTPUT_GID                      No
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 THERM_HEATFLUX                  No

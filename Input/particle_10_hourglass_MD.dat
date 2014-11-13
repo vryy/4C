@@ -31,7 +31,6 @@ TYPE                            Particle
 CUTOFF_RADIUS                   1.5E-2
 BOUNDINGBOX                     -0.0251 -0.0281 -0.0001 0.0251 0.0251 0.07051
 -----------------------------------------------------------------IO
-OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No

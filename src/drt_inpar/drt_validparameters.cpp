@@ -788,9 +788,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io = list->sublist("IO",false,"");
 
-  // Parameter OUTPUT_GID currently not used, but will be kept
-  // AN 2013_05
-  setStringToIntegralParameter<int>("OUTPUT_GID","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("OUTPUT_GMSH","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("OUTPUT_BIN","yes","Do you want to have binary output?",yesnotuple,yesnovalue,&io);
 
   // Output every iteration (for debugging purposes)

@@ -16,7 +16,6 @@ RESTART                         0
 NUMFLUIDDIS                     1
 NUMALEDIS                       1
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      Yes
 OUTPUT_BIN                      Yes
 FLUID_SOL                       Yes
 FLUID_STRESS                    No

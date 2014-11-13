@@ -20,7 +20,6 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMALEDIS                       1
 --------------------------------------------------------------------------IO
-OUTPUT_GID                      Yes
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
