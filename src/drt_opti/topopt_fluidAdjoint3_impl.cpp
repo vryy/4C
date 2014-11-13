@@ -436,6 +436,19 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
             reacoeff_ = params[0];
           break;
         }
+        case INPAR::TOPOPT::optitest_cornerflow:
+        {
+          LINALG::Matrix<nsd_,1> gp(true);
+          gp.Multiply(xyze_,funct_);
+
+          if ((gp(0)>0.875) or
+              (gp(1)>0.875) or
+              (gp(0)<0.625 and gp(1)<0.625)) // wall
+            reacoeff_ = params[1];
+          else
+            reacoeff_ = params[0];
+          break;
+        }
         case INPAR::TOPOPT::optitest_lin_poro:
         {
           double diff = params[1]-params[0];
@@ -1506,56 +1519,55 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForce(
 
   if (fldAdPara_->TestCase() == INPAR::TOPOPT::adjointtest_no)
   {
-    if (fldAdPara_->ObjDissipationTerm())
-    {
-      const double dissipation = fldAdPara_->ObjDissipationFac();
+    const double dissipation = fldAdPara_->ObjDissipationFac(); // zero if no dissipation part in obj-fcn
 
-      /* ------------------------------------------------------------------------ *
-       * 1) evaluate bodyforce at new time step                                   *
-       * ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------ *
+     * 1) evaluate bodyforce at new time step                                   *
+     * ------------------------------------------------------------------------ */
 
-      // dissipation term due to reaction
+    // dissipation term due to reaction
+    if (fldAdPara_->ObjDissipationTerm()==INPAR::TOPOPT::obj_diss_yes)
       bodyforce_.Update(-2*dissipation*reacoeff_,fluidvelint_);
+
+    // dissipation term due to viscosity
+    if (is_higher_order_ele_) // TODO check this
+    {
+      LINALG::Matrix<nsd_,numderiv2_> fluidvelxy2(true);
+      fluidvelxy2.MultiplyNT(efluidvelnp,derxy2_);
+
+      LINALG::Matrix<nsd_,1> laplaceU(true);
+      for (int idim=0;idim<nsd_;++idim)
+      {
+        for (int jdim=0;jdim<nsd_;++jdim)
+          laplaceU(idim) += fluidvelxy2(idim,jdim);
+      }
+
+      bodyforce_.Update(dissipation*fldAdPara_->Viscosity(),laplaceU,1.0);
+    }
+
+
+    /* ------------------------------------------------------------------------ *
+     * 2) evaluate bodyforce at old time step in instationary case              *
+     * ------------------------------------------------------------------------ */
+    if (not fldAdPara_->IsStationary())
+    {
+      if (fldAdPara_->ObjDissipationTerm()==INPAR::TOPOPT::obj_diss_yes)
+        bodyforce_old_.Update(-2*dissipation*reacoeff_,fluidvelint_old_);
 
       // dissipation term due to viscosity
       if (is_higher_order_ele_) // TODO check this
       {
-        LINALG::Matrix<nsd_,numderiv2_> fluidvelxy2(true);
-        fluidvelxy2.MultiplyNT(efluidvelnp,derxy2_);
+        LINALG::Matrix<nsd_,numderiv2_> fluidvelxy2_old(true);
+        fluidvelxy2_old.MultiplyNT(efluidveln,derxy2_);
 
-        LINALG::Matrix<nsd_,1> laplaceU(true);
+        LINALG::Matrix<nsd_,1> laplaceU_old(true);
         for (int idim=0;idim<nsd_;++idim)
         {
           for (int jdim=0;jdim<nsd_;++jdim)
-            laplaceU(idim) += fluidvelxy2(idim,jdim);
+            laplaceU_old(idim) += fluidvelxy2_old(idim,jdim);
         }
 
-        bodyforce_.Update(dissipation*fldAdPara_->Viscosity(),laplaceU,1.0);
-      }
-
-
-      /* ------------------------------------------------------------------------ *
-       * 2) evaluate bodyforce at old time step in instationary case              *
-       * ------------------------------------------------------------------------ */
-      if (not fldAdPara_->IsStationary())
-      {
-        bodyforce_old_.Update(-2*dissipation*reacoeff_,fluidvelint_old_);
-
-        // dissipation term due to viscosity
-        if (is_higher_order_ele_) // TODO check this
-        {
-          LINALG::Matrix<nsd_,numderiv2_> fluidvelxy2_old(true);
-          fluidvelxy2_old.MultiplyNT(efluidveln,derxy2_);
-
-          LINALG::Matrix<nsd_,1> laplaceU_old(true);
-          for (int idim=0;idim<nsd_;++idim)
-          {
-            for (int jdim=0;jdim<nsd_;++jdim)
-              laplaceU_old(idim) += fluidvelxy2_old(idim,jdim);
-          }
-
-          bodyforce_old_.Update(dissipation*fldAdPara_->Viscosity(),laplaceU_old,1.0);
-        }
+        bodyforce_old_.Update(dissipation*fldAdPara_->Viscosity(),laplaceU_old,1.0);
       }
     }
   }
@@ -2275,15 +2287,15 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForceGalPart(
     else if (fldAdPara_->IsInitInstatStep())  objfac *= fldAdPara_->ThetaObj(); // time T
     else                                      objfac *= 1.0;
 
-    if (fldAdPara_->ObjDissipationTerm())
-    {
-      const double dissipation = fldAdPara_->ObjDissipationFac();
+    const double dissipation = fldAdPara_->ObjDissipationFac(); // zero if no dissipation part in obj-fcn
 
-      /*
-       *  d   /             \                    /         \
-       * --- |   reac*u*u   | (w)   =   2*reac |   u , w   |
-       *  du  \             /                    \         /
-       */
+    /*
+     *  d   /             \                    /         \
+     * --- |   reac*u*u   | (w)   =   2*reac |   u , w   |
+     *  du  \             /                    \         /
+     */
+    if (fldAdPara_->ObjDissipationTerm()==INPAR::TOPOPT::obj_diss_yes)
+    {
       for (int idim = 0; idim <nsd_; ++idim)
       {
         value = 2*objfac*dissipation*reacoeff_*fluidvelint_(idim);
@@ -2293,26 +2305,26 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForceGalPart(
           velforce(idim,vi)-=value*funct_(vi);
         }
       }  // end for(idim)
-
-
-      /*
-       *  d   /                    \                  /                    \
-       * --- |  2*mu*eps(u)*eps(u)  | (w)   =   4*mu |   eps(u) , nabla w   |
-       *  du  \                    /                  \                    /
-       */
-      for (int idim = 0; idim <nsd_; ++idim)
-      {
-        for (int jdim = 0; jdim<nsd_; ++jdim)
-        {
-          value = 2*objfac*fldAdPara_->Viscosity()*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
-
-          for (int vi=0;vi<nen_; ++vi)
-          {
-            velforce(jdim,vi)-= derxy_(idim,vi)*value;
-          }
-        }
-      }  // end for(idim)
     }
+
+
+    /*
+     *  d   /                    \                  /                    \
+     * --- |  2*mu*eps(u)*eps(u)  | (w)   =   4*mu |   eps(u) , nabla w   |
+     *  du  \                    /                  \                    /
+     */
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      for (int jdim = 0; jdim<nsd_; ++jdim)
+      {
+        value = 2*objfac*fldAdPara_->Viscosity()*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
+
+        for (int vi=0;vi<nen_; ++vi)
+        {
+          velforce(jdim,vi)-= derxy_(idim,vi)*value;
+        }
+      }
+    }  // end for(idim)
   }
   else // special cases -> no partial integration
   {
@@ -2881,7 +2893,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteSUPG(
     momres.Update(fac2*fldAdPara_->Density(),conv_fluidvel_new,-2.0*fac2*fldAdPara_->Viscosity(),fluidvisc_new_,1.0);
     momres.Update(-fldAdPara_->Density()*fac2,fluidbodyforce_new_,1.0);
   }
-
 
   for (int ui=0; ui<nen_; ++ui)
   {

@@ -44,7 +44,7 @@ DRT::ELEMENTS::TopOptParam::TopOptParam()
   min_poro_(-1.0),
   max_poro_(-1.0),
   smear_fac_(-1.0),
-  dissipation_(false),
+  dissipation_(INPAR::TOPOPT::obj_diss_no),
   pressure_drop_(false),
   dissipation_fac_(0.0),
   pressure_drop_fac_(0.0),
@@ -140,9 +140,11 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
   }
 
   // set if objective contains dissipation and according factor
-  dissipation_ = params.get<bool>("dissipation");
-  if (dissipation_) dissipation_fac_ = params.get<double>("dissipation_fac");
-  else              dissipation_fac_ = 0.0;
+  dissipation_ = params.get<INPAR::TOPOPT::ObjectiveDissipation>("dissipation");
+  if (dissipation_!=INPAR::TOPOPT::obj_diss_no)
+    dissipation_fac_ = params.get<double>("dissipation_fac");
+  else
+    dissipation_fac_ = 0.0;
 
   // set if objective contains pressure drop and according factor
   pressure_drop_ = params.get<bool>("pres_drop");

@@ -203,7 +203,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
   // ---------------------------------------------- objective variables
   // set if objective contains dissipation
-  fluidadjointtimeparams->set<bool>          ("OBJECTIVE_DISSIPATION" ,DRT::INPUT::IntegralValue<int>(opti,"OBJECTIVE_DISSIPATION")==1);
+  fluidadjointtimeparams->set<INPAR::TOPOPT::ObjectiveDissipation>("OBJECTIVE_DISSIPATION" ,DRT::INPUT::IntegralValue<INPAR::TOPOPT::ObjectiveDissipation>(opti,"OBJECTIVE_DISSIPATION"));
   // set if objective contains pressure drop
   fluidadjointtimeparams->set<bool>          ("OBJECTIVE_PRESSURE_DROP" ,DRT::INPUT::IntegralValue<int>(opti,"OBJECTIVE_PRESSURE_DROP")==1);
   // set objective's dissipation factor
@@ -272,7 +272,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     if (DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE") != INPAR::FLUID::topopt)
       dserror("This physical type is not supported for fluid topology optimization");
 
-    if ((fluidadjointtimeparams->get<bool>("OBJECTIVE_DISSIPATION") == true) and
+    if ((fluidadjointtimeparams->get<INPAR::TOPOPT::ObjectiveDissipation>("OBJECTIVE_DISSIPATION") != INPAR::TOPOPT::obj_diss_no) and
         (fluidadjointtimeparams->get<double>("DISSIPATION_FAC") <= 0.0))
         dserror("Optimizing dissipation with negative dissipation coefficient");
 

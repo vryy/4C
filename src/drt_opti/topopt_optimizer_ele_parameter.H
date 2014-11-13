@@ -54,7 +54,7 @@ public:
   const double MaxPoro() {return max_poro_;}
   const double SmearFac() {return smear_fac_;}
 
-  const bool ObjDissipationTerm() {return dissipation_;}
+  const INPAR::TOPOPT::ObjectiveDissipation ObjDissipationTerm() {return dissipation_;}
   const bool ObjPresDropTerm() {return pressure_drop_;}
   const double ObjDissipationFac() {return dissipation_fac_;}
   const double ObjPresDropFac() {return pressure_drop_fac_;}
@@ -99,7 +99,7 @@ private:
   /// @name objective parameters
 
   // set if objective contains dissipation
-  bool dissipation_;
+  INPAR::TOPOPT::ObjectiveDissipation dissipation_;
   // set if objective contains pressure drop
   bool pressure_drop_;
   // set objective's dissipation factor

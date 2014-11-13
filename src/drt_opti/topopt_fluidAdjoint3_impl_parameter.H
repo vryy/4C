@@ -45,7 +45,7 @@ public:
   void PrintAdjointParameter() const;
 
   bool GeneralParamsSet() {return set_general_adjoint_parameter_;}
-  bool ObjDissipationTerm() {return dissipation_;}
+  INPAR::TOPOPT::ObjectiveDissipation ObjDissipationTerm() {return dissipation_;}
   bool ObjPresDropTerm() {return pressure_drop_;}
   double ObjDissipationFac() {return dissipation_fac_;}
   double ObjPresDropFac() {return pressure_drop_fac_;}
@@ -82,7 +82,7 @@ private:
   bool set_general_adjoint_parameter_;
 
   // set if objective contains dissipation
-  bool dissipation_;
+  INPAR::TOPOPT::ObjectiveDissipation dissipation_;
   // set if objective contains pressure drop
   bool pressure_drop_;
   // set objective's dissipation factor

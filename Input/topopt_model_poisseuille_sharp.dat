@@ -60,7 +60,7 @@ TESTCASE                        test_primal
 ------------------------------------------------------FLUID DYNAMIC
 CALCERROR  topopt_channel
 CONVTOL                         1e-10
-GMSH_OUTPUT                     Yes
+GMSH_OUTPUT                     no
 INITIALFIELD                    field_by_function
 ITEMAX                          20
 LINEAR_SOLVER                   1

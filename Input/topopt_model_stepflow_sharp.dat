@@ -38,7 +38,7 @@ RESTOL                          1e-6
 TIMESTEP                        1.0
 UPRES                           1
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
-GMSH_OUTPUT                     Yes
+GMSH_OUTPUT                     no
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MATID                           2
@@ -59,7 +59,7 @@ INITIALFIELD                    zero_field//field_by_function
 TESTCASE                        test_primal
 ------------------------------------------------------FLUID DYNAMIC
 CONVTOL                         1e-10
-GMSH_OUTPUT                     Yes
+GMSH_OUTPUT                     no
 INITIALFIELD                    field_by_function
 ITEMAX                          20
 LINEAR_SOLVER                   1

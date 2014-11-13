@@ -6027,10 +6027,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("RESTOL",1e-5,"Convergence tolerance of the objective function",&topoptcontrol);
   DoubleParameter("INCTOL",1e-5,"Convergence tolerance of the optimized variable",&topoptcontrol);
 
-  BoolParameter("OBJECTIVE_DISSIPATION","No","dissipation part of the objective function",&topoptcontrol);
-  BoolParameter("OBJECTIVE_PRESSURE_DROP","No","pressure drop part of the objective function",&topoptcontrol);
-
+  setStringToIntegralParameter<int>("OBJECTIVE_DISSIPATION","No","Cdissipation part of the objective function",
+      tuple<std::string>(
+          "No",
+          "Yes",
+          "Physical"),
+          tuple<int>(
+              INPAR::TOPOPT::obj_diss_no,
+              INPAR::TOPOPT::obj_diss_yes,
+              INPAR::TOPOPT::obj_diss_physical),
+              &topoptcontrol);
   DoubleParameter("DISSIPATION_FAC",-1.0,"factor for the dissipation part of the objective",&topoptcontrol);
+
+  BoolParameter("OBJECTIVE_PRESSURE_DROP","No","pressure drop part of the objective function",&topoptcontrol);
   DoubleParameter("PRESSURE_DROP_FAC",-1.0,"factor for the mean pressure drop part of the objective",&topoptcontrol);
 
   BoolParameter("OUTPUT_EVERY_ITER","No","write output of every iteration",&topoptcontrol);
@@ -6077,6 +6086,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
           "test_workflow_without_fluiddata",
           "test_channel",
           "test_channel_with_step",
+          "test_cornerflow",
           "test_lin_poro",
           "test_quad_poro",
           "test_cubic_poro"),
@@ -6087,6 +6097,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::TOPOPT::optitest_workflow_without_fluiddata,
               INPAR::TOPOPT::optitest_channel,
               INPAR::TOPOPT::optitest_channel_with_step,
+              INPAR::TOPOPT::optitest_cornerflow,
               INPAR::TOPOPT::optitest_lin_poro,
               INPAR::TOPOPT::optitest_quad_poro,
               INPAR::TOPOPT::optitest_cub_poro),

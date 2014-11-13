@@ -275,59 +275,56 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
     // volume constraint
     densint += fac_*(edens.Dot(funct_) - optiparams_->VolBd());
 
-    // dissipation in objective present?
-    if (optiparams_->ObjDissipationTerm())
+    switch (optiparams_->TimeIntScheme())
     {
-      switch (optiparams_->TimeIntScheme())
+    case INPAR::FLUID::timeint_stationary:
+    case INPAR::FLUID::timeint_one_step_theta: // handle these two cases together
+    {
+      for (int timestep=0;timestep<=optiparams_->NumTimesteps();timestep++)
       {
-      case INPAR::FLUID::timeint_stationary:
-      case INPAR::FLUID::timeint_one_step_theta: // handle these two cases together
-      {
-        for (int timestep=0;timestep<=optiparams_->NumTimesteps();timestep++)
+        if (optiparams_->IsStationary())
+          timestep=1; // just one stationary time step 1
+
+        evel = efluidvel.find(timestep)->second;
+
+        fluidvelint_.Multiply(evel,funct_);
+        fluidvelxy_.MultiplyNT(evel,derxy_);
+
+        // weighting of the timesteps
+        // if stationary, we have the second case with theta = 1, so all is ok
+        double objfac = 0.0;
+        if (timestep==0) // first time step -> factor 1-theta (old sol at first time step)
+          objfac = 1.0 - optiparams_->ThetaObj();
+        else if (timestep==optiparams_->NumTimesteps()) // last time step -> factor theta (new sol at last time step)
+          objfac = optiparams_->ThetaObj();
+        else // all other time steps -> factor 1-theta as old sol, factor theta as new sol -> overall factor 1
+          objfac = 1.0;
+
+        if (optiparams_->OptiCase() == INPAR::TOPOPT::optitest_workflow_without_fluiddata)
+          value -= objfac*edens.Dot(funct_)*edens.Dot(funct_);
+        else // standard case
         {
-          if (optiparams_->IsStationary())
-            timestep=1; // just one stationary time step 1
-
-          evel = efluidvel.find(timestep)->second;
-
-          fluidvelint_.Multiply(evel,funct_);
-          fluidvelxy_.MultiplyNT(evel,derxy_);
-
-          // weighting of the timesteps
-          // if stationary, we have the second case with theta = 1, so all is ok
-          double objfac = 0.0;
-          if (timestep==0) // first time step -> factor 1-theta (old sol at first time step)
-            objfac = 1.0 - optiparams_->ThetaObj();
-          else if (timestep==optiparams_->NumTimesteps()) // last time step -> factor theta (new sol at last time step)
-            objfac = optiparams_->ThetaObj();
-          else // all other time steps -> factor 1-theta as old sol, factor theta as new sol -> overall factor 1
-            objfac = 1.0;
-
-          if (optiparams_->OptiCase() == INPAR::TOPOPT::optitest_workflow_without_fluiddata)
-            value -= objfac*edens.Dot(funct_)*edens.Dot(funct_);
-          else // standard case
-          {
+          if (optiparams_->ObjDissipationTerm()==INPAR::TOPOPT::obj_diss_yes)
             value += objfac*poroint_*fluidvelint_.Dot(fluidvelint_);
 
-            for (int idim=0;idim<nsd_;idim++)
+          for (int idim=0;idim<nsd_;idim++)
+          {
+            for (int jdim=0;jdim<nsd_;jdim++)
             {
-              for (int jdim=0;jdim<nsd_;jdim++)
-              {
-                value += objfac*optiparams_->Viscosity()*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
-              }
+              value += objfac*optiparams_->Viscosity()*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
             }
           }
         }
       }
-      break;
-      default:
-      {
-        dserror("unknown time integration scheme while evaluating objective gradient");
-        break;
-      }
-      }
-      objective += optiparams_->Dt()*fac_*optiparams_->ObjDissipationFac()*value;
     }
+    break;
+    default:
+    {
+      dserror("unknown time integration scheme while evaluating objective gradient");
+      break;
+    }
+    }
+    objective += optiparams_->Dt()*fac_*optiparams_->ObjDissipationFac()*value; // zero if no dissipation in obj-fcn
   }
   //------------------------------------------------------------------------
   //  end loop over integration points
@@ -505,10 +502,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
   const double timefac = optiparams_->Theta();
   const double timefac_old = 1.0-optiparams_->Theta();
 
-  // dissipation in objective present?
-  double dissipation_fac = 0.0;
-  if (optiparams_->ObjDissipationTerm())
-    dissipation_fac = optiparams_->ObjDissipationFac();
+  double dissipation_fac = optiparams_->ObjDissipationFac();
 
   //------------------------------------------------------------------------
   //  start loop over integration points
@@ -554,7 +548,8 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
           evel = efluidvels.find(timestep)->second;
           fluidvelint_.Multiply(evel,funct_);
 
-          value += objfac*dissipation_fac*fluidvelint_.Dot(fluidvelint_); // dissipation part, zero if not used
+          if (optiparams_->ObjDissipationTerm()==INPAR::TOPOPT::obj_diss_yes)
+            value += objfac*dissipation_fac*fluidvelint_.Dot(fluidvelint_); // dissipation part, zero if not used
 
 
           //------------------------------------------------------------------------
@@ -714,6 +709,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::EvalPorosityAtIntPoint(
     {
     case INPAR::TOPOPT::optitest_channel:
     case INPAR::TOPOPT::optitest_channel_with_step:
+    case INPAR::TOPOPT::optitest_cornerflow:
     {
       dserror("Discontinuous setting here! Algorithm should stop earlier!");
       break;

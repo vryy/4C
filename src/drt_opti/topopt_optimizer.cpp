@@ -63,6 +63,7 @@ gradienttype_(DRT::INPUT::IntegralValue<INPAR::TOPOPT::GradientType>(params_,"GR
   {
   case INPAR::TOPOPT::optitest_channel:
   case INPAR::TOPOPT::optitest_channel_with_step:
+  case INPAR::TOPOPT::optitest_cornerflow:
   case INPAR::TOPOPT::optitest_lin_poro:
   case INPAR::TOPOPT::optitest_quad_poro:
   case INPAR::TOPOPT::optitest_cub_poro:
@@ -526,6 +527,7 @@ void TOPOPT::Optimizer::ImportFlowParams(
           {
           case INPAR::TOPOPT::optitest_channel:
           case INPAR::TOPOPT::optitest_channel_with_step:
+          case INPAR::TOPOPT::optitest_cornerflow:
           case INPAR::TOPOPT::optitest_lin_poro:
           case INPAR::TOPOPT::optitest_quad_poro:
           case INPAR::TOPOPT::optitest_cub_poro:
@@ -561,7 +563,7 @@ void TOPOPT::Optimizer::ImportFlowParams(
   opti_ele_params.set("theta",fluidParams_->get<double>("theta"));
 
   // objective parameter
-  opti_ele_params.set("dissipation",fluidParams_->get<bool>("OBJECTIVE_DISSIPATION"));
+  opti_ele_params.set("dissipation",fluidParams_->get<INPAR::TOPOPT::ObjectiveDissipation>("OBJECTIVE_DISSIPATION"));
   opti_ele_params.set("pres_drop",fluidParams_->get<bool>("OBJECTIVE_PRESSURE_DROP"));
 
   opti_ele_params.set("dissipation_fac",fluidParams_->get<double>("DISSIPATION_FAC"));

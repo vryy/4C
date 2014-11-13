@@ -1067,6 +1067,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
           {
           case INPAR::TOPOPT::optitest_channel:
           case INPAR::TOPOPT::optitest_channel_with_step:
+          case INPAR::TOPOPT::optitest_cornerflow:
           case INPAR::TOPOPT::optitest_lin_poro:
           case INPAR::TOPOPT::optitest_quad_poro:
           case INPAR::TOPOPT::optitest_cub_poro:
@@ -1094,11 +1095,11 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
   }
 
   // set if objective contains dissipation
-  eleparams.set<bool>("dissipation",params_->get<bool>("OBJECTIVE_DISSIPATION"));
+  eleparams.set<INPAR::TOPOPT::ObjectiveDissipation>("dissipation",params_->get<INPAR::TOPOPT::ObjectiveDissipation>("OBJECTIVE_DISSIPATION"));
   // set if objective contains pressure drop
   eleparams.set<bool>("presDrop",params_->get<bool>("OBJECTIVE_PRESSURE_DROP"));
   // set objective's dissipation factor
-  eleparams.set<double>("dissipationFac" ,params_->get<double>("DISSIPATION_FAC"));
+  eleparams.set<double>("dissipation_fac" ,params_->get<double>("DISSIPATION_FAC"));
   // set objective's pressure drop factor
   eleparams.set<double>("presDropFac" ,params_->get<double>("PRESSURE_DROP_FAC"));
 

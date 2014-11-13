@@ -37,6 +37,14 @@ namespace INPAR
       inc_and_res
     };
 
+    /// dissipation part of objective function
+    enum ObjectiveDissipation
+    {
+      obj_diss_no,
+      obj_diss_yes,
+      obj_diss_physical
+    };
+
     /// reentry point of reinitialization
     enum Restart
     {
@@ -113,6 +121,7 @@ namespace INPAR
       optitest_workflow_without_fluiddata,
       optitest_channel,
       optitest_channel_with_step,
+      optitest_cornerflow,
       optitest_lin_poro,
       optitest_quad_poro,
       optitest_cub_poro
