@@ -62,6 +62,19 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetPorosityAtGP(
         reacoeff_ = params[0];
       break;
     }
+    case INPAR::TOPOPT::optitest_cornerflow:
+    {
+      LINALG::Matrix<nsd_,1> gp(true);
+      gp.Multiply(xyze_,funct_);
+
+      if ((gp(0)>0.875) or
+          (gp(1)>0.875) or
+          (gp(0)<0.625 and gp(1)<0.625)) // wall
+        reacoeff_ = params[1];
+      else
+        reacoeff_ = params[0];
+      break;
+    }
     case INPAR::TOPOPT::optitest_lin_poro:
     {
       double diff = params[1]-params[0];
