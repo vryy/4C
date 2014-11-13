@@ -3,17 +3,14 @@
  \file growth_scd.H
 
  \brief
- This file contains routines for an integration point based growth law.
-It is derived from the growth law implemented in growth_ip.cpp with
-additional scalar dependency (scd), e.g. nutrients.
-
-See also Bachelor thesis Jasper Rieser (2013)
+This file contains routines for an integration point based and scalar dependend volumetric growth law.
+It is derived from the growth laws implemented in growth_ip.cpp and additional adds the scalar dependency, e.g. nutrients.
 
  <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
+   Maintainer: Moritz Thon
+               thon@lnm.mw.tum.de
+               http://www.mhpc.mw.tum.de
+               089 - 289-10364
  </pre>
  *----------------------------------------------------------------------*/
 
@@ -55,7 +52,7 @@ namespace MAT
       //@}
 
       // Coupling between stress dependent growth and reaction dependent growth
-      // it could be that the stress dependent growth has to be scaled with the reeaction term (ScaleConc)
+      // it could be that the stress dependent growth has to be scaled with the reaaction term (ScaleConc)
       // or that the reaction dependent growth is reduced by the presence of stresses (StressRed)
       const std::string* growthcoupl_;
 
@@ -65,7 +62,7 @@ namespace MAT
 
   }  // namespace PAR
 
-  class GrowthScdType : public GrowthType
+  class GrowthScdType : public GrowthMandelType
   {
   public:
 
@@ -82,7 +79,10 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for growth material
-  class GrowthScd : public Growth
+
+  /// See Bachelor thesis Jasper Rieser (2013, supervisor: Anh-Thu Vuong)
+  class GrowthScd : public GrowthMandel                                                    //
+
   {
   public:
 
@@ -132,11 +132,10 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growthscd; }
-
+    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_volumetric_scd; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthScd( *this ) ); }
+    Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthScd( *this ) ); }
 
     /// Setup
     void Setup
@@ -145,8 +144,8 @@ namespace MAT
       DRT::INPUT::LineDefinition* linedef ///< definition of element line
     );
 
-    /// Update
-    void Update();
+    /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
+    void ResetAll(int numgp);
 
     /// Evaluate material
     void Evaluate
@@ -187,14 +186,14 @@ namespace MAT
     Teuchos::RCP<MAT::Material> Matelastic() const { return matelastic_; }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::GrowthScd* Parameter() const { return paramsScd_; }
 
     ///Return concentration
     double GetConcentration() const {return concentration_;}
 
   protected:
     /// Evaluate growth function (overwrites implementation in stress based growth law)
-    virtual void EvaluateGrowthFunction
+    void EvaluateGrowthFunction
     (
         double & growthfunc,
         double traceM,
@@ -202,7 +201,7 @@ namespace MAT
     );
 
     /// Evaluate derivative of growth function w.r.t. growth factor (overwrites implementation in stress based growth law)
-    virtual void EvaluateGrowthFunctionDerivTheta
+    void EvaluateGrowthFunctionDerivTheta
     (
         double & dgrowthfunctheta,
         double traceM,
@@ -212,7 +211,7 @@ namespace MAT
     );
 
     /// Evaluate derivative of growth function w.r.t. Green-Lagrange-Strain (overwrites implementation in stress based growth law)
-    virtual void EvaluateGrowthFunctionDerivC
+    void EvaluateGrowthFunctionDerivC
     (
         LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdC,
         double traceM,
@@ -222,10 +221,7 @@ namespace MAT
         const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat
     );
 
-  private:
-
-    /// my material parameters
-    MAT::PAR::GrowthScd* params_;
+  protected:
 
     /// determinante of elastic deformation gradient F_e for each gauss point
     Teuchos::RCP<std::vector<double> > detFe_;
@@ -237,7 +233,133 @@ namespace MAT
     /// growth function value evaluated by the stress law
     double stressgrowthfunc;
 
-  };//class ScdGrowth
+  private:
+
+    /// my material parameters
+    MAT::PAR::GrowthScd* paramsScd_;
+
+  };//class GrowthScd
+
+
+
+  class GrowthScdACType : public DRT::ParObjectType
+  {
+  public:
+
+    std::string Name() const { return "GrowthScdACType"; }
+
+    static GrowthScdACType & Instance() { return instance_; };
+
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+  private:
+
+    static GrowthScdACType instance_;
+  }; //class ScdGrowthType
+
+  /*----------------------------------------------------------------------*/
+  /// Wrapper for growth material
+  class GrowthScdAC : public GrowthBasic                                                    //
+  {
+  public:
+
+    /// construct empty material object
+    GrowthScdAC();                                                                      //
+
+    /// construct the material object given material parameters
+    explicit GrowthScdAC(MAT::PAR::GrowthScd* params);                                  //
+
+    //! @name Packing and Unpacking
+
+    /*!
+      \brief Return unique ParObject id
+
+      every class implementing ParObject needs a unique id defined at the
+      top of drt_parobject.H (this file) and should return it in this method.
+    */
+    int UniqueParObjectId() const { return GrowthScdACType::Instance().UniqueParObjectId(); }
+
+
+    /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
+    void ResetAll(int numgp);
+
+    /*!
+      \brief Pack this class so it can be communicated
+
+      Resizes the std::vector data and stores all information of a class in it.
+      The first information to be stored in data has to be the
+      unique parobject id delivered by UniqueParObjectId() which will then
+      identify the exact class on the receiving processor.
+      This material contains history variables, which are packed for restart purposes.
+
+      \param data (in/out): char std::vector to store class information
+    */
+    void Pack(DRT::PackBuffer& data) const;
+    /*!
+      \brief Unpack data from a char std::vector into this class
+
+      The std::vector data contains all information to rebuild the
+      exact copy of an instance of a class on a different processor.
+      The first entry in data has to be an integer which is the unique
+      parobject id defined at the top of this file and delivered by
+      UniqueParObjectId().
+      History data is unpacked in restart.
+
+      \param data (in) : std::vector storing all data to be unpacked into this
+      instance.
+    */
+    void Unpack(const std::vector<char>& data);
+
+    //@}
+
+    /// material type
+    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_volumetric_scd; }
+
+
+    /// return copy of this material object
+    Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthScdAC( *this ) ); }
+
+    /// Setup
+    void Setup
+    (
+      int numgp,  ///< number of Gauss points
+      DRT::INPUT::LineDefinition* linedef ///< definition of element line
+    );
+
+    /// Evaluate material
+    void Evaluate
+    (
+        const LINALG::Matrix<3,3>* defgrd,
+        const LINALG::Matrix<6,1>* glstrain,
+        Teuchos::ParameterList& params,
+        LINALG::Matrix<6,1>* stress,
+        LINALG::Matrix<6,6>* cmat,
+        const int eleGID
+     );
+
+    /// Return elastic material
+    Teuchos::RCP<MAT::Material> Matelastic() const { return matelastic_; }
+
+    /// Return quick accessible material parameter data
+    MAT::PAR::GrowthScd* Parameter() const { return paramsScdAC_; }
+
+    ///Return concentration
+    //double GetConcentration() const {return concentration_;}
+
+  protected:
+
+    //Calculate the volumetric growth parameter
+    double CalculateTheta();
+
+    /// pointer to mean concentrations at present timestep
+    Teuchos::RCP<std::vector<double> > concentrations_;
+
+  private:
+
+    /// my material parameters
+    MAT::PAR::GrowthScd* paramsScdAC_;
+
+  };//class GrowthScdAC
 
 }  // namespace MAT
 

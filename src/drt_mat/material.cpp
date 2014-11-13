@@ -472,6 +472,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_genmax:
   case INPAR::MAT::m_growth_linear:
   case INPAR::MAT::m_growth_exponential:
+  case INPAR::MAT::m_growth_ac:
   case INPAR::MAT::mes_coupSVK:
   {
     return Teuchos::null;
@@ -539,7 +540,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::FourierIso* params = static_cast<MAT::PAR::FourierIso*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_growth:
+  case INPAR::MAT::m_growth_volumetric:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Growth(curmat));
@@ -581,7 +582,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ParticleMat* params = static_cast<MAT::PAR::ParticleMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_growthscd:
+  case INPAR::MAT::m_growth_volumetric_scd:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::GrowthScd(curmat));

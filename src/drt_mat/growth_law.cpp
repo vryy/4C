@@ -3,18 +3,45 @@
  \file growth_law.cpp
 
  \brief
-
+This file contains routines needed for the calculation of the volumetric growth
+parameter theta. The returned results can be either theta itself or its derivative
  <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
+   Maintainer: Moritz Thon
+               thon@lnm.mw.tum.de
+               http://www.mhpc.mw.tum.de
+               089 - 289-10364
  </pre>
  *----------------------------------------------------------------------*/
 
 
 #include "growth_law.H"
 #include "matpar_material.H"
+
+
+/*----------------------------------------------------------------------*
+ |  Constructor                                   (public)         02/10|
+ *----------------------------------------------------------------------*/
+MAT::GrowthLaw::GrowthLaw()
+  : params_(NULL)
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Copy-Constructor                             (public)          02/10|
+ *----------------------------------------------------------------------*/
+MAT::GrowthLaw::GrowthLaw(MAT::PAR::Parameter* params)
+  : params_(params)
+{
+}
+
+/// This is a law returning the derivatives of theta
+/// See e.g.:
+///- Lubarda, V. & Hoger, A., On the mechanics of solids with a growing mass,
+///  International Journal of Solids and Structures, 2002, 39, 4627-4664
+///- Himpel, G.; Kuhl, E.; Menzel, A. & Steinmann, P., Computational modelling
+///  of isotropic multiplicative growth, Computer Modeling in Engineering
+///  and Sciences, 2005, 8, 119-134
 
 Teuchos::RCP<MAT::Material> MAT::PAR::GrowthLawLinear::CreateMaterial()
 {
@@ -25,7 +52,6 @@ Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawLinear::CreateGrowthLaw()
 {
   return Teuchos::rcp(new MAT::GrowthLawLinear(this));
 }
-
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -49,7 +75,7 @@ MAT::PAR::GrowthLawLinear::GrowthLawLinear(
  |  Constructor                                   (public)         02/10|
  *----------------------------------------------------------------------*/
 MAT::GrowthLawLinear::GrowthLawLinear()
-  : params_(NULL)
+  : GrowthLaw(NULL)
 {
 }
 
@@ -58,7 +84,7 @@ MAT::GrowthLawLinear::GrowthLawLinear()
  |  Copy-Constructor                             (public)          02/10|
  *----------------------------------------------------------------------*/
 MAT::GrowthLawLinear::GrowthLawLinear(MAT::PAR::GrowthLawLinear* params)
-  : params_(params)
+  : GrowthLaw(params)
 {
 }
 
@@ -72,14 +98,15 @@ void MAT::GrowthLawLinear::EvaluateGrowthFunction
   double theta
 )
 {
+  MAT::PAR::GrowthLawLinear* params = Parameter();
   // parameters
-  const double hommandel   = params_->hommandel_;
-  const double thetaplus   = params_->thetaplus_; //1.5;
-  const double kthetaplus  = params_->kthetaplus_; //1.0; 0.5;
-  const double mthetaplus  = params_->mthetaplus_; //2.0; 4.0;
-  const double thetaminus  = params_->thetaminus_; //0.5;
-  const double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
-  const double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
+  const double hommandel   = params->hommandel_;
+  const double thetaplus   = params->thetaplus_; //1.5;
+  const double kthetaplus  = params->kthetaplus_; //1.0; 0.5;
+  const double mthetaplus  = params->mthetaplus_; //2.0; 4.0;
+  const double thetaminus  = params->thetaminus_; //0.5;
+  const double kthetaminus = params->kthetaminus_; //2.0; 0.25;
+  const double mthetaminus = params->mthetaminus_; //3.0; 5.0;
 
   double ktheta  = 0.0;
 
@@ -104,14 +131,15 @@ void MAT::GrowthLawLinear::EvaluateGrowthFunctionDerivTheta
   const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic
 )
 {
+  MAT::PAR::GrowthLawLinear* params = Parameter();
   // parameters
-  const double hommandel   = params_->hommandel_;
-  const double thetaplus   = params_->thetaplus_; //1.5;
-  const double kthetaplus  = params_->kthetaplus_; //1.0; 0.5;
-  const double mthetaplus  = params_->mthetaplus_; //2.0; 4.0;
-  const double thetaminus  = params_->thetaminus_; //0.5;
-  const double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
-  const double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
+  const double hommandel   = params->hommandel_;
+  const double thetaplus   = params->thetaplus_; //1.5;
+  const double kthetaplus  = params->kthetaplus_; //1.0; 0.5;
+  const double mthetaplus  = params->mthetaplus_; //2.0; 4.0;
+  const double thetaminus  = params->thetaminus_; //0.5;
+  const double kthetaminus = params->kthetaminus_; //2.0; 0.25;
+  const double mthetaminus = params->mthetaminus_; //3.0; 5.0;
 
   double ktheta  = 0.0;
   double dktheta = 0.0;
@@ -153,14 +181,15 @@ void MAT::GrowthLawLinear::EvaluateGrowthFunctionDerivC
   const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat
 )
 {
+  MAT::PAR::GrowthLawLinear* params = Parameter();
   // parameters
-  const double hommandel   = params_->hommandel_;
-  const double thetaplus   = params_->thetaplus_; //1.5;
-  const double kthetaplus  = params_->kthetaplus_; //1.0; 0.5;
-  const double mthetaplus  = params_->mthetaplus_; //2.0; 4.0;
-  const double thetaminus  = params_->thetaminus_; //0.5;
-  const double kthetaminus = params_->kthetaminus_; //2.0; 0.25;
-  const double mthetaminus = params_->mthetaminus_; //3.0; 5.0;
+  const double hommandel   = params->hommandel_;
+  const double thetaplus   = params->thetaplus_; //1.5;
+  const double kthetaplus  = params->kthetaplus_; //1.0; 0.5;
+  const double mthetaplus  = params->mthetaplus_; //2.0; 4.0;
+  const double thetaminus  = params->thetaminus_; //0.5;
+  const double kthetaminus = params->kthetaminus_; //2.0; 0.25;
+  const double mthetaminus = params->mthetaminus_; //3.0; 5.0;
 
   double ktheta  = 0.0;
 
@@ -182,7 +211,8 @@ void MAT::GrowthLawLinear::EvaluateGrowthFunctionDerivC
   return;
 }
 
-
+/// This is a law returning the derivatives of theta
+/// See e.g.: ???
 Teuchos::RCP<MAT::Material> MAT::PAR::GrowthLawExp::CreateMaterial()
 {
   return Teuchos::null;
@@ -192,7 +222,6 @@ Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawExp::CreateGrowthLaw()
 {
   return Teuchos::rcp(new MAT::GrowthLawExp(this));
 }
-
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -210,7 +239,7 @@ MAT::PAR::GrowthLawExp::GrowthLawExp(
  |  Constructor                                   (public)         02/10|
  *----------------------------------------------------------------------*/
 MAT::GrowthLawExp::GrowthLawExp()
-  : params_(NULL)
+  : GrowthLaw(NULL)
 {
 }
 
@@ -219,7 +248,7 @@ MAT::GrowthLawExp::GrowthLawExp()
  |  Copy-Constructor                             (public)          02/10|
  *----------------------------------------------------------------------*/
 MAT::GrowthLawExp::GrowthLawExp(MAT::PAR::GrowthLawExp* params)
-  : params_(params)
+  : GrowthLaw(params)
 {
 }
 
@@ -233,8 +262,9 @@ void MAT::GrowthLawExp::EvaluateGrowthFunction
   double theta
 )
 {
+  MAT::PAR::GrowthLawExp* params = Parameter();
   // parameters
-  const double mandel   = params_->mandel_;
+  const double mandel   = params->mandel_;
 
   growthfunc = theta * exp(-traceM*traceM/(mandel*mandel));
 }
@@ -251,8 +281,9 @@ void MAT::GrowthLawExp::EvaluateGrowthFunctionDerivTheta
   const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic
 )
 {
+  MAT::PAR::GrowthLawExp* params = Parameter();
   // parameters
-  const double mandel   = params_->mandel_;
+  const double mandel   = params->mandel_;
 
   double temp = 0.0;
   for (int i = 0; i < 6; i++)
@@ -287,8 +318,9 @@ void MAT::GrowthLawExp::EvaluateGrowthFunctionDerivC
   const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat
 )
 {
+  MAT::PAR::GrowthLawExp* params = Parameter();
   // parameters
-  const double mandel   = params_->mandel_;
+  const double mandel   = params->mandel_;
 
   {
     double expdC = - 2.0 * theta * traceM/(mandel*mandel)
@@ -304,4 +336,76 @@ void MAT::GrowthLawExp::EvaluateGrowthFunctionDerivC
   }
 
   return;
+}
+
+/// This is a growth law directly calculating theta itself
+
+Teuchos::RCP<MAT::Material> MAT::PAR::GrowthLawAC::CreateMaterial()
+{
+  return Teuchos::null;
+}
+
+Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawAC::CreateGrowthLaw()
+{
+  return Teuchos::rcp(new MAT::GrowthLawAC(this));
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+MAT::PAR::GrowthLawAC::GrowthLawAC(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: Parameter(matdata),
+  Sc1_(matdata->GetInt("SCALAR1")),
+  alpha_(matdata->GetDouble("ALPHA")),
+  Sc2_(matdata->GetInt("SCALAR2")),
+  beta_(matdata->GetDouble("BETA"))
+{
+  if (Sc1_ < 1)
+    dserror("At least on scalar field must induce growth");
+  if (alpha_ < 0)
+    dserror("The influence of scalar field SCALAR1 to growth can't be negativ");
+  if (Sc2_ < 1)
+    dserror("If you choose a second scalar field to induce growth, choose a existing one!!");
+  if (beta_ < 0)
+    dserror("The influence of scalar field SCALAR2 to growth can't be negativ");
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Constructor                                   (public)         02/10|
+ *----------------------------------------------------------------------*/
+MAT::GrowthLawAC::GrowthLawAC()
+  : GrowthLaw(NULL)
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Copy-Constructor                             (public)          02/10|
+ *----------------------------------------------------------------------*/
+MAT::GrowthLawAC::GrowthLawAC(MAT::PAR::GrowthLawAC* params)
+  : GrowthLaw(params)
+{
+}
+
+/*----------------------------------------------------------------------*
+ |Calculate Theta from the given mean concentrations          thon 11/14|
+ *----------------------------------------------------------------------*/
+double MAT::GrowthLawAC::CalculateTheta
+(
+    Teuchos::RCP<std::vector<double> > concentrations //pointer to a vector containing element wise mean concentrations
+)
+{
+  int Sc1 = Parameter()->Sc1_;
+  double alpha= Parameter()->alpha_;
+  int Sc2 = Parameter()->Sc2_; //if no second scalar is choosen to induce growth, this points out the first scalar field
+  double beta= Parameter()->beta_; //if no second scalar is choosen to induce growth, beta is zero and hence has no influence on growth
+
+
+  double theta = pow(1+ alpha * concentrations->at(Sc1-1) + beta * concentrations->at(Sc2-1),0.33333333333333333);
+
+  return theta;
 }

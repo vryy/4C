@@ -1482,9 +1482,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // integration point based growth
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_GROWTH",
-                                            "integration point based growth",
-                                            INPAR::MAT::m_growth));
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthVolumetric",
+                                            "volumetric growth",
+                                            INPAR::MAT::m_growth_volumetric));
 
     AddNamedInt(m,"GROWTHLAW","number of growth law in input file");
     AddNamedInt(m,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
@@ -1499,17 +1499,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
    // integration point based and scalar dependent growth
    {
      Teuchos::RCP<MaterialDefinition> m
-       = Teuchos::rcp(new MaterialDefinition("MAT_GrowthScd",
+       = Teuchos::rcp(new MaterialDefinition("MAT_GrowthVolumetricScd",
                                              "integration point based and scalar dependent growth",
-                                             INPAR::MAT::m_growthscd));
+                                             INPAR::MAT::m_growth_volumetric_scd));
 
      AddNamedInt(m,"GROWTHLAW","growth function: linear(Default) or exponential");
      AddNamedInt(m,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
      AddNamedReal(m,"STARTTIME","start growth after this time");
      AddNamedReal(m,"ENDTIME","end growth after this time");
      AddNamedReal(m,"TOL","tolerance for local Newton iteration");
-     AddNamedReal(m,"REARATE","substrate uptake rate coefficient");
-     AddNamedReal(m,"SATCOEFF","saturation coefficient for concentration dependent growth law");
+     AddNamedReal(m,"REARATE","substrate uptake rate coefficient",-1.0,true);
+     AddNamedReal(m,"SATCOEFF","saturation coefficient for concentration dependent growth law",-1.0,true);
      AddNamedString(m,"GROWTHCOUPL","Coupling between stress dependent growth and reaction dependent growth","ScaleConc", true);
 
      AppendMaterialDefinition(matlist,m);
@@ -1520,7 +1520,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // linear growth law
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_GROWTH_LINEAR",
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthLinear",
                                             "linear growth law",
                                             INPAR::MAT::m_growth_linear));
 
@@ -1540,11 +1540,28 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // exponential growth law
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_GROWTH_EXP",
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthExponential",
                                             "exponential growth law",
                                             INPAR::MAT::m_growth_exponential));
 
     AddNamedReal(m,"MANDEL","reference value for mandelstress");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // simple atherosclerosis growth law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAC",
+                                            "exponential growth law",
+                                            INPAR::MAT::m_growth_ac));
+
+    AddNamedInt(m,"SCALAR1","number of first growth inducing scalar");
+    AddNamedReal(m,"ALPHA","volume per first scalar's mass density");
+    AddNamedInt(m,"SCALAR2","number of second growth inducing scalar",1,true);
+    AddNamedReal(m,"BETA","volume per second scalar's mass density",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }

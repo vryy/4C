@@ -36,8 +36,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
                                         DRT::Element::LocationArray& la)
 {
 
-
-
   if(la.Size()>1)
   {
     //ask for the number ofs dofs of second dofset (fluid)
@@ -59,12 +57,22 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
       Teuchos::RCP<std::vector<double> >mytemp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
       DRT::UTILS::ExtractMyValues(*tempnp,*mytemp,la[1].lm_);
 
-      double meantemp = 0.0;
-      for (int i=0; i<numnod_; ++i){
-          meantemp +=  (*mytemp)[i]/numnod_;
-      }
-       params.set<double>("scalar",meantemp);
+      //number of scalars
+      int numscal=mytemp->size()/numnod_;
 
+      Teuchos::RCP<std::vector<double> > meantemp = Teuchos::rcp(new std::vector<double>(numscal));
+
+      //calculate for each scalar the mean scalar value of this element
+      for (int i=0; i<numscal;i++)
+      {
+        double meantempi = 0.0;
+        for (int j=0; j<numnod_; ++j){
+            meantempi +=  (*mytemp)[i+numscal*j];
+        }
+        meantemp->at(i) =meantempi/numnod_;
+      }
+
+     params.set< Teuchos::RCP<std::vector<double> > >("mean_concentrations",meantemp);
     }
 
     DRT::Problem* problem = DRT::Problem::Instance();

@@ -22,10 +22,11 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
 
+//MATERIALS
 #include "../drt_mat/biofilm.H"
 #include "../drt_mat/scatra_growth_scd.H"
 #include "../drt_mat/growth_scd.H"
-//#include "../drt_mat/scatra_reaction_mat.H"
+#include "../drt_mat/growth_law.H"
 #include "../drt_mat/matlist_reactions.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/matlist.H"
@@ -274,40 +275,54 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatGrowthScd(
   const Teuchos::RCP<const MAT::ScatraGrowthScd>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ScatraGrowthScd>(material);
 
-  //strategy to obtain theta from the structure at equivalent gauss-point
-  //access structure discretization
-   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-   structdis = DRT::Problem::Instance()->GetDis("structure");
-   //get corresponding structure element (it has the same global ID as the scatra element)
-   DRT::Element* structele = structdis->gElement(my::eid_);
-   if (structele == NULL)
-     dserror("Structure element %i not on local processor", my::eid_);
-
-   const Teuchos::RCP<const MAT::GrowthScd>& structmat
-             = Teuchos::rcp_dynamic_cast<const MAT::GrowthScd>(structele->Material());
-   if(structmat->MaterialType() != INPAR::MAT::m_growthscd)
-     dserror("invalid structure material for scalar dependent growth");
-
-   const double theta    = structmat->Gettheta_atgp(iquad);
-   const double dtheta   = structmat->Getdtheta_atgp(iquad);
-   const double thetaold = structmat->Getthetaold_atgp(iquad);
-   const double detFe    = structmat->GetdetFe_atgp(iquad);
-
-  // get constant diffusivity
+  // get and save constant diffusivity
   diffmanager->SetIsotropicDiff(actmat->Diffusivity(),k);
 
-  // get substrate concentration at n+1 or n+alpha_F at integration point
-  const double csnp = my::funct_.Dot(my::ephinp_[k]);
+  //strategy to obtain theta from the structure at equivalent gauss-point
+  //access structure discretization
+  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
+  structdis = DRT::Problem::Instance()->GetDis("structure");
+  //get corresponding structure element (it has the same global ID as the scatra element)
+  DRT::Element* structele = structdis->gElement(my::eid_);
+  if (structele == NULL)
+    dserror("Structure element %i not on local processor", my::eid_);
 
-  // set reaction coefficient
-  reamanager->SetReaCoeff(actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe),k);
-  // set derivative of reaction coefficient
-  reamanager->SetReaCoeffDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp,theta,thetaold,1.0),k,k);
+  const Teuchos::RCP<const MAT::GrowthScd>& structmat
+          = Teuchos::rcp_dynamic_cast<const MAT::GrowthScd>(structele->Material());
+  if (structmat == Teuchos::null)
+    dserror("dynamic cast of structure material GrowthScd failed.");
+  if(structmat->MaterialType() != INPAR::MAT::m_growth_volumetric_scd)
+    dserror("invalid structure material for scalar dependent growth");
 
-  // set density at various time steps and density gradient factor to 1.0/0.0
-  densn      = 1.0;
-  densnp     = 1.0;
-  densam     = 1.0;
+  if (structmat->Parameter()->growthlaw_->MaterialType() == INPAR::MAT::m_growth_linear or
+      structmat->Parameter()->growthlaw_->MaterialType() == INPAR::MAT::m_growth_exponential)
+  {
+    const double theta    = structmat->Gettheta_atgp(iquad);
+    const double dtheta   = structmat->Getdtheta_atgp(iquad);
+    const double thetaold = structmat->Getthetaold_atgp(iquad);
+    const double detFe    = structmat->GetdetFe_atgp(iquad);
+
+    // get substrate concentration at n+1 or n+alpha_F at integration point
+    const double csnp = my::funct_.Dot(my::ephinp_[k]);
+
+    // set reaction coefficient
+    reamanager->SetReaCoeff(actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe),k);
+    // set derivative of reaction coefficient
+    reamanager->SetReaCoeffDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp,theta,thetaold,1.0),k,k);
+
+    // set density at various time steps and density gradient factor to 1.0/0.0
+    densn      = 1.0;
+    densnp     = 1.0;
+    densam     = 1.0;
+  }
+  else if (structmat->Parameter()->growthlaw_->MaterialType() == INPAR::MAT::m_growth_ac)
+    {
+    dserror("In the case of MAT_GrowthAC one should not end up in here, since the growth does only change the scalars field size/volume. And this is already cared due to the conservative formulation you hopefully use!");
+    }
+  else
+  {
+    dserror("Your growth law is not a valid one!");
+  }
 
   return;
 }
