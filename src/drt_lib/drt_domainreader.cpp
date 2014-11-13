@@ -198,7 +198,11 @@ void DomainReader::Partition(int* nodeoffset)
     comm_->Broadcast(lower_bound_, sizeof(lower_bound_)/sizeof(lower_bound_[0]), 0);
     comm_->Broadcast(upper_bound_, sizeof(upper_bound_)/sizeof(upper_bound_[0]), 0);
     comm_->Broadcast(   interval_,       sizeof(interval_)/sizeof(interval_[0]), 0);
-    comm_->Broadcast(reinterpret_cast<int*>(&autopartition), 1, 0);
+    {
+      int tmp = autopartition;
+      comm_->Broadcast(&tmp, 1, 0);
+      autopartition = tmp;
+    }
 
     std::vector<char> data;
     if (myrank == 0)
@@ -529,8 +533,9 @@ void ParticleDomainReader::Partition(int* nodeoffset)
   }
 
   // check whether a particle domain is specified
-  comm_->Broadcast(reinterpret_cast<int*>(&haveparticledomain), 1, 0);
-  if(haveparticledomain == false)
+  int tmp = haveparticledomain;
+  comm_->Broadcast(&tmp, 1, 0);
+  if(!tmp)
     return;
 
   // broadcast
