@@ -258,35 +258,38 @@ void STATMECH::StatMechManager::OutputNeumannPointForce(const double&           
 {
   std::stringstream fileneumanptforce;
 
+  int curvenum = statmechparams_.get<int>("NBCCURVENUMBER", 0)-1;
+  double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  double amp = statmechparams_.get<double>("NBCFORCEAMP",0.0);
+
   for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
   {
     if(pid==discret_->Comm().MyPID())
     {
+      FILE* fp = NULL;
+      fp = fopen(filename.str().c_str(), "a");
+
       int nodesetindex = timeintervalstep_-bctimeindex_;
-      if (discret_->NodeRowMap()->MyGID(nbcnodesets_[nodesetindex][0]))
+      // necessary adjustment beyond the first timeintervalstep_ since timeintervalstep_ does not mark the current position in actiontime_
+      // but the next position to reach (hence --).
+      if((int)nbcnodesets_.size()==1)
+        nodesetindex = 0;
+      else if(timeintervalstep_>1)// && timeintervalstep_<(int)actiontime_->size())
+        nodesetindex--;
+
+      for(int i=0; i<(int)nbcnodesets_[nodesetindex].size(); i++)
       {
-        FILE* fp = NULL;
-        fp = fopen(filename.str().c_str(), "a");
-        // necessary adjustment beyond the first timeintervalstep_ since timeintervalstep_ does not mark the current position in actiontime_
-        // but the next position to reach (hence --).
-        if((int)nbcnodesets_.size()==1)
-          nodesetindex = 0;
-        else
+        if (discret_->NodeRowMap()->MyGID(nbcnodesets_[nodesetindex][0]))
         {
-          if(timeintervalstep_>1)// && timeintervalstep_<(int)actiontime_->size())
-            nodesetindex--;
+          fileneumanptforce <<std::scientific<<std::setprecision(8)<<time<<"\t"<<nbcnodesets_[nodesetindex][0]<<"\t"<<std::scientific<<std::setprecision(8)<<amp*curvefac<<std::endl;
         }
-        int curvenum = statmechparams_.get<int>("NBCCURVENUMBER", 0)-1;
-        double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-        double amp = statmechparams_.get<double>("NBCFORCEAMP",0.0);
-        fileneumanptforce <<std::scientific<<std::setprecision(8)<<time<<"\t"<<nbcnodesets_[nodesetindex][0]<<"\t"<<amp*curvefac<<std::endl;
-        fputs(fileneumanptforce.str().c_str(), fp);
-        fclose(fp);
       }
+
+      fputs(fileneumanptforce.str().c_str(), fp);
+      fclose(fp);
     }
     discret_->Comm().Barrier();
   }
-
 
   return;
 }
