@@ -457,7 +457,7 @@ void POROELAST::PORO_SCATRA_Mono::SetupSystemMatrix()
   // 1st diagonal block (upper left): poro weighting - poro solution
   //----------------------------------------------------------------------
   // get matrix block
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat_pp = PoroField()->SystemBlockMatrix();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat_pp = PoroField()->BlockSystemMatrix();
 
   // uncomplete matrix block (appears to be required in certain cases)
   mat_pp->UnComplete();

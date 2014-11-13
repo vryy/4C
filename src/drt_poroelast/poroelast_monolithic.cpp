@@ -137,8 +137,6 @@ void POROELAST::Monolithic::Solve()
   // --> On #rhs_ is the positive force residuum
   // --> On #systemmatrix_ is the effective dynamic tangent matrix
 
-  //---------------------------------------- initialise equilibrium loop and norms
-  SetupNewton();
 
   //---------------------------------------------- iteration loop
   // equilibrium iteration loop (loop over k)
@@ -154,21 +152,10 @@ void POROELAST::Monolithic::Solve()
     // 1.) Update(iterinc_),
     // 2.) EvaluateForceStiffResidual(),
     // 3.) PrepareSystemForNewtonSolve()
-    Evaluate(iterinc_);
+    Evaluate(iterinc_,iter_==1);
     //std::cout << "  time for Evaluate diagonal blocks: " << timer.ElapsedTime() << "\n";
     //timer.ResetStartTime();
 
-    // check whether we have a sanely filled tangent matrix
-    if (not systemmatrix_->Filled())
-    {
-      dserror("Effective tangent matrix must be filled here");
-    }
-
-    // create full monolithic rhs vector
-    SetupRHS(iter_==1);
-
-    //Modify System for Contact!
-    EvalPoroContact();
 
     //std::cout << "  time for Evaluate SetupRHS: " << timer.ElapsedTime() << "\n";
     //timer.ResetStartTime();
@@ -268,7 +255,7 @@ void POROELAST::Monolithic::Evaluate(
 /*----------------------------------------------------------------------*
  | evaluate the single fields                              vuong 01/12   |
  *----------------------------------------------------------------------*/
-void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x, bool firstiter)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::Evaluate");
 
@@ -281,10 +268,26 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   {
     // extract displacement sx and fluid fx incremental vector of global
     // unknown incremental vector x (different for splits)
-    ExtractFieldVectors(x, sx, fx,iter_==1);
+    ExtractFieldVectors(x, sx, fx,firstiter);
+
+    // update poro iterinc
+    if (PartOfMultifieldProblem_)
+      UpdatePoroIterinc(x);
   }
 
   Evaluate(sx,fx);
+
+  // check whether we have a sanely filled tangent matrix
+  if (not systemmatrix_->Filled())
+  {
+    dserror("Effective tangent matrix must be filled here");
+  }
+
+  // create full monolithic rhs vector
+  SetupRHS(firstiter);
+
+  //Modify System for Contact!
+  EvalPoroContact();
 } // Evaluate()
 
 /*----------------------------------------------------------------------*
@@ -518,6 +521,18 @@ void POROELAST::Monolithic::SetupRHS(bool firstcall)
   // add rhs terms due to no penetration condition
   noPenHandle_->ApplyCondRHS(iterinc_,rhs_);
 } // SetupRHS()
+
+
+/*----------------------------------------------------------------------*
+ | prepare time step (protected)                                        |
+ *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::PrepareTimeStep()
+{
+  PoroBase::PrepareTimeStep();
+
+  //---------------------------------------- initialise equilibrium loop and norms
+  SetupNewton();
+}
 
 
 /*----------------------------------------------------------------------*
@@ -1316,8 +1331,7 @@ void POROELAST::Monolithic::PoroFDCheck()
       std::cout << "\n******************" << spaltenr + 1
           << ". Spalte!!***************" << std::endl;
 
-    Evaluate(iterinc);
-    SetupRHS();
+    Evaluate(iterinc, iter_ == 1);
 
     rhs_copy->Update(1.0, *rhs_, 0.0);
 
@@ -1379,8 +1393,7 @@ void POROELAST::Monolithic::PoroFDCheck()
 
   }
 
-  Evaluate(iterinc);
-  SetupRHS();
+  Evaluate(iterinc, iter_ == 1);
 
   stiff_approx->FillComplete();
 
@@ -1803,7 +1816,7 @@ bool POROELAST::Monolithic::SetupSolver()
 /*----------------------------------------------------------------------*
  |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::SystemSparseMatrix()
+Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::SystemMatrix()
 {
   return systemmatrix_->Merge();
 }
@@ -1927,7 +1940,7 @@ const Epetra_Map& POROELAST::Monolithic::StructureDomainMap()
 /*----------------------------------------------------------------------*
  |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> POROELAST::Monolithic::DofRowMap() const
+Teuchos::RCP<const Epetra_Map> POROELAST::Monolithic::DofRowMap()
 {
   return blockrowdofmap_->FullMap();
 }

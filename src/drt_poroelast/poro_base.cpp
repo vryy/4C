@@ -73,9 +73,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
       PartOfMultifieldProblem_(false),
       matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->PoroelastDynamicParams(),"MATCHINGGRID"))
 {
-  if(DRT::Problem::Instance()->ProblemType()==prb_fpsi or
-     DRT::Problem::Instance()->ProblemType()==prb_fps3i
-     )
+  if(DRT::Problem::Instance()->ProblemType()!= prb_poroelast)
     PartOfMultifieldProblem_=true;
 
   // access the structural discretization
@@ -194,17 +192,17 @@ POROELAST::PoroBase::~PoroBase()
 /*----------------------------------------------------------------------*
  | read restart information for given time step (public)   vuong 01/12  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroBase::ReadRestart( int restart)
+void POROELAST::PoroBase::ReadRestart(const int step)
 {
-  if (restart)
+  if (step)
   {
     // apply current velocity and pressures to structure
     SetFluidSolution();
     // apply current structural displacements to fluid
     SetStructSolution();
 
-    FluidField()->ReadRestart(restart);
-    StructureField()->ReadRestart(restart);
+    FluidField()->ReadRestart(step);
+    StructureField()->ReadRestart(step);
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if(submeshes_)
@@ -216,15 +214,15 @@ void POROELAST::PoroBase::ReadRestart( int restart)
     SetStructSolution();
 
     // second ReadRestart needed due to the coupling variables
-    FluidField()->ReadRestart(restart);
-    StructureField()->ReadRestart(restart);
+    FluidField()->ReadRestart(step);
+    StructureField()->ReadRestart(step);
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if(submeshes_)
       AddDofSets(true);
 
     //set the current time in the algorithm (taken from fluid field)
-    SetTimeStep(FluidField()->Time(), restart);
+    SetTimeStep(FluidField()->Time(), step);
 
     // Material pointers to other field were deleted during ReadRestart().
     // They need to be reset.
@@ -244,7 +242,7 @@ void POROELAST::PoroBase::ReadRestart( int restart)
 }
 
 /*----------------------------------------------------------------------*
- | prepare time step (protected)                         vuong 01/12       |
+ | prepare time step (public)                            vuong 01/12    |
  *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::PrepareTimeStep()
 {
@@ -395,14 +393,14 @@ void POROELAST::PoroBase::TimeLoop()
 /*----------------------------------------------------------------------*
  |                                                        vuong 01/12   |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroBase::Output()
+void POROELAST::PoroBase::Output(bool forced_writerestart)
 {
   // Note: The order is important here! In here control file entries are
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
   FluidField()->StatisticsAndOutput();
-  StructureField()->Output();
+  StructureField()->Output(forced_writerestart);
 } // Monolithic::Output()
 
 /*----------------------------------------------------------------------*

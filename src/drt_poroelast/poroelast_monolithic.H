@@ -23,6 +23,7 @@
 #include "poro_base.H"
 #include "poroelast_utils.H"
 
+//#include "../linalg/linalg_mapextractor.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -72,6 +73,9 @@ namespace POROELAST
       //! setup composed right hand side from field solvers
       virtual void SetupRHS(bool firstcall=false) ;
 
+      //! start a new time step
+      virtual void PrepareTimeStep();
+
       /// setup composed system matrix from field solvers
       virtual void SetupSystemMatrix() { SetupSystemMatrix(*systemmatrix_); }
 
@@ -97,14 +101,14 @@ namespace POROELAST
       //Todo: remove this method!
       //this method merges the block matrix when called.
       //As this is very expensive this,this method is not meant to be used any more.
-      //Use SystemBlockMatrix() instead and assemble the blocks separately, if necessary.
-      Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix();
+      //Use BlockSystemMatrix() instead and assemble the blocks separately, if necessary.
+      Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
       //! block system matrix
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemBlockMatrix(){return systemmatrix_;};
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix(){return systemmatrix_;};
 
       //! full monolithic dof row map
-      Teuchos::RCP<const Epetra_Map> DofRowMap() const;
+      Teuchos::RCP<const Epetra_Map> DofRowMap();
 
       //! dof row map of Structure field
       Teuchos::RCP<const Epetra_Map> DofRowMapStructure();
@@ -116,7 +120,7 @@ namespace POROELAST
       Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const {return combinedDBCMap_;};
 
       //! right hand side vector
-      Teuchos::RCP<const Epetra_Vector> RHS() const
+      Teuchos::RCP<const Epetra_Vector> RHS()
           {return rhs_;};
 
       //! zero all entries in iterinc vector
@@ -148,9 +152,11 @@ namespace POROELAST
       //! create linear solver (setup of parameter lists, etc...)
       void CreateLinearSolver();
 
-      //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-      void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc //!< increment between time step n and n+1
-          );
+      //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
+      void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc, //!< increment between iteration i and i+1
+                    bool firstiter = false
+      );
+
       //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
       void Evaluate(
           Teuchos::RCP<const Epetra_Vector> sx,

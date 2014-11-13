@@ -590,8 +590,7 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
     dserror("No existing increment vector !");
   }
 
-  PoroField() -> Evaluate(sx);
-  PoroField() -> UpdatePoroIterinc(sx);
+  PoroField() -> Evaluate(sx, iter_ == 1);
 
   Teuchos::RCP<Epetra_Vector> porointerfacedisplacements_FPSI = StructToAle_FPSI(PoroField() -> StructureField() -> ExtractInterfaceDispnp(true));
   AleField()  -> ApplyInterfaceDisplacements(porointerfacedisplacements_FPSI);

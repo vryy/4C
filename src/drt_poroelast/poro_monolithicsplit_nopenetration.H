@@ -69,7 +69,7 @@ namespace POROELAST
     virtual void Update();
 
     /// read restart data
-    virtual void ReadRestart(int restart);
+    virtual void ReadRestart(const int step);
 
     //! contains text to PrintNewtonIter
     virtual void PrintNewtonIterTextStream(std::ostringstream& oss);
@@ -98,7 +98,7 @@ namespace POROELAST
     virtual void RecoverLagrangeMultiplierAfterTimeStep();
 
     //! output
-    virtual void Output();
+    virtual void Output(bool forced_writerestart = false);
 
     //! setup of coupling object and systemmatrixes
     virtual void SetupCouplingAndMatrixes();

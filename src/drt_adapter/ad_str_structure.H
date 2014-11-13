@@ -16,14 +16,15 @@ Maintainer: Georg Hammerl
 #ifndef ADAPTER_STRUCTURE_H
 #define ADAPTER_STRUCTURE_H
 
-#include <Teuchos_RCP.hpp>
+//#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
+//#include <Epetra_Vector.h>
+//#include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
 #include "../drt_inpar/inpar_structure.H"
+#include "ad_field.H"
 
 // forward declarations:
 namespace DRT
@@ -113,7 +114,7 @@ namespace ADAPTER {
   \author u.kue
   \date 11/07
   */
-  class Structure
+  class Structure : public Field
   {
   public:
 

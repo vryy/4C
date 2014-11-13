@@ -18,9 +18,9 @@
  | headers                                                              |
  *----------------------------------------------------------------------*/
 #include <Epetra_Time.h>
-#include <Epetra_Vector.h>
 
 #include "../drt_adapter/adapter_algorithmbase.H"
+#include "../drt_adapter/ad_field.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "poroelast_utils.H"
@@ -60,7 +60,7 @@ namespace POROELAST
   class NoPenetrationConditionHandle;
 
   /// base class for porous media algorithm
-  class PoroBase: public ADAPTER::AlgorithmBase
+  class PoroBase: public ADAPTER::AlgorithmBase, public ADAPTER::Field
   {
     public:
 
@@ -71,7 +71,7 @@ namespace POROELAST
       virtual ~PoroBase();
 
       /// read restart data
-      virtual void ReadRestart(int restart);
+      void ReadRestart(const int step);
 
       //! outer level time loop
       virtual void TimeLoop();
@@ -91,16 +91,16 @@ namespace POROELAST
       const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField(){return fluid_;}
 
       //! composed system matrix
-//      virtual Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix()
-//          {dserror("SystemSparseMatrix() only available for monolithic schemes!"); return Teuchos::null;};
+      virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
+          {dserror("SystemMatrix() only available for monolithic schemes!"); return Teuchos::null;};
 
       //! block system matrix
-      virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemBlockMatrix()
-          {dserror("SystemSparseMatrix() only available for monolithic schemes!"); return Teuchos::null;};
+      virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+          {dserror("BlockSystemMatrix() only available for monolithic schemes!"); return Teuchos::null;};
 
       //! full monolithic dof row map
-      virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const
-         {dserror("dof maps only available for monolithic schemes!"); return Teuchos::null;};
+      virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
+         {dserror("DofRowMap() only available for monolithic schemes!"); return Teuchos::null;};
 
       //! dof row map of Structure field
       virtual Teuchos::RCP<const Epetra_Map> DofRowMapStructure()=0;
@@ -114,19 +114,23 @@ namespace POROELAST
 
       //! unique map of all dofs that should be constrained with DBC
       virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const
-          {dserror("combined DBC map only available for monolithic schemes!"); return Teuchos::null;};
+          {dserror("CombinedDBCMap() only available for monolithic schemes!"); return Teuchos::null;};
 
-      //! unique map of all dofs that should be constrained with DBC
-      virtual Teuchos::RCP<const Epetra_Vector> RHS() const
-          {dserror("RHS only available for monolithic schemes!"); return Teuchos::null;};
+      //! return rhs of poro problem
+      virtual Teuchos::RCP<const Epetra_Vector> RHS()
+          {dserror("RHS() only available for monolithic schemes!"); return Teuchos::null;};
 
       //@}
+
+      //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
+      void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc //!< increment between iteration i and i+1
+      ){dserror("Evaluate() only available for monolithic schemes!");};
 
       //! evaluate system matrix
       virtual void Evaluate(
           Teuchos::RCP<const Epetra_Vector> sx,
           Teuchos::RCP<const Epetra_Vector> fx)
-          {dserror("Evaluate only available for monolithic schemes!");};
+          {dserror("Evaluate() only available for monolithic schemes!");};
 
       //! solve time step (depending on algorithm)
       virtual void Solve() = 0;
@@ -138,7 +142,7 @@ namespace POROELAST
       virtual bool SetupSolver(){return false;};
 
       virtual void SetupRHS(bool firstcall=false)
-          {dserror("SetupRHS only available for monolithic schemes!"); };
+          {dserror("SetupRHS() only available for monolithic schemes!"); };
 
       //! @name Time loop building blocks
 
@@ -152,7 +156,7 @@ namespace POROELAST
       virtual void PrepareOutput();
 
       //! output
-      virtual void Output();
+      virtual void Output(bool forced_writerestart = false);
 
       //@}
 

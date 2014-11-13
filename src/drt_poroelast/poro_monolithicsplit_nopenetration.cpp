@@ -651,12 +651,12 @@ void POROELAST::MonolithicSplitNoPenetration::Update()
 }
 
 /*----------------------------------------------------------------------*
-| RecoverLagrangeMultiplier (protected)              ager 09/14        |
+| RecoverLagrangeMultiplier (protected)               ager 09/14        |
  *----------------------------------------------------------------------*/
-void POROELAST::MonolithicSplitNoPenetration::Output()
+void POROELAST::MonolithicSplitNoPenetration::Output(bool forced_writerestart)
 {
   //call base class
-  MonolithicSplit::Output();
+  MonolithicSplit::Output(forced_writerestart);
 
   //for now, we always write the lagrange multiplier
   Teuchos::RCP<Epetra_Vector> fulllambda = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*StructureField()->DofRowMap()));
@@ -740,19 +740,19 @@ void POROELAST::MonolithicSplitNoPenetration::SetupCouplingAndMatrixes()
 void POROELAST::MonolithicSplitNoPenetration::PrepareTimeStep()
 {
   //call base class
-  POROELAST::PoroBase::PrepareTimeStep();
+  POROELAST::Monolithic::PrepareTimeStep();
 }
 
 /*----------------------------------------------------------------------*
  | Read Restart (public)                          vuong 09/14        |
  *----------------------------------------------------------------------*/
-void POROELAST::MonolithicSplitNoPenetration::ReadRestart(int restart)
+void POROELAST::MonolithicSplitNoPenetration::ReadRestart(const int step)
 {
   //call base class
-  POROELAST::PoroBase::ReadRestart(restart);
+  POROELAST::PoroBase::ReadRestart(step);
 
   //get lagrange multiplier and D matrix
-  if(restart)
+  if(step)
   {
     //get the structure reader (this is where the lagrange multiplier was saved)
     IO::DiscretizationReader reader(StructureField()->Discretization(), StructureField()->Step());

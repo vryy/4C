@@ -261,8 +261,6 @@ void FPSI::Monolithic_Plain::SetupRHS(bool firstcall)
 
   firstcall_ = firstcall;
 
-  PoroField()->SetupRHS(firstcall_);
-
   SetupVector(*rhs_,
               PoroField() ->RHS(),
               FluidField()->RHS(),
@@ -287,11 +285,11 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
     mat.UnComplete();
 
     // get single field block matrices
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase>       pbm    = PoroField() -> SystemBlockMatrix();
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase>       pbm    = PoroField() -> BlockSystemMatrix();
 
     // Todo: use only blockmatrix pbm instead of sparse matrix
     // vuong 08/14
-    Teuchos::RCP<LINALG::SparseMatrix>                p      = PoroField() -> SystemSparseMatrix();
+    Teuchos::RCP<LINALG::SparseMatrix>                p      = PoroField() -> SystemMatrix();
 
     const Teuchos::RCP<LINALG::SparseMatrix>          f      = FluidField()-> SystemSparseMatrix();
     const Teuchos::RCP<LINALG::BlockSparseMatrixBase> fbm    = FluidField()-> BlockSystemMatrix();

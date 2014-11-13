@@ -60,13 +60,16 @@ POROELAST::MonolithicSplit::MonolithicSplit(const Epetra_Comm& comm,
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplit::PrepareTimeStep()
 {
-  // counter and print header
-  IncrementTimeAndStep();
-  PrintHeader();
+  //call base class
+  POROELAST::Monolithic::PrepareTimeStep();
 
-  // call the predictor
-  StructureField()->PrepareTimeStep();
-  FluidField()->PrepareTimeStep();
+  // counter and print header
+  //IncrementTimeAndStep();
+  //PrintHeader();
+
+//  // call the predictor
+//  StructureField()->PrepareTimeStep();
+//  FluidField()->PrepareTimeStep();
 
   if (evaluateinterface_)
   {
