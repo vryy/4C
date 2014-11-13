@@ -155,7 +155,7 @@ bool TOPOPT::Algorithm::OptimizationFinished()
   if (testcase!=INPAR::TOPOPT::adjointtest_no and optimizer_->Iter()>=1)
     return true; // special test cases for adjoint equations -> no optimization
 
-  if (FluidField().Discretization()->Comm().MyPID()==0)
+  if (FluidField()->Discretization()->Comm().MyPID()==0)
   {
     printf("\n");
     printf("          +----------------------------------------------------------------------+          \n");
@@ -172,7 +172,7 @@ bool TOPOPT::Algorithm::OptimizationFinished()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareFluidField()
 {
-  dynamic_cast<FLD::TimIntTopOpt&>(FluidField()).SetTopOptData(
+  Teuchos::rcp_dynamic_cast<FLD::TimIntTopOpt>(FluidField())->SetTopOptData(
       Optimizer()->Density(),
       optimizer_);
 
@@ -185,7 +185,7 @@ void TOPOPT::Algorithm::PrepareFluidField()
     if (initfield != INPAR::FLUID::initfield_field_by_function and
         initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
       startfuncno=-1;
-    FluidField().SetInitialFlowField(initfield,startfuncno);
+    FluidField()->SetInitialFlowField(initfield,startfuncno);
   }
 
   return;
@@ -198,7 +198,7 @@ void TOPOPT::Algorithm::PrepareFluidField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::DoFluidField()
 {
-  if (FluidField().Discretization()->Comm().MyPID()==0)
+  if (FluidField()->Discretization()->Comm().MyPID()==0)
   {
     printf("\n");
     printf("          +----------------------------------------------------------------------------+          \n");
@@ -206,7 +206,7 @@ void TOPOPT::Algorithm::DoFluidField()
     printf("          +----------------------------------------------------------------------------+          \n");
   }
 
-  FluidField().Integrate();
+  FluidField()->Integrate();
   return;
 }
 
@@ -284,7 +284,7 @@ void TOPOPT::Algorithm::FDGradient(const int numFDPoints)
       Update();
 
       // data of primal (fluid) problem no more required
-      FluidField().Reset(
+      FluidField()->Reset(
           true,
           DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
           Optimizer()->Iter()+2);
@@ -317,7 +317,7 @@ void TOPOPT::Algorithm::PrepareOptimizationStep()
     optimizer_->Gradients();
 
   // data of primal (fluid) problem no more required
-  FluidField().Reset(
+  FluidField()->Reset(
       true,
       DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
       Optimizer()->Iter()+2);
@@ -401,7 +401,7 @@ void TOPOPT::Algorithm::Restart(const int step, const INPAR::TOPOPT::Restart typ
   case INPAR::TOPOPT::fluid:
   {
     dserror("currently not implemented restart type");
-    FluidField().ReadRestart(step);
+    FluidField()->ReadRestart(step);
     break;
   }
   case INPAR::TOPOPT::gradient:

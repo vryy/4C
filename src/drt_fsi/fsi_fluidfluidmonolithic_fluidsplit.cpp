@@ -71,13 +71,13 @@ void FSI::FluidFluidMonolithicFluidSplit::Update()
 
   if (relaxing_ale)
   {
-    FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
+    FluidField()->ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
 
     if (Comm().MyPID() == 0)
       IO::cout << "Relaxing Ale" << IO::endl;
 
     AleField()->Solve();
-    FluidField().ApplyMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
+    FluidField()->ApplyMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
   }
 
   // update fields
@@ -124,7 +124,7 @@ void FSI::FluidFluidMonolithicFluidSplit::SetupDBCMapExtractor()
   // structure DBC
   dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
   // fluid DBC (including background & embedded discretization)
-  dbcmaps.push_back(FluidField().GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(FluidField()->GetDBCMapExtractor()->CondMap());
   // ALE-DBC-maps, free of FSI DOF
   std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
   aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());
@@ -144,26 +144,26 @@ void FSI::FluidFluidMonolithicFluidSplit::SetupDBCMapExtractor()
 void FSI::FluidFluidMonolithicFluidSplit::Output()
 {
   StructureField()->Output();
-  FluidField().    Output();
+  FluidField()->    Output();
 
   // output Lagrange multiplier
   {
     // the Lagrange multiplier lives on the FSI interface
     // for output, we want to insert lambda into a full vector, defined on the embedded fluid field
     // 1. insert into vector containing all fluid DOF
-    Teuchos::RCP<Epetra_Vector> lambdafull = FluidField().Interface()->InsertFSICondVector(
+    Teuchos::RCP<Epetra_Vector> lambdafull = FluidField()->Interface()->InsertFSICondVector(
         FSI::MonolithicFluidSplit::GetLambda());
     // 2. extract the embedded fluid part
-    Teuchos::RCP<Epetra_Vector> lambdaemb = FluidField().XFluidFluidMapExtractor()->ExtractFluidVector(lambdafull);
+    Teuchos::RCP<Epetra_Vector> lambdaemb = FluidField()->XFluidFluidMapExtractor()->ExtractFluidVector(lambdafull);
 
     const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
     const int upres = fsidyn.get<int>("UPRES");
-    if ((uprestart != 0 && FluidField().Step() % uprestart == 0) || FluidField().Step() % upres == 0)
-      FluidField().DiscWriter()->WriteVector("fsilambda", lambdaemb);
+    if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
+      FluidField()->DiscWriter()->WriteVector("fsilambda", lambdaemb);
   }
   AleField()->Output();
-  FluidField().LiftDrag();
+  FluidField()->LiftDrag();
 
   if (StructureField()->GetConstraintManager()->HaveMonitor())
   {
@@ -180,17 +180,17 @@ void FSI::FluidFluidMonolithicFluidSplit::ReadRestart(int step)
   // Read Lagrange Multiplier (associated with embedded fluid)
   {
     Teuchos::RCP<Epetra_Vector> lambdaemb = Teuchos::rcp(new Epetra_Vector(
-        *(FluidField().XFluidFluidMapExtractor()->FluidMap()),true));
-    IO::DiscretizationReader reader = IO::DiscretizationReader(FluidField().Discretization(),step);
+        *(FluidField()->XFluidFluidMapExtractor()->FluidMap()),true));
+    IO::DiscretizationReader reader = IO::DiscretizationReader(FluidField()->Discretization(),step);
     reader.ReadVector(lambdaemb, "fsilambda");
     // Insert into vector containing the whole merged fluid DOF
-    Teuchos::RCP<Epetra_Vector> lambdafull = FluidField().XFluidFluidMapExtractor()->InsertFluidVector(lambdaemb);
-    FSI::MonolithicFluidSplit::SetLambda(FluidField().Interface()->ExtractFSICondVector(lambdafull));
+    Teuchos::RCP<Epetra_Vector> lambdafull = FluidField()->XFluidFluidMapExtractor()->InsertFluidVector(lambdaemb);
+    FSI::MonolithicFluidSplit::SetLambda(FluidField()->Interface()->ExtractFSICondVector(lambdafull));
   }
 
   StructureField()->ReadRestart(step);
-  FluidField().ReadRestart(step);
+  FluidField()->ReadRestart(step);
   AleField()->ReadRestart(step);
 
-  SetTimeStep(FluidField().Time(),FluidField().Step());
+  SetTimeStep(FluidField()->Time(),FluidField()->Step());
 }

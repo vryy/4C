@@ -66,8 +66,8 @@ void FSI::ConstrMonolithic::GeneralSetup()
   const int ndim = DRT::Problem::Instance()->NDim();
   coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
                                  StructureField()->Interface()->FSICondMap(),
-                                *FluidField().Discretization(),
-                                 FluidField().Interface()->FSICondMap(),
+                                *FluidField()->Discretization(),
+                                 FluidField()->Interface()->FSICondMap(),
                                 "FSICoupling",
                                 ndim);
 
@@ -82,8 +82,8 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
   // fluid to ale at the interface
 
-  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface()->FSICondMap(),
+  icoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
+                                   FluidField()->Interface()->FSICondMap(),
                                   *AleField()->Discretization(),
                                    AleField()->Interface()->FSICondMap(),
                                   "FSICoupling",
@@ -100,16 +100,16 @@ void FSI::ConstrMonolithic::GeneralSetup()
     dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
   const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
 
-  coupfa.SetupCoupling(*FluidField().Discretization(),
+  coupfa.SetupCoupling(*FluidField()->Discretization(),
                        *AleField()->Discretization(),
                        *fluidnodemap,
                        *alenodemap,
                        ndim);
 
-  FluidField().SetMeshMap(coupfa.MasterDofMap());
+  FluidField()->SetMeshMap(coupfa.MasterDofMap());
 
   aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(0)));
 
@@ -128,7 +128,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
   // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
   std::vector<Teuchos::RCP<const Epetra_Map> > dbcmaps;
   dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
-  dbcmaps.push_back(FluidField().GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(FluidField()->GetDBCMapExtractor()->CondMap());
   dbcmaps.push_back(aleintersectionmap);
   Teuchos::RCP<const Epetra_Map> dbcmap = LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
 
@@ -415,7 +415,7 @@ FSI::ConstrMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
 //  // setup tests for interface
 //
 //  std::vector<Teuchos::RCP<const Epetra_Map> > interface;
-//  interface.push_back(FluidField().Interface()->FSICondMap());
+//  interface.push_back(FluidField()->Interface()->FSICondMap());
 //  interface.push_back(Teuchos::null);
 //  LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
 //
@@ -443,7 +443,7 @@ FSI::ConstrMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
   // setup tests for fluid velocities
 
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidvel;
-  fluidvel.push_back(FluidField().InnerVelocityRowMap());
+  fluidvel.push_back(FluidField()->InnerVelocityRowMap());
   fluidvel.push_back(Teuchos::null);
   LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(),fluidvel);
 
@@ -471,7 +471,7 @@ FSI::ConstrMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
   // setup tests for fluid pressure
 
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidpress;
-  fluidpress.push_back(FluidField().PressureRowMap());
+  fluidpress.push_back(FluidField()->PressureRowMap());
   fluidpress.push_back(Teuchos::null);
   LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(),fluidpress);
 
@@ -589,7 +589,7 @@ void FSI::ConstrMonolithic::CreateSystemMatrix(bool structuresplit)
   case INPAR::FSI::PreconditionedKrylov:
     systemmatrix_ = Teuchos::rcp(new ConstrOverlappingBlockMatrix(Extractor(),
                                                                 *StructureField(),
-                                                                FluidField(),
+                                                                *FluidField(),
                                                                 *AleField(),
                                                                 structuresplit,
                                                                 DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),

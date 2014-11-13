@@ -550,7 +550,7 @@ void FSI::MonolithicXFEM::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 //
 //  SetupVector(*ig,
 //              StructureField()->InitialGuess(),
-//              FluidField().InitialGuess(),
+//              FluidField()->InitialGuess(),
 //              AleField().InitialGuess(),
 //              0.0);
 }

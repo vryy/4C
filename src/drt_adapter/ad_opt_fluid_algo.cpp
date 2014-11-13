@@ -44,6 +44,6 @@ ADAPTER::FluidTopOptCouplingAlgorithm::~FluidTopOptCouplingAlgorithm()
 void ADAPTER::FluidTopOptCouplingAlgorithm::ReadRestart(int step)
 {
   dserror("change");
-  FluidField().ReadRestart(step);
+  FluidField()->ReadRestart(step);
   return;
 }

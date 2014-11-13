@@ -44,7 +44,7 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(const Epetra_Comm& comm,
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT")==1)
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
-    //fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField().Discretization()));
+    //fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField()->Discretization()));
   }
 
   std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -95,8 +95,8 @@ void FSI::MonolithicNoNOX::SetupSystem()
 
   coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
                                  StructureField()->Interface()->FSICondMap(),
-                                *FluidField().Discretization(),
-                                 FluidField().Interface()->FSICondMap(),
+                                *FluidField()->Discretization(),
+                                 FluidField()->Interface()->FSICondMap(),
                                 "FSICoupling",
                                  ndim);
 
@@ -111,8 +111,8 @@ void FSI::MonolithicNoNOX::SetupSystem()
 
   // fluid to ale at the interface
 
-  icoupfa.SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface()->FSICondMap(),
+  icoupfa.SetupConditionCoupling(*FluidField()->Discretization(),
+                                   FluidField()->Interface()->FSICondMap(),
                                    *AleField()->Discretization(),
                                    AleField()->Interface()->FSICondMap(),
                                    "FSICoupling",
@@ -129,16 +129,16 @@ void FSI::MonolithicNoNOX::SetupSystem()
     dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
   const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
 
-  coupfa.SetupCoupling(*FluidField().Discretization(),
+  coupfa.SetupCoupling(*FluidField()->Discretization(),
                        *AleField()->Discretization(),
                        *fluidnodemap,
                        *alenodemap,
                         ndim);
 
-  FluidField().SetMeshMap(coupfa.MasterDofMap());
+  FluidField()->SetMeshMap(coupfa.MasterDofMap());
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -394,11 +394,11 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   // transfer the current ale mesh positions to the fluid field
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField()->WriteAccessDispnp());
-  FluidField().ApplyMeshDisplacement(fluiddisp);
+  FluidField()->ApplyMeshDisplacement(fluiddisp);
 
   {
    Epetra_Time tf(Comm());
-   FluidField().Evaluate(fx);
+   FluidField()->Evaluate(fx);
    //IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
   }
 
@@ -637,7 +637,7 @@ void FSI::MonolithicNoNOX::Update()
   if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton and aleupdate )
   {
     // Set the old state of ALE displacement before relaxation
-    FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
+    FluidField()->ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
   }
 
   RecoverLagrangeMultiplier();
@@ -652,12 +652,12 @@ void FSI::MonolithicNoNOX::Update()
     AleField()->Solve();
     // Now apply the ALE-displacement to the (embedded) fluid and update the
     // grid velocity
-    FluidField().ApplyMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
+    FluidField()->ApplyMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
   }
 
   // update subsequent fields
   StructureField()->Update();
-  FluidField().Update();
+  FluidField()->Update();
   AleField()->Update();
 
   if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton and aleupdate )
@@ -677,7 +677,7 @@ void FSI::MonolithicNoNOX::PrepareTimeStep()
   PrintHeader();
 
   StructureField()->PrepareTimeStep();
-  FluidField().PrepareTimeStep();
+  FluidField()->PrepareTimeStep();
   AleField()->PrepareTimeStep();
 
   // no ALE-relaxation or still at the first step? leave!

@@ -125,7 +125,7 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField() { return structure_; }
 
     /// access to fluid field
-    ::ADAPTER::Fluid& FluidField(){return *fluid_;}
+    const Teuchos::RCP<ADAPTER::Fluid>& FluidField(){return fluid_;}
 
     /// access to ale field
     const Teuchos::RCP<ADAPTER::AleFsiWrapper>& AleField() { return ale_; }

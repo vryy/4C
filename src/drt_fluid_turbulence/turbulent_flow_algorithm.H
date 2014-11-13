@@ -42,7 +42,7 @@ public:
   void ReadRestart(const int restart);
 
   /// do result check
-  Teuchos::RCP<DRT::ResultTest> DoResultCheck(){return fluidalgo_->FluidField().CreateFieldTest();};
+  Teuchos::RCP<DRT::ResultTest> DoResultCheck(){return fluidalgo_->FluidField()->CreateFieldTest();};
 
 private:
 

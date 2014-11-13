@@ -25,17 +25,17 @@ IMMERSED::ImmersedPartitionedFSINeumannNeumann::ImmersedPartitionedFSINeumannNeu
   fintn_ = Teuchos::rcp(new Epetra_Vector(*(StructureField()->DofRowMapView()),true));
   if(StructureField()->Discretization()->Comm().NumProc() > 1)
     CreateGhosting(DRT::Problem::Instance()->GetDis("structure"));
-  std::vector<int> dvol_fenode = DetermineImmersionDomain(MBFluidField().Discretization(),StructureField()->Discretization(),true);
-  CreateVolumeCondition(MBFluidField().Discretization(), dvol_fenode, DRT::Condition::ImmersedFSIForceEvaluation,"ImmersedFSIForceEvaluation");
-  dvol_fenode = DetermineImmersionBoundaryDomain(MBFluidField().Discretization(),StructureField()->Discretization(),"FSICoupling",true);
-  CreateVolumeCondition(MBFluidField().Discretization(), dvol_fenode, DRT::Condition::ImmersedInterpolatingElement,"ImmersedInterpolatingElement");
+  std::vector<int> dvol_fenode = DetermineImmersionDomain(MBFluidField()->Discretization(),StructureField()->Discretization(),true);
+  CreateVolumeCondition(MBFluidField()->Discretization(), dvol_fenode, DRT::Condition::ImmersedFSIForceEvaluation,"ImmersedFSIForceEvaluation");
+  dvol_fenode = DetermineImmersionBoundaryDomain(MBFluidField()->Discretization(),StructureField()->Discretization(),"FSICoupling",true);
+  CreateVolumeCondition(MBFluidField()->Discretization(), dvol_fenode, DRT::Condition::ImmersedInterpolatingElement,"ImmersedInterpolatingElement");
 # ifdef DEBUG
   StructureField()->Update();
   StructureField()->PrepareOutput();
   StructureField()->Output();
-  MBFluidField().Output();
+  MBFluidField()->Output();
 # endif
-  //InterpolateToImmersedNodes(MBFluidField().Discretization(), dvol_fenode, "ImmersedInterpolatingElement");
+  //InterpolateToImmersedNodes(MBFluidField()->Discretization(), dvol_fenode, "ImmersedInterpolatingElement");
   dserror("came so far");
 }
 
@@ -65,19 +65,19 @@ IMMERSED::ImmersedPartitionedFSINeumannNeumann::FluidOp(Teuchos::RCP<Epetra_Vect
   if (fillFlag==User)
   {
     // SD relaxation calculation
-    return FluidToStruct(MBFluidField().RelaxationSolve(StructToFluid(bforce),Dt()));
+    return FluidToStruct(MBFluidField()->RelaxationSolve(StructToFluid(bforce),Dt()));
   }
   else
   {
     // normal fluid solve
 
     // A rather simple hack. We need something better!
-    const int itemax = MBFluidField().Itemax();
+    const int itemax = MBFluidField()->Itemax();
     if (fillFlag==MF_Res and mfresitemax_ > 0)
-      MBFluidField().SetItemax(mfresitemax_ + 1);
+      MBFluidField()->SetItemax(mfresitemax_ + 1);
 
     // Evaluate fluid part of fsi force vector directly on fluid
-    Teuchos::RCP<Epetra_Vector> fluidpart = Teuchos::rcp(new Epetra_Vector(*(MBFluidField().Discretization()->DofRowMap(0)),true));
+    Teuchos::RCP<Epetra_Vector> fluidpart = Teuchos::rcp(new Epetra_Vector(*(MBFluidField()->Discretization()->DofRowMap(0)),true));
     Teuchos::ParameterList fparams;
     fparams.set<int>("action", FLD::ImmersedFSIForceEvaluation);
     DRT::AssembleStrategy fsiforcestrategy(
@@ -89,16 +89,16 @@ IMMERSED::ImmersedPartitionedFSINeumannNeumann::FluidOp(Teuchos::RCP<Epetra_Vect
           Teuchos::null,
           Teuchos::null
       );
-      MBFluidField().Discretization()->EvaluateCondition( fparams, fsiforcestrategy,"ImmersedFSIForceEvaluation" );
+      MBFluidField()->Discretization()->EvaluateCondition( fparams, fsiforcestrategy,"ImmersedFSIForceEvaluation" );
 
     // structural force spread to fluid field
     ffsi_->Update(1.0,*StructToFluid(bforce),1.0,*fluidpart,0.0);
-    MBFluidField().NonlinearSolve(ffsi_);
+    MBFluidField()->NonlinearSolve(ffsi_);
 
-    MBFluidField().SetItemax(itemax);
+    MBFluidField()->SetItemax(itemax);
     std::vector<int> vector;
 
-    return InterpolateToImmersedNodes(MBFluidField().Discretization(), vector, "ImmersedInterpolatingElement");
+    return InterpolateToImmersedNodes(MBFluidField()->Discretization(), vector, "ImmersedInterpolatingElement");
   }
 }
 

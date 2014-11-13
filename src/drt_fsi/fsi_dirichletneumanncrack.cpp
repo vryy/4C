@@ -42,7 +42,7 @@ void FSI::DirichletNeumann_Crack::update_FSI_interface_Crack()
     AddNewCrackSurfaceToCutInterface();
 
     // rebuild FSI interface of fluid side
-    dynamic_cast<ADAPTER::XFluidFSI&>(MBFluidField().FluidField()).RebuildFSIInterface();
+    Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(MBFluidField()->FluidField())->RebuildFSIInterface();
 
     // rebuild FSI interface of structure side
     StructureField()->RebuildInterface();
@@ -52,8 +52,8 @@ void FSI::DirichletNeumann_Crack::update_FSI_interface_Crack()
     const int ndim = DRT::Problem::Instance()->NDim();
     coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
                                    StructureField()->Interface()->FSICondMap(),
-                                   *MBFluidField().Discretization(),
-                                   MBFluidField().Interface().FSICondMap(),
+                                   *MBFluidField()->Discretization(),
+                                   MBFluidField()->Interface()->FSICondMap(),
                                   "FSICoupling",
                                   ndim);
 
@@ -73,7 +73,7 @@ void FSI::DirichletNeumann_Crack::AddNewCrackSurfaceToCutInterface()
   const Teuchos::RCP<ADAPTER::FSICrackingStructure>& structfield =
                                 Teuchos::rcp_dynamic_cast<ADAPTER::FSICrackingStructure>(StructureField());
 
-  Teuchos::RCP<FLD::XFluid> xfluid =  dynamic_cast<ADAPTER::XFluidFSI&>(MBFluidField().FluidField()).MyFluid();
+  Teuchos::RCP<FLD::XFluid> xfluid =  Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(MBFluidField()->FluidField())->MyFluid();
 
   Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
   xfluid->BoundaryDis( boundary_dis );

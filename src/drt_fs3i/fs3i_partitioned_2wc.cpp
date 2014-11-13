@@ -81,12 +81,12 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
 
   // set initial fluid velocity field for evaluation of initial scalar
   // time derivative in fluid-based scalar transport
-  fluidscatra_->ScaTraField()->SetVelocityField(fsi_->FluidField().Velnp(),
+  fluidscatra_->ScaTraField()->SetVelocityField(fsi_->FluidField()->Velnp(),
                                                Teuchos::null,
                                                Teuchos::null,
                                                Teuchos::null,
                                                Teuchos::null,
-                                               fsi_->FluidField().Discretization());
+                                               fsi_->FluidField()->Discretization());
 
   // set initial value of thermodynamic pressure in fluid-based scalar
   // transport
@@ -101,7 +101,7 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
 
   // set initial scalar field and thermodynamic pressure for evaluation of
   // Neumann boundary conditions in fluid at beginning of first time step
-  fsi_->FluidField().SetScalarFields(fluidscatra_->ScaTraField()->Phinp(),
+  fsi_->FluidField()->SetScalarFields(fluidscatra_->ScaTraField()->Phinp(),
                                        Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->ThermPressNp(),
                                        Teuchos::null,
                                        fluidscatra_->ScaTraField()->Discretization());
@@ -212,20 +212,20 @@ void FS3I::PartFS3I_2WC::OuterLoop()
 {
   // set respective field vectors for velocity/pressure, acceleration
   // and discretization based on time-integration scheme
-  if (fsi_->FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
-    fluidscatra_->ScaTraField()->SetVelocityField(fsi_->FluidField().Velaf(),
-                                                fsi_->FluidField().Accam(),
+  if (fsi_->FluidField()->TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
+    fluidscatra_->ScaTraField()->SetVelocityField(fsi_->FluidField()->Velaf(),
+                                                fsi_->FluidField()->Accam(),
                                                 Teuchos::null,
-                                                fsi_->FluidField().FsVel(),
+                                                fsi_->FluidField()->FsVel(),
                                                 Teuchos::null,
-                                                fsi_->FluidField().Discretization());
+                                                fsi_->FluidField()->Discretization());
   else
-    fluidscatra_->ScaTraField()->SetVelocityField(fsi_->FluidField().Velnp(),
-                                                fsi_->FluidField().Hist(),
+    fluidscatra_->ScaTraField()->SetVelocityField(fsi_->FluidField()->Velnp(),
+                                                fsi_->FluidField()->Hist(),
                                                 Teuchos::null,
-                                                fsi_->FluidField().FsVel(),
+                                                fsi_->FluidField()->FsVel(),
                                                 Teuchos::null,
-                                                fsi_->FluidField().Discretization());
+                                                fsi_->FluidField()->Discretization());
 }*/
 
 
@@ -235,7 +235,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
 {
     // set scalar and thermodynamic pressure values as well as time
     // derivatives and discretization based on time-integration scheme
-    /*if (fsi_->FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
+    /*if (fsi_->FluidField()->TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
     {
       dynamic_cast<FLD::TimIntLoma&>(fsi_->FluidField()).SetIterScalarFields(fluidscatra_->ScaTraField()->Phiaf(),
                                            fluidscatra_->ScaTraField()->Phiam(),
@@ -251,7 +251,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
     }
     else
     {*/
-      dynamic_cast<FLD::TimIntLoma&>(fsi_->FluidField()).SetIterScalarFields(fluidscatra_->ScaTraField()->Phinp(),
+     Teuchos::rcp_dynamic_cast<FLD::TimIntLoma>(fsi_->FluidField())->SetIterScalarFields(fluidscatra_->ScaTraField()->Phinp(),
                                            fluidscatra_->ScaTraField()->Phin(),
                                            fluidscatra_->ScaTraField()->Phidtnp(),
                                            Teuchos::null,
@@ -357,7 +357,7 @@ void FS3I::PartFS3I_2WC::TimeUpdateAndOutput()
   // set scalar and thermodynamic pressure at n+1 and SCATRA trueresidual
   // for statistical evaluation and evaluation of Neumann boundary
   // conditions at the beginning of the subsequent time step
-  fsi_->FluidField().SetScalarFields(fluidscatra_->ScaTraField()->Phinp(),
+  fsi_->FluidField()->SetScalarFields(fluidscatra_->ScaTraField()->Phinp(),
                                        Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(fluidscatra_->ScaTraField())->ThermPressNp(),
                                        fluidscatra_->ScaTraField()->TrueResidual(),
                                        fluidscatra_->ScaTraField()->Discretization());
@@ -366,7 +366,7 @@ void FS3I::PartFS3I_2WC::TimeUpdateAndOutput()
   // written, defining the order in which the filters handle the
   // discretizations, which in turn defines the dof number ordering of the
   // discretizations.
-  //fsi_->FluidField().StatisticsAndOutput();
+  //fsi_->FluidField()->StatisticsAndOutput();
   fsi_->Output();
 
   // output of fluid- and structure-based scalar transport

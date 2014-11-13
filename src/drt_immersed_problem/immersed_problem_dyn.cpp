@@ -62,7 +62,7 @@ void immersed_problem_drt()
       algo->Timeloop(algo);
 
       // create result tests for single fields
-      DRT::Problem::Instance()->AddFieldTest(algo->MBFluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(algo->MBFluidField()->CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(algo->StructureField()->CreateFieldTest());
 
       // do the actual testing

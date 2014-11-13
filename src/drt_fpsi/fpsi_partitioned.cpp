@@ -49,7 +49,7 @@ FPSI::Partitioned::Partitioned(const Epetra_Comm& comm,
   // Call the fluid subproblem
   Teuchos::RCP< ::ADAPTER::FluidMovingBoundaryBaseAlgorithm> FluidMBBase =
   Teuchos::rcp(new ADAPTER::FluidMovingBoundaryBaseAlgorithm(timeparams,"FPSICoupling"));
-  fluid_subproblem_ = FluidMBBase->MBFluidFieldrcp();
+  fluid_subproblem_ = FluidMBBase->MBFluidField();
   if(fluid_subproblem_ == Teuchos::null)
   {
     dserror("Red Alert!!! Call of the fluid subproblem failed! ... Roundhouse-Kick!!! ");
@@ -65,7 +65,7 @@ FPSI::Partitioned::Partitioned(const Epetra_Comm& comm,
       coupsf_->SetupConditionCoupling(*poroelast_subproblem_->StructureField()->Discretization(),            //masterdis (const)
                                        poroelast_subproblem_->StructureField()->Interface()->FPSICondMap(),   //mastercondmap
                                       *fluid_subproblem_->Discretization(),                                  //slavedis (const)
-                                       fluid_subproblem_->Interface().FSICondMap(),                          //slavecondmap
+                                       fluid_subproblem_->Interface()->FSICondMap(),                          //slavecondmap
                                       "FPSICoupling",                                                        //condname
                                        ndim);
       //numdof

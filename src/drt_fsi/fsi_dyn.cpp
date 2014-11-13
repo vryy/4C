@@ -123,7 +123,7 @@ void fluid_ale_drt()
   }
   fluid->Timeloop();
 
-  DRT::Problem::Instance()->AddFieldTest(fluid->MBFluidField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(fluid->MBFluidField()->CreateFieldTest());
   DRT::Problem::Instance()->TestAll(comm);
 }
 
@@ -169,10 +169,10 @@ void fluid_xfem_drt()
     Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,fdyn,"fluid",false));
 
     // run the simulation, calls the xfluid-"integrate()" routine
-    fluidalgo->FluidField().Integrate();
+    fluidalgo->FluidField()->Integrate();
 
     // perform result tests if required
-    problem->AddFieldTest(fluidalgo->FluidField().CreateFieldTest());
+    problem->AddFieldTest(fluidalgo->FluidField()->CreateFieldTest());
     problem->TestAll(comm);
   }
   else if(moving_boundary == INPAR::XFEM::XFluidMovingBoundary)
@@ -191,7 +191,7 @@ void fluid_xfem_drt()
     fluidalgo->Timeloop();
 
     // perform result tests if required
-    problem->AddFieldTest(fluidalgo->MBFluidField().CreateFieldTest());
+    problem->AddFieldTest(fluidalgo->MBFluidField()->CreateFieldTest());
     problem->TestAll(comm);
   }
   else if(moving_boundary == INPAR::XFEM::XFSIMovingBoundary) dserror("do not use XFSIMovingBoundary with prb fluid_xfem2");
@@ -410,7 +410,7 @@ void fluid_fluid_ale_drt()
   }
   alefluid->Timeloop();
 
-  problem->AddFieldTest(alefluid->MBFluidField().CreateFieldTest());
+  problem->AddFieldTest(alefluid->MBFluidField()->CreateFieldTest());
   problem->TestAll(*comm);
 
 }
@@ -643,7 +643,7 @@ void fluid_fluid_fsi_drt()
       // here we go...
       fsi->Timeloop();
 
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
       // create fsi specific result test
@@ -671,7 +671,7 @@ void fluid_fluid_fsi_drt()
 
       fsi->Timeloop();
 
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
       // create fsi specific result test
@@ -700,7 +700,7 @@ void fluid_fluid_fsi_drt()
       // here we go...
       fsi->Timeloop(fsi);
 
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
       // create fsi specific result test
       Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
@@ -727,7 +727,7 @@ void fluid_fluid_fsi_drt()
       // here we go...
       fsi->Timeloop(fsi);
 
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
       // create fsi specific result test
       Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
@@ -760,7 +760,7 @@ void fluid_fluid_fsi_drt()
       }
 
       fsi->Timeloop(fsi);
-      DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
       // do the actual testing
@@ -855,7 +855,7 @@ void fluid_freesurf_drt()
 
     fluid->Timeloop();
 
-    DRT::Problem::Instance()->AddFieldTest(fluid->MBFluidField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fluid->MBFluidField()->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(comm);
     break;
   }
@@ -997,11 +997,11 @@ void fsi_ale_drt()
       fsi->Timeloop(fsi);
 
       // calculate errors in comparison to analytical solution
-      fsi->FluidField().CalculateError();
+      fsi->FluidField()->CalculateError();
 
       // create result tests for single fields
       DRT::Problem::Instance()->AddFieldTest(fsi->AleField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
       // create fsi specific result test
@@ -1039,7 +1039,7 @@ void fsi_ale_drt()
       fsi->Timeloop(fsi);
 
       // create result tests for single fields
-      DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 
       // do the actual testing
@@ -1171,7 +1171,7 @@ void xfsi_drt()
 
     fsi->Timeloop(fsi);
 
-    DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(comm);
 

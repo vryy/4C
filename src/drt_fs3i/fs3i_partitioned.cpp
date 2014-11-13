@@ -299,8 +299,8 @@ void FS3I::PartFS3I::ReadRestart()
       currscatra->ScaTraField()->ReadRestart(restart);
     }
 
-    time_ = fsi_->FluidField().Time();
-    step_ = fsi_->FluidField().Step();
+    time_ = fsi_->FluidField()->Time();
+    step_ = fsi_->FluidField()->Step();
   }
 }
 
@@ -454,7 +454,7 @@ void FS3I::PartFS3I::SetupSystem()
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::TestResults(const Epetra_Comm& comm)
 {
-  DRT::Problem::Instance()->AddFieldTest(fsi_->FluidField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(fsi_->FluidField()->CreateFieldTest());
   DRT::Problem::Instance()->AddFieldTest(fsi_->AleField()->CreateFieldTest());
   DRT::Problem::Instance()->AddFieldTest(fsi_->StructureField()->CreateFieldTest());
 
@@ -489,9 +489,9 @@ void FS3I::PartFS3I::SetMeshDisp()
 {
   // fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
-  ADAPTER::Fluid& fluidadapter = fsi_->FluidField();
-  fluidscatra->ScaTraField()->ApplyMeshMovement(fluidadapter.Dispnp(),
-                                               fluidadapter.Discretization());
+  Teuchos::RCP<ADAPTER::Fluid> fluidadapter = fsi_->FluidField();
+  fluidscatra->ScaTraField()->ApplyMeshMovement(fluidadapter->Dispnp(),
+                                               fluidadapter->Discretization());
 
   // structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra = scatravec_[1];
@@ -511,7 +511,7 @@ void FS3I::PartFS3I::SetVelocityFields()
 
   std::vector<Teuchos::RCP<DRT::Discretization> > discret;
 
-  discret.push_back(fsi_->FluidField().Discretization());
+  discret.push_back(fsi_->FluidField()->Discretization());
   discret.push_back(fsi_->StructureField()->Discretization());
 
   for (unsigned i=0; i<scatravec_.size(); ++i)
@@ -534,8 +534,8 @@ void FS3I::PartFS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >&
 {
   // extract fluid velocities
 
-  convel.push_back(fsi_->FluidField().ConvectiveVel());
-  vel.push_back(fsi_->FluidField().Velnp());
+  convel.push_back(fsi_->FluidField()->ConvectiveVel());
+  vel.push_back(fsi_->FluidField()->Velnp());
 
   // extract structure velocities and accelerations
 

@@ -46,7 +46,7 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::Monolithic>& fsi,
         dserror("Cast to FSI::MonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->FluidField().Discretization();
+      slavedisc_ = fsiobject->FluidField()->Discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -74,7 +74,7 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::Monolithic>& fsi,
         dserror("Cast to FSI::MortarMonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->FluidField().Discretization();
+      slavedisc_ = fsiobject->FluidField()->Discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -116,7 +116,7 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::Monolithic>& fsi,
         dserror("Cast to FSI::FluidFluidMonolithicFluidSplit failed.");
 
       // Lagrange multipliers live on the slave field
-      slavedisc_ = fsiobject->FluidField().Discretization();
+      slavedisc_ = fsiobject->FluidField()->Discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;
@@ -165,7 +165,7 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::MonolithicNoNOX> fsi,
         dserror("Cast to FSI::FluidFluidMonolithicFluidSplitNoNOX failed.");
 
       // Lagrange multiplier lives on the slave field (fluid in this case!)
-      slavedisc_ = fsiobject->FluidField().Discretization();
+      slavedisc_ = fsiobject->FluidField()->Discretization();
       fsilambda_ = fsiobject->lambda_;
 
       break;

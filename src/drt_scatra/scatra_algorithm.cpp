@@ -29,7 +29,7 @@ SCATRA::ScaTraAlgorithm::ScaTraAlgorithm(
      natconv_(DRT::INPUT::IntegralValue<int>(scatradyn,"NATURAL_CONVECTION")),
      natconvitmax_(scatradyn.get<int>("NATCONVITEMAX")),
      natconvittol_(scatradyn.get<double>("NATCONVCONVTOL")),
-     velincnp_ (Teuchos::rcp(new Epetra_Vector(*(FluidField().ExtractVelocityPart(FluidField().Velnp()))))),
+     velincnp_ (Teuchos::rcp(new Epetra_Vector(*(FluidField()->ExtractVelocityPart(FluidField()->Velnp()))))),
      phiincnp_ (Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phinp())))),
      samstart_(fdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
      samstop_(fdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
@@ -130,7 +130,7 @@ void SCATRA::ScaTraAlgorithm::TimeLoopTwoWay()
 void SCATRA::ScaTraAlgorithm::PrepareTimeLoopTwoWay()
 {
   // a safety check
-  switch((FluidField().TimIntScheme()))
+  switch((FluidField()->TimIntScheme()))
   {
   case INPAR::FLUID::timeint_stationary:
   case INPAR::FLUID::timeint_one_step_theta:
@@ -156,7 +156,7 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStep()
 {
   IncrementTimeAndStep();
 
-  FluidField().PrepareTimeStep();
+  FluidField()->PrepareTimeStep();
 
   // prepare time step
   /* remark: initial velocity field has been transfered to scalar transport field in constructor of
@@ -184,11 +184,11 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStepConvection()
   // density time derivative is not used for OST and BDF2 (pass zero vector)
   // thermodynamic pressure values are set to 1.0 and its derivative to 0.0
 
-  switch((FluidField().TimIntScheme()))
+  switch((FluidField()->TimIntScheme()))
   {
   case INPAR::FLUID::timeint_stationary:
   {
-    FluidField().SetIterScalarFields(
+    FluidField()->SetIterScalarFields(
         ScaTraField()->DensNp(),
         ScaTraField()->DensNp(), // we have to provide something here
         Teuchos::null,
@@ -198,7 +198,7 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStepConvection()
   case INPAR::FLUID::timeint_one_step_theta:
   case INPAR::FLUID::timeint_bdf2:
   {
-    FluidField().SetIterScalarFields(
+    FluidField()->SetIterScalarFields(
         ScaTraField()->DensNp(),
         ScaTraField()->DensN(),
         Teuchos::null,
@@ -209,18 +209,18 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStepConvection()
     break;
   }
 
-  FluidField().PrepareTimeStep();
+  FluidField()->PrepareTimeStep();
 
   // transfer the initial(!!) convective velocity
   //(fluid initial field was set inside the constructor of fluid base class)
   if (Step()==1)
     ScaTraField()->SetVelocityField(
-        FluidField().Velnp(),
-        FluidField().Hist(),
+        FluidField()->Velnp(),
+        FluidField()->Hist(),
         Teuchos::null,
         Teuchos::null,
         Teuchos::null,
-        FluidField().Discretization());
+        FluidField()->Discretization());
 
   // prepare time step (+ initialize one-step-theta scheme correctly with
   // velocity given above)
@@ -252,9 +252,9 @@ void SCATRA::ScaTraAlgorithm::DoFluidStep()
 
   // currently only required for forced homogeneous isotropic turbulence with
   // passive scalar transport; does nothing otherwise
-  FluidField().CalcIntermediateSolution();
+  FluidField()->CalcIntermediateSolution();
 
-  FluidField().Solve();
+  FluidField()->Solve();
 
   return;
 }
@@ -271,18 +271,18 @@ void SCATRA::ScaTraAlgorithm::DoTransportStep()
   //       since it is not yet clear how the grid velocity should be interpolated
   //       properly -> hence, ScaTraAlgorithm does not support moving
   //       meshes yet
-  switch(FluidField().TimIntScheme())
+  switch(FluidField()->TimIntScheme())
   {
   case INPAR::FLUID::timeint_npgenalpha:
   case INPAR::FLUID::timeint_afgenalpha:
   {
     ScaTraField()->SetVelocityField(
-        FluidField().Velaf(),
-        FluidField().Accam(),
-        FluidField().Velaf(),
-        FluidField().FsVel(),
+        FluidField()->Velaf(),
+        FluidField()->Accam(),
+        FluidField()->Velaf(),
+        FluidField()->FsVel(),
         Teuchos::null,
-        FluidField().Discretization());;
+        FluidField()->Discretization());;
   }
   break;
   case INPAR::FLUID::timeint_one_step_theta:
@@ -290,12 +290,12 @@ void SCATRA::ScaTraAlgorithm::DoTransportStep()
   case INPAR::FLUID::timeint_stationary:
   {
     ScaTraField()->SetVelocityField(
-      FluidField().Velnp(),
-        FluidField().Hist(),
-        FluidField().Velnp(),
-        FluidField().FsVel(),
+      FluidField()->Velnp(),
+        FluidField()->Hist(),
+        FluidField()->Velnp(),
+        FluidField()->FsVel(),
         Teuchos::null,
-        FluidField().Discretization()
+        FluidField()->Discretization()
     );
   }
   break;
@@ -350,7 +350,7 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
     natconvitnum ++;
 
     phiincnp_->Update(1.0,*ScaTraField()->Phinp(),0.0);
-    velincnp_->Update(1.0,*FluidField().ExtractVelocityPart(FluidField().Velnp()),0.0);
+    velincnp_->Update(1.0,*FluidField()->ExtractVelocityPart(FluidField()->Velnp()),0.0);
 
     // solve nonlinear Navier-Stokes system with body forces
     DoFluidStep();
@@ -362,7 +362,7 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
     // pass actual density field to fluid discretisation
     // Density derivative is not used for OST, BDF2 and convective formulation
     ScaTraField()->ComputeDensity();
-    FluidField().SetScalarFields(
+    FluidField()->SetScalarFields(
         ScaTraField()->DensNp(),
         0.0,
         Teuchos::null,
@@ -389,7 +389,7 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
    myoutput->NewStep(natconvitnum,natconvitnum);
    myoutput->WriteVector("phinp", ScaTraField().Phinp());
    myoutput->WriteVector("convec_velocity", ScaTraField().ConVel());
-   // myoutput->WriteVector("velnp", FluidField().Velnp());
+   // myoutput->WriteVector("velnp", FluidField()->Velnp());
 #endif
 
   }
@@ -401,7 +401,7 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
 /*----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::Update(const int num)
 {
-  FluidField().Update();
+  FluidField()->Update();
   ScaTraField()->Update(num);
   return;
 }
@@ -424,13 +424,13 @@ void SCATRA::ScaTraAlgorithm::UpdateConvection()
   /*
   int numscal = 1;
 
-  switch((FluidField().TimIntScheme()))
+  switch((FluidField()->TimIntScheme()))
   {
   case timeint_stationary:
   case timeint_one_step_theta:
   case timeint_bdf2:
   {
-    FluidField().SetIterScalarFields(
+    FluidField()->SetIterScalarFields(
         ScaTraField().DensNp(),
         ScaTraField().DensN(),
         Teuchos::null,
@@ -446,7 +446,7 @@ void SCATRA::ScaTraAlgorithm::UpdateConvection()
   }
   */
 
-  FluidField().Update();
+  FluidField()->Update();
 
   // Update density at time steps n+1 and n
   // Update density after SetScalarFields
@@ -469,7 +469,7 @@ void SCATRA::ScaTraAlgorithm::Output()
   {
     // if statistics for one-way coupled problems is performed, provide
     // the field for the first scalar!
-    FluidField().SetScalarFields(
+    FluidField()->SetScalarFields(
         ScaTraField()->Phinp(),
         0.0,
         Teuchos::null,
@@ -478,12 +478,12 @@ void SCATRA::ScaTraAlgorithm::Output()
     );
   }
 
-  FluidField().StatisticsAndOutput();
+  FluidField()->StatisticsAndOutput();
   ScaTraField()->Output();
 
   // we have to call the output of averaged fields for scatra separately
-  if (  FluidField().TurbulenceStatisticManager() != Teuchos::null)
-    FluidField().TurbulenceStatisticManager()
+  if (  FluidField()->TurbulenceStatisticManager() != Teuchos::null)
+    FluidField()->TurbulenceStatisticManager()
         ->DoOutputForScaTra(ScaTraField()->DiscWriter(),ScaTraField()->Step());
 
   return;
@@ -516,9 +516,9 @@ bool SCATRA::ScaTraAlgorithm::ConvergenceCheck(
   // Calculate velocity increment and velocity L2 - Norm
   // velincnp_ = 1.0 * convelnp_ - 1.0 * conveln_
 
-  velincnp_->Update(1.0,*FluidField().ExtractVelocityPart(FluidField().Velnp()),-1.0);
+  velincnp_->Update(1.0,*FluidField()->ExtractVelocityPart(FluidField()->Velnp()),-1.0);
   velincnp_->Norm2(&velincnorm_L2); // Estimation of the L2 - norm save values to both variables (velincnorm_L2 and velnorm_L2)
-  FluidField().ExtractVelocityPart(FluidField().Velnp())->Norm2(&velnorm_L2);
+  FluidField()->ExtractVelocityPart(FluidField()->Velnp())->Norm2(&velnorm_L2);
 
   // Calculate phi increment and phi L2 - Norm
   // tempincnp_ includes the concentration and the potential increment
@@ -624,10 +624,10 @@ void SCATRA::ScaTraAlgorithm::ReadInflowRestart(int restart)
 {
   // in case a inflow generation in the inflow section has been performed,
   // there are not any scatra results available and the initial field is used
-  FluidField().ReadRestart(restart);
+  FluidField()->ReadRestart(restart);
   // as ReadRestart is only called for the FluidField
   // time and step have not been set in the superior class and the ScaTraField
-  SetTimeStep(FluidField().Time(),FluidField().Step());
-  ScaTraField()->SetTimeStep(FluidField().Time(),FluidField().Step());
+  SetTimeStep(FluidField()->Time(),FluidField()->Step());
+  ScaTraField()->SetTimeStep(FluidField()->Time(),FluidField()->Step());
   return;
 }

@@ -158,8 +158,8 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   // Create intersection of fluid DOFs that hold a Dirichlet boundary condition
   // and are located at the FSI interface.
   std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmapsfluid;
-  intersectionmapsfluid.push_back(FluidField().GetDBCMapExtractor()->CondMap());
-  intersectionmapsfluid.push_back(FluidField().Interface()->FSICondMap());
+  intersectionmapsfluid.push_back(FluidField()->GetDBCMapExtractor()->CondMap());
+  intersectionmapsfluid.push_back(FluidField()->Interface()->FSICondMap());
   Teuchos::RCP<Epetra_Map> intersectionmapfluid = LINALG::MultiMapExtractor::IntersectMaps(intersectionmapsfluid);
 
   // store number of interface DOFs subject to Dirichlet BCs on structure and fluid side of the interface
@@ -462,7 +462,7 @@ void FSI::Monolithic::TimeStepAuxiliar()
   // ---------------------------------------------------------------------------
   if (IsAdaFluid())
   {
-    FluidField().TimeStepAuxiliar();
+    FluidField()->TimeStepAuxiliar();
   }
   // ---------------------------------------------------------------------------
 
@@ -501,7 +501,7 @@ void FSI::Monolithic::AdaptTimeStepSize()
   // ---------------------------------------------------------------------------
   if (IsAdaFluid())
   {
-    FluidField().IndicateErrorNorms(flnorm_, flfsinorm_, flinnernorm_, flinfnorm_, flinffsinorm_, flinfinnernorm_);
+    FluidField()->IndicateErrorNorms(flnorm_, flfsinorm_, flinnernorm_, flinfnorm_, flinffsinorm_, flinfinnernorm_);
 
     //calculate time step sizes resulting from errors in the fluid field
     dtfl_ = CalculateTimeStepSize(flnorm_, errtolfl_, estorderfl_);
@@ -703,7 +703,7 @@ void FSI::Monolithic::ResetStep()
   else
     StructureField()->ResetStep();
 
-  FluidField().ResetStep();
+  FluidField()->ResetStep();
   AleField()->ResetStep();
 }
 
@@ -712,7 +712,7 @@ void FSI::Monolithic::ResetStep()
 void FSI::Monolithic::ResetTime()
 {
   // Fluid and ALE
-  FluidField().ResetTime(DtPast(1));
+  FluidField()->ResetTime(DtPast(1));
   AleField()->ResetTime(DtPast(1));
 
   // FSI routine
@@ -729,7 +729,7 @@ void FSI::Monolithic::SetDt(const double dtnew)
   else
     StructureField()->SetDt(dtnew);
 
-  FluidField().SetDt(dtnew);
+  FluidField()->SetDt(dtnew);
   AleField()->SetDt(dtnew);
 
   // FSI algorithm
@@ -774,7 +774,7 @@ bool FSI::Monolithic::CheckIfDtsSame()
   // get time step sizes from all fields
   const double dtfsi = Dt();
   const double dtstruct = StructureField()->Dt();
-  const double dtfluid = FluidField().Dt();
+  const double dtfluid = FluidField()->Dt();
   const double dtale = AleField()->Dt();
 
   double dtstrada = -1.0;

@@ -202,7 +202,7 @@ void XFLUIDLEVELSET::Algorithm::SolveStationaryProblem()
 
   // check time integration schemes of single fields
   // remark: this was already done in ScaTraFluidCouplingAlgorithm() before
-  if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary)
+  if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_stationary)
     dserror("Fluid time integration scheme is not stationary");
   if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_stationary)
     dserror("Scatra time integration scheme is not stationary");
@@ -211,7 +211,7 @@ void XFLUIDLEVELSET::Algorithm::SolveStationaryProblem()
   Output();
 
   // run the simulation, calls the xfluid-"integrate()" routine
-  FluidField().Integrate();
+  FluidField()->Integrate();
 
 //  // solve level set equation
   if (Comm().MyPID()==0)
@@ -227,16 +227,16 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
 {
   // set level set in fluid field
 
-  Teuchos::RCP<Epetra_Vector> phinpnode = StorePhiVectors(FluidField().Discretization(), ScaTraField()->Discretization(), ScaTraField()->Phinp());
+  Teuchos::RCP<Epetra_Vector> phinpnode = StorePhiVectors(FluidField()->Discretization(), ScaTraField()->Discretization(), ScaTraField()->Phinp());
 
-  switch(FluidField().TimIntScheme())
+  switch(FluidField()->TimIntScheme())
   {
   case INPAR::FLUID::timeint_stationary:
   {
     //The state class is initialized in the Fluid().Init() call in FluidBaseAlgorithm().
     //This State is set without any information about the level set. Thus Set StateLS is called,
     //  to set the state correctly for further calculations.
-    Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidFieldrcp())->SetStateLS(*phinpnode);
+    Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField())->SetStateLS(*phinpnode);
   }
   break;
   default:
@@ -269,7 +269,7 @@ void XFLUIDLEVELSET::Algorithm::TestResults()
   std::cout << "--------------------------ScaTra values are not compared as of now.\n";
 
   // perform result tests if required
-  DRT::Problem::Instance()->AddFieldTest(FluidField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(FluidField()->CreateFieldTest());
   DRT::Problem::Instance()->TestAll(Comm());
 
 

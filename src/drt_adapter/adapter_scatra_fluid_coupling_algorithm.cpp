@@ -40,21 +40,21 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   if (ScaTraField()->ScaTraType() == INPAR::SCATRA::scatratype_levelset)
   {
     const Epetra_Map* scatraelecolmap = ScaTraField()->Discretization()->ElementColMap();
-    if (not scatraelecolmap->PointSameAs(*FluidField().Discretization()->ElementColMap()))
+    if (not scatraelecolmap->PointSameAs(*FluidField()->Discretization()->ElementColMap()))
     {
       if (comm.MyPID()==0)
         std::cout << "----- adaption of fluid ghosting to scatra ghosting ------" << std::endl;
 
       // adapt fluid ghosting to scatra ghosting
       if (DRT::Problem::Instance()->ProblemType() != prb_combust)
-        FluidField().Discretization()->ExtendedGhosting(*scatraelecolmap,true,true,true,false);
+        FluidField()->Discretization()->ExtendedGhosting(*scatraelecolmap,true,true,true,false);
       else
-        FluidField().Discretization()->ExtendedGhosting(*scatraelecolmap,false,false,false,false);
+        FluidField()->Discretization()->ExtendedGhosting(*scatraelecolmap,false,false,false,false);
     }
   }
 
   // initialize fluid time integration scheme
-  FluidField().Init();
+  FluidField()->Init();
 
   // set also initial field
   if (DRT::Problem::Instance()->ProblemType() != prb_combust and DRT::Problem::Instance()->ProblemType() != prb_fluid_xfem_ls)
@@ -69,18 +69,18 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
           initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
         startfuncno=-1;
 
-      FluidField().SetInitialFlowField(initfield,startfuncno);
+      FluidField()->SetInitialFlowField(initfield,startfuncno);
     }
 
     // transfer the initial convective velocity from initial fluid field to scalar transport field
     // subgrid scales not transferred since they are zero at time t=0.0
     ScaTraField()->SetVelocityField(
-      FluidField().ConvectiveVel(),
+      FluidField()->ConvectiveVel(),
       Teuchos::null,
       Teuchos::null,
       Teuchos::null,
       Teuchos::null,
-      FluidField().Discretization()
+      FluidField()->Discretization()
     );
   }
 
@@ -90,28 +90,28 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   {
   case INPAR::SCATRA::timeint_stationary:
   {
-    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary)
+    if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_stationary)
       dserror("Fluid and Scatra time integration schemes do not match");
     break;
   }
   case INPAR::SCATRA::timeint_one_step_theta:
   {
-    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_one_step_theta)
+    if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_one_step_theta)
       if (comm.MyPID()==0)
         std::cout << "Fluid and Scatra time integration do not match!" << std::endl;
     break;
   }
   case INPAR::SCATRA::timeint_bdf2:
   {
-    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_bdf2)
+    if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_bdf2)
       if (comm.MyPID()==0)
         std::cout << "Fluid and Scatra time integration do not match!" << std::endl;
     break;
   }
   case INPAR::SCATRA::timeint_gen_alpha:
   {
-    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_npgenalpha and
-        FluidField().TimIntScheme() != INPAR::FLUID::timeint_afgenalpha)
+    if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_npgenalpha and
+        FluidField()->TimIntScheme() != INPAR::FLUID::timeint_afgenalpha)
       if (comm.MyPID()==0)
         std::cout << "Fluid and Scatra time integration do not match!" << std::endl;
     break;
@@ -120,19 +120,19 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   }
 
   // if applicable, provide scatra data to the turbulence statistics
-  if (FluidField().TurbulenceStatisticManager() != Teuchos::null and ScaTraField()->MethodName()!= INPAR::SCATRA::timeint_stationary)
+  if (FluidField()->TurbulenceStatisticManager() != Teuchos::null and ScaTraField()->MethodName()!= INPAR::SCATRA::timeint_stationary)
   {
     // Now, the statistics manager has access to the scatra time integration
-    FluidField().TurbulenceStatisticManager()->AddScaTraField(ScaTraField());
+    FluidField()->TurbulenceStatisticManager()->AddScaTraField(ScaTraField());
   }
 
   // if available, allow scatra field to access dynamic Smagorinsky filter
-  if (FluidField().DynSmagFilter() != Teuchos::null)
-    ScaTraField()->AccessDynSmagFilter(FluidField().DynSmagFilter());
+  if (FluidField()->DynSmagFilter() != Teuchos::null)
+    ScaTraField()->AccessDynSmagFilter(FluidField()->DynSmagFilter());
 
   // if available, allow scatra field to access dynamic Vreman
-  if (FluidField().Vreman() != Teuchos::null)
-    ScaTraField()->AccessVreman(FluidField().Vreman());
+  if (FluidField()->Vreman() != Teuchos::null)
+    ScaTraField()->AccessVreman(FluidField()->Vreman());
 
   return;
 
@@ -143,15 +143,15 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
 /*----------------------------------------------------------------------*/
 void ADAPTER::ScaTraFluidCouplingAlgorithm::ReadRestart(int step)
 {
-  FluidField().ReadRestart(step);
+  FluidField()->ReadRestart(step);
   ScaTraField()->ReadRestart(step);
-  SetTimeStep(FluidField().Time(),step);
+  SetTimeStep(FluidField()->Time(),step);
 
   // read scatra-specific restart data for turbulence statistics
-  if (FluidField().TurbulenceStatisticManager() != Teuchos::null)
+  if (FluidField()->TurbulenceStatisticManager() != Teuchos::null)
   {
     IO::DiscretizationReader reader(ScaTraField()->Discretization(),step);
-    FluidField().TurbulenceStatisticManager()->RestartScaTra(reader,step);
+    FluidField()->TurbulenceStatisticManager()->RestartScaTra(reader,step);
   }
 
   return;

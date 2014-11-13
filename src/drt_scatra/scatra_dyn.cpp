@@ -138,7 +138,7 @@ void scatra_dyn(int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      DRT::Problem::Instance()->AddFieldTest(algo->FluidField().CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(algo->FluidField()->CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(algo->CreateScaTraFieldTest());
       DRT::Problem::Instance()->TestAll(comm);
 

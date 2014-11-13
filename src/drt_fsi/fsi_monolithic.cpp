@@ -80,7 +80,7 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
 
   // ask base algorithm for the fluid time integrator
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true));
-  fluid_ = fluid->FluidFieldrcp();
+  fluid_ = fluid->FluidField();
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale")));
@@ -108,10 +108,10 @@ FSI::MonolithicBase::~MonolithicBase()
 void FSI::MonolithicBase::ReadRestart(int step)
 {
   StructureField()->ReadRestart(step);
-  FluidField().ReadRestart(step);
+  FluidField()->ReadRestart(step);
   AleField()->ReadRestart(step);
 
-  SetTimeStep(FluidField().Time(), FluidField().Step());
+  SetTimeStep(FluidField()->Time(), FluidField()->Step());
 }
 
 /*----------------------------------------------------------------------*/
@@ -123,7 +123,7 @@ void FSI::MonolithicBase::PrepareTimeStep()
   PrintHeader();
 
   StructureField()->PrepareTimeStep();
-  FluidField().PrepareTimeStep();
+  FluidField()->PrepareTimeStep();
   AleField()->PrepareTimeStep();
 }
 
@@ -144,7 +144,7 @@ void FSI::MonolithicBase::Update()
       Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->UpdateStepSize(Dt());
   }
 
-  FluidField().Update();
+  FluidField()->Update();
   AleField()->Update();
 }
 
@@ -164,10 +164,10 @@ void FSI::MonolithicBase::Output()
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
   StructureField()->Output();
-  FluidField().Output();
+  FluidField()->Output();
   AleField()->Output();
 
-  FluidField().LiftDrag();
+  FluidField()->LiftDrag();
 
   if (StructureField()->GetConstraintManager()->HaveMonitor())
   {
@@ -292,7 +292,7 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
   if (DRT::INPUT::IntegralValue<int>(fsidyn, "DEBUGOUTPUT") == 1)
   {
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
-    //fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField().Discretization()));
+    //fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField()->Discretization()));
   }
 
   // write iterations-file
@@ -339,8 +339,8 @@ void FSI::Monolithic::SetupSystem()
 
   coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
                                  StructureField()->Interface()->FSICondMap(),
-                                *FluidField().Discretization(),
-                                 FluidField().Interface()->FSICondMap(),
+                                *FluidField()->Discretization(),
+                                 FluidField()->Interface()->FSICondMap(),
                                 "FSICoupling",
                                  ndim);
 
@@ -355,8 +355,8 @@ void FSI::Monolithic::SetupSystem()
 
   // fluid to ale at the interface
 
-  icoupfa.SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface()->FSICondMap(),
+  icoupfa.SetupConditionCoupling(*FluidField()->Discretization(),
+                                   FluidField()->Interface()->FSICondMap(),
                                    *AleField()->Discretization(),
                                    AleField()->Interface()->FSICondMap(),
                                    "FSICoupling",
@@ -373,16 +373,16 @@ void FSI::Monolithic::SetupSystem()
     dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
   const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
 
-  coupfa.SetupCoupling(*FluidField().Discretization(),
+  coupfa.SetupCoupling(*FluidField()->Discretization(),
                        *AleField()->Discretization(),
                        *fluidnodemap,
                        *alenodemap,
                         ndim);
 
-  FluidField().SetMeshMap(coupfa.MasterDofMap());
+  FluidField()->SetMeshMap(coupfa.MasterDofMap());
 
   return;
 }
@@ -770,11 +770,11 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   // transfer the current ale mesh positions to the fluid field
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField()->Dispnp());
-  FluidField().ApplyMeshDisplacement(fluiddisp);
+  FluidField()->ApplyMeshDisplacement(fluiddisp);
 
   {
     Epetra_Time tf(Comm());
-    FluidField().Evaluate(fx);
+    FluidField()->Evaluate(fx);
     Utils()->out() << "fluid    : " << tf.ElapsedTime() << " sec\n";
   }
 
@@ -956,7 +956,7 @@ void FSI::Monolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 
   CombineFieldVectors(*ig,
                       StructureField()->InitialGuess(),
-                      FluidField().InitialGuess(),
+                      FluidField()->InitialGuess(),
                       AleField()->InitialGuess(),
                       true);
 }
@@ -1128,7 +1128,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlock
      mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
                                    Extractor(),
                                    *StructureField(),
-                                   FluidField(),
+                                   *FluidField(),
                                    *AleField(),
                                    structuresplit,
                                    DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),

@@ -115,7 +115,7 @@ void TWOPHASEFLOW::Algorithm::SolveStationaryProblem()
 
   // check time integration schemes of single fields
   // remark: this was already done in ScaTraFluidCouplingAlgorithm() before
-  if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary)
+  if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_stationary)
     dserror("Fluid time integration scheme is not stationary");
   if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_stationary)
     dserror("Scatra time integration scheme is not stationary");
@@ -124,7 +124,7 @@ void TWOPHASEFLOW::Algorithm::SolveStationaryProblem()
   SetScaTraValuesInFluid();
 
   // solve nonlinear Navier-Stokes equations
-  FluidField().Solve();
+  FluidField()->Solve();
 
   // solve level set equation
   if (Comm().MyPID()==0)
@@ -146,10 +146,10 @@ void TWOPHASEFLOW::Algorithm::PrepareTimeStep()
   ScaTraField()->PrepareTimeStep();
 
   // prepare fluid time step, among other things, predict velocity field
-  FluidField().PrepareTimeStep();
+  FluidField()->PrepareTimeStep();
 
   // synchronicity check between fluid algorithm and level set algorithms
-  if (FluidField().Time() != Time())
+  if (FluidField()->Time() != Time())
     dserror("Time in Fluid time integration differs from time in two phase flow algorithm");
   if (ScaTraField()->Time() != Time())
     dserror("Time in ScaTra time integration differs from time in two phase flow algorithm");
@@ -190,7 +190,7 @@ void TWOPHASEFLOW::Algorithm::OuterLoop()
 
     // solve low-Mach-number flow equations
     if (Comm().MyPID()==0) std::cout<<"\n****************************************\n              FLUID SOLVER\n****************************************\n";
-    FluidField().Solve();
+    FluidField()->Solve();
 
     // set fluid values required in scatra
     SetFluidValuesInScaTra(false);
@@ -213,11 +213,11 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
   // set level set in fluid field
   // derivatives and discretization based on time-integration scheme
 
-  switch(FluidField().TimIntScheme())
+  switch(FluidField()->TimIntScheme())
   {
   case INPAR::FLUID::timeint_stationary:
   {
-    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidFieldrcp())->SetScalarFields(ScaTraField()->Phinp(),
+    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidField())->SetScalarFields(ScaTraField()->Phinp(),
                                        Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(),
                                        ScaTraField()->GetGradientAtNodes(),
                                        ScaTraField()->Residual(),
@@ -236,15 +236,15 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
     }
 
     //TimIntParam() provides 1 - alphaf
-    const double alphaf = 1.0 - FluidField().TimIntParam();
-    const double alpham = Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhaseGenAlpha>(FluidFieldrcp())->AlphaM();
+    const double alphaf = 1.0 - FluidField()->TimIntParam();
+    const double alpham = Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhaseGenAlpha>(FluidField())->AlphaM();
     //Necessary function for the structure of GetNodalCurvature() and GetGradientAtNodes()
     Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->SetAlphaF(alphaf); //Set to -1.0 for Gradients and NodalCurv calculations at time (n+1)
 
 
     // As The Levelset algorithm does not have support for gen-alpha timeintegration ->
     // OST values from the ScaTra field will have to be used in the fluid field.
-    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidFieldrcp())->SetIterScalarFields(Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->PhiafOst(alphaf),
+    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidField())->SetIterScalarFields(Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->PhiafOst(alphaf),
                              Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->PhiamOst(alpham),
                                                Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->PhidtamOst(alpham),
                              Teuchos::null, //ScaTraField()->FsPhi()
@@ -256,7 +256,7 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
 //    // As The Levelset algorithm does not have support for gen-alpha timeintegration ->
 //    // OST values from the ScaTra field will have to be used in the fluid field.
 //    // Here the gen-alpha values have to be alpha_M=alpha_F=1
-//    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidFieldrcp())->SetIterScalarFields(ScaTraField()->Phinp(),
+//    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidField())->SetIterScalarFields(ScaTraField()->Phinp(),
 //                                       ScaTraField()->Phinp(),
 //                                       ScaTraField()->Phidtnp(),
 //                                       ScaTraField()->FsPhi(), //Teuchos::null
@@ -268,7 +268,7 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
   break;
   case INPAR::FLUID::timeint_one_step_theta:
   {
-    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidFieldrcp())->SetIterScalarFields(ScaTraField()->Phinp(),
+    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidField())->SetIterScalarFields(ScaTraField()->Phinp(),
                                    ScaTraField()->Phin(),
                                    ScaTraField()->Phidtnp(),
                                    ScaTraField()->FsPhi(), //Teuchos::null
@@ -298,7 +298,7 @@ bool TWOPHASEFLOW::Algorithm::ConvergenceCheck(int itnum)
     std::cout<<"\n****************************************\n  CONVERGENCE CHECK FOR ITERATION STEP\n****************************************\n";
     std::cout<<"\n****************************************\n              FLUID CHECK\n****************************************\n";
   }
-  fluidstopnonliniter  = FluidField().ConvergenceCheck(itnum,itmax_,ittol_);
+  fluidstopnonliniter  = FluidField()->ConvergenceCheck(itnum,itmax_,ittol_);
 
   //Levelset/ScaTra convergence check.
   if (Comm().MyPID()==0) std::cout<<"\n****************************************\n         SCALAR TRANSPORT CHECK\n****************************************\n";
@@ -317,7 +317,7 @@ void TWOPHASEFLOW::Algorithm::TimeUpdate()
   ScaTraField()->Update();
 
   // update fluid
-  FluidField().Update();
+  FluidField()->Update();
 
   return;
 }
@@ -330,7 +330,7 @@ void TWOPHASEFLOW::Algorithm::Output()
   // set scalar and thermodynamic pressure at n+1 and SCATRA true residual
   // for statistical evaluation and evaluation of Neumann boundary
   // conditions at the beginning of the subsequent time step
-  FluidField().SetScalarFields(ScaTraField()->Phinp(),
+  FluidField()->SetScalarFields(ScaTraField()->Phinp(),
                                  0.0,
                                  ScaTraField()->TrueResidual(),
                                  ScaTraField()->Discretization());
@@ -339,7 +339,7 @@ void TWOPHASEFLOW::Algorithm::Output()
   // written, defining the order in which the filters handle the
   // discretizations, which in turn defines the dof number ordering of the
   // discretizations.
-  FluidField().StatisticsAndOutput();
+  FluidField()->StatisticsAndOutput();
 
   ScaTraField()->Output();
 
@@ -405,7 +405,7 @@ void TWOPHASEFLOW::Algorithm::Restart(int step, const bool restartscatrainput)
   const Teuchos::RCP<DRT::Discretization> scatradis = ScaTraField()->Discretization();
 
   // restart of fluid field
-  FluidField().ReadRestart(step);
+  FluidField()->ReadRestart(step);
 
   // read level-set field from input file instead of restart file
   if (restartscatrainput)
@@ -441,9 +441,9 @@ void TWOPHASEFLOW::Algorithm::Restart(int step, const bool restartscatrainput)
   // set time in scalar transport time integration scheme
   // this has also to be done for restartscatrainput, since a particle field may now be included
   if(restartscatrainput)
-    ScaTraField()->SetTimeStep(FluidField().Time(),step);
+    ScaTraField()->SetTimeStep(FluidField()->Time(),step);
 
-  SetTimeStep(FluidField().Time(),step);
+  SetTimeStep(FluidField()->Time(),step);
 
   //TODO: Give TPF the capability to use generating flow  as seen in COMBUST module.
   // assign the fluid velocity field to the levelset function as convective velocity field
@@ -464,15 +464,15 @@ void TWOPHASEFLOW::Algorithm::ReadInflowRestart(int restart)
   //          modeling the physical parameters (dens, visc, diff) are required
   //          to obtain non-zero values which otherwise cause troubles when dividing by them
   // set initial scalar field
-  FluidField().SetScalarFields(ScaTraField()->Phinp(),
+  FluidField()->SetScalarFields(ScaTraField()->Phinp(),
                                  0.0,
                                  Teuchos::null,
                                  ScaTraField()->Discretization());
-  FluidField().ReadRestart(restart);
+  FluidField()->ReadRestart(restart);
   // as ReadRestart is only called for the FluidField
   // time and step have not been set in the superior class and the ScaTraField
-  SetTimeStep(FluidField().Time(),FluidField().Step());
-  ScaTraField()->SetTimeStep(FluidField().Time(),FluidField().Step());
+  SetTimeStep(FluidField()->Time(),FluidField()->Step());
+  ScaTraField()->SetTimeStep(FluidField()->Time(),FluidField()->Step());
   return;
 }
 
@@ -481,17 +481,17 @@ void TWOPHASEFLOW::Algorithm::SetFluidValuesInScaTra(bool init)
 {
   // get convel at the correct time
   const Teuchos::RCP<const Epetra_Vector> convel = (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_gen_alpha)
-                                                       ?(FluidField().Velaf())
-                                                       :(FluidField().Velnp());
+                                                       ?(FluidField()->Velaf())
+                                                       :(FluidField()->Velnp());
 
   if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_gen_alpha)
     Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->SetVelocityField(convel,
         Teuchos::null,
         Teuchos::null,
-        FluidField().FsVel(),
-        FluidField().Discretization()->GetDofSetProxy(),
-        //FluidField().DofSet(),
-        FluidField().Discretization(),
+        FluidField()->FsVel(),
+        FluidField()->Discretization()->GetDofSetProxy(),
+        //FluidField()->DofSet(),
+        FluidField()->Discretization(),
         false,
         init);
   else // temporary solution, since level-set algorithm does not yet support gen-alpha
@@ -502,10 +502,10 @@ void TWOPHASEFLOW::Algorithm::SetFluidValuesInScaTra(bool init)
     ScaTraField()->SetVelocityField(convel,
         Teuchos::null,
         Teuchos::null,
-        FluidField().FsVel(),
-        FluidField().Discretization()->GetDofSetProxy(),
-//        FluidField().DofSet(),
-        FluidField().Discretization());
+        FluidField()->FsVel(),
+        FluidField()->Discretization()->GetDofSetProxy(),
+//        FluidField()->DofSet(),
+        FluidField()->Discretization());
   }
 
   return;
@@ -519,8 +519,8 @@ void TWOPHASEFLOW::Algorithm::OutputInitialField()
   if (Step() == 0)
   {
     // output fluid initial state
-    if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary)
-      FluidField().Output();
+    if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_stationary)
+      FluidField()->Output();
 
     // output Levelset function initial state
     if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_stationary)
@@ -540,7 +540,7 @@ void TWOPHASEFLOW::Algorithm::OutputInitialField()
  *----------------------------------------------------------------------*/
 void TWOPHASEFLOW::Algorithm::TestResults()
 {
-  DRT::Problem::Instance()->AddFieldTest(FluidField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(FluidField()->CreateFieldTest());
 
   if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_gen_alpha)
   {

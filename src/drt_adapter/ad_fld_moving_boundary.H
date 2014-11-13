@@ -60,12 +60,10 @@ namespace ADAPTER
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
-    /// fluid field
-    virtual const ADAPTER::Fluid& FluidField() const = 0;
-    virtual ADAPTER::Fluid& FluidField() = 0;
+    virtual const Teuchos::RCP<ADAPTER::Fluid>& FluidField() = 0;
 
     /// communication object at the interface
-    virtual const FLD::UTILS::MapExtractor& Interface() const = 0;
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const = 0;
 
     //@}
 
@@ -155,9 +153,7 @@ namespace ADAPTER
     virtual ~FluidMovingBoundaryBaseAlgorithm() {}
 
     /// fluid field solver
-    FluidMovingBoundary& MBFluidField() { return *fluid_; }
-    const FluidMovingBoundary& MBFluidField() const { return *fluid_; }
-    Teuchos::RCP<FluidMovingBoundary> MBFluidFieldrcp() { return fluid_; }
+    const Teuchos::RCP<FluidMovingBoundary>& MBFluidField() { return fluid_; }
 
   private:
 

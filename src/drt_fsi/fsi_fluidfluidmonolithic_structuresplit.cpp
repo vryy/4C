@@ -68,13 +68,13 @@ void FSI::FluidFluidMonolithicStructureSplit::Update()
 
   if (relaxing_ale)
   {
-    FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
+    FluidField()->ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
 
     if (Comm().MyPID() == 0)
       IO::cout << "Relaxing Ale" << IO::endl;
 
     AleField()->Solve();
-    FluidField().ApplyMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
+    FluidField()->ApplyMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
   }
 
   // update fields
@@ -124,7 +124,7 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupDBCMapExtractor()
   // structure DBC
   dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
   // fluid DBC (including background & embedded discretization)
-  dbcmaps.push_back(FluidField().GetDBCMapExtractor()->CondMap());
+  dbcmaps.push_back(FluidField()->GetDBCMapExtractor()->CondMap());
   // ALE-DBC-maps, free of FSI DOF
   std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
   aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());

@@ -38,33 +38,33 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
 
    // set up couplings
   icoupfa_ = Teuchos::rcp(new Coupling());
-  icoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                   FluidField().Interface()->FSICondMap(),
+  icoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
+                                   FluidField()->Interface()->FSICondMap(),
                                    *AleField()->Discretization(),
                                    AleField()->Interface()->FSICondMap(),
                                    condname,
                                    ndim);
 
   fscoupfa_ = Teuchos::rcp(new Coupling());
-  fscoupfa_->SetupConditionCoupling(*FluidField().Discretization(),
-                                    FluidField().Interface()->FSCondMap(),
+  fscoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
+                                    FluidField()->Interface()->FSCondMap(),
                                     *AleField()->Discretization(),
                                     AleField()->Interface()->FSCondMap(),
                                     "FREESURFCoupling",
                                     ndim);
 
   // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
+  const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
   const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
 
   coupfa_ = Teuchos::rcp(new Coupling());
-  coupfa_->SetupCoupling(*FluidField().Discretization(),
+  coupfa_->SetupCoupling(*FluidField()->Discretization(),
                          *AleField()->Discretization(),
                          *fluidnodemap,
                          *alenodemap,
                          ndim);
 
-  FluidField().SetMeshMap(coupfa_->MasterDofMap());
+  FluidField()->SetMeshMap(coupfa_->MasterDofMap());
 
   // the ale matrix might be build just once!
   AleField()->CreateSystemMatrix(AleField()->Interface());
@@ -93,15 +93,15 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::FluidAleNonlinearSolve(
     AleField()->ApplyInterfaceDisplacements(FluidToAle(idisp));
     if (not pseudotransient)
     {
-      FluidField().ApplyInterfaceVelocities(ivel);
+      FluidField()->ApplyInterfaceVelocities(ivel);
     }
   }
 
-  if (FluidField().Interface()->FSCondRelevant())
+  if (FluidField()->Interface()->FSCondRelevant())
   {
     dserror("free surface code in combination with scatra has to be checked");
-    Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
-    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().Interface()->ExtractFSCondVector(dispnp);
+    Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
+    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField()->Interface()->ExtractFSCondVector(dispnp);
     AleField()->ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 
@@ -112,12 +112,12 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::FluidAleNonlinearSolve(
 
   AleField()->Solve();
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->WriteAccessDispnp());
-  FluidField().ApplyMeshDisplacement(fluiddisp);
+  FluidField()->ApplyMeshDisplacement(fluiddisp);
 
   // no computation of fluid velocities in case only ScaTra and ALE are to compute
   if (not pseudotransient)
   {
-    FluidField().Solve();
+    FluidField()->Solve();
   }
 
   return;

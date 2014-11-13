@@ -108,7 +108,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   const Teuchos::ParameterList& fluiddynparams = problem->FluidDynamicParams();
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,fluiddynparams,"porofluid",true));
-  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(fluid->FluidFieldrcp());
+  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(fluid->FluidField());
 
   if(fluid_ == Teuchos::null)
     dserror("cast from ADAPTER::FluidBaseAlgorithm to ADAPTER::FluidPoro failed");

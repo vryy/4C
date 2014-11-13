@@ -46,7 +46,7 @@ FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 
   Teuchos::RCP< ::ADAPTER::FluidMovingBoundaryBaseAlgorithm> MBFluidbase =
       Teuchos::rcp(new ADAPTER::FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"));
-  fluid_ = MBFluidbase->MBFluidFieldrcp();
+  fluid_ = MBFluidbase->MBFluidField();
 
   coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
 }
@@ -64,7 +64,7 @@ FSI::Algorithm::~Algorithm()
 void FSI::Algorithm::ReadRestart(int step)
 {
   StructureField()->ReadRestart(step);
-  double time = MBFluidField().ReadRestart(step);
+  double time = MBFluidField()->ReadRestart(step);
   SetTimeStep(time,step);
 }
 
@@ -78,7 +78,7 @@ void FSI::Algorithm::PrepareTimeStep()
   PrintHeader();
 
   StructureField()->PrepareTimeStep();
-  MBFluidField().PrepareTimeStep();
+  MBFluidField()->PrepareTimeStep();
 }
 
 
@@ -87,7 +87,7 @@ void FSI::Algorithm::PrepareTimeStep()
 void FSI::Algorithm::Update()
 {
   StructureField()->Update();
-  MBFluidField().Update();
+  MBFluidField()->Update();
 }
 
 
@@ -108,7 +108,7 @@ void FSI::Algorithm::Output()
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
   StructureField()->Output();
-  MBFluidField().Output();
+  MBFluidField()->Output();
 }
 
 

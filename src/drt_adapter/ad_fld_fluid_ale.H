@@ -42,14 +42,13 @@ namespace ADAPTER
                     std::string condname);
 
     /// fluid field
-    Fluid& FluidField() { return fluid_.FluidField(); }
-    const Fluid& FluidField() const { return fluid_.FluidField(); }
+    const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
 
     /// ale field
     const Teuchos::RCP<ADAPTER::AleFluidWrapper>& AleField() const { return ale_; }
 
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
-    virtual const FLD::UTILS::MapExtractor& Interface() const;
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return fluid_->Interface(); }
 
     virtual void PrepareTimeStep();
     virtual void Update();
@@ -67,8 +66,8 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
 
-    virtual int Itemax() const { return FluidField().Itemax(); }
-    virtual void SetItemax(int itemax) { FluidField().SetItemax(itemax); }
+    virtual int Itemax() const { return fluid_->Itemax(); }
+    virtual void SetItemax(int itemax) { fluid_->SetItemax(itemax); }
 
     virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape();
 
@@ -94,7 +93,7 @@ namespace ADAPTER
 
   private:
 
-    FluidBaseAlgorithm fluid_;
+    Teuchos::RCP<ADAPTER::Fluid> fluid_;
 
     /// problem-specific ALE-wrapper
     Teuchos::RCP<ADAPTER::AleFluidWrapper>  ale_;

@@ -101,9 +101,9 @@ bool ELCH::Algorithm::ConvergenceCheck( int natconvitnum,
   // Calculate velocity increment and velocity L2 - Norm
   // velincnp_ = 1.0 * convelnp_ - 1.0 * conveln_
 
-  velincnp_->Update(1.0,*FluidField().ExtractVelocityPart(FluidField().Velnp()),-1.0);
+  velincnp_->Update(1.0,*FluidField()->ExtractVelocityPart(FluidField()->Velnp()),-1.0);
   velincnp_->Norm2(&velincnorm_L2); // Estimation of the L2 - norm save values to both variables (velincnorm_L2 and velnorm_L2)
-  FluidField().ExtractVelocityPart(FluidField().Velnp())->Norm2(&velnorm_L2);
+  FluidField()->ExtractVelocityPart(FluidField()->Velnp())->Norm2(&velnorm_L2);
 
   // Calculate concentration increment and concentration L2 - Norm
   // tempincnp_ includes the concentration and the potential increment

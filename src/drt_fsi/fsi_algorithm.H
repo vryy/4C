@@ -71,7 +71,7 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
 
     /// access to fluid field
-    ADAPTER::FluidMovingBoundary& MBFluidField(){return *fluid_;}
+    const Teuchos::RCP<ADAPTER::FluidMovingBoundary>& MBFluidField(){return fluid_;}
 
     /// read restart data
     virtual void ReadRestart(int step);

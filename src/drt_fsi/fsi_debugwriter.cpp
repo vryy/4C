@@ -148,7 +148,7 @@ FSI::UTILS::MonolithicDebugWriter::MonolithicDebugWriter(Monolithic& algorithm)
     counter_(0)
 {
   struct_writer_ = Teuchos::rcp(new SimpleDebugWriter(algorithm_.StructureField()->Discretization(), "structure"));
-  fluid_writer_ = Teuchos::rcp(new SimpleDebugWriter(algorithm_.FluidField().Discretization(), "fluid"));
+  fluid_writer_ = Teuchos::rcp(new SimpleDebugWriter(algorithm_.FluidField()->Discretization(), "fluid"));
   ale_writer_ = Teuchos::rcp(new SimpleDebugWriter(algorithm_.AleField()->WriteAccessDiscretization(), "ale"));
 }
 

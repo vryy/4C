@@ -99,7 +99,7 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   DRT::Problem* problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& fluiddynparams = problem->FluidDynamicParams();
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fpsidynparams,fluiddynparams,"fluid",true));
-  fluid_subproblem_ = fluid->FluidFieldrcp();
+  fluid_subproblem_ = fluid->FluidField();
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(fpsidynparams, DRT::Problem::Instance()->GetDis("ale")));
   ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFpsiWrapper>(ale->AleField());

@@ -50,7 +50,7 @@ void FSI::FluidAleAlgorithm::Timeloop()
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::ReadRestart(int step)
 {
-  time_ = MBFluidField().ReadRestart(step);
+  time_ = MBFluidField()->ReadRestart(step);
   step_ = step;
 
 }
@@ -69,7 +69,7 @@ void FSI::FluidAleAlgorithm::PrepareTimeStep()
               << "     STEP = " YELLOW_LIGHT << std::setw(4) << step_ << END_COLOR "/" << std::setw(4) << nstep_
               << "\n\n";
 
-  MBFluidField().PrepareTimeStep();
+  MBFluidField()->PrepareTimeStep();
 }
 
 
@@ -77,7 +77,7 @@ void FSI::FluidAleAlgorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::Solve()
 {
-  MBFluidField().NonlinearSolve();
+  MBFluidField()->NonlinearSolve();
 }
 
 
@@ -85,7 +85,7 @@ void FSI::FluidAleAlgorithm::Solve()
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::Update()
 {
-  MBFluidField().Update();
+  MBFluidField()->Update();
 }
 
 
@@ -93,6 +93,6 @@ void FSI::FluidAleAlgorithm::Update()
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::Output()
 {
-  MBFluidField().Output();
+  MBFluidField()->Output();
 }
 

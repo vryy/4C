@@ -34,9 +34,9 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
 :  ScaTraFluidAleCouplingAlgorithm(comm,scatradyn,"FSICoupling",solverparams),
    pseudotransient_(false),
    molarvolume_(elchcontrol.get<double>("MOLARVOLUME")),
-   idispn_(FluidField().ExtractInterfaceVeln()),
-   idispnp_(FluidField().ExtractInterfaceVeln()),
-   iveln_(FluidField().ExtractInterfaceVeln()),
+   idispn_(FluidField()->ExtractInterfaceVeln()),
+   idispnp_(FluidField()->ExtractInterfaceVeln()),
+   iveln_(FluidField()->ExtractInterfaceVeln()),
    itmax_(elchcontrol.get<int>("MOVBOUNDARYITEMAX")),
    ittol_(elchcontrol.get<double>("MOVBOUNDARYCONVTOL")),
    theta_(elchcontrol.get<double>("MOVBOUNDARYTHETA"))
@@ -92,18 +92,18 @@ if (not pseudotransient_)
 {
   // transfer convective velocity = fluid velocity - grid velocity
   ScaTraField()->SetVelocityField(
-      FluidField().ConvectiveVel(), // = velnp - grid velocity
-      FluidField().Hist(),
+      FluidField()->ConvectiveVel(), // = velnp - grid velocity
+      FluidField()->Hist(),
       Teuchos::null,
       Teuchos::null,
       Teuchos::null,
-      FluidField().Discretization()
+      FluidField()->Discretization()
   );
 }
   // transfer moving mesh data
   ScaTraField()->ApplyMeshMovement(
-      FluidField().Dispnp(),
-      FluidField().Discretization()
+      FluidField()->Dispnp(),
+      FluidField()->Discretization()
   );
 
   // time loop
@@ -112,7 +112,7 @@ if (not pseudotransient_)
     // prepare next time step
     PrepareTimeStep();
 
-    Teuchos::RCP<Epetra_Vector> incr(FluidField().ExtractInterfaceVeln());
+    Teuchos::RCP<Epetra_Vector> incr(FluidField()->ExtractInterfaceVeln());
     incr->PutScalar(0.0);
     double incnorm(0.0);
     int iter(0);
@@ -197,7 +197,7 @@ void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
     std::cout<<"*********************\n";
   }
 
-  FluidField().PrepareTimeStep();
+  FluidField()->PrepareTimeStep();
   AleField()->PrepareTimeStep();
 
   // prepare time step
@@ -234,7 +234,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
     std::cout<<"************************\n";
   }
 
-  switch(FluidField().TimIntScheme())
+  switch(FluidField()->TimIntScheme())
   {
   case INPAR::FLUID::timeint_npgenalpha:
   case INPAR::FLUID::timeint_afgenalpha:
@@ -247,12 +247,12 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
     {
       // transfer convective velocity = fluid velocity - grid velocity
       ScaTraField()->SetVelocityField(
-        FluidField().ConvectiveVel(), // = velnp - grid velocity
-        FluidField().Hist(),
+        FluidField()->ConvectiveVel(), // = velnp - grid velocity
+        FluidField()->Hist(),
         Teuchos::null,
         Teuchos::null,
         Teuchos::null,
-        FluidField().Discretization()
+        FluidField()->Discretization()
       );
     }
   }
@@ -264,8 +264,8 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
 
   // transfer moving mesh data
   ScaTraField()->ApplyMeshMovement(
-      FluidField().Dispnp(),
-      FluidField().Discretization()
+      FluidField()->Dispnp(),
+      FluidField()->Discretization()
   );
 
   // solve coupled electrochemistry equations
@@ -278,7 +278,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
 /*----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::Update()
 {
-  FluidField().Update();
+  FluidField()->Update();
   AleField()->Update();
   ScaTraField()->Update();
 
@@ -299,20 +299,20 @@ void ELCH::MovingBoundaryAlgorithm::Output()
   // written. And these entries define the order in which the filters handle
   // the discretizations, which in turn defines the dof number ordering of the
   // discretizations.
-  FluidField().StatisticsAndOutput();
+  FluidField()->StatisticsAndOutput();
   // additional vector needed for restarts:
   int uprestart = AlgoParameters().get<int>("RESTARTEVRY");
-  if ((uprestart != 0) && (FluidField().Step() % uprestart == 0))
+  if ((uprestart != 0) && (FluidField()->Step() % uprestart == 0))
   {
-    FluidField().DiscWriter()->WriteVector("idispn",idispnp_);
+    FluidField()->DiscWriter()->WriteVector("idispn",idispnp_);
   }
 
 #if 0
   //ToDo
   // for visualization only...
-  Teuchos::RCP<Epetra_Vector> idispnpfull = LINALG::CreateVector(*(FluidField().DofRowMap()),true);
-  (FluidField().Interface()).AddFSICondVector(idispnp_,idispnpfull);
-  FluidField().DiscWriter()->WriteVector("idispnfull",idispnpfull);
+  Teuchos::RCP<Epetra_Vector> idispnpfull = LINALG::CreateVector(*(FluidField()->DofRowMap()),true);
+  (FluidField()->Interface()).AddFSICondVector(idispnp_,idispnpfull);
+  FluidField()->DiscWriter()->WriteVector("idispnfull",idispnpfull);
 #endif
 
   // now the other physical fiels
@@ -333,7 +333,7 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
   fluxnp_ = ScaTraField()->CalcFluxAtBoundary(condnames,false);
 
   // access discretizations
-  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
+  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField()->Discretization();
   Teuchos::RCP<DRT::Discretization> scatradis = ScaTraField()->Discretization();
 
   // no support for multiple reactions at the interface !
@@ -399,7 +399,7 @@ void ELCH::MovingBoundaryAlgorithm::ReadRestart(int step)
   AleField()->ReadRestart(step); // add reading of ALE restart data
 
   // finally read isdispn which was written to the fluid restart data
-  IO::DiscretizationReader reader(FluidField().Discretization(),step);
+  IO::DiscretizationReader reader(FluidField()->Discretization(),step);
   reader.ReadVector(idispn_ ,"idispn");
   // read same result into vector isdispnp_ as a 'good guess'
   reader.ReadVector(idispnp_,"idispn");

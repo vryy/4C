@@ -69,7 +69,7 @@ CAVITATION::Algorithm::Algorithm(
   // ask base algorithm for the fluid time integrator
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(),DRT::Problem::Instance()->FluidDynamicParams(),"fluid",false));
-  fluid_ = fluid->FluidFieldrcp();
+  fluid_ = fluid->FluidField();
 
   return;
 }

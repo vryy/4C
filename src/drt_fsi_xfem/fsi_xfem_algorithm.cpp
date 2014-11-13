@@ -53,7 +53,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
   //--------------------------------------------
   // ask base algorithm for the fluid time integrator
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,fdyn,"fluid",false));
-  fluid_ = fluid->FluidFieldrcp();
+  fluid_ = fluid->FluidField();
 
   return;
 }

@@ -103,7 +103,7 @@ void fluid_topopt_dyn()
   Teuchos::TimeMonitor::summarize();
 
   // perform the result test
-  problem->AddFieldTest(topopt_->FluidField().CreateFieldTest());
+  problem->AddFieldTest(topopt_->FluidField()->CreateFieldTest());
   problem->AddFieldTest(topopt_->AdjointFluidField()->CreateFieldTest());
   problem->AddFieldTest(topopt_->Optimizer()->CreateFieldTest());
   problem->TestAll(comm);

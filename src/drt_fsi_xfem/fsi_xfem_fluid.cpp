@@ -58,7 +58,7 @@ void FSI::FluidXFEMAlgorithm::Timeloop()
 /*----------------------------------------------------------------------*/
 void FSI::FluidXFEMAlgorithm::ReadRestart(int step)
 {
-  time_ = MBFluidField().ReadRestart(step);
+  time_ = MBFluidField()->ReadRestart(step);
   step_ = step;
 
 }
@@ -71,7 +71,7 @@ void FSI::FluidXFEMAlgorithm::PrepareTimeStep()
   time_ += dt_;
 
 
-  MBFluidField().PrepareTimeStep();
+  MBFluidField()->PrepareTimeStep();
 }
 
 
@@ -79,7 +79,7 @@ void FSI::FluidXFEMAlgorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::FluidXFEMAlgorithm::Solve()
 {
-  MBFluidField().NonlinearSolve();
+  MBFluidField()->NonlinearSolve();
 }
 
 
@@ -87,7 +87,7 @@ void FSI::FluidXFEMAlgorithm::Solve()
 /*----------------------------------------------------------------------*/
 void FSI::FluidXFEMAlgorithm::Update()
 {
-  MBFluidField().Update();
+  MBFluidField()->Update();
 }
 
 
@@ -95,6 +95,6 @@ void FSI::FluidXFEMAlgorithm::Update()
 /*----------------------------------------------------------------------*/
 void FSI::FluidXFEMAlgorithm::Output()
 {
-  MBFluidField().Output();
+  MBFluidField()->Output();
 }
 

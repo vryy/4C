@@ -53,12 +53,8 @@ namespace ADAPTER {
     /// virtual destructor to support polymorph destruction
     virtual ~FluidBaseAlgorithm();
 
-    /// fluid field solver
-    Fluid& FluidField() { return *fluid_; }
-    /// return instance of fluid time integration class
-    const Fluid& FluidField() const { return *fluid_; }
-    /// return instance of fluid time integration class
-    Teuchos::RCP<Fluid> FluidFieldrcp() { return fluid_; }
+    /// access to fluid field solver
+    const Teuchos::RCP<Fluid>& FluidField() { return fluid_; }
 
   private:
 

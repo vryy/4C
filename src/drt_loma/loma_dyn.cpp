@@ -150,7 +150,7 @@ void loma_dyn(int restart)
     Teuchos::TimeMonitor::summarize();
 
     // perform result test if required
-    problem->AddFieldTest(loma->FluidField().CreateFieldTest());
+    problem->AddFieldTest(loma->FluidField()->CreateFieldTest());
     problem->AddFieldTest(loma->CreateScaTraFieldTest());
     problem->TestAll(comm);
 

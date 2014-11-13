@@ -775,7 +775,7 @@ void FPSI::Monolithic_Plain::SetupRHSFirstIter(Epetra_Vector& f)
     * (3)  - (1-stiparam)/(1-ftiparam) * F^{G}_{\Gamma\Gamma} * \Delta d_{\Gamma,p}
     *
     * Remarks on all terms:
-    * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
+    * +  tau: time scaling factor for interface time integration (tau = 1/FluidField()->TimeScaling())
     *
     */
    // ----------addressing term 1
@@ -838,7 +838,7 @@ void FPSI::Monolithic_Plain::SetupRHSFirstIter(Epetra_Vector& f)
     * (3)  - F^{G}_{I \Gamma} * \Delta d_{\Gamma,p}
     *
     * Remarks on all terms:
-    * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
+    * +  tau: time scaling factor for interface time integration (tau = 1/FluidField()->TimeScaling())
     *
     */
    // ----------addressing term 1
@@ -849,7 +849,7 @@ void FPSI::Monolithic_Plain::SetupRHSFirstIter(Epetra_Vector& f)
    rhs->Scale(Dt() * timescale);
 
  #ifdef FLUIDSPLITAMG
-   rhs = FluidField().Interface()->InsertOtherVector(rhs);
+   rhs = FluidField()->Interface()->InsertOtherVector(rhs);
  #endif
 
    rhs = FluidField()->Interface()->InsertOtherVector(rhs);
@@ -864,7 +864,7 @@ void FPSI::Monolithic_Plain::SetupRHSFirstIter(Epetra_Vector& f)
 //   rhs->Scale(-timescale);
 //
 // #ifdef FLUIDSPLITAMG
-//   rhs = FluidField().Interface()->InsertOtherVector(rhs);
+//   rhs = FluidField()->Interface()->InsertOtherVector(rhs);
 // #endif
 //
 //   Extractor().AddVector(*rhs,1,f);
@@ -883,7 +883,7 @@ void FPSI::Monolithic_Plain::SetupRHSFirstIter(Epetra_Vector& f)
 //     rhs->Scale(-1.);
 //
 // #ifdef FLUIDSPLITAMG
-//   rhs = FluidField().Interface()->InsertOtherVector(rhs);
+//   rhs = FluidField()->Interface()->InsertOtherVector(rhs);
 // #endif
 //
 //     Extractor().AddVector(*rhs,1,f);
@@ -1063,7 +1063,7 @@ void FPSI::Monolithic_Plain::RecoverLagrangeMultiplier()
      * Remarks on all terms:
      * +  Division by -(1.0 - ftiparam) will be done in the end
      *    since this is common to all terms
-     * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
+     * +  tau: time scaling factor for interface time integration (tau = 1/FluidField()->TimeScaling())
      * +  neglecting terms (4)-(8) should not alter the results significantly
      *    since at the end of the time step the solution increments tend to zero.
      *

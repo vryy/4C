@@ -37,7 +37,7 @@ FSI::MonolithicBaseFS::MonolithicBaseFS(const Epetra_Comm& comm,
 {
   // ask base algorithm for the fluid time integrator
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true));
-  fluid_ = fluid->FluidFieldrcp();
+  fluid_ = fluid->FluidField();
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale")));

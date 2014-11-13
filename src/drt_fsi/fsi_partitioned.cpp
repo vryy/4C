@@ -68,8 +68,8 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     const int ndim = DRT::Problem::Instance()->NDim();
     coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
                                    StructureField()->Interface()->FSICondMap(),
-                                  *MBFluidField().Discretization(),
-                                   MBFluidField().Interface().FSICondMap(),
+                                  *MBFluidField()->Discretization(),
+                                   MBFluidField()->Interface()->FSICondMap(),
                                   "FSICoupling",
                                   ndim);
 
@@ -85,8 +85,8 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 
     matchingnodes_ = false;
     coupsfm_->Setup( StructureField()->Discretization(),
-                     MBFluidField().Discretization(),
-                     (dynamic_cast<ADAPTER::FluidAle&>(MBFluidField())).AleField()->WriteAccessDiscretization(),
+                     MBFluidField()->Discretization(),
+                     (Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle>(MBFluidField()))->AleField()->WriteAccessDiscretization(),
                      coupleddof,
                      "FSICoupling",
                      comm,
@@ -724,7 +724,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceDisp()
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceForce()
 {
   // extract forces
-  return FluidToStruct(MBFluidField().ExtractInterfaceForces());
+  return FluidToStruct(MBFluidField()->ExtractInterfaceForces());
 }
 
 
@@ -860,7 +860,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidToStruct(Teuchos::RCP<Epetra_
   else
   {
     // Translate consistent nodal forces to interface loads
-    const Teuchos::RCP<Epetra_Vector> ishape = MBFluidField().IntegrateInterfaceShape();
+    const Teuchos::RCP<Epetra_Vector> ishape = MBFluidField()->IntegrateInterfaceShape();
     const Teuchos::RCP<Epetra_Vector> iforce = Teuchos::rcp(new Epetra_Vector(iv->Map()));
 
     if ( iforce->ReciprocalMultiply( 1.0, *ishape, *iv, 0.0 ) )
@@ -896,6 +896,6 @@ void FSI::Partitioned::ExtractPreviousInterfaceSolution()
   else
   {
     idispn_ = StructureField()->ExtractInterfaceDispn();
-    iveln_ = FluidToStruct(MBFluidField().ExtractInterfaceVeln());
+    iveln_ = FluidToStruct(MBFluidField()->ExtractInterfaceVeln());
   }
 }

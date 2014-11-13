@@ -162,7 +162,7 @@ void elch_dyn(int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      problem->AddFieldTest(elch->FluidField().CreateFieldTest());
+      problem->AddFieldTest(elch->FluidField()->CreateFieldTest());
       problem->AddFieldTest(elch->AleField()->CreateFieldTest());
       problem->AddFieldTest(elch->CreateScaTraFieldTest());
       problem->TestAll(comm);
@@ -187,7 +187,7 @@ void elch_dyn(int restart)
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      problem->AddFieldTest(elch->FluidField().CreateFieldTest());
+      problem->AddFieldTest(elch->FluidField()->CreateFieldTest());
       problem->AddFieldTest(elch->CreateScaTraFieldTest());
       problem->TestAll(comm);
     }

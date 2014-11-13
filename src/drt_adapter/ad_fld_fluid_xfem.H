@@ -41,14 +41,13 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// fluid field
-    const Fluid& FluidField() const { return fluid_.FluidField(); }
-    Fluid& FluidField() { return fluid_.FluidField(); }
+    const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
 
     /// return the boundary discretization that matches the structure discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
 
     /// communication object at the interface
-    virtual const FLD::UTILS::MapExtractor& Interface() const;
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return fluid_->Interface(); }
 
     //@}
 
@@ -107,10 +106,10 @@ namespace ADAPTER
     /// number of Newton steps inside the fluid solver
 
     /// get the maximum number of iterations from the fluid field
-    virtual int Itemax() const { return FluidField().Itemax(); }
+    virtual int Itemax() const { return fluid_->Itemax(); }
 
     /// set the maximum number of iterations for the fluid field
-    virtual void SetItemax(int itemax) { FluidField().SetItemax(itemax); }
+    virtual void SetItemax(int itemax) { fluid_->SetItemax(itemax); }
 
     //@}
 
@@ -129,7 +128,7 @@ namespace ADAPTER
   private:
 
     /// fluid base algorithm object
-    FluidBaseAlgorithm fluid_;
+    Teuchos::RCP<Fluid> fluid_;
 
     /// coupling of interface in to parallel distributions
     Teuchos::RCP<Coupling> icoupsf_;

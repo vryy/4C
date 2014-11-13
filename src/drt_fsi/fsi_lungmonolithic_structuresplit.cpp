@@ -102,7 +102,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystem()
   // create combined map
   CreateCombinedDofRowMap();
 
-  FluidField().UseBlockMatrix(false);
+  FluidField()->UseBlockMatrix(false);
 
   // build ale system matrix in splitted system
   AleField()->CreateSystemMatrix(AleField()->Interface());
@@ -121,7 +121,7 @@ void FSI::LungMonolithicStructureSplit::CreateCombinedDofRowMap()
 
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(structfield->FSIInterface()->OtherMap());
-  vecSpaces.push_back(FluidField().DofRowMap());
+  vecSpaces.push_back(FluidField()->DofRowMap());
   // remaining (not coupled) dofs of ale field
   vecSpaces.push_back(AleField()->Interface()->Map(0));
   // additional volume constraints
@@ -142,10 +142,10 @@ void FSI::LungMonolithicStructureSplit::SetupRHSResidual(Epetra_Vector& f)
   Teuchos::RCP<Epetra_Vector> structureRHS = Teuchos::rcp(new Epetra_Vector(*StructureField()->Discretization()->DofRowMap()));
   structureRHS->Update(1.0, *StructureField()->RHS(), 1.0, *AddStructRHS_, 0.0);
 
-  const double fluidscale = FluidField().ResidualScaling();
+  const double fluidscale = FluidField()->ResidualScaling();
 
-  Teuchos::RCP<Epetra_Vector> fluidRHS = Teuchos::rcp(new Epetra_Vector(*FluidField().Discretization()->DofRowMap()));
-  fluidRHS->Update(1.0, *FluidField().RHS(), 1.0, *AddFluidRHS_, 0.0);
+  Teuchos::RCP<Epetra_Vector> fluidRHS = Teuchos::rcp(new Epetra_Vector(*FluidField()->Discretization()->DofRowMap()));
+  fluidRHS->Update(1.0, *FluidField()->RHS(), 1.0, *AddFluidRHS_, 0.0);
 
   SetupVector(f,
               structureRHS,
@@ -171,9 +171,9 @@ void FSI::LungMonolithicStructureSplit::SetupRHSLambda(Epetra_Vector& f)
 void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
 {
   const Teuchos::RCP<ADAPTER::StructureLung>& structfield = Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
-  ADAPTER::FluidLung& fluidfield = dynamic_cast<ADAPTER::FluidLung&>(FluidField());
+  const Teuchos::RCP<ADAPTER::FluidLung> fluidfield = Teuchos::rcp_dynamic_cast<ADAPTER::FluidLung>(FluidField());
 
-  const double fluidscale = FluidField().ResidualScaling();
+  const double fluidscale = FluidField()->ResidualScaling();
 
   // additional rhs term for ALE equations
   // -dt Aig u(n)
@@ -191,7 +191,7 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
 
   LINALG::SparseMatrix& aig = a->Matrix(0,1);
 
-  Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
+  Teuchos::RCP<Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
   Teuchos::RCP<Epetra_Vector> sveln = FluidToStruct(fveln);
   Teuchos::RCP<Epetra_Vector> aveln = StructToAle(sveln);
   Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
@@ -220,7 +220,7 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   Extractor().AddVector(*veln,0,f);
 
   veln = StructureField()->Interface()->ExtractFSICondVector(rhs);
-  veln = FluidField().Interface()->InsertFSICondVector(StructToFluid(veln));
+  veln = FluidField()->Interface()->InsertFSICondVector(StructToFluid(veln));
 
   veln->Scale(1./fluidscale);
   Extractor().AddVector(*veln,1,f);
@@ -256,7 +256,7 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   //--------------------------------------------------------------------------------
   // shape derivatives
   //--------------------------------------------------------------------------------
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = fluidfield.ShapeDerivatives();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = fluidfield->ShapeDerivatives();
 
   if (mmm!=Teuchos::null)
   {
@@ -266,15 +266,15 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
 
     rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
     fmig.Apply(*fveln,*rhs);
-    veln = FluidField().Interface()->InsertVector(rhs,0);
+    veln = FluidField()->Interface()->InsertVector(rhs,0);
 
     rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
     fmgg.Apply(*fveln,*rhs);
-    FluidField().Interface()->InsertVector(rhs,1,veln);
+    FluidField()->Interface()->InsertVector(rhs,1,veln);
 
     rhs = Teuchos::rcp(new Epetra_Vector(fmGg.RowMap()));
     fmGg.Apply(*fveln,*rhs);
-    FluidField().Interface()->InsertVector(rhs,3,veln);
+    FluidField()->Interface()->InsertVector(rhs,3,veln);
 
     veln->Scale(-1.*Dt());
     Extractor().AddVector(*veln,1,f);
@@ -284,11 +284,11 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
 
     rhs = Teuchos::rcp(new Epetra_Vector(afmgg.RowMap()));
     afmgg.Apply(*fveln,*rhs);
-    veln = FluidField().Interface()->InsertVector(rhs,1);
+    veln = FluidField()->Interface()->InsertVector(rhs,1);
 
     rhs = Teuchos::rcp(new Epetra_Vector(afmGg.RowMap()));
     afmGg.Apply(*fveln,*rhs);
-    FluidField().Interface()->InsertVector(rhs,3,veln);
+    FluidField()->Interface()->InsertVector(rhs,3,veln);
 
     veln->Scale(-1.*Dt());
     Extractor().AddVector(*veln,1,f);
@@ -311,14 +311,14 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
 
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
 
-  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
 
   // Uncomplete fluid matrix to be able to deal with slightly defective
   // interface meshes.
   f->UnComplete();
 
-  double scale     = FluidField().ResidualScaling();
-  double timescale = FluidField().TimeScaling();
+  double scale     = FluidField()->ResidualScaling();
+  double timescale = FluidField()->TimeScaling();
 
   /*----------------------------------------------------------------------*/
   // fluid part
@@ -326,7 +326,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   mat.Assign(1,1,View,*f);
 
   // fluid linearization with respect to mesh motion block
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField()->ShapeDerivatives();
   const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   if (mmm!=Teuchos::null)
@@ -578,7 +578,7 @@ void FSI::LungMonolithicStructureSplit::InitialGuess(Teuchos::RCP<Epetra_Vector>
 
   SetupVector(*ig,
               StructureField()->InitialGuess(),
-              FluidField().InitialGuess(),
+              FluidField()->InitialGuess(),
               AleField()->InitialGuess(),
               ConstraintInitialGuess,
               0.0);
@@ -606,7 +606,7 @@ void FSI::LungMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> scv = StructureField()->Interface()->ExtractFSICondVector(sv);
-    Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface()->InsertFSICondVector(StructToFluid(scv));
+    Teuchos::RCP<Epetra_Vector> modfv = FluidField()->Interface()->InsertFSICondVector(StructToFluid(scv));
     modfv->Update(1.0, *fv, 1./fluidscale);
 
     Extractor().InsertVector(*modfv,1,f);
@@ -635,8 +635,8 @@ void FSI::LungMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const E
 
   // process structure unknowns
 
-  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface()->ExtractFSICondVector(fx);
-  FluidField().VelocityToDisplacement(fcx);
+  Teuchos::RCP<Epetra_Vector> fcx = FluidField()->Interface()->ExtractFSICondVector(fx);
+  FluidField()->VelocityToDisplacement(fcx);
   Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
   Teuchos::RCP<Epetra_Vector> scx = FluidToStruct(fcx);
 
