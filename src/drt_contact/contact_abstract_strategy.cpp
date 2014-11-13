@@ -1866,8 +1866,7 @@ void CONTACT::CoAbstractStrategy::StoreToOld(
 /*----------------------------------------------------------------------*
  |  Update and output contact at end of time step             popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::Update(int istep,
-    Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::CoAbstractStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
 {
   // store Lagrange multipliers, D and M
   // (we need this for interpolation of the next generalized mid-point)
@@ -1887,9 +1886,6 @@ void CONTACT::CoAbstractStrategy::Update(int istep,
   // the auxiliary positions in binarytree contact search)
   SetState("olddisplacement", dis);
 
-#ifdef MORTARGMSH1
-  VisualizeGmsh(istep);
-#endif // #ifdef MORTARGMSH1
   // double-check if active set is really converged
   // (necessary e.g. for monolithic FSI with Lagrange multiplier contact,
   // because usually active set convergence check has been integrated into

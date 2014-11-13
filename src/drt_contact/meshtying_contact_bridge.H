@@ -138,7 +138,13 @@ public:
   \brief update
 
   */
-  void Update(int istep, Teuchos::RCP<Epetra_Vector> dis);
+  void Update(Teuchos::RCP<Epetra_Vector> dis);
+
+  /*!
+  \brief visualize stuff with gmsh
+
+  */
+  void VisualizeGmsh(const int istep, const int iter = -1);
 
   /*!
   \brief write restart

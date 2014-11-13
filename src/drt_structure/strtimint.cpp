@@ -582,10 +582,8 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
   // visualization of initial configuration
 #ifdef MORTARGMSH3
-  if(cmtbridge_ != Teuchos::null)
-  {
-    cmtbridge_->GetStrategy().VisualizeGmsh(0,0);
-  }
+  bool gmsh = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH");
+  if (gmsh) cmtbridge_->VisualizeGmsh(0);
 #endif // #ifdef MORTARGMSH3
 
   //**********************************************************************
@@ -1096,7 +1094,14 @@ void STR::TimInt::UpdateStepTime()
 void STR::TimInt::UpdateStepContactMeshtying()
 {
   if(HaveContactMeshtying())
-    cmtbridge_->Update(stepn_, disn_);
+  {
+    cmtbridge_->Update(disn_);
+#ifdef MORTARGMSH1
+    bool gmsh = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH");
+    if (gmsh) cmtbridge_->VisualizeGmsh(stepn_);
+#endif // #ifdef MORTARGMSH1
+  }
+
 
    return;
 }

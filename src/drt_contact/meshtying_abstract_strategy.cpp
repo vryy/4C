@@ -820,7 +820,7 @@ void CONTACT::MtAbstractStrategy::StoreDirichletStatus(Teuchos::RCP<LINALG::MapE
 /*----------------------------------------------------------------------*
  | Update meshtying at end of time step                       popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::Update(int istep, Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::MtAbstractStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
 {
   // store Lagrange multipliers
   // (we need this for interpolation of the next generalized mid-point)
@@ -831,10 +831,6 @@ void CONTACT::MtAbstractStrategy::Update(int istep, Teuchos::RCP<Epetra_Vector> 
   // (this is needed for calculating the auxiliary positions in
   // binarytree contact search)
   SetState("olddisplacement",dis);
-
-#ifdef MORTARGMSH1
-  VisualizeGmsh(istep);
-#endif // #ifdef MORTARGMSH1
 
   return;
 }

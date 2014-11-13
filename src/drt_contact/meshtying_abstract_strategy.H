@@ -312,11 +312,10 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     /*!
     \brief Update meshtying at end of time step
 
-    \param iter (in): step index for gmsh file creation
     \param dis (in):  current displacements (-> old displacements)
 
     */
-    void Update(int istep, Teuchos::RCP<Epetra_Vector> dis);
+    void Update(Teuchos::RCP<Epetra_Vector> dis);
 
     /*!
     \brief Perform a write restart
@@ -366,7 +365,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \param iter (in): current iteration index
 
     */
-    void VisualizeGmsh(const int step, const int iter = 0);
+    void VisualizeGmsh(const int step, const int iter);
 
     //@}
 

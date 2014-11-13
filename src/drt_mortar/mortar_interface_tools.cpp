@@ -33,10 +33,19 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
   // GMSH output of all interface elements
   //**********************************************************************
   // construct unique filename for gmsh output
-  // first index = time step index
+  // basic information
   std::ostringstream filename;
   const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
-  filename << "o/gmsh_output/" << filebase << "_";
+  filename << "o/gmsh_output/" << filebase << "_mt_id";
+  if (id_<10)
+    filename << 0;
+  else if (id_>99)
+    dserror("Gmsh output implemented for a maximum of 99 iterations");
+  filename << id_;
+
+  // construct unique filename for gmsh output
+  // first index = time step index
+  filename << "_step";
   if (step<10)
     filename << 0 << 0 << 0 << 0;
   else if (step<100)
@@ -51,32 +60,26 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
 
   // construct unique filename for gmsh output
   // second index = Newton iteration index
-#ifdef MORTARGMSH2
-  filename << "_";
-  if (iter<10)
-    filename << 0;
-  else if (iter>99)
-    dserror("Gmsh output implemented for a maximum of 99 iterations");
-  filename << iter;
-#endif // #ifdef MORTARGMSH2
-
-#ifdef MORTARGMSH3
-  filename << "_";
-  if (iter<10)
-    filename << 0;
-  else if (iter>99)
-    dserror("Gmsh output implemented for a maximum of 99 iterations");
-  filename << iter;
-#endif // #ifdef MORTARGMSH3
+  filename << "_iter";
+  if (iter>=0)
+  {
+    if (iter<10)
+      filename << 0;
+    else if (iter>99)
+      dserror("Gmsh output implemented for a maximum of 99 iterations");
+    filename << iter;
+  }
+  else
+    filename << "XX";
 
   // create three files (slave, master and whole interface)
   std::ostringstream filenameslave;
   std::ostringstream filenamemaster;
   filenameslave << filename.str();
   filenamemaster << filename.str();
-  filename << "_iface.pos";
-  filenameslave << "_slave.pos";
-  filenamemaster << "_master.pos";
+  filename << "_if.pos";
+  filenameslave << "_sl.pos";
+  filenamemaster << "_ma.pos";
 
   // do output to file in c-style
   FILE* fp = NULL;
@@ -110,9 +113,9 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
       std::stringstream gmshfilecontentmaster;
       if (proc==0)
       {
-        gmshfilecontent << "View \" Step " << step << " Iter " << iter << " Iface\" {" << std::endl;
-        gmshfilecontentslave << "View \" Step " << step << " Iter " << iter << " Slave\" {" << std::endl;
-        gmshfilecontentmaster << "View \" Step " << step << " Iter " << iter << " Master\" {" << std::endl;
+        gmshfilecontent << "View \" Mt-Id " << id_ << " Step " << step << " Iter " << iter << " Iface\" {" << std::endl;
+        gmshfilecontentslave << "View \" Mt-Id " << id_ << " Step " << step << " Iter " << iter << " Slave\" {" << std::endl;
+        gmshfilecontentmaster << "View \" Mt-Id " << id_ << " Step " << step << " Iter " << iter << " Master\" {" << std::endl;
       }
 
       //******************************************************************
@@ -590,23 +593,15 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
 
   // construct unique filename for gmsh output
   // second index = Newton iteration index
-#ifdef MORTARGMSH2
-  filenametn << "_";
-  if (iter<10)
-    filenametn << 0;
-  else if (iter>99)
-    dserror("Gmsh output implemented for a maximum of 99 iterations");
-  filenametn << iter;
-#endif // #ifdef MORTARGMSH2
-
-#ifdef MORTARGMSH3
-  filenametn << "_";
-  if (iter<10)
-    filenametn << 0;
-  else if (iter>99)
-    dserror("Gmsh output implemented for a maximum of 99 iterations");
-  filenametn << iter;
-#endif // #ifdef MORTARGMSH3
+  if (iter>=0)
+  {
+    filenametn << "_";
+    if (iter<10)
+      filenametn << 0;
+    else if (iter>99)
+      dserror("Gmsh output implemented for a maximum of 99 iterations");
+    filenametn << iter;
+  }
 
   if (lComm()->MyPID()==0)
   {
@@ -764,14 +759,15 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
 
   // construct unique filename for gmsh output
   // second index = Newton iteration index
-#ifdef MORTARGMSH2
-  filenamectn << "_";
-  if (iter<10)
-    filenamectn << 0;
-  else if (iter>99)
-    dserror("Gmsh output implemented for a maximum of 99 iterations");
-  filenamectn << iter;
-#endif // #ifdef MORTARGMSH2
+  if (iter>=0)
+  {
+    filenamectn << "_";
+    if (iter<10)
+      filenamectn << 0;
+    else if (iter>99)
+      dserror("Gmsh output implemented for a maximum of 99 iterations");
+    filenamectn << iter;
+  }
 
   int lcontactmapsize=(int)(binarytree_->CouplingMap()[0].size());
   int gcontactmapsize;

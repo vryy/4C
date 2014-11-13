@@ -1130,7 +1130,8 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
 
     // visualization of current Newton step
 #ifdef MORTARGMSH2
-    cmtman_->GetStrategy().VisualizeGmsh(stepn_,iter_);
+    bool gmsh = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH");
+    if (gmsh) cmtbridge_->VisualizeGmsh(stepn_,iter_);
 #endif // #ifdef MORTARGMSH2
   }
 

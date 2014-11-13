@@ -219,12 +219,12 @@ class StrategyBase
     virtual const Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;
     virtual void StoreDirichletStatus(Teuchos::RCP<LINALG::MapExtractor> dbcmaps) = 0;
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
-    virtual void Update(int istep, Teuchos::RCP<Epetra_Vector> dis) = 0;
+    virtual void Update(Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void UpdateActiveSet() = 0;
     virtual void UpdateActiveSetSemiSmooth() = 0;
     virtual void UpdateUzawaAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
-    virtual void VisualizeGmsh(const int step, const int iter = 0) = 0;
+    virtual void VisualizeGmsh(const int step, const int iter) = 0;
     virtual bool WasInContact() = 0;
     virtual bool WasInContactLastTimeStep() = 0;
     virtual bool Wear() = 0;

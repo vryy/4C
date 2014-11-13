@@ -171,15 +171,31 @@ void CONTACT::MeshtyingContactBridge::WriteRestart(Teuchos::RCP<IO::Discretizati
 /*----------------------------------------------------------------------*
  |  Write restart                                            farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::Update(int istep, Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::MeshtyingContactBridge::Update(Teuchos::RCP<Epetra_Vector> dis)
 {
   // contact
   if (HaveContact())
-    ContactManager()->GetStrategy().Update(istep,dis);
+    ContactManager()->GetStrategy().Update(dis);
 
   // meshtying
   if (HaveMeshtying())
-    MtManager()->GetStrategy().Update(istep,dis);
+    MtManager()->GetStrategy().Update(dis);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Write restart                                             popp 11/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::MeshtyingContactBridge::VisualizeGmsh(const int istep, const int iter)
+{
+  // contact
+  if (HaveContact())
+    ContactManager()->GetStrategy().VisualizeGmsh(istep,iter);
+
+  // meshtying
+  if (HaveMeshtying())
+    MtManager()->GetStrategy().VisualizeGmsh(istep,iter);
 
   return;
 }

@@ -582,11 +582,10 @@ public:
   /*!
    \brief Update contact at end of time step
 
-   \param iter (in): step index for gmsh file creation
    \param dis (in):  current displacements (-> old displacements)
 
    */
-  void Update(int istep, Teuchos::RCP<Epetra_Vector> dis);
+  void Update(Teuchos::RCP<Epetra_Vector> dis);
 
   /*!
    \brief Perform a write restart
@@ -657,7 +656,7 @@ public:
    \param iter (in): current iteration index
 
    */
-  void VisualizeGmsh(const int step, const int iter = 0);
+  void VisualizeGmsh(const int step, const int iter);
 
   //@}
 
