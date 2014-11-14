@@ -82,11 +82,13 @@ public:
   {
     dis_none,                   // unknown dis type
     quad4,                      // 4 noded quadrilateral
+    quad6,                      // 6 noded quadrilateral (linear in one direction, quadratic in the other)
     quad8,                      // 8 noded quadrilateral
     quad9,                      // 9 noded quadrilateral
     tri3,                       // 3 noded triangle
     tri6,                       // 6 noded triangle
     hex8,                       // 8 noded hexahedra
+    hex18,                      // 18 noded hexahedra
     hex20,                      // 20 noded hexahedra
     hex27,                      // 27 noded hexahedra
     tet4,                       // 4 noded tetrahedra
@@ -1333,6 +1335,7 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
     case DRT::Element::tri3:       s = "TRI3";  break;
     case DRT::Element::tri6:       s = "TRI6";  break;
     case DRT::Element::hex8:       s = "HEX8";  break;
+    case DRT::Element::hex18:      s = "HEX18"; break;
     case DRT::Element::hex20:      s = "HEX20";  break;
     case DRT::Element::hex27:      s = "HEX27";  break;
     case DRT::Element::tet4:       s = "TET4";  break;

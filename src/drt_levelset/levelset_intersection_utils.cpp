@@ -49,7 +49,7 @@ void SCATRA::CaptureZeroLevelSet(
   volumedomainplus = 0.0;
   zerosurface = 0.0;
   elementBoundaryIntCells.clear();
-  
+
   // export phi from row to column map
   const Teuchos::RCP<Epetra_Vector> phicol = Teuchos::rcp(new Epetra_Vector(*scatradis->DofColMap()));
   LINALG::Export(*phi,*phicol);
@@ -409,11 +409,8 @@ void SCATRA::unpackBoundaryIntCells(
       DRT::Element::DiscretizationType distype;
       int distypeint = -1;
       DRT::ParObject::ExtractfromPack(posingroup,data,distypeint);
-      if (distypeint == 4)
-        distype = DRT::Element::tri3;
-      else if (distypeint == 1)
-        distype = DRT::Element::quad4;
-      else
+      distype=(DRT::Element::DiscretizationType)distypeint;
+      if (!(distype==DRT::Element::tri3 || distype==DRT::Element::quad4))
         dserror("unexpected distype %d", distypeint);
 
       LINALG::SerialDenseMatrix vertices_xi;

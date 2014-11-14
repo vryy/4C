@@ -3442,6 +3442,33 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
 
     break;
   }
+  case intrule_quad_6point:
+  {
+    //
+    //                ^ xi_2
+    //     _ _ _ _ _ _|_ _ _ _ _ _
+    //    |           |           |
+    //    |           |           |
+    //    |    4      6     5     |
+    //    |           |           |
+    //    |           |           |
+    //    |           +----------------> xi_1
+    //    |                       |
+    //    |                       |
+    //    |    1      3     2     |
+    //    |                       |
+    //    |_ _ _ _ _ _ _ _ _ _ _ _|
+
+    nquad = 6;
+    qwgt[0] = qwgt[1] = qwgt[3] = qwgt[4] = 0.5555555555556;
+    qwgt[2] = qwgt[5]                     = 0.8888888888889;
+    qxg[0][0] = qxg[3][0]             = -0.7745966692415;
+    qxg[1][0] = qxg[4][0]             = +0.7745966692415;
+    qxg[2][0] = qxg[5][0]             = 0.0;
+    qxg[0][1] = qxg[1][1] = qxg[2][1] = -0.5773502691896;
+    qxg[3][1] = qxg[4][1] = qxg[5][1] = +0.5773502691896;
+    break;
+  }
   case intrule_quad_16point:
   {
     internal::fillquadrature(intrule_line_4point,qxg,qwgt,nquad);

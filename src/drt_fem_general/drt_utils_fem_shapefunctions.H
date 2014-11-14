@@ -1477,6 +1477,17 @@ void shape_function_2D(
     funct(8) = r2 * s2;
     break;
   }
+  case DRT::Element::quad6:
+  {
+    funct(0) = 0.25*r*(r-1.)*(1.-s);
+    funct(1) = 0.25*r*(r+1.)*(1.-s);
+    funct(2) =-0.5*(r-1.)*(r+1.)*(1.-s);
+    funct(3) = 0.25*r*(r-1.)*(1.+s);
+    funct(4) = 0.25*r*(r+1.)*(1.+s);
+    funct(5) =-0.5*(r-1.)*(r+1.)*(1.+s);
+
+    break;
+  }
   case DRT::Element::tri3:
   {
     const T t1 = 1.0 - r - s;
@@ -1671,6 +1682,23 @@ void shape_function_2D_deriv1(
 
     deriv1(0, 8) = -2.0 * r * s2;
     deriv1(1, 8) = -2.0 * s * r2;
+    break;
+  }
+  case DRT::Element::quad6:
+  {
+    deriv1(0,0) = 0.25*(2.*r-1.)*(1.-s);
+    deriv1(0,1) = 0.25*(2.*r+1.)*(1.-s);
+    deriv1(0,2) =             -r*(1.-s);
+    deriv1(0,3) = 0.25*(2.*r-1.)*(1.+s);
+    deriv1(0,4) = 0.25*(2.*r+1.)*(1.+s);
+    deriv1(0,5) =             -r*(1.+s);
+
+    deriv1(1,0) =-0.25*r*(r-1.);
+    deriv1(1,1) =-0.25*r*(r+1.);
+    deriv1(1,2) =+0.5*(r-1.)*(r+1.);
+    deriv1(1,3) = 0.25*r*(r-1.);
+    deriv1(1,4) = 0.25*r*(r+1.);
+    deriv1(1,5) =-0.5*(r-1.)*(r+1.);
     break;
   }
   case DRT::Element::tri3:

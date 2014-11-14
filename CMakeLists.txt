@@ -733,6 +733,9 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_nurbs27.cpp
   src/drt_so3/so_nurbs27_evaluate.cpp
   src/drt_so3/so_nurbs27_input.cpp
+  src/drt_so3/so_sh18.cpp
+  src/drt_so3/so_sh18_input.cpp
+  src/drt_so3/so_sh18_evaluate.cpp
   src/drt_so3/so_sh8.cpp
   src/drt_so3/so_sh8_evaluate.cpp
   src/drt_so3/so_sh8_input.cpp

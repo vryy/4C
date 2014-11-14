@@ -3310,6 +3310,13 @@ int STR::TimIntImpl::PTC()
     dserror("Effective stiffness matrix must be filled here");
   }
 
+  if (outputeveryiter_)
+  {
+    int restart = DRT::Problem::Instance()->Restart();
+    if (stepn_ == (restart + 1)) outputcounter_ = 0;
+    OutputEveryIter(true);
+  }
+
   // initialise equilibrium loop
   iter_ = 1;
   normfres_ = CalcRefNormForce();
@@ -3387,6 +3394,8 @@ int STR::TimIntImpl::PTC()
 
     // update end-point displacements etc
     UpdateIter(iter_);
+
+    if (outputeveryiter_) OutputEveryIter(true);
 
     // create parameter list
     Teuchos::ParameterList params;

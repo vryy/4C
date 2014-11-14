@@ -72,6 +72,14 @@ const int subhexmap[8][8] =
   { 26, 22, 14, 23, 25, 17, 6, 18 },
   { 24, 26, 23, 15, 19, 25, 18, 7 } };
 
+//! defines how 4 hex8 elements are constructed from a hex18
+const int subhex18map[4][8] =
+{
+  { 0,4,8,7,9,13,17,16 },
+  { 4,1,5,8,13,10,14,17},
+  { 8,5,2,6,17,14,11,15 },
+  { 7,8,6,3,16,17,15,12 } };
+
 
 //! basis class for the Ensight filter
 class EnsightWriter : public PostWriterBase

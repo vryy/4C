@@ -94,6 +94,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"WALL");
   PrintElementLines(stream,"WALLQ4PORO");
   PrintElementLines(stream,"WALLQ9PORO");
+  PrintElementLines(stream,"SOLIDSH18");
 
 
   PrintSectionHeader(stream,"FLUID ELEMENTS");

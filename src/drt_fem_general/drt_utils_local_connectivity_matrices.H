@@ -33,6 +33,34 @@ namespace DRT
 namespace UTILS
 {
 
+  //! 2 surfaces on a Hex18 element with 9 nodes per surface
+  const int eleNodeNumbering_hex18_surfaces_q9[2][9] = {
+          {0,  3,  2,  1,  7,  6,  5,  4,  8},
+          {9, 10, 11, 12, 13, 14, 15, 16, 17}};
+  //! 4 surfaces on a Hex18 element with 6 nodes per surface
+  const int eleNodeNumbering_hex18_surfaces_q6[4][6] = {
+          {0,  1,  4,  9, 10, 13},
+          {1,  2,  5, 10, 11, 14},
+          {2,  3,  6, 11, 12, 15},
+          {3,  0,  7, 12,  9, 16}};
+
+  //! 8 Lines of a Hex18 element with 3 nodes per line
+  const int eleNodeNumbering_hex18_lines_quad[8][3] = {
+          { 0,  1,  4},
+          { 1,  2,  5},
+          { 2,  3,  6},
+          { 0,  3,  7},
+          { 9, 10, 13},
+          {10, 11, 14},
+          {11, 12, 15},
+          { 9, 12, 16}};
+  //! 4 Lines in a Hex18 element with 2 nodes per line
+  const int eleNodeNumbering_hex18_lines_lin[4][2] = {
+          {0, 9},
+          {1,10},
+          {2,11},
+          {3,12}};
+
   //! 6 Surfaces of a Hex27 element with 9 nodes per surface
   const int eleNodeNumbering_hex27_surfaces[6][9] = {
           {0,  3,  2,  1, 11, 10,  9,  8, 20},

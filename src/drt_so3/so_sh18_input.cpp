@@ -1,0 +1,80 @@
+/*!----------------------------------------------------------------------
+\file so_hex8_input.cpp
+\brief
+
+<pre>
+Maintainer: Moritz Frenzel
+            frenzel@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
+</pre>
+
+*----------------------------------------------------------------------*/
+
+#include "so_sh18.H"
+#include "../drt_mat/so3_material.H"
+#include "../drt_lib/drt_linedefinition.H"
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::So_sh18::ReadElement(const std::string& eletype,
+                                         const std::string& distype,
+                                         DRT::INPUT::LineDefinition* linedef)
+{
+  // read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+
+  SetMaterial(material);
+
+  // set up of materials with GP data (e.g., history variables)
+
+  Teuchos::RCP<MAT::Material> mat = Material();
+
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->Setup(NUMGPT_SOH18, linedef);
+
+  // temporary variable for read-in
+  std::string buffer;
+
+  // read kinematic flag
+  linedef->ExtractString("KINEM",buffer);
+  if (buffer=="linear")
+  {
+   //kintype_ = soh8_linear;
+   dserror ("Only nonlinear kinematics for SO_SH8 implemented!");
+  }
+  else if (buffer=="nonlinear")
+  { /* everything ok */ }
+  else dserror ("Reading SO_HEX18 element failed KINEM unknown");
+
+  // transverse shear locking
+  linedef->ExtractString("TSL",buffer);
+  if      (buffer=="dsg" ) dsg_shear_=true;
+  else if (buffer=="none") dsg_shear_=false;
+  else                     dserror("unknown transverse shear locking method");
+
+  // membrane locking
+  linedef->ExtractString("MEL",buffer);
+  if      (buffer=="dsg" ) dsg_membrane_=true;
+  else if (buffer=="none") dsg_membrane_=false;
+  else                     dserror("unknown membrane locking method");
+
+  // curvature thickness locking
+  linedef->ExtractString("CTL",buffer);
+  if      (buffer=="dsg" ) dsg_ctl_=true;
+  else if (buffer=="none") dsg_ctl_=false;
+  else                     dserror("unknown curvature thickness locking method");
+
+  // volumetric locking
+  linedef->ExtractString("VOL",buffer);
+  if      (buffer=="eas9") eas_=true;
+  else if (buffer=="none") eas_=false;
+  else                     dserror("unknown volumetric locking method");
+
+  SetupDSG();
+
+  return true;
+}
+

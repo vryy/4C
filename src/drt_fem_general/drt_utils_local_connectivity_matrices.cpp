@@ -394,6 +394,28 @@ std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
             }
             break;
         }
+    case DRT::Element::hex18:
+            {
+              const int nSurf_9=2;
+              const int nSurf_6=4;
+              const int nNode_9=9;
+              const int nNode_6=6;
+              std::vector<int> submap_9(nNode_9);
+              std::vector<int> submap_6(nNode_6);
+              for (int i=0; i<nSurf_9; i++)
+              {
+                for (int j=0; j<nNode_9; j++)
+                  submap_9[j] = eleNodeNumbering_hex18_surfaces_q9[i][j];
+                map.push_back(submap_9);
+              }
+              for (int i=0; i<nSurf_6; i++)
+              {
+                for (int j=0; j<nNode_6; j++)
+                  submap_6[j] = eleNodeNumbering_hex18_surfaces_q6[i][j];
+                map.push_back(submap_6);
+              }
+              break;
+            }
         case DRT::Element::hex20:
         {
             const int nSurf = 6;
@@ -741,6 +763,28 @@ std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingLines(
                 for(int j = 0; j < nNode; j++)
                     map[i][j] = eleNodeNumbering_pyramid5_lines[i][j];
             }
+            break;
+        }
+        case DRT::Element::hex18:
+        {
+          const int nLine_quad=8;
+          const int nNode_quad=3;
+          const int nLine_lin =4;
+          const int nNode_lin =2;
+          std::vector<int> submap_lin(nNode_lin);
+          std::vector<int> submap_quad(nNode_quad);
+          for (int i=0; i<nLine_lin; i++)
+          {
+            for (int j=0; j<nNode_lin; j++)
+              submap_lin[j] = eleNodeNumbering_hex18_lines_lin[i][j];
+            map.push_back(submap_lin);
+          }
+          for (int i=0; i<nLine_quad; i++)
+          {
+            for (int j=0; j<nNode_quad; j++)
+              submap_quad[j] = eleNodeNumbering_hex18_lines_quad[i][j];
+            map.push_back(submap_quad);
+          }
             break;
         }
         default:

@@ -119,6 +119,7 @@ enum GaussRule2D
     intrule2D_undefined,             ///< use this to initialize a gaussrule, if you don't know the value, yet!
     intrule_quad_1point,             ///< degree of precision: 1  (open)
     intrule_quad_4point,             ///< degree of precision: 3  (open)
+    intrule_quad_6point,             ///< degree of precision: 3/5  (open) (2 by 3 gauss points for quad6 element
     intrule_quad_9point,             ///< degree of precision: 5  (open)
     intrule_quad_16point,            ///< degree of precision: 7  (open)
     intrule_quad_25point,            ///< degree of precision: 9  (open)
