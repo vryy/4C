@@ -623,6 +623,11 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     double conv_phi(0.0);
     conv_phi = convelint.Dot(gradphinp);
 
+    //set changed values in variable manager
+    my::scatravarmanager_->SetConv(conv);
+    my::scatravarmanager_->SetConVel(convelint);
+    my::scatravarmanager_->SetConvPhi(0,conv_phi);
+
     // diffusive part used in stabilization terms
     double diff_phi(0.0);
     LINALG::Matrix<my::nen_,1> diff(true);
@@ -659,6 +664,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     if (gradphin_norm>1e-8)
          convelintold.Update(oldsign/gradphin_norm,gradphin);
     hist = phin - my::scatraparatimint_->Dt() * (1.0 - my::scatraparatimint_->TimeFac()/my::scatraparatimint_->Dt()) * (convelintold.Dot(gradphin)-oldsign);
+
+    //set changed values in variable manager
+    my::scatravarmanager_->SetHist(hist);
 #endif
 
     //--------------------------------------------------------------------

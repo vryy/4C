@@ -1261,12 +1261,19 @@ namespace ELEMENTS
     virtual const LINALG::Matrix<NSD,1>& GradPhi(const int k) const {return gradphi_[k];};
     //! return convective term of current scalar value
     virtual const double& ConvPhi(const int k) const {return conv_phi_[k];};
-    //! return convective term of current scalar value
+    //! return history term of current scalar value
     virtual const double& Hist(const int k) const {return hist_[k];};
 
     /*========================================================================*/
     //! @name set methods for internal variables
     /*========================================================================*/
+    // in a perfect world, all values should have been set in SetInternalVariables() and
+    // related methods. Single(!) variables should not be manipulated, because this
+    // easily leads to inconsistencies. However, this needs to be done in certain places
+    // at the moment. Therefore the following set methods. Try to circumvent
+    // using them and do not add new ones, if possible.
+    //TODO: reduce number of set methods
+
     //! set spatial gradient of current scalar value
     virtual void SetGradPhi(const int k,LINALG::Matrix<NSD,1>& gradphi) {gradphi_[k] = gradphi;};
     //! set convective term of current scalar value
@@ -1275,6 +1282,12 @@ namespace ELEMENTS
     virtual void AddToConvPhi(const int k,double conv_phi) {conv_phi_[k] += conv_phi;};
     //! set convective term of current scalar value
     virtual void ScaleConvPhi(const int k,double scale) {conv_phi_[k] *= scale;};
+    //! set convective velocity
+    virtual void SetConVel(LINALG::Matrix<NSD,1>& convel) {convelint_ = convel;};
+    //! set history term of current scalar value
+    virtual void SetHist(const int k,double hist) {hist_[k] = hist;};
+    //! set convective part in convective form
+    virtual void SetConv(LINALG::Matrix<NEN,1>& conv) {conv_ = conv;};
 
   protected:
 
