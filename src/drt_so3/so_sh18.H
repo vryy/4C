@@ -457,6 +457,31 @@ protected:
   void CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_disp,
                             LINALG::Matrix<6,1> glstrain_mod,
                             LINALG::Matrix<3,3>& defgrd_mod);
+
+  void CalculateBopLoc(
+      const LINALG::Matrix<NUMNOD_SOH18,NUMDIM_SOH18>& xcurr,
+      const LINALG::Matrix<NUMNOD_SOH18,NUMDIM_SOH18>& xrefe,
+      const LINALG::Matrix<9,1>& shape_q9,
+      const LINALG::Matrix<2,9>& deriv_q9,
+      const int gp,
+      LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH18>& bop_loc);
+
+  void CalculateLocStrain(
+      const LINALG::Matrix<NUMNOD_SOH18,NUMDIM_SOH18>& xcurr,
+      const LINALG::Matrix<NUMNOD_SOH18,NUMDIM_SOH18>& xrefe,
+      const LINALG::Matrix<9,1>& shape_q9,
+      const LINALG::Matrix<2,9>& deriv_q9,
+      const int gp,
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1>& lstrain);
+
+  void CalculateGeoStiff(
+      const LINALG::Matrix<9,1>& shape_q9,
+      const LINALG::Matrix<2,9>& deriv_q9,
+      LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& TinvT,
+      const int gp,
+      const double detJ_w,
+      const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& stress,
+      LINALG::Matrix<NUMDOF_SOH18,NUMDOF_SOH18>* stiffmatrix);
   //@}
 
 }; // class So_sh18

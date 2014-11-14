@@ -508,114 +508,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(
     // set up B-Operator in local(parameter) element space including ANS
     // **********************************************************************
     LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH18> bop_loc(true);
-    for (int dim = 0; dim < NUMDIM_SOH18; ++dim)
-      for (int k=0; k<9; ++k)
-        for (int l=0; l<9; ++l)
-        {
-          if (dsg_membrane_)
-          {
-            // constant normal strain
-            bop_loc(0,(k+9)*3+dim) += .125*dsg_membrane_r_[gp%9](k,l)*(xcurr(l+9,dim)+xcurr(l,dim));
-            bop_loc(0,k*3+dim)     += .125*dsg_membrane_r_[gp%9](k,l)*(xcurr(l+9,dim)+xcurr(l,dim));
-            bop_loc(0,(l+9)*3+dim) += .125*dsg_membrane_r_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-            bop_loc(0,l*3+dim)     += .125*dsg_membrane_r_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-
-            bop_loc(1,(k+9)*3+dim) += .125*dsg_membrane_s_[gp%9](k,l)*(xcurr(l+9,dim)+xcurr(l,dim));
-            bop_loc(1,k*3+dim)     += .125*dsg_membrane_s_[gp%9](k,l)*(xcurr(l+9,dim)+xcurr(l,dim));
-            bop_loc(1,(l+9)*3+dim) += .125*dsg_membrane_s_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-            bop_loc(1,l*3+dim)     += .125*dsg_membrane_s_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-
-            // constant in-plane shear strain
-            bop_loc(3,(k+9)*3+dim) += .25*dsg_membrane_rs_[gp%9](k,l)*(xcurr(l+9,dim)+xcurr(l,dim));
-            bop_loc(3,k*3+dim)     += .25*dsg_membrane_rs_[gp%9](k,l)*(xcurr(l+9,dim)+xcurr(l,dim));
-            bop_loc(3,(l+9)*3+dim) += .25*dsg_membrane_rs_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-            bop_loc(3,l*3+dim)     += .25*dsg_membrane_rs_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-          }
-          else
-          {
-            // constant normal strain
-            for (int alpha=0; alpha<2;++alpha)
-            {
-              bop_loc(alpha,(k+9)*3+dim) += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l)*(xcurr(l+9,dim)+xcurr(l,dim));
-              bop_loc(alpha,k*3+dim)     += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l)*(xcurr(l+9,dim)+xcurr(l,dim));
-              bop_loc(alpha,(l+9)*3+dim) += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-              bop_loc(alpha,l*3+dim)     += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-            }
-
-            // constant in-plane shear strain
-            bop_loc(3,(k+9)*3+dim) += .25*deriv_q9(0,k)*deriv_q9(1,l)*(xcurr(l+9,dim)+xcurr(l,dim));
-            bop_loc(3,k*3+dim)     += .25*deriv_q9(0,k)*deriv_q9(1,l)*(xcurr(l+9,dim)+xcurr(l,dim));
-            bop_loc(3,(l+9)*3+dim) += .25*deriv_q9(0,k)*deriv_q9(1,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-            bop_loc(3,l*3+dim)     += .25*deriv_q9(0,k)*deriv_q9(1,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-          }
-
-          // linear normal strain
-          for (int alpha=0; alpha<2; ++alpha)
-          {
-            bop_loc(alpha,(k+9)*3+dim) += xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l)*xcurr(l+9,dim);
-            bop_loc(alpha,k*3+dim)     +=-xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l)*xcurr(l,dim);
-            bop_loc(alpha,(l+9)*3+dim) += xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l)*xcurr(k+9,dim);
-            bop_loc(alpha,l*3+dim)     +=-xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l)*xcurr(k,dim);
-          }
-
-          // linear in-plane shear strain
-          bop_loc(3,(k+9)*3+dim) += xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l)*xcurr(l+9,dim);
-          bop_loc(3,k*3+dim)     +=-xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l)*xcurr(l,dim);
-          bop_loc(3,(l+9)*3+dim) += xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l)*xcurr(k+9,dim);
-          bop_loc(3,l*3+dim)     +=-xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l)*xcurr(k,dim);
-
-          if (dsg_shear_)
-          {
-            // constant transverse shear strain
-            bop_loc(4,(k+9)*3+dim) += .25*dsg_shear_s_[gp%9](k,l)*(xcurr(l+9,dim)-xcurr(l,dim));
-            bop_loc(4,k*3+dim)     += .25*dsg_shear_s_[gp%9](k,l)*(xcurr(l+9,dim)-xcurr(l,dim));
-            bop_loc(4,(l+9)*3+dim) += .25*dsg_shear_s_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-            bop_loc(4,l*3+dim)     +=-.25*dsg_shear_s_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-
-            bop_loc(5,(k+9)*3+dim) += .25*dsg_shear_r_[gp%9](k,l)*(xcurr(l+9,dim)-xcurr(l,dim));
-            bop_loc(5,k*3+dim)     += .25*dsg_shear_r_[gp%9](k,l)*(xcurr(l+9,dim)-xcurr(l,dim));
-            bop_loc(5,(l+9)*3+dim) += .25*dsg_shear_r_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-            bop_loc(5,l*3+dim)     +=-.25*dsg_shear_r_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
-          }
-          else
-          {
-            // constant transverse shear strain
-            bop_loc(4,(k+9)*3+dim) += .25*deriv_q9(1,k)*shapefunct_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
-            bop_loc(4,k*3+dim)     += .25*deriv_q9(1,k)*shapefunct_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
-            bop_loc(4,(l+9)*3+dim) += .25*deriv_q9(1,k)*shapefunct_q9(l)*(xcurr(k+9,dim)+xcurr(k,dim));
-            bop_loc(4,l*3+dim)     +=-.25*deriv_q9(1,k)*shapefunct_q9(l)*(xcurr(k+9,dim)+xcurr(k,dim));
-            bop_loc(5,(k+9)*3+dim) += .25*deriv_q9(0,k)*shapefunct_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
-            bop_loc(5,k*3+dim)     += .25*deriv_q9(0,k)*shapefunct_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
-            bop_loc(5,(l+9)*3+dim) += .25*deriv_q9(0,k)*shapefunct_q9(l)*(xcurr(k+9,dim)+xcurr(k,dim));
-            bop_loc(5,l*3+dim)     +=-.25*deriv_q9(0,k)*shapefunct_q9(l)*(xcurr(k+9,dim)+xcurr(k,dim));
-          }
-
-          // linear transverse shear strain
-          bop_loc(4,(k+9)*3+dim) += xsi_[gp](2)*.25*deriv_q9(1,k)*shapefunct_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
-          bop_loc(4,k*3+dim)     +=-xsi_[gp](2)*.25*deriv_q9(1,k)*shapefunct_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
-          bop_loc(4,(l+9)*3+dim) += xsi_[gp](2)*.25*deriv_q9(1,k)*shapefunct_q9(l)*(xcurr(k+9,dim)-xcurr(k,dim));
-          bop_loc(4,l*3+dim)     +=-xsi_[gp](2)*.25*deriv_q9(1,k)*shapefunct_q9(l)*(xcurr(k+9,dim)-xcurr(k,dim));
-          bop_loc(5,(k+9)*3+dim) += xsi_[gp](2)*.25*deriv_q9(0,k)*shapefunct_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
-          bop_loc(5,k*3+dim)     +=-xsi_[gp](2)*.25*deriv_q9(0,k)*shapefunct_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
-          bop_loc(5,(l+9)*3+dim) += xsi_[gp](2)*.25*deriv_q9(0,k)*shapefunct_q9(l)*(xcurr(k+9,dim)-xcurr(k,dim));
-          bop_loc(5,l*3+dim)     +=-xsi_[gp](2)*.25*deriv_q9(0,k)*shapefunct_q9(l)*(xcurr(k+9,dim)-xcurr(k,dim));
-
-          // transverse normal strain
-          if (dsg_ctl_)
-          {
-            bop_loc(2,(k+9)*3+dim) += .125*dsg_transverse_t_[gp%9](k,l)*(xcurr(l+9,dim)-xcurr(l,dim));
-            bop_loc(2,k*3+dim)     -= .125*dsg_transverse_t_[gp%9](k,l)*(xcurr(l+9,dim)-xcurr(l,dim));
-            bop_loc(2,(l+9)*3+dim) += .125*dsg_transverse_t_[gp%9](k,l)*(xcurr(k+9,dim)-xcurr(k,dim));
-            bop_loc(2,l*3+dim)     -= .125*dsg_transverse_t_[gp%9](k,l)*(xcurr(k+9,dim)-xcurr(k,dim));
-          }
-          else
-          {
-            bop_loc(2,(k+9)*3+dim) += .125*shapefunct_q9(k)*shapefunct_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
-            bop_loc(2,k*3+dim)     +=-.125*shapefunct_q9(k)*shapefunct_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
-            bop_loc(2,(l+9)*3+dim) += .125*shapefunct_q9(k)*shapefunct_q9(l)*(xcurr(k+9,dim)-xcurr(k,dim));
-            bop_loc(2,l*3+dim)     +=-.125*shapefunct_q9(k)*shapefunct_q9(l)*(xcurr(k+9,dim)-xcurr(k,dim));
-          }
-      } // k=0..8; l=0..8; dim=0..2
+    CalculateBopLoc(xcurr,xrefe,shapefunct_q9,deriv_q9,gp,bop_loc);
     LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH18> bop;
     bop.Multiply(TinvT,bop_loc);
 
@@ -624,120 +517,9 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(
     // see Diss. Koschnik page 41
     // **************************************************************************
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> lstrain(true);
-
-    for (int dim=0; dim<3; ++dim)
-      for (int k=0; k<9; ++k)
-        for (int l=0; l<9; ++l)
-        {
-          if (dsg_membrane_)
-          {
-            // constant normal strain
-            lstrain(0) += .125*dsg_membrane_r_[gp%9](k,l)
-                         *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))     // a_alphaalpha
-                           -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))     // A_alphaalpha
-                          );
-            lstrain(1) += .125*dsg_membrane_s_[gp%9](k,l)
-                         *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))     // a_alphaalpha
-                           -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))     // A_alphaalpha
-                          );
-            // constant in-plane shear strain
-
-            lstrain(3) += .25*dsg_membrane_rs_[gp%9](k,l)
-                          *(  (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))           // a_01
-                             -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))           // A_01
-                           );
-          }
-          else
-          {
-            // constant normal strain
-            for (int alpha=0; alpha<2;++alpha)
-              lstrain(alpha) += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l)
-                                *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))     // a_alphaalpha
-                                  -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))     // A_alphaalpha
-                                 );
-
-            // constant in-plane shear strain
-            lstrain(3) += .25*deriv_q9(0,k)*deriv_q9(1,l)
-                          *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))           // a_01
-                            -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))           // A_01
-                           );
-          }
-
-          // linear normal strain
-            for (int alpha=0; alpha<2; ++alpha)
-              lstrain(alpha) += xsi_[gp](2)
-                                *.125*deriv_q9(alpha,k)*deriv_q9(alpha,l)
-                                *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))
-                                  +(xcurr(k+9,dim)-xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))     // b_alphaalpha
-                                  -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))
-                                  -(xrefe(k+9,dim)-xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))     // B_alphaalpha
-                                 );
-
-            // linear in-plane shear strain
-            lstrain(3) += xsi_[gp](2)
-                          *.25*deriv_q9(0,k)*deriv_q9(1,l)
-                          *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))
-                            +(xcurr(k+9,dim)-xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))     // b_01
-                            -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))
-                            -(xrefe(k+9,dim)-xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))     // B_01
-                          );
-
-            if (dsg_shear_)
-            {
-              // constant transverse shear strain
-              lstrain(4) += .25*dsg_shear_s_[gp%9](k,l)
-                            *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))
-                              -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))
-                             );
-              lstrain(5) += .25*dsg_shear_r_[gp%9](k,l)
-                            *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))
-                              -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))
-                             );
-            }
-            else
-            {
-              // constant transverse shear strain
-              lstrain(4) += .25*deriv_q9(1,k)*shapefunct_q9(l)
-                            *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))     // a_12
-                              -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))     // A_12
-                             );
-              lstrain(5) += .25*deriv_q9(0,k)*shapefunct_q9(l)
-                            *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))     // a_02
-                              -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))     // A_02
-                            );
-            }
-
-            // linear transverse shear strain
-           lstrain(4) += xsi_[gp](2)
-                         *.25*deriv_q9(1,k)*shapefunct_q9(l)
-                         *( (xcurr(k+9,dim)-xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))    // a_2 dot a_2,1
-                           -(xrefe(k+9,dim)-xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))    // A_2 dot A_2,1
-                          );
-           lstrain(5) += xsi_[gp](2)
-                         *.25*deriv_q9(0,k)*shapefunct_q9(l)
-                         *( (xcurr(k+9,dim)-xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))    // a_2 dot a_2,0
-                           -(xrefe(k+9,dim)-xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))    // A_2 dot A_2,0
-                          );
-
-           // transverse normal strain
-           if (dsg_ctl_)
-           {
-             lstrain(2) += .125*dsg_transverse_t_[gp%9](k,l)
-                           *( (xcurr(k+9,dim)-xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))    // a_2 dot a_2
-                             -(xrefe(k+9,dim)-xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))    // A_2 dot A_2
-                           );
-           }
-           else
-           {
-             lstrain(2) += .125*shapefunct_q9(k)*shapefunct_q9(l)
-                           *( (xcurr(k+9,dim)-xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))    // a_2 dot a_2
-                             -(xrefe(k+9,dim)-xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))    // A_2 dot A_2
-                            );
-           }
-      } // k=0..8; l=0..8; dim=0..2
-
-      LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain;
-      glstrain.Multiply(TinvT,lstrain);
+    CalculateLocStrain(xcurr,xrefe,shapefunct_q9,deriv_q9,gp,lstrain);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain;
+    glstrain.Multiply(TinvT,lstrain);
     // **************************************************************************
     // shell-like calculation of strains
     // **************************************************************************
@@ -809,203 +591,8 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(
       LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH18> cb;
       cb.Multiply(cmat,bop);
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);  // standard hex8 evaluation
-
       // intergrate `geometric' stiffness matrix and add to keu *****************
-      for (int k=0; k<9; ++k)
-        for (int l=0; l<9; ++l)
-        {
-          LINALG::Matrix<6,1> G_kl,G_klp,G_kpl,G_kplp,G_lk,G_lkp,G_lpk,G_lpkp;
-
-          // Normalverzerrungen
-          if (dsg_membrane_)
-          {
-            // constant normal strain
-            G_kl(0)    += .125*dsg_membrane_r_[gp%9](k,l);
-            G_klp(0)   += .125*dsg_membrane_r_[gp%9](k,l);
-            G_kpl(0)   += .125*dsg_membrane_r_[gp%9](k,l);
-            G_kplp(0)  += .125*dsg_membrane_r_[gp%9](k,l);
-            G_lk(0)    += .125*dsg_membrane_r_[gp%9](k,l);
-            G_lkp(0)   += .125*dsg_membrane_r_[gp%9](k,l);
-            G_lpk(0)   += .125*dsg_membrane_r_[gp%9](k,l);
-            G_lpkp(0)  += .125*dsg_membrane_r_[gp%9](k,l);
-
-            G_kl(1)    += .125*dsg_membrane_s_[gp%9](k,l);
-            G_klp(1)   += .125*dsg_membrane_s_[gp%9](k,l);
-            G_kpl(1)   += .125*dsg_membrane_s_[gp%9](k,l);
-            G_kplp(1)  += .125*dsg_membrane_s_[gp%9](k,l);
-            G_lk(1)    += .125*dsg_membrane_s_[gp%9](k,l);
-            G_lkp(1)   += .125*dsg_membrane_s_[gp%9](k,l);
-            G_lpk(1)   += .125*dsg_membrane_s_[gp%9](k,l);
-            G_lpkp(1)  += .125*dsg_membrane_s_[gp%9](k,l);
-
-            // constant in-plane shear strain
-            G_kl(3)           += .25*dsg_membrane_rs_[gp%9](k,l);
-            G_klp(3)          += .25*dsg_membrane_rs_[gp%9](k,l);
-            G_kpl(3)          += .25*dsg_membrane_rs_[gp%9](k,l);
-            G_kplp(3)         += .25*dsg_membrane_rs_[gp%9](k,l);
-            G_lk(3)           += .25*dsg_membrane_rs_[gp%9](k,l);
-            G_lkp(3)          += .25*dsg_membrane_rs_[gp%9](k,l);
-            G_lpk(3)          += .25*dsg_membrane_rs_[gp%9](k,l);
-            G_lpkp(3)         += .25*dsg_membrane_rs_[gp%9](k,l);
-          }
-          else
-          {
-            // constant normal strain
-            for (int alpha=0; alpha<2; ++alpha)
-            {
-              G_kl(alpha)          += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
-              G_klp(alpha)         += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
-              G_kpl(alpha)         += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
-              G_kplp(alpha)        += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
-              G_lk(alpha)          += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
-              G_lkp(alpha)         += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
-              G_lpk(alpha)         += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
-              G_lpkp(alpha)        += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
-            }
-
-            // constant in-plane shear strain
-            G_kl(3)           += .25*deriv_q9(0,k)*deriv_q9(1,l);
-            G_klp(3)          += .25*deriv_q9(0,k)*deriv_q9(1,l);
-            G_kpl(3)          += .25*deriv_q9(0,k)*deriv_q9(1,l);
-            G_kplp(3)         += .25*deriv_q9(0,k)*deriv_q9(1,l);
-            G_lk(3)           += .25*deriv_q9(0,k)*deriv_q9(1,l);
-            G_lkp(3)          += .25*deriv_q9(0,k)*deriv_q9(1,l);
-            G_lpk(3)          += .25*deriv_q9(0,k)*deriv_q9(1,l);
-            G_lpkp(3)         += .25*deriv_q9(0,k)*deriv_q9(1,l);
-          }
-
-          // linear normal strain
-          for (int alpha=0; alpha<2; ++alpha)
-          {
-            G_kl(alpha)     -= xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l);
-            G_klp(alpha)    +=0.;
-            G_kpl(alpha)    +=0.;
-            G_kplp(alpha)   += xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l);
-            G_lk(alpha)     -= xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l);
-            G_lkp(alpha)    +=0.;
-            G_lpk(alpha)    +=0.;
-            G_lpkp(alpha)   += xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l);
-          }
-
-          // linear in-plane shear strain
-          G_kl(3)       -= xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l);
-          G_klp(3)      +=0.;
-          G_kpl(3)      +=0.;
-          G_kplp(3)     += xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l);
-          G_lk(3)       -= xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l);
-          G_lkp(3)      +=0.;
-          G_lpk(3)      +=0.;
-          G_lpkp(3)     += xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l);
-
-          if (dsg_shear_)
-          {
-            // constant transverse shear strain
-            G_kl(4)    -= .25*dsg_shear_s_[gp%9](k,l);
-            G_klp(4)   += .25*dsg_shear_s_[gp%9](k,l);
-            G_kpl(4)   -= .25*dsg_shear_s_[gp%9](k,l);
-            G_kplp(4)  += .25*dsg_shear_s_[gp%9](k,l);
-            G_lk(4)    -= .25*dsg_shear_s_[gp%9](k,l);
-            G_lkp(4)   -= .25*dsg_shear_s_[gp%9](k,l);
-            G_lpk(4)   += .25*dsg_shear_s_[gp%9](k,l);
-            G_lpkp(4)  += .25*dsg_shear_s_[gp%9](k,l);
-
-            G_kl(5)    -= .25*dsg_shear_r_[gp%9](k,l);
-            G_klp(5)   += .25*dsg_shear_r_[gp%9](k,l);
-            G_kpl(5)   -= .25*dsg_shear_r_[gp%9](k,l);
-            G_kplp(5)  += .25*dsg_shear_r_[gp%9](k,l);
-            G_lk(5)    -= .25*dsg_shear_r_[gp%9](k,l);
-            G_lkp(5)   -= .25*dsg_shear_r_[gp%9](k,l);
-            G_lpk(5)   += .25*dsg_shear_r_[gp%9](k,l);
-            G_lpkp(5)  += .25*dsg_shear_r_[gp%9](k,l);
-          }
-          else
-          {
-            // constant transverse shear strain
-            G_kl(4)      -= .25*deriv_q9(1,k)*shapefunct_q9(l);
-            G_klp(4)     += .25*deriv_q9(1,k)*shapefunct_q9(l);
-            G_kpl(4)     -= .25*deriv_q9(1,k)*shapefunct_q9(l);
-            G_kplp(4)    += .25*deriv_q9(1,k)*shapefunct_q9(l);
-            G_lk(4)      -= .25*deriv_q9(1,k)*shapefunct_q9(l);
-            G_lkp(4)     -= .25*deriv_q9(1,k)*shapefunct_q9(l);
-            G_lpk(4)     += .25*deriv_q9(1,k)*shapefunct_q9(l);
-            G_lpkp(4)    += .25*deriv_q9(1,k)*shapefunct_q9(l);
-
-            G_kl(5)      -= .25*deriv_q9(0,k)*shapefunct_q9(l);
-            G_klp(5)     += .25*deriv_q9(0,k)*shapefunct_q9(l);
-            G_kpl(5)     -= .25*deriv_q9(0,k)*shapefunct_q9(l);
-            G_kplp(5)    += .25*deriv_q9(0,k)*shapefunct_q9(l);
-            G_lk(5)      -= .25*deriv_q9(0,k)*shapefunct_q9(l);
-            G_lkp(5)     -= .25*deriv_q9(0,k)*shapefunct_q9(l);
-            G_lpk(5)     += .25*deriv_q9(0,k)*shapefunct_q9(l);
-            G_lpkp(5)    += .25*deriv_q9(0,k)*shapefunct_q9(l);
-          }
-
-          // linear transverse shear strain
-          G_kl(4)       += xsi_[gp](2)*.25*deriv_q9(1,k)*shapefunct_q9(l);
-          G_klp(4)      -= xsi_[gp](2)*.25*deriv_q9(1,k)*shapefunct_q9(l);
-          G_kpl(4)      -= xsi_[gp](2)*.25*deriv_q9(1,k)*shapefunct_q9(l);
-          G_kplp(4)     += xsi_[gp](2)*.25*deriv_q9(1,k)*shapefunct_q9(l);
-          G_lk(4)       += xsi_[gp](2)*.25*deriv_q9(1,k)*shapefunct_q9(l);
-          G_lkp(4)      -= xsi_[gp](2)*.25*deriv_q9(1,k)*shapefunct_q9(l);
-          G_lpk(4)      -= xsi_[gp](2)*.25*deriv_q9(1,k)*shapefunct_q9(l);
-          G_lpkp(4)     += xsi_[gp](2)*.25*deriv_q9(1,k)*shapefunct_q9(l);
-
-
-          G_kl(5)       += xsi_[gp](2)*.25*deriv_q9(0,k)*shapefunct_q9(l);
-          G_klp(5)      -= xsi_[gp](2)*.25*deriv_q9(0,k)*shapefunct_q9(l);
-          G_kpl(5)      -= xsi_[gp](2)*.25*deriv_q9(0,k)*shapefunct_q9(l);
-          G_kplp(5)     += xsi_[gp](2)*.25*deriv_q9(0,k)*shapefunct_q9(l);
-          G_lk(5)       += xsi_[gp](2)*.25*deriv_q9(0,k)*shapefunct_q9(l);
-          G_lkp(5)      -= xsi_[gp](2)*.25*deriv_q9(0,k)*shapefunct_q9(l);
-          G_lpk(5)      -= xsi_[gp](2)*.25*deriv_q9(0,k)*shapefunct_q9(l);
-          G_lpkp(5)     += xsi_[gp](2)*.25*deriv_q9(0,k)*shapefunct_q9(l);
-
-          // transverse normal strain
-          if (dsg_ctl_)
-          {
-            G_kl(2)     += .125*dsg_transverse_t_[gp%9](k,l);
-            G_klp(2)    -= .125*dsg_transverse_t_[gp%9](k,l);
-            G_kpl(2)    -= .125*dsg_transverse_t_[gp%9](k,l);
-            G_kplp(2)   += .125*dsg_transverse_t_[gp%9](k,l);
-            G_lk(2)     += .125*dsg_transverse_t_[gp%9](k,l);
-            G_lkp(2)    -= .125*dsg_transverse_t_[gp%9](k,l);
-            G_lpk(2)    -= .125*dsg_transverse_t_[gp%9](k,l);
-            G_lpkp(2)   += .125*dsg_transverse_t_[gp%9](k,l);
-          }
-          else
-          {
-            G_kl(2)      += .125*shapefunct_q9(k)*shapefunct_q9(l);
-            G_klp(2)     -= .125*shapefunct_q9(k)*shapefunct_q9(l);
-            G_kpl(2)     -= .125*shapefunct_q9(k)*shapefunct_q9(l);
-            G_kplp(2)    += .125*shapefunct_q9(k)*shapefunct_q9(l);
-            G_lk(2)      += .125*shapefunct_q9(k)*shapefunct_q9(l);
-            G_lkp(2)     -= .125*shapefunct_q9(k)*shapefunct_q9(l);
-            G_lpk(2)     -= .125*shapefunct_q9(k)*shapefunct_q9(l);
-            G_lpkp(2)    += .125*shapefunct_q9(k)*shapefunct_q9(l);
-          }
-
-          LINALG::Matrix<6,1> G_kl_g;       G_kl_g  .Multiply(TinvT,G_kl);    const double Gkl    = detJ_w*stress.Dot(G_kl_g);
-          LINALG::Matrix<6,1> G_klp_g;      G_klp_g .Multiply(TinvT,G_klp);   const double Gklp   = detJ_w*stress.Dot(G_klp_g);
-          LINALG::Matrix<6,1> G_kpl_g;      G_kpl_g .Multiply(TinvT,G_kpl);   const double Gkpl   = detJ_w*stress.Dot(G_kpl_g);
-          LINALG::Matrix<6,1> G_kplp_g;     G_kplp_g.Multiply(TinvT,G_kplp);  const double Gkplp  = detJ_w*stress.Dot(G_kplp_g);
-          LINALG::Matrix<6,1> G_lk_g;       G_lk_g  .Multiply(TinvT,G_lk);    const double Glk    = detJ_w*stress.Dot(G_lk_g);
-          LINALG::Matrix<6,1> G_lkp_g;      G_lkp_g .Multiply(TinvT,G_lkp);   const double Glkp   = detJ_w*stress.Dot(G_lkp_g);
-          LINALG::Matrix<6,1> G_lpk_g;      G_lpk_g .Multiply(TinvT,G_lpk);   const double Glpk   = detJ_w*stress.Dot(G_lpk_g);
-          LINALG::Matrix<6,1> G_lpkp_g;     G_lpkp_g.Multiply(TinvT,G_lpkp);  const double Glpkp  = detJ_w*stress.Dot(G_lpkp_g);
-          for (int dim=0; dim<3; ++dim)
-          {
-            (*stiffmatrix)(k*3+dim,l*3+dim)         += Gkl;
-            (*stiffmatrix)(k*3+dim,(l+9)*3+dim)     += Gklp;
-            (*stiffmatrix)((k+9)*3+dim,l*3+dim)     += Gkpl;
-            (*stiffmatrix)((k+9)*3+dim,(l+9)*3+dim) += Gkplp;
-
-            (*stiffmatrix)(l*3+dim,k*3+dim)         += Glk;
-            (*stiffmatrix)(l*3+dim,(k+9)*3+dim)     += Glkp;
-            (*stiffmatrix)((l+9)*3+dim,k*3+dim)     += Glpk;
-            (*stiffmatrix)((l+9)*3+dim,(k+9)*3+dim) += Glpkp;
-          }
-      } // k=0..8 l=0..8
-      // end of integrate `geometric' stiffness******************************
+      CalculateGeoStiff(shapefunct_q9,deriv_q9,TinvT,gp,detJ_w,stress,stiffmatrix);
 
       // EAS technology: integrate matrices --------------------------------- EAS
       if (eas_)
@@ -1417,6 +1004,452 @@ void DRT::ELEMENTS::So_sh18::EvaluateT(const LINALG::Matrix<NUMDIM_SOH18,NUMDIM_
   int err = solve_for_inverseT.Invert();
   if ((err != 0) && (err2!=0)) dserror("Inversion of Tinv (Jacobian) failed");
   return;
+}
+
+void DRT::ELEMENTS::So_sh18::CalculateLocStrain(const LINALG::Matrix<NUMNOD_SOH18,NUMDIM_SOH18>& xcurr,
+    const LINALG::Matrix<NUMNOD_SOH18,NUMDIM_SOH18>& xrefe,
+    const LINALG::Matrix<9,1>& shape_q9,
+    const LINALG::Matrix<2,9>& deriv_q9,
+    const int gp,
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1>& lstrain)
+{
+  for (int dim=0; dim<3; ++dim)
+    for (int k=0; k<9; ++k)
+      for (int l=0; l<9; ++l)
+      {
+        if (dsg_membrane_)
+        {
+          // constant normal strain
+          lstrain(0) += .125*dsg_membrane_r_[gp%9](k,l)
+                       *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))     // a_alphaalpha
+                         -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))     // A_alphaalpha
+                        );
+          lstrain(1) += .125*dsg_membrane_s_[gp%9](k,l)
+                       *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))     // a_alphaalpha
+                         -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))     // A_alphaalpha
+                        );
+          // constant in-plane shear strain
+
+          lstrain(3) += .25*dsg_membrane_rs_[gp%9](k,l)
+                        *(  (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))           // a_01
+                           -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))           // A_01
+                         );
+        }
+        else
+        {
+          // constant normal strain
+          for (int alpha=0; alpha<2;++alpha)
+            lstrain(alpha) += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l)
+                              *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))     // a_alphaalpha
+                                -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))     // A_alphaalpha
+                               );
+
+          // constant in-plane shear strain
+          lstrain(3) += .25*deriv_q9(0,k)*deriv_q9(1,l)
+                        *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))           // a_01
+                          -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))           // A_01
+                         );
+        }
+
+        // linear normal strain
+          for (int alpha=0; alpha<2; ++alpha)
+            lstrain(alpha) += xsi_[gp](2)
+                              *.125*deriv_q9(alpha,k)*deriv_q9(alpha,l)
+                              *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))
+                                +(xcurr(k+9,dim)-xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))     // b_alphaalpha
+                                -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))
+                                -(xrefe(k+9,dim)-xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))     // B_alphaalpha
+                               );
+
+          // linear in-plane shear strain
+          lstrain(3) += xsi_[gp](2)
+                        *.25*deriv_q9(0,k)*deriv_q9(1,l)
+                        *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))
+                          +(xcurr(k+9,dim)-xcurr(k,dim))*(xcurr(l+9,dim)+xcurr(l,dim))     // b_01
+                          -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))
+                          -(xrefe(k+9,dim)-xrefe(k,dim))*(xrefe(l+9,dim)+xrefe(l,dim))     // B_01
+                        );
+
+          if (dsg_shear_)
+          {
+            // constant transverse shear strain
+            lstrain(4) += .25*dsg_shear_s_[gp%9](k,l)
+                          *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))
+                            -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))
+                           );
+            lstrain(5) += .25*dsg_shear_r_[gp%9](k,l)
+                          *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))
+                            -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))
+                           );
+          }
+          else
+          {
+            // constant transverse shear strain
+            lstrain(4) += .25*deriv_q9(1,k)*shape_q9(l)
+                          *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))     // a_12
+                            -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))     // A_12
+                           );
+            lstrain(5) += .25*deriv_q9(0,k)*shape_q9(l)
+                          *( (xcurr(k+9,dim)+xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))     // a_02
+                            -(xrefe(k+9,dim)+xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))     // A_02
+                          );
+          }
+
+          // linear transverse shear strain
+         lstrain(4) += xsi_[gp](2)
+                       *.25*deriv_q9(1,k)*shape_q9(l)
+                       *( (xcurr(k+9,dim)-xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))    // a_2 dot a_2,1
+                         -(xrefe(k+9,dim)-xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))    // A_2 dot A_2,1
+                        );
+         lstrain(5) += xsi_[gp](2)
+                       *.25*deriv_q9(0,k)*shape_q9(l)
+                       *( (xcurr(k+9,dim)-xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))    // a_2 dot a_2,0
+                         -(xrefe(k+9,dim)-xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))    // A_2 dot A_2,0
+                        );
+
+         // transverse normal strain
+         if (dsg_ctl_)
+         {
+           lstrain(2) += .125*dsg_transverse_t_[gp%9](k,l)
+                         *( (xcurr(k+9,dim)-xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))    // a_2 dot a_2
+                           -(xrefe(k+9,dim)-xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))    // A_2 dot A_2
+                         );
+         }
+         else
+         {
+           lstrain(2) += .125*shape_q9(k)*shape_q9(l)
+                         *( (xcurr(k+9,dim)-xcurr(k,dim))*(xcurr(l+9,dim)-xcurr(l,dim))    // a_2 dot a_2
+                           -(xrefe(k+9,dim)-xrefe(k,dim))*(xrefe(l+9,dim)-xrefe(l,dim))    // A_2 dot A_2
+                          );
+         }
+    } // k=0..8; l=0..8; dim=0..2
+
+  return;
+}
+
+void DRT::ELEMENTS::So_sh18::CalculateBopLoc(const LINALG::Matrix<NUMNOD_SOH18,NUMDIM_SOH18>& xcurr,
+    const LINALG::Matrix<NUMNOD_SOH18,NUMDIM_SOH18>& xrefe,
+    const LINALG::Matrix<9,1>& shape_q9,
+    const LINALG::Matrix<2,9>& deriv_q9,
+    const int gp,
+    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH18>& bop_loc)
+{
+  for (int dim = 0; dim < NUMDIM_SOH18; ++dim)
+    for (int k=0; k<9; ++k)
+      for (int l=0; l<9; ++l)
+      {
+        if (dsg_membrane_)
+        {
+          // constant normal strain
+          bop_loc(0,(k+9)*3+dim) += .125*dsg_membrane_r_[gp%9](k,l)*(xcurr(l+9,dim)+xcurr(l,dim));
+          bop_loc(0,k*3+dim)     += .125*dsg_membrane_r_[gp%9](k,l)*(xcurr(l+9,dim)+xcurr(l,dim));
+          bop_loc(0,(l+9)*3+dim) += .125*dsg_membrane_r_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+          bop_loc(0,l*3+dim)     += .125*dsg_membrane_r_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+
+          bop_loc(1,(k+9)*3+dim) += .125*dsg_membrane_s_[gp%9](k,l)*(xcurr(l+9,dim)+xcurr(l,dim));
+          bop_loc(1,k*3+dim)     += .125*dsg_membrane_s_[gp%9](k,l)*(xcurr(l+9,dim)+xcurr(l,dim));
+          bop_loc(1,(l+9)*3+dim) += .125*dsg_membrane_s_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+          bop_loc(1,l*3+dim)     += .125*dsg_membrane_s_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+
+          // constant in-plane shear strain
+          bop_loc(3,(k+9)*3+dim) += .25*dsg_membrane_rs_[gp%9](k,l)*(xcurr(l+9,dim)+xcurr(l,dim));
+          bop_loc(3,k*3+dim)     += .25*dsg_membrane_rs_[gp%9](k,l)*(xcurr(l+9,dim)+xcurr(l,dim));
+          bop_loc(3,(l+9)*3+dim) += .25*dsg_membrane_rs_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+          bop_loc(3,l*3+dim)     += .25*dsg_membrane_rs_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+        }
+        else
+        {
+          // constant normal strain
+          for (int alpha=0; alpha<2;++alpha)
+          {
+            bop_loc(alpha,(k+9)*3+dim) += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l)*(xcurr(l+9,dim)+xcurr(l,dim));
+            bop_loc(alpha,k*3+dim)     += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l)*(xcurr(l+9,dim)+xcurr(l,dim));
+            bop_loc(alpha,(l+9)*3+dim) += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+            bop_loc(alpha,l*3+dim)     += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+          }
+
+          // constant in-plane shear strain
+          bop_loc(3,(k+9)*3+dim) += .25*deriv_q9(0,k)*deriv_q9(1,l)*(xcurr(l+9,dim)+xcurr(l,dim));
+          bop_loc(3,k*3+dim)     += .25*deriv_q9(0,k)*deriv_q9(1,l)*(xcurr(l+9,dim)+xcurr(l,dim));
+          bop_loc(3,(l+9)*3+dim) += .25*deriv_q9(0,k)*deriv_q9(1,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+          bop_loc(3,l*3+dim)     += .25*deriv_q9(0,k)*deriv_q9(1,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+        }
+
+        // linear normal strain
+        for (int alpha=0; alpha<2; ++alpha)
+        {
+          bop_loc(alpha,(k+9)*3+dim) += xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l)*xcurr(l+9,dim);
+          bop_loc(alpha,k*3+dim)     +=-xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l)*xcurr(l,dim);
+          bop_loc(alpha,(l+9)*3+dim) += xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l)*xcurr(k+9,dim);
+          bop_loc(alpha,l*3+dim)     +=-xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l)*xcurr(k,dim);
+        }
+
+        // linear in-plane shear strain
+        bop_loc(3,(k+9)*3+dim) += xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l)*xcurr(l+9,dim);
+        bop_loc(3,k*3+dim)     +=-xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l)*xcurr(l,dim);
+        bop_loc(3,(l+9)*3+dim) += xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l)*xcurr(k+9,dim);
+        bop_loc(3,l*3+dim)     +=-xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l)*xcurr(k,dim);
+
+        if (dsg_shear_)
+        {
+          // constant transverse shear strain
+          bop_loc(4,(k+9)*3+dim) += .25*dsg_shear_s_[gp%9](k,l)*(xcurr(l+9,dim)-xcurr(l,dim));
+          bop_loc(4,k*3+dim)     += .25*dsg_shear_s_[gp%9](k,l)*(xcurr(l+9,dim)-xcurr(l,dim));
+          bop_loc(4,(l+9)*3+dim) += .25*dsg_shear_s_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+          bop_loc(4,l*3+dim)     +=-.25*dsg_shear_s_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+
+          bop_loc(5,(k+9)*3+dim) += .25*dsg_shear_r_[gp%9](k,l)*(xcurr(l+9,dim)-xcurr(l,dim));
+          bop_loc(5,k*3+dim)     += .25*dsg_shear_r_[gp%9](k,l)*(xcurr(l+9,dim)-xcurr(l,dim));
+          bop_loc(5,(l+9)*3+dim) += .25*dsg_shear_r_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+          bop_loc(5,l*3+dim)     +=-.25*dsg_shear_r_[gp%9](k,l)*(xcurr(k+9,dim)+xcurr(k,dim));
+        }
+        else
+        {
+          // constant transverse shear strain
+          bop_loc(4,(k+9)*3+dim) += .25*deriv_q9(1,k)*shape_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
+          bop_loc(4,k*3+dim)     += .25*deriv_q9(1,k)*shape_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
+          bop_loc(4,(l+9)*3+dim) += .25*deriv_q9(1,k)*shape_q9(l)*(xcurr(k+9,dim)+xcurr(k,dim));
+          bop_loc(4,l*3+dim)     +=-.25*deriv_q9(1,k)*shape_q9(l)*(xcurr(k+9,dim)+xcurr(k,dim));
+          bop_loc(5,(k+9)*3+dim) += .25*deriv_q9(0,k)*shape_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
+          bop_loc(5,k*3+dim)     += .25*deriv_q9(0,k)*shape_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
+          bop_loc(5,(l+9)*3+dim) += .25*deriv_q9(0,k)*shape_q9(l)*(xcurr(k+9,dim)+xcurr(k,dim));
+          bop_loc(5,l*3+dim)     +=-.25*deriv_q9(0,k)*shape_q9(l)*(xcurr(k+9,dim)+xcurr(k,dim));
+        }
+
+        // linear transverse shear strain
+        bop_loc(4,(k+9)*3+dim) += xsi_[gp](2)*.25*deriv_q9(1,k)*shape_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
+        bop_loc(4,k*3+dim)     +=-xsi_[gp](2)*.25*deriv_q9(1,k)*shape_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
+        bop_loc(4,(l+9)*3+dim) += xsi_[gp](2)*.25*deriv_q9(1,k)*shape_q9(l)*(xcurr(k+9,dim)-xcurr(k,dim));
+        bop_loc(4,l*3+dim)     +=-xsi_[gp](2)*.25*deriv_q9(1,k)*shape_q9(l)*(xcurr(k+9,dim)-xcurr(k,dim));
+        bop_loc(5,(k+9)*3+dim) += xsi_[gp](2)*.25*deriv_q9(0,k)*shape_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
+        bop_loc(5,k*3+dim)     +=-xsi_[gp](2)*.25*deriv_q9(0,k)*shape_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
+        bop_loc(5,(l+9)*3+dim) += xsi_[gp](2)*.25*deriv_q9(0,k)*shape_q9(l)*(xcurr(k+9,dim)-xcurr(k,dim));
+        bop_loc(5,l*3+dim)     +=-xsi_[gp](2)*.25*deriv_q9(0,k)*shape_q9(l)*(xcurr(k+9,dim)-xcurr(k,dim));
+
+        // transverse normal strain
+        if (dsg_ctl_)
+        {
+          bop_loc(2,(k+9)*3+dim) += .125*dsg_transverse_t_[gp%9](k,l)*(xcurr(l+9,dim)-xcurr(l,dim));
+          bop_loc(2,k*3+dim)     -= .125*dsg_transverse_t_[gp%9](k,l)*(xcurr(l+9,dim)-xcurr(l,dim));
+          bop_loc(2,(l+9)*3+dim) += .125*dsg_transverse_t_[gp%9](k,l)*(xcurr(k+9,dim)-xcurr(k,dim));
+          bop_loc(2,l*3+dim)     -= .125*dsg_transverse_t_[gp%9](k,l)*(xcurr(k+9,dim)-xcurr(k,dim));
+        }
+        else
+        {
+          bop_loc(2,(k+9)*3+dim) += .125*shape_q9(k)*shape_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
+          bop_loc(2,k*3+dim)     +=-.125*shape_q9(k)*shape_q9(l)*(xcurr(l+9,dim)-xcurr(l,dim));
+          bop_loc(2,(l+9)*3+dim) += .125*shape_q9(k)*shape_q9(l)*(xcurr(k+9,dim)-xcurr(k,dim));
+          bop_loc(2,l*3+dim)     +=-.125*shape_q9(k)*shape_q9(l)*(xcurr(k+9,dim)-xcurr(k,dim));
+        }
+    } // k=0..8; l=0..8; dim=0..2
+  return;
+}
+
+void DRT::ELEMENTS::So_sh18::CalculateGeoStiff(
+    const LINALG::Matrix<9,1>& shape_q9,
+    const LINALG::Matrix<2,9>& deriv_q9,
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& TinvT,
+    const int gp,
+    const double detJ_w,
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& stress,
+    LINALG::Matrix<NUMDOF_SOH18,NUMDOF_SOH18>* stiffmatrix)
+{
+  // intergrate `geometric' stiffness matrix and add to keu *****************
+  for (int k=0; k<9; ++k)
+    for (int l=0; l<9; ++l)
+    {
+      LINALG::Matrix<6,1> G_kl,G_klp,G_kpl,G_kplp,G_lk,G_lkp,G_lpk,G_lpkp;
+
+      // Normalverzerrungen
+      if (dsg_membrane_)
+      {
+        // constant normal strain
+        G_kl(0)    += .125*dsg_membrane_r_[gp%9](k,l);
+        G_klp(0)   += .125*dsg_membrane_r_[gp%9](k,l);
+        G_kpl(0)   += .125*dsg_membrane_r_[gp%9](k,l);
+        G_kplp(0)  += .125*dsg_membrane_r_[gp%9](k,l);
+        G_lk(0)    += .125*dsg_membrane_r_[gp%9](k,l);
+        G_lkp(0)   += .125*dsg_membrane_r_[gp%9](k,l);
+        G_lpk(0)   += .125*dsg_membrane_r_[gp%9](k,l);
+        G_lpkp(0)  += .125*dsg_membrane_r_[gp%9](k,l);
+
+        G_kl(1)    += .125*dsg_membrane_s_[gp%9](k,l);
+        G_klp(1)   += .125*dsg_membrane_s_[gp%9](k,l);
+        G_kpl(1)   += .125*dsg_membrane_s_[gp%9](k,l);
+        G_kplp(1)  += .125*dsg_membrane_s_[gp%9](k,l);
+        G_lk(1)    += .125*dsg_membrane_s_[gp%9](k,l);
+        G_lkp(1)   += .125*dsg_membrane_s_[gp%9](k,l);
+        G_lpk(1)   += .125*dsg_membrane_s_[gp%9](k,l);
+        G_lpkp(1)  += .125*dsg_membrane_s_[gp%9](k,l);
+
+        // constant in-plane shear strain
+        G_kl(3)           += .25*dsg_membrane_rs_[gp%9](k,l);
+        G_klp(3)          += .25*dsg_membrane_rs_[gp%9](k,l);
+        G_kpl(3)          += .25*dsg_membrane_rs_[gp%9](k,l);
+        G_kplp(3)         += .25*dsg_membrane_rs_[gp%9](k,l);
+        G_lk(3)           += .25*dsg_membrane_rs_[gp%9](k,l);
+        G_lkp(3)          += .25*dsg_membrane_rs_[gp%9](k,l);
+        G_lpk(3)          += .25*dsg_membrane_rs_[gp%9](k,l);
+        G_lpkp(3)         += .25*dsg_membrane_rs_[gp%9](k,l);
+      }
+      else
+      {
+        // constant normal strain
+        for (int alpha=0; alpha<2; ++alpha)
+        {
+          G_kl(alpha)          += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
+          G_klp(alpha)         += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
+          G_kpl(alpha)         += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
+          G_kplp(alpha)        += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
+          G_lk(alpha)          += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
+          G_lkp(alpha)         += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
+          G_lpk(alpha)         += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
+          G_lpkp(alpha)        += .125*deriv_q9(alpha,k)*deriv_q9(alpha,l);
+        }
+
+        // constant in-plane shear strain
+        G_kl(3)           += .25*deriv_q9(0,k)*deriv_q9(1,l);
+        G_klp(3)          += .25*deriv_q9(0,k)*deriv_q9(1,l);
+        G_kpl(3)          += .25*deriv_q9(0,k)*deriv_q9(1,l);
+        G_kplp(3)         += .25*deriv_q9(0,k)*deriv_q9(1,l);
+        G_lk(3)           += .25*deriv_q9(0,k)*deriv_q9(1,l);
+        G_lkp(3)          += .25*deriv_q9(0,k)*deriv_q9(1,l);
+        G_lpk(3)          += .25*deriv_q9(0,k)*deriv_q9(1,l);
+        G_lpkp(3)         += .25*deriv_q9(0,k)*deriv_q9(1,l);
+      }
+
+      // linear normal strain
+      for (int alpha=0; alpha<2; ++alpha)
+      {
+        G_kl(alpha)     -= xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l);
+        G_klp(alpha)    +=0.;
+        G_kpl(alpha)    +=0.;
+        G_kplp(alpha)   += xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l);
+        G_lk(alpha)     -= xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l);
+        G_lkp(alpha)    +=0.;
+        G_lpk(alpha)    +=0.;
+        G_lpkp(alpha)   += xsi_[gp](2)*.25*deriv_q9(alpha,k)*deriv_q9(alpha,l);
+      }
+
+      // linear in-plane shear strain
+      G_kl(3)       -= xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l);
+      G_klp(3)      +=0.;
+      G_kpl(3)      +=0.;
+      G_kplp(3)     += xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l);
+      G_lk(3)       -= xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l);
+      G_lkp(3)      +=0.;
+      G_lpk(3)      +=0.;
+      G_lpkp(3)     += xsi_[gp](2)*.5*deriv_q9(0,k)*deriv_q9(1,l);
+
+      if (dsg_shear_)
+      {
+        // constant transverse shear strain
+        G_kl(4)    -= .25*dsg_shear_s_[gp%9](k,l);
+        G_klp(4)   += .25*dsg_shear_s_[gp%9](k,l);
+        G_kpl(4)   -= .25*dsg_shear_s_[gp%9](k,l);
+        G_kplp(4)  += .25*dsg_shear_s_[gp%9](k,l);
+        G_lk(4)    -= .25*dsg_shear_s_[gp%9](k,l);
+        G_lkp(4)   -= .25*dsg_shear_s_[gp%9](k,l);
+        G_lpk(4)   += .25*dsg_shear_s_[gp%9](k,l);
+        G_lpkp(4)  += .25*dsg_shear_s_[gp%9](k,l);
+
+        G_kl(5)    -= .25*dsg_shear_r_[gp%9](k,l);
+        G_klp(5)   += .25*dsg_shear_r_[gp%9](k,l);
+        G_kpl(5)   -= .25*dsg_shear_r_[gp%9](k,l);
+        G_kplp(5)  += .25*dsg_shear_r_[gp%9](k,l);
+        G_lk(5)    -= .25*dsg_shear_r_[gp%9](k,l);
+        G_lkp(5)   -= .25*dsg_shear_r_[gp%9](k,l);
+        G_lpk(5)   += .25*dsg_shear_r_[gp%9](k,l);
+        G_lpkp(5)  += .25*dsg_shear_r_[gp%9](k,l);
+      }
+      else
+      {
+        // constant transverse shear strain
+        G_kl(4)      -= .25*deriv_q9(1,k)*shape_q9(l);
+        G_klp(4)     += .25*deriv_q9(1,k)*shape_q9(l);
+        G_kpl(4)     -= .25*deriv_q9(1,k)*shape_q9(l);
+        G_kplp(4)    += .25*deriv_q9(1,k)*shape_q9(l);
+        G_lk(4)      -= .25*deriv_q9(1,k)*shape_q9(l);
+        G_lkp(4)     -= .25*deriv_q9(1,k)*shape_q9(l);
+        G_lpk(4)     += .25*deriv_q9(1,k)*shape_q9(l);
+        G_lpkp(4)    += .25*deriv_q9(1,k)*shape_q9(l);
+
+        G_kl(5)      -= .25*deriv_q9(0,k)*shape_q9(l);
+        G_klp(5)     += .25*deriv_q9(0,k)*shape_q9(l);
+        G_kpl(5)     -= .25*deriv_q9(0,k)*shape_q9(l);
+        G_kplp(5)    += .25*deriv_q9(0,k)*shape_q9(l);
+        G_lk(5)      -= .25*deriv_q9(0,k)*shape_q9(l);
+        G_lkp(5)     -= .25*deriv_q9(0,k)*shape_q9(l);
+        G_lpk(5)     += .25*deriv_q9(0,k)*shape_q9(l);
+        G_lpkp(5)    += .25*deriv_q9(0,k)*shape_q9(l);
+      }
+
+      // linear transverse shear strain
+      G_kl(4)       += xsi_[gp](2)*.25*deriv_q9(1,k)*shape_q9(l);
+      G_klp(4)      -= xsi_[gp](2)*.25*deriv_q9(1,k)*shape_q9(l);
+      G_kpl(4)      -= xsi_[gp](2)*.25*deriv_q9(1,k)*shape_q9(l);
+      G_kplp(4)     += xsi_[gp](2)*.25*deriv_q9(1,k)*shape_q9(l);
+      G_lk(4)       += xsi_[gp](2)*.25*deriv_q9(1,k)*shape_q9(l);
+      G_lkp(4)      -= xsi_[gp](2)*.25*deriv_q9(1,k)*shape_q9(l);
+      G_lpk(4)      -= xsi_[gp](2)*.25*deriv_q9(1,k)*shape_q9(l);
+      G_lpkp(4)     += xsi_[gp](2)*.25*deriv_q9(1,k)*shape_q9(l);
+
+
+      G_kl(5)       += xsi_[gp](2)*.25*deriv_q9(0,k)*shape_q9(l);
+      G_klp(5)      -= xsi_[gp](2)*.25*deriv_q9(0,k)*shape_q9(l);
+      G_kpl(5)      -= xsi_[gp](2)*.25*deriv_q9(0,k)*shape_q9(l);
+      G_kplp(5)     += xsi_[gp](2)*.25*deriv_q9(0,k)*shape_q9(l);
+      G_lk(5)       += xsi_[gp](2)*.25*deriv_q9(0,k)*shape_q9(l);
+      G_lkp(5)      -= xsi_[gp](2)*.25*deriv_q9(0,k)*shape_q9(l);
+      G_lpk(5)      -= xsi_[gp](2)*.25*deriv_q9(0,k)*shape_q9(l);
+      G_lpkp(5)     += xsi_[gp](2)*.25*deriv_q9(0,k)*shape_q9(l);
+
+      // transverse normal strain
+      if (dsg_ctl_)
+      {
+        G_kl(2)     += .125*dsg_transverse_t_[gp%9](k,l);
+        G_klp(2)    -= .125*dsg_transverse_t_[gp%9](k,l);
+        G_kpl(2)    -= .125*dsg_transverse_t_[gp%9](k,l);
+        G_kplp(2)   += .125*dsg_transverse_t_[gp%9](k,l);
+        G_lk(2)     += .125*dsg_transverse_t_[gp%9](k,l);
+        G_lkp(2)    -= .125*dsg_transverse_t_[gp%9](k,l);
+        G_lpk(2)    -= .125*dsg_transverse_t_[gp%9](k,l);
+        G_lpkp(2)   += .125*dsg_transverse_t_[gp%9](k,l);
+      }
+      else
+      {
+        G_kl(2)      += .125*shape_q9(k)*shape_q9(l);
+        G_klp(2)     -= .125*shape_q9(k)*shape_q9(l);
+        G_kpl(2)     -= .125*shape_q9(k)*shape_q9(l);
+        G_kplp(2)    += .125*shape_q9(k)*shape_q9(l);
+        G_lk(2)      += .125*shape_q9(k)*shape_q9(l);
+        G_lkp(2)     -= .125*shape_q9(k)*shape_q9(l);
+        G_lpk(2)     -= .125*shape_q9(k)*shape_q9(l);
+        G_lpkp(2)    += .125*shape_q9(k)*shape_q9(l);
+      }
+
+      LINALG::Matrix<6,1> G_kl_g;       G_kl_g  .Multiply(TinvT,G_kl);    const double Gkl    = detJ_w*stress.Dot(G_kl_g);
+      LINALG::Matrix<6,1> G_klp_g;      G_klp_g .Multiply(TinvT,G_klp);   const double Gklp   = detJ_w*stress.Dot(G_klp_g);
+      LINALG::Matrix<6,1> G_kpl_g;      G_kpl_g .Multiply(TinvT,G_kpl);   const double Gkpl   = detJ_w*stress.Dot(G_kpl_g);
+      LINALG::Matrix<6,1> G_kplp_g;     G_kplp_g.Multiply(TinvT,G_kplp);  const double Gkplp  = detJ_w*stress.Dot(G_kplp_g);
+      LINALG::Matrix<6,1> G_lk_g;       G_lk_g  .Multiply(TinvT,G_lk);    const double Glk    = detJ_w*stress.Dot(G_lk_g);
+      LINALG::Matrix<6,1> G_lkp_g;      G_lkp_g .Multiply(TinvT,G_lkp);   const double Glkp   = detJ_w*stress.Dot(G_lkp_g);
+      LINALG::Matrix<6,1> G_lpk_g;      G_lpk_g .Multiply(TinvT,G_lpk);   const double Glpk   = detJ_w*stress.Dot(G_lpk_g);
+      LINALG::Matrix<6,1> G_lpkp_g;     G_lpkp_g.Multiply(TinvT,G_lpkp);  const double Glpkp  = detJ_w*stress.Dot(G_lpkp_g);
+      for (int dim=0; dim<3; ++dim)
+      {
+        (*stiffmatrix)(k*3+dim,l*3+dim)         += Gkl;
+        (*stiffmatrix)(k*3+dim,(l+9)*3+dim)     += Gklp;
+        (*stiffmatrix)((k+9)*3+dim,l*3+dim)     += Gkpl;
+        (*stiffmatrix)((k+9)*3+dim,(l+9)*3+dim) += Gkplp;
+
+        (*stiffmatrix)(l*3+dim,k*3+dim)         += Glk;
+        (*stiffmatrix)(l*3+dim,(k+9)*3+dim)     += Glkp;
+        (*stiffmatrix)((l+9)*3+dim,k*3+dim)     += Glpk;
+        (*stiffmatrix)((l+9)*3+dim,(k+9)*3+dim) += Glpkp;
+      }
+  } // k=0..8 l=0..8
+  // end of integrate `geometric' stiffness******************************
 }
 
 void DRT::ELEMENTS::So_sh18::CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_disp,
