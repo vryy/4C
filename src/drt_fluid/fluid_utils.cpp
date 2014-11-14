@@ -630,13 +630,6 @@ std::map<int,double> FLD::UTILS::ComputeVolume(
 
   std::map<int,double> volumeperline;
 
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices local <-> global dof numbering
-  const Epetra_Map* dofrowmap = dis.DofRowMap();
-
-  // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> volumes = LINALG::CreateVector(*dofrowmap,true);
-
   // call loop over elements
   dis.ClearState();
   dis.SetState("velnp",velnp);
@@ -645,19 +638,14 @@ std::map<int,double> FLD::UTILS::ComputeVolume(
   if(gridv != Teuchos::null)
     dis.SetState("gridv",gridv);
 
-  dis.Evaluate(eleparams,Teuchos::null,volumes);
+  Teuchos::RCP<Epetra_SerialDenseVector> volumes
+    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+
+  // call loop over elements (assemble nothing)
+  dis.EvaluateScalars(eleparams, volumes);
   dis.ClearState();
 
-  double local_volume = 0.0;
-  for (int i=0; i < dofrowmap->NumMyElements(); i++)
-  {
-    local_volume +=((*volumes)[i]);
-  }
-
-  double volume = 0.0;
-  dofrowmap->Comm().SumAll(&local_volume,&volume,1);
-
-  volumeperline[0] = volume;
+  volumeperline[0] = (*volumes)(0);
 
   return volumeperline;
 }
@@ -754,7 +742,7 @@ void FLD::UTILS::WriteDoublesToFile(
     s << std::right << std::setw(16) << std::scientific << time
       << std::right << std::setw(10) << std::scientific << step
       << std::right << std::setw(10) << std::scientific << iter->first
-      << std::right << std::setw(16) << std::scientific << iter->second;
+      << std::right << std::setw(29) << std::setprecision(14) << std::scientific << iter->second;
 
     std::ostringstream slabel;
     slabel << std::setw(3) << std::setfill('0') << iter->first;

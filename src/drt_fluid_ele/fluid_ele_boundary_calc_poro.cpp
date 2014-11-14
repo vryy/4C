@@ -1833,9 +1833,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     DRT::Node** nodes = pele->Nodes();
     for (int i=0; i<nenparent; ++i)
     {
+      const double* x = nodes[i]->X();
       for (int j=0; j<my::nsd_; ++j)
       {
-        const double* x = nodes[i]->X();
         xrefe(j,i) = x[j];
         xcurr(j,i) = xrefe(j,i) + parentdispnp[i*my::numdofpernode_+j];
       }

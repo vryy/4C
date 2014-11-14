@@ -6443,6 +6443,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(
   LINALG::Matrix<my::nen_,1> epressnp(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelnp, &epressnp,"velnp");
 
+  xyze0_ = my::xyze_;
   // get new node positions of ALE mesh
   my::xyze_ += edispnp;
 
@@ -6452,7 +6453,13 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(
     // evaluate shape functions and derivatives at integration point
     my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
-    const double det0 = SetupMaterialDerivatives();
+    //------------------------get determinant of Jacobian dX / ds
+    // transposed jacobian "dX/ds"
+    LINALG::Matrix<my::nsd_,my::nsd_> xjm0;
+    xjm0.MultiplyNT(my::deriv_,xyze0_);
+
+    // inverse of transposed jacobian "ds/dX"
+    const double det0= xjm0.Determinant();
 
     // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
     J_ = my::det_/det0;
@@ -6481,10 +6488,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(
                       NULL,
                       false);
 
-    for (int nodes = 0; nodes < my::nen_; nodes++) // loop over nodes
-    {
-      elevec1((my::numdofpernode_) * nodes) += my::funct_(nodes) * porosity_* my::fac_;
-    }
+    elevec1(0) += porosity_* my::fac_;
   } // end of integration loop
 
   return 0;

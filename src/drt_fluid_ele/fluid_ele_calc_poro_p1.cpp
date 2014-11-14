@@ -233,7 +233,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputePorosity(
                                           const double& J,
                                           const int& gp,
                                           const LINALG::Matrix<my::nen_,1>&       shapfct,
-                                          const LINALG::Matrix<my::nen_,1>*           myporosity,
+                                          const LINALG::Matrix<my::nen_,1>*       myporosity,
                                           double& porosity,
                                           double* dphi_dp,
                                           double* dphi_dJ,
@@ -1383,6 +1383,81 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ReacStab(
            timefacfacpre,
            rhsfac,
            fac3);
+}
+
+/*--------------------------------------------------------------------------*
+ *  compute fluid volume                                         vuong 06/11 |
+ *--------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeVolume(
+    Teuchos::ParameterList&         params,
+    DRT::ELEMENTS::Fluid*           ele,
+    DRT::Discretization&            discretization,
+    std::vector<int>&               lm,
+    Epetra_SerialDenseVector&       elevec1)
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
+  // set element id
+  my::eid_ = ele->Id();
+
+  LINALG::Matrix<my::nsd_,my::nen_> edispnp(true);
+  LINALG::Matrix<my::nen_, 1> eporositynp(true);
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, &eporositynp,"dispnp");
+
+  LINALG::Matrix<my::nsd_,my::nen_> evelnp(true);
+  LINALG::Matrix<my::nen_,1> epressnp(true);
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelnp, &epressnp,"velnp");
+
+  my::xyze0_ = my::xyze_;
+  // get new node positions of ALE mesh
+  my::xyze_ += edispnp;
+
+  // integration loop
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=my::intpoints_.begin(); iquad!=my::intpoints_.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
+
+    //------------------------get determinant of Jacobian dX / ds
+    // transposed jacobian "dX/ds"
+    LINALG::Matrix<my::nsd_,my::nsd_> xjm0;
+    xjm0.MultiplyNT(my::deriv_,my::xyze0_);
+
+    // inverse of transposed jacobian "ds/dX"
+    const double det0= xjm0.Determinant();
+
+    // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
+    my::J_ = my::det_/det0;
+
+    //pressure at integration point
+    my::press_ = my::funct_.Dot(epressnp);
+
+    //-----------------------------------computing the porosity
+    my::porosity_=0.0;
+
+    // compute scalar at n+alpha_F or n+1
+    //const double scalaraf = my::funct_.Dot(escaaf);
+    //params.set<double>("scalar",scalaraf);
+
+    ComputePorosity(  params,
+                      my::press_,
+                      my::J_,
+                      *(iquad),
+                      my::funct_,
+                      &eporositynp,
+                      my::porosity_,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      false);
+
+    elevec1(0) += my::porosity_* my::fac_;
+  } // end of integration loop
+
+  return 0;
 }
 
 

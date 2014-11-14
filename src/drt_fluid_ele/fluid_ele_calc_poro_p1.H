@@ -477,6 +477,13 @@ protected:
         const double &                                         fac3            ///< factor for residual in current subgrid velocities
         );
 
+    virtual int ComputeVolume(
+        Teuchos::ParameterList&         params,
+        DRT::ELEMENTS::Fluid*           ele,              //< current fluid element
+        DRT::Discretization&            discretization,   //< fluid discretization
+        std::vector<int>&               lm,               //< location vector for DOF management
+        Epetra_SerialDenseVector&       elevec1           //< reference to element vector to be filled
+    );
 };
 
 }//ELEMENTS
