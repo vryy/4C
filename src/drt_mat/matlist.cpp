@@ -47,6 +47,26 @@ Teuchos::RCP<MAT::Material> MAT::PAR::MatList::CreateMaterial()
   return Teuchos::rcp(new MAT::MatList(this));
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::MatList::MaterialById(const int id) const
+{
+  if (not local_)
+  {
+    std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
+
+    if (m == mat_.end())
+    {
+      dserror("Material %d could not be found", id);
+      return Teuchos::null;
+    }
+    else
+      return m->second;
+  }
+  else
+    dserror("This is not allowed");
+
+  return Teuchos::null;
+}
+
 
 MAT::MatListType MAT::MatListType::instance_;
 
@@ -77,7 +97,6 @@ MAT::MatList::MatList(MAT::PAR::MatList* params)
   {
     SetupMatMap();
   }
-  // else: material Teuchos::rcps live inside MAT::PAR::MatList
 }
 
 
@@ -201,3 +220,37 @@ void MAT::MatList::Unpack(const std::vector<char>& data)
   } // if (params_ != NULL)
 }
 
+/*----------------------------------------------------------------------*
+ | material ID by Index                                      thon 11/14 |
+ *----------------------------------------------------------------------*/
+int MAT::MatList::MatID( const unsigned index) const
+{
+  if ((int)index < params_->nummat_)
+    return params_->matids_->at(index);
+  else
+  {
+    dserror("Index too large");
+    return -1;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | provide access to material by its ID                      thon 11/14 |
+ *----------------------------------------------------------------------*/
+///
+Teuchos::RCP<MAT::Material> MAT::MatList::MaterialById(const int id) const
+{
+  if (params_->local_)
+  {
+  std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = MaterialMapRead()->find(id);
+  if (m == mat_.end())
+  {
+    dserror("Material %d could not be found", id);
+    return Teuchos::null;
+  }
+  else
+    return m->second;
+  }
+  else // material is global (stored in material parameters)
+    return params_->MaterialById(id);
+}

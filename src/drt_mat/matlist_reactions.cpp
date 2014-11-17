@@ -1,6 +1,14 @@
 /*!----------------------------------------------------------------------
 \file matlist_reactions.cpp
 
+ \brief
+
+This file contains the material for reactive scalars. It derives from MAT_matlist
+and adds everything to supervise all the MAT_scatra_raction materials. The reactions
+itself are defined inside the MAT_scatra_raction materials. So MAT_matlist_reactions
+is just a "control instance".
+
+
 <pre>
 Maintainer: Moritz Thon
             thon@mhpc.mw.tum.de
@@ -15,22 +23,17 @@ Maintainer: Moritz Thon
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | rstandard constructor                                     thon 11/14 |
+ *----------------------------------------------------------------------*/
 MAT::PAR::MatListReactions::MatListReactions(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata),
-  local_((matdata->GetInt("LOCAL"))),
-  nummat_(matdata->GetInt("NUMMAT")),
-  matids_(matdata->Get<std::vector<int> >("MATIDS")),
+: MatList(matdata),
   numreac_((matdata->GetInt("NUMREAC"))),
   reacids_((matdata->Get<std::vector<int> >("REACIDS")))
 {
   // check if sizes fit
-  if (nummat_ != (int)matids_->size())
-    dserror("number of materials %d does not fit to size of material vector %d", nummat_, matids_->size());
-
   if (numreac_ != (int)reacids_->size())
       dserror("number of materials %d does not fit to size of material vector %d", nummat_, reacids_->size());
 
@@ -41,18 +44,11 @@ MAT::PAR::MatListReactions::MatListReactions(
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
-    for (m=matids_->begin(); m!=matids_->end(); ++m)
-    {
-      const int matid = *m;
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
-      mat_.insert(std::pair<int,Teuchos::RCP<MAT::Material> >(matid,mat));
-    }
-
     for (m=reacids_->begin(); m!=reacids_->end(); ++m)
     {
       const int reacid = *m;
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
-      mat_.insert(std::pair<int,Teuchos::RCP<MAT::Material> >(reacid,mat));
+      MaterialMapWrite()->insert(std::pair<int,Teuchos::RCP<MAT::Material> >(reacid,mat));
     }
   }
 }
@@ -74,71 +70,60 @@ DRT::ParObject* MAT::MatListReactionsType::Create( const std::vector<char> & dat
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | construct empty material object                           thon 11/14 |
+ *----------------------------------------------------------------------*/
 MAT::MatListReactions::MatListReactions()
-  : params_(NULL)
+  : MatList(),
+    paramsreac_(NULL)
 {
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | construct the material object given material paramete     thon 11/14 |
+ *----------------------------------------------------------------------*/
 MAT::MatListReactions::MatListReactions(MAT::PAR::MatListReactions* params)
-  : params_(params)
+  : MatList(params),
+    paramsreac_(params)
 {
   // setup of material map
-  if (params_->local_)
+  if (paramsreac_->local_)
   {
     SetupMatMap();
   }
-  // else: material Teuchos::rcps live inside MAT::PAR::MatListReactions
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | setup of material map                                     thon 11/14 |
+ *----------------------------------------------------------------------*/
 void MAT::MatListReactions::SetupMatMap()
 {
-  // safety first
-  mat_.clear();
-  if (not mat_.empty()) dserror("What's going wrong here?");
-
-  // make sure the referenced materials in material list have quick access parameters
+  // We just have to add the reaction materials, since the rest is already done in MAT::MatList::SetupMatMap() called from the MatList constructor
 
   // here's the recursive creation of materials
   std::vector<int>::const_iterator m;
-  for (m=params_->MatIds()->begin(); m!=params_->MatIds()->end(); ++m)
-  {
-    const int matid = *m;
-    Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
-    if (mat == Teuchos::null) dserror("Failed to allocate this material");
-    mat_.insert(std::pair<int,Teuchos::RCP<MAT::Material> >(matid,mat));
-  }
-
-  for (m=params_->ReacIds()->begin(); m!=params_->ReacIds()->end(); ++m)
+  for (m=paramsreac_->ReacIds()->begin(); m!=paramsreac_->ReacIds()->end(); ++m)
   {
     const int reacid = *m;
     Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(reacid);
     if (mat == Teuchos::null) dserror("Failed to allocate this material");
-    mat_.insert(std::pair<int,Teuchos::RCP<MAT::Material> >(reacid,mat));
+    MaterialMapWrite()->insert(std::pair<int,Teuchos::RCP<MAT::Material> >(reacid,mat));
   }
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | reset everything                                          thon 11/14 |
+ *----------------------------------------------------------------------*/
 void MAT::MatListReactions::Clear()
 {
-  params_ = NULL;
-  mat_.clear();
+  paramsreac_ = NULL;
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | Unpack data from a char vector into this class            thon 11/14 |
+ *----------------------------------------------------------------------*/
 void MAT::MatListReactions::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
@@ -150,32 +135,17 @@ void MAT::MatListReactions::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (paramsreac_ != NULL) matid = paramsreac_->Id();  // in case we are in post-process mode
 
   AddtoPack(data,matid);
 
-  if (params_->local_)
-  {
-    // loop map of associated local materials
-    if (params_ != NULL)
-    {
-      std::vector<int>::const_iterator m;
-      for (m=params_->MatIds()->begin(); m!=params_->MatIds()->end(); m++)
-      {
-        (mat_.find(*m))->second->Pack(data);
-      }
-
-      for (m=params_->ReacIds()->begin(); m!=params_->ReacIds()->end(); m++)
-      {
-        (mat_.find(*m))->second->Pack(data);
-      }
-    }
-  }
+  // Pack base class material
+  MAT::MatList::Pack(data);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | Unpack data from a char vector into this class            thon 11/14 |
+ *----------------------------------------------------------------------*/
 void MAT::MatListReactions::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
@@ -187,61 +157,42 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matid and recover params_
+  // matid and recover paramsreac_
   int matid(-1);
   ExtractfromPack(position,data,matid);
-  params_ = NULL;
+  paramsreac_ = NULL;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        params_ = static_cast<MAT::PAR::MatListReactions*>(mat);
+        paramsreac_ = static_cast<MAT::PAR::MatListReactions*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
     }
 
-  if (params_ != NULL) // params_ are not accessible in postprocessing mode
+  // extract base class material
+  std::vector<char> basedata(0);
+  MAT::MatList::ExtractfromPack(position,data,basedata);
+  MAT::MatList::Unpack(basedata);
+
+  // in the postprocessing mode, we do not unpack everything we have packed
+  // -> position check cannot be done in this case
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+}
+
+/*----------------------------------------------------------------------*
+ | reaction ID by Index                                      thon 11/14 |
+ *----------------------------------------------------------------------*/
+int MAT::MatListReactions::ReacID( const unsigned index ) const
+{
+  if ((int)index < paramsreac_->numreac_)
+    return paramsreac_->reacids_->at(index);
+  else
   {
-    // make sure the referenced materials in material list have quick access parameters
-    std::vector<int>::const_iterator m;
-    for (m=params_->MatIds()->begin(); m!=params_->MatIds()->end(); m++)
-    {
-      const int actmatid = *m;
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(actmatid);
-      if (mat == Teuchos::null) dserror("Failed to allocate this material");
-      mat_.insert(std::pair<int,Teuchos::RCP<MAT::Material> >(actmatid,mat));
-    }
-
-    for (m=params_->ReacIds()->begin(); m!=params_->ReacIds()->end(); m++)
-    {
-      const int actmatid = *m;
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(actmatid);
-      if (mat == Teuchos::null) dserror("Failed to allocate this material");
-      mat_.insert(std::pair<int,Teuchos::RCP<MAT::Material> >(actmatid,mat));
-    }
-
-    if (params_->local_)
-    {
-      // loop map of associated local materials
-      for (m=params_->MatIds()->begin(); m!=params_->MatIds()->end(); m++)
-      {
-        std::vector<char> pbtest;
-        ExtractfromPack(position,data,pbtest);
-        (mat_.find(*m))->second->Unpack(pbtest);
-      }
-
-      for (m=params_->ReacIds()->begin(); m!=params_->ReacIds()->end(); m++)
-      {
-        std::vector<char> pbtest;
-        ExtractfromPack(position,data,pbtest);
-        (mat_.find(*m))->second->Unpack(pbtest);
-      }
-    }
-    // in the postprocessing mode, we do not unpack everything we have packed
-    // -> position check cannot be done in this case
-    if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d",data.size(),position);
-  } // if (params_ != NULL)
+    dserror("Index too large");
+    return -1;
+  }
 }

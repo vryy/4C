@@ -109,8 +109,6 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // transport discretization is empty
   if (fluidscatradis->NumGlobalNodes()==0)
   {
-    std::cout<<__FILE__<<__LINE__<<"\t fluid num: "<<fluiddis->NumMyColElements()<<std::endl;
-    std::cout<<__FILE__<<__LINE__<<"\t scatra num: "<<fluidscatradis->NumMyColElements()<<std::endl;
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,fluidscatradis);
   }
   else

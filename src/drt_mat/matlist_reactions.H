@@ -1,6 +1,14 @@
 /*!----------------------------------------------------------------------
 \file matlist_reactions.cpp
 
+ \brief
+
+This file contains the material for reactive scalars. It derives from MAT_matlist
+and adds everything to supervise all the MAT_scatra_raction materials. The reactions
+itself are defined inside the MAT_scatra_raction materials. So MAT_matlist_reactions
+is just a "control instance".
+
+
 <pre>
 Maintainer: Moritz Thon
             thon@mhpc.mw.tum.de
@@ -16,6 +24,7 @@ Maintainer: Moritz Thon
 
 #include "matpar_parameter.H"
 #include "material.H"
+#include "matlist.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
@@ -25,7 +34,7 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for list of materials
-    class MatListReactions : public Parameter
+    class MatListReactions : public MatList
     {
     public:
 
@@ -43,52 +52,14 @@ namespace MAT
       /// @name material parameters
       //@{
 
-      /// provide ids of the individual materials
-      const std::vector<int>* MatIds() const {return matids_;}
-
       /// provide ids of the individual reaction materials
       const std::vector<int>* ReacIds() const {return reacids_;}
-
-      /// provide access to material by its ID
-      Teuchos::RCP<MAT::Material> MaterialById(const int id) const
-              {
-        if (not local_)
-        {
-          std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
-
-          if (m == mat_.end())
-          {
-            dserror("Material %d could not be found", id);
-            return Teuchos::null;
-          }
-          else
-            return m->second;
-        }
-        else
-          dserror("This is not allowed");
-
-        return Teuchos::null;
-              }
-
-      /// flag for individual materials or only one at global scope
-      bool local_;
-
-      /// length of material list
-      const int nummat_;
-
-      /// the list of material IDs
-      const std::vector<int>* matids_;
 
       /// length of reaction list
       const int numreac_;
 
       /// the list of reaction IDs
       const std::vector<int>* reacids_;
-
-    private:
-
-      /// map to materials (only used for local_==true)
-      std::map<int,Teuchos::RCP<MAT::Material> > mat_;
 
       //@}
 
@@ -113,7 +84,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
-  class MatListReactions : public Material
+  class MatListReactions : public MatList
   {
   public:
 
@@ -167,75 +138,25 @@ private:
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MatListReactions( *this ) ); }
 
-    /// number of materials
-    int NumMat() const { return params_->nummat_; }
-
     /// number of reactions
-    int NumReac() const { return params_->numreac_; }
-
-    /// material ID by Index
-    int MatID(
-      const unsigned index
-    ) const
-    {
-      if ((int)index < params_->nummat_)
-        return params_->matids_->at(index);
-      else
-      {
-        dserror("Index too large");
-        return -1;
-      }
-    }
+    int NumReac() const { return paramsreac_->numreac_; }
 
     /// reaction ID by Index
-    int ReacID(
-      const unsigned index
-    ) const
-    {
-      if ((int)index < params_->numreac_)
-        return params_->reacids_->at(index);
-      else
-      {
-        dserror("Index too large");
-        return -1;
-      }
-    }
-
-    /// provide access to material by its ID
-    Teuchos::RCP<MAT::Material> MaterialById(const int id) const
-    {
-      if (params_->local_)
-      {
-      std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
-      if (m == mat_.end())
-      {
-        dserror("Material %d could not be found", id);
-        return Teuchos::null;
-      }
-      else
-        return m->second;
-      }
-      else // material is global (stored in material parameters)
-        return params_->MaterialById(id);
-     }
+    int ReacID( const unsigned index ) const;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    virtual MAT::PAR::MatListReactions* Parameter() const { return paramsreac_; }
 
   private:
 
     /// setup of material map
-    void SetupMatMap();
+    virtual void SetupMatMap();
 
     /// clear everything
     void Clear();
 
     /// my material parameters
-    MAT::PAR::MatListReactions* params_;
-
-    /// map to materials
-    std::map<int,Teuchos::RCP<MAT::Material> > mat_;
-
+    MAT::PAR::MatListReactions* paramsreac_;
   };
 
 }

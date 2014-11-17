@@ -46,25 +46,9 @@ namespace MAT
       const std::vector<int>* MatIds() const {return matids_;}
 
       /// provide access to material by its ID
-      Teuchos::RCP<MAT::Material> MaterialById(const int id) const
-              {
-        if (not local_)
-        {
-          std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
+      Teuchos::RCP<MAT::Material> MaterialById(const int id) const;
 
-          if (m == mat_.end())
-          {
-            dserror("Material %d could not be found", id);
-            return Teuchos::null;
-          }
-          else
-            return m->second;
-        }
-        else
-          dserror("This is not allowed");
-
-        return Teuchos::null;
-              }
+      std::map<int,Teuchos::RCP<MAT::Material> >* MaterialMapWrite() {return &mat_;}
 
       /// length of material list
       const int nummat_;
@@ -161,39 +145,21 @@ private:
     int NumMat() const { return params_->nummat_; }
 
     /// material ID by Index
-    int MatID(
-      const unsigned index
-    ) const
-    {
-      if ((int)index < params_->nummat_)
-        return params_->matids_->at(index);
-      else
-      {
-        dserror("Index too large");
-        return -1;
-      }
-    }
+    int MatID( const unsigned index ) const;
 
     /// provide access to material by its ID
-    Teuchos::RCP<MAT::Material> MaterialById(const int id) const
-    {
-      if (params_->local_)
-      {
-      std::map<int,Teuchos::RCP<MAT::Material> >::const_iterator m = mat_.find(id);
-      if (m == mat_.end())
-      {
-        dserror("Material %d could not be found", id);
-        return Teuchos::null;
-      }
-      else
-        return m->second;
-      }
-      else // material is global (stored in material parameters)
-        return params_->MaterialById(id);
-     }
+    virtual Teuchos::RCP<MAT::Material> MaterialById(const int id) const;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    virtual MAT::PAR::MatList* Parameter() const { return params_; }
+
+  protected:
+
+    ///return pointer to the materials map, which has read-only access.
+    const std::map<int,Teuchos::RCP<MAT::Material> >* MaterialMapRead() const {return &mat_;}
+
+    ///return pointer to the materials map, which has read and write access.
+    std::map<int,Teuchos::RCP<MAT::Material> >* MaterialMapWrite() {return &mat_;}
 
   private:
 
