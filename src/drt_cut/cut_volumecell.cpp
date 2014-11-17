@@ -916,10 +916,16 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
    //if no of corners are 3 or 4, just add them as boundary integrationcells directly
    if(corners.size()==3)
    {
+     double areaCell = GEO::CUT::KERNEL::getAreaTri( corners );
+     if( areaCell < REF_AREA_BCELL )
+       continue;
      NewTri3Cell( mesh, fac, corners );
    }
    else if(corners.size()==4)
    {
+     double areaCell = GEO::CUT::KERNEL::getAreaConvexQuad( corners );
+     if( areaCell < REF_AREA_BCELL )
+       continue;
      NewQuad4Cell(mesh,fac,corners);
    }
    else
@@ -948,9 +954,19 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
           std::vector<Point*> tri = *j;
 
           if(tri.size()==3)
+          {
+            double areaCell = GEO::CUT::KERNEL::getAreaTri( tri );
+            if( areaCell < REF_AREA_BCELL )
+              continue;
             NewTri3Cell(mesh,fac,tri);
+          }
           else if(tri.size()==4)
+          {
+            double areaCell = GEO::CUT::KERNEL::getAreaConvexQuad( tri );
+            if( areaCell < REF_AREA_BCELL )
+              continue;
             NewQuad4Cell(mesh,fac,tri);
+          }
           else
             dserror("Triangulation created neither tri3 or quad4");
         }

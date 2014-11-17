@@ -776,3 +776,56 @@ std::vector<GEO::CUT::Point*> GEO::CUT::KERNEL::Get3NoncollinearPts( std::vector
   return preparedPoints;
 
 }
+
+/*------------------------------------------------------------------------------*
+ * Calculate area of triangle in 3D                                     sudhakar 11/14
+ *------------------------------------------------------------------------------*/
+double GEO::CUT::KERNEL::getAreaTri( std::vector<Point*> & poly )
+{
+
+  if( poly.size() != 3 )
+    dserror("expecting a triangle");
+
+  double a[3]={0.0,0.0,0.0},b[3]={0.0,0.0,0.0},c[3]={0.0,0.0,0.0};
+  poly[0]->Coordinates(a);
+  poly[1]->Coordinates(b);
+  poly[2]->Coordinates(c);
+
+  double ab[3]={0.0,0.0,0.0},ac[3]={0.0,0.0,0.0};
+  for( int i=0; i<3; i++ )
+  {
+    ab[i] = b[i] - a[i];
+    ac[i] = c[i] - a[i];
+  }
+
+  double term = pow(( ab[1]*ac[2] - ab[2]*ac[1] ),2);
+  term += pow(( ab[2]*ac[0] - ab[0]*ac[2] ),2);
+  term += pow(( ab[0]*ac[1] - ab[1]*ac[0] ),2);
+
+  double area = 0.5 * sqrt( term );
+  return area;
+
+}
+
+/*------------------------------------------------------------------------------*
+ * Calculate area of convex Quad in 3D                                  sudhakar 11/14
+ * Quad is split into two triangles and area of tri are summed up
+ *------------------------------------------------------------------------------*/
+double GEO::CUT::KERNEL::getAreaConvexQuad( std::vector<Point*> & poly )
+{
+  if( poly.size() != 4 )
+    dserror("expecting a quad");
+
+  std::vector<Point*> tri1, tri2;
+  tri1.push_back( poly[0] );
+  tri1.push_back( poly[1] );
+  tri1.push_back( poly[2] );
+
+  tri2.push_back( poly[0] );
+  tri2.push_back( poly[2] );
+  tri2.push_back( poly[3] );
+
+  double area1 = getAreaTri( tri1 );
+  double area2 = getAreaTri( tri2 );
+  return (area1 + area2);
+}

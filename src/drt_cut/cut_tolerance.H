@@ -55,4 +55,8 @@
 
 #define SELF_CUT_POS_TOL 1e-10
 
+// If the area of boundarycell is less than this value, then it is eliminated from boundary integration
+// Such small area can lead to zero or a very small negative value in the boundary cell mapping's Jacobian
+#define REF_AREA_BCELL 1e-30
+
 #endif

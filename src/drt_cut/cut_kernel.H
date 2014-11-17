@@ -215,6 +215,16 @@ namespace GEO
        */
       void FindProjectionPlane( std::string& projPlane, const std::vector<double>& eqn );
 
+      /*!
+      \brief Get area of triangle in 3D space
+       */
+      double getAreaTri( std::vector<Point*> & poly );
+
+      /*!
+      \brief Get area of convex Quad in 3D space
+       */
+      double getAreaConvexQuad( std::vector<Point*> & poly );
+
       /// generic Newton algorithm
       template <class Strategy, int maxiter=20>
       class NewtonSolve : public Strategy
