@@ -29,7 +29,7 @@ void MeshLoader::GetNode( int nid, double x, double y, double z, double lsv )
   }
 }
 
-void MeshLoader::CreateSide( int sid, int nid1, int nid2, int nid3, int nid4, int shape )
+void MeshLoader::CreateSide( int sid, int nid1, int nid2, int nid3, int nid4, DRT::Element::DiscretizationType shape )
 {
   switch ( shape )
   {
@@ -52,11 +52,11 @@ void MeshLoader::CreateSide( int sid, int nid1, int nid2, int nid3, int nid4, in
     break;
   }
   default:
-    throw std::runtime_error( "unknown shape" );
+    throw std::runtime_error( "unknown shape creating a side in mesh loader" );
   }
 }
 
-void MeshLoader::CreateElement( int eid, int nid1, int nid2, int nid3, int nid4, int nid5, int nid6, int nid7, int nid8, int shape )
+void MeshLoader::CreateElement( int eid, int nid1, int nid2, int nid3, int nid4, int nid5, int nid6, int nid7, int nid8, DRT::Element::DiscretizationType shape )
 {
   switch ( shape )
   {
@@ -87,7 +87,7 @@ void MeshLoader::CreateElement( int eid, int nid1, int nid2, int nid3, int nid4,
     break;
   }
   default:
-    throw std::runtime_error( "unknown shape" );
+    throw std::runtime_error( "unknown shape creating an element in mesh loader" );
   }
 }
 
@@ -95,7 +95,7 @@ void MeshLoader::Fill( std::map<int, std::vector<double> > & nodes, int nid, dou
 {
   if ( nodes.find( nid )==nodes.end() )
   {
-    throw std::runtime_error( "node not defined" );
+    throw std::runtime_error( "node not defined in mesh loader" );
   }
   std::vector<double> & v = nodes[nid];
   std::copy( v.begin(), v.end(), values );

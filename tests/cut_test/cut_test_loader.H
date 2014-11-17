@@ -14,9 +14,9 @@ public:
 
   void GetNode( int nid, double x, double y, double z, double lsv );
 
-  void CreateSide( int sid, int nid1, int nid2, int nid3, int nid4, int shape );
+  void CreateSide( int sid, int nid1, int nid2, int nid3, int nid4, DRT::Element::DiscretizationType shape );
 
-  void CreateElement( int eid, int nid1, int nid2, int nid3, int nid4, int nid5, int nid6, int nid7, int nid8, int shape );
+  void CreateElement( int eid, int nid1, int nid2, int nid3, int nid4, int nid5, int nid6, int nid7, int nid8, DRT::Element::DiscretizationType );
 
   void Cut( bool include_inner )
   {
