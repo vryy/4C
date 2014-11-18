@@ -135,7 +135,7 @@ void fillElementUnknownsArrays(
     for (size_t iparam=0; iparam<numparampres; ++iparam)
       epreaf(iparam) = mystate.velnp_[presdof[iparam]];
   }
-  
+
   if(mystate.avm3_)
   {
     for (size_t iparam=0; iparam<numparamvelx; ++iparam)
@@ -695,7 +695,7 @@ void COMBUST::BlendMaterial(
           dserror("Negative time value in blending material: time = %f",time);
       }
       else // we do not have a timecurve --- timefactors are constant equal 1
-        curvefac = 1.0;
+        dserror("Blending of materials without time curve does not make sense. Provide a time curve (from 1 at t=0 to 0 at t=tend) in your input file!");
 
       double fac = -1.0;
       // get switch from the condition
@@ -1344,8 +1344,8 @@ void NitscheErrors(
     ephi(iparam) = mystate.phinp_[iparam];
 
   //=================================================================================================================
-  double ele_meas_plus = 0.0;	// we need measure of element in plus domain and minus domain
-  double ele_meas_minus = 0.0;	// for different averages <> and {}
+  double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
+  double ele_meas_minus = 0.0;  // for different averages <> and {}
 
   switch(combusttype)
   {
@@ -1737,7 +1737,7 @@ void Facemat(
   const unsigned int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
   const unsigned int m_fac = COMBUST::SizeFac<M_ASSTYPE>::fac;
   const unsigned int s_fac = COMBUST::SizeFac<S_ASSTYPE>::fac;
-  
+
   const unsigned int m_shpVecSize = m_fac * numnode;
   const unsigned int s_shpVecSize = s_fac * numnode;
 
