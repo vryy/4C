@@ -33,6 +33,23 @@ L2 :  2,  3,  6
 L3 :  3,  0,  7
 \end{verbatim}
 
+\subsubsection{Quad6 Elements}
+\begin{figure}[h!]
+\begin{center}
+\subfigure[node pattern]{
+\includegraphics[width=0.46\textwidth]{figures/quad6}}
+\caption{Node numbering scheme for \texttt{quad6} elements.}
+\label{fig:conventions:quad6}
+\end{center}
+\end{figure}
+
+Line pattern for \texttt{quad6}:
+\begin{verbatim}
+L0 :  0,  2,  1
+L1 :  3,  5,  4
+L2 :  1,  4
+L3 :  0,  3
+\end{verbatim}
 
 \subsection{Triangular Elements}
 
@@ -106,16 +123,19 @@ L10:  6,  7, 18
 L11:  4,  7, 19
 \end{verbatim}
 
+
+\newpage
+\subsubsection{Hex18 Element}
 \begin{figure}[h!]
 \begin{center}
 \subfigure[node pattern]{\label{fig:conventions:hex18_nodes}
 \includegraphics[width=0.46\textwidth]{figures/hex18_nodes}}
-\caption{Node numbering scheme.}
+\caption{Node numbering scheme for \texttt{hex18} elements.}
 \label{fig:conventions:hex18}
 \end{center}
 \end{figure}
 
-Surface pattern:
+Surface pattern for \texttt{hex18}:
 \begin{verbatim}
 S0 : 0,  3,  2,  1,  7,  6,  5,  4,  8 
 S1 : 9, 10, 11, 12, 13, 14, 15, 16, 17 
@@ -125,7 +145,7 @@ S4 : 2,  3,  6, 11, 12, 15
 S5 : 3,  0,  7, 12,  9, 16 
 \end{verbatim}
 
-Line pattern:
+Line pattern for \texttt{hex18}:
 \begin{verbatim}
 L0 : 0,  9
 L1 : 1, 10
