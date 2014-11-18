@@ -100,6 +100,25 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qwgt[7] = 1.0;
     break;
   }
+  case intrule_hex_18point:
+  {
+    nquad=18;
+    // in plane
+    DRT::UTILS::IntPointsAndWeights<2> ip_p(DRT::UTILS::intrule_quad_9point);
+    // director
+    DRT::UTILS::IntPointsAndWeights<1> ip_d(DRT::UTILS::intrule_line_2point);
+
+    for (int d=0; d<ip_d.IP().nquad; ++d)
+      for (int p=0; p<ip_p.IP().nquad; ++p)
+      {
+        qwgt[p+d*ip_p.IP().nquad] = ip_d.IP().qwgt[d]*
+                                    ip_p.IP().qwgt[p];
+        qxg[p+d*ip_p.IP().nquad][0]=ip_p.IP().qxg[p][0];
+        qxg[p+d*ip_p.IP().nquad][1]=ip_p.IP().qxg[p][1];
+        qxg[p+d*ip_p.IP().nquad][2]=ip_d.IP().qxg[d][0];
+      }
+    break;
+  }
   case intrule_hex_27point:
   {
     nquad = 27;

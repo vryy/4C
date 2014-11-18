@@ -107,6 +107,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumVolume() const
   switch(distype)
   {
   case DRT::Element::hex8:
+  case DRT::Element::hex18:
   case DRT::Element::hex27:
     return 0;
     break;
@@ -126,6 +127,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumSurface() const
   switch(distype)
   {
   case DRT::Element::hex8:
+  case DRT::Element::hex18:
   case DRT::Element::hex27:
     return 6;
     break;
@@ -145,6 +147,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumLine() const
   switch(distype)
   {
   case DRT::Element::hex8:
+  case DRT::Element::hex18:
   case DRT::Element::hex27:
     return 12;
     break;
@@ -292,8 +295,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
-  // kintype_
-//  kintype_ = static_cast<GenKinematicType>( ExtractInt(position,data) );
   // detJ_
   ExtractfromPack(position,data,detJ_);
   // invJ_
@@ -388,7 +389,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
    for (int i=0; i<size; i++)
      ExtractfromPack(position,data,dDp_last_iter_[i]);
 
-  if (position != data.size())
+   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
 

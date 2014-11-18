@@ -15,353 +15,8 @@ Maintainer: Alexander Seitz
 #include "../linalg/linalg_utils.H"
 #include "../drt_mat/so3_material.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
-
-/*----------------------------------------------------------------------*
- |  evaluate the element (public)                           seitz 11/14 |
- *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_sh18::Evaluate(Teuchos::ParameterList&  params,
-                                    DRT::Discretization&      discretization,
-                                    std::vector<int>&         lm,
-                                    Epetra_SerialDenseMatrix& elemat1_epetra,
-                                    Epetra_SerialDenseMatrix& elemat2_epetra,
-                                    Epetra_SerialDenseVector& elevec1_epetra,
-                                    Epetra_SerialDenseVector& elevec2_epetra,
-                                    Epetra_SerialDenseVector& elevec3_epetra)
-{
-  LINALG::Matrix<NUMDOF_SOH18,NUMDOF_SOH18> elemat1(elemat1_epetra.A(),true);
-  LINALG::Matrix<NUMDOF_SOH18,NUMDOF_SOH18> elemat2(elemat2_epetra.A(),true);
-  LINALG::Matrix<NUMDOF_SOH18,1> elevec1(elevec1_epetra.A(),true);
-  LINALG::Matrix<NUMDOF_SOH18,1> elevec2(elevec2_epetra.A(),true);
-  LINALG::Matrix<NUMDOF_SOH18,1> elevec3(elevec3_epetra.A(),true);
-
-  // start with "none"
-  DRT::ELEMENTS::So_sh18::ActionType act = So_sh18::none;
-
-  // get the required action
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff")                        act = So_sh18::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff")                        act = So_sh18::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce")                   act = So_sh18::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass")                    act = So_sh18::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass")                    act = So_sh18::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass")                   act = So_sh18::calc_struct_nlnstifflmass;
-  else if (action=="calc_struct_stress")                          act = So_sh18::calc_struct_stress;
-  else if (action=="calc_struct_eleload")                         act = So_sh18::calc_struct_eleload;
-  else if (action=="calc_struct_update_istep")                    act = So_sh18::calc_struct_update_istep;
-  else if (action=="calc_struct_reset_istep")                     act = So_sh18::calc_struct_reset_istep;
-  else if (action=="calc_struct_reset_all")                       act = So_sh18::calc_struct_reset_all;
-  else if (action=="calc_struct_energy")                          act = So_sh18::calc_struct_energy;
-  else if (action=="calc_struct_errornorms")                      act = So_sh18::calc_struct_errornorms;
-  else if (action=="postprocess_stress")                          act = So_sh18::postprocess_stress;
-  else dserror("Unknown type of action for So_hex8: %s", action.c_str());
-
-  // what should the element do
-  switch(act)
-  {
-
-    //==================================================================================
-    // nonlinear stiffness and internal force vector
-    case calc_struct_nlnstiff:
-    case calc_struct_linstiff:
-    {
-      // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      LINALG::Matrix<NUMDOF_SOH18,NUMDOF_SOH18>* matptr = NULL;
-      if (elemat1.IsInitialized()) matptr = &elemat1;
-
-        nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-                                    INPAR::STR::stress_none,INPAR::STR::strain_none);
-      break;
-    }
-
-
-    //==================================================================================
-    // internal force vector only
-    case calc_struct_internalforce:
-    {
-      // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::Matrix<NUMDOF_SOH18,NUMDOF_SOH18> myemat(true);
-
-      nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
-        INPAR::STR::stress_none,INPAR::STR::strain_none);
-
-      break;
-    }
-
-    //==================================================================================
-    // nonlinear stiffness, internal force vector, and consistent mass matrix
-    case calc_struct_nlnstiffmass:
-    case calc_struct_nlnstifflmass:
-    case calc_struct_linstiffmass:
-    {
-      // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      // need current velocities and accelerations (for non constant mass matrix)
-      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
-
-      std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-
-        nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-          INPAR::STR::stress_none,INPAR::STR::strain_none);
-
-      if (act==calc_struct_nlnstifflmass) soh18_lumpmass(&elemat2);
-
-      break;
-    }
-
-    //==================================================================================
-    // evaluate stresses and strains at gauss points
-    case calc_struct_stress:
-    {
-      // nothing to do for ghost elements
-      if (discretization.Comm().MyPID()==Owner())
-      {
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        Teuchos::RCP<std::vector<char> > stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
-        Teuchos::RCP<std::vector<char> > straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
-        if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
-        if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        std::vector<double> myres(lm.size());
-        DRT::UTILS::ExtractMyValues(*res,myres,lm);
-        LINALG::Matrix<NUMGPT_SOH18,MAT::NUM_STRESS_3D> stress;
-        LINALG::Matrix<NUMGPT_SOH18,MAT::NUM_STRESS_3D> strain;
-        INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-
-          nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
-
-        {
-          DRT::PackBuffer data;
-          AddtoPack(data, stress);
-          data.StartPacking();
-          AddtoPack(data, stress);
-          std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
-        }
-
-        {
-          DRT::PackBuffer data;
-          AddtoPack(data, strain);
-          data.StartPacking();
-          AddtoPack(data, strain);
-          std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
-        }
-      }
-    }
-    break;
-
-    //==================================================================================
-    // postprocess stresses/strains at gauss points
-    // note that in the following, quantities are always referred to as
-    // "stresses" etc. although they might also apply to strains
-    // (depending on what this routine is called for from the post filter)
-    case postprocess_stress:
-    {
-      const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
-      if (gpstressmap==Teuchos::null)
-        dserror("no gp stress/strain map available for postprocessing");
-      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
-      int gid = Id();
-      LINALG::Matrix<NUMGPT_SOH18,MAT::NUM_STRESS_3D> gpstress(((*gpstressmap)[gid])->A(),true);
-      Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
-      if (poststress==Teuchos::null)
-        dserror("No element stress/strain vector available");
-      if (stresstype=="ndxyz")
-      {
-        // extrapolate stresses/strains at Gauss points to nodes
-        dserror("no node-based stress output");
-      }
-      else if (stresstype=="cxyz")
-      {
-        const Epetra_BlockMap& elemap = poststress->Map();
-        int lid = elemap.LID(Id());
-        if (lid!=-1)
-        {
-          for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
-          {
-            double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
-            s = 0.;
-            for (int j = 0; j < NUMGPT_SOH18; ++j)
-            {
-              s += gpstress(j,i);
-            }
-            s *= 1.0/NUMGPT_SOH18;
-          }
-        }
-      }
-      else
-      {
-        dserror("unknown type of stress/strain output on element level");
-      }
-    }
-    break;
-
-    //==================================================================================
-    case calc_struct_eleload:
-      dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
-    break;
-
-    //==================================================================================
-    case calc_struct_update_istep:
-    {
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->Update();
-
-      if (eas_)
-      {
-        feas_.Clear();
-        Kad_.Clear();
-        KaaInv_.Clear();
-      }
-    }
-    break;
-
-    //==================================================================================
-    case calc_struct_reset_istep:
-    {
-      // Reset of history (if needed)
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->ResetStep();
-    }
-    break;
-
-    //==================================================================================
-    case calc_struct_reset_all:
-    {
-      // Reset of history for materials
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->ResetAll(NUMGPT_SOH18);
-    }
-    break;
-
-  //==================================================================================
-  default:
-    dserror("Unknown type of action for So_hex18");
-    break;
-  }
-  return 0;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Integrate a Volume Neumann boundary condition (public)  seitz 11/14 |
- *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_sh18::EvaluateNeumann(Teuchos::ParameterList&   params,
-                                             DRT::Discretization&      discretization,
-                                             DRT::Condition&           condition,
-                                             std::vector<int>&         lm,
-                                             Epetra_SerialDenseVector& elevec1,
-                                             Epetra_SerialDenseMatrix* elemat1)
-{
-  // get values and switches from the condition
-  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
-  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
-
-  /*
-  **    TIME CURVE BUSINESS
-  */
-  // find out whether we will use a time curve
-  bool usetime = true;
-  const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
-
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-
-  // (SPATIAL) FUNCTION BUSINESS
-  const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
-  LINALG::Matrix<NUMDIM_SOH18,1> xrefegp(false);
-  bool havefunct = false;
-  if (funct)
-    for (int dim=0; dim<NUMDIM_SOH18; dim++)
-      if ((*funct)[dim] > 0)
-        havefunct = havefunct or true;
-
-  /* ============================================================================*/
-
-  // update element geometry
-  LINALG::Matrix<NUMNOD_SOH18,NUMDIM_SOH18> xrefe;  // material coord. of element
-  DRT::Node** nodes = Nodes();
-  for (int i=0; i<NUMNOD_SOH18; ++i){
-    const double* x = nodes[i]->X();
-    xrefe(i,0) = x[0];
-    xrefe(i,1) = x[1];
-    xrefe(i,2) = x[2];
-  }
-  /* ================================================= Loop over Gauss Points */
-  for (int gp=0; gp<NUMGPT_SOH18; ++gp) {
-
-    // shape function and derivatives
-    const LINALG::Matrix<NUMNOD_SOH18,1> shapefunct = sh18_shapefcts(gp);
-    const LINALG::Matrix<NUMDIM_SOH18,NUMNOD_SOH18> deriv = sh18_derivs(gp);
-
-    // compute the Jacobian matrix
-    LINALG::Matrix<NUMDIM_SOH18,NUMDIM_SOH18> jac;
-    jac.Multiply(deriv,xrefe);
-
-    // compute determinant of Jacobian
-    const double detJ = jac.Determinant();
-    if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
-    else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
-
-    // material/reference co-ordinates of Gauss point
-    if (havefunct) {
-      for (int dim=0; dim<NUMDIM_SOH18; dim++) {
-        xrefegp(dim) = 0.0;
-        for (int nodid=0; nodid<NUMNOD_SOH18; ++nodid)
-          xrefegp(dim) += shapefunct(nodid) * xrefe(nodid,dim);
-      }
-    }
-
-    // integration factor
-    const double fac = wgt_[gp] * curvefac * detJ;
-    // distribute/add over element load vector
-    for(int dim=0; dim<NUMDIM_SOH18; dim++) {
-      // function evaluation
-      const int functnum = (funct) ? (*funct)[dim] : -1;
-      const double functfac
-        = (functnum>0)
-        ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
-        : 1.0;
-      const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
-      for (int nodid=0; nodid<NUMNOD_SOH18; ++nodid) {
-        elevec1[nodid*NUMDIM_SOH18+dim] += shapefunct(nodid) * dim_fac;
-      }
-    }
-
-  }/* ==================================================== end of Loop over GP */
-
-  return 0;
-} // DRT::ELEMENTS::So_hex8::EvaluateNeumann
 
 
 int DRT::ELEMENTS::So_sh18::InitJacobianMapping()
@@ -388,8 +43,10 @@ int DRT::ELEMENTS::So_sh18::InitJacobianMapping()
     detJ_[gp]=0.;
 
     // in-plane shape functions and derivatives
-    const LINALG::Matrix<9,1> shapefunct_q9 = sh18_shapefcts_q9(gp);
-    const LINALG::Matrix<2,9> deriv_q9      = sh18_derivs_q9(gp);
+    LINALG::Matrix<9,1> shapefunct_q9;
+    DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp],shapefunct_q9);
+    LINALG::Matrix<2,9> deriv_q9;
+    DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp],deriv_q9);
 
     for (int dim=0; dim<3; ++dim)
       for (int k=0; k<9; ++k)
@@ -458,7 +115,8 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(
     if (stiffmatrix)
     {
       feas_.Multiply(1.,Kad_,res_d,1.);
-      alpha_eas_.Multiply(-1.,KaaInv_,feas_,1.);
+      alpha_eas_inc_.Multiply(-1.,KaaInv_,feas_,0.);
+      alpha_eas_.Update(1.,alpha_eas_inc_,1.);
     }
     // recover EAS **************************************
 
@@ -476,8 +134,10 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(
   for (int gp=0; gp<NUMGPT_SOH18; ++gp)
   {
     // in-plane shape functions and derivatives
-    const LINALG::Matrix<9,1> shapefunct_q9 = sh18_shapefcts_q9(gp);
-    const LINALG::Matrix<2,9> deriv_q9      = sh18_derivs_q9(gp);
+    LINALG::Matrix<9,1> shapefunct_q9;
+    DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp],shapefunct_q9);
+    LINALG::Matrix<2,9> deriv_q9;
+    DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp],deriv_q9);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **         [ x_,r  y_,r  z_,r ]
@@ -578,10 +238,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(
     double detJ_w = detJ*wgt_[gp];
     // update internal force vector
     if (force != NULL)
-    {
-      // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
-    }
 
     // update stiffness matrix
     if (stiffmatrix != NULL)
@@ -609,7 +266,8 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
       // shape function and derivatives
-      const LINALG::Matrix<NUMNOD_SOH18,1> shapefunct = sh18_shapefcts(gp);
+      LINALG::Matrix<NUMNOD_SOH18,1> shapefunct;
+      DRT::UTILS::shape_function<DRT::Element::hex18>(xsi_[gp],shapefunct);
 
       double density = Material()->Density(gp);
 
@@ -672,217 +330,6 @@ void DRT::ELEMENTS::So_sh18::soh18_lumpmass(LINALG::Matrix<NUMDOF_SOH18,NUMDOF_S
       (*emass)(c,c) = d;  // apply sum of row entries on diagonal
     }
   }
-}
-
-
-const LINALG::Matrix<NUMNOD_SOH18,1> DRT::ELEMENTS::So_sh18::sh18_shapefcts(const int gp)
-{ return sh18_shapefcts(xsi_.at(gp)(0),xsi_.at(gp)(1),xsi_.at(gp)(2)); }
-
-const LINALG::Matrix<9,1> DRT::ELEMENTS::So_sh18::sh18_shapefcts_q9(const int gp)
-{ return sh18_shapefcts_q9(xsi_.at(gp)(0),xsi_.at(gp)(1)); }
-
-const LINALG::Matrix<NUMNOD_SOH18,1> DRT::ELEMENTS::So_sh18::sh18_shapefcts(
-  const double r,
-  const double s,
-  const double t)
-{
-  LINALG::Matrix<NUMNOD_SOH18,1> shapefcts;
-
-  // fill up nodal f
-
-  const double rp = 1.0 + r;
-  const double rm = 1.0 - r;
-  const double sp = 1.0 + s;
-  const double sm = 1.0 - s;
-  const double r2 = 1.0 - r * r;
-  const double s2 = 1.0 - s * s;
-  const double rh = 0.5 * r;
-  const double sh = 0.5 * s;
-  const double rs = rh * sh;
-
-  shapefcts(0) =  rs * rm * sm *(1.0-t)*0.5;
-  shapefcts(1) = -rs * rp * sm *(1.0-t)*0.5;
-  shapefcts(2) =  rs * rp * sp *(1.0-t)*0.5;
-  shapefcts(3) = -rs * rm * sp *(1.0-t)*0.5;
-  shapefcts(4) = -sh * sm * r2 *(1.0-t)*0.5;
-  shapefcts(5) =  rh * rp * s2 *(1.0-t)*0.5;
-  shapefcts(6) =  sh * sp * r2 *(1.0-t)*0.5;
-  shapefcts(7) = -rh * rm * s2 *(1.0-t)*0.5;
-  shapefcts(8) =  r2 * s2      *(1.0-t)*0.5;
-
-  shapefcts(9)  =  rs * rm * sm *(1.0+t)*0.5;
-  shapefcts(10) = -rs * rp * sm *(1.0+t)*0.5;
-  shapefcts(11) =  rs * rp * sp *(1.0+t)*0.5;
-  shapefcts(12) = -rs * rm * sp *(1.0+t)*0.5;
-  shapefcts(13) = -sh * sm * r2 *(1.0+t)*0.5;
-  shapefcts(14) =  rh * rp * s2 *(1.0+t)*0.5;
-  shapefcts(15) =  sh * sp * r2 *(1.0+t)*0.5;
-  shapefcts(16) = -rh * rm * s2 *(1.0+t)*0.5;
-  shapefcts(17) =  r2 * s2      *(1.0+t)*0.5;
-
-  return shapefcts;
-}
-
-const LINALG::Matrix<9,1> DRT::ELEMENTS::So_sh18::sh18_shapefcts_q9(
-  const double r,
-  const double s)
-{
-  LINALG::Matrix<9,1> shapefcts;
-
-  // fill up nodal f
-
-  const double rp = 1.0 + r;
-  const double rm = 1.0 - r;
-  const double sp = 1.0 + s;
-  const double sm = 1.0 - s;
-  const double r2 = 1.0 - r * r;
-  const double s2 = 1.0 - s * s;
-  const double rh = 0.5 * r;
-  const double sh = 0.5 * s;
-  const double rs = rh * sh;
-
-  shapefcts(0) =  rs * rm * sm;
-  shapefcts(1) = -rs * rp * sm;
-  shapefcts(2) =  rs * rp * sp;
-  shapefcts(3) = -rs * rm * sp;
-  shapefcts(4) = -sh * sm * r2;
-  shapefcts(5) =  rh * rp * s2;
-  shapefcts(6) =  sh * sp * r2;
-  shapefcts(7) = -rh * rm * s2;
-  shapefcts(8) =  r2 * s2     ;
-
-  return shapefcts;
-}
-
-
-const LINALG::Matrix<NUMDIM_SOH18,NUMNOD_SOH18> DRT::ELEMENTS::So_sh18::sh18_derivs(const int gp)
-{
-  return sh18_derivs(xsi_.at(gp)(0), xsi_.at(gp)(1), xsi_.at(gp)(2));
-}
-
-const LINALG::Matrix<2,9> DRT::ELEMENTS::So_sh18::sh18_derivs_q9(const int gp)
-{ return sh18_derivs_q9(xsi_.at(gp)(0), xsi_.at(gp)(1));}
-
-const LINALG::Matrix<NUMDIM_SOH18,NUMNOD_SOH18> DRT::ELEMENTS::So_sh18::sh18_derivs(
-    const double r,
-    const double s,
-    const double t)
-{
-  LINALG::Matrix<NUMDIM_SOH18,NUMNOD_SOH18> derivs;
-
-  const double rp = 1.0 + r;
-  const double rm = 1.0 - r;
-  const double sp = 1.0 + s;
-  const double sm = 1.0 - s;
-  const double r2 = 1.0 - r * r;
-  const double s2 = 1.0 - s * s;
-  const double rh = 0.5 * r;
-  const double sh = 0.5 * s;
-  const double rs = rh * sh;
-  const double rhp = r + 0.5;
-  const double rhm = r - 0.5;
-  const double shp = s + 0.5;
-  const double shm = s - 0.5;
-
-  derivs(0, 0) = -rhm * sh * sm*(1.0-t)*0.5;
-  derivs(1, 0) = -shm * rh * rm*(1.0-t)*0.5;
-  derivs(0, 1) = -rhp * sh * sm*(1.0-t)*0.5;
-  derivs(1, 1) =  shm * rh * rp*(1.0-t)*0.5;
-  derivs(0, 2) =  rhp * sh * sp*(1.0-t)*0.5;
-  derivs(1, 2) =  shp * rh * rp*(1.0-t)*0.5;
-  derivs(0, 3) =  rhm * sh * sp*(1.0-t)*0.5;
-  derivs(1, 3) = -shp * rh * rm*(1.0-t)*0.5;
-  derivs(0, 4) =  2.0 * r * sh * sm*(1.0-t)*0.5;
-  derivs(1, 4) =  shm * r2*(1.0-t)*0.5;
-  derivs(0, 5) =  rhp * s2*(1.0-t)*0.5;
-  derivs(1, 5) = -2.0 * s * rh * rp*(1.0-t)*0.5;
-  derivs(0, 6) = -2.0 * r * sh * sp*(1.0-t)*0.5;
-  derivs(1, 6) =  shp * r2*(1.0-t)*0.5;
-  derivs(0, 7) =  rhm * s2*(1.0-t)*0.5;
-  derivs(1, 7) =  2.0 * s * rh * rm*(1.0-t)*0.5;
-  derivs(0, 8) = -2.0 * r * s2*(1.0-t)*0.5;
-  derivs(1, 8) = -2.0 * s * r2*(1.0-t)*0.5;
-
-  derivs(0, 9) = -rhm * sh * sm*(1.0+t)*0.5;
-  derivs(1, 9) = -shm * rh * rm*(1.0+t)*0.5;
-  derivs(0, 10) = -rhp * sh * sm*(1.0+t)*0.5;
-  derivs(1, 10) =  shm * rh * rp*(1.0+t)*0.5;
-  derivs(0, 11) =  rhp * sh * sp*(1.0+t)*0.5;
-  derivs(1, 11) =  shp * rh * rp*(1.0+t)*0.5;
-  derivs(0, 12) =  rhm * sh * sp*(1.0+t)*0.5;
-  derivs(1, 12) = -shp * rh * rm*(1.0+t)*0.5;
-  derivs(0, 13) =  2.0 * r * sh * sm*(1.0+t)*0.5;
-  derivs(1, 13) =  shm * r2*(1.0+t)*0.5;
-  derivs(0, 14) =  rhp * s2*(1.0+t)*0.5;
-  derivs(1, 14) = -2.0 * s * rh * rp*(1.0+t)*0.5;
-  derivs(0, 15) = -2.0 * r * sh * sp*(1.0+t)*0.5;
-  derivs(1, 15) =  shp * r2*(1.0+t)*0.5;
-  derivs(0, 16) =  rhm * s2*(1.0+t)*0.5;
-  derivs(1, 16) =  2.0 * s * rh * rm*(1.0+t)*0.5;
-  derivs(0, 17) = -2.0 * r * s2*(1.0+t)*0.5;
-  derivs(1, 17) = -2.0 * s * r2*(1.0+t)*0.5;
-
-  derivs(2,0) =  rs * rm * sm *(-0.5);
-  derivs(2,1) = -rs * rp * sm *(-0.5);
-  derivs(2,2) =  rs * rp * sp *(-0.5);
-  derivs(2,3) = -rs * rm * sp *(-0.5);
-  derivs(2,4) = -sh * sm * r2 *(-0.5);
-  derivs(2,5) =  rh * rp * s2 *(-0.5);
-  derivs(2,6) =  sh * sp * r2 *(-0.5);
-  derivs(2,7) = -rh * rm * s2 *(-0.5);
-  derivs(2,8) =  r2 * s2      *(-0.5);
-
-  derivs(2,9)  =  rs * rm * sm *0.5;
-  derivs(2,10) = -rs * rp * sm *0.5;
-  derivs(2,11) =  rs * rp * sp *0.5;
-  derivs(2,12) = -rs * rm * sp *0.5;
-  derivs(2,13) = -sh * sm * r2 *0.5;
-  derivs(2,14) =  rh * rp * s2 *0.5;
-  derivs(2,15) =  sh * sp * r2 *0.5;
-  derivs(2,16) = -rh * rm * s2 *0.5;
-  derivs(2,17) =  r2 * s2      *0.5;
-
-  return derivs;
-}
-
-const LINALG::Matrix<2,9> DRT::ELEMENTS::So_sh18::sh18_derivs_q9(
-    const double r,
-    const double s)
-{
-  LINALG::Matrix<2,9> derivs;
-
-  const double rp = 1.0 + r;
-  const double rm = 1.0 - r;
-  const double sp = 1.0 + s;
-  const double sm = 1.0 - s;
-  const double r2 = 1.0 - r * r;
-  const double s2 = 1.0 - s * s;
-  const double rh = 0.5 * r;
-  const double sh = 0.5 * s;
-  const double rhp = r + 0.5;
-  const double rhm = r - 0.5;
-  const double shp = s + 0.5;
-  const double shm = s - 0.5;
-
-  derivs(0, 0) = -rhm * sh * sm;
-  derivs(1, 0) = -shm * rh * rm;
-  derivs(0, 1) = -rhp * sh * sm;
-  derivs(1, 1) =  shm * rh * rp;
-  derivs(0, 2) =  rhp * sh * sp;
-  derivs(1, 2) =  shp * rh * rp;
-  derivs(0, 3) =  rhm * sh * sp;
-  derivs(1, 3) = -shp * rh * rm;
-  derivs(0, 4) =  2.0 * r * sh * sm;
-  derivs(1, 4) =  shm * r2;
-  derivs(0, 5) =  rhp * s2;
-  derivs(1, 5) = -2.0 * s * rh * rp;
-  derivs(0, 6) = -2.0 * r * sh * sp;
-  derivs(1, 6) =  shp * r2;
-  derivs(0, 7) =  rhm * s2;
-  derivs(1, 7) =  2.0 * s * rh * rm;
-  derivs(0, 8) = -2.0 * r * s2;
-  derivs(1, 8) = -2.0 * s * r2;
-  return derivs;
 }
 
 /*----------------------------------------------------------------------*
@@ -1509,12 +956,13 @@ void DRT::ELEMENTS::So_sh18::CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_dis
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(const double xi,const double eta, LINALG::Matrix<9,9>& dsg_shear_r)
+void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(const int gp, LINALG::Matrix<9,9>& dsg_shear_r)
 {
   dsg_shear_r.Clear();
   const double coord_refNode[2]={0.,0.};
 
-  const LINALG::Matrix<2,9> deriv = sh18_derivs_q9(xi,eta);
+  LINALG::Matrix<2,9> deriv;
+  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp],deriv);
 
   DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::intrule_line_2point);
   for (int i=0; i<9; ++i)
@@ -1529,14 +977,16 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(const double xi,const double 
         const double jac = .5*(coord_i(0)-coord_refNode[0]);
 
         // gauss point coordinates in element parameter space
-        double xi_gp[2];
-        xi_gp[0] = .5*(coord_i(0)+coord_refNode[0])+jac*ip.IP().qxg[gp][0];
-        xi_gp[1] = coord_i(1);
+        LINALG::Matrix<2,1> xi_gp;
+        xi_gp(0) = .5*(coord_i(0)+coord_refNode[0])+jac*ip.IP().qxg[gp][0];
+        xi_gp(1) = coord_i(1);
 
         // shape function
-        const LINALG::Matrix<9,1> shape_gp = sh18_shapefcts_q9(xi_gp[0],xi_gp[1]);
+        LINALG::Matrix<9,1> shape_gp;
+        DRT::UTILS::shape_function<DRT::Element::quad9>(xi_gp,shape_gp);
         // derivative
-        const LINALG::Matrix<2,9> deriv_gp = sh18_derivs_q9(xi_gp[0],xi_gp[1]);
+        LINALG::Matrix<2,9> deriv_gp;
+        DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp,deriv_gp);
 
         for (int k=0; k<9; ++k)
           for (int l=0; l<9; ++l)
@@ -1550,12 +1000,13 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(const double xi,const double 
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_s(const double xi,const double eta, LINALG::Matrix<9,9>& dsg_shear_s)
+void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_s(const int gp, LINALG::Matrix<9,9>& dsg_shear_s)
 {
   dsg_shear_s.Clear();
   const double coord_refNode[2]={0.,0.};
 
-  const LINALG::Matrix<2,9> deriv = sh18_derivs_q9(xi,eta);
+  LINALG::Matrix<2,9> deriv;
+  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp],deriv);
 
   DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::intrule_line_2point);
   for (int i=0; i<9; ++i)
@@ -1571,14 +1022,16 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_s(const double xi,const double 
           const double jac=.5*(coord_i(1)-coord_refNode[1]);
 
           // gauss point coordinates in element parameter space
-          double xi_gp[2];
-          xi_gp[0] = coord_i(0);
-          xi_gp[1] = .5*(coord_i(1)+coord_refNode[1])+jac*ip.IP().qxg[gp][0];
+          LINALG::Matrix<2,1> xi_gp;
+          xi_gp(0) = coord_i(0);
+          xi_gp(1) = .5*(coord_i(1)+coord_refNode[1])+jac*ip.IP().qxg[gp][0];
 
           // shape function
-          LINALG::Matrix<9,1> shape_gp = sh18_shapefcts_q9(xi_gp[0],xi_gp[1]);
+          LINALG::Matrix<9,1> shape_gp;
+          DRT::UTILS::shape_function<DRT::Element::quad9>(xi_gp,shape_gp);
           // derivative
-          LINALG::Matrix<2,9> deriv_gp = sh18_derivs_q9(xi_gp[0],xi_gp[1]);
+          LINALG::Matrix<2,9> deriv_gp;
+          DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp,deriv_gp);
 
           for (int k=0; k<9; ++k)
             for (int l=0; l<9; ++l)
@@ -1592,7 +1045,7 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_s(const double xi,const double 
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_rs(const double xi,const double eta, LINALG::Matrix<9,9>& dsg_membrane_rs)
+void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_rs(const int gp, LINALG::Matrix<9,9>& dsg_membrane_rs)
 {
   dsg_membrane_rs.Clear();
 
@@ -1600,7 +1053,9 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_rs(const double xi,const dou
   const double coord_refNode[2]={0.,0.};
   const LINALG::Matrix<18,3> coords = NodeParamCoord();
   DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::intrule_line_2point);
-  const LINALG::Matrix<2,9> deriv_xieta = sh18_derivs_q9(xi,eta);
+  LINALG::Matrix<2,9> deriv_xieta;
+  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp],deriv_xieta);
+
   for (int k=0; k<9; ++k)
     for (int l=0; l<9; ++l)
     {
@@ -1615,8 +1070,12 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_rs(const double xi,const dou
               const double g_loc = .5*(coords(r,0)+coord_refNode[0])+jac_g*ip.IP().qxg[g][0];
               const double h_loc = .5*(coords(s,1)+coord_refNode[1])+jac_h*ip.IP().qxg[h][0];
 
-              const LINALG::Matrix<2,9> deriv_g_eta = sh18_derivs_q9(g_loc,eta);
-              const LINALG::Matrix<2,9> deriv_g_h   = sh18_derivs_q9(g_loc,h_loc);
+              LINALG::Matrix<2,1> xsi_g_eta; xsi_g_eta(0)=g_loc; xsi_g_eta(1)=xsi_[gp](1);
+              LINALG::Matrix<2,1> xsi_g_h;   xsi_g_h  (0)=g_loc; xsi_g_h  (1)=h_loc;
+              LINALG::Matrix<2,9> deriv_g_eta;
+              DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_g_eta,deriv_g_eta);
+              LINALG::Matrix<2,9> deriv_g_h;
+              DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_g_h,deriv_g_h);
 
               if (coords(r,0)!=coord_refNode[0] && coords(s,1)!=coord_refNode[1])
                 dsg_membrane_rs(k,l) += deriv_xieta(0,r)*deriv_g_eta(1,s)*deriv_g_h(0,k)*deriv_g_h(1,l)
@@ -1631,12 +1090,13 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_rs(const double xi,const dou
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_r(const double xi,const double eta, LINALG::Matrix<9,9>& dsg_membrane_r)
+void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_r(const int gp, LINALG::Matrix<9,9>& dsg_membrane_r)
 {
   dsg_membrane_r.Clear();
   const double coord_refNode[2]={0.,0.};
 
-  const LINALG::Matrix<2,9> deriv = sh18_derivs_q9(xi,eta);
+  LINALG::Matrix<2,9> deriv;
+  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp],deriv);
 
   DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::intrule_line_2point);
   for (int i=0; i<9; ++i)
@@ -1652,12 +1112,13 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_r(const double xi,const doub
           const double jac=.5*(coord_i(0)-coord_refNode[0]);
 
           // gauss point coordinates in element parameter space
-          double xi_gp[2];
-          xi_gp[0] = .5*(coord_i(0)+coord_refNode[0])+jac*ip.IP().qxg[gp][0];
-          xi_gp[1] = coord_i(1);
+          LINALG::Matrix<2,1> xi_gp;
+          xi_gp(0) = .5*(coord_i(0)+coord_refNode[0])+jac*ip.IP().qxg[gp][0];
+          xi_gp(1) = coord_i(1);
 
           // derivative
-          const LINALG::Matrix<2,9> deriv_gp = sh18_derivs_q9(xi_gp[0],xi_gp[1]);
+          LINALG::Matrix<2,9> deriv_gp;
+          DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp,deriv_gp);
 
           // fill up array
           for (int k=0; k<9; ++k)
@@ -1672,12 +1133,13 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_r(const double xi,const doub
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_s(const double xi,const double eta, LINALG::Matrix<9,9>& dsg_membrane_s)
+void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_s(const int gp, LINALG::Matrix<9,9>& dsg_membrane_s)
 {
   dsg_membrane_s.Clear();
   const double coord_refNode[2]={0.,0.};
 
-  const LINALG::Matrix<2,9> deriv = sh18_derivs_q9(xi,eta);
+  LINALG::Matrix<2,9> deriv;
+  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp],deriv);
 
   DRT::UTILS::IntPointsAndWeights<1> ip(DRT::UTILS::intrule_line_2point);
   for (int i=0; i<9; ++i)
@@ -1693,12 +1155,13 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_s(const double xi,const doub
           const double jac=.5*(coord_i(1)-coord_refNode[1]);
 
           // gauss point coordinates in element parameter space
-          double xi_gp[2];
-          xi_gp[0] = coord_i(0);
-          xi_gp[1] = .5*(coord_i(1)+coord_refNode[1])+jac*ip.IP().qxg[gp][0];
+          LINALG::Matrix<2,1> xi_gp;
+          xi_gp(0) = coord_i(0);
+          xi_gp(1) = .5*(coord_i(1)+coord_refNode[1])+jac*ip.IP().qxg[gp][0];
 
           // derivative
-          LINALG::Matrix<2,9> deriv_gp = sh18_derivs_q9(xi_gp[0],xi_gp[1]);
+          LINALG::Matrix<2,9> deriv_gp;
+          DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp,deriv_gp);
 
           // fill up array
           for (int k=0; k<9; ++k)
@@ -1713,16 +1176,18 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_s(const double xi,const doub
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Integrate_dsg_transverse_t(const double xi,const double eta, LINALG::Matrix<9,9>& dsg_transverse_t)
+void DRT::ELEMENTS::So_sh18::Integrate_dsg_transverse_t(const int gp, LINALG::Matrix<9,9>& dsg_transverse_t)
 {
   // reset
   dsg_transverse_t.Clear();
-  const LINALG::Matrix<9,1> shape=sh18_shapefcts_q9(xi,eta);
+  LINALG::Matrix<9,1> shape;
+  DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp],shape);
 
   for (int i=0; i<9; ++i)
   {
     const LINALG::Matrix<3,1> coord_i=NodeParamCoord(i);
-    LINALG::Matrix<9,1> shape_gp = sh18_shapefcts_q9(coord_i(0),coord_i(1));
+    LINALG::Matrix<9,1> shape_gp;
+    DRT::UTILS::shape_function<DRT::Element::quad9>(coord_i,shape_gp);
     for (int k=0; k<9; ++k)
       for (int l=0; l<9; ++l)
         dsg_transverse_t(k,l) += shape(i)*shape_gp(k)*shape_gp(l);
@@ -1773,22 +1238,20 @@ void DRT::ELEMENTS::So_sh18::SetupDSG()
   // without any further modification.
   for (int gp=0; gp<9; ++gp)
   {
-    const double r=xsi_[gp](0);
-    const double s=xsi_[gp](1);
     if (dsg_shear_)
     {
-      Integrate_dsg_shear_r(r,s,dsg_shear_r_[gp]);
-      Integrate_dsg_shear_s(r,s,dsg_shear_s_[gp]);
+      Integrate_dsg_shear_r(gp,dsg_shear_r_[gp]);
+      Integrate_dsg_shear_s(gp,dsg_shear_s_[gp]);
     }
     if (dsg_membrane_)
     {
-      Integrate_dsg_membrane_r(r,s,dsg_membrane_r_[gp]);
-      Integrate_dsg_membrane_s(r,s,dsg_membrane_s_[gp]);
-      Integrate_dsg_membrane_rs(r,s,dsg_membrane_rs_[gp]);
+      Integrate_dsg_membrane_r(gp,dsg_membrane_r_[gp]);
+      Integrate_dsg_membrane_s(gp,dsg_membrane_s_[gp]);
+      Integrate_dsg_membrane_rs(gp,dsg_membrane_rs_[gp]);
     }
     if (dsg_ctl_)
     {
-      Integrate_dsg_transverse_t(r,s,dsg_transverse_t_[gp]);
+      Integrate_dsg_transverse_t(gp,dsg_transverse_t_[gp]);
     }
   }
 
@@ -1858,8 +1321,11 @@ void DRT::ELEMENTS::So_sh18::EasSetup(
 {
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   LINALG::Matrix<NUMDIM_SOH18,NUMDIM_SOH18> jac0inv;
-  const LINALG::Matrix<2,9> deriv_q9      = sh18_derivs_q9(0,0);
-    const LINALG::Matrix<9,1> shapefunct_q9 = sh18_shapefcts_q9(0,0);
+  LINALG::Matrix<2,1> xsi_center(true);
+  LINALG::Matrix<2,9> deriv_q9;
+  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_center,deriv_q9);
+  LINALG::Matrix<9,1> shapefunct_q9;
+  DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_center,shapefunct_q9);
   for (int dim=0; dim<3; ++dim)
     for (int k=0; k<9; ++k)
     {
@@ -1900,3 +1366,20 @@ void DRT::ELEMENTS::So_sh18::EasSetup(
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  update EAS terms at the end of time step                seitz 11/14 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_sh18::Update()
+{
+  if (eas_)
+  {
+    alpha_eas_delta_over_last_timestep_.Update(alpha_eas_last_timestep_);
+    alpha_eas_delta_over_last_timestep_.Update(1.,alpha_eas_,-1.);
+    alpha_eas_last_timestep_.Update(alpha_eas_);
+    Kad_.Clear();
+    KaaInv_.Clear();
+    feas_.Clear();
+  }
+}
+

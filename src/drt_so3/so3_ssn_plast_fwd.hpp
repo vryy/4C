@@ -12,4 +12,5 @@
 
 // template classes
 template class DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>;
+template class DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>;
 template class DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>;

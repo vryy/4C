@@ -494,6 +494,7 @@ namespace UTILS
   template<> struct DisTypeToNumNodePerEle<DRT::Element::tri3>     {static const int numNodePerElement =  3;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::tri6>     {static const int numNodePerElement =  6;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::hex8>     {static const int numNodePerElement =  8;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::hex18>    {static const int numNodePerElement = 18;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::hex20>    {static const int numNodePerElement = 20;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::hex27>    {static const int numNodePerElement = 27;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::nurbs8>   {static const int numNodePerElement =  8;};
@@ -733,6 +734,7 @@ namespace UTILS
   template<> struct DisTypeToDim<DRT::Element::tri3>     {static const int dim = 2;};
   template<> struct DisTypeToDim<DRT::Element::tri6>     {static const int dim = 2;};
   template<> struct DisTypeToDim<DRT::Element::hex8>     {static const int dim = 3;};
+  template<> struct DisTypeToDim<DRT::Element::hex18>    {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::hex20>    {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::hex27>    {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::tet4>     {static const int dim = 3;};

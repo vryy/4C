@@ -16,13 +16,8 @@ Maintainer: Alexander Seitz
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_mat/material.H"
+#include "so_hex18.H"
 
-// Several parameters which are fixed for Solid Hex18
-const int NUMNOD_SOH18 = 18;     ///< number of nodes
-const int NODDOF_SOH18 = 3;      ///< number of dofs per node
-const int NUMDOF_SOH18 = 54;    ///< total dofs per element
-const int NUMGPT_SOH18 = 2*3*3;      ///< total gauss points per element
-const int NUMDIM_SOH18 = 3;      ///< number of dimensions
 const int num_eas=9;
 
 namespace DRT
@@ -33,9 +28,11 @@ class Discretization;
 namespace ELEMENTS
 {
 
-class So_sh18Type : public DRT::ElementType
+class So_sh18Type : public So_hex18Type
 {
 public:
+  //! @name Friends
+  friend class So_sh18PlastType;
 
   std::string Name() const { return "So_sh18Type"; }
 
@@ -52,10 +49,6 @@ public:
 
   virtual int Initialize(DRT::Discretization& dis);
 
-  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
-
-  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
-
   virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
 private:
@@ -69,12 +62,13 @@ private:
 A structural 18-node hexahedral solid element for large deformations.
 Quadratic interpolation within a plane and linear interpolation in the third direction
 */
-class So_sh18 : public DRT::Element
+class So_sh18 : public virtual So_hex18
 {
 public:
 
   //! @name Friends
   friend class So_sh18Type;
+  friend class So_sh18PlastType;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -103,44 +97,6 @@ public:
 
   */
   DRT::Element* Clone() const;
-
-  /*!
-  \brief Get shape type of element
-  */
-  virtual DiscretizationType Shape() const;
-
-  /*!
-  \brief Return number of volumes of this element
-  */
-  virtual int NumVolume() const {return 1;}
-
-  /*!
-  \brief Return number of surfaces of this element
-  */
-  virtual int NumSurface() const {return 6;}
-
-  /*!
-  \brief Return number of lines of this element
-  */
-  virtual int NumLine() const {return 12;}
-
-  /*!
-  \brief Get vector of Teuchos::RCPs to the lines of this element
-
-  */
-  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
-
-  /*!
-  \brief Get vector of Teuchos::RCPs to the surfaces of this element
-
-  */
-  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
-
-  /*!
-  \brief Get vector of Teuchos::RCPs to the volumes of this element
-
-  */
-  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
 
   /*!
@@ -177,32 +133,6 @@ public:
 
   //! @name Acess methods
 
-
-  /*!
-  \brief Get number of degrees of freedom of a certain node
-         (implements pure virtual DRT::Element)
-
-  The element decides how many degrees of freedom its nodes must have.
-  As this may vary along a simulation, the element can redecide the
-  number of degrees of freedom per node along the way for each of it's nodes
-  separately.
-  */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 3;}
-
-
-  /*!
-  \brief Get number of degrees of freedom per element
-         (implements pure virtual DRT::Element)
-
-  The element decides how many element degrees of freedom it has.
-  It can redecide along the way of a simulation.
-
-  \note Element degrees of freedom mentioned here are dofs that are visible
-        at the level of the total system of equations. Purely internal
-        element dofs that are condensed internally should NOT be considered.
-  */
-  virtual int NumDofPerElement() const { return 0; }
-
   /*!
   \brief Print this element
   */
@@ -217,48 +147,6 @@ public:
 
   //! @name Input and Creation
 
-  /*!
-  \brief Read input for this element
-  */
-  /*!
-  \brief Query names of element data to be visualized using BINIO
-
-  The element fills the provided map with key names of
-  visualization data the element wants to visualize AT THE CENTER
-  of the element geometry. The values is supposed to be dimension of the
-  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
-  or 9 (nonsym. tensor)
-
-  Example:
-  \code
-    // Name of data is 'Owner', dimension is 1 (scalar value)
-    names.insert(std::pair<std::string,int>("Owner",1));
-    // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
-    names.insert(std::pair<std::string,int>("StressesXYZ",6));
-  \endcode
-
-  \param names (out): On return, the derived class has filled names with
-                      key names of data it wants to visualize and with int dimensions
-                      of that data.
-  */
-  virtual void VisNames(std::map<std::string,int>& names);
-
-  /*!
-  \brief Query data to be visualized using BINIO of a given name
-
-  The method is supposed to call this base method to visualize the owner of
-  the element.
-  If the derived method recognizes a supported data name, it shall fill it
-  with corresponding data.
-  If it does NOT recognizes the name, it shall do nothing.
-
-  \warning The method must not change size of data
-
-  \param name (in):   Name of data that is currently processed for visualization
-  \param data (out):  data to be filled by element if element recognizes the name
-  */
-  virtual bool VisData(const std::string& name, std::vector<double>& data);
-
   //@}
 
   //! @name Input and Creation
@@ -272,98 +160,9 @@ public:
 
   //@}
 
-  //! @name Evaluation
-
-  /*!
-  \brief Evaluate an element
-
-  Evaluate so_hex8 element stiffness, mass, internal forces, etc.
-
-  \param params (in/out): ParameterList for communication between control routine
-                          and elements
-  \param discretization : pointer to discretization for de-assembly
-  \param lm (in)        : location matrix for de-assembly
-  \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
-                          the controling method does not expect the element to fill
-                          this matrix.
-  \param elemat2 (out)  : (mass-)matrix to be filled by element. If NULL on input,
-                          the controling method does not expect the element to fill
-                          this matrix.
-  \param elevec1 (out)  : (internal force-)vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                          the controlling method does not expect the element
-                          to fill this vector
-  \return 0 if successful, negative otherwise
-  */
-  virtual int Evaluate(Teuchos::ParameterList& params,
-                       DRT::Discretization&      discretization,
-                       std::vector<int>&         lm,
-                       Epetra_SerialDenseMatrix& elemat1,
-                       Epetra_SerialDenseMatrix& elemat2,
-                       Epetra_SerialDenseVector& elevec1,
-                       Epetra_SerialDenseVector& elevec2,
-                       Epetra_SerialDenseVector& elevec3);
-
-  /*!
-  \brief Evaluate a Neumann boundary condition
-
-  this method evaluates a surface Neumann condition on the solid3 element
-
-  \param params (in/out)    : ParameterList for communication between control routine
-                              and elements
-  \param discretization (in): A reference to the underlying discretization
-  \param condition (in)     : The condition to be evaluated
-  \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-
-  \return 0 if successful, negative otherwise
-  */
-  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-                              DRT::Discretization&      discretization,
-                              DRT::Condition&           condition,
-                              std::vector<int>&         lm,
-                              Epetra_SerialDenseVector& elevec1,
-                              Epetra_SerialDenseMatrix* elemat1 = NULL);
-
-  //@}
 
 protected:
 
-  //! action parameters recognized by so_hex8
-  enum ActionType
-  {
-    none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_update_istep,
-    calc_struct_reset_istep,  //!< reset elementwise internal variables
-                              //!< during iteration to last converged state
-    calc_struct_reset_all,  //!< reset elementwise internal variables
-                            //!< to state in the beginning of the computation
-    calc_struct_energy,       //!< compute internal energy
-    calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
-    postprocess_stress,       //!< postprocess stresses
-  };
-
-  //! vector of inverses of the jacobian in material frame
-  std::vector<LINALG::Matrix<NUMDIM_SOH18,NUMDIM_SOH18> >              invJ_;
-  //! determinant of Jacobian in material frame
-  std::vector<double>                                                  detJ_;
-  //! Gauss point coordinates
-  std::vector<LINALG::Matrix<NUMDIM_SOH18,1> >                         xsi_;
-  //! Gauss point weights
-  std::vector<double>                                                  wgt_;
   //! use DSG for transverse shear locking
   bool dsg_shear_;
   //! use DSG for membrane locking
@@ -379,6 +178,9 @@ protected:
   LINALG::Matrix<num_eas,1> feas_;
   LINALG::Matrix<num_eas,NUMDOF_SOH18> Kad_;
   LINALG::Matrix<num_eas,1> alpha_eas_;
+  LINALG::Matrix<num_eas,1> alpha_eas_last_timestep_;
+  LINALG::Matrix<num_eas,1> alpha_eas_delta_over_last_timestep_;
+  LINALG::Matrix<num_eas,1> alpha_eas_inc_;
   // EAS stuff *****************************************************
 
   // DSG factors ***************************************************
@@ -418,17 +220,6 @@ protected:
       const INPAR::STR::StrainType iostrain   ///< strain output option
       );
 
-  //! Evaluate Shapefcts
-  const LINALG::Matrix<NUMNOD_SOH18,1>            sh18_shapefcts   (const int gp);
-  const LINALG::Matrix<9,1>                       sh18_shapefcts_q9(const int gp);
-  const LINALG::Matrix<NUMNOD_SOH18,1>            sh18_shapefcts   (const double r, const double s, const double t);
-  const LINALG::Matrix<9,1>                       sh18_shapefcts_q9(const double r, const double s);
-  //! Evaluate Derivs
-  const LINALG::Matrix<NUMDIM_SOH18,NUMNOD_SOH18> sh18_derivs   (const int gp);
-  const LINALG::Matrix<2,9>                       sh18_derivs_q9(const int gp);
-  const LINALG::Matrix<NUMDIM_SOH18,NUMNOD_SOH18> sh18_derivs   (const double r, const double s, const double t);
-  const LINALG::Matrix<2,9>                       sh18_derivs_q9(const double r, const double s);
-
   // parameter space coords of one node
   LINALG::Matrix<3,1> NodeParamCoord(const int node);
   // parameter space coords of all nodes
@@ -447,12 +238,12 @@ protected:
                 const LINALG::Matrix<NUMNOD_SOH18,3> xrefe);   // material element coords
 
   void SetupDSG();
-  void Integrate_dsg_shear_r     (const double xi,const double eta, LINALG::Matrix<9,9>& dsg_shear_r);
-  void Integrate_dsg_shear_s     (const double xi,const double eta, LINALG::Matrix<9,9>& dsg_shear_s);
-  void Integrate_dsg_membrane_r  (const double xi,const double eta, LINALG::Matrix<9,9>& dsg_membrane_r);
-  void Integrate_dsg_membrane_s  (const double xi,const double eta, LINALG::Matrix<9,9>& dsg_membrane_r);
-  void Integrate_dsg_membrane_rs (const double xi,const double eta, LINALG::Matrix<9,9>& dsg_membrane_rs);
-  void Integrate_dsg_transverse_t(const double xi,const double eta, LINALG::Matrix<9,9>& dsg_transverse_t);
+  void Integrate_dsg_shear_r     (const int gp, LINALG::Matrix<9,9>& dsg_shear_r);
+  void Integrate_dsg_shear_s     (const int gp, LINALG::Matrix<9,9>& dsg_shear_s);
+  void Integrate_dsg_membrane_r  (const int gp, LINALG::Matrix<9,9>& dsg_membrane_r);
+  void Integrate_dsg_membrane_s  (const int gp, LINALG::Matrix<9,9>& dsg_membrane_r);
+  void Integrate_dsg_membrane_rs (const int gp, LINALG::Matrix<9,9>& dsg_membrane_rs);
+  void Integrate_dsg_transverse_t(const int gp, LINALG::Matrix<9,9>& dsg_transverse_t);
 
   void CalcConsistentDefgrd(LINALG::Matrix<3,3> defgrd_disp,
                             LINALG::Matrix<6,1> glstrain_mod,
@@ -482,6 +273,8 @@ protected:
       const double detJ_w,
       const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& stress,
       LINALG::Matrix<NUMDOF_SOH18,NUMDOF_SOH18>* stiffmatrix);
+
+  void Update();
   //@}
 
 }; // class So_sh18

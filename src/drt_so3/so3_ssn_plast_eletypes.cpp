@@ -139,6 +139,126 @@ int DRT::ELEMENTS::So_hex8PlastType::Initialize(DRT::Discretization& dis)
 
 
 /*----------------------------------------------------------------------------*
+*  HEX18 element
+*----------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+| build an instance of Plast type                         seitz 07/13 |
+*----------------------------------------------------------------------*/
+DRT::ELEMENTS::So_hex18PlastType DRT::ELEMENTS::So_hex18PlastType::instance_;
+
+
+/*----------------------------------------------------------------------*
+| create the new element type (public)                     seitz 07/13 |
+| is called in ElementRegisterType                                     |
+*----------------------------------------------------------------------*/
+DRT::ParObject* DRT::ELEMENTS::So_hex18PlastType::Create(
+ const std::vector<char> & data
+ )
+{
+ DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>* object
+   = new DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>(-1,-1);
+ object->Unpack(data);
+ return object;
+}  // Create()
+
+
+/*----------------------------------------------------------------------*
+| create the new element type (public)                     seitz 07/13 |
+| is called from ParObjectFactory                                      |
+*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18PlastType::Create(
+ const std::string eletype,
+ const std::string eledistype,
+ const int id,
+ const int owner
+ )
+{
+ if (eletype == "SOLIDH18PLAST")
+ {
+   Teuchos::RCP<DRT::Element> ele
+     = Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>(
+         id,
+         owner
+         )
+       );
+   return ele;
+ }
+ return Teuchos::null;
+}  // Create()
+
+
+/*----------------------------------------------------------------------*
+| create the new element type (public)                     seitz 07/13 |
+| virtual method of ElementType                                        |
+*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18PlastType::Create(
+ const int id,
+ const int owner
+ )
+{
+ Teuchos::RCP<DRT::Element> ele
+   = Teuchos::rcp(
+       new DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>(
+         id,
+         owner
+         )
+       );
+ return ele;
+}  // Create()
+
+
+/*---------------------------------------------------------------------*
+|                                                          seitz 07/13 |
+*----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex18PlastType::SetupElementDefinition(
+ std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >& definitions
+ )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH18PLAST"];
+
+  defs["HEX18"]
+    .AddIntVector("HEX18",18)
+    .AddNamedInt("MAT")
+    .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("FIBER1",3)
+    .AddOptionalNamedDoubleVector("FIBER2",3)
+    .AddOptionalNamedDoubleVector("FIBER3",3)
+    .AddOptionalNamedDouble("STRENGTH")
+    ;
+}  // SetupElementDefinition()
+
+
+/*----------------------------------------------------------------------*
+| initialise the element (public)                          seitz 07/13 |
+*----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_hex18PlastType::Initialize(DRT::Discretization& dis)
+{
+ for (int i=0; i<dis.NumMyColElements(); ++i)
+ {
+   if (dis.lColElement(i)->ElementType() != *this) continue;
+
+   DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>* actele
+     = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex18> * >(
+       dis.lColElement(i)
+       );
+   if (!actele)
+     dserror("cast to So_hex18_Plast* failed");
+
+   actele->InitJacobianMapping();
+ }
+
+ return 0;
+}  // Initialize()
+/*----------------------------------------------------------------------------*
+| END HEX18 Element
+*----------------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------------------*
 *  HEX27 element
 *----------------------------------------------------------------------------*/
 

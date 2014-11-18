@@ -15,6 +15,7 @@ Maintainer: Alexander Seitz
 #include "../drt_lib/drt_discret.H"
 #include "../drt_so3/so3_ssn_plast.H"
 #include "../drt_so3/so3_ssn_plast_sosh8.H"
+#include "../drt_so3/so3_ssn_plast_sosh18.H"
 #include "../drt_lib/drt_globalproblem.H" // to get parameter list
 
 /*-------------------------------------------------------------------*
@@ -73,13 +74,19 @@ void DRT::UTILS::PlastSsnManager::ReadAndCheckInput()
   {
     DRT::Element* actele = discret_->lColElement(i);
     if (  actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance() )
-      static_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(actele)->ReadParameterList(plparams_);
+      dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(actele)->ReadParameterList(plparams_);
 
     if ( actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance() )
-      static_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>*>(actele)->ReadParameterList(plparams_);
+      dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>*>(actele)->ReadParameterList(plparams_);
 
     if (actele->ElementType() == DRT::ELEMENTS::So_sh8PlastType::Instance() )
-      static_cast<DRT::ELEMENTS::So_sh8Plast*>(actele)->ReadParameterList(plparams_);
+      dynamic_cast<DRT::ELEMENTS::So_sh8Plast*>(actele)->ReadParameterList(plparams_);
+
+    if (actele->ElementType() == DRT::ELEMENTS::So_hex18PlastType::Instance() )
+      dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>*>(actele)->ReadParameterList(plparams_);
+
+    if (actele->ElementType() == DRT::ELEMENTS::So_sh18PlastType::Instance() )
+      dynamic_cast<DRT::ELEMENTS::So_sh18Plast*>(actele)->ReadParameterList(plparams_);
   }
 
   int eas_local = plparams_->get<int>("have_EAS");

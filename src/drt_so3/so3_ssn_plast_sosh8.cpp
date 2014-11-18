@@ -258,6 +258,7 @@ void DRT::ELEMENTS::So_sh8PlastType::SetupElementDefinition(
  | ctor (public)                                            seitz 05/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(int id, int owner):
+DRT::Element(id,owner),
 DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(id,owner)
 {
   thickdir_=globx;
@@ -270,6 +271,7 @@ DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(id,owner)
  | copy-ctor (public)                                       seitz 05/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(const DRT::ELEMENTS::So_sh8Plast& old):
+DRT::Element(old),
 DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(old)
 {
   return;
@@ -1413,19 +1415,9 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
 
     // recover plastic variables
     if (HavePlasticSpin())
-    {
-      if (eastype_!=soh8p_easnone)
-        RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery),&(*alpha_eas_inc_));
-      else
         RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery));
-    }
     else
-    {
-      if (eastype_!=soh8p_easnone)
-        RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery),&(*alpha_eas_inc_));
-      else
         RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery));
-    }
 
     // calculate deformation gradient consistent with modified GL strain tensor
     if (eastype_!=soh8p_easnone || anstype_!=ansnone_p)

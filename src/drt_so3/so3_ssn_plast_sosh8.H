@@ -63,7 +63,7 @@ private:
   static So_sh8PlastType instance_;
 }; // class So_sh8PlastType
 
-class So_sh8Plast : public So3_Plast<DRT::Element::hex8>
+class So_sh8Plast : public virtual So3_Plast<DRT::Element::hex8>
 {
 public:
 

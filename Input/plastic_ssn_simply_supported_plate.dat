@@ -1,8 +1,20 @@
+//
+// Maintainer: Alexander Seitz
+// seitz@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15271
+//
+//
+// necessary defines: D_SOLID3 BINIO
+//
 ==================================================================
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
 created by pre_exodus
+
+Elasto-Plastic solid-shell sosh8 (EAS/ANS)
+Semi-smooth Newton type plasticity
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    64
 //NODES       162

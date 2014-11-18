@@ -73,6 +73,40 @@ void shape_function_3D(
 
     break;
   }
+  case DRT::Element::hex18:
+  {
+    const T rp = 1.0 + r;
+    const T rm = 1.0 - r;
+    const T sp = 1.0 + s;
+    const T sm = 1.0 - s;
+    const T r2 = 1.0 - r * r;
+    const T s2 = 1.0 - s * s;
+    const T rh = 0.5 * r;
+    const T sh = 0.5 * s;
+    const T rs = rh * sh;
+
+    funct(0) =  rs * rm * sm *(1.0-t)*0.5;
+    funct(1) = -rs * rp * sm *(1.0-t)*0.5;
+    funct(2) =  rs * rp * sp *(1.0-t)*0.5;
+    funct(3) = -rs * rm * sp *(1.0-t)*0.5;
+    funct(4) = -sh * sm * r2 *(1.0-t)*0.5;
+    funct(5) =  rh * rp * s2 *(1.0-t)*0.5;
+    funct(6) =  sh * sp * r2 *(1.0-t)*0.5;
+    funct(7) = -rh * rm * s2 *(1.0-t)*0.5;
+    funct(8) =  r2 * s2      *(1.0-t)*0.5;
+
+    funct(9)  =  rs * rm * sm *(1.0+t)*0.5;
+    funct(10) = -rs * rp * sm *(1.0+t)*0.5;
+    funct(11) =  rs * rp * sp *(1.0+t)*0.5;
+    funct(12) = -rs * rm * sp *(1.0+t)*0.5;
+    funct(13) = -sh * sm * r2 *(1.0+t)*0.5;
+    funct(14) =  rh * rp * s2 *(1.0+t)*0.5;
+    funct(15) =  sh * sp * r2 *(1.0+t)*0.5;
+    funct(16) = -rh * rm * s2 *(1.0+t)*0.5;
+    funct(17) =  r2 * s2      *(1.0+t)*0.5;
+
+    break;
+  }
   case DRT::Element::hex20:
   {
     /* shape functions associated to vertex nodes k=1,...,8
@@ -326,6 +360,82 @@ void shape_function_3D_deriv1(
     deriv1(0, 7) = -Q18 * sp * tp;
     deriv1(1, 7) = Q18 * tp * rm;
     deriv1(2, 7) = Q18 * rm * sp;
+    break;
+  }
+  case DRT::Element::hex18:
+  {
+    const T rp = 1.0 + r;
+    const T rm = 1.0 - r;
+    const T sp = 1.0 + s;
+    const T sm = 1.0 - s;
+    const T r2 = 1.0 - r * r;
+    const T s2 = 1.0 - s * s;
+    const T rh = 0.5 * r;
+    const T sh = 0.5 * s;
+    const T rs = rh * sh;
+    const T rhp = r + 0.5;
+    const T rhm = r - 0.5;
+    const T shp = s + 0.5;
+    const T shm = s - 0.5;
+
+    deriv1(0, 0) = -rhm * sh * sm*(1.0-t)*0.5;
+    deriv1(1, 0) = -shm * rh * rm*(1.0-t)*0.5;
+    deriv1(0, 1) = -rhp * sh * sm*(1.0-t)*0.5;
+    deriv1(1, 1) =  shm * rh * rp*(1.0-t)*0.5;
+    deriv1(0, 2) =  rhp * sh * sp*(1.0-t)*0.5;
+    deriv1(1, 2) =  shp * rh * rp*(1.0-t)*0.5;
+    deriv1(0, 3) =  rhm * sh * sp*(1.0-t)*0.5;
+    deriv1(1, 3) = -shp * rh * rm*(1.0-t)*0.5;
+    deriv1(0, 4) =  2.0 * r * sh * sm*(1.0-t)*0.5;
+    deriv1(1, 4) =  shm * r2*(1.0-t)*0.5;
+    deriv1(0, 5) =  rhp * s2*(1.0-t)*0.5;
+    deriv1(1, 5) = -2.0 * s * rh * rp*(1.0-t)*0.5;
+    deriv1(0, 6) = -2.0 * r * sh * sp*(1.0-t)*0.5;
+    deriv1(1, 6) =  shp * r2*(1.0-t)*0.5;
+    deriv1(0, 7) =  rhm * s2*(1.0-t)*0.5;
+    deriv1(1, 7) =  2.0 * s * rh * rm*(1.0-t)*0.5;
+    deriv1(0, 8) = -2.0 * r * s2*(1.0-t)*0.5;
+    deriv1(1, 8) = -2.0 * s * r2*(1.0-t)*0.5;
+
+    deriv1(0, 9) = -rhm * sh * sm*(1.0+t)*0.5;
+    deriv1(1, 9) = -shm * rh * rm*(1.0+t)*0.5;
+    deriv1(0, 10) = -rhp * sh * sm*(1.0+t)*0.5;
+    deriv1(1, 10) =  shm * rh * rp*(1.0+t)*0.5;
+    deriv1(0, 11) =  rhp * sh * sp*(1.0+t)*0.5;
+    deriv1(1, 11) =  shp * rh * rp*(1.0+t)*0.5;
+    deriv1(0, 12) =  rhm * sh * sp*(1.0+t)*0.5;
+    deriv1(1, 12) = -shp * rh * rm*(1.0+t)*0.5;
+    deriv1(0, 13) =  2.0 * r * sh * sm*(1.0+t)*0.5;
+    deriv1(1, 13) =  shm * r2*(1.0+t)*0.5;
+    deriv1(0, 14) =  rhp * s2*(1.0+t)*0.5;
+    deriv1(1, 14) = -2.0 * s * rh * rp*(1.0+t)*0.5;
+    deriv1(0, 15) = -2.0 * r * sh * sp*(1.0+t)*0.5;
+    deriv1(1, 15) =  shp * r2*(1.0+t)*0.5;
+    deriv1(0, 16) =  rhm * s2*(1.0+t)*0.5;
+    deriv1(1, 16) =  2.0 * s * rh * rm*(1.0+t)*0.5;
+    deriv1(0, 17) = -2.0 * r * s2*(1.0+t)*0.5;
+    deriv1(1, 17) = -2.0 * s * r2*(1.0+t)*0.5;
+
+    deriv1(2,0) =  rs * rm * sm *(-0.5);
+    deriv1(2,1) = -rs * rp * sm *(-0.5);
+    deriv1(2,2) =  rs * rp * sp *(-0.5);
+    deriv1(2,3) = -rs * rm * sp *(-0.5);
+    deriv1(2,4) = -sh * sm * r2 *(-0.5);
+    deriv1(2,5) =  rh * rp * s2 *(-0.5);
+    deriv1(2,6) =  sh * sp * r2 *(-0.5);
+    deriv1(2,7) = -rh * rm * s2 *(-0.5);
+    deriv1(2,8) =  r2 * s2      *(-0.5);
+
+    deriv1(2,9)  =  rs * rm * sm *0.5;
+    deriv1(2,10) = -rs * rp * sm *0.5;
+    deriv1(2,11) =  rs * rp * sp *0.5;
+    deriv1(2,12) = -rs * rm * sp *0.5;
+    deriv1(2,13) = -sh * sm * r2 *0.5;
+    deriv1(2,14) =  rh * rp * s2 *0.5;
+    deriv1(2,15) =  sh * sp * r2 *0.5;
+    deriv1(2,16) = -rh * rm * s2 *0.5;
+    deriv1(2,17) =  r2 * s2      *0.5;
+
     break;
   }
   case DRT::Element::hex20:

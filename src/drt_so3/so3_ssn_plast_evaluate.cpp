@@ -1197,19 +1197,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     {
       // recover plastic variables
       if (HavePlasticSpin())
-      {
-        if (eastype_!=soh8p_easnone)
-          RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery),&(*alpha_eas_inc_));
-        else
           RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery));
-      }
       else
-      {
-        if (eastype_!=soh8p_easnone)
-          RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery),&(*alpha_eas_inc_));
-        else
           RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery));
-      }
     }
     // material call *********************************************
     LINALG::Matrix<numstr_,1> pk2;
@@ -2164,8 +2154,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
     const Teuchos::ParameterList& params,
     LINALG::Matrix<3,3>& deltaLp,
     double& lp_inc,
-    bool recover,
-    Epetra_SerialDenseVector* eas_increment
+    bool recover
     )
 {
   // recover condensed variables from last iteration step *********
@@ -2233,15 +2222,15 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
           {
           case soh8p_easmild:
             LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easmild>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
-            LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easmild,1>(1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),eas_increment->A());
+            LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easmild,1>(1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),alpha_eas_inc_->A());
             break;
           case soh8p_easfull:
             LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easfull>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
-            LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easfull,1>(1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),eas_increment->A());
+            LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easfull,1>(1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),alpha_eas_inc_->A());
             break;
           case soh8p_eassosh8:
             LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_eassosh8>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
-            LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_eassosh8,1>(1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),eas_increment->A());
+            LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_eassosh8,1>(1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),alpha_eas_inc_->A());
             break;
           case soh8p_easnone:
             break;
@@ -2340,9 +2329,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformation_nln(PlSpinType 
       (*alpha_eas_delta_over_last_timestep_)(i) = (*alpha_eas_)(i)-(*alpha_eas_last_timestep_)(i);
       (*alpha_eas_last_timestep_)(i) = (*alpha_eas_)(i);
     }
-    Kad_->Shape(neas_,numdofperelement_);
-    KaaInv_->Shape(neas_,neas_);
-    feas_->Size(neas_);
+    Kad_->Scale(0.);
+    KaaInv_->Scale(0.);
+    feas_->Scale(0.);
   }
 
   return;

@@ -33,6 +33,7 @@ namespace THR
   template<DRT::Element::DiscretizationType DISTYPE>
   struct DisTypeToOptGaussRule {};
   template<> struct DisTypeToOptGaussRule<DRT::Element::hex8>    {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_8point; };
+  template<> struct DisTypeToOptGaussRule<DRT::Element::hex18>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_18point;};
   template<> struct DisTypeToOptGaussRule<DRT::Element::hex20>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_27point;};
   template<> struct DisTypeToOptGaussRule<DRT::Element::hex27>   {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_hex_27point;};
   template<> struct DisTypeToOptGaussRule<DRT::Element::tet4>    {static const DRT::UTILS::GaussRule3D rule =  DRT::UTILS::intrule_tet_4point; };
@@ -91,6 +92,7 @@ namespace THR
   template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::tet10>   { static const int nquad =  5; };
   template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::hex27>   { static const int nquad = 27; };
   template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::hex20>   { static const int nquad = 27; };
+  template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::hex18>   { static const int nquad = 18; };
 
 } // namespace THR
 

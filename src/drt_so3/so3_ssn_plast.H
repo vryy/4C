@@ -45,7 +45,7 @@ namespace ELEMENTS
   //! A C++ version of a 3 dimensional solid element with modifications von Mises
   //! plasticity using a semi-smooth Newton method
   template<DRT::Element::DiscretizationType distype>
-  class So3_Plast : public DRT::Element
+  class So3_Plast : public virtual DRT::Element
   {
     //! @name Friends
     friend class So_hex8PlastType;
@@ -311,6 +311,8 @@ namespace ELEMENTS
       soh8p_easmild = 9,  //!< 9 parameters consisting of modes to alleviate
                           //!< shear locking (bending) and main incompressibility modes
                           //!< (for Solid Hex8)
+                          //!< The sosh18 also uses 9 eas parameters. Therefore, we can
+                          //!< re-use this EASType here.
       soh8p_easfull = 21, //!< 21 parameters to prevent almost all locking modes.
                           //!< Equivalent to all 30 parameters to fully complete element
                           //!< with quadratic modes (see Andelfinger 1993 for details) and therefore
@@ -467,8 +469,7 @@ namespace ELEMENTS
         const Teuchos::ParameterList& params,
         LINALG::Matrix<3,3>& deltaLp,
         double& lp_inc,
-        bool recover,
-        Epetra_SerialDenseVector* eas_increment=NULL
+        bool recover
         );
 
 

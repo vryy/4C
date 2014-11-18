@@ -68,6 +68,7 @@ Maintainer: Alexander Popp
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_so3/so3_ssn_plast_eletypes.H"
 #include "../drt_so3/so3_ssn_plast_sosh8.H"
+#include "../drt_so3/so3_ssn_plast_sosh18.H"
 #include "../drt_poroelast/poroelast_utils.H"
 
 #include "../drt_io/io_pstream.H"
@@ -789,6 +790,8 @@ void STR::TimInt::PrepareSemiSmoothPlasticity()
     if (   actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance()
         || actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance()
         || actele->ElementType() == DRT::ELEMENTS::So_sh8PlastType::Instance()
+        || actele->ElementType() == DRT::ELEMENTS::So_hex18PlastType::Instance()
+        || actele->ElementType() == DRT::ELEMENTS::So_sh18PlastType::Instance()
        )
     {
       HavePlasticity_local=1;
