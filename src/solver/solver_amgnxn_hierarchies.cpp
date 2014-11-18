@@ -143,6 +143,8 @@ LINALG::SOLVER::AMGnxn_Hierarchies::GetNullSpaceData(int block)
 void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
 {
 
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_Hierarchies::Setup");
+
   // ===========================================================
   // Build up MueLu Hierarchies of each one of the blocks
   // ===========================================================
@@ -537,6 +539,8 @@ int LINALG::SOLVER::AMGnxn_MonolithicHierarchy::GetNumLevels()
 void LINALG::SOLVER::AMGnxn_MonolithicHierarchy::Setup()
 {
 
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_MonolithicHierarchy");
+
   // ====================================================
   // Create block transfer operators
   // ====================================================
@@ -676,6 +680,8 @@ LINALG::SOLVER::AMGnxn_MonolithicHierarchy::GetHierarchies()
 Teuchos::RCP<LINALG::SOLVER::AMGnxn_BlockSmootherBase>
 LINALG::SOLVER::AMGnxn_MonolithicHierarchy::BuildSmoother(int level)
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_MonolithicHierarchy::BuildSmoother");
 
   std::string smother_name;
   if (level<NumLevels_-1)

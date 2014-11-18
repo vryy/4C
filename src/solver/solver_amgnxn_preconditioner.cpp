@@ -23,6 +23,7 @@ Created on: Feb 27, 2014
 #include "../drt_lib/drt_dserror.H"
 #include "solver_amgnxn_preconditioner.H"
 
+#include <Teuchos_TimeMonitor.hpp>
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -79,6 +80,8 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup
 
 void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrixBase> A)
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_Preconditioner::Setup");
 
   // Free old matrix and preconditioner
   A_ = Teuchos::null;
@@ -395,7 +398,7 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator(
   //
   //   ....
   //
-  //  <Parameter name="muelu xml file for block N"       type="string"  value="fileN.xml"/>
+  //  <Parameter name="muelu parameters for block N"       type="string"  value="myMueluN"/>
   //
   //</ParameterList>
 
@@ -441,6 +444,7 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator(
 int  LINALG::SOLVER::AMGnxn_Operator::ApplyInverse(
     const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_Operator::ApplyInverse");
   if(!is_setup_flag_)
     dserror("ApplyInverse cannot be called without a previous set up of the preconditioner");
   V_->Apply(X,Y);
@@ -453,6 +457,8 @@ int  LINALG::SOLVER::AMGnxn_Operator::ApplyInverse(
 
 void  LINALG::SOLVER::AMGnxn_Operator::Setup()
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_Operator::Setup");
 
   std::string verbosity = amgnxn_params_.get<std::string>("verbosity","off");
   if (verbosity=="on")
@@ -572,6 +578,7 @@ LINALG::SOLVER::BlockSmoother_Operator::BlockSmoother_Operator(
 int  LINALG::SOLVER::BlockSmoother_Operator::ApplyInverse(
     const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::BlockSmoother_Operator::ApplyInverse");
   if(!is_setup_flag_)
     dserror("ApplyInverse cannot be called without a previous set up of the preconditioner");
   if(Sbase_==Teuchos::null) dserror("Something wrong");
@@ -587,6 +594,9 @@ int  LINALG::SOLVER::BlockSmoother_Operator::ApplyInverse(
 
 void  LINALG::SOLVER::BlockSmoother_Operator::Setup()
 {
+
+
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::BlockSmoother_Operator::Setup");
 
   std::string verbosity = amgnxn_params_.get<std::string>("verbosity","off");
   if (verbosity=="on")

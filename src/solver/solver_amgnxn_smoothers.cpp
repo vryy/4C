@@ -424,7 +424,8 @@ void LINALG::SOLVER::MueluAMGWrapper::Setup()
   int offsetFineLevel =  A_->RowMap().MinAllGID();
   mueluOp->SetFixedBlockSize(num_pde_,offsetFineLevel);
   Teuchos::ParameterList& MatrixList = muelu_list_.sublist("Matrix");
-  MatrixList.set<int>("DOF offset",offsetFineLevel); //TODO do we need this?
+  MatrixList.set<int>("DOF offset",offsetFineLevel);
+  MatrixList.set<int>("number of equations",num_pde_);
 
 
 

@@ -227,7 +227,7 @@ void FSI::AMGnxnInterfaceFSI::Default_AMG_BGS(Teuchos::ParameterList& params)
   file_contents  += "  <Parameter name=\"type\" type=\"string\"  value=\"AMG(BlockSmoother)\"/>                                                        ";
   file_contents  += "    <ParameterList name=\"parameters\">                                                                                           ";
   file_contents  += "      <Parameter name=\"verbosity\"                        type=\"string\"  value=\"on\"/>                                        ";
-  file_contents  += "      <Parameter name=\"number of levels\"                 type=\"int\"     value=\"2\"/>                                         ";
+  file_contents  += "      <Parameter name=\"number of levels\"                 type=\"int\"     value=\"3\"/>                                         ";
   file_contents  += "      <Parameter name=\"smoother: all but coarsest level\" type=\"string\"  value=\"myFineSmoother\"/>                            ";
   file_contents  += "      <Parameter name=\"smoother: coarsest level\"         type=\"string\"  value=\"myFineSmoother\"/>                            ";
   file_contents  += "      <Parameter name=\"muelu parameters for block 0\"       type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
@@ -260,9 +260,12 @@ void FSI::AMGnxnInterfaceFSI::Default_AMG_BGS(Teuchos::ParameterList& params)
   file_contents  += "        <Parameter name=\"aggregation: min agg size\"              type=\"int\"    value=\"12\"/>                                 ";
   file_contents  += "        <Parameter name=\"aggregation: max agg size\"              type=\"int\"    value=\"27\"/>                                 ";
   file_contents  += "      </ParameterList>                                                                                                            ";
+  file_contents  += "      <ParameterList name=\"myTentativePFactory\">                                                                                ";
+  file_contents  += "        <Parameter name=\"factory\"                         type=\"string\" value=\"TentativePFactory\"/>                         ";
+  file_contents  += "      </ParameterList>                                                                                                            ";
   file_contents  += "      <ParameterList name=\"myProlongatorFact\">                                                                                  ";
   file_contents  += "        <Parameter name=\"factory\"                         type=\"string\" value=\"SaPFactory\"/>                                ";
-  file_contents  += "        <Parameter name=\"P\"                               type=\"string\" value=\"TentativePFactory\"/>                         ";
+  file_contents  += "        <Parameter name=\"P\"                               type=\"string\" value=\"myTentativePFactory\"/>                       ";
   file_contents  += "        <Parameter name=\"Damping factor\"                  type=\"double\" value=\"1.333\"/>                                     ";
   file_contents  += "      </ParameterList>                                                                                                            ";
   file_contents  += "      <ParameterList name=\"myRestrictorFact\">                                                                                   ";
@@ -294,9 +297,9 @@ void FSI::AMGnxnInterfaceFSI::Default_AMG_BGS(Teuchos::ParameterList& params)
   file_contents  += "      </ParameterList>                                                                                                            ";
   file_contents  += "    </ParameterList>                                                                                                              ";
   file_contents  += "    <ParameterList name=\"Hierarchy\">                                                                                            ";
-  file_contents  += "      <Parameter name=\"numDesiredLevel\"          type=\"int\"      value=\"2\"/>                                                ";
+  file_contents  += "      <Parameter name=\"numDesiredLevel\"          type=\"int\"      value=\"3\"/>                                                ";
   file_contents  += "      <Parameter name=\"maxCoarseSize\"            type=\"int\"      value=\"1000\"/>                                             ";
-  file_contents  += "      <Parameter name=\"verbosity\"                type=\"string\"   value=\"Extreme\"/>                                          ";
+  file_contents  += "      <Parameter name=\"verbosity\"                type=\"string\"   value=\"High\"/>                                             ";
   file_contents  += "      <ParameterList name=\"All\">                                                                                                ";
   file_contents  += "        <Parameter name=\"startLevel\"             type=\"int\"      value=\"0\"/>                                                ";
   file_contents  += "        <Parameter name=\"Smoother\"               type=\"string\"   value=\"myForwardGaussSeidel\"/>                             ";
@@ -306,7 +309,7 @@ void FSI::AMGnxnInterfaceFSI::Default_AMG_BGS(Teuchos::ParameterList& params)
   file_contents  += "        <Parameter name=\"A\"                      type=\"string\"   value=\"myRAPFact\"/>                                        ";
   file_contents  += "        <Parameter name=\"P\"                      type=\"string\"   value=\"myProlongatorFact\"/>                                ";
   file_contents  += "        <Parameter name=\"R\"                      type=\"string\"   value=\"myRestrictorFact\"/>                                 ";
-  file_contents  += "        <Parameter name=\"Nullspace\"              type=\"string\"   value=\"TentativePFactory\"/>                                ";
+  file_contents  += "        <Parameter name=\"Nullspace\"              type=\"string\"   value=\"myTentativePFactory\"/>                              ";
   file_contents  += "      </ParameterList>                                                                                                            ";
   file_contents  += "    </ParameterList>                                                                                                              ";
   file_contents  += "  </ParameterList>                                                                                                                ";
@@ -324,9 +327,12 @@ void FSI::AMGnxnInterfaceFSI::Default_AMG_BGS(Teuchos::ParameterList& params)
   file_contents  += "        <Parameter name=\"aggregation: min agg size\"              type=\"int\"    value=\"12\"/>                                 ";
   file_contents  += "        <Parameter name=\"aggregation: max agg size\"              type=\"int\"    value=\"27\"/>                                 ";
   file_contents  += "      </ParameterList>                                                                                                            ";
+  file_contents  += "      <ParameterList name=\"myTentativePFactory\">                                                                                ";
+  file_contents  += "        <Parameter name=\"factory\"                         type=\"string\" value=\"TentativePFactory\"/>                         ";
+  file_contents  += "      </ParameterList>                                                                                                            ";
   file_contents  += "      <ParameterList name=\"myProlongatorFact\">                                                                                  ";
   file_contents  += "        <Parameter name=\"factory\"                         type=\"string\" value=\"PgPFactory\"/>                                ";
-  file_contents  += "        <Parameter name=\"P\"                               type=\"string\" value=\"TentativePFactory\"/>                         ";
+  file_contents  += "        <Parameter name=\"P\"                               type=\"string\" value=\"myTentativePFactory\"/>                       ";
   file_contents  += "      </ParameterList>                                                                                                            ";
   file_contents  += "      <ParameterList name=\"myRestrictorFact\">                                                                                   ";
   file_contents  += "        <Parameter name=\"factory\"                         type=\"string\" value=\"GenericRFactory\"/>                           ";
@@ -356,9 +362,9 @@ void FSI::AMGnxnInterfaceFSI::Default_AMG_BGS(Teuchos::ParameterList& params)
   file_contents  += "      </ParameterList>                                                                                                            ";
   file_contents  += "    </ParameterList>                                                                                                              ";
   file_contents  += "    <ParameterList name=\"Hierarchy\">                                                                                            ";
-  file_contents  += "      <Parameter name=\"numDesiredLevel\"          type=\"int\"      value=\"2\"/>                                                ";
+  file_contents  += "      <Parameter name=\"numDesiredLevel\"          type=\"int\"      value=\"3\"/>                                                ";
   file_contents  += "      <Parameter name=\"maxCoarseSize\"            type=\"int\"      value=\"1000\"/>                                             ";
-  file_contents  += "      <Parameter name=\"verbosity\"                type=\"string\"   value=\"Extreme\"/>                                          ";
+  file_contents  += "      <Parameter name=\"verbosity\"                type=\"string\"   value=\"High\"/>                                             ";
   file_contents  += "      <ParameterList name=\"All\">                                                                                                ";
   file_contents  += "        <Parameter name=\"startLevel\"             type=\"int\"      value=\"0\"/>                                                ";
   file_contents  += "        <Parameter name=\"Smoother\"               type=\"string\"   value=\"myForwardGaussSeidel\"/>                             ";
@@ -368,7 +374,7 @@ void FSI::AMGnxnInterfaceFSI::Default_AMG_BGS(Teuchos::ParameterList& params)
   file_contents  += "        <Parameter name=\"A\"                      type=\"string\"   value=\"myRAPFact\"/>                                        ";
   file_contents  += "        <Parameter name=\"P\"                      type=\"string\"   value=\"myProlongatorFact\"/>                                ";
   file_contents  += "        <Parameter name=\"R\"                      type=\"string\"   value=\"myRestrictorFact\"/>                                 ";
-  file_contents  += "        <Parameter name=\"Nullspace\"              type=\"string\"   value=\"TentativePFactory\"/>                                ";
+  file_contents  += "        <Parameter name=\"Nullspace\"              type=\"string\"   value=\"myTentativePFactory\"/>                              ";
   file_contents  += "      </ParameterList>                                                                                                            ";
   file_contents  += "    </ParameterList>                                                                                                              ";
   file_contents  += "  </ParameterList>                                                                                                                ";
