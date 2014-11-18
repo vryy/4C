@@ -6632,11 +6632,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "block Gauss-Seidel methods as well.",
                                tuple<std::string>(
                                  "PreconditionedKrylov",
-                                 "FSIAMG"
+                                 "FSIAMG",
+                                 "AMGnxn"
                                  ),
                                tuple<int>(
                                  INPAR::FSI::PreconditionedKrylov,
-                                 INPAR::FSI::FSIAMG
+                                 INPAR::FSI::FSIAMG,
+                                 INPAR::FSI::AMGnxn
                                  ),
                                &fsimono);
 

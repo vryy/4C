@@ -1778,6 +1778,8 @@ baci_test(f2_drivencavity20x20_muelu_xml_PGAMG 2 "")
 # temporarely deactivate this test until partial dirichlet node issue is fixed in MueLu!
 #baci_test(tsi_simplrocketnozzle_monolithic_amgnxn_AMGBGS 2 "")
 
+# fsi using the AMGnxn framework
+baci_test(fsi_pw_mono_ss_ost_ga_amgnxn 2 "")
 
 endif (HAVE_MueLu)
 

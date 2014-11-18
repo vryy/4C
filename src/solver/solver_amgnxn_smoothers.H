@@ -250,7 +250,10 @@ namespace LINALG
             int p,
             int s,
             int iter,
-            double omega);
+            double omega,
+            double alpha=1.0,
+            std::string algorithm="simple",
+            std::string correction = "approximated inverse");
         virtual void Apply(
             const Epetra_MultiVector& X,
             Epetra_MultiVector& Y,
@@ -271,6 +274,9 @@ namespace LINALG
         int s_;
         int iter_;
         double omega_;
+        double alpha_;
+        std::string algorithm_;
+        std::string correction_;
         // Working vectors
         mutable Teuchos::RCP<Epetra_MultiVector> DXp_      ;
         mutable Teuchos::RCP<Epetra_MultiVector> DXs_      ;
@@ -279,7 +285,6 @@ namespace LINALG
         mutable Teuchos::RCP<Epetra_MultiVector> DXp_aux_  ;
         mutable Teuchos::RCP<Epetra_MultiVector> DXs_aux_  ;
         mutable Teuchos::RCP<Epetra_MultiVector> DYp_aux_  ;
-        mutable Teuchos::RCP<Epetra_MultiVector> DYp_aux2_ ;
     };
 
 

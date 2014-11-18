@@ -943,6 +943,7 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_statustest.cpp
   src/drt_fsi/fsi_structureale.cpp
   src/drt_fsi/fsi_utils.cpp
+  src/drt_fsi/fsi_overlapprec_amgnxn.cpp
 )
 set(OBJS_DRT_FSI_XFEM
   src/drt_fsi_xfem/fsi_xfem_fluid.cpp

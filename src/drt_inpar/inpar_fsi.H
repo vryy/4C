@@ -73,7 +73,8 @@ namespace INPAR
     enum LinearBlockSolver
     {
       PreconditionedKrylov,
-      FSIAMG
+      FSIAMG,
+      AMGnxn
     };
 
     /// Projection methods for sliding fluid-structure interface

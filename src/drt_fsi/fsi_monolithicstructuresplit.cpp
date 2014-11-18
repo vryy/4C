@@ -20,6 +20,7 @@ Maintainer: Matthias Mayr
 #include "fsi_matrixtransform.H"
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
+#include "fsi_overlapprec_amgnxn.H"
 #include "fsi_statustest.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -902,6 +903,7 @@ FSI::MonolithicStructureSplit::CreateLinearSystem(Teuchos::ParameterList& nlPara
   {
   case INPAR::FSI::PreconditionedKrylov:
   case INPAR::FSI::FSIAMG:
+  case INPAR::FSI::AMGnxn:
     linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
                                                                *lsParams,
                                                                Teuchos::rcp(iJac,false),

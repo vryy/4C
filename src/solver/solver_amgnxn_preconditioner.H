@@ -29,9 +29,6 @@ Created on: Feb 27, 2014
 #include "solver_preconditionertype.H"
 #include "solver_amgnxn_hierarchies.H"
 
-//=========================================================================
-// This might be moved to another place (begin)
-//=========================================================================
 
 namespace LINALG
 {

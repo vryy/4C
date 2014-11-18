@@ -49,6 +49,7 @@ Maintainer: Matthias Mayr
 
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
+#include "fsi_overlapprec_amgnxn.H"
 
 /*----------------------------------------------------------------------*/
 // Note: The order of calling the three BaseAlgorithm-constructors is
@@ -1145,6 +1146,25 @@ void FSI::BlockMonolithic::CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlock
                                    DRT::INPUT::IntegralValue<int>(fsimono,"FSIAMGANALYZE"),
                                    linearsolverstrategy,
                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
+    break;
+  case INPAR::FSI::AMGnxn:
+    {
+    // TODO This is a temporary hack to input the xml file without adding a new input parameter in FSI/DYNAMIC MONOLITHIC SOLVER.
+    // We assume that the xml file is given in the first position of the BLOCKSMOOTHER list
+    std::string amgnxn_xml = "none";
+    if ((int)blocksmoother.size() > 0)
+      amgnxn_xml = blocksmoother[0];
+    else
+      dserror("Not found xml file in the first position of the BLOCKSMOOTHER list");
+    mat = Teuchos::rcp(new OverlappingBlockMatrixAMGnxn(
+                                                    Extractor(),
+                                                    *StructureField(),
+                                                    *FluidField(),
+                                                    *AleField(),
+                                                    structuresplit,
+                                                    amgnxn_xml,
+                                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
+    }
     break;
   default:
     dserror("Unsupported type of monolithic solver");
