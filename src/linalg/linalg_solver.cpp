@@ -294,10 +294,18 @@ void LINALG::Solver::FixMLNullspace(std::string field,
     Teuchos::ParameterList& solveparams)
 {
   // there is no ML list, do nothing
-  if (!solveparams.isSublist("ML Parameters"))
+  if (!solveparams.isSublist("ML Parameters") &&
+      !solveparams.isSublist("MueLu Parameters"))
     return;
 
-  Teuchos::ParameterList& params = solveparams.sublist("ML Parameters");
+  // find the ML or MueLu list
+  Teuchos::RCP<Teuchos::ParameterList> params_ptr = Teuchos::null;
+  if (solveparams.isSublist("ML Parameters"))
+    params_ptr = Teuchos::rcp(&(solveparams.sublist("ML Parameters")),false);
+  else if (solveparams.isSublist("MueLu Parameters"))
+    params_ptr = Teuchos::rcp(&(solveparams.sublist("MueLu Parameters")),false);
+  else return;
+  Teuchos::ParameterList& params = *params_ptr;
 
   const int ndim = params.get("null space: dimension",-1);
   if (ndim==-1) dserror("List does not contain nullspace dimension");
@@ -330,7 +338,7 @@ void LINALG::Solver::FixMLNullspace(std::string field,
 
     // transfer entries for this dof to new nullspace vector
     for (int j=0; j<ndim; ++j)
-      nns[j*ndim+i] = ons[j*ndim+olid];
+      nns[j*nlength+i] = ons[j*olength+olid];
   }
 
   // put new nullspace in parameter list
