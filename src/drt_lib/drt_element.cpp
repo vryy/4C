@@ -202,7 +202,13 @@ void DRT::Element::SetNodeIds(const std::string& distype, DRT::INPUT::LineDefini
  *----------------------------------------------------------------------*/
 void DRT::Element::SetMaterial(int matnum)
 {
-  mat_[0] = MAT::Material::Factory(matnum);
+  Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matnum);
+  if(mat == Teuchos::null)
+    dserror("Invalid material given to the element. \n"
+        "Invalid are Summands of the Elasthyper-Toolbox and single Growth-Materials. \n"
+        "If you like to use a Summand of the Elasthyper-Material define it via MAT_ElastHyper. \n"
+        "If you like to use a Growth-Material define it via the according base material.");
+  mat_[0] = mat;
 }
 
 /*----------------------------------------------------------------------*
