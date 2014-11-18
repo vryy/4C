@@ -444,7 +444,8 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::Multiply(
           }
 
         // complete Cij with correct range and domain map
-        Cij->Complete(C->DomainMap(j),C->RangeMap(i));
+        if(completeoutput)
+          Cij->Complete(C->DomainMap(j),C->RangeMap(i));
 
         // assign Cij block
         C->Assign(i,j,View,*Cij);
