@@ -18,6 +18,7 @@ Maintainer: Martin Kronbichler
 #include "post_drt_vtu_writer.H"
 
 #include <sstream>
+#include <boost/static_assert.hpp>
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
@@ -49,7 +50,7 @@ namespace
  \brief Converts between our element types and the VTK numbers and the respective numbering of degrees of freedom
  */
 /*----------------------------------------------------------------------*/
-std::pair<uint8_t,std::vector<int> > vtk_element_types [DRT::Element::max_distype] =
+std::pair<uint8_t,std::vector<int> > vtk_element_types [] =
 {
     // the VTK element types are from the documentation of vtkCellType,
     // e.g. at http://www.vtk.org/doc/nightly/html/vtkCellType_8h.html
@@ -57,11 +58,13 @@ std::pair<uint8_t,std::vector<int> > vtk_element_types [DRT::Element::max_distyp
     // for index translation
     std::pair<uint8_t,std::vector<int> > (0, std::vector<int>()),                                                    // dis_none
     std::pair<uint8_t,std::vector<int> > (9, make_vector<int>() << 0 << 1 << 2 << 3),                                // quad4
+    std::pair<uint8_t,std::vector<int> > (9, make_vector<int>() << 0 << 1 << 4 << 3),                                // quad6
     std::pair<uint8_t,std::vector<int> > (23, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7),           // quad8
     std::pair<uint8_t,std::vector<int> > (28, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8),      // quad9
     std::pair<uint8_t,std::vector<int> > (5, make_vector<int>() << 0 << 1 << 2),                                     // tri3
     std::pair<uint8_t,std::vector<int> > (22, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5),                     // tri6
     std::pair<uint8_t,std::vector<int> > (12, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7),           // hex8
+    std::pair<uint8_t,std::vector<int> > (12, make_vector<int>() << 0 << 1 << 2 << 3 << 9 << 10 << 11 << 12),        // hex18
     std::pair<uint8_t,std::vector<int> > (25, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8        // hex20
                                           << 9 << 10 << 11 << 16 << 17 << 18 << 19 << 12 << 13 << 14 << 15),
     std::pair<uint8_t,std::vector<int> > (29, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8        // hex27
@@ -87,11 +90,10 @@ std::pair<uint8_t,std::vector<int> > vtk_element_types [DRT::Element::max_distyp
     std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>())     // nurbs27, not yet implemented
 };
 
-
-
 VtuWriter::VtuWriter(PostField* field, const std::string &filename) :
     VtkWriter(field, filename)
 {
+  BOOST_STATIC_ASSERT_MSG((ssize_t)(sizeof(vtk_element_types)/sizeof(std::pair<uint8_t,std::vector<int> >) == (ssize_t)DRT::Element::max_distype), "The number of element types defined by DRT::Element::DiscretizationType does not match the number of element types supported by the post vtu filter.") __attribute__((unused));
 }
 
 
