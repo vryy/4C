@@ -28,11 +28,15 @@ Maintainer: Alexander Popp
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
 CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(
-    DRT::Discretization& probdiscret, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface, int dim,
-    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
-    MtAbstractStrategy(probdiscret, params, interface, dim, comm, alphaf,
-        maxdof)
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof) :
+MtAbstractStrategy(DofRowMap,NodeRowMap, params, interface, dim, comm, alphaf, maxdof)
 {
   // empty constructor body
   return;
@@ -215,12 +219,12 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(
 /*----------------------------------------------------------------------*
  |  mesh initialization for rotational invariance             popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtLagrangeStrategy::MeshInitialization()
+Teuchos::RCP<Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitialization()
 {
   // get out of here is NTS algorithm is activated
   if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM") ==
       INPAR::MORTAR::algorithm_nts)
-    return;
+    return Teuchos::null;
 
   // print message
   if (Comm().MyPID() == 0)
@@ -363,7 +367,8 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
   mhatmatrix_ = LINALG::MLMultiply(*invd_, false, *mmatrix_, false, false,
       false, true);
 
-  return;
+  // return xslavemod for global problem
+  return Xslavemod;
 }
 
 /*----------------------------------------------------------------------*

@@ -34,10 +34,6 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_mortar.H"
 
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_nurbs_discret/drt_knotvector.H"
-
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
@@ -237,10 +233,9 @@ discret_(discret)
         // get nurbs weight!
         if(mtparams.get<bool>("NURBS")==true)
         {
-          DRT::NURBS::ControlPoint* cp =
-            dynamic_cast<DRT::NURBS::ControlPoint* > (node);
-
-          mtnode->NurbsW() = cp->W();
+          ManagerBase::PrepareNURBSNode(
+                          node,
+                          mtnode);
         }
 
         // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
@@ -297,23 +292,11 @@ discret_(discret)
         // get knotvector, normal factor and zero-size information for nurbs
         if(mtparams.get<bool>("NURBS")==true)
         {
-          DRT::NURBS::NurbsDiscretization* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discret_));
-
-          Teuchos::RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
-          std::vector<Epetra_SerialDenseVector> parentknots(dim);
-          std::vector<Epetra_SerialDenseVector> mortarknots(dim-1);
-
-          double normalfac = 0.0;
-          bool zero_size=knots->GetBoundaryEleAndParentKnots(parentknots,
-                                                             mortarknots,
-                                                             normalfac,
-                                                             ele->ParentMasterElement()->Id(),
-                                                             ele->FaceMasterNumber());
-
-          // store nurbs specific data to node
-          mtele->ZeroSized() = zero_size;
-          mtele->Knots()     = mortarknots;
-          mtele->NormalFac() = normalfac;
+          ManagerBase::PrepareNURBSElement(
+              discret,
+              ele,
+              mtele,
+              dim);
         }
 
         mtele->IsHermite() = DRT::INPUT::IntegralValue<int>(mtparams,"HERMITE_SMOOTHING") ;
@@ -342,13 +325,37 @@ discret_(discret)
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams,"STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
-    strategy_ = Teuchos::rcp(new MtLagrangeStrategy(Discret(),mtparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new MtLagrangeStrategy(
+        Discret().DofRowMap(),
+        Discret().NodeRowMap(),
+        mtparams,
+        interfaces,
+        dim,
+        comm_,
+        alphaf,
+        maxdof));
   else if (stype == INPAR::CONTACT::solution_penalty)
-    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret(),mtparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(
+        Discret().DofRowMap(),
+        Discret().NodeRowMap(),
+        mtparams,
+        interfaces,
+        dim,
+        comm_,
+        alphaf,
+        maxdof));
   else if (stype == INPAR::CONTACT::solution_uzawa)
-    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret(),mtparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(
+        Discret().DofRowMap(),
+        Discret().NodeRowMap(),
+        mtparams,
+        interfaces,
+        dim,
+        comm_,
+        alphaf,
+        maxdof));
   else
-    dserror("Unrecognized strategy");
+    dserror("ERROR: Unrecognized strategy");
 
   if(Comm().MyPID()==0) std::cout << "done!" << std::endl;
   //**********************************************************************

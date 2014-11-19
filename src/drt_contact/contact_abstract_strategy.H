@@ -56,10 +56,15 @@ public:
    all necessary Epetra_Maps and global vector and matrix quantities.
 
    */
-  CoAbstractStrategy(DRT::Discretization& probdiscret,
+  CoAbstractStrategy(
+      const Epetra_Map* DofRowMap,
+      const Epetra_Map* NodeRowMap,
       Teuchos::ParameterList params,
-      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface, int dim,
-      Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+      int dim,
+      Teuchos::RCP<Epetra_Comm> comm,
+      double alphaf,
+      int maxdof);
 
   /*!
    \brief Destructor
@@ -698,7 +703,8 @@ public:
   void RedistributeMeshtying() {}
   void RestrictMeshtyingZone() {}
   void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) {}
-  void MeshInitialization() {}
+  Teuchos::RCP<Epetra_Vector> MeshInitialization() {return Teuchos::null;};
+
   void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) {}
   Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled() {return Teuchos::null; }
 

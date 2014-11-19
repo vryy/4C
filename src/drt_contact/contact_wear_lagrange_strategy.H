@@ -39,10 +39,15 @@ public:
   \brief Standard Constructor
 
   */
-  WearLagrangeStrategy(DRT::Discretization& probdiscret,
-                     Teuchos::ParameterList params,
-                     std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface, int dim,
-                     Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+  WearLagrangeStrategy(
+      const Epetra_Map* DofRowMap,
+      const Epetra_Map* NodeRowMap,
+      Teuchos::ParameterList params,
+      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces,
+      int dim,
+      Teuchos::RCP<Epetra_Comm> comm,
+      double alphaf,
+      int maxdof);
 
   /*!
   \brief Destructor

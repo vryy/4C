@@ -29,10 +29,15 @@ class AugmentedLagrangeStrategy : public CoLagrangeStrategy
   \brief Standard Constructor
 
   */
-  AugmentedLagrangeStrategy(DRT::Discretization& probdiscret,
-                     Teuchos::ParameterList params,
-                     std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces, int dim,
-                     Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+  AugmentedLagrangeStrategy(
+      const Epetra_Map* DofRowMap,
+      const Epetra_Map* NodeRowMap,
+      Teuchos::ParameterList params,
+      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces,
+      int dim,
+      Teuchos::RCP<Epetra_Comm> comm,
+      double alphaf,
+      int maxdof);
 
   /*!
   \brief Destructor

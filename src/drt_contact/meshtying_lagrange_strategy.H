@@ -34,10 +34,15 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     \brief Standard Constructor
 
     */
-    MtLagrangeStrategy(DRT::Discretization& probdiscret,
-                       Teuchos::ParameterList params,
-                       std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
-                       int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+    MtLagrangeStrategy(
+        const Epetra_Map* DofRowMap,
+        const Epetra_Map* NodeRowMap,
+        Teuchos::ParameterList params,
+        std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
+        int dim,
+        Teuchos::RCP<Epetra_Comm> comm,
+        double alphaf,
+        int maxdof);
 
     /*!
     \brief Destructor
@@ -60,7 +65,7 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     (only implemented for DUAL shape functions)
 
     */
-    void MeshInitialization();
+    Teuchos::RCP<Epetra_Vector> MeshInitialization();
 
     /*!
     \brief Evaluate meshtying

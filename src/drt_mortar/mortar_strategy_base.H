@@ -82,7 +82,9 @@ class StrategyBase
 
     Creates the strategy base object and initializes all global variables.
 
-    \param probdiscret (in): Underlying problem discretization
+    \param dofrowmap (in): dofrowmap of underlying problem
+    \param noderowmap (in): noderowmap of underlying problem
+    \param elementrowmap (in): elementrowmap of underlying problem
     \param params (in): List of meshtying/contact parameters
     \param dim (in): Global problem dimension
     \param comm (in): A communicator object
@@ -90,10 +92,14 @@ class StrategyBase
     \param maxdof (in): Highest dof number in global problem
 
     */
-    StrategyBase(DRT::Discretization& probdiscret,
-                 Teuchos::ParameterList params,
-                 int dim, Teuchos::RCP<Epetra_Comm> comm,
-                 double alphaf, int maxdof);
+    StrategyBase(
+        const Epetra_Map* DofRowMap,
+        const Epetra_Map* NodeRowMap,
+        Teuchos::ParameterList params,
+        int dim,
+        Teuchos::RCP<Epetra_Comm> comm,
+        double alphaf,
+        int maxdof);
 
     /*!
     \brief Destructor
@@ -122,12 +128,6 @@ class StrategyBase
     const Epetra_Comm& Comm() const { return *comm_; }
 
     /*!
-    \brief Get the underlying problem discretization
-
-    */
-    const DRT::Discretization& ProblemDiscret() const { return probdiscret_; }
-
-    /*!
     \brief Get the underlying problem dof row map
 
     */
@@ -138,12 +138,6 @@ class StrategyBase
 
     */
     const Teuchos::RCP<Epetra_Map> ProblemNodes() { return probnodes_; }
-
-    /*!
-    \brief Get the underlying problem dof row map
-
-    */
-    const Teuchos::RCP<Epetra_Map> ProblemElements() { return probeles_; }
 
     //@}
 
@@ -197,7 +191,7 @@ class StrategyBase
     virtual Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() = 0;
     virtual Teuchos::RCP<Epetra_Vector> WSolveIncr() = 0;
     virtual Teuchos::RCP<Epetra_Vector> WMSolveIncr() = 0;
-    virtual void MeshInitialization() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> MeshInitialization() = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> MMatrix() = 0;
     virtual void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual const int NumberOfActiveNodes() = 0;
@@ -240,10 +234,8 @@ class StrategyBase
     // don't want cctor (= operator impossible anyway for abstract class)
     StrategyBase(const StrategyBase& old);
 
-    DRT::Discretization&        probdiscret_;      // underlying problem discretization (not only interfaces)
     Teuchos::RCP<Epetra_Map>    probdofs_;         // underlying problem dof row map (not only interfaces)
     Teuchos::RCP<Epetra_Map>    probnodes_;        // underlying problem node row map (not only interfaces)
-    Teuchos::RCP<Epetra_Map>    probeles_;         // underlying problem element row map (not only interfaces)
 
     Teuchos::RCP<Epetra_Comm>   comm_;             // communicator
     Teuchos::ParameterList      scontact_;         // containing contact input parameters

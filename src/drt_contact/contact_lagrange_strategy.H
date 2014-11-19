@@ -36,10 +36,15 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     \brief Standard Constructor
 
     */
-    CoLagrangeStrategy(DRT::Discretization& probdiscret,
-                       Teuchos::ParameterList params,
-                       std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface, int dim,
-                       Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+    CoLagrangeStrategy(
+        const Epetra_Map* DofRowMap,
+        const Epetra_Map* NodeRowMap,
+        Teuchos::ParameterList params,
+        std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+        int dim,
+        Teuchos::RCP<Epetra_Comm> comm,
+        double alphaf,
+        int maxdof);
 
     /*!
     \brief Destructor

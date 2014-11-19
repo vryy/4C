@@ -567,11 +567,17 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   if(cmtbridge_->HaveMeshtying())
   {
     // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
-    // (1) Do mortar coupling in reference configuration and
-    // perform mesh initialization for rotational invariance
+    // (1) Do mortar coupling in reference configuration
     cmtbridge_->MtManager()->GetStrategy().MortarCoupling(zeros_);
-    cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
-  }
+
+    // perform mesh initialization for rotational invariance (interface)
+    Teuchos::RCP<Epetra_Vector> Xslavemod =
+        cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
+
+    // perform mesh initialization for rotational invariance (struct. discr.)
+    MeshInitialization(Xslavemod);
+
+  } // end meshinit
 
   // initialization of contact
   if(cmtbridge_->HaveContact())
@@ -593,7 +599,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   {
     // only plausibility check, that a contact solver is available
     if (contactsolver_ == Teuchos::null)
-      dserror("no contact solver in STR::TimInt::PrepareContactMeshtying? cannot be");
+      dserror("ERROR: No contact solver in STR::TimInt::PrepareContactMeshtying? Cannot be!");
   }
 
   //**********************************************************************
@@ -777,6 +783,62 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*/
+/* Mesh initialization rotational invariance (Mortar Meshtying)         */
+void STR::TimInt::MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
+{
+  if(Xslavemod==Teuchos::null)
+    return;
+
+  // create allreduce slave row nodes map
+  Teuchos::RCP<Epetra_Map> slavemap = cmtbridge_->MtManager()->GetStrategy().SlaveRowNodes();
+  Teuchos::RCP<Epetra_Map> allreduceslavemap = LINALG::AllreduceEMap(*slavemap);
+
+  // export node positions to problem col map
+  Teuchos::RCP<Epetra_Vector> Xslavemodcol  = LINALG::CreateVector(*discret_->DofColMap(),false);
+  LINALG::Export(*Xslavemod,*Xslavemodcol);
+
+  const int numnode = allreduceslavemap->NumMyElements();
+  const int numdim  = DRT::Problem::Instance()->NDim();
+  const Epetra_Vector& gvector =*Xslavemodcol;
+
+  // loop over slave nodes (for all procs)
+  for(int index=0;index<numnode;++index)
+  {
+    int gid = allreduceslavemap->GID(index);
+    DRT::Node* mynode = discret_->gNode(gid);
+
+    int ilid = discret_->NodeColMap()->LID(gid);
+    if (ilid<0)
+      continue;
+
+    // get degrees of freedom associated with this fluid/structure node
+    std::vector<int> nodedofs = discret_->Dof(0,mynode);
+    std::vector<double> nvector(3,0.0);
+
+    // create new position vector
+    for (int i=0; i<numdim; ++i)
+    {
+      const int lid = gvector.Map().LID(nodedofs[i]);
+
+      if (lid<0)
+        dserror("ERROR: Proc %d: Cannot find gid=%d in Epetra_Vector",
+            gvector.Comm().MyPID(),nodedofs[i]);
+
+      nvector[i] += gvector[lid];
+    }
+
+    // set new reference position
+    mynode->SetPos(nvector);
+  }
+  // re-initialize finite elements
+  DRT::ParObjectFactory::Instance().InitializeElements(*discret_);
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /* Check for semi-smooth Newton type of plasticity and do preparations */

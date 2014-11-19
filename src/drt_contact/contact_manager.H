@@ -123,7 +123,6 @@ public:
 
   */
   void PostprocessTractions(IO::DiscretizationWriter& output);
-
   //@}
 
 

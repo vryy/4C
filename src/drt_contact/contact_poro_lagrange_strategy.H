@@ -51,10 +51,15 @@ class PoroLagrangeStrategy : public CoLagrangeStrategy
     \brief Standard Constructor
 
     */
-    PoroLagrangeStrategy(DRT::Discretization& probdiscret,
-                       Teuchos::ParameterList params,
-                       std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface, int dim,
-                       Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+    PoroLagrangeStrategy(
+        const Epetra_Map* DofRowMap,
+        const Epetra_Map* NodeRowMap,
+        Teuchos::ParameterList params,
+        std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+        int dim,
+        Teuchos::RCP<Epetra_Comm> comm,
+        double alphaf,
+        int maxdof);
 
     /*!
     \brief Destructor

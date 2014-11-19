@@ -26,14 +26,16 @@ Maintainer: Michael Hiermeier
 /*----------------------------------------------------------------------*
  | ctor (public)                                        hiermeier 04/14 |
  *----------------------------------------------------------------------*/
-CONTACT::AugmentedLagrangeStrategy::AugmentedLagrangeStrategy(DRT::Discretization& probdiscret,
-                                                              Teuchos::ParameterList params,
-                                                              std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces,
-                                                              int dim,
-                                                              Teuchos::RCP<Epetra_Comm> comm,
-                                                              double alphaf,
-                                                              int maxdof) :
-CoLagrangeStrategy(probdiscret,params,interfaces,dim,comm,alphaf,maxdof),
+CONTACT::AugmentedLagrangeStrategy::AugmentedLagrangeStrategy(
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof) :
+CoLagrangeStrategy(DofRowMap,NodeRowMap,params,interfaces,dim,comm,alphaf,maxdof),
 gFdCheck_(false)
 {
   // cast to augmented interfaces

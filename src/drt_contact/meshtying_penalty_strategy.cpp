@@ -25,11 +25,16 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
-CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(DRT::Discretization& probdiscret,
-                                              Teuchos::ParameterList params,
-                                              std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
-                                              int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
-MtAbstractStrategy(probdiscret, params, interface, dim, comm, alphaf, maxdof)
+CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof) :
+MtAbstractStrategy(DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof)
 {
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;
@@ -105,12 +110,12 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<Epetra_Vector
 /*----------------------------------------------------------------------*
  |  mesh intialization for rotational invariance              popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtPenaltyStrategy::MeshInitialization()
+Teuchos::RCP<Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization()
 {
   // get out of here is NTS algorithm is activated
   if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(), "ALGORITHM") ==
       INPAR::MORTAR::algorithm_nts)
-    return;
+    return Teuchos::null;
 
   // print message
   if(Comm().MyPID()==0)
@@ -147,7 +152,8 @@ void CONTACT::MtPenaltyStrategy::MeshInitialization()
   // print message
   if(Comm().MyPID()==0) std::cout << "done!\n" << std::endl;
 
-  return;
+  // return xslavemod for global problem
+  return Xslavemod;
 }
 
 /*----------------------------------------------------------------------*

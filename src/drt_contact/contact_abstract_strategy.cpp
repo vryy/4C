@@ -30,11 +30,16 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 05/09 |
  *----------------------------------------------------------------------*/
-CONTACT::CoAbstractStrategy::CoAbstractStrategy(DRT::Discretization& probdiscret,
-                                                Teuchos::ParameterList params,
-                                                std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-                                                int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
-MORTAR::StrategyBase(probdiscret,params,dim,comm,alphaf,maxdof),
+CONTACT::CoAbstractStrategy::CoAbstractStrategy(
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof) :
+MORTAR::StrategyBase(DofRowMap,NodeRowMap,params,dim,comm,alphaf,maxdof),
 interface_(interface),
 step_(0),
 iter_(0),
@@ -92,8 +97,8 @@ constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>
   if (ParRedist())
   {
     pglmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*glmdofrowmap_));
-    pgsdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsdofrowmap_));
-    pgmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
+    pgsdofrowmap_  = Teuchos::rcp(new Epetra_Map(*gsdofrowmap_));
+    pgmdofrowmap_  = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
     pgsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
   }
 
@@ -374,7 +379,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   // (no need to rebuild this map after redistribution)
   if (!redistributed)
   {
-    gndofrowmap_ = LINALG::SplitMap(*(ProblemDiscret().DofRowMap()),
+    gndofrowmap_ = LINALG::SplitMap(*(ProblemDofs()),
         *gsdofrowmap_);
     gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
   }

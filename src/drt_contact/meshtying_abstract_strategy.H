@@ -60,10 +60,15 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     all necessary Epetra_Maps and global vector and matrix quantities.
 
     */
-    MtAbstractStrategy(DRT::Discretization& probdiscret,
-                       Teuchos::ParameterList params,
-                       std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
-                       int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+    MtAbstractStrategy(
+        const Epetra_Map* DofRowMap,
+        const Epetra_Map* NodeRowMap,
+        Teuchos::ParameterList params,
+        std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
+        int dim,
+        Teuchos::RCP<Epetra_Comm> comm,
+        double alphaf,
+        int maxdof);
 
     /*!
     \brief Destructor
@@ -256,7 +261,8 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \param Xslavemod (in): modified slave reference configuration
 
     */
-    virtual void MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod);
+    virtual void MeshInitialization(
+        Teuchos::RCP<Epetra_Vector> Xslavemod);
 
     /*!
     \brief Evaluate contact

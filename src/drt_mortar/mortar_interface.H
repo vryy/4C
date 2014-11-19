@@ -756,16 +756,14 @@ protected:
   Teuchos::RCP<Epetra_Map>           lmdofmap_;      // row map of all Lagrange multiplier dofs
   int                                maxdofglobal_;  // maximum dof ID in global discretization
 
-  const INPAR::MORTAR::SearchAlgorithm searchalgo_;  // type of search algorithm
-  Teuchos::RCP<MORTAR::BinaryTree>   binarytree_;    // binary searchtree
-  const double                       searchparam_;   // search parameter
-  const bool                         searchuseauxpos_; // use auxiliary position when computing dops
-
+  const INPAR::MORTAR::SearchAlgorithm searchalgo_;     // type of search algorithm
+  Teuchos::RCP<MORTAR::BinaryTree>   binarytree_;       // binary searchtree
+  const double                       searchparam_;      // search parameter
+  const bool                         searchuseauxpos_;  // use auxiliary position when computing dops
   double                             inttime_interface_;// integration time
 
-  bool                               nurbs_;
-
-  bool                               poro_;// flag if poro contact problem!
+  bool                               nurbs_; // flag for nurbs shape functions
+  bool                               poro_;  // flag if poro contact problem!
 
   std::map<int, std::pair<DRT::Element*, int> > parentelementmap_; //map which contains pointers to parentelements! <cele.id, proc>,<elepointer,faceid>
 

@@ -36,10 +36,15 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   \brief Standard Constructor
 
   */
-  MtPenaltyStrategy(DRT::Discretization& probdiscret,
-                    Teuchos::ParameterList params,
-                    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
-                    int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+  MtPenaltyStrategy(
+      const Epetra_Map* DofRowMap,
+      const Epetra_Map* NodeRowMap,
+      Teuchos::ParameterList params,
+      std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
+      int dim,
+      Teuchos::RCP<Epetra_Comm> comm,
+      double alphaf,
+      int maxdof);
 
   /*!
   \brief Destructor
@@ -79,7 +84,7 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   Only do this ONCE for meshtying upon initialization!
 
   */
-  void MeshInitialization();
+  Teuchos::RCP<Epetra_Vector>  MeshInitialization();
 
   /*!
   \brief Evaluate meshtying

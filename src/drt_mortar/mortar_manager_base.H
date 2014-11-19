@@ -21,8 +21,15 @@ Maintainer: Alexander Popp
 // forward declarations
 namespace IO
 {
- class DiscretizationWriter;
- class DiscretizationReader;
+class DiscretizationWriter;
+class DiscretizationReader;
+}
+
+namespace DRT
+{
+class Node;
+class Discretization;
+class Element;
 }
 
 namespace MORTAR
@@ -30,6 +37,8 @@ namespace MORTAR
 
 // forward declarations
 class StrategyBase;
+class MortarNode;
+class MortarElement;
 
 /*!
 \brief Abstract base class to control all mortar coupling
@@ -87,6 +96,28 @@ public:
 
   */
   MORTAR::StrategyBase& GetStrategy() { return *strategy_;}
+
+  /*!
+  \brief Prepare mortar element for nurbs case
+
+  store knot vector, zerosized information and normal factor
+
+  */
+  void PrepareNURBSElement(
+      DRT::Discretization& discret,
+      Teuchos::RCP<DRT::Element> ele,
+      Teuchos::RCP<MORTAR::MortarElement> cele,
+      int dim);
+
+  /*!
+  \brief Prepare mortar node for nurbs case
+
+  store control point weight
+
+  */
+  void PrepareNURBSNode(
+      DRT::Node* node,
+      Teuchos::RCP<MORTAR::MortarNode> mnode);
 
   //@}
 

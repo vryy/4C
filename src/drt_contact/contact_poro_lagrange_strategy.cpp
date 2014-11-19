@@ -29,11 +29,16 @@ Maintainer: Christoph Ager
 /*----------------------------------------------------------------------*
  | ctor (public)                                              ager 08/14|
  *----------------------------------------------------------------------*/
-CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy(DRT::Discretization& probdiscret,
-                                                Teuchos::ParameterList params,
-                                                std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-                                                int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof):
-CoLagrangeStrategy(probdiscret,params,interface,dim,comm,alphaf,maxdof),
+CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy(
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof):
+CoLagrangeStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
 no_penetration_(false),
 nopenalpha_(0.0)
 {

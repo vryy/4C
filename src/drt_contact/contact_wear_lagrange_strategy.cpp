@@ -39,11 +39,16 @@ Maintainer: Philipp Farah
 /*----------------------------------------------------------------------*
  | ctor (public)                                             farah 09/13|
  *----------------------------------------------------------------------*/
-CONTACT::WearLagrangeStrategy::WearLagrangeStrategy(DRT::Discretization& probdiscret,
-                                                Teuchos::ParameterList params,
-                                                std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces,
-                                                int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
-CoLagrangeStrategy(probdiscret,params,interfaces,dim,comm,alphaf,maxdof),
+CONTACT::WearLagrangeStrategy::WearLagrangeStrategy(
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof) :
+CoLagrangeStrategy(DofRowMap,NodeRowMap,params,interfaces,dim,comm,alphaf,maxdof),
 sswear_(DRT::INPUT::IntegralValue<int>(Params(),"SSWEAR"))
 {
   // cast to  wearinterfaces

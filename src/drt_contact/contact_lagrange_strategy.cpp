@@ -24,11 +24,16 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(DRT::Discretization& probdiscret,
-                                                Teuchos::ParameterList params,
-                                                std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-                                                int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
-CoAbstractStrategy(probdiscret,params,interface,dim,comm,alphaf,maxdof),
+CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof) :
+CoAbstractStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
 activesetssconv_(false),
 activesetconv_(false),
 activesetsteps_(1)

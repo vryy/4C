@@ -16,19 +16,24 @@ Maintainer: Alexander Popp
 #include "mortar_strategy_base.H"
 #include "mortar_defines.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_mortar.H"
 
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 01/10 |
  *----------------------------------------------------------------------*/
-MORTAR::StrategyBase::StrategyBase(DRT::Discretization& probdiscret,
-                                   Teuchos::ParameterList params,
-                                   int dim, Teuchos::RCP<Epetra_Comm> comm,
-                                   double alphaf, int maxdof) :
-probdiscret_(probdiscret),
+MORTAR::StrategyBase::StrategyBase(
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof) :
+probdofs_(Teuchos::rcp(new Epetra_Map(*(DofRowMap)))),
+probnodes_(Teuchos::rcp(new Epetra_Map(*(NodeRowMap)))),
 comm_(comm),
 scontact_(params),
 dim_(dim),
@@ -36,12 +41,6 @@ alphaf_(alphaf),
 maxdof_(maxdof)
 
 {
-  // create and store Epetra_Maps for problem dof, node, ele row maps
-  probdofs_ =  Teuchos::rcp(new Epetra_Map(*(probdiscret.DofRowMap())));
-  probnodes_ = Teuchos::rcp(new Epetra_Map(*(probdiscret.NodeRowMap())));
-  probeles_ =  Teuchos::rcp(new Epetra_Map(*(probdiscret.ElementRowMap())));
-
   // empty constructor
   // (this is an abstract base class)
 }
-

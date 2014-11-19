@@ -25,12 +25,16 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
-CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(DRT::Discretization& probdiscret,
-                                              Teuchos::ParameterList params,
-                                              std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-                                              int dim, Teuchos::RCP<Epetra_Comm> comm,
-                                              double alphaf, int maxdof) :
-CoAbstractStrategy(probdiscret,params,interface,dim,comm,alphaf,maxdof)
+CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof) :
+CoAbstractStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof)
 {
   // initialize constraint norm and initial penalty
   constrnorm_ = 0.0;
