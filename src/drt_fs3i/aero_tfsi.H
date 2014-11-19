@@ -197,6 +197,7 @@ namespace FS3I
     Teuchos::RCP<TSI::Monolithic> tsi_;  ///< Monolithic TSI system that is calculated
     Teuchos::RCP<ADAPTER::Structure> structure_;  ///< Structural field that is calculated (FSI)
     Teuchos::RCP<ADAPTER::Thermo> thermo_;  ///< Thermal field that is calculated
+    Teuchos::RCP<Teuchos::ParameterList> probdyn_;   ///< parameter list of the problem
 
     INPAR::TSI::BaciIncaCoupling tfsi_coupling_;   ///< Coupling strategy for TFSI problem
 

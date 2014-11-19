@@ -81,6 +81,7 @@ FS3I::AeroTFSI::AeroTFSI(
     // setup of the discretizations, including clone strategy
     TSI::UTILS::SetupTSI(lcomm);
 
+    probdyn_ = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->TSIDynamicParams()));
     // create a TSI::Monolithic instance
     const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
     tsi_ = Teuchos::rcp(new TSI::Monolithic(lcomm,sdynparams));
@@ -97,10 +98,10 @@ FS3I::AeroTFSI::AeroTFSI(
     Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
 
     // access structural dynamic params list which will be possibly modified while creating the time integrator
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+    probdyn_ = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->StructuralDynamicParams()));
 
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(*probdyn_, *probdyn_, structdis));
     structure_ = structure->StructureField();
 
     // setup of the helper class
@@ -113,10 +114,10 @@ FS3I::AeroTFSI::AeroTFSI(
     Teuchos::RCP<DRT::Discretization> thermodis = DRT::Problem::Instance()->GetDis("thermo");
 
     // access thermal dynamic params list
-    const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
+    probdyn_ = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ThermalDynamicParams()));
 
     Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermo =
-        Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(tdyn, thermodis));
+        Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(*probdyn_, thermodis));
     thermo_ = thermo->ThermoFieldrcp();
 
     // setup of the helper class
@@ -845,9 +846,8 @@ void FS3I::AeroTFSI::SendAeroData(
 template<class A>
 void FS3I::AeroTFSI::Output(Teuchos::RCP<A> solver)
 {
-  // call the TSI parameter list
-  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
-  int uprestart = tsidyn.get<int>("RESTARTEVRY");
+  // call the problem dyn parameter list
+  int uprestart = probdyn_->get<int>("RESTARTEVRY");
   if(stopflag_ != 2)
   {
     // do either normal output or forced output when stopflag == 1
@@ -855,16 +855,10 @@ void FS3I::AeroTFSI::Output(Teuchos::RCP<A> solver)
   }
   else
   {
-    if((uprestart != 0) and (solver->Step()%uprestart == 0))
-    {
-      // normal restart output
-      solver->Output(false);
-    }
-    else
-    {
-      // forced output is written
-      solver->Output(true);
-    }
+    // write standard output first
+    solver->Output(false);
+    // add missing restart information if necessary
+    solver->Output(true);
   }
 
   // write latest step to file for proper restarting
