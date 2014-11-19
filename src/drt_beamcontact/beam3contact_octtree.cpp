@@ -1431,6 +1431,11 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> >& allbboxes
     center(i) = (lim(2*i)+lim(2*i+1))/2.0;
     newedgelength(i) = fabs(lim(2*i+1)-(lim)(2*i));
   }
+
+  // safety: only cubic octants for now.
+  if(fabs(newedgelength(0)-newedgelength(1))>1e-8 || fabs(newedgelength(0)-newedgelength(2))>1e-8)
+    dserror("Check GetRootBox()! For now, octants must be cubic!");
+
   std::vector<LINALG::Matrix<6,1> > limits;
   limits.clear();
   for(int i=0; i<2; i++)
@@ -1659,15 +1664,18 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> >& allbboxes
           break;
           case Beam3ContactOctTree::spherical:
           {
-            // determine if the sphere intersects with the octant
-            bool sphereinoctant = true;
-            for(int j=0; j<(int)octcenter->M(); j++)
-              if(fabs(allbboxesstdvec[i][j]-(*octcenter)(j))>(newedgelength(j)/2.0))
-              {
-                sphereinoctant = false;
-                break;
-              }
-            if(sphereinoctant)
+            // note: element GID is the last entry of allbboxesstdvec
+            int lid = searchdis_.ElementColMap()->LID((int)allbboxesstdvec[i][(int)allbboxesstdvec[i].size()-1]);
+            double maxdistx = 0.5*(newedgelength(0)+(*diameter_)[lid]);
+            double maxdisty = 0.5*(newedgelength(1)+(*diameter_)[lid]);
+            double maxdistz = 0.5*(newedgelength(2)+(*diameter_)[lid]);
+
+            double distx = fabs((*octcenter)(0)-allbboxesstdvec[i][0]);
+            double disty = fabs((*octcenter)(1)-allbboxesstdvec[i][1]);
+            double distz = fabs((*octcenter)(2)-allbboxesstdvec[i][2]);
+
+            // check: component-wise distance
+            if(distx <= maxdistx && disty <= maxdisty && distz <= maxdistz)
               bboxsubset.push_back(allbboxesstdvec[i]);
           }
           break;
