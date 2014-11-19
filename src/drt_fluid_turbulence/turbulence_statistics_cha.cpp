@@ -48,7 +48,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   visc_     (1.0),
   shc_      (1.0),
   scnum_    (1.0),
-  myxwall_  (xwallobj)
+  myxwall_  (xwallobj),
+  numsubdivisions_(params_.sublist("TURBULENCE MODEL").get<int>("CHA_NUMSUBDIVISIONS"))
 {
   //----------------------------------------------------------------------
   // plausibility check
@@ -234,11 +235,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
 
   // available homogeneous (sampling) planes --- there are
-  // numsubdivisions layers per element layer between two
+  // numsubdivisions_ layers per element layer between two
   // nodes (Polynomial)/per element layer (Nurbs)
   planecoordinates_ = Teuchos::rcp(new std::vector<double> );
 
-  const int numsubdivisions=5;
 
   // try to cast discretisation to nurbs variant
   // this tells you what kind of computation of
@@ -423,9 +423,9 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
       for(unsigned rr =0; rr < nodeplanes_->size()-1; ++rr)
       {
-        double delta = ((*nodeplanes_)[rr+1]-(*nodeplanes_)[rr])/((double) numsubdivisions);
+        double delta = ((*nodeplanes_)[rr+1]-(*nodeplanes_)[rr])/((double) numsubdivisions_);
 
-        for (int mm =0; mm < numsubdivisions; ++mm)
+        for (int mm =0; mm < numsubdivisions_; ++mm)
         {
           planecoordinates_->push_back((*nodeplanes_)[rr]+delta*mm);
         }
@@ -464,7 +464,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // resize and initialise to 0
     {
       (*nodeplanes_      ).resize(nele_x_mele_x_lele[1]+1);
-      (*planecoordinates_).resize(nele_x_mele_x_lele[1]*(numsubdivisions-1)+1);
+      (*planecoordinates_).resize(nele_x_mele_x_lele[1]*(numsubdivisions_-1)+1);
 
       std::vector<double>::iterator coord;
 
@@ -572,7 +572,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
         }
 
         (*nodeplanes_      )[ele_cart_id[1]]                    +=x[1];
-        (*planecoordinates_)[ele_cart_id[1]*(numsubdivisions-1)]+=x[1];
+        (*planecoordinates_)[ele_cart_id[1]*(numsubdivisions_-1)]+=x[1];
 
         for (int isd=0; isd<3; ++isd)
         {
@@ -586,9 +586,9 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
           }
         }
 
-        for(int rr=1;rr<numsubdivisions-1;++rr)
+        for(int rr=1;rr<numsubdivisions_-1;++rr)
         {
-          uv(1) += 2.0/(numsubdivisions-1);
+          uv(1) += 2.0/(numsubdivisions_-1);
 
           DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
                          uv               ,
@@ -604,7 +604,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
             }
             x[isd]=val;
           }
-          (*planecoordinates_)[ele_cart_id[1]*(numsubdivisions-1)+rr]+=x[1];
+          (*planecoordinates_)[ele_cart_id[1]*(numsubdivisions_-1)+rr]+=x[1];
         }
 
 
@@ -631,7 +631,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
           }
 
           (*nodeplanes_)      [ele_cart_id[1]                   +1]+=x[1];
-          (*planecoordinates_)[(ele_cart_id[1]+1)*(numsubdivisions-1)]+=x[1];
+          (*planecoordinates_)[(ele_cart_id[1]+1)*(numsubdivisions_-1)]+=x[1];
 
             for (int isd=0; isd<3; ++isd)
             {
@@ -666,7 +666,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
     {
       (*nodeplanes_      ).resize(nele_x_mele_x_lele[1]+1);
-      (*planecoordinates_).resize(nele_x_mele_x_lele[1]*(numsubdivisions-1)+1);
+      (*planecoordinates_).resize(nele_x_mele_x_lele[1]*(numsubdivisions_-1)+1);
 
       std::vector<double>::iterator coord;
 

@@ -739,6 +739,9 @@ private:
   //! sum over all in plane averaged dissipation rates from Galerkin convective term
   Teuchos::RCP<std::vector<double> >     sum_scatra_eps_conv_;
 
+  //! number of sampling planes inside the element
+  const int numsubdivisions_;
+
 };
 
 }

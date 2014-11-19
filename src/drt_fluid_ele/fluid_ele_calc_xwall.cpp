@@ -846,8 +846,8 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::EnrichmentShapeDer(
 
    //get enrichment function and scalar derivatives
    const double psigp = SpaldingsLaw(wdist, utau);
-   const double derpsigpsc=DerSpaldingsLaw(wdist, psigp);
-   const double der2psigpsc=Der2SpaldingsLaw(wdist, psigp,derpsigpsc);
+   const double derpsigpsc=DerSpaldingsLaw(wdist, utau, psigp);
+   const double der2psigpsc=Der2SpaldingsLaw(wdist, utau, psigp,derpsigpsc);
 
    //calculate final derivatives
    for(int sdm=0;sdm < my::nsd_;++sdm)
@@ -894,37 +894,43 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::SpaldingsLaw(double di
 
     inc=fn/dfn;
 
-    //increasing robustness
-    //I think that this is not necessary
-//    if(count>50)
-//      inc*=0.5;
-
     psi-=inc;
   }
 
   return psi;
+
+  //Reichardt's law 1951
+  // return (1.0/k_*log(1.0+0.4*yplus)+7.8*(1.0-exp(-yplus/11.0)-(yplus/11.0)*exp(-yplus/3.0)))*k_;
 }
 
 /*-----------------------------------------------------------------------------*
  | Derivative of enrichment function w.r.t. y+                         bk 06/2014 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::DerSpaldingsLaw(double dist,double psi)
+double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::DerSpaldingsLaw(double dist, double utau, double psi)
 {
   //derivative with respect to y+!
   //spaldings law according to paper (derivative)
   return 1.0/(1.0/k_+expmkmb_*(exp(psi)-1.0-psi-psi*psi*0.5));
+
+// Reichardt's law
+//  double yplus=dist*utau*viscinv_;
+//  return (0.4/(k_*(1.0+0.4*yplus))+7.8*(1.0/11.0*exp(-yplus/11.0)-1.0/11.0*exp(-yplus/3.0)+yplus/33.0*exp(-yplus/3.0)))*k_;
 }
 
 /*-----------------------------------------------------------------------------*
  | Second derivative of enrichment function w.r.t. y+               bk 06/2014 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Der2SpaldingsLaw(double dist,double psi,double derpsi)
+double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Der2SpaldingsLaw(double dist, double utau, double psi,double derpsi)
 {
   //derivative with respect to y+!
   //spaldings law according to paper (2nd derivative)
   return -expmkmb_*(exp(psi)-1-psi)*derpsi*derpsi*derpsi;
+
+  // Reichardt's law
+//  double yplus=dist*utau*viscinv_;
+//  return (-0.4*0.4/(k_*(1.0+0.4*yplus)*(1.0+0.4*yplus))+7.8*(-1.0/121.0*exp(-yplus/11.0)+(2.0/33.0-yplus/99.0)*exp(-yplus/3.0)))*k_;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -1023,8 +1029,8 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::TauWViaGradient(
         for(int jdim=0;jdim<my::nsd_ ; jdim++)
           veldern(idim) += velderxywoun(idim,jdim)*normwall(jdim);
 
-      //calculate wall shear stress
-      elevec1(inode) = visc_ * veldern.Norm2();
+      //calculate wall shear stress with dynamic! viscosity
+      elevec1(inode) = visc_ * dens_ * veldern.Norm2();
       //the following vector counts, how often this node is assembled
       //(e.g. from neighboring elements)
       elevec2(inode) = 1.0;

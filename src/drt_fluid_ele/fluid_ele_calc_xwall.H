@@ -110,10 +110,10 @@ private:
   virtual double SpaldingsLaw(double dist, double utau);
 
   //! calculate derivative of enrichment wrt y+
-  virtual double DerSpaldingsLaw(double dist,double psi);
+  virtual double DerSpaldingsLaw(double dist, double utau, double psi);
 
   //! calculate second derivative of enrichment wrt y+
-  virtual double Der2SpaldingsLaw(double dist,double psi,double derpsi);
+  virtual double Der2SpaldingsLaw(double dist, double utau, double psi,double derpsi);
 
   //! evaluate enrichment (1)
   virtual void EvalEnrichment();
@@ -217,7 +217,7 @@ private:
   //! nodal values of old psi
   LINALG::Matrix<enren_,1>    epsiold_;
 
-  //! viscosity
+  //! kinematic viscosity
   double visc_;
 
   //! inverse of viscosity

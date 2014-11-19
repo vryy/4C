@@ -4559,6 +4559,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    ),
                                &fdyn_turbu);
 
+  IntParameter("CHA_NUMSUBDIVISIONS",5,"Number of homogenious sampling planes in element",&fdyn_turbu);
+
   // HIT
   //--------------
 
