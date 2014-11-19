@@ -567,17 +567,16 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   if(cmtbridge_->HaveMeshtying())
   {
     // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
-    // (1) Do mortar coupling in reference configuration
+    // (1) do mortar coupling in reference configuration
     cmtbridge_->MtManager()->GetStrategy().MortarCoupling(zeros_);
 
-    // perform mesh initialization for rotational invariance (interface)
-    Teuchos::RCP<Epetra_Vector> Xslavemod =
-        cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
+    // (2) perform mesh initialization for rotational invariance (interface)
+    // and return the modified slave node positions in vector Xslavemod
+    Teuchos::RCP<Epetra_Vector> Xslavemod = cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
 
-    // perform mesh initialization for rotational invariance (struct. discr.)
-    MeshInitialization(Xslavemod);
-
-  } // end meshinit
+    // (3) apply result of mesh initialization to underlying problem discretization
+    ApplyMeshInitialization(Xslavemod);
+  }
 
   // initialization of contact
   if(cmtbridge_->HaveContact())
@@ -786,17 +785,18 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
 
 /*----------------------------------------------------------------------*/
-/* Mesh initialization rotational invariance (Mortar Meshtying)         */
-void STR::TimInt::MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
+/* Apply results of mesh initialization (mortar meshtying) to problem discretization */
+void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
 {
+  // check modified positions vector
   if(Xslavemod==Teuchos::null)
     return;
 
-  // create allreduce slave row nodes map
+  // create fully overlapping slave node map
   Teuchos::RCP<Epetra_Map> slavemap = cmtbridge_->MtManager()->GetStrategy().SlaveRowNodes();
   Teuchos::RCP<Epetra_Map> allreduceslavemap = LINALG::AllreduceEMap(*slavemap);
 
-  // export node positions to problem col map
+  // export modified node positions to column map of problem discretization
   Teuchos::RCP<Epetra_Vector> Xslavemodcol  = LINALG::CreateVector(*discret_->DofColMap(),false);
   LINALG::Export(*Xslavemod,*Xslavemodcol);
 
@@ -804,15 +804,15 @@ void STR::TimInt::MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
   const int numdim  = DRT::Problem::Instance()->NDim();
   const Epetra_Vector& gvector =*Xslavemodcol;
 
-  // loop over slave nodes (for all procs)
+  // loop over all slave nodes (for all procs)
   for(int index=0;index<numnode;++index)
   {
     int gid = allreduceslavemap->GID(index);
     DRT::Node* mynode = discret_->gNode(gid);
 
+    // only do someting for nodes in my column map
     int ilid = discret_->NodeColMap()->LID(gid);
-    if (ilid<0)
-      continue;
+    if (ilid<0) continue;
 
     // get degrees of freedom associated with this fluid/structure node
     std::vector<int> nodedofs = discret_->Dof(0,mynode);
@@ -833,12 +833,12 @@ void STR::TimInt::MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
     // set new reference position
     mynode->SetPos(nvector);
   }
+
   // re-initialize finite elements
   DRT::ParObjectFactory::Instance().InitializeElements(*discret_);
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /* Check for semi-smooth Newton type of plasticity and do preparations */

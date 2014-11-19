@@ -472,8 +472,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
 /*----------------------------------------------------------------------*
  |  mesh intialization for rotational invariance              popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::MeshInitialization(
-    Teuchos::RCP<Epetra_Vector> Xslavemod)
+void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
 {
   //**********************************************************************
   // (1) perform mesh initialization node by node
@@ -493,120 +492,85 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(
   // dealing with the classical finite element evaluation. Thus, it is
   // very important that we apply the nodal relocation to BOTH the
   // MortarNodes in the meshtying interface discretization AND to the
-  // DRT:Nodes in the underlying problem discretization.
-  // Finally, we have to ask ourselves whether the node column distribution
-  // of the slave nodes in the interface discretization is IDENTICAL
-  // to the distribution in the underlying problem discretization. This
-  // is NOT necessarily the case, as we might have redistributed the
-  // interface among all processors. Thus, we loop over the fully over-
-  // lapping slave column map here to keep all processors around. Then,
-  // the first modification (MortarNode) is always performed, but the
-  // second modification (DRT::Node) is only performed if the respective
-  // node in contained in the problem node column map.
-  //**************************************************************
+  // DRT:Nodes in the underlying problem discretization. However, the
+  // second aspect needs to be done by the respective control routine,
+  // i.e. in the case of BACI in strtimint.cpp and NOT here.
+  //**********************************************************************
 
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    // export Xslavemod to fully overlapping column map for current interface
-    Teuchos::RCP<Epetra_Map> fullsdofs  = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowDofs()));
-    Teuchos::RCP<Epetra_Map> fullsnodes = LINALG::AllreduceEMap(*(interface_[i]->SlaveRowNodes()));
-    Epetra_Vector Xslavemodcol(*fullsdofs,false);
+    // export Xslavemod to column map for current interface
+    Epetra_Vector Xslavemodcol(*(interface_[i]->SlaveColDofs()),false);
     LINALG::Export(*Xslavemod,Xslavemodcol);
 
-    // loop over all slave nodes on the current interface
-    for (int j=0; j<fullsnodes->NumMyElements(); ++j)
+    // loop over all slave column nodes on the current interface
+    for (int j=0; j<interface_[i]->SlaveColNodes()->NumMyElements(); ++j)
     {
       // get global ID of current node
-      int gid = fullsnodes->GID(j);
+      int gid = interface_[i]->SlaveColNodes()->GID(j);
 
-      // be careful to modify BOTH mtnode in interface discret ...
-      // (check if the node is available on this processor)
-      bool isininterfacecolmap = false;
-      int ilid = interface_[i]->SlaveColNodes()->LID(gid);
-      if (ilid>=0)
-        isininterfacecolmap = true;
-      DRT::Node* node = NULL;
-      MORTAR::MortarNode* mtnode = NULL;
-      if (isininterfacecolmap)
-      {
-        node = interface_[i]->Discret().gNode(gid);
-        if (!node)
-          dserror("ERROR: Cannot find node with gid %",gid);
-        mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
-      }
+      // get the mortar node
+      DRT::Node* node =interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      MORTAR::MortarNode* mtnode =dynamic_cast<MORTAR::MortarNode*>(node);
 
       // new nodal position and problem dimension
       std::vector<double> Xnew(3,0.0);
-      std::vector<double> Xnewglobal(3,0.0);
       int dim = Dim();
 
       //******************************************************************
       // compute new nodal position
       //******************************************************************
-      // first sort out procs that do not know of mtnode
-      if (isininterfacecolmap)
+      // get corresponding entries from Xslavemodcol
+      int numdof = mtnode->NumDof();
+      if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+
+      // find DOFs of current node in Xslavemodcol and extract this node's position
+      std::vector<int> locindex(numdof);
+
+      for (int dof=0;dof<numdof;++dof)
       {
-        // owner processor of this node will do computation
-        if (Comm().MyPID()==mtnode->Owner())
-        {
-          // get corresponding entries from Xslavemod
-          int numdof = mtnode->NumDof();
-          if (dim!=numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
-
-          // find DOFs of current node in Xslavemod and extract this node's position
-          std::vector<int> locindex(numdof);
-
-          for (int dof=0;dof<numdof;++dof)
-          {
-            locindex[dof] = (Xslavemodcol.Map()).LID(mtnode->Dofs()[dof]);
-            if (locindex[dof]<0)
-              dserror("ERROR: Did not find dof in map");
-            Xnew[dof] = Xslavemodcol[locindex[dof]];
-          }
-
-          // check is mesh distortion is still OK
-          // (throw a dserror if length of relocation is larger than 80%
-          // of an adjacent element edge -> see Puso, IJNME, 2004)
-          double limit = 0.8;
-          double relocation = 0.0;
-          if (dim==2)
-          {
-            relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
-                             +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1]));
-          }
-          else if (dim==3)
-          {
-            relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
-                             +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1])
-                             +(Xnew[2]-mtnode->X()[2])*(Xnew[2]-mtnode->X()[2]));
-          }
-          else
-          {
-            dserror("ERROR: Problem dimension must be either 2 or 3!");
-          }
-
-          bool isok = mtnode->CheckMeshDistortion(relocation,limit);
-          if (!isok)
-            dserror("ERROR: Mesh distortion generated by relocation is too large!");
-        }
+        locindex[dof] = (Xslavemodcol.Map()).LID(mtnode->Dofs()[dof]);
+        if (locindex[dof]<0)
+          dserror("ERROR: Did not find dof in map");
+        Xnew[dof] = Xslavemodcol[locindex[dof]];
       }
 
-      // communicate new position Xnew to all procs
-      // (we can use SumAll here, as Xnew will be zero on all processors
-      // except for the owner processor of the current node)
-      Comm().SumAll(&Xnew[0],&Xnewglobal[0],3);
-
-      // const_cast to force modifed X() into mtnode
-      // const_cast to force modifed xspatial() into mtnode
-      // modification in interface discretization
-      if (isininterfacecolmap)
+      // check is mesh distortion is still OK
+      // (throw a dserror if length of relocation is larger than 80%
+      // of an adjacent element edge -> see Puso, IJNME, 2004)
+      double limit = 0.8;
+      double relocation = 0.0;
+      if (dim==2)
       {
-        for (int k=0;k<dim;++k)
-          mtnode->xspatial()[k] = Xnewglobal[k];
-
-        mtnode->SetPos(Xnewglobal);
+        relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
+                         +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1]));
       }
+      else if (dim==3)
+      {
+        relocation = sqrt((Xnew[0]-mtnode->X()[0])*(Xnew[0]-mtnode->X()[0])
+                         +(Xnew[1]-mtnode->X()[1])*(Xnew[1]-mtnode->X()[1])
+                         +(Xnew[2]-mtnode->X()[2])*(Xnew[2]-mtnode->X()[2]));
+      }
+      else
+      {
+        dserror("ERROR: Problem dimension must be either 2 or 3!");
+      }
+
+      // check is only done once per node (by owing processor)
+      if (Comm().MyPID()==mtnode->Owner())
+      {
+        bool isok = mtnode->CheckMeshDistortion(relocation,limit);
+        if (!isok) dserror("ERROR: Mesh distortion generated by relocation is too large!");
+      }
+
+      // modification of xspatial (spatial coordinates)
+      for (int k=0;k<dim;++k)
+        mtnode->xspatial()[k] = Xnew[k];
+
+      // modification of xref (reference coordinates)
+      mtnode->SetPos(Xnew);
     }
   }
 
@@ -630,7 +594,6 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  | call appropriate evaluate for contact evaluation           popp 06/09|

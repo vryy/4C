@@ -900,9 +900,9 @@ namespace STR
     //! create manager object + initialize all relevant stuff if so
     void PrepareContactMeshtying(const Teuchos::ParameterList& sdynparams);
 
-    //! Do mesh initialization for rotational invariance for nodes in
-    //! problem discr. (Mortar Meshtying case)
-    void MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod);
+    //! Apply results of mesh initialization (mortar meshtying) to the
+    //! underlying problem discretization
+    void ApplyMeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod);
 
     //! Check if plasticity elements are involved and
     //! create manager object + initialize all relevant stuff if so
