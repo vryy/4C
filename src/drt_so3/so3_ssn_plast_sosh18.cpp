@@ -433,7 +433,9 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(
       // calculate the deformation gradient consistent to the modified strains
       // but only if the material needs a deformation gradient (e.g. plasticity)
       LINALG::Matrix<NUMDIM_SOH18,NUMDIM_SOH18> defgrd;
-      if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd())
+      if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd()
+          || iostrain==INPAR::STR::strain_ea
+          || iostress==INPAR::STR::stress_cauchy)
       {
         // compute the deformation gradient - shell-style
         // deformation gradient with derivatives w.r.t. local basis
@@ -481,6 +483,94 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(
         so3mat->Evaluate(&defgrd,&glstrain,params,&pk2,&cmat,Id());
       }
       // material call *********************************************
+
+      // strain output **********************************************************
+      if (elestrain)
+      {
+        // return gp strains if necessary
+        switch (iostrain)
+        {
+        case INPAR::STR::strain_gl:
+        {
+          if (elestrain == NULL) dserror("strain data not available");
+            for (int i = 0; i < 3; ++i) {
+            (*elestrain)(gp,i) = glstrain(i);
+          }
+          for (int i = 3; i < 6; ++i) {
+            (*elestrain)(gp,i) = 0.5 * glstrain(i);
+          }
+        }
+        break;
+        case INPAR::STR::strain_ea:
+        {
+          LINALG::Matrix<3,3> bi;
+          bi.MultiplyNT(defgrd,defgrd);
+          bi.Invert();
+          for (int i=0; i<3; i++)
+            (*elestrain)(gp,i) = .5*(1.-bi(i,i));
+          (*elestrain)(gp,3) = -bi(0,1);
+          (*elestrain)(gp,4) = -bi(2,1);
+          (*elestrain)(gp,5) = -bi(0,2);
+        break;
+        }
+        case INPAR::STR::strain_none:
+          break;
+        default:
+          dserror("requested strain option not available");
+          break;
+        }
+      }
+      // end of strain output ***************************************************
+
+      // stress output **********************************************************
+      if (elestress)
+      {
+        // return gp strains if necessary
+        switch (iostress)
+        {
+        case INPAR::STR::stress_2pk:
+        {
+          if (elestress == NULL) dserror("stress data not available");
+          for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) {
+            (*elestress)(gp,i) = pk2(i);
+          }
+        }
+        break;
+        case INPAR::STR::stress_cauchy:
+        {
+          if (elestress == NULL) dserror("stress data not available");
+          LINALG::Matrix<3,3> pkstress;
+          pkstress(0,0) = pk2(0);
+          pkstress(0,1) = pk2(3);
+          pkstress(0,2) = pk2(5);
+          pkstress(1,0) = pkstress(0,1);
+          pkstress(1,1) = pk2(1);
+          pkstress(1,2) = pk2(4);
+          pkstress(2,0) = pkstress(0,2);
+          pkstress(2,1) = pkstress(1,2);
+          pkstress(2,2) = pk2(2);
+
+          LINALG::Matrix<3,3> cauchystress;
+          LINALG::Matrix<3,3> temp;
+          temp.Multiply(1.0/defgrd.Determinant(),defgrd,pkstress);
+          cauchystress.MultiplyNT(temp,defgrd);
+
+          (*elestress)(gp,0) = cauchystress(0,0);
+          (*elestress)(gp,1) = cauchystress(1,1);
+          (*elestress)(gp,2) = cauchystress(2,2);
+          (*elestress)(gp,3) = cauchystress(0,1);
+          (*elestress)(gp,4) = cauchystress(1,2);
+          (*elestress)(gp,5) = cauchystress(0,2);
+        }
+        break;
+        case INPAR::STR::stress_none:
+          break;
+        default:
+          dserror("requested stress option not available");
+          break;
+        }
+      }
+      // end of stress output ***************************************************
 
       double detJ_w = detJ*So_sh18::wgt_[gp];
 
