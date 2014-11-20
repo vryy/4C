@@ -977,7 +977,7 @@ protected:
   void ComputeStabilizationParameters(const double& vol);
 
   /// get compute RHS of contiuity equation of time step n
-  void ComputeOldRHSConti();
+  void ComputeOldRHSConti(double dphi_dp);
 
   virtual int ComputeVolume(
       Teuchos::ParameterList&         params,

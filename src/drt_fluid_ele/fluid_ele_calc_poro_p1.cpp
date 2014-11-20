@@ -906,7 +906,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     my::ComputeOldRHSAndSubgridScaleVelocity();
 
     // compute old RHS of continuity equation
-    my::ComputeOldRHSConti();
+    my::ComputeOldRHSConti(dphi_dp);
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
