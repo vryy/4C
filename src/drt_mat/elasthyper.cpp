@@ -890,15 +890,15 @@ void MAT::ElastHyper::EvaluateIsotropicMod(
 
   //isochoric contribution
   // modified constitutive tensor
-  LINALG::Matrix<6,6> modcmat;
+  LINALG::Matrix<6,6> modcmat(true);
   LINALG::Matrix<6,6> modcmat2(true);
   // contribution: Id \otimes Id
   modcmat.MultiplyNT(moddelta(0), id2, id2);
   // contribution: Id \otimes C + C \otimes Id
   modcmat.MultiplyNT(moddelta(1), id2, modscg, 1.0);
-  modcmat.MultiplyNT(moddelta(1), scg, id2, 1.0);
+  modcmat.MultiplyNT(moddelta(1), modscg, id2, 1.0);
   // contribution: C \otimes C
-  modcmat.MultiplyNT(moddelta(2), scg, modscg, 1.0);
+  modcmat.MultiplyNT(moddelta(2), modscg, modscg, 1.0);
   // contribution: Id4^#
   modcmat.Update(moddelta(3), id4sharp, 1.0);
   //scaling
