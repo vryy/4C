@@ -1183,6 +1183,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*--------------------------------------------------------------------*/
+  // test material to test elasthyper-toolbox
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoTestMaterial",
+                                            "test material to test elasthyper-toolbox",
+                                            INPAR::MAT::mes_isotestmaterial));
+
+    AddNamedReal(m,"C1","Modulus for first invariant");
+    AddNamedReal(m,"C2","Modulus for second invariant");
+    AppendMaterialDefinition(matlist,m);
+  }
+
 
   /*--------------------------------------------------------------------*/
   // volumetric contribution of Sussman Bathe

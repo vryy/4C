@@ -289,6 +289,37 @@ private:
         LINALG::Matrix<5,1>& moddelta
         );
 
+//    /// calculates the derivations of the hyperelastic laws with respect to the (modified) invariants
+//    virtual void EvaluateInvariantDerivations(
+//        const LINALG::Matrix<3,1>& prinv,
+//        const LINALG::Matrix<3,1>& modinv,
+//        LINALG::Matrix<3,1>& dPI,
+//        LINALG::Matrix<6,1>& ddPII,
+//        LINALG::Matrix<3,1>& dPmodI,
+//        LINALG::Matrix<6,1>& ddPmodII
+//        );
+
+//    /// converts the derivations with respect to the modified invariants in derivations with respect to principal invariants
+//    virtual void ConvertModToPrinc(
+//        const LINALG::Matrix<3,1>& prinv,
+//        const LINALG::Matrix<3,1>& dPmodI,
+//        const LINALG::Matrix<6,1>& ddPmodII,
+//        LINALG::Matrix<3,1>& dPI,
+//        LINALG::Matrix<6,1>& ddPII
+//        );
+
+//    /// calculates the isotropic stress and elasticity tensor
+//    virtual void EvaluateIsotropicStressCmat(
+//        LINALG::Matrix<6,1>& stress,
+//        LINALG::Matrix<6,6>& cmat,
+//        LINALG::Matrix<6,1> scg,
+//        LINALG::Matrix<6,1> id2,
+//        LINALG::Matrix<6,1> icg,
+//        LINALG::Matrix<6,6> id4sharp,
+//        LINALG::Matrix<3,1> prinv,
+//        LINALG::Matrix<3,1> dPI,
+//        LINALG::Matrix<6,1> ddPII
+//        );
 
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
     virtual void EvaluateIsotropicPrinc(

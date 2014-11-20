@@ -1,8 +1,15 @@
 ==================================================================
                   General Data File BACI
 ==================================================================
+//
+//
+// Maintainer: Birzle Anna
+// birzle@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15255
+//
 -------------------------------------------------------------TITLE
-created by pre_exodus
+Testcase for testing viscoelasthyper-toolbox.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    8
 //NODES       27

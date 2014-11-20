@@ -107,6 +107,7 @@ namespace INPAR
       mes_isoanisoexpodispersion,   ///< isochoric anisotropic single fiber material, with isotropic fiber dispersion
       mes_coupvarga,  ///< isotropic Varga material
       mes_isovarga,  ///< isotropic isochoric Varga material
+      mes_isotestmaterial, ///< material to test the elasthyper-toolbox
       mes_isoratedep,  ///< isotropic iscochoric frequency dependent viscos potential summand
       mes_genmax,     ///< viscous contribution according to SLS-Model
       m_cnst_art,            ///< 1D_Artery constant material properties

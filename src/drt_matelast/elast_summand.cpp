@@ -30,6 +30,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_coup2pow.H"
 #include "elast_isoexpopow.H"
 #include "elast_isomooneyrivlin.H"
+#include "elast_isotestmaterial.H"
 #include "elast_coupSaintVenantKirchhoff.H"
 #include "elast_volsussmanbathe.H"
 #include "elast_volpenalty.H"
@@ -192,6 +193,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::IsoMooneyRivlin(curmat));
     MAT::ELASTIC::PAR::IsoMooneyRivlin* params = static_cast<MAT::ELASTIC::PAR::IsoMooneyRivlin*>(curmat->Parameter());
     return Teuchos::rcp(new IsoMooneyRivlin(params));
+  }
+  case INPAR::MAT::mes_isotestmaterial:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoTestMaterial(curmat));
+    MAT::ELASTIC::PAR::IsoTestMaterial* params = static_cast<MAT::ELASTIC::PAR::IsoTestMaterial*>(curmat->Parameter());
+    return Teuchos::rcp(new IsoTestMaterial(params));
   }
   case INPAR::MAT::mes_isovolHUdependentneohooke:
   {

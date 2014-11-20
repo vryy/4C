@@ -193,6 +193,15 @@ namespace MAT
         return;  // do nothing
       };
 
+      virtual void AddDerivationsPrincipal(
+          LINALG::Matrix<3,1>& dPI, ///< first derivative with respect to invariants
+          LINALG::Matrix<6,1>& ddPII, ///< second derivative with respect to invariants
+          const LINALG::Matrix<3,1>& prinv ///< principal invariants of right Cauchy-Green tensor
+      )
+      {
+        return;  // do nothing
+      };
+
       /// retrieve coefficients of first and second derivative
       /// of summand (decoupled form) with respect to modified invariants
       ///
@@ -261,6 +270,15 @@ namespace MAT
         LINALG::Matrix<5,1>& delta,  ///< see above
         const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
         )
+      {
+        return;  // do nothing
+      };
+
+      virtual void AddDerivationsModified(
+          LINALG::Matrix<3,1>& dPmodI, ///< first derivative with respect to modified invariants
+          LINALG::Matrix<6,1>& ddPmodII, ///< second derivative with respect to modified invariants
+          const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
+      )
       {
         return;  // do nothing
       };
