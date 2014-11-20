@@ -3047,6 +3047,10 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   {
     dispnm_->Update(1.0,*dispn_,0.0);
     dispn_ ->Update(1.0,*dispnp_,0.0);
+
+    // gridvelocities of this step become most recent
+    // gridvelocities of the last step
+    gridvn_ ->Update(1.0,*gridv_,0.0);
   }
 
   // update flow-rate, flow-volume and impedance vectors in case of flow-dependent pressure boundary conditions,
@@ -3483,6 +3487,7 @@ void FLD::FluidImplicitTimeInt::Output()
       {
         output_->WriteVector("dispn", dispn_);
         output_->WriteVector("dispnm",dispnm_);
+        output_->WriteVector("gridvn", gridvn_);
       }
 
       // flow rate, flow volume and impedance in case of flow-dependent pressure bc
@@ -3514,6 +3519,7 @@ void FLD::FluidImplicitTimeInt::Output()
       output_->WriteVector("dispnp", dispnp_);
       output_->WriteVector("dispn", dispn_);
       output_->WriteVector("dispnm",dispnm_);
+      output_->WriteVector("gridvn", gridvn_);
     }
 
     // write mesh in each restart step --- the elements are required since
@@ -3732,6 +3738,7 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
     reader.ReadVector(dispnp_,"dispnp");
     reader.ReadVector(dispn_ , "dispn");
     reader.ReadVector(dispnm_,"dispnm");
+    reader.ReadVector(gridvn_,"gridvn");
   }
 
   // flow rate and flow volume in case of flow-dependent pressure bc
@@ -3862,11 +3869,13 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
       gridv_->Update(0.5/dta_, *dispnm_, 1.0);
     break;
     case INPAR::FLUID::OST:
+    {
       /* get gridvelocity from OST time discretisation of mesh motion:
          -> needed to allow consistent linearization of FPSI problem  */
       const double theta = fluiddynparams.get<double>("THETA");
       gridv_->Update(1/(theta*dta_), *dispnp_, -1/(theta*dta_), *dispn_, 0.0);
-      gridv_->Update(-((1.0/theta)-1.0),*veln_,1.0);
+      gridv_->Update(-((1.0/theta)-1.0),*gridvn_,1.0);
+    }
     break;
   }
 
@@ -6268,7 +6277,7 @@ void FLD::FluidImplicitTimeInt::Reset(
     dispn_  = LINALG::CreateVector(*dofrowmap,true);
     dispnm_ = LINALG::CreateVector(*dofrowmap,true);
     gridv_  = LINALG::CreateVector(*dofrowmap,true);
-
+    gridvn_  = LINALG::CreateVector(*dofrowmap,true);
   }
 
   if (completeReset)

@@ -89,7 +89,7 @@ GRAD_DIV                        yes
 CHARELELENGTH_PC                volume_equivalent_diameter
 CHARELELENGTH_U                 streamlength
 -------------------------------------------------------FPSI DYNAMIC
-CONVTOL                         1e-06
+CONVTOL                         1e-10
 COUPALGO                        fpsi_monolithic_plain
 PARTITIONED                     monolithic // monolithic  RobinNeumann nocoupling
 ITEMAX                          100
@@ -106,8 +106,8 @@ ITEMIN                          1
 NORM_INC                        Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFINC               And
-RESTOL                          1e-7
-INCTOL                          1e-6
+RESTOL                          1e-10
+INCTOL                          1e-10
 LineSearch      No  // Yes No
 FDCheck        No
 FDCheck_row                     -1
@@ -19659,7 +19659,7 @@ NODE 4430    COORD  -1.7500000000000000e+00  2.5000000000000000e+00  -5.00000000
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 
-STRUCTURE DIS structure NODE  60 QUANTITY dispx VALUE 1.96887306223569621e-05 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 120 QUANTITY dispx VALUE 1.88557055313558839e-05 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE  60 QUANTITY dispx VALUE 1.92017823336172285e-05 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 120 QUANTITY dispx VALUE 1.83868605482977580e-05 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END

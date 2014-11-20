@@ -51,9 +51,6 @@ void FLD::TimIntPoro::Init()
 
   if(not alefluid_) dserror("poro fluid has to be an ale fluid!");
 
-  //grid velocity of old time step n
-  gridvn_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-
   //set some poro-specific parameters
   SetElementCustomParameter();
   return;
@@ -104,7 +101,6 @@ void FLD::TimIntPoro::ReadRestart(int step)
   FluidImplicitTimeInt::ReadRestart(step);
 
   reader.ReadVector(gridv_,"gridv");
-  reader.ReadVector(gridvn_,"gridvn");
 
   return;
 }
@@ -230,13 +226,11 @@ void FLD::TimIntPoro::Output()
     convel->Update(-1.0,*gridv_,1.0);
     output_->WriteVector("convel", convel);
     output_->WriteVector("gridv", gridv_);
-    output_->WriteVector("gridvn", gridvn_);
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ > 0 && step_%uprestart_ == 0)
   {
     output_->WriteVector("gridv", gridv_);
-    output_->WriteVector("gridvn", gridvn_);
   }
   return;
 } // TimIntPoro::Output
@@ -327,8 +321,6 @@ void FLD::TimIntPoro::TimIntCalculateAcceleration()
                         velnm_,
                         accn_ ,
                         accnp_);
-
-  gridvn_ ->Update(1.0,*gridv_,0.0);
 
   return;
 }
