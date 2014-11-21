@@ -45,8 +45,8 @@ Maintainer: Burkhard Bornemann
 #include "elast_isoanisoexpodispersion.H"
 #include "elast_coupvarga.H"
 #include "elast_isovarga.H"
-#include "elast_isovolHUdependentneohooke.H"
-#include "elast_isovolaaagasser.H"
+#include "elast_coupHUdependentneohooke.H"
+#include "elast_coupaaagasser.H"
 #include "visco_isoratedep.H"
 #include "visco_genmax.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -201,19 +201,19 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     MAT::ELASTIC::PAR::IsoTestMaterial* params = static_cast<MAT::ELASTIC::PAR::IsoTestMaterial*>(curmat->Parameter());
     return Teuchos::rcp(new IsoTestMaterial(params));
   }
-  case INPAR::MAT::mes_isovolHUdependentneohooke:
+  case INPAR::MAT::mes_coupHUdependentneohooke:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke(curmat));
-    MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params = static_cast<MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke*>(curmat->Parameter());
-    return Teuchos::rcp(new IsoVolHUDependentNeoHooke(params));
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupHUDependentNeoHooke(curmat));
+    MAT::ELASTIC::PAR::CoupHUDependentNeoHooke* params = static_cast<MAT::ELASTIC::PAR::CoupHUDependentNeoHooke*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupHUDependentNeoHooke(params));
   }
-  case INPAR::MAT::mes_isovolaaagasser:
+  case INPAR::MAT::mes_coupaaagasser:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoVolAAAGasser(curmat));
-    MAT::ELASTIC::PAR::IsoVolAAAGasser* params = static_cast<MAT::ELASTIC::PAR::IsoVolAAAGasser*>(curmat->Parameter());
-    return Teuchos::rcp(new IsoVolAAAGasser(params));
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAAAGasser(curmat));
+    MAT::ELASTIC::PAR::CoupAAAGasser* params = static_cast<MAT::ELASTIC::PAR::CoupAAAGasser*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupAAAGasser(params));
   }
   case INPAR::MAT::mes_volsussmanbathe:
   {

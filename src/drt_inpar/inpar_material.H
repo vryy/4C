@@ -83,8 +83,8 @@ namespace INPAR
       mes_coupexppol,     ///<compressible, istropic material law for soft tissue
       mes_coupSVK,     ///<Saint-Venant-Kirchhoff material
       mes_isoneohooke,  ///< isochoric Neo-Hooke hyperelastic potential summand
-      mes_isovolHUdependentneohooke,  ///< isochoric and volumetric summands for HU dependent material
-      mes_isovolaaagasser,  ///< isochoric and volumetric summands for thrombus material (varible stiffness)
+      mes_coupHUdependentneohooke,  ///< isochoric and volumetric summands for HU dependent material
+      mes_coupaaagasser,  ///< isochoric and volumetric summands for thrombus material (varible stiffness)
       mes_isoexpopow,  ///< isochoric exponential hyperelastic potential summand
       mes_isomooneyrivlin,  ///< isochoric Mooney-Rivlin hyperelastic potential summand
       mes_isoyeoh,  ///< isochoric Yeoh hyperelastic potential summand

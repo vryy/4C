@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isovolHUdependentneohooke.H
+\file elast_coupHUdependentneohooke.H
 \brief
 
 This file contains the routines required to calculate the isochoric and volumetric contribution
@@ -8,12 +8,11 @@ of the HU dependent neo hooke material. E.g used for inclusion of
 calcification in AAA simulations
 
 <pre>
-maintainer: Andreas Maier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_
-#define ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_
+#ifndef ELAST_COUPHUDEPENDENTNEOHOOKE_H_
+#define ELAST_COUPHUDEPENDENTNEOHOOKE_H_
 
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
@@ -34,7 +33,7 @@ namespace ELASTIC
     /// element. The input line for the consideration of
     /// calcifications in AAA simulation reads:
     ///
-    /// MAT 20 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
+    /// MAT 20 ELAST_CoupHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
     ///
     /// An Neo Hooke material is chosen for the isochoric contribution
     /// with varying stiffness parameters according to the HU and the
@@ -48,17 +47,17 @@ namespace ELASTIC
     /// bulk modulus for each element is then calculated according to
     /// the isochoric stiffness.
 
-    class IsoVolHUDependentNeoHooke : public MAT::PAR::Parameter
+    class CoupHUDependentNeoHooke : public MAT::PAR::Parameter
     {
     public:
 
       /// standard constructor
-      IsoVolHUDependentNeoHooke(
+      CoupHUDependentNeoHooke(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~IsoVolHUDependentNeoHooke() { ; }
+      virtual ~CoupHUDependentNeoHooke() { ; }
 
       /// @name material parameters
       //@{
@@ -85,18 +84,18 @@ namespace ELASTIC
       ///
       virtual Teuchos::RCP<MAT::Material> CreateMaterial(){ return Teuchos::null; };
 
-    };  // class IsoVolHUDependentNeoHooke
+    };  // class CoupHUDependentNeoHooke
 
   }  // namespace PAR
 
 
-  class IsoVolHUDependentNeoHooke : public Summand
+  class CoupHUDependentNeoHooke : public Summand
   {
 
   public:
 
     /// constructor with given material parameters
-    IsoVolHUDependentNeoHooke(MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params);
+    CoupHUDependentNeoHooke(MAT::ELASTIC::PAR::CoupHUDependentNeoHooke* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -111,14 +110,14 @@ namespace ELASTIC
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isovolHUdependentneohooke; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupHUdependentneohooke; }
 
     //@}
 
     /// Setup of summand
     virtual void Setup(DRT::INPUT::LineDefinition* linedef);
 
-    /// Add principal calcified coefficients for IsoVolHUDependentNeoHooke material.
+    /// Add principal calcified coefficients for CoupHUDependentNeoHooke material.
     void AddCoefficientsPrincipal(
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
@@ -161,7 +160,7 @@ namespace ELASTIC
   private:
 
     /// my material parameters
-    MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params_;
+    MAT::ELASTIC::PAR::CoupHUDependentNeoHooke* params_;
 
     /// factor for material parameter
     double alpha_;

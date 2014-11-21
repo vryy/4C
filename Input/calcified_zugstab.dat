@@ -57,8 +57,8 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK //Superlu                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 11 DENS 0.001
-MAT 10 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 1.0E4 CT_MIN 50.0 CT_MAX 600.0 NUE 0.475 BETA -2.0
-MAT 11 ELAST_IsoVolAAAGasser CLUM 2.0E4 CMED 5.0E4 CABLUM 8.0E4 NUE 0.475 BETA -2.0
+MAT 10 ELAST_CoupHUDependentNeoHooke ALPHA_MAX 1.0E4 CT_MIN 50.0 CT_MAX 600.0 NUE 0.475 BETA -2.0
+MAT 11 ELAST_CoupAAAGasser CLUM 2.0E4 CMED 5.0E4 CABLUM 8.0E4 NUE 0.475 BETA -2.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.00 1.0 FACTOR 0.0 170.23
 ----------------------------------------------------------------------CURVE2

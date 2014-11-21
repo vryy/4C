@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isovolHUdependentneohooke.cpp
+\file elast_coupHUdependentneohooke.cpp
 \brief
 
 This file contains the routines required to calculate the isochoric and volumetric contribution
 of the cc neo hooke material
 
-MAT 20 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
+MAT 20 ELAST_CoupHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
 
 <pre>
 maintainer: Andreas Maier
@@ -16,7 +16,7 @@ maintainer: Andreas Maier
 /* macros */
 
 /*----------------------------------------------------------------------*/
-#include "elast_isovolHUdependentneohooke.H"
+#include "elast_coupHUdependentneohooke.H"
 #include "../drt_mat/matpar_material.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -25,7 +25,7 @@ maintainer: Andreas Maier
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(
+MAT::ELASTIC::PAR::CoupHUDependentNeoHooke::CoupHUDependentNeoHooke(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -41,7 +41,7 @@ MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(
 /*----------------------------------------------------------------------*
  |  Constructor                                 (public)   AMaier 06/11 |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params)
+MAT::ELASTIC::CoupHUDependentNeoHooke::CoupHUDependentNeoHooke(MAT::ELASTIC::PAR::CoupHUDependentNeoHooke* params)
   : params_(params)
 {
 
@@ -50,7 +50,7 @@ MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(MAT::ELASTIC:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoVolHUDependentNeoHooke::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::CoupHUDependentNeoHooke::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data,alpha_);
 }
@@ -58,7 +58,7 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::PackSummand(DRT::PackBuffer& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoVolHUDependentNeoHooke::UnpackSummand(
+void MAT::ELASTIC::CoupHUDependentNeoHooke::UnpackSummand(
   const std::vector<char>& data,
   std::vector<char>::size_type& position
   )
@@ -69,7 +69,7 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::UnpackSummand(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoVolHUDependentNeoHooke::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::ELASTIC::CoupHUDependentNeoHooke::Setup(DRT::INPUT::LineDefinition* linedef)
 {
   double HU = 0.0;
   if (linedef->HaveNamed("HU"))
@@ -96,7 +96,7 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::Setup(DRT::INPUT::LineDefinition* 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincipal(
+void MAT::ELASTIC::CoupHUDependentNeoHooke::AddCoefficientsPrincipal(
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<8,1>& delta,
   const LINALG::Matrix<3,1>& prinv

@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_isovolaaagasser.H
+\file elast_coupaaagasser.H
 \brief
 
 This file contains the routines required to calculate the isochoric contribution
 of the aaagasser material and the corresponding volumetric contribution.
 
-MAT 20 ELAST_IsoVolAAAGasser CLUM 2.62E3 CMED 1.98E3 CABLUM 1.73E3 NUE 0.49 BETA -2.0
+MAT 20 ELAST_CoupAAAGasser CLUM 2.62E3 CMED 1.98E3 CABLUM 1.73E3 NUE 0.49 BETA -2.0
 
 <pre>
 maintainer: Andreas Maier
@@ -14,8 +14,8 @@ maintainer: Andreas Maier
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef ELAST_ISOVOLAAAGASSER_H_
-#define ELAST_ISOVOLAAAGASSER_H_
+#ifndef ELAST_COUPAAAGASSER_H_
+#define ELAST_COUPAAAGASSER_H_
 
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
@@ -32,7 +32,7 @@ namespace ELASTIC
     /// This material provides the isochoric and(!) the volumetric
     /// contribution for a AAA thromubs. The input line should read
     /// like this:
-    ///     MAT 21 ELAST_IsoVolAAAGasser CLUM 2.62E3 CMED 1.98E3
+    ///     MAT 21 ELAST_CoupAAAGasser CLUM 2.62E3 CMED 1.98E3
     ///     CABLUM 1.73E3 NUE 0.49 BETA -2.0
     ///
     /// An Ogden type material
@@ -49,17 +49,17 @@ namespace ELASTIC
     /// Energy Functions, Journal of Applied Mechanics, 2000).
 
 
-    class IsoVolAAAGasser : public MAT::PAR::Parameter
+    class CoupAAAGasser : public MAT::PAR::Parameter
     {
     public:
 
       /// standard constructor
-      IsoVolAAAGasser(
+      CoupAAAGasser(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~IsoVolAAAGasser() { ; }
+      virtual ~CoupAAAGasser() { ; }
 
       /// @name material parameters
       //@{
@@ -88,18 +88,18 @@ namespace ELASTIC
       ///
       virtual Teuchos::RCP<MAT::Material> CreateMaterial(){ return Teuchos::null; };
 
-    };  // class IsoVolAAAGasser
+    };  // class CoupAAAGasser
 
   }  // namespace PAR
 
 
-  class IsoVolAAAGasser : public Summand
+  class CoupAAAGasser : public Summand
   {
 
   public:
 
     /// constructor with given material parameters
-    IsoVolAAAGasser(MAT::ELASTIC::PAR::IsoVolAAAGasser* params);
+    CoupAAAGasser(MAT::ELASTIC::PAR::CoupAAAGasser* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -114,7 +114,7 @@ namespace ELASTIC
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isovolaaagasser; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupaaagasser; }
 
     //@}
 
@@ -161,7 +161,7 @@ namespace ELASTIC
   private:
 
     /// my material parameters
-    MAT::ELASTIC::PAR::IsoVolAAAGasser* params_;
+    MAT::ELASTIC::PAR::CoupAAAGasser* params_;
 
     /// for Gasser AAA-ILT material
     double normdist_;
