@@ -371,14 +371,19 @@ void FS3I::PartFPS3I::SetupSystem()
   // Setup FPSI system
   fpsi_->SetupSystem();
 
+  /*----------------------------------------------------------------------*/
+  /*                  General set up for scalar fields                    */
+  /*----------------------------------------------------------------------*/
+
   // create map extractors needed for scatra condition coupling
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
+    const int numscal = currscatra->ScaTraField()->NumScal();
     Teuchos::RCP<DRT::Discretization> currdis = currscatra->ScaTraField()->Discretization();
     Teuchos::RCP<LINALG::MultiMapExtractor> mapex = Teuchos::rcp(new LINALG::MultiMapExtractor());
     DRT::UTILS::MultiConditionSelector mcs;
-    mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(*currdis,"ScaTraCoupling",0,1)));
+    mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(*currdis,"ScaTraCoupling",0,numscal)));
     mcs.SetupExtractor(*currdis,*currdis->DofRowMap(),*mapex);
     scatrafieldexvec_.push_back(mapex);
   }
@@ -388,7 +393,7 @@ void FS3I::PartFPS3I::SetupSystem()
                                      *(scatravec_[1]->ScaTraField()->Discretization()),
                                      scatrafieldexvec_[1]->Map(1),
                                      "ScaTraCoupling",
-                                     1);
+                                     scatravec_[0]->ScaTraField()->NumScal()); //we assume here that both discretisation have the same number of scalars
 
   // create map extractor for coupled scatra fields
   // the second field is always split
