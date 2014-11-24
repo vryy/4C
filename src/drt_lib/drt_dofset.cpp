@@ -20,7 +20,6 @@ Maintainer: Martin Kronbichler
 #include "drt_discret.H"
 #include "drt_discret_hdg.H"
 #include "drt_utils.H"
-#include "drt_globalproblem.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -222,6 +221,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   // does not exist. This is not resolved yet.
   // mwgee 01/13
 #ifdef BW_OPT
+  // TAW: Please do not include drt_problem.H!!!
   //bool bw = DRT::Problem::Instance()->BandWidthOpt();
   bool bw = false;
   if (bw)
