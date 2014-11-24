@@ -88,7 +88,7 @@ namespace FS3I
     virtual void TestResults(const Epetra_Comm& comm);
 
     //! information transfer FSI -> ScaTra
-    void SetFSISolution();
+    virtual void SetFSISolution();
 
     /// set scatra solution on structure field
     void SetStructScatraSolution() ;
@@ -111,6 +111,15 @@ namespace FS3I
     virtual void PrepareTimeStep() = 0;
 
     void SetMeshDisp();
+
+    ///provide wall shear stresses from FPSI subproblem for scatra subproblem
+    void SetWallShearStresses();
+
+    /// extract Wall Shear Stresses at the interface
+    void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
+
+    ///Calculation of wall shear stress at the interface
+    Teuchos::RCP<Epetra_Vector> CalcWallShearStress();
     //@}
 
   protected:

@@ -81,6 +81,9 @@ namespace FS3I
     //! interface are defined on both discretizations
     void CheckInterfaceDirichletBC();
 
+    //! Check input of all DESIGN SCATRA COUPLING SURF CONDITIONS
+    void CheckFS3IInputs();
+
     //! output of scalars and mean scalars
     void ScatraOutput();
 

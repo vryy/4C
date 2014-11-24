@@ -243,78 +243,20 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
   // check existence of scatra coupling conditions for both
   // discretizations and definition of the permeability coefficient
   //---------------------------------------------------------------------
-  std::vector<std::set<int> > condIDs;
-  std::set<int> fluidIDs;
-  std::set<int> structIDs;
-  condIDs.push_back(fluidIDs);
-  condIDs.push_back(structIDs);
-  std::vector<std::map<int,double> > PermCoeffs;
-  std::vector<std::map<int,double> > conduct;
-  std::map<int,double> fluidcoeff;
-  std::map<int,double> structcoeff;
-  PermCoeffs.push_back(fluidcoeff);
-  PermCoeffs.push_back(structcoeff);
-  conduct.push_back(fluidcoeff);
-  conduct.push_back(structcoeff);
+  CheckFS3IInputs();
 
-  for (unsigned i=0; i<scatravec_.size(); ++i)
+  //in case of FPS3I we have to handle the conductivity, too
+  Teuchos::RCP<DRT::Discretization> dis = scatravec_[0]->ScaTraField()->Discretization();
+  std::vector<DRT::Condition*> coupcond;
+  dis->GetCondition("ScaTraCoupling",coupcond);
+  double myconduct = coupcond[0]->GetDouble("hydraulic conductivity"); //here we assume the conductivity to be the same in every BC
+
+  //conductivity is not only needed in scatracoupling but also in FPSI coupling!
+  if(myconduct==0.0)
   {
-    Teuchos::RCP<DRT::Discretization> dis = (scatravec_[i])->ScaTraField()->Discretization();
-    std::vector<DRT::Condition*> coupcond;
-    dis->GetCondition("ScaTraCoupling",coupcond);
-    for (unsigned iter=0; iter<coupcond.size(); ++iter)
-    {
-      int myID = (coupcond[iter])->GetInt("coupling id");
-      condIDs[i].insert(myID);
-
-
-        double myperm = (coupcond[iter])->GetDouble("permeability coefficient");
-        PermCoeffs[i].insert(std::pair<int,double>(myID,myperm));
-        double myconduct = (coupcond[iter])->GetDouble("hydraulic conductivity");
-
-        //conductivity is not only needed in scatracoupling but also in FPSI coupling!
-        if(myconduct==0.0)
-        {
-          dserror("conductivity of 0.0 is not allowed!!! Should be set in \"DESIGN SCATRA COUPLING SURF CONDITIONS\"");
-        }
-        fpsi_->SetConductivity(myconduct);
-        conduct[i].insert(std::pair<int,double>(myID,myconduct));
-
-    }
+    dserror("conductivity of 0.0 is not allowed!!! Should be set in \"DESIGN SCATRA COUPLING SURF CONDITIONS\"");
   }
-  if (condIDs[0].size() != condIDs[1].size())
-    dserror("ScaTra coupling conditions need to be defined on both discretizations");
-
-  if (!infperm_)
-  {
-    std::map<int,double> fluid_PermCoeffs = PermCoeffs[0];
-    std::map<int,double> struct_PermCoeffs = PermCoeffs[1];
-
-    for (std::map<int,double>::iterator fit=fluid_PermCoeffs.begin(); fit!=fluid_PermCoeffs.end(); ++fit)
-    {
-      int ID = (*fit).first;
-      double fluid_permcoef = (*fit).second;
-
-      std::map<int,double>::iterator sit = struct_PermCoeffs.find(ID);
-      if ((*sit).second != fluid_permcoef)
-        dserror("Permeability coefficient of ScaTra interface needs to be the same in both conditions");
-    }
-
-    std::map<int,double> fluid_conduct = conduct[0];
-    std::map<int, double> struct_conduct = conduct[1];
-
-    for (std::map<int, double>::iterator fit = fluid_conduct.begin();
-        fit != fluid_conduct.end(); ++fit)
-    {
-      int ID = (*fit).first;
-      double fluid_conduct = (*fit).second;
-
-      std::map<int, double>::iterator sit = struct_conduct.find(ID);
-      if ((*sit).second != fluid_conduct)
-        dserror("Conductivity of ScaTra interface needs to be the same in both conditions");
-    }
-
-  }
+  fpsi_->SetConductivity(myconduct);
 
 }
 
@@ -420,7 +362,7 @@ void FS3I::PartFPS3I::SetupSystem()
   scatraglobalex_->Setup(*fullmap,maps);
 
   // create coupling vectors and matrices (only needed for finite surface permeabilities)
-  if (!infperm_)
+  if (not infperm_)
   {
     for (unsigned i=0; i<scatravec_.size(); ++i)
     {
@@ -630,6 +572,7 @@ void FS3I::PartFPS3I::SetWallShearStresses()
     scatra->ScaTraField()->SetWallShearStresses(wss[i],Teuchos::null,discret[i]);
   }
 }
+
 /*----------------------------------------------------------------------*
  |  Set presures                                          hemmler 07/14 |
  *----------------------------------------------------------------------*/
@@ -675,7 +618,8 @@ void FS3I::PartFPS3I::SetMeanConcentration()
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::EvaluateScatraFields()
 {
-  //mean concentration at the interface needed for membrane equation of Kedem and Katchalsky
+  //mean concentration at the interface needed for membrane equation of Kedem and Katchalsky.
+  //needs to be set here, since it depends on the scalar interface values on both discretisations
   SetMeanConcentration();
 
   for (unsigned i=0; i<scatravec_.size(); ++i)
@@ -747,7 +691,7 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >
   WallShearStress = fpsi_->FluidToPorofluid_FPSI(WallShearStress);
 
   // insert porofluid interface entries into vector with full porofluid length
-  Teuchos::RCP<Epetra_Vector> porofluid = LINALG::CreateVector(*(fpsi_->PoroField() ->Interface().FullMap()),true);
+  Teuchos::RCP<Epetra_Vector> porofluid = LINALG::CreateVector(*(fpsi_->PoroField()->Interface().FullMap()),true);
 
   //Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
   fpsi_->PoroField()->Interface().InsertVector(WallShearStress,3,porofluid);

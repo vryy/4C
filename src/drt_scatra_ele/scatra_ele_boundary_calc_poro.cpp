@@ -95,8 +95,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
 
   switch (action)
   {
-  case SCATRA::bd_calc_fps3i_conditions:
-  case SCATRA::bd_calc_surface_permeability:
+  case SCATRA::bd_calc_fps3i_surface_permeability:
+  case SCATRA::bd_calc_fs3i_surface_permeability:
   {
     DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(ele,
                                                                params,

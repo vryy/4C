@@ -3049,7 +3049,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("WSSONOFF")));
   scatracoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("wss onoff")));
   scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("WSSCOEFFS")));
-  scatracoupcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("WSSCOEFFS",3)));
+  scatracoupcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("wss coeffs",3)));
 
 
   Teuchos::RCP<ConditionDefinition> surfscatracoup =

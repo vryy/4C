@@ -579,6 +579,15 @@ void FS3I::BiofilmFSI::InnerTimeloop()
   time_fsi+=t;
 }
 
+/*----------------------------------------------------------------------*
+ | write FSI solutions into scatra discretisation             Thon 11/14|
+ *----------------------------------------------------------------------*/
+void FS3I::BiofilmFSI::SetFSISolution()
+{
+  SetMeshDisp();
+  SetVelocityFields();
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idispnp,

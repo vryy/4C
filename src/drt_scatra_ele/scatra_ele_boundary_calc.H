@@ -197,19 +197,17 @@ public:
     //! evaluate Kedem-Katchalsky interface condition
     void EvaluateKedemKatchalsky(
         const DRT::Element*        ele,         ///< the actual boundary element
-        const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
         const std::vector<double>& ephinp,      ///< scalar values at element nodes
         const std::vector<double>& epressure,   ///< pressure values at element nodes
-        const std::vector<double>& ephibar,   ///< mean concentration values at element nodes
-        const std::vector<double>& f_wss,     ///< factor for WSS at element nodes
+        const std::vector<double>& ephibar,     ///< mean concentration values at element nodes
+        const std::vector<double>& f_wss,       ///< factor for WSS at element nodes
         Epetra_SerialDenseMatrix&  emat,        ///< element-matrix
         Epetra_SerialDenseVector&  erhs,        ///< element-rhs
         const double               timefac,     ///< time factor
-        const std::vector<int>*    onoff,         ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
-        const double               perm,         ///< surface/interface permeability coefficient
-        const double               conductivity, ///< hydraulic conductivity at interface
-        const double               sigma, ///< Staverman filtration coefficient at interface
-        DRT::Discretization&       discretization
+        const std::vector<int>*    onoff,       ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
+        const double               perm,        ///< surface/interface permeability coefficient
+        const double               conductivity,///< hydraulic conductivity at interface
+        const double               sigma ///< Staverman filtration coefficient at interface
     );
 
      //! integral of shape functions over boundary surface
@@ -224,9 +222,11 @@ public:
   void EvaluateSurfacePermeability(
       const DRT::Element*        ele,    ///< current boundary element
       const std::vector<double>& ephinp, ///< scalar values at element nodes
+      const std::vector<double>& f_wss,  ///< factor for WSS at element nodes
       Epetra_SerialDenseMatrix&  emat,   ///< element-matrix
       Epetra_SerialDenseVector&  erhs,   ///< element-rhs
       const double               timefac,///< time factor
+      const std::vector<int>*    onoff,  ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
       const double               perm    ///< surface/interface permeability coefficient
   );
 

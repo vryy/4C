@@ -44,6 +44,9 @@ namespace FS3I
 
     void InnerTimeloop();
 
+    //! information transfer FSI -> ScaTra
+    void SetFSISolution();
+
     void ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idispnp_,
                                  Teuchos::RCP<Epetra_Vector> iveln_,
                                  Teuchos::RCP<Epetra_Vector> struidispnp_,

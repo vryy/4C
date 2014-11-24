@@ -86,8 +86,8 @@ enum BoundaryAction {
   bd_calc_elch_boundary_kinetics,   //calc_elch_electrode_kinetics,
   bd_calc_elch_linearize_nernst,    //calc_elch_electrode_kinetics,
   bd_calc_loma_therm_press,         //calc_therm_press,
-  bd_calc_surface_permeability,     //calc_surface_permeability,
-  bd_calc_fps3i_conditions          //Kedem-Katchalsky equations-->fps3i problem
+  bd_calc_fs3i_surface_permeability,//calc_surface_permeability,
+  bd_calc_fps3i_surface_permeability//Kedem-Katchalsky equations-->fps3i problem
 
 }; // enum SCATRA::BoundaryAction
 } // namespace SCATRA

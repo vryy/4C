@@ -828,11 +828,8 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
   return;
 } // SCATRA::ScaTraTimIntImpl::OutputMeanScalars
 
-
-
-// TODO: SCATRA_ELE_CLEANING: BIOFILM
 /*----------------------------------------------------------------------*
- | Evaluate surface/interface permeability                     BIOFILM  |
+ | Evaluate surface/interface permeability for FS3I          Thon 11/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
     Teuchos::RCP<LINALG::SparseOperator> matrix,
@@ -845,7 +842,7 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action",SCATRA::bd_calc_surface_permeability);
+  condparams.set<int>("action",SCATRA::bd_calc_fs3i_surface_permeability);
   condparams.set<int>("scatratype",scatratype_);
 
   // provide displacement field in case of ALE
@@ -858,8 +855,12 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   // add element parameters according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
-  std::string condstring("ScaTraCoupling");
-  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
+  if (wss_!=Teuchos::null) //if we have set wall shear stresses
+  {
+    discret_->SetState("WallShearStress",wss_);
+  }
+
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"ScaTraCoupling");
   discret_->ClearState();
 
   matrix->Complete();
@@ -873,7 +874,7 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
 } // SCATRA::ScaTraTimIntImpl::SurfacePermeability
 
 /*----------------------------------------------------------------------------*
- |  Kedem & Katchalsky second membrane equation                  hemmler 07/14 |
+ |  Kedem & Katchalsky second membrane equation for FPS3i       hemmler 07/14 |
  |  see e.g. Kedem, O. T., and A. Katchalsky. "Thermodynamic analysis of the permeability of biological membranes to non-electrolytes." Biochimica et biophysica Acta 27 (1958): 229-246.
  *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
@@ -888,7 +889,7 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<int>("action",SCATRA::bd_calc_fps3i_conditions);
+  condparams.set<int>("action",SCATRA::bd_calc_fps3i_surface_permeability);
   condparams.set<int>("scatratype",scatratype_);
 
   // provide displacement field in case of ALE
@@ -902,13 +903,15 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
   AddTimeIntegrationSpecificVectors();
 
   // provide velocity field
-  // (export to column map necessary for parallel evaluation)
-  discret_->AddMultiVectorToParameterList(condparams,"velocity field",convel_);
+  //discret_->AddMultiVectorToParameterList(condparams,"velocity field",convel_);
+
+  // test if all necessary ingredients for the second Kedem-Katchalsky equations had been set
+  if (wss_==Teuchos::null or pressure_==Teuchos::null or meanconc_==Teuchos::null)
+    dserror("One of the necessary dependencies to calculate the solute flux through the interface (according to the second Kedem and Katchalsky equation) was not set prior!");
 
   // set scalar values needed by elements
   discret_->SetState("WallShearStress",wss_);
   discret_->SetState("Pressure",pressure_);
-
   discret_->SetState("MeanConcentration",meanconc_);
 
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"ScaTraCoupling");

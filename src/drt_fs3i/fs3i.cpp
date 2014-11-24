@@ -147,6 +147,105 @@ void FS3I::FS3I_Base::CheckInterfaceDirichletBC()
     }
   }
 }
+
+/*----------------------------------------------------------------------*
+ | Check scatra-scatra interface conditions                  Thon 11/14 |
+ *----------------------------------------------------------------------*/
+void FS3I::FS3I_Base::CheckFS3IInputs()
+{
+  //Check FS3I control parameters
+  DRT::Problem* problem = DRT::Problem::Instance();
+  const Teuchos::ParameterList& fs3icontrol = problem->FS3IControlParams();
+  const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+
+  if ( fs3icontrol.get<int>("UPRES") != fsidyn.get<int>("UPRES") )
+    dserror("In sections FS3I CONTROL and FSI DYNAMIC the output parameter UPRES must be the same! ");
+
+
+
+  //Check DESIGN SCATRA COUPLING SURF CONDITIONS
+  std::vector<std::set<int> > condIDs;
+  std::set<int> fluidIDs;
+  std::set<int> structIDs;
+  condIDs.push_back(fluidIDs);
+  condIDs.push_back(structIDs);
+  std::vector<std::map<int,std::vector<double>*> > PermCoeffs;
+  std::map<int,std::vector<double>* > fluidcoeff;
+  std::map<int,std::vector<double>* > structcoeff;
+  PermCoeffs.push_back(fluidcoeff);
+  PermCoeffs.push_back(structcoeff);
+
+  for (unsigned i=0; i<scatravec_.size(); ++i)
+  {
+    Teuchos::RCP<DRT::Discretization> dis = (scatravec_[i])->ScaTraField()->Discretization();
+    std::vector<DRT::Condition*> coupcond;
+    dis->GetCondition("ScaTraCoupling",coupcond);
+
+    for (unsigned iter=0; iter<coupcond.size(); ++iter)
+    {
+      int myID = (coupcond[iter])->GetInt("coupling id");
+      condIDs[i].insert(myID);
+
+      if (!infperm_) //get all FS3I interface condition parameters from the input file
+      {
+        std::vector<double>* params = new std::vector<double>(8,true);
+        params->at(0) = (coupcond[iter])->GetDouble("permeability coefficient");
+        params->at(1) = (coupcond[iter])->GetDouble("hydraulic conductivity");
+        params->at(2) = (coupcond[iter])->GetDouble("filtration coefficient");
+        params->at(3) = (double)(coupcond[iter])->GetInt("wss onoff");
+        const std::vector<double>* mywsscoeffs = (coupcond[iter])->Get<std::vector<double> >("wss coeffs");
+        params->at(4)=mywsscoeffs->at(0);
+        params->at(5)=mywsscoeffs->at(1);
+        params->at(6)=mywsscoeffs->at(2);
+        params->at(7) = (double)(coupcond[iter])->GetInt("numscal");
+
+        if (scatravec_[i]->ScaTraField()->NumScal() != params->at(7))
+          dserror("Number of scalars NUMSCAL in ScaTra coupling conditions with COUPID %i does not equal the number of scalars your scalar field has!",myID);
+
+        PermCoeffs[i].insert(std::pair<int,std::vector<double>*>(myID,params));;
+      }
+    }
+  }
+
+  if (condIDs[0].size() != condIDs[1].size())
+    dserror("ScaTra coupling conditions need to be defined on both discretizations");
+
+  if (!infperm_) //now do the testing
+  {
+    std::map<int,std::vector<double>*> fluid_PermCoeffs = PermCoeffs[0];
+    std::map<int,std::vector<double>*> struct_PermCoeffs = PermCoeffs[1];
+
+    for (std::map<int,std::vector<double>*>::iterator fit=fluid_PermCoeffs.begin(); fit!=fluid_PermCoeffs.end(); ++fit) //loop over all fluid-scatra COUPIDs
+    {
+      int ID = (*fit).first;
+      std::vector<double>* fluid_permcoeffs = (*fit).second; //get the pointer to the fluid-scatra params
+
+      std::map<int,std::vector<double>*>::iterator sit = struct_PermCoeffs.find(ID); //get corresponding structure-scatra condition with same COUPID
+      std::vector<double>* structure_permcoeffs = (*sit).second; //get the pointer to the structure-scatra params
+
+      //no the actual testing
+      if ( fluid_permcoeffs->at(0) != structure_permcoeffs->at(0) )
+        dserror("Permeability coefficient PERMCOEF of ScaTra couplings with COUPID %i needs to be the same!",ID);
+      if ( fluid_permcoeffs->at(1) != structure_permcoeffs->at(1) )
+        dserror("Hydraulic conductivity coefficient CONDUCT of ScaTra couplings with COUPID %i needs to be the same!",ID);
+      if ( fluid_permcoeffs->at(2) != structure_permcoeffs->at(2) )
+        dserror("Filtration coefficient coefficient FILTR of ScaTra couplings with COUPID %i needs to be the same!",ID);
+      if (fluid_permcoeffs->at(2) < 0 or fluid_permcoeffs->at(2) > 1)
+        dserror("The filtration coefficient FILTR of ScaTra couplings with COUPID %i must be in [0;1], since it is the ratio of average pore size per area!",ID);
+      if ( fluid_permcoeffs->at(3) != structure_permcoeffs->at(3) )
+        dserror("WSS onoff flag WSSONOFF of ScaTra couplings with COUPID %i needs to be the same!",ID);
+      if ( fluid_permcoeffs->at(4) != structure_permcoeffs->at(4) )
+        dserror("First WSS coefficient WSSCOEFFS of ScaTra couplings with COUPID %i needs to be the same!",ID);
+      if ( fluid_permcoeffs->at(5) != structure_permcoeffs->at(5) )
+        dserror("Second WSS coefficient WSSCOEFFS of ScaTra couplings with COUPID %i needs to be the same!",ID);
+      if ( fluid_permcoeffs->at(6) != structure_permcoeffs->at(6) )
+        dserror("Third WSS coefficient WSSCOEFFS of ScaTra couplings with COUPID %i needs to be the same!",ID);
+      if ( fluid_permcoeffs->at(7) != structure_permcoeffs->at(7) )
+        dserror("Number of scalars NUMSCAL of ScaTra couplings with COUPID %i needs to be the same!",ID);
+    }
+  }
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::FS3I_Base::ScatraOutput()

@@ -345,7 +345,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
 
     break;
   }
-  case SCATRA::bd_calc_surface_permeability:
+  case SCATRA::bd_calc_fs3i_surface_permeability:
   {
     // get control parameters
     is_stationary_  = scatraparamstimint_->IsStationary();
@@ -365,28 +365,47 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
     Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
+    //get values of wall shear stress (the euclidean norm of the stress tensor)
+    Teuchos::RCP<const Epetra_Vector> wss  = discretization.GetState("WallShearStress");
+    if (wss==Teuchos::null)
+      dserror("Cannot get state vector 'WallShearStress'");
+
     // extract local values from global vector
     std::vector<double> ephinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+    std::vector<double> ewss(lm.size());
+    DRT::UTILS::ExtractMyValues(*wss,ewss,lm);
 
     // get current condition
     Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
     if (cond == Teuchos::null) dserror("Cannot access condition 'SurfacePermeability'");
 
+    const std::vector<int>* onoff = cond->Get<std::vector<int> > ("onoff");
+
     const double perm = cond->GetDouble("permeability coefficient");
+
+    //get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no 1->yes
+    bool wss_onoff = (bool)cond->GetInt("wss onoff");
+    const std::vector<double>* coeffs = cond->Get<std::vector<double> > ("wss coeffs");
+
+    //calculate factor that accounts for WSS for each integration point
+    std::vector<double> f_WSS = WSSinfluence(ewss,wss_onoff,coeffs);
+
 
     EvaluateSurfacePermeability(
         ele,
         ephinp,
+        f_WSS,
         elemat1_epetra,
         elevec1_epetra,
-        timefac,
-        perm
+        perm,
+        onoff,
+        timefac
     );
 
     break;
   }
-  case SCATRA::bd_calc_fps3i_conditions:
+  case SCATRA::bd_calc_fps3i_surface_permeability:
   {
     // get control parameters
     is_stationary_  = scatraparamstimint_->IsStationary();
@@ -402,28 +421,32 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
       if (timefac < 0.0) dserror("time factor is negative.");
     }
 
-    // get velocity values at nodes
-    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
+    //// get velocity values at nodes
+    //const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
 
-    // we deal with a (nsd_+1)-dimensional flow field
-    LINALG::Matrix<nsd_+1,nen_>  evel(true);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_+1);
+    //// we deal with a (nsd_+1)-dimensional flow field
+    //LINALG::Matrix<nsd_+1,nen_>  evel(true);
+    //DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_+1);
 
     // get values of scalar transport
     Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+    if (phinp==Teuchos::null)
+      dserror("Cannot get state vector 'phinp'");
 
     //get values of wall shear stress (the euclidean norm of the stress tensor)
     Teuchos::RCP<const Epetra_Vector> wss  = discretization.GetState("WallShearStress");
-    if (phinp==Teuchos::null) dserror("Cannot get state vector 'WallShearStress'");
+    if (wss==Teuchos::null)
+      dserror("Cannot get state vector 'WallShearStress'");
 
     //get values of pressure
     Teuchos::RCP<const Epetra_Vector> pressure  = discretization.GetState("Pressure");
-    if (phinp==Teuchos::null) dserror("Cannot get state vector 'Pressure'");
+    if (pressure==Teuchos::null)
+      dserror("Cannot get state vector 'Pressure'");
 
     //get mean concentration in the interface (i.e. within the membrane)
     Teuchos::RCP<const Epetra_Vector> phibar  = discretization.GetState("MeanConcentration");
-    if (phinp==Teuchos::null) dserror("Cannot get state vector 'MeanConcentration'");
+    if (phibar==Teuchos::null)
+      dserror("Cannot get state vector 'MeanConcentration'");
 
     // extract local values from global vector
     std::vector<double> ephinp(lm.size());
@@ -446,9 +469,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
     //get the standard permeability of the interface
     double perm = cond->GetDouble("permeability coefficient");
 
-//    //get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no 1->yes
+    //get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no 1->yes
     bool wss_onoff = (bool)cond->GetInt("wss onoff");
-    const std::vector<double>* coeffs = cond->Get<std::vector<double> > ("WSSCOEFFS");
+    const std::vector<double>* coeffs = cond->Get<std::vector<double> > ("wss coeffs");
 
     //calculate factor that accounts for WSS for each integration point
     std::vector<double> f_WSS = WSSinfluence(ewss,wss_onoff,coeffs);
@@ -461,7 +484,6 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
 
     EvaluateKedemKatchalsky(
         ele,
-        evel,
         ephinp,
         epressure,
         ephibar,
@@ -472,8 +494,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
         onoff,
         perm,
         conductivity,
-        sigma,
-        discretization
+        sigma
     );
 
     break;
@@ -1326,98 +1347,115 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
 
 
 /*----------------------------------------------------------------------*
- |  Evaluate surface/interface permeability                       |
+ |  Evaluate surface/interface permeability                  Thon 11/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateSurfacePermeability(
-    const DRT::Element*        ele,
-    const std::vector<double>&  ephinp,
-    Epetra_SerialDenseMatrix&  emat,
-    Epetra_SerialDenseVector&  erhs,
-    const double               timefac,
-    const double               perm
+        const DRT::Element*        ele,    ///< current boundary element
+        const std::vector<double>& ephinp, ///< scalar values at element nodes
+        const std::vector<double>& f_wss,  ///< factor for WSS at element nodes
+        Epetra_SerialDenseMatrix&  emat,   ///< element-matrix
+        Epetra_SerialDenseVector&  erhs,   ///< element-rhs
+        const double               timefac,///< time factor
+        const std::vector<int>*    onoff,  ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
+        const double               perm    ///< surface/interface permeability coefficient
     )
 {
+
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for scalar values at nodes
   LINALG::Matrix<nen_,1> phinod(true);
 
+  // define vector for wss concentration values at nodes
+  LINALG::Matrix<nen_,1> fwssnod(true);
+
   // loop over all scalars
   for(int k=0;k<numdofpernode_;++k)
   {
-    // compute scalar values at nodes
-    for (int inode=0; inode< nen_;++inode)
+    //flag for dofs to be considered by membrane equations of Kedem and Katchalsky
+    if((*onoff)[k]==1)
     {
-      phinod(inode) = ephinp[inode*numdofpernode_+k];
-    }
-
-    // loop over all integration points
-    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-    {
-      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
-
-      // integration factor for left-hand side
-      const double lhsfac = timefac*fac*perm;
-
-      // integration factor for right-hand side
-      double rhsfac = 0.0;
-      if (is_incremental_ and not is_genalpha_)
-        rhsfac = lhsfac;
-      else
-        dserror("EvaluateSurfacePermeability: Requested scheme not yet implemented");
-
-      // matrix
-      for (int vi=0; vi<nen_; ++vi)
+      for (int inode = 0; inode < nen_; ++inode)
       {
-        const double vlhs = lhsfac*funct_(vi);
+        // get scalar values at nodes
+        phinod(inode) = ephinp[inode * numdofpernode_ + k];
 
-        const int fvi = vi*numdofpernode_+k;
+        // get factor for WSS influence at nodes
+        fwssnod(inode) = f_wss[inode * numdofpernode_ + k];
+      }
 
-        for (int ui=0; ui<nen_; ++ui)
+      // loop over all integration points
+      for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+      {
+        const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+
+        // integration factor for right-hand side
+        double facfac = 0.0;
+        if (is_incremental_ and not is_genalpha_)
+          facfac = timefac*fac;
+        else
+          dserror("EvaluateSurfacePermeability: Requested scheme not yet implemented");
+
+        // scalar at integration point
+        const double phi = funct_.Dot(phinod);
+
+        // mean concentartion at integration point
+        const double facWSS = funct_.Dot(fwssnod);
+
+
+        // matrix
+        for (int vi=0; vi<nen_; ++vi)
         {
-          const int fui = ui*numdofpernode_+k;
+          const double vlhs = facfac * facWSS * perm * funct_(vi);
+          const int fvi = vi*numdofpernode_+k;
 
-          emat(fvi,fui) += vlhs*funct_(ui);
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            const int fui = ui*numdofpernode_+k;
+
+            emat(fvi,fui) += vlhs*funct_(ui);
+          }
+        }
+
+        // rhs
+        const double vrhs = facfac * facWSS * perm * phi;
+//        std::cout<<"k= "<<k<<std::endl;
+//        std::cout<<"perm= "<<perm<<std::endl;
+//        std::cout<<"phi= "<<phi<<std::endl;
+//        std::cout<<"facWSS= "<<facWSS<<std::endl;
+//        std::cout<<"vrhs= "<<vrhs<<"\n"<<std::endl;
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          erhs[fvi] -= vrhs*funct_(vi);
         }
       }
-
-      // scalar at integration point
-      const double phi = funct_.Dot(phinod);
-
-      // rhs
-      const double vrhs = rhsfac*phi;
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi = vi*numdofpernode_+k;
-
-        erhs[fvi] -= vrhs*funct_(vi);
-      }
-    }
+    }// if((*onoff)[k]==1)
+    // else //in the case of "OFF", a no flux condition is automatically applied
   }
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Kedem-Katchalsky interface                   hemmler 07/14 |
+ |  Evaluate Kedem-Katchalsky interface                   Thon 11/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateKedemKatchalsky(
-    const DRT::Element*        ele,
-    const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
-    const std::vector<double>&  ephinp,
-    const std::vector<double>&  epressure,
-    const std::vector<double>&  ephibar,
-    const std::vector<double>&  f_wss,
-    Epetra_SerialDenseMatrix&  emat,
-    Epetra_SerialDenseVector&  erhs,
-    const double               timefac,
-    const std::vector<int>*    onoff,
-    const double               perm,
-    const double               conductivity,
-    const double               sigma,
-    DRT::Discretization&       discretization
+    const DRT::Element*        ele,         ///< the actual boundary element
+    const std::vector<double>& ephinp,      ///< scalar values at element nodes
+    const std::vector<double>& epressure,   ///< pressure values at element nodes
+    const std::vector<double>& ephibar,     ///< mean concentration values at element nodes
+    const std::vector<double>& f_wss,       ///< factor for WSS at element nodes
+    Epetra_SerialDenseMatrix&  emat,        ///< element-matrix
+    Epetra_SerialDenseVector&  erhs,        ///< element-rhs
+    const double               timefac,     ///< time factor
+    const std::vector<int>*    onoff,       ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
+    const double               perm,        ///< surface/interface permeability coefficient
+    const double               conductivity,///< hydraulic conductivity at interface
+    const double               sigma ///< Staverman filtration coefficient at interface
     )
 {
 
@@ -1462,9 +1500,6 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateKedemKatchalsky(
       {
         const double fac = EvalShapeFuncAndIntFac(intpoints, iquad, ele->Id(), &normal_);
 
-        // get velocity at integration point
-        velint_.Multiply(evelnp,funct_);
-
         // integration factor
         double facfac = 0.0;
         if (is_incremental_ and not is_genalpha_)
@@ -1503,7 +1538,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateKedemKatchalsky(
         // rhs
         const double vrhs = facfac * facWSS * (perm * phi + (1 - sigma) * phibar * conductivity * p);
                         // J_s =f_WSS*[perm*(phi1-phi2)+(1-sigma)*phibar*conductivity*(p1-p2)]
-                        // J_s := solid flux through scalar scalar interface
+                        // J_s := solute flux through scalar scalar interface
                         // perm:=membrane permeability
                         // sigma:=Staverman filtration coefficient
                         // phibar:= mean concentration within the membrane (for now: simply linear interpolated, but other interpolations also possible)
@@ -1516,9 +1551,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateKedemKatchalsky(
           erhs[fvi] -= vrhs * funct_(vi);
         }
       }
-    }
+    } // if((*onoff)[k]==1)
+    // else //in the case of "OFF", a no flux condition is automatically applied
   }
-
   return;
 }
 
