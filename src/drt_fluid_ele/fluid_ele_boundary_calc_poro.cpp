@@ -4086,11 +4086,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
      for (int node=0;node<my::bdrynen_;++node)
      {
-       tangent1deriv(0,3*node)   = -normalderiv(1,3*node);
-       tangent1deriv(0,3*node+1) = -normalderiv(1,3*node+1);;
+       tangent1deriv(0,my::nsd_*node)   = -normalderiv(1,my::nsd_*node);
+       tangent1deriv(0,my::nsd_*node+1) = -normalderiv(1,my::nsd_*node+1);;
 
-       tangent1deriv(1,3*node)   = normalderiv(0,3*node);
-       tangent1deriv(1,3*node+1) = normalderiv(0,3*node+1);
+       tangent1deriv(1,my::nsd_*node)   = normalderiv(0,my::nsd_*node);
+       tangent1deriv(1,my::nsd_*node+1) = normalderiv(0,my::nsd_*node+1);
      }
    }
 
