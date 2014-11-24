@@ -246,8 +246,7 @@ void FLD::XFluid::XFluidState::InitStateVariables()
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",xfluid_.time_);
-    xfluid_.discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
-                                       Teuchos::null, dbcmaps_);
+    xfluid_.discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
 
     zeros_->PutScalar(0.0); // just in case of change
   }
@@ -257,16 +256,20 @@ void FLD::XFluid::XFluidState::InitStateVariables()
     xfluid_.fluid_infnormscaling_ = Teuchos::rcp(new FLD::UTILS::FluidInfNormScaling(*velpressplitter_));
   }
 
+
   if(!xfluid_.levelsetcut_)
   {
-    xfluid_.boundarydofrowmap_ = xfluid_.boundarydis_->DofRowMap();
     // savegraph flag set to true, as there is no change in the matrix graph expected for the lifetime
     // of XfluidState
+
+    // build coupling blocks based on the whole structure/fluid dofrowmap to enable Assign of the off-diagonal coupling blocks
     C_fs_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
-    C_sf_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.boundarydofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
-    C_ss_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.boundarydofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
-    rhC_s_ = LINALG::CreateVector(*xfluid_.boundarydofrowmap_,true);
-    rhC_s_col_= LINALG::CreateVector(*(xfluid_.boundarydis_->DofColMap()),true);
+    C_sf_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.soliddis_->DofRowMap(),0,true,true,LINALG::SparseMatrix::FE_MATRIX));
+
+    // build the diagonal C_ss coupling block based on the reduced map, as it is just added and not assigned finally
+    C_ss_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.boundarydis_->DofRowMap(),0,true,true,LINALG::SparseMatrix::FE_MATRIX));
+    rhC_s_ = LINALG::CreateVector(*xfluid_.boundarydis_->DofRowMap(),true);
+    rhC_s_col_= LINALG::CreateVector(*xfluid_.boundarydis_->DofColMap(),true);
   }
 }
 
@@ -727,33 +730,35 @@ void FLD::XFluid::XFluidState::Evaluate( DRT::Discretization & discret,
 
     discret.ClearState();
 
-    // finalize the complete matrices
+
+    // finalize the coupling matrices
+    if(coupling)
+    {
+      // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
+      // (domain-map are the columns, range-map are the rows)
+      C_fs_->Complete(*xfluid_.soliddis_->DofRowMap(),*xfluid_.discret_->DofRowMap());
+      C_sf_->Complete(*xfluid_.discret_->DofRowMap(),*xfluid_.soliddis_->DofRowMap());
+      C_ss_->Complete(*xfluid_.boundarydis_->DofRowMap(),*xfluid_.boundarydis_->DofRowMap());
+
+      //-------------------------------------------------------------------------------
+      // export the rhs coupling vector to a row vector
+      Epetra_Vector rhC_s_tmp(rhC_s_->Map(),true);
+      Epetra_Export exporter_rhC_s_col(rhC_s_col_->Map(),rhC_s_tmp.Map());
+      int err4 = rhC_s_tmp.Export(*rhC_s_col_,exporter_rhC_s_col,Add);
+      if (err4) dserror("Export using exporter returned err=%d",err4);
+      rhC_s_->Update(1.0,rhC_s_tmp,0.0);
+    }
 
     if(xfluid_.soliddis_ != Teuchos::null)
     {
-    // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
-    // (domain-map are the columns, range-map are the rows)
-    C_fs_->Complete(*xfluid_.boundarydofrowmap_,*xfluid_.discret_->DofRowMap());
-    C_sf_->Complete(*xfluid_.discret_->DofRowMap(),*xfluid_.boundarydofrowmap_);
-    C_ss_->Complete(*xfluid_.boundarydofrowmap_,*xfluid_.boundarydofrowmap_);
-
-    //-------------------------------------------------------------------------------
-    // export the rhs coupling vector to a row vector
-    Epetra_Vector rhC_s_tmp(rhC_s_->Map(),true);
-    Epetra_Export exporter_rhC_s_col(rhC_s_col_->Map(),rhC_s_tmp.Map());
-    int err4 = rhC_s_tmp.Export(*rhC_s_col_,exporter_rhC_s_col,Add);
-    if (err4) dserror("Export using exporter returned err=%d",err4);
-    rhC_s_->Update(1.0,rhC_s_tmp,0.0);
-
-
-    //-------------------------------------------------------------------------------
-    // need to export the interface forces
-    Epetra_Vector iforce_tmp(xfluid_.itrueresidual_->Map(),true);
-    Epetra_Export exporter_iforce(iforcecolnp->Map(),iforce_tmp.Map());
-    int err1 = iforce_tmp.Export(*iforcecolnp,exporter_iforce,Add);
-    if (err1) dserror("Export using exporter returned err=%d",err1);
-    // scale the interface trueresidual with -1.0 to get the forces acting on structural side (no residual-scaling!)
-    xfluid_.itrueresidual_->Update(-1.0,iforce_tmp,0.0);
+      //-------------------------------------------------------------------------------
+      // need to export the interface forces
+      Epetra_Vector iforce_tmp(xfluid_.itrueresidual_->Map(),true);
+      Epetra_Export exporter_iforce(iforcecolnp->Map(),iforce_tmp.Map());
+      int err1 = iforce_tmp.Export(*iforcecolnp,exporter_iforce,Add);
+      if (err1) dserror("Export using exporter returned err=%d",err1);
+      // scale the interface trueresidual with -1.0 to get the forces acting on structural side (no residual-scaling!)
+      xfluid_.itrueresidual_->Update(-1.0,iforce_tmp,0.0);
 
     }
 
@@ -1936,6 +1941,10 @@ void FLD::XFluid::Init()
   // output of stabilization details
   PrintStabilizationParams();
 
+  //----------------------------------------------------------------------
+  turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
+  //----------------------------------------------------------------------
+
   // compute or set 1.0 - theta for time-integration schemes
   if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)  omtheta_ = 1.0 - theta_;
   else                                      omtheta_ = 0.0;
@@ -2882,7 +2891,7 @@ void FLD::XFluid::PrepareTimeStep()
   // -------------------------------------------------------------------
   PrintTimeInt();
 
-
+  itnum_out_=0;
   // -------------------------------------------------------------------
   // set time parameters dependent on time integration scheme and step
   // -------------------------------------------------------------------
@@ -3672,7 +3681,7 @@ void FLD::XFluid::Evaluate(
   // xfsi solve...
   // currently we use fixed itnum = 1, it is okay as a new graph of the systemmatrix is created in the state-class evaluate routine
   int itnum = 1;
-
+  itnum_out_++;
   // -------------------------------------------------------------------
   // call elements to calculate system matrix and RHS
   // -------------------------------------------------------------------
@@ -3696,7 +3705,15 @@ void FLD::XFluid::Evaluate(
     Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
     LINALG::Export(*state_->residual_,*output_col_residual);
-    state_->GmshOutput( "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
+    state_->GmshOutput( "DEBUG_residual_wo_DBC", step_, itnum_out_, output_col_residual );
+
+
+    Teuchos::RCP<Epetra_Vector> output_col_vel = LINALG::CreateVector(*colmap,false);
+
+    LINALG::Export(*state_->velnp_,*output_col_vel);
+
+    state_->GmshOutput( "DEBUG_sol", step_, itnum_out_, output_col_vel );
+
   }
 
   return;
@@ -3719,7 +3736,7 @@ void FLD::XFluid::TimeUpdate()
 
     if(myrank_==0)
     {
-      cout << "time update for subscales";
+      std::cout << "time update for subscales";
     }
 
     // call elements to calculate system matrix and rhs and assemble
@@ -3754,7 +3771,7 @@ void FLD::XFluid::TimeUpdate()
 
     if(myrank_==0)
     {
-      cout << "("<<Teuchos::Time::wallTime()-tcpu<<")\n";
+      std::cout << "("<<Teuchos::Time::wallTime()-tcpu<<")\n";
     }
   }
 
@@ -4523,9 +4540,9 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
   //                                 increment-norms are below this bound
   const double  ittol        = params_->get<double>("tolerance for nonlin iter");
 
-  //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_->get<bool>("ADAPTCONV");
-  const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER",0.01);
+//  //------------------------------ turn adaptive solver tolerance on/off
+//  const bool   isadapttol    = params_->get<bool>("ADAPTCONV");
+//  const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER",0.01);
 
   int  itnum = 0;
   bool stopnonliniter = false;
@@ -4696,6 +4713,7 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
 
     LINALG::ApplyDirichlettoSystem(state_->sysmat_,state_->incvel_,state_->residual_,state_->zeros_,*(ghost_penaly_dbcmaps->CondMap()));
 
+#if(0)
     //-------solve for residual displacements to correct incremental displacements
     {
       // get cpu time
@@ -4717,6 +4735,18 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
       // end time measurement for solver
       dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
     }
+#else // use a direct solver for these small systems
+
+
+    Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
+    solverparams->set("solver","umfpack");
+
+    Teuchos::RCP<LINALG::Solver> direct_solver = Teuchos::rcp(new LINALG::Solver( solverparams, discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle() ));
+
+    direct_solver->Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1);
+
+#endif
+
 
     // -------------------------------------------------------------------
     // update velocity and pressure values by increments
@@ -4981,18 +5011,20 @@ void FLD::XFluid::StatisticsAndOutput()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::OutputDiscret()
 {
-  // compute the current solid and boundary position
-  std::map<int,LINALG::Matrix<3,1> >      currsolidpositions;
-  std::map<int,LINALG::Matrix<3,1> >      currinterfacepositions;
+
 
   //---------------------------------- GMSH DISCRET OUTPUT (element and node ids for all discretizations) ------------------------
   if(gmsh_discret_out_)
   {
+    // compute the current solid and boundary position
+    std::map<int,LINALG::Matrix<3,1> >      currsolidpositions;
+    std::map<int,LINALG::Matrix<3,1> >      currinterfacepositions;
+
     if(!levelsetcut_)
     {
-    ExtractNodeVectors(*soliddis_, soliddispnp_, currsolidpositions);
-    ExtractNodeVectors(*boundarydis_, idispnp_, currinterfacepositions);
-    //TODO: fill the soliddispnp in the XFSI case!
+      ExtractNodeVectors(*soliddis_, soliddispnp_, currsolidpositions);
+      ExtractNodeVectors(*boundarydis_, idispnp_, currinterfacepositions);
+      //TODO: fill the soliddispnp in the XFSI case!
     }
     // cast to DiscretizationXFEM
     Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);

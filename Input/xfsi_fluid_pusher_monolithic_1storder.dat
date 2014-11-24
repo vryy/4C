@@ -44,6 +44,7 @@ COUPALGO                        iter_xfem_monolithic
 SECONDORDER                     no
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          5
+INFNORMSCALING                  no
 CONVTOL                         1.0E-12
 NORM_INC                        Rel                           // Abs // Mix
 NORM_RESF                       Rel                           // Abs // Mix

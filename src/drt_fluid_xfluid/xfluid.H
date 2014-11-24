@@ -869,7 +869,8 @@ namespace FLD
     // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
     int restart_count_;
 
-
+    // counter for current Newton iteration (used for Debug output)
+    int itnum_out_;
     //--------------------------------------------------------------------
 
     //! do we cut with a level set?

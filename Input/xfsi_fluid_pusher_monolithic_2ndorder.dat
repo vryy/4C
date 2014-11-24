@@ -44,6 +44,7 @@ COUPALGO                        iter_xfem_monolithic
 SECONDORDER                     yes
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          5
+INFNORMSCALING                  no
 CONVTOL                         1.0E-12
 TOL_DIS_RES_L2                  1.0E-06
 TOL_DIS_RES_INF                 1.0E-06

@@ -152,8 +152,14 @@ namespace FSI
     //! \sa SetupRHS()
     void SetupRHSLambda(Epetra_Vector& f);
 
+    //! Apply Dirichlet BCs to the whole system
+    void ApplyDBC();
+
     //! Extract initial guess from fields
     void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
+
+    //! Create the combined DOF row map for the FSI problem; row maps of structure and xfluid to an global FSI DOF row map
+    void CreateCombinedDofRowMap();
 
     //! set full monolithic dof row map
     //! The block maps must be row maps by themselves and must not contain identical GIDs.
@@ -284,10 +290,9 @@ namespace FSI
 
 
     //--------------------------------------------------------------------------//
-    //! @name Linear solver
+    //! @name Linear direct solver
 
-    bool merge_fsi_blockmatrix_;                         //!< merged blockmatrix, used for solver setup
-    INPAR::FSI::LinearBlockSolver linearsolverstrategy_; //!< preconditioned block Krylov or block Gauss-Seidel linear solver
+    bool merge_fsi_blockmatrix_;           //!< merged blockmatrix, used for solver setup
 
     //@}
 
@@ -295,10 +300,10 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name inf-norm scaling
 
-    Teuchos::RCP<Epetra_Vector> srowsum_;
-    Teuchos::RCP<Epetra_Vector> scolsum_;
-//    Teuchos::RCP<Epetra_Vector> arowsum_;
-//    Teuchos::RCP<Epetra_Vector> acolsum_;
+    const bool scaling_infnorm_;           //!< inf-norm scaling for blockmatrix for iterative solvers
+
+    Teuchos::RCP<Epetra_Vector> srowsum_;  //!< structural row sum
+    Teuchos::RCP<Epetra_Vector> scolsum_;  //!< structural column sum
 
     //@}
 
@@ -378,7 +383,7 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name Norms for convergence criterion and linear solver
 
-    double tolrhs_; //!< rhs-tolerance for iterative linear solver
+    const double tolrhs_; //!< rhs-tolerance for iterative linear solver
 
     // number of DOFS
     //--------------------------------------------------------------------------//

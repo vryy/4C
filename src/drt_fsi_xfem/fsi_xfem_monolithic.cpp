@@ -50,11 +50,15 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   : AlgorithmXFEM(comm, timeparams),
     fsidyn_(DRT::Problem::Instance()->FSIDynamicParams()),
     fsimono_(fsidyn_.sublist("MONOLITHIC SOLVER")),
+    solveradapttol_(true),
+    solveradaptolbetter_(fsimono_.get<double>("ADAPTIVEDIST")), // adaptive distance
+    merge_fsi_blockmatrix_(false),
+    scaling_infnorm_((bool)DRT::INPUT::IntegralValue<int>(fsimono_,"INFNORMSCALING")),
 //  erroraction_(erroraction_stop),
     log_(Teuchos::null),
 //  logada_(Teuchos::null)
-    /// tolerance for linear solver
-    tolrhs_(1e-12),
+    /// tolerance and for linear solver
+    tolrhs_(fsimono_.get<double>("BASETOL")),     // absolute tolerance for full residual for adapting the linear solver
     /// iteration counter
     iter_         (0),
     iter_outer_   (0),
@@ -138,35 +142,10 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   }
 
 
-  //----------------------------------------------------
-  // XFSI solver: create a linear solver
-
-  //Extract information about the linear block solver (FSIAMG / PreconditionedKrylov)
-  linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono_,"LINEARBLOCKSOLVER");
-
-  merge_fsi_blockmatrix_ = true;
-
-  // get iterative solver
-  if (merge_fsi_blockmatrix_ == false)
-    CreateLinearSolver();
-  // get direct solver, e.g. UMFPACK
-  else  // (merge_fsi_blockmatrix_ == true)
-  {
-
-    if (Comm().MyPID() == 0)
-      std::cout << "Merged FSI block matrix is used!\n" << std::endl;
-
-    Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
-    solverparams->set("solver","umfpack");
-
-    solver_ = Teuchos::rcp(new LINALG::Solver(
-                        solverparams,
-                        Comm(),
-                        DRT::Problem::Instance()->ErrorFile()->Handle()
-                        )
-                  );
-  }  // end BlockMatrixMerge
-
+  //-------------------------------------------------------------------------
+  // Create direct or iterative solver for XFSI system
+  //-------------------------------------------------------------------------
+  CreateLinearSolver();
 
 
   //-------------------------------------------------------------------------
@@ -207,80 +186,31 @@ void FSI::MonolithicXFEM::SetupSystem()
   /*----------------------------------------------------------------------
    Create a combined map for Structure/Fluid-DOFs all in one!
    ----------------------------------------------------------------------*/
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
 
-  // Append the structural DOF map
-  vecSpaces.push_back(StructureField()->DofRowMap());
-
-  // Append the background fluid DOF map
-  vecSpaces.push_back(FluidField()->DofRowMap());
-
-  // solid maps empty??
-  if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No solid equations. Panic.");
-
-  // fluid maps empty??
-  if (vecSpaces[1]->NumGlobalElements() == 0)
-    dserror("No fluid equations. Panic.");
-
-  // The vector is complete, now fill the system's global block row map
-  // with the maps previously set together!
-  SetDofRowMaps(vecSpaces);
+  CreateCombinedDofRowMap();
 
 
-  /*-----------------------------------------------------------------------
-   // create block system matrix
-   ------------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------
+    Initialise XFSI-systemmatrix_
+   ----------------------------------------------------------------------*/
 
-  switch(linearsolverstrategy_)
-  {
-  case INPAR::FSI::PreconditionedKrylov:
-  {
+  //TODO: check the savegraph option and explicit Dirichlet flag for the matrix!
+  //TODO: check if it is okay to use a BlockSparseMatrix without the FE-flag for the fluid-submatrix and the coupling submatrices?
+  //TODO: do we add a already communicated (completed) fluid matrix?!
+  //TODO: check the number of non-zeros predicted
+  /*----------------------------------------------------------------------*/
 
-    //TODO: check the savegraph option and explicit Dirichlet flag for the matrix!
-    //TODO: check if it is okay to use a BlockSparseMatrix without the FE-flag for the fluid-submatrix and the coupling submatrices?
-    //TODO: do we add a already communicated (completed) fluid matrix?!
-    //TODO: check the number of non-zeros predicted
-    /*----------------------------------------------------------------------*/
-    // initialise XFSI-systemmatrix_
-    systemmatrix_
-    = Teuchos::rcp(
-        new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-            Extractor(),
-            Extractor(),
-            81,
-            false,
-            true
-        )
-    );
-    break;
-  }
-  //  case INPAR::FSI::FSIAMG:
-  //    systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
-  //                                   Extractor(),
-  //                                   *StructureField(),
-  //                                   FluidField(),
-  //                                   AleField(),
-  //                                   false,
-  //                                   DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
-  //                                   blocksmoother,
-  //                                   schuromega,
-  //                                   pcomega,
-  //                                   pciter,
-  //                                   spcomega,
-  //                                   spciter,
-  //                                   fpcomega,
-  //                                   fpciter,
-  //                                   apcomega,
-  //                                   apciter,
-  //                                   DRT::INPUT::IntegralValue<int>(fsimono,"FSIAMGANALYZE"),
-  //                                   linearsolverstrategy_,
-  //                                   DRT::Problem::Instance()->ErrorFile()->Handle()));
-  //    break;
-  default:
-    dserror("Unsupported type of monolithic solver");
-    break;
-  }
+  systemmatrix_
+  = Teuchos::rcp(
+      new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+          Extractor(),
+          Extractor(),
+          81,
+          false,
+          true
+      )
+  );
+
 }
 
 
@@ -292,8 +222,11 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::SetupSystemMatrix");
 
-  // zero the block system matrix
-  systemmatrix_->Zero();
+  // reset the block system matrix
+  // note: Zero() is not sufficient for the coupling blocks,
+  // as the couplings between fluid and structure can change (structure moves between iterations)
+  // while the fluid dofsets remain unchanged
+  systemmatrix_->Reset();
 
   /*----------------------------------------------------------------------*/
   // extract Jacobian matrices and put them into composite system
@@ -348,10 +281,10 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   /*----------------------------------------------------------------------*/
 
   // Uncomplete structure matrix to be able to deal with slightly defective interface meshes.
-  // uncomplete because the fluid interface can have more connections than the
-  // structural one. (Tet elements in fluid can cause this.) We should do
-  // this just once...
-  // TODO: really needed here?
+  //
+  // The additional coupling block C_ss can contain additional non-zero entries,
+  // e.g. from DBCs which are already applied to s in the structural evaluate, however, not
+  // to the coupling block C_ss yet
   s->UnComplete();
 
   // scale the structure system matrix
@@ -367,9 +300,9 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 
   Teuchos::RCP<ADAPTER::XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(FluidField(), true);
 
-  Teuchos::RCP<LINALG::SparseMatrix> C_ss = xfluid->C_Struct_Struct_Matrix();
-  Teuchos::RCP<LINALG::SparseMatrix> C_sf = xfluid->C_Struct_Fluid_Matrix();
-  Teuchos::RCP<LINALG::SparseMatrix> C_fs = xfluid->C_Fluid_Struct_Matrix();
+  Teuchos::RCP<LINALG::SparseMatrix> C_ss = xfluid->C_Struct_Struct_Matrix(); // based on the full structural dofrowmap (used for Add)
+  Teuchos::RCP<LINALG::SparseMatrix> C_sf = xfluid->C_Struct_Fluid_Matrix();  // based on the full structural dofrowmap (used for Assign)
+  Teuchos::RCP<LINALG::SparseMatrix> C_fs = xfluid->C_Fluid_Struct_Matrix();  // based on the full fluid dofrowmap (used for Assign)
 
   // * all the coupling matrices are scaled with the weighting of the fluid w.r.t new time step np
   //    -> Unscale the blocks with (1/(theta_f*dt) = 1/weight(t^f_np))
@@ -383,33 +316,17 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   // add the coupling block C_ss on the already existing diagonal block
   C_ss_block.Add(*C_ss, false, scaling_F*scaling_FSI, 1.0);
 
-
   // scale the off diagonal coupling blocks
   C_sf->Scale(scaling_F);              //<   1/(theta_f*dt)                    = 1/weight(t^f_np)
   C_fs->Scale(scaling_F*scaling_FSI);  //<   1/(theta_f*dt) * 1/(theta_FSI*dt) = 1/weight(t^f_np) * 1/weight(t^FSI_np)
 
-
-  // get already existing off-diagonal block C_sf
-  LINALG::SparseMatrix& C_sf_block = (*systemmatrix_)(0,1);
-
-  // add the coupling block C_sf on the already existing off-diagonal block
-  C_sf_block.Add(*C_sf, false, 1.0, 1.0);
-
-
-  // get already existing off-diagonal block C_fs
-  LINALG::SparseMatrix& C_fs_block = (*systemmatrix_)(1,0);
-
-  // add the coupling block C_fs on the already existing off-diagonal block
-  C_fs_block.Add(*C_fs, false, 1.0, 1.0);
+  systemmatrix_->Assign(0,1,View,*C_sf);
+  systemmatrix_->Assign(1,0,View,*C_fs);
 
 
   /*----------------------------------------------------------------------*/
   // Fluid diagonal block
   /*----------------------------------------------------------------------*/
-
-  // The complete call is absolete as Complete is already called in the xluid-Evaluate
-  //TODO: remove it, or is it a problem when it is called twice???
-  f->Complete();
 
   // scale the fluid diagonal block
   f->Scale(scaling_F); //<  1/(theta_f*dt) = 1/weight(t^f_np)
@@ -540,6 +457,46 @@ void FSI::MonolithicXFEM::SetupRHSLambda(Epetra_Vector& f)
 }
 
 
+/*----------------------------------------------------------------------*/
+// apply Dirichlet boundary conditions to XFSI system
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicXFEM::ApplyDBC()
+{
+
+  // note, the structural evaluate applies DBC already to the structure block,
+  // however, the additional C_ss coupling block is added and we have to apply DBC again to the sum
+  // no DBC are applied for in the fluid-evaluate for the ff-diagonal block or the fluid coupling blocks
+  // therefore we apply BCS to the whole system.
+  // Just the internal DBCs via the structural evaluate (PrepareSystemForNewtonSolve()) are applied twice
+
+#if(1)
+  // apply combined Dirichlet to whole XFSI system
+  LINALG::ApplyDirichlettoSystem(
+      systemmatrix_,
+      iterinc_,
+      rhs_,
+      Teuchos::null, //possible trafo?!
+      zeros_,
+      *CombinedDBCMap()
+  );
+
+#else
+  // TODO: transformations for locsys
+  // be aware of the rhs_Cs-coupling block when using localsys
+
+  // alternatively, when trafos for the structure have to be used, we apply DBC for each field separately
+  ((*systemmatrix_)(0,0)).ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),true);  // set diagonal 1.0 for SS-Block
+  ((*systemmatrix_)(0,1)).ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),false); // do not set diagonal 1.0 for SF-Block
+  ((*systemmatrix_)(1,0)).ApplyDirichlet(*FluidField()->GetDBCMapExtractor()->CondMap(),false);     // do not set diagonal 1.0 for FS-Block
+  ((*systemmatrix_)(1,1)).ApplyDirichlet(*FluidField()->GetDBCMapExtractor()->CondMap(),true);      // set diagonal 1.0 for FF-Block
+
+  LINALG::ApplyDirichlettoSystem(rhs_, zeros_, *CombinedDBCMap());
+
+#endif
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -550,10 +507,41 @@ void FSI::MonolithicXFEM::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 //
 //  SetupVector(*ig,
 //              StructureField()->InitialGuess(),
-//              FluidField()->InitialGuess(),
+//              FluidField().InitialGuess(),
 //              AleField().InitialGuess(),
 //              0.0);
 }
+
+
+/*----------------------------------------------------------------------*/
+// Create the combined DOF row map for the FSI problem;
+// row maps of structure and xfluid to an global FSI DOF row map
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicXFEM::CreateCombinedDofRowMap()
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+
+  // Append the structural DOF map
+  vecSpaces.push_back(StructureField()->DofRowMap());
+
+  // Append the background fluid DOF map
+  vecSpaces.push_back(FluidField()->DofRowMap());
+
+  // solid maps empty??
+  if (vecSpaces[0]->NumGlobalElements() == 0)
+    dserror("No solid equations. Panic.");
+
+  // fluid maps empty??
+  if (vecSpaces[1]->NumGlobalElements() == 0)
+    dserror("No fluid equations. Panic.");
+
+  // The vector is complete, now fill the system's global block row map
+  // with the maps previously set together!
+  SetDofRowMaps(vecSpaces);
+
+  return;
+}
+
 
 
 
@@ -859,6 +847,10 @@ bool FSI::MonolithicXFEM::Newton()
   permutation_.clear();
 
 
+  /*----------------------------------------------------------------------*/
+  // Create a new solver, important in particular when fluid null space changes
+  /*----------------------------------------------------------------------*/
+  CreateLinearSolver();
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
@@ -1032,20 +1024,31 @@ bool FSI::MonolithicXFEM::Newton()
     // Create the RHS consisting of the field residuals and coupling term residuals
     SetupRHS();
 
+
     //-------------------
-    //Solver call
+    // Apply Dirichlet BCs to the whole system
+    //-------------------
+    ApplyDBC();
+
+
+    //-------------------
+    // Solver call
     //-------------------
     LinearSolve();
 
-    //Adapt solver tolerance (important if Aztec solver is picked)
-    //TODO: does or how does this work for changing Newton systems
-    solver_->ResetTolerance();
 
+    //-------------------
     //Build residual and incremental norms, count the DOFs!
+    //-------------------
     BuildCovergenceNorms();
 
+
+    //-------------------
     //Give some output
+    //-------------------
     PrintNewtonIter();
+
+
 
     //Increment loop index
     iter_+=1;
@@ -1225,7 +1228,7 @@ bool FSI::MonolithicXFEM::Evaluate()
   // ------------------------------------------------------------------
   // ------------------------------------------------------------------
 
-
+  //StructureField()->writeGmshStrucOutputStep();
   //-------------------
   // structure field
   //-------------------
@@ -1861,15 +1864,49 @@ void FSI::MonolithicXFEM::PermuteFluidDOFSBackward(
 
 
 /*----------------------------------------------------------------------*
- | create linear solver                                   wiesner 07/11 |
+ | create linear solver                            schott/wiesner 10/14 |
  *----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::CreateLinearSolver()
 {
-  // get the solver number used for linear TSI solver
-  const int linsolvernumber = fsidyn_.get<int>("LINEAR_SOLVER");
+  // get the solver number used for linear XFSI solver
+//  const int linsolvernumber = fsidyn_.get<int>("LINEAR_SOLVER");
+  //TODO: get via input file, no LINEAR_SOLVER in FSI-Dynamic so far...
+  const int linsolvernumber = 1;
   // check if the XFSI solver has a valid solver number
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for monolithic XFSI. Please set LINEAR_SOLVER in XFSI DYNAMIC to a valid number!");
+
+  // get solver parameter list of linear XFSI solver
+  const Teuchos::ParameterList& xfsisolverparams = DRT::Problem::Instance()->SolverParams(linsolvernumber);
+
+  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>( xfsisolverparams, "SOLVER" );
+
+  //----------------------------------------------
+  // create direct solver for merged block matrix
+  //----------------------------------------------
+  if( solvertype == INPAR::SOLVER::umfpack )
+  {
+    if (Comm().MyPID() == 0) std::cout << "Merged XFSI block matrix is used!\n" << std::endl;
+
+    merge_fsi_blockmatrix_ = true;
+
+    Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
+    solverparams->set("solver","umfpack");
+
+    solver_ = Teuchos::rcp(new LINALG::Solver( solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle() ));
+
+    return;
+  }
+
+  //----------------------------------------------
+  // create iterative solver for XFSI block matrix
+  //----------------------------------------------
+
+  if ( (solvertype != INPAR::SOLVER::aztec_msr) and (solvertype != INPAR::SOLVER::belos) )
+  {
+    dserror("aztec solver expected");
+  }
+
 
   // get parameter list of structural dynamics
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -1881,40 +1918,16 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
 
   // get parameter list of thermal dynamics
-  const Teuchos::ParameterList& tdyn = DRT::Problem::Instance()->ThermalDynamicParams();
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
   // use solver blocks for temperature (thermal field)
   // get the solver number used for thermal solver
-  const int tlinsolvernumber = tdyn.get<int>("LINEAR_SOLVER");
+  const int flinsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
   // check if the XFSI solver has a valid solver number
-  if (tlinsolvernumber == (-1))
-    dserror("no linear solver defined for thermal field. Please set FLUID_SOLVER in FLUID DYNAMIC to a valid number!");
+  if (flinsolvernumber == (-1))
+    dserror("no linear solver defined for fluid field. Please set FLUID_SOLVER in FLUID DYNAMIC to a valid number!");
 
-  // get solver parameter list of linear XFSI solver
-  const Teuchos::ParameterList& xfsisolverparams
-    = DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-  const int solvertype
-    = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
-        xfsisolverparams,
-        "SOLVER"
-        );
-
-  if ( (solvertype != INPAR::SOLVER::aztec_msr) and (solvertype != INPAR::SOLVER::belos) )
-  {
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    std::cout << " Note: the BGS2x2 preconditioner now "                  << std::endl;
-    std::cout << " uses the structural solver and fluid solver blocks"    << std::endl;
-    std::cout << " for building the internal inverses"                    << std::endl;
-    std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries "      << std::endl;
-    std::cout << " in the dat files!"                                     << std::endl;
-    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
-    dserror("aztec solver expected");
-  }
-  const int azprectype
-    = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
-        xfsisolverparams,
-        "AZPREC"
-        );
+  const int azprectype = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>( xfsisolverparams, "AZPREC" );
 
   // plausibility check
   switch (azprectype)
@@ -1933,12 +1946,12 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
        )
     dserror("Teko expects a STRATIMIKOS solver object in STRUCTURE SOLVER");
 
-    solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(tlinsolvernumber), "SOLVER");
+    solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(flinsolvernumber), "SOLVER");
     if ( (solvertype != INPAR::SOLVER::stratimikos_amesos) and
          (solvertype != INPAR::SOLVER::stratimikos_aztec) and
          (solvertype != INPAR::SOLVER::stratimikos_belos)
        )
-      dserror("Teko expects a STRATIMIKOS solver object in thermal solver %3d",tlinsolvernumber);
+      dserror("Teko expects a STRATIMIKOS solver object in fluid solver %3d",tlinsolvernumber);
 #else
     dserror("Teko preconditioners only available with HAVE_TEKO flag for TRILINOS_DEV (>Q1/2011)");
 #endif
@@ -1946,6 +1959,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   }
   case INPAR::SOLVER::azprec_MueLuAMG_sym :
   case INPAR::SOLVER::azprec_AMGnxn :
+  case INPAR::SOLVER::azprec_CheapSIMPLE :
   {
     // no plausibility checks here
     // if you forget to declare an xml file you will get an error message anyway
@@ -1964,6 +1978,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   case INPAR::SOLVER::azprec_BGSnxn :
   case INPAR::SOLVER::azprec_TekoSIMPLE :
   case INPAR::SOLVER::azprec_AMGnxn :
+  case INPAR::SOLVER::azprec_CheapSIMPLE :
   {
     // This should be the default case (well-tested and used)
     solver_ = Teuchos::rcp(new LINALG::Solver(
@@ -1974,12 +1989,12 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
                                  )
                 );
 
-    // use solver blocks for structure and temperature (thermal field)
+    // use solver blocks for structure and fluid
     const Teuchos::ParameterList& ssolverparams = DRT::Problem::Instance()->SolverParams(slinsolvernumber);
-    const Teuchos::ParameterList& tsolverparams = DRT::Problem::Instance()->SolverParams(tlinsolvernumber);
+    const Teuchos::ParameterList& fsolverparams = DRT::Problem::Instance()->SolverParams(flinsolvernumber);
 
     solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
-    solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
+    solver_->PutSolverParamsToSubParams("Inverse2", fsolverparams);
 
     // prescribe rigid body modes
     StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
@@ -1988,6 +2003,14 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
       solver_->Params().sublist("Inverse2")
       );
+
+
+    if(azprectype==INPAR::SOLVER::azprec_CheapSIMPLE)
+    {
+    // Tell to the LINALG::SOLVER::SimplePreconditioner that we use the general implementation
+      solver_->Params().set<bool>("GENERAL",true);
+    }
+
     break;
   }
   case INPAR::SOLVER::azprec_MueLuAMG_sym:
@@ -2000,14 +2023,14 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
                                  )
                 );
 
-    // use solver blocks for structure and temperature (thermal field)
+    // use solver blocks for structure and fluid
     const Teuchos::ParameterList& ssolverparams = DRT::Problem::Instance()->SolverParams(slinsolvernumber);
-    const Teuchos::ParameterList& tsolverparams = DRT::Problem::Instance()->SolverParams(tlinsolvernumber);
+    const Teuchos::ParameterList& fsolverparams = DRT::Problem::Instance()->SolverParams(flinsolvernumber);
 
     // This is not very elegant:
     // first read in solver parameters. These have to contain ML parameters such that...
     solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
-    solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
+    solver_->PutSolverParamsToSubParams("Inverse2", fsolverparams);
 
     // ... BACI calculates the null space vectors. These are then stored in the sublists
     //     Inverse1 and Inverse2 from where they...
@@ -2037,6 +2060,8 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     inv1.set<Teuchos::RCP<std::vector<double> > >("nullspace", inv1source.get<Teuchos::RCP<std::vector<double> > >("nullspace"));
     inv2.set<Teuchos::RCP<std::vector<double> > >("nullspace", inv2source.get<Teuchos::RCP<std::vector<double> > >("nullspace"));
 
+    //TODO: muelu for XFSI similar to TSI?
+    dserror("MueLu for XFSI?");
     solver_->Params().sublist("MueLu Parameters").set("TSI",true);
     break;
   }
@@ -2053,18 +2078,11 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
  *----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::LinearSolve()
 {
-  if (Comm().MyPID() == 0)
-    std::cout << " FSI::MonolithicXFEM::LinearSolve()" <<  std::endl;
+  if (Comm().MyPID() == 0) std::cout << " FSI::MonolithicXFEM::LinearSolve()" <<  std::endl;
 
   // Solve for inc_ = [disi_,tempi_]
   // Solve K_Teffdyn . IncX = -R  ===>  IncX_{n+1} with X=[d,(u,p)]
   // \f$x_{i+1} = x_i + \Delta x_i\f$
-  if (solveradapttol_ and (iter_ > 1))
-  {
-    double worst = normrhs_;
-    double wanted = tolrhs_;
-    solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
-  }
 
   // apply Dirichlet BCs to system of equations
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -2072,16 +2090,12 @@ void FSI::MonolithicXFEM::LinearSolve()
   // default: use block matrix
   if (merge_fsi_blockmatrix_ == false)
   {
-    dserror("check this!!! DBC already applied?!");
-
-      // Dirichlet boundary conditions are already applied to FSI system, i.e.
-      // FSI system is prepared for solve, i.e. FSI systemmatrix, FSI rhs, FSI inc
-      // --> in PrepareSystemForNewtonSolve(): done for rhs and diagonal blocks
-      // --> in SetupSystemMatrix() done for off-diagonal blocks k_st, k_ts
-
-    if (Comm().MyPID() == 0)
+    // adapt solver tolerance
+    if (solveradapttol_ and (iter_ > 1))
     {
-      std::cout << " DBC applied to XFSI system on proc" << Comm().MyPID() <<  std::endl;
+      double worst = normrhs_;
+      double wanted = tolrhs_;
+      solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
     }
 
     // Infnormscaling: scale system before solving
@@ -2098,24 +2112,20 @@ void FSI::MonolithicXFEM::LinearSolve()
 
     // Infnormscaling: unscale system after solving
     UnscaleSolution(*systemmatrix_,*iterinc_,*rhs_);
+
+
+    //Adapt solver tolerance (important if Aztec solver is picked)
+    //TODO: does or how does this work for changing Newton systems
+    solver_->ResetTolerance();
+
   }  // use block matrix
   else // (merge_fsi_blockmatrix_ == true)
   {
+    if(scaling_infnorm_) dserror("infnorm-scaling of FSI-system not supported for direct solver");
+
     //------------------------------------------
     // merge blockmatrix to SparseMatrix and solve
     Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
-
-    //------------------------------------------
-    //TODO: check the handling of Dirichlet-bc during restarts...
-    // apply combined Dirichlet to System
-    LINALG::ApplyDirichlettoSystem(
-      sparse,
-      iterinc_,
-      rhs_,
-      Teuchos::null,
-      zeros_,
-      *CombinedDBCMap()
-      );
 
     //------------------------------------------
     // standard solver call
@@ -2126,7 +2136,6 @@ void FSI::MonolithicXFEM::LinearSolve()
         true,
         iter_==1
     );
-
   }  // MergeBlockMatrix
 
 //  {
@@ -2224,18 +2233,13 @@ void FSI::MonolithicXFEM::LinearSolve()
 
 
 /*----------------------------------------------------------------------*/
-// apply infnorm scaling to linear block system
+// apply infnorm scaling to linear block system            schott 10/14 |
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono_,"INFNORMSCALING");
 
-  if (scaling_infnorm)
+  if (scaling_infnorm_)
   {
-    dserror("check the infnorm-scaling of the FSI-system");
-
-    //TODO: also scaling of fluid-block???
-
     // The matrices are modified here. Do we have to change them back later on?
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
@@ -2250,66 +2254,39 @@ void FSI::MonolithicXFEM::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra
         mat.Matrix(1,0).EpetraMatrix()->RightScale(*scolsum_))
       dserror("structure scaling failed");
 
-//    A = mat.Matrix(2,2).EpetraMatrix();
-//    arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
-//    acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
-//    A->InvRowSums(*arowsum_);
-//    A->InvColSums(*acolsum_);
-//    if (A->LeftScale(*arowsum_) or
-//        A->RightScale(*acolsum_) or
-//        mat.Matrix(2,0).EpetraMatrix()->LeftScale(*arowsum_) or
-//        mat.Matrix(2,1).EpetraMatrix()->LeftScale(*arowsum_) or
-//        mat.Matrix(0,2).EpetraMatrix()->RightScale(*acolsum_) or
-//        mat.Matrix(1,2).EpetraMatrix()->RightScale(*acolsum_))
-//      dserror("ale scaling failed");
 
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b,0);
-//    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b,2);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0))
       dserror("structure scaling failed");
-//    if (ax->Multiply(1.0, *arowsum_, *ax, 0.0))
-//      dserror("ale scaling failed");
 
     Extractor().InsertVector(*sx,0,b);
-//    Extractor().InsertVector(*ax,2,b);
   }
 }
 
 
 
 /*----------------------------------------------------------------------*/
-// undo infnorm scaling from scaled solution
+// undo infnorm scaling from scaled solution               schott 10/14 |
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
-  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsimono_,"INFNORMSCALING");
-
-  if (scaling_infnorm)
+  if (scaling_infnorm_)
   {
-    dserror("check the infnorm-scaling of the FSI-system");
 
     Teuchos::RCP<Epetra_Vector> sy = Extractor().ExtractVector(x,0);
-//    Teuchos::RCP<Epetra_Vector> ay = Extractor().ExtractVector(x,2);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0))
       dserror("structure scaling failed");
-//    if (ay->Multiply(1.0, *acolsum_, *ay, 0.0))
-//      dserror("ale scaling failed");
 
     Extractor().InsertVector(*sy,0,x);
-//    Extractor().InsertVector(*ay,2,x);
 
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b,0);
-//    Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b,2);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0))
       dserror("structure scaling failed");
-//    if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0))
-//      dserror("ale scaling failed");
 
     Extractor().InsertVector(*sx,0,b);
-//    Extractor().InsertVector(*ax,2,b);
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
     srowsum_->Reciprocal(*srowsum_);
@@ -2319,17 +2296,6 @@ void FSI::MonolithicXFEM::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Ep
         mat.Matrix(0,1).EpetraMatrix()->LeftScale(*srowsum_) or
         mat.Matrix(1,0).EpetraMatrix()->RightScale(*scolsum_))
       dserror("structure scaling failed");
-
-//    A = mat.Matrix(2,2).EpetraMatrix();
-//    arowsum_->Reciprocal(*arowsum_);
-//    acolsum_->Reciprocal(*acolsum_);
-//    if (A->LeftScale(*arowsum_) or
-//        A->RightScale(*acolsum_) or
-//        mat.Matrix(2,0).EpetraMatrix()->LeftScale(*arowsum_) or
-//        mat.Matrix(2,1).EpetraMatrix()->LeftScale(*arowsum_) or
-//        mat.Matrix(0,2).EpetraMatrix()->RightScale(*acolsum_) or
-//        mat.Matrix(1,2).EpetraMatrix()->RightScale(*acolsum_))
-//      dserror("ale scaling failed");
 
   }
 }
