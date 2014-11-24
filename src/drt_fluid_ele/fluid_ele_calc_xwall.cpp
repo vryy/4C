@@ -60,7 +60,7 @@ DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::FluidEleCalcXWall()
   derxy2_(true),
   deriv_(true),
   deriv2_(true),
-  k_(0.409836066),
+  k_(0.41),
   B_(5.17),
   expmkmb_(exp(-k_*B_)),
   mk_(-1.0)
