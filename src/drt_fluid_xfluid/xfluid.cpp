@@ -5779,8 +5779,42 @@ void FLD::XFluid::SetInterfaceDisplacement(Teuchos::RCP<Epetra_Vector> idisp)
 
   if( timealgo_ != INPAR::FLUID::timeint_stationary)
   {
+    if( interface_disp_ == INPAR::XFEM::interface_disp_by_curve )
+    {
+      if(myrank_ == 0)
+      {
+        IO::cout << "\t\t ... interface displacement by CURVES " << interface_disp_curve_no_[0]<<" "
+                 << interface_disp_curve_no_[1]<<" "<< interface_disp_curve_no_[2]<< IO::endl;
+      }
 
-    if(interface_disp_ == INPAR::XFEM::interface_disp_by_funct)
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
+      {
+        // get the processor local node
+        DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
+        // the set of degrees of freedom associated with the node
+        const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
+
+        if( nodedofset.size() != 3 )
+          dserror( "Why nodes on boundary discretization has more than 3 dofs?" );
+
+        if (nodedofset.size()!=0)
+        {
+          for(int dof=0;dof<(int)nodedofset.size();++dof)
+          {
+            if( interface_disp_curve_no_[dof] == -1 )
+              continue;
+
+            int gid = nodedofset[dof];
+            double curveval = DRT::Problem::Instance()->Curve( interface_disp_curve_no_[dof]-1 ).f( time_ );
+
+            idisp->ReplaceGlobalValues(1,&curveval,&gid);
+          }
+        }
+      }
+    }
+
+    else if(interface_disp_ == INPAR::XFEM::interface_disp_by_funct)
     {
 
       if(interface_disp_func_no_ != -1)
@@ -5993,6 +6027,41 @@ void FLD::XFluid::ComputeInterfaceVelocities()
       ivelnp_->Update(-(1.0-thetaiface)/thetaiface,*iveln_,1.0);
 
     }
+
+    else if(interface_vel_ == INPAR::XFEM::interface_vel_by_curve)
+    {
+      if(myrank_ == 0)
+      {
+        IO::cout << "\t\t ... interface velocity by CURVES " << interface_vel_curve_no_[0]<<" "
+                 << interface_vel_curve_no_[1]<<" "<< interface_vel_curve_no_[2]<< IO::endl;
+      }
+
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
+      {
+        // get the processor local node
+        DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
+        // the set of degrees of freedom associated with the node
+        const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
+
+        if( nodedofset.size() != 3 )
+          dserror( "Why nodes on boundary discretization has more than 3 dofs?" );
+
+        if (nodedofset.size()!=0)
+        {
+          for(int dof=0;dof<(int)nodedofset.size();++dof)
+          {
+            if( interface_vel_curve_no_[dof] == -1 )
+              continue;
+
+            int gid = nodedofset[dof];
+            double curveval = DRT::Problem::Instance()->Curve( interface_vel_curve_no_[dof]-1 ).f( time_ );
+            ivelnp_->ReplaceGlobalValues(1,&curveval,&gid);
+          }
+        } // end if
+      } // end for
+    }
+
     else if(interface_vel_ == INPAR::XFEM::interface_vel_by_funct)
     {
 
@@ -6975,10 +7044,24 @@ void FLD::XFluid::SetXFluidParams()
   interface_vel_init_func_no_  = params_xf_gen.get<int>("VEL_INIT_FUNCT_NO", -1);
   interface_vel_               = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceVel>(params_xf_gen,"INTERFACE_VEL");
   interface_vel_func_no_       = params_xf_gen.get<int>("VEL_FUNCT_NO", -1);
+  std::istringstream velstream(Teuchos::getNumericStringParameter(params_xf_gen,"VEL_CURVE_NO"));
+  for(int idim=0; idim<3; idim++)
+  {
+    int val = -1;
+    if (velstream >> val)
+      interface_vel_curve_no_[idim] = val;
+  }
 
   // get input parameter how to prescribe solid displacement
   interface_disp_           = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceDisplacement>(params_xf_gen,"INTERFACE_DISP");
   interface_disp_func_no_   = params_xf_gen.get<int>("DISP_FUNCT_NO", -1);
+  std::istringstream dispstream(Teuchos::getNumericStringParameter(params_xf_gen,"DISP_CURVE_NO"));
+  for(int idim=0; idim<3; idim++)
+  {
+    int val = -1;
+    if (dispstream >> val)
+      interface_disp_curve_no_[idim] = val;
+  }
 
   xfluid_timintapproach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidTimeIntScheme>(params_xf_gen,"XFLUID_TIMEINT");
 
@@ -6988,9 +7071,11 @@ void FLD::XFluid::SetXFluidParams()
               << "\t\t initial interface velocity:     " << params_xf_gen.get<string>("INTERFACE_VEL_INITIAL")
               << "\t funct: " <<  interface_vel_init_func_no_ << "\n"
               << "\t\t interface velocity:             " << params_xf_gen.get<string>("INTERFACE_VEL")
-              << "\t\t funct: " <<  interface_vel_func_no_ << "\n"
+              << "\t\t funct: " <<  interface_vel_func_no_
+              << "\t\t curve: " <<  interface_vel_curve_no_ << "\n"
               << "\t\t interface displacement:         " << params_xf_gen.get<string>("INTERFACE_DISP")
-              << "\t funct: " <<  interface_disp_func_no_ << IO::endl;
+              << "\t funct: " <<  interface_disp_func_no_
+              << "\t curve: " <<  interface_disp_curve_no_ << IO::endl;
   }
 
   // get interface stabilization specific parameters

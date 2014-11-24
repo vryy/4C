@@ -51,6 +51,7 @@ namespace INPAR
     {
       interface_vel_by_disp,
       interface_vel_by_funct,
+      interface_vel_by_curve,
       interface_vel_zero
     };
 
@@ -59,6 +60,7 @@ namespace INPAR
     {
       interface_disp_by_fsi,
       interface_disp_by_funct,
+      interface_disp_by_curve,
       interface_disp_zero,
       interface_disp_by_implementation
     };

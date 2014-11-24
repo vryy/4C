@@ -791,11 +791,13 @@ namespace FLD
 
     enum INPAR::XFEM::InterfaceVel     interface_vel_;
     int interface_vel_func_no_;
+    int interface_vel_curve_no_[3];
     //@}
 
     //! @name setting an initial interface displacement
     enum INPAR::XFEM::InterfaceDisplacement interface_disp_;
     int interface_disp_func_no_;
+    int interface_disp_curve_no_[3];
 
     //! @name xfluid time integration
     enum INPAR::XFEM::XFluidTimeIntScheme xfluid_timintapproach_;
