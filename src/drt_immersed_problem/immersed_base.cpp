@@ -18,6 +18,7 @@ Maintainers: Andreas Rauch & Anh-Tu Vuong
 #include "../drt_lib/drt_element.H"
 #include "../drt_fluid_ele/fluid_ele_immersed.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../linalg/linalg_utils.H"
 
 IMMERSED::ImmersedBase::ImmersedBase()
 {

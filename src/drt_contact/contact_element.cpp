@@ -12,7 +12,6 @@ Maintainer: Alexander Popp
 
 #include "contact_element.H"
 #include "contact_node.H"
-#include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 

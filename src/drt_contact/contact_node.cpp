@@ -18,8 +18,6 @@ Maintainer: Alexander Popp
 #include "contact_defines.H"
 #include "../linalg/linalg_serialdensevector.H"
 
-#include "../drt_nurbs_discret/drt_control_point.H"
-
 CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
 
 
