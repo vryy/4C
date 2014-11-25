@@ -158,7 +158,8 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   // thus they are defined empty here in the case of Penalty meshtying.
 
   void Recover(Teuchos::RCP<Epetra_Vector> disi) {}
-  void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter) { std::cout << "WARNING: no saddlepoint solver in penalty meshtying strategy" << std::endl;};
+  void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs){ std::cout << "WARNING: no saddlepoint solver in penalty meshtying strategy" << std::endl;};
+  void UpdateDisplacementsAndLMincrements(Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol){ std::cout << "WARNING: no saddlepoint solver in penalty meshtying strategy" << std::endl;};
   void EvalConstrRHS(){std::cout << "Warning: No constraint RHS in contact penalty strategy" << std::endl;}
   //@}
 

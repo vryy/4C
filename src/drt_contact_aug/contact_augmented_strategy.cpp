@@ -20,7 +20,6 @@ Maintainer: Michael Hiermeier
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
@@ -588,13 +587,9 @@ void CONTACT::AugmentedLagrangeStrategy::EvalConstrRHS()
 }
 
 /*----------------------------------------------------------------------*
- | Solve linear system of saddle point type              hiermeier 05/14|
+ | Build saddle point system                               wiesner 11/14|
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
-    LINALG::Solver& fallbacksolver,
-    Teuchos::RCP<LINALG::SparseOperator> kdd,  Teuchos::RCP<Epetra_Vector> fd,
-    Teuchos::RCP<Epetra_Vector>  sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
-    int numiter)
+void CONTACT::AugmentedLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs)
 {
   // create old style dirichtoggle vector (supposed to go away)
   // the use of a toggle vector is more flexible here. It allows to apply dirichlet
@@ -609,21 +604,7 @@ void CONTACT::AugmentedLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver
   if (systype!=INPAR::CONTACT::system_saddlepoint)
     dserror("ERROR: Invalid system type in SaddlePointSolve");
 
-  // check if contact contributions are present,
-  // if not we make a standard solver call to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
-  {
-    //std::cout << "##################################################" << std::endl;
-    //std::cout << " USE FALLBACK SOLVER (pure structure problem)" << std::endl;
-    //std::cout << fallbacksolver.Params() << std::endl;
-    //std::cout << "##################################################" << std::endl;
-
-    // standard solver call
-    fallbacksolver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
-    return;
-  }
-
-  //**********************************************************************
+    //**********************************************************************
   // prepare saddle point system
   //**********************************************************************
   // the standard stiffness matrix
@@ -699,11 +680,11 @@ void CONTACT::AugmentedLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver
 
   // set a helper flag for the CheapSIMPLE preconditioner (used to detect, if Teuchos::nullspace has to be set explicitely)
   // do we need this? if we set the Teuchos::nullspace when the solver is constructed?
-  solver.Params().set<bool>("CONTACT",true); // for simpler precond
+  //solver.Params().set<bool>("CONTACT",true); // for simpler precond
 
   // build block matrix for SIMPLER
-  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat =
-    Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
+  blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
+  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >(blockMat);
   mat->Assign(0,0,View,*stiffmt);
   mat->Assign(0,1,View,*trkdz);
   mat->Assign(1,0,View,*trkzd);
@@ -721,16 +702,24 @@ void CONTACT::AugmentedLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver
   // apply Dirichlet B.C. to mergedrhs and mergedsol
   LINALG::ApplyDirichlettoSystem(mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
 
-  // SIMPLER preconditioning solver call
-  solver.Solve(mat->EpetraOperator(),mergedsol,mergedrhs,true,numiter==0);
+  blocksol = mergedsol;
+  blockrhs = mergedrhs;
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ | Split merged solution vector                            wiesner 11/14|
+ *----------------------------------------------------------------------*/
+void CONTACT::AugmentedLagrangeStrategy::UpdateDisplacementsAndLMincrements(Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
+{
   //**********************************************************************
   // extract results for displacement and LM increments
   //**********************************************************************
   Teuchos::RCP<Epetra_Vector> sollm = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
+  Teuchos::RCP<Epetra_Map>           mergedmap   = LINALG::MergeMap(ProblemDofs(),glmdofrowmap_,false);
   LINALG::MapExtractor mapext(*mergedmap,ProblemDofs(),glmdofrowmap_);
-  mapext.ExtractCondVector(mergedsol,sold);
-  mapext.ExtractOtherVector(mergedsol,sollm);
+  mapext.ExtractCondVector(blocksol,sold);
+  mapext.ExtractOtherVector(blocksol,sollm);
   sollm->ReplaceMap(*gsdofrowmap_);
 
   if (IsSelfContact())
@@ -749,6 +738,4 @@ void CONTACT::AugmentedLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver
     zincr_->Update(1.0, *sollm, 0.0);
     z_->Update(1.0, *zincr_, 1.0);
   }
-
-  return;
 }

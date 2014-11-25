@@ -3157,8 +3157,33 @@ void STR::TimIntImpl::CmtLinearSolve()
   if ((soltype==INPAR::CONTACT::solution_lagmult || soltype==INPAR::CONTACT::solution_augmented)
       && systype!=INPAR::CONTACT::system_condensed)
   {
-    // (iter_-1 to be consistent with old time integration)
-    cmtbridge_->GetStrategy().SaddlePointSolve(*contactsolver_,*solver_,stiff_,fres_,disi_,dbcmaps_,iter_-1);
+    // check if contact contributions are present,
+    // if not we make a standard solver call to speed things up
+    if (!cmtbridge_->GetStrategy().IsInContact() && !cmtbridge_->GetStrategy().WasInContact() && !cmtbridge_->GetStrategy().WasInContactLastTimeStep())
+    {
+      solver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
+    }
+    else
+    {
+      // otherwise, solve the saddle point linear system
+
+      // will be removed soon
+      //contactsolver_->Params().set<bool>("CONTACT",true); // for simpler precond
+      //contactsolver_->Params().set<bool>("MESHTYING",true); // for simpler precond
+
+      Teuchos::RCP<Epetra_Operator> blockMat = Teuchos::null;
+      Teuchos::RCP<Epetra_Vector> blocksol = Teuchos::null;
+      Teuchos::RCP<Epetra_Vector> blockrhs = Teuchos::null;
+
+      // build the saddle point system
+      cmtbridge_->GetStrategy().BuildSaddlePointSystem(stiff_, fres_, disi_, dbcmaps_, iter_-1, blockMat, blocksol, blockrhs);
+
+      // solve the linear system
+      contactsolver_->Solve(blockMat, blocksol, blockrhs, true, iter_==1);
+
+      // split vector and update internal displacement and Lagrange multipliers
+      cmtbridge_->GetStrategy().UpdateDisplacementsAndLMincrements(disi_, blocksol);
+    }
   }
 
   //**********************************************************************

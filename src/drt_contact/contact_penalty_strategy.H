@@ -200,7 +200,8 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   int ActiveSetSteps() {return 0;}
   void ResetActiveSet() {}
   void Recover(Teuchos::RCP<Epetra_Vector> disi) {}
-  void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter) { std::cout << "WARNING: no saddlepoint solver in contact penalty strategy" << std::endl;}
+  void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) { std::cout << __FILE__ << ":" << __LINE__ << "WARNING: saddle point system makes no sense here" << std::endl;}
+  void UpdateDisplacementsAndLMincrements(Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol) { std::cout << __FILE__ << ":" << __LINE__ << "WARNING: saddle point system makes no sense here" << std::endl;}
   void EvalConstrRHS(){}
   void UpdateActiveSet() {}
   void UpdateActiveSetSemiSmooth() {}

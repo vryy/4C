@@ -23,7 +23,6 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_colors.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
-#include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 

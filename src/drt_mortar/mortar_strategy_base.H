@@ -16,6 +16,7 @@ Maintainer: Alexander Popp
 #include "Teuchos_ParameterList.hpp"
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
+#include "Epetra_Operator.h"
 #include "Epetra_Vector.h"
 
 // forward declarations
@@ -207,7 +208,8 @@ class StrategyBase
     virtual void ResetActiveSet() = 0;
     virtual void ResetPenalty() = 0;
     virtual void RestrictMeshtyingZone() = 0;
-    virtual void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter) = 0;
+    virtual void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) = 0;
+    virtual void UpdateDisplacementsAndLMincrements(Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol) = 0;
     virtual void SaveReferenceState(Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void SetState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec) = 0;
     virtual const Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;
