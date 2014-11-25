@@ -72,8 +72,7 @@ namespace ADAPTER {
     );
 
     //! After crack has been propagated, add appropriate crack surfaces to cut interface
-    void addCrackSurfacesToCutSides( Teuchos::RCP<DRT::Discretization>& boundary_dis,
-                                      std::map<int, LINALG::Matrix<3,1> >& tip_nodes );
+    Teuchos::RCP<DRT::Discretization> addCrackSurfacesToCutSides( std::map<int, LINALG::Matrix<3,1> >& tip_nodes );
 
 
   private:
@@ -96,12 +95,10 @@ namespace ADAPTER {
     double minOpeningDist_;
 
     //! Rebuild cut interface only when crack mouth opening distance satisfies predefined value
-    void RebuildInterfaceWithConditionCheck( Teuchos::RCP<DRT::Discretization>& boundary_dis,
-                                             std::map<int, LINALG::Matrix<3,1> >& tip_nodes );
+    Teuchos::RCP<DRT::Discretization> RebuildInterfaceWithConditionCheck( std::map<int, LINALG::Matrix<3,1> >& tip_nodes );
 
     //! Rebuild cut interface irrespective of crack mouth opening displacement
-    void RebuildInterfaceWithoutConditionCheck( Teuchos::RCP<DRT::Discretization>& boundary_dis,
-                                                std::map<int, LINALG::Matrix<3,1> >& tip_nodes );
+    Teuchos::RCP<DRT::Discretization> RebuildInterfaceWithoutConditionCheck( std::map<int, LINALG::Matrix<3,1> >& tip_nodes );
 
     //! Returns true when the given crack mouth opening criterion is satisfied
     bool isCrackMouthOpeningConditionSatisfied( const std::map<int,int>& tips );

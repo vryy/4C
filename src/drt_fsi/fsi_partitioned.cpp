@@ -61,8 +61,12 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
-  if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD")
-      and DRT::Problem::Instance()->ProblemType() != prb_immersed_fsi) // IMMERSEDFSI
+  if ((DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") == 1)// matching meshes
+      and (
+          DRT::Problem::Instance()->ProblemType() != prb_immersed_fsi
+      and DRT::Problem::Instance()->ProblemType() != prb_fsi_xfem
+      and DRT::Problem::Instance()->ProblemType() != prb_fsi_crack)
+  )
   {
     matchingnodes_ = true;
     const int ndim = DRT::Problem::Instance()->NDim();
@@ -76,8 +80,30 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     if (coupsf.MasterDofMap()->NumGlobalElements()==0)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
   }
-  else if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") == 0
-           and DRT::Problem::Instance()->ProblemType() != prb_immersed_fsi)
+  else if ((DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") == 1)// matching meshes coupled via XFEM
+      and ( DRT::Problem::Instance()->ProblemType() == prb_fsi_xfem or DRT::Problem::Instance()->ProblemType() == prb_fsi_crack)
+      )
+  {
+    matchingnodes_ = true; // matching between structure and boundary dis! non-matching between boundary dis and fluid is handled bei XFluid itself
+    const int ndim = DRT::Problem::Instance()->NDim();
+
+    Teuchos::RCP<ADAPTER::FluidXFEM> x_movingboundary = Teuchos::rcp_dynamic_cast<ADAPTER::FluidXFEM>(MBFluidField());
+    coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
+                                   StructureField()->Interface()->FSICondMap(),
+                                  *x_movingboundary->BoundaryDiscretization(), // use the matching boundary discretization
+                                   MBFluidField()->Interface()->FSICondMap(),
+                                  "FSICoupling",
+                                  ndim);
+
+    if (coupsf.MasterDofMap()->NumGlobalElements()==0)
+      dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
+  }
+  else if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") == 0 // mortar coupling
+      and (
+          DRT::Problem::Instance()->ProblemType() != prb_immersed_fsi
+      and DRT::Problem::Instance()->ProblemType() != prb_fsi_xfem
+      and DRT::Problem::Instance()->ProblemType() != prb_fsi_crack)
+  )
   {
     // coupling condition at the fsi interface: displacements (=number of spatial dimensions) are coupled
     // e.g.: 3D: coupleddof = [1, 1, 1]

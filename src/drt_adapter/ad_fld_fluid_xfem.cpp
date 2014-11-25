@@ -20,6 +20,8 @@ Maintainer:  Benedikt Schott
 #include "ad_fld_fluid_xfem.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
+#include "../drt_adapter/ad_fld_xfluid_fsi.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidXFEM::FluidXFEM(
@@ -43,6 +45,22 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::Discretization()
   // therefore return the boundary dis
   // this is similar to the matching of fluid dis and ale dis in case of ADAPTER::FluidALE
   return FluidField()->Discretization();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::BoundaryDiscretization()
+{
+  // returns the boundary discretization
+  // REMARK:
+  // the returned discretization has to match the structure discretization at the interface coupling (see FSI::Partitioned::Partitioned(const Epetra_Comm& comm) )
+  // therefore return the boundary dis
+  // this is similar to the matching of fluid dis and ale dis in case of ADAPTER::FluidALE
+
+  Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>( FluidField() , true);
+
+  return xfluid->MyFluid()->BoundaryDiscretization();
 }
 
 

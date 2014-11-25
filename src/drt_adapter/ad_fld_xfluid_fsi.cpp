@@ -63,12 +63,10 @@ void ADAPTER::XFluidFSI::Init()
   interface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
   meshmap_   = Teuchos::rcp(new LINALG::MapExtractor());
 
-  //Assign after calling the Xfluid-constructor
-  boundarydis_ = xfluid_->Boundary_Dis();
 
   // the solid mesh has to match the interface mesh
   // so we have to compute a interface true residual vector itrueresidual_
-  interface_->Setup(*boundarydis_);
+  interface_->Setup(*xfluid_->BoundaryDiscretization());
   xfluid_->SetSurfaceSplitter(&(*interface_));
 }
 
@@ -88,8 +86,6 @@ double ADAPTER::XFluidFSI::TimeScaling() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceForces()
 {
-  //cout << "ExtractInterfaceForces (itrueresnp)" << endl;
-
   // the trueresidual vector has to match the solid dis
   // it contains the forces acting on the structural surface
   return interface_->ExtractFSICondVector(xfluid_->ITrueResidual());
@@ -100,8 +96,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceForces()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceVeln()
 {
-  //cout << "call ExtractInterfaceVeln() "<< endl;
-
   // it depends, when this method is called, and when velnp is updated
   // the FSI algorithm expects first an time update and then asks for the old time step velocity
   // meaning that it gets the velocity from the new time step
@@ -190,9 +184,9 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidFSI::RHS_Struct_Vec()
  *----------------------------------------------------------------------*/
 void ADAPTER::XFluidFSI::RebuildFSIInterface()
 {
-  Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
-  xfluid_->BoundaryDis( boundary_dis );
-  Interface()->Setup(*boundary_dis);
+  Interface()->Setup(*xfluid_->BoundaryDiscretization());
+  // do we need this line?
+  xfluid_->SetSurfaceSplitter(&(*interface_));
 }
 
 /// GmshOutput for background mesh and cut mesh

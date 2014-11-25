@@ -415,14 +415,20 @@ namespace FLD
       state_->GmshOutput(name, step, count, vel, acc);
     }
 
+    /// initialize the state vectors for the interface
+    void InitStateVectorsForInterface();
+
     /// set an initial flow field
     void SetInitialFlowField(
       const INPAR::FLUID::InitialField initfield,
       const int startfuncno
       );
 
+    /// set initial interface fields (velocity and displacements)
+    void SetInitialInterfaceFields();
+
     /// set an initial solid field
-    void SetInitialInterfaceField();
+    void SetInterfaceInitialVelocityField();
 
     /// set the interface displacement
     void SetInterfaceDisplacement(Teuchos::RCP<Epetra_Vector> idisp);
@@ -535,19 +541,13 @@ namespace FLD
     /// read restart data for boundary discretization
     void ReadRestartBound(int step);
 
-    /// Get elemets of boundary discretization that defines the tip of propagating crack
-    //void GetCrackTipElements( std::map<int, Teuchos::RCP<DRT::Element> >& tip ) { tip = crackTip_; }
 
-    /// Given the nodes that defines crack tip, this function builds proper crack tip elements and add to boundary discretization
-    //void addCrackTipElements( const std::vector<int>* tipNodes );
+    //-----------------------------XFEM-Crack specific function------------------
 
-    /// return boundary discretization
-    Teuchos::RCP<DRT::Discretization> Boundary_Dis() { return boundarydis_; }
-
-    void BoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ) { boun = boundarydis_; }
+    //! @name XFEM-Crack specific function
 
     /// set the given discretization as the boundary discretization
-    void setBoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ){ boundarydis_ = boun; }
+    void SetBoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ){ boundarydis_ = boun; }
 
     /// Get the nodes that defines crack tip
     void GetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes ){tip_nodes = tip_nodes_;}
@@ -565,20 +565,18 @@ namespace FLD
     /// Properly initialize the DOFs of new nodes introduced after the crack propagation
     void UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldnewIds );
 
-    //Renamed call for boundarydiscretization from Discretization to BoundaryDiscretization
-    /// implements the ADAPTER::Fluid and returns the boundary discretization which is matching to the structure mesh
-    //const Teuchos::RCP<DRT::Discretization>& BoundaryDiscretization() { return boundarydis_; }
-    const Teuchos::RCP<DRT::Discretization>& Discretization()
-    {
-      if(!levelsetcut_)
-      {
-        return boundarydis_;
-      }
-      else
-      {
-        return discret_;
-      }
-    }
+    //@}
+
+
+    //-----------------------------Getter for Discretizations------------------
+
+    //! @name Getter for Discretizations
+
+    /// return boundary discretization
+    const Teuchos::RCP<DRT::Discretization>& BoundaryDiscretization() { return boundarydis_; }
+
+    //@}
+
 
     Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() {return Teuchos::null;}
 
@@ -758,8 +756,22 @@ namespace FLD
     /// extract the nodal vectors and store them in node-vector-map
     void ExtractNodeVectors(DRT::Discretization & dis, Teuchos::RCP<Epetra_Vector> dofrowvec, std::map<int, LINALG::Matrix<3,1> >& nodevecmap);
 
+
+    //! @name specialized init routines
+
+    /// initialize the boundary discretization, output, restart and statevectors
+    void InitBoundaryDiscretization();
+
     /// initialize the needed functionality for the boundary discretization.
-    void InitBoundaryDis(std::string element_name);
+    void CreateBoundaryDis(std::string element_name);
+
+    void PrepareOutputBoundary();
+
+    void InitCrackInitiationPoints();
+
+    void PrepareOutput();
+
+    //@}
 
     //-------------------------------------------------------------------------------
     //! possible inf-norm scaling of linear system / fluid matrix
@@ -770,6 +782,9 @@ namespace FLD
     //! @name general algorithm parameters
     Teuchos::RCP<DRT::Discretization>      soliddis_;     //! solid discretization
     Teuchos::RCP<DRT::Discretization>      boundarydis_;  //! boundary discretization
+
+    //! holds the initial boundary discretization for crack problems, as the boundary discretization will be replaced, needed for output
+    Teuchos::RCP<DRT::Discretization>      boundarydis_init_output;
 
     //---------------------------------input parameters------------------
 
@@ -942,11 +957,6 @@ namespace FLD
     int maxnumdofsets_;
     int minnumdofsets_;
     //@}
-
-    // dof-row maps
-    const Epetra_Map* soliddofrowmap_;
-    const Epetra_Map* boundarydofrowmap_;
-
 
     //------------------------------- vectors -----------------------------
 

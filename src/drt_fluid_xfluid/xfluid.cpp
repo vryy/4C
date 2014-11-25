@@ -1924,7 +1924,7 @@ FLD::XFluid::XFluid(
 }
 
 /*----------------------------------------------------------------------*
- |  initialize algorithm                                rasthofer 04/14 |
+ |  initialize algorithm                                   schott 11/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::Init()
 {
@@ -1966,13 +1966,89 @@ void FLD::XFluid::Init()
   // create boundary dis
   // -------------------------------------------------------------------
 
-  // use always 3 dofs on the structural surface, in partitioned and monolithic algorithms as well (if you change this take care for numdof in boundary output!)
-  string element_name = "BELE3_3";
+  if(!levelsetcut_)
+  {
+    InitBoundaryDiscretization();
+  }
+  else
+  {
+    boundarydis_ == Teuchos::null;
+
+    //phinp_ = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap()));
+  }
+
+
+  //--------------------------------------------------------------------
+  // do crack initialization
+  //--------------------------------------------------------------------
+  InitCrackInitiationPoints();
+
+
+  // -------------------------------------------------------------------
+  // create output dofsets and prepare output for xfluid
+  // -------------------------------------------------------------------
+
+  PrepareOutput();
+
+  // used to write out owner of elements just once
+  firstoutputofrun_ = true;
+
+
+  // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
+  restart_count_ = 0;
+
+  // -------------------------------------------------------------------
+
+  // GMSH discretization output before CUT
+  OutputDiscret();
+
+  // -------------------------------------------------------------------
 
   if(!levelsetcut_)
-    InitBoundaryDis(element_name);
+  {
+    solidvelnp_ = LINALG::CreateVector(*soliddis_->DofRowMap(),true);
+    soliddispnp_ = LINALG::CreateVector(*soliddis_->DofRowMap(),true);
+
+    // -------------------------------------------------------------------
+    // create XFluidState object
+    // -------------------------------------------------------------------
+
+    Epetra_Vector idispcol( *boundarydis_->DofColMap() );
+    idispcol.PutScalar( 0.0 );
+
+    // create new XFluidState object
+    // REMARK: for a step 0 we perform the cut based on idispn, the initial interface position
+    //         for a restart (step n+1 has to be solved first) we perform the initial cut
+    //         based on idispn (step n) (=data written after updating the interface fields in last time step n)
+    LINALG::Export(*idispn_,idispcol);
+
+    // initialize the state class iterator with -1
+    // the XFluidState class called from the constructor is then indexed with 0
+    // all further first cuts of a new time-step have then index 1 and have to be reset to 0 in PrepareTimeStep()
+    state_it_=-1;
+    state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
+  }
 
 
+
+  //----------------------------------------------------------------------
+  turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
+  //----------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------
+  // UpdateKrylovSpaceProjection can not be called during
+  // SetupKrylovSpaceProjection since 'state_' is not yet member. So if Krylov
+  // was set up, update here
+  // REMARK: call this after SetElementGeneralFluidXFEMParameter
+  if (projector_!=Teuchos::null)
+    UpdateKrylovSpaceProjection();
+
+}
+
+
+
+void FLD::XFluid::InitCrackInitiationPoints()
+{
   /*----------- POSSIBILITY 1 --- adding zero displacement at crack tip nodes----------------------*/
   if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
   {
@@ -2010,15 +2086,12 @@ void FLD::XFluid::Init()
 
   boundarydis_->ReplaceDofSet(newdofset1);//do not call this with true!!
   boundarydis_->FillComplete();*/
+}
 
-
-
-
-  // -------------------------------------------------------------------
-  // create output dofsets and prepare output
-  // -------------------------------------------------------------------
-
+void FLD::XFluid::PrepareOutput()
+{
   // store a dofset with the complete fluid unknowns
+
   dofset_out_ = Teuchos::rcp(new DRT::IndependentDofSet());
   dofset_out_->Reset();
   dofset_out_->AssignDegreesOfFreedom(*discret_,0,0);
@@ -2027,21 +2100,54 @@ void FLD::XFluid::Init()
 
   // create vector according to the dofset_out row map holding all standard fluid unknowns
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
+}
+
+void FLD::XFluid::PrepareOutputBoundary()
+{
+  // -------------------------------------------------------------------
+  // prepare output
+  // -------------------------------------------------------------------
+
+  boundarydis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_)));
+
+  if(DRT::Problem::Instance()->ProblemType() == prb_fsi_crack)
+  {
+    // @ Sudhakar
+    // keep a pointer to the original boundary discretization
+    // note: for crack problems, the discretization is replaced by new ones during the simulation.
+    // Paraview output based on changing discretizations is not possible so far.
+    // To enable at least restarts, the IO::DiscretizationWriter(boundarydis_) has to be kept alive,
+    // however, in case that the initial boundary dis, used for creating the Writer, is replaced, it will be deleted,
+    // as now other RCP points to it anymore. Then the functionality of the Writer breaks down. Therefore, we artificially
+    // hold second pointer to the original boundary dis for Crack-problems.
+    boundarydis_init_output = boundarydis_;
+  }
+
+  boundary_output_ = boundarydis_->Writer();
+  boundary_output_->WriteMesh(0,0.0);
+}
 
 
-  // used to write out owner of elements just once
-  firstoutputofrun_ = true;
+void FLD::XFluid::InitBoundaryDiscretization()
+{
 
-  // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
-  restart_count_ = 0;
+  // -------------------------------------------------------------------
+  // create boundary discretization from condition
+  // -------------------------------------------------------------------
 
-  // set an initial interface velocity field
-  if(interface_vel_init_ == INPAR::XFEM::interface_vel_init_by_funct and step_ == 0)
-    SetInitialInterfaceField();
+  // use always 3 dofs on the structural surface, in partitioned and monolithic algorithms as well (if you change this take care for numdof in boundary output!)
+  string element_name = "BELE3_3";
 
-  if(interface_disp_ == INPAR::XFEM::interface_disp_by_funct or
-     interface_disp_ == INPAR::XFEM::interface_disp_by_implementation)
-    SetInterfaceDisplacement(idispn_);
+  CreateBoundaryDis(element_name);
+
+  // prepare output for boundary discretization
+  PrepareOutputBoundary();
+
+  // initialize boundary vectors
+  InitStateVectorsForInterface();
+
+  // set initial interface fields
+  SetInitialInterfaceFields();
 
 
   // -------------------------------------------------------------------
@@ -2057,56 +2163,22 @@ void FLD::XFluid::Init()
   const int restart = DRT::Problem::Instance()->Restart();
 
   if(restart) ReadRestartBound(restart);
-
-  // -------------------------------------------------------------------
-
-  if(!levelsetcut_)
-  {
-    // get dofrowmap for solid discretization
-    soliddofrowmap_ = soliddis_->DofRowMap();
-
-    solidvelnp_ = LINALG::CreateVector(*soliddofrowmap_,true);
-    soliddispnp_ = LINALG::CreateVector(*soliddofrowmap_,true);
-
-    // -------------------------------------------------------------------
-    // create XFluidState object
-    // -------------------------------------------------------------------
-
-    Epetra_Vector idispcol( *boundarydis_->DofColMap() );
-    idispcol.PutScalar( 0.0 );
-
-    // create new XFluidState object
-    // REMARK: for a step 0 we perform the cut based on idispn, the initial interface position
-    //         for a restart (step n+1 has to be solved first) we perform the initial cut
-    //         based on idispn (step n) (=data written after updating the interface fields in last time step n)
-    LINALG::Export(*idispn_,idispcol);
-
-    // initialize the state class iterator with -1
-    // the XFluidState class called from the constructor is then indexed with 0
-    // all further first cuts of a new time-step have then index 1 and have to be reset to 0 in PrepareTimeStep()
-    state_it_=-1;
-    state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
-  }
-
-  // GMSH discretization output before CUT
-  OutputDiscret();
-
-
-  //----------------------------------------------------------------------
-  turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
-  //----------------------------------------------------------------------
-
-  // ---------------------------------------------------------------------
-  // UpdateKrylovSpaceProjection can not be called during
-  // SetupKrylovSpaceProjection since 'state_' is not yet member. So if Krylov
-  // was set up, update here
-  // REMARK: call this after SetElementGeneralFluidXFEMParameter
-  if (projector_!=Teuchos::null)
-    UpdateKrylovSpaceProjection();
-
 }
 
 
+/*----------------------------------------------------------------------*
+ |  ... |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::SetInitialInterfaceFields()
+{
+  // set an initial interface velocity field
+  if(interface_vel_init_ == INPAR::XFEM::interface_vel_init_by_funct and step_ == 0)
+    SetInterfaceInitialVelocityField();
+
+  if(interface_disp_ == INPAR::XFEM::interface_disp_by_funct or
+     interface_disp_ == INPAR::XFEM::interface_disp_by_implementation)
+    SetInterfaceDisplacement(idispn_);
+}
 
 /*----------------------------------------------------------------------*
  |  Evaluate errors compared to an analytical solution     schott 09/12 |
@@ -5554,9 +5626,9 @@ void FLD::XFluid::ExtractNodeVectors(DRT::Discretization & dis,
 }
 
 /*--------------------------------------------------------------------------*
- | Initialize the boundary discretization                                   |
+ | Create the boundary discretization                                       |
  *--------------------------------------------------------------------------*/
-void FLD::XFluid::InitBoundaryDis(string element_name)
+void FLD::XFluid::CreateBoundaryDis(string element_name)
 {
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
@@ -5567,7 +5639,6 @@ void FLD::XFluid::InitBoundaryDis(string element_name)
    {
      dserror("Empty boundary discretization detected. No FSI coupling will be performed...");
    }
-   boundarydis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_)));
 
    // for parallel jobs we have to call TransparentDofSet with additional flag true
    bool parallel = discret_->Comm().NumProc() > 1;
@@ -5588,26 +5659,26 @@ void FLD::XFluid::InitBoundaryDis(string element_name)
    boundarydis_->ExportColumnElements(elemcolmap);
 
    boundarydis_->FillComplete();
+}
 
-   // -------------------------------------------------------------------
-   // prepare output
-   // -------------------------------------------------------------------
-   boundary_output_ = boundarydis_->Writer();
-   boundary_output_->WriteMesh(0,0.0);
 
-   //--------------------------------------------------------
-   // create interface fields
-   // -------------------------------------------------------
-   boundarydofrowmap_ = boundarydis_->DofRowMap();
-   ivelnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
-   iveln_  = LINALG::CreateVector(*boundarydofrowmap_,true);
-   ivelnm_ = LINALG::CreateVector(*boundarydofrowmap_,true);
+/*----------------------------------------------------------------------*
+ |  ...                              schott 11/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::InitStateVectorsForInterface()
+{
+  //--------------------------------------------------------
+  // create interface fields
+  // -------------------------------------------------------
+  const Epetra_Map* boundarydofrowmap = boundarydis_->DofRowMap();
+  ivelnp_ = LINALG::CreateVector(*boundarydofrowmap,true);
+  iveln_  = LINALG::CreateVector(*boundarydofrowmap,true);
+  ivelnm_ = LINALG::CreateVector(*boundarydofrowmap,true);
 
-   idispnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
-   idispn_ = LINALG::CreateVector(*boundarydofrowmap_,true);
+  idispnp_ = LINALG::CreateVector(*boundarydofrowmap,true);
+  idispn_ = LINALG::CreateVector(*boundarydofrowmap,true);
 
-   itrueresidual_ = LINALG::CreateVector(*boundarydofrowmap_,true);
-
+  itrueresidual_ = LINALG::CreateVector(*boundarydofrowmap,true);
 }
 
 
@@ -5629,7 +5700,7 @@ void FLD::XFluid::SetInitialFlowField(
   if (initfield == INPAR::FLUID::initfield_field_by_function/* or
       initfield == INPAR::FLUID::initfield_disturbed_field_from_function*/)
   {
-    if(myrank_ == 0) cout << "SetInitialFlowField with function number " << startfuncno << endl;
+    if(myrank_ == 0) std::cout << "SetInitialFlowField with function number " << startfuncno << std::endl;
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -5765,12 +5836,12 @@ void FLD::XFluid::SetInitialFlowField(
 /*----------------------------------------------------------------------*
  |   set an initial interface field                        schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::SetInitialInterfaceField()
+void FLD::XFluid::SetInterfaceInitialVelocityField()
 {
 
   if(interface_vel_init_func_no_ != -1)
   {
-    if(myrank_ == 0) cout << "Set initial interface velocity field with function number " << interface_vel_init_func_no_ << endl;
+    if(myrank_ == 0) std::cout << "Set initial interface velocity field with function number " << interface_vel_init_func_no_ << std::endl;
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
@@ -5799,7 +5870,7 @@ void FLD::XFluid::SetInitialInterfaceField()
   }
 
   return;
-} // end SetInitialInterfaceField
+} // end SetInterfaceInitialVelocityField
 
 
 /*----------------------------------------------------------------------*

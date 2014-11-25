@@ -46,6 +46,9 @@ namespace ADAPTER
     /// return the boundary discretization that matches the structure discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
 
+    /// return the boundary discretization that matches the structure discretization
+    Teuchos::RCP<DRT::Discretization> BoundaryDiscretization();
+
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return fluid_->Interface(); }
 

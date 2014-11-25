@@ -129,6 +129,7 @@ namespace ADAPTER {
         Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
     );
 
+
   protected:
     /// A casted pointer to the fluid itself
     Teuchos::RCP<FLD::XFluid>              xfluid_;
@@ -142,7 +143,6 @@ namespace ADAPTER {
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization>      xfluiddis_;
     Teuchos::RCP<DRT::Discretization>      soliddis_;
-    Teuchos::RCP<DRT::Discretization>      boundarydis_;
     Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
     //@}

@@ -59,20 +59,22 @@ ADAPTER::FSICrackingStructure::FSICrackingStructure
  * Add newly formed crack surfaces into cut discretization                    sudhakar 03/14
  * This is the only function that communicates with FSI implementation
  *------------------------------------------------------------------------------------*/
-void ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides( Teuchos::RCP<DRT::Discretization>& boundary_dis,
-                                                                std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
+Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides(
+    std::map<int, LINALG::Matrix<3,1> >& tip_nodes
+)
 {
-  //RebuildInterfaceWithConditionCheck( boundary_dis, tip_nodes );
+  // return RebuildInterfaceWithConditionCheck( tip_nodes );
 
-  RebuildInterfaceWithoutConditionCheck( boundary_dis, tip_nodes );
+  return RebuildInterfaceWithoutConditionCheck( tip_nodes );
 }
 
 /*------------------------------------------------------------------------------------*
  * Rebuild FSI interface only when the crack mouth opening displacement        sudhakar 03/14
  * reaches a predefined given value.
  *------------------------------------------------------------------------------------*/
-void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos::RCP<DRT::Discretization>& boundary_dis,
-                                                                        std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
+Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck(
+    std::map<int, LINALG::Matrix<3,1> >& tip_nodes
+)
 {
   std::map<int,int> tips = getOldNewCrackNodes();
   std::vector<int> crtip = GetCrackTipNodes();
@@ -83,7 +85,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos:
   tipHistory_.push_back( tips );
 
   if( not isCrackMouthOpeningConditionSatisfied( tipHistory_[0] ) )
-    return;
+    return Teuchos::null;
 
   // We do not explicitly add new elements to the discretization
   // Instead, we add the new nodes to FSI condition in structual discretization
@@ -116,6 +118,8 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos:
   // In order to build discretization based on this condition, it is necessary to rebuild
   // the geometry of the conditions
   structdis_->FillComplete();
+
+  Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
 
   // build boundary discretization based on FSI condition
   std::vector<std::string> conditions_to_copy;
@@ -187,6 +191,8 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos:
   boundary_dis->ExportColumnElements(elemcolmap);
 
   boundary_dis->FillComplete();
+
+  return boundary_dis;
 }
 
 /*------------------------------------------------------------------------------------*
@@ -230,8 +236,7 @@ bool ADAPTER::FSICrackingStructure::isCrackMouthOpeningConditionSatisfied( const
  * are added to cut discretization; so fluid will enter into this which may
  * create some problems
  *------------------------------------------------------------------------------------------------------*/
-void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuchos::RCP<DRT::Discretization>& boundary_dis,
-                                                                            std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
+Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
 {
   std::map<int,int> tips = getOldNewCrackNodes();
   std::vector<int> crtip = GetCrackTipNodes();
@@ -266,16 +271,16 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
   // the geometry of the conditions
   structdis_->FillComplete();
 
-  Teuchos::RCP<DRT::Discretization> temp_dis = Teuchos::null;
-
   // build a temporary discretization based on FSI condition
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
 
-  temp_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
 
 #if 1
+
+  Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
+
   boundary_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
 
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true,Teuchos::null));
@@ -289,6 +294,8 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
 
   tip_nodes.clear();
 #else
+  Teuchos::RCP<DRT::Discretization> temp_dis = Teuchos::null;
+
   temp_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
 
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true,Teuchos::null));
@@ -622,6 +629,8 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
   distributeDisToAllProcs( boundary_dis );
 
 #endif
+
+  return boundary_dis;
 }
 
 /*---------------------------------------------------------------------------------------------------*

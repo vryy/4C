@@ -21,7 +21,7 @@
  *        Constructor
  *-------------------------------------------------------------------------------------*/
 FSI::DirichletNeumann_Crack::DirichletNeumann_Crack(const Epetra_Comm& comm)
-  : DirichletNeumann(comm)
+: DirichletNeumann(comm)
 {
   crackUpdate_ = false;
 }
@@ -42,7 +42,9 @@ void FSI::DirichletNeumann_Crack::update_FSI_interface_Crack()
     AddNewCrackSurfaceToCutInterface();
 
     // rebuild FSI interface of fluid side
-    Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(MBFluidField()->FluidField())->RebuildFSIInterface();
+    Teuchos::RCP<ADAPTER::XFluidFSI> xfluidfsi = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(MBFluidField()->FluidField());
+
+    xfluidfsi->RebuildFSIInterface();
 
     // rebuild FSI interface of structure side
     StructureField()->RebuildInterface();
@@ -51,11 +53,11 @@ void FSI::DirichletNeumann_Crack::update_FSI_interface_Crack()
     ADAPTER::Coupling& coupsf = StructureFluidCoupling();
     const int ndim = DRT::Problem::Instance()->NDim();
     coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
-                                   StructureField()->Interface()->FSICondMap(),
-                                   *MBFluidField()->Discretization(),
-                                   MBFluidField()->Interface()->FSICondMap(),
-                                  "FSICoupling",
-                                  ndim);
+        StructureField()->Interface()->FSICondMap(),
+        *xfluidfsi->MyFluid()->BoundaryDiscretization(),
+        MBFluidField()->Interface()->FSICondMap(),
+        "FSICoupling",
+        ndim);
 
     if (coupsf.MasterDofMap()->NumGlobalElements()==0)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
@@ -71,17 +73,17 @@ void FSI::DirichletNeumann_Crack::update_FSI_interface_Crack()
 void FSI::DirichletNeumann_Crack::AddNewCrackSurfaceToCutInterface()
 {
   const Teuchos::RCP<ADAPTER::FSICrackingStructure>& structfield =
-                                Teuchos::rcp_dynamic_cast<ADAPTER::FSICrackingStructure>(StructureField());
+      Teuchos::rcp_dynamic_cast<ADAPTER::FSICrackingStructure>(StructureField());
 
   Teuchos::RCP<FLD::XFluid> xfluid =  Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(MBFluidField()->FluidField())->MyFluid();
 
-  Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
-  xfluid->BoundaryDis( boundary_dis );
-
   std::map<int, LINALG::Matrix<3,1> > tip_nodes;
   xfluid->GetCrackTipNodes( tip_nodes );
-  structfield->addCrackSurfacesToCutSides( boundary_dis, tip_nodes );
-  xfluid->setBoundaryDis( boundary_dis );
+
+  // create new boundary discretization if necessary
+  Teuchos::RCP<DRT::Discretization> boundary_dis = structfield->addCrackSurfacesToCutSides( tip_nodes );
+  if(boundary_dis != Teuchos::null) xfluid->SetBoundaryDis( boundary_dis );
+
   xfluid->SetCrackTipNodes( tip_nodes );
 
   xfluid->UpdateBoundaryValuesAfterCrack( structfield->getOldNewCrackNodes() );
