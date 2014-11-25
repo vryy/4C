@@ -18,7 +18,8 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_multiply.H"
+#include "../linalg/linalg_solver.H"  // mesh initialization :-(
 #include "../linalg/linalg_utils.H"
 
 

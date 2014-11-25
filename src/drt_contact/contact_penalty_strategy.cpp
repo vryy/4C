@@ -18,6 +18,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_utils.H"
+#include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
 
 

@@ -1449,6 +1449,7 @@ set(OBJS_LINALG
   src/linalg/linalg_utils.cpp
 )
 set(OBJS_SOLVER
+  src/linalg/linalg_multiply.cpp
   src/linalg/linalg_solver.cpp
   src/solver/bgs2x2_operator.cpp
   src/solver/solver_cheapsimplepreconditioner.cpp

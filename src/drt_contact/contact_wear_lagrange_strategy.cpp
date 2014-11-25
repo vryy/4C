@@ -32,8 +32,8 @@ Maintainer: Philipp Farah
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_io/io.H"
 
-#include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 #include <Epetra_FEVector.h>
 
 /*----------------------------------------------------------------------*

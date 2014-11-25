@@ -20,6 +20,7 @@ Maintainer: Michael Hiermeier
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*

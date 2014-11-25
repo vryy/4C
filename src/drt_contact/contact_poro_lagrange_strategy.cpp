@@ -18,7 +18,7 @@ Maintainer: Christoph Ager
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_io/io.H"
-#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_adapter/adapter_coupling.H"
