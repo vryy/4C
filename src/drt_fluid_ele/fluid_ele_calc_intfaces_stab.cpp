@@ -111,7 +111,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
     }
     else
     {
-      dserror("expected combination quad4/hex8/hex8 for surface/parent/neighbor pair");
+      dserror("expected combination quad4/hex8/hex8 or quad4/wedge6/wedge6 for surface/parent/neighbor pair");
     }
     break;
   }
@@ -643,15 +643,56 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                   mynegridv
                   );
 
-  // convective velocities
-  LINALG::Matrix<nsd_,piel> peconvvelaf(pevelaf_);
-  LINALG::Matrix<nsd_,niel> neconvvelaf(nevelaf_);
 
-  if (pele->IsAle())
+  // convective velocities
+  if (fldintfacepara.PhysicalType()==INPAR::FLUID::incompressible)
   {
-    peconvvelaf.Update(1.0,pegridv_,-1.0);
-    neconvvelaf.Update(1.0,negridv_,-1.0);
+    peconvvelaf_.Update(1.0, pevelaf_, 0.0);
+    neconvvelaf_.Update(1.0, nevelaf_, 0.0);
+
+    if (pele->IsAle())
+    {
+      peconvvelaf_.Update(1.0,pegridv_,-1.0);
+      neconvvelaf_.Update(1.0,negridv_,-1.0);
+    }
   }
+  // set element advective field for Oseen problems
+  else if (fldintfacepara.PhysicalType()==INPAR::FLUID::oseen)
+  {
+
+    const int funcnum = fldintfacepara.OseenFieldFuncNo();
+    const double time = fldparatimint.Time();
+
+    // parent element
+    for ( int jnode=0; jnode<piel; ++jnode )
+    {
+      const double * jx = pele->Nodes()[jnode]->X();
+      for(int idim=0;idim<nsd_;++idim)
+        peconvvelaf_(idim,jnode) = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(idim,jx,time,NULL);
+    }
+
+    // neighbor element
+    for ( int jnode=0; jnode<niel; ++jnode )
+    {
+      const double * jx = nele->Nodes()[jnode]->X();
+      for(int idim=0;idim<nsd_;++idim)
+        neconvvelaf_(idim,jnode) = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(idim,jx,time,NULL);
+    }
+
+    if (pele->IsAle()) dserror("is ALE for Oseen really reasonable");
+  }
+  else if(fldintfacepara.PhysicalType()==INPAR::FLUID::stokes)
+  {
+    peconvvelaf_.Clear();
+    neconvvelaf_.Clear();
+
+    // zero convective terms
+    if (pele->IsAle()) dserror("is ALE for Stokes really reasonable");
+  }
+  else dserror("physical type for face-oriented stabilizations not supported so far");
+
+
+
 
   //--------------------------------------------------
   // compute element length w.r.t patch of master and slave parent element
@@ -664,19 +705,23 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   // compute velocity norm patch of master and slave parent element
   double max_vel_L2_norm = 0.0;
 
-  // get the L_inf-norm of the parent's element velocity for stabilization
-  for(int r=0; r<nsd_; r++)
+  if(fldintfacepara.PhysicalType() != INPAR::FLUID::stokes)
   {
-    for(int c=0; c<piel; c++)
+    // get the L_inf-norm of the parent's element velocity for stabilization
+    for(int r=0; r<nsd_; r++)
     {
-      if( fabs(peconvvelaf(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(peconvvelaf(r,c));
-    }
+      for(int c=0; c<piel; c++)
+      {
+        if( fabs(peconvvelaf_(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(peconvvelaf_(r,c));
+      }
 
-    for(int c=0; c<niel; c++)
-    {
-      if( fabs(neconvvelaf(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(neconvvelaf(r,c));
+      for(int c=0; c<niel; c++)
+      {
+        if( fabs(neconvvelaf_(r,c)) > max_vel_L2_norm ) max_vel_L2_norm = fabs(neconvvelaf_(r,c));
+      }
     }
   }
+
 
   //--------------------------------------------------
   // transform the face's Gaussian points to both parent elements
@@ -862,6 +907,34 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
     EvalVelPresAndDerivsAtIntPoint(use2ndderiv,pele->IsAle());
 
+#if(0) //DEBUGGING
+    std::cout << "intface->FaceSlaveNumber " << intface->FaceSlaveNumber() << std::endl;
+    std::cout << "intface->FaceMasterNumber " << intface->FaceMasterNumber() << std::endl;
+
+    std::cout << "face nodes" << std::endl;
+    const int * face_nodes = intface->NodeIds();
+    for(int i=0; i< intface->NumNode(); i++) std::cout << face_nodes[i] << std::endl;
+
+    std::cout << "parent nodes" << std::endl;
+    const int * pele_nodes = pele->NodeIds();
+    for(int i=0; i< pele->NumNode(); i++) std::cout << pele_nodes[i] << std::endl;
+
+    std::cout << "neighbor nodes" << std::endl;
+    const int * nele_nodes = nele->NodeIds();
+    for(int i=0; i< nele->NumNode(); i++) std::cout << nele_nodes[i] << std::endl;
+
+    LINALG::Matrix<nsd_,1> p_x, n_x, f_x(true);
+
+    p_x.Multiply(pxyze_, pfunct_);
+    n_x.Multiply(nxyze_, nfunct_);
+    f_x.Multiply(xyze_, funct_);
+
+    std::cout << "p_x " << p_x << std::endl;
+    std::cout << "n_x " << n_x << std::endl;
+    std::cout << "f_x " << f_x << std::endl;
+
+#endif
+
     //-----------------------------------------------------
     LINALG::Matrix<nsd_,nsd_> vderxyaf_diff(true);
     vderxyaf_diff.Update(1.0, nvderxyaf_, -1.0, pvderxyaf_);
@@ -879,17 +952,11 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
     //-----------------------------------------------------
     // get the stabilization parameters
-
-    // get convective velocity
-    LINALG::Matrix<nsd_,1> convvelint(velintaf_);
-
-    // in case of an ALE-fluid, we have to subtract the grid velocity,
-    // as we want the normal convective velocity!
-    if(pele->IsAle())
-      convvelint.Update(1.0,gridvelint_,-1.0);
+    SetConvectiveVelint(fldintfacepara, pele->IsAle());
 
     // normal velocity
-    const double normal_vel_lin_space = fabs(convvelint.Dot(n_));
+    const double normal_vel_lin_space = fabs(convvelint_.Dot(n_));
+
 
     ComputeStabilizationParams(
         fldintfacepara.EOS_WhichTau(),
@@ -1771,6 +1838,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::EvalVe
     }
   }
 
+
   //-----------------------------------------------------
   // get velocity (n+alpha_F,i) derivatives at integration point
   //
@@ -2106,6 +2174,57 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
   return fac;
 }
 
+
+/*---------------------------------------------------------------------------*
+ |  set the (relative) convective velocity at integration point schott 11/14 |
+ *---------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,
+          DRT::Element::DiscretizationType pdistype,
+          DRT::Element::DiscretizationType ndistype>
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::SetConvectiveVelint(
+    DRT::ELEMENTS::FluidEleParameterIntFace& fldintfacepara,
+    const bool isale
+)
+{
+  // get convective velocity at integration point
+  switch (fldintfacepara.PhysicalType())
+  {
+  case INPAR::FLUID::incompressible:
+  case INPAR::FLUID::artcomp:
+  case INPAR::FLUID::varying_density:
+  case INPAR::FLUID::loma:
+  case INPAR::FLUID::boussinesq:
+  case INPAR::FLUID::topopt:
+  {
+    convvelint_.Update(velintaf_);
+    break;
+  }
+  case INPAR::FLUID::oseen:
+  {
+    convvelint_.Multiply(peconvvelaf_,pfunct_);
+    break;
+  }
+  case INPAR::FLUID::stokes:
+  {
+    convvelint_.Clear();
+    break;
+  }
+  default:
+    dserror("Physical type not implemented here. For Poro-problems see derived class FluidEleCalcPoro.");
+    break;
+  }
+
+  // (ALE case handled implicitly here using the (potential
+  //  mesh-movement-dependent) convective velocity, avoiding
+  //  various ALE terms used to be calculated before)
+
+  // in case of an ALE-fluid, we have to subtract the grid velocity,
+  // as we want the normal convective velocity!
+  if (isale)
+  {
+    convvelint_.Update(-1.0,gridvelint_,1.0);
+  }
+}
 
 
 
@@ -2486,7 +2605,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
         for (int vi=0; vi<piel; ++vi)
         {
           elematrix_mm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_timefacfacpre*pderxy_(jdim,vi)*pderxy_(idim,ui);
-
         }
 
         //neighbor row

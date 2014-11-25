@@ -716,17 +716,60 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
+  // ---------------------------------------------------------------------
+  // get additional state vectors for ALE case: grid displacement and vel.
+  // ---------------------------------------------------------------------
+
+  LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
+  LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+
+  if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
+
+  // ---------------------------------------------------------------------
+  // get initial node coordinates for element
+  // ---------------------------------------------------------------------
   // get node coordinates
   GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
-  // evaluate shape functions and derivatives at element center
-  my::EvalShapeFuncAndDerivsAtEleCenter();
-  // set element area or volume
-  const double vol = my::fac_;
+
+  // add displacement when fluid nodes move in the ALE case
+  if (ele->IsAle()) my::xyze_ += edispnp;
+
+
+  // ---------------------------------------------------------------------
+
+  /// element coordinates in EpetraMatrix
+  Epetra_SerialDenseMatrix ele_xyze(my::nsd_,my::nen_);
+  for ( int i=0; i<my::nen_; ++i )
+  {
+    for(int j=0; j<my::nsd_; j++)
+      ele_xyze(j,i) = my::xyze_( j, i );
+  }
+
+  // ---------------------------------------------------------------------
+  // get velocity state vectors
+  // ---------------------------------------------------------------------
 
   // get element-wise velocity/pressure field
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
   LINALG::Matrix<my::nen_,1> epreaf(true);
   my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "u and p at time n+1 (converged)");
+
+
+  // ---------------------------------------------------------------------
+  // set element advective field for Oseen problems
+  // ---------------------------------------------------------------------
+  if (my::fldpara_->PhysicalType()==INPAR::FLUID::oseen) my::SetAdvectiveVelOseen(ele);
+
+
+  // ---------------------------------------------------------------------
+  // get the element volume
+  // ---------------------------------------------------------------------
+
+  // evaluate shape functions and derivatives at element center
+  my::EvalShapeFuncAndDerivsAtEleCenter();
+  // set element area or volume
+  const double vol = my::fac_;
+
 
 
   //----------------------------------------------------------------------------
@@ -915,6 +958,10 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
         double press = my::funct_.Dot(epreaf);
 
+        //----------------------------------------------
+        // get convective velocity at integration point
+        my::SetConvectiveVelint(ele->IsAle());
+
         //--------------------------------------------
         // compute errors
 
@@ -1027,17 +1074,61 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
+  // ---------------------------------------------------------------------
+  // get additional state vectors for ALE case: grid displacement and vel.
+  // ---------------------------------------------------------------------
+
+  LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
+  LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+
+  if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
+
+  // ---------------------------------------------------------------------
+  // get initial node coordinates for element
+  // ---------------------------------------------------------------------
   // get node coordinates
   GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
-  // evaluate shape functions and derivatives at element center
-  my::EvalShapeFuncAndDerivsAtEleCenter();
-  // set element area or volume
-  const double vol = my::fac_;
+
+  // add displacement when fluid nodes move in the ALE case
+  if (ele->IsAle()) my::xyze_ += edispnp;
+
+
+  // ---------------------------------------------------------------------
+
+  /// element coordinates in EpetraMatrix
+  Epetra_SerialDenseMatrix ele_xyze(my::nsd_,my::nen_);
+  for ( int i=0; i<my::nen_; ++i )
+  {
+    for(int j=0; j<my::nsd_; j++)
+      ele_xyze(j,i) = my::xyze_( j, i );
+  }
+
+  // ---------------------------------------------------------------------
+  // get velocity state vectors
+  // ---------------------------------------------------------------------
 
   // get element-wise velocity/pressure field
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
   LINALG::Matrix<my::nen_,1> epreaf(true);
   my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "u and p at time n+1 (converged)");
+
+
+  // ---------------------------------------------------------------------
+  // set element advective field for Oseen problems
+  // ---------------------------------------------------------------------
+  if (my::fldpara_->PhysicalType()==INPAR::FLUID::oseen) my::SetAdvectiveVelOseen(ele);
+
+
+  // ---------------------------------------------------------------------
+  // get the element volume
+  // ---------------------------------------------------------------------
+
+  // evaluate shape functions and derivatives at element center
+  my::EvalShapeFuncAndDerivsAtEleCenter();
+  // set element area or volume
+  const double vol = my::fac_;
+
+
 
   //----------------------------------------------------------------------------
   //      surface integral --- build Cuiui, Cuui, Cuiu and Cuu matrix and rhs
@@ -1233,6 +1324,10 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
         // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
         double press = my::funct_.Dot(epreaf);
 
+        //----------------------------------------------
+        // get convective velocity at integration point
+        my::SetConvectiveVelint(ele->IsAle());
+
         //--------------------------------------------
         // compute errors
 
@@ -1379,11 +1474,28 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // get additional state vectors for ALE case: grid displacement and vel.
+  // ---------------------------------------------------------------------
 
-  // get nodal coordinates
-  GEO::fillInitialPositionArray<distype, my::nsd_, LINALG::Matrix<my::nsd_, my::nen_> > (ele,my::xyze_);
+  LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
+  LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
 
-  ///< element coordinates in EpetraMatrix
+  if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
+
+  // ---------------------------------------------------------------------
+  // get initial node coordinates for element
+  // ---------------------------------------------------------------------
+  // get node coordinates
+  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+
+  // add displacement when fluid nodes move in the ALE case
+  if (ele->IsAle()) my::xyze_ += edispnp;
+
+
+  // ---------------------------------------------------------------------
+
+  /// element coordinates in EpetraMatrix
   Epetra_SerialDenseMatrix ele_xyze(my::nsd_,my::nen_);
   for ( int i=0; i<my::nen_; ++i )
   {
@@ -1391,10 +1503,23 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
       ele_xyze(j,i) = my::xyze_( j, i );
   }
 
-  // extract the current velocity & pressure values for current element
-  LINALG::Matrix<my::nsd_,my::nen_>  evelaf(true);
-  LINALG::Matrix<my::nen_,1>         epreaf(true);
+  // ---------------------------------------------------------------------
+  // get velocity state vectors
+  // ---------------------------------------------------------------------
+
+  // get element-wise velocity/pressure field
+  LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
+  LINALG::Matrix<my::nen_,1> epreaf(true);
   my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "velaf");
+
+
+  // ---------------------------------------------------------------------
+  // set element advective field for Oseen problems
+  // ---------------------------------------------------------------------
+  if (my::fldpara_->PhysicalType()==INPAR::FLUID::oseen) my::SetAdvectiveVelOseen(ele);
+
+
+
 
   // reconstruct interface force vector
   const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("iforcenp", Teuchos::null);
@@ -1720,6 +1845,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         {
           double NIT_conv_stab_fac = 0.0;
           const double NIT_visc_stab_fac = 0.0;
+
+          my::SetConvectiveVelint(ele->IsAle());
 
           if (fluidfluidcoupling)
           {
@@ -2766,8 +2893,27 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
+
+  // ---------------------------------------------------------------------
+  // get additional state vectors for ALE case: grid displacement and vel.
+  // ---------------------------------------------------------------------
+
+  LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
+  LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+
+  if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
+
+  // ---------------------------------------------------------------------
+  // get initial node coordinates for element
+  // ---------------------------------------------------------------------
   // get node coordinates
   GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+
+  // add displacement when fluid nodes move in the ALE case
+  if (ele->IsAle()) my::xyze_ += edispnp;
+
+
+  // ---------------------------------------------------------------------
 
   /// element coordinates in EpetraMatrix
   Epetra_SerialDenseMatrix ele_xyze(my::nsd_,my::nen_);
@@ -2777,10 +2923,23 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
       ele_xyze(j,i) = my::xyze_( j, i );
   }
 
+  // ---------------------------------------------------------------------
+  // get velocity state vectors
+  // ---------------------------------------------------------------------
+
   // get element-wise velocity/pressure field
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
   LINALG::Matrix<my::nen_,1> epreaf(true);
   my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "velaf");
+
+
+  // ---------------------------------------------------------------------
+  // set element advective field for Oseen problems
+  // ---------------------------------------------------------------------
+  if (my::fldpara_->PhysicalType()==INPAR::FLUID::oseen) my::SetAdvectiveVelOseen(ele);
+
+
+
 
   // location array of boundary element
   DRT::Element::LocationArray cutla( 1 );
@@ -3130,6 +3289,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         // get pressure at integration point
         // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
         double press = my::funct_.Dot(epreaf);
+
+        //----------------------------------------------
+        // get convective velocity at integration point
+        my::SetConvectiveVelint(ele->IsAle());
 
         //-----------------------------------------------------------------------------
         // compute stabilization factors
@@ -3523,17 +3686,20 @@ void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
 
   if (fldparaxfem_->MassConservationScaling() == INPAR::XFEM::MassConservationScaling_full)
   {
+    //TODO: Raffaela: which velocity has to be evaluated for these terms in ALE? the convective velocity or the velint?
+    double velnorminf = my::convvelint_.NormInf(); // relative convective velocity
+
     // take the maximum of viscous & convective contribution or the sum?
     if (fldparaxfem_->MassConservationCombination() == INPAR::XFEM::MassConservationCombination_max)
     {
-      NIT_full_stab_fac = std::max(NIT_full_stab_fac,my::densaf_ * fabs(my::velint_.NormInf()) / 6.0);
+      NIT_full_stab_fac = std::max(NIT_full_stab_fac,my::densaf_ * fabs(velnorminf) / 6.0);
       if (! my::fldparatimint_->IsStationary())
         NIT_full_stab_fac= std::max( h_k * my::densaf_ / (12.0 * my::fldparatimint_->TimeFac()),NIT_full_stab_fac);
     }
     else // the sum
     {
       // (2)
-      NIT_full_stab_fac += my::densaf_ * fabs(my::velint_.NormInf()) / 6.0;
+      NIT_full_stab_fac += my::densaf_ * fabs(velnorminf) / 6.0;
 
       // (3)
       if (! my::fldparatimint_->IsStationary())
@@ -3557,7 +3723,7 @@ void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
        fldparaxfem_->XffConvStabScaling() == INPAR::XFEM::XFF_ConvStabScaling_only_averaged || error_calc)
     return;
 
-  const double veln_normal = my::velint_.Dot(normal);
+  const double veln_normal = my::convvelint_.Dot(normal);
 
   double NIT_inflow_stab = 0.0;
 

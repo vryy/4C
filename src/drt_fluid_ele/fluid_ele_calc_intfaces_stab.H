@@ -265,6 +265,12 @@ namespace DRT
           bool  isAle                 ///< flag, whether we are on an ALE-fluid
       );
 
+      //! set the convective velocity
+      void SetConvectiveVelint(
+          DRT::ELEMENTS::FluidEleParameterIntFace& fldintfacepara,
+          const bool isale
+      );
+
       //! Provid pressure and viscous u (EOS) ghost penalty stabilization for 2nd order derivatives
       void GhostPenalty2nd(
                   LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
@@ -926,6 +932,8 @@ namespace DRT
       LINALG::Matrix<nsd_,piel> pegridv_;
       //! array of nodal velocities, new time level
       LINALG::Matrix<nsd_,piel> pevelnp_;
+      //! array of nodal advective velocities
+      LINALG::Matrix<nsd_,piel> peconvvelaf_;
       //! array of nodal pressure, new time level
       LINALG::Matrix<piel,1> peprenp_;
       //! array of nodal grid displacements, parent element, new time level
@@ -941,6 +949,8 @@ namespace DRT
       LINALG::Matrix<nsd_,niel> negridv_;
       //! array of nodal velocities, new time level
       LINALG::Matrix<nsd_,niel> nevelnp_;
+      //! array of nodal advective velocities
+      LINALG::Matrix<nsd_,niel> neconvvelaf_;
       //! array of nodal pressure, new time level
       LINALG::Matrix<niel,1> neprenp_;
       //! array of nodal grid displacements, neighbor element, new time level
@@ -1015,6 +1025,8 @@ namespace DRT
       LINALG::Matrix<nsd_,1> velintnp_;
       //! grid velocity in gausspoint, time n+1 (master side, for ALE-fluid)
       LINALG::Matrix<nsd_,1> gridvelint_;
+      //! convective velocity in gausspoint, time n+1 (master side, for ALE-fluid)
+      LINALG::Matrix<nsd_,1> convvelint_;
       //! parent velocity derivatives in gausspoint, time n+af
       LINALG::Matrix<nsd_,nsd_> pvderxyaf_;
       //! neighbor velocity derivatives in gausspoint, time n+af

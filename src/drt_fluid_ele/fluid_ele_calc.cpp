@@ -79,7 +79,7 @@ DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::FluidEleCalc():
     sgvelint_(true),
     gridvelint_(true),
     convvelint_(true),
-    advevelint_(true),
+    eadvvel_(true),
     accint_(true),
     gradp_(true),
     tau_(true),
@@ -270,18 +270,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
   }
   else eaccam.Clear();
 
+
   // set element advective field for Oseen problems
-  if (fldpara_->PhysicalType()==INPAR::FLUID::oseen)
-  {
-    const int funcnum = fldpara_->OseenFieldFuncNo();
-    const double time = fldparatimint_->Time();
-    for ( int jnode=0; jnode<nen_; ++jnode )
-    {
-      const double * jx = ele->Nodes()[jnode]->X();
-      for(int idim=0;idim<nsd_;++idim)
-        advevelint_(idim,jnode) = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(idim,jx,time,NULL);
-    }
-  }
+  if (fldpara_->PhysicalType()==INPAR::FLUID::oseen) SetAdvectiveVelOseen(ele);
+
+
 
   LINALG::Matrix<nsd_,nen_> gradphiele(true);
   LINALG::Matrix<nen_,1>    curvatureele(true);
@@ -331,30 +324,24 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
       dserror("not implemented type of density function");
   }
 
+
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
   LINALG::Matrix<nsd_, nen_> edispnp(true);
   LINALG::Matrix<nsd_, nen_> egridv(true);
 
-  if (ele->IsAle())
-  {
-    switch (fldpara_->PhysicalType())
-    {
-    case INPAR::FLUID::oseen:
-    case INPAR::FLUID::stokes:
-    {
-      dserror("ALE with Oseen or Stokes seems to be a tricky combination. Think deep before removing dserror!");
-      break;
-    }
-    default:
-    {
-      ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
-      ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &egridv, NULL,"gridv");
-      break;
-    }
-    }
-  }
+  if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp, egridv);
+
+  // ---------------------------------------------------------------------
+  // get initial node coordinates for element
+  // ---------------------------------------------------------------------
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // add displacement when fluid nodes move in the ALE case
+  if (ele->IsAle()) xyze_ += edispnp;
+
+
 
   // ---------------------------------------------------------------------
   // get additional state vector for AVM3 case: fine-scale velocity
@@ -371,8 +358,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
      ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &fsescaaf,"fsscaaf");
   }
 
-  // get node coordinates and number of elements per node
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   //----------------------------------------------------------------------
   // get filtered veolcities and reynoldsstresses
@@ -695,9 +680,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
     E_.Clear();
   }
 
-  // add displacement when fluid nodes move in the ALE case
-  if (isale) xyze_ += edispnp;
-
   // evaluate shape functions and derivatives at element center
   EvalShapeFuncAndDerivsAtEleCenter();
 
@@ -768,34 +750,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
     // get convective velocity at element center
     // for evaluation of stabilization parameter
     velint_.Multiply(evelaf,funct_);
-    switch (fldpara_->PhysicalType())
-    {
-    case INPAR::FLUID::incompressible:
-    case INPAR::FLUID::artcomp:
-    case INPAR::FLUID::varying_density:
-    case INPAR::FLUID::loma:
-    case INPAR::FLUID::boussinesq:
-    case INPAR::FLUID::topopt:
-    {
-      convvelint_.Multiply(evelaf,funct_);
-      break;
-    }
-    case INPAR::FLUID::oseen:
-    {
-      convvelint_.Multiply(advevelint_,funct_);
-      break;
-    }
-    case INPAR::FLUID::stokes:
-    {
-      convvelint_.Clear();
-      break;
-    }
-    default:
-      dserror("Physical type not implemented here. For Poro-problems see derived class FluidEleCalcPoro.");
-      break;
-    }
 
-    if (isale) convvelint_.Multiply(-1.0,egridv,funct_,1.0);
+    // get the grid velocity in case of ALE
+    if(isale) gridvelint_.Multiply(egridv,funct_);
+
+    // get convective velocity at integration point
+    SetConvectiveVelint(isale);
+
 
     if (fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent)
     {
@@ -862,42 +823,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
       fsvelint_.Clear();
     }
 
-    // get convective velocity at integration point
-    switch (fldpara_->PhysicalType())
-    {
-    case INPAR::FLUID::incompressible:
-    case INPAR::FLUID::artcomp:
-    case INPAR::FLUID::varying_density:
-    case INPAR::FLUID::loma:
-    case INPAR::FLUID::boussinesq:
-    case INPAR::FLUID::topopt:
-    {
-      convvelint_.Update(velint_);
-      break;
-    }
-    case INPAR::FLUID::oseen:
-    {
-      convvelint_.Multiply(advevelint_,funct_);
-      break;
-    }
-    case INPAR::FLUID::stokes:
-    {
-      convvelint_.Clear();
-      break;
-    }
-    default:
-      dserror("Physical type not implemented here. For Poro-problems see derived class FluidEleCalcPoro.");
-      break;
-    }
+    // get the grid velocity in case of ALE
+    if(isale) gridvelint_.Multiply(egridv,funct_);
 
-    // (ALE case handled implicitly here using the (potential
-    //  mesh-movement-dependent) convective velocity, avoiding
-    //  various ALE terms used to be calculated before)
-    if (isale)
-    {
-      gridvelint_.Multiply(egridv,funct_);
-      convvelint_.Update(-1.0,gridvelint_,1.0);
-    }
+    // get convective velocity at integration point
+    SetConvectiveVelint(isale);
+
 
     // get pressure at integration point
     // (value at n+alpha_F for generalized-alpha scheme,
@@ -1920,6 +1851,100 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvalShapeFuncAndDerivsAtIntPo
   else derxy2_.Clear();
 
   return;
+}
+
+/*---------------------------------------------------------------------------*
+ | get ALE grid displacements and grid velocity for element     schott 11/14 |
+ *---------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetGridDispVelALE(
+    DRT::Discretization &                   discretization,
+    const std::vector<int> &                lm,
+    LINALG::Matrix<nsd_,nen_>&              edispnp,
+    LINALG::Matrix<nsd_,nen_>&              egridv
+)
+{
+  switch (fldpara_->PhysicalType())
+  {
+  case INPAR::FLUID::oseen:
+  case INPAR::FLUID::stokes:
+  {
+    dserror("ALE with Oseen or Stokes seems to be a tricky combination. Think deep before removing dserror!");
+    break;
+  }
+  default:
+  {
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &egridv, NULL,"gridv");
+    break;
+  }
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ |  set the (relative) convective velocity at integration point schott 11/14 |
+ *---------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SetConvectiveVelint(
+    const bool isale
+)
+{
+  // get convective velocity at integration point
+  switch (fldpara_->PhysicalType())
+  {
+  case INPAR::FLUID::incompressible:
+  case INPAR::FLUID::artcomp:
+  case INPAR::FLUID::varying_density:
+  case INPAR::FLUID::loma:
+  case INPAR::FLUID::boussinesq:
+  case INPAR::FLUID::topopt:
+  {
+    convvelint_.Update(velint_);
+    break;
+  }
+  case INPAR::FLUID::oseen:
+  {
+    convvelint_.Multiply(eadvvel_,funct_);
+    break;
+  }
+  case INPAR::FLUID::stokes:
+  {
+    convvelint_.Clear();
+    break;
+  }
+  default:
+    dserror("Physical type not implemented here. For Poro-problems see derived class FluidEleCalcPoro.");
+    break;
+  }
+
+  // (ALE case handled implicitly here using the (potential
+  //  mesh-movement-dependent) convective velocity, avoiding
+  //  various ALE terms used to be calculated before)
+  if (isale)
+  {
+    convvelint_.Update(-1.0,gridvelint_,1.0);
+  }
+}
+
+
+/*---------------------------------------------------------------------------*
+ |  set element advective field for Oseen problems              schott 11/14 |
+ *---------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SetAdvectiveVelOseen(DRT::ELEMENTS::Fluid* ele)
+{
+  // set element advective field for Oseen problems
+  if (fldpara_->PhysicalType()==INPAR::FLUID::oseen)
+  {
+    const int funcnum = fldpara_->OseenFieldFuncNo();
+    const double time = fldparatimint_->Time();
+    for ( int jnode=0; jnode<nen_; ++jnode )
+    {
+      const double * jx = ele->Nodes()[jnode]->X();
+      for(int idim=0;idim<nsd_;++idim)
+        eadvvel_(idim,jnode) = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(idim,jx,time,NULL);
+    }
+  }
 }
 
 

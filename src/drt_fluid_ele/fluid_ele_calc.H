@@ -623,6 +623,19 @@ protected:
                                                       double gpweight        ///< actual integration point (weight)
                                                 );
 
+  //! get ALE grid displacements and grid velocity for element
+  void GetGridDispVelALE(
+      DRT::Discretization &                   discretization,
+      const std::vector<int> &                lm,
+      LINALG::Matrix<nsd_,nen_>&              edispnp,
+      LINALG::Matrix<nsd_,nen_>&              egridv
+  );
+
+  //! set the (relative) convective velocity at integration point for various physical types
+  void SetConvectiveVelint( const bool isale );
+
+  //! set element advective field for Oseen problems
+  void SetAdvectiveVelOseen(DRT::ELEMENTS::Fluid* ele);
 
   //! get material parameters
   void GetMaterialParams(Teuchos::RCP<const MAT::Material>  material,       ///< reference pointer to material
@@ -1183,8 +1196,8 @@ protected:
   LINALG::Matrix<nsd_,1> gridvelint_;
   //! ale convective velocity c=u-u_G at integration point
   LINALG::Matrix<nsd_,1> convvelint_;
-  //! Oseen advective velocity at integration point
-  LINALG::Matrix<nsd_,nen_> advevelint_;
+  //! Oseen advective velocity at element nodes
+  LINALG::Matrix<nsd_,nen_> eadvvel_;
   //! acceleration vector in gausspoint
   LINALG::Matrix<nsd_,1> accint_;
   //! pressure gradient in gausspoint

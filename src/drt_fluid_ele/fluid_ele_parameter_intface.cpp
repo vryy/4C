@@ -113,6 +113,17 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
 //    dserror(" general face fluid XFEM parameters should be set only once!! -> Check this?!");
   }
 
+
+  // set flag for physical type of fluid flow
+  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type");
+  if ((physicaltype_ != INPAR::FLUID::incompressible)
+      and (physicaltype_ != INPAR::FLUID::stokes)
+      and (physicaltype_ != INPAR::FLUID::oseen)) dserror("physical type is not supported for face stabilizations.");
+
+  // get function number of given Oseen advective field if necessary
+  if (physicaltype_==INPAR::FLUID::oseen)
+    oseenfieldfuncno_ = DRT::INPUT::get<int>(params,"OSEENFIELDFUNCNO");
+
   //---------------------------------
   // which basic stabilization type?
   // residual-based: for residualbased standard fluid or residual-based XFEM fluid in combination with edge-based ghost penalty stabilization
@@ -131,6 +142,9 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
   EOS_conv_stream_  = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(stablist_edgebased,"EOS_CONV_STREAM");
   EOS_conv_cross_   = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Cross>(stablist_edgebased,"EOS_CONV_CROSS");
   EOS_div_          = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased,"EOS_DIV");
+
+  if(physicaltype_ == INPAR::FLUID::stokes and EOS_conv_stream_) dserror("no EOS_CONV_STREAM stabilization required for Stokes problems");
+  if(physicaltype_ == INPAR::FLUID::stokes and EOS_conv_cross_) dserror("no EOS_CONV_CROSS stabilization required for Stokes problems");
 
   // check for reasonable combinations of non-edgebased fluid stabilizations with edge-based stabilizations
   if(stabtype_ != INPAR::FLUID::stabtype_edgebased)

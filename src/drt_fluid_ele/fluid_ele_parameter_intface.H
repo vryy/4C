@@ -102,6 +102,17 @@ public:
   /*========================================================================*/
 
   /*----------------------------------------------------*/
+  //! @name general parameters
+  /*----------------------------------------------------*/
+
+  //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq, poro)
+  INPAR::FLUID::PhysicalType PhysicalType() const {return physicaltype_;};
+
+  //! Return function number of Oseen advective field
+  int OseenFieldFuncNo() const {return oseenfieldfuncno_;};
+
+
+  /*----------------------------------------------------*/
   //! @name general stabilization parameters (non-individually for each face, see below)
   /*----------------------------------------------------*/
 
@@ -190,8 +201,14 @@ protected:
   //! Flag SetFaceGeneralXFEMParameter was called
   bool set_face_general_XFEM_parameter_;
 
+  //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq, Poro)
+  INPAR::FLUID::PhysicalType physicaltype_;
+
   //! Which stabilization type
   INPAR::FLUID::StabType stabtype_;
+
+  //! function number for advective velocity for Oseen problems
+  int oseenfieldfuncno_;
 
 
   /*----------------------------------------------------*/

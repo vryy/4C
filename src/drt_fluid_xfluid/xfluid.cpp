@@ -1997,18 +1997,21 @@ void FLD::XFluid::Init()
   // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
   restart_count_ = 0;
 
-  // -------------------------------------------------------------------
-
-  // GMSH discretization output before CUT
-  OutputDiscret();
 
   // -------------------------------------------------------------------
-
   if(!levelsetcut_)
   {
     solidvelnp_ = LINALG::CreateVector(*soliddis_->DofRowMap(),true);
     soliddispnp_ = LINALG::CreateVector(*soliddis_->DofRowMap(),true);
+  }
 
+  // -------------------------------------------------------------------
+  // GMSH discretization output before CUT
+  OutputDiscret();
+
+
+  if(!levelsetcut_)
+  {
     // -------------------------------------------------------------------
     // create XFluidState object
     // -------------------------------------------------------------------
@@ -6283,6 +6286,10 @@ void FLD::XFluid::SetElementGeneralFluidXFEMParameter()
   // parameter for stabilization
   eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
 
+  // get function number of given Oseen advective field if necessary
+  if (physicaltype_==INPAR::FLUID::oseen)
+    eleparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
+
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
@@ -6326,6 +6333,11 @@ void FLD::XFluid::SetFaceGeneralFluidXFEMParameter()
     faceparams.sublist("EDGE-BASED STABILIZATION")     = params_->sublist("EDGE-BASED STABILIZATION");
 
     faceparams.set<int>("STABTYPE", DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>( params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
+
+    faceparams.set<int>("Physical Type", physicaltype_);
+
+    // get function number of given Oseen advective field if necessary
+    if (physicaltype_==INPAR::FLUID::oseen) faceparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
 
     DRT::ELEMENTS::FluidIntFaceType::Instance().PreEvaluate(*discret_,faceparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   }

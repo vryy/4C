@@ -5544,6 +5544,12 @@ void FLD::FluidImplicitTimeInt::SetFaceGeneralFluidParameter()
 
   faceparams.set<int>("STABTYPE", DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>( params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
 
+  faceparams.set<int>("Physical Type", physicaltype_);
+
+  // get function number of given Oseen advective field if necessary
+  if (physicaltype_==INPAR::FLUID::oseen) faceparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
+
+
   DRT::ELEMENTS::FluidIntFaceType::Instance().PreEvaluate(*discret_,faceparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
 }
