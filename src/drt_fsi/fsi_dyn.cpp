@@ -71,6 +71,7 @@ Maintainer: Matthias Mayr
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_adapter/ad_fld_moving_boundary.H"
+#include "../drt_adapter/ad_fld_xfluid_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_lib/drt_discret_xfem.H"
@@ -147,8 +148,8 @@ void fluid_xfem_drt()
 
   // now we can reserve dofs for background fluid
   int numglobalnodes = actdis->NumGlobalNodes();
-  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+  int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
   actdis->ReplaceDofSet(maxdofset,true);
   actdis->FillComplete();
 
@@ -302,8 +303,8 @@ void fluid_fluid_ale_drt()
 
   // now we can reserve dofs for background fluid
   int numglobalnodes = bgfluiddis->NumGlobalNodes();
-  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+  int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
   bgfluiddis->ReplaceDofSet(maxdofset,true);
   bgfluiddis->FillComplete();
 
@@ -520,8 +521,8 @@ void fluid_fluid_fsi_drt()
 
   // now we can reserve dofs for background fluid
   int numglobalnodes = bgfluiddis->NumGlobalNodes();
-  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+  int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
   bgfluiddis->ReplaceDofSet(maxdofset,true);
   bgfluiddis->FillComplete();
 
@@ -1085,8 +1086,8 @@ void xfsi_drt()
 
   // now we can reserve dofs for background fluid
   int numglobalnodes = fluiddis->NumGlobalNodes();
-  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+  int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
   fluiddis->ReplaceDofSet(maxdofset,true);
   fluiddis->FillComplete();
 

@@ -54,8 +54,10 @@ public:
   \return void
 
   */
-  FixedSizeDofSet(int numreservedof)
-    :DofSet(), numMyReservedDofs_(numreservedof)
+  FixedSizeDofSet(int numreservedofpernode, int numnodes)
+    :DofSet(),
+     numMyReservedDofs_(numreservedofpernode*numnodes),
+     numMyReservedDofsperNode_(numreservedofpernode)
   {
     minGID_ = -1;
     return;
@@ -97,12 +99,28 @@ public:
 
   virtual void MinGID(int mingid) {}
 
+  ///Get Reserved Max Number Dofs per Node
+  virtual void GetReservedMaxNumDofperNode(int& maxnodenumdf)
+  {
+    if (maxnodenumdf > numMyReservedDofsperNode_)
+    {
+      dserror("FixedSizeDofSet::GetReservedMaxNumDofperNode: Not enought Dofs reserved!!!");
+      return;
+    }
+    maxnodenumdf = numMyReservedDofsperNode_;
+
+    return;
+  }
+
   int minGID_ ;
 
 protected:
 
   /// Number of reserved dofs
   int numMyReservedDofs_;
+
+  /// Number of reserved dofs per node
+  int numMyReservedDofsperNode_;
 
 private:
 

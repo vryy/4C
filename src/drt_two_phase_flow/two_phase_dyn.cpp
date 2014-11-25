@@ -210,8 +210,8 @@ void fluid_xfem_ls_drt()
 
    // Reserve DoF's for fluid
    int numglobalnodes = fluiddis->NumGlobalNodes();
-   int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+   int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
    fluiddis->ReplaceDofSet(maxdofset,true);
    fluiddis->FillComplete();
 
