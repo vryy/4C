@@ -77,6 +77,7 @@ public:
   virtual Teuchos::RCP<const Epetra_Vector> InitialGuess()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
   virtual Teuchos::RCP<const Epetra_Vector> TrueResidual()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+  virtual Teuchos::RCP<Epetra_Vector>       WriteAccessVelnp()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
   virtual Teuchos::RCP<const Epetra_Vector> Velaf()         { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Vector> Veln()  = 0;
@@ -105,9 +106,6 @@ public:
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives()  { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual const Teuchos::RCP<DRT::Discretization>& Discretization() { return discret_; }
   virtual Teuchos::RCP<const DRT::DofSet> DofSet()          { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
-  virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor() { dserror("Not implemented in the base class, may be overridden by a subclass.");
-   static Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> ret = Teuchos::null; return ret; }
-  virtual void ApplyEmbFixedMeshDisplacement(Teuchos::RCP<const Epetra_Vector> disp) {dserror("Not implemented in the base class, may be overridden by a subclass.");};
   virtual Teuchos::RCP<const Epetra_Vector> Stepinc()       { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()   { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual void Integrate() = 0;
@@ -261,8 +259,6 @@ public:
 
   int Itemax()  const { return itemax_; }
   virtual void SetItemax(int itemax){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
-
-  virtual void CutAndSetStateVectors(bool isnewNewtonIncrement){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   /*!
   \brief return type of time integration scheme

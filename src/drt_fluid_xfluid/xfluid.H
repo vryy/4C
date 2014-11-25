@@ -487,21 +487,8 @@ namespace FLD
 
     Teuchos::RCP<Epetra_Vector> RHS_Struct_Vec(){ return state_->rhC_s_; }
 
-//    Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f){ return state_->fluidfluidsplitter_.ExtractFluidVector(f); }
-
-    /// provide access to the Dirichlet maps
-    //const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return state_->dbcmaps_;}
-
     /// Return MapExtractor for Dirichlet boundary conditions
     Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(){ return state_->dbcmaps_; }
-
-    /// Expand the Dirichlet DOF set
-    ///
-    /// The method expands the DOF set (map) which contains the DOFs
-    /// subjected to Dirichlet boundary conditions. For instance, the method is
-    /// called by the staggered FSI in which the velocities on the FSI
-    /// interface are prescribed by the other fields.
-    void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
     /// set the maximal number of nonlinear steps
     void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }

@@ -365,10 +365,7 @@ namespace FLD
 
     /// Update the solution after convergence of the nonlinear
     /// iteration. Current solution becomes old solution of next timestep.
-    void TimeUpdate();
-
-    /// Implement ADAPTER::Fluid
-    void Update() { TimeUpdate(); }
+    void Update();
 
     /// lift'n'drag forces, statistics time sample and output of solution and
     /// statistics
@@ -433,16 +430,16 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> TrueResidual() { return aletrueresidual_; }
 
     Teuchos::RCP<const Epetra_Vector> Velnp() { return state_->fluidfluidvelnp_; }
-    Teuchos::RCP<      Epetra_Vector> ViewofVelnp() { return state_->fluidfluidvelnp_; }
+    Teuchos::RCP<      Epetra_Vector> WriteAccessVelnp() { return state_->fluidfluidvelnp_; }
     Teuchos::RCP<const Epetra_Vector> Velaf() { dserror("Gen. alpha not implemented for XFluidFluid problems."); return Teuchos::null; }
     Teuchos::RCP<const Epetra_Vector> Veln() { return state_->fluidfluidveln_; }
     Teuchos::RCP<const Epetra_Vector> GridVel() {return gridv_; }
-    Teuchos::RCP<      Epetra_Vector> ViewOfGridVel() {return gridv_; }
+    Teuchos::RCP<      Epetra_Vector> WriteAccessGridVel() {return gridv_; }
     Teuchos::RCP<const Epetra_Vector> Stepinc() {return state_->stepinc_;}
 
     Teuchos::RCP<const Epetra_Vector> Dispnp() {return aledispnp_; }
     Teuchos::RCP<      Epetra_Vector> WriteAccessDispnp() {return aledispnp_; }
-    Teuchos::RCP<      Epetra_Vector> WriteAccesDispOldState() {return aledispnpoldstate_; }
+    Teuchos::RCP<      Epetra_Vector> WriteAccessDispOldState() {return aledispnpoldstate_; }
     Teuchos::RCP<const Epetra_Vector> Dispn() { return aledispn_; }
 
     Teuchos::RCP<const Epetra_Map> DofRowMap() { return state_->fluidfluiddofrowmap_; }
@@ -465,14 +462,6 @@ namespace FLD
     //! get combined background and embedded fluid dirichlet map extractor
     Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return state_->fluidfluiddbcmaps_; }
     //@}
-
-    /// Expand the Dirichlet DOF set
-    ///
-    /// The method expands the DOF set (map) which contains the DOFs
-    /// subjected to Dirichlet boundary conditions. For instance, the method is
-    /// called by the staggered FSI in which the velocities on the FSI
-    /// interface are prescribed by the other fields.
-    void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
     /*!
      * \brief return fluid-fluid system matrix as block matrix

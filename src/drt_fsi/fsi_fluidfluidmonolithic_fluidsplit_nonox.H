@@ -147,6 +147,8 @@ namespace FSI
                      Teuchos::RCP<const Epetra_Vector> av,
                      double fluidscale);
 
+    /// access type-cast pointer to problem-specific fluid-wrapper
+    const Teuchos::RCP<ADAPTER::FluidFluidFSI>& FluidField(){ return MonolithicNoNOX::fluid_; }
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks

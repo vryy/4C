@@ -786,7 +786,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       Teuchos::RCP<DRT::Discretization> xfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
       bool monolithicfluidfluidfsi = false;
       Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(xfluiddis,actdis,solver,fluidtimeparams,output,isale,monolithicfluidfluidfsi));
-      fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid,actdis,xfluiddis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
+      fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid,actdis,xfluiddis,solver,fluidtimeparams,output,isale,dirichletcond));
     }
     break;
     case prb_fluid_fluid_fsi:
@@ -804,7 +804,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         monolithicfluidfluidfsi = false;
 
       Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(xfluiddis,actdis,solver,fluidtimeparams,output,isale,monolithicfluidfluidfsi));
-      fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid,actdis,xfluiddis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
+      fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid,actdis,xfluiddis,solver,fluidtimeparams,output,isale,dirichletcond));
     }
     break;
     case prb_fsi:

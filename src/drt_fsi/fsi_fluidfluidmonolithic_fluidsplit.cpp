@@ -24,6 +24,7 @@ Maintainer: Raffaela Kruse
 
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_fld_fluid_fluid_fsi.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
@@ -39,6 +40,9 @@ FSI::FluidFluidMonolithicFluidSplit::FluidFluidMonolithicFluidSplit(const Epetra
                                                                     const Teuchos::ParameterList& timeparams)
   : MonolithicFluidSplit(comm,timeparams)
 {
+  // cast to problem-specific fluid-wrapper
+  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFluidFSI>(MonolithicFluidSplit::FluidField());
+
   // cast to problem-specific ALE-wrapper
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicFluidSplit::AleField());
 
@@ -160,7 +164,7 @@ void FSI::FluidFluidMonolithicFluidSplit::Output()
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
     const int upres = fsidyn.get<int>("UPRES");
     if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
-      FluidField()->DiscWriter()->WriteVector("fsilambda", lambdaemb);
+      FluidField()->EmbDiscWriter()->WriteVector("fsilambda", lambdaemb);
   }
   AleField()->Output();
   FluidField()->LiftDrag();

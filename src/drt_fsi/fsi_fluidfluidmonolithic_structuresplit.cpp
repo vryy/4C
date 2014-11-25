@@ -17,6 +17,7 @@ Maintainer: Raffaela Kruse
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
+#include "../drt_adapter/ad_fld_fluid_fluid_fsi.H"
 #include "../drt_adapter/ad_ale_xffsi.H"
 
 #include "../drt_inpar/inpar_fsi.H"
@@ -37,6 +38,9 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(cons
                                                                             const Teuchos::ParameterList& timeparams)
   : MonolithicStructureSplit(comm,timeparams)
 {
+  // cast to problem-specific fluid-wrapper
+  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFluidFSI>(MonolithicStructureSplit::FluidField());
+
   // cast to problem-specific ALE-wrapper
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicStructureSplit::AleField());
 

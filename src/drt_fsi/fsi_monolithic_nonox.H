@@ -31,6 +31,7 @@ Maintainer: Shadan Shahmiri
 
 namespace ADAPTER
 {
+  class FluidFluidFSI;
   class AleXFFsiWrapper;
 }
 
@@ -284,6 +285,9 @@ namespace FSI
     /// timestep when to relax the ale
     int relaxing_ale_every_;
 
+    /// type-cast pointer to problem-specific fluid-wrapper
+    Teuchos::RCP<ADAPTER::FluidFluidFSI> fluid_;
+
   private:
 
     /*!
@@ -333,6 +337,7 @@ namespace FSI
     double TOL_VEL_INC_INF_;
     //@}
 
+    /// type-cast pointer to problem-specific ALE-wrapper
     Teuchos::RCP<ADAPTER::AleXFFsiWrapper> ale_;
 
 

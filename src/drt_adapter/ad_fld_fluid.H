@@ -57,7 +57,6 @@ namespace FLD
   namespace UTILS
   {
     class MapExtractor;
-    class FluidXFluidMapExtractor;
   }
 }
 
@@ -122,6 +121,9 @@ namespace ADAPTER {
 
     /// true residual
     virtual Teuchos::RCP<const Epetra_Vector> TrueResidual() = 0;
+
+    /// velocities (and pressures) at \f$t^{n+1}\f$ for write access
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() = 0;
 
     /// velocities (and pressures) at \f$t^{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
@@ -498,16 +500,9 @@ namespace ADAPTER {
     /// extract fluid forces at the interface
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
 
-    virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor() = 0;
-
-    /// needed for xfluidfluid monolithic approach to set the old displacement
-    /// of the Ale mesh before realxing it.
-    virtual void ApplyEmbFixedMeshDisplacement(Teuchos::RCP<const Epetra_Vector> disp) = 0;
-
     virtual Teuchos::RCP<const Epetra_Vector> Stepinc() = 0;
 
     //@}
-
 
     //! @name Extract mesh values
 
@@ -546,13 +541,6 @@ namespace ADAPTER {
     virtual int Itemax() const = 0;
     /// set maximum for iteration steps
     virtual void SetItemax(int itemax) = 0;
-
-    //@}
-
-    //! @ XFluid specific routines
-
-    /// performs the cut and creates a new state class
-    virtual void CutAndSetStateVectors( bool isnewNewtonIncrement ) = 0;
 
     //@}
 

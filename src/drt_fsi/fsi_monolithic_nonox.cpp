@@ -25,6 +25,8 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
+#include "../drt_adapter/ad_fld_fluid_fluid_fsi.H"
+
 #include "../drt_adapter/ad_ale_xffsi.H"
 
 /*----------------------------------------------------------------------*/
@@ -38,6 +40,8 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(const Epetra_Comm& comm,
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
+  // use taylored fluid- and ALE-wrappers
+  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFluidFSI>(MonolithicBase::FluidField());
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicBase::AleField());
 
   // enable debugging
@@ -637,7 +641,7 @@ void FSI::MonolithicNoNOX::Update()
   if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton and aleupdate )
   {
     // Set the old state of ALE displacement before relaxation
-    FluidField()->ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
+    fluid_->ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
   }
 
   RecoverLagrangeMultiplier();

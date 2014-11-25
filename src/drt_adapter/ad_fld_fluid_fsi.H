@@ -189,6 +189,13 @@ namespace ADAPTER {
     //@}
 
   protected:
+
+    /// create conditioned dof-map extractor for the fluid
+    void SetupInterface();
+
+    /// build inner velocity dof-map
+    void BuildInnerVelMap();
+
     /// A casted pointer to the fluid itself
     Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpl_;
 

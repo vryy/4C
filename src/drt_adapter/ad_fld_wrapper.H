@@ -29,13 +29,6 @@ public:
         { return fluid_->Veln(); }
   virtual Teuchos::RCP<const Epetra_Vector> Velnm()
         { dserror("not implemented"); return Teuchos::null; };
-  virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor()
-        { dserror("not implemented");
-        static Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> ret = Teuchos::null;
-        return ret;
-        };
-  virtual void ApplyEmbFixedMeshDisplacement(Teuchos::RCP<const Epetra_Vector> disp)
-  { dserror("not implemented"); }
   virtual Teuchos::RCP<const Epetra_Vector> Stepinc() {return fluid_->Stepinc();}
   virtual Teuchos::RCP<const Epetra_Vector> Accnp()
         { return fluid_->Accnp(); };
@@ -138,7 +131,7 @@ public:
   { return fluid_->Output(); }
   virtual void StatisticsOutput() { dserror("not implemented!"); return; }
   virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter()
-        { return fluid_->DiscWriter();}
+  { return fluid_->DiscWriter();}
   virtual void ReadRestart(int step)
   { return fluid_->ReadRestart(step); }
   virtual void SetRestart(const int step,
@@ -154,6 +147,15 @@ public:
   { return fluid_->Step(); }
   virtual double Dt() const
   { return fluid_->Dt(); }
+
+  //! @name Write access to field solution variables at \f$t^{n+1}\f$
+  //@{
+
+  /// write access to extract velocities at \f$t^{n+1}\f$
+  virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp()
+  { return fluid_->WriteAccessVelnp(); }
+
+  //@}
 
   //! @name Time step size adaptivity in monolithic FSI
   //@{
@@ -285,8 +287,6 @@ public:
   { return fluid_->Reset(completeReset, newFiles, iter); };
   virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp)
   { return fluid_->SetFldGrDisp(fluid_growth_disp); }
-  virtual void CutAndSetStateVectors( bool isnewNewtonIncrement )
-  { return fluid_->CutAndSetStateVectors(isnewNewtonIncrement); }
 
   /// calculate error in comparison to analytical solution
   virtual void CalculateError()

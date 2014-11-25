@@ -1972,14 +1972,14 @@ void FLD::XFluidFluid::Init()
     aledispn_  = LINALG::CreateVector(*aledofrowmap_,true);
     aledispnm_ = LINALG::CreateVector(*aledofrowmap_,true);
     gridv_  = LINALG::CreateVector(*aledofrowmap_,true);
-
-    if (restart)
-      LINALG::Export(*aledispn_,idispcol);
   }
 
   if (restart)
   {
     ReadRestartEmb(restart);
+
+    if (alefluid_)
+      LINALG::Export(*aledispn_,idispcol);
   }
 
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
@@ -2229,7 +2229,7 @@ void FLD::XFluidFluid::TimeLoop()
     //                         update solution
     //        current solution becomes old solution of next timestep
     // -------------------------------------------------------------------
-    TimeUpdate();
+    Update();
 
 
     // -------------------------------------------------------------------
@@ -2634,7 +2634,7 @@ void FLD::XFluidFluid::PrepareSolve()
 }//FLD::XFluidFluid::PrepareSolve()
 
 // ----------------------------------------------------------------
-// Prepare monolithic step (called in TimeUpdate)
+// Prepare monolithic step (called in Update)
 // - set time parameters
 // - do the cut and xfluidfluid time integration
 // - solve the fluid problem with FSI velocities as dirichlet values
@@ -3165,6 +3165,8 @@ void FLD::XFluidFluid::ReadRestart(int step)
     dserror("Global dof numbering in maps does not match");
   if (not (bgdis_->DofRowMap())->SameAs(state_->accn_->Map()))
     dserror("Global dof numbering in maps does not match");
+
+  ReadRestartEmb(step);
 }
 
 // -------------------------------------------------------------------
@@ -3251,23 +3253,7 @@ void FLD::XFluidFluid::UpdateGridv()
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-void FLD::XFluidFluid::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
-{
-  std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-  condmaps.push_back(maptoadd);
-  condmaps.push_back(aledbcmaps_->CondMap());
-  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-  *(aledbcmaps_) = LINALG::MapExtractor(*(embdis_->DofRowMap()), condmerged);
-
-  // update the combined fluid dirichlet maps immediately
-  state_->CreateFluidFluidDBCMaps();
-  return;
-}//FLD::XFluidFluid::AddDirichCond
-
-// -------------------------------------------------------------------
-//
-// -------------------------------------------------------------------
-void FLD::XFluidFluid::TimeUpdate()
+void FLD::XFluidFluid::Update()
 {
   // parameter for monolithic_approach_fixedale, do not move
   // the embedded mesh in this monolithic step. (No Cut and ale-relaxing;
@@ -3401,7 +3387,7 @@ void FLD::XFluidFluid::TimeUpdate()
     aledispn_->Update(1.0,*aledispnp_,0.0);
   }
 
-} //XFluidFluid::TimeUpdate()
+} //XFluidFluid::Update()
 
 // -------------------------------------------------------------------
 // In this function:
