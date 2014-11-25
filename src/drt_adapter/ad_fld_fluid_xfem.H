@@ -52,6 +52,9 @@ namespace ADAPTER
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return fluid_->Interface(); }
 
+    /// communication object at the struct interface
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& StructInterface();
+
     //@}
 
     /*========================================================================*/

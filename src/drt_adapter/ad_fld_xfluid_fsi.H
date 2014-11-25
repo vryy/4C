@@ -72,40 +72,44 @@ namespace ADAPTER {
     virtual void Init();
 
     /// communication object at the interface
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& StructInterface() const { return structinterface_; }
+
+    /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
 
-    /// communication object at the interface (dummy)
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const
-    { dserror("Not implemented in the base class, may be overridden by a subclass.");
-      static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
-      return ret;
-    }
+    /// communication object at the interface without pressure dofs for FPSI problems
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const { return fpsiinterface_; }
 
     /// Velocity-displacement conversion at the fsi interface
     virtual double TimeScaling() const;
 
     /// Return interface forces
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractStructInterfaceForces();
 
     /// Return interface velocity at old time level n
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractStructInterfaceVeln();
 
     /// Return interface velocity at new time level n+1
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() { dserror("Not implemented, yet!");
+    virtual Teuchos::RCP<Epetra_Vector> ExtractStructInterfaceVelnp() { dserror("Not implemented, yet!");
                                                                   return Teuchos::null; }
 
     /// apply the interface velocities to the fluid
-    virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
+    virtual void ApplyStructInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
 
     /// apply the interface displacements to the fluid
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
+    virtual void ApplyStructMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 
     /// convert increment of displacement to increment in velocity
     virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
 
     /// Rebuild FSI interface in case of FSI-crack problem
-    virtual void RebuildFSIInterface();
+    virtual void RebuildFSIStructInterface();
 
+
+       /// apply the interface displacements to the fluid
+       virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
+
+       virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
 
     /// return coupling matrix between fluid and structure as sparse matrices
     Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix();
@@ -115,6 +119,9 @@ namespace ADAPTER {
     Teuchos::RCP<const Epetra_Vector> RHS_Struct_Vec();
 
     Teuchos::RCP<FLD::XFluid> MyFluid() {return xfluid_; }
+
+    /// return boundary discretization
+    const Teuchos::RCP<DRT::Discretization>& BoundaryDiscretization() {return xfluid_->BoundaryDiscretization();}
 
     bool NewtonRestartMonolithic(){ return xfluid_->NewtonRestartMonolithic(); }
 
@@ -137,8 +144,16 @@ namespace ADAPTER {
     /// the interface map setup for fsi interface, free surface, interior translation
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
 
+    /// the interface map setup for fsi interface, free surface, interior translation
+    Teuchos::RCP<FLD::UTILS::MapExtractor> structinterface_;
+
+    /// the interface map setup for fpsi interface
+    Teuchos::RCP<FLD::UTILS::MapExtractor> fpsiinterface_;
+
     /// ALE dof map
     Teuchos::RCP<LINALG::MapExtractor>     meshmap_;
+    Teuchos::RCP<Epetra_Map> permfluidmap_;
+    Teuchos::RCP<Epetra_Map> fullfluidmap_;
 
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization>      xfluiddis_;

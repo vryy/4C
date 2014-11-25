@@ -168,10 +168,10 @@ namespace ADAPTER
     }
 
    //!Recover Lagrange Multiplier during iteration (does nothing for structure)
-   void RecoverLagrangeMultiplier_iter(Teuchos::RCP<Epetra_Vector> iterinc)
+   void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<Epetra_Vector> iterinc)
    {
      if (type_ == FieldWrapper::type_PoroField)
-       poro_->RecoverLagrangeMultiplier_iter(iterinc);
+       poro_->RecoverLagrangeMultiplierAfterNewtonStep(iterinc);
    }
 
   protected:

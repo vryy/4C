@@ -16,6 +16,7 @@ Maintainer: Benedikt Schott
 
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_fld_xfluid_fsi.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
@@ -53,7 +54,9 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
   //--------------------------------------------
   // ask base algorithm for the fluid time integrator
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,fdyn,"fluid",false));
-  fluid_ = fluid->FluidField();
+  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(fluid->FluidField());
+  if (fluid_ == Teuchos::null)
+    dserror("Cast of Fluid to XFluidFSI failed! - Everything fine in SetupFluid()?");
 
   return;
 }

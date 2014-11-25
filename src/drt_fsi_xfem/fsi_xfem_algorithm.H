@@ -32,6 +32,7 @@ namespace ADAPTER
 {
   class Structure;
   class FSIStructureWrapper;
+  class XFluidFSI;
 }
 
 
@@ -76,7 +77,7 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
 
     //! access to fluid field
-    const Teuchos::RCP< ::ADAPTER::Fluid>& FluidField(){return fluid_;}
+    const Teuchos::RCP< ::ADAPTER::XFluidFSI>& FluidField(){return fluid_;}
 
     //@}
 
@@ -107,7 +108,7 @@ namespace FSI
     Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> structure_;
 
     //! underlying fluid of the FSI problem
-    Teuchos::RCP< ::ADAPTER::Fluid> fluid_;
+    Teuchos::RCP< ::ADAPTER::XFluidFSI> fluid_;
 
     //@}
 

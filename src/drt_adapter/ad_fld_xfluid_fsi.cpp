@@ -37,6 +37,7 @@ ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,   // the XFluid object
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output )
 : FluidWrapper(fluid),                                      // the XFluid object is set as fluid_ in the FluidWrapper
+  fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
   xfluiddis_(xfluiddis),
   soliddis_(soliddis),
   solver_(solver),
@@ -60,14 +61,19 @@ void ADAPTER::XFluidFSI::Init()
   if (xfluid_ == Teuchos::null)
     dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
 
+  structinterface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
   interface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
   meshmap_   = Teuchos::rcp(new LINALG::MapExtractor());
 
 
   // the solid mesh has to match the interface mesh
   // so we have to compute a interface true residual vector itrueresidual_
-  interface_->Setup(*xfluid_->BoundaryDiscretization());
-  xfluid_->SetSurfaceSplitter(&(*interface_));
+  structinterface_->Setup(*xfluid_->BoundaryDiscretization());
+  xfluid_->SetSurfaceSplitter(&(*structinterface_));
+
+  interface_->Setup(*xfluiddis_,false, true); //Always Create overlapping FSI/FPSI Interface
+
+  fpsiinterface_->Setup(*xfluiddis_,true, true); //Always Create overlapping FSI/FPSI Interface
 }
 
 
@@ -84,42 +90,60 @@ double ADAPTER::XFluidFSI::TimeScaling() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractStructInterfaceForces()
 {
   // the trueresidual vector has to match the solid dis
   // it contains the forces acting on the structural surface
-  return interface_->ExtractFSICondVector(xfluid_->ITrueResidual());
+  return structinterface_->ExtractFSICondVector(xfluid_->ITrueResidual());
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceVeln()
+Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractStructInterfaceVeln()
 {
   // it depends, when this method is called, and when velnp is updated
   // the FSI algorithm expects first an time update and then asks for the old time step velocity
   // meaning that it gets the velocity from the new time step
   // not clear? exactly! thats why the FSI time update should be more clear about it
   // needs discussion with the FSI people
-  return interface_->ExtractFSICondVector(xfluid_->IVeln());
+  return structinterface_->ExtractFSICondVector(xfluid_->IVeln());
 }
 
 
 /*----------------------------------------------------------------------*/
 // apply the interface velocities to the fluid
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
+void ADAPTER::XFluidFSI::ApplyStructInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
-  interface_->InsertFSICondVector(ivel,xfluid_->IVelnp());
+  structinterface_->InsertFSICondVector(ivel,xfluid_->IVelnp());
 }
 
 
 /*----------------------------------------------------------------------*/
 //  apply the interface displacements to the fluid
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> idisp)
+void ADAPTER::XFluidFSI::ApplyStructMeshDisplacement(Teuchos::RCP<const Epetra_Vector> idisp)
 {
-   interface_->InsertFSICondVector(idisp,xfluid_->IDispnp());
+  structinterface_->InsertFSICondVector(idisp,xfluid_->IDispnp());
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::XFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
+{
+  meshmap_->Setup(*xfluid_->FilledDofRowMap(),mm,LINALG::SplitMap(*xfluid_->FilledDofRowMap(),*mm));
+}
+
+/*----------------------------------------------------------------------*/
+//  apply the ale displacements to the fluid
+/*----------------------------------------------------------------------*/
+void ADAPTER::XFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
+{
+  meshmap_->InsertCondVector(fluiddisp,xfluid_->WriteAccessDispnp());
+
+  // new grid velocity
+  xfluid_->UpdateGridv();
 }
 
 
@@ -135,7 +159,7 @@ void ADAPTER::XFluidFSI::DisplacementToVelocity(
 {
 
   // get interface velocity at t(n)
-  const Teuchos::RCP<const Epetra_Vector> veln = interface_->ExtractFSICondVector(xfluid_->IVeln());
+  const Teuchos::RCP<const Epetra_Vector> veln = structinterface_->ExtractFSICondVector(xfluid_->IVeln());
 
 #ifdef DEBUG
   // check, whether maps are the same
@@ -182,11 +206,11 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidFSI::RHS_Struct_Vec()
  * Rebuild FSI interface in case of crack-FSI problem               sudhakar 03/14
  * This is needed when we add new nodes to the FSI interface
  *----------------------------------------------------------------------*/
-void ADAPTER::XFluidFSI::RebuildFSIInterface()
+void ADAPTER::XFluidFSI::RebuildFSIStructInterface()
 {
-  Interface()->Setup(*xfluid_->BoundaryDiscretization());
-  // do we need this line?
-  xfluid_->SetSurfaceSplitter(&(*interface_));
+  StructInterface()->Setup(*xfluid_->BoundaryDiscretization());
+    // do we need this line?
+  xfluid_->SetSurfaceSplitter(&(*StructInterface()));
 }
 
 /// GmshOutput for background mesh and cut mesh

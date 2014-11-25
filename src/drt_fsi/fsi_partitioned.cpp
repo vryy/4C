@@ -91,7 +91,7 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
                                    StructureField()->Interface()->FSICondMap(),
                                   *x_movingboundary->BoundaryDiscretization(), // use the matching boundary discretization
-                                   MBFluidField()->Interface()->FSICondMap(),
+                                  x_movingboundary->StructInterface()->FSICondMap(),
                                   "FSICoupling",
                                   ndim);
 

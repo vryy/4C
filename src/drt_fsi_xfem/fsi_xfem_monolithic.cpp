@@ -1251,7 +1251,7 @@ bool FSI::MonolithicXFEM::Evaluate()
     Teuchos::RCP<Epetra_Vector> idispnp = StructureField()->ExtractInterfaceDispnp();
 
     // apply the current interface displacement to the boundary discretization of the fluid field
-    FluidField()->ApplyMeshDisplacement(idispnp);
+    FluidField()->ApplyStructMeshDisplacement(idispnp);
   }
 
   //--------------------------------------------------------
@@ -1263,7 +1263,7 @@ bool FSI::MonolithicXFEM::Evaluate()
     //--------------------------------------------------------
 
     // new vector for interface velocities
-    Teuchos::RCP<Epetra_Vector> ivelnp = LINALG::CreateVector( *FluidField()->Interface()->FSICondMap(),true);
+    Teuchos::RCP<Epetra_Vector> ivelnp = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(),true);
 
     // update ivelnp to contain the interface displacements step-increment Delta d = d^(n+1,i+1)-d^n
     ivelnp->Update(1.0, *StructureField()->ExtractInterfaceDispnp(), -1.0, *StructureField()->ExtractInterfaceDispn(), 0.0 );
@@ -1273,12 +1273,12 @@ bool FSI::MonolithicXFEM::Evaluate()
     FluidField()->DisplacementToVelocity( ivelnp );
 
     // obtain current interface velocity u^(n+1,i+1) = Delta u + u^n = u^(n+1,i+1)-u^n + u^n
-    ivelnp->Update( 1.0, *(FluidField()->ExtractInterfaceVeln()), 1.0);
+    ivelnp->Update(1.0, *(FluidField()->ExtractStructInterfaceVeln()), 1.0);
 
     //--------------------------------------------------------
     // apply ivelnp = u^(n+1,i+1) in the Xfluid-object
     //--------------------------------------------------------
-    FluidField()->ApplyInterfaceVelocities(ivelnp);
+    FluidField()->ApplyStructInterfaceVelocities(ivelnp);
   }
 
 
@@ -1445,7 +1445,7 @@ bool FSI::MonolithicXFEM::Evaluate()
 //
 //     //--------------------------------------------------------
 //     // apply the current interface displacement idispnp to the boundary discretization of the fluid field
-//     FluidField()->ApplyMeshDisplacement(idispnp);
+//     FluidField()->ApplyStructMeshDisplacement(idispnp);
 //
 //     //--------------------------------------------------------
 //     // * cut with new interface position
@@ -1506,7 +1506,8 @@ bool FSI::MonolithicXFEM::Evaluate()
 //
 //     //--------------------------------------------------------
 //     // new vector for interface velocities
-//     Teuchos::RCP<Epetra_Vector> ivelnp = LINALG::CreateVector( *FluidField()->Interface()->FSICondMap(),true);
+
+//     Teuchos::RCP<Epetra_Vector> ivelnp = LINALG::CreateVector( *FluidField()->StructInterface()->FSICondMap(),true);
 //
 //     // now ivelnp contains the interface displacements increment Delta d = d^(n+1,i+1)-d^n
 //     ivelnp->Update(1.0, *StructureField()->ExtractInterfaceDispnp(), -1.0, *StructureField()->ExtractInterfaceDispn(), 0.0 );
@@ -1516,7 +1517,7 @@ bool FSI::MonolithicXFEM::Evaluate()
 //     FluidField()->DisplacementToVelocity( ivelnp );
 //
 //     // obtain current interface velocity u^(n+1,i+1) = Delta u + u^n = u^(n+1,i+1)-u^n + u^n
-//     ivelnp->Update( 1.0, *(FluidField()->ExtractInterfaceVeln()), 1.0);
+//     ivelnp->Update( 1.0, *(FluidField()->ExtractStructInterfaceVeln()), 1.0);
 //
 //     // set ivelnp in Xfluid
 //     FluidField()->ApplyInterfaceVelocities(ivelnp);

@@ -204,12 +204,12 @@ namespace FLD
 
       //! @name displacemets at time n+1, n and n-1
       Teuchos::RCP<Epetra_Vector>    dispnp_;
-      Teuchos::RCP<Epetra_Vector>    dispn_;
-      Teuchos::RCP<Epetra_Vector>    dispnm_;
+//      Teuchos::RCP<Epetra_Vector>    dispn_; //until now not required in state
+//      Teuchos::RCP<Epetra_Vector>    dispnm_; //until now not required in state
       //@}
 
       /// grid velocity (set from the adapter!)
-      Teuchos::RCP<Epetra_Vector>    gridv_;
+      Teuchos::RCP<Epetra_Vector>    gridvnp_;
 
       /// histvector --- a linear combination of velnm, veln (BDF)
       ///                or veln, accn (One-Step-Theta)
@@ -454,8 +454,11 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> Velaf()        { return state_->velaf_; }
     Teuchos::RCP<const Epetra_Vector> Veln()         { return state_->veln_;  }
 
-    Teuchos::RCP<const Epetra_Vector> Dispnp() { return state_->dispnp_; }
-    Teuchos::RCP<const Epetra_Vector> Dispn()  { return state_->dispn_; }
+    virtual Teuchos::RCP<const Epetra_Vector> GridVel()     { return gridvnp_; } //full grid velocity (1st dofset)
+
+    Teuchos::RCP<const Epetra_Vector> Dispnp() { return dispnp_; }  //full Dispnp (1st dofset)
+    Teuchos::RCP<      Epetra_Vector> WriteAccessDispnp() {return dispnp_; }  //full Dispnp (1st dofset)
+    Teuchos::RCP<const Epetra_Vector> Dispn()  { return dispn_; }  //full Dispn(1st dofset)
 
     //! get the interface forces acting on the structural surface
     Teuchos::RCP<const Epetra_Vector> ITrueResidual(){ return itrueresidual_; }
@@ -570,6 +573,11 @@ namespace FLD
     Teuchos::RCP<FLD::Vreman> Vreman() {return Teuchos::null;}
 
     void SetStateLS( Epetra_Vector & lsvalues );
+
+    void UpdateGridv();
+
+    ///FilledDofRowMap with gids of the first fluid dofset
+    Teuchos::RCP<Epetra_Map> FilledDofRowMap() {return filleddofrowmap_;}
 
   private:
 
@@ -759,6 +767,12 @@ namespace FLD
     void PrepareOutput();
 
     //@}
+
+    /// Takes DofRowMap with just one xfem-Dofset and duplicates the dof gids for export of gridvelocity!
+    Teuchos::RCP<Epetra_Map> ExtendMap(Teuchos::RCP<Epetra_Map> srcmap, int numdofspernode, int numdofsets, bool copy);
+
+    ///Export XFluid Vector to State Vector
+    void GetStateVectorXFluid(Teuchos::RCP<Epetra_Vector>& xfluidvec, Teuchos::RCP<Epetra_Vector>& statevec);
 
     //-------------------------------------------------------------------------------
     //! possible inf-norm scaling of linear system / fluid matrix
@@ -956,11 +970,29 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    idispn_;
     Teuchos::RCP<Epetra_Vector>    itrueresidual_; //! interface forces acting on the structural surface
     Teuchos::RCP<Epetra_Vector>    iforcenp_;
+
+    //Dispnp of full fluidfield (also unphysical area - to avoid reconstruction for gridvelocity calculation!)
+    Teuchos::RCP<Epetra_Vector>    dispnp_;
+    Teuchos::RCP<Epetra_Vector>    dispn_;
+    Teuchos::RCP<Epetra_Vector>    dispnm_;
+
+    /// grid velocity (set from the adapter!)
+    Teuchos::RCP<Epetra_Vector>    gridvnp_;
+
+    /// grid velocity at timestep n
+    Teuchos::RCP<Epetra_Vector>    gridvn_;
+
     //@}
 
     //! @name solid-dis state vectors
     Teuchos::RCP<Epetra_Vector>    solidvelnp_;
     Teuchos::RCP<Epetra_Vector>    soliddispnp_;
+    //@}
+
+    //! @specific dof row maps
+    Teuchos::RCP<Epetra_Map> fulldofrowmap_; //dofrowmap with all reserved dofs of the xfluid
+    Teuchos::RCP<Epetra_Map> filleddofrowmap_; //dofrowmap with gids of the first fluid dofset
+    Teuchos::RCP<Epetra_Map> duplicatedfilleddofrowmap_; //dofrowmap with gids of the first fluid dofset duplicated to all local dofsetpositions
     //@}
 
     //-----------------------------XFEM time-integration specific data ----------------

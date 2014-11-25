@@ -271,6 +271,17 @@ void FLD::XFluid::XFluidState::InitStateVariables()
     rhC_s_ = LINALG::CreateVector(*xfluid_.boundarydis_->DofRowMap(),true);
     rhC_s_col_= LINALG::CreateVector(*xfluid_.boundarydis_->DofColMap(),true);
   }
+
+  if (xfluid_.alefluid_)
+  {
+    //! @name Ale Displacement at time n+1
+    dispnp_ = LINALG::CreateVector(*fluiddofrowmap_,true);
+    xfluid_.GetStateVectorXFluid(xfluid_.dispnp_,dispnp_);
+    //! @name Grid Velocity at time n+1
+    gridvnp_ = LINALG::CreateVector(*fluiddofrowmap_,true);
+    xfluid_.GetStateVectorXFluid(xfluid_.gridvnp_,gridvnp_);
+  }
+
 }
 
 /*----------------------------------------------------------------------*
@@ -338,8 +349,9 @@ void FLD::XFluid::XFluidState::Evaluate( DRT::Discretization & discret,
   discret.SetState("scaam",scaam_);
   if (xfluid_.alefluid_)
   {
+    //set in -FLD::XFluid::UpdateGridv()
     discret.SetState("dispnp", dispnp_);
-    discret.SetState("gridv", gridv_);
+    discret.SetState("gridv", gridvnp_);
   }
 
   // set scheme-specific element parameters and vector values
@@ -1780,9 +1792,10 @@ void FLD::XFluid::XFluidState::GradientPenalty( Teuchos::ParameterList & elepara
 
   if (xfluid_.alefluid_)
   {
-    dserror("which vectors have to be set for gradient penalty for timeintegration in alefluid?!");
+    //dserror("which vectors have to be set for gradient penalty for timeintegration in alefluid?!");
+    //In principle we would not need gridv, as tau is anyway set to 1.0 at the end ...
     discret.SetState("dispnp", dispnp_);
-    discret.SetState("gridv", gridv_);
+    discret.SetState("gridv", gridvnp_);
   }
 
   // set scheme-specific element parameters and vector values
@@ -1918,8 +1931,21 @@ FLD::XFluid::XFluid(
     fluid_output_(output_),
     levelsetcut_((soliddis==Teuchos::null)),
     alefluid_(alefluid),
+    fulldofrowmap_(Teuchos::null),
+    filleddofrowmap_(Teuchos::rcp(new Epetra_Map(*actdis->DofRowMap()))),
+    duplicatedfilleddofrowmap_(Teuchos::null),
     setTipNodesInCut_(false)
 {
+  if (alefluid_)
+  {
+    DRT::Problem* problem = DRT::Problem::Instance();
+    const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
+    // now we can reserve dofs for background fluid
+    int maxNumMyReservedDofsetsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"));
+
+    duplicatedfilleddofrowmap_ = ExtendMap(filleddofrowmap_,4,maxNumMyReservedDofsetsperNode,false);
+    fulldofrowmap_ = ExtendMap(filleddofrowmap_,4,maxNumMyReservedDofsetsperNode,true);
+  }
   return;
 }
 
@@ -2045,6 +2071,16 @@ void FLD::XFluid::Init()
   // REMARK: call this after SetElementGeneralFluidXFEMParameter
   if (projector_!=Teuchos::null)
     UpdateKrylovSpaceProjection();
+
+  if (alefluid_)
+  {
+    dispnp_ = LINALG::CreateVector(*filleddofrowmap_,true);
+    dispn_ = LINALG::CreateVector(*filleddofrowmap_,true);
+    dispnm_ = LINALG::CreateVector(*filleddofrowmap_,true);
+    gridvnp_ = LINALG::CreateVector(*filleddofrowmap_,true);
+    gridvn_ = LINALG::CreateVector(*filleddofrowmap_,true);
+  }
+
 
 }
 
@@ -3883,6 +3919,17 @@ void FLD::XFluid::TimeUpdate()
   state_->velnm_->Update(1.0,*state_->veln_ ,0.0);
   state_->veln_ ->Update(1.0,*state_->velnp_,0.0);
 
+  if (alefluid_)
+  {
+  // displacements of this step becomes most recent
+  // displacements of the last step
+  dispnm_->Update(1.0,*dispn_,0.0);
+  dispn_->Update(1.0,*dispnp_,0.0);
+
+  // gridvelocities of this step become most recent
+  // gridvelocities of the last step
+  gridvn_->Update(1.0,*gridvnp_,0.0);
+  }
 
   // update of interface fields (interface velocity and interface displacements)
   UpdateInterfaceFields();
@@ -5384,6 +5431,24 @@ void FLD::XFluid::Output()
 
     fluid_output_->WriteVector("velnp", outvec_fluid_);
     fluid_output_->WriteVector("pressure", pressure);
+
+    if (alefluid_)
+      {
+      //write ale displacement for t^{n+1}
+      Teuchos::RCP<Epetra_Vector> dispnprm = Teuchos::rcp(new Epetra_Vector(*dispnp_));
+      dispnprm->ReplaceMap(outvec_fluid_->Map()); //to get dofs starting by 0 ...
+      output_->WriteVector("dispnp", dispnprm);
+
+      //write grid velocity for t^{n+1}
+      Teuchos::RCP<Epetra_Vector> gridvnprm = Teuchos::rcp(new Epetra_Vector(*gridvnp_));
+      gridvnprm->ReplaceMap(outvec_fluid_->Map()); //to get dofs starting by 0 ...
+      output_->WriteVector("gridv", gridvnprm);
+
+      //write convective velocity for t^{n+1}
+      Teuchos::RCP<Epetra_Vector> convvel = Teuchos::rcp(new Epetra_Vector(outvec_fluid_->Map(),true));
+      convvel->Update(1.0,*outvec_fluid_,-1.0,*gridvnprm,0.0);
+      output_->WriteVector("convel", convvel);
+      }
 
     fluid_output_->WriteElementData(firstoutputofrun_);
 
@@ -7249,4 +7314,90 @@ void FLD::XFluid::SetStateLS( Epetra_Vector & lsvalues) {
   // all further first cuts of a new time-step have then index 1 and have to be reset to 0 in PrepareTimeStep()
   state_it_=-1;
   state_ = Teuchos::rcp( new XFluidState( *this, lsvalues ));
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::UpdateGridv()
+{
+  // get order of accuracy of grid velocity determination
+  // from input file data
+  const Teuchos::ParameterList& fluiddynparams =  DRT::Problem::Instance()->FluidDynamicParams();
+  const int order = DRT::INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
+
+  Teuchos::RCP<Epetra_Vector> gridv = Teuchos::rcp(new Epetra_Vector(dispnp_->Map(),true));
+
+  switch (order)
+  {
+    case INPAR::FLUID::BE:
+      /* get gridvelocity from BE time discretisation of mesh motion:
+           -> cheap
+           -> easy
+           -> limits FSI algorithm to first order accuracy in time
+
+                  x^n+1 - x^n
+             uG = -----------
+                    Delta t                        */
+      gridvnp_->Update(1/dta_, *dispnp_, -1/dta_, *dispn_, 0.0);
+    break;
+    case INPAR::FLUID::BDF2:
+      /* get gridvelocity from BDF2 time discretisation of mesh motion:
+           -> requires one more previous mesh position or displacement
+           -> somewhat more complicated
+           -> allows second order accuracy for the overall flow solution  */
+      gridvnp_->Update(1.5/dta_, *dispnp_, -2.0/dta_, *dispn_, 0.0);
+      gridvnp_->Update(0.5/dta_, *dispnm_, 1.0);
+    break;
+    case INPAR::FLUID::OST:
+    {
+      /* get gridvelocity from OST time discretisation of mesh motion:
+         -> needed to allow consistent linearization of FPSI problem  */
+      const double theta = fluiddynparams.get<double>("THETA");
+      gridvnp_->Update(1/(theta*dta_), *dispnp_, -1/(theta*dta_), *dispn_, 0.0);
+      gridvnp_->Update(-((1.0/theta)-1.0),*gridvn_,1.0);
+    }
+    break;
+    default:
+      dserror("Unknown or invalid type of grid velocity determination. Fix GRIDVEL section of your input file.");
+    break;
+  }
+
+}
+
+
+/*------------------------------------------------------------------------------*
+ * Export XFluid Vector (with filleddofrowmap - all nodes with one dofset)
+ * to State Vector (with all active fluid dofs)                   ager 11/14
+ *  *---------------------------------------------------------------------------*/
+void FLD::XFluid::GetStateVectorXFluid(Teuchos::RCP<Epetra_Vector>& xfluidvec, Teuchos::RCP<Epetra_Vector>& statevec)
+{
+  //export xfluidvec to state (actual physical dofs!)
+  Teuchos::RCP<Epetra_Vector> fullvec = Teuchos::rcp(new Epetra_Vector(*duplicatedfilleddofrowmap_,true));
+  LINALG::Export(*xfluidvec,*fullvec);
+  fullvec->ReplaceMap(*fulldofrowmap_); ///replace |1 2 3 4|1 2 3 4| -> |1 2 3 4|5 6 7 8|
+  LINALG::Export(*fullvec,*statevec);
+}
+
+/*---------------------------------------------------------------------------*
+ * Takes DofRowMap with just one xfem-Dofset and duplicates
+ * the dof gids for export of gridvelocity!                     ager 11/14
+ *---------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> FLD::XFluid::ExtendMap(Teuchos::RCP<Epetra_Map> srcmap, int numdofspernode, int numdofsets, bool copy)
+{
+  int numsrcelements = srcmap->NumMyElements();
+  const int* srcgids = srcmap->MyGlobalElements();
+  std::vector<int> dstgids;
+  for (int i = 0; i < numsrcelements; i += numdofspernode)
+  {
+    if (numsrcelements < i + numdofspernode) dserror("ExtendMap(): Check your srcmap!");
+    for (int dofset = 0; dofset < numdofsets; ++dofset)
+    {
+      for (int dof = 0; dof < numdofspernode; ++dof)
+      {
+        dstgids.push_back(srcgids[i+dof] + copy*dofset*numdofspernode);
+      }
+    }
+  }
+
+  return  Teuchos::rcp(new Epetra_Map(-1,dstgids.size(), &dstgids[0],0,srcmap->Comm()));
 }

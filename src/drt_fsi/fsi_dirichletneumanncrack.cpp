@@ -44,7 +44,7 @@ void FSI::DirichletNeumann_Crack::update_FSI_interface_Crack()
     // rebuild FSI interface of fluid side
     Teuchos::RCP<ADAPTER::XFluidFSI> xfluidfsi = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(MBFluidField()->FluidField());
 
-    xfluidfsi->RebuildFSIInterface();
+    xfluidfsi->RebuildFSIStructInterface();
 
     // rebuild FSI interface of structure side
     StructureField()->RebuildInterface();
@@ -53,11 +53,11 @@ void FSI::DirichletNeumann_Crack::update_FSI_interface_Crack()
     ADAPTER::Coupling& coupsf = StructureFluidCoupling();
     const int ndim = DRT::Problem::Instance()->NDim();
     coupsf.SetupConditionCoupling(*StructureField()->Discretization(),
-        StructureField()->Interface()->FSICondMap(),
-        *xfluidfsi->MyFluid()->BoundaryDiscretization(),
-        MBFluidField()->Interface()->FSICondMap(),
-        "FSICoupling",
-        ndim);
+                                   StructureField()->Interface()->FSICondMap(),
+                                   *xfluidfsi->BoundaryDiscretization(),
+                                   xfluidfsi->StructInterface()->FSICondMap(),
+                                  "FSICoupling",
+                                  ndim);
 
     if (coupsf.MasterDofMap()->NumGlobalElements()==0)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
