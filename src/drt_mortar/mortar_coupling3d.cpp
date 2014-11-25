@@ -20,12 +20,6 @@ Maintainer: Alexander Popp
 #include "mortar_calc_utils.H"
 #include "../drt_contact/contact_interpolator.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-
-#include "../drt_io/io_gmsh.H"
-#include "../drt_io/io_control.H"
-
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 
