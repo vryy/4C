@@ -169,7 +169,7 @@ class StrategyBase
     virtual void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis) = 0;
-    virtual void EvaluateReferenceState(int step,const Teuchos::RCP<Epetra_Vector> vec) = 0;
+    virtual void EvaluateReferenceState(const Teuchos::RCP<Epetra_Vector> vec) = 0;
     virtual void EvaluateRelMov() = 0;
     virtual void EvaluateRelMovPredict() = 0;
     virtual bool Friction() = 0;

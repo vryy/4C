@@ -913,9 +913,6 @@ namespace STR
     //! evaluate reference state for frictional contact at t=0)
     void PrepareStepContact();
 
-    //! Only evaluate reference state for frictional contact at t=0
-    void EvaluateReferenceState();
-
     //@}
 
     //! @name Beam contact specific methods

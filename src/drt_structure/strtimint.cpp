@@ -584,6 +584,10 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
     // (1) Explicitly store gap-scaling factor kappa
     cmtbridge_->ContactManager()->GetStrategy().SaveReferenceState(zeros_);
+
+    // FOR CONTACT FORMULATIONS (ONLY ONCE)
+    // (1) Evaluate reference state for friction and initialize gap
+    cmtbridge_->ContactManager()->GetStrategy().EvaluateReferenceState(zeros_);
   }
 
   // visualization of initial configuration
@@ -889,9 +893,6 @@ void STR::TimInt::PrepareStepContact()
       // prepare binstrategy for timestep
       if(strat==INPAR::MORTAR::binningstrategy)
         cmtbridge_->GetStrategy().InitBinStrategyforTimestep((*vel_)(0));
-
-      // evaluation of reference state for friction (only at t=0)
-      cmtbridge_->GetStrategy().EvaluateReferenceState(step_,disn_);
     }
   }
 
@@ -931,15 +932,6 @@ void STR::TimInt::PrepareStatMech()
     }
   }
   return;
-}
-
-/*----------------------------------------------------------------------*/
-/* EvaluateReferenceState for frictional contact */
-void STR::TimInt::EvaluateReferenceState()
-{
-  // only do something if contact is present
-  if (HaveContactMeshtying())
-    cmtbridge_->GetStrategy().EvaluateReferenceState(step_,disn_);
 }
 
 /*----------------------------------------------------------------------*/

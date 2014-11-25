@@ -251,7 +251,7 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(
 
     // if redistribution has really been performed
     // (the previous method might have found that there
-    // are no "close" slave elements and thud redistribution
+    // are no "close" slave elements and thus redistribution
     // might not be necessary ->indicated by boolean)
     if (done)
     {
@@ -532,6 +532,20 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
     // FillComplete() transformation matrices
     trafo_->Complete();
     invtrafo_->Complete();
+  }
+
+  // transform modified old D-matrix in case of friction
+  // (ony necessary after parallel redistribution)
+  if (redistributed && friction_ && Dualquadslave3d())
+  {
+    if (doldmod_ == Teuchos::null)
+    {
+      doldmod_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+      doldmod_->Zero();
+      doldmod_->Complete();
+    }
+    else
+      doldmod_ = MORTAR::MatrixRowColTransform(doldmod_, gsdofrowmap_, gsdofrowmap_);
   }
 
   return;
@@ -1167,12 +1181,8 @@ void CONTACT::CoAbstractStrategy::AssembleMortar()
 /*----------------------------------------------------------------------*
  | evaluate reference state                               gitterle 01/10|
  *----------------------------------------------------------------------*/
-void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
-    const Teuchos::RCP<Epetra_Vector> vec)
+void CONTACT::CoAbstractStrategy::EvaluateReferenceState(const Teuchos::RCP<Epetra_Vector> vec)
 {
-  // only before the first time step
-  if (step != 0) return;
-
   // flag for initualization of contact with nodal gaps
   bool initcontactbygap = DRT::INPUT::IntegralValue<int>(Params(),"INITCONTACTBYGAP");
 
@@ -1186,6 +1196,7 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
   InitEvalInterface();
   AssembleMortar();
 
+  // (1) GAP INITIALIZATION CASE
   // initialize init contact with nodal gap
   if (initcontactbygap)
   {
@@ -1221,33 +1232,35 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,
       dserror("ERROR: No active nodes: Choose bigger value for INITCONTACTGAPVALUE!");
   }
 
-  // store contact state to contact nodes (active or inactive)
+  // (2) FRICTIONAL CONTACT CASE
+  // do some friction stuff
   if (friction_)
+  {
+    // store contact state to contact nodes (active or inactive)
     StoreNodalQuantities(MORTAR::StrategyBase::activeold);
 
-  // store D and M to old ones
-  StoreDM("old");
+    // store D and M to old ones
+    StoreDM("old");
 
-  // store nodal entries from D and M to old ones
-  if (friction_)
+    // store nodal entries from D and M to old ones
     StoreToOld(MORTAR::StrategyBase::dm);
 
-  // transform dold_ in the case of dual quadratic 3d
-  if (Dualquadslave3d())
-  {
-    Teuchos::RCP<LINALG::SparseMatrix> tempold = LINALG::MLMultiply(*dold_,
+    // transform dold_ in the case of dual quadratic 3d
+    if (Dualquadslave3d())
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> tempold = LINALG::MLMultiply(*dold_,
         false, *invtrafo_, false, false, false, true);
-    doldmod_ = tempold;
+      doldmod_ = tempold;
+    }
+
+    // evaluate relative movement
+    // needed because it is not called in the predictor of the
+    // lagrange multiplier strategy
+    EvaluateRelMov();
   }
 
-  // evaluate relative movement
-  // needed because it is not called in the predictor of the
-  // lagrange multiplier strategy
-  if (friction_)
-    EvaluateRelMov();
-
   // reset unbalance factors for redistribution
-  // (during EvalRefState the interface has been evaluated once)
+  // (since the interface has been evaluated once above)
   tunbalance_.resize(0);
   eunbalance_.resize(0);
 
@@ -1813,7 +1826,7 @@ void CONTACT::CoAbstractStrategy::StoreDM(const std::string& state)
   {
     dold_ = dmatrix_;
     mold_ = mmatrix_;
-    if (friction_)
+    if (friction_ && Dualquadslave3d())
       doldmod_ = dmatrixmod_;
   }
 

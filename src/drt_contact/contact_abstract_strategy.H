@@ -453,7 +453,7 @@ public:
    configuration) before the first time step
 
    */
-  void EvaluateReferenceState(int step, const Teuchos::RCP<Epetra_Vector> vec);
+  void EvaluateReferenceState(const Teuchos::RCP<Epetra_Vector> vec);
 
   void InitBinStrategyforTimestep(Teuchos::RCP<Epetra_Vector> vel);
 
