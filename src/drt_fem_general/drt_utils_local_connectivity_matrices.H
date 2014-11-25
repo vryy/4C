@@ -103,14 +103,14 @@ namespace UTILS
 
   //! Triangular surfaces of wedge15 with 7 nodes per surface
   const int eleNodeNumbering_wedge15_trisurfaces[2][6] = {
-          { 0, 2, 1,  8,  7,  6},
-          { 3, 4, 5, 12, 13, 14}};
+          { 2, 1, 0, 7, 6, 8},
+          { 5, 3, 4, 14, 12, 13}};
 
   //! Rectangular surfaces of wedge15 with 8 nodes per surface
   const int eleNodeNumbering_wedge15_quadsurfaces[3][8] = {
           {0, 1, 4, 3, 6, 10, 12,  9},
           {1, 2, 5, 4, 7, 11, 13, 10},
-          {0, 3, 5, 2, 9, 14, 11,  8}};
+          {2, 0, 3, 5, 8, 9, 14, 11}};
 
   //! 9 lines of a wedge15 element with 3 nodes per line
   const int eleNodeNumbering_wedge15_lines[9][3] = {
@@ -120,9 +120,9 @@ namespace UTILS
           {3, 4, 12},
           {4, 5, 13},
           {5, 3, 14},
+          {0, 3, 9},
           {1, 4, 10},
-          {2, 5, 11},
-          {0, 3, 9}};
+          {2, 5, 11}};
 
   //! Rectangular surface of pyramid5
   const int eleNodeNumbering_pyramid5_quadsurfaces[1][4]= {

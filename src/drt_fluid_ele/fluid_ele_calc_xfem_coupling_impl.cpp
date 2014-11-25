@@ -2174,12 +2174,19 @@ template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad8,3>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad9,3>;
+//template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,  DRT::Element::tri3,3>;
+//template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,  DRT::Element::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad4,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad9,3>;
 
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::dis_none,3>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::dis_none,3>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::dis_none,3>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::dis_none,3>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::dis_none,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,DRT::Element::dis_none,3>;
+
 
 // pairs with numdof=4
 //template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tri3,4>;
@@ -2207,6 +2214,11 @@ template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad8,4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad9,4>;
+//template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tri3,4>;
+//template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad4,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad8,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad9,4>;
 //
 
 //template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tet4, 4>;
@@ -2234,12 +2246,19 @@ template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex8,4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex20,4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex27,4>;
+//template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tet4,4>;
+//template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex8,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex20,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex27,4>;
 
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::dis_none,4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::dis_none,4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::dis_none,4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::dis_none,4>;
 template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::dis_none,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::dis_none,4>;
+
 
 // pairs with numdof=3
 //template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex8,  DRT::Element::tri3,3>;
@@ -2267,6 +2286,11 @@ template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet4,  DRT:
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::quad8,3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::quad9,3>;
+//template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6,  DRT::Element::tri3,3>;
+//template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6,  DRT::Element::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6, DRT::Element::quad4,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6, DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6, DRT::Element::quad9,3>;
 
 // pairs with numdof=4
 //template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex8,  DRT::Element::tri3,4>;
@@ -2294,6 +2318,11 @@ template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet4,  DRT:
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::quad8,4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::quad9,4>;
+//template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6, DRT::Element::tri3,4>;
+//template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6, DRT::Element::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6, DRT::Element::quad4,4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6, DRT::Element::quad8,4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6, DRT::Element::quad9,4>;
 
 // pairs with numdof=3
 //template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,  DRT::Element::tri3,3>;
@@ -2321,6 +2350,11 @@ template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::t
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::quad8,3>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::quad9,3>;
+//template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,  DRT::Element::tri3,3>;
+//template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,  DRT::Element::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::quad4,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::quad9,3>;
 
 // pairs with numdof=4
 //template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,  DRT::Element::tri3,4>;
@@ -2348,6 +2382,11 @@ template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::t
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::quad4,4>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::quad8,4>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::quad9,4>;
+//template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::tri3,4>;
+//template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::quad4,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::quad8,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::quad9,4>;
 
 //template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,  DRT::Element::tet4, 4>;
 //template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,  DRT::Element::tet10,4>;
@@ -2374,3 +2413,8 @@ template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::t
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::hex8,4>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::hex20,4>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::hex27,4>;
+//template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::tet4,4>;
+//template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::hex8,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::hex20,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::hex27,4>;

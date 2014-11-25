@@ -4232,7 +4232,7 @@ template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::hex20>;
 template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::hex27>;
 template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::tet4>;
 template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::tet10>;
-//template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::wedge6>;
 //template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::pyramid5>;
 
 

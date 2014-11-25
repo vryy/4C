@@ -1303,6 +1303,117 @@ inline void BoundaryGPToParentGP3(
         dserror("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
+    else if( (distype==DRT::Element::quad4 && pdistype == DRT::Element::wedge6))
+    {
+      switch(beleid)
+      {
+      case 0:
+      {
+        // r+s=1
+        /*
+                      parent               surface
+
+                   t|                        s|
+                    |                         |
+                   3|        4           3         2
+                    +-------+             +-------+
+                    |       |      s      |   |   |      r
+                    +-------|  -----      |   +-- |  -----
+                    |       |             |       |
+                    +-------+             +-------+
+                   0         1           0         1
+         */
+
+        for (int iquad=0;iquad<intpoints.M();++iquad)
+        {
+          pqxg(iquad,0)=-0.5*intpoints(iquad,0)+0.5;
+          pqxg(iquad,1)= 0.5*intpoints(iquad,0)+0.5;
+          pqxg(iquad,2)= intpoints(iquad,1);
+        }
+        break;
+      }
+      case 1:
+      {
+        // r=0
+        /*
+                      parent               surface
+                           t|                s|
+                            |                 |
+                   4        |5           3         2
+                    +-------+             +-------+
+               s    |       |             |   |   |      r
+               -----|-------+             |   +-- |  -----
+                    |       |             |       |
+                    +-------+             +-------+
+                   1         2           0         1
+         */
+        for (int iquad=0;iquad<intpoints.M();++iquad)
+        {
+          pqxg(iquad,0)= 0.0;
+          pqxg(iquad,1)=-0.5*intpoints(iquad,0)+0.5;
+          pqxg(iquad,2)= intpoints(iquad,1);
+        }
+        break;
+      }
+      case 2:
+      {
+        // s=0
+        /*
+                      parent               surface
+
+                   t|                        s|
+                    |                         |
+                   5|        3           3    |    2
+                    +-------+             +-------+
+                    |       |      r      |   |   |      r
+                    +       |  -----      |   +-- |  -----
+                    |       |             |       |
+                    +-------+             +-------+
+                   2         0           0         1
+         */
+        for (int iquad=0;iquad<intpoints.M();++iquad)
+        {
+          pqxg(iquad,0)= 0.5*intpoints(iquad,0)+0.5;
+          pqxg(iquad,1)= 0.0;
+          pqxg(iquad,2)= intpoints(iquad,1);
+        }
+        break;
+      }
+      default:
+        dserror("invalid number of quad4 surface for wedge element, unable to determine intpoint in parent");
+      }
+    }
+    else if( (distype==DRT::Element::tri3 && pdistype == DRT::Element::wedge6))
+    {
+      dserror("transformation for tri3 surface of wedge6 element implemented, however, not tested yet! Just do it now!");
+      switch(beleid)
+      {
+      case 3:
+      {
+        // t=-1.0
+        for (int iquad=0;iquad<intpoints.M();++iquad)
+        {
+          pqxg(iquad,0)= intpoints(iquad,1);
+          pqxg(iquad,1)= intpoints(iquad,0);
+          pqxg(iquad,2)= -1.0;
+        }
+        break;
+      }
+      case 4:
+      {
+        // t=1.0
+        for (int iquad=0;iquad<intpoints.M();++iquad)
+        {
+          pqxg(iquad,0)= intpoints(iquad,0);
+          pqxg(iquad,1)= intpoints(iquad,1);
+          pqxg(iquad,2)= 1.0;
+        }
+        break;
+      }
+      default:
+        dserror("invalid number of tri3 surface for wedge element, unable to determine intpoint in parent");
+      }
+    }
     else if(distype==DRT::Element::nurbs9 && pdistype==DRT::Element::nurbs27)
     {
       switch(beleid)

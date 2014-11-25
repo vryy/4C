@@ -104,6 +104,11 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
     {
       return FluidInternalSurfaceStab<DRT::Element::quad4,DRT::Element::hex8,DRT::Element::hex8>::Instance();
     }
+    else if(    surfele->ParentMasterElement()->Shape()==DRT::Element::wedge6
+              && surfele->ParentSlaveElement()->Shape()== DRT::Element::wedge6)
+    {
+      return FluidInternalSurfaceStab<DRT::Element::quad4,DRT::Element::wedge6,DRT::Element::wedge6>::Instance();
+    }
     else
     {
       dserror("expected combination quad4/hex8/hex8 for surface/parent/neighbor pair");

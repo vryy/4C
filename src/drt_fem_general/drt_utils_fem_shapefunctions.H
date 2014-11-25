@@ -1358,6 +1358,52 @@ void shape_function_3D_deriv2(
 
     break;
   }
+  case DRT::Element::wedge6:
+  {
+    deriv2(drdr, 0) = 0.0;
+    deriv2(dsds, 0) = 0.0;
+    deriv2(dtdt, 0) = 0.0;
+    deriv2(drds, 0) = 0.0;
+    deriv2(drdt, 0) = -Q12;
+    deriv2(dsdt, 0) = 0.0;
+
+    deriv2(drdr, 1) = 0.0;
+    deriv2(dsds, 1) = 0.0;
+    deriv2(dtdt, 1) = 0.0;
+    deriv2(drds, 1) = 0.0;
+    deriv2(drdt, 1) = 0.0;
+    deriv2(dsdt, 1) = -Q12;
+
+    deriv2(drdr, 2) = 0.0;
+    deriv2(dsds, 2) = 0.0;
+    deriv2(dtdt, 2) = 0.0;
+    deriv2(drds, 2) = 0.0;
+    deriv2(drdt, 2) = Q12;
+    deriv2(dsdt, 2) = Q12;
+
+    deriv2(drdr, 3) = 0.0;
+    deriv2(dsds, 3) = 0.0;
+    deriv2(dtdt, 3) = 0.0;
+    deriv2(drds, 3) = 0.0;
+    deriv2(drdt, 3) = Q12;
+    deriv2(dsdt, 3) = 0.0;
+
+    deriv2(drdr, 4) = 0.0;
+    deriv2(dsds, 4) = 0.0;
+    deriv2(dtdt, 4) = 0.0;
+    deriv2(drds, 4) = 0.0;
+    deriv2(drdt, 4) = 0.0;
+    deriv2(dsdt, 4) = Q12;
+
+    deriv2(drdr, 5) = 0.0;
+    deriv2(dsds, 5) = 0.0;
+    deriv2(dtdt, 5) = 0.0;
+    deriv2(drds, 5) = 0.0;
+    deriv2(drdt, 5) = -Q12;
+    deriv2(dsdt, 5) = -Q12;
+
+    break;
+  }
   case DRT::Element::wedge15:
   {
 

@@ -564,7 +564,7 @@ template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::hex20>
 template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::hex27>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::tet4>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::tet10>;
-//template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::wedge6>;
 //template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::pyramid5>;
 
 template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::hex8>;
@@ -572,7 +572,7 @@ template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::hex20>;
 template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::hex27>;
 template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::tet4>;
 template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::tet10>;
-//template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::wedge6>;
 //template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::pyramid5>;
 
 template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::hex8>;
@@ -580,5 +580,5 @@ template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::hex20>;
 template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::hex27>;
 template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::tet4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::tet10>;
-//template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::wedge6>;
 //template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::pyramid5>;

@@ -170,10 +170,10 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(D
     {
       return DefineProblemTypeXFEM<DRT::Element::tet10>(problem);
     }
-//    case DRT::Element::wedge6:
-//    {
-//      return DefineProblemTypeXFEM<DRT::Element::wedge6>(problem);
-//    }
+    case DRT::Element::wedge6:
+    {
+      return DefineProblemTypeXFEM<DRT::Element::wedge6>(problem);
+    }
 //    case DRT::Element::pyramid5:
 //    {
 //      return DefineProblemTypeXFEM<DRT::Element::pyramid5>(problem);
