@@ -305,10 +305,6 @@ namespace ADAPTER
     )
     {return structure_->SetRestart(step,time,disn,veln,accn,elementdata,nodedata);}
 
-    /// evaluate reference state (for frictional contact)
-    virtual void EvaluateReferenceState()
-    { structure_->EvaluateReferenceState(); }
-
     //@}
 
 

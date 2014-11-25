@@ -358,9 +358,6 @@ namespace ADAPTER {
       Teuchos::RCP<std::vector<char> > nodedata
     ) = 0;
 
-    /// evaluate reference state (for frictional contact)
-    virtual void EvaluateReferenceState() = 0;
-
     //@}
 
     //! @name Solver calls
