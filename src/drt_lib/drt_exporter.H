@@ -17,9 +17,7 @@ Maintainer: Michael Gee
 #include <set>
 #include <Epetra_Map.h>
 #include <Epetra_Comm.h>
-#ifdef PARALLEL
 #include <Epetra_MpiComm.h>
-#endif
 #include <Teuchos_RCP.hpp>
 
 #include "drt_node.H"
@@ -213,8 +211,6 @@ public:
   */
   void Export(std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& data);
 
-
-#ifdef PARALLEL
   /*!
   \brief Send data from one processor to another (nonblocking)
 
@@ -404,11 +400,6 @@ public:
   \param mpi_op   (input): MPI operation
   */
   void Allreduce(std::vector<int>& sendbuff, std::vector<int>& recvbuff, MPI_Op mpi_op);
-
-
-
-
-#endif
 
   //@}
 

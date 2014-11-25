@@ -79,7 +79,6 @@ DRT::Exporter::~Exporter()
 }
 
 
-#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  do a send of data (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -96,9 +95,7 @@ void DRT::Exporter::ISend(const int frompid,
   MPI_Isend((void*)data,dsize,MPI_CHAR,topid,tag,comm->Comm(),&request);
   return;
 }
-#endif
 
-#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  do a send of data (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -115,9 +112,7 @@ void DRT::Exporter::ISend(const int frompid,
   MPI_Isend((void*)data,dsize,MPI_INT,topid,tag,comm->Comm(),&request);
   return;
 }
-#endif
 
-#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  do a send of data (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -134,9 +129,7 @@ void DRT::Exporter::ISend(const int frompid,
   MPI_Isend((void*)data,dsize,MPI_DOUBLE,topid,tag,comm->Comm(),&request);
   return;
 }
-#endif
 
-#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -157,9 +150,7 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
   MPI_Recv(&recvbuff[0],length,MPI_CHAR,source,tag,comm->Comm(),&status);
   return;
 }
-#endif
 
-#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  receive specific (public)                                mwgee 03/07|
  *----------------------------------------------------------------------*/
@@ -177,9 +168,7 @@ void DRT::Exporter::Receive(const int source,const int tag,
   MPI_Recv(&recvbuff[0],length,MPI_CHAR,source,tag,comm->Comm(),&status);
   return;
 }
-#endif
 
-#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -200,9 +189,7 @@ void DRT::Exporter::ReceiveAny(int& source, int& tag,
   MPI_Recv(&recvbuff[0],length,MPI_INT,source,tag,comm->Comm(),&status);
   return;
 }
-#endif
 
-#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  receive specific (public)                                mwgee 03/07|
  *----------------------------------------------------------------------*/
@@ -220,9 +207,7 @@ void DRT::Exporter::Receive(const int source,const int tag,
   MPI_Recv(&recvbuff[0],length,MPI_INT,source,tag,comm->Comm(),&status);
   return;
 }
-#endif
 
-#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
@@ -243,10 +228,7 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
   MPI_Recv(&recvbuff[0],length,MPI_DOUBLE,source,tag,comm->Comm(),&status);
   return;
 }
-#endif
 
-
-#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  receive specific (public)                                mwgee 03/07|
  *----------------------------------------------------------------------*/
@@ -264,10 +246,7 @@ void DRT::Exporter::Receive(const int source,const int tag,
   MPI_Recv(&recvbuff[0],length,MPI_DOUBLE,source,tag,comm->Comm(),&status);
   return;
 }
-#endif
 
-
-#ifdef PARALLEL
 /*----------------------------------------------------------------------*
  |  reduce all (public)                                       umay 10/07|
  *----------------------------------------------------------------------*/
@@ -284,8 +263,6 @@ void DRT::Exporter::Allreduce(std::vector<int>& sendbuff, std::vector<int>& recv
             MPI_INT, mpi_op, comm->Comm() );
   return;
 }
-#endif
-
 
 /*----------------------------------------------------------------------*
  |  the actual exporter constructor (private)                mwgee 05/07|
@@ -418,8 +395,6 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
 
   helper.PreExportTest(this);
 
-#ifdef PARALLEL
-
   //------------------------------------------------ do the send/recv loop
   for (int i=0; i<NumProc()-1; ++i)
   {
@@ -516,7 +491,6 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
 
   helper.PostExportCleanup(this);
 
-#endif
   return;
 }
 
