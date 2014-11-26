@@ -339,30 +339,55 @@ void DomainReader::Partition(int* nodeoffset)
 
     // this depends on the distype
     std::vector<int> nodeids(DRT::UTILS::getNumberOfElementNodes(DRT::StringToDistype(distype_)));
-    if (nodeids.size() == 8)
+    // current element position
+    const size_t ex = 2*( eleid%interval_[0]);
+    const size_t ey = 2*((eleid/interval_[0])%interval_[1]);
+    const size_t ez = 2*( eleid/(interval_[0]*interval_[1]));
+
+    // number of nodes per direction
+    const size_t nx = 2*interval_[0]+1;
+    const size_t ny = 2*interval_[1]+1;
+
+    switch (nodeids.size())
     {
-      // current element position
-      const size_t ex =  eleid%interval_[0];
-      const size_t ey = (eleid/interval_[0])%interval_[1];
-      const size_t ez =  eleid/(interval_[0]*interval_[1]);
-
-      // number of nodes per direction
-      const size_t nx = interval_[0]+1;
-      const size_t ny = interval_[1]+1;
-
+    case 27:
+      nodeids[20]= *nodeoffset+(ez*ny+ey+1)*nx+ex+1;
+      nodeids[21]= *nodeoffset+((ez+1)*ny+ey)*nx+ex+1;
+      nodeids[22]= *nodeoffset+((ez+1)*ny+ey+1)*nx+ex+2;
+      nodeids[23]= *nodeoffset+((ez+1)*ny+ey+2)*nx+ex+1;
+      nodeids[24]= *nodeoffset+((ez+1)*ny+ey+1)*nx+ex;
+      nodeids[25]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex+1;
+      nodeids[26]= *nodeoffset+((ez+1)*ny+ey+1)*nx+ex+1;
+      // intentionally left breakless
+    case 20:
+      nodeids[8] = *nodeoffset+(ez*ny+ey)*nx+ex+1;
+      nodeids[9] = *nodeoffset+(ez*ny+ey+1)*nx+ex+2;
+      nodeids[10]= *nodeoffset+(ez*ny+ey+2)*nx+ex+1;
+      nodeids[11]= *nodeoffset+(ez*ny+ey+1)*nx+ex;
+      nodeids[12]= *nodeoffset+((ez+1)*ny+ey)*nx+ex;
+      nodeids[13]= *nodeoffset+((ez+1)*ny+ey)*nx+ex+2;
+      nodeids[14]= *nodeoffset+((ez+1)*ny+ey+2)*nx+ex+2;
+      nodeids[15]= *nodeoffset+((ez+1)*ny+ey+2)*nx+ex;
+      nodeids[16]= *nodeoffset+((ez+2)*ny+ey)*nx+ex+1;
+      nodeids[17]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex+2;
+      nodeids[18]= *nodeoffset+((ez+2)*ny+ey+2)*nx+ex+1;
+      nodeids[19]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex;
+      // intentionally left breakless
+    case 8:
       nodeids[0] = *nodeoffset+(ez*ny+ey)*nx+ex;
-      nodeids[1] = *nodeoffset+(ez*ny+ey)*nx+ex+1;
-      nodeids[2] = *nodeoffset+(ez*ny+ey+1)*nx+ex+1;
-      nodeids[3] = *nodeoffset+(ez*ny+ey+1)*nx+ex;
-      nodeids[4] = *nodeoffset+((ez+1)*ny+ey)*nx+ex;
-      nodeids[5] = *nodeoffset+((ez+1)*ny+ey)*nx+ex+1;
-      nodeids[6] = *nodeoffset+((ez+1)*ny+ey+1)*nx+ex+1;
-      nodeids[7] = *nodeoffset+((ez+1)*ny+ey+1)*nx+ex;
+      nodeids[1] = *nodeoffset+(ez*ny+ey)*nx+ex+2;
+      nodeids[2] = *nodeoffset+(ez*ny+ey+2)*nx+ex+2;
+      nodeids[3] = *nodeoffset+(ez*ny+ey+2)*nx+ex;
+      nodeids[4] = *nodeoffset+((ez+2)*ny+ey)*nx+ex;
+      nodeids[5] = *nodeoffset+((ez+2)*ny+ey)*nx+ex+2;
+      nodeids[6] = *nodeoffset+((ez+2)*ny+ey+2)*nx+ex+2;
+      nodeids[7] = *nodeoffset+((ez+2)*ny+ey+2)*nx+ex;
+      break;
+    default:
+      dserror("Not implemented: Currently only hex8, hex20 and hex27 are implemented for the box geometry generation.");
+      break;
     }
-    else
-    {
-      dserror("Not implemented: Currently only elements with 8 nodes are implemented for the box geometry generation.");
-    }
+
     ele->SetNodeIds(nodeids.size(),&(nodeids[0]));
     ele->ReadElement(elementtype_,distype_,linedef);
 
@@ -404,8 +429,8 @@ void DomainReader::Partition(int* nodeoffset)
 
   // Create the nodes according to their elements
   // number of nodes per direction
-  const size_t nx = interval_[0]+1;
-  const size_t ny = interval_[1]+1;
+  const size_t nx = 2*interval_[0]+1;
+  const size_t ny = 2*interval_[1]+1;
   int maxgid = -1;
 
   // as we are using the redistributed row node map, the nodes are directly created on the
@@ -422,9 +447,9 @@ void DomainReader::Partition(int* nodeoffset)
     size_t k = posid/(nx*ny);
 
     double coords[3];
-    coords[0] = static_cast<double>(i)/interval_[0]*(upper_bound_[0]-lower_bound_[0])+lower_bound_[0];
-    coords[1] = static_cast<double>(j)/interval_[1]*(upper_bound_[1]-lower_bound_[1])+lower_bound_[1];
-    coords[2] = static_cast<double>(k)/interval_[2]*(upper_bound_[2]-lower_bound_[2])+lower_bound_[2];
+    coords[0] = static_cast<double>(i)/(2*interval_[0])*(upper_bound_[0]-lower_bound_[0])+lower_bound_[0];
+    coords[1] = static_cast<double>(j)/(2*interval_[1])*(upper_bound_[1]-lower_bound_[1])+lower_bound_[1];
+    coords[2] = static_cast<double>(k)/(2*interval_[2])*(upper_bound_[2]-lower_bound_[2])+lower_bound_[2];
 
     Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(gid,coords,myrank));
     dis_->AddNode(node);

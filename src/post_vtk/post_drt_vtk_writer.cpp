@@ -26,7 +26,7 @@ Maintainer: Martin Kronbichler
 
 
 // deactivate for ascii output. Only do this for debugging.
-//#define BIN_VTK_OUT
+#define BIN_VTK_OUT
 
 
 namespace LIBB64

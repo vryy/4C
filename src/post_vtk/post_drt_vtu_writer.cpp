@@ -25,6 +25,8 @@ Maintainer: Martin Kronbichler
 #include "../linalg/linalg_utils.H"
 #include "../post_drt_common/post_drt_common.H"
 
+// deactivate for ascii output. Only do this for debugging.
+#define BIN_VTK_OUT
 
 namespace
 {
@@ -58,7 +60,7 @@ std::pair<uint8_t,std::vector<int> > vtk_element_types [] =
     // for index translation
     std::pair<uint8_t,std::vector<int> > (0, std::vector<int>()),                                                    // dis_none
     std::pair<uint8_t,std::vector<int> > (9, make_vector<int>() << 0 << 1 << 2 << 3),                                // quad4
-    std::pair<uint8_t,std::vector<int> > (9, make_vector<int>() << 0 << 1 << 4 << 3),                                // quad6
+    std::pair<uint8_t,std::vector<int> > (30, make_vector<int>() << 0 << 1 << 4 << 3 << 2 << 5),                     // quad6
     std::pair<uint8_t,std::vector<int> > (23, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7),           // quad8
     std::pair<uint8_t,std::vector<int> > (28, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8),      // quad9
     std::pair<uint8_t,std::vector<int> > (5, make_vector<int>() << 0 << 1 << 2),                                     // tri3
@@ -182,8 +184,19 @@ VtuWriter::WriteGeo()
   currentout_ << "<Piece NumberOfPoints=\"" << nnodes
       <<"\" NumberOfCells=\"" << nelements << "\" >\n"
       << "  <Points>\n"
-      << "    <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"binary\">\n";
+      << "    <DataArray type=\"Float64\" NumberOfComponents=\"3\"";
+
+#ifdef BIN_VTK_OUT
+  currentout_ << " format=\"binary\">\n";
   LIBB64:: writeCompressedBlock(coordinates, currentout_);
+#else
+  currentout_ << " format=\"ascii\">\n";
+  for (std::vector<double>::const_iterator it = coordinates.begin(); it != coordinates.end(); ++it)
+    currentout_ << std::setprecision(15) << std::scientific << *it << " ";
+  currentout_ << std::resetiosflags(std::ios::scientific);
+#endif
+
+
   currentout_ << "    </DataArray>\n"
       << "  </Points>\n\n";
 
@@ -196,37 +209,57 @@ VtuWriter::WriteGeo()
   // step 2: write mesh-node topology into file. we assumed contiguous order of coordinates
   // in this format, so fill the vector only here
   currentout_ << "  <Cells>\n"
-              << "    <DataArray type=\"Int32\" Name=\"connectivity\" format=\"binary\">\n";
+              << "    <DataArray type=\"Int32\" Name=\"connectivity\"";
+#ifdef BIN_VTK_OUT
+  currentout_ << " format=\"binary\">\n";
+#else
+  currentout_ << " format=\"ascii\">\n";
+#endif
   {
     std::vector<int32_t> connectivity;
     connectivity.reserve(nnodes);
     for (int i=0; i<nnodes; ++i)
       connectivity.push_back(i);
+#ifdef BIN_VTK_OUT
     LIBB64::writeCompressedBlock(connectivity, currentout_);
+#else
+  for (std::vector<int32_t>::const_iterator it = connectivity.begin(); it != connectivity.end(); ++it)
+    currentout_ << *it << " ";
+#endif
+
   }
   currentout_ << "    </DataArray>\n";
 
   // step 3: write start indices for individual cells
-  currentout_ << "    <DataArray type=\"Int32\" Name=\"offsets\" format=\"binary\">\n";
+  currentout_ << "    <DataArray type=\"Int32\" Name=\"offsets\"";
+#ifdef BIN_VTK_OUT
+  currentout_ << " format=\"binary\">\n";
   LIBB64::writeCompressedBlock(celloffset, currentout_);
+#else
+  currentout_ << " format=\"ascii\">\n";
+  for (std::vector<int32_t>::const_iterator it = celloffset.begin(); it != celloffset.end(); ++it)
+    currentout_ << *it << " ";
+#endif
   currentout_ << "    </DataArray>\n";
 
   // step 4: write cell types
-  currentout_ << "    <DataArray type=\"UInt8\" Name=\"types\" format=\"binary\">\n";
+  currentout_ << "    <DataArray type=\"UInt8\" Name=\"types\"";
+#ifdef BIN_VTK_OUT
+  currentout_ << " format=\"binary\">\n";
   LIBB64::writeCompressedBlock(celltypes, currentout_);
+#else
+  currentout_ << " format=\"ascii\">\n";
+  for (std::vector<uint8_t>::const_iterator it = celltypes.begin(); it != celltypes.end(); ++it)
+    currentout_ << (unsigned int)*it << " ";
+#endif
   currentout_ << "    </DataArray>\n";
 
   currentout_ << "  </Cells>\n\n";
-
-  // start the scalar fields that will later be written
-  currentout_ << "  <PointData Scalars=\"scalars\">\n";
-
 
   if (myrank_ == 0) {
     currentmasterout_ << "    <PPoints>\n";
     currentmasterout_ << "      <PDataArray type=\"Float64\" NumberOfComponents=\"3\"/>\n";
     currentmasterout_ << "    </PPoints>\n";
-    currentmasterout_ << "    <PPointData Scalars=\"scalars\">\n";
   }
 }
 
@@ -300,6 +333,18 @@ VtuWriter::WriteDofResultStep(
   }
   dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
+  // start the scalar fields that will later be written
+  if (currentPhase_ == INIT) {
+    currentout_ << "  <PointData>\n"; // Scalars=\"scalars\">\n";
+    if (myrank_ == 0) {
+      currentmasterout_ << "    <PPointData>\n"; // Scalars=\"scalars\">\n";
+    }
+    currentPhase_ = POINTS;
+  }
+
+  if (currentPhase_ != POINTS)
+    dserror("Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
+
   this->WriteSolutionVector(solution, ncomponents, name, file);
 }
 
@@ -372,6 +417,18 @@ VtuWriter::WriteNodalResultStep(
   }
   dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
+  // start the scalar fields that will later be written
+  if (currentPhase_ == INIT) {
+    currentout_ << "  <PointData>\n"; // Scalars=\"scalars\">\n";
+    if (myrank_ == 0) {
+      currentmasterout_ << "    <PPointData>\n"; // Scalars=\"scalars\">\n";
+    }
+    currentPhase_ = POINTS;
+  }
+
+  if (currentPhase_ != POINTS)
+    dserror("Cannot write point data at this stage. Most likely cell and point data fields are mixed.");
+
   this->WriteSolutionVector(solution, ncomponents, name, file);
 }
 
@@ -430,6 +487,26 @@ VtuWriter::WriteElementResultStep(
     }
   }
   dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
+
+  // start the scalar fields that will later be written
+  if (currentPhase_ == POINTS) {
+    // end the scalar fields
+    currentout_ << "  </PointData>\n";
+    if (myrank_ == 0) {
+      currentmasterout_ << "    </PPointData>\n";
+    }
+  }
+
+  if (currentPhase_ == INIT || currentPhase_ == POINTS) {
+    currentout_ << "  <CellData>\n"; // Scalars=\"scalars\">\n";
+    if (myrank_ == 0) {
+      currentmasterout_ << "    <PCellData>\n"; // Scalars=\"scalars\">\n";
+    }
+    currentPhase_ = CELLS;
+  }
+
+  if (currentPhase_ != CELLS)
+    dserror("Cannot write cell data at this stage. Most likely cell and point data fields are mixed.");
 
   this->WriteSolutionVector(solution, ncomponents, name, file);
 }

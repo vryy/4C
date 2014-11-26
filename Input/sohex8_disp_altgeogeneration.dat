@@ -86,9 +86,9 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 16 QUANTITY dispx VALUE 4.0 TOLERANCE 1e-14
-STRUCTURE DIS structure NODE 16 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-14
-STRUCTURE DIS structure NODE 16 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-14
+STRUCTURE DIS structure NODE 49 QUANTITY dispx VALUE 4.0 TOLERANCE 1e-14
+STRUCTURE DIS structure NODE 49 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-14
+STRUCTURE DIS structure NODE 49 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-14
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0
