@@ -13,11 +13,8 @@ Maintainer: Michael Gee
 
 #include "drt_utils_parallel.H"
 #include "drt_node.H"
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "drt_dofset.H"
 #include "drt_discret.H"
 #include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_mapextractor.H"
 #include "drt_dserror.H"
 
 /*----------------------------------------------------------------------*/

@@ -13,21 +13,18 @@ Maintainer: Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
 
-
-#include "drt_condition_utils.H"
-#include "drt_condition_selector.H"
-#include "drt_discret_iterator.H"
-
-#include "drt_globalproblem.H"
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../linalg/linalg_utils.H"
-
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 #include <algorithm>
 
+#include "drt_condition_utils.H"
+#include "drt_condition_selector.H"
+#include "drt_discret_iterator.H"
+
+#include "../drt_lib/drt_utils_parallel.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
