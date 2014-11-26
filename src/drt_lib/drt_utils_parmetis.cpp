@@ -10,8 +10,6 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 
-#if defined(PARALLEL) && defined(PARMETIS)
-
 #include "drt_utils_parmetis.H"
 #include "../linalg/linalg_utils.H"
 
@@ -493,4 +491,3 @@ Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::BuildGraph(
 
   return graph;
 }
-#endif
