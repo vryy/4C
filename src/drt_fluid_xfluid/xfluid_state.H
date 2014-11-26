@@ -17,6 +17,11 @@ Maintainer:  Raffaela Kruse
 #ifndef XFLUID_STATE_H_
 #define XFLUID_STATE_H_
 
+#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
+
+#include <Teuchos_RCP.hpp>
+
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
@@ -236,20 +241,9 @@ public:
     const double &                            time,
     bool                                      coupling = true);
 
-  /// create a state-object after a cut
-  Teuchos::RCP<XFluidState> Create(
-    const Teuchos::RCP<DRT::Discretization> & discret
-    )
-  {
-    dserror("Not implemented yet!");
-    return Teuchos::null;
-  }
-
   /// access to the fluid wizard (boundary mesh)
   Teuchos::RCP<XFEM::FluidWizard> Wizard()
   {
-    if (wizard_ == Teuchos::null)
-      dserror("Xfem fluid wizard is uninitialized!");
     return wizard_;
   }
 

@@ -15,8 +15,6 @@ Maintainer:  Benedikt Schott
 #ifndef XFLUID_H
 #define XFLUID_H
 
-
-#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
 

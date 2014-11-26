@@ -10,23 +10,20 @@ Maintainer:  Shadan Shahmiri
 </pre>
 
 *----------------------------------------------------------------------*/
-#include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "xfluidfluid.H"
+#include "xfluidfluidresulttest.H"
 
-#include "../drt_lib/drt_discret.H"
+#include "../drt_fluid/fluid_utils.H"
+
 #include "../drt_lib/drt_discret_faces.H"
-#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_dofset_transparent_independent.H"
-#include "../drt_lib/drt_dofset.H"
-#include "../drt_lib/drt_dofset_independent.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_utils_parallel.H"
 
@@ -46,11 +43,9 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_cut/cut_position.H"
 
 #include "../drt_fluid_ele/fluid_ele.H"
-
+#include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_interface.H"
 #include "../drt_fluid_ele/fluid_ele_factory.H"
-
-#include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_fluid_ele/fluid_ele_parameter_xfem.H"
 
 #include "../drt_io/io.H"
@@ -65,13 +60,6 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_xfem/xfluidfluid_timeInt.H"
 
 #include "../drt_combust/combust_utils_time_integration.H"
-#include "xfluidfluidresulttest.H"
-
-#include "../drt_fluid/fluid_utils.H"
-
-#include "xfluid_defines.H"
-
-#include "xfluidfluid.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -140,7 +128,8 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   // split dof row map into velocity and pressure dof
   // (btw this has nothing to do with monolithic fluidsplit FSI)
-  FLD::UTILS::SetupFluidSplit(*xfluid.bgdis_,xfluid.numdim_, 1,velpressplitter_);
+  velpressplitter_ = Teuchos::rcp(new LINALG::MapExtractor());
+  FLD::UTILS::SetupFluidSplit(*xfluid.bgdis_,xfluid.numdim_, 1,*velpressplitter_);
 
   // get the background fluid dof-rowmap
   fluiddofrowmap_ = Teuchos::rcp(xfluid.bgdis_->DofRowMap(), false);
@@ -236,9 +225,10 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   // setup the embedded fluid/background fluid map extractor
   fluidfluidsplitter_ = Teuchos::rcp(new FLD::UTILS::FluidXFluidMapExtractor());
+  fluidfluidvelpressplitter_ = Teuchos::rcp(new LINALG::MapExtractor());
   fluidfluidsplitter_->Setup(*fluidfluiddofrowmap_,alefluiddofrowmap,fluiddofrowmap_);
 
-  FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluid.bgdis_,xfluid.numdim_,*xfluid.embdis_,fluidfluidvelpressplitter_,fluidfluiddofrowmap_);
+  FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluid.bgdis_,xfluid.numdim_,*xfluid.embdis_,*fluidfluidvelpressplitter_,fluidfluiddofrowmap_);
 
   // ---------------------------------------------------------------------------
   // matrices & vectors for merged background & embedded fluid
@@ -1851,8 +1841,13 @@ void FLD::XFluidFluid::Init()
   dofset_out_ = Teuchos::rcp(new DRT::IndependentDofSet());
   dofset_out_->Reset();
   dofset_out_->AssignDegreesOfFreedom(*bgdis_,0,0);
+
+  alevelpressplitter_ = Teuchos::rcp(new LINALG::MapExtractor());
+  velpressplitterForBoundary_ = Teuchos::rcp(new LINALG::MapExtractor());
+  velpressplitterForOutput_ = Teuchos::rcp(new LINALG::MapExtractor());
+
   // split based on complete fluid field (standard splitter that handles one dofset)
-  FLD::UTILS::SetupFluidSplit(*bgdis_,*dofset_out_,numdim_,velpressplitterForOutput_);
+  FLD::UTILS::SetupFluidSplit(*bgdis_,*dofset_out_,numdim_,*velpressplitterForOutput_);
 
   // create vector according to the dofset_out row map holding all standard fluid unknowns
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
@@ -1860,7 +1855,6 @@ void FLD::XFluidFluid::Init()
   // create fluid output object
   output_ = bgdis_->Writer();
   output_->WriteMesh(0,0.0);
-
 
   // used to write out owner of elements just once
   firstoutputofrun_ = true;
@@ -1885,7 +1879,7 @@ void FLD::XFluidFluid::Init()
 //   output_->WriteMesh(0,0.0);
 
   // embedded fluid state vectors
-  FLD::UTILS::SetupFluidSplit(*embdis_,numdim_,alevelpressplitter_);
+  FLD::UTILS::SetupFluidSplit(*embdis_,numdim_,*alevelpressplitter_);
 
   aledofrowmap_ = embdis_->DofRowMap();
 
@@ -2011,6 +2005,16 @@ void FLD::XFluidFluid::Init()
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> FLD::XFluidFluid::VelocityRowMap()
+{ return state_->fluidfluidvelpressplitter_->OtherMap(); }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> FLD::XFluidFluid::PressureRowMap()
+{ return state_->fluidfluidvelpressplitter_->CondMap(); }
 
 // ------------------------------------------------------------------------
 // prepare embedded discretization for Ale-sided-coupling
@@ -2790,23 +2794,23 @@ void FLD::XFluidFluid::Solve()
     double presnorm = 0.0;
 
 
-    Teuchos::RCP<Epetra_Vector> onlyvel =  state_->fluidfluidvelpressplitter_.ExtractOtherVector(state_->fluidfluidresidual_);
+    Teuchos::RCP<Epetra_Vector> onlyvel =  state_->fluidfluidvelpressplitter_->ExtractOtherVector(state_->fluidfluidresidual_);
     onlyvel->Norm2(&vresnorm);
 
-    state_->fluidfluidvelpressplitter_.ExtractOtherVector( state_->fluidfluidincvel_,onlyvel);
+    state_->fluidfluidvelpressplitter_->ExtractOtherVector( state_->fluidfluidincvel_,onlyvel);
     onlyvel->Norm2(&incvelnorm_L2);
 
-    state_->fluidfluidvelpressplitter_.ExtractOtherVector( state_->fluidfluidvelnp_,onlyvel);;
+    state_->fluidfluidvelpressplitter_->ExtractOtherVector( state_->fluidfluidvelnp_,onlyvel);;
     onlyvel->Norm2(&velnorm_L2);
 
 
-    Teuchos::RCP<Epetra_Vector> onlypre =  state_->fluidfluidvelpressplitter_.ExtractCondVector( state_->fluidfluidresidual_);
+    Teuchos::RCP<Epetra_Vector> onlypre =  state_->fluidfluidvelpressplitter_->ExtractCondVector( state_->fluidfluidresidual_);
     onlypre->Norm2(&presnorm);
 
-    state_->fluidfluidvelpressplitter_.ExtractCondVector( state_->fluidfluidincvel_,onlypre);
+    state_->fluidfluidvelpressplitter_->ExtractCondVector( state_->fluidfluidincvel_,onlypre);
     onlypre->Norm2(&incprenorm_L2);
 
-    state_->fluidfluidvelpressplitter_.ExtractCondVector( state_->fluidfluidvelnp_,onlypre);
+    state_->fluidfluidvelpressplitter_->ExtractCondVector( state_->fluidfluidvelnp_,onlypre);
     onlypre->Norm2(&prenorm_L2);
 
 
@@ -3329,11 +3333,11 @@ void FLD::XFluidFluid::Update()
 
   // Compute accelerations
   {
-    Teuchos::RCP<Epetra_Vector> onlyaccn  = state_->velpressplitter_.ExtractOtherVector(state_->accn_ );
-    Teuchos::RCP<Epetra_Vector> onlyaccnp = state_->velpressplitter_.ExtractOtherVector(state_->accnp_);
-    Teuchos::RCP<Epetra_Vector> onlyvelnm = state_->velpressplitter_.ExtractOtherVector(state_->velnm_);
-    Teuchos::RCP<Epetra_Vector> onlyveln  = state_->velpressplitter_.ExtractOtherVector(state_->veln_ );
-    Teuchos::RCP<Epetra_Vector> onlyvelnp = state_->velpressplitter_.ExtractOtherVector(state_->velnp_);
+    Teuchos::RCP<Epetra_Vector> onlyaccn  = state_->velpressplitter_->ExtractOtherVector(state_->accn_ );
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = state_->velpressplitter_->ExtractOtherVector(state_->accnp_);
+    Teuchos::RCP<Epetra_Vector> onlyvelnm = state_->velpressplitter_->ExtractOtherVector(state_->velnm_);
+    Teuchos::RCP<Epetra_Vector> onlyveln  = state_->velpressplitter_->ExtractOtherVector(state_->veln_ );
+    Teuchos::RCP<Epetra_Vector> onlyvelnp = state_->velpressplitter_->ExtractOtherVector(state_->velnp_);
 
     COMBUST::UTILS::CalculateAcceleration(onlyvelnp,
                                               onlyveln ,
@@ -3349,11 +3353,11 @@ void FLD::XFluidFluid::Update()
     // copy back into global vector
     LINALG::Export(*onlyaccnp,*state_->accnp_);
 
-    Teuchos::RCP<Epetra_Vector> aleonlyaccn  = alevelpressplitter_.ExtractOtherVector(aleaccn_ );
-    Teuchos::RCP<Epetra_Vector> aleonlyaccnp = alevelpressplitter_.ExtractOtherVector(aleaccnp_);
-    Teuchos::RCP<Epetra_Vector> aleonlyvelnm = alevelpressplitter_.ExtractOtherVector(alevelnm_);
-    Teuchos::RCP<Epetra_Vector> aleonlyveln  = alevelpressplitter_.ExtractOtherVector(aleveln_ );
-    Teuchos::RCP<Epetra_Vector> aleonlyvelnp = alevelpressplitter_.ExtractOtherVector(alevelnp_);
+    Teuchos::RCP<Epetra_Vector> aleonlyaccn  = alevelpressplitter_->ExtractOtherVector(aleaccn_ );
+    Teuchos::RCP<Epetra_Vector> aleonlyaccnp = alevelpressplitter_->ExtractOtherVector(aleaccnp_);
+    Teuchos::RCP<Epetra_Vector> aleonlyvelnm = alevelpressplitter_->ExtractOtherVector(alevelnm_);
+    Teuchos::RCP<Epetra_Vector> aleonlyveln  = alevelpressplitter_->ExtractOtherVector(aleveln_ );
+    Teuchos::RCP<Epetra_Vector> aleonlyvelnp = alevelpressplitter_->ExtractOtherVector(alevelnp_);
 
     COMBUST::UTILS::CalculateAcceleration(aleonlyvelnp,
                                               aleonlyveln ,
@@ -4005,7 +4009,7 @@ void FLD::XFluidFluid::Output()
     output_->WriteVector("velnp", outvec_fluid_);
 
     // output (hydrodynamic) pressure for visualization
-    Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(outvec_fluid_);
+    Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_->ExtractCondVector(outvec_fluid_);
     output_->WriteVector("pressure", pressure);
 
     // write domain decomposition for visualization (only once!)
@@ -4064,7 +4068,7 @@ void FLD::XFluidFluid::Output()
     emboutput_->WriteVector("velnp",alevelnp_);
 
     // (hydrodynamic) pressure
-    Teuchos::RCP<Epetra_Vector> pressure = alevelpressplitter_.ExtractCondVector(alevelnp_);
+    Teuchos::RCP<Epetra_Vector> pressure = alevelpressplitter_->ExtractCondVector(alevelnp_);
     emboutput_->WriteVector("pressure", pressure);
 
     //output_.WriteVector("residual", trueresidual_);
@@ -4504,8 +4508,8 @@ void FLD::XFluidFluid::XFluidFluidState::GenAlphaIntermediateValues()
     // only these are allowed to be updated, otherwise you will
     // run into trouble in loma, where the 'pressure' component
     // is used to store the acceleration of the temperature
-    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
-    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
+    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_->ExtractOtherVector(accn_ );
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_->ExtractOtherVector(accnp_);
 
     Teuchos::RCP<Epetra_Vector> onlyaccam = Teuchos::rcp(new Epetra_Vector(onlyaccnp->Map()));
 
@@ -4547,9 +4551,9 @@ void FLD::XFluidFluid::XFluidFluidState::GenAlphaUpdateAcceleration()
   // only these are allowed to be updated, otherwise you will
   // run into trouble in loma, where the 'pressure' component
   // is used to store the acceleration of the temperature
-  Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
-  Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(veln_ );
-  Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
+  Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_->ExtractOtherVector(accn_ );
+  Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_->ExtractOtherVector(veln_ );
+  Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_->ExtractOtherVector(velnp_);
 
   Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::rcp(new Epetra_Vector(onlyaccn->Map()));
 

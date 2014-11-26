@@ -17,24 +17,10 @@ Maintainer:  Shadan Shahmiri
 #ifndef XFLUIDFLUID_H
 #define XFLUIDFLUID_H
 
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-
-#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
 
 #include "../drt_fluid/fluid_timint.H"
-
-#include "../linalg/linalg_mapextractor.H"
-
-#include "../drt_lib/drt_element.H"
 
 namespace DRT
 {
@@ -175,7 +161,7 @@ namespace FLD
 
       //! extractor to split background fluid velocity from pressure dof
       //! (used for convergence check)
-      LINALG::MapExtractor       velpressplitter_;
+      Teuchos::RCP<LINALG::MapExtractor> velpressplitter_;
 
       //! @name fluid-fluid coupling matrices and rhs-vector
       //@{
@@ -204,7 +190,7 @@ namespace FLD
 
       /// extractor used for splitting between velocity and pressure dof from
       /// the combined background & embedded fluid dof-map
-      LINALG::MapExtractor fluidfluidvelpressplitter_;
+      Teuchos::RCP<LINALG::MapExtractor> fluidfluidvelpressplitter_;
 
       //! @name dof-row maps
       //@{
@@ -342,12 +328,6 @@ namespace FLD
     /// setup the variables to do a new time step
     void PrepareTimeStep();
 
-    /// new cut and xfem-time integration happen here
-    void PrepareSolve();
-
-    /// new cut, xfem-time integration and fluid solution for monolithic fixed-ale approach
-    void PrepareMonolithicFixedAle();
-
     /// do nonlinear iteration, e.g. full Newton, Newton-like or Fixpoint iteration
     void Solve();
 
@@ -444,8 +424,8 @@ namespace FLD
 
     Teuchos::RCP<const Epetra_Map> DofRowMap() { return state_->fluidfluiddofrowmap_; }
 
-    Teuchos::RCP<const Epetra_Map>PressureRowMap() { return state_->fluidfluidvelpressplitter_.CondMap(); }
-    Teuchos::RCP<const Epetra_Map>VelocityRowMap() { return state_->fluidfluidvelpressplitter_.OtherMap(); }
+    Teuchos::RCP<const Epetra_Map>PressureRowMap();
+    Teuchos::RCP<const Epetra_Map>VelocityRowMap();
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives(){ return shapederivatives_; }
 
     /// get the combined fluid-fluid system matrix
@@ -540,6 +520,12 @@ namespace FLD
     /// create new discretization from all embedded fluid elements,
     /// that contribute to the fluid-fluid interface with at least one face
     void CreateEmbeddedBoundaryDiscretization();
+
+    /// new cut and xfem-time integration happen here
+    void PrepareSolve();
+
+    /// new cut, xfem-time integration and fluid solution for monolithic fixed-ale approach
+    void PrepareMonolithicFixedAle();
 
     //! @name Set general xfem specific element parameter in class FluidEleParameterXFEM
     /*!
@@ -696,7 +682,7 @@ namespace FLD
 
     /// extractor to split embedded fluid velocity from pressure dof
     /// (used for convergence check)
-    LINALG::MapExtractor      alevelpressplitter_;
+    Teuchos::RCP<LINALG::MapExtractor>  alevelpressplitter_;
 
     /// dof-row maps
     const Epetra_Map* aledofrowmap_;
@@ -721,8 +707,8 @@ namespace FLD
     Teuchos::RCP<DRT::IndependentDofSet> dofset_out_;
 
     /// velocity pressure splitter for fluid output
-    LINALG::MapExtractor      velpressplitterForBoundary_;
-    LINALG::MapExtractor      velpressplitterForOutput_;
+    Teuchos::RCP<LINALG::MapExtractor>  velpressplitterForBoundary_;
+    Teuchos::RCP<LINALG::MapExtractor>  velpressplitterForOutput_;
 
     /// output vector for bg-fluid field (velocity and pressure)
     Teuchos::RCP<Epetra_Vector> outvec_fluid_;
@@ -732,9 +718,6 @@ namespace FLD
 
     /// counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
     int restart_count_;
-
-    /// ALE dof map
-    LINALG::MapExtractor meshmap_;
 
     //! @name general algorithm parameters
     //@{

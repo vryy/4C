@@ -1165,9 +1165,6 @@ protected:
   //! pressure    = CondVector
   LINALG::MapExtractor      velpressplitter_;
 
-  /// ALE dof map
-  LINALG::MapExtractor meshmap_;
-
   /// row dof map extractor
   const UTILS::MapExtractor* surfacesplitter_;
 

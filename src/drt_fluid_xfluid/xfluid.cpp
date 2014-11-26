@@ -12,28 +12,26 @@ Maintainer:  Benedikt Schott
 
 *----------------------------------------------------------------------*/
 
-#include <Teuchos_ParameterList.hpp>
+#include "xfluid_defines.H"
+#include "xfluid.H"
+
 
 #include "../drt_fluid/fluid_utils.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_discret_faces.H"
 #include "../drt_lib/drt_dofset_transparent_independent.H"
 
-#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_utils_parallel.H"
 
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_krylov_projector.H"
@@ -71,16 +69,10 @@ Maintainer:  Benedikt Schott
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_inpar/inpar_fsi.H"
 
-
 #include "../drt_combust/combust_utils_time_integration.H"
-
-#include "xfluid_defines.H"
 
 #include "../drt_xfem/xfluid_timeInt_std_SemiLagrange.H"
 #include "../drt_xfem/xfluid_timeInt_base.H"
-
-
-#include "xfluid.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
