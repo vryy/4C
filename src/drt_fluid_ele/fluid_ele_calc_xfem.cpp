@@ -712,6 +712,11 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
   const double t = my::fldparatimint_->Time();
 
 
+  // flag which indicates whether a level set cut is done or a mesh cut is done.
+  // This implies there is no cutdis and as such no cut sides.
+  const bool levelset_cut = (cutdis==Teuchos::null);
+
+
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
@@ -782,28 +787,12 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
   LINALG::Matrix<3,1> x_side;
 
   // coupling implementation between background element and each cut side (std::map<sid, side_impl)
-  std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > > side_impl;
   Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si;
 
-  // find all the intersecting elements of actele
-  std::set<int> begids;
-  for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
-       bc!=bcells.end(); ++bc )
-  {
-    int sid = bc->first;
-    begids.insert(sid);
-  }
-
-  // map of boundary element gids and coupling matrices, [0]: Cuiui matrix
-  std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling;
-
-  // lm vector of all intersecting boundary elements that intersect the current background element
-  std::vector<int> patchelementslmv;
-  std::vector<int> patchelementslmowner;
-
-  // create location vectors for intersecting boundary elements and reshape coupling matrices
-  PatchLocationVector(begids,*cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling);
-
+  // pointer to boundary element
+  DRT::Element * side = NULL;
+  // coordinates of boundary element
+  Epetra_SerialDenseMatrix side_xyze;
 
   //-----------------------------------------------------------------------------------
   //         evaluate element length, stabilization factors and average weights
@@ -858,29 +847,28 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
     if ( bcs.size()!=cutintpoints.size() )
       dserror( "boundary cell integration rules mismatch" );
 
-    // side and location vector
-    DRT::Element * side = cutdis->gElement( sid );
-    side->LocationVector(*cutdis,cutla,false);
 
-    // side geometry
-    const int numnodes = side->NumNode();
-    DRT::Node ** nodes = side->Nodes();
-    Epetra_SerialDenseMatrix side_xyze( 3, numnodes );
-    for ( int i=0; i<numnodes; ++i )
+    if(!levelset_cut)
     {
-      const double * x = nodes[i]->X();
-      std::copy( x, x+3, &side_xyze( 0, i ) );
+      // side and location vector
+      side = cutdis->gElement( sid );
+      side->LocationVector(*cutdis,cutla,false);
+
+      // side geometry
+      const int numnodes = side->NumNode();
+      DRT::Node ** nodes = side->Nodes();
+      side_xyze.Shape( 3, numnodes );
+      for ( int i=0; i<numnodes; ++i )
+      {
+        const double * x = nodes[i]->X();
+        std::copy( x, x+3, &side_xyze( 0, i ) );
+      }
+
+      si = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateSlaveElementRepresentation(side,side_xyze);
+
+      // set displacement of side
+      si->AddSlaveEleDisp(*cutdis,"idispnp",cutla[0].lm_);
     }
-
-    si = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateSlaveElementRepresentation(side,side_xyze);
-
-    side_impl[sid] = si;
-
-    // get velocity at integration point of boundary dis
-    si->SetSlaveState(*cutdis,"ivelnp",cutla[0].lm_);
-
-    // set displacement of side
-    si->AddSlaveEleDisp(*cutdis,"idispnp",cutla[0].lm_);
 
 
     //--------------------------------------------
@@ -927,9 +915,16 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         pos.Compute();
         rst = pos.LocalCoordinates();
 
-        // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
-        LINALG::Matrix<2,1> xi_side(true);
-        si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+        if (!levelset_cut)
+        {
+          // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
+          LINALG::Matrix<2,1> xi_side(true);
+
+          //          side_impl[sid]->ProjectOnSide(x_gp_lin, x_side, xi_side);
+          si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+        }
+        else x_side = x_gp_lin;
+
 
         const double surf_fac = drs*iquad.Weight();
 
@@ -979,25 +974,6 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
                      mat
                      );
 
-        //--------------------------------------------
-
-        // prescribed velocity vector at weak Dirichlet boundary
-        LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
-        si->GetInterfaceVel(ivelint_WDBC_JUMP);
-
-        LINALG::Matrix<my::nsd_,1> check_diff(true);
-        check_diff.Update(1.0, u_analyt, -1.0, ivelint_WDBC_JUMP);
-
-
-        // This check is obsolete, since there is a interpolation difference
-        // between analytical solution and the enforced boundary condition
-        if(check_diff.Norm2() > 1e-12)
-        {
-//            cout.precision(12);
-//            cout << "u_analyt" << u_analyt << endl;
-//            cout << "ivelint_WDBC_JUMP" <<  ivelint_WDBC_JUMP << endl;
-          //dserror("do you want to enforce other boundary conditions than the analytical domain solution?");
-        }
 
         u_err.Update(1.0, my::velint_, -1.0, u_analyt, 0.0);
 
