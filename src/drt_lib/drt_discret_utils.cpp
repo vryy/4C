@@ -15,12 +15,7 @@ Maintainer: Michael Gee
 #include "drt_exporter.H"
 #include "drt_dserror.H"
 #include "../linalg/linalg_utils.H"
-#include "drt_globalproblem.H"
 #include "drt_elementtype.H"
-#ifdef D_SHELL8
-#include "../drt_s8/shell8.H"
-#endif
-
 
 /*----------------------------------------------------------------------*
  |  compute nullspace of system (public)                     mwgee 02/07|
@@ -102,7 +97,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   Teuchos::ParameterList* mllist_ptr = NULL;
   if (solveparams.isSublist("Stratimikos Parameters"))
   {
-	// TODO: what about MueLu?
+    // TODO: what about MueLu?
     if (solveparams.sublist("Stratimikos Parameters").get<std::string>("Preconditioner Type") != "ML")
         return;
     else
