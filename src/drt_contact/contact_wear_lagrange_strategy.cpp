@@ -3049,13 +3049,16 @@ void CONTACT::WearLagrangeStrategy::PrepareSaddlePointSystem(Teuchos::RCP<LINALG
 }
 
 /*----------------------------------------------------------------------*
- | Solve linear system of saddle point type                  farah 10/13|
+ | Setup 2x2 saddle point system for contact problems      wiesner 11/14|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
-                  LINALG::Solver& fallbacksolver,
-                  Teuchos::RCP<LINALG::SparseOperator> kdd,  Teuchos::RCP<Epetra_Vector> fd,
-                  Teuchos::RCP<Epetra_Vector>  sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
-                  int numiter)
+void CONTACT::WearLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+                                        Teuchos::RCP<Epetra_Vector> fd,
+                                        Teuchos::RCP<Epetra_Vector> sold,
+                                        Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+                                        int numiter,
+                                        Teuchos::RCP<Epetra_Operator>& blockMat,
+                                        Teuchos::RCP<Epetra_Vector>& blocksol,
+                                        Teuchos::RCP<Epetra_Vector>& blockrhs)
 {
   // create old style dirichtoggle vector (supposed to go away)
   // the use of a toggle vector is more flexible here. It allows to apply dirichlet
@@ -3067,20 +3070,6 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 
   // get system type
   INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
-
-  // check if contact contributions are present,
-  // if not we make a standard solver call to speed things up
-  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
-  {
-    //std::cout << "##################################################" << std::endl;
-    //std::cout << " USE FALLBACK SOLVER (pure structure problem)" << std::endl;
-    //std::cout << fallbacksolver.Params() << std::endl;
-    //std::cout << "##################################################" << std::endl;
-
-    // standard solver call
-    fallbacksolver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
-    return;
-  }
 
   //**********************************************************************
   // prepare saddle point system
@@ -3686,15 +3675,10 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
         mapvec.push_back(gwmdofrowmap_);
     }
 
-    // set a helper flag for the CheapSIMPLE preconditioner (used to detect, if Teuchos::nullspace has to be set explicitely)
-    // do we need this? if we set the Teuchos::nullspace when the solver is constructed?
-    solver.Params().set<bool>("CONTACT",true); // for simpler precond
-
     // MODIFICATION OF SYSTEM:
     // =======================
     // build 2x2 soe by inserting wear blocks into lm blocks
     // this results to a well-suited block system for the iterative solvers
-    Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::null;
 
     if(weardiscr_)
     {
@@ -3711,7 +3695,8 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
         LINALG::MapExtractor rowmapext(*mergedmap,gmap,ProblemDofs());
         LINALG::MapExtractor dommapext(*mergedmap,gmap,ProblemDofs());
 
-        mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
+        blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
+        Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >(blockMat);
 
         trkgd = Teuchos::rcp(new LINALG::SparseMatrix(*gmap,100,false,true));
         trkgg = Teuchos::rcp(new LINALG::SparseMatrix(*gmap,100,false,true));
@@ -3730,6 +3715,11 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
         trkdz->UnComplete();
         trkdz->Complete(*gmap,*ProblemDofs());
 
+        mat->Assign(0,0,View,*stiffmt);
+        mat->Assign(0,1,View,*trkdz);
+        mat->Assign(1,0,View,*trkgd);
+        mat->Assign(1,1,View,*trkgg);
+        mat->Complete();
       }
       // BOTH_SIDED DISCRETE WEAR
       else
@@ -3743,8 +3733,8 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
         LINALG::MapExtractor rowmapext(*mergedmap,gmap,ProblemDofs());
         LINALG::MapExtractor dommapext(*mergedmap,gmap,ProblemDofs());
 
-        mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
-
+        blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
+        Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >(blockMat);
 
         trkgd = Teuchos::rcp(new LINALG::SparseMatrix(*gmap,100,false,true));
         trkgg = Teuchos::rcp(new LINALG::SparseMatrix(*gmap,100,false,true));
@@ -3765,14 +3755,13 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
 
         trkdz->UnComplete();
         trkdz->Complete(*gmap,*ProblemDofs());
+
+        mat->Assign(0,0,View,*stiffmt);
+        mat->Assign(0,1,View,*trkdz);
+        mat->Assign(1,0,View,*trkgd);
+        mat->Assign(1,1,View,*trkgg);
+        mat->Complete();
       }
-
-
-      mat->Assign(0,0,View,*stiffmt);
-      mat->Assign(0,1,View,*trkdz);
-      mat->Assign(1,0,View,*trkgd);
-      mat->Assign(1,1,View,*trkgg);
-
     }
     // without wear unknowns...
     else
@@ -3781,17 +3770,14 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
       LINALG::MultiMapExtractor dommapext(*mergedmap,mapvec);
 
       // build block matrix for SIMPLER
-      mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
-
+      blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
+      Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >(blockMat);
       mat->Assign(0,0,View,*stiffmt);
       mat->Assign(0,1,View,*trkdz);
       mat->Assign(1,0,View,*trkzd);
       mat->Assign(1,1,View,*trkzz);
+      mat->Complete();
     }
-
-
-    // matrix filling done
-    mat->Complete();
 
     // we also need merged rhs here
     Teuchos::RCP<Epetra_Vector> fresmexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
@@ -3821,15 +3807,25 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     LINALG::Export(*dirichtoggle,*dirichtoggleexp);
     LINALG::ApplyDirichlettoSystem(mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
 
-    // SIMPLER preconditioning solver call
-    solver.Solve(mat->EpetraOperator(),mergedsol,mergedrhs,true,numiter==0);
+    // return references to solution and rhs vector
+    blocksol = mergedsol;
+    blockrhs = mergedrhs;
+    return;
   }
 
   //**********************************************************************
   // invalid system types
   //**********************************************************************
-  else dserror("ERROR: Invalid system type in SaddlePointSolve");
+  else dserror("ERROR: Invalid system type in BuildSaddlePointProblem");
 
+  return;
+}
+
+/*------------------------------------------------------------------------*
+ | Update internal member variables after saddle point solve wiesner 11/14|
+ *------------------------------------------------------------------------*/
+void CONTACT::WearLagrangeStrategy::UpdateDisplacementsAndLMincrements(Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
+{
   //**********************************************************************
   // extract results for displacement and LM increments
   //**********************************************************************
@@ -3840,22 +3836,38 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   if(weardiscr_) solw      = Teuchos::rcp(new Epetra_Vector(*gwdofrowmap_));
   if(wearbothdiscr_) solwm = Teuchos::rcp(new Epetra_Vector(*gwmdofrowmap_));
 
+  // initialize merged system (matrix, rhs, sol);
+  Teuchos::RCP<Epetra_Map>           mergedmap   = Teuchos::null;
+  if (!weardiscr_)
+    mergedmap   = LINALG::MergeMap(ProblemDofs(),glmdofrowmap_,false);
+  else if (weardiscr_ and !wearbothdiscr_)
+  {
+    Teuchos::RCP<Epetra_Map> map_dummy = LINALG::MergeMap(ProblemDofs(),glmdofrowmap_,false);
+    mergedmap   = LINALG::MergeMap(map_dummy,gwdofrowmap_,false);
+  }
+  else
+  {
+    Teuchos::RCP<Epetra_Map> map_dummy = LINALG::MergeMap(ProblemDofs(),glmdofrowmap_,false);
+    mergedmap   = LINALG::MergeMap(map_dummy,gwdofrowmap_,false);
+    mergedmap   = LINALG::MergeMap(mergedmap,gwmdofrowmap_,false); // slave + master wear
+  }
+
   LINALG::MapExtractor mapextd(*mergedmap,ProblemDofs(),glmdofrowmap_);
   LINALG::MapExtractor mapextlm(*mergedmap,glmdofrowmap_,glmdofrowmap_);
-  mapextd.ExtractCondVector(mergedsol,sold);
-  mapextlm.ExtractCondVector(mergedsol,sollm);
+  mapextd.ExtractCondVector(blocksol,sold);
+  mapextlm.ExtractCondVector(blocksol,sollm);
   sollm->ReplaceMap(*gsdofrowmap_);
 
   if(weardiscr_)
   {
     LINALG::MapExtractor mapextw(*mergedmap,gwdofrowmap_,glmdofrowmap_);
-    mapextw.ExtractCondVector(mergedsol,solw);
+    mapextw.ExtractCondVector(blocksol,solw);
     solw->ReplaceMap(*gsdofnrowmap_);
   }
   if(wearbothdiscr_)
   {
     LINALG::MapExtractor mapextwm(*mergedmap,gwmdofrowmap_,glmdofrowmap_);
-    mapextwm.ExtractCondVector(mergedsol,solwm);
+    mapextwm.ExtractCondVector(blocksol,solwm);
     solwm->ReplaceMap(*gmdofnrowmap_);
   }
 
@@ -3886,7 +3898,6 @@ void CONTACT::WearLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
       }
     }
   }
-
   return;
 }
 

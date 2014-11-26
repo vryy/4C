@@ -143,29 +143,33 @@ public:
   void SetupWear(bool redistributed, bool init);
 
   /*!
-  \brief Solve linear system of saddle point type
+  \brief Build 2x2 saddle point system
 
-  \param solver (in): LINALG::Solver object
-  \param solver (in): LINALG::Solver object (fallback solver)
   \param kdd (in): the displacement dof stiffness (upper left block)
   \param fd (in): the displacement dof r.h.s. (upper block)
-  \param sold (in/out): the displacement dof solution increment
+  \param sold (in): the displacement dof solution increment
   \param dirichtoggle (in): toggle vector for dirichlet conditions
   \param numiter (in): current nonlinear iteration step
-
-  This routine is called by the <tt>LinearSolve</tt> function in the (contact) structure time integration algorithm.
-  The <tt>SaddlePointSolve</tt> problem is only used for saddle point problems (contact or meshtying). The solver must be
-  a LINALG::Solver object with a block preconditioner (e.g. CheapSIMPLE). The fallback solver is used whenever there is no
-  contact and a pure (symmetric) structural problem has to be solved. Therefore per default the STRUCT SOLVER block parameters
-  are used.
+  \param blockMat (out): Epetra_Operator containing the 2x2 block sparse matrix object
+  \param mergedsol (out): Epetra_Vector for merged solution vector
+  \param mergedrhs (out): Epetra_Vector for merged right hand side vector
   */
-  void SaddlePointSolve(LINALG::Solver& solver,
-                        LINALG::Solver& fallbacksolver,
-                        Teuchos::RCP<LINALG::SparseOperator> kdd,
-                        Teuchos::RCP<Epetra_Vector>          fd,
-                        Teuchos::RCP<Epetra_Vector>          sold,
-                        Teuchos::RCP<LINALG::MapExtractor>   dbcmaps,
-                        int numiter);
+  void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+                                        Teuchos::RCP<Epetra_Vector> fd,
+                                        Teuchos::RCP<Epetra_Vector> sold,
+                                        Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+                                        int numiter,
+                                        Teuchos::RCP<Epetra_Operator>& blockMat,
+                                        Teuchos::RCP<Epetra_Vector>& blocksol,
+                                        Teuchos::RCP<Epetra_Vector>& blockrhs);
+
+  /*!
+  \brief Update internal member variables after solving the 2x2 saddle point contact system
+
+  \param sold (in): the displacement dof solution increment (associated with displacement dofs)
+  \param mergedsol (in): Epetra_Vector for merged solution vector (containing the new solution vector of the full merged linear system)
+  */
+  void UpdateDisplacementsAndLMincrements(Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol);
 
   /*!
   \brief Evaluate wear vector
