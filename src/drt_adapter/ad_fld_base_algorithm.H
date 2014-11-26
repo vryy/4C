@@ -56,6 +56,9 @@ namespace ADAPTER {
     /// access to fluid field solver
     const Teuchos::RCP<Fluid>& FluidField() { return fluid_; }
 
+    /// set the initial flow field in the fluid
+    void SetInitialFlowField(const Teuchos::ParameterList& fdyn);
+
   private:
 
     //! setup fluid algorithm (overriding some fluid parameters with
@@ -72,6 +75,9 @@ namespace ADAPTER {
                     const std::string& disname,
                     bool isale,
                     bool init);
+
+    /// set the initial turbulent inflow field in the fluid
+    void SetInitialInflowField(const Teuchos::ParameterList& fdyn);
 
     /// setup second fluid algorithm (overriding some fluid parameters with
     /// values specified in given problem-dependent Turbulent Inflow ParameterList)

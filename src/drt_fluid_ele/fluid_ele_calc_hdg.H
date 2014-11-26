@@ -171,7 +171,7 @@ namespace ELEMENTS
         const std::vector<int> &                                            lm,                ///< element local map
         Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
         Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
-        DRT::Discretization &                                               cutdis,            ///< cut discretization
+        const Teuchos::RCP<DRT::Discretization> &                           cutdis,            ///< cut discretization
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
         Teuchos::ParameterList&                                             params,            ///< parameter list
@@ -220,6 +220,7 @@ namespace ELEMENTS
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,               ///< boundary integration points
         std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,            ///< side coupling matrices
         Teuchos::ParameterList&                                           params,                   ///< parameter list
+        Teuchos::RCP<MAT::Material>&                                      mat,                      ///< material
         Epetra_SerialDenseMatrix&                                         elemat1_epetra,           ///< local system matrix of intersected element
         Epetra_SerialDenseVector&                                         elevec1_epetra,           ///< local element vector of intersected element
         Epetra_SerialDenseMatrix&                                         Cuiui,                    ///< coupling matrix of a side with itself
@@ -250,6 +251,7 @@ namespace ELEMENTS
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
         Teuchos::ParameterList&                                             params,            ///< parameter list
+        Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
         Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
         Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
         const GEO::CUT::plain_volumecell_set &                              vcSet,             ///< volumecell sets in this element

@@ -61,7 +61,7 @@ namespace XFLUIDLEVELSET
     /// write output
     void Output();
 
-    Teuchos::RCP<Epetra_Vector> StorePhiVectors(Teuchos::RCP<DRT::Discretization> fluiddis, Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<const Epetra_Vector> phinp);
+
 
   private:
 

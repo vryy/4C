@@ -21,6 +21,8 @@ Maintainer: Andreas Ehrl
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_fluid_xfluid/xfluid.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
@@ -56,22 +58,24 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   // initialize fluid time integration scheme
   FluidField()->Init();
 
+  // create initial state for xfluid
+  if(DRT::Problem::Instance()->ProblemType() == prb_fluid_xfem_ls)
+  {
+
+    Teuchos::RCP<FLD::XFluid> xfluid = Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField(), true);
+
+    xfluid->SetLevelSetField(ScaTraField()->Phinp(), ScaTraField()->Discretization());
+    xfluid->CreateInitialStateLS();
+  }
+
   // set also initial field
+  if (DRT::Problem::Instance()->ProblemType() != prb_combust)
+  {
+    SetInitialFlowField(DRT::Problem::Instance()->FluidDynamicParams());
+  }
+
   if (DRT::Problem::Instance()->ProblemType() != prb_combust and DRT::Problem::Instance()->ProblemType() != prb_fluid_xfem_ls)
   {
-    // set initial field by given function
-    // we do this here, since we have direct access to all necessary parameters
-    INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(DRT::Problem::Instance()->FluidDynamicParams(),"INITIALFIELD");
-    if(initfield != INPAR::FLUID::initfield_zero_field)
-    {
-      int startfuncno = DRT::Problem::Instance()->FluidDynamicParams().get<int>("STARTFUNCNO");
-      if (initfield != INPAR::FLUID::initfield_field_by_function and
-          initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
-        startfuncno=-1;
-
-      FluidField()->SetInitialFlowField(initfield,startfuncno);
-    }
-
     // transfer the initial convective velocity from initial fluid field to scalar transport field
     // subgrid scales not transferred since they are zero at time t=0.0
     ScaTraField()->SetVelocityField(

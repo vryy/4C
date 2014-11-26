@@ -572,7 +572,14 @@ namespace FLD
 
     Teuchos::RCP<FLD::Vreman> Vreman() {return Teuchos::null;}
 
-    void SetStateLS( Epetra_Vector & lsvalues );
+    void CreateInitialState( const Epetra_Vector & idispcol );
+
+    void CreateInitialStateLS();
+
+    void SetLevelSetField(
+       Teuchos::RCP<const Epetra_Vector> scalaraf,
+       Teuchos::RCP<DRT::Discretization> scatradis
+       );
 
     void UpdateGridv();
 
@@ -987,6 +994,11 @@ namespace FLD
     //! @name solid-dis state vectors
     Teuchos::RCP<Epetra_Vector>    solidvelnp_;
     Teuchos::RCP<Epetra_Vector>    soliddispnp_;
+    //@}
+
+
+    //! @name scatra-dis state vectors for levelset applications
+    Teuchos::RCP<Epetra_Vector>    phinp_;
     //@}
 
     //! @specific dof row maps

@@ -700,7 +700,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
     const std::vector<int> &                                            lm,                ///< element local map
     Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
     Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
-    DRT::Discretization &                                               cutdis,            ///< cut discretization
+    const Teuchos::RCP<DRT::Discretization> &                           cutdis,            ///< cut discretization
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
     Teuchos::ParameterList&                                             params,            ///< parameter list
@@ -802,7 +802,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
   std::vector<int> patchelementslmowner;
 
   // create location vectors for intersecting boundary elements and reshape coupling matrices
-  PatchLocationVector(begids,cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling);
+  PatchLocationVector(begids,*cutdis,patchelementslmv,patchelementslmowner, Cuiui_coupling);
 
 
   //-----------------------------------------------------------------------------------
@@ -859,8 +859,8 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
       dserror( "boundary cell integration rules mismatch" );
 
     // side and location vector
-    DRT::Element * side = cutdis.gElement( sid );
-    side->LocationVector(cutdis,cutla,false);
+    DRT::Element * side = cutdis->gElement( sid );
+    side->LocationVector(*cutdis,cutla,false);
 
     // side geometry
     const int numnodes = side->NumNode();
@@ -877,10 +877,10 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
     side_impl[sid] = si;
 
     // get velocity at integration point of boundary dis
-    si->SetSlaveState(cutdis,"ivelnp",cutla[0].lm_);
+    si->SetSlaveState(*cutdis,"ivelnp",cutla[0].lm_);
 
     // set displacement of side
-    si->AddSlaveEleDisp(cutdis,"idispnp",cutla[0].lm_);
+    si->AddSlaveEleDisp(*cutdis,"idispnp",cutla[0].lm_);
 
 
     //--------------------------------------------
@@ -1419,6 +1419,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,               ///< boundary integration points
     std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,            ///< side coupling matrices
     Teuchos::ParameterList&                                           params,                   ///< parameter list
+    Teuchos::RCP<MAT::Material>&                                      mat,                      ///< material
     Epetra_SerialDenseMatrix&                                         elemat1_epetra,           ///< local system matrix of intersected element
     Epetra_SerialDenseVector&                                         elevec1_epetra,           ///< local element vector of intersected element
     Epetra_SerialDenseMatrix&                                         Cuiui,                    ///< coupling matrix of a side with itself
@@ -2877,6 +2878,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,
     Teuchos::ParameterList&                                             params,
+    Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
     Epetra_SerialDenseMatrix&                                           elemat1_epetra,
     Epetra_SerialDenseVector&                                           elevec1_epetra,
     const GEO::CUT::plain_volumecell_set &                              vcSet,

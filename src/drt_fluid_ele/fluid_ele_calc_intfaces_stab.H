@@ -325,6 +325,18 @@ namespace DRT
           const double &                                                 tau_div        ///< combined penalty parameter for divergence stabilization terms
       );
 
+      //! Provide special condition to fix uncoupled pressure layers for pseudo 2D examples in combination with Krylov projection
+      void pressureKrylov2Dz(
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
+          LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
+          const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
+          const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
+          const double &                                                 tau_pres       ///< pressure stabilization parameter
+      );
 
       //! compute h_k w.r.t master and slave element
       double compute_patch_hk(

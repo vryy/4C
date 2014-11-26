@@ -142,6 +142,9 @@ public:
   //! Flag to define tau for edge-based stabilization
   bool Is_WhichTau() const {return EOS_whichtau_;};
 
+  //! Flag to activate special least-squares condition for pseudo 2D examples where pressure level is determined via Krylov-projection
+  bool presKrylov2Dz() const {return presKrylov2Dz_;};
+
   //! get the viscous ghost-penalty stabilization flag
   bool Is_General_Ghost_Penalty_visc(){return ghost_penalty_visc_;};
 
@@ -233,6 +236,9 @@ protected:
 
   //! which EOS characteristic element length definition
   INPAR::FLUID::EOS_ElementLength EOS_element_length_;
+
+  //! flag to active special least-squares condition for pseudo 2D examples where pressure level is determined via Krylov-projection
+  bool presKrylov2Dz_;
 
 
   /*----------------------------------------------------*/

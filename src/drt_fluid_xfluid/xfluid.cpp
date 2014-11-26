@@ -555,6 +555,7 @@ void FLD::XFluid::XFluidState::Evaluate( DRT::Discretization & discret,
                                                  bintpoints,
                                                  side_coupling,
                                                  eleparams,
+                                                 mat,
                                                  strategy.Elematrix1(),
                                                  strategy.Elevector1(),
                                                  C_ss,
@@ -569,6 +570,7 @@ void FLD::XFluid::XFluidState::Evaluate( DRT::Discretization & discret,
                                                  bcells,
                                                  bintpoints,
                                                  eleparams,
+                                                 mat,
                                                  strategy.Elematrix1(),
                                                  strategy.Elevector1(),
                                                  cells,
@@ -846,7 +848,12 @@ void FLD::XFluid::XFluidState::IntegrateShapeFunction(
 
     DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem");
 
-    GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
+    GEO::CUT::ElementHandle * e;
+    if(!xfluid_.levelsetcut_)
+      e = wizard_->GetElement( actele );
+    else
+      e = wizardls_->GetElement( actele );
+
     if ( e!=NULL )
     {
 
@@ -1207,14 +1214,30 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
     DRT::UTILS::ExtractMyValues(*acc,m_acc,la[0].lm_);
   }
 
+  int numnode = 0;
+
   switch ( actele->Shape() )
   {
   case DRT::Element::hex8:
   case DRT::Element::hex20:
   case DRT::Element::hex27:
+    numnode=8;
     vel_f << "VH(";
     press_f << "SH(";
     if(acc_output) acc_f << "VH(";
+    break;
+  case DRT::Element::wedge6:
+  case DRT::Element::wedge15:
+    numnode=6;
+    vel_f << "VI(";
+    press_f << "SI(";
+    if(acc_output) acc_f << "VI(";
+    break;
+  case DRT::Element::pyramid5:
+    numnode=5;
+    vel_f << "VY(";
+    press_f << "SY(";
+    if(acc_output) acc_f << "VY(";
     break;
   default:
   {
@@ -1223,8 +1246,7 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
   }
   }
 
-//  for ( int i=0; i<actele->NumNode(); ++i )
-  for ( int i=0; i<8; ++i )
+  for ( int i=0; i<numnode; ++i )
   {
     if ( i > 0 )
     {
@@ -1241,8 +1263,7 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
   press_f << "){";
   if(acc_output) acc_f << "){";
 
-//  for ( int i=0; i<actele->NumNode(); ++i )
-  for ( int i=0; i<8; ++i )
+  for ( int i=0; i<numnode; ++i )
   {
     if ( i > 0 )
     {
@@ -1563,6 +1584,20 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
           const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
           LINALG::Matrix<numnodes,1> funct;
           DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex27 );
+          LINALG::Matrix<3,numnodes> velocity( vel, true );
+          LINALG::Matrix<1,numnodes> pressure( press, true );
+          LINALG::Matrix<3,numnodes> acceleration( acc, true );
+
+          v.Multiply( 1, velocity, funct, 1 );
+          p.Multiply( 1, pressure, funct, 1 );
+          if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
+          break;
+        }
+        case DRT::Element::wedge6:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement;
+          LINALG::Matrix<numnodes,1> funct;
+          DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::wedge6 );
           LINALG::Matrix<3,numnodes> velocity( vel, true );
           LINALG::Matrix<1,numnodes> pressure( press, true );
           LINALG::Matrix<3,numnodes> acceleration( acc, true );
@@ -2000,7 +2035,7 @@ void FLD::XFluid::Init()
   {
     boundarydis_ == Teuchos::null;
 
-    //phinp_ = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap()));
+    phinp_ = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap()));
   }
 
 
@@ -2035,13 +2070,8 @@ void FLD::XFluid::Init()
   // GMSH discretization output before CUT
   OutputDiscret();
 
-
   if(!levelsetcut_)
   {
-    // -------------------------------------------------------------------
-    // create XFluidState object
-    // -------------------------------------------------------------------
-
     Epetra_Vector idispcol( *boundarydis_->DofColMap() );
     idispcol.PutScalar( 0.0 );
 
@@ -2051,26 +2081,10 @@ void FLD::XFluid::Init()
     //         based on idispn (step n) (=data written after updating the interface fields in last time step n)
     LINALG::Export(*idispn_,idispcol);
 
-    // initialize the state class iterator with -1
-    // the XFluidState class called from the constructor is then indexed with 0
-    // all further first cuts of a new time-step have then index 1 and have to be reset to 0 in PrepareTimeStep()
-    state_it_=-1;
-    state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
+    CreateInitialState(idispcol);
   }
+  // otherwise we create the state from the coupling algorithm using the levelset values from the scatra field
 
-
-
-  //----------------------------------------------------------------------
-  turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
-  //----------------------------------------------------------------------
-
-  // ---------------------------------------------------------------------
-  // UpdateKrylovSpaceProjection can not be called during
-  // SetupKrylovSpaceProjection since 'state_' is not yet member. So if Krylov
-  // was set up, update here
-  // REMARK: call this after SetElementGeneralFluidXFEMParameter
-  if (projector_!=Teuchos::null)
-    UpdateKrylovSpaceProjection();
 
   if (alefluid_)
   {
@@ -2081,8 +2095,8 @@ void FLD::XFluid::Init()
     gridvn_ = LINALG::CreateVector(*filleddofrowmap_,true);
   }
 
-
 }
+
 
 
 
@@ -2301,7 +2315,14 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 
       DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
 
-      GEO::CUT::ElementHandle * e = state_->wizard_->GetElement( actele );
+      GEO::CUT::ElementHandle * e;
+
+      if(!levelsetcut_)
+        e = state_->wizard_->GetElement( actele );
+      else
+        e = state_->wizardls_->GetElement( actele );
+
+
       DRT::Element::LocationArray la( 1 );
 
       DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem");
@@ -2364,8 +2385,11 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
           {
             TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 2) interface" );
 
-            // get boundary cell integration points
-            e->BoundaryCellGaussPointsLin( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+            // get boundary cell Gaussian points
+            if(!levelsetcut_)
+              e->BoundaryCellGaussPointsLin( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+            else
+              e->BoundaryCellGaussPointsLin( bcells, bintpoints );
 
             if(CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
                CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress or
@@ -2377,7 +2401,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
                   la[0].lm_,
                   mat,
                   ele_interf_norms,
-                  *boundarydis_,
+                  boundarydis_,
                   bcells,
                   bintpoints,
                   *params_,
@@ -3703,6 +3727,8 @@ void FLD::XFluid::CheckMatrixNullspace()
 
 void FLD::XFluid::UpdateInterfaceFields()
 {
+  if(boundarydis_ == Teuchos::null) return; // no interface vectors for levelset
+
   // update velocity n-1
   ivelnm_->Update(1.0,*iveln_,0.0);
 
@@ -6163,6 +6189,9 @@ void FLD::XFluid::ComputeInterfaceVelocities()
   // XFSI:    use always interface vel by displacement (second order yes/no )
   // (the right input parameter configuration is checked in adapter_fluid_base_algorithm)
 
+
+  if(ivelnp_ == Teuchos::null) return; // no interface vectors for levelset cut
+
   if(myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
 
   if( timealgo_ != INPAR::FLUID::timeint_stationary)
@@ -6324,7 +6353,8 @@ void FLD::XFluid::SetDirichletNeumannBC()
 
     state_->neumann_loads_->PutScalar(0.0);
     discret_->SetState("scaaf",state_->scaaf_);
-//      discret_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
+
+//    discret_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
 
     XFEM::EvaluateNeumann(state_->Wizard(), eleparams, *discret_, *boundarydis_, state_->neumann_loads_);
 
@@ -6851,12 +6881,13 @@ void FLD::XFluid::ReadRestartBound(int step)
 
   if (not (boundarydis_->DofRowMap())->SameAs(ivelnp_->Map()))
     dserror("Global dof numbering in maps does not match");
+  if (not (boundarydis_->DofRowMap())->SameAs(iveln_->Map()))
+    dserror("Global dof numbering in maps does not match");
   if (not (boundarydis_->DofRowMap())->SameAs(idispnp_->Map()))
     dserror("Global dof numbering in maps does not match");
   if (not (boundarydis_->DofRowMap())->SameAs(idispn_->Map()))
     dserror("Global dof numbering in maps does not match");
-  if (not (boundarydis_->DofRowMap())->SameAs(iveln_->Map()))
-    dserror("Global dof numbering in maps does not match");
+
 
 }
 
@@ -7303,18 +7334,90 @@ void FLD::XFluid::SetXFluidParams()
   SetFaceGeneralFluidXFEMParameter();
 }
 
-void FLD::XFluid::SetStateLS( Epetra_Vector & lsvalues) {
 
-  std::cout << "\n========================ENTERING:========================" << std::endl;
-  std::cout << "                 FLD::XFluid::SetStateLS                  " << std::endl;
-  std::cout << "This function is only for testing capability of levelset \nintegration into XFluid." << std::endl;
-
+void FLD::XFluid::CreateInitialState(const Epetra_Vector & idispcol)
+{
   // initialize the state class iterator with -1
   // the XFluidState class called from the constructor is then indexed with 0
   // all further first cuts of a new time-step have then index 1 and have to be reset to 0 in PrepareTimeStep()
   state_it_=-1;
-  state_ = Teuchos::rcp( new XFluidState( *this, lsvalues ));
+
+  // ---------------------------------------------------------------------
+  // create the initial state class
+  state_ = Teuchos::rcp( new XFluidState( *this, idispcol ) );
+
+  // ---------------------------------------------------------------------
+  // UpdateKrylovSpaceProjection can not be called during
+  // SetupKrylovSpaceProjection since 'state_' is not yet member. So if Krylov
+  // was set up, update here
+  // REMARK: call this after SetElementGeneralFluidXFEMParameter
+  if (projector_!=Teuchos::null)
+    UpdateKrylovSpaceProjection();
+
 }
+
+void FLD::XFluid::CreateInitialStateLS()
+{
+  // initialize the state class iterator with -1
+  // the XFluidState class called from the constructor is then indexed with 0
+  // all further first cuts of a new time-step have then index 1 and have to be reset to 0 in PrepareTimeStep()
+  state_it_=-1;
+
+  const Teuchos::RCP<Epetra_Vector> phinpcol = Teuchos::rcp(new Epetra_Vector(*discret_->NodeColMap()));
+  LINALG::Export(*phinp_,*phinpcol);
+
+  // ---------------------------------------------------------------------
+  // create the initial state class
+  state_ = Teuchos::rcp( new XFluidState( *this, *phinpcol ) );
+
+  // ---------------------------------------------------------------------
+  // UpdateKrylovSpaceProjection can not be called during
+  // SetupKrylovSpaceProjection since 'state_' is not yet member. So if Krylov
+  // was set up, update here
+  // REMARK: call this after SetElementGeneralFluidXFEMParameter
+  if (projector_!=Teuchos::null)
+    UpdateKrylovSpaceProjection();
+
+}
+
+
+/*----------------------------------------------------------------------*
+ | ... |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::SetLevelSetField(
+   Teuchos::RCP<const Epetra_Vector> scalaraf,
+   Teuchos::RCP<DRT::Discretization> scatradis
+   )
+{
+  // initializations
+  int err(0);
+  double value(0.0);
+  std::vector<int> nodedofs;
+
+
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  {
+    // get the processor's local scatra node
+    DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
+
+    // find out the global dof id of the last(!) dof at the scatra node
+    const int numscatradof = scatradis->NumDof(0,lscatranode);
+    const int globalscatradofid = scatradis->Dof(0,lscatranode,numscatradof-1);
+    const int localscatradofid = scalaraf->Map().LID(globalscatradofid);
+    if (localscatradofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
+
+    // now copy the values
+    value = (*scalaraf)[localscatradofid];
+    err = phinp_->ReplaceMyValue(lnodeid,0,value);
+    if (err != 0) dserror("error while inserting value into phinp_");
+
+  }
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -7401,3 +7504,4 @@ Teuchos::RCP<Epetra_Map> FLD::XFluid::ExtendMap(Teuchos::RCP<Epetra_Map> srcmap,
 
   return  Teuchos::rcp(new Epetra_Map(-1,dstgids.size(), &dstgids[0],0,srcmap->Comm()));
 }
+

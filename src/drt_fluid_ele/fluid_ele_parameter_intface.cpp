@@ -71,6 +71,7 @@ DRT::ELEMENTS::FluidEleParameterIntFace::FluidEleParameterIntFace()
     EOS_div_(INPAR::FLUID::EOS_DIV_none),
     EOS_whichtau_(INPAR::FLUID::EOS_tau_burman_fernandez),
     EOS_element_length_(INPAR::FLUID::EOS_he_max_dist_to_opp_surf),
+    presKrylov2Dz_(false),
     ghost_penalty_visc_fac(0.0),
     ghost_penalty_trans_fac(0.0),
     ghost_penalty_visc_(false),
@@ -146,6 +147,9 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
   if(physicaltype_ == INPAR::FLUID::stokes and EOS_conv_stream_) dserror("no EOS_CONV_STREAM stabilization required for Stokes problems");
   if(physicaltype_ == INPAR::FLUID::stokes and EOS_conv_cross_) dserror("no EOS_CONV_CROSS stabilization required for Stokes problems");
 
+  // activate special least-squares condition for pseudo 2D examples where pressure level is determined via Krylov-projection
+  presKrylov2Dz_ = (bool)DRT::INPUT::IntegralValue<int>(stablist_edgebased, "PRES_KRYLOV_2Dz");
+
   // check for reasonable combinations of non-edgebased fluid stabilizations with edge-based stabilizations
   if(stabtype_ != INPAR::FLUID::stabtype_edgebased)
   {
@@ -162,7 +166,10 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
         and EOS_div_ != INPAR::FLUID::EOS_DIV_none)
        dserror("check the combination of edge-based pressure-EOS and non-edge-based stabtype! Do you really want to use this combination?");
 
+    if(presKrylov2Dz_) dserror("pressure Krylov 2Dz condition not reasonable for non-pure edge-based stabilizations");
   }
+
+  if(presKrylov2Dz_ and EOS_pres_!= INPAR::FLUID::EOS_PRES_std_eos) dserror("pressure Krylov 2Dz condition only reasonable for full p-EOS: EOS_PRES = std_eos");
 
   EOS_element_length_ = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(stablist_edgebased, "EOS_H_DEFINITION");
   EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");

@@ -251,7 +251,7 @@ void fluid_xfem_ls_drt()
 
    Teuchos::RCP<XFLUIDLEVELSET::Algorithm>  xfluid_levelset = Teuchos::rcp(new XFLUIDLEVELSET::Algorithm(comm,fdyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
-   INPAR::FLUID::TimeIntegrationScheme timeintscheme = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
+   INPAR::FLUID::TimeIntegrationScheme timeintscheme = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
 
    if (timeintscheme == INPAR::FLUID::timeint_stationary)
    {

@@ -311,6 +311,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   if (probtype != prb_fsi_xfem and
       probtype != prb_fpsi_xfem and
       probtype != prb_fluid_xfem and
+      probtype != prb_fluid_xfem_ls and
       probtype != prb_combust and
       probtype != prb_fluid_fluid and
       probtype != prb_fluid_fluid_ale and
@@ -962,22 +963,49 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   {
     fluid_->Init();
 
-    // set initial field by given function
-    // we do this here, since we have direct access to all necessary parameters
-    INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
-    if(initfield != INPAR::FLUID::initfield_zero_field)
-    {
-      int startfuncno = fdyn.get<int>("STARTFUNCNO");
-      if (initfield != INPAR::FLUID::initfield_field_by_function and
-          initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
-      {
-        startfuncno=-1;
-      }
-      fluid_->SetInitialFlowField(initfield,startfuncno);
-    }
+    SetInitialFlowField(fdyn);
   }
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidBaseAlgorithm::SetInitialFlowField(const Teuchos::ParameterList& fdyn)
+{
+  // set initial field by given function
+  // we do this here, since we have direct access to all necessary parameters
+  INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
+  if(initfield != INPAR::FLUID::initfield_zero_field)
+  {
+    int startfuncno = fdyn.get<int>("STARTFUNCNO");
+    if (initfield != INPAR::FLUID::initfield_field_by_function and
+        initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
+    {
+      startfuncno=-1;
+    }
+    fluid_->SetInitialFlowField(initfield,startfuncno);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidBaseAlgorithm::SetInitialInflowField(const Teuchos::ParameterList& fdyn)
+{
+  // set initial field for inflow section by given function
+  // we do this here, since we have direct access to all necessary parameters
+  INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn.sublist("TURBULENT INFLOW"),"INITIALINFLOWFIELD");
+  if(initfield != INPAR::FLUID::initfield_zero_field)
+  {
+    int startfuncno = fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOWFUNC");
+    if (initfield != INPAR::FLUID::initfield_field_by_function and
+        initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
+    {
+      startfuncno=-1;
+    }
+    fluid_->SetInitialFlowField(initfield,startfuncno);
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -1118,20 +1146,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // initialize algorithm for specific time-integration scheme
   fluid_->Init();
 
-  // set initial field for inflow section by given function
-  // we do this here, since we have direct access to all necessary parameters
-  INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
-  initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn.sublist("TURBULENT INFLOW"),"INITIALINFLOWFIELD");
-  if(initfield != INPAR::FLUID::initfield_zero_field)
-  {
-    int startfuncno = fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOWFUNC");
-    if (initfield != INPAR::FLUID::initfield_field_by_function and
-        initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
-    {
-      startfuncno=-1;
-    }
-    fluid_->SetInitialFlowField(initfield,startfuncno);
-  }
+  SetInitialInflowField(fdyn);
 
   return;
 }

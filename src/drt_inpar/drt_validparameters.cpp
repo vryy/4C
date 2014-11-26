@@ -4021,6 +4021,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                ),
                                &fdyn_edge_based_stab);
 
+  //! special least-squares condition for pseudo 2D examples where pressure level is determined via Krylov-projection
+  BoolParameter("PRES_KRYLOV_2Dz","No","residual based without second derivatives (i.e. only consistent for tau->0, but faster)",&fdyn_edge_based_stab);
+
   //! this parameter selects the definition of Edge-based stabilization parameter
   setStringToIntegralParameter<int>("EOS_DEFINITION_TAU",
                                     "Burman_Hansbo_DAngelo_Zunino",

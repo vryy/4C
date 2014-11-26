@@ -1001,6 +1001,21 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                       timefacfac_rhs,
                       tau_pres
       );
+
+      // assemble special pressure least-squares condition for pseudo 2D examples where pressure level is determined via Krylov-projection
+      if(fldintfacepara.presKrylov2Dz() and fldintfacepara.EOS_Pres() == INPAR::FLUID::EOS_PRES_std_eos)
+      {
+        pressureKrylov2Dz( elematrix_mm,
+                           elematrix_ms,
+                           elematrix_sm,
+                           elematrix_ss,
+                           elevector_m,
+                           elevector_s,
+                           timefacfac_pre,
+                           timefacfac_rhs,
+                           tau_pres
+        );
+      }
     }
 
     //-----------------------------------------------------
@@ -2418,6 +2433,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
     for (int ui=0; ui<piel; ++ui)
     {
       elematrix_mm(row, ui*numdofpernode_+nsd_) += pderiv_dyad_pderiv(vi,ui);
+
+//      elematrix_mm(row, ui*numdofpernode_+nsd_) += pderxy_(nsd_-1,vi)*pderxy_(nsd_-1,ui)*tau_timefacfacpre;
     }
 
     for (int ui=0; ui<niel; ++ui)
@@ -2429,6 +2446,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
     // q_master (p_slave-p_master)
     for (int isd=0; isd<nsd_; ++isd)
       elevector_m(row,0) += pderxy_(isd,vi)*prederxy_jump(isd);
+
+//      elevector_m(row,0) -= pderxy_(nsd_,vi)*pprederxy_(nsd_)*tau_timefacfacrhs;
 
   }
 
@@ -2446,11 +2465,15 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
     for (int ui=0; ui<niel; ++ui)
     {
       elematrix_ss(row, ui*numdofpernode_+nsd_) += nderiv_dyad_nderiv(vi,ui);
+
+//      elematrix_ss(row, ui*numdofpernode_+nsd_) += nderxy_(nsd_-1,vi)*nderxy_(nsd_-1,ui)*tau_timefacfacpre;
     }
 
     // -q_slave (p_slave-p_master)
     for (int isd=0; isd<nsd_; ++isd)
       elevector_s(row,0) -=  nderxy_(isd,vi)*prederxy_jump(isd);
+
+//      elevector_s(row,0) -= nderxy_(nsd_,vi)*nprederxy_(nsd_)*tau_timefacfacrhs;
 
   }
 
@@ -2654,6 +2677,79 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
     }
   }
 
+
+  return;
+}
+
+
+template <DRT::Element::DiscretizationType distype,
+          DRT::Element::DiscretizationType pdistype,
+          DRT::Element::DiscretizationType ndistype>
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressureKrylov2Dz(
+            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
+            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
+            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
+            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
+            LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
+            LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
+            const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
+            const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
+            const double &                                                 tau_pres       ///< pressure stabilization parameter
+)
+{
+
+  // in case of Krylov projection for Pseudo 2D examples with one element in z-direction,
+  // the pressure solution at the different z-layers of nodes are completely decoupled for pure Dirichlet problems when Krylov-projection is used
+  // to eliminate the constant pressure mode (which are decoupled in z-direction in contrast to e.g. PSPG stabilization)
+  // to fix this decoupling, we try to minimize the pressure gradient in z-direction in a least squares sense
+  // this can be done on the element as volumetric integral, or as in this case we eliminate this by integration along all surfaces
+
+  // min (dp/dz)^2 -> add (dq/dz, dp/dz) = 0
+  // this term is consistent for pure Dirichlet problems with symmmetric solutions in z-direction
+  // for conditioning reasons we use the same stabilization parameter as for the pEOS stabiliation
+
+  //--------------------------------------------------
+  // edge stabilization: pressure
+  /*
+           //
+           //
+           //             /                 \
+           //            |                   |
+           //  + tau_p * |  dq/dz , dp/dz p  |
+           //            |                   |
+           //             \                 / surface
+           //
+   */
+
+  const double tau_timefacfacpre = tau_pres*timefacfacpre;
+  const double tau_timefacfacrhs = tau_pres*timefacfacrhs;
+
+
+  for (int vi=0; vi<piel; ++vi)
+  {
+    int row = vi*numdofpernode_+nsd_;
+
+    // q_master * p_master
+    for (int ui=0; ui<piel; ++ui)
+    {
+      elematrix_mm(row, ui*numdofpernode_+nsd_) += pderxy_(nsd_-1,vi)*pderxy_(nsd_-1,ui)*tau_timefacfacpre;
+    }
+
+    elevector_m(row,0) -= pderxy_(nsd_,vi)*pprederxy_(nsd_)*tau_timefacfacrhs;
+  }
+
+  for (int vi=0; vi<niel; ++vi)
+  {
+    int row = vi*numdofpernode_+nsd_;
+
+    // q_slave * p_slave
+    for (int ui=0; ui<niel; ++ui)
+    {
+      elematrix_ss(row, ui*numdofpernode_+nsd_) += nderxy_(nsd_-1,vi)*nderxy_(nsd_-1,ui)*tau_timefacfacpre;
+    }
+
+    elevector_s(row,0) -= nderxy_(nsd_,vi)*nprederxy_(nsd_)*tau_timefacfacrhs;
+  }
 
   return;
 }
