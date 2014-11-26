@@ -24,6 +24,7 @@ http://www.lnm.mw.tum.de
 #include "../drt_io/io_gmsh.H"
 #include "../drt_fsi/fsi_monolithicfluidsplit.H"
 #include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_utils_materials.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_ale/ale_utils_clonestrategy.H"

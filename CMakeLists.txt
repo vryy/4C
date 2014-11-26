@@ -395,6 +395,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_parobjectfactory.cpp
   src/drt_lib/drt_timecurve.cpp
   src/drt_lib/drt_utils_createdis.cpp
+  src/drt_lib/drt_utils_materials.cpp
   src/drt_lib/drt_utils_factory.cpp
   src/drt_lib/drt_utils_nullspace.cpp
 )

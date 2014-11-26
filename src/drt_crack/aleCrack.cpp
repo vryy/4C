@@ -19,8 +19,9 @@ Maintainer: Sudhakar
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_fs3i/biofilm_fsi_utils.H"
+#include "../drt_lib/drt_utils_materials.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_fs3i/biofilm_fsi_utils.H"
 
 #include "../drt_ale/ale_utils_clonestrategy.H"
 #include "../drt_ale/ale_utils_mapextractor.H"

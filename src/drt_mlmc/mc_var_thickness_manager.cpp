@@ -18,12 +18,15 @@ Maintainer: Jonas Biehler
 
 #include "mc_var_thickness_manager.H"
 #include "../drt_inpar/inpar_mlmc.H"
+#include "../drt_inpar/inpar_material.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_utils_materials.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_element.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_inpar/inpar_material.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_comm/comm_utils.H"
@@ -31,14 +34,11 @@ Maintainer: Jonas Biehler
 #include "randomfield.H"
 #include "randomfield_fourier.H"
 #include "randomfield_spectral.H"
-#include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_ale/ale_utils_clonestrategy.H"
 #include "../drt_adapter/ad_ale_wrapper.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_mortar/mortar_interface.H"
 #include "../drt_adapter/adapter_coupling.H"
-
+#include "../drt_mortar/mortar_interface.H"
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 UQ::MCVarThicknessManager::MCVarThicknessManager(

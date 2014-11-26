@@ -79,16 +79,6 @@ namespace UTILS
                                  int original,                            ///< id of original node. Values are copied from this node
                                  int copy );                              ///< id of node to which copied values are set
 
-  /*! brief Update material configuration with displacements stored in dofrowmap format
-   *
-   *
-   *
-   */
-  void UpdateMaterialConfigWithDispVector(
-      Teuchos::RCP<DRT::Discretization> dis, ///< discretization of which material configuration shall be updated
-      Teuchos::RCP<const Epetra_Vector> disp ///< displacement vector which is used for moving the nodes
-        );
-
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
   /// and fill a local matrix that has implemented the (.,.) operator
   /*  \author g.bau
