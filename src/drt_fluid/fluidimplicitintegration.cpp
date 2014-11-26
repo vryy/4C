@@ -3066,6 +3066,14 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   dtp_ = dta_;
   discret_->ClearState();
 
+  // Create wallshearstress manager, if needed. This cannot be done in Init() since we need a fully build systemmatrix when building
+  if (write_wall_shear_stresses_ and wssmanager_==Teuchos::null)
+  {
+    const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams(); //get number of ML-solver
+    const int mlsolver = fdyn.get<int>("WSS_ML_AGR_SOLVER");
+    wssmanager_ = Teuchos::rcp( new FLD::UTILS::WSSManager( mlsolver, discret_, dispnp_, alefluid_, numdim_, SystemMatrix()->EpetraMatrix()) );
+  }
+
   return;
 }// FluidImplicitTimeInt::TimeUpdate
 
@@ -3410,9 +3418,13 @@ void FLD::FluidImplicitTimeInt::Output()
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
       {
-        Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses();
+        Teuchos::RCP<Epetra_Vector> wss;
+
+        wss = wssmanager_->GetWallShearStresses(traction);
+
         if(xwall_!=Teuchos::null)
           xwall_->FilterResVectorForOutput(wss);
+
         output_->WriteVector("wss",wss);
       }
     }
@@ -3538,9 +3550,13 @@ void FLD::FluidImplicitTimeInt::Output()
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
       {
-        Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses();
+        Teuchos::RCP<Epetra_Vector> wss;
+
+        wss = wssmanager_->GetWallShearStresses(traction);
+
         if(xwall_!=Teuchos::null)
           xwall_->FilterResVectorForOutput(wss);
+
         output_->WriteVector("wss",wss);
       }
     }
@@ -5006,6 +5022,93 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcStresses()
 
 } // FluidImplicitTimeInt::CalcStresses()
 
+//TODO: (Krank) remove this function when xWall framework uses new WSSManager
+/*----------------------------------------------------------------------*
+ |  calculate wall sheer stress at (Dirichlet) boundary (public)        |
+ |                                                          ismail 08/10|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
+{
+  // -------------------------------------------------------------------
+  // first evaluate the normals at the nodes
+  // -------------------------------------------------------------------
+
+  Teuchos::ParameterList eleparams;
+  // set action for elements
+  eleparams.set<int>("action",FLD::ba_calc_node_normal);
+
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  //vector ndnorm0 with pressure-entries is needed for EvaluateCondition
+  Teuchos::RCP<Epetra_Vector> ndnorm0 = LINALG::CreateVector(*dofrowmap,true);
+
+  //call loop over elements, note: normal vectors do not yet have length = 1.0
+  discret_->ClearState();
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+  }
+  // evaluate the normals of the surface
+  discret_->EvaluateCondition(eleparams,ndnorm0,"FluidStressCalc");
+  discret_->ClearState();
+
+  // -------------------------------------------------------------------
+  // normalize the normal vectors
+  // -------------------------------------------------------------------
+  for (int i = 0; i < ndnorm0->MyLength();i+=numdim_+1)
+  {
+    // calculate the length of the normal
+    double L = 0.0;
+    for (int j = 0; j<numdim_; j++)
+    {
+      L += ((*ndnorm0)[i+j])*((*ndnorm0)[i+j]);
+    }
+    L = sqrt(L);
+
+    // normalise the normal vector (if present for the current node)
+    if (L > EPS15)
+    {
+      for (int j = 0; j < numdim_; j++)
+      {
+        (*ndnorm0)[i+j] /=  L;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // evaluate the wall shear stress from the traction by removing
+  // the normal stresses
+  // -------------------------------------------------------------------
+
+  // get traction
+  Teuchos::RCP<Epetra_Vector> wss = CalcStresses();
+
+  // loop over all entities within the traction vector
+  for (int i = 0; i < ndnorm0->MyLength();i+=numdim_+1)
+  {
+    // evaluate the normal stress = < traction . normal >
+    double normal_stress = 0.0;
+    for (int j = 0; j<numdim_; j++)
+    {
+      normal_stress += (*wss)[i+j] * (*ndnorm0)[i+j];
+    }
+
+    // subtract the normal stresses from traction
+    for (int j = 0; j<numdim_; j++)
+    {
+      (*wss)[i+j] -= normal_stress * (*ndnorm0)[i+j];
+    }
+  }
+
+
+  // -------------------------------------------------------------------
+  // return the wall_shear_stress vector
+  // -------------------------------------------------------------------
+  return wss;
+}
 
 /*----------------------------------------------------------------------*
  | Destructor dtor (public)                                  gammi 04/07|
@@ -5366,94 +5469,6 @@ Teuchos::RCP<const Epetra_Map> FLD::FluidImplicitTimeInt::VelocityRowMap()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> FLD::FluidImplicitTimeInt::PressureRowMap()
 { return velpressplitter_.CondMap(); }
-
-
-/*----------------------------------------------------------------------*
- |  calculate wall sheer stress at (Dirichlet) boundary (public)        |
- |                                                          ismail 08/10|
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
-{
-  // -------------------------------------------------------------------
-  // first evaluate the normals at the nodes
-  // -------------------------------------------------------------------
-
-  Teuchos::ParameterList eleparams;
-  // set action for elements
-  eleparams.set<int>("action",FLD::ba_calc_node_normal);
-
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  //vector ndnorm0 with pressure-entries is needed for EvaluateCondition
-  Teuchos::RCP<Epetra_Vector> ndnorm0 = LINALG::CreateVector(*dofrowmap,true);
-
-  //call loop over elements, note: normal vectors do not yet have length = 1.0
-  discret_->ClearState();
-  if (alefluid_)
-  {
-    discret_->SetState("dispnp", dispnp_);
-  }
-  // evaluate the normals of the surface
-  discret_->EvaluateCondition(eleparams,ndnorm0,"FluidStressCalc");
-  discret_->ClearState();
-
-  // -------------------------------------------------------------------
-  // normalize the normal vectors
-  // -------------------------------------------------------------------
-  for (int i = 0; i < ndnorm0->MyLength();i+=numdim_+1)
-  {
-    // calculate the length of the normal
-    double L = 0.0;
-    for (int j = 0; j<numdim_; j++)
-    {
-      L += ((*ndnorm0)[i+j])*((*ndnorm0)[i+j]);
-    }
-    L = sqrt(L);
-
-    // normalise the normal vector (if present for the current node)
-    if (L > EPS15)
-    {
-      for (int j = 0; j < numdim_; j++)
-      {
-        (*ndnorm0)[i+j] /=  L;
-      }
-    }
-  }
-
-  // -------------------------------------------------------------------
-  // evaluate the wall shear stress from the traction by removing
-  // the normal stresses
-  // -------------------------------------------------------------------
-
-  // get traction
-  Teuchos::RCP<Epetra_Vector> wss = CalcStresses();
-
-  // loop over all entities within the traction vector
-  for (int i = 0; i < ndnorm0->MyLength();i+=numdim_+1)
-  {
-    // evaluate the normal stress = < traction . normal >
-    double normal_stress = 0.0;
-    for (int j = 0; j<numdim_; j++)
-    {
-      normal_stress += (*wss)[i+j] * (*ndnorm0)[i+j];
-    }
-
-    // subtract the normal stresses from traction
-    for (int j = 0; j<numdim_; j++)
-    {
-      (*wss)[i+j] -= normal_stress * (*ndnorm0)[i+j];
-    }
-  }
-
-
-  // -------------------------------------------------------------------
-  // return the wall_shear_stress vector
-  // -------------------------------------------------------------------
-  return wss;
-}
 
 
 Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcSFS(

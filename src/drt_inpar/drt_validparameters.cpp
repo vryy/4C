@@ -3407,6 +3407,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // number of linear solver used for fluid problem (former fluid pressure solver for SIMPLER preconditioning with fluid)
   IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for fluid dynamics (ONLY NECESSARY FOR BlockGaussSeidel solver block within fluid mehstying case any more!!!!)",&fdyn);
 
+  // Set ML-solver number for smooting of residual-based calculated wallshearstress via plain aggregation.
+  IntParameter("WSS_ML_AGR_SOLVER",-1,"Set ML-solver number for smoothing of residual-based calculated wallshearstress via plain aggregation.",&fdyn);
+
   setStringToIntegralParameter<int>(
     "TIMEINTEGR","One_Step_Theta",
     "Time Integration Scheme",

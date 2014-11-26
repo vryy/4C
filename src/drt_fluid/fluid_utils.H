@@ -315,6 +315,58 @@ namespace UTILS
     Teuchos::RCP<std::set<int> > condelements_;
   };
 
+
+  /// WSS manager manages everything to do with wallshearstresses. For now
+  /// it only calculates the WSS from stresses and returns them
+  class WSSManager
+  {
+  public:
+
+    /// constructor
+    WSSManager(
+        const int ml_solver,
+        Teuchos::RCP<DRT::Discretization> discret,
+        Teuchos::RCP<Epetra_Vector> dispnp,
+        const bool alefluid,
+        const int numdim,
+        Teuchos::RCP<Epetra_CrsMatrix> sysmat
+  );
+
+    ///return WSS vector
+    Teuchos::RCP<Epetra_Vector> GetWallShearStresses( Teuchos::RCP<Epetra_Vector> stresses );
+
+  private:
+
+    ///calculate WSS based on residual
+    Teuchos::RCP<Epetra_Vector> CalcWallShearStresses(  Teuchos::RCP<Epetra_Vector> stresses );
+
+    /// smooth WSS via ML-aggregation
+    Teuchos::RCP<Epetra_Vector> AggreagteWallShearStresses( Teuchos::RCP<Epetra_Vector> wss );
+
+    ///Calculate Aggregation Matrix
+    Teuchos::RCP<LINALG::SparseMatrix> CalcSepEnr( const int ml_solver, Teuchos::RCP<DRT::Discretization> discret , Teuchos::RCP<Epetra_CrsMatrix> sysmat );
+
+
+    ///number of ML solver to build aggreagtion matrix, also flag if WSS are aggregated (!= -1) or not (==-1)
+    const int ML_solver_;
+
+    /// fluid discretization
+    const Teuchos::RCP<DRT::Discretization> discret_;
+
+    /// displacement at time \f$t^{n+1}\f$
+    const Teuchos::RCP<Epetra_Vector> dispnp_;
+
+    /// do we move the fluid mesh and calculate the fluid on this moving mesh?
+    const bool alefluid_;
+
+    /// number of spatial dimensions
+    const int numdim_;
+
+    ///filtering matrix for wall shear stress
+    const Teuchos::RCP<LINALG::SparseMatrix> SepEnr_;
+  };
+
+
 /// Split dof row map of discretization into velocity and pressure maps
 /*!
 

@@ -37,6 +37,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_turbulence.H"
 #include "fluid_utils_mapextractor.H" // should go away
+#include "fluid_utils.H" // should go away
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_fluid/fluid_timint.H"
 #include "../drt_lib/drt_discret.H"
@@ -97,6 +98,7 @@ namespace UTILS
   class FluidInfNormScaling;
   class FluidImpedanceWrapper;
   class FluidWkOptimizationWrapper;
+  // class WSSManager;
 }
 
 /*!
@@ -1214,6 +1216,9 @@ protected:
   /// windkessel (outflow) boundaries
   Teuchos::RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
   Teuchos::RCP<UTILS::FluidWkOptimizationWrapper> impedancebc_optimization_;
+
+  //! Dirichlet BCs with local co-ordinate system
+  Teuchos::RCP<FLD::UTILS::WSSManager> wssmanager_;
 
   /// flag for windkessel outflow condition
   bool isimpedancebc_;
