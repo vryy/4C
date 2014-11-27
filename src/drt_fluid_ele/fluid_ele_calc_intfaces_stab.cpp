@@ -2433,8 +2433,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
     for (int ui=0; ui<piel; ++ui)
     {
       elematrix_mm(row, ui*numdofpernode_+nsd_) += pderiv_dyad_pderiv(vi,ui);
-
-//      elematrix_mm(row, ui*numdofpernode_+nsd_) += pderxy_(nsd_-1,vi)*pderxy_(nsd_-1,ui)*tau_timefacfacpre;
     }
 
     for (int ui=0; ui<niel; ++ui)
@@ -2446,9 +2444,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
     // q_master (p_slave-p_master)
     for (int isd=0; isd<nsd_; ++isd)
       elevector_m(row,0) += pderxy_(isd,vi)*prederxy_jump(isd);
-
-//      elevector_m(row,0) -= pderxy_(nsd_,vi)*pprederxy_(nsd_)*tau_timefacfacrhs;
-
   }
 
   for (int vi=0; vi<niel; ++vi)
@@ -2465,15 +2460,11 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
     for (int ui=0; ui<niel; ++ui)
     {
       elematrix_ss(row, ui*numdofpernode_+nsd_) += nderiv_dyad_nderiv(vi,ui);
-
-//      elematrix_ss(row, ui*numdofpernode_+nsd_) += nderxy_(nsd_-1,vi)*nderxy_(nsd_-1,ui)*tau_timefacfacpre;
     }
 
     // -q_slave (p_slave-p_master)
     for (int isd=0; isd<nsd_; ++isd)
       elevector_s(row,0) -=  nderxy_(isd,vi)*prederxy_jump(isd);
-
-//      elevector_s(row,0) -= nderxy_(nsd_,vi)*nprederxy_(nsd_)*tau_timefacfacrhs;
 
   }
 
@@ -2721,6 +2712,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
            //
    */
 
+
+  // symmetry in z-direction
+//  const int index_symmetry = 0; // one element layer in x-direction
+//  const int index_symmetry = 1; // one element layer in y-direction
+  const int index_symmetry = 2; // one element layer in z-direction
+
+  if(index_symmetry >= nsd_) dserror("the symmetry index exceeds the number of spatial dimensions of the problem!");
+
   const double tau_timefacfacpre = tau_pres*timefacfacpre;
   const double tau_timefacfacrhs = tau_pres*timefacfacrhs;
 
@@ -2732,10 +2731,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
     // q_master * p_master
     for (int ui=0; ui<piel; ++ui)
     {
-      elematrix_mm(row, ui*numdofpernode_+nsd_) += pderxy_(nsd_-1,vi)*pderxy_(nsd_-1,ui)*tau_timefacfacpre;
+      elematrix_mm(row, ui*numdofpernode_+nsd_) += pderxy_(index_symmetry,vi)*pderxy_(index_symmetry,ui)*tau_timefacfacpre;
     }
 
-    elevector_m(row,0) -= pderxy_(nsd_,vi)*pprederxy_(nsd_)*tau_timefacfacrhs;
+    elevector_m(row,0) -= pderxy_(index_symmetry,vi)*pprederxy_(index_symmetry)*tau_timefacfacrhs;
   }
 
   for (int vi=0; vi<niel; ++vi)
@@ -2745,10 +2744,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
     // q_slave * p_slave
     for (int ui=0; ui<niel; ++ui)
     {
-      elematrix_ss(row, ui*numdofpernode_+nsd_) += nderxy_(nsd_-1,vi)*nderxy_(nsd_-1,ui)*tau_timefacfacpre;
+      elematrix_ss(row, ui*numdofpernode_+nsd_) += nderxy_(index_symmetry,vi)*nderxy_(index_symmetry,ui)*tau_timefacfacpre;
     }
 
-    elevector_s(row,0) -= nderxy_(nsd_,vi)*nprederxy_(nsd_)*tau_timefacfacrhs;
+    elevector_s(row,0) -= nderxy_(index_symmetry,vi)*nprederxy_(index_symmetry)*tau_timefacfacrhs;
   }
 
   return;
