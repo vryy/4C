@@ -438,21 +438,18 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
     int sumghostele = -1;
     int localnumghostele = localrelevantghostelements.size();
     discret_->Comm().SumAll(&localnumghostele,&sumghostele,1);
-    std::vector<int> relevantghostelements(sumghostele);
+    std::vector<int> relevantghostelements;
 
-    for(int i=0; i<sumghostele; ++i)
+    for(int proc=0; proc<discret_->Comm().NumProc(); ++proc)
     {
-      for(int proc=0; proc<discret_->Comm().NumProc(); ++proc)
+      int vals = -1;
+      int locsize = localnumghostele;
+      discret_->Comm().Broadcast(&locsize,1,proc);
+      for(int j=0; j<locsize; ++j)
       {
-        int vals = -1;
-        int locsize = localnumghostele;
-        discret_->Comm().Broadcast(&locsize,1,proc);
-        for(int j=0; j<locsize; ++j)
-        {
-          if(myrank_==proc) vals=localrelevantghostelements[j];
-          discret_->Comm().Broadcast(&vals,1,proc);
-          relevantghostelements[i] = vals;
-        }
+        if(myrank_==proc) vals=localrelevantghostelements[j];
+        discret_->Comm().Broadcast(&vals,1,proc);
+        relevantghostelements.push_back(vals);
       }
     }
 
