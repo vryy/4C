@@ -46,7 +46,8 @@ namespace INPAR
     enum CalcError
     {
       calcerror_no,
-      calcerror_1d
+      calcerror_1d,
+      calcerror_2d
     };
 
     /// Type of Inverse Analysis

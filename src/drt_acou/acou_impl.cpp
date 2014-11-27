@@ -48,6 +48,7 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   stepmax_        (params_->get<int>   ("NUMSTEP")),
   uprestart_      (params_->get<int>("RESTARTEVRY", -1)),
   upres_          (params_->get<int>("UPRES", -1)),
+  sourcefuncno_   ((params_->get<int>("SOURCETERMFUNCNO"))-1),
   dyna_           (DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(*params_,"TIMEINT")),
   phys_           (DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(*params,"PHYSICAL_TYPE")),
   numdim_         (DRT::Problem::Instance()->NDim()),
@@ -68,6 +69,9 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   if(padaptivity_==true && (dyna_==INPAR::ACOU::acou_dirk23 || dyna_==INPAR::ACOU::acou_dirk33 || dyna_==INPAR::ACOU::acou_dirk34 || dyna_==INPAR::ACOU::acou_dirk54 ))
       dserror("p-adaptivity not yet implemented for dirk time integration!"); // TODO asap
   if(padaptivity_==true && discret_->Comm().NumProc()>1) dserror("p-adaptivity does not yet work in parallel!"); // TODO asap
+  if(sourcefuncno_>=0)
+    if(DRT::Problem::Instance()->Funct(sourcefuncno_).NumberComponents()>1)
+      dserror("Source term has to be scalar!");
 
   // create all vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -849,12 +853,15 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
   bool resonly = false;// !(!bool(step_-1) || !bool(step_-restart_-1));
 
   // set information needed by the elements
+  eleparams.set<int>("sourcefuncno",sourcefuncno_);
   eleparams.set<bool>("resonly",resonly);
   eleparams.set<bool>("padaptivity",padaptivity_);
   eleparams.set<int>("action",ACOU::calc_systemmat_and_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
   eleparams.set<bool>("adjoint",adjoint_);
   eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
+  eleparams.set<double>("time",time_);
+  eleparams.set<double>("timep",time_+dtp_);
   eleparams.set<int>("step",step_);
   eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
@@ -926,7 +933,10 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
   // fill in parameters and set states needed by elements
   if(!padaptivity_) discret_->SetState("trace_m",veln_);
 
+  eleparams.set<int>("sourcefuncno",sourcefuncno_);
   eleparams.set<double>("dt",dtp_);
+  eleparams.set<double>("time",time_);
+  eleparams.set<double>("timep",time_+dtp_);
   eleparams.set<bool>("adjoint",adjoint_);
   eleparams.set<bool>("errormaps",errormaps_);
   eleparams.set<bool>("padaptivity",padaptivity_);
@@ -1567,7 +1577,7 @@ void ACOU::AcouImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     else
       (*relerror)[1] = 0.0;
 
-    std::cout<<"time "<<time_<<" relative L2 pressure error "<<(*relerror)[1]<<std::endl;
+    if(!myrank_) std::cout<<"time "<<time_<<" relative L2 pressure error "<<(*relerror)[1]<<" absolute L2 pressure error "<<sqrt((*errors)[1])<< " L2 pressure norm "<<sqrt((*errors)[3])<<std::endl;
   }
   return;
 }

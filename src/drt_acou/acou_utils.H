@@ -32,6 +32,7 @@ schemes are added, make sure, that a[i][i] are all the same!
 void FillDIRKValues(INPAR::ACOU::DynamicType scheme,
                     double (&a)[6][6],
                     double (&b)[6],
+                    double (&c)[6],
                     int &q);
 
 std::string DIRKTypeToString(INPAR::ACOU::DynamicType scheme);

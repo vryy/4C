@@ -66,7 +66,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     const DRT::UTILS::GaussIntegration &, bool offdiag)
 {
   return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra,
-      elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra, offdiag);
+                        elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra, offdiag);
 }
 
 /*----------------------------------------------------------------------*
@@ -145,7 +145,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
   {
     const bool padapty = params.get<bool>("padaptivity");
     ReadGlobalVectors(ele, discretization, lm, padapty);
-    ComputeError(ele, params, mat, discretization, lm, elevec1);
+    ComputeAnalyticError(ele, params, mat, discretization, lm, elevec1);
     break;
   }
   case ACOU::calc_abc:
@@ -217,7 +217,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
       localSolver_->CondenseLocalPart(elemat1, dyna_);
 
     VectorHandling(ele, params, dt);
-    localSolver_->ComputeResidual(elevec1, interiorVelnp_, interiorPressnp_, traceVal_, dyna_);
+    localSolver_->ComputeResidual(params, mat, elevec1, interiorVelnp_, interiorPressnp_, traceVal_, dyna_);
 
     break;
   }
@@ -284,8 +284,9 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::VectorHandling(
     // when we are here, the time integrator is dirk, and we have to do the update things
     double dirk_a[6][6];
     double dirk_b[6];
+    double dirk_c[6];
     int dirk_q;
-    ACOU::FillDIRKValues(dyna_, dirk_a, dirk_b, dirk_q);
+    ACOU::FillDIRKValues(dyna_, dirk_a, dirk_b, dirk_c, dirk_q);
     int stage = params.get<int>("stage");
 
     if (stage == 0)
@@ -617,55 +618,86 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ElementInitFromRestart(
  * ComputeError
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeError(DRT::ELEMENTS::Acou* ele,
+void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeAnalyticError(DRT::ELEMENTS::Acou* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, const std::vector<int>& lm,
     Epetra_SerialDenseVector& elevec)
 {
   shapes_->Evaluate(*ele);
 
-  double time = params.get<double>("time");
-
-  if (params.get<INPAR::ACOU::CalcError>("error calculation") != INPAR::ACOU::calcerror_1d)
-    dserror("no analytical solution available");
+  // for the calculation of the error, we use a higher integration rule
+  Teuchos::RCP<DRT::UTILS::GaussPoints> highquad = DRT::UTILS::GaussPointCache::Instance().Create(distype,(ele->Degree() +2) * 2);
+  LINALG::Matrix<nsd_, 1> xsi;
+  Epetra_SerialDenseVector values(shapes_->ndofs_);
+  LINALG::Matrix<nsd_, nen_> deriv;
+  LINALG::Matrix<nsd_, nsd_> xjm;
 
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
   double c = actmat->SpeedofSound();
+  double time = params.get<double>("time");
 
   // get function
   const int *start_func = params.getPtr<int>("funct");
 
   double err_p = 0.0,norm_p = 0.0;
-  for(unsigned  int q=0; q<shapes_->nqpoints_; ++q)
-  {
-    double numerical = 0.0;
-    for (unsigned int i=0; i<shapes_->ndofs_; ++i)
-    numerical += shapes_->shfunct(i,q) * interiorPressnp_(i);
+  double numerical = 0.0;
+  double exact = 0.0;
 
-    double exact = 0.0;
+  for(int q=0; q<highquad->NumPoints(); ++q)
+  {
+    const double* gpcoord = highquad->Point(q);
+    for (unsigned int idim = 0; idim < nsd_; idim++)
+      xsi(idim) = gpcoord[idim];
+    shapes_->polySpace_->Evaluate(xsi,values);
+
+    DRT::UTILS::shape_function_deriv1<distype>(xsi,deriv);
+    xjm.MultiplyNT(deriv,shapes_->xyze);
+    double highjfac = xjm.Determinant() * highquad->Weight(q);
+
+    numerical = 0.0;
+    exact = 0.0;
+    for (unsigned int i=0; i<shapes_->ndofs_; ++i)
+      numerical += values(i) * interiorPressnp_(i);
+
+    LINALG::Matrix<nen_,1>  myfunct;
+    DRT::UTILS::shape_function<distype>(xsi,myfunct);
+    LINALG::Matrix<nsd_,1> xyzmat;
+    xyzmat.MultiplyNN(shapes_->xyze,myfunct);
+
     double xyz[nsd_];
     for (unsigned int d=0; d<nsd_; ++d)
-    xyz[d] = shapes_->xyzreal(d,q);
+      xyz[d]=xyzmat(d,0);
 
-    // careful: we assume that the x-axis is the orientation of your 1D problem
-    double xyzp[nsd_];
-    double xyzm[nsd_];
-    xyzp[0]=xyz[0]+c*time;
-    xyzm[0]=xyz[0]-c*time;
-    for (unsigned int d=1; d<nsd_; ++d)
+    if (params.get<INPAR::ACOU::CalcError>("error calculation") == INPAR::ACOU::calcerror_1d)
     {
-      xyzp[d] = xyz[d];
-      xyzm[d] = xyz[d];
+      // careful: we assume that the x-axis is the orientation of your 1D problem
+      double xyzp[nsd_];
+      double xyzm[nsd_];
+      xyzp[0]=xyz[0]+c*time;
+      xyzm[0]=xyz[0]-c*time;
+      for (unsigned int d=1; d<nsd_; ++d)
+      {
+        xyzp[d] = xyz[d];
+        xyzm[d] = xyz[d];
+      }
+      // calculation of the analytical solution
+      exact = 0.5 * DRT::Problem::Instance()->Funct(*start_func-1).Evaluate(0,xyzp,0.0,NULL)
+            + 0.5 * DRT::Problem::Instance()->Funct(*start_func-1).Evaluate(0,xyzm,0.0,NULL);
     }
+    else if(params.get<INPAR::ACOU::CalcError>("error calculation") == INPAR::ACOU::calcerror_2d)
+    {
+      dserror("insert your analytic solution here!");
+      double FACTOR = 1.6e5;
+      double ell = 0.02;
+      double xi = 4.0e5;
+      exact = 2.0 * xi * FACTOR * ell * (xyz[0] * std::cos(xi * time) - xyz[1] * std::sin(xi* time)) * std::exp(-FACTOR*(std::pow(xyz[1] - ell * std::cos(xi*time),2) + std::pow(xyz[0]-ell*std::sin(xi*time),2)));
+    }
+    else
+      dserror("no analytical solution available");
 
-    // calculation of the analytical solution
-    exact = 0.5 * DRT::Problem::Instance()->Funct(*start_func-1).Evaluate(0,xyzp,0.0,NULL)
-          + 0.5 * DRT::Problem::Instance()->Funct(*start_func-1).Evaluate(0,xyzm,0.0,NULL);
-
-    err_p += ( exact - numerical ) * ( exact - numerical ) * shapes_->jfac(q);
-    norm_p += exact * exact * shapes_->jfac(q);
+    err_p += ( exact - numerical ) * ( exact - numerical ) * highjfac;
+    norm_p += exact * exact * highjfac;
   }
-
   elevec[1] += err_p;
   elevec[3] += norm_p;
 
@@ -766,7 +798,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
   // internal variables
   if (elevec2.M() > 0)
   {
-    Epetra_SerialDenseMatrix localMat(shapes_.ndofs_, 1);
+    Epetra_SerialDenseMatrix localMat(shapes_.ndofs_,nsd_+ 1);
 
     for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
     {
@@ -775,15 +807,19 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
       for (unsigned int d = 0; d < nsd_; ++d)
         xyz[d] = shapes_.xyzreal(d, q); // coordinates of quadrature point in real coordinates
       double p;
+      double gradient[nsd_];
+
       dsassert(start_func != NULL,"funct not set for initial value");
-      EvaluateAll(*start_func, xyz, p, 1.0); // u and p at quadrature point
+      EvaluateAll(*start_func, xyz, p, gradient); // u and p at quadrature point
 
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
       {
         massPart(i, q) = shapes_.shfunct(i, q);
         massPartW(i, q) = shapes_.shfunct(i, q) * fac;
-        localMat(i, 0) += shapes_.shfunct(i, q) * p * fac;
+        localMat(i,nsd_) += shapes_.shfunct(i, q) * p * fac;
+        for(unsigned int j=0; j<nsd_; ++j)
+          localMat(i,j) += shapes_.shfunct(i,q) * gradient[j] * fac;
       }
     }
 
@@ -796,20 +832,28 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
     }
 
     for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
-      ele->eleinteriorPressnp_(r) += localMat(r, 0); // pressure
+    {
+      ele->eleinteriorPressnp_(r) += localMat(r, nsd_); // pressure
+      for (unsigned int i=0;i<nsd_;++i)
+        ele->eleinteriorVelnp_(i*shapes_.ndofs_+r) += localMat(r, i);
+    }
 
   }
   switch (dyna)
   {
   case INPAR::ACOU::acou_bdf4:
+    ele->eleinteriorVelnmmm_ = ele->eleinteriorVelnp_;
     ele->eleinteriorPressnmmm_ = ele->eleinteriorPressnp_; // no break here
   case INPAR::ACOU::acou_bdf3:
+    ele->eleinteriorVelnmm_ = ele->eleinteriorVelnp_;
     ele->eleinteriorPressnmm_ = ele->eleinteriorPressnp_; // no break here
   case INPAR::ACOU::acou_bdf2:
-    ele->eleinteriorPressnm_ = ele->eleinteriorPressnp_; // no break here                                          // here you go
+    ele->eleinteriorVelnm_ = ele->eleinteriorVelnp_;
+    ele->eleinteriorPressnm_ = ele->eleinteriorPressnp_; // no break here
   default:
+    ele->eleinteriorVeln_ = ele->eleinteriorVelnp_;
     ele->eleinteriorPressn_ = ele->eleinteriorPressnp_;
-    break;
+    break;// here you go
   }
 
   // in case this paramter "faceconsider" is set, we are applying Dirichlet values
@@ -838,8 +882,9 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
       for (unsigned int d = 0; d < nsd_; ++d)
         xyz[d] = shapesface_->xyzreal(d, q);
       double p;
+      double gradient[nsd_];
 
-      EvaluateAll((*functno)[0], xyz, p, 1.0);
+      EvaluateAll((*functno)[0], xyz, p, gradient);
 
       // now fill the components in the mass matrix and the right hand side
       for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
@@ -990,10 +1035,17 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectOpticalField(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateAll(
-    const int start_func, const double(&xyz)[nsd_], double &p, double rho) const
+    const int start_func, const double(&xyz)[nsd_], double &p, double (&v)[nsd_]) const
 {
-  p = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(0, xyz, 0.0,
-      NULL);
+  p = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(0, xyz, 0.0, NULL);
+  if(DRT::Problem::Instance()->Funct(start_func-1).NumberComponents()==nsd_+1)
+  {
+    for(unsigned int d=0; d<nsd_; ++d)
+      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d+1, xyz, 0.0, NULL);
+  }
+  else if(DRT::Problem::Instance()->Funct(start_func-1).NumberComponents()!=1)
+    dserror("Supply ONE component for your start function or NUMDIM+1, not anything else! The first component is for the pressure, the others for the velocity.");
+
   return;
 }
 
@@ -1397,8 +1449,10 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResid
   tempVec1.Multiply('N', 'N', -theta, localSolver_->Cmat, traceVal_SDV, 1.0);
 
   Epetra_SerialDenseVector tempVec2(shapes_->ndofs_);
+  Epetra_SerialDenseVector tempVec3(shapes_->ndofs_);
+  localSolver_->ComputeSource(params,mat,tempVec2,tempVec3);
 
-  tempVec2.Multiply('N', 'N', 1.0, localSolver_->Mmat, interiorPressn_, 0.0);
+  tempVec2.Multiply('N', 'N', 1.0, localSolver_->Mmat, interiorPressn_, 1.0);
   if (theta != 1.0)
   {
     tempVec2.Multiply('N', 'N', -(1.0 - theta), localSolver_->Hmat,interiorVeln_, 1.0);
@@ -1438,7 +1492,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResid
   {
     double dirk_a[6][6];
     double dirk_b[6];
-    ACOU::FillDIRKValues(dyna_, dirk_a, dirk_b, dirk_q);
+    double dirk_c[6];
+    ACOU::FillDIRKValues(dyna_, dirk_a, dirk_b, dirk_c, dirk_q);
 
     ele.eleyp_[stage] = interiorPressnp_;
     ele.eleyv_[stage] = interiorVelnp_;
@@ -1544,7 +1599,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResid
   {
     double dirk_a[6][6];
     double dirk_b[6];
-    ACOU::FillDIRKValues(dyna_, dirk_a, dirk_b, dirk_q);
+    double dirk_c[6];
+    ACOU::FillDIRKValues(dyna_, dirk_a, dirk_b, dirk_c, dirk_q);
 
     stage++;
     if (stage == dirk_q)
@@ -1624,6 +1680,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResid
 
   tempVec1.Resize(shapes_->ndofs_);
   tempVec1.Multiply('N', 'N', 1.0, localSolver_->Mmat, interiorPressnp_, 0.0);
+  // ComputeSource(...)
+  tempVec1+=tempVec3;
   if (theta != 1.0)
   {
     tempVec1.Multiply('N', 'N', -(1.0 - theta), localSolver_->Hmat, interiorVelnp_, 1.0);
@@ -1977,6 +2035,49 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputePMonNodeVals(
     }
     else
       elevec(i) = sum;
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ * ComputeSource
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
+ComputeSource(Teuchos::ParameterList&       params,
+              const Teuchos::RCP<MAT::Material>&  mat,
+              Epetra_SerialDenseVector          & interiorSourcen,
+              Epetra_SerialDenseVector          & interiorSourcenp)
+{
+  int funcno = params.get<int>("sourcefuncno");
+  if(funcno<0) return; // there is no such thing as a volume force
+
+  // the vector to be filled
+  Epetra_SerialDenseVector source(shapes_.ndofs_);
+
+  // what time is it?
+  double tn = params.get<double>("time");
+  double tp = params.get<double>("timep");
+
+  double f_value = 0.0;
+  double f_value_p = 0.0;
+  for (unsigned int q=0; q<shapes_.nqpoints_; ++q)
+  {
+    double xyz[nsd_];
+    for (unsigned int d=0; d<nsd_; ++d)
+      xyz[d] = shapes_.xyzreal(d,q);
+
+    // calculate right hand side contribution for dp/dt
+    f_value = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,tn,NULL);
+    f_value_p = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,tp,NULL);
+
+    // add it all up
+    for(unsigned int i=0; i<shapes_.ndofs_; ++i)
+    {
+      interiorSourcen(i) += shapes_.shfunct(i,q) * f_value * shapes_.jfac(q);
+      interiorSourcenp(i) += shapes_.shfunct(i,q) * f_value_p * shapes_.jfac(q);
+    }
   }
 
   return;
@@ -2345,6 +2446,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeInteriorMatrices(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeResidual(
+    Teuchos::ParameterList&       params,
+    Teuchos::RCP<MAT::Material>&  mat,
     Epetra_SerialDenseVector & elevec, Epetra_SerialDenseVector & interiorVeln,
     Epetra_SerialDenseVector & interiorPressn, std::vector<double> traceVal,
     INPAR::ACOU::DynamicType dyna)
@@ -2382,7 +2485,10 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeResidual(
     theta = 0.66;
 
   Epetra_SerialDenseVector tempVec1(ndofs_);
-  tempVec1.Multiply('N', 'N', 1.0, Mmat, interiorPressn, 0.0);
+  Epetra_SerialDenseVector tempVec2(ndofs_);
+  ComputeSource(params,mat,tempVec2,tempVec1);
+
+  tempVec1.Multiply('N', 'N', 1.0, Mmat, interiorPressn, 1.0);
 
   if (theta != 1.0)
   {
@@ -2415,7 +2521,6 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeResidual(
   }
   // tempMat2 = ( D + M - H A^{-1} B )^{-1}
 
-  Epetra_SerialDenseVector tempVec2(ndofs_);
   tempVec2.Multiply('N', 'N', 1.0, tempMat2, tempVec1, 0.0); // = w = ( D + M - H A^{-1} B )^{-1} ( ... )
 
   elevec.Multiply('N', 'N', -theta, Jmat, tempVec2, 0.0);

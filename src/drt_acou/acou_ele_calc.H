@@ -50,7 +50,7 @@ namespace ELEMENTS
         Epetra_SerialDenseVector& elevec1)
     { dserror("Not implemented"); return 1; };
 
-    void ComputeError(
+    void ComputeAnalyticError(
         DRT::ELEMENTS::Acou*          ele,
         Teuchos::ParameterList&       params,
         Teuchos::RCP<MAT::Material>&  mat,
@@ -137,11 +137,18 @@ namespace ELEMENTS
                                     bool completepoly);
 
       /// compute the residual
-      void ComputeResidual(Epetra_SerialDenseVector          & eleVec,
+      void ComputeResidual(Teuchos::ParameterList&       params,
+                           Teuchos::RCP<MAT::Material>&  mat,
+                           Epetra_SerialDenseVector          & eleVec,
                            Epetra_SerialDenseVector          & interiorVeln,
                            Epetra_SerialDenseVector          & interiorPressn,
                            std::vector<double>               traceVal,
                            INPAR::ACOU::DynamicType          dyna);
+
+      void ComputeSource(Teuchos::ParameterList&       params,
+                         const Teuchos::RCP<MAT::Material>&  mat,
+                         Epetra_SerialDenseVector          & interiorSourcen,
+                         Epetra_SerialDenseVector          & interiorSourcenp);
 
       /// add terms corresponding to the absorbing boundary condition
       void ComputeAbsorbingBC(DRT::ELEMENTS::Acou*        ele,
@@ -223,7 +230,7 @@ namespace ELEMENTS
       void EvaluateAll(const int start_func,
                        const double (&xyz)[nsd_],
                        double  &p,
-                       double rho) const;
+                       double  (&v)[nsd_]) const;
 
       void EvaluateLight(double lightxyz[][nsd_],
                          double values[],

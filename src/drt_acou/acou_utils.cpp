@@ -25,6 +25,7 @@ Maintainer: Svenja Schoeder
 void ACOU::FillDIRKValues(INPAR::ACOU::DynamicType scheme,
                           double (&a)[6][6],
                           double (&b)[6],
+                          double (&c)[6],
                           int &q)
 {
   // TODO: no fill, but object with values
@@ -36,6 +37,8 @@ void ACOU::FillDIRKValues(INPAR::ACOU::DynamicType scheme,
     a[1][0] = -1.0 / sqrt(3.0);       a[1][1] = 0.5 + 0.5 / sqrt(3.0);
     b[0] = 0.5;
     b[1] = 0.5;
+    c[0] = 0.5 + 0.5 / sqrt(3.0);
+    c[1] = 0.5 - 0.5 / sqrt(3.0);
     q = 2;
     break;
   }
@@ -48,6 +51,9 @@ void ACOU::FillDIRKValues(INPAR::ACOU::DynamicType scheme,
     b[0] = -(6.0*alpha*alpha-16.0*alpha+1.0)/4.0;
     b[1] = (6.0*alpha*alpha-20.0*alpha+5.0)/4.0;
     b[2] = alpha;
+    c[0] = alpha;
+    c[1] = (1.0 + alpha) / 2.0;
+    c[2] = 1.0;
     q = 3;
     break;
   }
@@ -60,6 +66,9 @@ void ACOU::FillDIRKValues(INPAR::ACOU::DynamicType scheme,
     b[0] = 1.0 / 6.0 / alpha / alpha;
     b[1] = 1.0 - 1.0 / 3.0 / alpha / alpha;
     b[2] = 1.0 / 6.0 / alpha / alpha;
+    c[0] = (1.0 + alpha) / 2.0;
+    c[1] = 0.5;
+    c[2] = (1.0 - alpha) / 2.0;
     q = 3;
     break;
   }
@@ -71,6 +80,7 @@ void ACOU::FillDIRKValues(INPAR::ACOU::DynamicType scheme,
     a[3][0] = 0.416349501547; a[3][1] = 0.190984004184;  a[3][2] = -0.118643265417;  a[3][3] = 0.4358665215;    a[3][4] = 0.0;
     a[4][0] = 0.896869652944; a[4][1] = 0.0182725272734; a[4][2] = -0.0845900310706; a[4][3] = -0.266418670647; a[4][4] = 0.4358665215;
     b[0]    = 0.896869652944; b[1]    = 0.0182725272734; b[2]    = -0.0845900310706; b[3]    = -0.266418670647; b[4]    = 0.4358665215;
+    dserror("please fill in values for c and you can delete this error message!");
     q = 5;
     break;
   }

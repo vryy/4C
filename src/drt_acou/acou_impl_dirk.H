@@ -60,6 +60,7 @@ private:
   /// coefficients of given dirk scheme, filled in during construction
   double dirk_a_[6][6];
   double dirk_b_[6];
+  double dirk_c_[6];
   int dirk_q_;
 
   // for dirk as class variable

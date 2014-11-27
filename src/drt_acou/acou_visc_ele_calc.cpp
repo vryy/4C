@@ -407,8 +407,9 @@ VectorHandling(DRT::ELEMENTS::Acou   * ele,
 
     double dirk_a[6][6];
     double dirk_b[6];
+    double dirk_c[6];
     int dirk_q;
-    ACOU::FillDIRKValues(dyna_,dirk_a,dirk_b,dirk_q);
+    ACOU::FillDIRKValues(dyna_,dirk_a,dirk_b,dirk_c,dirk_q);
     int stage = params.get<int>("stage");
 
     if(stage == 0)
@@ -2452,8 +2453,9 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
   {
     double dirk_a[6][6];
     double dirk_b[6];
+    double dirk_c[6];
     int dirk_q;
-    ACOU::FillDIRKValues(dyna_,dirk_a,dirk_b,dirk_q);
+    ACOU::FillDIRKValues(dyna_,dirk_a,dirk_b,dirk_c,dirk_q);
 
     int stage = params.get<int>("stage");
     for(unsigned i=0; i<interiorValnp_.size(); ++i)
@@ -2501,8 +2503,9 @@ UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &     discretizati
 
     double dirk_a[6][6];
     double dirk_b[6];
+    double dirk_c[6];
     int dirk_q;
-    ACOU::FillDIRKValues(dyna_, dirk_a, dirk_b, dirk_q);
+    ACOU::FillDIRKValues(dyna_, dirk_a, dirk_b, dirk_c, dirk_q);
 
     stage++;
     if (stage == dirk_q)

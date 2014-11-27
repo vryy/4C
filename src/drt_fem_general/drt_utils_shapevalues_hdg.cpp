@@ -228,7 +228,7 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const DRT::Element &ele,
       xsi(idim) = gpcoord[idim];
 
     DRT::UTILS::shape_function_deriv1<facedis>(xsi,deriv);
-    double jacdet = 0;
+    double jacdet = 0.0;
     DRT::UTILS::ComputeMetricTensorForBoundaryEle<facedis>(xyze,deriv,metricTensor,jacdet,&normal);
     for (unsigned int d=0; d<nsd_; ++d)
       normals(d,q) = normal(d);

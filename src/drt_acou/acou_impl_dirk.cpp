@@ -34,7 +34,7 @@ ACOU::TimIntImplDIRK::TimIntImplDIRK(
 :AcouImplicitTimeInt(actdis,solver,params,output)
 {
   // fill the scheme specific coefficients
-  FillDIRKValues(dyna_,dirk_a_,dirk_b_,dirk_q_);
+  FillDIRKValues(dyna_,dirk_a_,dirk_b_,dirk_c_,dirk_q_);
   t_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
   velnp_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
   resonly_ = false;
@@ -51,6 +51,9 @@ void ACOU::TimIntImplDIRK::Integrate(Teuchos::RCP<Epetra_MultiVector> history, T
 
   // output of initial field (given by function for purely acoustic simulation or given by optics for PAT simulation)
   Output(history,splitter);
+
+  // evaluate error
+  EvaluateErrorComparedToAnalyticalSol();
 
   // call elements to calculate system matrix/rhs and assemble
   AssembleMatAndRHS(0);
@@ -121,6 +124,7 @@ void ACOU::TimIntImplDIRK::AssembleMatAndRHS(int stage)
   if(!resonly_)
     sysmat_->Zero();
 
+  eleparams.set<int>("sourcefuncno",sourcefuncno_);
   eleparams.set<bool>("resonly",resonly_);
   eleparams.set<int>("stage",stage);
   eleparams.set<bool>("padaptivity",padaptivity_);
@@ -130,6 +134,9 @@ void ACOU::TimIntImplDIRK::AssembleMatAndRHS(int stage)
   eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
   eleparams.set<bool>("adjoint",adjoint_);
   eleparams.set<int>("step",step_);
+  eleparams.set<double>("time",time_);
+  eleparams.set<double>("timep",time_+dirk_c_[0]*dtp_);
+
   eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
 
   discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
@@ -179,9 +186,17 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariablesAndAssemebleRHS(int stage)
   Teuchos::ParameterList eleparams;
   eleparams.set<double>("dt",dtp_*dirk_a_[0][0]);
 
+  eleparams.set<int>("sourcefuncno",sourcefuncno_);
   eleparams.set<bool>("adjoint",adjoint_);
   eleparams.set<bool>("errormaps",errormaps_);
   eleparams.set<int>("stage",stage);
+  eleparams.set<double>("time",time_-dtp_+dirk_c_[stage]*dtp_);
+
+  if(stage==dirk_q_-1)
+    eleparams.set<double>("timep",time_+dirk_c_[0]*dtp_);
+  else
+    eleparams.set<double>("timep",time_-dtp_+dirk_c_[stage+1]*dtp_);
+
   eleparams.set<bool>("padaptivity",padaptivity_);
   if(stage==dirk_q_-1)eleparams.set<double>("padaptivitytol",padapttol_);
   Teuchos::RCP<std::vector<double> > elevals;

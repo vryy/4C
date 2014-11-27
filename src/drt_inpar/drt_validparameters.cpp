@@ -7516,11 +7516,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "compute error compared to analytical solution",
                                tuple<std::string>(
                                  "No",
-                                 "1D"
+                                 "1D",
+                                 "2D"
                                  ),
                                tuple<int>(
                                    INPAR::ACOU::calcerror_no,
-                                   INPAR::ACOU::calcerror_1d
+                                   INPAR::ACOU::calcerror_1d,
+                                   INPAR::ACOU::calcerror_2d
                                    ),
                                &acousticdyn);
 
@@ -7529,6 +7531,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&acousticdyn);
   IntParameter("LINEAR_SOLVER",-1,"Number of linear solver used for acoustical problem",&acousticdyn);
   IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&acousticdyn);
+  IntParameter("SOURCETERMFUNCNO",-1,"Function for source term in volume",&acousticdyn);
 
   // distinguish viscous and lossless flows
   setStringToIntegralParameter<int>("PHYSICAL_TYPE","lossless",

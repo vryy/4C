@@ -176,6 +176,8 @@ protected:
   int     uprestart_;                   /// write restart data every uprestart_ steps
   int     upres_;                       /// write output every upres_ steps
 
+  int     sourcefuncno_;                /// function number of source term for wave equation
+
   INPAR::ACOU::DynamicType dyna_;       /// time integration scheme
   INPAR::ACOU::PhysicalType phys_;      /// physical type
 
