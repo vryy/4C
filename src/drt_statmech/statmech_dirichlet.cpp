@@ -598,7 +598,7 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
 }
 
 /*----------------------------------------------------------------------*
- | Dirichlet condition constrainint all but one translational           |
+ | Dirichlet condition constraining all but one translational           |
  | direction                                    (private)  mueller 09/13|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::DBCMovableSupport1D(Teuchos::ParameterList&     params,

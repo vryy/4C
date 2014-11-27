@@ -1683,7 +1683,8 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                     case statmech_linker_activeintpol:
                     case statmech_linker_myosinthick:
                     {
-                      std::cout<<"  ===WARNING! Implementatation incomplete!!!==="<<std::endl;
+                      if(linkermodel_==statmech_linker_myosinthick)
+                        std::cout<<"  ===WARNING! Implementation incomplete!!!==="<<std::endl;
                       nodelid1 = discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][irandom]);
                       for(int k=0; k<crosslinkerbond_->NumVectors(); k++)
                         if((*crosslinkerbond_)[k][irandom]>-0.1)
@@ -3347,12 +3348,12 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
   // change reference length in actual elements
   for(int i=0; i<actlinklengthout->MyLength(); i++)
   {
+    int collid = discret_->ElementColMap()->LID((int)(*crosslink2element_)[i]);
     // if length of the active linker changed in the probability check
-    if(fabs((*actlinklengthout)[i]-(*actlinklengthin)[i])>1e-6 && (int)(*crosslink2element_)[i]>-0.9)
+    if(fabs((*actlinklengthout)[i]-(*actlinklengthin)[i])>1e-6 && (int)(*crosslink2element_)[i]>-0.9 && collid != -1)
     {
       // just on the processor, where element is located
       // scaling-factor = 0.75 (myosin II)
-      int collid = discret_->ElementColMap()->LID((int)(*crosslink2element_)[i]);
       int rowlid = discret_->ElementRowMap()->LID((int)(*crosslink2element_)[i]);
       double sca = statmechparams_.get<double>("LINKERSCALEFACTOR", 0.8);
 
@@ -3361,43 +3362,37 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
         // change linker length to short
         case 1:
         {
-          if (collid != -1)
+          switch(linkermodel_)
           {
-            switch(linkermodel_)
-            {
-              case statmech_linker_active:
-                (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lColElement(collid)))->SetReferenceLength(sca);
-              break;
-              case statmech_linker_activeintpol:
-              case statmech_linker_myosinthick:
-                ActiveLinkerPowerStroke(collid,i,(int)(*actlinklengthout)[i],revertchanges, bspotpositions, bspotquaternions,nodalquaternions);
-              break;
-              default: dserror("Unknown active linker beam element!");
-            }
-            if(rowlid!=-1)
-              toshort++;
+            case statmech_linker_active:
+              (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lColElement(collid)))->SetReferenceLength(sca);
+            break;
+            case statmech_linker_activeintpol:
+            case statmech_linker_myosinthick:
+              ActiveLinkerPowerStroke(collid,i,(int)(*actlinklengthout)[i],revertchanges, bspotpositions, bspotquaternions,nodalquaternions);
+            break;
+            default: dserror("Unknown active linker beam element!");
           }
+          if(rowlid!=-1)
+            toshort++;
         }
         break;
         // change linker length to long
         case 0:
         {
-          if (collid != -1)
+          switch(linkermodel_)
           {
-            switch(linkermodel_)
-            {
-              case statmech_linker_active:
-                (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lColElement(collid)))->SetReferenceLength(1.0/sca);
-              break;
-              case statmech_linker_activeintpol:
-              case statmech_linker_myosinthick:
-                ActiveLinkerPowerStroke(collid, i, (int)(*actlinklengthout)[i], revertchanges,bspotpositions, bspotquaternions,nodalquaternions);
-              break;
-              default: dserror("Unknown active linker beam element!");
-            }
-            if(rowlid!=-1)
-              tolong++;
+            case statmech_linker_active:
+              (dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_->lColElement(collid)))->SetReferenceLength(1.0/sca);
+            break;
+            case statmech_linker_activeintpol:
+            case statmech_linker_myosinthick:
+              ActiveLinkerPowerStroke(collid, i, (int)(*actlinklengthout)[i], revertchanges,bspotpositions, bspotquaternions,nodalquaternions);
+            break;
+            default: dserror("Unknown active linker beam element!");
           }
+          if(rowlid!=-1)
+            tolong++;
         }
         break;
         default: dserror("Wrong status %d in actlinklength_", (int)(*crosslinkeractlength_)[i]);
@@ -3532,12 +3527,13 @@ void STATMECH::StatMechManager::ActiveLinkerPowerStroke(const int&              
       thetarot.Scale(thetaabs);
     }
 
-    // set new reference length
-    (dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->SetReferenceLength(sca);
-
     // Set converged quaternions to rotated values. Currently only direction long->short, no inverse operation.
+    // set new reference length
     if(!revertchanges)
+    {
+      (dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->SetReferenceLength(sca);
       (dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->SetRotation(thetarot);
+    }
   }
   else // standard case without rotation
   {
