@@ -937,6 +937,136 @@ void shape_function_3D_deriv2(
 
     break;
   }
+  case DRT::Element::hex18:
+  {
+    deriv2(drdr, 0) = .25*s*(s-1.)*(1.-t);
+    deriv2(dsds, 0) = .25*r*(r-1.)*(1.-t);
+    deriv2(dtdt, 0) = 0.;
+    deriv2(drds, 0) = (.125*(r-1.))*(s-1.)*(1.-t)+(.125*(r-1.))*s*(1.-t)+.125*r*(s-1.)*(1.-t)+.125*r*s*(1.-t);
+    deriv2(drdt, 0) = -(.125*(r-1.))*s*(s-1.)-.125*r*s*(s-1.);
+    deriv2(dsdt, 0) = -.125*r*(r-1.)*(s-1.)-.125*r*(r-1.)*s;
+
+    deriv2(drdr, 1) = .250*s*(s-1.)*(1.-t);
+    deriv2(dsds, 1) = .250*r*(r+1.)*(1.-t);
+    deriv2(dtdt, 1) = 0.;
+    deriv2(drds, 1) = (.125*(r+1.))*(s-1.)*(1.-t)+.125*s*(r+1.)*(1.-t)+.125*r*(s-1.)*(1.-t)+.125*r*s*(1.-t);
+    deriv2(drdt, 1) = -.125*s*(r+1.)*(s-1.)-.125*r*s*(s-1.);
+    deriv2(dsdt, 1) = -.125*r*(r+1.)*(s-1.)-.125*r*s*(r+1.);
+
+    deriv2(drdr, 2) = .250*s*(s+1.)*(1.-t);
+    deriv2(dsds, 2) = .250*r*(r+1.)*(1.-t);
+    deriv2(dtdt, 2) = 0.;
+    deriv2(drds, 2) = (.125*(r+1.))*(s+1.)*(1.-t)+.125*s*(r+1.)*(1.-t)+.125*r*(s+1.)*(1.-t)+.125*r*s*(1.-t);
+    deriv2(drdt, 2) = -(.125*(r+1.))*s*(s+1.)-.125*r*s*(s+1.);
+    deriv2(dsdt, 2) = -.125*r*(r+1.)*(s+1.)-.125*r*s*(r+1.);
+
+    deriv2(drdr, 3) = .250*s*(s+1.)*(1.-t);
+    deriv2(dsds, 3) = .250*r*(r-1.)*(1.-t);
+    deriv2(dtdt, 3) = 0.;
+    deriv2(drds, 3) = (.125*(r-1.))*(s+1.)*(1.-t)+(.125*(r-1.))*s*(1.-t)+.125*r*(s+1.)*(1.-t)+.125*r*s*(1.-t);
+    deriv2(drdt, 3) = -(.125*(r-1.))*s*(s+1.)-.125*r*s*(s+1.);
+    deriv2(dsdt, 3) = -.125*r*(r-1.)*(s+1.)-.125*r*(r-1.)*s;
+
+    deriv2(drdr, 4) = -.50*s*(s-1.)*(1.-t);
+    deriv2(dsds, 4) = (.50*(1.-r*r))*(1.-t);
+    deriv2(dtdt, 4) = 0.;
+    deriv2(drds, 4) = -.50*r*(s-1.)*(1.-t)-.50*r*s*(1.-t);
+    deriv2(drdt, 4) = .50*r*s*(s-1.);
+    deriv2(dsdt, 4) = -(.25*(1.-r*r))*(s-1.)-(.25*(1.-r*r))*s;
+
+    deriv2(drdr, 5) = (.50*(1.-s*s))*(1.-t);
+    deriv2(dsds, 5) = -.50*r*(r+1.)*(1.-t);
+    deriv2(dtdt, 5) = 0.;
+    deriv2(drds, 5) = -.50*s*(r+1.)*(1.-t)-.50*r*s*(1.-t);
+    deriv2(drdt, 5) = -(.25*(r+1.))*(1.-s*s)-.25*r*(1.-s*s);
+    deriv2(dsdt, 5) = .50*r*s*(r+1.);
+
+    deriv2(drdr, 6) = -.50*s*(s+1.)*(1.-t);
+    deriv2(dsds, 6) = (.50*(1.-r*r))*(1.-t);
+    deriv2(dtdt, 6) = 0.;
+    deriv2(drds, 6) = -.50*r*(s+1.)*(1.-t)-.50*r*s*(1.-t);
+    deriv2(drdt, 6) = .50*r*s*(s+1.);
+    deriv2(dsdt, 6) = -(.25*(1.-r*r))*(s+1.)-(.25*(1.-r*r))*s;
+
+    deriv2(drdr, 7) = (.50*(1.-s*s))*(1.-t);
+    deriv2(dsds, 7) = -.50*r*(r-1.)*(1.-t);
+    deriv2(dtdt, 7) = 0;
+    deriv2(drds, 7) = -(.50*(r-1.))*s*(1.-t)-.50*r*s*(1.-t);
+    deriv2(drdt, 7) = -(.25*(r-1.))*(1.-s*s)-.25*r*(1.-s*s);
+    deriv2(dsdt, 7) = .50*r*(r-1.)*s;
+
+    deriv2(drdr, 8) = -(1.0*(1.-s*s))*(1.-t);
+    deriv2(dsds, 8) = -(1.0*(1.-r*r))*(1.-t);
+    deriv2(dtdt, 8) = 0;
+    deriv2(drds, 8) = 2.0*r*s*(1.-t);
+    deriv2(drdt, 8) = 1.0*r*(1.-s*s);
+    deriv2(dsdt, 8) = (1.0*(1.-r*r))*s;
+
+    deriv2(drdr, 9) = .250*s*(s-1.)*(1.+t);
+    deriv2(dsds, 9) = .250*r*(r-1.)*(1.+t);
+    deriv2(dtdt, 9) = 0;
+    deriv2(drds, 9) = (.125*(r-1.))*(s-1.)*(1.+t)+(.125*(r-1.))*s*(1.+t)+.125*r*(s-1.)*(1.+t)+.125*r*s*(1.+t);
+    deriv2(drdt, 9) = (.125*(r-1.))*s*(s-1.)+.125*r*s*(s-1.);
+    deriv2(dsdt, 9) = .125*r*(r-1.)*(s-1.)+.125*r*(r-1.)*s;
+
+    deriv2(drdr,10) = .250*s*(s-1.)*(1.+t);
+    deriv2(dsds,10) = .250*r*(r+1.)*(1.+t);
+    deriv2(dtdt,10) = 0;
+    deriv2(drds,10) = (.125*(r+1.))*(s-1.)*(1.+t)+.125*s*(r+1.)*(1.+t)+.125*r*(s-1.)*(1.+t)+.125*r*s*(1.+t);
+    deriv2(drdt,10) = .125*s*(r+1.)*(s-1.)+.125*r*s*(s-1.);
+    deriv2(dsdt,10) = .125*r*(r+1.)*(s-1.)+.125*r*s*(r+1.);
+
+    deriv2(drdr,11) = .250*s*(s+1.)*(1.+t);
+    deriv2(dsds,11) = .250*r*(r+1.)*(1.+t);
+    deriv2(dtdt,11) = 0;
+    deriv2(drds,11) = (.125*(r+1.))*(s+1.)*(1.+t)+.125*s*(r+1.)*(1.+t)+.125*r*(s+1.)*(1.+t)+.125*r*s*(1.+t);
+    deriv2(drdt,11) = (.125*(r+1.))*s*(s+1.)+.125*r*s*(s+1.);
+    deriv2(dsdt,11) = .125*r*(r+1.)*(s+1.)+.125*r*s*(r+1.);
+
+    deriv2(drdr,12) = .250*s*(s+1.)*(1.+t);
+    deriv2(dsds,12) = .250*r*(r-1.)*(1.+t);
+    deriv2(dtdt,12) = 0;
+    deriv2(drds,12) = (.125*(r-1.))*(s+1.)*(1.+t)+(.125*(r-1.))*s*(1.+t)+.125*r*(s+1.)*(1.+t)+.125*r*s*(1.+t);
+    deriv2(drdt,12) = (.125*(r-1.))*s*(s+1.)+.125*r*s*(s+1.);
+    deriv2(dsdt,12) = .125*r*(r-1.)*(s+1.)+.125*r*(r-1.)*s;
+
+    deriv2(drdr,13) = -.50*s*(s-1.)*(1.+t);
+    deriv2(dsds,13) = (.50*(1.-r*r))*(1.+t);
+    deriv2(dtdt,13) = 0;
+    deriv2(drds,13) = -.50*r*(s-1.)*(1.+t)-.50*r*s*(1.+t);
+    deriv2(drdt,13) = -.50*r*s*(s-1.);
+    deriv2(dsdt,13) = (.25*(1.-r*r))*(s-1.)+(.25*(1.-r*r))*s;
+
+    deriv2(drdr,14) = (.50*(1.-s*s))*(1.+t);
+    deriv2(dsds,14) = -.50*r*(r+1.)*(1.+t);
+    deriv2(dtdt,14) = 0;
+    deriv2(drds,14) = -.50*s*(r+1.)*(1.+t)-.50*r*s*(1.+t);
+    deriv2(drdt,14) = (.25*(r+1.))*(1.-s*s)+.25*r*(1.-s*s);
+    deriv2(dsdt,14) = -.50*r*s*(r+1.);
+
+    deriv2(drdr,15) = -.50*s*(s+1.)*(1.+t);
+    deriv2(dsds,15) = (.50*(1.-r*r))*(1.+t);
+    deriv2(dtdt,15) = 0;
+    deriv2(drds,15) = -.50*r*(s+1.)*(1.+t)-.50*r*s*(1.+t);
+    deriv2(drdt,15) = -.50*r*s*(s+1.);
+    deriv2(dsdt,15) = (.25*(1.-r*r))*(s+1.)+(.25*(1.-r*r))*s;
+
+    deriv2(drdr,16) = (.50*(1.-s*s))*(1.+t);
+    deriv2(dsds,16) = -.50*r*(r-1.)*(1.+t);
+    deriv2(dtdt,16) = 0;
+    deriv2(drds,16) = -(.50*(r-1.))*s*(1.+t)-.50*r*s*(1.+t);
+    deriv2(drdt,16) = (.25*(r-1.))*(1.-s*s)+.25*r*(1.-s*s);
+    deriv2(dsdt,16) = -.50*r*(r-1.)*s;
+
+    deriv2(drdr,17) = -(1.0*(1.-s*s))*(1.+t);
+    deriv2(dsds,17) = -(1.0*(1.-r*r))*(1.+t);
+    deriv2(dtdt,17) = 0;
+    deriv2(drds,17) = 2.0*r*s*(1.+t);
+    deriv2(drdt,17) = -1.0*r*(1.-s*s);
+    deriv2(dsdt,17) = -(1.0*(1.-r*r))*s;
+
+    break;
+  }
   case DRT::Element::hex20:
   {
 
@@ -1560,6 +1690,17 @@ void shape_function_2D(
     funct(3) = 0.25 * rm * sp;
     break;
   }
+  case DRT::Element::quad6:
+  {
+    funct(0) = 0.25*r*(r-1.)*(1.-s);
+    funct(1) = 0.25*r*(r+1.)*(1.-s);
+    funct(2) =-0.5*(r-1.)*(r+1.)*(1.-s);
+    funct(3) = 0.25*r*(r-1.)*(1.+s);
+    funct(4) = 0.25*r*(r+1.)*(1.+s);
+    funct(5) =-0.5*(r-1.)*(r+1.)*(1.+s);
+
+    break;
+  }
   case DRT::Element::quad8:
   {
     const T rp = 1.0 + r;
@@ -1631,17 +1772,6 @@ void shape_function_2D(
     funct(6) = sh * sp * r2;
     funct(7) = -rh * rm * s2;
     funct(8) = r2 * s2;
-    break;
-  }
-  case DRT::Element::quad6:
-  {
-    funct(0) = 0.25*r*(r-1.)*(1.-s);
-    funct(1) = 0.25*r*(r+1.)*(1.-s);
-    funct(2) =-0.5*(r-1.)*(r+1.)*(1.-s);
-    funct(3) = 0.25*r*(r-1.)*(1.+s);
-    funct(4) = 0.25*r*(r+1.)*(1.+s);
-    funct(5) =-0.5*(r-1.)*(r+1.)*(1.+s);
-
     break;
   }
   case DRT::Element::tri3:
@@ -1719,6 +1849,23 @@ void shape_function_2D_deriv1(
 
     deriv1(dr, 3) = -0.25 * sp;
     deriv1(ds, 3) = 0.25 * rm;
+    break;
+  }
+  case DRT::Element::quad6:
+  {
+    deriv1(0,0) = 0.25*(2.*r-1.)*(1.-s);
+    deriv1(0,1) = 0.25*(2.*r+1.)*(1.-s);
+    deriv1(0,2) =             -r*(1.-s);
+    deriv1(0,3) = 0.25*(2.*r-1.)*(1.+s);
+    deriv1(0,4) = 0.25*(2.*r+1.)*(1.+s);
+    deriv1(0,5) =             -r*(1.+s);
+
+    deriv1(1,0) =-0.25*r*(r-1.);
+    deriv1(1,1) =-0.25*r*(r+1.);
+    deriv1(1,2) =+0.5*(r-1.)*(r+1.);
+    deriv1(1,3) = 0.25*r*(r-1.);
+    deriv1(1,4) = 0.25*r*(r+1.);
+    deriv1(1,5) =-0.5*(r-1.)*(r+1.);
     break;
   }
   case DRT::Element::quad8:
@@ -1840,23 +1987,6 @@ void shape_function_2D_deriv1(
     deriv1(1, 8) = -2.0 * s * r2;
     break;
   }
-  case DRT::Element::quad6:
-  {
-    deriv1(0,0) = 0.25*(2.*r-1.)*(1.-s);
-    deriv1(0,1) = 0.25*(2.*r+1.)*(1.-s);
-    deriv1(0,2) =             -r*(1.-s);
-    deriv1(0,3) = 0.25*(2.*r-1.)*(1.+s);
-    deriv1(0,4) = 0.25*(2.*r+1.)*(1.+s);
-    deriv1(0,5) =             -r*(1.+s);
-
-    deriv1(1,0) =-0.25*r*(r-1.);
-    deriv1(1,1) =-0.25*r*(r+1.);
-    deriv1(1,2) =+0.5*(r-1.)*(r+1.);
-    deriv1(1,3) = 0.25*r*(r-1.);
-    deriv1(1,4) = 0.25*r*(r+1.);
-    deriv1(1,5) =-0.5*(r-1.)*(r+1.);
-    break;
-  }
   case DRT::Element::tri3:
   {
     deriv1(0, 0) = -1.0;
@@ -1942,6 +2072,34 @@ void shape_function_2D_deriv2(
     deriv2(drdr, 3) = 0.0;
     deriv2(dsds, 3) = 0.0;
     deriv2(drds, 3) = -0.25;
+    break;
+  }
+  case DRT::Element::quad6:
+  {
+    deriv2(drdr,0) = .5*(1.-s);
+    deriv2(dsds,0) = 0.;
+    deriv2(drds,0) = .25-.5*r;
+
+    deriv2(drdr,1) = .5*(1.-s);
+    deriv2(dsds,1) = 0.;
+    deriv2(drds,1) = -.25-.5*r;
+
+    deriv2(drdr,2) = s-1.;
+    deriv2(dsds,2) = 0.;
+    deriv2(drds,2) = r;
+
+    deriv2(drdr,3) = .5*(s+1.);
+    deriv2(dsds,3) = 0.;
+    deriv2(drds,3) = .5*r-.25;
+
+    deriv2(drdr,4) = .5+.5*s;
+    deriv2(dsds,4) = 0.;
+    deriv2(drds,4) = .5*r+.25;
+
+    deriv2(drdr,5) = -s-1.;
+    deriv2(dsds,5) = 0.;
+    deriv2(drds,5) = -r;
+
     break;
   }
   case DRT::Element::quad8:
