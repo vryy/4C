@@ -640,6 +640,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     fluidtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
     // parameter for grid velocity interpolation
     fluidtimeparams->set<int>              ("order gridvel"            ,DRT::INPUT::IntegralValue<int>(fdyn,"GRIDVEL"));
+    // handling of pressure and continuity discretization in new one step theta framework
+    fluidtimeparams->set<int>              ("ost cont and press"       ,DRT::INPUT::IntegralValue<INPAR::FLUID::OST_Cont_and_Press>(fdyn,"OST_CONT_PRESS"));
+    // flag to switch on the new One Step Theta implementation
+    fluidtimeparams->set<bool>             ("ost new"                  ,DRT::INPUT::IntegralValue<bool>(fdyn,"NEW_OST"));
 
     fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
     bool dirichletcond = true;
@@ -1118,6 +1122,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     fluidtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
     // parameter for grid velocity interpolation
     fluidtimeparams->set<int>              ("order gridvel"            ,DRT::INPUT::IntegralValue<int>(fdyn,"GRIDVEL"));
+    // handling of pressure and continuity discretization in new one step theta framework
+    fluidtimeparams->set<int>              ("ost cont and press"       ,DRT::INPUT::IntegralValue<INPAR::FLUID::OST_Cont_and_Press>(fdyn,"OST_CONT_PRESS"));
+    // flag to switch on the new One Step Theta implementation
+    fluidtimeparams->set<bool>             ("ost new"                  ,DRT::INPUT::IntegralValue<bool>(fdyn,"NEW_OST"));
 
     fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 

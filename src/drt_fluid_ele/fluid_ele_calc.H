@@ -281,7 +281,9 @@ public:
       const Teuchos::RCP<MAT::Material> &mat,
       LINALG::Matrix<nsd_,1>            &u,
       double                            &p,
-      LINALG::Matrix<nsd_,nsd_>         &dervel
+      LINALG::Matrix<nsd_,nsd_>         &dervel,
+      bool                        isFullImplPressure = false,
+      double                      deltat = 0.0
       );
 
   /// Evaluate the element
@@ -484,6 +486,8 @@ protected:
   virtual int Evaluate(Teuchos::ParameterList&                       params,
                        const LINALG::Matrix<nsd_,nen_> &             ebofoaf,
                        const LINALG::Matrix<nsd_,nen_> &             eprescpgaf,
+                       const LINALG::Matrix<nsd_,nen_> &             ebofon,
+                       const LINALG::Matrix<nsd_,nen_> &             eprescpgn,
                        LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat1,
                        LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat2,
                        LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
@@ -496,6 +500,7 @@ protected:
                        const LINALG::Matrix<nsd_,nen_> &             eaccam,
                        const LINALG::Matrix<nen_,1>    &             escadtam,
                        const LINALG::Matrix<nen_,1>    &             escabofoaf,
+                       const LINALG::Matrix<nen_,1>    &             escabofon,
                        const LINALG::Matrix<nsd_,nen_> &             eveln,
                        const LINALG::Matrix<nen_,1>    &             epren,
                        const LINALG::Matrix<nen_,1>    &             escaam,
@@ -524,6 +529,8 @@ protected:
 
     \param ebofoaf          (i) body force at n+alpha_F/n+1
     \param eprescpgaf       (i) prescribed pressure gradient at n+alpha_F/n+1 (required for turbulent channel flow)
+    \param ebofon           (i) body force at n
+    \param eprescpgaf       (i) prescribed pressure gradient at n (required for turbulent channel flow)
     \param evelaf           (i) nodal velocities at n+alpha_F/n+1
     \param eveln            (i) nodal velocities at n
     \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
@@ -555,6 +562,8 @@ protected:
     */
   virtual void Sysmat(const LINALG::Matrix<nsd_,nen_> &             ebofoaf,
                       const LINALG::Matrix<nsd_,nen_> &             eprescpgaf,
+                      const LINALG::Matrix<nsd_,nen_> &             ebofon,
+                      const LINALG::Matrix<nsd_,nen_> &             eprescpgn,
                       const LINALG::Matrix<nsd_,nen_>&              evelaf,
                       const LINALG::Matrix<nsd_,nen_>&              eveln,
                       const LINALG::Matrix<nsd_,nen_> &             evelnp,
@@ -570,6 +579,7 @@ protected:
                       const LINALG::Matrix<nen_,1>&                 escaam,
                       const LINALG::Matrix<nen_,1>&                 escadtam,
                       const LINALG::Matrix<nen_,1>&                 escabofoaf,
+                      const LINALG::Matrix<nen_,1>&                 escabofon,
                       const LINALG::Matrix<nsd_,nen_>&              emhist,
                       const LINALG::Matrix<nsd_,nen_>&              edispnp,
                       const LINALG::Matrix<nsd_,nen_>&              egridv,
@@ -612,6 +622,7 @@ protected:
 
   //! calculate body force contribution from surface tension
   void AddSurfaceTensionForce(const LINALG::Matrix<nen_,1>&                 escaaf,     ///< scalar at time n+alpha_f / n+1
+                              const LINALG::Matrix<nen_,1>&                 escaam,     ///< scalar at time n+alpha_m / n
                               const LINALG::Matrix<nsd_,nen_> &             egradphi,   //<gradient of scalar function at nodes
                               const LINALG::Matrix<nen_,1> &                ecurvature  //<curvature of scalar function at nodes
                               );
@@ -666,7 +677,9 @@ protected:
 
 
   //! calculate div(epsilon(u))
-  void CalcDivEps(const LINALG::Matrix<nsd_,nen_>& evelaf);   ///< velocity at time n+alpha_f / n+1
+  void CalcDivEps(
+      const LINALG::Matrix<nsd_,nen_>& evelaf,   ///< velocity at time n+alpha_f / n+1
+      const LINALG::Matrix<nsd_,nen_>& eveln);   ///< velocity at time n+alpha_f / n+1
 
   //! compute residual of momentum equation and subgrid-scale velocity
   void ComputeSubgridScaleVelocity(const LINALG::Matrix<nsd_,nen_>& eaccam,  ///< acceleration at time n+alpha_M
@@ -702,7 +715,8 @@ protected:
     LINALG::Matrix<nsd_,nen_> &            velforce,       ///< rhs forces velocity
     LINALG::Matrix<nsd_*nsd_,nen_> &       lin_resM_Du,    ///< linearisation of the Garlerkin momentum residual
     LINALG::Matrix<nsd_,1> &               resM_Du,        ///< linearisation of the Garlerkin momentum residual
-    const double &                         rhsfac          ///< right-hand-side factor
+    const double &                         rhsfac,         ///< right-hand-side factor
+    const double &                         rhsfacn         ///< right-hand-side factor time step n
     );
 
   //! Compute element matrix entries: for the viscous terms of the Galerkin part
@@ -711,7 +725,8 @@ protected:
     LINALG::Matrix<nsd_,nen_> &            velforce,       ///< rhs forces velocity
     LINALG::Matrix<nsd_,nsd_> &            viscstress,     ///< viscous stresses
     const double &                         timefacfac,     ///< = timefac x fac
-    const double &                         rhsfac          ///< right-hand-side factor
+    const double &                         rhsfac,         ///< right-hand-side factor
+    const double &                         rhsfacn         ///< right-hand-side factor time step n
     );
 
   //! Compute element matrix entries: div-grad stabilization and the rhs of the viscous term
@@ -721,7 +736,8 @@ protected:
     const double &                         timefac,        ///< time factor
     const double &                         timefacfac,     ///< = timefac x fac
     const double &                         timefacfacpre,     ///< = timefac x fac
-    const double &                         rhsfac         ///< right-hand-side factor
+    const double &                         rhsfac,         ///< right-hand-side factor
+    const double &                         rhsfacn         ///< right-hand-side factor time step n
     );
 
   //! Compute element matrix entries: pressure terms of the Garlerkin part and rhs
@@ -731,7 +747,9 @@ protected:
     const double &                    timefacfac,     ///< = timefac x fac
     const double &                    timefacfacpre,
     const double &                    rhsfac,         ///< right-hand-side factor
-    const double &                    press           ///< pressure at integration point
+    const double &                    rhsfacn,        ///< right-hand-side factor time step n
+    const double &                    press,          ///< pressure at integration point
+    const double &                    pressn          ///< pressure at integration point
     );
 
   //! Compute element matrix entries: continuity terms of the Garlerkin part and rhs
@@ -740,7 +758,8 @@ protected:
     LINALG::Matrix<nen_,1> &           preforce,     ///< rhs forces pressure
     const double &                     timefacfac,   ///< = timefac x fac
     const double &                     timefacfacpre,
-    const double &                     rhsfac        ///< right-hand-side factor
+    const double &                     rhsfac,       ///< right-hand-side factor
+    const double &                     rhsfacn       ///< right-hand-side factor at time step n
     );
 
   //! Compute element matrix entries: pressure projection terms
@@ -758,7 +777,8 @@ protected:
   //! Compute element matrix entries: body force terms on rhs
   void BodyForceRhsTerm(
     LINALG::Matrix<nsd_,nen_> &  velforce,     ///< rhs forces velocity
-    const double &               rhsfac     ///< right-hand-side factor for residuals
+    const double &               rhsfac,       ///< right-hand-side factor for residuals
+    const double               rhsfacn = 0.0 ///< right-hand-side factor for residuals
     );
 
   //! Compute element matrix entries: conservative formulation
@@ -1186,6 +1206,27 @@ protected:
   LINALG::Matrix<numderiv2_,nen_> derxy2_;
   //! bodyforce in gausspoint
   LINALG::Matrix<nsd_,1> bodyforce_;
+  //New One Step Theta variables
+  //======================================================
+  //! denisty multiplied with instationary term for OST implementations
+  double dens_theta_;
+  //! bodyforce in gausspoint (n)
+  LINALG::Matrix<nsd_,1> bodyforcen_;
+  //! (u^n_old*nabla)u^n_old
+  LINALG::Matrix<nsd_,1> conv_oldn_;
+  //! div epsilon(u^n_old)
+  LINALG::Matrix<nsd_,1> visc_oldn_;
+  //! pressure gradient in gausspoint (n)
+  LINALG::Matrix<nsd_,1> gradpn_;
+  //! velocity vector in gausspoint (n)
+  LINALG::Matrix<nsd_,1> velintn_;
+  //! physical viscosity (n)
+  double viscn_;
+  //! old residual of continuity equation (n)
+  double conres_oldn_;
+  //! prescribed pressure gradient (required for turbulent channel flow!)
+  LINALG::Matrix<nsd_,1> generalbodyforcen_;
+  //======================================================
   //! prescribed pressure gradient (required for turbulent channel flow!)
   LINALG::Matrix<nsd_,1> generalbodyforce_;
   //! vector containing all values from previous timelevel n for momentum equation

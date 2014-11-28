@@ -27,7 +27,7 @@ NUMTHERMDIS                     0
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function
 STARTFUNCNO                     2
-TIMEINTEGR                      BDF2
+TIMEINTEGR                      Af_Gen_Alpha //BDF2
 NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
@@ -35,13 +35,14 @@ CONVTOL                         1.0E-6
 UPRES                           1
 RESTARTEVRY                     10
 NUMSTEP                         10
-NUMSTASTEPS                     0
+NUMSTASTEPS                     1
 MAXTIME                         1000.0
 TIMESTEP                        0.2
 THETA                           0.66
-START_THETA                     0.67
+START_THETA                     1.0
 ALPHA_F                         1.00
-ALPHA_M                         1.00
+ALPHA_M                         1.50
+GAMMA                           1.00
 LIFTDRAG                        no
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1

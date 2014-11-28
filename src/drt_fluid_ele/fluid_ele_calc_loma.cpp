@@ -537,7 +537,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       my::conv_old_.Multiply(my::vderxy_,my::convvelint_);
 
       // compute viscous term from previous iteration
-      if (my::is_higher_order_ele_) my::CalcDivEps(evelaf);
+      if (my::is_higher_order_ele_) my::CalcDivEps(evelaf,eveln);
       else my::visc_old_.Clear();
 
       // compute residual of momentum equation and subgrid-scale velocity

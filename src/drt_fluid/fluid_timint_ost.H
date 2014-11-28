@@ -125,6 +125,12 @@ public:
   virtual void SetElementTimeParameter();
 
   /*!
+  \brief set theta if starting algorithm is chosen.
+
+  */
+  virtual void SetTheta();
+
+  /*!
   \brief return scheme-specific time integration parameter
 
   */
@@ -150,6 +156,8 @@ protected:
   /// copy constructor
   TimIntOneStepTheta (const TimIntOneStepTheta& old);
 
+  //! @name time stepping variables
+  bool    startalgo_;   ///< flag for starting algorithm
 
 private:
 

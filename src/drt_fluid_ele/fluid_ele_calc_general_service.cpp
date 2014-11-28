@@ -817,7 +817,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeError(
     //  n+alpha_F for generalized-alpha scheme
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
 
-    EvaluateAnalyticSolutionPoint(xyzint, fldparatimint_->Time(), calcerr, mat, u, p, dervel);
+    EvaluateAnalyticSolutionPoint(xyzint, fldparatimint_->Time(), calcerr, mat, u, p, dervel, fldparatimint_->IsFullImplPressureAndCont(), fldparatimint_->Dt());
 
     if (calcerr == INPAR::FLUID::topoptchannel &&
         !(xyzint(1)>-0.2-1.0e-014 && xyzint(1)<0.2+1.0e-014))
@@ -875,7 +875,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateAnalyticSolutionPoint
       const Teuchos::RCP<MAT::Material> &mat,
       LINALG::Matrix<nsd_,1>            &u,
       double                            &p,
-      LINALG::Matrix<nsd_,nsd_>         &dervel
+      LINALG::Matrix<nsd_,nsd_>         &dervel,
+      bool                              isFullImplPressure,
+      double                            deltat
       )
 {
   // Compute analytical solution
@@ -900,14 +902,28 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateAnalyticSolutionPoint
       const double d      = M_PI/2.0;
 
       // compute analytical pressure
-      p = -a*a/2.0 *
-          ( std::exp(2.0*a*xyzint(0))
-              + std::exp(2.0*a*xyzint(1))
-              + std::exp(2.0*a*xyzint(2))
-              + 2.0 * std::sin(a*xyzint(0) + d*xyzint(1)) * std::cos(a*xyzint(2) + d*xyzint(0)) * std::exp(a*(xyzint(1)+xyzint(2)))
-              + 2.0 * std::sin(a*xyzint(1) + d*xyzint(2)) * std::cos(a*xyzint(0) + d*xyzint(1)) * std::exp(a*(xyzint(2)+xyzint(0)))
-              + 2.0 * std::sin(a*xyzint(2) + d*xyzint(0)) * std::cos(a*xyzint(1) + d*xyzint(2)) * std::exp(a*(xyzint(0)+xyzint(1)))
-          )* std::exp(-2.0*visc*d*d*t);
+      if(!isFullImplPressure)
+      {
+        p = -a*a/2.0 *
+            ( std::exp(2.0*a*xyzint(0))
+        + std::exp(2.0*a*xyzint(1))
+        + std::exp(2.0*a*xyzint(2))
+        + 2.0 * std::sin(a*xyzint(0) + d*xyzint(1)) * std::cos(a*xyzint(2) + d*xyzint(0)) * std::exp(a*(xyzint(1)+xyzint(2)))
+        + 2.0 * std::sin(a*xyzint(1) + d*xyzint(2)) * std::cos(a*xyzint(0) + d*xyzint(1)) * std::exp(a*(xyzint(2)+xyzint(0)))
+        + 2.0 * std::sin(a*xyzint(2) + d*xyzint(0)) * std::cos(a*xyzint(1) + d*xyzint(2)) * std::exp(a*(xyzint(0)+xyzint(1)))
+            )* std::exp(-2.0*visc*d*d*t);
+      }
+      else //pressure for full implicit OST scheme:
+      {
+        p = -a*a/2.0 *
+            ( std::exp(2.0*a*xyzint(0))
+        + std::exp(2.0*a*xyzint(1))
+        + std::exp(2.0*a*xyzint(2))
+        + 2.0 * std::sin(a*xyzint(0) + d*xyzint(1)) * std::cos(a*xyzint(2) + d*xyzint(0)) * std::exp(a*(xyzint(1)+xyzint(2)))
+        + 2.0 * std::sin(a*xyzint(1) + d*xyzint(2)) * std::cos(a*xyzint(0) + d*xyzint(1)) * std::exp(a*(xyzint(2)+xyzint(0)))
+        + 2.0 * std::sin(a*xyzint(2) + d*xyzint(0)) * std::cos(a*xyzint(1) + d*xyzint(2)) * std::exp(a*(xyzint(0)+xyzint(1)))
+            )* std::exp(-2.0*visc*d*d*(t-0.5*deltat));
+      }
 
       // H1 -error norm
       // sacado data type replaces "double"
@@ -1617,7 +1633,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
     conv_old_.Multiply(vderxy_,convvelint_);
 
     // compute viscous term from previous iteration and viscous operator
-    if (is_higher_order_ele_) CalcDivEps(evelaf);
+    if (is_higher_order_ele_) CalcDivEps(evelaf,eveln);
     else
       visc_old_.Clear();
 

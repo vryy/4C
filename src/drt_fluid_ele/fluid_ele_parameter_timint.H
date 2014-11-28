@@ -57,6 +57,15 @@ public:
   bool IsGenalphaNP(){return is_genalpha_np_;};
   //! flag to (de)activate stationary formulation
   bool IsStationary(){return is_stationary_;};
+  //! flag to (de)activate stationary formulation
+  bool IsOneStepTheta(){return is_one_step_theta_;};
+  //! flag to (de)activate full implicit pressure in momentum equation (and adjust continuity eq accordingly)
+  bool IsFullImplPressureAndCont() const { return is_cont_impl_press_impl_;};
+  //! flag to (de)activate full implicit pressure in momentum equation (and adjust continuity eq accordingly)
+  bool IsImplPressure() const { return is_cont_impl_press_normal_;};
+
+  //! flag for new or old implementation. WILL BE REMOVED!
+  bool IsNewOSTImplementation() const { return ostnew_;};
 
   /// parameters for the time integration
   //! time algorithm
@@ -97,10 +106,20 @@ private:
   bool is_genalpha_np_;
   //! flag to (de)activate stationary formulation
   bool is_stationary_;
+  //! flag to (de)activate one step theta
+  bool is_one_step_theta_;
+  //! flag to (de)activate full implicit pressure and continuity eq.
+  bool is_cont_impl_press_impl_;
+  //! flag to (de)activate implicit handling of continuity eq, but pressure at theta.
+  bool is_cont_impl_press_normal_;
 
   /// parameters for the time integration
   //! time algorithm
   INPAR::FLUID::TimeIntegrationScheme timealgo_;
+  //! One Step Theta discretization for the continuity and pressure.
+  INPAR::FLUID::OST_Cont_and_Press     ostalgo_;
+  //! New One Step Theta implementation flag
+  bool   ostnew_;
   //! actual time to evaluate the body BC
   double time_;
   //! time-step length

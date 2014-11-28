@@ -6478,6 +6478,8 @@ void FLD::XFluid::SetElementTimeParameter()
   else
   {
     eleparams.set("total time",time_);
+    eleparams.set<int>("ost cont and press",params_->get<int>("ost cont and press"));
+    eleparams.set<bool>("ost new"          , params_->get<bool>("ost new"));
   }
 
   // call standard loop over elements

@@ -45,6 +45,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/yoghurt.H"
 #include "../drt_mat/fluidporo.H"
+#include "../drt_mat/matlist.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -325,7 +326,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
-                              DRT::ELEMENTS::FluidBoundary* ele,
+                              DRT::ELEMENTS::FluidBoundary*  ele,
                               Teuchos::ParameterList&        params,
                               DRT::Discretization&           discretization,
                               DRT::Condition&                condition,
@@ -343,8 +344,12 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
+  double curvefacn = 1.0;
   if (curvenum>=0 && usetime)
+  {
     curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    curvefacn = DRT::Problem::Instance()->Curve(curvenum).f(time-fldparatimint_->Dt());
+  }
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
@@ -354,6 +359,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
 
   // get time factor for Neumann term
   const double timefac = fldparatimint_->TimeFacRhs();
+  const double timefacn = (1.0-fldparatimint_->Theta())*fldparatimint_->Dt();
 
   // get Gaussrule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
@@ -362,6 +368,9 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
+
+  // THESE ARE NEEDED IF DENSITY OR A SCALAR IS USED in the BC (which normally is NOT the case)
+  //========================================================
   // get scalar vector
   Teuchos::RCP<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
   if (scaaf==Teuchos::null) dserror("Cannot get state vector 'scaaf'");
@@ -381,6 +390,8 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
 
   // get thermodynamic pressure at n+1/n+alpha_F
   const double thermpressaf = params.get<double>("thermpress at n+alpha_F/n+1",0.0);
+  //========================================================
+
 
   // add potential ALE displacements
   if (ele->ParentElement()->IsAle())
@@ -444,11 +455,30 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
     // (evaluation always at integration point, in contrast to parent element)
     GetDensity(material,escaaf,thermpressaf);
 
-    //    cout<<"Dens: "<<densaf_<<endl;
+    const double tol=1e-8;
+    if(densfac_<(1.0-tol) or densfac_>(1.0+tol))
+    {
+      // If you got this warning have a look in GetDensity(...) for clarification!
+      std::cout << "                                                                    " << std::endl;
+      std::cout << "                                                                    " << std::endl;
+      std::cout << "          WARNING:                                                  " << std::endl;
+      std::cout << "                  BACI scales your NEUMANN BC with the DENSITY!!!   " << std::endl;
+      std::cout << "                                                                    " << std::endl;
+      std::cout << "                  Do you really want this?                          " << std::endl;
+      std::cout << "                  Like, super sure about this?                      " << std::endl;
+      std::cout << "                  Might want to think this through one more time...." << std::endl;
+      std::cout << "                                                                    " << std::endl;
+      std::cout << "                                                                    " << std::endl;
+      std::cout << "        Fine... Do what you want...                                 " << std::endl;
+      std::cout << "        densfac_=               " << densfac_ << std::endl;
+    }
+
     const double fac_curve_time_dens = fac_*curvefac*timefac*densfac_;
+    const double fac_curve_time_densn = fac_*curvefacn*timefacn;
 
     // factor given by spatial function
     double functfac = 1.0;
+    double functfacn = 1.0;
 
     // global coordinates of gausspoint
     LINALG::Matrix<(nsd_),1>  coordgp(0.0);
@@ -477,14 +507,25 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
           {
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time,NULL);
+            functfacn = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time-fldparatimint_->Dt(),NULL);
           }
-          else functfac = 1.0;
+          else
+          {
+            functfac = 1.0;
+            functfacn = 1.0;
+          }
         }
         const double valfac = (*val)[idim]*fac_curve_time_dens*functfac;
+        const double valfacn = (*val)[idim]*fac_curve_time_densn*functfacn;
         for(int inode=0; inode < bdrynen_; ++inode )
         {
           elevec1_epetra[inode*numdofpernode_+idim] += funct_(inode)*valfac;
-        }
+          if(fldparatimint_->IsNewOSTImplementation())
+          {
+            if(fldparatimint_->IsOneStepTheta())
+              elevec1_epetra[inode*numdofpernode_+idim] += funct_(inode)*valfacn;
+          }
+        } //end IsNewOSTImplementation
       }  // if (*onoff)
     }
   }
@@ -742,6 +783,15 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
     Epetra_SerialDenseMatrix&      elemat1,
     Epetra_SerialDenseVector&      elevec1)
 {
+
+  if(fldparatimint_->IsNewOSTImplementation())
+  {
+    if(fldparatimint_->IsOneStepTheta())
+    {
+      dserror("NEUMANN INFLOW IS NOT IMPLEMENTED FOR NEW OST AS OF YET!");
+    }
+  }//end IsNewOSTImplementation
+
   //----------------------------------------------------------------------
   // get control parameters for time integration
   //----------------------------------------------------------------------
@@ -2103,6 +2153,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
 {
 // initially set density and density factor for Neumann boundary conditions to 1.0
 // (the latter only changed for low-Mach-number flow/combustion problems)
+// (This is due to the nature of the Neumann BC's for these problems as they are usually given as h_N=\rho*h.)
+// (Thus in the input file for these problems, h is set which is then scaled by \rho here.)
+//
+//          See Gravemeier, Wall 2011 IJNMF example 4.1.2
+//
 densaf_  = 1.0;
 densfac_ = 1.0;
 
@@ -2210,10 +2265,82 @@ else if (material->MaterialType() == INPAR::MAT::m_fluidporo)
 
   densaf_ = actmat->Density();
 }
+else if (material->MaterialType() == INPAR::MAT::m_matlist)
+{
+
+  // get material list for this element
+  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+
+  int numofmaterials = matlist->NumMat();
+
+  //Error messages
+  if(numofmaterials>2)
+  {
+    dserror("More than two materials is currently not supported.");
+  }
+
+  std::vector<double> density(numofmaterials); //Assume density[0] is on positive side, and density[1] is on negative side.
+
+  for(int nmaterial=0; nmaterial<numofmaterials; nmaterial++)
+  {
+    // set default id in list of materials
+      int matid = -1;
+      matid = matlist->MatID(nmaterial);
+
+      Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
+      INPAR::MAT::MaterialType mattype = matptr->MaterialType();
+
+      // choose from different materials
+      switch(mattype)
+      {
+      //--------------------------------------------------------
+      // Newtonian fluid for incompressible flow (standard case)
+      //--------------------------------------------------------
+      case INPAR::MAT::m_fluid:
+      {
+        const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
+        density[nmaterial]=mat->Density();
+        break;
+      }
+      //------------------------------------------------
+      // different types of materials (to be added here)
+      //------------------------------------------------
+      default:
+        dserror("Only Newtonian fluids supported as input.");
+        break;
+      }
+  }
+
+  double epsilon = fldpara_->GetInterfaceThickness();
+
+  const double gpscaaf = funct_.Dot(escaaf); //Scalar function at gausspoint evaluated
+
+  //Assign material parameter values to positive side by default.
+  double heavyside_epsilon=1.0;
+  densaf_=density[0];
+
+  //Calculate material parameters with phiaf
+  if(abs(gpscaaf) <= epsilon)
+  {
+    heavyside_epsilon = 0.5 * (1.0 + gpscaaf/epsilon + 1.0 / PI * sin(PI*gpscaaf/epsilon));
+
+    densaf_ = heavyside_epsilon*density[0]+(1.0-heavyside_epsilon)*density[1];
+  }
+  else if (gpscaaf < epsilon)
+  {
+    heavyside_epsilon = 0.0;
+
+    densaf_=density[1];
+  }
+
+}// end else if m_matlist
 else dserror("Material type is not supported for density evaluation for boundary element!");
 
 // check whether there is zero or negative density
 if (densaf_ < EPS15) dserror("zero or negative density!");
+
+
+
 
 return;
 } // FluidBoundaryImpl::GetDensity

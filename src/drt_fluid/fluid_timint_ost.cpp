@@ -32,7 +32,8 @@ FLD::TimIntOneStepTheta::TimIntOneStepTheta(
     const Teuchos::RCP<Teuchos::ParameterList>&   params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output,
     bool                                          alefluid /*= false*/)
-: FluidImplicitTimeInt(actdis,solver,params,output,alefluid)
+: FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
+  startalgo_(false)
 {
   return;
 }
@@ -49,7 +50,11 @@ void FLD::TimIntOneStepTheta::Init()
 
   //check, if starting algorithm is desired
   if (numstasteps_ > 0)
-    dserror("no starting algorithm supported for schemes other than af-gen-alpha");
+  {
+    startalgo_= true;
+    if (numstasteps_>stepmax_)
+      dserror("more steps for starting algorithm than steps overall");
+  }
 
   SetElementTimeParameter();
 
@@ -207,9 +212,39 @@ void FLD::TimIntOneStepTheta::SetElementTimeParameter()
   // set scheme-specific element parameters and vector values
   eleparams.set("total time",time_);
 
+  //full implicit handling of pressure in OST integration
+  eleparams.set<int>("ost cont and press",params_->get<int>("ost cont and press"));
+  eleparams.set<bool>("ost new"          , params_->get<bool>("ost new"));
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
 
+void FLD::TimIntOneStepTheta::SetTheta()
+{
+  // starting algorithm, sets theta = 1.0 for starting steps.
+  if (startalgo_)
+  {
+    // use backward-Euler-type parameter combination
+    if (step_<=numstasteps_)
+    {
+      if (myrank_==0)
+      {
+        std::cout<<"Starting algorithm for OST active. "
+            <<"Performing step "<<step_ <<" of "<<numstasteps_
+            <<" Backward Euler starting steps"<<std::endl;
+      }
+      theta_=1.0;
+    }
+    else
+    {
+      // recall original user wish
+      theta_ = params_->get<double>("theta");
+      // do not enter starting algorithm section in the future
+      startalgo_ = false;
+    }
+  }
+
+  return;
+}

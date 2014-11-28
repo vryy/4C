@@ -28,7 +28,12 @@ NONLINEARBC                     yes
 NONLINITER                      Newton
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
-TIMEINTEGR                      BDF2
+TIMEINTEGR                      Af_Gen_Alpha //BDF2
+ALPHA_F                         1.00
+ALPHA_M                         1.50
+GAMMA                           1.00
+START_THETA                     1.0
+NUMSTASTEPS                     1
 -----------------------------------------------------------------FSI DYNAMIC
 COUPALGO                        iter_monolithicstructuresplit
 MAXTIME                         1.0

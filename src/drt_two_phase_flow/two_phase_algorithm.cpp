@@ -145,6 +145,19 @@ void TWOPHASEFLOW::Algorithm::PrepareTimeStep()
   // (+ computation of initial scalar time derivative in first time step)
   ScaTraField()->PrepareTimeStep();
 
+  // Needs to be tested!!!!!
+
+  // set fluid values required in scatra
+  SetFluidValuesInScaTra(false);
+
+  // initially solve scalar transport equation
+  // (values for intermediate time steps were calculated at the end of PerpareTimeStep)
+  if (Comm().MyPID()==0) std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
+  ScaTraField()->Solve();
+
+  // set scatra values required in fluid
+  SetScaTraValuesInFluid();
+
   // prepare fluid time step, among other things, predict velocity field
   FluidField()->PrepareTimeStep();
 

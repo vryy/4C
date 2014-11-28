@@ -36,11 +36,12 @@ NUMSTEP                         5
 PREDICTOR                       steady_state
 RESTARTEVRY                     5
 THETA                           0.5
-TIMEINTEGR                      BDF2 //Af_Gen_Alpha
-START_THETA        0.66
-ALPHA_M            0.83333333333333
-ALPHA_F            0.66666666666666
-GAMMA              0.66666666666666
+TIMEINTEGR                      Af_Gen_Alpha //BDF2 //Af_Gen_Alpha
+NUMSTASTEPS                     1 //0
+START_THETA                     1.0 //0.67
+ALPHA_F                         1.00 //BDF2
+ALPHA_M                         1.50 //BDF2
+GAMMA                           1.00 //BDF2
 TIMESTEP       0.01
 UPRES                           5
 MESHTYING  Condensed_Bmat

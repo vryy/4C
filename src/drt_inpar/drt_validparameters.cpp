@@ -3428,6 +3428,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &fdyn);
 
   setStringToIntegralParameter<int>(
+    "OST_CONT_PRESS","Cont_normal_Press_normal",
+    "One step theta option for time discretization of continuity eq. and pressure",
+    tuple<std::string>(
+      "Cont_normal_Press_normal",
+      "Cont_impl_Press_normal",
+      "Cont_impl_Press_impl"),
+    tuple<int>(
+      INPAR::FLUID::Cont_normal_Press_normal,
+      INPAR::FLUID::Cont_impl_Press_normal,
+      INPAR::FLUID::Cont_impl_Press_impl),
+    &fdyn);
+
+  setStringToIntegralParameter<int>(
     "GEOMETRY","full",
     "How the geometry is specified",
     tuple<std::string>(
@@ -3613,6 +3626,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("GMSH_OUTPUT","No","write output to gmsh files",&fdyn);
   BoolParameter("COMPUTE_DIVU","No","Compute divergence of velocity field at the element center",&fdyn);
   BoolParameter("COMPUTE_EKIN","No","Compute kinetic energy at the end of each time step and write it to file.",&fdyn);
+  BoolParameter("NEW_OST","No","Solve the Navier-Stokes equation with the new One Step Theta algorithm",&fdyn);  //TODO: To be removed.
   IntParameter("UPRES",1,"Increment for writing solution",&fdyn);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&fdyn);
   IntParameter("NUMSTEP",1,"Total number of Timesteps",&fdyn);

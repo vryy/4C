@@ -38,7 +38,7 @@ LINEAR_SOLVER                   4
 LINEAR_SOLVER                   3
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
-TIMEINTEGR                      BDF2
+TIMEINTEGR                      Af_Gen_Alpha //BDF2
 NONLINITER                      Newton
 ITEMAX                          12
 CONVCHECK                       L_2_norm
@@ -46,11 +46,14 @@ CONVTOL                         1.0E-6
 UPRES                           1
 RESTARTEVRY                     1
 NUMSTEP                         1000
-NUMSTASTEPS                     0
+NUMSTASTEPS                     1 //0
+START_THETA                     1.0 //0.67
+ALPHA_F                         1.00 //BDF2
+ALPHA_M                         1.50 //BDF2
+GAMMA                           1.00 //BDF2
 MAXTIME                         0.5
 TIMESTEP                        0.01
 THETA                           0.66
-START_THETA                     0.67
 LIFTDRAG                        no
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.01

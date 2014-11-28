@@ -213,6 +213,14 @@ namespace INPAR
       timeint_bdf2,
     };
 
+    /// One step theta variations
+    enum OST_Cont_and_Press
+    {
+      Cont_normal_Press_normal,
+      Cont_impl_Press_normal,
+      Cont_impl_Press_impl
+    };
+
     /// initial and Oseen advective field
     enum InitialField
     {

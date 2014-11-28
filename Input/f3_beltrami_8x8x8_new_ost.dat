@@ -10,10 +10,10 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-f3_beltrami_8x8x8_bdf2_2iter_conv
+f3_beltrami_8x8x8_ost_2iter_conv
 
-results must be identical with results from test case 'combust_beltrami_8x8x8_bdf2_2iter'
-BDF2 time integration scheme of combustion and standard fluid have to compute identical results
+results must be identical with results from test case 'combust_beltrami_8x8x8_ost'
+One-Step-Theta time integration scheme of combustion and standard fluid have to compute identical results
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        320
 NODES                           125
@@ -35,31 +35,33 @@ LINEAR_SOLVER                   1
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ALPHA_F                         1.0                           // 0.666666
-ALPHA_M                         1.5                           // 0.833333
-GAMMA                           1.0
+ALPHA_M                         1.0                           // 0.833333
+GAMMA                           0.66
+COMPUTE_EKIN                    yes
 CONVCHECK                       L_2_norm
-CONVFORM convective //conservative
+CONVFORM                        convective //conservative
 CONVTOL                         1e-06
-ITEMAX                          1
+GRIDVEL                         BE
+ITEMAX                          10
 MAXTIME                         0.5
-NONLINITER Newton //fixed_point_like
+NONLINITER                      Newton //fixed_point_like
 NUMSTEP                         8
 PREDICTOR                       steady_state
 RESTARTEVRY                     20
 STARTFUNCNO                     -1
-NUMSTASTEPS                     1 //0
-START_THETA                     1.0 //0.66
-THETA                           1.0 //0.66
-TIMEINTEGR                      Af_Gen_Alpha //BDF2 //One_Step_Theta
-TIMESTEP                        0.05
+START_THETA                     0.66 //1.0, 0.66
+THETA                           0.66 //1.0, 0.66
+TIMEINTEGR                      One_Step_Theta
+TIMESTEP                        0.05 //0.05
 UPRES                           8
 MESHTYING                       no
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
+NEW_OST                         yes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-GRAD_DIV                        yes
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
+GRAD_DIV                        yes //yes
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
 PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based
@@ -113,22 +115,64 @@ CURVE2 on Explicit FUNC BELTRAMI c1 2.0 c2 1.0
 FUNCT1                          BELTRAMI
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 12 QUANTITY velx VALUE 5.33900563439094061e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12 QUANTITY vely VALUE -4.40944932498359143e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12 QUANTITY velz VALUE 3.09961833079965332e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -6.40097280451410594e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY velx VALUE -2.91037540733762312e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY vely VALUE -2.91037540733762423e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY velz VALUE -2.91037540733762423e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY pressure VALUE -1.29109438183187764e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 453 QUANTITY velx VALUE -6.54349959712877460e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY vely VALUE -4.48455843226260253e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY velz VALUE -4.91019001014207979e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY pressure VALUE -4.24949970076899386e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY velx VALUE 1.41624854780344339e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 637 QUANTITY vely VALUE -8.89452731063745894e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY velz VALUE -5.67147532713445091e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY pressure VALUE -5.47218404055443419e-01 TOLERANCE 1e-9
+// FLUID DIS fluid NODE 12 QUANTITY velx VALUE 5.30071156915331992e-02 TOLERANCE 1e-10
+// FLUID DIS fluid NODE 12 QUANTITY vely VALUE -4.43364656009461108e-02 TOLERANCE 1e-10
+// FLUID DIS fluid NODE 12 QUANTITY velz VALUE 3.10365568339124709e-01 TOLERANCE 1e-10
+// FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -4.82645547516156390e-02 TOLERANCE 1e-10
+// FLUID DIS fluid NODE 365 QUANTITY velx VALUE -2.92156436616534121e-01 TOLERANCE 1e-10
+// FLUID DIS fluid NODE 365 QUANTITY vely VALUE -2.92156436616534121e-01 TOLERANCE 1e-10
+// FLUID DIS fluid NODE 365 QUANTITY velz VALUE -2.92156436616534176e-01 TOLERANCE 1e-10
+// FLUID DIS fluid NODE 365 QUANTITY pressure VALUE -1.28864203703083741e-01 TOLERANCE 1e-10
+// FLUID DIS fluid NODE 453 QUANTITY velx VALUE -6.56177675268235006e-01 TOLERANCE 1e-9
+// FLUID DIS fluid NODE 453 QUANTITY vely VALUE -4.49286692474754779e-01 TOLERANCE 1e-9
+// FLUID DIS fluid NODE 453 QUANTITY velz VALUE -4.92332789797114589e-01 TOLERANCE 1e-9
+// FLUID DIS fluid NODE 453 QUANTITY pressure VALUE -4.47164599499179638e-01 TOLERANCE 1e-9
+// FLUID DIS fluid NODE 637 QUANTITY velx VALUE 1.41634226975093758e-01 TOLERANCE 1e-10
+// FLUID DIS fluid NODE 637 QUANTITY vely VALUE -8.90358870483999087e-01 TOLERANCE 1e-9
+// FLUID DIS fluid NODE 637 QUANTITY velz VALUE -5.66828005721011108e-01 TOLERANCE 1e-9
+// FLUID DIS fluid NODE 637 QUANTITY pressure VALUE -5.70045859391644316e-01 TOLERANCE 1e-9
+
+FLUID DIS fluid NODE 12 QUANTITY velx VALUE 5.30090558286519659e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY vely VALUE -4.43352243908521002e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY velz VALUE 3.10365225524279587e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -4.85838176428330243e-02 TOLERANCE 1e-10
+
+FLUID DIS fluid NODE 365 QUANTITY velx VALUE -2.92156547673239453e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY vely VALUE -2.92156547673239453e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY velz VALUE -2.92156547673239564e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY pressure VALUE -1.28848318622311581e-01 TOLERANCE 1e-10
+
+FLUID DIS fluid NODE 453 QUANTITY velx VALUE -6.56177612217451411e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY vely VALUE -4.49288084585895975e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY velz VALUE -4.92331850221035372e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY pressure VALUE -4.46079152589733463e-01 TOLERANCE 1e-9
+
+FLUID DIS fluid NODE 637 QUANTITY velx VALUE 1.41635915855643252e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 637 QUANTITY vely VALUE -8.90356602109390050e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 637 QUANTITY velz VALUE -5.66827996718319738e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 637 QUANTITY pressure VALUE -5.69729630744674309e-01 TOLERANCE 1e-9
+
+
+//node 12 (analytical)
+// 0.0528883900135
+// -0.0444506915163
+// 0.310338583306
+// -0.0505415410315
+
+//HIST
+// ---- error norm for analytical solution Nr. 1 ----------
+// | relative L_2 velocity error norm:     0.014188858
+// | relative L_2 pressure error norm:     0.014790527
+// | relative H_1 velocity error norm:     0.08079517
+
+//NO-HIST
+// ---- error norm for analytical solution Nr. 1 ----------
+// | relative L_2 velocity error norm:     0.014189727
+// | relative L_2 pressure error norm:     0.014595874
+// | relative H_1 velocity error norm:     0.080795197
+
+
+
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0
