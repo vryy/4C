@@ -238,6 +238,15 @@ public:
         return ret;
         }
 
+  virtual Teuchos::RCP<FLD::UTILS::FsiMapExtractor>const& FsiInterface() const
+        { dserror("Not implemented in the base class, may be overridden by a subclass.");
+        static Teuchos::RCP<FLD::UTILS::FsiMapExtractor> ret = Teuchos::null;
+        return ret;
+        }
+
+  virtual void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f)
+        { dserror("Not implemented in the base class, may be overridden by a subclass."); }
+
   virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const
         { dserror("Not implemented in the base class, may be overridden by a subclass.");
         static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;

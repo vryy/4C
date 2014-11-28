@@ -49,6 +49,7 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   output_(output),
   dirichletcond_(dirichletcond),
   interface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
+  fsiinterface_(Teuchos::rcp(new FLD::UTILS::FsiMapExtractor())),
   meshmap_(Teuchos::rcp(new LINALG::MapExtractor())),
   locerrvelnp_(Teuchos::null),
   auxintegrator_(INPAR::FSI::timada_fld_none),
@@ -656,12 +657,21 @@ double ADAPTER::FluidFSI::CalculateErrorNorm(const Epetra_Vector& vec,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f)
+{
+  fluidimpl_->UpdateSlaveDOF(f);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::SetupInterface()
 {
   if (DRT::Problem::Instance()->ProblemType() != prb_fpsi)
     interface_->Setup(*dis_,false);
   else
     interface_->Setup(*dis_,false,true); //create overlapping maps for fpsi problem
+
+  fsiinterface_->Setup(*dis_);
 }
 
 /*----------------------------------------------------------------------*

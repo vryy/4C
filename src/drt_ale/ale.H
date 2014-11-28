@@ -28,6 +28,8 @@
 
 #include "../drt_inpar/inpar_ale.H"
 
+#include "ale_meshtying.H"
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace LINALG
@@ -335,6 +337,15 @@ public:
   /// Reset state vectors to zero
   void Reset();
 
+  /// Update slave dofs for fsi simulations with ale
+  void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a);
+
+  /// Use the split of the ale mesh tying for the sysmat
+  void UseMshtSplit();
+
+  /// Use the split of the fsi mesh tying for the sysmat
+  void UseFsiSplit();
+
   //@}
 
 private:
@@ -444,6 +455,24 @@ private:
 
   //! error handling in case of unconverged nonlinear solver
   const INPAR::ALE::DivContAct divercont_;
+
+  /// flag for mesh-tying
+  const INPAR::ALE::MeshTying msht_;
+
+  /// number of spatial dimensions
+  int numdim_;
+
+  /// row dof map extractor
+  const UTILS::MapExtractor* surfacesplitter_;
+
+  /// map extractor from the fsi framework
+  Teuchos::RCP<const ALE::UTILS::MapExtractor> interface_;
+
+  /// flag for fsi simulations with ale mesh tying
+  bool fsi_and_msht_;
+
+  /// coupling of ALE-ALE at an internal interface
+  Teuchos::RCP<ALE::Meshtying> meshtying_;
 
   //@}
 

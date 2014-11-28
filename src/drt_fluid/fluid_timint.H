@@ -151,6 +151,13 @@ public:
   virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { dserror("Implemented in the fluid wrapper and derived classes");
     static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null; return ret; }
 
+  /// map extracor for fsi simulations with fluid mesh tying
+  virtual Teuchos::RCP<FLD::UTILS::FsiMapExtractor>const& FsiInterface() const { dserror("Implemented in the fluid wrapper and derived classes");
+    static Teuchos::RCP<FLD::UTILS::FsiMapExtractor> ret = Teuchos::null; return ret; }
+
+  /// Update slave dofs for fsi simulations with fluid mesh tying
+  virtual void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f) { dserror("Implemented in the fluid wrapper and derived classes");}
+
   /// communication object at the interface needed for fpsi problems (including pressure dofs)
   virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const { dserror("Implemented in the fluid wrapper and derived classes");
     static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null; return ret; }

@@ -38,6 +38,12 @@ namespace INPAR
     divcont_stop,               ///< abort simulation
     divcont_continue           ///< continue nevertheless
   };
+  /// mesh tying
+  enum MeshTying
+  {
+    no_meshtying,
+    yes_meshtying
+  };
 
 
   }  // namespace ALE

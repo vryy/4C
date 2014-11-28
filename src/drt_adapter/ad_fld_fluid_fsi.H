@@ -89,6 +89,12 @@ namespace ADAPTER {
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
 
+    /// communication object at the fsiinterface
+    virtual Teuchos::RCP<FLD::UTILS::FsiMapExtractor>const& FsiInterface() const { return fsiinterface_; }
+
+    /// update slave dofs for fsi simulations with fluid mesh tying
+    virtual void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f);
+
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap();
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
@@ -213,6 +219,9 @@ namespace ADAPTER {
     //!
     //! Note: full map contains velocity AND pressure DOFs
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
+
+    //! map extractor for fsi simulations with fluid mesh tying
+    Teuchos::RCP<FLD::UTILS::FsiMapExtractor> fsiinterface_;
 
     /// interface force at old time level t_n
     Teuchos::RCP<Epetra_Vector>            interfaceforcen_;

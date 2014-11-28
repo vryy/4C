@@ -118,6 +118,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   impedancebc_(Teuchos::null),
   impedancebc_optimization_(Teuchos::null),
   isimpedancebc_(false),
+  condelements_(Teuchos::null),
+  splitmatrix_(false),
+  fsi_and_msht_(false),
   massmat_(Teuchos::null),
   logenergy_(Teuchos::null)
 {
@@ -1059,7 +1062,11 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
 
   // prepare meshtying system
   if (msht_ != INPAR::FLUID::no_meshtying)
+  {
     meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_);
+    if (shapederivatives_ != Teuchos::null)
+      meshtying_->CondensationShapeDerivatives(shapederivatives_);
+  }
 
   // update local coordinate systems for ALE fluid case
   // (which may be time and displacement dependent)
@@ -2906,6 +2913,12 @@ void FLD::FluidImplicitTimeInt::GetDofsVectorLocalIndicesforNode(int nodeGid, Te
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
+
+  if(fsi_and_msht_)
+  {
+    UseMshtSplit();
+  }
+
   // update solution by adding step increment to previous converged solution
   if (stepinc!=Teuchos::null)
   {
@@ -2946,6 +2959,11 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> stepi
   }
 
   PrepareSolve();
+
+  if(fsi_and_msht_)
+  {
+    UseFSISplit();
+  }
 
   return;
 }
@@ -5254,23 +5272,37 @@ void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> >     
                                                const LINALG::MultiMapExtractor& rangemaps,
                                                bool splitmatrix)
 {
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
 
-  if (splitmatrix)
+  if (msht_ != INPAR::FLUID::no_meshtying)
   {
-    // (re)allocate system matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
-    mat->SetCondElements(condelements);
-    sysmat_ = mat;
+    if (params_->get<bool>("shape derivatives"))
+      shapederivatives_ = meshtying_->MshtSplit();
+    condelements_ = condelements;
+    domainmaps_ = domainmaps;
+    splitmatrix_ = splitmatrix;
+    fsi_and_msht_ = true;
   }
-
-  // if we never build the matrix nothing will be done
-  if (params_->get<bool>("shape derivatives"))
+  else
   {
-    // allocate special mesh moving matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
-    mat->SetCondElements(condelements);
-    shapederivatives_ = mat;
+    Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
+
+    if (splitmatrix)
+    {
+      // (re)allocate system matrix
+      mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+      mat->SetCondElements(condelements);
+      sysmat_ = mat;
+    }
+
+    // if we never build the matrix nothing will be done
+    if (params_->get<bool>("shape derivatives"))
+    {
+      // allocate special mesh moving matrix
+      mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+      mat->SetCondElements(condelements);
+      shapederivatives_ = mat;
+    }
+
   }
 }
 
@@ -6717,4 +6749,119 @@ void FLD::FluidImplicitTimeInt::ExplicitPredictor()
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ * Update slave dofs for fsi simulations with fluid mesh tying          |
+ *                                                          wirtz 11/14 |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f)
+{
+
+  if (msht_ != INPAR::FLUID::no_meshtying)
+  {
+    meshtying_->UpdateSlaveDOF(f, velnp_);
+  }
+
+}
+
+/*----------------------------------------------------------------------*
+ * Use the split of the ale mesh tying for the sysmat                   |
+ *                                                          wirtz 11/14 |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::UseMshtSplit()
+{
+
+  sysmat_ = meshtying_->MshtSplit();
+
+  if (shapederivatives_ != Teuchos::null)
+    shapederivatives_ = meshtying_->MshtSplit();
+
+}
+
+/*----------------------------------------------------------------------*
+ * Use the split of the fsi mesh tying for the sysmat                   |
+ *                                                          wirtz 11/14 |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::UseFSISplit()
+{
+
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat =
+      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
+
+//  Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(*gidofs));
+//  ones->PutScalar(1.0);
+//  Teuchos::RCP<LINALG::SparseMatrix> onesdiag = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
+//  onesdiag->Complete();
+
+  Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(sysmat->Matrix(2,2).RowMap()));
+  ones->PutScalar(1.0);
+  Teuchos::RCP<LINALG::SparseMatrix> onesdiag = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
+  onesdiag->Complete();
+
+  sysmat->Matrix(0,2).UnComplete();
+  sysmat->Matrix(0,2).Zero();
+
+  sysmat->Matrix(1,2).UnComplete();
+  sysmat->Matrix(1,2).Zero();
+
+  sysmat->Matrix(2,2).UnComplete();
+  sysmat->Matrix(2,2).Zero();
+  sysmat->Matrix(2,2).Add(*onesdiag, false, 1.0, 1.0);
+
+  sysmat->Matrix(2,0).UnComplete();
+  sysmat->Matrix(2,0).Zero();
+
+  sysmat->Matrix(2,1).UnComplete();
+  sysmat->Matrix(2,1).Zero();
+
+  sysmat->Complete();
+
+  Teuchos::RCP<LINALG::SparseMatrix> mergedmatrix = sysmat->Merge();
+
+  if(splitmatrix_)
+  {
+    Teuchos::RCP<LINALG::MapExtractor> extractor = Teuchos::rcp(new LINALG::MapExtractor(*domainmaps_.FullMap(),domainmaps_.Map(1)));
+    Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat = mergedmatrix->Split<FLD::UTILS::InterfaceSplitStrategy>(*extractor,*extractor);
+    mat->SetCondElements(condelements_);
+    mat->Complete();
+    sysmat_ = mat;
+  }
+  else
+  {
+    sysmat_ = mergedmatrix;
+  }
+
+  if (shapederivatives_ != Teuchos::null)
+  {
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> shapederivatives =
+        Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(shapederivatives_);
+
+    shapederivatives->Matrix(0,2).UnComplete();
+    shapederivatives->Matrix(0,2).Zero();
+
+    shapederivatives->Matrix(1,2).UnComplete();
+    shapederivatives->Matrix(1,2).Zero();
+
+    shapederivatives->Matrix(2,2).UnComplete();
+    shapederivatives->Matrix(2,2).Zero();
+    shapederivatives->Matrix(2,2).Add(*onesdiag, false, 1.0, 1.0);
+
+    shapederivatives->Matrix(2,0).UnComplete();
+    shapederivatives->Matrix(2,0).Zero();
+
+    shapederivatives->Matrix(2,1).UnComplete();
+    shapederivatives->Matrix(2,1).Zero();
+
+    shapederivatives->Complete();
+
+    Teuchos::RCP<LINALG::SparseMatrix> mergedshapederivatives = shapederivatives->Merge();
+
+    Teuchos::RCP<LINALG::MapExtractor> extractor = Teuchos::rcp(new LINALG::MapExtractor(*domainmaps_.FullMap(),domainmaps_.Map(1)));
+    Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > matshapederivatives = mergedmatrix->Split<FLD::UTILS::InterfaceSplitStrategy>(*extractor,*extractor);
+    matshapederivatives->SetCondElements(condelements_);
+    matshapederivatives->Complete();
+    shapederivatives_ = matshapederivatives;
+  }
+
 }

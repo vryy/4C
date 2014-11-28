@@ -848,6 +848,15 @@ public:
   */
   virtual void DoProblemSpecificBoundaryConditions() {return;}
 
+  /// Update slave dofs for fsi simulations with fluid mesh tying
+  void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f);
+
+  /// Use the split of the ale mesh tying for the sysmat
+  void UseMshtSplit();
+
+  /// Use the split of the fsi mesh tying for the sysmat
+  void UseFSISplit();
+
 protected:
 
   // don't want = operator and cctor
@@ -1224,6 +1233,17 @@ protected:
   /// flag for windkessel outflow condition
   bool isimpedancebc_;
 
+  /// elements with condition from the fsi framework
+  Teuchos::RCP<std::set<int> > condelements_;
+
+  /// map extractor from the fsi framework
+  LINALG::MultiMapExtractor domainmaps_;
+
+  /// flag for the sysmat of the fsi framework
+  bool splitmatrix_;
+
+  /// flag for fsi simulations with ale mesh tying
+  bool fsi_and_msht_;
 
   //! @name Set general parameter in class f3Parameter
   /*!

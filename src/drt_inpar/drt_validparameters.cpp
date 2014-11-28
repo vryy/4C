@@ -5118,6 +5118,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                         INPAR::ALE::divcont_continue),
                                     &adyn);
 
+  setStringToIntegralParameter<int>("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm",
+                                  tuple<std::string>(
+                                    "no",
+                                    "yes"),
+                                  tuple<int>(
+                                      INPAR::ALE::no_meshtying,
+                                      INPAR::ALE::yes_meshtying),
+                                  &adyn);
+
   // linear solver id used for scalar ale problems
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for ale problems...",&adyn);
 

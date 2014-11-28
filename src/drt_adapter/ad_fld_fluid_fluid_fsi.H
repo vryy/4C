@@ -83,6 +83,9 @@ namespace ADAPTER {
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return mergedfluidinterface_; }
 
+    /// communication object at the interface
+    virtual Teuchos::RCP<FLD::UTILS::FsiMapExtractor>const& FsiInterface() const { return fsiinterface_; }
+
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
     { dserror("Do not call RexationSolve for XFFSI."); return Teuchos::null; }
 
@@ -121,6 +124,8 @@ namespace ADAPTER {
     /// (indicated monolithic XFFSI with fluidsplit)
     virtual void UseBlockMatrix(bool split_fluidsysmat = false);
 
+    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f){};
+
   private:
 
     /// setup of map extractor to distinguish between FSI DOF-map and
@@ -135,9 +140,14 @@ namespace ADAPTER {
     /// type cast pointer to XFluidFluid
     Teuchos::RCP<FLD::XFluidFluid>         xfluidfluid_;
 
+    /// fsi map extractor for embedded fluid
+    Teuchos::RCP<FLD::UTILS::FsiMapExtractor> embfluidfsiinterface_;
+
     /// fsi map extractor for merged fluid maps (to keep fsi interface-DOF apart from
     /// merged inner DOF (inner embedded fluid together with background fluid)
     Teuchos::RCP<FLD::UTILS::MapExtractor> mergedfluidinterface_;
+
+    Teuchos::RCP<FLD::UTILS::FsiMapExtractor> fsiinterface_;
 
     /// type of monolithic XFluid-Fluid approach (decides whether ALE-mesh is fixed during
     /// Newton iteration)
