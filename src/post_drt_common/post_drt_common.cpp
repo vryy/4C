@@ -1108,7 +1108,7 @@ PostField PostProblem::getfield(MAP* field_info)
   {
     if(problemtype_==prb_combust)
     {
-      dis=Teuchos::rcp(new DRT::DiscretizationXFEM(field_name,comm_));
+      dis=Teuchos::rcp(new DRT::DiscretizationCombust(field_name,comm_));
     }
     else
     {

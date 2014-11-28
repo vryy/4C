@@ -38,13 +38,13 @@ Maintainer: Ursula Rasthofer
 /*----------------------------------------------------------------------*
  |  Evaluate edge-based integrals (public)               rasthofer 02/13|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
+void DRT::DiscretizationCombust::EvaluateEdgeBasedCombust(
         Teuchos::ParameterList&              params,
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<Epetra_Vector>          systemvector1
 )
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationXFEM::EdgeBased" );
+  TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationCombust::EdgeBased" );
 
 
   Teuchos::RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*(this->DofColMap()),true);
@@ -150,10 +150,10 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
 /*----------------------------------------------------------------------*
  |  Evaluate edge-based integrals (public)               rasthofer 02/13|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::EvaluateEdgeBasedCombust(
+void DRT::DiscretizationCombust::EvaluateEdgeBasedCombust(
         DRT::ELEMENTS::Combust3IntFace*      ele,             ///< internal face element
         Teuchos::ParameterList&              params,          ///< parameter list
-        DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
+        DRT::DiscretizationCombust&             discretization,  ///< XFEM discretization
         Teuchos::RCP<LINALG::SparseMatrix>            systemmatrix,    ///< systemmatrix
         Teuchos::RCP<Epetra_Vector>                   systemvector     ///< systemvector
 )

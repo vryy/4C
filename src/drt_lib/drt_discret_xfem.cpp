@@ -82,7 +82,7 @@ Maintainer: Ursula Rasthofer
 \author henke 07/09
 */
 static void DoDirichletConditionCombust(DRT::Condition&             cond,
-                                 DRT::DiscretizationXFEM&    dis,
+                                 DRT::DiscretizationCombust&    dis,
                                  const bool                  usetime,
                                  const double                time,
                                  Teuchos::RCP<Epetra_Vector> systemvector,
@@ -99,7 +99,7 @@ static void DoDirichletConditionCombust(DRT::Condition&             cond,
  | remark: read documentation at top of this file!                      |
  *----------------------------------------------------------------------*/
 void DoDirichletConditionCombust(DRT::Condition&             cond,
-                          DRT::DiscretizationXFEM&    dis,
+                          DRT::DiscretizationCombust&    dis,
                           const bool                  usetime,
                           const double                time,
                           Teuchos::RCP<Epetra_Vector> systemvector,
@@ -797,7 +797,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
  | remark: read documentation at top of this file!                      |
  *----------------------------------------------------------------------*/
 void DoDirichletConditionCombust(DRT::Condition&             cond,
-                          DRT::DiscretizationXFEM&    dis,
+                          DRT::DiscretizationCombust&    dis,
                           const bool                  usetime,
                           const double                time,
                           Teuchos::RCP<Epetra_Vector> systemvector,
@@ -994,7 +994,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
 /*----------------------------------------------------------------------*
  | evaluate Dirichlet conditions (public)                   henke 07/09 |
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::EvaluateDirichletCombust(Teuchos::ParameterList& params,
+void DRT::DiscretizationCombust::EvaluateDirichletCombust(Teuchos::ParameterList& params,
                                             Teuchos::RCP<Epetra_Vector> systemvector,
                                             Teuchos::RCP<Epetra_Vector> systemvectord,
                                             Teuchos::RCP<Epetra_Vector> systemvectordd,

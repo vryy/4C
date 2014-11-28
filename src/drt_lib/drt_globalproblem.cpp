@@ -1453,7 +1453,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_combust:
   {
     // create empty discretizations
-    fluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
+    fluiddis = Teuchos::rcp(new DRT::DiscretizationCombust("fluid",reader.Comm()));
     scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
     particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
 

@@ -450,7 +450,7 @@ void FLD::CombustFluidImplicitTimeInt::Init()
   }
 
   // build xfem discretization with all its special options
-  xfemdiscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
+  xfemdiscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationCombust>(discret_, true);
   // build internal faces, if required
   if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based" or
      DRT::INPUT::IntegralValue<bool>(params_->sublist("COMBUSTION FLUID"),"XFEMSTABILIZATION") == true)

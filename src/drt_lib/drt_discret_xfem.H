@@ -49,7 +49,7 @@ namespace DRT
 
 \author henke (henke@lnm.mw.tum.de)
 */
-class DiscretizationXFEM : public DiscretizationFaces
+class DiscretizationCombust : public DiscretizationFaces
 {
 public:
 
@@ -59,14 +59,14 @@ public:
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
   */
-  DiscretizationXFEM(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
+  DiscretizationCombust(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
   :DiscretizationFaces(name, comm) { extension_filled_ = false; }; // use base class constructor
 
   /*!
   \brief Destructor
 
   */
-  virtual ~DiscretizationXFEM()
+  virtual ~DiscretizationCombust()
   {
     return;
   };
@@ -124,12 +124,12 @@ public:
   void EvaluateEdgeBasedCombust(
        DRT::ELEMENTS::Combust3IntFace*      ele,             ///< internal face element
        Teuchos::ParameterList&              params,          ///< parameter list
-       DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
+       DRT::DiscretizationCombust&             discretization,  ///< XFEM discretization
        Teuchos::RCP<LINALG::SparseMatrix>   systemmatrix,    ///< systemmatrix
        Teuchos::RCP<Epetra_Vector>          systemvector     ///< systemvector
        );
 
-}; // class DiscretizationXFEM
+}; // class DiscretizationCombust
 } // namespace DRT
 
 #endif  // #ifndef DISCRET_XFEM_H

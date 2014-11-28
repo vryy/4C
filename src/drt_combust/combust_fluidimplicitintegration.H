@@ -39,7 +39,7 @@ namespace COMBUST
 namespace DRT
 {
   class Discretization;
-  class DiscretizationXFEM;
+  class DiscretizationCombust;
   class IndependentPBCDofSet;
 }
 
@@ -612,7 +612,7 @@ protected:
   Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
 
   /// special discretization for xfem: holds faces and may handle extended DBC
-  Teuchos::RCP<DRT::DiscretizationXFEM>      xfemdiscret_;
+  Teuchos::RCP<DRT::DiscretizationCombust>      xfemdiscret_;
 
   //! @name parameters for sampling/dumping period
   int samstart_;
