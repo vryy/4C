@@ -89,7 +89,7 @@ COUPLING_METHOD                 Nitsche       // "BoundaryTypeTauPressure" "Boun
 COUPLING_STRATEGY               xfluid_sided_coupling
 XFF_CONV_STAB_SCALING           none
 VISC_ADJOINT_SYMMETRY           yes
-VISC_STAB_FAC                   35
+NIT_STAB_FAC                   35
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    vol_equivalent
 GHOST_PENALTY_STAB              yes

@@ -103,7 +103,7 @@ BOUNDARY_GAUSS_POINTS_BY        MomentFitting
 COUPLING_METHOD                 Nitsche                       // BoundaryTypeNitsche // BoundaryTypeNeumann
 COUPLING_STRATEGY               xfluid_sided_coupling
 IS_PSEUDO_2D                    yes
-VISC_STAB_FAC                   20.0
+NIT_STAB_FAC                   20.0
 XFF_CONV_STAB_SCALING           none
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0

@@ -86,9 +86,9 @@ public:
   //! get the element length definition used for viscous part of the penalty term in Nitsche's method
   INPAR::XFEM::ViscStab_hk ViscStabHK() const{ return visc_stab_hk_; };
 
-  //! get the dimensionless user defined scaling for the viscous part of the penalty term in Nitsche's method and
+  //! get the dimensionless user defined scaling for the penalty term in Nitsche's method and
   //! scaling factor for the MHVS method (then gamma = 1/n, see publications)
-  double ViscStabGamma() const{ return visc_stab_gamma_; };
+  double NITStabScaling() const{ return nit_stab_gamma_; };
 
   //! get information, whether the formulation should be symmetric/skew-symmetric in the adjoint viscous terms
   //! @return true, in case of a symmetric adjoint term
@@ -217,10 +217,10 @@ private:
   //! element length definition used for viscous part of the penalty term in Nitsche's method
   INPAR::XFEM::ViscStab_hk visc_stab_hk_;
 
-  //! dimensionless user defined scaling for the viscous part of the penalty term in Nitsche's method and
+  //! dimensionless user defined scaling for the penalty term in Nitsche's method and
   //! scaling factor for the MHVS method (then gamma = 1/n, see publications),
   //! this parameter shall be independent of element type, shape and polynomial degree
-  double visc_stab_gamma_;
+  double nit_stab_gamma_;
 
   //! flag, that indicates matching signs between the viscous and adjoint viscous Nitsche terms
   //! or between the equivalent MHVS-terms

@@ -176,9 +176,16 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::VelocityRowMap()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<IO::DiscretizationWriter>& ADAPTER::FluidFluidFSI::EmbDiscWriter()
+const Teuchos::RCP<DRT::Discretization>& ADAPTER::FluidFluidFSI::Discretization()
 {
-  return xfluidfluid_->EmbDiscWriter();
+  return xfluidfluid_->EmbeddedDiscretization();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Teuchos::RCP<IO::DiscretizationWriter>& ADAPTER::FluidFluidFSI::DiscWriter()
+{
+  return xfluidfluid_->EmbeddedDiscWriter();
 }
 
 /*----------------------------------------------------------------------*
@@ -217,7 +224,7 @@ void ADAPTER::FluidFluidFSI::SetupInterface()
 void ADAPTER::FluidFluidFSI::PrepareShapeDerivatives()
 {
   // the dof-maps may have changed: create a new shape derivatives matrix
-  Teuchos::RCP<std::set<int> > condelements = mergedfluidinterface_->ConditionedElementMap(*Discretization());
+  Teuchos::RCP<std::set<int> > condelements = mergedfluidinterface_->ConditionedElementMap(*xfluidfluid_->EmbeddedDiscretization());
   xfluidfluid_->PrepareShapeDerivatives(mergedfluidinterface_,condelements);
 }
 

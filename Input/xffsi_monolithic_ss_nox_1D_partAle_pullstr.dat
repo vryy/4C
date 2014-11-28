@@ -90,7 +90,7 @@ RELAXING_ALE_EVERY              1
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 COUPLING_STRATEGY               embedded_sided_coupling
-VISC_STAB_FAC                   21.97015825                   // 35/CT(2d)
+NIT_STAB_FAC                   21.97015825                   // 35/CT(2d)
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    vol_equivalent
 IS_PSEUDO_2D                    yes

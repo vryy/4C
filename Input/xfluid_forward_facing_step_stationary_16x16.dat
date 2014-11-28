@@ -142,7 +142,7 @@ XFLUID_TIMEINT                  STD=COPY/SL_and_GHOST=COPY/GP
 //EMBEDDED_BOUNDARY             BoundaryTypeSigma
 COUPLING_STRATEGY               xfluid_sided_weak_DBC
 //MSH_L2_PROJ                   part_ele_proj
-VISC_STAB_FAC                   30
+NIT_STAB_FAC                   30
 //VISC_STAB_SCALING             visc_div_by_hk
 VISC_STAB_HK                    vol_equivalent
 //CONV_STAB_FAC                 1

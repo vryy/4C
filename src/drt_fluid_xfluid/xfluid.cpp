@@ -2794,7 +2794,7 @@ void FLD::XFluid::PrintStabilizationParams() const
 
     if(coupling_method_ == INPAR::XFEM::Nitsche)
     {
-      IO::cout << "VISC_STAB_FAC:                     " << interfstabparams->get<double>("VISC_STAB_FAC") << "\n";
+      IO::cout << "NIT_STAB_FAC:                      " << interfstabparams->get<double>("NIT_STAB_FAC") << "\n";
       IO::cout << "VISC_STAB_TRACE_ESTIMATE:          " << interfstabparams->get<std::string>("VISC_STAB_TRACE_ESTIMATE") << "\n";
       IO::cout << "VISC_STAB_HK:                      " << interfstabparams->get<std::string>("VISC_STAB_HK")  << "\n";
     }

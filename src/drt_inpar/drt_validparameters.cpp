@@ -7202,7 +7202,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("VISC_ADJOINT_SYMMETRY","yes","viscous and adjoint viscous interface terms with matching sign?",&xfluid_stab);
 
   // viscous and convective Nitsche/MSH stabilization parameter
-  DoubleParameter("VISC_STAB_FAC", 35.0, " ( stabilization parameter for viscous part of interface stabilization (Nitsche, hybrid stress-based LM)",&xfluid_stab);
+  DoubleParameter("NIT_STAB_FAC", 35.0, " ( stabilization parameter for Nitsche's penalty term",&xfluid_stab);
 
   setStringToIntegralParameter<int>("VISC_STAB_TRACE_ESTIMATE","CT_div_by_hk","how to estimate the scaling from the trace inequality in Nitsche's method",
                                tuple<std::string>("CT_div_by_hk", "eigenvalue"),

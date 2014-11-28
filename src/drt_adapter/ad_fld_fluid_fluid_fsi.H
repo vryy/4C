@@ -98,8 +98,11 @@ namespace ADAPTER {
     /// get the velocity row map of the embedded fluid
     virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap();
 
+    // access to embedded discretization
+    const Teuchos::RCP<DRT::Discretization>& Discretization();
+
     // return discretization writer of embedded fluid discretization (for special purpose output)
-    const Teuchos::RCP<IO::DiscretizationWriter>& EmbDiscWriter();
+    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter();
 
     /// get map extractor for background/embedded fluid
     virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor();

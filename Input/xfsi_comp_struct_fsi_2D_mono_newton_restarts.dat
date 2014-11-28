@@ -181,7 +181,7 @@ INTERFACE_DISP                  interface_disp_by_fsi
 COUPLING_METHOD                 Nitsche
 COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_ADJOINT_SYMMETRY           yes
-VISC_STAB_FAC                   50.0
+NIT_STAB_FAC                   50.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    ele_vol_div_by_max_ele_surf //vol_div_by_surf //vol_equivalent //vol_div_by_surf //vol_equivalent //vol_div_by_surf//vol_equivalent  // vol_div_by_surf // longest_ele_length
 IS_PSEUDO_2D                    yes

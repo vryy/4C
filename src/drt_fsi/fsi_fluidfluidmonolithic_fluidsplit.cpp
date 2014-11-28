@@ -164,7 +164,7 @@ void FSI::FluidFluidMonolithicFluidSplit::Output()
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
     const int upres = fsidyn.get<int>("UPRES");
     if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
-      FluidField()->EmbDiscWriter()->WriteVector("fsilambda", lambdaemb);
+      FluidField()->DiscWriter()->WriteVector("fsilambda", lambdaemb);
   }
   AleField()->Output();
   FluidField()->LiftDrag();

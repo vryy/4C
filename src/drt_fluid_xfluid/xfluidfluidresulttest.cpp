@@ -30,7 +30,7 @@ FLD::XFluidFluidResultTest::XFluidFluidResultTest(XFluidFluid& fluid)
 {
   embfluiddis_= fluid.embdis_;
   bgfluiddis_= fluid.bgdis_;
-  embfluidsol_   = fluid.alevelnp_ ;
+  embfluidsol_   = fluid.velnp_ ;
   bgfluidsol_   = fluid.state_->velnp_ ;
 //  mytraction_ = fluid.calcStresses();
 }

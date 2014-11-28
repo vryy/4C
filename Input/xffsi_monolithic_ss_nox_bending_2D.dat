@@ -153,7 +153,7 @@ VOLUME_GAUSS_POINTS_BY          DirectDivergence
 COUPLING_METHOD                 Nitsche                       // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               embedded_sided_coupling //xfluid_sided_mortaring
 IS_PSEUDO_2D                    yes
-VISC_STAB_FAC                   24.40282794                   // 35/CT(2d)
+NIT_STAB_FAC                   24.40282794                   // 35/CT(2d)
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent
 XFF_CONV_STAB_SCALING           none

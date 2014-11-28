@@ -93,7 +93,7 @@ VEL_FUNCT_NO                    2
 INTERFACE_DISP                  interface_disp_zero
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
-VISC_STAB_FAC                   30.0
+NIT_STAB_FAC                   30.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    vol_equivalent
 CONV_STAB_SCALING               inflow

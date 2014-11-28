@@ -136,7 +136,7 @@ INTERFACE_DISP                  interface_disp_by_fsi
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche // Which Boundary method shall be used to enforce interface conditions?
 IS_PSEUDO_2D                    yes
-VISC_STAB_FAC                   34.86118277      // 50.0/CT(2d)
+NIT_STAB_FAC                   34.86118277      // 50.0/CT(2d)
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent                  // vol_div_by_surf // longest_ele_length
 CONV_STAB_FAC                   1.0

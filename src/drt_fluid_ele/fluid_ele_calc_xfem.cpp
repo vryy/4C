@@ -1559,7 +1559,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
     // (C^2 includes characteristic length scale);
     // the analogous MHVS-factor = 2 * n * mu * meas(\Gamma)/meas(\Omega_K)
     // gamma <--> 2 * n
-    double mhvs_param = fldparaxfem_->ViscStabGamma() / 2.0;
+    double mhvs_param = fldparaxfem_->NITStabScaling() / 2.0;
     if ( fabs(mhvs_param) < 1.e-8 )
       dserror("MHVS stabilizing parameter n appears in denominator. Please avoid choosing 0.");
   }
@@ -1820,7 +1820,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         // evaluate additional inflow/convective stabilization terms
         if (add_conv_stab)
         {
-          double NIT_conv_stab_fac = 0.0;
+          double NIT_full_stab_fac = 0.0;
           const double NIT_visc_stab_fac = 0.0;
 
           my::SetConvectiveVelint(ele->IsAle());
@@ -1828,7 +1828,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
           if (fluidfluidcoupling)
           {
             NIT_Compute_FullPenalty_Stabfac(
-                NIT_conv_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+                NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
                 normal,
                 h_k,
                 NIT_visc_stab_fac   ///< Nitsche's viscous scaling part of penalty term
@@ -1842,14 +1842,14 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
                  my::velint_,
                  normal,
                  my::densaf_,
-                 NIT_conv_stab_fac,
+                 NIT_full_stab_fac,
                  fac,
                  fldparaxfem_->XffConvStabScaling());
           }
           else if (! eval_side_coupling)
           {
             NIT_Compute_FullPenalty_Stabfac(
-                NIT_conv_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
+                NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
                 normal,
                 h_k,
                 NIT_visc_stab_fac   ///< Nitsche's viscous scaling part of penalty term
@@ -1863,7 +1863,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
                 my::velint_,
                 normal,
                 my::densaf_,
-                NIT_conv_stab_fac,
+                NIT_full_stab_fac,
                 fac);
           }
         }
@@ -3175,13 +3175,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
     //---------------------------------------------------------------------------------
     // compute viscous part of Nitsche's penalty term scaling for Nitsche's method
-    // (dimensionless)
+    // based on the inverse characteristic element length
     //---------------------------------------------------------------------------------
 
-    double NIT_visc_stab_fac = 0.0;
-
-    // compute Nitsche stabilization factor based on the inverse characteristic element length
-    NIT_visc_stab_fac = NIT_Compute_ViscPenalty_Stabfac( ele->Shape(), inv_hk );
+    double NIT_visc_stab_fac = NIT_Compute_ViscPenalty_Stabfac( ele->Shape(), inv_hk );
 
     // define interface force vector w.r.t side (for XFSI)
     Epetra_SerialDenseVector iforce;
@@ -3462,7 +3459,7 @@ double FluidEleCalcXFEM<distype>::NIT_Compute_ViscPenalty_Stabfac(
 
   //--------------------------------------
   // scale the viscous part of the penalty scaling with the dimensionless user defined Nitsche-parameter gamma
-  NIT_visc_stab_fac *= fldparaxfem_->ViscStabGamma();
+  NIT_visc_stab_fac *= fldparaxfem_->NITStabScaling();
 
 
   return NIT_visc_stab_fac;
@@ -3660,8 +3657,6 @@ void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
   // (1)
   NIT_full_stab_fac = NIT_visc_stab_fac;
 
-  // Todo: scale with fldparaxfem_->ViscStabGamma()
-
   if (fldparaxfem_->MassConservationScaling() == INPAR::XFEM::MassConservationScaling_full)
   {
     //TODO: Raffaela: which velocity has to be evaluated for these terms in ALE? the convective velocity or the velint?
@@ -3670,18 +3665,18 @@ void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
     // take the maximum of viscous & convective contribution or the sum?
     if (fldparaxfem_->MassConservationCombination() == INPAR::XFEM::MassConservationCombination_max)
     {
-      NIT_full_stab_fac = std::max(NIT_full_stab_fac,my::densaf_ * fabs(velnorminf) / 6.0);
+      NIT_full_stab_fac = std::max(NIT_full_stab_fac,fldparaxfem_->NITStabScaling() * my::densaf_ * fabs(velnorminf) / 6.0);
       if (! my::fldparatimint_->IsStationary())
-        NIT_full_stab_fac= std::max( h_k * my::densaf_ / (12.0 * my::fldparatimint_->TimeFac()),NIT_full_stab_fac);
+        NIT_full_stab_fac= std::max( fldparaxfem_->NITStabScaling() * h_k * my::densaf_ / (12.0 * my::fldparatimint_->TimeFac()),NIT_full_stab_fac);
     }
     else // the sum
     {
       // (2)
-      NIT_full_stab_fac += my::densaf_ * fabs(velnorminf) / 6.0;
+      NIT_full_stab_fac += fldparaxfem_->NITStabScaling() * my::densaf_ * fabs(velnorminf) / 6.0;
 
       // (3)
       if (! my::fldparatimint_->IsStationary())
-        NIT_full_stab_fac += h_k * my::densaf_ / (12.0 * my::fldparatimint_->TimeFac());
+        NIT_full_stab_fac += fldparaxfem_->NITStabScaling() * h_k * my::densaf_ / (12.0 * my::fldparatimint_->TimeFac());
     }
   }
   else if (fldparaxfem_->MassConservationScaling() != INPAR::XFEM::MassConservationScaling_only_visc)
