@@ -53,6 +53,7 @@ INITSTATITEMAX                  5
 ITEMAX                          10
 LIFTDRAG                        No
 LINEAR_SOLVER                   3
+WSS_ML_AGR_SOLVER               -1
 MAXTIME                         1000
 MESHTYING                       no
 NONLINITER                      Newton //Newton fixed_point_like
@@ -196,7 +197,7 @@ FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
+FLUID_WALL_SHEAR_STRESS         Yes //needs to be YES is WSS dependend permeability!
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
 PREFIX_GROUP_ID                 No
@@ -573,6 +574,11 @@ DSURF                           2
 E 18 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 100.0 CONDUCT 100.0 FILTR 0.98 WSSONOFF 1 WSSCOEFFS 5e-2 1e-5 1e-6
 // interface_intima
 E 17 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 100.0 CONDUCT 100.0 FILTR 0.98 WSSONOFF 1 WSSCOEFFS 5e-2 1e-5 1e-6
+
+-------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
+DSURF  1
+// interface_lumen
+E 18 -
 
 -----------------------------------------------DNODE-NODE TOPOLOGY
 //NODE   292 DNODE 1

@@ -118,8 +118,6 @@ namespace FS3I
     /// extract Wall Shear Stresses at the interface
     void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
 
-    ///Calculation of wall shear stress at the interface
-    Teuchos::RCP<Epetra_Vector> CalcWallShearStress();
     //@}
 
   protected:

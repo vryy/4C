@@ -37,7 +37,7 @@ FLD::UTILS::WSSManager::WSSManager(
       Teuchos::RCP<Epetra_Vector> dispnp,
       const bool alefluid,
       const int numdim,
-      Teuchos::RCP<Epetra_CrsMatrix> sysmat
+      Teuchos::RCP<LINALG::SparseOperator> sysmat
 ): ML_solver_(ml_solver),
    discret_(discret),
    dispnp_(dispnp),
@@ -45,7 +45,6 @@ FLD::UTILS::WSSManager::WSSManager(
    numdim_(numdim),
    SepEnr_(CalcSepEnr(ml_solver,discret,sysmat))
 {
-  std::cout<<__FILE__<<__LINE__<<std::endl;
   if (ML_solver_ != -1 and SepEnr_== Teuchos::null)
     dserror("If a WSS_ML_AGR_SOLVER is specified one should already have set SepEnr_. Strange thing...");
 }
@@ -177,7 +176,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::WSSManager::AggreagteWallShearStresses(
 Teuchos::RCP<LINALG::SparseMatrix> FLD::UTILS::WSSManager::CalcSepEnr(
     const int ml_solver ,
     Teuchos::RCP<DRT::Discretization> discret ,
-    Teuchos::RCP<Epetra_CrsMatrix> sysmat
+    Teuchos::RCP<LINALG::SparseOperator> sysmat
 )
 {
   Teuchos::RCP<LINALG::SparseMatrix> SepEnr;
@@ -188,6 +187,16 @@ Teuchos::RCP<LINALG::SparseMatrix> FLD::UTILS::WSSManager::CalcSepEnr(
   }
   else
   {
+    Teuchos::RCP<LINALG::SparseMatrix> sysmat2;
+
+    //Try this:
+    sysmat2 =  Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat);
+    if (sysmat2 == Teuchos::null) //if it does not work the fluid matrix probably is a BlockSparseMatrix, compare with function UseBlockMatrix()
+      sysmat2 = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat)->Merge();
+    if (sysmat2 == Teuchos::null)
+      dserror("One of these two dynamic casts should have worked... Sorry!");
+
+
     if (discret_->Comm().MyPID() == 0)
       std::cout << "Calculating mean WSS via ML-aggregation:" << std::endl;
 
@@ -258,7 +267,7 @@ Teuchos::RCP<LINALG::SparseMatrix> FLD::UTILS::WSSManager::CalcSepEnr(
 
     // get plain aggregation Ptent
     Teuchos::RCP<Epetra_CrsMatrix> crsPtent;
-    MLAPI::GetPtent(*sysmat,mlparams,nullspace,crsPtent);
+    MLAPI::GetPtent(*sysmat2->EpetraMatrix(),mlparams,nullspace,crsPtent);
     LINALG::SparseMatrix Ptent(crsPtent);
 
     // compute scale-separation matrix: S = Ptent*Ptent^T

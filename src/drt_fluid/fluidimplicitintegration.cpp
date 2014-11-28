@@ -3066,12 +3066,13 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   dtp_ = dta_;
   discret_->ClearState();
 
-  // Create wallshearstress manager, if needed. This cannot be done in Init() since we need a fully build systemmatrix when building
+  // Create WSS manager, if needed. This cannot be done in Init() since we need a fully build system matrix when building
   if (write_wall_shear_stresses_ and wssmanager_==Teuchos::null)
   {
     const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams(); //get number of ML-solver
     const int mlsolver = fdyn.get<int>("WSS_ML_AGR_SOLVER");
-    wssmanager_ = Teuchos::rcp( new FLD::UTILS::WSSManager( mlsolver, discret_, dispnp_, alefluid_, numdim_, SystemMatrix()->EpetraMatrix()) );
+
+    wssmanager_ = Teuchos::rcp( new FLD::UTILS::WSSManager( mlsolver, discret_, dispnp_, alefluid_, numdim_, sysmat_) );
   }
 
   return;

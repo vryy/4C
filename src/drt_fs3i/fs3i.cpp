@@ -60,6 +60,7 @@ FS3I::FS3I_Base::FS3I_Base()
   timemax_ = fs3icontrol.get<double>("MAXTIME");
 
   infperm_ = DRT::INPUT::IntegralValue<int>(fs3icontrol,"INF_PERM");
+  wssdependperm_ = false;
 
 
   //---------------------------------------------------------------------
@@ -155,12 +156,24 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
 {
   //Check FS3I control parameters
   DRT::Problem* problem = DRT::Problem::Instance();
+  const Teuchos::ParameterList& ioparams = problem->IOParams();
   const Teuchos::ParameterList& fs3icontrol = problem->FS3IControlParams();
+  const Teuchos::ParameterList& structdynparams = problem->StructuralDynamicParams();
+  const Teuchos::ParameterList& scatradynparams = problem->ScalarTransportDynamicParams();
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
+  //are UPRESes the same?
   if ( fs3icontrol.get<int>("UPRES") != fsidyn.get<int>("UPRES") )
     dserror("In sections FS3I CONTROL and FSI DYNAMIC the output parameter UPRES must be the same! ");
 
+  //is scatra calculated conservative?
+  if ( DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatradynparams,"CONVFORM") != INPAR::SCATRA::convform_conservative )
+      dserror("Your scalar fields have to be calculated in conservative form, since the velocity field in the structure is NOT divergence free!");
+
+  //is structure calculated dynamic when not prestressing?
+  if ( DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structdynparams,"DYNAMICTYP") == INPAR::STR::dyna_statics and
+      DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(structdynparams,"DYNAMICTYP") != INPAR::STR::prestress_mulf)
+    dserror("Since we need a velocity field in the structure domain for the scalar field you need do calculate the structure dynamically! Exception: when prestressing..");
 
 
   //Check DESIGN SCATRA COUPLING SURF CONDITIONS
@@ -177,9 +190,9 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
 
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
-    Teuchos::RCP<DRT::Discretization> dis = (scatravec_[i])->ScaTraField()->Discretization();
+    Teuchos::RCP<DRT::Discretization> disscatra = (scatravec_[i])->ScaTraField()->Discretization();
     std::vector<DRT::Condition*> coupcond;
-    dis->GetCondition("ScaTraCoupling",coupcond);
+    disscatra->GetCondition("ScaTraCoupling",coupcond);
 
     for (unsigned iter=0; iter<coupcond.size(); ++iter)
     {
@@ -201,6 +214,18 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
 
         if (scatravec_[i]->ScaTraField()->NumScal() != params->at(7))
           dserror("Number of scalars NUMSCAL in ScaTra coupling conditions with COUPID %i does not equal the number of scalars your scalar field has!",myID);
+
+        if ( (bool)params->at(3) ) //if we have WSS depended interface permeabiliy
+        {
+          if (not (bool)DRT::INPUT::IntegralValue<int>(ioparams,"FLUID_WALL_SHEAR_STRESS"))
+            dserror("If you have a WSS dependent interface permeablity you need FLUID_WALL_SHEAR_STRESS in section IO to be YES. Otherwise the WSSManager will not be initialisied!");
+
+          std::vector<DRT::Condition*> FSCCond;
+          problem->GetDis("fluid")->GetCondition("FluidStressCalc",FSCCond);
+          std::cout<<"FSCOND.size():\t"<<FSCCond.size()<<std::endl;
+          if (FSCCond.size() == 0)
+            dserror("If you have a WSS dependent interface permeablity you need at least one FLUID STRESS CALC CONDITION to specify the region you want to evaluate the WSS. Typically this region is equal to the SSI interface...");
+        }
 
         PermCoeffs[i].insert(std::pair<int,std::vector<double>*>(myID,params));;
       }
@@ -242,6 +267,13 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
         dserror("Third WSS coefficient WSSCOEFFS of ScaTra couplings with COUPID %i needs to be the same!",ID);
       if ( fluid_permcoeffs->at(7) != structure_permcoeffs->at(7) )
         dserror("Number of scalars NUMSCAL of ScaTra couplings with COUPID %i needs to be the same!",ID);
+
+      //TODO: (Thon) find a better place to do this
+      if ( fluid_permcoeffs->at(3) == 1 ) //iff we have WSS dependency
+      {
+        std::cout<<__FILE__<<std::endl;
+        wssdependperm_ = true; //we assume here that
+      }
     }
   }
 }

@@ -129,9 +129,6 @@ namespace FS3I
     ///provide displacements from FPSI subproblem for scatra subproblem
     void SetMeshDisp();
 
-    ///Calculation of wall shear stress at the interface
-    Teuchos::RCP<Epetra_Vector> CalcWallShearStress();
-
     ///Calculation of mean concentration in the membrane between fluid and poro
     Teuchos::RCP<Epetra_Vector> CalcMeanConcentration();
 

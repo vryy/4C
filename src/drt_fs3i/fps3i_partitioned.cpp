@@ -674,8 +674,12 @@ void FS3I::PartFPS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >
 void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss)
 {
   //############ Fluid Field ###############
-  Teuchos::RCP<Epetra_Vector> WallShearStress = LINALG::CreateVector(*(fpsi_->FluidField()->Discretization()->DofRowMap()),true);
-  WallShearStress = CalcWallShearStress();
+
+  Teuchos::RCP<ADAPTER::FluidFSI> fluid = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>( fpsi_->FluidField() );
+  if (fluid == Teuchos::null)
+    dserror("Dynamic cast to ADAPTER::FluidFSI failed!");
+
+  Teuchos::RCP<Epetra_Vector> WallShearStress = fluid->CalculateWallShearStresses(); //CalcWallShearStress();
   wss.push_back(WallShearStress);
 
   //############ Poro Field ###############
@@ -730,108 +734,6 @@ void FS3I::PartFPS3I::ExtractMeanConcentration(std::vector<Teuchos::RCP<Epetra_V
   MeanConc.push_back(MeanConcentration2);
 }
 
-
-/*----------------------------------------------------------------------*
- |  Calculate wall shear stresses                         hemmler 07/14 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::PartFPS3I::CalcWallShearStress()
-{
-  Teuchos::ParameterList eleparams;
-  // set action for elements
-  eleparams.set<int>("action",FLD::ba_calc_node_normal);
-  std::string condstring("ScaTraCoupling");
-
-  //get rowmap
-  Teuchos::RCP<DRT::Discretization> discret = fpsi_->FluidField()->Discretization();
-  const Epetra_Map* dofrowmap = discret->DofRowMap();
-
-  //vector ndnorm0 with pressure-entries is needed for EvaluateCondition
-  Teuchos::RCP<Epetra_Vector> ndnorm0 = LINALG::CreateVector(*dofrowmap,true);
-
-  // evaluate the normals of the surface, note: normal vectors do not yet have length = 1.0
-  discret->ClearState();
-  Teuchos::RCP<const Epetra_Vector> dispnp = LINALG::CreateVector(*dofrowmap,true);
-  dispnp=fpsi_->FluidField()->Dispnp();
-  discret->SetState("dispnp", dispnp);
-  discret->EvaluateCondition(eleparams,ndnorm0,condstring);
-  discret->ClearState();
-
-  //dimensions
-  const int ndim = DRT::Problem::Instance()->NDim();
-
-  // normalize the normal vectors
-  for (int i = 0; i < ndnorm0->MyLength();i+=ndim+1)
-  {
-    // calculate the length of the normal
-    double L = 0.0;
-    for (int j = 0; j<ndim; j++)
-    {
-      L += ((*ndnorm0)[i+j])*((*ndnorm0)[i+j]);
-    }
-    L = sqrt(L);
-
-    // normalise the normal vector (if present for the current node)
-    if (L > EPS15)
-    {
-      for (int j = 0; j < ndim; j++)
-      {
-        (*ndnorm0)[i+j] /=  L;
-      }
-    }
-  }
-
-  // evaluate the wall shear stress from the traction by removing
-  // the normal stresses
-
-  // set action for elements
-  eleparams.set<int>("action",FLD::integrate_Shapefunction);
-  // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
-
-  //integrate shape functions
-  discret->ClearState();
-  discret->SetState("dispnp", dispnp);
-  discret->EvaluateCondition(eleparams,integratedshapefunc,condstring);
-  discret->ClearState();
-
-  //true (rescaled) residual vector without zeros at dirichlet positions (Unit: Newton [N])
-  Teuchos::RCP<const Epetra_Vector> trueresidual  =fpsi_->FluidField()->TrueResidual();
-
-  // compute traction values at specified nodes; otherwise do not touch the zero values
-  for (int i=0;i<integratedshapefunc->MyLength();i++)
-  {
-    if ((*integratedshapefunc)[i] != 0.0)
-    {
-      // overwrite integratedshapefunc values with the calculated traction coefficients,
-      // which are reconstructed out of the nodal forces (trueresidual_) using the
-      // same shape functions on the boundary as for velocity and pressure.
-      (*integratedshapefunc)[i] = (*trueresidual)[i]/(*integratedshapefunc)[i];
-    }
-  }
-
-  //this is just a renaming
-  Teuchos::RCP<Epetra_Vector> wss = integratedshapefunc;
-
-  // loop over all entities within the traction vector
-  for (int i = 0; i < ndnorm0->MyLength();i+=ndim+1)
-  {
-    // evaluate the normal stress = < traction . normal >
-    double normal_stress = 0.0;
-    for (int j = 0; j<ndim; j++)
-    {
-      normal_stress += (*wss)[i+j] * (*ndnorm0)[i+j];
-    }
-
-    // subtract the normal stresses from traction
-    for (int j = 0; j<ndim; j++)
-    {
-      (*wss)[i+j] -= normal_stress * (*ndnorm0)[i+j];
-    }
-  }
-
-  // return the wall_shear_stress vector
-  return wss;
-}
 
 /*----------------------------------------------------------------------*
  |  Calculate mean concentration                          hemmler 07/14 |

@@ -329,7 +329,7 @@ namespace UTILS
         Teuchos::RCP<Epetra_Vector> dispnp,
         const bool alefluid,
         const int numdim,
-        Teuchos::RCP<Epetra_CrsMatrix> sysmat
+        Teuchos::RCP<LINALG::SparseOperator> sysmat
   );
 
     ///return WSS vector
@@ -344,7 +344,11 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> AggreagteWallShearStresses( Teuchos::RCP<Epetra_Vector> wss );
 
     ///Calculate Aggregation Matrix
-    Teuchos::RCP<LINALG::SparseMatrix> CalcSepEnr( const int ml_solver, Teuchos::RCP<DRT::Discretization> discret , Teuchos::RCP<Epetra_CrsMatrix> sysmat );
+    Teuchos::RCP<LINALG::SparseMatrix> CalcSepEnr(
+        const int ml_solver,
+        Teuchos::RCP<DRT::Discretization> discret,
+        Teuchos::RCP<LINALG::SparseOperator> sysmat
+    );
 
 
     ///number of ML solver to build aggreagtion matrix, also flag if WSS are aggregated (!= -1) or not (==-1)

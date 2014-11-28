@@ -37,7 +37,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_turbulence.H"
 #include "fluid_utils_mapextractor.H" // should go away
-#include "fluid_utils.H" // should go away
+#include "fluid_utils.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_fluid/fluid_timint.H"
 #include "../drt_lib/drt_discret.H"
@@ -651,6 +651,10 @@ public:
 
   //! Return locsys manager
   virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() {return locsysman_;}
+
+  //! Return wss manager
+  virtual Teuchos::RCP<FLD::UTILS::WSSManager> WSSManager() {return wssmanager_;}
+
   //! Apply Dirichlet boundary conditions on provided state vectors
   virtual void ApplyDirichletBC
   (

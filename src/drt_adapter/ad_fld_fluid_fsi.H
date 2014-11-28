@@ -186,6 +186,9 @@ namespace ADAPTER {
         double& errinfother ///< L-inf-norm of temporal discretization error based on interior DOFs
         );
 
+    ///Calculate WSS vector
+    virtual Teuchos::RCP<Epetra_Vector> CalculateWallShearStresses();
+
     //@}
 
   protected:

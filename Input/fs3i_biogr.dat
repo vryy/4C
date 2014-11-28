@@ -188,7 +188,7 @@ LINEAR_SOLVER2                  3
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 BLOCKPRECOND                    NO
 CALCERROR                       No
-CONVFORM                        convective
+CONVFORM                        conservative
 GAMMA                           0.5
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
