@@ -26,7 +26,7 @@ Maintainer: Martin Kronbichler
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_lib/drt_discret_xfem.H"
+#include "../drt_lib/drt_discret_combust.H"
 #include "../drt_lib/drt_dofset_independent.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "../drt_inpar/inpar_problemtype.H"

@@ -15,7 +15,7 @@ Maintainer: Ursula Rasthofer
 #include <Teuchos_TimeMonitor.hpp>
 
 
-#include "drt_discret_xfem.H"
+#include "drt_discret_combust.H"
 #include "drt_globalproblem.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_combust/combust_defines.H"

@@ -44,7 +44,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_dofset_independent_pbc.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret_xfem.H"
+#include "../drt_lib/drt_discret_combust.H"
 #include "../drt_lib/drt_condition.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"

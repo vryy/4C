@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_discret_xfem.H
+\file drt_discret_combust.H
 
 \brief a class to manage an XFEM discretization
 

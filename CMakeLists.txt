@@ -369,8 +369,8 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_discret_faces.cpp
   src/drt_lib/drt_discret_hdg.cpp
   src/drt_lib/drt_discret_xwall.cpp
-  src/drt_lib/drt_discret_xfem.cpp
-  src/drt_lib/drt_discret_xfem_evaluate.cpp
+  src/drt_lib/drt_discret_combust.cpp
+  src/drt_lib/drt_discret_combust_evaluate.cpp
   src/drt_lib/drt_discret_conditions.cpp
   src/drt_lib/drt_discret_evaluate.cpp
   src/drt_lib/drt_discret_fillcomplete.cpp

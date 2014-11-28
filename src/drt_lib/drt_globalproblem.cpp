@@ -36,7 +36,7 @@ Maintainer: Martin Kronbichler
 #include "drt_discret_faces.H"
 #include "drt_discret_xwall.H"
 #include "drt_discret_hdg.H"
-#include "drt_discret_xfem.H"
+#include "drt_discret_combust.H"
 #include "drt_linedefinition.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
