@@ -153,7 +153,7 @@ void INVANA::MatParManagerPerElement::ContractGradient(Teuchos::RCP<Epetra_Multi
 /*----------------------------------------------------------------------*/
 /* build blockwise connectivity graphs                      keh 10/14   */
 /*----------------------------------------------------------------------*/
-void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& paramrowmap, int lblockid, Teuchos::RCP<Epetra_CrsMatrix> graph)
+void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& paramrowmap, Teuchos::RCP<Epetra_CrsMatrix> graph)
 {
   /*------------------------------------------------------------------- */
   // STEP 1: loop elements in elerowmap and store map of faces(vector

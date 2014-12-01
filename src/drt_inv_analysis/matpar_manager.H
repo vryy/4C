@@ -234,7 +234,7 @@ private:
     \param Out
     graph - a reference to itself to be passed to the optimization algorithm.
   */
-  virtual void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, int blockid, Teuchos::RCP<Epetra_CrsMatrix> graph);
+  virtual void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, Teuchos::RCP<Epetra_CrsMatrix> graph);
 
   //! discretization for convenience
   Teuchos::RCP<DRT::Discretization> discret_;

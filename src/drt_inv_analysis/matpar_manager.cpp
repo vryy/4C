@@ -456,8 +456,8 @@ Teuchos::RCP<INVANA::ConnectivityData> INVANA::MatParManager::GetConnectivityDat
   int maxbw=6;  // based on connectivity for hex8 elements
   Teuchos::RCP<Epetra_CrsMatrix> graph = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*(paramapextractor_->FullMap()),maxbw,false));
 
-  for (int i=0; i<NumParams(); i++)
-    FillAdjacencyMatrix(*(paramapextractor_->Map(i)), paraposGIDtoLID_[i], graph);
+  for (int i=0; i<paramapextractor_->NumMaps(); i++)
+    FillAdjacencyMatrix(*(paramapextractor_->Map(i)), graph);
 
   // Finalize the graph ...
   graph->FillComplete();
@@ -477,7 +477,7 @@ Teuchos::RCP<INVANA::ConnectivityData> INVANA::MatParManager::GetConnectivityDat
 /*----------------------------------------------------------------------*/
 /* build blockwise connectivity graphs                      keh 10/14   */
 /*----------------------------------------------------------------------*/
-void INVANA::MatParManager::FillAdjacencyMatrix(const Epetra_Map& elerowmap, int blockid, Teuchos::RCP<Epetra_CrsMatrix> graph)
+void INVANA::MatParManager::FillAdjacencyMatrix(const Epetra_Map& elerowmap, Teuchos::RCP<Epetra_CrsMatrix> graph)
 {
   // if not implemented for the specific parameterizations no graph exists
   //graph=Teuchos::null;
