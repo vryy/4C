@@ -129,7 +129,7 @@ protected:
   void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
 
   //! add interface state vector specific for time-integration scheme
-  void AddTimeIntegrationSpecificInterfaceVector();
+  void AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params);
 
   /// write additional data required for restart
   virtual void OutputRestart();

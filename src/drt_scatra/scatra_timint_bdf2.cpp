@@ -302,12 +302,12 @@ void SCATRA::TimIntBDF2::AddTimeIntegrationSpecificVectors(bool forcedincrementa
 /*------------------------------------------------------------------------------*
  | add interface state vector specific for time-integration scheme   fang 11/14 |
  *------------------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::AddTimeIntegrationSpecificInterfaceVector()
+void SCATRA::TimIntBDF2::AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params)
 {
   // set interface state vector iphinp_ with transformed dof values and add to discretization
   imaps_->InsertVector(icoup_->SlaveToMaster(maps_->ExtractVector(*phinp_,2)),0,iphinp_);
   imaps_->InsertVector(icoup_->MasterToSlave(maps_->ExtractVector(*phinp_,1)),1,iphinp_);
-  discret_->SetState("iphinp",iphinp_);
+  params.set<Teuchos::RCP<const Epetra_Vector> >("iphinp",iphinp_);
 
   return;
 }

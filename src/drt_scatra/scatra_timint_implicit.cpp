@@ -2523,7 +2523,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateS2ICoupling(
   // set global and interface state vectors according to time-integration scheme
   discret_->ClearState();
   AddTimeIntegrationSpecificVectors();
-  AddTimeIntegrationSpecificInterfaceVector();
+  AddTimeIntegrationSpecificInterfaceVector(condparams);
 
   // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
   blockauxiliarymatrix->Zero();

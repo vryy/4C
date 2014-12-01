@@ -1257,7 +1257,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
 {
   // get global and interface state vectors
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  Teuchos::RCP<const Epetra_Vector> iphinp = discretization.GetState("iphinp");
+  Teuchos::RCP<const Epetra_Vector> iphinp = params.get<Teuchos::RCP<const Epetra_Vector> >("iphinp");
   if (phinp == Teuchos::null or iphinp == Teuchos::null) dserror("Cannot get state vector 'phinp' or 'iphinp'!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
