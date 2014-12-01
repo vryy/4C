@@ -235,10 +235,6 @@ public:
   virtual void CreateSystemMatrix(
     Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null) = 0;
 
-  //! update slave dofs for fsi simulations with ale mesh tying
-  virtual void UpdateSlaveDOF(
-    Teuchos::RCP<Epetra_Vector>& a) = 0;
-
 };
 
 //! Base class of algorithms that use an ale field

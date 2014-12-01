@@ -167,12 +167,6 @@ class Meshtying
     void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>&   inc,
                         Teuchos::RCP<Epetra_Vector>&   velnp);
 
-    //! Use the split of the ale mesh tying for the sysmat
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> MshtSplit();
-
-    //! Prepare condensation of the shape derivatives
-    void CondensationShapeDerivatives(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& shapederivatives);
-
   private:
 
     //! Prepare condensation for sparse matrix (including ALE case)

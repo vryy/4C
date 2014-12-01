@@ -70,8 +70,7 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                          *AleField()->Discretization(),
                          *fluidnodemap,
                          *alenodemap,
-                         ndim,
-                         false);
+                         ndim);
 
   FluidField()->SetMeshMap(coupfa_->MasterDofMap());
 

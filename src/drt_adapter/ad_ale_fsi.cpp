@@ -25,9 +25,6 @@ ADAPTER::AleFsiWrapper::AleFsiWrapper(Teuchos::RCP<Ale> ale)
   interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
   interface_->Setup(*Discretization());
 
-  fsiinterface_ = Teuchos::rcp(new ALE::UTILS::FsiMapExtractor);
-  fsiinterface_->Setup(*Discretization());
-
   return;
 }
 
@@ -37,12 +34,4 @@ Teuchos::RCP<const ALE::UTILS::MapExtractor>
 ADAPTER::AleFsiWrapper::Interface() const
 {
   return interface_;
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALE::UTILS::FsiMapExtractor>
-ADAPTER::AleFsiWrapper::FsiInterface() const
-{
-  return fsiinterface_;
 }

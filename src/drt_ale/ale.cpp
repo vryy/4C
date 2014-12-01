@@ -68,12 +68,7 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
     maxiter_(params->get<int>("MAXITER")),
     tolres_(params->get<double>("TOLRES")),
     toldisp_(params->get<double>("TOLDISP")),
-    divercont_ (DRT::INPUT::IntegralValue<INPAR::ALE::DivContAct>(*params,"DIVERCONT")),
-    msht_ (DRT::INPUT::IntegralValue<INPAR::ALE::MeshTying>(*params,"MESHTYING")),
-    numdim_ (DRT::Problem::Instance()->NDim()),
-    surfacesplitter_ (NULL),
-    interface_(Teuchos::null),
-    fsi_and_msht_(false)
+    divercont_ (DRT::INPUT::IntegralValue<INPAR::ALE::DivContAct>(*params,"DIVERCONT"))
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -90,11 +85,6 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
   {
     DRT::Condition* cond = discret_->GetCondition("ALEDirichlet");
     if (cond) dserror("Found a ALE Dirichlet condition. Remove ALE string!");
-  }
-
-  if (msht_ != INPAR::ALE::no_meshtying )
-  {
-    meshtying_ = Teuchos::rcp(new Meshtying(discret_, *solver_, msht_, numdim_, surfacesplitter_));
   }
 
   // ---------------------------------------------------------------------
@@ -119,18 +109,7 @@ void ALE::Ale::CreateSystemMatrix(
   Teuchos::RCP<const ALE::UTILS::MapExtractor> interface
 )
 {
-  if (msht_ != INPAR::ALE::no_meshtying )
-  {
-    std::vector<int> coupleddof(numdim_,1);
-    sysmat_ = meshtying_->Setup(coupleddof);
-    meshtying_->DirichletOnMaster(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
-    if (interface != Teuchos::null)
-    {
-      interface_ = interface;
-      fsi_and_msht_ = true;
-    }
-  }
-  else if (interface == Teuchos::null)
+  if (interface == Teuchos::null)
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,false,true));
@@ -157,11 +136,6 @@ void ALE::Ale::Evaluate(
   // Note: What we get here is the sum of all increments in this time
   // step, not just the latest increment.
 
-  if (fsi_and_msht_)
-  {
-    UseMshtSplit();
-  }
-
   disi_->PutScalar(0.0);
 
   if (stepinc!=Teuchos::null)
@@ -170,12 +144,6 @@ void ALE::Ale::Evaluate(
   }
 
   EvaluateElements();
-
-  // prepare meshtying system
-  if (msht_ != INPAR::ALE::no_meshtying)
-  {
-    meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,dispnp_);
-  }
 
   // dispnp_ has zeros at the Dirichlet-entries, so we maintain zeros there.
   if (LocsysManager() != Teuchos::null)
@@ -199,11 +167,6 @@ void ALE::Ale::Evaluate(
    */
   rhs_->Update(-1.0, *residual_, 0.0);
 
-  if (fsi_and_msht_)
-  {
-    UseFsiSplit();
-  }
-
   return;
 }
 
@@ -215,12 +178,8 @@ int ALE::Ale::Solve()
   Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(*residual_));
   rhs->Scale(-1.0);
 
-  int errorcode = 0;
   // ToDo (mayr) Why can't we use rhs_ instead of local variable rhs???
-  if (msht_== INPAR::ALE::no_meshtying)
-    errorcode = solver_->Solve(sysmat_->EpetraOperator(), disi_, rhs, true);
-  else
-    errorcode = meshtying_->SolveMeshtying(*solver_, sysmat_, disi_, rhs, dispnp_);
+  int errorcode = solver_->Solve(sysmat_->EpetraOperator(), disi_, rhs, true);
 
   // calc norm
   disi_->Norm2(&normdisi_);
@@ -735,66 +694,4 @@ Teuchos::RCP<const LINALG::SparseMatrix> ALE::Ale::GetLocSysTrafo() const
     return locsysman_->Trafo();
 
   return Teuchos::null;
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void ALE::Ale::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a)
-{
-
-  if (msht_ != INPAR::ALE::no_meshtying)
-  {
-    meshtying_->UpdateSlaveDOF(a, dispnp_);
-  }
-
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void ALE::Ale::UseMshtSplit()
-{
-
-  sysmat_ = meshtying_->MshtSplit();
-
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void ALE::Ale::UseFsiSplit()
-{
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
-
-  Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(sysmat->Matrix(2,2).RowMap()));
-  ones->PutScalar(1.0);
-  Teuchos::RCP<LINALG::SparseMatrix> onesdiag = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
-  onesdiag->Complete();
-
-  sysmat->Matrix(0,2).UnComplete();
-  sysmat->Matrix(0,2).Zero();
-
-  sysmat->Matrix(1,2).UnComplete();
-  sysmat->Matrix(1,2).Zero();
-
-  sysmat->Matrix(2,2).UnComplete();
-  sysmat->Matrix(2,2).Zero();
-  sysmat->Matrix(2,2).Add(*onesdiag, false, 1.0, 1.0);
-
-  sysmat->Matrix(2,0).UnComplete();
-  sysmat->Matrix(2,0).Zero();
-
-  sysmat->Matrix(2,1).UnComplete();
-  sysmat->Matrix(2,1).Zero();
-
-  sysmat->Complete();
-
-  Teuchos::RCP<LINALG::SparseMatrix> mergedmatrix = sysmat->Merge();
-
-  Teuchos::RCP<LINALG::MapExtractor> extractor = Teuchos::rcp(new LINALG::MapExtractor(*interface_->FullMap(),interface_->FSICondMap()));
-
-  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = mergedmatrix->Split<LINALG::DefaultBlockMatrixStrategy>(*extractor,*extractor);
-
-  mat->Complete();
-  sysmat_ = mat;
-
 }

@@ -236,7 +236,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     // build ale system matrix in splitted system
     AleField()->CreateSystemMatrix(AleField()->Interface());
 
-    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField()->FsiInterface()->OtherMap()));
+    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->OtherMap()));
 
     // -------------------------------------------------------------------------
     // Build the global Dirichlet map extractor
@@ -277,7 +277,7 @@ void FSI::MortarMonolithicStructureSplit::CreateCombinedDofRowMap()
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField()->Interface()->OtherMap());
   vecSpaces.push_back(FluidField()->DofRowMap());
-  vecSpaces.push_back(AleField()->FsiInterface()->OtherMap());
+  vecSpaces.push_back(AleField()->Interface()->OtherMap());
 
   if (vecSpaces[0]->NumGlobalElements() == 0)
     dserror("No inner structural equations. Splitting not possible. Panic.");
@@ -298,7 +298,7 @@ void FSI::MortarMonolithicStructureSplit::SetupDBCMapExtractor()
    */
   std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
   aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());
-  aleintersectionmaps.push_back(AleField()->FsiInterface()->OtherMap());
+  aleintersectionmaps.push_back(AleField()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap =
       LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
 
@@ -349,7 +349,7 @@ void FSI::MortarMonolithicStructureSplit::SetupRHSResidual(Epetra_Vector& f)
 
   // extract only inner DOFs from structure (=slave) and ALE field
   Teuchos::RCP<const Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
-  Teuchos::RCP<const Epetra_Vector> aov = AleField()->FsiInterface()->ExtractOtherVector(av);
+  Teuchos::RCP<const Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
 
   // add structure interface residual to fluid interface residual considering temporal scaling
   Teuchos::RCP<const Epetra_Vector> scv = StructureField()->Interface()->ExtractFSICondVector(sv);
@@ -500,7 +500,7 @@ void FSI::MortarMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
     fmig.Apply(*fveln, *rhs);
 
     rhs->Scale(-Dt());
-    rhs = FluidField()->FsiInterface()->InsertOtherVector(rhs);
+    rhs = FluidField()->Interface()->InsertOtherVector(rhs);
 
     Extractor().AddVector(*rhs, 1, f);
   }
@@ -624,7 +624,7 @@ void FSI::MortarMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmfsig.RowMap(), true));
       fmfsig.Apply(*fveln, *rhs);
-      Teuchos::RCP<Epetra_Vector> veln = FluidField()->FsiInterface()->InsertOtherVector(rhs);
+      Teuchos::RCP<Epetra_Vector> veln = FluidField()->Interface()->InsertOtherVector(rhs);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmfsgg.RowMap(), true));
       fmfsgg.Apply(*fveln, *rhs);
@@ -1350,9 +1350,7 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(
   // process fluid unknowns
   // ---------------------------------------------------------------------------
   // extract fluid solution increment from NOX increment
-  Teuchos::RCP<Epetra_Vector> f = Extractor().ExtractVector(x,1);
-  FluidField()->UpdateSlaveDOF(f);
-  fx = f;
+  fx = Extractor().ExtractVector(x,1);
 
   // ---------------------------------------------------------------------------
   // process ale unknowns
@@ -1366,7 +1364,7 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(
   Teuchos::RCP<Epetra_Vector> acx = FluidToAleInterface(fcx);
 
   // put inner and interface ALE solution increments together
-  Teuchos::RCP<Epetra_Vector> a = AleField()->FsiInterface()->InsertOtherVector(aox);
+  Teuchos::RCP<Epetra_Vector> a = AleField()->Interface()->InsertOtherVector(aox);
   AleField()->Interface()->InsertFSICondVector(acx, a);
 
   // if there is a free surface
@@ -1378,7 +1376,7 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(
     Teuchos::RCP<Epetra_Vector> acx = fscoupfa_->MasterToSlave(fcx);
     AleField()->Interface()->InsertFSCondVector(acx, a);
   }
-  AleField()->UpdateSlaveDOF(a);
+
   ax = a;
 
   // ---------------------------------------------------------------------------
@@ -1782,7 +1780,7 @@ void FSI::MortarMonolithicStructureSplit::CombineFieldVectors(Epetra_Vector& v,
     Teuchos::RCP<Epetra_Vector> sov =
         StructureField()->Interface()->ExtractOtherVector(sv);
     Teuchos::RCP<Epetra_Vector> aov =
-        AleField()->FsiInterface()->ExtractOtherVector(av);
+        AleField()->Interface()->ExtractOtherVector(av);
 
     // put them together
     Extractor().AddVector(*sov,0,v);

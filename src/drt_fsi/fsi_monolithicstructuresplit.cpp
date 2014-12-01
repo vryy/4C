@@ -199,12 +199,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   // build ale system matrix in splitted system
   AleField()->CreateSystemMatrix(AleField()->Interface());
 
-//  Teuchos::RCP<const Epetra_Map> othermap = AleField()->Interface()->OtherMap();
-//  Teuchos::RCP<const Epetra_Map> mortarmap = AleField()->Interface()->MortarMap();
-//  Teuchos::RCP<const Epetra_Map> innermap = LINALG::MergeMap(*othermap, *mortarmap, false);
-//
-//  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*innermap));   // Problem
-  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField()->FsiInterface()->OtherMap()));
+  aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->OtherMap()));
 
   // ---------------------------------------------------------------------------
   // Build the global Dirichlet map extractor
@@ -234,12 +229,7 @@ void FSI::MonolithicStructureSplit::CreateCombinedDofRowMap()
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField()->Interface()->OtherMap());
   vecSpaces.push_back(FluidField()->DofRowMap());
-  vecSpaces.push_back(AleField()->FsiInterface()->OtherMap());
-
-//  Teuchos::RCP<const Epetra_Map> othermap = AleField()->Interface()->OtherMap();
-//  Teuchos::RCP<const Epetra_Map> mortarmap = AleField()->Interface()->MortarMap();
-//  Teuchos::RCP<const Epetra_Map> innermap = LINALG::MergeMap(*othermap, *mortarmap, false);
-//  vecSpaces.push_back(innermap);
+  vecSpaces.push_back(AleField()->Interface()->OtherMap());
 
   if (vecSpaces[0]->NumGlobalElements()==0)
     dserror("No inner structural equations. Splitting not possible. Panic.");
@@ -259,13 +249,7 @@ void FSI::MonolithicStructureSplit::SetupDBCMapExtractor()
   // intersection of inner ALE DOFs with Dirichlet ALE DOFs.
   std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
   aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());
-  aleintersectionmaps.push_back(AleField()->FsiInterface()->OtherMap());
-
-//  Teuchos::RCP<const Epetra_Map> othermap = AleField()->Interface()->OtherMap();
-//  Teuchos::RCP<const Epetra_Map> mortarmap = AleField()->Interface()->MortarMap();
-//  Teuchos::RCP<const Epetra_Map> innermap = LINALG::MergeMap(*othermap, *mortarmap, false);
-//  aleintersectionmaps.push_back(innermap);
-
+  aleintersectionmaps.push_back(AleField()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap = LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
 
   // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
@@ -308,18 +292,7 @@ void FSI::MonolithicStructureSplit::SetupRHSResidual(Epetra_Vector& f)
 
 //  // extract only inner DOFs from structure (=slave) and ALE field
   Teuchos::RCP<const Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
-  Teuchos::RCP<const Epetra_Vector> aov = AleField()->FsiInterface()->ExtractOtherVector(av);
-//  Teuchos::RCP<const Epetra_Vector> amv = AleField()->Interface()->ExtractMortarVector(av);
-//
-//  Teuchos::RCP<const Epetra_Map> othermap = AleField()->Interface()->OtherMap();
-//  Teuchos::RCP<const Epetra_Map> mortarmap = AleField()->Interface()->MortarMap();
-//  Teuchos::RCP<const Epetra_Map> innermap = LINALG::MergeMap(*mortarmap, *othermap, false);
-//
-//  LINALG::MapExtractor extractor(*innermap, mortarmap, othermap);
-//
-//  Teuchos::RCP<Epetra_Vector> aiv = LINALG::CreateVector(*innermap,true);
-//  extractor.InsertVector(aov,0,aiv);
-//  extractor.InsertVector(amv,1,aiv);
+  Teuchos::RCP<const Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
 
   // add structure interface residual to fluid interface residual considering temporal scaling
   Teuchos::RCP<Epetra_Vector> scv = StructureField()->Interface()->ExtractFSICondVector(sv);
@@ -443,7 +416,7 @@ void FSI::MonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
     fmig.Apply(*fveln,*rhs);
     rhs->Scale(-Dt());
 
-    rhs = FluidField()->FsiInterface()->InsertOtherVector(rhs);
+    rhs = FluidField()->Interface()->InsertOtherVector(rhs);
 
     Extractor().AddVector(*rhs,1,f);
   }
@@ -549,7 +522,7 @@ void FSI::MonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
       fmig.Apply(*fveln,*rhs);
-      Teuchos::RCP<Epetra_Vector> veln = FluidField()->FsiInterface()->InsertOtherVector(rhs);
+      Teuchos::RCP<Epetra_Vector> veln = FluidField()->Interface()->InsertOtherVector(rhs);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
       fmgg.Apply(*fveln,*rhs);
@@ -1205,9 +1178,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   // process fluid unknowns
   // ---------------------------------------------------------------------------
   // extract fluid solution increment from NOX increment
-  Teuchos::RCP<Epetra_Vector> f = Extractor().ExtractVector(x,1);
-  FluidField()->UpdateSlaveDOF(f);
-  fx = f;
+  fx = Extractor().ExtractVector(x,1);
 
   // ---------------------------------------------------------------------------
   // process ale unknowns
@@ -1221,7 +1192,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   Teuchos::RCP<Epetra_Vector> acx = FluidToAleInterface(fcx);
 
   // put inner and interface ALE solution increments together
-  Teuchos::RCP<Epetra_Vector> a = AleField()->FsiInterface()->InsertOtherVector(aox);
+  Teuchos::RCP<Epetra_Vector> a = AleField()->Interface()->InsertOtherVector(aox);
   AleField()->Interface()->InsertFSICondVector(acx, a);
 
   // if there is a free surface
@@ -1233,7 +1204,7 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
     Teuchos::RCP<Epetra_Vector> acx = fscoupfa_->MasterToSlave(fcx);
     AleField()->Interface()->InsertFSCondVector(acx, a);
   }
-  AleField()->UpdateSlaveDOF(a);
+
   ax = a;
 
   // ---------------------------------------------------------------------------
@@ -1468,18 +1439,7 @@ void FSI::MonolithicStructureSplit::CombineFieldVectors(Epetra_Vector& v,
   {
     // extract inner DOFs from slave vectors
     Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
-Teuchos::RCP<const Epetra_Vector> aov = AleField()->FsiInterface()->ExtractOtherVector(av);
-//    Teuchos::RCP<const Epetra_Vector> amv = AleField()->Interface()->ExtractMortarVector(av);
-//
-//    Teuchos::RCP<const Epetra_Map> othermap = AleField()->Interface()->OtherMap();
-//    Teuchos::RCP<const Epetra_Map> mortarmap = AleField()->Interface()->MortarMap();
-//    Teuchos::RCP<const Epetra_Map> innermap = LINALG::MergeMap(*mortarmap, *othermap, false);
-//
-//    LINALG::MapExtractor extractor(*innermap, mortarmap, othermap);
-//
-//    Teuchos::RCP<Epetra_Vector> aiv = LINALG::CreateVector(*innermap,true);
-//    extractor.InsertVector(aov,0,aiv);
-//    extractor.InsertVector(amv,1,aiv);
+    Teuchos::RCP<Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
 
     // put them together
     Extractor().AddVector(*sov,0,v);

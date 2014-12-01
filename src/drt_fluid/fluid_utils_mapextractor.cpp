@@ -111,46 +111,6 @@ void FLD::UTILS::VelPressExtractor::Setup(const DRT::Discretization& dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::FsiMapExtractor::Setup(const DRT::Discretization& dis)
-{
-  const int ndim = DRT::Problem::Instance()->NDim();
-  DRT::UTILS::MultiConditionSelector mcs;
-  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,ndim)));
-  mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FLD::UTILS::FsiMapExtractor::Setup(Teuchos::RCP<const Epetra_Map>& additionalothermap, const FLD::UTILS::FsiMapExtractor& extractor)
-{
-  // build the new othermap
-  std::vector<Teuchos::RCP<const Epetra_Map> > othermaps;
-  othermaps.push_back(additionalothermap);
-  othermaps.push_back(extractor.OtherMap());
-
-  if (LINALG::MultiMapExtractor::IntersectMaps(othermaps)->NumGlobalElements() > 0)
-    dserror("Failed to add dofmap of foreign discretization to OtherMap. Detected overlap.");
-
-  Teuchos::RCP<const Epetra_Map> mergedothermap = LINALG::MultiMapExtractor::MergeMaps(othermaps);
-
-  // the vector of maps for the new map extractor consists of othermap at position 0
-  // followed by the maps of conditioned DOF
-  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
-  // append the merged other map at first position
-  maps.push_back(mergedothermap);
-
-  // append the condition maps subsequently
-  for (int i=1; i< extractor.NumMaps(); ++i)
-    maps.push_back(extractor.Map(i));
-
-  // merge
-  Teuchos::RCP<const Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
-
-  LINALG::MultiMapExtractor::Setup(* fullmap, maps);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void FLD::UTILS::FluidXFluidMapExtractor::Setup(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> fluidmap, Teuchos::RCP<const Epetra_Map> xfluidmap)
 {
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;

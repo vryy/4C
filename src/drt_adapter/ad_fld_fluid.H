@@ -57,7 +57,6 @@ namespace FLD
   namespace UTILS
   {
     class MapExtractor;
-    class FsiMapExtractor;
   }
 }
 
@@ -460,12 +459,6 @@ namespace ADAPTER {
 
     /// communication object at the interface (neglecting pressure dofs)
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const = 0;
-
-    /// communication object at the fsiinterface
-    virtual Teuchos::RCP<FLD::UTILS::FsiMapExtractor>const& FsiInterface() const = 0;
-
-    /// update slave dofs for fsi simulations with fluid mesh tying
-    virtual void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f) = 0;
 
     /// communication object at the interface (including pressure dofs)
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const = 0;

@@ -58,7 +58,6 @@ void ADAPTER::FluidFluidFSI::Init()
   // create map extractor for combined fluid domains
   // (to distinguish between FSI interface DOF / merged inner embedded & background fluid DOF)
   mergedfluidinterface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
-  fsiinterface_ = Teuchos::rcp(new FLD::UTILS::FsiMapExtractor());
   SetupInterface();
 
   interfaceforcen_ = Teuchos::rcp(new Epetra_Vector(*(FluidFSI::Interface()->FSICondMap())));
@@ -214,7 +213,6 @@ void ADAPTER::FluidFluidFSI::SetupInterface()
   Teuchos::RCP<const Epetra_Map> xfluidmap = xfluidfluid_->XFluidFluidMapExtractor()->XFluidMap();
   // do the setup
   mergedfluidinterface_->Setup(xfluidmap, *FluidFSI::Interface());
-  fsiinterface_->Setup(xfluidmap, *FluidFSI::FsiInterface());
 
   return;
 }
