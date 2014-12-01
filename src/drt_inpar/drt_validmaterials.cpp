@@ -879,10 +879,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
     AddNamedReal(m,"DENS","material mass density");
     AddNamedReal(m,"INITYIELD","initial yield stress");
-    AddNamedReal(m,"ISOHARD","linear isotropic hardening modulus");
-    AddNamedReal(m,"EXPISOHARD","nonlinear isotropic hardening exponent");
-    AddNamedReal(m,"INFYIELD","saturation yield stress for nonlinear isotropic hardening");
-    AddNamedReal(m,"KINHARD","linear kinematic hardening modulus");
+    AddNamedReal(m,"ISOHARD","linear isotropic hardening modulus",0.,true);
+    AddNamedReal(m,"EXPISOHARD","nonlinear isotropic hardening exponent",0.,true);
+    AddNamedReal(m,"INFYIELD","saturation yield stress for nonlinear isotropic hardening",0.,true);
+    AddNamedReal(m,"KINHARD","linear kinematic hardening modulus",0.,true);
+
+    // visco-plasticity
+    AddNamedReal(m,"VISC", "Visco-Plasticity parameter 'eta' in Perzyna model",0.,true);
+    AddNamedReal(m,"VISC_SOFT", "Visco-Plasticity temperature dependency (eta = eta_0 * (1-(T-T_0)*x)",0.,true);
 
     // optional pastic spin parameter
     AddNamedReal(m,"PL_SPIN_CHI","Plastic spin coupling parameter chi (often called eta)",0.0,true);

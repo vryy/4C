@@ -857,6 +857,7 @@ void STR::TimIntImpl::ApplyForceStiffInternal
     plastman_->SetPlasticParams(params);
     if (DRT::Problem::Instance()->ProblemType() == prb_tsi)
       discret_->SetState(0,"velocity",vel);
+    plastman_->SetData().dt_=(*dt_)[0];
   }
 
   /* Additionally we hand in "fint_str_"

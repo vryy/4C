@@ -2356,7 +2356,11 @@ void STR::TimInt::DetermineStressStrain()
     p.set<int>("ioplstrain", writeplstrain_);
 
     // set plasticity data
-    if (HaveSemiSmoothPlasticity()) plastman_->SetPlasticParams(p);
+    if (HaveSemiSmoothPlasticity())
+    {
+      plastman_->SetPlasticParams(p);
+      plastman_->SetData().dt_=(*dt_)[0];
+    }
 
     // set vector values needed by elements
     discret_->ClearState();

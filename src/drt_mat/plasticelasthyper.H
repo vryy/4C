@@ -83,6 +83,10 @@ namespace MAT
       const double infyield_;
       /// linear kinematic hardening parameter
       const double kinhard_;
+      /// Visco-Plasticity parameter 'eta' in Perzyna model
+      const double visc_;
+      /// Visco-Plasticity parameter 'eta' in Perzyna model softening
+      const double visc_soft_;
       //! coefficient of thermal expansion
       const double cte_;
       //! initial, reference temperature
@@ -226,6 +230,12 @@ private:
 
     /// plastic spin parameter chi
     virtual double PlSpinChi() const {return params_->plspin_chi_; }
+
+    /// viscosity (of the plastic flow, no visco-elasticity)
+    virtual double Visc() const {return params_->visc_;}
+
+    /// viscosity (of the plastic flow, no visco-elasticity)
+    virtual double ViscSoft() const {return params_->visc_soft_;}
 
     /// thermal expansion coefficient
     virtual double Cte() const {return params_->cte_; }
@@ -539,7 +549,8 @@ private:
                              LINALG::Matrix<6,9>* dPK2dLp,
                              bool* active,
                              bool* elast,
-                             bool* as_converged
+                             bool* as_converged,
+                             const double dt
     );
 
     /// calculate principal invariants

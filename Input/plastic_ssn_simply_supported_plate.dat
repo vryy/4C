@@ -77,7 +77,7 @@ SOLVER                          UMFPACK
 AZPREC                         ILU
 AZSOLVE                        GMRES
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 248 ISOHARD 0.0 EXPISOHARD 0.0 INFYIELD 248 KINHARD 0.0  // rY_11 1.0 rY_22 1.0 rY_33 1.0 rY_12 0.57735 rY_23 0.57735 rY_13 0.57735 PL_SPIN_ETA 0
+MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 248
 MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 69e4 C2 0.3
 -------------------------------------------------------------CURVE1
 CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 1  FACTOR 0 60

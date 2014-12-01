@@ -9,8 +9,8 @@ a hyperelastic strain energy function.
 
 The input line should read
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 0.45 ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
-                            CTE 1.0e-5 INITTEMP 293 YIELDSOFT 0.002 HARDSOFT 0.002
-                            PL_SPIN_CHI 50 rY_11 1.0 rY_22 0.9 rY_33 0.9 rY_12 0.7 rY_23 0.57385 rY_13 0.7
+                            CTE 1.0e-5 INITTEMP 293 YIELDSOFT 0.002 HARDSOFT 0.002 VISC 1e-4 VISC_TEMP 0.003
+                            PL_SPIN_CHI -50 rY_11 1.0 rY_22 0.9 rY_33 0.9 rY_12 0.7 rY_23 0.57385 rY_13 0.7
 
 <pre>
 Maintainer: Alexander Seitz
@@ -46,6 +46,8 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(
   expisohard_(matdata->GetDouble("EXPISOHARD")),
   infyield_(matdata->GetDouble("INFYIELD")),
   kinhard_(matdata->GetDouble("KINHARD")),
+  visc_(matdata->GetDouble("VISC")),
+  visc_soft_(matdata->GetDouble("VISC_SOFT")),
   cte_(matdata->GetDouble("CTE")),
   inittemp_(matdata->GetDouble("INITTEMP")),
   yieldsoft_(matdata->GetDouble("YIELDSOFT")),
@@ -68,11 +70,12 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(
   // check plastic parameter validity
   if (inityield_<=0.)
     dserror("initial yield stress must be positive");
-  if (infyield_<inityield_)
-    dserror("saturation yield stress must not be less than initial yield stress");
+  // no infyield provided 0. is default
+  if (infyield_==0.)
+    if (expisohard_!=0.)
+      dserror("hardening exponent provided without inf yield stress");
   if (expisohard_<0.)
     dserror("Nonlinear hardening exponent must be non-negative");
-
 
 }
 
@@ -421,6 +424,13 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp,
   if (PlSpinChi()!=0.)
     dserror("no thermo-plasticitiy with plastic spin");
 
+  /// Hill TSI only with pl_flow dissipation
+  if (params_->rY_11_!=0. && DisMode()!=INPAR::TSI::pl_flow)
+    dserror("hill thermo plasticity only with dissipation mode pl_flow");
+
+  /// viscoplastic TSI only with  pl_flow dissipation
+  if (Visc()!=0. &&  DisMode()!=INPAR::TSI::pl_flow)
+    dserror("thermo-visco-plasticity only with dissipation mode pl_flow");
   return;
 }
 
@@ -948,6 +958,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(
                                  *( 1.-exp(-Expisohard()*aI) )
                             + Isohard() *(1.- HardSoft()*dT)*aI
                             +Inityield()*(1.-YieldSoft()*dT)
+                            +Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt
                            );
 
   double dYpldT = sq*(
@@ -955,6 +966,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(
                           *(1.-exp(-Expisohard()*aI))
                         -Isohard()*HardSoft()*aI
                         -Inityield()*YieldSoft()
+                        -Visc()*ViscSoft()*delta_alpha_i_[gp]/dt
                             );
 
   // Factor of derivative of Y^pl w.r.t. delta alpha ^i
@@ -963,6 +975,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(
       +Isohard()*(1.-HardSoft()*dT)
       +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
         *Expisohard()*exp(-Expisohard()*aI)
+        +Visc()*(1.-ViscSoft()*dT)/dt
        );
 
   // activity state check
@@ -1043,7 +1056,8 @@ void MAT::PlasticElastHyper::EvaluateNCP(
             +Inityield()*(1.-YieldSoft()*dT)
             +Isohard()*(1.-HardSoft()*dT)*aI
             +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
-            *(1.-exp(-Expisohard()*aI))
+              *(1.-exp(-Expisohard()*aI))
+            +Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt
                               );
         break;
       case INPAR::TSI::pl_flow:
@@ -1068,6 +1082,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(
             +Isohard()*HardSoft()*aI
             +(Infyield()*HardSoft()-Inityield()*YieldSoft())
             *(1.-exp(-Expisohard()*aI))
+            +Visc()*ViscSoft()*delta_alpha_i_[gp]/dt
         );
         break;
       case INPAR::TSI::pl_flow:
@@ -1095,7 +1110,8 @@ void MAT::PlasticElastHyper::EvaluateNCP(
         dPlHeatingDdai+= +Inityield()*(1.-YieldSoft()*dT)
         +Isohard()*(1.-HardSoft()*dT)*(last_alpha_isotropic_[gp]+2.*delta_alpha_i_[gp])
         +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
-        *( (1.-exp(-Expisohard()*aI)) + delta_alpha_i_[gp]*Expisohard()*exp(-Expisohard()*aI) );
+        *( (1.-exp(-Expisohard()*aI)) + delta_alpha_i_[gp]*Expisohard()*exp(-Expisohard()*aI) )
+        +2.*Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt;
         break;
       case INPAR::TSI::pl_flow:
         // do nothing
@@ -1318,7 +1334,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   else
     dserror("only isotropic hypereleastic materials");
 
-  EvaluateNCPandSpin(&mStr,&dMdC,&dMdFpinv,&dPK2dFpinv,deltaLp,gp,NCP,dNCPdC,dNCPdLp,dPK2dLp,active,elast,as_converged);
+  EvaluateNCPandSpin(&mStr,&dMdC,&dMdFpinv,&dPK2dFpinv,deltaLp,gp,NCP,dNCPdC,dNCPdLp,dPK2dLp,active,elast,as_converged,dt);
 
   return;
 }
@@ -1339,7 +1355,8 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
     LINALG::Matrix<6,9>* dPK2dLp,
     bool* active,
     bool* elast,
-    bool* as_converged)
+    bool* as_converged,
+    const double dt)
 {
   double sq=sqrt(2./3.);
   LINALG::Matrix<6,1> tmp61;
@@ -1419,11 +1436,15 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
   if (dDpHeta>0. && absHeta>0.)
     delta_alpha_i_[gp]=sq*dDpHeta*abseta_H/(absHeta*absHeta);
 
+  // new isotropic hardening value
+  const double aI = last_alpha_isotropic_[gp]+delta_alpha_i_[gp];
+
   // current yield stress equivalent (yield stress scaled by sqrt(2/3))
   const double ypl = sq * ( (Infyield() - Inityield())
                                  *(1.-exp(-Expisohard()*(last_alpha_isotropic_[gp]+ delta_alpha_i_[gp])) )
                             + Isohard()*(last_alpha_isotropic_[gp]+ delta_alpha_i_[gp])
-                            +Inityield());
+                            +Inityield()
+                            +Visc()*delta_alpha_i_[gp]/dt);
 
   // check activity state
   if (ypl<absetatr_H)
@@ -1490,7 +1511,13 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
     dPK2dLp->Multiply(*dPK2dFpinv,dFpiDdeltaLp);
 
     // Factor of derivative of Y^pl w.r.t. delta alpha ^i
-    double fac = 2./3.*(Isohard()+(Infyield()-Inityield())*Expisohard()*exp(-Expisohard()*(last_alpha_isotropic_[gp]+delta_alpha_i_[gp])));
+    // we have added the factor sqrt(2/3) from delta_alpha_i=sq*... here
+    double dYplDai = 2./3.*(0.
+        +Isohard()
+        +(Infyield()-Inityield())
+          *Expisohard()*exp(-Expisohard()*aI)
+          +Visc()/dt
+         );
 
     // plastic gp
     if (*active)
@@ -1506,9 +1533,9 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
       if (dDpHeta>0.)
       {
         tmp61.Multiply(PlAniso_full_,eta_v_strainlike);
-        dNCPdeta.MultiplyNT(-fac*dDpHeta/(abseta_H*absHeta*absHeta*absetatr_H),etatr_v,tmp61,1.);
-        dNCPdeta.MultiplyNT(-fac*abseta_H/(absHeta*absHeta*absetatr_H),etatr_v,HdDp_strainlike,1.);
-        dNCPdeta.MultiplyNT(2.*fac*abseta_H*dDpHeta/(pow(absHeta,4.)*absetatr_H),etatr_v,HetaH_strainlike,1.);
+        dNCPdeta.MultiplyNT(-dYplDai*dDpHeta/(abseta_H*absHeta*absHeta*absetatr_H),etatr_v,tmp61,1.);
+        dNCPdeta.MultiplyNT(-dYplDai*abseta_H/(absHeta*absHeta*absetatr_H),etatr_v,HdDp_strainlike,1.);
+        dNCPdeta.MultiplyNT(2.*dYplDai*abseta_H*dDpHeta/(pow(absHeta,4.)*absetatr_H),etatr_v,HetaH_strainlike,1.);
       }
 
       // derivative w.r.t. C
@@ -1525,7 +1552,7 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
       if (dDpHeta>0.)
       {
         tmp61.Multiply(PlAniso_full_,eta_v_strainlike);
-        dNCPdDp.MultiplyNT(-fac*abseta_H/(absetatr_H*absHeta*absHeta),etatr_v,tmp61,1.);
+        dNCPdDp.MultiplyNT(-dYplDai*abseta_H/(absetatr_H*absHeta*absHeta),etatr_v,tmp61,1.);
       }
       dNCPdLp_red.Multiply(1.,dNCPdDp,psym,1.);
 
@@ -1548,9 +1575,9 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
       LINALG::Matrix<6,6> dNCPdeta;
 
       tmp61.Multiply(PlAniso_full_,eta_v_strainlike);
-      dNCPdeta.MultiplyNT(-s()*fac*dDpHeta/(abseta_H*absHeta*absHeta*ypl),NCP_red,tmp61,1.);
-      dNCPdeta.MultiplyNT(-s()*fac*abseta_H/(absHeta*absHeta*ypl),NCP_red,HdDp_strainlike,1.);
-      dNCPdeta.MultiplyNT(s()*2.*fac*abseta_H*dDpHeta/(pow(absHeta,4.)*ypl),NCP_red,HetaH_strainlike,1.);
+      dNCPdeta.MultiplyNT(-s()*dYplDai*dDpHeta/(abseta_H*absHeta*absHeta*ypl),NCP_red,tmp61,1.);
+      dNCPdeta.MultiplyNT(-s()*dYplDai*abseta_H/(absHeta*absHeta*ypl),NCP_red,HdDp_strainlike,1.);
+      dNCPdeta.MultiplyNT(s()*2.*dYplDai*abseta_H*dDpHeta/(pow(absHeta,4.)*ypl),NCP_red,HetaH_strainlike,1.);
 
         // derivative w.r.t. C
       dNCPdC_red.Multiply(dNCPdeta,*dMdC);
@@ -1558,7 +1585,7 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
       LINALG::Matrix<6,6> dNCPdDp;
       dNCPdDp.Update(-cpl(),InvPlAniso_full_,1.);
       tmp61.Multiply(PlAniso_full_,eta_v_strainlike);
-      dNCPdDp.MultiplyNT(fac/(ypl*absHeta),NCP_red,tmp61,1.);
+      dNCPdDp.MultiplyNT(dYplDai/(ypl*absHeta),NCP_red,tmp61,1.);
       dNCPdLp_red.Multiply(1.,dNCPdDp,psym,1.);
       dNCPdLp_red.Multiply(1.,dNCPdeta,detadLp,1.);
 
