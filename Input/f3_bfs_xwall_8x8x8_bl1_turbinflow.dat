@@ -67,8 +67,6 @@ Blending_Type                   ramp_function//tauw_transformation////tauw_trans
 Penalty_Param                   0.0
 GP_Wall_Normal                  8
 GP_Wall_Parallel                4
-SMOOTH_TAUW                     No
-ML_SOLVER                       2
 PROJECTION_SOLVER               9
 -------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based

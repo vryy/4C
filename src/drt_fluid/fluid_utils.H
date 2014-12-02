@@ -318,24 +318,38 @@ namespace UTILS
 
   /// WSS manager manages everything to do with wallshearstresses. For now
   /// it only calculates the WSS from stresses and returns them
-  class WSSManager
+  class StressManager
   {
   public:
 
     /// constructor
-    WSSManager(
-        const int ml_solver,
+    StressManager(
         Teuchos::RCP<DRT::Discretization> discret,
         Teuchos::RCP<Epetra_Vector> dispnp,
         const bool alefluid,
-        const int numdim,
-        Teuchos::RCP<LINALG::SparseOperator> sysmat
+        const int numdim
   );
 
-    ///return WSS vector
-    Teuchos::RCP<Epetra_Vector> GetWallShearStresses( Teuchos::RCP<Epetra_Vector> stresses );
+    ///initialize smoothing of wall shear stress
+    void Init(Teuchos::RCP<LINALG::SparseOperator> sysmat);
 
-  private:
+    ///return WSS vector
+    Teuchos::RCP<Epetra_Vector> GetWallShearStresses( Teuchos::RCP<const Epetra_Vector> trueresidual );
+
+    /*!
+    \brief calculate stresses
+
+    */
+    virtual Teuchos::RCP<Epetra_Vector> CalcStresses(Teuchos::RCP<const Epetra_Vector> trueresidual);
+
+    bool IsInit(){return isinit_;}
+private:
+
+    /// integrate shape functions at nodes marked by condition
+    /*!
+      Needed for Mortar coupling at the FSI interface
+     */
+    virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
 
     ///calculate WSS based on residual
     Teuchos::RCP<Epetra_Vector> CalcWallShearStresses(  Teuchos::RCP<Epetra_Vector> stresses );
@@ -344,9 +358,7 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> AggreagteWallShearStresses( Teuchos::RCP<Epetra_Vector> wss );
 
     ///Calculate Aggregation Matrix
-    Teuchos::RCP<LINALG::SparseMatrix> CalcSepEnr(
-        const int ml_solver,
-        Teuchos::RCP<DRT::Discretization> discret,
+    void CalcSepEnr(
         Teuchos::RCP<LINALG::SparseOperator> sysmat
     );
 
@@ -367,7 +379,9 @@ namespace UTILS
     const int numdim_;
 
     ///filtering matrix for wall shear stress
-    const Teuchos::RCP<LINALG::SparseMatrix> SepEnr_;
+    Teuchos::RCP<LINALG::SparseMatrix> SepEnr_;
+
+    bool isinit_;
   };
 
 

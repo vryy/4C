@@ -37,6 +37,10 @@ namespace FLD
 {
 class FluidImplicitTimeInt;
 class TransferTurbulentInflowConditionNodal;
+namespace UTILS
+{
+class StressManager;
+}
 
 class XWall
 {
@@ -46,7 +50,8 @@ public:
   XWall(Teuchos::RCP<DRT::Discretization>      dis,
       int                           nsd,
       Teuchos::RCP<Teuchos::ParameterList>& params,
-      Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
+      Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+      Teuchos::RCP<FLD::UTILS::StressManager> wssmanager);
 
   /// Destructor
   virtual ~XWall(){return;};
@@ -57,14 +62,11 @@ public:
   // adapt ml nullspace for aggregation for scale separation (mfs)
   void AdaptMLNullspace(const Teuchos::RCP<LINALG::Solver>&   solver);
 
-  // smooth vector via aggregation
-  void FilterResVectorForOutput(Teuchos::RCP<Epetra_Vector>   residual);
-
   // get output vector of enriched dofs
   Teuchos::RCP<Epetra_Vector> GetOutputVector(Teuchos::RCP<Epetra_Vector>   vel);
 
   // returns, if Properties for GenAlpha have to be updated
-  void UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual,int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln, FluidImplicitTimeInt& fluid);
+  void UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual,int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln);
 
   // returns tauw of discret_
   Teuchos::RCP<Epetra_Vector>   GetTauw();
@@ -121,6 +123,9 @@ private:
 
   //! fluid params
   Teuchos::RCP<Teuchos::ParameterList> params_;
+
+  //! manager for wall shear stress
+  Teuchos::RCP<FLD::UTILS::StressManager> mystressmanager_;
 
   //! the processor ID from the communicator
   int                           myrank_;
@@ -214,9 +219,6 @@ private:
 
   //! MK for xwall discretization
   Teuchos::RCP<Epetra_Vector> mkxwstate_;
-
-  //! scale separation matrix for smoothing of tauw/ residual
-  Teuchos::RCP<LINALG::SparseMatrix> SepEnr_;
 
   Teuchos::RCP<TransferTurbulentInflowConditionNodal> turbulent_inflow_condition_;
 

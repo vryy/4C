@@ -31,31 +31,49 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  | constructor                                         Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-FLD::UTILS::WSSManager::WSSManager(
-      const int ml_solver,
+FLD::UTILS::StressManager::StressManager(
       Teuchos::RCP<DRT::Discretization> discret,
       Teuchos::RCP<Epetra_Vector> dispnp,
       const bool alefluid,
-      const int numdim,
-      Teuchos::RCP<LINALG::SparseOperator> sysmat
-): ML_solver_(ml_solver),
+      const int numdim
+): ML_solver_((DRT::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER")),
    discret_(discret),
    dispnp_(dispnp),
    alefluid_(alefluid),
    numdim_(numdim),
-   SepEnr_(CalcSepEnr(ml_solver,discret,sysmat))
+   SepEnr_(Teuchos::null),
+   isinit_(false)
 {
+  //nothing has to be done!
+  if(ML_solver_ == -1)
+    isinit_ = true;
+}
+
+/*----------------------------------------------------------------------*
+ | constructor                                         Thon/Krank 11/14 |
+ *----------------------------------------------------------------------*/
+void FLD::UTILS::StressManager::Init(Teuchos::RCP<LINALG::SparseOperator> sysmat)
+{
+  CalcSepEnr(sysmat);
+
   if (ML_solver_ != -1 and SepEnr_== Teuchos::null)
-    dserror("If a WSS_ML_AGR_SOLVER is specified one should already have set SepEnr_. Strange thing...");
+    dserror("If a WSS_ML_AGR_SOLVER is specified one should already have set SepEnr_.");
+
+  isinit_=true;
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
  | return WSS vector                                   Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::WSSManager::GetWallShearStresses(
-    Teuchos::RCP<Epetra_Vector> stresses
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStresses(
+    Teuchos::RCP<const Epetra_Vector> trueresidual
 )
 {
+  if(not isinit_)
+    dserror("not initialized");
+  Teuchos::RCP<Epetra_Vector> stresses = CalcStresses(trueresidual);
   //calculate wss from stresses
   Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses(stresses);
 
@@ -66,10 +84,67 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::WSSManager::GetWallShearStresses(
 }
 
 /*----------------------------------------------------------------------*
+ |  calculate traction vector at (Dirichlet) boundary (public) gjb 07/07|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcStresses(Teuchos::RCP<const Epetra_Vector> trueresidual)
+{
+  if(not isinit_)
+    dserror("not initialized");
+  std::string condstring("FluidStressCalc");
+  Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
+
+  // compute traction values at specified nodes; otherwise do not touch the zero values
+  for (int i=0;i<integratedshapefunc->MyLength();i++)
+  {
+    if ((*integratedshapefunc)[i] != 0.0)
+    {
+      // overwrite integratedshapefunc values with the calculated traction coefficients,
+      // which are reconstructed out of the nodal forces (trueresidual_) using the
+      // same shape functions on the boundary as for velocity and pressure.
+      (*integratedshapefunc)[i] = (*trueresidual)[i]/(*integratedshapefunc)[i];
+    }
+  }
+
+  if (ML_solver_ != -1) //iff we have a ML solver we aggregate the WSS
+    return AggreagteWallShearStresses(integratedshapefunc);
+  else
+    return integratedshapefunc;
+
+} // FluidImplicitTimeInt::CalcStresses()
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::IntegrateInterfaceShape(std::string condname)
+{
+  Teuchos::ParameterList eleparams;
+  // set action for elements
+  eleparams.set<int>("action",FLD::integrate_Shapefunction);
+
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // create vector (+ initialization with zeros)
+  Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
+
+  // call loop over elements
+  discret_->ClearState();
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+  }
+  discret_->EvaluateCondition(eleparams,integratedshapefunc,condname);
+  discret_->ClearState();
+
+  return integratedshapefunc;
+}
+
+/*----------------------------------------------------------------------*
  |  calculate wall sheer stress from stresses at dirichlet boundary     |
  |                                                      Thon/Krank 11/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::WSSManager::CalcWallShearStresses(
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcWallShearStresses(
     Teuchos::RCP<Epetra_Vector> stresses
 )
 {
@@ -157,10 +232,13 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::WSSManager::CalcWallShearStresses(
 /*----------------------------------------------------------------------*
  | smooth WSS via ML-aggregation                       Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::WSSManager::AggreagteWallShearStresses(
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::AggreagteWallShearStresses(
     Teuchos::RCP<Epetra_Vector> wss
 )
 {
+  if(SepEnr_==Teuchos::null)
+    dserror("no scale separation matrix");
+
   Teuchos::RCP<Epetra_Vector> mean_wss = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
 
   //Do the actual aggregation
@@ -173,19 +251,12 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::WSSManager::AggreagteWallShearStresses(
  | Calculate Aggregation Matrix and set is as member variable SepEnr_   |
  |                                                     Thon/Krank 11/14 |
  *------------------------------------------------- --------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> FLD::UTILS::WSSManager::CalcSepEnr(
-    const int ml_solver ,
-    Teuchos::RCP<DRT::Discretization> discret ,
+void FLD::UTILS::StressManager::CalcSepEnr(
     Teuchos::RCP<LINALG::SparseOperator> sysmat
 )
 {
-  Teuchos::RCP<LINALG::SparseMatrix> SepEnr;
 
-  if (ml_solver == -1 ) //iff we have not specified a ML-solver one does not want to smooth the wss
-  {
-    SepEnr = Teuchos::null;
-  }
-  else
+  if (ML_solver_ != -1 ) //iff we have not specified a ML-solver one does not want to smooth the wss
   {
     Teuchos::RCP<LINALG::SparseMatrix> sysmat2;
 
@@ -202,8 +273,8 @@ Teuchos::RCP<LINALG::SparseMatrix> FLD::UTILS::WSSManager::CalcSepEnr(
 
     MLAPI::Init();
 
-    Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(ml_solver),
-                                          discret->Comm(),
+    Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(ML_solver_),
+                                          discret_->Comm(),
                                           DRT::Problem::Instance()->ErrorFile()->Handle()));
 
     if (solver == Teuchos::null)
@@ -211,7 +282,7 @@ Teuchos::RCP<LINALG::SparseMatrix> FLD::UTILS::WSSManager::CalcSepEnr(
 
     Teuchos::ParameterList& mlparams = solver->Params().sublist("ML Parameters");
     // compute the null space,
-    discret->ComputeNullSpaceIfNecessary(solver->Params(),true);
+    discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
 
     // get nullspace parameters
     double* nullspace = mlparams.get("null space: vectors",(double*)NULL);
@@ -220,20 +291,20 @@ Teuchos::RCP<LINALG::SparseMatrix> FLD::UTILS::WSSManager::CalcSepEnr(
     if(nsdim!=4)
       dserror("The calculation of mean WSS is only tested for three space dimensions!");
 
-    int lrowdofs = discret->DofRowMap()->NumMyElements();
+    int lrowdofs = discret_->DofRowMap()->NumMyElements();
 
-    for (int j=0; j<discret->NodeRowMap()->NumMyElements();++j)
+    for (int j=0; j<discret_->NodeRowMap()->NumMyElements();++j)
     {
-      int gid = discret->NodeRowMap()->GID(j);
+      int gid = discret_->NodeRowMap()->GID(j);
 
-      if (not discret->NodeRowMap()->MyGID(gid)) //just in case
+      if (not discret_->NodeRowMap()->MyGID(gid)) //just in case
         dserror("not on proc");
       {
-        DRT::Node* node = discret->gNode(gid);
+        DRT::Node* node = discret_->gNode(gid);
         if(!node) dserror("Cannot find node");
 
-        int firstglobaldofid=discret->Dof(node,0);
-        int firstlocaldofid=discret->DofRowMap()->LID(firstglobaldofid);
+        int firstglobaldofid=discret_->Dof(node,0);
+        int firstlocaldofid=discret_->DofRowMap()->LID(firstglobaldofid);
 
         std::vector<DRT::Condition*> nodedircond;
         node->GetCondition("FluidStressCalc",nodedircond);
@@ -255,7 +326,7 @@ Teuchos::RCP<LINALG::SparseMatrix> FLD::UTILS::WSSManager::CalcSepEnr(
           nullspace[lrowdofs*3+firstlocaldofid+3]=0.0;
         }
 
-        if(discret->NumDof(node)>5) //in the case of xWall fluid
+        if(discret_->NumDof(node)>5) //in the case of xWall fluid
         {
           nullspace[firstlocaldofid+4]=0.0;
           nullspace[lrowdofs+firstlocaldofid+5]=0.0;
@@ -271,11 +342,11 @@ Teuchos::RCP<LINALG::SparseMatrix> FLD::UTILS::WSSManager::CalcSepEnr(
     LINALG::SparseMatrix Ptent(crsPtent);
 
     // compute scale-separation matrix: S = Ptent*Ptent^T
-    SepEnr = LINALG::Multiply(Ptent,false,Ptent,true);
-    SepEnr->Complete();
+    SepEnr_ = LINALG::Multiply(Ptent,false,Ptent,true);
+    SepEnr_->Complete();
   }
 
-  return SepEnr;
+  return;
 }
 
 

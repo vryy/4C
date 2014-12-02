@@ -13,6 +13,9 @@ created by pre_exodus
 //ELEMENTS    288
 //NODES       441
 DIM           3
+---------------------------------------------------------------IO
+FLUID_STRESS             Yes
+FLUID_WALL_SHEAR_STRESS  Yes
 -----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 --------------------------------------------------------PROBLEM TYP
@@ -45,6 +48,7 @@ ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 CONVTOL                         1e-6
 CFL_NUMBER                      1.0
+WSS_ML_AGR_SOLVER               2
 -------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
@@ -65,9 +69,8 @@ Tauw_Type                       between_steps
 Tauw_Calc_Type                  gradient_to_residual
 Switch_Step                     2
 Min_Tauw                        0.085
-Projection                      l2projectionwithcontinuityconstraint
-Blending_Type                   tauw_transformation
-Penalty_Param                   1000.0
+Projection                      onlyl2projection
+Blending_Type                   ramp_function
 GP_Wall_Normal                  12
 GP_Wall_Parallel                5
 PROJECTION_SOLVER               9
@@ -104,6 +107,39 @@ ML_SMOTIMES       2 2 1
 ML_DAMPFINE       0.65
 ML_DAMPMED        0.67
 ML_DAMPCOARSE     1.0
+------------------------------------------------------SOLVER 2
+NAME                            AVM3_Solver
+SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        0                               // output every so often, 0 no output
+AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ML                              // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         5                               // how often to recompute some preconditioners
+AZDROP                          0.0                             // drop tolerance for ILUT
+IFPACKFILL                      1.0                             // fill-in for ILUT
+IFPACKGFILL                     0                               // graph fill for ILU
+AZTOL                           1.0E-4                          // tolerance in unscaled residual
+AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                            // max iterations
+AZSUB                           40                              // size of krylov space for gmres
+AZOMEGA                         1.0                             // unused
+AZGRAPH                         1                               // unused
+AZPOLY                          5                               // polynomial order for Neumann
+IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          none                            // none sym infnorm scaling of the system
+ML_PRINT                        0                               // ML print-out level (0-10)
+ML_MAXCOARSESIZE                1000                            // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL 2 //3 // ML max number of levels
+ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 SGS                             // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  SGS                             // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu Umfpack
+ML_SMOTIMES 2 2 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.67                            // damping fine grid
+ML_DAMPMED                      0.67                            // damping med grids
+ML_DAMPCOARSE                   1.0                             // damping coarse grid
 --------------------------------------------------------------------SOLVER 9
 NAME              Projection_Solver
 SOLVER            Belos
@@ -155,22 +191,22 @@ FUNCT1 COMPONENT 6 EXPR 0 0.0 0 FUNCTION 0
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 12 QUANTITY velx VALUE 1.64303961971931152e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 12 QUANTITY vely VALUE -4.73806271480294288e-03 TOLERANCE 1e-9
-FLUID DIS fluid NODE 12 QUANTITY velz VALUE  4.70698956994295370e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -3.57902526154600387e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 365 QUANTITY velx VALUE 1.10106089021324625e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 365 QUANTITY vely VALUE 5.82662116610506257e-03 TOLERANCE 1e-9
-FLUID DIS fluid NODE 365 QUANTITY velz VALUE  2.28556652033701624e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 365 QUANTITY pressure VALUE  -1.51623825053287364e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 430 QUANTITY velx VALUE 1.12076737073563120e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 430 QUANTITY vely VALUE 9.70154078657950794e-03 TOLERANCE 1e-9
-FLUID DIS fluid NODE 430 QUANTITY velz VALUE 2.38113006240898206e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 430 QUANTITY pressure VALUE -6.19027684311258750e-02 TOLERANCE 1e-9
-FLUID DIS fluid NODE 237 QUANTITY velx VALUE  2.39690857460884459e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 237 QUANTITY vely VALUE 1.81385542960096294e-03 TOLERANCE 1e-9
-FLUID DIS fluid NODE 237 QUANTITY velz VALUE 4.68547595759162827e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 237 QUANTITY pressure VALUE -5.57838935828792182e-02 TOLERANCE 1e-9
+FLUID DIS fluid NODE 12 QUANTITY velx VALUE 1.64297412774592644e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 12 QUANTITY vely VALUE -9.19856721283705131e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 12 QUANTITY velz VALUE  4.65023392499449462e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -3.49132870847051080e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 365 QUANTITY velx VALUE 1.11504724164748854e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 365 QUANTITY vely VALUE 5.31383885231609746e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 365 QUANTITY velz VALUE  3.15447301826720705e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 365 QUANTITY pressure VALUE  -1.38786610150760603e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 430 QUANTITY velx VALUE 1.10841620777580143e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 430 QUANTITY vely VALUE 7.54364259380710563e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 430 QUANTITY velz VALUE 1.94686468801603590e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 430 QUANTITY pressure VALUE 4.36742828984100009e-02 TOLERANCE 1e-9
+FLUID DIS fluid NODE 237 QUANTITY velx VALUE  2.39629254863756458e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 237 QUANTITY vely VALUE 1.07551459478513831e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 237 QUANTITY velz VALUE 4.68046227689117411e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 237 QUANTITY pressure VALUE -1.29632283320039093e-01 TOLERANCE 1e-9
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0

@@ -620,18 +620,18 @@ void ADAPTER::FluidFSI::IndicateErrorNorms(double& err,
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::CalculateWallShearStresses()
 {
   //Calculate stresses
-  Teuchos::RCP<Epetra_Vector> stresses = fluidimpl_->CalcStresses();
+  Teuchos::RCP<const Epetra_Vector> trueresidual = fluidimpl_->TrueResidual();
 
   //Get WSSManager
-  Teuchos::RCP<FLD::UTILS::WSSManager> wssmanager = fluidimpl_->WSSManager();
+  Teuchos::RCP<FLD::UTILS::StressManager> stressmanager = fluidimpl_->StressManager();
 
   //Since the WSS Manager cannot be initialized in the FluidImplicitTimeInt::Init()
   //it is not so sure if the WSSManager is jet initialized. So let's be safe here..
-  if ( wssmanager == Teuchos::null)
+  if ( stressmanager == Teuchos::null)
     dserror("WSSManager has not been initialized jet!");
 
-  //Call WSSManager to calculate WSS from stresses
-  Teuchos::RCP<Epetra_Vector> wss = wssmanager->GetWallShearStresses( stresses );
+  //Call StressManager to calculate WSS from stresses
+  Teuchos::RCP<Epetra_Vector> wss = stressmanager->GetWallShearStresses( trueresidual );
 
   return wss;
 }

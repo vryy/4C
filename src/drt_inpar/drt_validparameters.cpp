@@ -4755,15 +4755,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("GP_Wall_Parallel",3,"Gauss points in wall parallel direction",&fdyn_wallmodel);
 
-  BoolParameter("SMOOTH_TAUW","No","Flag to switch on smoothing of the residual before calculating tauw",&fdyn_wallmodel);
-
   BoolParameter("Enr_MFS_Fine_Scale","No","Flag to add the enrichment part to the fine scale velocity. if no: enrichment part of coarse scales",&fdyn_wallmodel);
-
-  IntParameter(
-    "ML_SOLVER",
-    -1,
-    "Set solver number for smooting of residual for tauw via level set transfer operators from plain aggregation.",
-  &fdyn_wallmodel);
 
   IntParameter(
     "PROJECTION_SOLVER",

@@ -98,7 +98,7 @@ namespace UTILS
   class FluidInfNormScaling;
   class FluidImpedanceWrapper;
   class FluidWkOptimizationWrapper;
-  // class WSSManager;
+  // class StressManager;
 }
 
 /*!
@@ -540,18 +540,6 @@ public:
   virtual void EvaluateDtWithCFL();
 
   /*!
-  \brief calculate stresses
-
-  */
-  virtual Teuchos::RCP<Epetra_Vector> CalcStresses();
-
-  /*!
-  \brief calculate wall shear stresses
-
-  */
-  virtual Teuchos::RCP<Epetra_Vector> CalcWallShearStresses();
-
-  /*!
   \brief calculate subfilter stresses
 
   */
@@ -590,6 +578,17 @@ public:
 
   /// Return true residual, ie the actual force in Newton [N]
   virtual Teuchos::RCP<const Epetra_Vector> TrueResidual() { return trueresidual_; }
+
+  /// Return stresses in [N/m^2]
+  virtual Teuchos::RCP<Epetra_Vector> CalcStresses()
+      { if(stressmanager_==Teuchos::null)
+        {
+          dserror("no StressManager");
+          return Teuchos::null;
+        }
+        else
+          return stressmanager_->CalcStresses(trueresidual_);
+      }
 
   virtual Teuchos::RCP<const Epetra_Vector> Velnp()       { return velnp_; }
   virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp()  { return velnp_; }
@@ -653,7 +652,7 @@ public:
   virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() {return locsysman_;}
 
   //! Return wss manager
-  virtual Teuchos::RCP<FLD::UTILS::WSSManager> WSSManager() {return wssmanager_;}
+  virtual Teuchos::RCP<FLD::UTILS::StressManager> StressManager() {return stressmanager_;}
 
   //! Apply Dirichlet boundary conditions on provided state vectors
   virtual void ApplyDirichletBC
@@ -1219,7 +1218,7 @@ protected:
   Teuchos::RCP<UTILS::FluidWkOptimizationWrapper> impedancebc_optimization_;
 
   //! Dirichlet BCs with local co-ordinate system
-  Teuchos::RCP<FLD::UTILS::WSSManager> wssmanager_;
+  Teuchos::RCP<FLD::UTILS::StressManager> stressmanager_;
 
   /// flag for windkessel outflow condition
   bool isimpedancebc_;

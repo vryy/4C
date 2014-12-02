@@ -14,6 +14,7 @@ Maintainer: Benjamin Krank
 
 #include "fluid_xwall.H"
 #include "fluidimplicitintegration.H"
+#include "fluid_utils.H"
 #include "../drt_fluid_ele/fluid_ele_xwall.H"
 #include "../drt_lib/drt_condition.H"
 #include "../drt_lib/drt_discret.H"
@@ -43,9 +44,11 @@ FLD::XWall::XWall(
     Teuchos::RCP<DRT::Discretization>      dis,
     int                           nsd,
     Teuchos::RCP<Teuchos::ParameterList>& params,
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps):
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+    Teuchos::RCP<FLD::UTILS::StressManager> wssmanager):
     discret_(dis),
-    params_(params)
+    params_(params),
+    mystressmanager_(wssmanager)
 {
 
   // get the processor ID from the communicator
@@ -152,7 +155,10 @@ FLD::XWall::XWall(
 
   inctauwnorm_=0.0;
 
-  smooth_res_aggregation_ = DRT::INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"),"SMOOTH_TAUW");
+  const int mlsmooth = (DRT::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER");
+  if(mlsmooth!=-1)
+    smooth_res_aggregation_ = true;
+  else smooth_res_aggregation_ = false;
 
   switch_step_ = params_->sublist("WALL MODEL").get<int>("Switch_Step");
   if(tauwcalctype_ == INPAR::FLUID::gradient_to_residual && switch_step_ < 2)
@@ -171,7 +177,6 @@ FLD::XWall::XWall(
   if (scale_sep != "algebraic_multigrid_operator" && mfs_fs_)
     dserror("enrichment can only be fine-scale velocity if the AVM3 method is used");
 
-  SepEnr_=Teuchos::null;
 
 
   //output:
@@ -189,7 +194,7 @@ FLD::XWall::XWall(
     std::cout << "Penalty parameter:            " << penalty_param_ << std::endl;
     std::cout << "Blending method:              " << blendingtype << std::endl;
     std::cout << "Smooth tau_w:                 " << smooth_res_aggregation_ << std::endl;
-    std::cout << "Solver for tau_w smoothing:   " << params_->sublist("WALL MODEL").get<int>("ML_SOLVER") << std::endl;
+    std::cout << "Solver for tau_w smoothing:   " << (DRT::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER") << std::endl;
     std::cout << "Solver for projection:        " << params_->sublist("WALL MODEL").get<int>("PROJECTION_SOLVER") << std::endl;
     std::cout << "Enrichment fine scale vel:    " << mfs_fs_ << std::endl;
     std::cout << std::endl;
@@ -900,99 +905,19 @@ void FLD::XWall::SetupL2Projection()
 /*----------------------------------------------------------------------*
  |  Routine to update Tauw                                     bk 07/14 |
  *----------------------------------------------------------------------*/
-  void FLD::XWall::UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual, int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln, FluidImplicitTimeInt& fluid)
+  void FLD::XWall::UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual, int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln)
 {
   TransferAndSaveTauw();
 
   Teuchos::RCP<Epetra_Vector> newtauw = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
   //calculate wall stress
-  Teuchos::RCP<Epetra_Vector> wss = fluid.CalcWallShearStresses();
+  Teuchos::RCP<Epetra_Vector> wss ;//= fluid.CalcWallShearStresses();
 
-  if(((tauwcalctype_ == INPAR::FLUID::gradient_to_residual && step >= switch_step_) || (tauwcalctype_ != INPAR::FLUID::gradient_to_residual && step > 1)) && smooth_res_aggregation_)
+  if(((tauwcalctype_ == INPAR::FLUID::gradient_to_residual && step >= switch_step_) || (tauwcalctype_ != INPAR::FLUID::gradient_to_residual && step > 1)))
   {
-    //filtering matrix for wall shear stress
-    if(SepEnr_==Teuchos::null)
-    {
-      if(myrank_==0)
-        std::cout << "build filtering matrix for residual via aggregation:" << std::endl;
-
-      MLAPI::Init();
-      const int scale_sep_solvernumber = params_->sublist("WALL MODEL").get<int>("ML_SOLVER");
-      if(scale_sep_solvernumber==-1)
-        dserror("Set a solver number in ML_SOLVER for smooting of tauw via aggregation");
-        Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(scale_sep_solvernumber),
-                                              discret_->Comm(),
-                                              DRT::Problem::Instance()->ErrorFile()->Handle()));
-
-      Teuchos::ParameterList& mlparams = solver->Params().sublist("ML Parameters");
-      // compute the null space,
-      discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
-
-      // get nullspace parameters
-      double* nullspace = mlparams.get("null space: vectors",(double*)NULL);
-      if (!nullspace) dserror("No nullspace supplied in parameter list");
-      int nsdim = mlparams.get("null space: dimension",1);
-      if(nsdim!=4)
-        dserror("Wrong Nullspace dimension for XWall");
-      int lrowdofs = discret_->DofRowMap()->NumMyElements();
-
-      for (int j=0; j<discret_->NodeRowMap()->NumMyElements();++j)
-      {
-        int xwallgid = discret_->NodeRowMap()->GID(j);
-
-        if (not discret_->NodeRowMap()->MyGID(xwallgid)) //just in case
-          dserror("not on proc");
-        {
-          DRT::Node* xwallnode = discret_->gNode(xwallgid);
-          if(!xwallnode) dserror("Cannot find node");
-
-          int firstglobaldofid=discret_->Dof(xwallnode,0);
-          int firstlocaldofid=discret_->DofRowMap()->LID(firstglobaldofid);
-
-          std::vector<DRT::Condition*> nodedircond;
-          xwallnode->GetCondition("FluidStressCalc",nodedircond);
-
-          if(not nodedircond.empty())
-          {
-            //these nodes are wall nodes, so aggregate them
-            nullspace[firstlocaldofid]=1.0;
-            nullspace[lrowdofs+firstlocaldofid+1]=1.0;
-            nullspace[lrowdofs*2+firstlocaldofid+2]=1.0;
-            nullspace[lrowdofs*3+firstlocaldofid+3]=1.0;
-          }
-          else
-          {
-            //set everything to zero
-            nullspace[firstlocaldofid]=0.0;
-            nullspace[lrowdofs+firstlocaldofid+1]=0.0;
-            nullspace[lrowdofs*2+firstlocaldofid+2]=0.0;
-            nullspace[lrowdofs*3+firstlocaldofid+3]=0.0;
-          }
-
-          if(discret_->NumDof(xwallnode)>5)
-          {
-            nullspace[firstlocaldofid+4]=0.0;
-            nullspace[lrowdofs+firstlocaldofid+5]=0.0;
-            nullspace[lrowdofs*2+firstlocaldofid+6]=0.0;
-            nullspace[lrowdofs*3+firstlocaldofid+7]=0.0;
-          }
-        }
-      }
-
-      // get plain aggregation Ptent
-      Teuchos::RCP<Epetra_CrsMatrix> crsPtent;
-      MLAPI::GetPtent(*fluid.SystemMatrix()->EpetraMatrix(),mlparams,nullspace,crsPtent);
-      LINALG::SparseMatrix Ptent(crsPtent);
-
-      // compute scale-separation matrix: S = I - Ptent*Ptent^T
-      SepEnr_ = LINALG::Multiply(Ptent,false,Ptent,true);
-
-      SepEnr_->Complete();
-    }
-
-    Teuchos::RCP<Epetra_Vector> fsresidual = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
-    SepEnr_->Multiply(false,*wss,*fsresidual);
-    wss->Update(1.0,*fsresidual,0.0);
+    if(mystressmanager_==Teuchos::null)
+      dserror("wssmanager not available in xwall");
+    wss=mystressmanager_->GetWallShearStresses(trueresidual);
   }
   switch (tauwtype_)
   {
@@ -1875,20 +1800,6 @@ void FLD::XWall::CalcMK()
 
   return;
 } // end CalcMK
-
-/*----------------------------------------------------------------------*
- |  Filter residual for output of wall shear stress            bk 09/14 |
- *----------------------------------------------------------------------*/
-void FLD::XWall::FilterResVectorForOutput(Teuchos::RCP<Epetra_Vector>   residual)
-{
-  if(SepEnr_!=Teuchos::null)
-  {
-  Teuchos::RCP<Epetra_Vector> fsresidual = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
-  SepEnr_->Multiply(false,*residual,*fsresidual);
-  residual->Update(1.0,*fsresidual,0.0);
-  }
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  Write enriched dofs in standard dofs for output            bk 09/14 |

@@ -238,6 +238,9 @@ void FLD::FluidImplicitTimeInt::Init()
   // a vector containing the integrated traction in boundary normal direction for slip boundary conditions (Unit: Newton [N])
   slip_bc_normal_tractions_ = LINALG::CreateVector(*dofrowmap,true);
 
+  //manager for wall stress related things
+  stressmanager_ = Teuchos::rcp( new FLD::UTILS::StressManager( discret_, dispnp_, alefluid_, numdim_) );
+
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
   // one system matrix!
@@ -252,7 +255,7 @@ void FLD::FluidImplicitTimeInt::Init()
   {
     //XWall: enrichment with spaldings law
     if(DRT::INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"),"X_WALL"))
-      xwall_= Teuchos::rcp(new XWall(discret_,numdim_,params_,dbcmaps_));
+      xwall_= Teuchos::rcp(new XWall(discret_,numdim_,params_,dbcmaps_,stressmanager_));
   }
 
   if (not params_->get<int>("Simple Preconditioner",0) && not params_->get<int>("AMG BS Preconditioner",0)
@@ -516,6 +519,24 @@ void FLD::FluidImplicitTimeInt::Init()
     // including the faces between elements
     facediscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
     facediscret_->CreateInternalFacesExtension(true);
+  }
+
+  // Initialize WSS manager if smoothing via aggregation is desired
+  if (not stressmanager_->IsInit())
+  {
+    //necessary for the assembly
+    SetElementTimeParameter();
+
+    // create the parameters for the discretization
+    Teuchos::ParameterList eleparams;
+
+    //necessary here, because some application time integrations add something to the residual
+    //before the Neumann loads are added
+    residual_->PutScalar(0.0);
+
+    AVM3AssembleMatAndRHS(eleparams);
+
+    stressmanager_->Init(sysmat_);
   }
 
   return;
@@ -801,7 +822,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   {
     // Transfer of boundary data if necessary
     turbulent_inflow_condition_->Transfer(trueresidual_,trueresidual_,time_);
-    xwall_->UpdateTauW(step_,trueresidual_,0,accn_,velnp_,veln_,*this);
+    xwall_->UpdateTauW(step_,trueresidual_,0,accn_,velnp_,veln_);
   }
 
   // -------------------------------------------------------------------
@@ -3066,15 +3087,6 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   dtp_ = dta_;
   discret_->ClearState();
 
-  // Create WSS manager, if needed. This cannot be done in Init() since we need a fully build system matrix when building
-  if (write_wall_shear_stresses_ and wssmanager_==Teuchos::null)
-  {
-    const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams(); //get number of ML-solver
-    const int mlsolver = fdyn.get<int>("WSS_ML_AGR_SOLVER");
-
-    wssmanager_ = Teuchos::rcp( new FLD::UTILS::WSSManager( mlsolver, discret_, dispnp_, alefluid_, numdim_, sysmat_) );
-  }
-
   return;
 }// FluidImplicitTimeInt::TimeUpdate
 
@@ -3412,22 +3424,13 @@ void FLD::FluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
+      Teuchos::RCP<Epetra_Vector> traction = stressmanager_->CalcStresses(trueresidual_);
       output_->WriteVector("traction",traction);
       if (myrank_==0)
         std::cout<<"Writing stresses"<<std::endl;
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
-      {
-        Teuchos::RCP<Epetra_Vector> wss;
-
-        wss = wssmanager_->GetWallShearStresses(traction);
-
-        if(xwall_!=Teuchos::null)
-          xwall_->FilterResVectorForOutput(wss);
-
-        output_->WriteVector("wss",wss);
-      }
+        output_->WriteVector("wss",stressmanager_->GetWallShearStresses(trueresidual_));
     }
 
     //biofilm growth
@@ -3546,20 +3549,11 @@ void FLD::FluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-      Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
+      Teuchos::RCP<Epetra_Vector> traction = stressmanager_->CalcStresses(trueresidual_);
       output_->WriteVector("traction",traction);
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
-      {
-        Teuchos::RCP<Epetra_Vector> wss;
-
-        wss = wssmanager_->GetWallShearStresses(traction);
-
-        if(xwall_!=Teuchos::null)
-          xwall_->FilterResVectorForOutput(wss);
-
-        output_->WriteVector("wss",wss);
-      }
+        output_->WriteVector("wss",stressmanager_->GetWallShearStresses(trueresidual_));
     }
 
     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
@@ -3912,6 +3906,14 @@ void FLD::FluidImplicitTimeInt::UpdateGridv()
 void FLD::FluidImplicitTimeInt::AVM3Preparation()
 {
 
+  // AVM3 can't be used with locsys conditions cause it hasn't been implemented yet
+  if (locsysman_ != Teuchos::null) {
+    dserror("AVM3 can't be used with locsys conditions cause it hasn't been implemented yet!");
+  }
+
+  if(msht_ == INPAR::FLUID::condensed_bmat || msht_ == INPAR::FLUID::condensed_bmat_merged)
+    dserror("Scale separation via aggregation is currently not implemented for block matrices");
+
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
 
@@ -3944,14 +3946,6 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::AVM3AssembleMatAndRHS(Teuchos::ParameterList& eleparams)
 {
-  // AVM3 can't be used with locsys conditions cause it hasn't been implemented yet
-  if (locsysman_ != Teuchos::null) {
-    dserror("AVM3 can't be used with locsys conditions cause it hasn't been implemented yet!");
-  }
-
-  if(msht_ == INPAR::FLUID::condensed_bmat || msht_ == INPAR::FLUID::condensed_bmat_merged)
-    dserror("Scale separation via aggregation is currently not implemented for block matrices");
-
   // zero matrix
   sysmat_->Zero();
 
@@ -4997,120 +4991,6 @@ void FLD::FluidImplicitTimeInt::EvaluateDtWithCFL()
   return;
 } // end EvaluateDtWithCFL
 
-
-
-/*----------------------------------------------------------------------*
- |  calculate traction vector at (Dirichlet) boundary (public) gjb 07/07|
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcStresses()
-{
-  std::string condstring("FluidStressCalc");
-  Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
-
-  // compute traction values at specified nodes; otherwise do not touch the zero values
-  for (int i=0;i<integratedshapefunc->MyLength();i++)
-  {
-    if ((*integratedshapefunc)[i] != 0.0)
-    {
-      // overwrite integratedshapefunc values with the calculated traction coefficients,
-      // which are reconstructed out of the nodal forces (trueresidual_) using the
-      // same shape functions on the boundary as for velocity and pressure.
-      (*integratedshapefunc)[i] = (*trueresidual_)[i]/(*integratedshapefunc)[i];
-    }
-  }
-
-  return integratedshapefunc;
-
-} // FluidImplicitTimeInt::CalcStresses()
-
-//TODO: (Krank) remove this function when xWall framework uses new WSSManager
-/*----------------------------------------------------------------------*
- |  calculate wall sheer stress at (Dirichlet) boundary (public)        |
- |                                                          ismail 08/10|
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
-{
-  // -------------------------------------------------------------------
-  // first evaluate the normals at the nodes
-  // -------------------------------------------------------------------
-
-  Teuchos::ParameterList eleparams;
-  // set action for elements
-  eleparams.set<int>("action",FLD::ba_calc_node_normal);
-
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  //vector ndnorm0 with pressure-entries is needed for EvaluateCondition
-  Teuchos::RCP<Epetra_Vector> ndnorm0 = LINALG::CreateVector(*dofrowmap,true);
-
-  //call loop over elements, note: normal vectors do not yet have length = 1.0
-  discret_->ClearState();
-  if (alefluid_)
-  {
-    discret_->SetState("dispnp", dispnp_);
-  }
-  // evaluate the normals of the surface
-  discret_->EvaluateCondition(eleparams,ndnorm0,"FluidStressCalc");
-  discret_->ClearState();
-
-  // -------------------------------------------------------------------
-  // normalize the normal vectors
-  // -------------------------------------------------------------------
-  for (int i = 0; i < ndnorm0->MyLength();i+=numdim_+1)
-  {
-    // calculate the length of the normal
-    double L = 0.0;
-    for (int j = 0; j<numdim_; j++)
-    {
-      L += ((*ndnorm0)[i+j])*((*ndnorm0)[i+j]);
-    }
-    L = sqrt(L);
-
-    // normalise the normal vector (if present for the current node)
-    if (L > EPS15)
-    {
-      for (int j = 0; j < numdim_; j++)
-      {
-        (*ndnorm0)[i+j] /=  L;
-      }
-    }
-  }
-
-  // -------------------------------------------------------------------
-  // evaluate the wall shear stress from the traction by removing
-  // the normal stresses
-  // -------------------------------------------------------------------
-
-  // get traction
-  Teuchos::RCP<Epetra_Vector> wss = CalcStresses();
-
-  // loop over all entities within the traction vector
-  for (int i = 0; i < ndnorm0->MyLength();i+=numdim_+1)
-  {
-    // evaluate the normal stress = < traction . normal >
-    double normal_stress = 0.0;
-    for (int j = 0; j<numdim_; j++)
-    {
-      normal_stress += (*wss)[i+j] * (*ndnorm0)[i+j];
-    }
-
-    // subtract the normal stresses from traction
-    for (int j = 0; j<numdim_; j++)
-    {
-      (*wss)[i+j] -= normal_stress * (*ndnorm0)[i+j];
-    }
-  }
-
-
-  // -------------------------------------------------------------------
-  // return the wall_shear_stress vector
-  // -------------------------------------------------------------------
-  return wss;
-}
-
 /*----------------------------------------------------------------------*
  | Destructor dtor (public)                                  gammi 04/07|
  *----------------------------------------------------------------------*/
@@ -5245,7 +5125,6 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::IntegrateInterfaceShape(s
 
   return integratedshapefunc;
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
