@@ -1628,13 +1628,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         overpotentialint += eta*fac;
         electdiffpotint += epd*fac;
         opencircuitpotint += ocp*fac;
-        currentintegral += i0*expterm*fac; // the negative(!) normal flux density
+        currentintegral += dmedc_->GetPhasePoro(0)*i0*expterm*fac; // the negative(!) normal flux density
         boundaryint += fac;
         concentrationint += conint[k]*fac;
 
         // tangent and rhs (= negative residual) for galvanostatic equation
-        currderiv += i0*linea*timefac*fac;
-        currentresidual += i0 * expterm * timefac *fac;
+        currderiv += dmedc_->GetPhasePoro(0)*i0*linea*timefac*fac;
+        currentresidual += dmedc_->GetPhasePoro(0)*i0 * expterm * timefac *fac;
 
         if (dlcap != 0.0)
         {
@@ -1642,8 +1642,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
 
           // add contributions due to double-layer capacitance
           // positive due to redefinition of the exchange current density
-          currderiv += fac*dlcap;
-          currentresidual += fac*dlcap*(pot0-pot0hist-(timefac*potdtnpint));
+          currderiv += dmedc_->GetPhasePoro(0)*fac*dlcap;
+          currentresidual += dmedc_->GetPhasePoro(0)*fac*dlcap*(pot0-pot0hist-(timefac*potdtnpint));
         }
         break;
       }
@@ -1695,8 +1695,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         concentrationint += conint[k]*fac;
 
         // tangent and rhs (= negative residual) for galvanostatic equation
-        currderiv += i0*linea*timefac*fac;
-        currentresidual += i0*expterm*timefac*fac;
+        currderiv += dmedc_->GetPhasePoro(0)*i0*linea*timefac*fac;
+        currentresidual += dmedc_->GetPhasePoro(0)*i0*expterm*timefac*fac;
 
         break;
       }
@@ -1715,13 +1715,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         const double refcon = cond->GetDouble("refcon");
         if (refcon < EPS12) dserror("reference concentration is too small: %f",refcon);
         const double dlcap = cond->GetDouble("dl_spec_cap");
-        double pot0dtnp = 0.0;
-        double pot0hist = 0.0;
-        if(dlcap!=0.0)
-        {
-          pot0dtnp = cond->GetDouble("pot0dtnp");
-          pot0hist = cond->GetDouble("pot0hist");
-        }
 
         // opencircuit potential is assumed to be zero here
         double ocp = 0.0;
@@ -1754,18 +1747,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
 
         // tangent and rhs (= negative residual) for galvanostatic equation
         linea = std::pow(conint[k]/refcon,gamma)*(alphaa*frt);
-        currderiv += i0*linea*timefac*fac;
-        currentresidual += i0*pow(conint[k]/refcon,gamma)*(alphaa*frt*eta)*timefac*fac;
-
-        if (dlcap != 0.0)
-        {
-          currentdlintegral+=fac*dlcap*(pot0dtnp-potdtnpint);
-
-          // add contributions due to double-layer capacitance
-          // positive due to redefinition of the exchange current density
-          currderiv += fac*dlcap;
-          currentresidual += fac*dlcap*(pot0-pot0hist-(timefac*potdtnpint));
-        }
+        currderiv += dmedc_->GetPhasePoro(0)*i0*linea*timefac*fac;
+        currentresidual += dmedc_->GetPhasePoro(0)*i0*pow(conint[k]/refcon,gamma)*(alphaa*frt*eta)*timefac*fac;
 
         break;
       }
@@ -1870,7 +1853,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
           dserror("NaN detected in electrode status calculation");
 
         // compute integrals
-        currentintegral += nume*faraday*((k_a*expterma*pow_conint_p)-(k_c*exptermc*pow_conint_q))*fac;
+        currentintegral +=dmedc_->GetPhasePoro(0)* nume*faraday*((k_a*expterma*pow_conint_p)-(k_c*exptermc*pow_conint_q))*fac;
         boundaryint += fac;
         electpotentialint += elepot * fac;
         overpotentialint += eta * fac;
@@ -1879,8 +1862,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         concentrationint += conint[k]*fac;
 
         // tangent and rhs (= negative residual) for galvanostatic equation
-        currderiv += linea*fac*timefac;
-        currentresidual += nume*faraday*((k_a*expterma*pow_conint_p)-(k_c*exptermc*pow_conint_q))*timefac*fac;
+        currderiv += dmedc_->GetPhasePoro(0)*linea*fac*timefac;
+        currentresidual += dmedc_->GetPhasePoro(0)*nume*faraday*((k_a*expterma*pow_conint_p)-(k_c*exptermc*pow_conint_q))*timefac*fac;
 
         break;
       }
@@ -1969,13 +1952,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         overpotentialint += eta*fac;
         electdiffpotint += epd*fac;
         opencircuitpotint += ocp*fac;
-        currentintegral += i0*(concterma*expterma-conctermc*exptermc)*fac; // the negative(!) normal flux density
+        currentintegral += dmedc_->GetPhasePoro(0)*i0*(concterma*expterma-conctermc*exptermc)*fac; // the negative(!) normal flux density
         boundaryint += fac;
         concentrationint += conint[k]*fac;  //concentration-output for the first species only
 
         // tangent and rhs (= negative residual) for galvanostatic equation
-        currderiv += i0*linea*timefac*fac;
-        currentresidual += i0*(concterma*expterma-conctermc*exptermc)*timefac*fac;
+        currderiv += dmedc_->GetPhasePoro(0)*i0*linea*timefac*fac;
+        currentresidual += dmedc_->GetPhasePoro(0)*i0*(concterma*expterma-conctermc*exptermc)*timefac*fac;
 
         break;
       } //end Butler-Volmer-Bard
