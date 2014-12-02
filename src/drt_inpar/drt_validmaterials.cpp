@@ -886,6 +886,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     // visco-plasticity
     AddNamedReal(m,"VISC", "Visco-Plasticity parameter 'eta' in Perzyna model",0.,true);
+    AddNamedReal(m,"RATE_DEPENDENCY", "Visco-Plasticity parameter 'eta' in Perzyna model",1.,true);
     AddNamedReal(m,"VISC_SOFT", "Visco-Plasticity temperature dependency (eta = eta_0 * (1-(T-T_0)*x)",0.,true);
 
     // optional pastic spin parameter

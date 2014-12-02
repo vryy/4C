@@ -47,6 +47,7 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(
   infyield_(matdata->GetDouble("INFYIELD")),
   kinhard_(matdata->GetDouble("KINHARD")),
   visc_(matdata->GetDouble("VISC")),
+  rate_dependency_(matdata->GetDouble("RATE_DEPENDENCY")),
   visc_soft_(matdata->GetDouble("VISC_SOFT")),
   cte_(matdata->GetDouble("CTE")),
   inittemp_(matdata->GetDouble("INITTEMP")),
@@ -886,7 +887,9 @@ void MAT::PlasticElastHyper::EvaluateNCP(
 {
   double sq=sqrt(2./3.);
   LINALG::Matrix<6,1> tmp61;
-  const double dT=temp-InitTemp();
+  double dT=0.;
+  if (dNCPdT) dT=temp-InitTemp();
+  else        dT=0.;
 
   // deviatoric projection tensor
   LINALG::Matrix<6,6> pdev(true);
@@ -958,25 +961,38 @@ void MAT::PlasticElastHyper::EvaluateNCP(
                                  *( 1.-exp(-Expisohard()*aI) )
                             + Isohard() *(1.- HardSoft()*dT)*aI
                             +Inityield()*(1.-YieldSoft()*dT)
-                            +Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt
-                           );
+                     )* (1.+pow(Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()));
 
   double dYpldT = sq*(
                         (Infyield()*(-HardSoft())-Inityield()*(-YieldSoft()))
                           *(1.-exp(-Expisohard()*aI))
                         -Isohard()*HardSoft()*aI
                         -Inityield()*YieldSoft()
-                        -Visc()*ViscSoft()*delta_alpha_i_[gp]/dt
-                            );
+                      )* (1.+pow(Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()));
+  if (ViscRate()>=1. || Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt>0.)
+    dYpldT +=sq *(
+                       (Infyield()*(1.-HardSoft()*dT) - Inityield()*(1.-YieldSoft()*dT))
+                             *( 1.-exp(-Expisohard()*aI) )
+                        + Isohard() *(1.- HardSoft()*dT)*aI
+                        +Inityield()*(1.-YieldSoft()*dT)
+                 ) * pow(Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()-1.)
+                     *delta_alpha_i_[gp]/dt * Visc()*(-ViscSoft())*ViscRate()
+                      ;
 
   // Factor of derivative of Y^pl w.r.t. delta alpha ^i
   // we have added the factor sqrt(2/3) from delta_alpha_i=sq*... here
-  double dYplDai = 2./3.*(0.
-      +Isohard()*(1.-HardSoft()*dT)
-      +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
-        *Expisohard()*exp(-Expisohard()*aI)
-        +Visc()*(1.-ViscSoft()*dT)/dt
-       );
+  double dYplDai = 2./3.*(
+                          +Isohard()*(1.-HardSoft()*dT)
+                          +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
+                              *Expisohard()*exp(-Expisohard()*aI)
+                         )* (1.+pow(Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()));
+  if (ViscRate()>=1. || Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt>0.)
+    dYplDai +=  +2./3.*(
+                          (Infyield()*(1.-HardSoft()*dT) - Inityield()*(1.-YieldSoft()*dT))
+                                *( 1.-exp(-Expisohard()*aI) )
+                           + Isohard() *(1.- HardSoft()*dT)*aI
+                           +Inityield()*(1.-YieldSoft()*dT)
+                       )* pow(Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()-1.)*(Visc()*(1.-ViscSoft()*dT))/dt*ViscRate();
 
   // activity state check
   if (ypl<absetatr_H)
@@ -1057,7 +1073,6 @@ void MAT::PlasticElastHyper::EvaluateNCP(
             +Isohard()*(1.-HardSoft()*dT)*aI
             +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
               *(1.-exp(-Expisohard()*aI))
-            +Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt
                               );
         break;
       case INPAR::TSI::pl_flow:
@@ -1082,7 +1097,6 @@ void MAT::PlasticElastHyper::EvaluateNCP(
             +Isohard()*HardSoft()*aI
             +(Infyield()*HardSoft()-Inityield()*YieldSoft())
             *(1.-exp(-Expisohard()*aI))
-            +Visc()*ViscSoft()*delta_alpha_i_[gp]/dt
         );
         break;
       case INPAR::TSI::pl_flow:
@@ -1110,8 +1124,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(
         dPlHeatingDdai+= +Inityield()*(1.-YieldSoft()*dT)
         +Isohard()*(1.-HardSoft()*dT)*(last_alpha_isotropic_[gp]+2.*delta_alpha_i_[gp])
         +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
-        *( (1.-exp(-Expisohard()*aI)) + delta_alpha_i_[gp]*Expisohard()*exp(-Expisohard()*aI) )
-        +2.*Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt;
+        *( (1.-exp(-Expisohard()*aI)) + delta_alpha_i_[gp]*Expisohard()*exp(-Expisohard()*aI) );
         break;
       case INPAR::TSI::pl_flow:
         // do nothing
@@ -1440,11 +1453,12 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
   const double aI = last_alpha_isotropic_[gp]+delta_alpha_i_[gp];
 
   // current yield stress equivalent (yield stress scaled by sqrt(2/3))
-  const double ypl = sq * ( (Infyield() - Inityield())
-                                 *(1.-exp(-Expisohard()*(last_alpha_isotropic_[gp]+ delta_alpha_i_[gp])) )
-                            + Isohard()*(last_alpha_isotropic_[gp]+ delta_alpha_i_[gp])
+  double ypl = sq * (
+                           (Infyield() - Inityield())
+                                 *( 1.-exp(-Expisohard()*aI) )
+                            + Isohard() *aI
                             +Inityield()
-                            +Visc()*delta_alpha_i_[gp]/dt);
+                     )* (1.+pow(Visc()*delta_alpha_i_[gp]/dt,ViscRate()));
 
   // check activity state
   if (ypl<absetatr_H)
@@ -1512,12 +1526,18 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
 
     // Factor of derivative of Y^pl w.r.t. delta alpha ^i
     // we have added the factor sqrt(2/3) from delta_alpha_i=sq*... here
-    double dYplDai = 2./3.*(0.
-        +Isohard()
-        +(Infyield()-Inityield())
-          *Expisohard()*exp(-Expisohard()*aI)
-          +Visc()/dt
-         );
+    double dYplDai = 2./3.*(
+                            +Isohard()
+                            +(Infyield()-Inityield())
+                                *Expisohard()*exp(-Expisohard()*aI)
+                           )* (1.+pow(Visc()*delta_alpha_i_[gp]/dt,ViscRate()));
+    if (ViscRate()>=1. || Visc()*delta_alpha_i_[gp]/dt>0.)
+      dYplDai +=  +2./3.*(
+                            (Infyield() - Inityield())
+                                  *( 1.-exp(-Expisohard()*aI) )
+                             + Isohard() *aI
+                             +Inityield()
+                         )* pow(Visc()*delta_alpha_i_[gp]/dt,ViscRate()-1.)*(Visc())/dt*ViscRate();
 
     // plastic gp
     if (*active)

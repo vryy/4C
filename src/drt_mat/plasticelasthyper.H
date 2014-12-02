@@ -85,6 +85,8 @@ namespace MAT
       const double kinhard_;
       /// Visco-Plasticity parameter 'eta' in Perzyna model
       const double visc_;
+      /// rate-dependency in Perzyna model
+      const double rate_dependency_;
       /// Visco-Plasticity parameter 'eta' in Perzyna model softening
       const double visc_soft_;
       //! coefficient of thermal expansion
@@ -233,6 +235,9 @@ private:
 
     /// viscosity (of the plastic flow, no visco-elasticity)
     virtual double Visc() const {return params_->visc_;}
+
+    /// rate dependency of visco-plasticity
+    virtual double ViscRate() const {return params_->rate_dependency_;}
 
     /// viscosity (of the plastic flow, no visco-elasticity)
     virtual double ViscSoft() const {return params_->visc_soft_;}
