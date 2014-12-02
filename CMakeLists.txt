@@ -1120,6 +1120,7 @@ set(OBJS_DRT_FLUID_TURBULENCE
   src/drt_fluid_turbulence/turbulent_flow_algorithm.cpp
   src/drt_fluid_turbulence/turbulence_statistic_manager.cpp
   src/drt_fluid_turbulence/turbulence_statistics_bfs.cpp
+  src/drt_fluid_turbulence/turbulence_statistics_bfda.cpp
   src/drt_fluid_turbulence/turbulence_statistics_bcf.cpp
   src/drt_fluid_turbulence/turbulence_statistics_ccy.cpp
   src/drt_fluid_turbulence/turbulence_statistics_cha.cpp

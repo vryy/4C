@@ -28,6 +28,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_fluid_turbulence/turbulence_statistics_bcf.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_ldc.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_bfs.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_bfda.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_oracles.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_sqc.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_hit.H"
@@ -319,6 +320,17 @@ namespace FLD
       // do the time integration independent setup
       Setup();
     }
+    else if(fluid.special_flow_=="blood_fda_flow")
+    {
+      flow_=blood_fda_flow;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_bfda_ = Teuchos::rcp(new TurbulenceStatisticsBfda(discret_,*params_));
+    }
     else
     {
       flow_=no_special_flow;
@@ -398,6 +410,7 @@ namespace FLD
     statistics_ccy_(Teuchos::null          ),
     statistics_ldc_(Teuchos::null          ),
     statistics_bfs_(Teuchos::null          ),
+    statistics_bfda_(Teuchos::null          ),
     statistics_oracles_(Teuchos::null      ),
     statistics_sqc_(Teuchos::null          ),
     statistics_hit_(Teuchos::null          )
@@ -867,6 +880,14 @@ namespace FLD
             }
           }
         }
+        break;
+      }
+      case blood_fda_flow:
+      {
+        if(statistics_bfda_==Teuchos::null)
+          dserror("need statistics_bfda_ to do a time sample for a blood fda flow");
+
+        statistics_bfda_->DoTimeSample(myvelnp_);
         break;
       }
       case combust_oracles:
@@ -1476,6 +1497,16 @@ namespace FLD
         }
         break;
       }
+      case blood_fda_flow:
+       {
+         if(statistics_bfda_==Teuchos::null)
+           dserror("need statistics_bfda_ to do a time sample for a blood fda flow");
+
+         if(outputformat == write_single_record)
+           statistics_bfda_->DumpStatistics(step);
+
+         break;
+       }
       case combust_oracles:
       {
         if(statistics_oracles_==Teuchos::null)
