@@ -15,6 +15,7 @@ Maintainer: Sebastian Kehl
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
+#include "../drt_inpar/inpar_parameterlist_utils.H"
 
 /*----------------------------------------------------------------------*/
 /* standard constructor                                                 */
@@ -29,6 +30,8 @@ dofrowmap_(discret->DofRowMap())
     dserror("Discretisation is not complete or has no dofs!");
 
   ReadMonitor(invap.get<std::string>("MONITORFILE"));
+
+  scaling_ = DRT::INPUT::IntegralValue<bool>(invap, "OBJECTIVEFUNCTSCAL");
 }
 
 /*----------------------------------------------------------------------*/
@@ -201,6 +204,9 @@ void INVANA::ObjectiveFunctDisp::Evaluate(Teuchos::RCP<Epetra_Vector> state,
   sim->Norm2(&norm);
 
   val = 0.5*norm*norm;
+
+  if (scaling_)
+    val=val/sqrt(mstate_->GlobalLength());
 }
 
 /*----------------------------------------------------------------------*/
@@ -221,7 +227,11 @@ void INVANA::ObjectiveFunctDisp::EvaluateGradient(Teuchos::RCP<Epetra_Vector> st
   sim->Update(-1.0,*(*mstate_)(step),1.0);
 
   // insert into gradient
-  gradient->Update(1.0,*mextractor_->InsertCondVector(sim),0.0);
+  double fac=1.0;
+  if (scaling_)
+    fac=1.0/sqrt(mstate_->GlobalLength());
+
+  gradient->Update(fac,*mextractor_->InsertCondVector(sim),0.0);
 
   return;
 }

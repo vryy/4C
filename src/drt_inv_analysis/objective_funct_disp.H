@@ -78,6 +78,9 @@ private:
   //! simulated timesteps
   std::vector<double> timesteps_;
 
+  //! scaling of the objective function?
+  bool scaling_;
+
 
 public:
 
