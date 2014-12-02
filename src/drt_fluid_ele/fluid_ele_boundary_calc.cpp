@@ -2151,139 +2151,139 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
   const double                         thermpressaf
 )
 {
-// initially set density and density factor for Neumann boundary conditions to 1.0
-// (the latter only changed for low-Mach-number flow/combustion problems)
-// (This is due to the nature of the Neumann BC's for these problems as they are usually given as h_N=\rho*h.)
-// (Thus in the input file for these problems, h is set which is then scaled by \rho here.)
-//
-//          See Gravemeier, Wall 2011 IJNMF example 4.1.2
-//
-densaf_  = 1.0;
-densfac_ = 1.0;
+  // initially set density and density factor for Neumann boundary conditions to 1.0
+  // (the latter only changed for low-Mach-number flow/combustion problems)
+  // (This is due to the nature of the Neumann BC's for these problems as they are usually given as h_N=\rho*h.)
+  // (Thus in the input file for these problems, h is set which is then scaled by \rho here.)
+  //
+  //          See Gravemeier, Wall 2011 IJNMF example 4.1.2
+  //
+  densaf_  = 1.0;
+  densfac_ = 1.0;
 
-if (material->MaterialType() == INPAR::MAT::m_fluid)
-{
-  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
-
-  // varying density
-  if (fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
-    densaf_ = funct_.Dot(escaaf);
-  // Boussinesq approximation: Calculation of delta rho
-  else if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
-    dserror("Boussinesq approximation not yet supported for boundary terms!");
-  else
-    densaf_ = actmat->Density();
-}
-else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
-{
-  const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
-
-  densaf_ = actmat->Density();
-}
-else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
-{
-  const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
-
-  densaf_ = actmat->Density();
-}
-else if (material->MaterialType() == INPAR::MAT::m_herschelbulkley)
-{
-  const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(material.get());
-
-  densaf_ = actmat->Density();
-}
-else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
-{
-  const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
-
-  // get constant density
-  densaf_ = actmat->Density();
-}
-else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
-{
-  const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
-
-  // compute mixture fraction at n+alpha_F or n+1
-  const double mixfracaf = funct_.Dot(escaaf);
-
-  // compute density at n+alpha_F or n+1 based on mixture fraction
-  densaf_ = actmat->ComputeDensity(mixfracaf);
-
-  // set density factor for Neumann boundary conditions to density for present material
-  densfac_ = densaf_;
-}
-else if (material->MaterialType() == INPAR::MAT::m_sutherland)
-{
-  const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
-
-  // compute temperature at n+alpha_F or n+1
-  const double tempaf = funct_.Dot(escaaf);
-
-  // compute density at n+alpha_F or n+1 based on temperature
-  // and thermodynamic pressure
-
-  densaf_ = actmat->ComputeDensity(tempaf,thermpressaf);
-
-  // set density factor for Neumann boundary conditions to density for present material
-  densfac_ = densaf_;
-}
-else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
-{
-  const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
-
-  // get progress variable at n+alpha_F or n+1
-  const double provaraf = funct_.Dot(escaaf);
-
-  // compute density at n+alpha_F or n+1 based on progress variable
-  densaf_ = actmat->ComputeDensity(provaraf);
-
-  // set density factor for Neumann boundary conditions to density for present material
-  densfac_ = densaf_;
-}
-else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
-{
-  const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
-
-  // get progress variable at n+alpha_F or n+1
-  const double provaraf = funct_.Dot(escaaf);
-
-  // compute density at n+alpha_F or n+1 based on progress variable
-  densaf_ = actmat->ComputeDensity(provaraf);
-
-  // set density factor for Neumann boundary conditions to density for present material
-  densfac_ = densaf_;
-}
-else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
-{
-  const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
-
-  densaf_ = actmat->Density();
-}
-else if (material->MaterialType() == INPAR::MAT::m_fluidporo)
-{
-  const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
-
-  densaf_ = actmat->Density();
-}
-else if (material->MaterialType() == INPAR::MAT::m_matlist)
-{
-
-  // get material list for this element
-  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
-
-  int numofmaterials = matlist->NumMat();
-
-  //Error messages
-  if(numofmaterials>2)
+  if (material->MaterialType() == INPAR::MAT::m_fluid)
   {
-    dserror("More than two materials is currently not supported.");
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+
+    // varying density
+    if (fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
+      densaf_ = funct_.Dot(escaaf);
+    // Boussinesq approximation: Calculation of delta rho
+    else if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
+      dserror("Boussinesq approximation not yet supported for boundary terms!");
+    else
+      densaf_ = actmat->Density();
   }
-
-  std::vector<double> density(numofmaterials); //Assume density[0] is on positive side, and density[1] is on negative side.
-
-  for(int nmaterial=0; nmaterial<numofmaterials; nmaterial++)
+  else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
   {
-    // set default id in list of materials
+    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
+
+    densaf_ = actmat->Density();
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
+  {
+    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
+
+    densaf_ = actmat->Density();
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_herschelbulkley)
+  {
+    const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(material.get());
+
+    densaf_ = actmat->Density();
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
+  {
+    const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
+
+    // get constant density
+    densaf_ = actmat->Density();
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
+  {
+    const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
+
+    // compute mixture fraction at n+alpha_F or n+1
+    const double mixfracaf = funct_.Dot(escaaf);
+
+    // compute density at n+alpha_F or n+1 based on mixture fraction
+    densaf_ = actmat->ComputeDensity(mixfracaf);
+
+    // set density factor for Neumann boundary conditions to density for present material
+    densfac_ = densaf_;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_sutherland)
+  {
+    const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
+
+    // compute temperature at n+alpha_F or n+1
+    const double tempaf = funct_.Dot(escaaf);
+
+    // compute density at n+alpha_F or n+1 based on temperature
+    // and thermodynamic pressure
+
+    densaf_ = actmat->ComputeDensity(tempaf,thermpressaf);
+
+    // set density factor for Neumann boundary conditions to density for present material
+    densfac_ = densaf_;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+  {
+    const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+    // get progress variable at n+alpha_F or n+1
+    const double provaraf = funct_.Dot(escaaf);
+
+    // compute density at n+alpha_F or n+1 based on progress variable
+    densaf_ = actmat->ComputeDensity(provaraf);
+
+    // set density factor for Neumann boundary conditions to density for present material
+    densfac_ = densaf_;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+  {
+    const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
+
+    // get progress variable at n+alpha_F or n+1
+    const double provaraf = funct_.Dot(escaaf);
+
+    // compute density at n+alpha_F or n+1 based on progress variable
+    densaf_ = actmat->ComputeDensity(provaraf);
+
+    // set density factor for Neumann boundary conditions to density for present material
+    densfac_ = densaf_;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
+  {
+    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
+
+    densaf_ = actmat->Density();
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_fluidporo)
+  {
+    const MAT::FluidPoro* actmat = static_cast<const MAT::FluidPoro*>(material.get());
+
+    densaf_ = actmat->Density();
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_matlist)
+  {
+
+    // get material list for this element
+    const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+
+    int numofmaterials = matlist->NumMat();
+
+    //Error messages
+    if(numofmaterials>2)
+    {
+      dserror("More than two materials is currently not supported.");
+    }
+
+    std::vector<double> density(numofmaterials); //Assume density[0] is on positive side, and density[1] is on negative side.
+
+    for(int nmaterial=0; nmaterial<numofmaterials; nmaterial++)
+    {
+      // set default id in list of materials
       int matid = -1;
       matid = matlist->MatID(nmaterial);
 
@@ -2309,40 +2309,40 @@ else if (material->MaterialType() == INPAR::MAT::m_matlist)
         dserror("Only Newtonian fluids supported as input.");
         break;
       }
-  }
+    }
 
-  double epsilon = fldpara_->GetInterfaceThickness();
+    double epsilon = fldpara_->GetInterfaceThickness();
 
-  const double gpscaaf = funct_.Dot(escaaf); //Scalar function at gausspoint evaluated
+    const double gpscaaf = funct_.Dot(escaaf); //Scalar function at gausspoint evaluated
 
-  //Assign material parameter values to positive side by default.
-  double heavyside_epsilon=1.0;
-  densaf_=density[0];
+    //Assign material parameter values to positive side by default.
+    double heavyside_epsilon=1.0;
+    densaf_=density[0];
 
-  //Calculate material parameters with phiaf
-  if(abs(gpscaaf) <= epsilon)
-  {
-    heavyside_epsilon = 0.5 * (1.0 + gpscaaf/epsilon + 1.0 / PI * sin(PI*gpscaaf/epsilon));
+    //Calculate material parameters with phiaf
+    if(abs(gpscaaf) <= epsilon)
+    {
+      heavyside_epsilon = 0.5 * (1.0 + gpscaaf/epsilon + 1.0 / PI * sin(PI*gpscaaf/epsilon));
 
-    densaf_ = heavyside_epsilon*density[0]+(1.0-heavyside_epsilon)*density[1];
-  }
-  else if (gpscaaf < epsilon)
-  {
-    heavyside_epsilon = 0.0;
+      densaf_ = heavyside_epsilon*density[0]+(1.0-heavyside_epsilon)*density[1];
+    }
+    else if (gpscaaf < epsilon)
+    {
+      heavyside_epsilon = 0.0;
 
-    densaf_=density[1];
-  }
+      densaf_=density[1];
+    }
 
-}// end else if m_matlist
-else dserror("Material type is not supported for density evaluation for boundary element!");
+  }// end else if m_matlist
+  else dserror("Material type is not supported for density evaluation for boundary element!");
 
-// check whether there is zero or negative density
-if (densaf_ < EPS15) dserror("zero or negative density!");
-
-
+  // check whether there is zero or negative density
+  if (densaf_ < EPS15) dserror("zero or negative density!");
 
 
-return;
+
+
+  return;
 } // FluidBoundaryImpl::GetDensity
 
 /*----------------------------------------------------------------------*
