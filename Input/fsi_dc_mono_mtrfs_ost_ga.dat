@@ -87,6 +87,16 @@ MAT 3 ELAST_CoupNeoHooke YOUNG 250.0 NUE 0.0
 MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 4
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE -1.73316456893029587e-04 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE 1.63275837142665657e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 841 QUANTITY velx VALUE -9.97499071198352724e-03 TOLERANCE 1e-11
+FLUID DIS fluid NODE 841 QUANTITY vely VALUE 3.43480903436662460e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 841 QUANTITY pressure VALUE -1.15498383320778927e-01 TOLERANCE 1e-12
+ALE DIS ale NODE 841 QUANTITY dispx VALUE 4.29301357130906379e-04 TOLERANCE 1e-12
+ALE DIS ale NODE 841 QUANTITY dispy VALUE 7.61240569667187908e-03 TOLERANCE 1e-11
+FSI NODE 1139 QUANTITY lambdax VALUE -1.51245762024554962e-03 TOLERANCE 1e-11
+FSI NODE 1139 QUANTITY lambday VALUE 9.55036272591851948e-02 TOLERANCE 1e-10
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 200.0
 ----------------------------------------------------------------------FUNCT1
@@ -2889,25 +2899,5 @@ NODE 1295 COORD 1.0000000000000000e+00 1.0000000000000000e+00 0.0000000000000000
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 38 QUANTITY dispx VALUE -1.73316456893029587e-04 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 38 QUANTITY dispy VALUE 1.63275837142665657e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 841 QUANTITY velx VALUE -9.97499071198352724e-03 TOLERANCE 1e-11
-FLUID DIS fluid NODE 841 QUANTITY vely VALUE 3.43480903436662460e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 841 QUANTITY pressure VALUE -1.15498383320778927e-01 TOLERANCE 1e-9
-ALE DIS ale NODE 841 QUANTITY dispx VALUE 4.29301357130906379e-04 TOLERANCE 1e-12
-ALE DIS ale NODE 841 QUANTITY dispy VALUE 7.61240569667187908e-03 TOLERANCE 1e-11
-FSI NODE 1139 QUANTITY lambdax VALUE -1.51245762024554962e-03 TOLERANCE 1e-11
-FSI NODE 1139 QUANTITY lambday VALUE 9.55036272591851948e-02 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END
-
-STRUCTURE: dispx    at node  38  is WRONG --> actresult=-1.73316456893029587e-04, givenresult=-1.73320025109999990e-04
-STRUCTURE: dispy    at node  38  is WRONG --> actresult= 1.63275837142665657e-02, givenresult= 1.63276123060000014e-02
-FLUID    : velx     at node 841  is WRONG --> actresult=-9.97499071198352724e-03, givenresult=-9.98411696321000082e-03
-FLUID    : vely     at node 841  is WRONG --> actresult= 3.43480903436662460e-02, givenresult= 3.43420378692999989e-02
-FLUID    : pressure at node 841  is WRONG --> actresult=-1.15498383320778927e-01, givenresult=-1.15513048245000000e-01
-ALE      : dispx    at node 841  is WRONG --> actresult= 4.29301357130906379e-04, givenresult= 3.46385329261999987e-04
-ALE      : dispy    at node 841  is WRONG --> actresult= 7.61240569667187908e-03, givenresult= 7.76807564582999988e-03
-FSI      : lambdax  at node 1139         is WRONG --> actresult=-1.51245762024554962e-03, givenresult=-1.51252966024399997e-03
-FSI      : lambday  at node 1139         is WRONG --> actresult= 9.55036272591851948e-02, givenresult= 9.55044516373800001e-02
