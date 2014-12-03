@@ -302,8 +302,6 @@ void TOPOPT::Algorithm::FDGradient(const int numFDPoints)
       Optimizer()->AdoptDensityForFD(-c,i);
     }
   }
-
-
 }
 
 
@@ -411,6 +409,9 @@ void TOPOPT::Algorithm::Restart(const int step, const INPAR::TOPOPT::Restart typ
   }
   case INPAR::TOPOPT::opti_step:
   {
+    if (gradienttype_ != INPAR::TOPOPT::gradientByAdjoints)
+      dserror("restart only implemented for adjoints approach!");
+
     Optimizer()->ReadRestart(step);
     break;
   }
