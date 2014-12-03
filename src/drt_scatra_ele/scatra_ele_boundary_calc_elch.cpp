@@ -1715,6 +1715,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         const double refcon = cond->GetDouble("refcon");
         if (refcon < EPS12) dserror("reference concentration is too small: %f",refcon);
         const double dlcap = cond->GetDouble("dl_spec_cap");
+        double pot0dtnp = 0.0;
+        double pot0hist = 0.0;
+        if(dlcap!=0.0)
+        {
+          pot0dtnp = cond->GetDouble("pot0dtnp");
+          pot0hist = cond->GetDouble("pot0hist");
+        }
 
         // opencircuit potential is assumed to be zero here
         double ocp = 0.0;
@@ -1749,6 +1756,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
         linea = std::pow(conint[k]/refcon,gamma)*(alphaa*frt);
         currderiv += dmedc_->GetPhasePoro(0)*i0*linea*timefac*fac;
         currentresidual += dmedc_->GetPhasePoro(0)*i0*pow(conint[k]/refcon,gamma)*(alphaa*frt*eta)*timefac*fac;
+
+        if (dlcap != 0.0)
+        {
+          currentdlintegral+=fac*dlcap*(pot0dtnp-potdtnpint);
+
+          // add contributions due to double-layer capacitance
+          // positive due to redefinition of the exchange current density
+          currderiv += fac*dlcap;
+          currentresidual += fac*dlcap*(pot0-pot0hist-(timefac*potdtnpint));
+        }
 
         break;
       }
