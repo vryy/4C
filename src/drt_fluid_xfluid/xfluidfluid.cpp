@@ -68,7 +68,7 @@ Maintainer:  Shadan Shahmiri
  *------------------------------------------------------------------------------------------------*/
 FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epetra_Vector & idispcol )
   : xfluid_( xfluid ),
-    wizard_( Teuchos::rcp( new XFEM::FluidWizardMesh(*xfluid.bgdis_, *xfluid.boundarydis_ )))
+    wizard_( Teuchos::rcp( new XFEM::FluidWizardMesh(xfluid.bgdis_, xfluid.boundarydis_ )))
 {
   // do the (parallel!) cut for the 0 timestep and find the fluid dofset
   wizard_->Cut( false,                                 // include_inner

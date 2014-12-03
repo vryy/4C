@@ -84,8 +84,8 @@ Maintainer:  Benedikt Schott
  *----------------------------------------------------------------------*/
 FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, const Epetra_Vector & cutvector )
   : xfluid_( xfluid ),
-    wizard_( xfluid.levelsetcut_ ? Teuchos::null : Teuchos::rcp( new XFEM::FluidWizardMesh(*xfluid.discret_, *xfluid.boundarydis_)) ),
-    wizardls_( xfluid.levelsetcut_ ? Teuchos::rcp( new XFEM::FluidWizardLevelSet(*xfluid.discret_)) : Teuchos::null)
+    wizard_( xfluid.levelsetcut_ ? Teuchos::null : Teuchos::rcp( new XFEM::FluidWizardMesh(xfluid.discret_, xfluid.boundarydis_)) ),
+    wizardls_( xfluid.levelsetcut_ ? Teuchos::rcp( new XFEM::FluidWizardLevelSet(xfluid.discret_)) : Teuchos::null)
 {
   // increase the state-class counter
   xfluid_.state_it_++;

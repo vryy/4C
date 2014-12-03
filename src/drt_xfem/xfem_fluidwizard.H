@@ -60,7 +60,7 @@ public:
   /*!
   \brief The interface that bridges the cut libraries and fluid part of XFEM
   */
-  FluidWizard(DRT::Discretization & backdis)
+  FluidWizard(Teuchos::RCP<DRT::Discretization> backdis)
   : backdis_ ( backdis ),
     parentcut_(Teuchos::null)
   {
@@ -115,7 +115,7 @@ protected:
   /*========================================================================*/
 
   /// background discretization
-  DRT::Discretization & backdis_;
+  Teuchos::RCP<DRT::Discretization> backdis_;
 
   /// parent cut wizard
   Teuchos::RCP<GEO::CutWizard> parentcut_;
@@ -129,7 +129,7 @@ public:
   /*!
   \brief The interface that bridges the cut libraries and fluid part of XFEM for mesh cut
   */
-  FluidWizardMesh( DRT::Discretization & backdis, DRT::Discretization & cutterdis )
+  FluidWizardMesh(Teuchos::RCP<DRT::Discretization> backdis, Teuchos::RCP<DRT::Discretization> cutterdis )
   : FluidWizard(backdis),
     cutterdis_( cutterdis )
     {
@@ -182,7 +182,7 @@ private:
   Teuchos::RCP<GEO::CutWizardMesh> cut_;
 
   /// cutter discretization
-  DRT::Discretization & cutterdis_;
+  Teuchos::RCP<DRT::Discretization> cutterdis_;
 
   /// nodes of the crack tip when simulating FSI with crack
   std::map<int, LINALG::Matrix<3,1> > tip_nodes_;
@@ -195,7 +195,7 @@ public:
   /*!
   \brief The interface that bridges the cut libraries and fluid part of XFEM for level set cut.
   */
-  FluidWizardLevelSet( DRT::Discretization & backdis )
+  FluidWizardLevelSet( Teuchos::RCP<DRT::Discretization> backdis )
   : FluidWizard(backdis)
   {
   }

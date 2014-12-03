@@ -195,7 +195,7 @@ void FLD::XFluidState::SetupKSPMapExtractor(
 void FLD::XFluidStateCreator::SetWizard(
   const Teuchos::RCP<DRT::Discretization> & discret)
 {
-  wizard_ = Teuchos::rcp( new XFEM::FluidWizardLevelSet(*discret) );
+  wizard_ = Teuchos::rcp( new XFEM::FluidWizardLevelSet(discret) );
 
 }
 /*----------------------------------------------------------------------*
@@ -206,7 +206,7 @@ void FLD::XFluidStateCreator::SetWizard(
   const Teuchos::RCP<DRT::Discretization> & boundarydiscret)
 {
   // Initialize the mesh wizard
-  wizard_ = Teuchos::rcp( new XFEM::FluidWizardMesh(*discret, *boundarydiscret) );
+  wizard_ = Teuchos::rcp( new XFEM::FluidWizardMesh(discret, boundarydiscret) );
 }
 
 /*----------------------------------------------------------------------*

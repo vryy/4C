@@ -1209,7 +1209,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
   mauxdis->FillComplete(true, false, false);
 
   // create cut wizard
-  Teuchos::RCP<XFEM::FluidWizardMesh> wizard = Teuchos::rcp( new XFEM::FluidWizardMesh(*mauxdis, *sauxdis ));
+  Teuchos::RCP<XFEM::FluidWizardMesh> wizard = Teuchos::rcp( new XFEM::FluidWizardMesh(mauxdis, sauxdis ));
 
   //dummy displacement vector --> zero due to coupling in reference configuration
   Teuchos::RCP<Epetra_Vector> idispcol = LINALG::CreateVector(

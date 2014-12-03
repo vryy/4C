@@ -37,7 +37,7 @@ Maintainer: Benedikt Schott and Magnus Winter
 *--------------------------------------------------------------*/
 Teuchos::RCP<XFEM::FluidDofSet> XFEM::FluidWizard::DofSet(int maxNumMyReservedDofsperNode)
 {
-  return Teuchos::rcp( new FluidDofSet( this , maxNumMyReservedDofsperNode, backdis_ ) );
+  return Teuchos::rcp( new FluidDofSet( this , maxNumMyReservedDofsperNode, *backdis_ ) );
 }
 
 /*-------------------------------------------------------------*
@@ -94,13 +94,13 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
 {
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizardMesh::Cut" );
 
-  if ( backdis_.Comm().MyPID() == 0 and screenoutput)
+  if ( backdis_->Comm().MyPID() == 0 and screenoutput)
     IO::cout << "\nXFEM::FluidWizardMesh::Cut:" << IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
 
   // set a new CutWizardMesh based on the background discretization
-  cut_ = Teuchos::rcp( new GEO::CutWizardMesh( backdis_, 1 ) );
+  cut_ = Teuchos::rcp( new GEO::CutWizardMesh( *backdis_, 1 ) );
   parentcut_ = cut_;
   cut_->SetFindPositions( positions );
   GEO::CutWizardMesh & cw = *cut_;
@@ -108,7 +108,7 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
   {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/6 --- Cut_Initialize" );
 
-  if(backdis_.Comm().MyPID()==0 and screenoutput)
+  if(backdis_->Comm().MyPID()==0 and screenoutput)
     IO::cout << "\n\t * 1/6 Cut_Initialize ...";
 
   std::vector<int> lm;
@@ -132,10 +132,10 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
   // then the bb around the bg-mesh on this proc has no intersection with an an bb around an side element
 
   // 1. Add CutSides (sides of the cutterdiscretization)
-  int numcutelements = cutterdis_.NumMyColElements();
+  int numcutelements = cutterdis_->NumMyColElements();
   for ( int lid = 0; lid < numcutelements; ++lid )
   {
-    DRT::Element * element = cutterdis_.lColElement(lid);
+    DRT::Element * element = cutterdis_->lColElement(lid);
 
     const int numnode = element->NumNode();
     DRT::Node ** nodes = element->Nodes();
@@ -148,7 +148,7 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
 
       lm.clear();
       mydisp.clear();
-      cutterdis_.Dof(&node, lm);
+      cutterdis_->Dof(&node, lm);
 
       LINALG::Matrix<3, 1> x( node.X() );
 
@@ -204,20 +204,20 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
   }
 
   // 2. add background elements dependent on bounding box created by the CutSides in 1.
-  int numbackelements = backdis_.NumMyColElements();
+  int numbackelements = backdis_->NumMyColElements();
 
   //Cast Discretisation to DiscretisationXFEM just used in case of AleBackground!
 
-  DRT::DiscretizationXFEM * xbackdis = dynamic_cast<DRT::DiscretizationXFEM*>(&backdis_);
+  Teuchos::RCP<DRT::DiscretizationXFEM>  xbackdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(backdis_);
    if(!cutinrefconf && dispnpcol != Teuchos::null)
    {
-   if (xbackdis == NULL)
+   if (xbackdis == Teuchos::null)
      dserror("XFEM::FluidWizardMesh::Cut: Cast to DiscretizationXFEM failed!");
    }
 
   for ( int k = 0; k < numbackelements; ++k )
   {
-    DRT::Element * element = backdis_.lColElement(k);
+    DRT::Element * element = backdis_->lColElement(k);
 
     const int numnode = element->NumNode();
     DRT::Node ** nodes = element->Nodes();
@@ -272,7 +272,7 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
   cw.BuildStaticSearchTree();
 
   const double t_mid = Teuchos::Time::wallTime()-t_start;
-  if ( backdis_.Comm().MyPID() == 0  and screenoutput)
+  if ( backdis_->Comm().MyPID() == 0  and screenoutput)
   {
     IO::cout << "\t\t\t... Success (" << t_mid  <<  " secs)" << IO::endl;
   }
@@ -295,7 +295,7 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
   // cleanup
 
   const double t_end = Teuchos::Time::wallTime()-t_start;
-  if ( backdis_.Comm().MyPID() == 0  and screenoutput)
+  if ( backdis_->Comm().MyPID() == 0  and screenoutput)
   {
     IO::cout << "\n\t\t\t\t\t\t\t... Success (" << t_end  <<  " secs)\n" << IO::endl;
   }
@@ -348,10 +348,10 @@ void XFEM::FluidWizardLevelSet::Cut(
 
   //fluiddis_ = backdis_
 
-  if ( backdis_.Comm().MyPID() == 0 and screenoutput)
+  if ( backdis_->Comm().MyPID() == 0 and screenoutput)
     IO::cout << "\nXFEM::FluidWizardLevelSet::Cut:" << IO::endl;
 
-  cut_ = Teuchos::rcp( new GEO::CutWizardLevelSet( backdis_ ) );
+  cut_ = Teuchos::rcp( new GEO::CutWizardLevelSet( *backdis_ ) );
   parentcut_ = cut_;
   cut_->SetFindPositions( positions );
 
@@ -362,7 +362,7 @@ void XFEM::FluidWizardLevelSet::Cut(
 
   // Loop over all Elements to find cut elements and add them to the LevelsetIntersection class
   // Brute force method.
-  int numelements = backdis_.NumMyColElements();
+  int numelements = backdis_->NumMyColElements();
 
   std::vector<double> myphinp;
 
@@ -370,7 +370,7 @@ void XFEM::FluidWizardLevelSet::Cut(
   {
     myphinp.clear();
 
-    DRT::Element * element = backdis_.lColElement(lid);
+    DRT::Element * element = backdis_->lColElement(lid);
 
     DRT::UTILS::ExtractMyNodeBasedValues(element, myphinp, phinpnode);
     cut_->AddElement(element,myphinp,include_inner);
@@ -388,7 +388,7 @@ void XFEM::FluidWizardLevelSet::Cut(
   }
 
   const double t_end = Teuchos::Time::wallTime()-t_start;
-  if ( backdis_.Comm().MyPID() == 0  and screenoutput)
+  if ( backdis_->Comm().MyPID() == 0  and screenoutput)
   {
     IO::cout << "\n\t ... Success (" << t_end  <<  " secs)\n" << IO::endl;
   }
