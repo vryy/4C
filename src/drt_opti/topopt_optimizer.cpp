@@ -282,7 +282,6 @@ void TOPOPT::Optimizer::ComputeGradientDirectionForFD(
 void TOPOPT::Optimizer::Output()
 {
   optimizer_->Output();
-  optimizer_->OutputWriter()->WriteVector("obj_der",obj_der_);
 }
 
 
@@ -842,7 +841,9 @@ void TOPOPT::Optimizer::ReadRestart(const int step)
 
   Teuchos::RCP<Epetra_Vector> dens = optimizer_->X();
   LINALG::Export(*dens,*dens_);
-  reader->ReadVector(obj_der_,"obj_der");
+
+  *obj_der_ = *optimizer_->ObjDeriv();
+  *constr_der_ = *optimizer_->ConstrDeriv();
 
   return;
 }
