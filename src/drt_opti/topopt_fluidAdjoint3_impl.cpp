@@ -2996,6 +2996,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::DiscreteContStab(
 
       /* viscosity term on right-hand side */
       velforce(jdim,vi)-= cont_stab_fac*vdiv_*derxy_(jdim,vi);
+      velforce(jdim,vi)-= timefacfacdivrhs*tau_old_(2)*vdiv_old_*derxy_(jdim,vi);
 
       for (int ui=0; ui<nen_; ++ui)
       {
