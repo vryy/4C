@@ -71,9 +71,6 @@ namespace ADAPTER
 
     //@}
 
-    /// known FSI force for immersed FSI
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInternalForceVector(double time, double dt, Teuchos::RCP<const Epetra_Vector> dis,Teuchos::RCP<Epetra_Vector> fint)
-    { return structure_->ExtractInternalForceVector(time,dt,dis,fint); }
 
     //! @name Misc
     //@{

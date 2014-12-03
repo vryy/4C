@@ -247,8 +247,6 @@ public:
     Absorb,
     PressureMonitor,
     ImmersedSearchbox,
-    ImmersedFSIForceEvaluation,
-    ImmersedInterpolatingElement,
     ParticlePeriodic,
     RedAirwayVolDependentPleuralPressureCond,
     RedAirwayEvalLungVolCond

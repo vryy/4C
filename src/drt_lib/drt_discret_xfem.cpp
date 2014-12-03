@@ -136,7 +136,7 @@ void DRT::DiscretizationXFEM::ExportInitialtoActiveVector(Teuchos::RCP<Epetra_Ve
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::DiscretizationXFEM::InitialDofRowMap(unsigned nds) const
 {
-  Initialized()
+  Initialized();
   dsassert(nds<initialdofsets_.size(),"undefined initial dof set");
 
   return initialdofsets_[nds]->DofRowMap();

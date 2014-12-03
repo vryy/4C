@@ -4,17 +4,17 @@
 \brief global algorithm control class for all immersed algorithms
 
 <pre>
-Maintainers: Andreas Rauch & Anh-Tu Vuong
-             {rauch,vuong}@lnm.mw.tum.de
+Maintainers: Andreas Rauch
+             rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289--15240 / 15264
+             089 - 289 -15240
 </pre>
 *----------------------------------------------------------------------*/
 #include "immersed_problem_dyn.H"
 #include "immersed_base.H"
 #include "immersed_partitioned.H"
 #include "immersed_partitioned_fsi.H"
-#include "immersed_partitioned_fsi_neumannneumann.H"
+#include "immersed_partitioned_fsi_dirichletneumann.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_immersed.H"
@@ -42,9 +42,9 @@ void immersed_problem_drt()
     {
     case prb_immersed_fsi:
     {
-      Teuchos::RCP<IMMERSED::ImmersedPartitionedFSINeumannNeumann> algo = Teuchos::null;
-      if(scheme == INPAR::IMMERSED::neumannneumann)
-        algo = Teuchos::rcp(new IMMERSED::ImmersedPartitionedFSINeumannNeumann(comm));
+      Teuchos::RCP<IMMERSED::ImmersedPartitionedFSIDirichletNeumann> algo = Teuchos::null;
+      if(scheme == INPAR::IMMERSED::dirichletneumann)
+        algo = Teuchos::rcp(new IMMERSED::ImmersedPartitionedFSIDirichletNeumann(comm));
       else
       {
         algo = Teuchos::null;

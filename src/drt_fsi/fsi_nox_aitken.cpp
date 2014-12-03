@@ -44,8 +44,8 @@ bool NOX::FSI::AitkenRelaxation::reset(const Teuchos::RCP<NOX::GlobalData>& gd,
   // We might want to constrain the step size of the first relaxation
   // in a new time step.
   double maxstep = p.get("max step size", 0.0);
-  if (maxstep > 0 && maxstep < 1-nu_)
-    nu_ = 1-maxstep;
+  if (maxstep > 0. && maxstep < 1.-nu_)
+    nu_ = 1.-maxstep;
 
   if (!is_null(del_))
   {
@@ -142,4 +142,10 @@ bool NOX::FSI::AitkenRelaxation::compute(Abstract::Group& grp, double& step,
   }
 
   return true;
+}
+
+
+double NOX::FSI::AitkenRelaxation::getOmega()
+{
+  return 1.-nu_;
 }

@@ -33,13 +33,32 @@ enum _IMMERSED_COUPLING
 
 enum _IMMERSED_COUPLING_SCHEME
 {
-  neumannneumann
+  neumannneumann,
+  dirichletneumann
 };
 
 enum _IMMERSED_PROJECTION
 {
   shapefunctions,
   mortar
+};
+
+enum _IMMERSED_RELAXATION
+{
+  globally,
+  selectively
+};
+
+enum _IMMERSED_NLNSOLVER
+{
+  nlnsolver_stop,
+  nlnsolver_continue
+};
+
+enum _IMMERSED_RELAXATIONPARAM
+{
+  fixed,
+  aitken
 };
 
 }// namespace IMMERSED

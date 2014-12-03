@@ -29,6 +29,8 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_mat/structporo.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_immersed_problem/immersed_base.H"
 
 using UTILS::SurfStressManager;
 using POTENTIAL::PotentialManager;
@@ -675,7 +677,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="calc_undo_struct_rotation")    act = StructuralSurface::calc_undo_struct_rotation;
   else if (action=="calc_struct_area")             act = StructuralSurface::calc_struct_area;
   else if (action=="calc_ref_nodal_normals")       act = StructuralSurface::calc_ref_nodal_normals;
+  else if (action=="calc_cur_normal_at_point")     act = StructuralSurface::calc_cur_normal_at_point;
   else if (action=="calc_cur_nodal_normals")       act = StructuralSurface::calc_cur_nodal_normals;
+  else if (action=="calc_fluid_traction")          act = StructuralSurface::calc_fluid_traction;
+  else if (action=="mark_immersed_elements")       act = StructuralSurface::mark_immersed_elements;
   else
   {
     std::cout << action << std::endl;
@@ -1346,6 +1351,367 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     BuildNormalsAtNodes(elevector1,mydisp,false);
+  }
+  break;
+  case calc_cur_normal_at_point:
+  {
+    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+    if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+    std::vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+    const int numnode = NumNode();
+    const int numdim = 3;
+
+    LINALG::SerialDenseMatrix x(numnode,3);
+    SpatialConfiguration(x,mydisp);
+
+    const double e0 = elevector2(0);
+    const double e1 = elevector2(1);
+
+    // allocate vector for shape functions and matrix for derivatives
+    LINALG::SerialDenseVector  funct(numnode);
+    LINALG::SerialDenseMatrix  deriv(2,numnode);
+
+    // get shape functions and derivatives in the plane of the element
+    DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
+    DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
+
+    double detA;
+    std::vector<double> normal(3);
+    SurfaceIntegration(detA,normal,x,deriv);
+
+    for (int j=0; j<numdim; ++j)
+    {
+      elevector1(j) = normal[j];
+    }
+
+  }
+  break;
+  case calc_fluid_traction:
+  {
+    DRT::Problem* globalproblem = DRT::Problem::Instance();
+    std::string backgrddisname("fluid");
+    std::string immerseddisname("structure");
+    ////////////////////////////////////////////////////////////////////////////
+    // rauch 05/14 originally for immersed method
+    //
+    // this action integrates the fluid stress over the structural surface.
+    // the fluid velocities and pressure are interpolated to the structural
+    // integration point externally by the method:
+    //
+    // InterpolateToImmersedIntPoint(...)
+    //
+    // this is a generally applicable method for this purpose returning
+    // the desired quantitiy from another field interpolated to the current
+    // integration point belonging to THIS field.
+    //
+    // fluiddis  = backgrddis
+    // structdis = immerseddis
+    //
+    // if discretizations named differently are to be dealt with, hand
+    // them in via the parameter list.
+    //
+    // CALC:   /
+    //        /
+    //        |
+    //        | P * N * du  dA = (J * \sigma * F^-T * N, du)_{d B_0}
+    //        |
+    //       /
+    //      / d B_0
+    //
+    // \sigma can be calculated from interpolated velocity gradient and pressure.
+    // J is the usual jacobian determinant.
+    // F is the deformation gradient of the structural surface ele.
+    // N is the normal in reference configuration of the structural surface ele.
+    // du denotes the virtual displacement field over the structural surface ele.
+    //
+    //
+    /////////////////////////////////////////////////////////////////////////////
+
+    // get integration rule
+    const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad4>::rule);
+
+    const Teuchos::RCP<DRT::Discretization> backgrddis  = globalproblem->GetDis(backgrddisname);
+    const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
+
+    const int nen = NumNode();
+    const int parent_nen = this->ParentElement()->NumNode();
+    const int numdofpernode = NumDofPerNode(*(Nodes()[0]));
+    const int globdim = globalproblem->NDim();
+
+    LINALG::Matrix<2,4> deriv;
+    LINALG::Matrix<1,4> funct;
+    LINALG::Matrix<1,8> parent_funct;
+    LINALG::Matrix<3,8> parent_deriv;
+    LINALG::Matrix<3,8> parent_deriv_notrafo;
+
+    // get parent location matrix
+    Element::LocationArray parent_la(immerseddis->NumDofSets());
+    this->ParentElement()->LocationVector(*immerseddis,parent_la,false);
+
+    // get structural state and element displacements (parent element)
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
+#ifdef DEBUG
+    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+#endif
+    std::vector<double> parenteledisp(lm.size());
+    std::vector<double> bdryeledisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,bdryeledisp,lm);
+    DRT::UTILS::ExtractMyValues(*dispnp,parenteledisp,parent_la[0].lm_);
+
+    // geometry (surface ele)
+    LINALG::Matrix<3,4> xrefe; // material coord. of element
+
+    DRT::Node** nodes = this->Nodes();
+    for (int i=0; i<nen; ++i)
+    {
+      const double* x = nodes[i]->X();
+      xrefe(0,i) = x[0];
+      xrefe(1,i) = x[1];
+      xrefe(2,i) = x[2];
+//      std::cout<<"PROC "<<Comm.MyPID()<<" : xrefe "<<xrefe(0,i)<<" "<<xrefe(1,i)<<" "<<xrefe(2,i)<<std::endl;
+    }
+
+    // update element geometry (parent ele)
+    LINALG::Matrix<3,8> parent_xrefe; // material coord. of element
+    LINALG::Matrix<3,8> parent_xcurr; // current  coord. of element
+
+    nodes = this->ParentElement()->Nodes();
+    for (int i=0; i<parent_nen; ++i)
+    {
+      const double* x = nodes[i]->X();
+      parent_xrefe(0,i) = x[0];
+      parent_xrefe(1,i) = x[1];
+      parent_xrefe(2,i) = x[2];
+//      std::cout<<"PROC "<<Comm.MyPID()<<" : xrefe "<<parent_xrefe(0,i)<<" "<<parent_xrefe(1,i)<<" "<<parent_xrefe(2,i)<<std::endl;
+
+      parent_xcurr(0,i) = parent_xrefe(0,i) + parenteledisp[i*numdofpernode+0];
+      parent_xcurr(1,i) = parent_xrefe(1,i) + parenteledisp[i*numdofpernode+1];
+      parent_xcurr(2,i) = parent_xrefe(2,i) + parenteledisp[i*numdofpernode+2];
+//      std::cout<<"PROC "<<Comm.MyPID()<<" : disp "<< parenteledisp[i*numdofpernode+0]<<" "<< parenteledisp[i*numdofpernode+1]<<" "<< parenteledisp[i*numdofpernode+2]<<std::endl;
+    }
+
+    // get coordinates of gauss points w.r.t. local parent coordinate system
+    LINALG::SerialDenseMatrix parent_xi(intpoints.IP().nquad,globdim);
+    Epetra_SerialDenseMatrix derivtrafo(3,3);
+
+    DRT::UTILS::BoundaryGPToParentGP<3>(
+        parent_xi,
+        derivtrafo,
+        intpoints,
+        DRT::Element::hex8,
+        DRT::Element::quad4,
+        this->FaceParentNumber());
+
+    ////////////////////////////////////////////////////////////////////
+    /////   gauss point loop
+    ///////////////////////////////////////////////////////////////////
+    for (int gp=0; gp<intpoints.IP().nquad; gp++)
+    {
+      std::vector<double> bdryxi(globdim-1);
+      bdryxi[0] = intpoints.IP().qxg[gp][0];
+      bdryxi[1] = intpoints.IP().qxg[gp][1];
+
+      std::vector<double> interpolationresult (6);
+      int action = (int)FLD::interpolate_velgrad_to_given_point;
+
+      IMMERSED::InterpolateToImmersedIntPoint <DRT::Element::hex8,  // source
+                                               DRT::Element::quad4> // target
+                                                           (backgrddis,
+                                                            immerseddis,
+                                                            *this,
+                                                            bdryxi,
+                                                            bdryeledisp,
+                                                            action,
+                                                            interpolationresult // result
+                                                           );
+
+//        //////////////////
+//       // Debug output //
+//      //////////////////
+//      std::cout<<"PROC "<<Comm.MyPID()<<": gradu and press at gp "<<gp<<" on surf ele id "<<this->Id()<<":"<<std::endl;
+//      for(int i=0;i<(int)interpolationresult.size();++i)
+//        std::cout<<" "<<interpolationresult[i]<<" ";
+//      std::cout<<" "<<std::endl;
+
+
+        // get shape functions and derivatives in the plane of the element
+      DRT::UTILS::shape_function_2D(funct,bdryxi[0],bdryxi[1],Shape());
+      DRT::UTILS::shape_function_2D_deriv1(deriv,bdryxi[0],bdryxi[1],Shape());
+
+      DRT::UTILS::shape_function_3D(parent_funct,parent_xi(gp,0),parent_xi(gp,1),parent_xi(gp,2),this->ParentElement()->Shape());
+      DRT::UTILS::shape_function_3D_deriv1(parent_deriv_notrafo,parent_xi(gp,0),parent_xi(gp,1),parent_xi(gp,2),this->ParentElement()->Shape());
+      //parent_deriv.Multiply(derivtrafo,parent_deriv_notrafo);
+
+//        //////////////////
+//       // Debug output //
+//      //////////////////
+//      std::cout<<"PROC "<<Comm.MyPID()<<" : deriv at gp "<<bdryxi[0]<<" "<<bdryxi[1]<<" "<<std::endl;
+//      std::cout<<"PROC "<<Comm.MyPID()<<" : "<<deriv<<std::endl;
+
+
+      ////////////////////////////////////////////////////
+      // calc unitnormal N in material configuration
+      ///////////////////////////////////////////////////
+      LINALG::Matrix<3,1> unitnormal;
+      std::vector<double> normal(globdim);
+
+      // note that the length of this normal is the area dA
+
+      // compute dXYZ / drs
+      LINALG::Matrix<2,3> dxyzdrs;
+      dxyzdrs.MultiplyNT(deriv,xrefe); // to calculate unitnormal in current config. argument must be xcurr
+
+      normal[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+      normal[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+      normal[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+
+      LINALG::Matrix<2,2> metrictensor;
+      metrictensor.MultiplyNT(dxyzdrs,dxyzdrs);
+      double detA = sqrt( metrictensor(0,0)*metrictensor(1,1)-metrictensor(0,1)*metrictensor(1,0) );
+
+//         //////////////////
+//        // Debug output //
+//       //////////////////
+//      for(int i=0;i<globdim;++i)
+//        std::cout<<" normal["<<i<<"] "<<normal[i]<<std::endl;
+
+      for(int i=0;i<globdim;++i)
+        unitnormal(i,0)=normal[i];
+      const double norm2 = unitnormal.Norm2();
+      unitnormal.Scale(1/norm2);
+
+//      // DEBUG
+//      std::cout<<"_________________________________________________________________________________"<<std::endl;
+//      std::cout<<unitnormal<<std::endl;
+
+      /////////////////////////////////////////////////////////////////////
+      // extract cauchy stress tensor from result vector of interpolation
+      /////////////////////////////////////////////////////////////////////
+      LINALG::Matrix<3,3> cauchystress;
+
+      cauchystress(0,0)=interpolationresult[0];
+      cauchystress(1,1)=interpolationresult[1];
+      cauchystress(2,2)=interpolationresult[2];
+      cauchystress(0,1)=interpolationresult[3];
+      cauchystress(1,2)=interpolationresult[4];
+      cauchystress(0,2)=interpolationresult[5];
+      cauchystress(1,0)=cauchystress(0,1);
+      cauchystress(2,1)=cauchystress(1,2);
+      cauchystress(2,0)=cauchystress(0,2);
+
+//      // DEBUG
+//      std::cout<<"[ "<<cauchystress(0,0)<<" "<<cauchystress(0,1)<<" "<<cauchystress(0,2)<<" ]"<<std::endl;
+//      std::cout<<"[ "<<cauchystress(1,0)<<" "<<cauchystress(1,1)<<" "<<cauchystress(1,2)<<" ]"<<std::endl;
+//      std::cout<<"[ "<<cauchystress(2,0)<<" "<<cauchystress(2,1)<<" "<<cauchystress(2,2)<<" ]"<<std::endl;
+//      std::cout<<"\n"<<std::endl;
+
+
+
+      /* get the inverse of the Jacobian matrix which looks like:
+      **            [ x_,r  y_,r  z_,r ]^-1
+      **     J^-1 = [ x_,s  y_,s  z_,s ]
+      **            [ x_,t  y_,t  z_,t ]
+      */
+      // compute derivatives N_XYZ at gp w.r.t. material coordinates
+      // by N_XYZ = J^-1 * N_rst
+      LINALG::Matrix<3,3> invJ(true);
+      LINALG::Matrix<3,8> N_XYZ(true);
+      invJ.MultiplyNT(parent_deriv_notrafo,parent_xrefe);
+      invJ.Invert();
+      N_XYZ.Multiply(invJ,parent_deriv_notrafo);
+
+      // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
+      LINALG::Matrix<3,3> defgrd_inv;
+      // deformation gradient
+      defgrd_inv.MultiplyNT(parent_xcurr,N_XYZ);
+      // Jacobian determinant
+      double J = defgrd_inv.Determinant();
+      // invert deformation gradient
+      defgrd_inv.Invert();
+
+      LINALG::Matrix<3,1> tempvec;
+      LINALG::Matrix<3,3> tempmat;
+      tempmat.MultiplyNT(cauchystress,defgrd_inv);
+
+//      // DEBUG
+//      std::cout<<"[ "<<tempmat(0,0)<<" "<<tempmat(0,1)<<" "<<tempmat(0,2)<<" ]"<<std::endl;
+//      std::cout<<"[ "<<tempmat(1,0)<<" "<<tempmat(1,1)<<" "<<tempmat(1,2)<<" ]"<<std::endl;
+//      std::cout<<"[ "<<tempmat(2,0)<<" "<<tempmat(2,1)<<" "<<tempmat(2,2)<<" ]"<<std::endl;
+//
+//      std::cout<<"_________________________________________________________________________________"<<std::endl;
+
+      tempvec.MultiplyNN(tempmat,unitnormal);
+
+      double gpweight = intpoints.IP().qwgt[gp];
+      // fill element vector
+      for(int node = 0; node < nen; node++)
+      {
+        for (int dof=0;dof<globdim;dof++)
+        {
+          elevector1(node*numdofpernode+dof) += (gpweight*detA)*J*tempvec(dof,0)*funct(node);
+        }
+      }
+
+    }// gauss point loop
+  }
+  break;
+  case mark_immersed_elements:
+  {
+    DRT::Problem* globalproblem = DRT::Problem::Instance();
+    std::string backgrddisname("fluid");
+    std::string immerseddisname("structure");
+
+    // get integration rule
+    const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad4>::rule);
+
+    const Teuchos::RCP<DRT::Discretization> backgrddis  = globalproblem->GetDis(backgrddisname);
+    const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
+
+    const int nen = NumNode();
+    const int globdim = globalproblem->NDim();
+
+    // get structural state and element displacements (parent element)
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
+#ifdef DEBUG
+    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+#endif
+    std::vector<double> bdryeledisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,bdryeledisp,lm);
+
+    // geometry (surface ele)
+    LINALG::Matrix<3,4> xrefe; // material coord. of element
+
+    DRT::Node** nodes = this->Nodes();
+    for (int i=0; i<nen; ++i)
+    {
+      const double* x = nodes[i]->X();
+      xrefe(0,i) = x[0];
+      xrefe(1,i) = x[1];
+      xrefe(2,i) = x[2];
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    /////   gauss point loop
+    ///////////////////////////////////////////////////////////////////
+    for (int gp=0; gp<intpoints.IP().nquad; gp++)
+    {
+      std::vector<double> bdryxi(globdim-1);
+      bdryxi[0] = intpoints.IP().qxg[gp][0];
+      bdryxi[1] = intpoints.IP().qxg[gp][1];
+
+      IMMERSED::DetermineBackgrdElementsWithImmersedBoundary <DRT::Element::hex8,  // source
+                                                              DRT::Element::quad4> // target
+                                                           (backgrddis,
+                                                            immerseddis,
+                                                            *this,
+                                                            bdryxi,
+                                                            bdryeledisp
+                                                           );
+
+    }// gauss point loop
+
   }
   break;
   default:

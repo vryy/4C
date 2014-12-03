@@ -186,6 +186,39 @@ public:
 //    const DRT::UTILS::GaussIntegration & intpoints
   );
 
+  /*! \brief Interpolate velocity gradient and pressure to given point
+   *
+   *  \author rauch \date 05/2014
+   */
+  int InterpolateVelocityGradientAndPressure(
+      DRT::ELEMENTS::Fluid*                ele,
+      DRT::Discretization &                discretization,
+      const std::vector<int> &             lm,
+      Epetra_SerialDenseVector&            elevec1_epetra,
+      Epetra_SerialDenseVector&            elevec2_epetra
+      );
+
+  /*! \brief Interpolate velocity to given point
+   *
+   *  \author rauch \date 05/2014
+   */
+  int InterpolateVelocityToNode(
+      Teuchos::ParameterList&              params,
+      DRT::ELEMENTS::Fluid*                ele,
+      DRT::Discretization &                discretization,
+      const std::vector<int> &             lm,
+      Epetra_SerialDenseVector&            elevec1_epetra,
+      Epetra_SerialDenseVector&            elevec2_epetra
+      );
+
+  /*! \brief Reset debug output of immersed element
+   *
+   *  \author rauch \date 05/2014
+   */
+  int ResetImmersedEle(
+      DRT::ELEMENTS::Fluid*                ele,
+      Teuchos::ParameterList&              params
+      );
 
   /*! \brief Calculate properties for adaptive time step based on CFL number
    *

@@ -63,7 +63,8 @@ void DRT::ELEMENTS::FluidTypeImmersed::SetupElementDefinition( std::map<std::str
 DRT::ELEMENTS::FluidImmersed::FluidImmersed(int id, int owner) :
 Fluid(id,owner),
 is_immersed_(0),
-is_immersed_bdry_(0)
+is_immersed_bdry_(0),
+has_projected_dirichletvalues_(0)
 
 {
 }
@@ -74,7 +75,9 @@ is_immersed_bdry_(0)
 DRT::ELEMENTS::FluidImmersed::FluidImmersed(const DRT::ELEMENTS::FluidImmersed& old) :
 Fluid(old),
 is_immersed_       (old.is_immersed_     ),
-is_immersed_bdry_  (old.is_immersed_bdry_)
+is_immersed_bdry_  (old.is_immersed_bdry_),
+has_projected_dirichletvalues_ (old.has_projected_dirichletvalues_)
+
 {
   return;
 }
@@ -107,6 +110,8 @@ void DRT::ELEMENTS::FluidImmersed::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,is_immersed_);
   // Part of immersion domain for immersed boundary?
   AddtoPack(data,is_immersed_bdry_);
+  // has dirichletvals projected?
+  AddtoPack(data,has_projected_dirichletvalues_);
 
   return;
 }
@@ -131,6 +136,8 @@ void DRT::ELEMENTS::FluidImmersed::Unpack(const std::vector<char>& data)
   is_immersed_ = ExtractInt(position,data);
   // Part of immersion domain for immersed boundary?
   is_immersed_bdry_ = ExtractInt(position,data);
+  // has dirichletvals projected?
+  has_projected_dirichletvalues_ = ExtractInt(position,data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

@@ -634,6 +634,17 @@ public:
   /// interface are prescribed by the other fields.
   virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
+  /// Contract the Dirichlet DOF set
+  ///
+  /// !!! Be careful using this! You might delete dirichlet values set in the input file !!!
+  /// !!! So make sure you are only touching the desired dofs.                           !!!
+  ///
+  /// The method contracts the DOF set (map) which contains the DOFs
+  /// subjected to Dirichlet boundary conditions. This method is
+  /// called solely by immersed FSI to remove the Dirichlet values from
+  /// the previous solution step before a new set is prescribed.
+  virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+
   /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
   ///
   /// This method provides backward compatibility only. Formerly, the Dirichlet conditions
@@ -847,6 +858,12 @@ public:
   */
   virtual void DoProblemSpecificBoundaryConditions() {return;}
 
+  ///< Print stabilization details to screen
+  virtual void PrintStabilizationDetails() const;
+
+  ///< Add contribution to Neumann load vector (neumann_loads_)
+  void AddContributionToNeumannLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector);
+
 protected:
 
   // don't want = operator and cctor
@@ -976,6 +993,7 @@ protected:
   //! @name restart variables
   int writestresses_;
   int write_wall_shear_stresses_;
+  int write_eledata_everystep_;
   //@}
 
   //! @name time step sizes
@@ -1246,8 +1264,6 @@ private:
   */
   virtual void RecomputeMeanCsgsB();
 
-  ///< Print stabilization details to screen
-  virtual void PrintStabilizationDetails() const;
 
   //@}
 

@@ -35,6 +35,10 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 #include "Sacado.hpp"
 
+// immersed fsi related
+#include "../drt_immersed_problem/immersed_base.H"
+#include <Teuchos_TimeMonitor.hpp>
+
 /*----------------------------------------------------------------------*
  * Evaluate supporting methods of the element
  *----------------------------------------------------------------------*/
@@ -123,6 +127,18 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
       return CalcMassMatrix(ele, discretization, lm, mat, elemat1);
     }
     break;
+    case FLD::interpolate_velgrad_to_given_point:
+    {
+      // interpolate velocity gradient grad(u) to given point
+      return InterpolateVelocityGradientAndPressure(ele, discretization, lm, elevec1, elevec2);
+    }
+    break;
+    case FLD::interpolate_velocity_to_given_point:
+    {
+      // interpolate structural velocity to given point
+      return InterpolateVelocityToNode(params, ele, discretization, lm, elevec1, elevec2);
+    }
+    break;
     case FLD::calc_turbulence_statistics:
     {
       if (nsd_ == 3)
@@ -150,6 +166,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
       return CalcTimeStep(ele, discretization, lm, elevec1);
     }
     break;
+    case FLD::reset_immersed_ele:
+    {
+      return ResetImmersedEle(ele,params);
+    }
     default:
       dserror("Unknown type of action '%i' for Fluid EvaluateService()", act);
     break;
@@ -2773,6 +2793,333 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassMatrix(
 }
 
 /*-----------------------------------------------------------------------------*
+ | Interpolate velocity gradient                                 rauch 05/2014 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAndPressure(
+    DRT::ELEMENTS::Fluid*                ele,
+    DRT::Discretization &                discretization,
+    const std::vector<int> &             lm,
+    Epetra_SerialDenseVector&            elevec1_epetra, // vectofill
+    Epetra_SerialDenseVector&            elevec2_epetra  // given point in parameter space coordinates
+    )
+{
+  // declare and initialize matrix for shapefunction evaluation
+  LINALG::Matrix<nen_,1> shapefunct;
+  // derivatives of shapefunctions at int point
+  LINALG::Matrix<nsd_,nen_> pderiv_loc;
+  // velocity gradient
+  LINALG::Matrix<nsd_,nsd_> dudxi;
+  // du/dxi * dxi/dx
+  LINALG::Matrix<nsd_,nsd_> dudxioJinv;
+  // material coord. of element
+  LINALG::Matrix<nsd_,nen_> xrefe;
+  // element velocity at time n+1
+  LINALG::Matrix<nsd_,nen_> evelnp;
+  // element pressure at time n+1
+  LINALG::Matrix<nen_,1> eprenp;
+  // velocity at int point
+  LINALG::Matrix<nsd_,1> velint;
+  // pressure at int point
+  LINALG::Matrix<1,1> pressint;
+  // dx/dxi
+  LINALG::Matrix<nsd_,nsd_>xjm;
+  // dxi/dx
+  LINALG::Matrix<nsd_,nsd_> xji;
+  //cauchystress
+  LINALG::Matrix<nsd_,nsd_> cauchystress(true);
+
+  // get dynamic viscosity
+  Teuchos::RCP<MAT::Material> currentmaterial;
+  currentmaterial = ele->Material(0);
+  double fluiddynamicviscosity = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(currentmaterial)->Viscosity();
+
+  // resize vector to the size of the nsd_ times nsd_ independent entries of the velocity gradient du/dx and the pressure
+  // causes seg fault -> therefore commented; needs to be investigated. elevec1 is directly build with a size of 10 for now
+  //elevec1_epetra.Resize(nsd_*nsd_+1);
+
+  // save point anew for safety -> check later if elevec2_epetra can be use directly
+  LINALG::Matrix<nsd_,1> xi;
+  for(int i=0;i<nsd_;++i)
+    xi(i)=elevec2_epetra(i);
+
+  // evaluate shapefunctions at given point in reference coordinates
+  DRT::UTILS::shape_function<distype>(xi,shapefunct);
+  // evaluate derivatives of element shape functions at given point in reference configuration
+  DRT::UTILS::shape_function_deriv1<distype>(xi,pderiv_loc);
+  // get state of the global vector
+  Teuchos::RCP<const Epetra_Vector> state = discretization.GetState("velnp");
+
+#ifdef DEBUG
+  if(state == Teuchos::null)
+    dserror("Cannot get state vector %s", "velnp");
+  if(ele->IsAle() )
+    dserror("Ale not supported, yet. Make sure to add displacements to xrefe.");
+#endif
+
+  // update element geometry (for now xrefe=X and no xcurr present)
+  {
+    DRT::Node** nodes = ele->Nodes();
+    for (int inode=0;inode<nen_;++inode)
+    {
+      for (int idof=0;idof<nsd_;++idof)
+      {
+        const double* x = nodes[inode]->X();
+        xrefe(idof,inode) = x[idof];
+      }
+    }
+  }
+
+  // get Jacobian matrix and determinant w.r.t. spatial configuration
+  //
+  // |J| = det(xjm) * det(Jmat^-1) = det(xjm) * 1/det(Jmat)
+  //
+  //    _                     _
+  //   |  x_1,1  x_2,1  x_3,1  |           d x_i
+  //   |  x_1,2  x_2,2  x_3,2  | = xjm  = --------
+  //   |_ x_1,3  x_2,3  x_3,3 _|           d s_j
+  //    _
+  xjm.MultiplyNT(pderiv_loc,xrefe); // xcurr=xrefe -> dX/ds
+
+  // inverse of transposed jacobian "ds/dx" (xjm) -> here: ds/dX
+
+  //    _                     _
+  //   |  s_1,1  s_2,1  s_3,1  |           d s_i
+  //   |  s_1,2  s_2,2  s_3,2  | = xji  = -------- ;  [xji] o [xjm] = I
+  //   |_ s_1,3  s_2,3  s_3,3 _|           d x_j
+  //    _
+  xji.Invert(xjm);
+
+  // fill locationarray
+  DRT::Element::LocationArray la(1);
+  ele->LocationVector(discretization,la,false);
+  // extract local values of the global vectors
+  std::vector<double> myvalues(la[0].lm_.size());
+  DRT::UTILS::ExtractMyValues(*state,myvalues,la[0].lm_);
+
+  // split velocity and pressure
+  for (int inode=0; inode<nen_; ++inode)  // number of nodes
+  {
+    // fill a vector field via a pointer
+    for(int idim=0; idim<nsd_; ++idim) // number of dimensions
+    {
+      evelnp(idim,inode) = myvalues[idim+(inode*numdofpernode_)];
+    }  // end for(idim)
+
+    // fill a scalar field via a pointer
+    eprenp(inode,0) = myvalues[nsd_+(inode*numdofpernode_)];
+  }
+
+  // velocity at int point
+  //      _   _
+  //     | u_0 |
+  //     | u_1 |
+  //     | u_2 |
+  //     |_   _|
+  //
+  velint.Multiply(evelnp,shapefunct);
+
+  // pressure at int point
+  // scalar value
+  // pseudo matrix "pressint" for ease of implementation
+  //
+  pressint.MultiplyTN(eprenp,shapefunct);
+
+  //                                         _              _
+  //                                        | u1,1 u1,2 u1,3 |
+  // dudxi = u_i,alhpa = N_A,alpha u^A_i =  | u2,1 u2,2 u2,3 |
+  //                                        |_u3,1 u3,2 u3,3_|
+  //
+  dudxi.MultiplyNT(evelnp,pderiv_loc);
+  //                                            l=_  1     2     3  _
+  //         -1                               i=1| u1,x1 u1,x2 u1,x3 |
+  // dudxi o J  = N_A,alpha u^A_i xi_alpha,l =  2| u2,x1 u2,x2 u2,x3 | = gradu
+  //                                            3|_u3,x1 u3,x2 u3,x3_|
+  //
+  dudxioJinv.MultiplyNT(dudxi,xji);
+
+  // cauchystress = (gradu)^T
+  cauchystress.UpdateT(1.0,dudxioJinv);
+  // chauchystress = gradu + (gradu)^T
+  cauchystress.Update(1.0,dudxioJinv,1.0);
+  // cauchystress = tau
+  cauchystress.Scale(fluiddynamicviscosity);
+  // cauchystress finished
+  cauchystress(0,0) += -pressint(0,0);
+  cauchystress(1,1) += -pressint(0,0);
+  cauchystress(2,2) += -pressint(0,0);
+
+  // save cauchystress row for row as vector [11 22 33 12 23 13]
+  elevec1_epetra(0)=cauchystress(0,0);
+  elevec1_epetra(1)=cauchystress(1,1);
+  elevec1_epetra(2)=cauchystress(2,2);
+  elevec1_epetra(3)=cauchystress(0,1);
+  elevec1_epetra(4)=cauchystress(1,2);
+  elevec1_epetra(5)=cauchystress(0,2);
+
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  // calc test velocity gradient on artificial element with sidelength 1 in the physical space
+  // the result is a measure for the differences in velocity in every direction over the element.
+  //
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+//  LINALG::Matrix<nsd_,nsd_> xji_test(true);
+//  xji_test(0,0)=2.0; xji_test(1,1)=2.0; xji_test(2,2)=2.0;
+//  dudxioJinv.MultiplyNT(dudxi,xji_test);
+
+    return 0;
+}
+
+/*-----------------------------------------------------------------------------*
+ | Interpolate velocity                                          rauch 05/2014 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
+    Teuchos::ParameterList&              params,
+    DRT::ELEMENTS::Fluid*                ele,
+    DRT::Discretization &                discretization,
+    const std::vector<int> &             lm,
+    Epetra_SerialDenseVector&            elevec1_epetra, // vectofill
+    Epetra_SerialDenseVector&            elevec2_epetra  // given point in parameter space coordinates
+    )
+{
+  DRT::ELEMENTS::FluidImmersed* immersedele = static_cast<DRT::ELEMENTS::FluidImmersed*>(ele);
+
+  DRT::Problem* globalproblem = DRT::Problem::Instance();
+  std::string backgrddisname("fluid");
+  std::string immerseddisname("structure");
+
+  static double fsiconvtol = globalproblem->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<double>("CONVTOL");
+  static double timestepsize = globalproblem->FSIDynamicParams().get<double>("TIMESTEP");
+  static double minvalidvel = (fsiconvtol/timestepsize)*0.9;
+
+  static double searchradiusfac = globalproblem->ImmersedMethodParams().get<double>("FLD_SRCHRADIUS_FAC");
+  static int detectvelsignificance = (DRT::INPUT::IntegralValue<int>(globalproblem->ImmersedMethodParams(), "DETECT_VEL_SIGNIFICANCE") == 1);
+
+  const Teuchos::RCP<DRT::Discretization> backgrddis  = globalproblem->GetDis(backgrddisname);
+  const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
+
+  Teuchos::RCP<const Epetra_Vector> state;
+  std::vector<double> myvalues(1);
+  if(detectvelsignificance)
+  {
+    state = discretization.GetState("veln");
+    // fill locationarray
+    DRT::Element::LocationArray la(1);
+    ele->LocationVector(discretization,la,false);
+    // extract local values of the global vectors
+    myvalues.resize(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*state,myvalues,la[0].lm_);
+  }
+
+  std::vector<double> vel(numdofpernode_);
+
+  // fluid target elements have no displacements. fill dummy vector.
+  std::vector<double> targeteledisp(nsd_*nen_);
+  for(int i=0;i<nsd_*nen_;++i)
+    targeteledisp[i]=0.0;
+
+  const std::string action="interpolate_velocity_to_given_point";
+
+  // parameter space coordinates of nodes 0 to 7 according to global report
+  std::vector<std::vector<double> >nodalrefcoords(8);
+  nodalrefcoords[0].push_back(-1.0); nodalrefcoords[0].push_back(-1.0); nodalrefcoords[0].push_back(-1.0);
+  nodalrefcoords[1].push_back(1.0);  nodalrefcoords[1].push_back(-1.0); nodalrefcoords[1].push_back(-1.0);
+  nodalrefcoords[2].push_back(1.0);  nodalrefcoords[2].push_back(1.0);  nodalrefcoords[2].push_back(-1.0);
+  nodalrefcoords[3].push_back(-1.0); nodalrefcoords[3].push_back(1.0);  nodalrefcoords[3].push_back(-1.0);
+  nodalrefcoords[4].push_back(-1.0); nodalrefcoords[4].push_back(-1.0); nodalrefcoords[4].push_back(1.0);
+  nodalrefcoords[5].push_back(1.0);  nodalrefcoords[5].push_back(-1.0); nodalrefcoords[5].push_back(1.0);
+  nodalrefcoords[6].push_back(1.0);  nodalrefcoords[6].push_back(1.0);  nodalrefcoords[6].push_back(1.0);
+  nodalrefcoords[7].push_back(-1.0); nodalrefcoords[7].push_back(1.0);  nodalrefcoords[7].push_back(1.0);
+
+  // get structure search tree
+  Teuchos::RCP<GEO::SearchTree> struct_searchtree = params.get<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp");
+
+  // search tree related stuff
+  std::map<int,LINALG::Matrix<3,1> >* currpositions_struct = params.get<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct");
+
+  std::map<int,std::set<int> > curr_subset_of_structdis;
+  {
+    //TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::InterpolateVelocityToNode() - search in searchtree");
+    // search radius (diagonal length of targetele)
+    double radius = sqrt(pow(ele->Nodes()[1]->X()[0]-ele->Nodes()[7]->X()[0],2)+pow(ele->Nodes()[1]->X()[1]-ele->Nodes()[7]->X()[1],2)+pow(ele->Nodes()[1]->X()[2]-ele->Nodes()[7]->X()[2],2));
+    LINALG::Matrix<3,1> searchcenter; // center of fluid ele
+    searchcenter(0)=ele->Nodes()[1]->X()[0]+(ele->Nodes()[7]->X()[0] - ele->Nodes()[1]->X()[0])*0.5;
+    searchcenter(1)=ele->Nodes()[1]->X()[1]+(ele->Nodes()[7]->X()[1] - ele->Nodes()[1]->X()[1])*0.5;
+    searchcenter(2)=ele->Nodes()[1]->X()[2]+(ele->Nodes()[7]->X()[2] - ele->Nodes()[1]->X()[2])*0.5;
+
+    // search for immersed elements within a certain radius around the searchcenter node
+    curr_subset_of_structdis = struct_searchtree->searchElementsInRadius(*immerseddis,*currpositions_struct,searchcenter,radius*searchradiusfac,0);
+
+  }
+
+  bool match = false;
+  bool alreadymatched = false;
+  ////////////////////////////////////////////////////////////////////
+  ///
+  /// LOOP OVER ALL NODES OF THIS ELEMENT
+  ///
+  ///////////////////////////////////////////////////////////////////
+  for (int node=0; node<this->nen_; node++)
+  {
+    std::vector<double> backgrdxi(nsd_);
+    backgrdxi[0] = nodalrefcoords[node][0];
+    backgrdxi[1] = nodalrefcoords[node][1];
+    backgrdxi[2] = nodalrefcoords[node][2];
+
+  if(static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->IsMatched())
+  {
+    match = true;
+    alreadymatched = true;
+  }
+
+  IMMERSED::InterpolateToBackgrdIntPointFAST  <DRT::Element::hex8,  // source
+                                               DRT::Element::hex8>  // target
+                                                       (curr_subset_of_structdis,
+                                                        immerseddis, // source
+                                                        backgrddis,  // target
+                                                        *ele,
+                                                        backgrdxi,
+                                                        targeteledisp,
+                                                        action,
+                                                        vel, // result
+                                                        match
+                                                       );
+
+  if(match)
+  {
+    static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->SetIsMatched(1);
+    immersedele->SetHasProjectedDirichlet(1);
+
+    for(int i=0; i<nsd_;++i)
+    {
+      if(vel[i]>1e-15 and vel[i]<minvalidvel and detectvelsignificance)
+      {
+        //std::cout<<" UNREASONABLY LOW VELOCITIES DETECTED :"<<vel[i]<<"<"<<minvalidvel<<" REGULARIZE VELOCITY INTERPOLATION ..."<<std::endl;
+        // set velocity of node to value of old timestep
+        vel[i]=myvalues[i+(node*numdofpernode_)];
+      }
+
+      elevec1_epetra((node*numdofpernode_)+i) += vel[i];
+    }
+
+    // also set pressure to zero // coment probably outdated
+    elevec1_epetra((node*numdofpernode_)+nsd_) = vel[nsd_];
+
+    // only elements who really interpolate are set as IsImmersed
+    if(!alreadymatched)
+      immersedele -> SetIsImmersed(1);
+  }
+
+  // reset match to false and check next node in the following loop execution
+  match = false;
+  alreadymatched = false;
+
+  }
+
+  return 0;
+}
+/*-----------------------------------------------------------------------------*
  | Calculate channel statistics                                     bk 05/2014 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
@@ -3540,6 +3887,56 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcTimeStep(
   return 0;
 }
 
+/*-----------------------------------------------------------------------------*
+ | Reset Immersed Ele                                            rauch 05/2014 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ResetImmersedEle(
+    DRT::ELEMENTS::Fluid*           ele,
+    Teuchos::ParameterList&         params
+   )
+{
+//  // DEBUG
+//  static int firstelelid = ele->LID();
+
+  DRT::ELEMENTS::FluidImmersed* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(ele);
+  int reset_isimmersed = params.get("reset_isimmersed",1);
+  int reset_hasprojecteddirichlet = params.get("reset_hasprojecteddirichlet",1);
+
+//  // DEBUG output
+//  if(reset_isimmersed == 1 and reset_hasprojecteddirichlet == 1 and ele->LID()==firstelelid)
+//  {
+//    std::cout<<"\n Reset all information in fluid elements ... \n"<<std::endl;
+//  }
+//  else if(reset_isimmersed == 0 and reset_hasprojecteddirichlet == 0 and ele->LID() == firstelelid)
+//  {
+//      std::cout<<"\n Reset all information in fluid elements EXCEPT 'IsImmersed' ... \n"<<std::endl;
+//  }
+
+
+//#ifdef DEBUG
+  if(reset_isimmersed)
+  {
+    immersedele->SetIsImmersed(0);
+  }
+
+  immersedele->SetIsImmersedBoundary(0);
+//#endif
+
+  if(reset_hasprojecteddirichlet)
+  {
+    immersedele->SetHasProjectedDirichlet(0);
+  }
+
+  DRT::Node** nodes = immersedele->Nodes();
+  for(int i=0;i<immersedele->NumNode();++i)
+  {
+    static_cast<IMMERSED::ImmersedNode* >(nodes[i])->SetIsMatched(0);
+    static_cast<IMMERSED::ImmersedNode* >(nodes[i])->SetIsImmersedBoundary(0);
+  }
+
+  return 0;
+}
 
 // template classes
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8,DRT::ELEMENTS::Fluid::none>;

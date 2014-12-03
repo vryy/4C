@@ -550,6 +550,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_fld_fluid_fpsi.cpp
   src/drt_adapter/ad_fld_fluid_fluid_fsi.cpp
   src/drt_adapter/ad_fld_fluid_xfem.cpp
+  src/drt_adapter/ad_fld_fluid_immersed.cpp
   src/drt_adapter/ad_fld_fluid_ale_xfem.cpp
   src/drt_adapter/ad_fld_xfluid_fsi.cpp
   src/drt_adapter/ad_opt.cpp
@@ -1858,12 +1859,18 @@ src/drt_ssi/ssi_partitioned_2wc.cpp
 src/drt_ssi/ssi_utils.cpp
 )
 
+set(OBJS_DRT_IMMERSED_LIB
+src/drt_immersed_problem/immersed_node.cpp
+)
+
 set(OBJS_DRT_IMMERSED_PROBLEM
 src/drt_immersed_problem/immersed_base.cpp
 src/drt_immersed_problem/immersed_problem_dyn.cpp
 src/drt_immersed_problem/immersed_partitioned.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi.cpp
-src/drt_immersed_problem/immersed_partitioned_fsi_neumannneumann.cpp
+src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann.cpp
+src/drt_immersed_problem/fsi_partitioned_immersed.cpp
+src/drt_immersed_problem/immersed_field_exchange_manager.cpp
 )
 ###------------------------------------------------------------------ Element flags
 
@@ -1982,6 +1989,7 @@ set(ELEMENT_LIBRARIES
 
 # algorithm libraries that depend on adapters
 add_library(alg_elch ${OBJS_DRT_ELCH})
+add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
 add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 add_library(alg_loma ${OBJS_DRT_LOMA})
@@ -1990,7 +1998,6 @@ add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_wear ${OBJS_DRT_WEAR})
 add_library(alg_poroelast ${OBJS_DRT_POROELAST})
 add_library(alg_fpsi ${OBJS_DRT_FPSI})
-add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
 add_library(alg_topopt ${OBJS_DRT_TOPOPT})
 add_library(alg_ssi ${OBJS_DRT_SSI})
@@ -2097,6 +2104,7 @@ add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 add_library(drt_lib_cut ${OBJS_DRT_CUT})
 add_library(drt_lib_crack ${OBJS_DRT_CRACK})
 add_library(drt_lib_statinv_anal ${OBJS_STATINV_ANALYSIS_LIB})
+add_library(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
 
 set(SUPPORT_LIBRARIES
   drt_lib
@@ -2116,6 +2124,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_nurbs
   drt_lib_meshfree
   drt_lib_statinv_anal
+  drt_lib_immersed
   )
 
 # filter framework

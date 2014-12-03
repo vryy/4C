@@ -781,6 +781,8 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::calc_divop:
     case FLD::calc_mat_deriv_u_and_rot_u:
     case FLD::void_fraction_gaussian_integration:
+    case FLD::interpolate_velgrad_to_given_point:
+    case FLD::interpolate_velocity_to_given_point:
     case FLD::calc_turbulence_statistics:
     case FLD::xwall_l2_projection:
     case FLD::xwall_l2_projection_with_continuity_constraint:
@@ -788,6 +790,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::tauw_via_gradient:
     case FLD::velgradient_projection:
     case FLD::calc_dt_via_cfl:
+    case FLD::reset_immersed_ele:
     {
       return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)->EvaluateService(this,
                                                                        params,

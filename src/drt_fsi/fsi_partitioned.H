@@ -69,7 +69,7 @@ public:
   explicit Partitioned(const Epetra_Comm& comm);
 
   /// outer level FSI time loop
-  void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+  virtual void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
   /// compute FSI interface residual S^{-1}(F(d)) - d
   bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
@@ -77,6 +77,8 @@ public:
   bool matchingnodes() {return matchingnodes_; }
 
   virtual void Remeshing();
+
+  virtual void SetupCoupling(const Teuchos::ParameterList& fsidyn ,const Epetra_Comm& comm);
 
   /// Perform all operations related to updating FSI interface for FSI-crack problem
   virtual void update_FSI_interface_Crack();
@@ -157,6 +159,9 @@ protected:
   /// return coupsfm_
   const ADAPTER::CouplingMortar& StructureFluidCouplingMortar() const;
 
+  /// access to iteration counter
+  virtual std::vector<int> IterationCounter(){return counter_;};
+
 private:
 
   /// create linear solver framework
@@ -171,13 +176,10 @@ private:
                                                         Teuchos::RCP<NOX::Epetra::Group> grp);
 
   /// setup list with default parameters
-  void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
+  virtual void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
   /// extract idispn_ iveln_
-  void ExtractPreviousInterfaceSolution();
-
-  /// coupling of structure and fluid at the interface, with mortar.
-  Teuchos::RCP<ADAPTER::CouplingMortar>         coupsfm_;
+  virtual void ExtractPreviousInterfaceSolution();
 
   /// interface displacement from time step begin
   Teuchos::RCP<Epetra_Vector> idispn_;
@@ -206,17 +208,20 @@ private:
    */
   Teuchos::RCP<NOX::Utils> utils_;
 
-  /// parameters handed in to NOX
-  Teuchos::ParameterList noxparameterlist_;
-
 protected:
   int mfresitemax_;
 
-private:
+
+  /// coupling of structure and fluid at the interface, with mortar.
+  Teuchos::RCP<ADAPTER::CouplingMortar>         coupsfm_;
 
   /// nodes at the fluid-structure interface match
   bool matchingnodes_;
 
+  /// parameters handed in to NOX
+  Teuchos::ParameterList noxparameterlist_;
+
+private:
   /// special debugging output
   Teuchos::RCP<UTILS::DebugWriter> debugwriter_;
 };

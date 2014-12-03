@@ -1,0 +1,158 @@
+/*!----------------------------------------------------------------------
+\file immersed_node.H
+
+<pre>
+Maintainers: Andreas Rauch
+             rauch@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15240
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifndef IMMERSED_NODE_H
+#define IMMERSED_NODE_H
+
+
+#include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_parobjectfactory.H"
+
+namespace DRT {
+class Node;
+}
+
+
+namespace IMMERSED
+{
+
+class ImmersedNodeType : public DRT::NodeType
+{
+public:
+
+  std::string Name() const { return "ImmersedNodeType"; }
+
+  static ImmersedNodeType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+
+private:
+
+  static ImmersedNodeType instance_;
+};
+
+/*!
+\brief A virtual class all nodes that are used in DRT have to implement
+
+*/
+class ImmersedNode : public DRT::Node
+{
+public:
+
+  //! @name Enums and Friends
+
+  /*!
+  \brief The Discretization is a friend of Node
+  */
+  friend class Discretization;
+
+  //@}
+
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  \param id     (in): A globally unique node id
+  \param coords (in): vector of nodal coordinates, length 3
+  \param owner  (in): Owner of this node.
+  */
+  ImmersedNode(int id, const double* coords, const int owner);
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Node
+
+  */
+  ImmersedNode(const IMMERSED::ImmersedNode& old);
+
+  /*!
+  \brief Deep copy the derived class and return pointer to it
+
+  */
+  virtual IMMERSED::ImmersedNode* Clone() const;
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~ImmersedNode();
+
+  /*!
+  \brief Return unique ParObject id
+
+  every class implementing ParObject needs a unique id defined at the
+  top of this file.
+  */
+  virtual int UniqueParObjectId() const { return ImmersedNodeType::Instance().UniqueParObjectId(); }
+
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this node
+
+  */
+  virtual void Pack(DRT::PackBuffer& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this node
+
+  */
+  virtual void Unpack(const std::vector<char>& data);
+
+  /*!
+  \brief immersed rauch
+  */
+  void SetIsMatched(int ismatched) { ismatched_=ismatched; }
+
+  /*!
+  \brief immersed rauch
+  */
+  void SetIsImmersedBoundary(int isimmersedboundary) { isimmersedboundary_=isimmersedboundary; }
+
+  /*!
+  \brief immersed rauch
+  */
+  int IsMatched() const { return ismatched_; }
+
+  /*!
+  \brief immersed rauch
+  */
+  int IsImmersedBoundary()  const { return isimmersedboundary_; }
+
+
+  /*!
+  \brief Print this node
+  */
+  virtual void Print(std::ostream& os) const ;
+
+protected:
+
+  int ismatched_;
+  int isimmersedboundary_;
+
+}; // class ImmersedNode
+} // namespace IMMERSED
+
+
+// << operator
+std::ostream& operator << (std::ostream& os, const IMMERSED::ImmersedNode& immersednode);
+
+
+
+
+
+
+#endif  // #ifndef NODE_IMMERSED_H

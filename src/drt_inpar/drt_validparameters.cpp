@@ -854,6 +854,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("FLUID_SOL","Yes","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_STRESS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_WALL_SHEAR_STRESS","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("FLUID_ELEDATA_EVRY_STEP","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_VIS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("THERM_TEMPERATURE","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("THERM_HEATFLUX","None","",
@@ -6828,9 +6829,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    "MTR",
                                    "Mtr",
                                    "mtr",
-                                   "conforming"
+                                   "conforming",
+                                   "immersed"
                                    ),
-                                 tuple<int>(0,0,0,1),
+                                 tuple<int>(0,0,0,1,2),
                                  &fsipart);
 
     DoubleParameter("BASETOL",1e-3,
@@ -6885,12 +6887,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    &immersedmethod);
 
     setStringToIntegralParameter<int>(
-                                 "SCHEME","neumannneumann",
+                                 "SCHEME","dirichletneumann",
                                  "Coupling schemes for partitioned immersed method.",
                                  tuple<std::string>(
-                                   "neumannneumann"),
+                                   "neumannneumann",
+                                   "dirichletneumann"),
                                    tuple<int>(
-                                   INPAR::IMMERSED::neumannneumann),
+                                   INPAR::IMMERSED::neumannneumann,
+                                   INPAR::IMMERSED::dirichletneumann),
                                    &immersedmethod);
 
 
@@ -6904,6 +6908,55 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::IMMERSED::shapefunctions,
                                    INPAR::IMMERSED::mortar),
                                    &immersedmethod);
+
+    setStringToIntegralParameter<int>(
+                                 "APPLY_FORCE_RELAX","globally",
+                                 "Relax whole force vector or not.",
+                                 tuple<std::string>(
+                                   "globally",
+                                   "selectively"),
+                                   tuple<int>(
+                                   INPAR::IMMERSED::globally,
+                                   INPAR::IMMERSED::selectively),
+                                   &immersedmethod);
+
+    setStringToIntegralParameter<int>(
+                                 "APPLY_VEL_RELAX","globally",
+                                 "Relax whole velocity vector or not.",
+                                 tuple<std::string>(
+                                   "globally",
+                                   "selectively"),
+                                   tuple<int>(
+                                   INPAR::IMMERSED::globally,
+                                   INPAR::IMMERSED::selectively),
+                                   &immersedmethod);
+
+    setStringToIntegralParameter<int>(
+                                 "DIVERCONT","stop",
+                                 "What to do after maxiter is reached.",
+                                 tuple<std::string>(
+                                   "stop",
+                                   "continue"),
+                                   tuple<int>(
+                                   INPAR::IMMERSED::nlnsolver_stop,
+                                   INPAR::IMMERSED::nlnsolver_continue),
+                                   &immersedmethod);
+
+    setStringToIntegralParameter<int>(
+                                 "DETECT_VEL_SIGNIFICANCE","no",
+                                 "set projected velocity to veln if not of significant magnitude",
+                                 tuple<std::string>(
+                                   "yes",
+                                   "no"),
+                                   tuple<int>(
+                                   1,
+                                   0),
+                                   &immersedmethod);
+
+    DoubleParameter("FORCE_RELAX",1.0,"Force Relaxaton Parameter"    ,&immersedmethod);
+    DoubleParameter("VEL_RELAX"  ,1.0,"Velocity Relaxation Parameter",&immersedmethod);
+    DoubleParameter("FLD_SRCHRADIUS_FAC",1.0,"fac times fluid ele. diag. length",&immersedmethod);
+    DoubleParameter("STRCT_SRCHRADIUS_FAC",0.5,"fac times structure bounding box diagonal",&immersedmethod);
 
   /*----------------------------------------------------------------------*/
     Teuchos::ParameterList& fpsidyn = list->sublist(

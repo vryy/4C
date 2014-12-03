@@ -40,6 +40,8 @@ Maintainer: Moritz Frenzel
 #include "inversedesign.H"
 #include "prestress.H"
 
+#include "../drt_fluid_ele/fluid_ele_parameter_timint.H"
+
 #include "so3_defines.H"
 
 /*----------------------------------------------------------------------*
@@ -91,6 +93,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch")            act = So_hex8::inversedesign_switch;
   else if (action=="calc_global_gpstresses_map")                  act = So_hex8::calc_global_gpstresses_map;
+  else if (action=="interpolate_velocity_to_given_point")         act = So_hex8::interpolate_velocity_to_point;
   else dserror("Unknown type of action for So_hex8: %s", action.c_str());
 
   // check for patient specific data
@@ -767,6 +770,221 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   case multi_calc_dens:
   {
     soh8_homog(params);
+  }
+  break;
+
+    //==================================================================================
+  case interpolate_velocity_to_point:
+  {
+//    // debug test
+//    elevec1_epetra(0)=0.01;
+//    elevec1_epetra(1)=0.01;
+//    elevec1_epetra(2)=0.01;
+
+    // time integration factor
+    //double theta = DRT::ELEMENTS::FluidEleParameterTimInt::Instance()->Theta();
+    //double dt = DRT::ELEMENTS::FluidEleParameterTimInt::Instance()->Dt();
+
+    // get displacements and extract values of this element
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
+    Teuchos::RCP<const Epetra_Vector> dispn  = discretization.GetState("displacement_old");
+    Teuchos::RCP<const Epetra_Vector> velnp  = discretization.GetState("velocity");
+    Teuchos::RCP<const Epetra_Vector> veln   = discretization.GetState("velocity_old");
+
+
+#ifdef DEBUG
+    if (dispnp==Teuchos::null) dserror("Cannot get state displacement vector");
+    if (dispn ==Teuchos::null) dserror("Cannot get state displacement_old vector");
+    if (velnp ==Teuchos::null) dserror("Cannot get state velocity vector");
+    if (veln  ==Teuchos::null) dserror("Cannot get state velocity_old vector");
+#endif
+
+    std::vector<double> mydispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+
+    std::vector<double> mydispn(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispn,mydispn,lm);
+
+    std::vector<double> myveln(lm.size());
+    DRT::UTILS::ExtractMyValues(*veln,myveln,lm);
+
+    std::vector<double> myvelnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+
+//    /////////////
+//    // DEBUG
+//    /////////////
+//    for(int i=0; i<(int)mydispnp.size() ;++i)
+//    {
+//      std::cout<<mydispnp[i]<<" ";
+//    }
+//    std::cout<<""<<std::endl;
+
+
+    std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts(1);
+    // (r,s,t) gp-locations of fully integrated linear 8-node Hex
+    const double r[1] = {elevec2_epetra(0)};
+    const double s[1] = {elevec2_epetra(1)};
+    const double t[1] = {elevec2_epetra(2)};
+    // fill nodal shape functions at point
+    (shapefcts[0])(0) = (1.0-r[0])*(1.0-s[0])*(1.0-t[0])*0.125;
+    (shapefcts[0])(1) = (1.0+r[0])*(1.0-s[0])*(1.0-t[0])*0.125;
+    (shapefcts[0])(2) = (1.0+r[0])*(1.0+s[0])*(1.0-t[0])*0.125;
+    (shapefcts[0])(3) = (1.0-r[0])*(1.0+s[0])*(1.0-t[0])*0.125;
+    (shapefcts[0])(4) = (1.0-r[0])*(1.0-s[0])*(1.0+t[0])*0.125;
+    (shapefcts[0])(5) = (1.0+r[0])*(1.0-s[0])*(1.0+t[0])*0.125;
+    (shapefcts[0])(6) = (1.0+r[0])*(1.0+s[0])*(1.0+t[0])*0.125;
+    (shapefcts[0])(7) = (1.0-r[0])*(1.0+s[0])*(1.0+t[0])*0.125;
+
+    // calc velocity at n+1
+    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> myvelocitynp;
+    for(int node=0;node<NUMNOD_SOH8;++node)
+    {
+      for(int dim=0;dim<NUMDIM_SOH8;++dim)
+      {
+        myvelocitynp(node,dim) = myvelnp[node*3+dim];//(mydispnp[node*3+dim] - mydispn[node*3+dim])/(theta*dt) - (1.0/theta -1.0)*myveln[node*3+dim];
+      }
+    }
+
+    double infnorm = myvelocitynp.NormInf();
+    if(infnorm < 1e-14)
+    {
+      for(int node=0;node<NUMNOD_SOH8;++node)
+      {
+        for(int dim=0;dim<NUMDIM_SOH8;++dim)
+        {
+          myvelocitynp(node,dim) = myveln[node*3+dim];//(mydispnp[node*3+dim] - mydispn[node*3+dim])/(theta*dt) - (1.0/theta -1.0)*myveln[node*3+dim];
+        }
+      }
+    }
+
+    //std::cout<<"myvelocitynp:\n"<<myvelocitynp<<std::endl;
+
+    LINALG::Matrix<3,1> result;
+    result.MultiplyTN(myvelocitynp,shapefcts[0]);
+    for(int i=0;i<3;++i)
+      elevec1_epetra(i) = result(i,0);
+
+
+    ///////////////////////////////////////////////////////
+    // divergence of velocity part
+    //
+    // calc \dot{J}/J = \dot{det(F)}/det(F)
+    //
+    // Calc time derivative with one-step-theta
+    //
+    ///////////////////////////////////////////////////////
+
+    // update element geometry
+    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;     // reference coord. of element
+    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;     // current coord. of element
+    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr_old; // spatial coordinate of element at old timestep
+
+
+    DRT::Node** nodes = Nodes();
+    for (int i=0; i<NUMNOD_SOH8; ++i)
+    {
+      const double* X = nodes[i]->X();
+      xrefe(i,0) = X[0];
+      xrefe(i,1) = X[1];
+      xrefe(i,2) = X[2];
+
+      xcurr(i,0) = xrefe(i,0) + mydispnp[i*NODDOF_SOH8+0];
+      xcurr(i,1) = xrefe(i,1) + mydispnp[i*NODDOF_SOH8+1];
+      xcurr(i,2) = xrefe(i,2) + mydispnp[i*NODDOF_SOH8+2];
+
+      xcurr_old(i,0) = xrefe(i,0) + mydispn[i*NODDOF_SOH8+0];
+      xcurr_old(i,1) = xrefe(i,1) + mydispn[i*NODDOF_SOH8+1];
+      xcurr_old(i,2) = xrefe(i,2) + mydispn[i*NODDOF_SOH8+2];
+    }
+
+    // fill derivatives of nodal shape functions at point
+
+    std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs(1);
+
+    (derivs[0])(0,0) = -(1.0-s[0])*(1.0-t[0])*0.125;
+    (derivs[0])(0,1) =  (1.0-s[0])*(1.0-t[0])*0.125;
+    (derivs[0])(0,2) =  (1.0+s[0])*(1.0-t[0])*0.125;
+    (derivs[0])(0,3) = -(1.0+s[0])*(1.0-t[0])*0.125;
+    (derivs[0])(0,4) = -(1.0-s[0])*(1.0+t[0])*0.125;
+    (derivs[0])(0,5) =  (1.0-s[0])*(1.0+t[0])*0.125;
+    (derivs[0])(0,6) =  (1.0+s[0])*(1.0+t[0])*0.125;
+    (derivs[0])(0,7) = -(1.0+s[0])*(1.0+t[0])*0.125;
+
+    // df wrt to s for each node(0..7) at each gp [0]
+    (derivs[0])(1,0) = -(1.0-r[0])*(1.0-t[0])*0.125;
+    (derivs[0])(1,1) = -(1.0+r[0])*(1.0-t[0])*0.125;
+    (derivs[0])(1,2) =  (1.0+r[0])*(1.0-t[0])*0.125;
+    (derivs[0])(1,3) =  (1.0-r[0])*(1.0-t[0])*0.125;
+    (derivs[0])(1,4) = -(1.0-r[0])*(1.0+t[0])*0.125;
+    (derivs[0])(1,5) = -(1.0+r[0])*(1.0+t[0])*0.125;
+    (derivs[0])(1,6) =  (1.0+r[0])*(1.0+t[0])*0.125;
+    (derivs[0])(1,7) =  (1.0-r[0])*(1.0+t[0])*0.125;
+
+    // df wrt to t for each node(0..7) at each gp [0]
+    (derivs[0])(2,0) = -(1.0-r[0])*(1.0-s[0])*0.125;
+    (derivs[0])(2,1) = -(1.0+r[0])*(1.0-s[0])*0.125;
+    (derivs[0])(2,2) = -(1.0+r[0])*(1.0+s[0])*0.125;
+    (derivs[0])(2,3) = -(1.0-r[0])*(1.0+s[0])*0.125;
+    (derivs[0])(2,4) =  (1.0-r[0])*(1.0-s[0])*0.125;
+    (derivs[0])(2,5) =  (1.0+r[0])*(1.0-s[0])*0.125;
+    (derivs[0])(2,6) =  (1.0+r[0])*(1.0+s[0])*0.125;
+    (derivs[0])(2,7) =  (1.0-r[0])*(1.0+s[0])*0.125;
+
+
+    LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
+
+    // build deformation gradient wrt to spatial configuration
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrdnp(true);
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrdnp_inv(true);
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrdn(true);
+    //double detFnp;
+    //double detFn;
+    //double detF_dot;
+
+    /* get the inverse of the Jacobian matrix which looks like:
+     **            [ x_,r  y_,r  z_,r ]^-1
+     **     J^-1 = [ x_,s  y_,s  z_,s ]
+     **            [ x_,t  y_,t  z_,t ]
+     */
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invJ;
+
+    invJ.Multiply(derivs[0],xrefe);
+    invJ.Invert();
+    N_XYZ.Multiply(invJ,derivs[0]);
+
+    defgrdnp.MultiplyTT(xcurr,N_XYZ);
+    defgrdnp_inv.Invert(defgrdnp);
+    //detFnp = defgrdnp.Determinant();
+
+    defgrdn.MultiplyTT(xcurr_old,N_XYZ);
+    //detFn = defgrdn.Determinant();
+
+    //detF_dot = (detFnp - detFn)/dt;
+
+    // evaluate divergence of structural velocity
+    double velocitydivergence = 0.0;
+
+    // div(v) = N_A,I (dX_I/dx_i) v_Ai
+    for(int I=0;I<NUMDIM_SOH8;++I)
+    {
+      for(int A=0;A<NUMNOD_SOH8;++A)
+      {
+        for(int i=0;i<NUMDIM_SOH8;++i)
+        {
+          velocitydivergence += N_XYZ(I,A) * ( defgrdnp_inv(I,i)*myvelocitynp(A,i) );
+        }
+      }
+    }
+
+    //std::cout<<"N_XYZ:\n"<<N_XYZ<<std::endl;
+    //std::cout<<"defgrdnp_inv:\n"<<defgrdnp_inv<<std::endl;
+
+    //velocitydivergence = detF_dot/detFn;
+    // vector to fill
+    elevec1_epetra(3) = velocitydivergence;
   }
   break;
 
@@ -1723,6 +1941,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     params.set<int>("gp",gp);
 
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
+    params.set<int>("iostress", iostress); // needed for activefiber material; if output is requested only active stresses are written
     so3mat->Evaluate(&defgrd_mod,&glstrain,params,&stress,&cmat,Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

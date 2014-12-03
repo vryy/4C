@@ -1,0 +1,116 @@
+  /*!----------------------------------------------------------------------
+\file immersed_partitioned_fsi_dirichletneumann.H
+
+\brief partitioned immersed fsi algorithm for dirichlet-neumann coupling (volume dirichlet coupling)
+
+<pre>
+Maintainers: Andreas Rauch
+             rauch@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15240
+</pre>
+*----------------------------------------------------------------------*/
+#ifndef IMMERSED_PARTITIONED_FSI_DIRICHLETNEUMANN_H
+#define IMMERSED_PARTITIONED_FSI_DIRICHLETNEUMANN_H
+
+#include "immersed_partitioned_fsi.H"
+#include "fsi_partitioned_immersed.H"
+
+
+namespace FLD
+{
+  class FluidImplicitTimeInt;
+}
+
+namespace GEO
+{
+  class SearchTree;
+}
+
+namespace Teuchos
+{
+  class Time;
+}
+
+
+namespace IMMERSED {
+
+class ImmersedPartitionedFSIDirichletNeumann : public ImmersedPartitionedFSI, public FSI::PartitionedImmersed
+{
+
+public:
+
+  /// setup partitioned ImmersedFSI algorithm
+  explicit ImmersedPartitionedFSIDirichletNeumann(const Epetra_Comm& comm);
+
+protected:
+
+  /// composed FSI operator
+  virtual void FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
+
+  /// interface fluid operator
+  virtual Teuchos::RCP<Epetra_Vector> FluidOp(Teuchos::RCP<Epetra_Vector> bforce,
+                                              const FillType fillFlag);
+
+  /// interface structural operator
+  virtual Teuchos::RCP<Epetra_Vector> StructOp(Teuchos::RCP<Epetra_Vector> struct_bdry_traction,
+                                               const FillType fillFlag);
+  /// initial guess
+  virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
+
+  /// get immersed nodes and determine their dofs
+  void BuildImmersedDirichMap(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& dirichmap, const Teuchos::RCP<const Epetra_Map>& dirichmap_original);
+
+  /// add immersed dirichlet values from immersed dis to systemvector of background dis
+  void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector, Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap);
+
+  /// setup
+  void SetupStructuralDiscretization(Teuchos::RCP<DRT::Discretization> structdis);
+
+  /// determine elements cut by the boundary
+  void PrepareFluidOp();
+
+
+  //! @name Various global forces
+  //@{
+  Teuchos::RCP<Epetra_Vector> fintn_;                    //!< internal structural force at time n+1
+  Teuchos::RCP<Epetra_Vector> struct_bdry_traction_;     //!< bdry traction rhs on struct FSI surface
+  Teuchos::RCP<Epetra_Vector> struct_bdry_traction_old_; //!< bdry traction rhs on struct FSI surface
+  Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_;//!< background velocity interpolated from immersed dis
+  Teuchos::RCP<const Epetra_Map> dbcmap_ordinary_;       //!< dirichlet bc map before consideration of immersed values
+  Teuchos::RCP<Epetra_Map> dbcmap_immersed_;             //!< dirichlet bc map of immersed values
+  Teuchos::RCP<Epetra_Vector> ffsi_;                     //!< body force vector being applied to fluid field
+  Teuchos::RCP<GEO::SearchTree> fluid_SearchTree_;       //!< search tree for fluid domain
+  Teuchos::RCP<GEO::SearchTree> structure_SearchTree_;   //!< search tree for structure domain
+  std::map<int,std::set<int> > curr_subset_of_fluiddis_;    //!< fluid elements to evaluate the dirichlet interpolation
+  std::map<int,LINALG::Matrix<3,1> > currpositions_struct_; //!< map of vectors for search tree containing current structural positions
+  std::map<int,LINALG::Matrix<3,1> > currpositions_fluid_;  //!< map of vectors for search tree containing current fluid positions
+  //!
+  //!           (backgrd element id)   (ref. coord. of immersed gp in backgrd element) (size = gp x dim)
+  //!                     |                             |
+  //!           std::map<int , std::map<int , std::vector<double> > >
+  //!                                    |
+  //!                           (immersed element id)
+  //!
+  //!Teuchos::RCP<std::map<int,Teuchos::RCP<std::map<int,Teuchos::RCP<std::vector<double> > > > > > bdry_intpoint_positionmap_;
+  //!Teuchos::RCP<Epetra_Vector> fluid_stress_at_struct_intpoints_;
+  //!Teuchos::RCP<Epetra_Map> bdry_gp_columnmap_;
+  //@}
+
+  bool displacementcoupling_;
+  bool multibodysimulation_;
+  double forcerelax_;
+  double velrelax_;
+  bool relaxforceglobally_;
+  bool relaxvelglobally_;
+  int coupalgo_;
+
+
+  Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpltimeint_;
+  Teuchos::RCP<DRT::Discretization> fluiddis_;
+  Teuchos::RCP<DRT::Discretization> structdis_;
+
+};// class ImmersedFSI
+} // namspace IMMERSED
+
+#endif

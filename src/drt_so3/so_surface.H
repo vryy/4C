@@ -206,7 +206,7 @@ public:
   //! Return local surface number
   const int LSurfNumber() const {return FaceMasterNumber();}
 
-protected:
+public: // changed to public rauch 05/2014
 
   //! action for surface evaluation
   enum ActionType
@@ -231,8 +231,13 @@ protected:
     calc_struct_area,
     calc_ref_nodal_normals,
     calc_cur_nodal_normals,
-    calc_struct_area_poro
+    calc_struct_area_poro,
+    calc_fluid_traction,
+    calc_cur_normal_at_point,
+    mark_immersed_elements
   };
+
+protected:
 
   // don't want = operator
   StructuralSurface& operator = (const StructuralSurface& old);

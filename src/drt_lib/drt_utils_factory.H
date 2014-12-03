@@ -31,7 +31,7 @@ namespace UTILS
   \param data (in): A char vector used for communication or io
 
   \warning All instances of ParObject have to store the parobject id
-           at the vey beginning of the char vector
+           at the very beginning of the char vector
 
   \return Allocates and returns the correct instance of ParObject where data is
           already unpacked in the instance. The calling method is responsible for

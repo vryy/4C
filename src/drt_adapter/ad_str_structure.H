@@ -150,9 +150,6 @@ namespace ADAPTER {
     /// known acceleration at \f$t_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accn() const = 0;
 
-    /// known fsi force vector for immersed fsi
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInternalForceVector(double time, double dt, Teuchos::RCP<const Epetra_Vector> dis,Teuchos::RCP<Epetra_Vector> fint)=0;
-
     virtual void ResizeMStepTimAda() = 0;
 
     //@}

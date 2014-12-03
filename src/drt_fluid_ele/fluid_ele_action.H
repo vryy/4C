@@ -61,7 +61,8 @@ enum Action {
     set_general_adjoint_parameter,
     set_adjoint_time_parameter,
     calc_volume,
-    ImmersedFSIForceEvaluation,
+    interpolate_velocity_to_given_point,
+    interpolate_velgrad_to_given_point,
     xwall_l2_projection,
     xwall_l2_projection_with_continuity_constraint,
     xwall_calc_mk,
@@ -70,7 +71,8 @@ enum Action {
     project_fluid_field,
     interpolate_hdg_to_node,
     velgradient_projection,
-    calc_dt_via_cfl
+    calc_dt_via_cfl,
+    reset_immersed_ele
 }; // enum Action
 
 /*--------------------------------------------------------------------------
@@ -107,8 +109,7 @@ enum BoundaryAction {
     poro_splitnopenetration_ODpres,
     poro_splitnopenetration_ODdisp,
     ba_calc_adjoint_neumann,
-    fpsi_coupling,
-    interpolatetoimmersednodes
+    fpsi_coupling
 }; // enum BoundaryAction
 
 /*--------------------------------------------------------------------------

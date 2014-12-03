@@ -7,7 +7,7 @@
 -------------------------------------------------------------TITLE
 //
 //
-// Units: mm, s , N
+// Units: mm, s , g
 // L = 50 micrometer = 50E-3 mm = 0.05 mm
 //
 //
@@ -24,17 +24,10 @@ NUMTHERMDIS                     0
 NUMAIRWAYSDIS                   0
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   Cauchy
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
@@ -45,33 +38,32 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     1000
-TIMESTEP                        10.0
-NUMSTEP                         10
+TIMESTEP                        20.0
+NUMSTEP                         5
 MAXTIME                         100.0
-TOLDISP                         1e-04
+TOLDISP                         1e-05
 NORM_DISP                       Abs
-TOLRES                          1e-07
+TOLRES                          1e-06
 NORM_RESF                       Abs
-TOLPRE                          1e-07
+TOLPRE                          1e-06
 NORM_PRES                       Abs
-TOLINCO                         1e-07
+TOLINCO                         1e-06
 NORM_INCO                       Abs
-NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFINCO              And
-NORMCOMBI_RESFDISP              And
-MAXITER                         10
+MAXITER                         50
 MINITER                         2
 ITERNORM                        L2
-NLNSOL                          fullnewton
-PREDICT                         ConstDis
+NLNSOL                          lsnewton
+MATERIALTANGENT                 finitedifferences
+ALPHA_LS                        0.5
+PREDICT                         ConstVel
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_ACTIVEFIBER DENS 1.0 DECAY 720.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 1.0 KVAR 10.0 SIGMAX 3.9E-3 EPSNULL 2.8E-4  //Beachte: Einheit von SIGMAX ist N/mm²
+MAT 1 MAT_ACTIVEFIBER DENS 1.0 DECAY 720.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 1.0 KVAR 10.0 SIGMAX 3.9E+3 EPSNULL 2.8E-4  //Beachte: Einheit von SIGMAX ist N/mm²
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0
-MAT 3 ELAST_CoupNeoHooke YOUNG 77.0E-6 NUE 0.3
+MAT 3 ELAST_CoupNeoHooke YOUNG 77.0 NUE 0.3
 -----------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------CURVE1
 -------------------------------------------------------------CURVE2
@@ -82,7 +74,7 @@ MAT 3 ELAST_CoupNeoHooke YOUNG 77.0E-6 NUE 0.3
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 7.25586370425626223e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 2.96723497201516976e-03 TOLERANCE 1e-09
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 8
 NDLINE  12

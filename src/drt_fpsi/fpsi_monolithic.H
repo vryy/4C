@@ -200,7 +200,7 @@ class MonolithicBase : public FPSI_Base
     // coupling of fluid and ale in the entire fluid volume
     Teuchos::RCP<ADAPTER::Coupling>                coupfa_;
     // coupling of all structure and fluid dofs
-    Teuchos::RCP<ADAPTER::Coupling>               innercoupsf_;
+    Teuchos::RCP<ADAPTER::Coupling>                innercoupsf_;
 
     //!FSI - COUPLING
     // coupling of structure and fluid at the interface

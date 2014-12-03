@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 
 #include "ad_fld_fluid_ale.H"
 #include "ad_fld_fluid_xfem.H"
+#include "ad_fld_fluid_immersed.H"
 #include "ad_fld_fluid_ale_xfem.H"
 
 
@@ -41,14 +42,13 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     case prb_freesurf:
     case prb_fsi_redmodels:
     {
-      //std::cout << "using FluidAle as FluidMovingBoundary" << endl;
+      //std::cout << "using FluidAle as FluidMovingBoundary" << std::endl;
       fluid_ = Teuchos::rcp(new FluidAle(prbdyn,condname));
       break;
     }
     case prb_fluid_xfem:
     case prb_fsi_xfem:
     case prb_fsi_crack:
-    case prb_immersed_fsi:
     {
       const Teuchos::ParameterList xfluid = DRT::Problem::Instance()->XFluidDynamicParams();
       bool alefluid = DRT::INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")),"ALE_XFluid");
@@ -61,7 +61,12 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
       {
         fluid_ = Teuchos::rcp(new FluidAleXFEM(prbdyn,condname));
       }
-
+      break;
+    }
+    case prb_immersed_fsi:
+    {
+      //std::cout << "using FluidImmersed as FluidMovingBoundary" << std::endl;
+      fluid_ = Teuchos::rcp(new FluidImmersed(prbdyn,condname));
       break;
     }
     default:

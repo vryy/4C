@@ -58,15 +58,24 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   SetDefaultParameters(fsidyn,noxparameterlist_);
 
+  SetupCoupling(fsidyn,comm);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn ,const Epetra_Comm& comm)
+{
+
   ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
+
   if ((DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") == 1)// matching meshes
       and (
-          DRT::Problem::Instance()->ProblemType() != prb_immersed_fsi
-      and DRT::Problem::Instance()->ProblemType() != prb_fsi_xfem
+          DRT::Problem::Instance()->ProblemType() != prb_fsi_xfem
       and DRT::Problem::Instance()->ProblemType() != prb_fsi_crack)
-  )
+      )
   {
     matchingnodes_ = true;
     const int ndim = DRT::Problem::Instance()->NDim();
@@ -100,8 +109,7 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   }
   else if (DRT::INPUT::IntegralValue<int>(fsidyn.sublist("PARTITIONED SOLVER"),"COUPMETHOD") == 0 // mortar coupling
       and (
-          DRT::Problem::Instance()->ProblemType() != prb_immersed_fsi
-      and DRT::Problem::Instance()->ProblemType() != prb_fsi_xfem
+          DRT::Problem::Instance()->ProblemType() != prb_fsi_xfem
       and DRT::Problem::Instance()->ProblemType() != prb_fsi_crack)
   )
   {
@@ -118,13 +126,12 @@ FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
                      comm,
                      true);
   }
-  else // immersed interface, thus no coupling
+  else
   {
-    coupsfm_ = Teuchos::null;
-    matchingnodes_ = false;
+    std::cout<<"\n No setup for fsi interface treatment needed.\n Performing IMMERSED FSI ALGORITHM ... \n"<<std::endl;
   }
 
-  // enable debugging
+    // enable debugging
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"DEBUGOUTPUT"))
     debugwriter_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField()->Discretization()));
 }
@@ -915,13 +922,6 @@ const ADAPTER::CouplingMortar& FSI::Partitioned::StructureFluidCouplingMortar() 
 /*----------------------------------------------------------------------*/
 void FSI::Partitioned::ExtractPreviousInterfaceSolution()
 {
-  if(DRT::Problem::Instance()->ProblemType() == prb_immersed_fsi)
-  {
-    // no interface
-  }
-  else
-  {
-    idispn_ = StructureField()->ExtractInterfaceDispn();
-    iveln_ = FluidToStruct(MBFluidField()->ExtractInterfaceVeln());
-  }
+  idispn_ = StructureField()->ExtractInterfaceDispn();
+  iveln_  = FluidToStruct(MBFluidField()->ExtractInterfaceVeln());
 }

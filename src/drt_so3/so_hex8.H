@@ -162,6 +162,7 @@ public:
 
   virtual std::vector<double> ElementCenterRefeCoords();
 
+
   /*!
   \brief Return unique ParObject id
 
@@ -411,6 +412,7 @@ protected:
     calc_stc_matrix_inverse,  //! calculate inverse of scaled director matrix for thin shell structures
     calc_struct_stifftemp,    //!< TSI specific: mechanical-thermal stiffness
     calc_global_gpstresses_map, //! basically calc_struct_stress but with assembly of global gpstresses map
+    interpolate_velocity_to_point, //! interpolate the structural velocity to a given point
   };
 
   //! kinematic types of so_hex8 (default: total-lagrangian)
@@ -455,6 +457,7 @@ protected:
   std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >                 invJmat_;
   //! determinant of Jacobian in material frame
   std::vector<double>                                                   detJ_;
+
   //! evaluate the analytical constitutive matrix
   bool                                                                  analyticalmaterialtangent_;
 

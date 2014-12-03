@@ -627,7 +627,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad,my::nsd_);
   LINALG::Matrix<my::nsd_,my::nsd_>  derivtrafo(true);
 
-  DRT::UTILS::BoundaryGPToParentGP<my::nsd_>( pqxg      ,
+  DRT::UTILS::BoundaryGPToParentGP<my::nsd_>( pqxg,
       derivtrafo,
       intpoints ,
       pdistype  ,
@@ -701,6 +701,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     xji.Invert(xjm);
     xji_n.Invert(xjm_n);
 
+#ifdef DEBUG
     // check unitiy of  [xji] o [xjm]
     LINALG::Matrix<my::nsd_,my::nsd_> eye;
     eye.Multiply(xji,xjm);
@@ -714,6 +715,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       std::cout<<eye<<std::endl;
       dserror("matrix times its inverse is not equal identity ... that sucks !!!");
     }
+#endif
 
     // evaluate my::unitnormal_ , my::deriv_, ...
     DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(my::funct_,my::deriv_,my::fac_,my::unitnormal_,my::drs_,my::xsi_,my::xyze_,
@@ -734,7 +736,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     const double fac = intpoints.IP().qwgt[gpid];
 
     // calculate variables at gausspoint
-    my::velint_     .Multiply(evelnp,    my::funct_);
+    my::velint_ .Multiply(evelnp,    my::funct_);
     gridvelint  .Multiply(egridvel  ,my::funct_);
     pressint    .Multiply(epressnp,  my::funct_);
     pressint_n  .Multiply(epressn ,  my::funct_);
@@ -791,15 +793,18 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     else
       porosityint = 1.0;
 
-
+#ifdef DEBUG
     if(porosityint < 0.00001)
-    { std::cout<<"Discretization: "<<discretization.Name()<<std::endl;
-    std::cout<<"SurfaceNumber:  "<<ele->SurfaceNumber()<<std::endl;
-    std::cout<<"Porosity:       "<<porosityint<<"  at gp: "<<gpid<<std::endl;
-    std::cout<<"Pressure at gp: "<<pressint(0,0)<<std::endl;
-    std::cout<<"Jacobian:       "<<J<<std::endl;
-    dserror("unreasonably low porosity for poro problem");
+    {
+      std::cout<<"Discretization: "<<discretization.Name()<<std::endl;
+      std::cout<<"SurfaceNumber:  "<<ele->SurfaceNumber()<<std::endl;
+      std::cout<<"Porosity:       "<<porosityint<<"  at gp: "<<gpid<<std::endl;
+      std::cout<<"Pressure at gp: "<<pressint(0,0)<<std::endl;
+      std::cout<<"Jacobian:       "<<J<<std::endl;
+      dserror("unreasonably low porosity for poro problem");
     }
+#endif
+
     // dxyzdrs vector -> normal which is not normalized built from cross product of columns
     // of Jacobian matrix d(x,y,z)/d(r,s)
     LINALG::Matrix<my::bdrynsd_,my::nsd_> dxyzdrs(0.0);
@@ -1126,12 +1131,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       }
     }
 
+#ifdef DEBUG
     if(abs(scalarintegraltransformfac - my::drs_) > 1e-11)
     {
       std::cout<<"my::drs_ = "<<my::drs_<<std::endl;
       std::cout<<"scalarintegraltransformfac = "<<scalarintegraltransformfac<<std::endl;
       dserror("scalarintegraltransformfac should be equal my::drs_ !");
     }
+#endif
 
     normalvelocity.MultiplyTN(my::velint_ ,my::unitnormal_);
 

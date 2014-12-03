@@ -7,6 +7,7 @@
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 #include "../drt_meshfree_discret/drt_meshfree_node.H"
+#include "../drt_immersed_problem/immersed_node.H"
 #include "../drt_particle/particle_node.H"
 #include "../drt_io/io_pstream.H"
 
@@ -244,6 +245,44 @@ void NodeReader::Read()
                 ++filecount;
                 break;
               }
+          }
+          // this is a specialized node for immersed problems
+          else if (tmp=="INODE")
+          {
+            double coords[6];
+            int nodeid;
+            //read in the node coordinates
+            file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
+            //store current position of file reader
+            int length = file.tellg();
+            file >> tmp2;
+            nodeid--;
+            maxnodeid = std::max(maxnodeid, nodeid)+1;
+            std::vector<Teuchos::RCP<DRT::Discretization> > diss = FindDisNode(nodeid);
+
+            if (tmp2!="ROTANGLE") //Common (Boltzmann) Nodes with 3 DoFs
+            {
+              //go back with file reader in order to make the expression in tmp2 available to tmp in the next iteration step
+              file.seekg(length);
+              for (unsigned i=0; i<diss.size(); ++i)
+              {
+                // create node and add to discretization
+                Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new IMMERSED::ImmersedNode(nodeid,coords,myrank));
+                diss[i]->AddNode(node);
+              }
+            }
+            else //Cosserat Nodes with 6 DoFs
+            {
+              dserror("no valid immersed node definition");
+            }
+            ++bcount;
+            if (block != nblock-1) // last block takes all the rest
+              if (bcount==bsize)   // block is full
+              {
+                ++filecount;
+                break;
+              }
+
           }
           // this node is a meshfree point
           else if (tmp=="POINT")

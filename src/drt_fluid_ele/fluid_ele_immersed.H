@@ -91,9 +91,13 @@ public:
 
   virtual void SetIsImmersedBoundary(int isimmersedboundary){is_immersed_bdry_ = isimmersedboundary;};
 
+  virtual void SetHasProjectedDirichlet(int has_projected_dirichletvalues){has_projected_dirichletvalues_ = has_projected_dirichletvalues;};
+
   virtual int IsImmersed(){return is_immersed_;};
 
   virtual int IsImmersedBoundary(){return is_immersed_bdry_;};
+
+  virtual int HasProjectedDirichlet(){return has_projected_dirichletvalues_;};
 
   virtual void VisIsImmersed(std::map<std::string,int>& names)
   {
@@ -177,6 +181,8 @@ private:
 
   int is_immersed_;
   int is_immersed_bdry_;
+  int has_projected_dirichletvalues_;
+  std::vector<int> matchednodes_;
 
 };
 }

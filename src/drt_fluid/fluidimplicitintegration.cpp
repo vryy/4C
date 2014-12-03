@@ -101,6 +101,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   alefluid_(alefluid),
   writestresses_(params_->get<int>("write stresses", 0)),
   write_wall_shear_stresses_(params_->get<int>("write wall shear stresses", 0)),
+  write_eledata_everystep_(params_->get<int>("write element data in every step", 0)),
   dtele_(0.0),
   dtfilter_(0.0),
   dtsolve_(0.0),
@@ -3489,7 +3490,8 @@ void FLD::FluidImplicitTimeInt::Output()
 #endif
 
     // write domain decomposition for visualization (only once!)
-    if (step_==upres_ or step_ == 0) output_->WriteElementData(true);
+    if ((step_==upres_ or step_ == 0) and !write_eledata_everystep_) output_->WriteElementData(true);
+    else output_->WriteElementData(true);
 
     if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
     {
@@ -5316,6 +5318,18 @@ void FLD::FluidImplicitTimeInt::AddDirichCond(const Teuchos::RCP<const Epetra_Ma
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > othermaps;
+  othermaps.push_back(maptoremove);
+  othermaps.push_back(dbcmaps_->OtherMap());
+  Teuchos::RCP<Epetra_Map> othermerged = LINALG::MultiMapExtractor::MergeMaps(othermaps);
+  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), othermerged, false);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::Dirichlet()
 {
   if (dbcmaps_ == Teuchos::null)
@@ -6596,4 +6610,12 @@ void FLD::FluidImplicitTimeInt::ExplicitPredictor()
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ * Add vector to neumann loads being applied to rhs before solve  rauch 12/14 |
+ *----------------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::AddContributionToNeumannLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector)
+{
+  neumann_loads_->Update(1.0,*contributing_vector,1.0);
 }

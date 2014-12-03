@@ -3,10 +3,10 @@
 \brief
 
  This file contains routines for a local material law that contains active
- fiber formation and orientation for the modeling of living cells
+ fiber formation and orientation for the modeling of living cells.
 
  example input line
- MAT 1 MAT_ACTIVEFIBER DENS 1.0 DECAY 720.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 1.0 KVAR 10.0 SIGMAX 3.9E-03 EPSNULL 2.8E-04
+ MAT 1 MAT_ACTIVEFIBER DENS 1.0 DECAY 720.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 1.0 KVAR 10.0 SIGMAX 3.9E+03 EPSNULL 2.8E-04
 
  For a detailed description of the model see:
 
@@ -15,12 +15,13 @@
    formation and dissociation, Proceedings of the Royal Society A:
    Mathematical, Physical and Engineering Sciences 463, 787-815.
 
-   ____________________________________________________________________________________
-  | !!! ATTENTION !!! Many major mistakes in literature that were corrected here !!!!  |
-  |____________________________________________________________________________________|
+   ________________________________________________________________________________________
+  | !!! ATTENTION !!! Many major mistakes in literature which are corrected in here !!!!   |
+  |                                                                                        |
+  | SMOOTHED implementation using sigmoid function for improved convergence and stability. |
+  |________________________________________________________________________________________|
 
 
- Based on student's work by Jonas Eichinger 2014
 
 <pre>
 Maintainer: Andreas Rauch
@@ -545,8 +546,6 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   // Get time algorithmic parameters
   double dt = params.get<double>("delta time",-1.0);
 
-  //analyticalmaterialtangent_ = params.get<int>("analyticalmaterialtangent",1);
-
 #ifdef DEBUG
   if (gp == -1)   dserror("no Gauss point number provided in material");
   if (dt == -1.0) dserror("no time step size provided in material");
@@ -570,19 +569,19 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   //******************
   // Parameters for active constitutive model
   // Decay constant of activation signal
-  double decayconst = params_->decayconst_;
+  double decayconst =  params_->decayconst_;
   // Non-dimensional parameter governing the rate of formation of stress fibers
-  double kforwards = params_->kforwards_;
+  double kforwards =   params_->kforwards_;
   // Non-dimensional parameter governing the rate of dissociation of stress fibers
-  double kbackwards = params_->kbackwards_;
+  double kbackwards =  params_->kbackwards_;
   // Non-dimensional fiber rate sensitivity
-  double kvariance = params_->kvariance_;
+  double kvariance =   params_->kvariance_;
   // Maximum tension exerted by stress fibers
-  double sigmamax = params_->sigmamax_;
+  double sigmamax =    params_->sigmamax_;
   // Reference strain rate of cross-bridge dynamics law
   double epsilonnull = params_->epsilonnull_;
-
- bool analyticalmaterialtangent = params_->analyticalmaterialtangent_;
+  // Use of analytical or finite difference material tangent?
+  bool analyticalmaterialtangent = params_->analyticalmaterialtangent_;
 
   // Setup inverse of deformation gradient
   LINALG::Matrix<3,3> invdefgrd(*defgrd);
@@ -635,7 +634,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
 
   double tol  = 1e-12;
-  int maxiter = 4;
+  int maxiter = 6;
 
   // parameters for sigmoid function
   //
@@ -643,9 +642,10 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   //
   double onebyeps0 = 1.0/epsilonnull;
 
-  double s = 0.95;
+  double s = 0.96;
+  double onebys = 1.0/s;
   double aa = 2.0*log(s/(1.0-s))*kvariance*onebyeps0;
-  double b = -1.0*log(1/s-1.0);
+  double b = -1.0*log(1.0/s-1.0);
   double exponent;
   double efunct;
   double denom;
@@ -658,7 +658,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   double auxfac2 = theta*dt*kbackwards;
   double onebysigmax = 1.0/sigmamax;
 
-  double deta_dsigma = onebyetafac*auxfac2*onebysigmax;
+  double deta_dsigma = onebyetafac*auxfac2*onebysigmax*onebys;
 
   //////////////////////////////////////////////////
   // gauss quadrature loop over spherical surface //
@@ -670,24 +670,23 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
       //angles according to Atkinson_1982
       double omega = acos(gausspoints.qxg[i][0]);
       double phi = (((double)(j+1))*M_PI)/((double)gausspoints.nquad);
-      double eta_m = (1.0-theta)*dt*((1.0-etalast(i,j))*kforwards*Csignalold-kbackwards*(etalast(i,j)-(sigmaomegaphilast(i,j)*onebysigmax)));
+      // sigma at \dot eps = 0 = s*eta*sigmax
+      double eta_m = (1.0-theta)*dt*((1.0-etalast(i,j))*kforwards*Csignalold-kbackwards*(etalast(i,j) -(sigmaomegaphilast(i,j)*onebys*onebysigmax)));
 
       LINALG::Matrix<3,1> m(true);
       m(0) = sin(omega)*cos(phi);
       m(1) = sin(omega)*sin(phi);
       m(2) = cos(omega);
-      LINALG::Matrix<3,3> M(true);
-      M.MultiplyNT(m,m);
       LINALG::Matrix<numbgp,twice> epsomegaphi(true);
 
       // Transform strain rate at each point to fiber strain rate in (omega,phi) direction
       // \dot{\epsilon} = \dot{\epsilon}_{ij} m_{i} m_{j}
-      epsomegaphi(i,j) =    strainrate(0) * M(0,0)
-                                 +    strainrate(1) * M(1,1)
-                                 +    strainrate(2) * M(2,2)
-                                 + 2.*strainrate(3) * M(0,1)
-                                 + 2.*strainrate(4) * M(1,2)
-                                 + 2.*strainrate(5) * M(0,2);
+      epsomegaphi(i,j) =              strainrate(0) * m(0)*m(0)
+                                 +    strainrate(1) * m(1)*m(1)
+                                 +    strainrate(2) * m(2)*m(2)
+                                 + 2.*strainrate(3) * m(0)*m(1)
+                                 + 2.*strainrate(4) * m(1)*m(2)
+                                 + 2.*strainrate(5) * m(0)*m(2);
 
       if(abs(epsomegaphi(i,j))<1e-12)
         epsomegaphi(i,j) = 0.0;
@@ -697,12 +696,12 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
       ///////////////////////////////////////////////
       double residual = 1.0;
 
-      // predict
+      // predict (sigma at \dot eps = 0 = s*eta*sigmax)
       etanew(i,j) = onebyetafac *
-          (etalast(i,j)*decayconst + auxfac + auxfac2*sigmaomegaphinew(i,j)*onebysigmax
+          (etalast(i,j)*decayconst + auxfac + auxfac2*sigmaomegaphinew(i,j)*onebys*onebysigmax
               + eta_m);
 
-      exponent = 1.0/etanew(i,j)*aa*epsomegaphi(i,j) + b;
+      exponent = (1.0/etanew(i,j))*aa*epsomegaphi(i,j) + b;
 
       if(exponent > 31.0)
       {
@@ -720,7 +719,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
         sigmaomegaphinew(i,j) = 0.0;
         etanew(i,j) = onebyetafac *
-            (etalast(i,j)*decayconst + auxfac + auxfac2*sigmaomegaphinew(i,j)*onebysigmax
+            (etalast(i,j)*decayconst + auxfac + auxfac2*sigmaomegaphinew(i,j)*onebys*onebysigmax
                 + eta_m);
         residual = 0.0;
       }
@@ -746,7 +745,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
           inc =  residual;
           sigmaomegaphinew(i,j) = 0.0;
           etanew(i,j) = onebyetafac *
-              (etalast(i,j)*decayconst + auxfac + auxfac2*sigmaomegaphinew(i,j)*onebysigmax
+              (etalast(i,j)*decayconst + auxfac + auxfac2*sigmaomegaphinew(i,j)*onebys*onebysigmax
                   + eta_m);
           residual = 0.0;
           break;
@@ -763,7 +762,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
          // evaluate corresponding fiber activation
          etanew(i,j) = onebyetafac *
-            (etalast(i,j)*decayconst + auxfac + auxfac2*sigmaomegaphinew(i,j)*onebysigmax
+             (etalast(i,j)*decayconst + auxfac + auxfac2*sigmaomegaphinew(i,j)*onebys*onebysigmax
                 + eta_m);
 
         // update
@@ -786,7 +785,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
           sigmaomegaphinew(i,j) = 0.0;
           etanew(i,j) = onebyetafac *
-              (etalast(i,j)*decayconst + auxfac + auxfac2*sigmaomegaphinew(i,j)*onebysigmax
+              (etalast(i,j)*decayconst + auxfac + auxfac2*sigmaomegaphinew(i,j)*onebys*onebysigmax
                   + eta_m);
 
           // set residual
@@ -807,7 +806,9 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
         if(newtonstep == maxiter)
         {
           std::cout<<"velocity gradient: \n"<<std::setprecision(16) <<strainrate<<std::endl;
-          dserror("local newton iteration did not converge after %d steps. Residual=%e,efunct=%e,eta=%e,sig=%e,eps=%e,detadsig=%e,eta_m=%e,etan=%e,etafac=%e,sigmax=%e",newtonstep,residual,efunct,etanew(i,j),sigmaomegaphinew(i,j),epsomegaphi(i,j),deta_dsigma,eta_m,etalast(i,j),etafac,sigmamax);
+          std::cout<<"direction vector m: \n"<<std::setprecision(16)<<m<<std::endl;
+          printf("local newton iteration did not converge after %d steps. gid= %d , gp= %d , i= %d , j= %d ,omega= %f ,phi= %f , Residual= %e ,efunct= %e ,eta= %e ,sig= %e ,eps= %e ,detadsig= %e ,eta_m= %e ,etan= %e ,etafac= %e ,sigmax= %e ,aa= %f ,b = %f ,eps0= %e ,kv= %f,Csig= %f,theta= %f , dt= %f ,decay= %f ,s= %f ,exponent= %f",newtonstep,eleGID,gp,i,j,omega,phi,residual,efunct,etanew(i,j),sigmaomegaphinew(i,j),epsomegaphi(i,j),deta_dsigma,eta_m,etalast(i,j),etafac,sigmamax,aa ,b, epsilonnull,kvariance,Csignal,theta,dt,decayconst,s,exponent);
+          residual=0.0;
         }
 
       } // newton loop
@@ -817,12 +818,12 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
       etahat += etanew(i,j) * (gausspoints.qwgt[i]/(4.0*(double)gausspoints.nquad));
 
       // average stress tensor in voigt notation
-      sigma(0) += sigmaomegaphinew(i,j) * gausspoints.qwgt[i] * M(0,0); // sigma_11
-      sigma(1) += sigmaomegaphinew(i,j) * gausspoints.qwgt[i] * M(1,1); // sigma_22
-      sigma(2) += sigmaomegaphinew(i,j) * gausspoints.qwgt[i] * M(2,2); // sigma_33
-      sigma(3) += sigmaomegaphinew(i,j) * gausspoints.qwgt[i] * M(0,1); // sigma_13
-      sigma(4) += sigmaomegaphinew(i,j) * gausspoints.qwgt[i] * M(1,2); // sigma_23
-      sigma(5) += sigmaomegaphinew(i,j) * gausspoints.qwgt[i] * M(0,2); // sigma_13
+      sigma(0) += sigmaomegaphinew(i,j) * gausspoints.qwgt[i] * m(0)*m(0); // sigma_11
+      sigma(1) += sigmaomegaphinew(i,j) * gausspoints.qwgt[i] * m(1)*m(1); // sigma_22
+      sigma(2) += sigmaomegaphinew(i,j) * gausspoints.qwgt[i] * m(2)*m(2); // sigma_33
+      sigma(3) += sigmaomegaphinew(i,j) * gausspoints.qwgt[i] * m(0)*m(1); // sigma_13
+      sigma(4) += sigmaomegaphinew(i,j) * gausspoints.qwgt[i] * m(1)*m(2); // sigma_23
+      sigma(5) += sigmaomegaphinew(i,j) * gausspoints.qwgt[i] * m(0)*m(2); // sigma_13
 
     }  // loop over i
   }  // loop over j
@@ -852,8 +853,16 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   CauchytoPK2(Sactive,cauchystress,*defgrd,invdefgrd,sigma);
 
   // Stress including active and passive part
-  stress->Update(1.0,Spassive,0.0);
-  stress->Update(1.0,Sactive,1.0);
+  if(params.get<int>("iostress")==0)
+  {
+    stress->Update(1.0,Spassive,0.0);
+    stress->Update(1.0,Sactive,1.0);
+  }
+  else
+  {
+    stress->Update(1.0,Sactive,1.0); // write only active stresses as output
+  }
+
 #ifndef  MATERIALFDCHECK
   if (cmat != NULL and analyticalmaterialtangent)
   {
@@ -1005,6 +1014,14 @@ void MAT::ActiveFiber::CauchytoPK2(
   temp.MultiplyNN(invdefgrd,cauchystress);
   S.MultiplyNT(temp,invdefgrd);
   S.Scale(detF);
+
+#ifdef DEBUG
+  if(abs(S(1,2)-S(2,1))>1e-13 or abs(S(0,2)-S(2,0))>1e-13 or abs(S(0,1)-S(1,0))>1e-13)
+  {
+    std::cout<<S<<std::endl;
+    dserror("PK2 not symmetric!!");
+  }
+#endif
 
   // Sactive is stress like 6x1-Voigt vector
   Sactive(0) = S(0,0);
@@ -1415,9 +1432,10 @@ void MAT::ActiveFiber::SetupCmatActive(
 
   // parameters for sigmoid function
   //
-  // 1/(1+exp(-(ax+b)))
+  // 1/(1+exp(-(axct+b)))
   //
-  double s = 0.95;
+  double s = 0.96;
+  double onebys = 1.0/s;
   double aa = 2.0*log(s/(1.0-s))*kvariance*onebyeps0;
   double b = -1.0*log(1/s-1.0);
 
@@ -1428,7 +1446,7 @@ void MAT::ActiveFiber::SetupCmatActive(
 
   double onebysigmax = 1./sigmamax;
 
-  double deta_dsigma = onebyetafac*auxfac2*onebysigmax;
+  double deta_dsigma = onebyetafac*auxfac2*onebysigmax*onebys;
 
   double exponent = 0.0;
   double efunct = 0.0;

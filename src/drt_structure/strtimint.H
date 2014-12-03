@@ -702,16 +702,6 @@ namespace STR
 
     //@}
 
-    //! known FSI force for immersed FSI
-    Teuchos::RCP<Epetra_Vector> ExtractInternalForceVector
-    (
-      double time,
-      double dt,
-      Teuchos::RCP<const Epetra_Vector> dis,
-      Teuchos::RCP<Epetra_Vector> fint
-        )
-    { ApplyForceInternal(time,dt,dis,Teuchos::null,Teuchos::null,fint); return fint; }
-
 
     //! Access from inside of the structural time integrator
     //@{

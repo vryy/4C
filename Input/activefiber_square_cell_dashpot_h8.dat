@@ -7,7 +7,7 @@
 -------------------------------------------------------------TITLE
 //
 //
-// Units: mm, s , N
+// Units: mm, s , g
 // L = 50 micrometer = 50E-3 mm = 0.05 mm
 //
 //
@@ -24,17 +24,10 @@ NUMTHERMDIS                     0
 NUMAIRWAYSDIS                   0
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   Cauchy
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
@@ -45,33 +38,33 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     1000
-TIMESTEP                        10.0
-NUMSTEP                         10
-MAXTIME                         100.0
-TOLDISP                         1e-04
+TIMESTEP                        20.0
+NUMSTEP                         3
+MAXTIME                         60.0
+TOLDISP                         1e-06
 NORM_DISP                       Abs
-TOLRES                          1e-07
+TOLRES                          1e-06
 NORM_RESF                       Abs
-TOLPRE                          1e-07
+TOLPRE                          1e-06
 NORM_PRES                       Abs
 TOLINCO                         1e-06
 NORM_INCO                       Abs
-NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFINCO              And
-NORMCOMBI_RESFDISP              And
-MAXITER                         20
+MAXITER                         50
 MINITER                         0
 ITERNORM                        L2
-NLNSOL                          fullnewton
-PREDICT                         ConstDis
+// FOLLOWING PARAMS IMPORTANT FOR CELL
+NLNSOL                          lsnewton
+ALPHA_LS                        0.5
+MATERIALTANGENT                 finitedifferences
+PREDICT                         ConstVel
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_ACTIVEFIBER DENS 1.0 DECAY 720.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 1.0 KVAR 10.0 SIGMAX 3.9E-03 EPSNULL 2.8E-04
+MAT 1 MAT_ACTIVEFIBER DENS 1.0 DECAY 720.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 1.0 KVAR 10.0 SIGMAX 3.9E+03 EPSNULL 2.8E-04
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0
-MAT 3 ELAST_CoupNeoHooke YOUNG 77.0E-6 NUE 0.3
+MAT 3 ELAST_CoupNeoHooke YOUNG 77.0 NUE 0.3
 -----------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------CURVE1
 -------------------------------------------------------------CURVE2
@@ -101,21 +94,21 @@ DLINE  0
 DSURF 8
 
 // left_up_up
-E 1 - SPRING_STIFF_TENS 6.0 SPRING_STIFF_COMP 6.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
+E 1 - SPRING_STIFF_TENS 6.0E+06 SPRING_STIFF_COMP 6.0E+06 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
 // left_up_left
-E 2 - SPRING_STIFF_TENS 6.0 SPRING_STIFF_COMP 6.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
+E 2 - SPRING_STIFF_TENS 6.0E+06 SPRING_STIFF_COMP 6.0E+06 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
 // right_up_up
-E 3 - SPRING_STIFF_TENS 6.0 SPRING_STIFF_COMP 6.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
+E 3 - SPRING_STIFF_TENS 6.0E+06 SPRING_STIFF_COMP 6.0E+06 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
 // right_up_right
-E 4 - SPRING_STIFF_TENS 6.0 SPRING_STIFF_COMP 6.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
+E 4 - SPRING_STIFF_TENS 6.0E+06 SPRING_STIFF_COMP 6.0E+06 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
 // left_down_down
-E 5 - SPRING_STIFF_TENS 6.0 SPRING_STIFF_COMP 6.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
+E 5 - SPRING_STIFF_TENS 6.0E+06 SPRING_STIFF_COMP 6.0E+06 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
 // left_down_left
-E 6 - SPRING_STIFF_TENS 6.0 SPRING_STIFF_COMP 6.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
+E 6 - SPRING_STIFF_TENS 6.0E+06 SPRING_STIFF_COMP 6.0E+06 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
 // right_down_down
-E 7 - SPRING_STIFF_TENS 6.0 SPRING_STIFF_COMP 6.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
+E 7 - SPRING_STIFF_TENS 6.0E+06 SPRING_STIFF_COMP 6.0E+06 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
 // right_down_right
-E 8 - SPRING_STIFF_TENS 6.0 SPRING_STIFF_COMP 6.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
+E 8 - SPRING_STIFF_TENS 6.0E+06 SPRING_STIFF_COMP 6.0E+06 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all
 
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
@@ -4210,8 +4203,8 @@ NODE 1352    COORD  5.0000000000000003e-02  5.0000000000000003e-02  5.0000000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 571 QUANTITY dispy VALUE -9.96126380846382625e-05 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE 9.96271523669138857e-05 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 571 QUANTITY dispy VALUE -2.17602273602282548e-05 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE 2.21431323469365017e-05 TOLERANCE 1e-09
 
 ---------------------------------------------------------------END
 // END
