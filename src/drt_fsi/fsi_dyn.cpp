@@ -75,6 +75,7 @@ Maintainer: Matthias Mayr
 #include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_lib/drt_discret_combust.H"
+#include "../drt_lib/drt_discret_xfem.H"
 
 /*----------------------------------------------------------------------*/
 // entry point for Fluid on Ale in DRT
@@ -140,9 +141,10 @@ void fluid_xfem_drt()
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
   soliddis->FillComplete();
 
-  Teuchos::RCP<DRT::Discretization> actdis = problem->GetDis("fluid");
+  Teuchos::RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("fluid"));
   actdis->FillComplete();
-
+  if (actdis == Teuchos::null)
+    dserror("fluid_xfem_drt(): Cast to DiscretisationXFEM failed!");
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 
@@ -151,10 +153,34 @@ void fluid_xfem_drt()
   int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
     Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
   actdis->ReplaceDofSet(maxdofset,true);
-  actdis->FillComplete();
+  actdis->InitialFillComplete();
 
   actdis->GetDofSetProxy()->PrintAllDofsets(actdis->Comm());
 
+  const Teuchos::ParameterList xfluid = problem->XFluidDynamicParams();
+  bool alefluid = DRT::INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")),"ALE_XFluid");
+  if (alefluid) //in ale case
+  {
+    Teuchos::RCP<DRT::Discretization> aledis   = problem->GetDis("ale");
+    aledis->FillComplete();
+
+    // create ale elements if the ale discretization is empty
+    if (aledis->NumGlobalNodes()==0)
+    {
+      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(actdis,aledis);
+      // setup material in every ALE element
+      Teuchos::ParameterList params;
+      params.set<std::string>("action", "setup_material");
+      aledis->Evaluate(params);
+    }
+    else  // filled ale discretization
+    {
+      if (!FSI::UTILS::FluidAleNodesDisjoint(actdis,aledis))
+        dserror("Fluid and ALE nodes have the same node numbers. "
+            "This it not allowed since it causes problems with Dirichlet BCs. "
+            "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
+    }
+  }
 
 
   const Teuchos::ParameterList& xfdyn     = DRT::Problem::Instance()->XFluidDynamicParams();
@@ -163,6 +189,7 @@ void fluid_xfem_drt()
 
   if(moving_boundary == INPAR::XFEM::XFluidStationaryBoundary)
   {
+    if (alefluid) dserror("XFluid_Ale not for XFluidStationaryBoundary implemented yet!!!");
     // no restart required, no moving interface
 
     // create instance of fluid basis algorithm

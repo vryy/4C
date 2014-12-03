@@ -20,6 +20,7 @@ Maintainer: Benedikt Schott and Magnus Winter
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_discret_xfem.H"
 
 #include "../drt_geometry/geo_meshintersection.H"
 #include "../drt_geometry/geo_levelsetintersection.H"
@@ -84,6 +85,7 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
                               INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
                               bool parallel,                              //!< use parallel cut algorithms
                               bool gmsh_output,                           //!< print write gmsh output for cut
+                              const Teuchos::RCP<Epetra_Vector> & dispnpcol, //!< background displacements
                               bool positions,                             //!< set inside and outside point, facet and volumecell positions
                               bool tetcellsonly,                          //!< generate only tet cells
                               bool screenoutput,                          //!< print screen output
@@ -203,10 +205,64 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
 
   // 2. add background elements dependent on bounding box created by the CutSides in 1.
   int numbackelements = backdis_.NumMyColElements();
+
+  //Cast Discretisation to DiscretisationXFEM just used in case of AleBackground!
+
+  DRT::DiscretizationXFEM * xbackdis = dynamic_cast<DRT::DiscretizationXFEM*>(&backdis_);
+   if(!cutinrefconf && dispnpcol != Teuchos::null)
+   {
+   if (xbackdis == NULL)
+     dserror("XFEM::FluidWizardMesh::Cut: Cast to DiscretizationXFEM failed!");
+   }
+
   for ( int k = 0; k < numbackelements; ++k )
   {
-    DRT::Element * element = backdis_.lColElement( k );
-    cw.AddElement( element );
+    DRT::Element * element = backdis_.lColElement(k);
+
+    const int numnode = element->NumNode();
+    DRT::Node ** nodes = element->Nodes();
+
+    Epetra_SerialDenseMatrix xyze( 3, numnode );
+//
+    for ( int i=0; i < numnode; ++i )
+    {
+      DRT::Node & node = *nodes[i];
+
+      LINALG::Matrix<3, 1> x( node.X() );
+
+      if(!cutinrefconf && dispnpcol != Teuchos::null)
+      {
+        lm.clear();
+        mydisp.clear();
+        xbackdis->InitialDof(&node, lm); //to get all dofs of background (also not active ones at the moment!)
+
+        if(lm.size() == 3) // case used actually?
+        {
+          DRT::UTILS::ExtractMyValues(*dispnpcol,mydisp,lm);
+        }
+        else if(lm.size() == 4) // case xFluid ... just take the first three
+        {
+          // copy the first three entries for the displacement, the fourth entry an all others
+          std::vector<int> lm_red; // reduced local map
+          lm_red.clear();
+          for(int k=0; k< 3; k++) lm_red.push_back(lm[k]);
+
+          DRT::UTILS::ExtractMyValues(*dispnpcol,mydisp,lm_red);
+        }
+        else
+          dserror("wrong number of dofs for node %i", lm.size());
+
+        if (mydisp.size() != 3)
+          dserror("we need 3 displacements here");
+
+        LINALG::Matrix<3, 1> disp( &mydisp[0], true );
+
+        //update x-position of cutter node for current time step (update with displacement)
+        x.Update( 1, disp, 1 );
+      }
+    std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
+  }
+    cw.AddElement( element , xyze );
   }
 
   // build the bounding volume tree for the collision detection in the context of the selfcut
@@ -281,6 +337,7 @@ void XFEM::FluidWizardLevelSet::Cut(
                               INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
                               bool parallel,                              //!< use parallel cut algorithms
                               bool gmsh_output,                           //!< print write gmsh output for cut
+                              const Teuchos::RCP<Epetra_Vector> & dispnpcol, //!< background displacements
                               bool positions,                             //!< set inside and outside point, facet and volumecell positions
                               bool tetcellsonly,                          //!< generate only tet cells
                               bool screenoutput,                          //!< print screen output
@@ -299,6 +356,9 @@ void XFEM::FluidWizardLevelSet::Cut(
   cut_->SetFindPositions( positions );
 
   const double t_start = Teuchos::Time::wallTime();
+
+  if (dispnpcol != Teuchos::null)
+    dserror("XFEM::FluidWizardLevelSet::Cut: AleDisplacements not implemented here!");
 
   // Loop over all Elements to find cut elements and add them to the LevelsetIntersection class
   // Brute force method.

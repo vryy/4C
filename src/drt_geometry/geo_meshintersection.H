@@ -55,7 +55,7 @@ namespace GEO
     /*!
     \brief Add this background mesh element to the cut libraries
     */
-    void AddElement( DRT::Element * ele );
+    void AddElement( DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze );
 
     /*!
     \brief Build the bounding volume tree for the collision detection in the context of the selfcut

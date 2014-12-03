@@ -149,7 +149,8 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
     adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
   }
 
-  if (probtype == prb_fpsi) {
+  if (probtype == prb_fpsi or
+      probtype == prb_fpsi_xfem) {
     // FPSI input parameters
     const Teuchos::ParameterList& fpsidyn =
         DRT::Problem::Instance()->FPSIDynamicParams();
@@ -277,11 +278,13 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
   }
   case prb_fpsi:
   case prb_fps3i:
+  case prb_fpsi_xfem:
   {
     ale_ = Teuchos::rcp(new ADAPTER::AleFpsiWrapper(ale));
     break;
   }
-  case prb_crack: case prb_fsi_crack:
+  case prb_crack:
+  case prb_fsi_crack:
   {
     ale_ = Teuchos::rcp(new ADAPTER::AleCrackWrapper(ale));
     break;
@@ -300,6 +303,7 @@ void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn
   case prb_fluid_ale:
   case prb_fluid_fluid_ale:
   case prb_elch:
+  case prb_fluid_xfem:
   {
     ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
     break;

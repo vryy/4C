@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_discret_xfem.cpp
+\file drt_discret_combust.cpp
 
 \brief a class to manage one discretization
 

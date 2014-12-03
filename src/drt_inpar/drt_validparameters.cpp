@@ -7166,6 +7166,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    ),
                                &xfluid_general);
 
+  BoolParameter("ALE_XFluid","no","XFluid is Ale Fluid?",&xfluid_general);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfluid_stab = xfluid_dyn.sublist("STABILIZATION",false,"");
 

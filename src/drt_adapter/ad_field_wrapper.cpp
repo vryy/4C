@@ -11,13 +11,13 @@ Maintainer: Ager Christoph
             089 - 289 15249
 </pre>
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------*/
 
 #include "ad_field_wrapper.H"
 
 /*-----------------------------------------------------------------------/
 | start new time step                                                    |
-/*----------------------------------------------------------------------*/
+/-----------------------------------------------------------------------*/
 void ADAPTER::FieldWrapper::PrepareTimeStep()
 {
   field_->PrepareTimeStep();
@@ -26,7 +26,7 @@ void ADAPTER::FieldWrapper::PrepareTimeStep()
 
 /*-----------------------------------------------------------------------/
 | update dofs and evaluate elements                                      |
-/*----------------------------------------------------------------------*/
+/-----------------------------------------------------------------------*/
 void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   if (!NOXCorrection_)
@@ -37,7 +37,7 @@ void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 
 /*-----------------------------------------------------------------------/
 | update dofs and evaluate elements                                      |
-/*----------------------------------------------------------------------*/
+/-----------------------------------------------------------------------*/
 void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter)
 {
   if (!NOXCorrection_)
@@ -48,7 +48,7 @@ void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 
 /*-----------------------------------------------------------------------/
 | Reset Step Increment                                                   |
-/*----------------------------------------------------------------------*/
+/-----------------------------------------------------------------------*/
 void ADAPTER::FieldWrapper::ResetStepinc()
 {
   if (stepinc_!=Teuchos::null)
@@ -57,7 +57,7 @@ void ADAPTER::FieldWrapper::ResetStepinc()
 
 /*-----------------------------------------------------------------------/
 | Get Iteration Increment from Step Increment                            |
-/*----------------------------------------------------------------------*/
+/-----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>  ADAPTER::FieldWrapper::GetIterinc(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   // The field solver always expects an iteration increment only. And

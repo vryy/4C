@@ -78,6 +78,7 @@ public:
               INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
               bool parallel,                              //!< use parallel cut algorithms
               bool gmsh_output,                           //!< print write gmsh output for cut
+              const Teuchos::RCP<Epetra_Vector> & dispnpcol = Teuchos::null, //!< background displacements
               bool positions = true,                      //!< set inside and outside point, facet and volumecell positions);
               bool tetcellsonly = false,                  //!< generate only tet cells
               bool screenoutput = true,                   //!< print screen output
@@ -147,6 +148,7 @@ public:
               INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
               bool parallel,                              //!< use parallel cut algorithms
               bool gmsh_output,                           //!< print write gmsh output for cut
+              const Teuchos::RCP<Epetra_Vector> & dispnpcol = Teuchos::null, //!< background displacements
               bool positions = true,                      //!< set inside and outside point, facet and volumecell positions);
               bool tetcellsonly = false,                  //!< generate only tet cells
               bool screenoutput = true,                   //!< print screen output
@@ -211,6 +213,7 @@ public:
               INPAR::CUT::BCellGaussPts BCellgausstype,    //!< Gauss point generation method for Boundarycell
               bool parallel,                               //!< use parallel cut algorithms
               bool gmsh_output,                            //!< print write gmsh output for cut
+              const Teuchos::RCP<Epetra_Vector> & dispnpcol = Teuchos::null, //!< background displacements
               bool positions = true,                       //!< set inside and outside point, facet and volumecell positions);
               bool tetcellsonly = false,                   //!< generate only tet cells
               bool screenoutput = true,                    //!< print screen output

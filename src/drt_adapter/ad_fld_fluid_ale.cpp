@@ -28,7 +28,7 @@ Maintainer: Ulrich Kuettler
 ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                             std::string condname)
 {
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true));
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true,false));
   fluid_ = fluid->FluidField();
   Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(prbdyn,DRT::Problem::Instance()->GetDis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField());
@@ -37,6 +37,22 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
 //    dserror("Failed to cast to problem-specific ALE-wrapper");
 
   const int ndim = DRT::Problem::Instance()->NDim();
+
+  // the fluid-ale coupling always matches
+  const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
+  const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
+
+  coupfa_ = Teuchos::rcp(new Coupling());
+  coupfa_->SetupCoupling(*FluidField()->Discretization(),
+                         *AleField()->Discretization(),
+                         *fluidnodemap,
+                         *alenodemap,
+                         ndim);
+
+  //initializing the fluid is done later as for xfluids the first cut is done there (coupfa_ cannot be build anymore!!!)
+  FluidField()->Init();
+  fluid->SetInitialFlowField(DRT::Problem::Instance()->FluidDynamicParams()); //call from base algorithm
+
   icoupfa_ = Teuchos::rcp(new Coupling());
   icoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
                                     FluidField()->Interface()->FSICondMap(),
@@ -60,17 +76,6 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                                      AleField()->Interface()->AUCondMap(),
                                     "ALEUPDATECoupling",
                                     ndim);
-
-  // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
-
-  coupfa_ = Teuchos::rcp(new Coupling());
-  coupfa_->SetupCoupling(*FluidField()->Discretization(),
-                         *AleField()->Discretization(),
-                         *fluidnodemap,
-                         *alenodemap,
-                         ndim);
 
   FluidField()->SetMeshMap(coupfa_->MasterDofMap());
 

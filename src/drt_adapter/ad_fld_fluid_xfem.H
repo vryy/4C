@@ -136,9 +136,6 @@ namespace ADAPTER
     /// fluid base algorithm object
     Teuchos::RCP<Fluid> fluid_;
 
-    /// coupling of interface in to parallel distributions
-    Teuchos::RCP<Coupling> icoupsf_;
-
   };
 
 }

@@ -20,6 +20,7 @@ Maintainer:  Benedikt Schott
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_lib/drt_discret_xfem.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"
 
@@ -132,7 +133,7 @@ void ADAPTER::XFluidFSI::ApplyStructMeshDisplacement(Teuchos::RCP<const Epetra_V
  *----------------------------------------------------------------------*/
 void ADAPTER::XFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
 {
-  meshmap_->Setup(*xfluid_->FilledDofRowMap(),mm,LINALG::SplitMap(*xfluid_->FilledDofRowMap(),*mm));
+  meshmap_->Setup(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(),mm,LINALG::SplitMap(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(),*mm));
 }
 
 /*----------------------------------------------------------------------*/

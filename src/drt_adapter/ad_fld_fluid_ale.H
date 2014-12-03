@@ -91,13 +91,6 @@ namespace ADAPTER
 
     //@}
 
-  private:
-
-    Teuchos::RCP<ADAPTER::Fluid> fluid_;
-
-    /// problem-specific ALE-wrapper
-    Teuchos::RCP<ADAPTER::AleFluidWrapper>  ale_;
-
     /// coupling of fluid and ale (whole field)
     Teuchos::RCP<Coupling>               coupfa_;
 
@@ -109,6 +102,14 @@ namespace ADAPTER
 
     /// coupling of fluid and ale for the ale update condition
     Teuchos::RCP<Coupling>               aucoupfa_;
+
+  private:
+
+    /// problem-specific Fluid-wrapper
+    Teuchos::RCP<ADAPTER::Fluid> fluid_;
+
+    /// problem-specific ALE-wrapper
+    Teuchos::RCP<ADAPTER::AleFluidWrapper>  ale_;
 
   };
 

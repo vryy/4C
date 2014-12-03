@@ -370,6 +370,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_discret_hdg.cpp
   src/drt_lib/drt_discret_xwall.cpp
   src/drt_lib/drt_discret_combust.cpp
+  src/drt_lib/drt_discret_xfem.cpp
   src/drt_lib/drt_discret_combust_evaluate.cpp
   src/drt_lib/drt_discret_conditions.cpp
   src/drt_lib/drt_discret_evaluate.cpp
@@ -549,6 +550,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_fld_fluid_fpsi.cpp
   src/drt_adapter/ad_fld_fluid_fluid_fsi.cpp
   src/drt_adapter/ad_fld_fluid_xfem.cpp
+  src/drt_adapter/ad_fld_fluid_ale_xfem.cpp
   src/drt_adapter/ad_fld_xfluid_fsi.cpp
   src/drt_adapter/ad_opt.cpp
   src/drt_adapter/ad_opt_fluid_adjoint_base.cpp
@@ -580,6 +582,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_ale_wear.cpp
   src/drt_adapter/ad_ale_wrapper.cpp
   src/drt_adapter/ad_ale_xffsi.cpp
+  src/drt_adapter/ad_field_wrapper.cpp
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_analytical.cpp

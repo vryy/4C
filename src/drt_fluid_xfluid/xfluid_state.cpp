@@ -150,6 +150,9 @@ void FLD::XFluidState::InitStateVectors()
   // Todo: ALE-displacements and grid-velocities for the case of an
   // XFEM-ALE-fluid are not initialized, as this option is not
   // implemented yet!
+
+  //if(alefluid_)...
+  dserror("ALE displacments!!!");
 }
 
 /*----------------------------------------------------------------------*
@@ -222,6 +225,9 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
   if (wizard_ == Teuchos::null)
     dserror("Uninitialized mesh wizard. Cannot create state.");
 
+  //if (alefluid_)...
+    dserror("FLD::XFluidStateCreator::Create: Add Ale displacements to Cut()!!! - at the moment Teuchos::null!");
+
   //--------------------------------------------------------------------------------------
   // the XFEM::FluidWizardMesh is created based on the xfluid-discretization and the boundary discretization
   // the FluidWizardMesh creates also a cut-object of type GEO::CutWizardMesh which performs the "CUT"
@@ -231,6 +237,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
                 BoundCellGaussPointBy_,        // how to create boundary cell Gauss points?
                 true,                          // parallel cut framework
                 gmsh_cut_out_,                 // gmsh output for cut library
+                Teuchos::null,                 // no ale displacements
                 true                           // find point positions
                 );
 

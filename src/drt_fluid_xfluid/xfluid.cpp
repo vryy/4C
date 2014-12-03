@@ -20,7 +20,7 @@ Maintainer:  Benedikt Schott
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
-#include "../drt_lib/drt_discret_faces.H"
+#include "../drt_lib/drt_discret_xfem.H"
 #include "../drt_lib/drt_dofset_transparent_independent.H"
 
 #include "../drt_lib/drt_condition_utils.H"
@@ -268,10 +268,11 @@ void FLD::XFluid::XFluidState::InitStateVariables()
   {
     //! @name Ale Displacement at time n+1
     dispnp_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-    xfluid_.GetStateVectorXFluid(xfluid_.dispnp_,dispnp_);
+    xfluid_.DiscretisationXFEM()->ExportInitialtoActiveVector(xfluid_.dispnp_,dispnp_);
+
     //! @name Grid Velocity at time n+1
     gridvnp_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-    xfluid_.GetStateVectorXFluid(xfluid_.gridvnp_,gridvnp_);
+    xfluid_.DiscretisationXFEM()->ExportInitialtoActiveVector(xfluid_.gridvnp_,gridvnp_);
   }
 
 }
@@ -339,9 +340,9 @@ void FLD::XFluid::XFluidState::Evaluate( DRT::Discretization & discret,
   discret.SetState("accam",accam_);
   discret.SetState("scaaf",scaaf_);
   discret.SetState("scaam",scaam_);
+
   if (xfluid_.alefluid_)
   {
-    //set in -FLD::XFluid::UpdateGridv()
     discret.SetState("dispnp", dispnp_);
     discret.SetState("gridv", gridvnp_);
   }
@@ -1898,6 +1899,16 @@ void FLD::XFluid::XFluidState::GradientPenalty( Teuchos::ParameterList & elepara
 
 void FLD::XFluid::XFluidState::CutAndSetDofSet(Teuchos::RCP<XFEM::FluidWizard> wizard, const Epetra_Vector & cutvector, bool include_inner)
 {
+  Teuchos::RCP<Epetra_Vector> dispnpcol;
+  if (xfluid_.alefluid_)
+  {
+    Teuchos::RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid_.discret_);
+    dispnpcol = Teuchos::rcp(new Epetra_Vector(*xdiscret->InitialDofColMap()));
+    LINALG::Export(*xfluid_.dispnp_,*dispnpcol);
+  }
+  else
+    dispnpcol = Teuchos::null;
+
   //--------------------------------------------------------------------------------------
   // the XFEM::FluidWizardMesh is created based on the xfluid-discretization and the boundary discretization
   // the FluidWizardMesh creates also a cut-object of type GEO::CutWizardMesh which performs the "CUT"
@@ -1907,6 +1918,7 @@ void FLD::XFluid::XFluidState::CutAndSetDofSet(Teuchos::RCP<XFEM::FluidWizard> w
                 xfluid_.BoundCellGaussPointBy_,        // how to create boundary cell Gauss points?
                 true,                                  // parallel cut framework
                 xfluid_.gmsh_cut_out_,                 // gmsh output for cut library
+                dispnpcol,                             // ale displacements
                 true                                   // find point positions
                 );
 
@@ -1954,25 +1966,18 @@ FLD::XFluid::XFluid(
     const Teuchos::RCP<IO::DiscretizationWriter>& output,
     bool                                          alefluid /*= false*/)
   : TimInt(actdis, solver, params, output),
+    xdiscret_(Teuchos::null),
     soliddis_(soliddis),
     fluid_output_(output_),
     levelsetcut_((soliddis==Teuchos::null)),
     alefluid_(alefluid),
-    fulldofrowmap_(Teuchos::null),
-    filleddofrowmap_(Teuchos::rcp(new Epetra_Map(*actdis->DofRowMap()))),
-    duplicatedfilleddofrowmap_(Teuchos::null),
     setTipNodesInCut_(false)
 {
-  if (alefluid_)
-  {
-    DRT::Problem* problem = DRT::Problem::Instance();
-    const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
-    // now we can reserve dofs for background fluid
-    int maxNumMyReservedDofsetsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"));
-
-    duplicatedfilleddofrowmap_ = ExtendMap(filleddofrowmap_,4,maxNumMyReservedDofsetsperNode,false);
-    fulldofrowmap_ = ExtendMap(filleddofrowmap_,4,maxNumMyReservedDofsetsperNode,true);
-  }
+  xdiscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(actdis);
+  //at the moment test just in case of alefluid as it not used otherwise!
+  //In the end als calculations should use DiscretisationXFEM!!!
+  if (xdiscret_ == Teuchos::null && alefluid)
+    dserror("XFluid: Cast to DiscretisationXFEM failed!");
   return;
 }
 
@@ -2062,6 +2067,15 @@ void FLD::XFluid::Init()
   // GMSH discretization output before CUT
   OutputDiscret();
 
+  if (alefluid_)
+  {
+    dispnp_ = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+    dispn_ = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+    dispnm_ = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+    gridvnp_ = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+    gridvn_ = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+  }
+
   if(!levelsetcut_)
   {
     Epetra_Vector idispcol( *boundarydis_->DofColMap() );
@@ -2077,15 +2091,6 @@ void FLD::XFluid::Init()
   }
   // otherwise we create the state from the coupling algorithm using the levelset values from the scatra field
 
-
-  if (alefluid_)
-  {
-    dispnp_ = LINALG::CreateVector(*filleddofrowmap_,true);
-    dispn_ = LINALG::CreateVector(*filleddofrowmap_,true);
-    dispnm_ = LINALG::CreateVector(*filleddofrowmap_,true);
-    gridvnp_ = LINALG::CreateVector(*filleddofrowmap_,true);
-    gridvn_ = LINALG::CreateVector(*filleddofrowmap_,true);
-  }
 
 }
 
@@ -2655,6 +2660,12 @@ void FLD::XFluid::CheckXFluidParams() const
     if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_weak_DBC)
       dserror("INPUT CHECK: please choose XFLUID_SIDED_weak_DBC as COUPLING_STRATEGY for any pure XFLUID or partitioned XFSI problem!");
   }
+
+  Teuchos::ParameterList * xfluidparam = &(params_->sublist("XFLUID DYNAMIC/GENERAL"));
+  if (!alefluid_  && DRT::INPUT::IntegralValue<bool>(*xfluidparam,"ALE_XFluid"))
+    dserror("XFluid: xfluid not constructed as Ale Fluid, but set in *.dat file!");
+  else if (alefluid_  && !(DRT::INPUT::IntegralValue<bool>(*xfluidparam,"ALE_XFluid")))
+    dserror("XFluid: xfluid constructed as Ale Fluid, but !NOT! set in *.dat file!");
 
   return;
 }
@@ -6340,6 +6351,11 @@ void FLD::XFluid::SetDirichletNeumannBC()
 
     discret_->ClearState();
 
+    if (alefluid_)
+    {
+    discret_->SetState("dispnp",state_->dispnp_);
+    }
+
     // set thermodynamic pressure
     eleparams.set("thermodynamic pressure",thermpressaf_);
 
@@ -7460,42 +7476,3 @@ void FLD::XFluid::UpdateGridv()
   }
 
 }
-
-
-/*------------------------------------------------------------------------------*
- * Export XFluid Vector (with filleddofrowmap - all nodes with one dofset)
- * to State Vector (with all active fluid dofs)                   ager 11/14
- *  *---------------------------------------------------------------------------*/
-void FLD::XFluid::GetStateVectorXFluid(Teuchos::RCP<Epetra_Vector>& xfluidvec, Teuchos::RCP<Epetra_Vector>& statevec)
-{
-  //export xfluidvec to state (actual physical dofs!)
-  Teuchos::RCP<Epetra_Vector> fullvec = Teuchos::rcp(new Epetra_Vector(*duplicatedfilleddofrowmap_,true));
-  LINALG::Export(*xfluidvec,*fullvec);
-  fullvec->ReplaceMap(*fulldofrowmap_); ///replace |1 2 3 4|1 2 3 4| -> |1 2 3 4|5 6 7 8|
-  LINALG::Export(*fullvec,*statevec);
-}
-
-/*---------------------------------------------------------------------------*
- * Takes DofRowMap with just one xfem-Dofset and duplicates
- * the dof gids for export of gridvelocity!                     ager 11/14
- *---------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> FLD::XFluid::ExtendMap(Teuchos::RCP<Epetra_Map> srcmap, int numdofspernode, int numdofsets, bool copy)
-{
-  int numsrcelements = srcmap->NumMyElements();
-  const int* srcgids = srcmap->MyGlobalElements();
-  std::vector<int> dstgids;
-  for (int i = 0; i < numsrcelements; i += numdofspernode)
-  {
-    if (numsrcelements < i + numdofspernode) dserror("ExtendMap(): Check your srcmap!");
-    for (int dofset = 0; dofset < numdofsets; ++dofset)
-    {
-      for (int dof = 0; dof < numdofspernode; ++dof)
-      {
-        dstgids.push_back(srcgids[i+dof] + copy*dofset*numdofspernode);
-      }
-    }
-  }
-
-  return  Teuchos::rcp(new Epetra_Map(-1,dstgids.size(), &dstgids[0],0,srcmap->Comm()));
-}
-

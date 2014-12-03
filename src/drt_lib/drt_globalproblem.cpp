@@ -37,6 +37,7 @@ Maintainer: Martin Kronbichler
 #include "drt_discret_xwall.H"
 #include "drt_discret_hdg.H"
 #include "drt_discret_combust.H"
+#include "drt_discret_xfem.H"
 #include "drt_linedefinition.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -925,7 +926,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       structdis = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
       fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
-      aledis    = Teuchos::rcp(new DRT::Discretization("ale"       ,reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::Discretization("ale",reader.Comm()));
     }
 
     // create discretization writer - in constructor set into and owned by corresponding discret
@@ -1119,45 +1120,45 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fsi_crack:
   {
     structdis = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
-    fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
-    //aledis    = Teuchos::rcp(new DRT::Discretization("ale"       ,reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
+    aledis    = Teuchos::rcp(new DRT::Discretization("ale"       ,reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
     fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-    //aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+    aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
 
     AddDis("structure", structdis);
     AddDis("fluid", fluiddis);
-    //AddDis("ale", aledis);
+    AddDis("ale", aledis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    //nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;
   }
   case prb_fpsi_xfem:
   {
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-    fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid"    ,reader.Comm()));
+    fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid"    ,reader.Comm()));
     porofluiddis    = Teuchos::rcp(new DRT::Discretization("porofluid"      ,reader.Comm()));
-    //aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+    aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
     fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
     porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
-    //aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+    aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
 
     AddDis("structure", structdis);
     AddDis("porofluid", porofluiddis);
     AddDis("fluid", fluiddis);
-    //AddDis("ale", aledis); //Remove me? ChrAg
+    AddDis("ale", aledis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    //nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;
   }

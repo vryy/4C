@@ -20,6 +20,7 @@ Maintainer: Ulrich Kuettler
 
 #include "ad_fld_fluid_ale.H"
 #include "ad_fld_fluid_xfem.H"
+#include "ad_fld_fluid_ale_xfem.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -46,12 +47,21 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     }
     case prb_fluid_xfem:
     case prb_fsi_xfem:
-    case prb_fpsi_xfem:
     case prb_fsi_crack:
     case prb_immersed_fsi:
     {
-      //std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;
-      fluid_ = Teuchos::rcp(new FluidXFEM(prbdyn,condname));
+      const Teuchos::ParameterList xfluid = DRT::Problem::Instance()->XFluidDynamicParams();
+      bool alefluid = DRT::INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")),"ALE_XFluid");
+      if (!alefluid) //xfluid
+      {
+        //std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;
+        fluid_ = Teuchos::rcp(new FluidXFEM(prbdyn,condname));
+      }
+      else //xafluid
+      {
+        fluid_ = Teuchos::rcp(new FluidAleXFEM(prbdyn,condname));
+      }
+
       break;
     }
     default:

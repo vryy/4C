@@ -775,7 +775,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_fsi_crack:
     {
       Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
-      Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
+      Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
       fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, solver, fluidtimeparams, output));
     }
     break;
@@ -906,7 +906,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         else if (probtype == prb_fpsi_xfem)
         {
           Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
-          Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
+          Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output,isale));
           fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, solver, fluidtimeparams, output));
         }
       }

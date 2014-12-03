@@ -638,6 +638,9 @@ void DRT::Discretization::FindAssociatedEleIDs(Teuchos::RCP<DRT::Condition> cond
 |  Set new nodes to a condition & build geometry new            (public)    |
 |                                                                ager 11/14 |
  *-------------------------------------------------------------------------*/
+//Do not use this function to manipulate conditions at the beginning of a calculation!
+//Should just be used for dynamically changing conditions!
+//Will always act on the first condition with this condname (if there is just one, this is ok!)
 void DRT::Discretization::ModifyCondition(const std::string& condname, std::vector<int>& nodegid, bool buildgeom)
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");

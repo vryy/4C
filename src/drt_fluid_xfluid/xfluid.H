@@ -27,6 +27,7 @@ Maintainer:  Benedikt Schott
 namespace DRT
 {
   class Discretization;
+  class DiscretizationXFEM;
   class IndependentDofSet;
 }
 namespace LINALG
@@ -581,8 +582,10 @@ namespace FLD
 
     void UpdateGridv();
 
-    ///FilledDofRowMap with gids of the first fluid dofset
-    Teuchos::RCP<Epetra_Map> FilledDofRowMap() {return filleddofrowmap_;}
+    Teuchos::RCP<DRT::DiscretizationXFEM> DiscretisationXFEM()
+    {
+      return xdiscret_;
+    }
 
   private:
 
@@ -784,6 +787,9 @@ namespace FLD
     Teuchos::RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
 
     //--------------- discretization and general algorithm parameters----------------
+
+    //! xfem fluid discretization
+    Teuchos::RCP<DRT::DiscretizationXFEM> xdiscret_;
 
     //! @name general algorithm parameters
     Teuchos::RCP<DRT::Discretization>      soliddis_;     //! solid discretization
@@ -997,12 +1003,6 @@ namespace FLD
 
     //! @name scatra-dis state vectors for levelset applications
     Teuchos::RCP<Epetra_Vector>    phinp_;
-    //@}
-
-    //! @specific dof row maps
-    Teuchos::RCP<Epetra_Map> fulldofrowmap_; //dofrowmap with all reserved dofs of the xfluid
-    Teuchos::RCP<Epetra_Map> filleddofrowmap_; //dofrowmap with gids of the first fluid dofset
-    Teuchos::RCP<Epetra_Map> duplicatedfilleddofrowmap_; //dofrowmap with gids of the first fluid dofset duplicated to all local dofsetpositions
     //@}
 
     //-----------------------------XFEM time-integration specific data ----------------

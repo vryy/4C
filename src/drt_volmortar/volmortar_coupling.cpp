@@ -1226,6 +1226,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
         INPAR::CUT::BCellGaussPts_Tessellation, // how to create boundary cell Gauss points?
         true,  // parallel cut framework
         false, // gmsh output for cut library
+        Teuchos::null, //no ale displacements
         true,  // find point positions
         true,  // create tet cells only
         false, // screen output
@@ -1279,6 +1280,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
         INPAR::CUT::BCellGaussPts_DirectDivergence, // how to create boundary cell Gauss points?
         true,  // parallel cut framework
         false, // gmsh output for cut library
+        Teuchos::null, // no ale displacements
         true,  // find point positions
         false, // create tet cells only
         false, // suppress screen output

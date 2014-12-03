@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_xfem.cpp
+\file ad_fld_fluid_ale_xfem.cpp
 
-\brief Fluid field adapter for xfem-fluids with moving boundaries
+\brief Fluid field adapter for xfem-ale-fluids with moving boundaries
 
 <pre>
-Maintainer:  Benedikt Schott
-             schott@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15241
+Maintainer: Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 - 15249
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -16,19 +16,21 @@ Maintainer:  Benedikt Schott
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+///Adapters
 #include "adapter_coupling.H"
-#include "ad_fld_fluid_xfem.H"
+#include "ad_fld_fluid_ale_xfem.H"
+#include "ad_ale_fluid.H"
+#include "ad_fld_xfluid_fsi.H"
+
 #include "../drt_fluid/fluid_utils_mapextractor.H"
-
-#include "../drt_adapter/ad_fld_xfluid_fsi.H"
+#include "../drt_inpar/inpar_fsi.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidXFEM::FluidXFEM(
+ADAPTER::FluidAleXFEM::FluidAleXFEM(
         const Teuchos::ParameterList& prbdyn,
         std::string condname)
-  : fluid_(Teuchos::rcp( new ADAPTER::FluidBaseAlgorithm(
-           prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",false))->FluidField())
+  : FluidAle(prbdyn,condname)
 {
   return;
 }
@@ -36,20 +38,7 @@ ADAPTER::FluidXFEM::FluidXFEM(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::Discretization()
-{
-  // returns the boundary discretization
-  // REMARK:
-  // the returned discretization has to match the structure discretization at the interface coupling (see FSI::Partitioned::Partitioned(const Epetra_Comm& comm) )
-  // therefore return the boundary dis
-  // this is similar to the matching of fluid dis and ale dis in case of ADAPTER::FluidALE
-  return FluidField()->Discretization();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::BoundaryDiscretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::FluidAleXFEM::BoundaryDiscretization()
 {
   // returns the boundary discretization
   // REMARK:
@@ -66,55 +55,15 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::BoundaryDiscretization()
 /*----------------------------------------------------------------------*/
 /// communication object at the struct interface
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::MapExtractor>const& ADAPTER::FluidXFEM::StructInterface()
+Teuchos::RCP<FLD::UTILS::MapExtractor>const& ADAPTER::FluidAleXFEM::StructInterface()
 {
-  // returns the boundary discretization
-  // REMARK:
-  // the returned discretization has to match the structure discretization at the interface coupling (see FSI::Partitioned::Partitioned(const Epetra_Comm& comm) )
-  // therefore return the boundary dis
-  // this is similar to the matching of fluid dis and ale dis in case of ADAPTER::FluidALE
-
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>( FluidField() , true);
 
   return xfluid->StructInterface();
 }
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidXFEM::PrepareTimeStep()
-{
-  FluidField()->PrepareTimeStep();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::FluidXFEM::Update()
-{
-  FluidField()->Update();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::FluidXFEM::Output()
-{
-  FluidField()->StatisticsAndOutput();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-double ADAPTER::FluidXFEM::ReadRestart(int step)
-{
-  FluidField()->ReadRestart(step);
-  return FluidField()->Time();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::FluidXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
+void ADAPTER::FluidAleXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                         Teuchos::RCP<Epetra_Vector> ivel)
 {
   // if we have values at the interface we need to apply them
@@ -132,18 +81,50 @@ void ADAPTER::FluidXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   if (ivel != Teuchos::null)
     xfluid->ApplyStructInterfaceVelocities(ivel);
 
+  // Update the ale update part
+  if (FluidField()->Interface()->AUCondRelevant())
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
+    Teuchos::RCP<Epetra_Vector> audispnp = FluidField()->Interface()->ExtractAUCondVector(dispnp);
+    AleField()->ApplyAleUpdateDisplacements(aucoupfa_->MasterToSlave(audispnp));
+  }
 
-  FluidField()->PrepareSolve();
-  FluidField()->Solve();
+  // Update the free-surface part
+  if (FluidField()->Interface()->FSCondRelevant())
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
+    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField()->Interface()->ExtractFSCondVector(dispnp);
+    AleField()->ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
+  }
+
+  // Note: We do not look for moving ale boundaries (outside the coupling
+  // interface) on the fluid side. Thus if you prescribe time variable ale
+  // Dirichlet conditions the according fluid Dirichlet conditions will not
+  // notice.
+
+
+  AleField()->Solve();
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
+  FluidField()->ApplyMeshDisplacement(fluiddisp);
+
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  // no computation of fluid velocities in case only structure and ALE are to compute
+  if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
+  {
+    FluidField()->PrepareSolve();
+    FluidField()->Solve();
+  }
+
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                                                       double dt)
 {
 
+  dserror("RelaxationSolve for XFEM useful?");
   std::cout << "WARNING: RelaxationSolve for XFEM useful?" << std::endl;
 
   // the displacement -> velocity conversion at the interface
@@ -155,7 +136,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::RelaxationSolve(Teuchos::RCP<Epe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::ExtractInterfaceForces()
 {
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>( FluidField() , true);
   return xfluid->ExtractStructInterfaceForces();
@@ -164,7 +145,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceVelnp()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::ExtractInterfaceVelnp()
 {
   dserror("Robin stuff");
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>( FluidField() , true);
@@ -174,24 +155,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceVelnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceVeln()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleXFEM::ExtractInterfaceVeln()
 {
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>( FluidField() , true);
   return xfluid->ExtractStructInterfaceVeln();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::IntegrateInterfaceShape()
-{
-  return FluidField()->IntegrateInterfaceShape();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFEM::CreateFieldTest()
-{
-  return FluidField()->CreateFieldTest();
 }
 

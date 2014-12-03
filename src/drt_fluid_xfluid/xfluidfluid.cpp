@@ -77,6 +77,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
                 xfluid_.BoundCellGaussPointBy_,        // how to create boundary cell Gauss points?
                 true,                                  // use parallel cut framework
                 xfluid_.gmsh_cut_out_,                 // gmsh output for cut library
+                Teuchos::null,                         // no ale displacements on background fluid
                 true                                   // find point positions
                 );
 

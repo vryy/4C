@@ -36,19 +36,11 @@ void GEO::CutWizardMesh::AddCutSide( int mi, DRT::Element * ele, const Epetra_Se
   meshintersection_->AddCutSide( ele->Id(), nids, xyze, ele->Shape(), mi );
 }
 
-void GEO::CutWizardMesh::AddElement( DRT::Element * ele )
+void GEO::CutWizardMesh::AddElement( DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze)
 {
   const int numnode = ele->NumNode();
   const DRT::Node * const * nodes = ele->Nodes();
   const int * nodeids = ele->NodeIds();
-
-  Epetra_SerialDenseMatrix xyze( 3, numnode );
-
-  for ( int i=0; i < numnode; ++i )
-  {
-    const DRT::Node & node = *nodes[i];
-    std::copy( node.X(), node.X()+3, &xyze( 0, i ) );
-  }
 
   std::vector<int> nids( nodeids, nodeids+numnode );
   meshintersection_->AddElement( ele->Id(), nids, xyze, ele->Shape() );

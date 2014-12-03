@@ -11,8 +11,8 @@ Maintainer: Ursula Rasthofer
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef DISCRET_XFEM_H
-#define DISCRET_XFEM_H
+#ifndef DISCRET_COMBUST_H
+#define DISCRET_COMBUST_H
 
 #include "drt_discret_faces.H"
 #include "drt_dserror.H"
