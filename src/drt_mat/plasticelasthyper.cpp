@@ -885,7 +885,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(
     const double dt
     )
 {
-  double sq=sqrt(2./3.);
+  const double sq=sqrt(2./3.);
   LINALG::Matrix<6,1> tmp61;
   double dT=0.;
   if (dNCPdT) dT=temp-InitTemp();
@@ -951,7 +951,6 @@ void MAT::PlasticElastHyper::EvaluateNCP(
   delta_alpha_i_[gp]=0.;
   if (dDpHeta>0. && absHeta>0.)
     delta_alpha_i_[gp]=sq*dDpHeta*abseta_H/(absHeta*absHeta);
-
   // new isotropic hardening value
   const double aI = last_alpha_isotropic_[gp]+delta_alpha_i_[gp];
 
@@ -961,23 +960,27 @@ void MAT::PlasticElastHyper::EvaluateNCP(
                                  *( 1.-exp(-Expisohard()*aI) )
                             + Isohard() *(1.- HardSoft()*dT)*aI
                             +Inityield()*(1.-YieldSoft()*dT)
-                     )* (1.+pow(Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()));
+                     )
+                      *pow(1.+Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate())
+                     ;
 
   double dYpldT = sq*(
                         (Infyield()*(-HardSoft())-Inityield()*(-YieldSoft()))
                           *(1.-exp(-Expisohard()*aI))
                         -Isohard()*HardSoft()*aI
                         -Inityield()*YieldSoft()
-                      )* (1.+pow(Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()));
-  if (ViscRate()>=1. || Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt>0.)
-    dYpldT +=sq *(
-                       (Infyield()*(1.-HardSoft()*dT) - Inityield()*(1.-YieldSoft()*dT))
-                             *( 1.-exp(-Expisohard()*aI) )
-                        + Isohard() *(1.- HardSoft()*dT)*aI
-                        +Inityield()*(1.-YieldSoft()*dT)
-                 ) * pow(Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()-1.)
-                     *delta_alpha_i_[gp]/dt * Visc()*(-ViscSoft())*ViscRate()
+                      )
+                      *pow(1.+Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate())
                       ;
+
+  dYpldT += sq * (
+                  (Infyield()*(1.-HardSoft()*dT) - Inityield()*(1.-YieldSoft()*dT))
+                        *( 1.-exp(-Expisohard()*aI) )
+                   + Isohard() *(1.- HardSoft()*dT)*aI
+                   +Inityield()*(1.-YieldSoft()*dT)
+                 )
+                   *pow(1.+Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()-1.)
+                     *ViscRate()*delta_alpha_i_[gp]/dt*Visc()*(-ViscSoft());
 
   // Factor of derivative of Y^pl w.r.t. delta alpha ^i
   // we have added the factor sqrt(2/3) from delta_alpha_i=sq*... here
@@ -985,14 +988,17 @@ void MAT::PlasticElastHyper::EvaluateNCP(
                           +Isohard()*(1.-HardSoft()*dT)
                           +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
                               *Expisohard()*exp(-Expisohard()*aI)
-                         )* (1.+pow(Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()));
-  if (ViscRate()>=1. || Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt>0.)
-    dYplDai +=  +2./3.*(
-                          (Infyield()*(1.-HardSoft()*dT) - Inityield()*(1.-YieldSoft()*dT))
-                                *( 1.-exp(-Expisohard()*aI) )
-                           + Isohard() *(1.- HardSoft()*dT)*aI
-                           +Inityield()*(1.-YieldSoft()*dT)
-                       )* pow(Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()-1.)*(Visc()*(1.-ViscSoft()*dT))/dt*ViscRate();
+                         )
+                         *pow(1.+Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate())
+                         ;
+  dYplDai += 2./3.*(
+                    (Infyield()*(1.-HardSoft()*dT) - Inityield()*(1.-YieldSoft()*dT))
+                          *( 1.-exp(-Expisohard()*aI) )
+                     + Isohard() *(1.- HardSoft()*dT)*aI
+                     +Inityield()*(1.-YieldSoft()*dT)
+                   )
+                    *pow(1.+Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()-1)
+                      *ViscRate()*Visc()*(1.-ViscSoft()*dT)/dt;
 
   // activity state check
   if (ypl<absetatr_H)
@@ -1371,7 +1377,7 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
     bool* as_converged,
     const double dt)
 {
-  double sq=sqrt(2./3.);
+  const double sq=sqrt(2./3.);
   LINALG::Matrix<6,1> tmp61;
 
   // deviatoric projection tensor
@@ -1458,7 +1464,9 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
                                  *( 1.-exp(-Expisohard()*aI) )
                             + Isohard() *aI
                             +Inityield()
-                     )* (1.+pow(Visc()*delta_alpha_i_[gp]/dt,ViscRate()));
+                     )
+                      *pow(1.+Visc()*delta_alpha_i_[gp]/dt,ViscRate())
+                     ;
 
   // check activity state
   if (ypl<absetatr_H)
@@ -1530,14 +1538,17 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
                             +Isohard()
                             +(Infyield()-Inityield())
                                 *Expisohard()*exp(-Expisohard()*aI)
-                           )* (1.+pow(Visc()*delta_alpha_i_[gp]/dt,ViscRate()));
-    if (ViscRate()>=1. || Visc()*delta_alpha_i_[gp]/dt>0.)
-      dYplDai +=  +2./3.*(
-                            (Infyield() - Inityield())
-                                  *( 1.-exp(-Expisohard()*aI) )
-                             + Isohard() *aI
-                             +Inityield()
-                         )* pow(Visc()*delta_alpha_i_[gp]/dt,ViscRate()-1.)*(Visc())/dt*ViscRate();
+                           )
+                           *pow(1.+Visc()*delta_alpha_i_[gp]/dt,ViscRate())
+                           ;
+    dYplDai += 2./3.*(
+                      (Infyield() - Inityield())
+                            *( 1.-exp(-Expisohard()*aI) )
+                       + Isohard() *aI
+                       +Inityield()
+                     )
+                      *pow(1.+Visc()*delta_alpha_i_[gp]/dt,ViscRate()-1)
+                        *ViscRate()*Visc()/dt;
 
     // plastic gp
     if (*active)
