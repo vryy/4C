@@ -131,6 +131,15 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
   }
 
   // *******************************************************************
+  // undefined case
+  // *******************************************************************
+  else if (Quad() && lmtype == INPAR::MORTAR::lagmult_undefined)
+  {
+    dserror("Lagrange multiplier interpolation for quadratic elements undefined\n"
+            "If you are using 2nd order mortar elements, you need to specify LM_QUAD in MORTAR COUPLING section");
+  }
+
+  // *******************************************************************
   // other cases
   // *******************************************************************
   else
@@ -387,6 +396,16 @@ void CONTACT::CoCoupling2dManager::EvaluateMortar()
     {
       dserror("ERROR: Piecewise linear LM not (yet?) implemented in 2D");
     }
+
+    // *******************************************************************
+    // undefined case
+    // *******************************************************************
+    else if (Quad() && lmtype == INPAR::MORTAR::lagmult_undefined)
+    {
+      dserror("Lagrange multiplier interpolation for quadratic elements undefined\n"
+              "If you are using 2nd order mortar elements, you need to specify LM_QUAD in MORTAR COUPLING section");
+    }
+
     // *******************************************************************
     // other cases
     // *******************************************************************
