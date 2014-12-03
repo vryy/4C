@@ -31,6 +31,7 @@ MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(
   k_(matdata->GetDouble("K")),
   d1_(matdata->GetDouble("D1")),
   d2_(matdata->GetDouble("D2")),
+  fibernumber_(matdata->GetInt("FIBER")),
   activethres_(matdata->GetDouble("ACTIVETHRES")),
   gamma_(matdata->GetDouble("GAMMA")),
   init_(matdata->GetInt("INIT")),
@@ -85,6 +86,9 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(DRT::INPUT::LineDefinition* linedef)
   else if (params_->init_ == 1)
   {
 
+    std::ostringstream ss;
+    ss << params_->fibernumber_;
+    std::string fibername = "FIBER"+ss.str(); // FIBER Name
     // CIR-AXI-RAD nomenclature
     if (linedef->HaveNamed("RAD") and
         linedef->HaveNamed("AXI") and
@@ -99,12 +103,11 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(DRT::INPUT::LineDefinition* linedef)
       // final setup of fiber data
       SetFiberVecs(0.0,locsys,Id);
     }
-
-    // FIBER1 nomenclature
-    else if ( linedef->HaveNamed("FIBER1") )
+    // FIBERi nomenclature
+    else if ( linedef->HaveNamed(fibername))
     {
       // Read in of data
-      ReadFiber(linedef, "FIBER1", a_);
+      ReadFiber(linedef, fibername, a_);
       SetupStructuralTensor(a_,A_);
     }
 

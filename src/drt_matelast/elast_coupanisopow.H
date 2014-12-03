@@ -54,6 +54,8 @@ namespace ELASTIC
       double d1_;
       /// exponential factor for ((I4)^{d1}-1)
       double d2_;
+      /// fiber number (1,2,3,...) used later as FIBER1,FIBER2,FIBER3,...
+      int fibernumber_;
       /// Deformation threshold where fibers are active.
       double activethres_;
       /// angle between circumferential and fiber direction (used for cir, axi, rad nomenclature)
