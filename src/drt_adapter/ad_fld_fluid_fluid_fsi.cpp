@@ -38,6 +38,10 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(
       isale,
       dirichletcond)
 {
+  // cast fluid to XFluidFluid
+  xfluidfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(fluid_);
+  if (xfluidfluid_ == Teuchos::null)
+    dserror("Failed to cast ADAPTER::Fluid to FLD::XFluidFluid.");
 }
 
 /*----------------------------------------------------------------------*/
@@ -46,11 +50,6 @@ void ADAPTER::FluidFluidFSI::Init()
 {
   // call base class init
   FluidWrapper::Init();
-
-  // cast fluid to XFluidFluid
-  xfluidfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(fluid_);
-  if (xfluidfluid_ == Teuchos::null)
-    dserror("Failed to cast ADAPTER::Fluid to FLD::XFluidFluid.");
 
   monolithic_approach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
                         (params_->sublist("XFLUID DYNAMIC/GENERAL"),"MONOLITHIC_XFFSI_APPROACH");

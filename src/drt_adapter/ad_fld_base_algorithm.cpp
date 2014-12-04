@@ -151,23 +151,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   // context for output and restart
   // -------------------------------------------------------------------
   Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
-  if (probtype != prb_combust and
-      probtype != prb_fluid_fluid and
-      probtype != prb_fluid_fluid_ale and
-      probtype != prb_fluid_fluid_fsi)
+  if (probtype != prb_combust)
   {
     output->WriteMesh(0,0.0);
   }
-  // in case Init() is not called in this, we have to be carefull with
-  // the order fields are written into the control file
-  // this order has to be respected by WriteMesh
-  // if problems with post_drt_ensight occur, a possible solution might be
-  // to move output->WriteMesh(0,0.0) from the Init()-function to the
-  // contructor of the xfluidfluid-class (see also combust algorithm)
-  if (init == false and (probtype == prb_fluid_fluid or
-      probtype == prb_fluid_fluid_ale or
-      probtype == prb_fluid_fluid_fsi))
-    dserror("Read remark!");
 
   // -------------------------------------------------------------------
   // set some pointers and variables

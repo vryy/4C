@@ -241,43 +241,46 @@ void runEnsightVtuFilter(PostProblem    &problem)
     {
       std::string basename = problem.outname();
 
-      PostField* fluidfield = problem.get_discretization(0);
+      PostField* embfluidfield = problem.get_discretization(0);
+      FluidFilter embfluidwriter(embfluidfield, basename);
+      embfluidwriter.WriteFiles();
+
+      PostField* fluidfield = problem.get_discretization(1);
       FluidFilter fluidwriter(fluidfield, basename);
       fluidwriter.WriteFiles();
 
-      PostField* embfluidfield = problem.get_discretization(1);
-      FluidFilter embfluidwriter(embfluidfield, basename);
-      embfluidwriter.WriteFiles();
       break;
     }
     case prb_fluid_fluid_ale:
     {
       std::string basename = problem.outname();
 
-      PostField* fluidfield = problem.get_discretization(0);
-      FluidFilter fluidwriter(fluidfield, basename);
-      fluidwriter.WriteFiles();
-
-      PostField* embfluidfield = problem.get_discretization(1);
+      PostField* embfluidfield = problem.get_discretization(0);
       FluidFilter embfluidwriter(embfluidfield, basename);
       embfluidwriter.WriteFiles();
+
+      PostField* fluidfield = problem.get_discretization(1);
+      FluidFilter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
 
       break;
     }
     case prb_fluid_fluid_fsi:
     {
       std::string basename = problem.outname();
-      PostField* fluidfield = problem.get_discretization(2);
-      FluidFilter fluidwriter(fluidfield, basename);
-      fluidwriter.WriteFiles();
+
+      PostField* structfield = problem.get_discretization(0);
+      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
 
       PostField* embfluidfield = problem.get_discretization(1);
       FluidFilter embfluidwriter(embfluidfield, basename);
       embfluidwriter.WriteFiles();
 
-      PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
-      structwriter.WriteFiles();
+      PostField* fluidfield = problem.get_discretization(2);
+      FluidFilter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+
       break;
     }
     case prb_ale:

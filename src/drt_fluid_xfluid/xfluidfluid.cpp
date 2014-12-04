@@ -101,7 +101,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   xfluid_.bgdis_->FillComplete();
 
   // print all dofsets
-  //---ALE---|---BG---|---Emb---|---Str---|
+  //---Str---|---Emb---|---Bg---|---ALE---|
   xfluid_.bgdis_->GetDofSetProxy()->PrintAllDofsets(xfluid_.bgdis_->Comm());
 
   // ---------------------------------------------------------------------------
@@ -217,9 +217,6 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   Teuchos::RCP<const Epetra_Map> embfluiddofrowmap = Teuchos::rcp(xfluid.embdis_->DofRowMap(),false);
   maps.push_back(fluiddofrowmap_);
-
-  if ((fluiddofrowmap_->MaxAllGID()) > (embfluiddofrowmap->MinAllGID()))
-      dserror("Maximum number of reserved dofs is not enough! Change MAX_NUM_DOFSETS in you dat-file.");
 
   maps.push_back(embfluiddofrowmap);
   fluidfluiddofrowmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
@@ -1755,19 +1752,21 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputBoundaryCell( DRT::Discretiza
 //
 // -------------------------------------------------------------------
 FLD::XFluidFluid::XFluidFluid(
-    const Teuchos::RCP<DRT::Discretization>&      actdis,
+    const Teuchos::RCP<DRT::Discretization>&      bgdis,
     const Teuchos::RCP<DRT::Discretization>&      embdis,
     const Teuchos::RCP<LINALG::Solver>&           solver,
     const Teuchos::RCP<Teuchos::ParameterList>&   params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output,
-    bool                                          embfluid ,
+    const Teuchos::RCP<IO::DiscretizationWriter>& emboutput,
+    bool                                          alefluid ,
     bool                                          monolithicfluidfluidfsi
-):TimInt(actdis, solver, params, output),
-  bgdis_(discret_),
+):TimInt(bgdis, solver, params, bgdis->Writer()),
+  bgdis_(bgdis),
   embdis_(embdis),
-  alefluid_(embfluid),
+  emboutput_(emboutput),
+  alefluid_(alefluid),
   monolithicfluidfluidfsi_(monolithicfluidfluidfsi)
 {
+  output_->WriteMesh(0,0.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -1782,9 +1781,6 @@ void FLD::XFluidFluid::Init()
   CheckXFluidParams();
 
   PrintStabilizationParams();
-
-  emboutput_ = embdis_->Writer();
-  emboutput_->WriteMesh(0,0.0);
 
   // ensure that degrees of freedom in the discretization have been set
   if ( not bgdis_->Filled() or not discret_->HaveDofs() )
@@ -1853,16 +1849,11 @@ void FLD::XFluidFluid::Init()
   // create vector according to the dofset_out row map holding all standard fluid unknowns
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
 
-  // create fluid output object
-  output_ = bgdis_->Writer();
-  output_->WriteMesh(0,0.0);
-
   // used to write out owner of elements just once
   firstoutputofrun_ = true;
 
   // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
   restart_count_ = 0;
-
 
   //-------------------------------------------------------------------
   // create internal faces extension for edge based stabilization
@@ -1875,9 +1866,6 @@ void FLD::XFluidFluid::Init()
     actbgdis->CreateInternalFacesExtension();
   }
   //-------------------------------------------------------------------
-
-//   output_ = bgdis_->Writer();
-//   output_->WriteMesh(0,0.0);
 
   // embedded fluid state vectors
   FLD::UTILS::SetupFluidSplit(*embdis_,numdim_,*velpressplitter_);
@@ -1892,12 +1880,8 @@ void FLD::XFluidFluid::Init()
   veln_  = LINALG::CreateVector(*embdis_->DofRowMap(),true);
   velnm_ = LINALG::CreateVector(*embdis_->DofRowMap(),true);
 
-  // we need the displacement vector of an ALE element if alefluid_ or when we do not use Xfluid-sided-mortaring
-  //if(alefluid_ || coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring)
   dispnp_ = LINALG::CreateVector(*embdis_->DofRowMap(),true);
-
-  if (monolithicfluidfluidfsi_)
-    dispnpoldstate_ = LINALG::CreateVector(*embdis_->DofRowMap(),true);
+  dispnpoldstate_ = LINALG::CreateVector(*embdis_->DofRowMap(),true);
 
   totaldispnp_ = LINALG::CreateVector(*embdis_->DofRowMap(),true);
   totaldispn_ = LINALG::CreateVector(*embdis_->DofRowMap(),true);

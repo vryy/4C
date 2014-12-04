@@ -301,14 +301,14 @@ namespace FLD
 
     /// constructor
     XFluidFluid(
-        const Teuchos::RCP<DRT::Discretization>&      actdis,                         ///< background fluid discretization
+        const Teuchos::RCP<DRT::Discretization>&      bgdis,                         ///< background fluid discretization
         const Teuchos::RCP<DRT::Discretization>&      embdis,                         ///< embedded fluid discretization
         const Teuchos::RCP<LINALG::Solver>&           solver,                         ///< linear solver
         const Teuchos::RCP<Teuchos::ParameterList>&   params,                         ///< parameters
-        const Teuchos::RCP<IO::DiscretizationWriter>& output,                         ///< discretization writer
+        const Teuchos::RCP<IO::DiscretizationWriter>& emboutput,                         ///< discretization writer
         bool                                          alefluid = false,               ///< true, if embedded fluid is ale-fluid
         bool                                          monolithicfluidfluidfsi = false ///< true for monolithic fluid-fluid-fsi context
-      );
+    );
 
     /// initialization
     virtual void Init();

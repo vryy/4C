@@ -115,18 +115,18 @@ void dyn_fluid_drt(const int restart)
 //-------------------------------------------------------------------------
 void fluid_fluid_drt(const int restart)
 {
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  Teuchos::RCP<DRT::Discretization> embfluiddis = problem->GetDis("fluid");
+  embfluiddis->FillComplete();
+
   // create a communicator
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(DRT::Problem::Instance()->GetDis("xfluid")->Comm().Clone());
-
-  DRT::Problem* problem = DRT::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> bgfluiddis = problem->GetDis("xfluid");
   bgfluiddis->FillComplete();
 
   const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
-
-  Teuchos::RCP<DRT::Discretization> embfluiddis = problem->GetDis("fluid");
-  embfluiddis->FillComplete();
 
   // -------------------------------------------------------------------
   // ---------------- find MovingFluid's elements and nodes
@@ -198,6 +198,54 @@ void fluid_fluid_drt(const int restart)
   LINALG::Gather<int>(NonMovingFluidNodeGIDs,NonMovingFluidNodeGIDsall,(int)bgfluiddis->Comm().NumProc(),&allprocbg[0],bgfluiddis->Comm());
 
   // ----------------------------------------------------------------------------
+  // preparing the embedded fluid discretization...
+
+  // delete elements and nodes
+  for(size_t nmv=0; nmv<NonMovingFluideleGIDsall.size(); ++nmv)
+    embfluiddis->DeleteElement(NonMovingFluideleGIDsall.at(nmv));
+
+  for(size_t nmv=0; nmv<NonMovingFluidNodeGIDsall.size(); ++nmv)
+    embfluiddis->DeleteNode(NonMovingFluidNodeGIDsall.at(nmv));
+
+  embfluiddis->CheckFilledGlobally();
+
+  // new dofset for embfluiddis which begins after bgfluiddis dofs
+  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::DofSet());
+  embfluiddis->ReplaceDofSet(newdofset,true);
+  embfluiddis->FillComplete();
+
+  std::vector<int> eleids;          // ele ids
+  for (int i=0; i<embfluiddis->NumMyRowElements(); ++i)
+  {
+    DRT::Element* ele = embfluiddis->lRowElement(i);
+    int gid = ele->Id();
+    eleids.push_back(gid);
+  }
+
+  // Embedded discretization redistribution..
+  Teuchos::RCP<Epetra_Map> embroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
+  Teuchos::RCP<Epetra_Map> embrownodes = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> embcolnodes = Teuchos::null;
+
+#if defined(PARALLEL) && defined(PARMETIS)
+  DRT::UTILS::PartUsingParMetis(embfluiddis,embroweles,embrownodes,embcolnodes,comm,false);
+#endif
+
+  Teuchos::RCP<Epetra_Map> embnewroweles  = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> embnewcoleles  = Teuchos::null;
+  embfluiddis->BuildElementRowColumn(*embrownodes,*embcolnodes,embnewroweles,embnewcoleles);
+
+  // export nodes and elements to the row map
+  embfluiddis->ExportRowNodes(*embrownodes);
+  embfluiddis->ExportRowElements(*embnewroweles);
+
+  // export nodes and elements to the column map (create ghosting)
+  embfluiddis->ExportColumnNodes(*embcolnodes);
+  embfluiddis->ExportColumnElements(*embnewcoleles);
+
+  embfluiddis->FillComplete();
+
+  // ----------------------------------------------------------------------------
   // preparing the background fluid discretization...
 
   // delete elements and nodes
@@ -247,55 +295,6 @@ void fluid_fluid_drt(const int restart)
 
   bgfluiddis->FillComplete();
 
-  //-------------------------------------------------------------------------
-
-  // ----------------------------------------------------------------------------
-  // preparing the embedded fluid discretization...
-
-  // delete elements and nodes
-  for(size_t nmv=0; nmv<NonMovingFluideleGIDsall.size(); ++nmv)
-    embfluiddis->DeleteElement(NonMovingFluideleGIDsall.at(nmv));
-
-  for(size_t nmv=0; nmv<NonMovingFluidNodeGIDsall.size(); ++nmv)
-    embfluiddis->DeleteNode(NonMovingFluidNodeGIDsall.at(nmv));
-
-  embfluiddis->CheckFilledGlobally();
-
-  // new dofset for embfluiddis which begins after bgfluiddis dofs
-  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::DofSet());
-  embfluiddis->ReplaceDofSet(newdofset,true);
-  embfluiddis->FillComplete();
-
-  std::vector<int> eleids;          // ele ids
-  for (int i=0; i<embfluiddis->NumMyRowElements(); ++i)
-  {
-    DRT::Element* ele = embfluiddis->lRowElement(i);
-    int gid = ele->Id();
-    eleids.push_back(gid);
-  }
-
-  // Embedded discretization redistribution..
-  Teuchos::RCP<Epetra_Map> embroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
-  Teuchos::RCP<Epetra_Map> embrownodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> embcolnodes = Teuchos::null;
-
-#if defined(PARALLEL) && defined(PARMETIS)
-  DRT::UTILS::PartUsingParMetis(embfluiddis,embroweles,embrownodes,embcolnodes,comm,false);
-#endif
-
-  Teuchos::RCP<Epetra_Map> embnewroweles  = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> embnewcoleles  = Teuchos::null;
-  embfluiddis->BuildElementRowColumn(*embrownodes,*embcolnodes,embnewroweles,embnewcoleles);
-
-  // export nodes and elements to the row map
-  embfluiddis->ExportRowNodes(*embrownodes);
-  embfluiddis->ExportRowElements(*embnewroweles);
-
-  // export nodes and elements to the column map (create ghosting)
-  embfluiddis->ExportColumnNodes(*embcolnodes);
-  embfluiddis->ExportColumnElements(*embnewcoleles);
-
-  embfluiddis->FillComplete();
   //------------------------------------------------------------------------------
 
   // access to some parameter lists
