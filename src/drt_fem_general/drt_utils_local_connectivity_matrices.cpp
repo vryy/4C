@@ -1853,6 +1853,9 @@ int DRT::UTILS::getDegree(const DRT::Element::DiscretizationType distype)
     case DRT::Element::hex27 :  degree = DisTypeToDegree<DRT::Element::hex27>::degree; break;
     case DRT::Element::tet4 :   degree = DisTypeToDegree<DRT::Element::tet4>::degree; break;
     case DRT::Element::tet10 :  degree = DisTypeToDegree<DRT::Element::tet10>::degree; break;
+    case DRT::Element::pyramid5 : degree = DisTypeToDegree<DRT::Element::pyramid5>::degree; break;
+    case DRT::Element::wedge6 : degree = DisTypeToDegree<DRT::Element::wedge6>::degree; break;
+    case DRT::Element::wedge15: degree = DisTypeToDegree<DRT::Element::wedge15>::degree; break;
     default: dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str()); break;
   }
   return degree;

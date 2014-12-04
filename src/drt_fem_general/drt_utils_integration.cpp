@@ -3312,8 +3312,8 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
   {
     nquad = 1;
     qxg[0][0] = 0;
-    qxg[1][0] = 0;
-    qxg[2][0] = Q14;
+    qxg[0][1] = 0;
+    qxg[0][2] = Q14;
     qwgt[0] = 4.0/3.0;
     break;
   }
