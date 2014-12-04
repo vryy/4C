@@ -6645,4 +6645,5 @@ void FLD::FluidImplicitTimeInt::ExplicitPredictor()
 void FLD::FluidImplicitTimeInt::AddContributionToNeumannLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector)
 {
   neumann_loads_->Update(1.0,*contributing_vector,1.0);
+  return;
 }

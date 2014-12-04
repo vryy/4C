@@ -186,10 +186,6 @@ namespace ADAPTER {
         double& errinfother ///< L-inf-norm of temporal discretization error based on interior DOFs
         );
 
-    /// provide access to fluid time integrator
-    Teuchos::RCP<FLD::FluidImplicitTimeInt> FluidImplTimeInt()
-    {return fluidimpl_;};
-
     ///Calculate WSS vector
     virtual Teuchos::RCP<Epetra_Vector> CalculateWallShearStresses();
 

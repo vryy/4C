@@ -39,11 +39,6 @@ ADAPTER::FluidImmersed::FluidImmersed(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ADAPTER::FluidImmersed::Discretization()
 {
-  // returns the boundary discretization
-  // REMARK:
-  // the returned discretization has to match the structure discretization at the interface coupling (see FSI::Partitioned::Partitioned(const Epetra_Comm& comm) )
-  // therefore return the boundary dis
-  // this is similar to the matching of fluid dis and ale dis in case of ADAPTER::FluidALE
   return FluidField()->Discretization();
 }
 
@@ -103,9 +98,6 @@ void ADAPTER::FluidImmersed::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImmersed::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                                                       double dt)
 {
-
-  std::cout << "WARNING: RelaxationSolve for XFEM useful?" << std::endl;
-
   // the displacement -> velocity conversion at the interface
   idisp->Scale(1./dt);
 
@@ -158,12 +150,12 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidImmersed::CreateFieldTest()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidImmersed::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
 {
-  Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(FluidField())->FluidImplTimeInt()->AddDirichCond(maptoadd);
+  FluidField()->AddDirichCond(maptoadd);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidImmersed::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
 {
-  Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(FluidField())->FluidImplTimeInt()->RemoveDirichCond(maptoremove);
+  FluidField()->RemoveDirichCond(maptoremove);
 }

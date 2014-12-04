@@ -86,6 +86,12 @@ public:
   { return fluid_->SetInitialPorosityField(initfield, startfuncno); };
   virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext)
   { return fluid_->ApplyExternalForces(fext); };
+  virtual void AddContributionToNeumannLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector)
+  { return fluid_->AddContributionToNeumannLoads(contributing_vector); };
+  virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+  { return fluid_->AddDirichCond(maptoadd); };
+  virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+  { return fluid_->RemoveDirichCond(maptoremove); };
   virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
   { return fluid_->UpdateNewton(vel); };
   virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,

@@ -91,9 +91,6 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
   else
     std::cout<<" Coupling variable for partitioned FSI scheme :  Force "<<std::endl;
 
-  // get pointer to fluid time integrator
-  fluidimpltimeint_ = Teuchos::rcp_dynamic_cast< ADAPTER::FluidFSI >(MBFluidField()->FluidField())->FluidImplTimeInt();
-
   // get pointer to discretizations
   fluiddis_  = DRT::Problem::Instance()->GetDis("fluid");
   structdis_ = DRT::Problem::Instance()->GetDis("structure");
@@ -358,11 +355,11 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
     }
     EvaluateWithInternalCommunication(MBFluidField()->Discretization(),&fluid_vol_strategy, curr_subset_of_fluiddis_, structure_SearchTree_, currpositions_struct_);
 
-    BuildImmersedDirichMap(MBFluidField()->Discretization(), dbcmap_immersed_, fluidimpltimeint_->DirichMaps()->CondMap());
+    BuildImmersedDirichMap(MBFluidField()->Discretization(), dbcmap_immersed_, MBFluidField()->FluidField()->GetDBCMapExtractor()->CondMap());
     Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->AddDirichCond(dbcmap_immersed_);
 
     // apply immersed dirichlets
-    DoImmersedDirichletCond(fluidimpltimeint_->WriteAccessVelnp(),fluid_artificial_velocity_, dbcmap_immersed_);
+    DoImmersedDirichletCond(MBFluidField()->FluidField()->WriteAccessVelnp(),fluid_artificial_velocity_, dbcmap_immersed_);
     double normofvelocities;
     MBFluidField()->FluidField()->ExtractVelocityPart(fluid_artificial_velocity)->Norm2(&normofvelocities);
 
@@ -380,7 +377,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
 
 
     // solve fluid
-    fluidimpltimeint_->AddContributionToNeumannLoads(fluid_artificial_veldiv);
+    MBFluidField()->FluidField()->AddContributionToNeumannLoads(fluid_artificial_veldiv);
     MBFluidField()->NonlinearSolve(Teuchos::null,Teuchos::null);
 
     // remove immersed dirichlets from dbcmap of fluid (may be different in next iteration)
