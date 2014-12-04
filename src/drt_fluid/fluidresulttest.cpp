@@ -29,7 +29,8 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
   fluiddis_= fluid.discret_;
   mysol_   = fluid.velnp_;
   myvan_   = fluid.velatmeshfreenodes_;
-  mytraction_ = fluid.CalcStresses();
+  mytraction_ = fluid.stressmanager_->CalcStresses(fluid.trueresidual_);
+  mywss_ = fluid.stressmanager_->GetWallShearStresses(fluid.trueresidual_);
   myerror_ = fluid.EvaluateErrorComparedToAnalyticalSol();
   mydivu_ = fluid.EvaluateDivU();
   mydensity_scaling_ = fluid.density_scaling_;
@@ -117,6 +118,16 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
         if (numdim==2)
           dserror("Cannot test result for tractionz in 2D case.");
         result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(0,actnode,2))];
+      }
+      else if (position=="wssx")
+        result = (*mywss_)[(mywss_->Map()).LID(fluiddis_->Dof(0,actnode,0))];
+      else if (position=="wssy")
+        result = (*mywss_)[(mywss_->Map()).LID(fluiddis_->Dof(0,actnode,1))];
+      else if (position=="wssz")
+      {
+        if (numdim==2)
+          dserror("Cannot test result for wssz in 2D case.");
+        result = (*mywss_)[(mywss_->Map()).LID(fluiddis_->Dof(0,actnode,2))];
       }
       else if(position=="L2errvel")
         result = (*myerror_)[0];

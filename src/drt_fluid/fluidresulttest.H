@@ -70,6 +70,8 @@ private:
     Teuchos::RCP<Epetra_Vector>       myvan_;
     /// pointer to traction vector with values
     Teuchos::RCP<Epetra_Vector>       mytraction_;
+    /// pointer to traction vector with values
+    Teuchos::RCP<Epetra_Vector>       mywss_;
     /// pointer to error evaluation
     Teuchos::RCP<std::vector <double> > myerror_;
     /// pointer to div u evaluation

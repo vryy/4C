@@ -591,17 +591,6 @@ public:
   /// Return true residual, ie the actual force in Newton [N]
   virtual Teuchos::RCP<const Epetra_Vector> TrueResidual() { return trueresidual_; }
 
-  /// Return stresses in [N/m^2]
-  virtual Teuchos::RCP<Epetra_Vector> CalcStresses()
-      { if(stressmanager_==Teuchos::null)
-        {
-          dserror("no StressManager");
-          return Teuchos::null;
-        }
-        else
-          return stressmanager_->CalcStresses(trueresidual_);
-      }
-
   virtual Teuchos::RCP<const Epetra_Vector> Velnp()       { return velnp_; }
   virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp()  { return velnp_; }
   virtual Teuchos::RCP<const Epetra_Vector> Velaf()       { return velaf_; }

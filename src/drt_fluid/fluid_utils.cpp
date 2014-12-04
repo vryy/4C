@@ -78,14 +78,14 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStresses(
   Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses(stresses);
 
   if (ML_solver_ != -1) //iff we have a ML solver we aggregate the WSS
-    return AggreagteWallShearStresses(wss);
+    return AggreagteStresses(wss);
   else
     return wss;
 }
 
-/*----------------------------------------------------------------------*
- |  calculate traction vector at (Dirichlet) boundary (public) gjb 07/07|
- *----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
+ *-----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcStresses(Teuchos::RCP<const Epetra_Vector> trueresidual)
 {
   if(not isinit_)
@@ -106,7 +106,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcStresses(Teuchos::RCP
   }
 
   if (ML_solver_ != -1) //iff we have a ML solver we aggregate the WSS
-    return AggreagteWallShearStresses(integratedshapefunc);
+    return AggreagteStresses(integratedshapefunc);
   else
     return integratedshapefunc;
 
@@ -230,9 +230,9 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcWallShearStresses(
 
 
 /*----------------------------------------------------------------------*
- | smooth WSS via ML-aggregation                       Thon/Krank 11/14 |
+ | smooth stresses/wss via ML-aggregation              Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::AggreagteWallShearStresses(
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::AggreagteStresses(
     Teuchos::RCP<Epetra_Vector> wss
 )
 {

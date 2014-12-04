@@ -316,8 +316,7 @@ namespace UTILS
   };
 
 
-  /// WSS manager manages everything to do with wallshearstresses. For now
-  /// it only calculates the WSS from stresses and returns them
+  /// Stress manager manages everything to do with stresses and wallshearstresses
   class StressManager
   {
   public:
@@ -330,7 +329,7 @@ namespace UTILS
         const int numdim
   );
 
-    ///initialize smoothing of wall shear stress
+    ///initialize smoothing of stresses
     void Init(Teuchos::RCP<LINALG::SparseOperator> sysmat);
 
     ///return WSS vector
@@ -340,22 +339,21 @@ namespace UTILS
     \brief calculate stresses
 
     */
-    virtual Teuchos::RCP<Epetra_Vector> CalcStresses(Teuchos::RCP<const Epetra_Vector> trueresidual);
+
+    ///return stress vector
+    Teuchos::RCP<Epetra_Vector> CalcStresses(Teuchos::RCP<const Epetra_Vector> trueresidual);
 
     bool IsInit(){return isinit_;}
 private:
 
     /// integrate shape functions at nodes marked by condition
-    /*!
-      Needed for Mortar coupling at the FSI interface
-     */
-    virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
+    Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
 
     ///calculate WSS based on residual
     Teuchos::RCP<Epetra_Vector> CalcWallShearStresses(  Teuchos::RCP<Epetra_Vector> stresses );
 
-    /// smooth WSS via ML-aggregation
-    Teuchos::RCP<Epetra_Vector> AggreagteWallShearStresses( Teuchos::RCP<Epetra_Vector> wss );
+    /// smooth stress/wss via ML-aggregation
+    Teuchos::RCP<Epetra_Vector> AggreagteStresses( Teuchos::RCP<Epetra_Vector> wss );
 
     ///Calculate Aggregation Matrix
     void CalcSepEnr(
