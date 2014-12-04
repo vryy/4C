@@ -151,6 +151,30 @@ public:
   */
   virtual const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return velnp_;};
 
+  /*!
+  \ apply external forces to the fluid
+
+  */
+  virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext);
+
+  /*!
+  \output of external forces for restart
+
+  */
+  virtual void OutputExternalForces();
+
+  /*!
+  \brief read restart data
+
+  */
+  virtual void ReadRestart(int step);
+
+  /*!
+  \ Update of external forces
+
+  */
+  virtual void TimeUpdateExternalForces();
+
 protected:
 
   /// copy constructor
@@ -158,6 +182,12 @@ protected:
 
   //! @name time stepping variables
   bool    startalgo_;   ///< flag for starting algorithm
+
+  /// the vector containing external loads at t_n
+  Teuchos::RCP<Epetra_Vector>    external_loadsn_;
+
+  /// the vector containing external loads at t_{n+1}
+  Teuchos::RCP<Epetra_Vector>    external_loadsnp_;
 
 private:
 

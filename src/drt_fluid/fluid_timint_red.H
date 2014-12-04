@@ -66,42 +66,42 @@ public:
   \brief evaluate problem-dependent bounadry consitions: update the 3D-to-reduced_D coupling data for dirichlet bc in this context
 
   */
-  void DoProblemSpecificBoundaryConditions();
+  virtual void DoProblemSpecificBoundaryConditions();
 
   /*!
   \brief update the 3D-to-reduced_D coupling data in AssembleMatAndRHS
 
   */
-  void Update3DToReducedMatAndRHS();
+  virtual void Update3DToReducedMatAndRHS();
 
   /*!
   \brief read restart data
   */
-  void ReadRestart(int step);
+  virtual void ReadRestart(int step);
 
   /*!
   \brief read restart (some more RedModels-specific data)
 
   */
-  void ReadRestartReducedD(int step);
+  virtual void ReadRestartReducedD(int step);
 
   /*!
   \brief update configuration and output to file/screen
 
   */
-  void OutputReducedD();
+  virtual void OutputReducedD();
 
   /*!
   \brief Setup meshtying
 
   */
-  void SetupMeshtying();
+  virtual void SetupMeshtying();
 
   /*!
   \brief update iterative increment
 
   */
-  void UpdateIterIncrementally(
+  virtual void UpdateIterIncrementally(
     Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
     );
 
@@ -109,45 +109,45 @@ public:
   \brief update configuration and output to file/screen
 
   */
-  void Output();
+  virtual void Output();
 
   /*!
   \brief Insert Womersley condition
 
   */
-  void InsertVolumetricSurfaceFlowCondVector(
+  virtual void InsertVolumetricSurfaceFlowCondVector(
       Teuchos::RCP<Epetra_Vector> vel ,
       Teuchos::RCP<Epetra_Vector> res);
 
   /// prepare AVM3-based scale separation
-  void AVM3Preparation();
+  virtual void AVM3Preparation();
 
   /// prepare time step
-  void PrepareTimeStep();
+  virtual void PrepareTimeStep();
 
   /*!
   \brief Additional function for RedModels in LinearRelaxationSolve
 
   */
-  void CustomSolve(Teuchos::RCP<Epetra_Vector> relax);
+  virtual void CustomSolve(Teuchos::RCP<Epetra_Vector> relax);
 
   /*!
   \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
   */
-  void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
+  virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
 
   /*!
   \brief call elements to calculate system matrix/rhs and assemble
 
   */
-  void AssembleMatAndRHS();
+  virtual void AssembleMatAndRHS();
 
   /*!
   \brief apply Dirichlet boundary conditions to system of equations
 
   */
-  void ApplyDirichletToSystem();
+  virtual void ApplyDirichletToSystem();
 
 
 protected:

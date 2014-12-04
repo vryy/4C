@@ -49,6 +49,19 @@ void FLD::TimIntRedModelsBDF2::Init()
 
 
 /*----------------------------------------------------------------------*
+ |  read restart data                                   rasthofer 12/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntRedModelsBDF2::ReadRestart(int step)
+{
+  // call of base classes
+  TimIntBDF2::ReadRestart(step);
+  TimIntRedModels::ReadRestart(step);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntRedModelsBDF2::~TimIntRedModelsBDF2()

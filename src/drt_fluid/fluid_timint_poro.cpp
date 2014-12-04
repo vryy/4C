@@ -97,9 +97,6 @@ void FLD::TimIntPoro::AssembleMatAndRHS()
 void FLD::TimIntPoro::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_,step);
-
-  FluidImplicitTimeInt::ReadRestart(step);
-
   reader.ReadVector(gridv_,"gridv");
 
   return;

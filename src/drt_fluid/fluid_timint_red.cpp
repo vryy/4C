@@ -291,8 +291,6 @@ void FLD::TimIntRedModels::OutputReducedD()
  *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::ReadRestart(int step)
 {
-  FluidImplicitTimeInt::ReadRestart(step);
-
   IO::DiscretizationReader reader(discret_,step);
 
   vol_surf_flow_bc_->ReadRestart(reader);

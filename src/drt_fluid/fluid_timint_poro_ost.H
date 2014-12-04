@@ -43,6 +43,11 @@ public:
   */
   virtual void Init();
 
+  /*!
+  \brief read restart data
+
+  */
+  virtual void ReadRestart(int step);
 
 protected:
 

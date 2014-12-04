@@ -46,6 +46,20 @@ void FLD::TimIntRedModelsStat::Init()
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  read restart data                                   rasthofer 12/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntRedModelsStat::ReadRestart(int step)
+{
+  // call of base classes
+  TimIntStationary::ReadRestart(step);
+  TimIntRedModels::ReadRestart(step);
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/

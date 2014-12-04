@@ -1122,7 +1122,9 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
   // add external loads
   if(external_loads_ != Teuchos::null)
+  {
     residual_->Update(1.0/ResidualScaling(),*external_loads_,1.0);
+  }
 
   //----------------------------------------------------------------------
   // evaluate elements
@@ -3079,6 +3081,9 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   if (nonlinearbc_)
     TimeUpdateNonlinearBC();
 
+  // update external forces
+  TimeUpdateExternalForces();
+
   // call time update of forcing routine
   if (homisoturb_forcing_ != Teuchos::null)
     homisoturb_forcing_->TimeUpdateForcing();
@@ -3159,6 +3164,16 @@ void FLD::FluidImplicitTimeInt::TimeUpdateNonlinearBC()
     impedancebc_optimization_->Solve(WkOpt_params);
     }
 }
+
+
+/*----------------------------------------------------------------------*
+ | Update of external forces                                ghamm 12/14 |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::TimeUpdateExternalForces()
+{
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  | Calculate Acceleration                                               |
@@ -3512,6 +3527,8 @@ void FLD::FluidImplicitTimeInt::Output()
       if (nonlinearbc_)
         OutputNonlinearBC();
 
+      OutputExternalForces();
+
       // write mesh in each restart step --- the elements are required since
       // they contain history variables (the time dependent subscales)
       // But never do this for step 0 (visualization of initial field) since
@@ -3716,6 +3733,16 @@ void FLD::FluidImplicitTimeInt::OutputToGmsh(
   if (screen_out) std::cout << " done" << std::endl;
 
  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | output of external forces for restart                     ghamm 12/14|
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::OutputExternalForces()
+{
+  // nothing to do here, possibly in derived classes
+  return;
 }
 
 

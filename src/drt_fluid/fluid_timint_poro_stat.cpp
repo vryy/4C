@@ -48,6 +48,19 @@ void FLD::TimIntPoroStat::Init()
 
 
 /*----------------------------------------------------------------------*
+ |  read restart data                                   rasthofer 12/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntPoroStat::ReadRestart(int step)
+{
+  // call of base classes
+  TimIntStationary::ReadRestart(step);
+  TimIntPoro::ReadRestart(step);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                     bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntPoroStat::~TimIntPoroStat()

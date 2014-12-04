@@ -15,11 +15,7 @@ Maintainers: Ursula Rasthofer & Martin Kronbichler
 #include "fluid_timint_ost.H"
 #include "../drt_fluid_turbulence/scale_sep_gmo.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_fluid_turbulence/dyn_smag.H"
-#include "../drt_fluid_turbulence/dyn_vreman.H"
-#include "../drt_fluid_turbulence/boxfilter.H"
-
-#include "../linalg/linalg_solver.H"
+#include "../drt_io/io.H"
 
 
 
@@ -33,7 +29,9 @@ FLD::TimIntOneStepTheta::TimIntOneStepTheta(
     const Teuchos::RCP<IO::DiscretizationWriter>& output,
     bool                                          alefluid /*= false*/)
 : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
-  startalgo_(false)
+  startalgo_(false),
+  external_loadsn_(Teuchos::null),
+  external_loadsnp_(Teuchos::null)
 {
   return;
 }
@@ -245,6 +243,91 @@ void FLD::TimIntOneStepTheta::SetTheta()
       startalgo_ = false;
     }
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+| apply external forces to the fluid                      ghamm 12/2014 |
+*-----------------------------------------------------------------------*/
+void FLD::TimIntOneStepTheta::ApplyExternalForces
+(
+  Teuchos::RCP<Epetra_MultiVector> fext
+)
+{
+  // initialize external force for t_n
+  if (step_<=numstasteps_)
+  {
+    external_loadsn_ = Teuchos::rcp(new Epetra_Vector(*(*fext)(0)));
+    external_loadsnp_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    external_loads_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+  }
+
+  if(external_loadsn_ == Teuchos::null)
+    dserror("Starting algorithm for OST missing: Increase number of start steps"
+        "or perform initialization of external forces");
+
+  // set external force for t_{n+1}
+  external_loadsnp_->Update(1.0, *fext, 0.0);
+
+  // compute interpolated external force at t_{n+\theta}
+  external_loads_->Update(theta_, *external_loadsnp_, (1.0-theta_), *external_loadsn_, 0.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | output of external forces for restart                     ghamm 12/14|
+ *----------------------------------------------------------------------*/
+void FLD::TimIntOneStepTheta::OutputExternalForces()
+{
+  if(external_loadsn_ != Teuchos::null)
+  {
+    output_->WriteInt("have_fexternal",external_loadsn_->GlobalLength());
+    output_->WriteVector("fexternal",external_loadsn_);
+  }
+  else
+  {
+    output_->WriteInt("have_fexternal",-1);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | read restart of external forces                           ghamm 12/14|
+ *----------------------------------------------------------------------*/
+void FLD::TimIntOneStepTheta::ReadRestart(int step)
+{
+  // call base class
+  FLD::FluidImplicitTimeInt::ReadRestart(step);
+
+  IO::DiscretizationReader reader(discret_,step);
+  // check whether external forces were written
+  const int have_fexternal = reader.ReadInt("have_fexternal");
+  if(have_fexternal != -1)
+  {
+    external_loadsn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    external_loadsnp_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    external_loads_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    reader.ReadVector(external_loadsn_,"fexternal");
+    if(have_fexternal != external_loadsn_->GlobalLength())
+      dserror("reading of external loads failed");
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update of external forces                                 ghamm 12/14|
+ *----------------------------------------------------------------------*/
+void FLD::TimIntOneStepTheta::TimeUpdateExternalForces()
+{
+  if(external_loadsn_ != Teuchos::null)
+    external_loadsn_->Update(1.0, *external_loadsnp_, 0.0);
 
   return;
 }

@@ -420,6 +420,12 @@ public:
 
   virtual void TimeUpdateNonlinearBC();
 
+  /*!
+  \ Update of external forces
+
+  */
+  virtual void TimeUpdateExternalForces();
+
   /// Implement ADAPTER::Fluid
   virtual void Update() { TimeUpdate(); }
 
@@ -498,6 +504,12 @@ public:
       const double time,
       const bool inflow
       ) const;
+
+  /*!
+  \output of external forces for restart
+
+  */
+  virtual void OutputExternalForces();
 
   /*!
   \brief set initial flow field for analytical test problems

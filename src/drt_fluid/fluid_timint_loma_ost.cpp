@@ -30,7 +30,7 @@ FLD::TimIntLomaOst::TimIntLomaOst(
       TimIntLoma(actdis,solver,params,output,alefluid)
 {
 
-  std::cout << "\nWARNING: Loma has never been tested with BDF2 time integration!!\n" << std::endl;
+  std::cout << "\nWARNING: Loma has never been tested with OST time integration!!\n" << std::endl;
   return;
 }
 

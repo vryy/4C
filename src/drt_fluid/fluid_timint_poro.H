@@ -43,12 +43,12 @@ public:
   \brief call elements to calculate system matrix/rhs and assemble
 
   */
-  void AssembleMatAndRHS();
+  virtual void AssembleMatAndRHS();
 
   /*!
   \brief read restart data
   */
-  void ReadRestart(int step);
+  virtual void ReadRestart(int step);
 
   //! @name Set general parameter in class f3Parameter
   /*!
@@ -56,10 +56,10 @@ public:
   \brief parameter (fix over all time step) are set in this method.
          Therefore, these parameter are accessible in the fluid element
          and in the fluid boundary element*/
-  void SetElementCustomParameter();
+  virtual void SetElementCustomParameter();
 
   /// set the initial porosity field
-  void SetInitialPorosityField(
+  virtual void SetInitialPorosityField(
     const INPAR::POROELAST::InitialField,   ///< type of initial field
     const int startfuncno                   ///< number of spatial function
     );
@@ -68,7 +68,7 @@ public:
   \brief update iterative increment
 
   */
-  void UpdateIterIncrementally(
+  virtual void UpdateIterIncrementally(
     Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
     );
 
@@ -76,19 +76,19 @@ public:
   \brief update configuration and output to file/screen
 
   */
-  void Output();
+  virtual void Output();
 
   /*!
   \brief Do some poro-specific stuff in AssembleMatAndRHS
 
   */
-  void PoroIntUpdate();
+  virtual void PoroIntUpdate();
 
   /*!
   \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
   */
-  void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
+  virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
 
   /*!
 
@@ -97,7 +97,7 @@ public:
          and in the fluid boundary element
 
   */
-  void TimIntCalculateAcceleration();
+  virtual void TimIntCalculateAcceleration();
 
   /*!
 
@@ -106,7 +106,7 @@ public:
          and in the fluid boundary element
 
   */
-  void SetElementGeneralFluidParameter();
+  virtual void SetElementGeneralFluidParameter();
 
   /*!
 
@@ -115,7 +115,7 @@ public:
          and in the fluid boundary element
 
   */
-  void SetElementTurbulenceParameter();
+  virtual void SetElementTurbulenceParameter();
 
 
 protected:

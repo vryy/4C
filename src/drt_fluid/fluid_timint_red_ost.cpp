@@ -49,6 +49,19 @@ void FLD::TimIntRedModelsOst::Init()
 
 
 /*----------------------------------------------------------------------*
+ |  read restart data                                   rasthofer 12/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntRedModelsOst::ReadRestart(int step)
+{
+  // call of base classes
+  TimIntOneStepTheta::ReadRestart(step);
+  TimIntRedModels::ReadRestart(step);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | Destructor dtor (public)                                    bk 11/13 |
 *----------------------------------------------------------------------*/
 FLD::TimIntRedModelsOst::~TimIntRedModelsOst()
