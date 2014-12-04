@@ -15,15 +15,15 @@
 
        example input line:
        MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0
-         YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715 HARDEXPO 16.93
+         YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715 HARDEXPO 16.93 VISC 1.0 RATE_DEPENDENCY 0.1
 
 
 
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
+Maintainer: Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15253
+            089 - 289-15271
 </pre>
 */
 /*----------------------------------------------------------------------*
@@ -50,7 +50,9 @@ MAT::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(
   yield_(matdata->GetDouble("YIELD")),
   isohard_(matdata->GetDouble("ISOHARD")),
   infyield_(matdata->GetDouble("SATHARDENING")),
-  hardexp_(matdata->GetDouble("HARDEXPO"))
+  hardexp_(matdata->GetDouble("HARDEXPO")),
+  visc_(matdata->GetDouble("VISC")),
+  rate_dependency_(matdata->GetDouble("RATE_DEPENDENCY"))
 {
 }
 
@@ -299,8 +301,12 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
   const double isohard = params_->isohard_; // linear isotropic hardening
   const double infyield = params_->infyield_; // saturation yield stress
   const double hardexp = params_->hardexp_; // nonlinear hardening exponent
+  const double visc = params_->visc_; // viscosity
+  const double eps = params_->rate_dependency_; // rate dependency
 
   const double detF = defgrd->Determinant();
+
+  const double dt = params.get<double>("delta time");
 
   LINALG::Matrix<3,3> invdefgrd(*defgrd);
   invdefgrd.Invert();
@@ -403,9 +409,12 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
     abs_dev_KH_trial += dev_KH_trial(i) * dev_KH_trial(i);
   abs_dev_KH_trial = std::sqrt(abs_dev_KH_trial);
 
-  double f_trial = std::sqrt(3.0/2.0) * abs_dev_KH_trial - yield
-                      - isohard * accplstrainlast_->at(gp)
-                      - (infyield-yield)*(1.-exp(-hardexp*accplstrainlast_->at(gp)));
+  double y_d = ( yield
+                 + isohard * accplstrainlast_->at(gp)
+                 + (infyield-yield)*(1.-exp(-hardexp*accplstrainlast_->at(gp)))
+               ) * pow(visc*gamma/dt+1.,eps);
+
+  double f_trial = std::sqrt(3.0/2.0) * abs_dev_KH_trial - y_d;
 
   // switch elastic (f <= 0) and plastic (f > 0) state
   if (f_trial <= 0.0) // ----------------------------------- elastic step
@@ -426,19 +435,39 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
     double res = 0.;
     double tan = 0.;
     int iter=0;
+    double dy_d_dgamma=0.;
+
+    y_d = ( yield
+                     + isohard * (accplstrainlast_->at(gp)+gamma)
+                     + (infyield-yield)*(1.-exp(-hardexp*(accplstrainlast_->at(gp)+gamma)))
+                   ) * pow(visc*gamma/dt+1.,eps);
+    dy_d_dgamma = (isohard + (infyield-yield)*hardexp*exp(-hardexp*(accplstrainlast_->at(gp)+gamma)))
+                    *  pow(visc*gamma/dt+1.,eps)
+                 +(yield
+                     + isohard * (accplstrainlast_->at(gp)+gamma)
+                     + (infyield-yield)*(1.-exp(-hardexp*(accplstrainlast_->at(gp)+gamma)))
+                   ) * pow(visc*gamma/dt+1.,eps-1.)*eps*visc/dt;
 
     for (iter=0; iter<maxiter; ++iter)
     {
-      res = sqrt(3.0/2.0) * abs_dev_KH_trial - yield
-          -3.*G*gamma
-          - isohard * (accplstrainlast_->at(gp)+gamma)
-          - (infyield-yield)*(1.-exp(-hardexp*(accplstrainlast_->at(gp)+gamma)));
+      res = sqrt(3.0/2.0) * abs_dev_KH_trial -3.*G*gamma - y_d;
 
       if (abs(res)<tol)
         break;
 
-      tan = -3.*G- isohard - (infyield-yield)*hardexp*exp(-hardexp*(accplstrainlast_->at(gp)+gamma));
+      tan = -3.*G - dy_d_dgamma;
       gamma -= res/tan;
+
+      y_d = ( yield
+                       + isohard * (accplstrainlast_->at(gp)+gamma)
+                       + (infyield-yield)*(1.-exp(-hardexp*(accplstrainlast_->at(gp)+gamma)))
+                     ) * pow(visc*gamma/dt+1.,eps);
+      dy_d_dgamma = (isohard + (infyield-yield)*hardexp*exp(-hardexp*(accplstrainlast_->at(gp)+gamma)))
+                      *  pow(visc*gamma/dt+1.,eps)
+                   +(yield
+                       + isohard * (accplstrainlast_->at(gp)+gamma)
+                       + (infyield-yield)*(1.-exp(-hardexp*(accplstrainlast_->at(gp)+gamma)))
+                     ) * pow(visc*gamma/dt+1.,eps-1.)*eps*visc/dt;
     }
 
     if (iter==maxiter)
@@ -453,7 +482,7 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
         return;
       }
       else
-      dserror("Local Newton iteration unconverged in %i iterations. Residual: %d",iter,res);
+        dserror("Local Newton iteration unconverged in %i iterations. Residual: %d",iter,res);
     }
     // flow vector (7.54a)
     LINALG::Matrix<3,1> flow_vector(dev_KH_trial);
@@ -479,7 +508,7 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
     tmp1.MultiplyNT(flow_vector,flow_vector);
     double fac_D_ep_2 = 4.0 * G * G * (
                           sqrt(2.0/3.0) * gamma/abs_dev_KH_trial
-                          - 1.0 / (3.0 * G + isohard + (infyield-yield)*hardexp*exp(-hardexp*(accplstrainlast_->at(gp)+gamma))) );
+                          - 1.0 / (3.0 * G + dy_d_dgamma) );
     D_ep_principal.Update(fac_D_ep_2, tmp1, 1.0);
   }
 

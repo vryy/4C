@@ -603,6 +603,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"ISOHARD","isotropic hardening modulus");
     AddNamedReal(m,"SATHARDENING","saturation hardening");
     AddNamedReal(m,"HARDEXPO","hardening exponent");
+    AddNamedReal(m,"VISC","VISCOSITY",0.,true);
+    AddNamedReal(m,"RATE_DEPENDENCY","rate dependency",0.,true);
 
     AppendMaterialDefinition(matlist,m);
   }
