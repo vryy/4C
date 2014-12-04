@@ -1409,27 +1409,9 @@ void DRT::ELEMENTS::So_sh18::EasSetup(
     LINALG::Matrix<3,1>& G3_contra,
     const LINALG::Matrix<NUMNOD_SOH18,3> xrefe)    // material element coords
 {
-  // compute Jacobian, evaluated at element origin (r=s=t=0.0)
-  LINALG::Matrix<NUMDIM_SOH18,NUMDIM_SOH18> jac0inv;
-  LINALG::Matrix<2,1> xsi_center(true);
-  LINALG::Matrix<2,9> deriv_q9;
-  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_center,deriv_q9);
-  LINALG::Matrix<9,1> shapefunct_q9;
-  DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_center,shapefunct_q9);
-  for (int dim=0; dim<3; ++dim)
-    for (int k=0; k<9; ++k)
-    {
-      jac0inv(0,dim) += .5            *deriv_q9(0,k)*(xrefe(k+9,dim)+xrefe(k,dim));
-      jac0inv(1,dim) += .5            *deriv_q9(1,k)*(xrefe(k+9,dim)+xrefe(k,dim));
-      jac0inv(2,dim) += .5*shapefunct_q9(k)*(xrefe(k+9,dim)-xrefe(k,dim));
-    }
-  jac0inv.Invert();
-
-  for (int dim=0;dim<3; ++dim)
-    G3_contra(dim) = jac0inv(2,dim);
-
   // build EAS interpolation matrix M, evaluated at the GPs
   static std::vector<LINALG::Matrix<6,num_eas> > M(NUMGPT_SOH18);
+  static LINALG::Matrix<3,1> G3_c;
   static bool eval;
   if (!eval)
   {
@@ -1450,8 +1432,28 @@ void DRT::ELEMENTS::So_sh18::EasSetup(
 
       M[gp].Scale(t);
     }
+  // compute Jacobian, evaluated at element origin (r=s=t=0.0)
+  LINALG::Matrix<NUMDIM_SOH18,NUMDIM_SOH18> jac0inv;
+  LINALG::Matrix<2,1> xsi_center(true);
+  LINALG::Matrix<2,9> deriv_q9;
+  DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_center,deriv_q9);
+  LINALG::Matrix<9,1> shapefunct_q9;
+  DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_center,shapefunct_q9);
+  for (int dim=0; dim<3; ++dim)
+    for (int k=0; k<9; ++k)
+    {
+      jac0inv(0,dim) += .5            *deriv_q9(0,k)*(xrefe(k+9,dim)+xrefe(k,dim));
+      jac0inv(1,dim) += .5            *deriv_q9(1,k)*(xrefe(k+9,dim)+xrefe(k,dim));
+      jac0inv(2,dim) += .5*shapefunct_q9(k)*(xrefe(k+9,dim)-xrefe(k,dim));
+    }
+  jac0inv.Invert();
+
+  for (int dim=0;dim<3; ++dim)
+    G3_c(dim) = jac0inv(2,dim);
+
     eval=true;
   }
+  G3_contra=G3_c;
   M_gp = M;
 
   return;
