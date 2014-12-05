@@ -1344,7 +1344,6 @@ void DRT::ELEMENTS::So_sh18::SetupDSG()
       Integrate_dsg_transverse_t(gp,dsg_transverse_t_[gp]);
     }
   }
-  std::cout << dsg_shear_r_[0] << dsg_shear_s_[0]<<dsg_membrane_r_[0]<<dsg_membrane_s_[0]<<dsg_membrane_rs_[0]<<dsg_transverse_t_[0];
   return;
 }
 
