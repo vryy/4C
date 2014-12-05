@@ -17,6 +17,7 @@ Maintainers: Volker Gravemeier & Lena Yoshihara
 
 #include "../drt_fsi/fsi_monolithic.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"

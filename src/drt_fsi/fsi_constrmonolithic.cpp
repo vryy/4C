@@ -4,6 +4,7 @@
 #include "fsi_monolithic_linearsystem.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"

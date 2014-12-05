@@ -69,7 +69,7 @@ Maintainer: Matthias Mayr
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../drt_adapter/ad_fld_fluid.H"
+#include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/ad_fld_moving_boundary.H"
 #include "../drt_adapter/ad_fld_xfluid_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"

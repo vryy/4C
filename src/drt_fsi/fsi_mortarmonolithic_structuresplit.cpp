@@ -16,6 +16,7 @@ Maintainer: Matthias Mayr
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_fld_fluid_fsi.H"
 
 #include "fsi_mortarmonolithic_structuresplit.H"
 #include "fsi_debugwriter.H"

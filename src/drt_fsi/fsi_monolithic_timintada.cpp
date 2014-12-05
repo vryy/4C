@@ -27,7 +27,7 @@ Maintainer: Matthias Mayr
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_adapter/ad_ale_fsi.H"
-
+#include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/ad_str_fsi_timint_adaptive.H"
 
 #include "../drt_io/io_control.H"

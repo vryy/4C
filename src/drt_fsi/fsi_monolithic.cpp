@@ -34,6 +34,7 @@ Maintainer: Matthias Mayr
 #include "../drt_adapter/ad_ale_fsi.H"
 
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/ad_ale.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_str_fsi_timint_adaptive.H"
@@ -81,7 +82,7 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
 
   // ask base algorithm for the fluid time integrator
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true));
-  fluid_ = fluid->FluidField();
+  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fluid->FluidField());
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale")));

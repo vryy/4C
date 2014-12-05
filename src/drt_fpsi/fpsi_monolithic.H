@@ -30,7 +30,7 @@ Maintainer: Andreas Rauch
 #include "../drt_adapter/ad_ale_fpsi.H"
 
 //ADAPTER includes
-#include "../drt_adapter/ad_fld_base_algorithm.H"
+#include "../drt_adapter/ad_fld_fluid_fpsi.H"
 
 //LINALG includes
 #include "../linalg/linalg_mapextractor.H"
@@ -104,7 +104,7 @@ class MonolithicBase : public FPSI_Base
 
 
     const Teuchos::RCP<POROELAST::Monolithic>&  PoroField() {return poroelast_subproblem_;}
-    const Teuchos::RCP< ::ADAPTER::Fluid>&      FluidField(){return fluid_subproblem_;}
+    const Teuchos::RCP< ::ADAPTER::FluidFPSI>&  FluidField(){return fluid_subproblem_;}
     const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& AleField()  {return ale_; }
 
     Teuchos::RCP<DRT::DofSet> porostructdofset;
@@ -120,7 +120,7 @@ class MonolithicBase : public FPSI_Base
     // underlying poroelast problem
     Teuchos::RCP<POROELAST::Monolithic>       poroelast_subproblem_;
     // underlying fluid of the FSI problem
-    Teuchos::RCP< ::ADAPTER::Fluid>           fluid_subproblem_;
+    Teuchos::RCP< ::ADAPTER::FluidFPSI>       fluid_subproblem_;
     // underlying ale of the FSI problem
     Teuchos::RCP<ADAPTER::AleFpsiWrapper>     ale_;
 

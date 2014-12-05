@@ -5,6 +5,7 @@
 #include "fsi_debugwriter.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"
 #include "fsi_monolithic.H"
 

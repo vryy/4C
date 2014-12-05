@@ -27,7 +27,7 @@ Maintainer: Matthias Mayr
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid.H"
+#include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"

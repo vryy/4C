@@ -34,6 +34,7 @@ http://www.lnm.mw.tum.de
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"
 
 //#define SCATRABLOCKMATRIXMERGE

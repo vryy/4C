@@ -30,6 +30,7 @@ namespace ADAPTER
 {
   class AleFsiWrapper;
   class Coupling;
+  class FluidFSI;
   class FSIStructureWrapper;
   class StructureFSITimIntAda;
 }
@@ -125,7 +126,7 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField() { return structure_; }
 
     /// access to fluid field
-    const Teuchos::RCP<ADAPTER::Fluid>& FluidField(){return fluid_;}
+    const Teuchos::RCP<ADAPTER::FluidFSI>& FluidField(){return fluid_;}
 
     /// access to ale field
     const Teuchos::RCP<ADAPTER::AleFsiWrapper>& AleField() { return ale_; }
@@ -144,7 +145,7 @@ namespace FSI
     Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP< ::ADAPTER::Fluid> fluid_;
+    Teuchos::RCP< ::ADAPTER::FluidFSI> fluid_;
 
     /// underlying ale of the FSI problem
     Teuchos::RCP< ::ADAPTER::AleFsiWrapper> ale_;
