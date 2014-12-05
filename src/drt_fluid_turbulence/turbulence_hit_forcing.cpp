@@ -1271,7 +1271,10 @@ PeriodicHillForcing::PeriodicHillForcing(
         oldforce_(0.0),
         oldflow_(49.46),
         idealmassflow_(49.46),
-        length_(252.0)
+        length_(252.0),
+        step_(1),
+        count_(0),
+        sum_(0.0)
 {
   if(discret_->Comm().MyPID()==0)
     std::cout << "forcing for periodic hill such that a mass flow of 392.6 is achieved" << std::endl;
@@ -1286,6 +1289,7 @@ PeriodicHillForcing::PeriodicHillForcing(
  *--------------------------------------------------------------*/
 void PeriodicHillForcing::UpdateForcing(const int step)
 {
+  step_=step;
   return;
 }
 
@@ -1335,10 +1339,20 @@ void PeriodicHillForcing::TimeUpdateForcing()
   massflvecneg->Norm1(&massflowneg);
   double massflow=massflowpos-massflowneg;
 
+  double dm=massflow-oldflow_;
+  double dgoalm=idealmassflow_-massflow;
+
+  double newforce=0.0;
+
+  //the inital value does not have any meaning, so assume 0 for first step
+  if(step_<2)
+    dm=0.0;
+
   //new estimated force
-  double newforce=pow((idealmassflow_/massflow),0.5)*pow((oldflow_/massflow),20.0)*oldforce_;
-  if(newforce<1.0)
-    newforce=1.0;
+  //first contribution makes the system want to get back to the ideal value (spring)
+  //the second contribution is a penalty on quick changes (damping)
+  //the constants are empirical
+  newforce= 500.0*dgoalm-30000.0*dm+oldforce_;
 
   //now insert values in vector
   forcing_->PutScalar(0.0);
@@ -1358,15 +1372,16 @@ void PeriodicHillForcing::TimeUpdateForcing()
       dserror("something went wrong during replacemyvalue");
   }
 
-//  if(discret_->Comm().MyPID()==0)
-//    std::cout << "new massflow:  " << massflow<< "/" << idealmassflow << "  new force:  " << newforce << std::endl;
-
   oldforce_=newforce;
   oldflow_=massflow;
 
+  //some statistical data
+  count_++;
+  sum_+=newforce;
+
   //provide some information about the current condition
   if(discret_->Comm().MyPID()==0)
-    std::cout << "current mass flux:  " << oldflow_<< "/" << 49.46  << "  force:  " << oldforce_ << std::endl;
+    std::cout << "current mass flux:  " << oldflow_<< "/" << 49.46  << "  force:  " << oldforce_ << "/" << sum_/(double)count_ << std::endl;
   return;
 }
 

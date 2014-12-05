@@ -183,9 +183,6 @@ class HomIsoTurbForcing: public ForcingInterface
 
 //this is an adaptive body force for the periodic hill benchmark such
 //that the mass flow reaches the given value.
-//it is derived here from the HomIsoTurbForcing because the routines in
-//the time integration and on element level can be re-used
-//None of the member variables or private/protected functions is initialized or used!
 //author: bk 12/14
 class PeriodicHillForcing: public ForcingInterface
 {
@@ -225,17 +222,23 @@ class PeriodicHillForcing: public ForcingInterface
     Teuchos::RCP<Epetra_Vector> velnp_;
     Teuchos::RCP<Epetra_Vector> velaf_;
 
-    //xwall object is required for evaluating inner element planes of channel
+    //! xwall object is required for evaluating inner element planes of channel
     Teuchos::RCP<FLD::XWall>              myxwall_;
 
+    //! values of previous step
     double oldforce_;
-
     double oldflow_;
 
+    //! reference value for optimal control
     double idealmassflow_;
 
     //length of overall flow domain
     double length_;
+
+    //! step and statistical data
+    int step_;
+    int count_;
+    double sum_;
 };
 
 }
