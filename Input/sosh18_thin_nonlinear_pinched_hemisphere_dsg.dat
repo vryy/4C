@@ -36,19 +36,19 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton
-TIMESTEP                        0.05
-NUMSTEP                         12
-MAXTIME                         0.6
+TIMESTEP                        0.025
+NUMSTEP                         100
+MAXTIME                         1
 DAMPING                         No
 M_DAMP                          0.00001
 K_DAMP                          0.00001
-TOLRES                          1.0E2
+TOLRES                          1.0E-2
 TOLDISP                         1.0E-8
 NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         100
-PREDICT                         ConstVel
+PREDICT                         ConstDis
 LOADLIN                         no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
@@ -167,9 +167,9 @@ NODE 50 COORD 3.5967915361083542e+00 8.7075149734493351e+00 3.3380081834733271e+
 -----------------------------------------------------------ACOUSTIC ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE  0.00000000000000000e+00 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -1.56264858045507826e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -1.26675804773157696e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE  1.13086476873979280e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -6.50271424721988556e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -3.09283256031040743e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE  3.30116964398931589e+00 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 17 QUANTITY dispy VALUE  0.00000000000000000e+00 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 17 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1e-12
 -------------------------------------------------------------------------END

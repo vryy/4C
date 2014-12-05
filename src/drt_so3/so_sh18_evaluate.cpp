@@ -1270,14 +1270,14 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_transverse_t(const int gp, LINALG::Ma
 {
   // reset
   dsg_transverse_t.Clear();
-  LINALG::Matrix<9,1> shape_gp;
-  DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp],shape_gp);
+  LINALG::Matrix<9,1> shape;
+  DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp],shape);
 
   for (int i=0; i<9; ++i)
   {
     const LINALG::Matrix<3,1> coord_i=NodeParamCoord(i);
-    LINALG::Matrix<9,1> shape;
-    DRT::UTILS::shape_function<DRT::Element::quad9>(coord_i,shape);
+    LINALG::Matrix<9,1> shape_gp;
+    DRT::UTILS::shape_function<DRT::Element::quad9>(coord_i,shape_gp);
     for (int k=0; k<9; ++k)
       for (int l=0; l<9; ++l)
         dsg_transverse_t(k,l) += shape(i)*shape_gp(k)*shape_gp(l);
@@ -1344,6 +1344,7 @@ void DRT::ELEMENTS::So_sh18::SetupDSG()
       Integrate_dsg_transverse_t(gp,dsg_transverse_t_[gp]);
     }
   }
+
   return;
 }
 
