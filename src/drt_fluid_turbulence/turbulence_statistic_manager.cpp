@@ -32,6 +32,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_fluid_turbulence/turbulence_statistics_oracles.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_sqc.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_hit.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_ph.H"
 
 namespace FLD
 {
@@ -76,6 +77,7 @@ namespace FLD
     statistics_ccy_(Teuchos::null          ),
     statistics_ldc_(Teuchos::null          ),
     statistics_bfs_(Teuchos::null          ),
+    statistics_ph_(Teuchos::null          ),
     statistics_oracles_(Teuchos::null      ),
     statistics_sqc_(Teuchos::null          ),
     statistics_hit_(Teuchos::null          )
@@ -198,6 +200,21 @@ namespace FLD
       // statistics manager for turbulent boundary layer not available
       if (inflow_)
        dserror("The backward-facing step based on the geometry the DNS requires a turbulent boundary layer inflow profile which is not supported, yet!");
+    }
+    else if(fluid.special_flow_=="periodic_hill")
+    {
+      flow_=periodic_hill;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_ph_ = Teuchos::rcp(new TurbulenceStatisticsPh(discret_,*params_));
+
+      // statistics manager for turbulent boundary layer not available
+//      if (inflow_)
+//       dserror("The backward-facing step based on the geometry the DNS requires a turbulent boundary layer inflow profile which is not supported, yet!");
     }
     else if(fluid.special_flow_=="loma_backward_facing_step")
     {
@@ -820,6 +837,14 @@ namespace FLD
         statistics_bfs_->DoTimeSample(myvelnp_);
         break;
       }
+      case periodic_hill:
+      {
+        if(statistics_ph_==Teuchos::null)
+          dserror("need statistics_ph_ to do a time sample for a flow over a backward-facing step");
+
+        statistics_ph_->DoTimeSample(myvelnp_);
+        break;
+      }
       case loma_backward_facing_step:
       {
         if(statistics_bfs_==Teuchos::null)
@@ -1428,6 +1453,16 @@ namespace FLD
             }
           }
         }
+        break;
+      }
+      case periodic_hill:
+      {
+        if(statistics_ph_==Teuchos::null)
+          dserror("need statistics_ph_ to do a time sample for a flow over a periodic hill");
+
+        if(outputformat == write_single_record)
+          statistics_ph_->DumpStatistics(step);
+
         break;
       }
       case loma_backward_facing_step:

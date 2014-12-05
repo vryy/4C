@@ -64,6 +64,7 @@ class TurbulenceStatisticsBfs;
 class TurbulenceStatisticsSqc;
 class TurbulenceStatisticsHit;
 class TurbulenceStatisticsGeneralMean;
+class TurbulenceStatisticsPh;
 class TurbulenceStatisticsBfda;
 
 
@@ -305,8 +306,9 @@ private:
     decaying_homogeneous_isotropic_turbulence,
     forced_homogeneous_isotropic_turbulence,
     scatra_forced_homogeneous_isotropic_turbulence,
-    blood_fda_flow,
-    time_averaging                          }    flow_;
+    time_averaging,
+    periodic_hill,
+    blood_fda_flow}    flow_;
 
   //! flag to include scatra field
   bool withscatra_;
@@ -342,6 +344,9 @@ private:
 
   //! turbulence statistics for backward-facing step
   Teuchos::RCP<TurbulenceStatisticsBfs>         statistics_bfs_;
+
+  //! turbulence statistics for periodic hill
+  Teuchos::RCP<TurbulenceStatisticsPh>         statistics_ph_;
 
   //! turbulence statistics for blood fda flow
   Teuchos::RCP<TurbulenceStatisticsBfda>         statistics_bfda_;

@@ -4481,8 +4481,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
     // Otherwise BACI DEBUG version will crash during runtime!
-    Teuchos::Tuple<std::string,19> name;
-    Teuchos::Tuple<int,19> label;
+    Teuchos::Tuple<std::string,20> name;
+    Teuchos::Tuple<int,20> label;
     name[ 0] = "no";                                             label[ 0] = 0;
     name[ 1] = "time_averaging";                                 label[ 1] = 1;
     name[ 2] = "channel_flow_of_height_2";                       label[ 2] = 2;
@@ -4501,9 +4501,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name[15] = "decaying_homogeneous_isotropic_turbulence";      label[15] = 15;
     name[16] = "forced_homogeneous_isotropic_turbulence";        label[16] = 16;
     name[17] = "scatra_forced_homogeneous_isotropic_turbulence"; label[17] = 17;
-    name[18] = "blood_fda_flow";                                 label[18] = 18;
+    name[18] = "periodic_hill";                                  label[18] = 18;
+    name[19] = "blood_fda_flow";                                 label[19] = 19;
 
-    Teuchos::Tuple<std::string,19> description;
+    Teuchos::Tuple<std::string,20> description;
     description[0]="The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible";
     description[1]="The flow is not further specified, but time averaging of velocity and pressure field is performed";
     description[2]="For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.";
@@ -4522,7 +4523,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     description[15]="For this flow, all statistical data could be averaged in \nthe in all homogeneous directions  --- it is essentially a statistically zero dimensional flow.";
     description[16]="For this flow, all statistical data could be averaged in \nthe in all homogeneous directions  --- it is essentially a statistically zero dimensional flow.";
     description[17]="For this flow, all statistical data could be averaged in \nthe in all homogeneous directions  --- it is essentially a statistically zero dimensional flow.";
-    description[18]="For this flow, statistical data are evaluated on various planes, averaged over time and in circumferential direction.";
+    description[18]="For this flow, statistical data is evaluated on various lines, averaged over time and z.";
+    description[19]="For this flow, statistical data is evaluated on various planes.";
 
     setStringToIntegralParameter<int>(
         "CANONICAL_FLOW",

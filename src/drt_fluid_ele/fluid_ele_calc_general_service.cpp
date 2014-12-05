@@ -166,10 +166,17 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
       return CalcTimeStep(ele, discretization, lm, elevec1);
     }
     break;
+    case FLD::calc_mass_flow_periodic_hill:
+    {
+      // compute element mass matrix
+      return CalcMassFlowPeriodicHill(ele, params, discretization, lm, elevec1,mat);
+    }
+    break;
     case FLD::reset_immersed_ele:
     {
       return ResetImmersedEle(ele,params);
     }
+    break;
     default:
       dserror("Unknown type of action '%i' for Fluid EvaluateService()", act);
     break;
@@ -3888,17 +3895,86 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcTimeStep(
 }
 
 /*-----------------------------------------------------------------------------*
- | Reset Immersed Ele                                            rauch 05/2014 |
+ | Calculate properties for adaptive forcing of periodic hill       bk 12/2014 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ResetImmersedEle(
-    DRT::ELEMENTS::Fluid*           ele,
-    Teuchos::ParameterList&         params
-   )
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
+    DRT::ELEMENTS::Fluid*                ele,
+    Teuchos::ParameterList&   params,
+    DRT::Discretization &                discretization,
+    const std::vector<int> &             lm,
+    Epetra_SerialDenseVector&       elevec1,
+    Teuchos::RCP<MAT::Material> &        mat
+    )
 {
-//  // DEBUG
-//  static int firstelelid = ele->LID();
+  // set element id
+  eid_ = ele->Id();
 
+  // ---------------------------------------------------------------------------
+  // Prepare material parameters
+  // ---------------------------------------------------------------------------
+  // Since we need only the density, we use a lot of dummy values.
+  // create dummy matrices
+  LINALG::Matrix<nsd_, nen_> mat1(true);
+  LINALG::Matrix<nen_, 1> mat2(true);
+
+  GetMaterialParams(mat, mat1, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+  // ---------------------------------------------------------------------------
+  // Geometry
+  // ---------------------------------------------------------------------------
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // Do ALE specific updates if necessary
+  if (ele->IsAle())
+    dserror("no ale for periodic hill");
+
+  LINALG::Matrix<nsd_,nen_> evelnp(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnp, NULL,"velnp");
+
+  // definition of matrices
+  LINALG::Matrix<nen_*nsd_,nen_*nsd_> estif_u(true);
+
+  //length of whole domain
+  double length = params.get<double>("length");
+
+  // ---------------------------------------------------------------------------
+  // Integration loop
+  // ---------------------------------------------------------------------------
+  double massf=0.0;
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
+
+    // create dummy matrices
+    LINALG::Matrix<nsd_, nen_> mat1(true);
+    LINALG::Matrix<nen_, 1> mat2(true);
+
+    GetMaterialParams(mat, mat1, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+    velint_.Multiply(evelnp,funct_);
+
+    massf += velint_(0)*densaf_*fac_;
+  }
+  massf /= length;
+  elevec1[0] = massf;
+
+  return 0;
+}
+
+  /*-----------------------------------------------------------------------------*
+   | Reset Immersed Ele                                            rauch 05/2014 |
+   *-----------------------------------------------------------------------------*/
+  template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+  int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ResetImmersedEle(
+      DRT::ELEMENTS::Fluid*           ele,
+      Teuchos::ParameterList&         params
+     )
+  {
+  //  // DEBUG
+  //  static int firstelelid = ele->LID();
   DRT::ELEMENTS::FluidImmersed* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(ele);
   int reset_isimmersed = params.get("reset_isimmersed",1);
   int reset_hasprojecteddirichlet = params.get("reset_hasprojecteddirichlet",1);

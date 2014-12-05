@@ -107,7 +107,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   dtsolve_(0.0),
   external_loads_(Teuchos::null),
   forcing_(Teuchos::null),
-  homisoturb_forcing_(Teuchos::null),
+  forcing_interface_(Teuchos::null),
   surfacesplitter_(NULL),
   inrelaxation_(false),
   xwall_(Teuchos::null),
@@ -615,11 +615,17 @@ void FLD::FluidImplicitTimeInt::CompleteGeneralInit()
   // -------------------------------------------------------------------
   if (special_flow_ == "forced_homogeneous_isotropic_turbulence"
       or special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence"
-      or special_flow_ == "decaying_homogeneous_isotropic_turbulence")
+      or special_flow_ == "decaying_homogeneous_isotropic_turbulence"
+      or special_flow_ == "periodic_hill")
   {
     forcing_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
     forcing_->PutScalar(0.0);
-    homisoturb_forcing_ = Teuchos::rcp(new FLD::HomIsoTurbForcing(*this));
+    if (special_flow_ == "forced_homogeneous_isotropic_turbulence"
+        or special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence"
+        or special_flow_ == "decaying_homogeneous_isotropic_turbulence")
+      forcing_interface_ = Teuchos::rcp(new FLD::HomIsoTurbForcing(*this));
+    else
+      forcing_interface_ = Teuchos::rcp(new FLD::PeriodicHillForcing(*this));
   }
 
   //Set general parameters:
@@ -1126,6 +1132,18 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     residual_->Update(1.0/ResidualScaling(),*external_loads_,1.0);
   }
 
+  // set external volume force (required, e.g., for forced homogeneous isotropic turbulence)
+  if (DRT::INPUT::IntegralValue<INPAR::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),"FORCING_TYPE")
+      == INPAR::FLUID::fixed_power_input)
+  {
+    // calculate required forcing
+    forcing_interface_->CalculateForcing(step_);
+    forcing_interface_->ActivateForcing(true);
+  }
+
+  if (forcing_interface_ != Teuchos::null)
+    forcing_interface_->UpdateForcing(step_);
+
   //----------------------------------------------------------------------
   // evaluate elements
   //----------------------------------------------------------------------
@@ -1164,18 +1182,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
   // set scheme-specific element parameters and vector values
   SetStateTimInt();
-
-  // set external volume force (required, e.g., for forced homogeneous isotropic turbulence)
-  if (DRT::INPUT::IntegralValue<INPAR::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),"FORCING_TYPE")
-      == INPAR::FLUID::fixed_power_input)
-  {
-    // calculate required forcing
-    homisoturb_forcing_->CalculateForcing(step_);
-    homisoturb_forcing_->ActivateForcing(true);
-  }
-
-  if (homisoturb_forcing_ != Teuchos::null)
-    homisoturb_forcing_->UpdateForcing(step_);
 
   if (forcing_!=Teuchos::null)
   {
@@ -3085,8 +3091,8 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   TimeUpdateExternalForces();
 
   // call time update of forcing routine
-  if (homisoturb_forcing_ != Teuchos::null)
-    homisoturb_forcing_->TimeUpdateForcing();
+  if (forcing_interface_ != Teuchos::null)
+    forcing_interface_->TimeUpdateForcing();
 
   // account for possible changes in time step size and update previous
   // time step size accordingly
@@ -3233,7 +3239,7 @@ void FLD::FluidImplicitTimeInt::CalcIntermediateSolution()
 
     if (activate)
     {
-      if (homisoturb_forcing_ == Teuchos::null)
+      if (forcing_interface_ == Teuchos::null)
         dserror("Forcing expected!");
 
       if (myrank_ == 0)
@@ -3244,7 +3250,7 @@ void FLD::FluidImplicitTimeInt::CalcIntermediateSolution()
       }
 
       // turn off forcing in Solve()
-      homisoturb_forcing_->ActivateForcing(false);
+      forcing_interface_->ActivateForcing(false);
 
       // temporary store velnp_ since it will be modified in Solve()
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -3256,7 +3262,7 @@ void FLD::FluidImplicitTimeInt::CalcIntermediateSolution()
       Solve();
 
       // calculate required forcing
-      homisoturb_forcing_->CalculateForcing(step_);
+      forcing_interface_->CalculateForcing(step_);
 
       // reset velnp_
       velnp_->Update(1.0,*tmp,0.0);
@@ -3278,7 +3284,7 @@ void FLD::FluidImplicitTimeInt::CalcIntermediateSolution()
       // ----------------------------------------------------------------
       GenAlphaIntermediateValues();
 
-      homisoturb_forcing_->ActivateForcing(true);
+      forcing_interface_->ActivateForcing(true);
 
       if (myrank_ == 0)
       {
@@ -4574,7 +4580,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     CallStatisticsManager();
 
     // initialize  forcing depending on initial field
-    homisoturb_forcing_->SetInitialSpectrum(initfield);
+    forcing_interface_->SetInitialSpectrum(initfield);
   }
   else
   {

@@ -72,6 +72,7 @@ enum Action {
     interpolate_hdg_to_node,
     velgradient_projection,
     calc_dt_via_cfl,
+    calc_mass_flow_periodic_hill,
     reset_immersed_ele
 }; // enum Action
 

@@ -151,7 +151,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::EvaluateService(
          elevec1, elevec2, elevec3);
 
      //for some EvaluateService actions, elevec1 is not necessary
-     if(elevec1!=NULL&&act!=FLD::tauw_via_gradient&&act!=FLD::calc_div_u&&act!=FLD::calc_dt_via_cfl&&act!=FLD::xwall_calc_mk)
+     if(elevec1!=NULL&&act!=FLD::tauw_via_gradient&&act!=FLD::calc_div_u&&act!=FLD::calc_dt_via_cfl&&act!=FLD::xwall_calc_mk&&act!=FLD::calc_mass_flow_periodic_hill)
      {
        int row1=0;
        //assembly back into the old vector

@@ -256,6 +256,20 @@ public:
     Epetra_SerialDenseVector& elevec1
     );
 
+  /*! \brief Calculate mass flow for periodic hill
+   *
+   *  \author bk \date 12/2014
+   */
+  virtual int CalcMassFlowPeriodicHill
+  (
+      DRT::ELEMENTS::Fluid*                ele,
+      Teuchos::ParameterList&              params,
+      DRT::Discretization &                discretization,
+      const std::vector<int> &             lm,
+      Epetra_SerialDenseVector&            elevec1,
+      Teuchos::RCP<MAT::Material> &        mat
+  );
+
 
   /*! \brief Project velocity gradient to nodal level
    *

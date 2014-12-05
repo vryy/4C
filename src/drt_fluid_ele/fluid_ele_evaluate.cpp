@@ -790,6 +790,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::tauw_via_gradient:
     case FLD::velgradient_projection:
     case FLD::calc_dt_via_cfl:
+    case FLD::calc_mass_flow_periodic_hill:
     case FLD::reset_immersed_ele:
     {
       return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)->EvaluateService(this,

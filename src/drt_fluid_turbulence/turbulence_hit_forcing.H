@@ -37,11 +37,37 @@ namespace DRT
 
 namespace FLD
 {
-
 // forward declarations
 class FluidImplicitTimeInt;
+class XWall;
 
-class HomIsoTurbForcing
+class ForcingInterface
+{
+  public:
+
+    //! constructor
+    ForcingInterface(){}
+
+    virtual ~ForcingInterface(){}
+
+    //! initialize with initial spectrum
+    virtual void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type)=0;
+
+    //! turn on forcing
+    virtual void ActivateForcing(const bool activate)=0;
+
+    //! calculate power input
+    virtual void CalculateForcing(const int step)=0;
+
+    //! get forcing
+    virtual void UpdateForcing(const int step)=0;
+
+    //! time update of energy spectrum
+    virtual void TimeUpdateForcing()=0;
+
+};
+
+class HomIsoTurbForcing: public ForcingInterface
 {
   public:
 
@@ -49,7 +75,7 @@ class HomIsoTurbForcing
     HomIsoTurbForcing(FluidImplicitTimeInt& timeint);
 
     //! destructor
-    ~HomIsoTurbForcing(){return;};
+    virtual ~HomIsoTurbForcing(){}
 
     //! initialize with initial spectrum
     void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type);
@@ -153,6 +179,63 @@ class HomIsoTurbForcing
       const double value = y_1 + (y_2 - y_1) / (x_2 - x_1) * (x - x_1);
       return value;
     }
+};
+
+//this is an adaptive body force for the periodic hill benchmark such
+//that the mass flow reaches the given value.
+//it is derived here from the HomIsoTurbForcing because the routines in
+//the time integration and on element level can be re-used
+//None of the member variables or private/protected functions is initialized or used!
+//author: bk 12/14
+class PeriodicHillForcing: public ForcingInterface
+{
+  public:
+
+    //! constructor
+    PeriodicHillForcing(FluidImplicitTimeInt& timeint);
+
+    //! destructor
+    virtual ~PeriodicHillForcing(){}
+
+    //! initialize with initial spectrum
+    void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type){return;}
+
+    //! turn on forcing
+    void ActivateForcing(const bool activate){return;}
+
+    //! calculate power input
+    void CalculateForcing(const int step){ return;}
+
+    //! get forcing
+    void UpdateForcing(const int step);
+
+    //! time update of energy spectrum
+    void TimeUpdateForcing();
+
+
+  private:
+
+    //! fluid discretization
+    Teuchos::RCP<DRT::Discretization> discret_;
+
+    //! state vector of volume force to be computed
+    Teuchos::RCP<Epetra_Vector> forcing_;
+
+    //! state vectors used to compute forcing
+    Teuchos::RCP<Epetra_Vector> velnp_;
+    Teuchos::RCP<Epetra_Vector> velaf_;
+
+    //xwall object is required for evaluating inner element planes of channel
+    Teuchos::RCP<FLD::XWall>              myxwall_;
+
+    double oldforce_;
+
+    double oldflow_;
+
+    double idealmassflow_;
+
+    //length of overall flow domain
+    double length_;
 };
 
 }

@@ -84,7 +84,7 @@ namespace FLD
 
 // forward declarations
 class TurbulenceStatisticManager;
-class HomIsoTurbForcing;
+class ForcingInterface;
 class DynSmagFilter;
 class Vreman;
 class Boxfilter;
@@ -111,6 +111,7 @@ class FluidImplicitTimeInt : public TimInt
   friend class TurbulenceStatisticManager;
   friend class HomIsoTurbInitialField;
   friend class HomIsoTurbForcing;
+  friend class PeriodicHillForcing;
   friend class FluidResultTest;
 
 public:
@@ -1159,7 +1160,7 @@ protected:
   Teuchos::RCP<FLD::TurbulenceStatisticManager> statisticsmanager_;
 
   //! forcing for homogeneous isotropic turbulence
-  Teuchos::RCP<FLD::HomIsoTurbForcing> homisoturb_forcing_;
+  Teuchos::RCP<FLD::ForcingInterface> forcing_interface_;
 
   //! @name Dynamic Smagorinsky model: methods and variables
   //        -------------------------

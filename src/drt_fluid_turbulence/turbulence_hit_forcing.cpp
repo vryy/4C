@@ -32,6 +32,8 @@ Maintainer: Ursula Rasthofer
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_fluid/fluid_xwall.H"
 
 #define USE_TRAGET_SPECTRUM
 //#define TIME_UPDATE_FORCING_SPECTRUM
@@ -45,6 +47,7 @@ namespace FLD
 HomIsoTurbForcing::HomIsoTurbForcing(
         FluidImplicitTimeInt& timeint)
         :
+        ForcingInterface(),
         forcing_type_(DRT::INPUT::IntegralValue<INPAR::FLUID::ForcingType>(timeint.params_->sublist("TURBULENCE MODEL"),"FORCING_TYPE")),
         discret_(timeint.discret_),
         forcing_(timeint.forcing_),
@@ -1250,6 +1253,120 @@ void HomIsoTurbForcing::TimeUpdateForcing()
 
   forcing_->PutScalar(0.0);
 
+  return;
+}
+
+/*--------------------------------------------------------------*
+ | constructor                                  bk        12/14 |
+ *--------------------------------------------------------------*/
+PeriodicHillForcing::PeriodicHillForcing(
+        FluidImplicitTimeInt& timeint)
+        :
+        ForcingInterface(),
+        discret_(timeint.discret_),
+        forcing_(timeint.forcing_),
+        velnp_(timeint.velnp_),
+        velaf_(timeint.velaf_),
+        myxwall_       (timeint.xwall_       ),
+        oldforce_(0.0),
+        oldflow_(49.46),
+        idealmassflow_(49.46),
+        length_(252.0)
+{
+  if(discret_->Comm().MyPID()==0)
+    std::cout << "forcing for periodic hill such that a mass flow of 392.6 is achieved" << std::endl;
+  std::vector<DRT::Condition*> bodycond;
+  discret_->GetCondition("VolumeNeumann",bodycond);
+  const std::vector<double>* val   = bodycond[0]->Get<std::vector<double> >("val"  );
+  oldforce_ = val->at(0);
+}
+
+/*--------------------------------------------------------------*
+ | time update of periodic hill forcing                bk 12/14 |
+ *--------------------------------------------------------------*/
+void PeriodicHillForcing::UpdateForcing(const int step)
+{
+  return;
+}
+
+/*--------------------------------------------------------------*
+ | time update of periodic hill forcing                bk 12/14 |
+ *--------------------------------------------------------------*/
+void PeriodicHillForcing::TimeUpdateForcing()
+{
+
+  // create the parameters for the discretization
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action",FLD::calc_mass_flow_periodic_hill);
+
+  if(myxwall_!=Teuchos::null)
+    myxwall_->SetXWallParams(eleparams);
+
+  eleparams.set<double>("length",length_);
+
+  discret_->SetState("velnp", velnp_);
+
+  const Epetra_Map* elementrowmap = discret_->ElementRowMap();
+  Teuchos::RCP<Epetra_MultiVector> massflvec = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,1,true));
+
+  // optional: elementwise defined div u may be written to standard output file (not implemented yet)
+  discret_->EvaluateScalars(eleparams, massflvec);
+
+  discret_->ClearState();
+
+  Teuchos::RCP<Epetra_MultiVector> massflvecneg = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,1,true));
+
+  //take into account negative mass flux at the inflow
+  for (int i=0;i<discret_->ElementRowMap()->NumMyElements();++i)
+  {
+    double locflow= (*((*massflvec)(0)))[i];
+    if(locflow<-1.0e-9)
+    {
+      (*((*massflvec)(0)))[i]=0.0;
+      (*((*massflvecneg)(0)))[i]=locflow;
+    }
+  }
+
+  double massflowpos = 0.0;
+  massflvec->Norm1(&massflowpos);
+  double massflowneg=0.0;
+  massflvecneg->Norm1(&massflowneg);
+  double massflow=massflowpos-massflowneg;
+
+  //new estimated force
+  double newforce=pow((idealmassflow_/massflow),0.5)*pow((oldflow_/massflow),20.0)*oldforce_;
+  if(newforce<1.0)
+    newforce=1.0;
+
+  //now insert values in vector
+  forcing_->PutScalar(0.0);
+
+  for (int i=0;i<discret_->NodeRowMap()->NumMyElements();++i)
+  {
+    int gid = discret_->NodeRowMap()->GID(i);
+    DRT::Node* node = discret_->gNode(gid);
+    if(!node) dserror("Cannot find node");
+
+    int firstgdofid=discret_->Dof(0,node,0);
+
+    int firstldofid=forcing_->Map().LID(firstgdofid);
+
+    int err  =     forcing_->ReplaceMyValue(firstldofid,0,newforce);
+    if(err!=0)
+      dserror("something went wrong during replacemyvalue");
+  }
+
+//  if(discret_->Comm().MyPID()==0)
+//    std::cout << "new massflow:  " << massflow<< "/" << idealmassflow << "  new force:  " << newforce << std::endl;
+
+  oldforce_=newforce;
+  oldflow_=massflow;
+
+  //provide some information about the current condition
+  if(discret_->Comm().MyPID()==0)
+    std::cout << "current mass flux:  " << oldflow_<< "/" << 49.46  << "  force:  " << oldforce_ << std::endl;
   return;
 }
 
