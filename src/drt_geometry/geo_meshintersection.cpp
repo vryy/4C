@@ -39,7 +39,6 @@ void GEO::CutWizardMesh::AddCutSide( int mi, DRT::Element * ele, const Epetra_Se
 void GEO::CutWizardMesh::AddElement( DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze)
 {
   const int numnode = ele->NumNode();
-  const DRT::Node * const * nodes = ele->Nodes();
   const int * nodeids = ele->NodeIds();
 
   std::vector<int> nids( nodeids, nodeids+numnode );
