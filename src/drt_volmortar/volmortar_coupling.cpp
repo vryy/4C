@@ -35,10 +35,6 @@
 #include "../drt_mortar/mortar_calc_utils.H"
 #include "../drt_mortar/mortar_element.H"
 
-// thermo eles
-#include "../drt_thermo/thermo_element.H"
-#include "../drt_so3/so3_thermo.H"
-
 // Cut
 #include "../drt_xfem/xfem_fluidwizard.H"
 #include "../drt_cut/cut_volumecell.H"
