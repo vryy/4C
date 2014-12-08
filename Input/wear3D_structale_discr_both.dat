@@ -73,7 +73,7 @@ PARALLEL_REDIST                 dynamic
 WEARLAW                         Archard
 WEARCOEFF                       0.001
 WEARCOEFF_MASTER                0.001
-WEARTYPE                        discrete
+WEARTYPE                        primvar
 BOTH_SIDED_WEAR                 bd
 WEARCOEFF_CONF                  sp
 ----------------------------------------------CLONING MATERIAL MAP

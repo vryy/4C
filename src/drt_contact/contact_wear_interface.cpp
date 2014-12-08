@@ -50,13 +50,13 @@ sswear_(DRT::INPUT::IntegralValue<int>(icontact,"SSWEAR"))
   INPAR::WEAR::WearSide wside =
       DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(icontact,"BOTH_SIDED_WEAR");
 
-  if (wtype == INPAR::WEAR::wear_impl)
+  if (wtype == INPAR::WEAR::wear_intstate_impl)
     wearimpl_ = true;
   else
     wearimpl_=false;
 
   // set wear contact discretization
-  if (wtype == INPAR::WEAR::wear_discr)
+  if (wtype == INPAR::WEAR::wear_primvar)
     weardiscr_ = true;
   else
     weardiscr_=false;

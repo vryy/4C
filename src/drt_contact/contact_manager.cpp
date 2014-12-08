@@ -595,9 +595,9 @@ CONTACT::CoManager::CoManager(
   // create WearLagrangeStrategy for wear as non-distinct quantity
   if ( stype == INPAR::CONTACT::solution_lagmult &&
        wlaw  != INPAR::WEAR::wear_none &&
-      (wtype == INPAR::WEAR::wear_expl ||
-       wtype == INPAR::WEAR::wear_impl ||
-       wtype == INPAR::WEAR::wear_discr))
+      (wtype == INPAR::WEAR::wear_intstate_expl ||
+       wtype == INPAR::WEAR::wear_intstate_impl ||
+       wtype == INPAR::WEAR::wear_primvar))
   {
     strategy_ = Teuchos::rcp(new WearLagrangeStrategy(
         Discret().DofRowMap(),
@@ -971,6 +971,11 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         wearlist.get<double>("WEARCOEFF") != 0.0)
       dserror("ERROR: Wear coefficient only necessary in the context of wear.");
 
+    if(problemtype == prb_structure and
+       DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")  != INPAR::WEAR::wear_none and
+       DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(wearlist,"WEARTYPE") != INPAR::WEAR::wear_intstate_expl)
+      dserror("ERROR: Wear calculation for pure structure problems only with explicit internal state variable approach reasonable!");
+
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_none
         && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")  != INPAR::WEAR::wear_none)
       dserror("ERROR: Wear models only applicable to frictional contact.");
@@ -997,7 +1002,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_pwlin
       || DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") == INPAR::MORTAR::lagmult_lin)
       && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
-      dserror("Only quadratic approach (for LM) implemented for quadratic contact with DUAL shape fct.");
+      dserror("ERROR: Only quadratic approach (for LM) implemented for quadratic contact with DUAL shape fct.");
 
     // *********************************************************************
     // Smooth contact
@@ -1435,7 +1440,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
     // ***************************************************************************
 
     // evaluate wear (not weighted)
-    //GetStrategy().OutputWear();
+//    GetStrategy().OutputWear();
 
     // write output
     Teuchos::RCP<Epetra_Vector> wearoutput    = GetStrategy().ContactWear();
@@ -1460,4 +1465,3 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   }
   return;
 }
-

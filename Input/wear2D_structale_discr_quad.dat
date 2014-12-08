@@ -71,7 +71,7 @@ LM_QUAD                         quad
 LM_DUAL_CONSISTENT              no
 -------------------------------------------------------------WEAR
 WEARLAW                         Archard
-WEARTYPE                        discrete
+WEARTYPE                        primvar
 BOTH_SIDED_WEAR                 none
 WEARCOEFF                       0.0003
 WEARCOEFF_CONF                  mat

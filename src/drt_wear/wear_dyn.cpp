@@ -89,7 +89,9 @@ void wear_dyn_drt(int restart)
     stru_ale = Teuchos::rcp(new WEAR::Partitioned(comm));
   }
   else
+  {
     dserror("ERROR: Chosen algorithm not supported");
+  }
 
   // read restart before joining the time loop
   if (restart!=0)

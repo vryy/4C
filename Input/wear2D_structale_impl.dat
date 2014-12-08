@@ -69,7 +69,7 @@ SEARCH_PARAM                    0.4
 PARALLEL_REDIST                 dynamic
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
-WEARTYPE                        implicit
+WEARTYPE                        is_impl
 BOTH_SIDED_WEAR                 none
 WEARCOEFF                       0.0003
 WEAR_COUPALGO                   stagg

@@ -70,7 +70,7 @@ WEARLAW                         Archard
 WEARCOEFF                       0.0003
 WEARCOEFF_MASTER                0.0003
 BOTH_SIDED_WEAR                 map
-WEARTYPE                        explicit
+WEARTYPE                        is_expl
 WEARCOEFF_CONF                  sp
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 2

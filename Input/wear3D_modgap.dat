@@ -65,9 +65,6 @@ PARALLEL_REDIST                 Static
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARCOEFF                       1e-3
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -131,16 +128,6 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2000 NUE 0.0 DENS 0 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t/10 t1 0.0 t2 10
 CURVE1 on EXPR FUNC 0.999 t1 10.0 t2 11
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE 1.9547069624368049e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE -3.0289183129216480e-03 TOLERANCE 1e-8
@@ -150,32 +137,6 @@ NDPOINT                         0
 NDLINE                          0
 NDSURF                          5
 NDVOL                           0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT                          0
-------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
---------------------------------------DESIGN POINT THERMO NEUMANN CONDITIONS
-DPOINT                          0
----------------------------------------DESIGN LINE THERMO NEUMANN CONDITIONS
-DLINE                           0
----------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
-DSURF                           0
-----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
-DVOL                            0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 // slave oben
@@ -184,204 +145,12 @@ E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1 -0.01 0.0 CURVE 1 none none FUNCT 0 0 0
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // master unten
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE                           0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF                           0
---------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL                            0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE                           0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF                           0
----------------------------------------DESIGN POINT THERMO DIRICH CONDITIONS
-DPOINT                          0
-----------------------------------------DESIGN LINE THERMO DIRICH CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
-DSURF                           0
------------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
-DVOL                            0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
-DLINE                           0
 -----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 //                              slave
 E 2 - 1 Slave Active FrCoeffOrBound 0.2
 //                              master
 E 3 - 1 Master Inactive FrCoeffOrBound 0.2
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-DVOL                            0
-------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-DSURF                           0
----------------------------------------DESIGN SURF TURBULENT INFLOW TRANSFER
-DSURF                           0
----------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
-DSURF                           0
--------------------------------DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS
-DLINE                           0
-----------------------------DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS
-DSURF                           0
------------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
-DSURF                           0
-----------------------------------------FLUID NEUMANN INFLOW LINE CONDITIONS
-DLINE                           0
-----------------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
-DSURF                           0
-------------------------------------TRANSPORT NEUMANN INFLOW LINE CONDITIONS
-DLINE                           0
-------------------------------------TRANSPORT NEUMANN INFLOW SURF CONDITIONS
-DSURF                           0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF                           0
---------------------------------DESIGN FSI COUPLING NO SLIDE LINE CONDITIONS
-DLINE                           0
---------------------------------DESIGN FSI COUPLING NO SLIDE SURF CONDITIONS
-DSURF                           0
------------------------------DESIGN FSI COUPLING CENTER DISP LINE CONDITIONS
-DLINE                           0
------------------------------DESIGN FSI COUPLING CENTER DISP SURF CONDITIONS
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF                           0
--------------------------------DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS
-DSURF                           0
-----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS
-DSURF                           0
------------------------DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS
-DVOL                            0
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-DSURF                           0
----------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF                           0
-------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
-DVOL                            0
------------------------------------DESIGN ALE FLUID COUPLING SURF CONDITIONS
-DSURF                           0
---------------------------------------------------SURFACE TENSION CONDITIONS
-DSURF                           0
--------------------------------------------------------SURFACTANT CONDITIONS
-DSURF                           0
-------------------------------------------DESIGN VOL LJ_POTENTIAL CONDITIONS
-DVOL                            0
------------------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
-DSURF                           0
------------------------------------------DESIGN LINE LJ_POTENTIAL CONDITIONS
-DLINE                           0
--------------------------------DESIGN VOL VAN DER WAALS POTENTIAL CONDITIONS
-DVOL                            0
-------------------------------DESIGN SURF VAN DER WAALS POTENTIAL CONDITIONS
-DSURF                           0
-------------------------------DESIGN LINE VAN DER WAALS POTENTIAL CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF ELECTRO REPULSION CONDITIONS
-DSURF                           0
-------------------------------------DESIGN LINE ELECTRO REPULSION CONDITIONS
-DLINE                           0
---------------------------------DESIGN FLUCTHYDRO STATISTICS SURF CONDITIONS
-DSURF                           0
---------------------------------DESIGN FLUCTHYDRO STATISTICS LINE CONDITIONS
-DLINE                           0
---------------------------------------DESIGN BROWNIAN MOTION SURF CONDITIONS
-DSURF                           0
-------------------------------------------------------------FILAMENT NUMBERS
-DLINE                           0
----------------------------------------------------------------FORCE SENSORS
-DPOINT                          0
--------------------------------------------------------MICROSCALE CONDITIONS
-DSURF                           0
-------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
-DLINE                           0
-------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-DSURF                           0
---------------------------------------------------------DESIGN VOL STC LAYER
-DVOL                            0
------------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF                           0
--------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D PEN
-DSURF                           0
--------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
-DSURF                           0
----------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D PEN
-DSURF                           0
---------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
-DLINE                           0
--------------------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE                           0
---------------------------------------------DESIGN SURF IMPEDANCE CONDITIONS
-DSURF                           0
---------------------------------DESIGN SURF IMPEDANCE CALIBRATION CONDITIONS
-DSURF                           0
----------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
-DSURF                           0
------------------------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D
-DSURF                           0
--------------------------DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D PEN
-DSURF                           0
-------------------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
-DLINE                           0
-------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
-DLINE                           0
-------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
-DSURF                           0
---------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
-DLINE                           0
---------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
-DSURF                           0
---------------------------------------------DESIGN FLOW RATE LINE CONDITIONS
-DLINE                           0
---------------------------------------------DESIGN FLOW RATE SURF CONDITIONS
-DSURF                           0
-------------------------------------------DESIGN IMPULS RATE SURF CONDITIONS
-DSURF                           0
---------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
-DSURF                           0
----------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
-DVOL                            0
--------------------------------------------------DESIGN SURFACE INV ANALYSIS
-DSURF                           0
-------------------------------DESIGN SURF WINDKESSEL OPTIMIZATION CONDITIONS
-DSURF                           0
---------------------------------------DESIGN SURF VOLUMETRIC FLOW CONDITIONS
-DSURF                           0
-------------------------------------DESIGN LINE VOLUMETRIC FLOW BORDER NODES
-DLINE                           0
-------------------------------------DESIGN THERMO CONVECTION LINE CONDITIONS
-DLINE                           0
-------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
-DSURF                           0
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 3 DSURFACE 1
 NODE 4 DSURFACE 1
@@ -564,9 +333,5 @@ NODE 78 COORD 5.0000000000000000e+00 0.0000000000000000e+00 -1.0000000000000000e
 20 SOLIDH8 HEX8 62 65 66 63 68 71 72 69 MAT 1 KINEM nonlinear EAS none
 21 SOLIDH8 HEX8 67 68 69 70 73 74 75 76 MAT 1 KINEM nonlinear EAS none
 22 SOLIDH8 HEX8 68 71 72 69 74 77 78 75 MAT 1 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

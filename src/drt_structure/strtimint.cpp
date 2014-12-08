@@ -812,11 +812,12 @@ void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
   for(int index=0;index<numnode;++index)
   {
     int gid = allreduceslavemap->GID(index);
-    DRT::Node* mynode = discret_->gNode(gid);
 
     // only do someting for nodes in my column map
     int ilid = discret_->NodeColMap()->LID(gid);
     if (ilid<0) continue;
+
+    DRT::Node* mynode = discret_->gNode(gid);
 
     // get degrees of freedom associated with this fluid/structure node
     std::vector<int> nodedofs = discret_->Dof(0,mynode);

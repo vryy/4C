@@ -65,7 +65,8 @@ discret_(discret)
   if(Comm().MyPID()==0) std::cout << "done!" << std::endl;
 
   // check for FillComplete of discretization
-  if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
+  if (!Discret().Filled())
+    dserror("ERROR: Discretization is not fillcomplete");
 
   // let's check for meshtying boundary conditions in discret
   // and detect groups of matching conditions
@@ -81,12 +82,15 @@ discret_(discret)
 
   // there must be more than one meshtying condition
   if ((int)contactconditions.size()<2)
-    dserror("Not enough contact conditions in discretization");
+    dserror("ERROR: Not enough contact conditions in discretization");
 
   // find all pairs of matching meshtying conditions
   // there is a maximum of (conditions / 2) groups
   std::vector<int> foundgroups(0);
   int numgroupsfound = 0;
+
+  // get nurbs information
+  const bool nurbs = mtparams.get<bool>("NURBS");
 
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
@@ -102,7 +106,8 @@ discret_(discret)
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);
     const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int> >("Interface ID");
-    if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
+    if (!group1v)
+      dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
     int groupid1 = (*group1v)[0];
     bool foundit = false;
 
@@ -111,7 +116,8 @@ discret_(discret)
       if (j==i) continue; // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
       const std::vector<int>* group2v = tempcond->Get<std::vector<int> >("Interface ID");
-      if (!group2v) dserror("Contact Conditions does not have value 'Interface ID'");
+      if (!group2v)
+        dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
       int groupid2 = (*group2v)[0];
       if (groupid1 != groupid2) continue; // not in the group
       foundit = true; // found a group entry
@@ -119,7 +125,8 @@ discret_(discret)
     }
 
     // now we should have found a group of conds
-    if (!foundit) dserror("Cannot find matching contact condition for id %d",groupid1);
+    if (!foundit)
+      dserror("ERROR: Cannot find matching contact condition for id %d",groupid1);
 
     // see whether we found this group before
     bool foundbefore = false;
@@ -162,8 +169,10 @@ discret_(discret)
       }
     }
 
-    if (!hasslave) dserror("Slave side missing in contact condition group!");
-    if (!hasmaster) dserror("Master side missing in contact condition group!");
+    if (!hasslave)
+      dserror("ERROR: Slave side missing in contact condition group!");
+    if (!hasmaster)
+      dserror("ERROR: Master side missing in contact condition group!");
 
     // find out which sides are initialized as Active
     std::vector<const std::string*> active((int)currentgroup.size());
@@ -175,16 +184,22 @@ discret_(discret)
       if (*sides[j] == "Slave")
       {
         // slave sides must be initialized as "Active"
-        if (*active[j] == "Active")        isactive[j] = true;
-        else if (*active[j] == "Inactive") dserror("ERROR: Slave side must be active for meshtying!");
-        else                               dserror("ERROR: Unknown contact init qualifier!");
+        if (*active[j] == "Active")
+          isactive[j] = true;
+        else if (*active[j] == "Inactive")
+          dserror("ERROR: Slave side must be active for meshtying!");
+        else
+          dserror("ERROR: Unknown contact init qualifier!");
       }
       else if (*sides[j] == "Master")
       {
         // master sides must NOT be initialized as "Active" as this makes no sense
-        if (*active[j] == "Active")        dserror("ERROR: Master side cannot be active!");
-        else if (*active[j] == "Inactive") isactive[j] = false;
-        else                               dserror("ERROR: Unknown contact init qualifier!");
+        if (*active[j] == "Active")
+          dserror("ERROR: Master side cannot be active!");
+        else if (*active[j] == "Inactive")
+          isactive[j] = false;
+        else
+          dserror("ERROR: Unknown contact init qualifier!");
       }
       else
       {
@@ -214,14 +229,16 @@ discret_(discret)
     {
       // get all nodes and add them
       const std::vector<int>* nodeids = currentgroup[j]->Nodes();
-      if (!nodeids) dserror("Condition does not have Node Ids");
+      if (!nodeids)
+        dserror("ERROR: Condition does not have Node Ids");
       for (int k=0; k<(int)(*nodeids).size(); ++k)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
         if (!Discret().NodeColMap()->MyGID(gid)) continue;
         DRT::Node* node = Discret().gNode(gid);
-        if (!node) dserror("Cannot find node with gid %",gid);
+        if (!node)
+          dserror("ERROR: Cannot find node with gid %",gid);
 
         // create MortarNode object
         Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),node->X(),
@@ -231,7 +248,7 @@ discret_(discret)
                                                               isslave[j]));
         //-------------------
         // get nurbs weight!
-        if(mtparams.get<bool>("NURBS")==true)
+        if(nurbs)
         {
           ManagerBase::PrepareNURBSNode(
                           node,
@@ -287,10 +304,10 @@ discret_(discret)
                                                                    ele->NumNode(),
                                                                    ele->NodeIds(),
                                                                    isslave[j],
-                                                                   mtparams.get<bool>("NURBS")));
+                                                                   nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
-        if(mtparams.get<bool>("NURBS")==true)
+        if(nurbs)
         {
           ManagerBase::PrepareNURBSElement(
               discret,

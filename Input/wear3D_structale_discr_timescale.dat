@@ -71,7 +71,7 @@ SEARCH_PARAM                    0.8
 PARALLEL_REDIST                 dynamic
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
-WEARTYPE                        discrete
+WEARTYPE                        primvar
 BOTH_SIDED_WEAR                 no
 WEARCOEFF                       0.003
 WEAR_TIMESCALE                  different

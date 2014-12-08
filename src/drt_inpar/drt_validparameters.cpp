@@ -2007,14 +2007,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 INPAR::WEAR::wear_both_discr, INPAR::WEAR::wear_both_discr,INPAR::WEAR::wear_both_discr),
         &wear);
 
-  setStringToIntegralParameter<int>("WEARTYPE","explicit","Definition of wear algorithm",
-        tuple<std::string>("impl","Impl", "implicit" ,
-                           "expl","Expl", "explicit",
-                           "discrete","wear_discrete", "wd"),
+  setStringToIntegralParameter<int>("WEARTYPE","internal_state_expl","Definition of wear algorithm",
+        tuple<std::string>("intstate_impl","is_impl", "internal_state_impl" ,
+                           "intstate_expl","is_expl", "internal_state_expl",
+                           "primvar","pv", "primary_variable"),
         tuple<int>(
-                INPAR::WEAR::wear_impl, INPAR::WEAR::wear_impl, INPAR::WEAR::wear_impl,
-                INPAR::WEAR::wear_expl, INPAR::WEAR::wear_expl,INPAR::WEAR::wear_expl,
-                INPAR::WEAR::wear_discr, INPAR::WEAR::wear_discr, INPAR::WEAR::wear_discr),
+                INPAR::WEAR::wear_intstate_impl, INPAR::WEAR::wear_intstate_impl, INPAR::WEAR::wear_intstate_impl,
+                INPAR::WEAR::wear_intstate_expl, INPAR::WEAR::wear_intstate_expl, INPAR::WEAR::wear_intstate_expl,
+                INPAR::WEAR::wear_primvar, INPAR::WEAR::wear_primvar, INPAR::WEAR::wear_primvar),
         &wear);
 
   setStringToIntegralParameter<int>("WEAR_COUPALGO","stagg","Definition of wear (ALE) coupling algorithm",

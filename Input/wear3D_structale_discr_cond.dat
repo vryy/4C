@@ -72,7 +72,7 @@ PARALLEL_REDIST                 dynamic
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEAR_SHAPEFCN                   dual
-WEARTYPE                        discrete
+WEARTYPE                        primvar
 BOTH_SIDED_WEAR                 no
 WEARCOEFF                       0.003
 --------------------------------------------------------CLONING MATERIAL MAP

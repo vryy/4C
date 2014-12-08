@@ -1434,8 +1434,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
       break;
     }
     default:
-      dserror(
-          "ERROR: StoreNodalQuantities: Unknown state std::string variable!");
+      dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
       break;
     } // switch
 
@@ -1633,7 +1632,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
           case MORTAR::StrategyBase::slipold:
           {
             if (!friction_)
-              dserror("Slip just for friction problems!");
+              dserror("ERROR: Slip just for friction problems!");
 
             FriNode* fnode = dynamic_cast<FriNode*>(cnode);
             fnode->FriData().SlipOld() = fnode->FriData().Slip();
@@ -1642,8 +1641,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
           case MORTAR::StrategyBase::wear:
           {
             if (!friction_)
-              dserror(
-                  "ERROR: This should not be called for contact without friction");
+              dserror("ERROR: This should not be called for contact without friction");
             // update wear only once
             if (dof == 0)
             {
@@ -1652,26 +1650,21 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
               double wearcoeffm = Params().get<double>("WEARCOEFF_MASTER", 0.0);
               double wearcoeff = wearcoeffs + wearcoeffm;
 
-              if (Params().get<int>("PROBTYPE")
-                  != INPAR::CONTACT::structalewear)
-                frinode->FriDataPlus().Wear() += wearcoeff
-                    * frinode->FriDataPlus().DeltaWear(); // amount of wear
+              if (Params().get<int>("PROBTYPE") != INPAR::CONTACT::structalewear)
+                frinode->FriDataPlus().Wear() += wearcoeff * frinode->FriDataPlus().DeltaWear(); // amount of wear
               else
-                frinode->FriDataPlus().Wear() = wearcoeff
-                    * frinode->FriDataPlus().DeltaWear(); // wear for each ale step
+                frinode->FriDataPlus().Wear()  = wearcoeff * frinode->FriDataPlus().DeltaWear(); // wear for each ale step
             }
 
             break;
           }
           default:
-            dserror(
-                "ERROR: StoreNodalQuantities: Unknown state std::string variable!");
+            dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
             break;
           } // switch
         }
       } // end slave loop
     }
-
   }
 
   return;

@@ -17,13 +17,16 @@ Maintainer: Philipp Farah
 #include "volmortar_shape.H"
 #include "volmortar_defines.H"
 #include "volmortar_cell.H"
+
 #include "../drt_fem_general/drt_utils_integration.H"
 
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../drt_mortar/mortar_calc_utils.H"
+
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_cut/cut_volumecell.H"
 
@@ -67,7 +70,6 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::InitializeGP(bool integr
     else
       dserror("wrong dimension!");
   }
-
 
   //*******************************
   // choose Gauss rule accordingly
@@ -225,7 +227,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
     // Check parameter space mapping
     bool proj = CheckMapping2D(sele,mele,sxi,mxi);
     if (proj==false)
-      dserror("Mapping failed!");
+      dserror("ERROR: Mapping failed!");
 
     // evaluate trace space shape functions (on both elements)
     UTILS::shape_function<distypeS>(sval,sxi);
@@ -357,10 +359,10 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D(
     Teuchos::RCP<const DRT::Discretization> Bdis)
 {
   // create empty vectors for shape fct. evaluation
-  LINALG::Matrix<ns_,1>             sval_A;
-  LINALG::Matrix<nm_,1>             mval_A;
-  LINALG::Matrix<ns_,1>             lmval_A;
-  LINALG::Matrix<nm_,1>             lmval_B;
+  LINALG::Matrix<ns_,1> sval_A;
+  LINALG::Matrix<nm_,1> mval_A;
+  LINALG::Matrix<ns_,1> lmval_A;
+  LINALG::Matrix<nm_,1> lmval_B;
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -499,10 +501,10 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D_DirectD
     Teuchos::RCP<const DRT::Discretization> Bdis)
 {
   // create empty vectors for shape fct. evaluation
-  LINALG::Matrix<ns_,1>             sval_A;
-  LINALG::Matrix<nm_,1>             mval_A;
-  LINALG::Matrix<ns_,1>             lmval_A;
-  LINALG::Matrix<nm_,1>             lmval_B;
+  LINALG::Matrix<ns_,1> sval_A;
+  LINALG::Matrix<nm_,1> mval_A;
+  LINALG::Matrix<ns_,1> lmval_A;
+  LINALG::Matrix<nm_,1> lmval_B;
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -641,9 +643,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
     Teuchos::RCP<const DRT::Discretization> Bdis)
 {
   // create empty vectors for shape fct. evaluation
-  LINALG::Matrix<ns_,1>             sval_A;
-  LINALG::Matrix<nm_,1>             mval_A;
-  LINALG::Matrix<ns_,1>             lmval_A;
+  LINALG::Matrix<ns_,1> sval_A;
+  LINALG::Matrix<nm_,1> mval_A;
+  LINALG::Matrix<ns_,1> lmval_A;
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -769,9 +771,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
     Teuchos::RCP<const DRT::Discretization> Bdis)
 {
   // create empty vectors for shape fct. evaluation
-  LINALG::Matrix<ns_,1>             mval_A;
-  LINALG::Matrix<nm_,1>             sval_B;
-  LINALG::Matrix<nm_,1>             lmval_B;
+  LINALG::Matrix<ns_,1> mval_A;
+  LINALG::Matrix<nm_,1> sval_B;
+  LINALG::Matrix<nm_,1> lmval_B;
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -901,10 +903,10 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEle3D(
      Teuchos::RCP<const DRT::Discretization> Bdis)
 {
   // create empty vectors for shape fct. evaluation
-  LINALG::Matrix<ns_,1>             sval_A;
-  LINALG::Matrix<nm_,1>             mval_A;
-  LINALG::Matrix<ns_,1>             lmval_A;
-  LINALG::Matrix<nm_,1>             lmval_B;
+  LINALG::Matrix<ns_,1> sval_A;
+  LINALG::Matrix<nm_,1> mval_A;
+  LINALG::Matrix<ns_,1> lmval_A;
+  LINALG::Matrix<nm_,1> lmval_B;
 
   //**********************************************************************
   // loop over all Gauss points for integration

@@ -315,7 +315,6 @@ protected:
 
   Teuchos::RCP<Epetra_Map> gidofs_;
 
-
 }; //class
 
 

@@ -67,11 +67,9 @@ VOLMORTAR::VolMortarCoupl::VolMortarCoupl(
 {
   //check
   if (not Adiscret_->Filled() or not Bdiscret_->Filled())
-    dserror(
-        "FillComplete() has to be called on both discretizations before setup of VolMortarCoupl");
+    dserror("ERROR: FillComplete() has to be called on both discretizations before setup of VolMortarCoupl");
   if ((Adiscret_->NumDofSets() == 1) or (Bdiscret_->NumDofSets() == 1))
-    dserror(
-        "Both discretizations need to own at least two dofsets for mortar coupling!");
+    dserror("ERROR: Both discretizations need to own at least two dofsets for mortar coupling!");
 
   // get required parameter list
   ReadAndCheckInput();
@@ -140,7 +138,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
 
   // no other possibility
   else
-    dserror("Chosen INTTYPE not provided");
+    dserror("ERROR: Chosen INTTYPE not provided");
 
   /***********************************************************
    * complete global matrices and create projection operator *
@@ -359,7 +357,6 @@ std::vector<int> VOLMORTAR::VolMortarCoupl::Search(DRT::Element& ele,
   //search for near elements to the background node's coord
   SearchTree->searchCollisions(currentKDOPs,queryKDOP,0,gid);
 
-
   for (std::set<int>::iterator iter = gid.begin(); iter != gid.end(); ++iter)
     gids.push_back(*iter);
 
@@ -491,7 +488,7 @@ std::vector<int> VOLMORTAR::VolMortarCoupl::GetAdjacentNodes(
       ids.push_back(7);
     }
     else
-      dserror("Given Id is wrong!!!");
+      dserror("ERROR: Given Id is wrong!!!");
 
     break;
   }
@@ -528,12 +525,12 @@ std::vector<int> VOLMORTAR::VolMortarCoupl::GetAdjacentNodes(
       ids.push_back(3);
     }
     else
-      dserror("Given Id is wrong!!!");
+      dserror("ERROR: Given Id is wrong!!!");
 
     break;
   }
   default:
-    dserror("shape unknown\n");
+    dserror("ERROR: shape unknown\n");
   }
 
   return ids;
@@ -569,7 +566,7 @@ void VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(DRT::Element& ele,
     edge_max = 9;
   }
   else
-    dserror("Unknown shape for trafo matrix");
+    dserror("ERROR: Unknown shape for trafo matrix");
 
   // loop over element nodes
   for (int i = 0; i < ele.NumNode(); ++i)
@@ -712,7 +709,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
 {
   // check dimension
   if (dim_ == 2)
-    dserror("Element-based integration only for 3D coupling!");
+    dserror("ERROR: Element-based integration only for 3D coupling!");
 
   // output
   if(myrank_== 0)
@@ -843,7 +840,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
        * Wrong Dimension !!!                            *
        **************************************************/
       else
-        dserror("Problem dimension is not correct!");
+        dserror("ERROR: Problem dimension is not correct!");
 
     } // end master element loop
   } // end slave element loop
@@ -1310,7 +1307,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
   // *******************************************
   // DEFAULT           *************************
   else
-    dserror("Chosen Cuttype for volmortar not supported!");
+    dserror("ERROR: Chosen Cuttype for volmortar not supported!");
 
   return;
 }
@@ -1343,7 +1340,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele,
       MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(mele, xgl, xi,
           converged);
     else
-      dserror("Shape function not supported!");
+      dserror("ERROR: Shape function not supported!");
 
     if (converged == true)
     {
@@ -1415,7 +1412,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
         MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(sele, xgl, xi,
             converged);
       else
-        dserror("Shape function not supported!");
+        dserror("ERROR: Shape function not supported!");
 
       if (converged == true)
       {
@@ -1488,7 +1485,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
         MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(mele, xgl, xi,
             converged);
       else
-        dserror("Shape function not supported!");
+        dserror("ERROR: Shape function not supported!");
 
       if (converged == true)
       {
@@ -1549,7 +1546,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
     else if (sele.Shape() == DRT::Element::tet4)
       MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(sele, xgl, xi, converged);
     else
-      dserror("Shape function not supported!");
+      dserror("ERROR: Shape function not supported!");
 
     if (converged == true)
     {
@@ -1587,7 +1584,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(mele, xgl, xi,
           converged);
     else
-      dserror("Shape function not supported!");
+      dserror("ERROR: Shape function not supported!");
 
     if (converged == true)
     {
@@ -1649,7 +1646,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
       }
       default:
       {
-        dserror("unknown shape!");
+        dserror("ERROR: unknown shape!");
         break;
       }
       }
@@ -1678,7 +1675,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
       }
       default:
       {
-        dserror("unknown shape!");
+        dserror("ERROR: unknown shape!");
         break;
       }
       }
@@ -1686,7 +1683,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -1719,7 +1716,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
       }
       default:
       {
-        dserror("unknown shape!");
+        dserror("ERROR: unknown shape!");
         break;
       }
       }
@@ -1748,7 +1745,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
       }
       default:
       {
-        dserror("unknown shape!");
+        dserror("ERROR: unknown shape!");
         break;
       }
       }
@@ -1803,7 +1800,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
       }
       default:
       {
-        dserror("unknown shape!");
+        dserror("ERROR: unknown shape!");
         break;
       }
       }
@@ -1834,7 +1831,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
       }
       default:
       {
-        dserror("unknown shape!");
+        dserror("ERROR: unknown shape!");
         break;
       }
       }
@@ -1842,7 +1839,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -1914,7 +1911,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -1972,7 +1969,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2030,7 +2027,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2088,7 +2085,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2146,7 +2143,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2154,7 +2151,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
   }
   default:
   {
-    dserror("unknown shape!");
+    dserror("ERROR: unknown shape!");
     break;
   }
   }
@@ -2226,7 +2223,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2284,7 +2281,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2342,7 +2339,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2400,7 +2397,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2458,7 +2455,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2466,7 +2463,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
   }
   default:
   {
-    dserror("unknown shape!");
+    dserror("ERROR: unknown shape!");
     break;
   }
   }
@@ -2517,7 +2514,7 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_ADis(
   }
   default:
   {
-    dserror("unknown shape!");
+    dserror("ERROR: unknown shape!");
     break;
   }
   }
@@ -2568,7 +2565,7 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_BDis(
   }
   default:
   {
-    dserror("unknown shape!");
+    dserror("ERROR: unknown shape!");
     break;
   }
   }
@@ -2632,7 +2629,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
       }
       default:
       {
-        dserror("unknown shape!");
+        dserror("ERROR: unknown shape!");
         break;
       }
       }
@@ -2663,7 +2660,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
       }
       default:
       {
-        dserror("unknown shape!");
+        dserror("ERROR: unknown shape!");
         break;
       }
       }
@@ -2671,7 +2668,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2716,7 +2713,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2747,7 +2744,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2755,7 +2752,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
   }
   default:
   {
-    dserror("unknown shape!");
+    dserror("ERROR: unknown shape!");
     break;
   }
   }

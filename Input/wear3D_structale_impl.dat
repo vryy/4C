@@ -70,7 +70,7 @@ SEARCH_PARAM                    0.8
 PARALLEL_REDIST                 dynamic
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
-WEARTYPE                        implicit
+WEARTYPE                        is_impl
 BOTH_SIDED_WEAR                 no
 WEARCOEFF                       0.003
 --------------------------------------------------------CLONING MATERIAL MAP

@@ -71,7 +71,7 @@ PARALLEL_REDIST                 dynamic
 //LM_DUAL_CONSISTENT              no
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
-WEARTYPE                        explicit
+WEARTYPE                        is_expl
 BOTH_SIDED_WEAR                 none
 WEAR_COUPALGO                   stagg
 WEARCOEFF                       0.0003

@@ -1746,7 +1746,7 @@ int STR::TimIntImpl::NewtonFull()
       INPAR::WEAR::WearSide wside =
           DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(cmtbridge_->GetStrategy().Params(),"BOTH_SIDED_WEAR");
 
-      if(wtype==INPAR::WEAR::wear_discr)
+      if(wtype==INPAR::WEAR::wear_primvar)
       {
         Teuchos::RCP<Epetra_Vector> wincr  = cmtbridge_->GetStrategy().WSolveIncr();
         Teuchos::RCP<Epetra_Vector> wearrhs = cmtbridge_->GetStrategy().WearRhs();
@@ -3752,7 +3752,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
       case INPAR::STR::convnorm_abs :
       {
         oss <<std::setw(20)<< "abs-lagrincr-norm";
-        if (wtype == INPAR::WEAR::wear_discr)
+        if (wtype == INPAR::WEAR::wear_primvar)
         {
           oss <<std::setw(20)<< "abs-wearincr-S-norm";
           oss <<std::setw(20)<< "abs-wearcon-S-norm";
@@ -3923,7 +3923,7 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
       oss << std::setw(20) << std::setprecision(5) << std::scientific << normcontconstr_; // RHS for contact constraints
       oss << std::setw(20) << std::setprecision(5) << std::scientific << normlagr_;    // norm Lagrange multipliers
 
-      if (wtype == INPAR::WEAR::wear_discr)
+      if (wtype == INPAR::WEAR::wear_primvar)
       {
         oss << std::setw(20) << std::setprecision(5) << std::scientific << normw_;       // norm wear
         oss << std::setw(20) << std::setprecision(5) << std::scientific << normwrhs_;    // norm wear rhs

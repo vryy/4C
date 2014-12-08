@@ -70,7 +70,7 @@ SEARCH_PARAM                    0.4
 PARALLEL_REDIST                 dynamic
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
-WEARTYPE                        discrete
+WEARTYPE                        primvar
 BOTH_SIDED_WEAR                 none
 WEARCOEFF                       0.003
 WEAR_COUPALGO                   stagg // change this to iterstagg!!

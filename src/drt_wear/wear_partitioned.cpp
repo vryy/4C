@@ -550,7 +550,9 @@ void WEAR::Partitioned::InterfaceDisp(
     }
   }
   else
+  {
     dserror("ERROR: Chosen wear configuration not supported!");
+  }
 
   return;
 }
@@ -743,7 +745,7 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
       INPAR::WEAR::WearTimeScale>(DRT::Problem::Instance()->WearParams(),
       "WEAR_TIMESCALE");
 
-  if (wtype != INPAR::WEAR::wear_impl)
+  if (wtype != INPAR::WEAR::wear_intstate_impl)
     cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::wear);
 
   for (int i=0; i<(int)interfaces_.size(); ++i)
@@ -775,7 +777,7 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
       for (int j=0;j<3;++j)
         nn[j]=frinode->MoData().n()[j];
 
-      if (wtype == INPAR::WEAR::wear_discr)
+      if (wtype == INPAR::WEAR::wear_primvar)
       {
         if(wtime == INPAR::WEAR::wear_time_different)
         {
@@ -792,8 +794,8 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
             wear=0.0;
         }
       }
-      else if (wtype == INPAR::WEAR::wear_expl or
-               wtype == INPAR::WEAR::wear_impl)
+      else if (wtype == INPAR::WEAR::wear_intstate_expl or
+               wtype == INPAR::WEAR::wear_intstate_impl)
       {
         wear = frinode->FriDataPlus().Wear();
       }
@@ -810,8 +812,8 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
     }
 
     // un-weight for internal state approach
-    if (wtype == INPAR::WEAR::wear_expl or
-        wtype == INPAR::WEAR::wear_impl)
+    if (wtype == INPAR::WEAR::wear_intstate_expl or
+        wtype == INPAR::WEAR::wear_intstate_impl)
     {
       Teuchos::RCP<LINALG::SparseMatrix> daa,dai,dia,dii;
       Teuchos::RCP<Epetra_Map> gidofs;
@@ -905,7 +907,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       INPAR::WEAR::WearTimeScale>(DRT::Problem::Instance()->WearParams(),
       "WEAR_TIMESCALE");
 
-  if (wtype != INPAR::WEAR::wear_impl)
+  if (wtype != INPAR::WEAR::wear_intstate_impl)
     cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::wear);
 
   // loop over all interfaces
@@ -958,7 +960,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       for (int j=0;j<3;++j)
         nn[j]=frinodem->MoData().n()[j];
 
-      if (wtype == INPAR::WEAR::wear_discr)
+      if (wtype == INPAR::WEAR::wear_primvar)
       {
         if(wtime == INPAR::WEAR::wear_time_different)
         {
@@ -975,8 +977,8 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
             wear=0.0;
         }
       }
-      else if (wtype == INPAR::WEAR::wear_expl or
-               wtype == INPAR::WEAR::wear_impl)
+      else if (wtype == INPAR::WEAR::wear_intstate_expl or
+               wtype == INPAR::WEAR::wear_intstate_impl)
       {
         wear = frinode->FriDataPlus().Wear();
       }
@@ -1016,7 +1018,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
     dmat->Complete();
 
     // 8. area trafo:
-    if (wtype == INPAR::WEAR::wear_discr)
+    if (wtype == INPAR::WEAR::wear_primvar)
     {
       // multiply current D matrix with current wear
       Teuchos::RCP<Epetra_Vector> forcecurr = Teuchos::rcp(new Epetra_Vector(*slavedofs));
@@ -1032,8 +1034,8 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       // store reference LM into global vector and nodes
       disinterface_s = zref;
     }
-    else if (wtype == INPAR::WEAR::wear_expl or
-             wtype == INPAR::WEAR::wear_impl)
+    else if (wtype == INPAR::WEAR::wear_intstate_expl or
+             wtype == INPAR::WEAR::wear_intstate_impl)
     {
       Teuchos::RCP<Epetra_Vector> zref  = Teuchos::rcp(new Epetra_Vector(*slavedofs));
 
@@ -1128,7 +1130,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       for (int j=0;j<3;++j)
         nn[j]=frinodem->MoData().n()[j];
 
-      if (wtype == INPAR::WEAR::wear_discr)
+      if (wtype == INPAR::WEAR::wear_primvar)
       {
         if(wtime == INPAR::WEAR::wear_time_different)
         {
@@ -1145,7 +1147,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
             wear=0.0;
         }
       }
-      else if (wtype == INPAR::WEAR::wear_expl)
+      else if (wtype == INPAR::WEAR::wear_intstate_expl)
       {
         wear = frinode->FriDataPlus().Wear();
       }
@@ -1249,7 +1251,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
     dmat->Complete();
 
     // 13. area trafo:
-    if (wtype == INPAR::WEAR::wear_discr)
+    if (wtype == INPAR::WEAR::wear_primvar)
     {
       // multiply current D matrix with current wear
       Teuchos::RCP<Epetra_Vector> forcecurr = Teuchos::rcp(new Epetra_Vector(*masterdofs));
@@ -1265,8 +1267,8 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       // store reference LM into global vector and nodes
       disinterface_m = zref;
     }
-    else if (wtype == INPAR::WEAR::wear_expl or
-             wtype == INPAR::WEAR::wear_impl)
+    else if (wtype == INPAR::WEAR::wear_intstate_expl or
+             wtype == INPAR::WEAR::wear_intstate_impl)
     {
       dserror("ERROR: not working yet!");
       Teuchos::RCP<Epetra_Vector> zref  = Teuchos::rcp(new Epetra_Vector(*masterdofs));
