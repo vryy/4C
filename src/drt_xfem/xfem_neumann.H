@@ -57,7 +57,7 @@ namespace XFEM
 void EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
                        Teuchos::ParameterList &             params,
                        DRT::Discretization &                discret,
-                       DRT::Discretization &                cutdiscret,
+                       Teuchos::RCP<DRT::Discretization>    cutdiscret,
                        Teuchos::RCP<Epetra_Vector>          systemvector,
                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix = Teuchos::null );
 
@@ -65,7 +65,7 @@ void EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
 void EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
                        Teuchos::ParameterList &             params,
                        DRT::Discretization &                discret,
-                       DRT::Discretization &                cutdiscret,
+                       Teuchos::RCP<DRT::Discretization>    cutdiscret,
                        Epetra_Vector&                       systemvector,
                        LINALG::SparseOperator*              systemmatrix = NULL );
 
@@ -93,7 +93,7 @@ void EvaluateNeumannXFEM(     Teuchos::RCP<XFEM::FluidWizard>               wiza
                               bool                                          assemblemat,
                               Teuchos::ParameterList &                      params,
                               DRT::Discretization &                         discret,
-                              DRT::Discretization &                         cutdiscret,
+                              Teuchos::RCP<DRT::Discretization>             cutdiscret,
                               Epetra_Vector&                                systemvector,
                               LINALG::SparseOperator*                       systemmatrix);
 

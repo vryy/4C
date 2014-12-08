@@ -35,7 +35,7 @@ Maintainer: Dipl.-Math. Benedikt Schott
 void XFEM::EvaluateNeumann(                    Teuchos::RCP<XFEM::FluidWizard>      wizard,
                                                Teuchos::ParameterList&              params,
                                                DRT::Discretization &                discret,
-                                               DRT::Discretization &                cutdiscret,
+                                               Teuchos::RCP<DRT::Discretization>    cutdiscret,
                                                Teuchos::RCP<Epetra_Vector>          systemvector,
                                                Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
 {
@@ -51,11 +51,11 @@ void XFEM::EvaluateNeumann(                    Teuchos::RCP<XFEM::FluidWizard>  
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
 void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
-                             Teuchos::ParameterList&          params,
-                             DRT::Discretization &   discret,
-                             DRT::Discretization &   cutdiscret,
-                             Epetra_Vector&          systemvector,
-                             LINALG::SparseOperator* systemmatrix)
+                             Teuchos::ParameterList&              params,
+                             DRT::Discretization &                discret,
+                             Teuchos::RCP<DRT::Discretization>    cutdiscret,
+                             Epetra_Vector&                       systemvector,
+                             LINALG::SparseOperator*              systemmatrix)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 5) EvaluateNeumann" );
@@ -281,7 +281,7 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
                                 bool                                 assemblemat,
                                 Teuchos::ParameterList&              params,
                                 DRT::Discretization &                discret,
-                                DRT::Discretization &                cutdiscret,
+                                Teuchos::RCP<DRT::Discretization>    cutdiscret,
                                 Epetra_Vector&                       systemvector,
                                 LINALG::SparseOperator*              systemmatrix)
 {

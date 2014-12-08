@@ -3605,7 +3605,7 @@ void FLD::XFluidFluid::SetDirichletNeumannBC()
   state_->neumann_loads_->PutScalar(0.0);
   bgdis_->SetState("scaaf",state_->scaaf_);
 //    bgdis_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
-  XFEM::EvaluateNeumann(state_->wizard_, eleparams, *bgdis_, *boundarydis_, state_->neumann_loads_);
+  XFEM::EvaluateNeumann(state_->wizard_, eleparams, *bgdis_, boundarydis_, state_->neumann_loads_);
   bgdis_->ClearState();
 
   neumann_loads_->PutScalar(0.0);

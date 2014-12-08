@@ -6364,7 +6364,7 @@ void FLD::XFluid::SetDirichletNeumannBC()
 
 //    discret_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
 
-    XFEM::EvaluateNeumann(state_->Wizard(), eleparams, *discret_, *boundarydis_, state_->neumann_loads_);
+    XFEM::EvaluateNeumann(state_->Wizard(), eleparams, *discret_, boundarydis_, state_->neumann_loads_);
 
     discret_->ClearState();
 
