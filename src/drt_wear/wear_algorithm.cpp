@@ -63,7 +63,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
     dserror("ERROR: cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
   // ask base algorithm for the ale time integrator
-  Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(
+  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(
       DRT::Problem::Instance()->StructuralDynamicParams(),
       DRT::Problem::Instance()->GetDis("ale")));
   ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleWearWrapper>(ale->AleField());

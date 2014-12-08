@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file fsi_monolithic.cpp
 
@@ -11,7 +11,7 @@ Maintainer: Matthias Mayr
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -52,13 +52,14 @@ Maintainer: Matthias Mayr
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_overlapprec_amgnxn.H"
 
-/*----------------------------------------------------------------------*/
-// Note: The order of calling the three BaseAlgorithm-constructors is
-// important here! In here control file entries are written. And these
-// entries define the order in which the filters handle the
-// Discretizations, which in turn defines the dof number ordering of the
-// Discretizations.
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/* Note: The order of calling the three BaseAlgorithm-constructors is
+ * important here! In here control file entries are written. And these
+ * entries define the order in which the filters handle the
+ * Discretizations, which in turn defines the dof number ordering of the
+ * Discretizations.
+ */
+/*----------------------------------------------------------------------------*/
 FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
                                     const Teuchos::ParameterList& timeparams)
   : AlgorithmBase(comm,timeparams),
@@ -85,7 +86,7 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fluid->FluidField());
 
   // ask base algorithm for the ale time integrator
-  Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale")));
+  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale")));
   ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFsiWrapper>(ale->AleField());
   if(ale_ == Teuchos::null)
      dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
@@ -99,14 +100,14 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 FSI::MonolithicBase::~MonolithicBase()
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::ReadRestart(int step)
 {
   StructureField()->ReadRestart(step);
@@ -116,8 +117,8 @@ void FSI::MonolithicBase::ReadRestart(int step)
   SetTimeStep(FluidField()->Time(), FluidField()->Step());
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::PrepareTimeStep()
 {
   IncrementTimeAndStep();
@@ -129,8 +130,8 @@ void FSI::MonolithicBase::PrepareTimeStep()
   AleField()->PrepareTimeStep();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::Update()
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
@@ -150,21 +151,22 @@ void FSI::MonolithicBase::Update()
   AleField()->Update();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::PrepareOutput()
 {
   StructureField()->PrepareOutput();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::Output()
 {
-  // Note: The order is important here! In here control file entries are
-  // written. And these entries define the order in which the filters handle
-  // the Discretizations, which in turn defines the dof number ordering of the
-  // Discretizations.
+  /* Note: The order is important here! In here control file entries are
+   * written. And these entries define the order in which the filters handle
+   * the Discretizations, which in turn defines the dof number ordering of the
+   * Discretizations.
+   */
   StructureField()->Output();
   FluidField()->Output();
   AleField()->Output();
@@ -179,106 +181,106 @@ void FSI::MonolithicBase::Output()
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupsa_->MasterToSlave(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupsa_->SlaveToMaster(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupsf_->MasterToSlave(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupsf_->SlaveToMaster(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupfa_->SlaveToMaster(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToAleInterface(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return icoupfa_->MasterToSlave(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluidInterface(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return icoupfa_->SlaveToMaster(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsa_->MasterToSlave(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsa_->SlaveToMaster(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsf_->MasterToSlave(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsf_->SlaveToMaster(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_->SlaveToMaster(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToAleInterface(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfa_->MasterToSlave(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluidInterface(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfa_->SlaveToMaster(iv);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
                             const Teuchos::ParameterList& timeparams)
   : MonolithicBase(comm,timeparams),
@@ -324,8 +326,8 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::SetupSystem()
 {
   // right now we use matching meshes at the interface
@@ -389,8 +391,8 @@ void FSI::Monolithic::SetupSystem()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
@@ -411,8 +413,8 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::TimeloopConstDt(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
   PrepareTimeloop();
@@ -429,8 +431,8 @@ void FSI::Monolithic::TimeloopConstDt(const Teuchos::RCP<NOX::Epetra::Interface:
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::PrepareTimeloop()
 {
   // make sure we didn't destroy the maps before we entered the timeloop
@@ -516,8 +518,8 @@ void FSI::Monolithic::PrepareTimeloop()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::TimeStep");
@@ -616,8 +618,8 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::NonLinErrorCheck()
 {
   // assume convergence of nonlinear solver
@@ -725,8 +727,8 @@ void FSI::Monolithic::NonLinErrorCheck()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
@@ -783,16 +785,16 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   Utils()->out() << "\n";
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps)
 {
   Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
   blockrowdofmap_.Setup(*fullmap, maps);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
                                            Teuchos::ParameterList& list)
 {
@@ -871,8 +873,8 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   lsParams.set<double>("adaptive distance",fsimono.get<double>("ADAPTIVEDIST")); // adaptive distance
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Direction::Generic>
 FSI::Monolithic::buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
                                 Teuchos::ParameterList& params) const
@@ -886,8 +888,8 @@ FSI::Monolithic::buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 bool FSI::Monolithic::computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::computeF");
@@ -897,16 +899,16 @@ bool FSI::Monolithic::computeF(const Epetra_Vector &x, Epetra_Vector &F, const F
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 bool FSI::Monolithic::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
 {
   return true;
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 bool FSI::Monolithic::computePreconditioner(const Epetra_Vector &x,
                                             Epetra_Operator &M,
                                             Teuchos::ParameterList *precParams)
@@ -914,8 +916,8 @@ bool FSI::Monolithic::computePreconditioner(const Epetra_Vector &x,
   return true;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::SetupRHS(Epetra_Vector& f, bool firstcall)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::SetupRHS");
@@ -950,8 +952,8 @@ void FSI::Monolithic::SetupRHS(Epetra_Vector& f, bool firstcall)
   f.Scale(-1.);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::InitialGuess");
@@ -963,8 +965,8 @@ void FSI::Monolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
                       true);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::CombineFieldVectors(Epetra_Vector& v,
                                           Teuchos::RCP<const Epetra_Vector> sv,
                                           Teuchos::RCP<const Epetra_Vector> fv,
@@ -975,8 +977,8 @@ void FSI::Monolithic::CombineFieldVectors(Epetra_Vector& v,
   Extractor().AddVector(*av, 2, v);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::Monolithic::WriteInterfaceEnergyFile(const double energystep,
                                                const double energysum)
 {
@@ -995,8 +997,8 @@ void FSI::Monolithic::WriteInterfaceEnergyFile(const double energystep,
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 FSI::BlockMonolithic::BlockMonolithic(const Epetra_Comm& comm,
                                       const Teuchos::ParameterList& timeparams)
   : Monolithic(comm,timeparams),
@@ -1004,8 +1006,8 @@ FSI::BlockMonolithic::BlockMonolithic(const Epetra_Comm& comm,
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 bool FSI::BlockMonolithic::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::computeJacobian");
@@ -1015,8 +1017,8 @@ bool FSI::BlockMonolithic::computeJacobian(const Epetra_Vector &x, Epetra_Operat
   return true;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
                                                  Epetra_Operator &M,
                                                  Teuchos::ParameterList *precParams)
@@ -1044,8 +1046,8 @@ bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
   return true;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::PrepareTimeStep()
 {
   FSI::Monolithic::PrepareTimeStep();
@@ -1054,8 +1056,8 @@ void FSI::BlockMonolithic::PrepareTimeStep()
   precondreusecount_ = 0;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlockMatrix>& mat,
                                               bool structuresplit)
 {

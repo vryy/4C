@@ -139,7 +139,8 @@ public:
   virtual double Time() const = 0;
 
   //! Evaluate time step
-  virtual void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type= ALE::UTILS::MapExtractor::dbc_set_std) = 0;
+  virtual void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
+      ALE::UTILS::MapExtractor::dbc_set_std) = 0;
 
   //! Get time step size \f$\Delta t_n\f$
   virtual double Dt() const = 0;
@@ -226,29 +227,28 @@ public:
   //! reset state vectors to zero
   virtual void Reset() = 0;
 
-  /*! \brief Create Systemmatrix
+  /*! \brief Create System matrix
    *
-   * We allocate the LINALG object just once, the result is an empty LINALG object.
-   * Evaluate has to be called separately.
-   *
+   * We allocate the LINALG object just once, the result is an empty LINALG
+   * object. Evaluate has to be called separately.
    */
   virtual void CreateSystemMatrix(
     Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null) = 0;
 
-};
+}; // class Ale
 
 //! Base class of algorithms that use an ale field
-class AleNewBaseAlgorithm
+class AleBaseAlgorithm
 {
 public:
 
   //! constructor
-  explicit AleNewBaseAlgorithm(const Teuchos::ParameterList& prbdyn, ///< the problem's parameter list
+  explicit AleBaseAlgorithm(const Teuchos::ParameterList& prbdyn, ///< the problem's parameter list
       Teuchos::RCP<DRT::Discretization> actdis ///< pointer to discretization
       );
 
   //! virtual destructor to support polymorph destruction
-  virtual ~AleNewBaseAlgorithm();
+  virtual ~AleBaseAlgorithm();
 
   //! Teuchos::RCP version of ale field solver
   Teuchos::RCP<Ale> AleField()
@@ -269,8 +269,9 @@ private:
 
   //! ALE field solver
   Teuchos::RCP<Ale> ale_;
-};
 
-}
+}; // class AleBaseAlgorithm
+
+} // namespace ADAPTER
 
 #endif // #ifndef ADAPTER_ALE_H

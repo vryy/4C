@@ -16,7 +16,7 @@ Maintainer: Matthias Mayr
 #ifndef ALE_DYN_H
 #define ALE_DYN_H
 
-void dyn_ale_new_drt();
+void dyn_ale_drt();
 
 #endif /* ALE_DYN_H */
 

@@ -76,7 +76,7 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
 
   // ask base algorithm for the ale time integrator
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
-  Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(fsidyn,structaledis));
+  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(fsidyn,structaledis));
   ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFsiWrapper>(ale->AleField());
   if(ale_ == Teuchos::null)
      dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");

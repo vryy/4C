@@ -48,11 +48,11 @@ ADAPTER::Ale::~Ale()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ADAPTER::AleNewBaseAlgorithm::AleNewBaseAlgorithm(
+ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn,
     Teuchos::RCP<DRT::Discretization> actdis)
 {
-  // check whether we have choosen a valid aletype for new ale
+  // check whether we have chosen a valid aletype for new ale
   INPAR::ALE::AleDynamic aletyp = DRT::INPUT::IntegralValue<
       INPAR::ALE::AleDynamic>(DRT::Problem::Instance()->AleDynamicParams(),
       "ALE_TYPE");
@@ -65,13 +65,13 @@ ADAPTER::AleNewBaseAlgorithm::AleNewBaseAlgorithm(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ADAPTER::AleNewBaseAlgorithm::~AleNewBaseAlgorithm()
+ADAPTER::AleBaseAlgorithm::~AleBaseAlgorithm()
 {
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ADAPTER::AleNewBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
+void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
     Teuchos::RCP<DRT::Discretization> actdis)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer(

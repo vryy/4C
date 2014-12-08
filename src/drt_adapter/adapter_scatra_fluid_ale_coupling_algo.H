@@ -44,7 +44,7 @@ namespace ADAPTER
    */
   class ScaTraFluidAleCouplingAlgorithm :
         public ADAPTER::ScaTraFluidCouplingAlgorithm,
-        public ADAPTER::AleNewBaseAlgorithm
+        public ADAPTER::AleBaseAlgorithm
   {
   public:
 

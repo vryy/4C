@@ -24,18 +24,19 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void dyn_ale_new_drt()
+void dyn_ale_drt()
 {
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> actdis = DRT::Problem::Instance()->GetDis("ale");
+  Teuchos::RCP<DRT::Discretization> actdis =
+      DRT::Problem::Instance()->GetDis("ale");
 
   // -------------------------------------------------------------------
   // ask ALE::AleBaseAlgorithm for the ale time integrator
   // -------------------------------------------------------------------
-  Teuchos::RCP< ::ADAPTER::AleNewBaseAlgorithm> ale =
-      Teuchos::rcp(new ::ADAPTER::AleNewBaseAlgorithm(DRT::Problem::Instance()->AleDynamicParams(), actdis));
+  Teuchos::RCP< ::ADAPTER::AleBaseAlgorithm> ale =
+      Teuchos::rcp(new ::ADAPTER::AleBaseAlgorithm(DRT::Problem::Instance()->AleDynamicParams(), actdis));
   Teuchos::RCP< ::ADAPTER::Ale> aletimint = ale->AleField();
 
   // -------------------------------------------------------------------

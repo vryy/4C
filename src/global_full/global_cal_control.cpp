@@ -105,7 +105,7 @@ void ntacal()
       break;
 
     case prb_ale:
-      dyn_ale_new_drt();
+      dyn_ale_drt();
     break;
 
     case prb_thermo:

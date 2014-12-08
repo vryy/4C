@@ -532,8 +532,8 @@ void UQ::MCVarThicknessManager::ModifyGeometryBasedOnRF(const unsigned int mysee
   ale_new_p.set("RESULTSEVRY", 0);
 
   // setup ale time integration
-  Teuchos::RCP< ::ADAPTER::AleNewBaseAlgorithm> ale =
-      Teuchos::rcp(new ::ADAPTER::AleNewBaseAlgorithm(ale_new_p, aledis_));
+  Teuchos::RCP< ::ADAPTER::AleBaseAlgorithm> ale =
+      Teuchos::rcp(new ::ADAPTER::AleBaseAlgorithm(ale_new_p, aledis_));
   Teuchos::RCP< ::ADAPTER::Ale> my_ale_timint = ale->AleField();
   //my_ale_timint->WriteAccessDiscretization()->Writer()->NewResultFile("ladida",100);
   //my_ale_timint->WriteAccessDiscretization()->Writer()->WriteMesh(0, 0.01);

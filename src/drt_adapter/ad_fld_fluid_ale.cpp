@@ -1,17 +1,16 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file ad_fld_fluid_ale.cpp
 
 \brief
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289 10362
 </pre>
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -23,14 +22,16 @@ Maintainer: Ulrich Kuettler
 #include "adapter_coupling.H"
 #include "../drt_inpar/inpar_fsi.H"
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                             std::string condname)
 {
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true,false));
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
+      Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true,false));
   fluid_ = fluid->FluidField();
-  Teuchos::RCP<ADAPTER::AleNewBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleNewBaseAlgorithm(prbdyn,DRT::Problem::Instance()->GetDis("ale")));
+  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale =
+      Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(prbdyn,DRT::Problem::Instance()->GetDis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField());
 
 //  if (ale_ == Teuchos::null)
@@ -49,7 +50,8 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                          *alenodemap,
                          ndim);
 
-  //initializing the fluid is done later as for xfluids the first cut is done there (coupfa_ cannot be build anymore!!!)
+  //initializing the fluid is done later as for xfluids the first cut is done
+  // there (coupfa_ cannot be build anymore!!!)
   FluidField()->Init();
   fluid->SetInitialFlowField(DRT::Problem::Instance()->FluidDynamicParams()); //call from base algorithm
 
@@ -84,15 +86,16 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ADAPTER::FluidAle::Discretization()
 {
   return FluidField()->Discretization();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void ADAPTER::FluidAle::PrepareTimeStep()
 {
   FluidField()->PrepareTimeStep();
@@ -100,8 +103,8 @@ void ADAPTER::FluidAle::PrepareTimeStep()
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void ADAPTER::FluidAle::Update()
 {
   FluidField()->Update();
@@ -109,8 +112,8 @@ void ADAPTER::FluidAle::Update()
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void ADAPTER::FluidAle::Output()
 {
   FluidField()->StatisticsAndOutput();
@@ -118,8 +121,8 @@ void ADAPTER::FluidAle::Output()
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 double ADAPTER::FluidAle::ReadRestart(int step)
 {
   FluidField()->ReadRestart(step);
@@ -128,10 +131,10 @@ double ADAPTER::FluidAle::ReadRestart(int step)
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                       Teuchos::RCP<Epetra_Vector> ivel)
+    Teuchos::RCP<Epetra_Vector> ivel)
 {
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
@@ -177,8 +180,9 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void ADAPTER::FluidAle::ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp,
                                        Teuchos::RCP<Epetra_Vector> ivel)
 {
@@ -207,10 +211,10 @@ void ADAPTER::FluidAle::ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp,
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                                               double dt)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::RelaxationSolve(
+    Teuchos::RCP<Epetra_Vector> idisp, double dt)
 {
   // Here we have a mesh position independent of the
   // given trial vector, but still the grid velocity depends on the
@@ -234,73 +238,77 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::RelaxationSolve(Teuchos::RCP<Epet
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceForces()
 {
   return FluidField()->ExtractInterfaceForces();
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceVelnp()
 {
   return FluidField()->ExtractInterfaceVelnp();
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceVeln()
 {
   return FluidField()->ExtractInterfaceVeln();
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::IntegrateInterfaceShape()
 {
   return FluidField()->IntegrateInterfaceShape();
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidAle::CreateFieldTest()
 {
   return FluidField()->CreateFieldTest();
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::AleToFluidField(
+    Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupfa_->SlaveToMaster(iv);
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::AleToFluidField(Teuchos::RCP<const Epetra_Vector> iv) const
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::AleToFluidField(
+    Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_->SlaveToMaster(iv);
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::FluidToAle(
+    Teuchos::RCP<Epetra_Vector> iv) const
 {
   return icoupfa_->MasterToSlave(iv);
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::FluidToAle(
+    Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfa_->MasterToSlave(iv);
 }
