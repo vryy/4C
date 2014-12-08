@@ -929,7 +929,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateAnalyticSolutionPoint
       const double d      = M_PI/2.0;
 
       // compute analytical pressure
-      if(!isFullImplPressure)
+      if(not isFullImplPressure)
       {
         p = -a*a/2.0 *
             ( std::exp(2.0*a*xyzint(0))
