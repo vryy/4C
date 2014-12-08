@@ -208,7 +208,8 @@ bool CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Evaluate( LINALG::Spars
                                                                    Epetra_Vector& fint,
                                                                    const double& pp,
                                                                    std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap,
-                                                                   Teuchos::ParameterList& timeintparams)
+                                                                   Teuchos::ParameterList& timeintparams,
+                                                                   bool fdcheck)
 {
   //**********************************************************************
   // Evaluation of contact forces and stiffness
@@ -967,63 +968,63 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
           stiffc2_FAD(i,j) = (fc2_FAD(i).dx(j)+fc2_FAD(i).dx(dim1+dim2)*delta_xi(j)+fc2_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
       }
 
-      std::cout << "BTB Contact Pair: " << element1_->Id() << " / " << element2_->Id() << std::endl;
-
-      std::cout << "stiffc1: " << std::endl;
-      for (int i=0;i<dim1;i++)
-      {
-        for (int j=0;j<dim1+dim2;j++)
-        {
-          std::cout << std::setw(14) << stiffc1(i,j).val() << " ";
-        }
-        std::cout << std::endl;
-      }
-      std::cout << std::endl;
-      std::cout << "stiffc1_FAD: " << std::endl;
-      for (int i=0;i<dim1;i++)
-      {
-        for (int j=0;j<dim1+dim2;j++)
-        {
-          std::cout << std::setw(14) << stiffc1_FAD(i,j).val() << " ";
-        }
-        std::cout << std::endl;
-      }
-      std::cout << std::endl;
+//      std::cout << "BTB Contact Pair: " << element1_->Id() << " / " << element2_->Id() << std::endl;
 //
-//      std::cout << "d fc1_/ d xi: " << std::endl;
+//      std::cout << "stiffc1: " << std::endl;
 //      for (int i=0;i<dim1;i++)
 //      {
-//        std::cout << std::setw(14) << fc1_FAD(i).dx(dim1+dim2);
+//        for (int j=0;j<dim1+dim2;j++)
+//        {
+//          std::cout << std::setw(14) << stiffc1(i,j).val() << " ";
+//        }
+//        std::cout << std::endl;
 //      }
 //      std::cout << std::endl;
-
-      std::cout << "stiffc2: " << std::endl;
-      for (int i=0;i<dim2;i++)
-      {
-        for (int j=0;j<dim1+dim2;j++)
-        {
-          std::cout << std::setw(14) << stiffc2(i,j).val() << " ";
-        }
-        std::cout << std::endl;
-      }
-      std::cout << std::endl;
-      std::cout << "stiffc2_FAD: " << std::endl;
-      for (int i=0;i<dim2;i++)
-      {
-        for (int j=0;j<dim1+dim2;j++)
-        {
-          std::cout << std::setw(14) << stiffc2_FAD(i,j).val() << " ";
-        }
-        std::cout << std::endl;
-      }
-      std::cout << std::endl;
+//      std::cout << "stiffc1_FAD: " << std::endl;
+//      for (int i=0;i<dim1;i++)
+//      {
+//        for (int j=0;j<dim1+dim2;j++)
+//        {
+//          std::cout << std::setw(14) << stiffc1_FAD(i,j).val() << " ";
+//        }
+//        std::cout << std::endl;
+//      }
+//      std::cout << std::endl;
+////
+////      std::cout << "d fc1_/ d xi: " << std::endl;
+////      for (int i=0;i<dim1;i++)
+////      {
+////        std::cout << std::setw(14) << fc1_FAD(i).dx(dim1+dim2);
+////      }
+////      std::cout << std::endl;
 //
-//      std::cout << "d fc2_/ d xi: " << std::endl;
+//      std::cout << "stiffc2: " << std::endl;
 //      for (int i=0;i<dim2;i++)
 //      {
-//        std::cout << std::setw(14) << fc2_FAD(i).dx(dim1+dim2);
+//        for (int j=0;j<dim1+dim2;j++)
+//        {
+//          std::cout << std::setw(14) << stiffc2(i,j).val() << " ";
+//        }
+//        std::cout << std::endl;
 //      }
 //      std::cout << std::endl;
+//      std::cout << "stiffc2_FAD: " << std::endl;
+//      for (int i=0;i<dim2;i++)
+//      {
+//        for (int j=0;j<dim1+dim2;j++)
+//        {
+//          std::cout << std::setw(14) << stiffc2_FAD(i,j).val() << " ";
+//        }
+//        std::cout << std::endl;
+//      }
+//      std::cout << std::endl;
+////
+////      std::cout << "d fc2_/ d xi: " << std::endl;
+////      for (int i=0;i<dim2;i++)
+////      {
+////        std::cout << std::setw(14) << fc2_FAD(i).dx(dim1+dim2);
+////      }
+////      std::cout << std::endl;
     #endif
   }//if (contactflag_ or (iter_==0 and inactivestiff and oldcontactflag_ and !beamendcontactopened_ and !beamsalmostparallel_) or dampingcontactflag_)
 

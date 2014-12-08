@@ -25,6 +25,7 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_beamcontact/beam3contact_utils.H"
 
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -43,21 +44,21 @@ int DRT::ELEMENTS::Beam3ebanisotrop::Evaluate(Teuchos::ParameterList& params,
   // get the action required
   std::string action = params.get<std::string>("action","calc_none");
 
-  if 	  (action == "calc_none") 				dserror("No action supplied");
-  else if (action=="calc_struct_linstiff") 		act = Beam3ebanisotrop::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff") 		act = Beam3ebanisotrop::calc_struct_nlnstiff;
+  if     (action == "calc_none")         dserror("No action supplied");
+  else if (action=="calc_struct_linstiff")     act = Beam3ebanisotrop::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff")     act = Beam3ebanisotrop::calc_struct_nlnstiff;
   else if (action=="calc_struct_internalforce") act = Beam3ebanisotrop::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass") 	act = Beam3ebanisotrop::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass") 	act = Beam3ebanisotrop::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_linstiffmass")   act = Beam3ebanisotrop::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass")   act = Beam3ebanisotrop::calc_struct_nlnstiffmass;
   else if (action=="calc_struct_nlnstifflmass") act = Beam3ebanisotrop::calc_struct_nlnstifflmass; //with lumped mass matrix
-  else if (action=="calc_struct_stress") 		act = Beam3ebanisotrop::calc_struct_stress;
-  else if (action=="calc_struct_eleload") 		act = Beam3ebanisotrop::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload") 		act = Beam3ebanisotrop::calc_struct_fsiload;
+  else if (action=="calc_struct_stress")     act = Beam3ebanisotrop::calc_struct_stress;
+  else if (action=="calc_struct_eleload")     act = Beam3ebanisotrop::calc_struct_eleload;
+  else if (action=="calc_struct_fsiload")     act = Beam3ebanisotrop::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Beam3ebanisotrop::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")   act = Beam3ebanisotrop::calc_struct_reset_istep;
-  else if (action=="calc_struct_ptcstiff")		act = Beam3ebanisotrop::calc_struct_ptcstiff;
+  else if (action=="calc_struct_ptcstiff")    act = Beam3ebanisotrop::calc_struct_ptcstiff;
   else if (action=="calc_struct_energy")     act = Beam3ebanisotrop::calc_struct_energy;
-  else 	  dserror("Unknown type of action for Beam3ebanisotrop");
+  else     dserror("Unknown type of action for Beam3ebanisotrop");
 
   std::string test = params.get<std::string>("action","calc_none");
 
@@ -124,21 +125,21 @@ int DRT::ELEMENTS::Beam3ebanisotrop::Evaluate(Teuchos::ParameterList& params,
       if (act == Beam3ebanisotrop::calc_struct_nlnstiffmass)
       {
         CalculateInternalForces(params,myvel,mydisp,&elemat1,&elevec1,false);
-    	  CalculateInertialForces(params,myacc,myvel,mydisp,&elemat2,&elevec2,false);
+        CalculateInertialForces(params,myacc,myvel,mydisp,&elemat2,&elevec2,false);
       }
       else if (act == Beam3ebanisotrop::calc_struct_nlnstifflmass)
       {
         CalculateInternalForces(params,myvel,mydisp,&elemat1,&elevec1,false);
         CalculateInertialForces(params,myacc,myvel,mydisp,&elemat2,&elevec2,false);
-  	  	lumpmass(&elemat2);
+        lumpmass(&elemat2);
       }
       else if (act == Beam3ebanisotrop::calc_struct_nlnstiff)
       {
-    	  CalculateInternalForces(params,myvel,mydisp,&elemat1,&elevec1,false);
+        CalculateInternalForces(params,myvel,mydisp,&elemat1,&elevec1,false);
       }
       else if (act == Beam3ebanisotrop::calc_struct_internalforce)
       {
-    	  CalculateInternalForces(params,myvel,mydisp,NULL,&elevec1,false);
+        CalculateInternalForces(params,myvel,mydisp,NULL,&elevec1,false);
       }
     }
     break;
@@ -192,7 +193,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case calc_struct_reset_istep:
-    	//not necessary since no class variables are modified in predicting steps
+      //not necessary since no class variables are modified in predicting steps
     break;
 
     default:
@@ -203,10 +204,10 @@ int DRT::ELEMENTS::Beam3ebanisotrop::Evaluate(Teuchos::ParameterList& params,
 
   return 0;
 
-}	//DRT::ELEMENTS::Beam3ebanisotrop::Evaluate
+}  //DRT::ELEMENTS::Beam3ebanisotrop::Evaluate
 
 /*------------------------------------------------------------------------------------------------------------*
- | lump mass matrix					   (private)                                                           meier 05/12|
+ | lump mass matrix             (private)                                                           meier 05/12|
  *------------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ebanisotrop::lumpmass(Epetra_SerialDenseMatrix* emass)
 {
@@ -214,14 +215,14 @@ void DRT::ELEMENTS::Beam3ebanisotrop::lumpmass(Epetra_SerialDenseMatrix* emass)
 }
 
 /*------------------------------------------------------------------------------------------------------------*
- | stiffness matrix 				   (private)                                                           meier 09/12|
+ | stiffness matrix            (private)                                                           meier 09/12|
  *------------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::ParameterList& params,
-											std::vector<double>&           vel,
-											std::vector<double>&           disp,
-											Epetra_SerialDenseMatrix* stiffmatrix,
-											Epetra_SerialDenseVector* force,
-											bool update)
+                      std::vector<double>&           vel,
+                      std::vector<double>&           disp,
+                      Epetra_SerialDenseMatrix* stiffmatrix,
+                      Epetra_SerialDenseVector* force,
+                      bool update)
 {
 
   const int twistdofs = TWISTDOFS;
@@ -230,115 +231,129 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     dserror("Only the values 2,3 and 4 are valid for TWISTDOFS!!!");
   }
 
-	//number of nodes fixed for these element
-	const int nnode = 2;
+  #ifdef BEAM3EBANISOTROPORTHOPRESSURE
+    const double time = params.get("total time",-1.0);
+    double orthopressureload = 0.0;
 
-	//number of values per node
-	const int vnode = 2;	//value + first derivative
+    if(time > 1.0)
+      orthopressureload = BEAM3EBANISOTROPORTHOPRESSURE * (time-1.0)/0.1;
+    if(time > 1.1)
+      orthopressureload = BEAM3EBANISOTROPORTHOPRESSURE;
+  #endif
 
-	//internal force vector
-	LINALG::TMatrix<FAD,6*nnode+twistdofs,1> f_int;
+  //number of nodes fixed for these element
+  const int nnode = 2;
 
-	//initialize
-	f_int.Clear();
+  //number of values per node
+  const int vnode = 2;  //value + first derivative
 
-	//matrix for current nodal positions and nodal tangents
-	std::vector<FAD> disp_totlag(6*nnode+twistdofs, 0.0);
+  //internal force vector
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,1> f_int;
 
-	//quantities to store the total internal energy of the element
-	FAD temp_energy=0.0;
-	int_energy_=0.0;
+  LINALG::Matrix<6*nnode+twistdofs,6*nnode+twistdofs> R_orthopressure_tot(true);
+  LINALG::Matrix<6*nnode+twistdofs,1> Res_orthopressure_tot(true);
 
-	//values needed to calculate f_int and K_T
+  //initialize
+  f_int.Clear();
 
-	FAD abs_r_s=0.0;	//|r'|
+  //matrix for current nodal positions and nodal tangents
+  std::vector<FAD> disp_totlag(6*nnode+twistdofs, 0.0);
+
+  //quantities to store the total internal energy of the element
+  FAD temp_energy=0.0;
+  int_energy_=0.0;
+
+  //values needed to calculate f_int and K_T
+
+  FAD abs_r_s=0.0;  //|r'|
   FAD kappa_g3=0.0; // scalar product vec(kappa)*vec(g3)
   FAD kappa_g2=0.0; // scalar product vec(kappa)*vec(g2)
-	FAD rxTrxx=0.0;		//scalar product: r'T r'' = r''T r'
-	FAD epsilon=0.0; // axial tension epsilon=|r_s|-1
+  FAD rxTrxx=0.0;    //scalar product: r'T r'' = r''T r'
+  FAD epsilon=0.0; // axial tension epsilon=|r_s|-1
 
   //the reference tangent equals the material tangent: t=g1
   LINALG::TMatrix<FAD,3,1> tangent;
   LINALG::TMatrix<FAD,3,1> tangent_s; //t'=g1'
 
-	//matrices holding the shape functions
-	LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_s;
-	LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_ss;
-	LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_sss;
-	LINALG::TMatrix<FAD,1,6*nnode+twistdofs> C;
-	LINALG::TMatrix<FAD,1,6*nnode+twistdofs> C_s;
+  //matrices holding the shape functions
+  LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N;
+  LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_s;
+  LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_ss;
+  LINALG::TMatrix<FAD,3,6*nnode+twistdofs> N_sss;
+  LINALG::TMatrix<FAD,1,6*nnode+twistdofs> C;
+  LINALG::TMatrix<FAD,1,6*nnode+twistdofs> C_s;
 
-	//Matrices for N_i, N_i,xi and N_i,xixi. vnode*nnode due to hermite shapefunctions
-	LINALG::TMatrix<FAD,1,vnode*nnode> N_i;
-	LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xi;
-	LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xixi;
-	LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xixixi;
+  //Matrices for N_i, N_i,xi and N_i,xixi. vnode*nnode due to hermite shapefunctions
+  LINALG::TMatrix<FAD,1,vnode*nnode> N_i;
+  LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xi;
+  LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xixi;
+  LINALG::TMatrix<FAD,1,vnode*nnode> N_i_xixixi;
   LINALG::TMatrix<FAD,1,twistdofs> C_i;
   LINALG::TMatrix<FAD,1,twistdofs> C_i_xi;
 
-	//Matrices for N_i,s and N_i,ss
-	LINALG::TMatrix<FAD,1,vnode*nnode> N_i_s;
-	LINALG::TMatrix<FAD,1,vnode*nnode> N_i_ss;
-	LINALG::TMatrix<FAD,1,vnode*nnode> N_i_sss;
-	LINALG::TMatrix<FAD,1,twistdofs> C_i_s;
+  //Matrices for N_i,s and N_i,ss
+  LINALG::TMatrix<FAD,1,vnode*nnode> N_i_s;
+  LINALG::TMatrix<FAD,1,vnode*nnode> N_i_ss;
+  LINALG::TMatrix<FAD,1,vnode*nnode> N_i_sss;
+  LINALG::TMatrix<FAD,1,twistdofs> C_i_s;
 
-	//Matrices to store r',r''
-	LINALG::TMatrix<FAD,3,1> r_s;
-	LINALG::TMatrix<FAD,3,1> r_ss;
-	LINALG::TMatrix<FAD,3,1> r_sss;
+  //Matrices to store r',r''
+  LINALG::TMatrix<FAD,3,1> r_s;
+  LINALG::TMatrix<FAD,3,1> r_ss;
+  LINALG::TMatrix<FAD,3,1> r_sss;
 
-	//tempvector temp_vector needed to store 1/|r_s|^2 r_ss -2(r_s^T*r_ss)/|r_s|^4 r_s
-	LINALG::TMatrix<FAD,3,1> temp_vector;
+  //tempvector temp_vector needed to store 1/|r_s|^2 r_ss -2(r_s^T*r_ss)/|r_s|^4 r_s
+  LINALG::TMatrix<FAD,3,1> temp_vector;
 
-	//scalar values gamma and gamma'
-	FAD gamma_;
-	FAD gamma_s;
+  //scalar values gamma and gamma'
+  FAD gamma_;
+  FAD gamma_s;
 
-	//spinmatrices
-	LINALG::TMatrix<FAD,3,3> Srx;
-	LINALG::TMatrix<FAD,3,3> Srxx;
-	LINALG::TMatrix<FAD,3,3> Stemp_vector;
+  //spinmatrices
+  LINALG::TMatrix<FAD,3,3> Srx;
+  LINALG::TMatrix<FAD,3,3> Srxx;
+  LINALG::TMatrix<FAD,3,3> Stemp_vector;
 
-	LINALG::TMatrix<FAD,6*nnode+twistdofs,3> M1;
-	LINALG::TMatrix<FAD,6*nnode+twistdofs,3> M2;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,3> M1;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,3> M2;
   LINALG::TMatrix<FAD,6*nnode+twistdofs,3> M2_aux;
 
-	//spatial force stress resultant n and moment stress resultant m
+  //spatial force stress resultant n and moment stress resultant m
   LINALG::TMatrix<FAD,3,1> m;
   LINALG::TMatrix<FAD,3,1> n;
 
 
-	//first of all we get the material law
-	Teuchos::RCP<const MAT::Material> currmat = Material();
-	double ym = 0;
-	double sm = 0;
+  //first of all we get the material law
+  Teuchos::RCP<const MAT::Material> currmat = Material();
+  double ym = 0;
+  double sm = 0;
 
-	//assignment of material parameters; only St.Venant material is accepted for this beam
-	switch(currmat->MaterialType())
-	{
-		case INPAR::MAT::m_stvenant:// only linear elastic material supported
-		{
-		  const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-		  ym = actmat->Youngs();
-		  sm = actmat->ShearMod();
-		}
-		break;
-		default:
-		dserror("unknown or improper type of material law");
-		break;
-	}
+  //assignment of material parameters; only St.Venant material is accepted for this beam
+  switch(currmat->MaterialType())
+  {
+    case INPAR::MAT::m_stvenant:// only linear elastic material supported
+    {
+      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+      ym = actmat->Youngs();
+      sm = actmat->ShearMod();
+    }
+    break;
+    default:
+    dserror("unknown or improper type of material law");
+    break;
+  }
 
-	//Get integration points for exact integration
-	DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+  //Get integration points for exact integration
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
 
-	//Get DiscretizationType of beam element
-	const DRT::Element::DiscretizationType distype = Shape();
+  //Get DiscretizationType of beam element
+  const DRT::Element::DiscretizationType distype = Shape();
 
-	//! Calculates nodal positions, tangents and relative twist angles out of the corresponding displacements
+  //! Calculates nodal positions, tangents and relative twist angles out of the corresponding displacements
   //if TWISTDOFS = 2: [ r1 t1 gamma1 r2 t2 gamma2]
-	//if TWISTDOFS = 3: [ r1 t1 gamma1 r2 t2 gamma2 gamma3]
-	//if TWISTDOFS = 4: [ r1 t1 gamma1 r2 t2 gamma2 gamma3 gamma4]
-	UpdateDispTotlag(disp, disp_totlag);
+  //if TWISTDOFS = 3: [ r1 t1 gamma1 r2 t2 gamma2 gamma3]
+  //if TWISTDOFS = 4: [ r1 t1 gamma1 r2 t2 gamma2 gamma3 gamma4]
+  UpdateDispTotlag(disp, disp_totlag);
 
   //begin: quantities which are needed for NSRISR calculation
 
@@ -377,6 +392,35 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
   Calculate_r_s(disp_totlag, xi, r_s_midpoint);
   //Fill all three epsilon values at CPs in matrix epsilonCP
   CalculateEpsilonCP(disp_totlag, r_s_midpoint, epsilonCP);
+
+  //Calculate ANS interpolation of kappa
+  #ifdef ANSKAPPA
+    if(ANSKAPPA<2)
+      dserror("ANSKAPPA<2 !!!");
+
+    //Calculation of tension at collocation points; this is needed for ANS approach
+    std::vector<LINALG::TMatrix<FAD,3,1> > kappaCP(ANSKAPPA, LINALG::TMatrix<FAD,3,1>(true));
+
+    for(int i=0;i<ANSKAPPA;i++)
+    {
+      double xi= 0.0;
+
+      if(i==0)
+        xi=-1.0;
+      else if(i==1)
+        xi=1.0;
+      else
+        xi=-1.0+ (i-1)*2.0/(ANSKAPPA-1);
+
+      //Calculate first epsilon in the element midpoint (2nd CP)
+      LINALG::TMatrix<FAD,3,1> r_s_CP(true);
+      LINALG::TMatrix<FAD,3,1> r_ss_CP(true);
+      std::cout << "xi: " << xi << std::endl;
+      Calculate_r_s_and_r_ss(disp_totlag, xi, r_s_CP, r_ss_CP);
+      kappaCP[i]=calculate_curvature(r_s_CP, r_ss_CP);
+      std::cout << "kappaCP[i](2): " << kappaCP[i](2) << std::endl;
+    }
+  #endif
 
 //    //**********************begin: calculation of original ANS variant epsilon4*****************************************************************
 //    LINALG::TMatrix<FAD,4,1> epsilon4;
@@ -508,93 +552,130 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
 
 //**********************begin: gauss integration*********************************************************************
 
-	//Loop through all GP and calculate their contribution to the internal forcevector and stiffnessmatrix
-	for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-	{
+  //Loop through all GP and calculate their contribution to the internal forcevector and stiffnessmatrix
+  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+  {
 
-	//Initialization and calculation of various values
+  //Initialization and calculation of various values
 
-		abs_r_s=0.0;	//|r'|
+    abs_r_s=0.0;  //|r'|
     kappa_g3=0.0; // scalar product vec(kappa)*vec(g3)
     kappa_g2=0.0; // scalar product vec(kappa)*vec(g2)
-		rxTrxx=0.0;
-		epsilon=0.0; // axial tension epsilon=|r_s|-1
-		//gamma and gamma'
-		gamma_=0.0;
-		gamma_s=0.0;
+    rxTrxx=0.0;
+    epsilon=0.0; // axial tension epsilon=|r_s|-1
+    //gamma and gamma'
+    gamma_=0.0;
+    gamma_s=0.0;
 
-		//initialization of matrices
-		//shape function N_i
-		N_i.Clear();
-		//shape function derivatives in xi
-		N_i_xi.Clear();
-		N_i_xixi.Clear();
-		N_i_xixixi.Clear();
-		C_i.Clear();
-		C_i_xi.Clear();
+    //initialization of matrices
+    //shape function N_i
+    N_i.Clear();
+    //shape function derivatives in xi
+    N_i_xi.Clear();
+    N_i_xixi.Clear();
+    N_i_xixixi.Clear();
+    C_i.Clear();
+    C_i_xi.Clear();
 
-		//shape function derivatives in s
-		N_i_s.Clear();
-		N_i_ss.Clear();
-		N_i_sss.Clear();
-		C_i_s.Clear();
+    //shape function derivatives in s
+    N_i_s.Clear();
+    N_i_ss.Clear();
+    N_i_sss.Clear();
+    C_i_s.Clear();
 
-		//Assembled matrices of shape functions
-		N_s.Clear();
-		N_ss.Clear();
-		N_sss.Clear();
-		C.Clear();
-		C_s.Clear();
-		//r' and r''
-		r_s.Clear();
-		r_ss.Clear();
-		r_sss.Clear();
-		temp_vector.Clear();
+    //Assembled matrices of shape functions
+    N.Clear();
+    N_s.Clear();
+    N_ss.Clear();
+    N_sss.Clear();
+    C.Clear();
+    C_s.Clear();
+    //r' and r''
+    r_s.Clear();
+    r_ss.Clear();
+    r_sss.Clear();
+    temp_vector.Clear();
 
-		//spinmatrices
-		Srx.Clear();
-		Srxx.Clear();
-		Stemp_vector.Clear();
+    //spinmatrices
+    Srx.Clear();
+    Srxx.Clear();
+    Stemp_vector.Clear();
 
-		tangent.Clear();
-		tangent_s.Clear();
+    tangent.Clear();
+    tangent_s.Clear();
 
-		M1.Clear();
-		M2.Clear();
+    M1.Clear();
+    M2.Clear();
     M2_aux.Clear();
-		m.Clear();
-		n.Clear();
+    m.Clear();
+    n.Clear();
 
-		//Get location and weight of GP in parameter space
-		const double xi = gausspoints.qxg[numgp][0];
-		const double wgt = gausspoints.qwgt[numgp];
+    //Get location and weight of GP in parameter space
+    const double xi = gausspoints.qxg[numgp][0];
+    const double wgt = gausspoints.qwgt[numgp];
 
-		//specific-for------------Smallest Rotation and Cross Product
-		//Get hermite derivatives N'xi and N''xi
-		DRT::UTILS::shape_function_hermite_1D(N_i,xi,length_,line2);
-		DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
-		DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi,xi,length_,line2);
-		DRT::UTILS::shape_function_hermite_1D_deriv3(N_i_xixixi,xi,length_,line2);
+    //specific-for------------Smallest Rotation and Cross Product
+    //Get hermite derivatives N'xi and N''xi
+    DRT::UTILS::shape_function_hermite_1D(N_i,xi,length_,line2);
+    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
+    DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi,xi,length_,line2);
+    DRT::UTILS::shape_function_hermite_1D_deriv3(N_i_xixixi,xi,length_,line2);
     DRT::UTILS::shape_function_1D(C_i,xi,distype);
     DRT::UTILS::shape_function_1D_deriv1(C_i_xi,xi,distype);
 
     AssembleShapefunctions(N_i, N_i_xi, N_i_xixi, N_i_xixixi, C_i, C_i_xi, jacobi_[numgp], jacobi2_[numgp], jacobi3_[numgp], N_s, N_ss, N_sss, C, C_s);
+    AssembleShapefunctions(N_i,N);
 
-		//Calculation of r' and r'', gamma and gamma' at the gp
-		for (int i=0; i<3; i++)
-		{
-			for (int j=0; j<6*nnode+twistdofs; j++)
-			{
-				r_s(i)+=N_s(i,j)*disp_totlag[j];
-				r_ss(i)+=N_ss(i,j)*disp_totlag[j];
-				r_sss(i)+=N_sss(i,j)*disp_totlag[j];
-			}
-		}
-		for (int i=0; i<6*nnode+twistdofs; i++)
-		{
-			gamma_+=C(i)*disp_totlag[i];
-			gamma_s+=C_s(i)*disp_totlag[i];
-		}
+
+    //Calculation of r' and r'', gamma and gamma' at the gp
+    for (int i=0; i<3; i++)
+    {
+      for (int j=0; j<6*nnode+twistdofs; j++)
+      {
+        r_s(i)+=N_s(i,j)*disp_totlag[j];
+        r_ss(i)+=N_ss(i,j)*disp_totlag[j];
+        r_sss(i)+=N_sss(i,j)*disp_totlag[j];
+      }
+    }
+
+    #ifdef BEAM3EBANISOTROPORTHOPRESSURE
+      LINALG::TMatrix<FAD,3,1> ortho_normal(true);
+      LINALG::Matrix<6*nnode+twistdofs,6*nnode+twistdofs> R_orthopressure(true);
+      LINALG::TMatrix<FAD,6*nnode+twistdofs,1> Res_orthopressure(true);
+
+      ortho_normal(0)=r_s(1,0);
+      ortho_normal(1)=-r_s(0,0);
+      ortho_normal(2)=0.0;
+      if (BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(ortho_normal))>1.0e-12)
+        ortho_normal.Scale(1.0/(BEAMCONTACT::VectorNorm<3>(ortho_normal)));
+
+      Res_orthopressure.Clear();
+      R_orthopressure.Clear();
+      Res_orthopressure.MultiplyTN(N,ortho_normal);
+      Res_orthopressure.Scale(-orthopressureload* wgt *jacobi_[numgp]);
+      for (int i= 0; i<6*nnode+twistdofs; i++)
+      {
+        for (int j= 0; j<6*nnode+twistdofs; j++)
+        {
+          R_orthopressure(i,j)=Res_orthopressure(i).dx(j);
+        }
+      }
+
+      for (int i= 0; i<6*nnode+twistdofs; i++)
+      {
+        for (int j= 0; j<6*nnode+twistdofs; j++)
+        {
+          R_orthopressure_tot(i,j)+=R_orthopressure(i,j);
+        }
+        Res_orthopressure_tot(i)+=Res_orthopressure(i).val();
+      }
+    #endif
+
+    for (int i=0; i<6*nnode+twistdofs; i++)
+    {
+      gamma_+=C(i)*disp_totlag[i];
+      gamma_s+=C_s(i)*disp_totlag[i];
+    }
     tangent=r_s;
     abs_r_s=Norm(r_s);
     tangent.Scale(1.0/abs_r_s);
@@ -615,9 +696,78 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     triad_fs=calculate_fs_triad(r_s, r_ss);
 
     //calculate initial curvature
-    LINALG::TMatrix<FAD,3,1> kappa_vec;
-    kappa_vec.Clear();
-    kappa_vec=calculate_curvature(r_s, r_ss);
+    LINALG::TMatrix<FAD,3,1> kappa_vec(true);
+
+    #ifndef ANSKAPPA
+      kappa_vec=calculate_curvature(r_s, r_ss);
+    #else
+      switch(ANSKAPPA)
+      {
+        case 2:
+        {
+          LINALG::Matrix<2,1> L(true);
+          DRT::UTILS::shape_function_1D(L,xi,line2);
+
+          for(int i=0;i<ANSKAPPA;i++)
+          {
+            for(int j=0;j<3;j++)
+            {
+              kappa_vec(j)+=kappaCP[i](j)*L(i);
+            }
+          }
+        }
+        break;
+
+        case 3:
+        {
+          LINALG::Matrix<3,1> L(true);
+          DRT::UTILS::shape_function_1D(L,xi,line3);
+
+          for(int i=0;i<ANSKAPPA;i++)
+          {
+            for(int j=0;j<3;j++)
+            {
+              kappa_vec(j)+=kappaCP[i](j)*L(i);
+            }
+          }
+        }
+        break;
+
+        case 4:
+        {
+          LINALG::Matrix<4,1> L(true);
+          DRT::UTILS::shape_function_1D(L,xi,line4);
+
+          for(int i=0;i<ANSKAPPA;i++)
+          {
+            for(int j=0;j<3;j++)
+            {
+              kappa_vec(j)+=kappaCP[i](j)*L(i);
+            }
+          }
+        }
+        break;
+
+        case 5:
+        {
+          LINALG::Matrix<5,1> L(true);
+          DRT::UTILS::shape_function_1D(L,xi,line5);
+
+          for(int i=0;i<ANSKAPPA;i++)
+          {
+            for(int j=0;j<3;j++)
+            {
+              kappa_vec(j)+=kappaCP[i](j)*L(i);
+            }
+          }
+        }
+        break;
+
+        default:
+          dserror("Only the case ANSKAPPA=2, ANSKAPPA=3, ANSKAPPA=4 and ANSKAPPA=5 are implemented so far!");
+        break;
+      }
+    #endif
 
     //Calculate the intermediate triad triad_bar_gp and the corresponding torsion tau_bar_gp at the gauss points
     CalculateIntermediateTriad(r_s, r_ss, numgp, triads_ref_nodes, triad_bar_gp, tau_bar_gp);
@@ -626,9 +776,9 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     //attention: for the initial configuration the angle gamma_0 is set to zero!
     CalculateMaterialTriad(xi, numgp, theta_nodes,triad_bar_gp, tau_bar_gp, gamma_, triad_mat_gp,tau_gp);
 
-		//Needed spinmatrices
-		LARGEROTATIONS::computespin<FAD>(Srx,r_s);
-		LARGEROTATIONS::computespin<FAD>(Srxx,r_ss);
+    //Needed spinmatrices
+    LARGEROTATIONS::computespin<FAD>(Srx,r_s);
+    LARGEROTATIONS::computespin<FAD>(Srxx,r_ss);
 
 
     kappa_g2=0.0;
@@ -643,6 +793,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
       epsilon=abs_r_s - 1.0;
     #else
       epsilon=epsilonCP(0)*(-0.5*xi*(1.0 - xi)) + epsilonCP(2)*(0.5*xi*(1.0 + xi)) + epsilonCP(1)*(1 - xi*xi);
+
 //***********begin: original ANS******************************************************************************
 //      double a = -0.8605772;
 //      double b = -0.3269228;
@@ -662,11 +813,11 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
       n(i,0)= ym*crosssec_*epsilon*tangent(i);
     }
 
-		M2_aux.MultiplyTN(N_ss,Srx);
+    M2_aux.MultiplyTN(N_ss,Srx);
     M2.MultiplyTN(N_s,Stemp_vector);
     M2.Update(1.0/pow(abs_r_s,2.0),M2_aux,1.0);
 
-		//Calculation of auxiliary matrices M1 and M2
+    //Calculation of auxiliary matrices M1 and M2
     for (int row=0;row<6*nnode+twistdofs;row++)
     {
       for (int column=0;column<3;column++)
@@ -675,7 +826,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
       }
     }
 
-	  //Calculation of the internal force vector (valid for all! triads)
+    //Calculation of the internal force vector (valid for all! triads)
     for (int row=0; row<6*nnode+twistdofs; row++)
     {
       for (int column=0; column<3; column++)
@@ -702,29 +853,44 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     }
     //****************end: Update of the old reference triads at gauss points******************************************
 
-	}//end of gauss integration
+  }//end of gauss integration
 
-	//cout << "int_energy_: " << int_energy_ << endl;
+  //cout << "int_energy_: " << int_energy_ << endl;
 
-	//Update stiffness matrix and force vector
-	if(stiffmatrix!=NULL)
-	{
-		//Calculating stiffness matrix with FAD
-		for(int i = 0; i < 6*nnode+twistdofs; i++)
-		{
-			for(int j = 0; j < 6*nnode+twistdofs; j++)
-		  {
-			  (*stiffmatrix)(i,j)=f_int(i).dx(j);
-		  }
-		}
-	}
-	if(force!=NULL)
-	{
-		for (int i=0; i< 6*nnode+twistdofs; i++)
-		{
-			(*force)(i)=f_int(i).val();
-		}
-	}
+  //Update stiffness matrix and force vector
+  if(stiffmatrix!=NULL)
+  {
+    //Calculating stiffness matrix with FAD
+    for(int i = 0; i < 6*nnode+twistdofs; i++)
+    {
+      for(int j = 0; j < 6*nnode+twistdofs; j++)
+      {
+        (*stiffmatrix)(i,j)=f_int(i).dx(j);
+      }
+    }
+    #ifdef BEAM3EBANISOTROPORTHOPRESSURE
+      for(int i = 0; i < 6*nnode+twistdofs; i++)
+      {
+        for(int j = 0; j < 6*nnode+twistdofs; j++)
+        {
+          (*stiffmatrix)(i,j)+=R_orthopressure_tot(i,j);
+        }
+      }
+    #endif
+  }
+  if(force!=NULL)
+  {
+    for (int i=0; i< 6*nnode+twistdofs; i++)
+    {
+      (*force)(i)=f_int(i).val();
+    }
+    #ifdef BEAM3EBANISOTROPORTHOPRESSURE
+      for (int i=0; i< 6*nnode+twistdofs; i++)
+      {
+        (*force)(i)+=Res_orthopressure_tot(i);
+      }
+    #endif
+  }
 
   //****************Update of the old reference triads at the nodes***********************************************
   if (update)
@@ -736,7 +902,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
   }
   //****************end: Update of the old reference triads at the nodes********************************************
 
-	return;
+  return;
 }
 
 /*------------------------------------------------------------------------------------------------------------*
@@ -767,7 +933,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
 
   //initialize
   f_inertia.Clear();
-  
+
     //internal force vector
   LINALG::TMatrix<FAD,6*nnode+twistdofs,1> f_inertia_m;
 
@@ -1103,7 +1269,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
         M_aux(i,j)+=C(i)*tangent(j);
       }
     }
-		NTN_gp.MultiplyTN(N, N);
+    NTN_gp.MultiplyTN(N, N);
     NsTNs_gp.MultiplyTN(N_s, N_s);
     NTN.Update(density*crosssec_*wgt*jacobi_[numgp],NTN_gp,1.0);
     NsTNs.Update(density*Irr_*wgt*jacobi_[numgp],NsTNs_gp,1.0);
@@ -1116,7 +1282,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
       for (int column=0; column<3; column++)
       {
         f_inertia(row)+=wgt*jacobi_[numgp]*(N(column, row)*n_inertia(column)+M_aux(row,column)*m_inertia(column));
-      	f_inertia_f(row)+=wgt*jacobi_[numgp]*N(column, row)*n_inertia(column);
+        f_inertia_f(row)+=wgt*jacobi_[numgp]*N(column, row)*n_inertia(column);
         f_inertia_m(row)+=wgt*jacobi_[numgp]*M_aux(row,column)*m_inertia(column);
       }
     }
@@ -1175,9 +1341,9 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
   //dimensions of freedom per node
   const int nnode=2;
   //const int dofpn = 6+twistdofpn;
-	const int dofgamma = 6; //gamma is the seventh dof
+  const int dofgamma = 6; //gamma is the seventh dof
 
-  // get element displacements
+  //get element displacements
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
@@ -1290,8 +1456,8 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
     LINALG::Matrix<3,1> moment;
     LINALG::Matrix<3,3> St; // t x ...
     LINALG::Matrix<3,3> SM; // M x
-    double tTM=0.0;	// t^T/|t| M = r'^T/|r'| M
-    double abs_tangent = 0.0;	//|t|
+    double tTM=0.0;  // t^T/|t| M = r'^T/|r'| M
+    double abs_tangent = 0.0;  //|t|
 
     //clear all matrices
     tangent.Clear();
@@ -1365,7 +1531,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
     {
       (*elemat1)(node*7+dofgamma,node*7+3+j)+=moment(j)/abs_tangent; //assemble M^T into the stiffness matrix, columns: t1 t2 t3, lines: gamma
       (*elemat1)(node*7+dofgamma,node*7+3+j)+=-tTM*tangent(j)/pow(abs_tangent,2.0); //assemble M^T t t^T = tTM t^T into the stiffness matrix, columns: t1 t2 t3, lines: gamma
-																		//pow(...,2) is correct here, since tTM is already multiplied with 1/|t|
+                                    //pow(...,2) is correct here, since tTM is already multiplied with 1/|t|
     }
 
   }
@@ -1456,7 +1622,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
 
   return 0;
 
-}	//DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann
+}  //DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann
 
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -2226,6 +2392,81 @@ void DRT::ELEMENTS::Beam3ebanisotrop::AssembleShapefunctions( LINALG::TMatrix<FA
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
+ |  Assemble all shape functions                                                                  meier 12/14|
+ *-----------------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3ebanisotrop::AssembleShapefunctions( LINALG::Matrix<1,4> N_i_xi,
+                                                              LINALG::Matrix<1,4> N_i_xixi,
+                                                              double jacobi_local,
+                                                              double jacobi2_local,
+                                                              LINALG::Matrix<3,2*6+TWISTDOFS>& N_s,
+                                                              LINALG::Matrix<3,2*6+TWISTDOFS>& N_ss)
+{
+
+  //Matrices for N_i,s and N_i,ss
+  LINALG::Matrix<1,4> N_i_s;
+  LINALG::Matrix<1,4> N_i_ss;
+
+  N_i_s.Clear();
+  N_i_ss.Clear();
+
+  //Calculate the derivatives in s
+  N_i_s=N_i_xi;
+  N_i_s.Scale(1/jacobi_local);
+
+  //******end: Reorder shape functions***********************************************************
+  for (int i=0; i<4; i++)
+  {
+    N_i_ss(i)=N_i_xixi(i)/pow(jacobi_local,2)-N_i_xi(i)*jacobi2_local/pow(jacobi_local,4.0);
+  }
+
+  //assembly_N respectively assembly_C is just an array to help assemble the matrices of the shape functions
+  //it determines, which shape function is used in which column of N respectively C
+
+
+  #if defined(TWISTDOFS) && (TWISTDOFS==2)
+
+  int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+                                      {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
+                                      {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
+
+  #elif defined(TWISTDOFS) && (TWISTDOFS==3)
+
+  int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+                                      {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+                                      {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0}};
+
+  #elif defined(TWISTDOFS) && (TWISTDOFS==4)
+
+  int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
+                                         {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+                                         {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
+
+  #else
+  dserror("TWISTDOFS has to be defined. Only the values 2,3 and 4 are valid for TWISTDOFS!!!");
+  #endif
+
+  //Assemble the matrices of the shape functions
+  for (int i=0; i<2*6+TWISTDOFS; i++)
+  {
+    for (int j=0; j<3; j++)
+    {
+      if(assembly_N[j][i]==0)
+      {
+        N_s(j,i)=0;
+        N_ss(j,i)=0;
+      }
+      else
+      {
+        N_s(j,i)=N_i_s(assembly_N[j][i]-1);
+        N_ss(j,i)=N_i_ss(assembly_N[j][i]-1);
+      }
+    }
+  }
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------------------------------------*
  |  Assemble some of the shape functions                                                          meier 05/13|
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ebanisotrop::AssembleShapefunctions( LINALG::TMatrix<FAD,1,4> N_i,
@@ -2358,6 +2599,57 @@ dserror("TWISTDOFS has to be defined. Only the values 2,3 and 4 are valid for TW
       else
       {
         N_s(j,i)=N_i_s(assembly_N[j][i]-1);
+      }
+    }
+  }
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------------------------------------*
+ |  Assemble the N_s shape functions                                                              meier 12/14|
+ *-----------------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3ebanisotrop::AssembleShapefunctions( LINALG::TMatrix<FAD,1,4> N_i,
+                                                              LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N)
+{
+
+  //assembly_N respectively assembly_C is just an array to help assemble the matrices of the shape functions
+  //it determines, which shape function is used in which column of N respectively C
+
+#if defined(TWISTDOFS) && (TWISTDOFS==2)
+
+int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+                                    {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
+                                    {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
+
+#elif defined(TWISTDOFS) && (TWISTDOFS==3)
+
+int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+                                    {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+                                    {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0}};
+
+#elif defined(TWISTDOFS) && (TWISTDOFS==4)
+
+int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
+                                       {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+                                       {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
+
+#else
+dserror("TWISTDOFS has to be defined. Only the values 2,3 and 4 are valid for TWISTDOFS!!!");
+#endif
+
+  //Assemble the matrices of the shape functions
+  for (int i=0; i<2*6+TWISTDOFS; i++)
+  {
+    for (int j=0; j<3; j++)
+    {
+      if(assembly_N[j][i]==0)
+      {
+        N(j,i)=0;
+      }
+      else
+      {
+        N(j,i)=N_i(assembly_N[j][i]-1);
       }
     }
   }
@@ -2768,7 +3060,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateEpsilonCP(std::vector<FAD> disp_t
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
- |  Calculate tangent at gauss point                                                              meier 05/13|
+ |  Calculate r_s at specific point xi                                                            meier 05/13|
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ebanisotrop::Calculate_r_s(std::vector<FAD> disp_totlag, double xi, LINALG::TMatrix<FAD,3,1>& r_s_midpoint)
 {
@@ -2802,6 +3094,55 @@ void DRT::ELEMENTS::Beam3ebanisotrop::Calculate_r_s(std::vector<FAD> disp_totlag
               r_s_midpoint(i)+=N_s(i,j)*disp_totlag[j];
             }
           }
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------------------------------------*
+ |  Calculate r_s and r_ss at specific point xi                                                   meier 12/14|
+ *-----------------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3ebanisotrop::Calculate_r_s_and_r_ss(std::vector<FAD> disp_totlag, double xi, LINALG::TMatrix<FAD,3,1>& r_s, LINALG::TMatrix<FAD,3,1>& r_ss)
+{
+
+    LINALG::Matrix<1,4> N_i_xi(true);
+    LINALG::Matrix<3,2*6+TWISTDOFS> N_s(true);
+    LINALG::Matrix<1,4> N_i_xixi(true);
+    LINALG::Matrix<3,2*6+TWISTDOFS> N_ss(true);
+    LINALG::Matrix<1,4> N_i_xixixi(true);
+
+    LINALG::Matrix<3,1> r0_xi(true);
+    LINALG::Matrix<3,1> r0_xixi(true);
+    LINALG::Matrix<3,1> r0_xixixi(true);
+
+    //Get hermite derivatives N'xi and N''xi
+    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
+    DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi,xi,length_,line2);
+    DRT::UTILS::shape_function_hermite_1D_deriv3(N_i_xixixi,xi,length_,line2);
+
+
+    //Calculate local jacobi factors. We need this as all terms evaluated here are evaluated at the local gauss point and not at the element gauss points
+    for (int i=0;i<3;i++)
+    {
+      r0_xi(i)+=Nodes()[0]->X()[i]*N_i_xi(0) + Nodes()[1]->X()[i]*N_i_xi(2) +Tref_[0](i)*N_i_xi(1) + Tref_[1](i)*N_i_xi(3);
+      r0_xixi(i)+=Nodes()[0]->X()[i]*N_i_xixi(0) + Nodes()[1]->X()[i]*N_i_xixi(2) +Tref_[0](i)*N_i_xixi(1) + Tref_[1](i)*N_i_xixi(3);
+      r0_xixixi(i)+=Nodes()[0]->X()[i]*N_i_xixixi(0) + Nodes()[1]->X()[i]*N_i_xixixi(2) +Tref_[0](i)*N_i_xixixi(1) + Tref_[1](i)*N_i_xixixi(3);
+    }
+
+    //calculate jacobi factors
+    std::vector<double> jacobi(3);
+    jacobi=calculate_jacobi(r0_xi,r0_xixi,r0_xixixi);
+
+    AssembleShapefunctions(N_i_xi,N_i_xixi, jacobi[0], jacobi[1], N_s, N_ss);
+
+    //Calculation of r' and r'', gamma and gamma' at the gp
+    for (int i=0; i<3; i++)
+    {
+      for (int j=0; j<2*6+TWISTDOFS; j++)
+      {
+        r_s(i)+=N_s(i,j)*disp_totlag[j];
+        r_ss(i)+=N_ss(i,j)*disp_totlag[j];
+      }
+    }
 
   return;
 }

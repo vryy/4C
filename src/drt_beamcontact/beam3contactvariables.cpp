@@ -39,12 +39,18 @@ Maintainer: Christoph Meier
 template<const int numnodes , const int numnodalvalues>
 CONTACT::Beam3contactvariables<numnodes, numnodalvalues>::Beam3contactvariables(std::pair<TYPE,TYPE>& closestpoint,
                                                                                 std::pair<int,int>& segids,
-                                                                                const double& pp):
+                                                                                std::pair<int,int>& intids,
+                                                                                const double& pp,
+                                                                                TYPE jacobi):
 closestpoint_(closestpoint),
 segids_(segids),
+intids_(intids),
+jacobi_(jacobi),
 gap_(0.0),
 normal_(LINALG::TMatrix<TYPE,3,1>(true)),
 pp_(pp),
+ppfac_(0.0),
+dppfac_(0.0),
 fp_(0.0),
 dfp_(0.0),
 angle_(0.0)

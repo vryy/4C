@@ -86,6 +86,11 @@ public:
   virtual const DRT::Element* Element2()=0;
 
   /*!
+  \brief Get number of contact points on this element pair
+  */
+  virtual int GetNumCps()=0;
+
+  /*!
   \brief Get vector of all gaps of this contact pair
   */
   virtual std::vector<double> GetGap()=0;
@@ -128,9 +133,9 @@ public:
   /*!
   \brief Get coordinates of contact point of element1 and element2
   */
-  virtual const Epetra_SerialDenseVector GetX1()=0;
+  virtual const std::vector<LINALG::Matrix<3,1> > GetX1()=0;
 
-  virtual const Epetra_SerialDenseVector GetX2()=0;
+  virtual const std::vector<LINALG::Matrix<3,1> > GetX2()=0;
 
   virtual const Epetra_SerialDenseVector GetNormal()=0;
 
@@ -163,7 +168,8 @@ public:
                         Epetra_Vector& fint,
                         const double& pp,
                         std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap,
-                        Teuchos::ParameterList& timeintparams)=0;
+                        Teuchos::ParameterList& timeintparams,
+                        bool fdcheck=false)=0;
 
   //! return appropriate internal implementation class (acts as a simple factory)
   static Teuchos::RCP<Beam3contactinterface> Impl(const int numnodes,

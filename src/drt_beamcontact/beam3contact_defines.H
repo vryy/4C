@@ -28,7 +28,7 @@ Maintainer: Christoph Meier
 #define BEAMCONTACTMAXITER 50     /* max number of steps for local Newton */
 //default: 50
 #define BEAMCONTACTTOL 1.0e-10    /* convergence tolerance for local Newton */
-//default: 1.0e-12
+//default: 1.0e-10
 #define XIETATOL 1.0e-7           /* tolerance for valid values of beam parameters Xi and Eta
 //default: 1.0e-9                                     (e.g. Xi \in [-1 - XIETATOL; 1 + XIETATOL]) */
 #define NORMTOL  1.0e-12           /* tolerance when the to contact points are to close and one
@@ -41,11 +41,12 @@ Maintainer: Christoph Meier
 //default: 1.0e-12
 #define NORMALTOL 0.00001         /* tolerance how small the scalar product of normal_old and normal is allowed to be */
 //default: 0.001 / 0.00001
+
 #define MANIPULATERADIUS 1.0        /* with this parameter the geometrical radius used for contact evaluation can be
 //default: 1                         chosen different from the physical radius appearing in the bending stiffness */
 #define MANIPULATERADIUSVIS 1.0     /* with this parameter the geometrical radius used for gmsh visualization can be
 //default: 1                         chosen different from the physical radius appearing in the bending stiffness */
-#define NEIGHBORTOL 3            /* parameter that allows to also evaluate the contact normal of neighbor elements
+#define NEIGHBORTOL 2            /* parameter that allows to also evaluate the contact normal of neighbor elements
 //default: 3                         needed for new gap function. It has proven useful that NEIGHBORTOL ca. 3,
                                      since the sum of |xi1| and |xi2| has to be larger than three for a contact pair
                                      consisting of element i and element i+2 of the same physical beam! */
@@ -70,7 +71,7 @@ Maintainer: Christoph Meier
 //default: Off
 #ifdef AUTOMATICDIFF
   typedef Sacado::Fad::DFad<double> TYPE;
-  #define FADCHECKS //Decide weather FAD checks via Sacado are printed as output or not
+  //#define FADCHECKS //Decide weather FAD checks via Sacado are printed as output or not
 #else
   typedef double TYPE;
 #endif
@@ -90,23 +91,40 @@ Maintainer: Christoph Meier
 //#define BEAMCONTACTPTC       10        //Apply PTC terms to contact elements
 //#define BEAMCONTACTPTCROT    0.0
 
-#define SEGANGLE 2.0/180.0*M_PI           //maximal tangent angle deviation of a segment point from straight line approximation
-#define MAXNUMSEG  256                    //maximal number of segments
-#define ANGLETOL 0.1/180*M_PI             //within the search algorithm, for angles<ANGLETOL two segments are assumed to be parallel
-#define DELTALARGEANGLE 10/180*M_PI       //bound for search of large angle contact segment pairs
-#define DELTASMALLANGLE  20/180*M_PI      //bound for search of small angle contact segment pairs
+
+#define SEGANGLE 1.0/180.0*M_PI    //default: 2.0  //maximal tangent angle deviation of a segment point from straight line approximation
+#define MAXNUMSEG  256      //default: 256         //maximal number of segments
+#define ANGLETOL 0.1/180*M_PI                      //within the search algorithm, for angles<ANGLETOL two segments are assumed to be parallel
+#define UNIQUECPPANGLE 1.0/180.0*M_PI              //angle above which it is assumed that a unique cpp can be found by the local Newton
+
+//#define DELTALARGEANGLE   6.0/180.0*M_PI           //bound for search of large angle contact segment pairs
+//#define DELTASMALLANGLE   35.0/180.0*M_PI          //bound for search of small angle contact segment pairs
+
+#define BEAMCONTACTGAUSSRULE intrule_line_5point   //Gauss rule applied in each segment
+
+//#define ENDPOINTSEGMENTATION                     //build integration segments at the physical beam endpoints
+#define RELSEGMENTTOL 0.001                        //minimal (relative) size of a cut integration interval
+
+#define INITSEG1 1                                 //minimal number of segments of element1 (necessary for debugging)
+#define INITSEG2 1                                 //minimal number of segments of element2 (necessary for debugging)
+
+#if defined(ENDPOINTSEGMENTATION) and !defined(AUTOMATICDIFF)
+  dserror("ENDPOINTSEGMENTATION only works in combination with AUTOMATICDIFF!")
+#endif
 
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
-#define N_CIRCUMFERENTIAL 10      /* number of gmsh visualization devisions of beam element in circumferential direction*/
-#define N_Axial 50                /* number of gmsh visualization devisions of beam element in axial direction*/
+#define N_CIRCUMFERENTIAL 20      /* number of gmsh visualization devisions of beam element in circumferential direction*/
+#define N_Axial 30                /* number of gmsh visualization devisions of beam element in axial direction*/
 
 #define OUTPUTEVERY 1          //Write output only every OUTPUTEVERY^th step
-//#defineOUTPUTEVERYNEWTONSTEP //Write output also after each Newton step
-//#define GMSHTIMESTEPS           /* write gmsh output in each time step */
-//#define GMSHNEWTONSTEPS           /* write gmsh and console output in each Newton step */
+#define OUTPUTEVERYNEWTONSTEP  //Write output also after each Newton step
+//#define GMSHTIMESTEPS          /* write gmsh output in each time step */
+//#define GMSHNEWTONSTEPS      /* write gmsh and console output in each Newton step */
 //#define REACTIONFORCES          /* output of reaction forces and moments */
 //#define BEAMCONTACTFDCHECKS     /* perform finite difference checks */
+
+//#define FDCHECK                //perform finite difference check of contact linearization
 
 #endif /* BEAM3CONTACT_DEFINES_H */

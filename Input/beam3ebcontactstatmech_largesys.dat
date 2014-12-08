@@ -93,8 +93,8 @@ GMSHOUTPUT          No                   // visualization via Gmsh
 GMSHNETSTRUCT       No                    // visualize structure detection
 PlotFactorThick     0                     // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
 SPECIAL_OUTPUT      none                  // structanaly viscoelasticity
-GMSHOUTINTERVALS    1000                  // gmsh output interval
-OUTPUTINTERVALS     10                  // specialoutput interval
+GMSHOUTINTERVALS    0                  // gmsh output interval
+OUTPUTINTERVALS     0                  // specialoutput interval
 //============== EVENT TRIGGERS =============
 STARTTIMEOUT        0                     // start writing output
 //ACTIONTIME          0 0 10000              // start actions equilibration time, kt switch time,...,starttimeact

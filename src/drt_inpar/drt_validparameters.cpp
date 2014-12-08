@@ -2065,6 +2065,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("BEAMS_SEGCON","No","choose between beam contact with and without subsegment generation",
                                yesnotuple,yesnovalue,&beamcontact);
 
+  setStringToIntegralParameter<int>("BEAMS_DEBUG","No","This flag can be used for testing purposes. When it is switched on, some sanity checks are not performed!",
+                               yesnotuple,yesnovalue,&beamcontact);
+
   setStringToIntegralParameter<int>("BEAMS_INACTIVESTIFF","No","Always apply contact stiffness in first Newton step for pairs which have active in last time step",
                                yesnotuple,yesnovalue,&beamcontact);
 
@@ -2090,7 +2093,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   INPAR::BEAMCONTACT::bd_yes,INPAR::BEAMCONTACT::bd_yes),
        &beamcontact);
 
-  DoubleParameter("BEAMS_BTBPENALTYPARAM",0.0,"Penalty parameter for beam-to-beam contact",&beamcontact);
+  DoubleParameter("BEAMS_BTBPENALTYPARAM",0.0,"Penalty parameter for beam-to-beam point contact",&beamcontact);
+  DoubleParameter("BEAMS_BTBLINEPENALTYPARAM",-1.0,"Penalty parameter per unit length for beam-to-beam line contact",&beamcontact);
   DoubleParameter("BEAMS_BTSPENALTYPARAM",0.0,"Penalty parameter for beam-to-solid contact",&beamcontact);
   DoubleParameter("BEAMS_BTSPH_PENALTYPARAM",0.0,"Penalty parameter for beam-to-rigidsphere penalty / Uzawa augmented solution strategy",&beamcontact);
   IntParameter("BEAMS_BTBUZAWAMAXSTEPS",10,"Maximum no. of Uzawa steps for Uzawa solution strategy",&beamcontact);
@@ -2100,6 +2104,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("BEAMS_DAMPREGPARAM2",-1000.0,"Second (at gap2, with gap1>gap2) regularization parameter for contact damping force",&beamcontact);
   DoubleParameter("BEAMS_MAXDISISCALEFAC",-1.0,"Scale factor in order to limit maximal iterative displacement increment (resiudal displacement)",&beamcontact);
   DoubleParameter("BEAMS_MAXDELTADISSCALEFAC",1.0,"Scale factor in order to limit maximal displacement per time step",&beamcontact);
+
+  DoubleParameter("BEAMS_PERPSHIFTANGLE1",-1.0,"Lower shift angle (in degrees) for penalty scaling of large-angle-contact",&beamcontact);
+  DoubleParameter("BEAMS_PERPSHIFTANGLE2",-1.0,"Upper shift angle (in degrees) for penalty scaling of large-angle-contact",&beamcontact);
+  DoubleParameter("BEAMS_PARSHIFTANGLE1",-1.0,"Lower shift angle (in degrees) for penalty scaling of small-angle-contact",&beamcontact);
+  DoubleParameter("BEAMS_PARSHIFTANGLE2",-1.0,"Upper shift angle (in degrees) for penalty scaling of small-angle-contact",&beamcontact);
+  IntParameter("BEAMS_NUMINTEGRATIONINTERVAL",1,"Number of integration intervals per element",&beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_PENALTYLAW","LinPen","Applied Penalty Law",
        tuple<std::string>("LinPen",

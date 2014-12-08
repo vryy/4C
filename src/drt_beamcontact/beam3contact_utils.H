@@ -205,6 +205,19 @@ namespace BEAMCONTACT
   }
 
   /*!
+  \brief Set primary parameter coordinate DoF on master beam for automatic differentiation with Sacado
+  */
+  template<int numnodes, int numnodalvalues>
+  void SetFADParCoordDof(FAD& eta)
+  {
+    // The 2*3*numnodes*numnodalvalues primary DoFs are the components of the nodal positions / tangents. The one additional
+    // degree of freedom represents the dependency on the master parameter coordinate eta, which is necessary in beam contact.
+    eta.diff((2*3*numnodes*numnodalvalues+1)-1,2*3*numnodes*numnodalvalues+1);
+
+    return;
+  }
+
+  /*!
   \brief Check, if current node belongs to a beam element
   */
   bool BeamNode(DRT::Node& node);
@@ -266,6 +279,55 @@ namespace BEAMCONTACT
   \brief Determine inpute parameter representing the additive searchbox increment
   */
   double DetermineSearchboxInc(Teuchos::ParameterList& beamcontactparams);
+
+  /*
+  \brief Check if a given double lies within a prescribed interval (enlarged by the tolerance XIETATOL)
+  */
+  inline bool WithinInterval(double& testpoint, double& leftbound, double& rightbound)
+  {
+    //The tolerance XIETATOL makes the test more conservative, i.e. the testpoint
+    //is assumed to be within the interval even if it actually is slightly outside
+    if(testpoint>leftbound-XIETATOL and testpoint<rightbound+XIETATOL)
+      return true;
+    else
+      return false;
+  }
+
+  /*
+  \brief Get interval-id out of numberofintervals intervals, in which the given point lies
+  */
+  inline int GetIntervalId(double& point, int numberofintervals, bool leftbound)
+  {
+    int interval_id=0;
+    double unrounded_id=0.0;
+
+    //With the following formula we would get the exact interval Ids when inserting the coordinate of the left bound
+    //of the interval. By inserting any double value lying within the interval, we get as result a double value that
+    //is larger than the sought-after interval ID but smaller than the next highter ID, i.e. we have to round down the solution.
+    unrounded_id=(point+1.0)/2.0*numberofintervals;
+    interval_id=floor(unrounded_id);
+
+    //if the size of the interval becomes smaller than 0.1% of the interval length we simply shift the point to the next higher/lower interval
+    double segmenttol=RELSEGMENTTOL*numberofintervals/2.0;
+
+    //The necessary shifting procedure depends on the fact, weather we are searching for the left bound
+    if(leftbound)
+    {
+      if(fabs(1+interval_id-unrounded_id)<segmenttol)
+        interval_id++;
+    }
+    //or for the right bound of the integration interval
+    else
+    {
+      if(fabs(interval_id-unrounded_id)<segmenttol)
+        interval_id--;
+    }
+
+    if(interval_id<0)
+      dserror("Interval-ID can't be negative!");
+
+    return interval_id;
+  }
 
 } // namespace BEAMCONTACT
 

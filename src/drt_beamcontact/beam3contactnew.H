@@ -93,6 +93,11 @@ public:
   inline const DRT::Element* Element2() { return element2_;};
 
   /*!
+  \brief Get number of contact points on this element pair
+  */
+  int GetNumCps(){return 1;};
+
+  /*!
   \brief Get gap of this contact pair
   */
   std::vector<double> GetGap()
@@ -172,12 +177,12 @@ public:
   /*!
   \brief Get coordinates of contact point of element1
   */
-  const Epetra_SerialDenseVector GetX1()
+  const std::vector<LINALG::Matrix<3,1> > GetX1()
   {
-    Epetra_SerialDenseVector r1;
-    r1.Resize(3);
-    for (int i=0;i<3;i++)
-      r1(i)=BEAMCONTACT::CastToDouble(r1_(i));
+    std::vector<LINALG::Matrix<3,1> > r1(1,LINALG::Matrix<3,1>(true));
+
+    for(int j=0;j<3;j++)
+      r1[0](j)=BEAMCONTACT::CastToDouble(r1_(j));
 
     return r1;
   };
@@ -185,12 +190,12 @@ public:
   /*!
   \brief Get coordinates of contact point of element2
   */
-  const Epetra_SerialDenseVector GetX2()
+  const std::vector<LINALG::Matrix<3,1> > GetX2()
   {
-    Epetra_SerialDenseVector r2;
-    r2.Resize(3);
-    for (int i=0;i<3;i++)
-      r2(i)=BEAMCONTACT::CastToDouble(r2_(i));
+    std::vector<LINALG::Matrix<3,1> > r2(1,LINALG::Matrix<3,1>(true));
+
+    for(int j=0;j<3;j++)
+      r2[0](j)=BEAMCONTACT::CastToDouble(r2_(j));
 
     return r2;
   };
@@ -273,7 +278,8 @@ public:
                 Epetra_Vector& fint,
                 const double& pp,
                 std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap,
-                Teuchos::ParameterList& timeintparams);
+                Teuchos::ParameterList& timeintparams,
+                bool fdcheck=false);
 
   /*!
   \brief Reset Uzawa-based Lagrange multiplier

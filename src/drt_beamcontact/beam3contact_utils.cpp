@@ -190,13 +190,25 @@ bool BEAMCONTACT::IntersectParallelCylinders( LINALG::TMatrix<double,3,1>& r1_a,
 
   //Check, if node r2_a lies within cylinder 1
   parallellinedist=CalcPointLineDist(r1_a, r1_b, r2_a, etapoint);
-  if(parallellinedist<distancelimit and fabs(etapoint)<1.0)
+  if(parallellinedist<distancelimit and fabs(etapoint)<1.0+distancelimit)
     return true;
 
   //Check, if node r2_b lies within cylinder 1
   etapoint = 0.0;
   parallellinedist=CalcPointLineDist(r1_a, r1_b, r2_b, etapoint);
-  if(parallellinedist<distancelimit and fabs(etapoint)<1.0)
+  if(parallellinedist<distancelimit and fabs(etapoint)<1.0+distancelimit)
+    return true;
+
+  //Check, if node r1_a lies within cylinder 2
+  etapoint = 0.0;
+  parallellinedist=CalcPointLineDist(r2_a, r2_b, r1_a, etapoint);
+  if(parallellinedist<distancelimit and fabs(etapoint)<1.0+distancelimit)
+    return true;
+
+  //Check, if node r1_b lies within cylinder 2
+  etapoint = 0.0;
+  parallellinedist=CalcPointLineDist(r2_a, r2_b, r1_b, etapoint);
+  if(parallellinedist<distancelimit and fabs(etapoint)<1.0+distancelimit)
     return true;
 
   //Else, we have no intersection!!!

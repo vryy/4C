@@ -55,7 +55,9 @@ public:
   */
   Beam3contactvariables(std::pair<TYPE,TYPE>& closestpoint,
                         std::pair<int,int>& segids,
-                        const double& pp);
+                        std::pair<int,int>& intids,
+                        const double& pp,
+                        TYPE jacobi);
 
   /*!
   \brief Destructor
@@ -81,6 +83,16 @@ public:
   \brief Get Segment Ids
   */
   std::pair<int,int> GetSegIds() { return segids_; };
+
+  /*!
+  \brief Get Integration Ids
+  */
+  std::pair<int,int> GetIntIds() { return intids_; };
+
+  /*!
+  \brief Get jacobi factor
+  */
+  TYPE GetJacobi() { return jacobi_; };
 
   /*!
   \brief Set gap
@@ -123,6 +135,26 @@ public:
   void Setdfp(TYPE dfp) { dfp_=dfp; };
 
   /*!
+  \brief Get pre-factor for penalty parameter
+  */
+  TYPE GetPPfac() { return ppfac_; };
+
+  /*!
+  \brief Set pre-factor for penalty parameter
+  */
+  void SetPPfac(TYPE ppfac) { ppfac_=ppfac; };
+
+  /*!
+  \brief Get linearization of pre-factor for penalty parameter
+  */
+  TYPE GetDPPfac() { return dppfac_; };
+
+  /*!
+  \brief Set linearization of pre-factor for penalty parameter
+  */
+  void SetDPPfac(TYPE dppfac) { dppfac_=dppfac; };
+
+  /*!
   \brief Get derivative of penalty force
   */
   TYPE Getdfp() { return dfp_; };
@@ -149,6 +181,12 @@ private:
   //element local Ids of considered segments
   std::pair<int,int> segids_;
 
+  //stores numgp and number of integration interval (only necessary for small-angle contact)
+  std::pair<int,int> intids_;
+
+  //jacobi factor for integration (only necessary for line contact)
+  TYPE jacobi_;
+
   //gap function
   TYPE gap_;
 
@@ -157,6 +195,12 @@ private:
 
   //penalty parameter
   double pp_;
+
+  //penalty parameter
+  TYPE ppfac_;
+
+  //linearization of penalty parameter
+  TYPE dppfac_;
 
   //penalty force
   TYPE fp_;

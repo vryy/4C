@@ -29,6 +29,7 @@ Maintainer: Christoph Meier
 #include "../drt_inpar/inpar_statmech.H"
 #include <Epetra_CrsMatrix.h>
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_beamcontact/beam3contact_utils.H"
 
 #include "Sacado.hpp"
 typedef Sacado::Fad::DFad<double> FAD;
@@ -983,6 +984,16 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
    //dimensions of freedom per node
   const int dofpn = 3*NODALDOFS;
 
+  const double time = params.get("total time",-1.0);
+  double orthopressureload = 0.0;
+
+  #ifdef ORTHOPRESSURE
+    if(time > 1.0)
+      orthopressureload = ORTHOPRESSURE * (time-1.0)/0.1;
+    if(time > 1.1)
+      orthopressureload = ORTHOPRESSURE;
+  #endif
+
   //matrix for current positions and tangents
   std::vector<double> disp_totlag(nnode*dofpn, 0.0);
   std::vector<FAD> disp_totlag_fad(nnode*dofpn, 0.0);
@@ -1001,6 +1012,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   double tension;
 
   LINALG::TMatrix<FAD,3,1> rx_fad;
+  LINALG::TMatrix<FAD,3,1> ortho_normal(true);
   FAD rxrx_fad;
 
   LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTilde;
@@ -1022,16 +1034,19 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
   LINALG::Matrix<1,NODALDOFS*nnode> N_i_x;
   LINALG::Matrix<1,NODALDOFS*nnode> N_i_xx;
 
+  LINALG::TMatrix<FAD,3,nnode*dofpn> N;
   LINALG::Matrix<3,nnode*dofpn> N_x;
   LINALG::Matrix<3,nnode*dofpn> N_xx;
 
   //stiffness due to tension and bending
   LINALG::Matrix<nnode*dofpn,nnode*dofpn> R_tension;
   LINALG::Matrix<nnode*dofpn,nnode*dofpn> R_bending;
+  LINALG::Matrix<nnode*dofpn,nnode*dofpn> R_orthopressure;
 
   //internal force due to tension and bending
   LINALG::Matrix<nnode*dofpn,1> Res_tension;
   LINALG::Matrix<nnode*dofpn,1> Res_bending;
+  LINALG::TMatrix<FAD,nnode*dofpn,1> Res_orthopressure;
 
   //some matrices necessary for ANS approach
   #ifdef ANS_BEAM3EB
@@ -1246,6 +1261,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     N_i_x.Clear();
     N_i_xx.Clear();
 
+    N.Clear();
     N_x.Clear();
     N_xx.Clear();
 
@@ -1301,6 +1317,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     {
       for (int j=0; j<nnode*NODALDOFS; ++j)
       {
+        N(i,i+3*j) += N_i(j);
         N_x(i,i+3*j) += N_i_x(j);
         N_xx(i,i+3*j) += N_i_xx(j);
         NxTrx(i+3*j)+=N_i_x(j)*r_x(i);
@@ -1309,6 +1326,26 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
         NxxTrxx(i+3*j)+=N_i_xx(j)*r_xx(i);
       }
     }
+
+    #ifdef ORTHOPRESSURE
+      ortho_normal(0)=rx_fad(1,0);
+      ortho_normal(1)=-rx_fad(0,0);
+      ortho_normal(2)=0.0;
+      if (BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(ortho_normal))>1.0e-12)
+        ortho_normal.Scale(1.0/(BEAMCONTACT::VectorNorm<3>(ortho_normal)));
+
+      Res_orthopressure.Clear();
+      R_orthopressure.Clear();
+      Res_orthopressure.MultiplyTN(N,ortho_normal);
+      Res_orthopressure.Scale(orthopressureload* wgt *jacobi_);
+      for (int i= 0; i<nnode*dofpn; i++)
+      {
+        for (int j= 0; j<nnode*dofpn; j++)
+        {
+          R_orthopressure(i,j)=Res_orthopressure(i).dx(j);
+        }
+      }
+    #endif
 
     NTilde.MultiplyTN(N_x,N_xx);
     NTildex.MultiplyTN(N_x,N_x);
@@ -1340,6 +1377,8 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
         lin_epsilon_ANS(j)+=L_i(i)*lin_epsilon_cp(i,j);
       }
     }
+
+//    std::cout << std::setprecision(16) << "epsilon: " << epsilon_ANS << std::endl;
 
     Res_tension_ANS.Clear();
     R_tension_ANS.Clear();
@@ -1415,6 +1454,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
           (*stiffmatrix)(i,j) += R_tension_ANS(i,j);
           #endif
           (*stiffmatrix)(i,j) += R_bending(i,j);
+          #ifdef ORTHOPRESSURE
+          (*stiffmatrix)(i,j) += R_orthopressure(i,j);
+          #endif
         }
       } //for(int i = 0; i < dofpn*nnode; i++)
     }//if (stiffmatrix != NULL)
@@ -1453,18 +1495,24 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
           (*force)(i) += Res_tension_ANS(i);
           #endif
           (*force)(i) += Res_bending(i) ;
+          #ifdef ORTHOPRESSURE
+          (*force)(i) += Res_orthopressure(i).val();
+          #endif
       }
     } //if (force != NULL)
 
 #ifdef ANS_BEAM3EB
     double kappa_quad = (rxxrxx/rxrx-pow(rxrxx,2)/pow(rxrx,2))/pow(jacobi_,2);
+//    if(kappa_quad>0)
+//      std::cout << std::setprecision(16) << "kappa: " << sqrt(kappa_quad) << std::endl;
+
     Eint_+=0.5*wgt*jacobi_*ym * crosssec_ * pow(epsilon_ANS,2);
-    Eint_+=0.5*wgt*jacobi_*ym * Izz_ * kappa_quad;
+    Eint_+=0.5*wgt*jacobi_*ym *Izz_ * kappa_quad;
 #endif
 
   } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
-  LINALG::Matrix<3,nnode*dofpn> N;
+  LINALG::Matrix<3,nnode*dofpn> N_mass;
   //Loop through all GP and calculate their contribution to the mass matrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   {
@@ -1472,7 +1520,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     LINALG::Matrix<3,1> r(true);
 
     N_i.Clear();
-    N.Clear();
+    N_mass.Clear();
     NTilde.Clear();
 
     //Get location and weight of GP in parameter space
@@ -1493,7 +1541,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     {
       for (int j=0; j<nnode*NODALDOFS; ++j)
       {
-        N(i,i+3*j) += N_i(j);
+        N_mass(i,i+3*j) += N_i(j);
       }
     }
     for (int i=0 ; i < 3 ; i++)
@@ -1511,7 +1559,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
         r(i,0)+= N_i(j)*disp_totlag[3*j + i];
       }
     }
-    NTilde.MultiplyTN(N,N);
+    NTilde.MultiplyTN(N_mass,N_mass);
 
     if (massmatrix != NULL)
     {

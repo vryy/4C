@@ -48,7 +48,9 @@ typedef Sacado::Fad::DFad<double> FAD;
 //#define VP //Vector product Reference System
 //#define SR1 //Smallest Rotation Reference System
 
-#define ANS //Apply Assumed Natural Strain approach. DEFAULT: ON
+#define ANS //Apply Assumed Natural Strain approach for axial tension. DEFAULT: ON
+
+//#define ANSKAPPA 2 //Apply Assumed Natural Strain approach for curvature kappa. DEFAULT: OFF
 
 //#define MATERIALREF  //decide whether the old material or the old reference triad is used to define the new reference triad. DEFAULT: OUT
 
@@ -61,6 +63,8 @@ typedef Sacado::Fad::DFad<double> FAD;
 #define ROTATIONTOL 1.0e-12 //Tolerance that ensures a rotation per load/time step, that is smaller than 180°: 1+t*t_old !< ROTATIONTOL. DEFAULT: 1.0e-12
 
 #define LENGTHCALCNEWTONTOL 10e-12 //Tolerance for iterative determination of element length. DEFAULT: 10e-12
+
+//#define BEAM3EBANISOTROPORTHOPRESSURE 3.1415926535897938   //Apply orthopressure load. DEFAULT: off
 
 
 #if !(defined NSRISR) and !(defined VP) and !(defined SR1)
@@ -326,6 +330,14 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1);
 
+  /*!
+  \brief get nodal tangents in reference configuration
+  */
+  std::vector<LINALG::Matrix<3,1> > Tref() const
+  {
+    return Tref_;
+  }
+
 
   //@}
 
@@ -563,6 +575,13 @@ private:
                               LINALG::TMatrix<FAD,1,2*6+TWISTDOFS>& C,
                               LINALG::TMatrix<FAD,1,2*6+TWISTDOFS>& C_s);
 
+  void AssembleShapefunctions( LINALG::Matrix<1,4> N_i_xi,
+                               LINALG::Matrix<1,4> N_i_xixi,
+                               double jacobi_local,
+                               double jacobi2_local,
+                               LINALG::Matrix<3,2*6+TWISTDOFS>& N_s,
+                               LINALG::Matrix<3,2*6+TWISTDOFS>& N_ss);
+
   //! Assembles the four first shape function derivatives of an element into a 3*dofs_per_element block matrix.
   void AssembleShapefunctions( LINALG::TMatrix<FAD,1,4> N_i,
                                LINALG::TMatrix<FAD,1,4> N_i_xi,
@@ -575,6 +594,9 @@ private:
   void AssembleShapefunctions(LINALG::TMatrix<FAD,1,4> N_i_xi,
                               FAD jacobi_local,
                               LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N_s);
+
+  void AssembleShapefunctions(LINALG::TMatrix<FAD,1,4> N_i,
+                              LINALG::TMatrix<FAD,3,2*6+TWISTDOFS>& N);
 
   //! Calculate the intermediate triad triad_bar_gp and the corresponding torsion tau_bar_gp at the gauss points
   void CalculateIntermediateTriad(LINALG::TMatrix<FAD,3,1> r_s,
@@ -622,6 +644,12 @@ private:
   void Calculate_r_s( std::vector<FAD> disp_totlag,
                       double xi,
                       LINALG::TMatrix<FAD,3,1>& r_s_midpoint);
+
+  //!Calculates derivatives r' and r'' at certain point xi
+  void Calculate_r_s_and_r_ss( std::vector<FAD> disp_totlag,
+                             double xi,
+                             LINALG::TMatrix<FAD,3,1>& r_s,
+                             LINALG::TMatrix<FAD,3,1>& r_ss);
 
   //!Store the gauss point reference triads of the converged configuration in the corresponding class variables t0_, n0_, b0_, dt0ds_ and db0ds_
   void UpdateGPRefTriads( LINALG::TMatrix<FAD,3,1> tangent,

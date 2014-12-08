@@ -95,17 +95,31 @@ public:
   inline const DRT::Element* Element2() { return element2_;};
 
   /*!
+  \brief Get number of standard large angle contact points on this element pair
+  */
+  int GetNumCps()
+  {
+    return cpvariables_.size();
+  };
+
+  /*!
   \brief Get vector of all gaps of this contact pair
   */
   std::vector<double> GetGap()
   {
-    std::vector<double> gaps(1,0.0);
+    int size1=cpvariables_.size();
+    int size2=gpvariables_.size();
+    std::vector<double > gaps(size1+size2, 0.0);
 
-    if((int)cpvariables_.size()!=0)
-      gaps.resize(cpvariables_.size());
+    for (int i=0;i<size1;i++)
+    {
+      gaps[i] = BEAMCONTACT::CastToDouble(cpvariables_[i]->GetGap());
+    }
 
-    for (int i=0;i<(int)cpvariables_.size();i++)
-      gaps[i]=BEAMCONTACT::CastToDouble(cpvariables_[i]->GetGap());
+    for (int i=size1;i<size2+size1;i++)
+    {
+      gaps[i] = BEAMCONTACT::CastToDouble(gpvariables_[i-size1]->GetGap());
+    }
 
     return gaps;
   };
@@ -115,15 +129,21 @@ public:
   */
   std::vector<double> GetContactForce()
   {
-    std::vector<double> forces(1,0.0);
+    int size1=cpvariables_.size();
+    int size2=gpvariables_.size();
+    std::vector<double > f(size1+size2, 0.0);
 
-    if((int)cpvariables_.size()!=0)
-      forces.resize(cpvariables_.size());
+    for (int i=0;i<size1;i++)
+    {
+      f[i] = BEAMCONTACT::CastToDouble(cpvariables_[i]->Getfp()*cpvariables_[i]->GetPPfac());
+    }
 
-    for (int i=0;i<(int)cpvariables_.size();i++)
-      forces[i]=BEAMCONTACT::CastToDouble(cpvariables_[i]->Getfp());
+    for (int i=size1;i<size2+size1;i++)
+    {
+      f[i] = BEAMCONTACT::CastToDouble(gpvariables_[i-size1]->Getfp()*gpvariables_[i-size1]->GetPPfac());
+    }
 
-    return forces;
+    return f;
   };
 
   /*!
@@ -131,13 +151,19 @@ public:
   */
   std::vector<double> GetContactAngle()
   {
-    std::vector<double> angles(1,0.0);
+    int size1=cpvariables_.size();
+    int size2=gpvariables_.size();
+    std::vector<double > angles(size1+size2, 0.0);
 
-    if((int)cpvariables_.size()!=0)
-      angles.resize(cpvariables_.size());
+    for (int i=0;i<size1;i++)
+    {
+      angles[i] = BEAMCONTACT::CastToDouble(cpvariables_[i]->GetAngle());
+    }
 
-    for (int i=0;i<(int)cpvariables_.size();i++)
-      angles[i]=BEAMCONTACT::CastToDouble(cpvariables_[i]->GetAngle());
+    for (int i=size1;i<size2+size1;i++)
+    {
+      angles[i] = BEAMCONTACT::CastToDouble(gpvariables_[i-size1]->GetAngle());
+    }
 
     return angles;
   };
@@ -147,15 +173,21 @@ public:
   */
   std::vector<std::pair<double,double> > GetClosestPoint()
   {
-    std::vector<std::pair<double,double> > cps(1,std::make_pair(0.0,0.0));
+    int size1=cpvariables_.size();
+    int size2=gpvariables_.size();
+    std::vector<std::pair<double,double> > cps(size1+size2,std::make_pair(0.0,0.0));
 
-    if((int)cpvariables_.size()!=0)
-      cps.resize(cpvariables_.size());
-
-    for (int i=0;i<(int)cpvariables_.size();i++)
+    for (int i=0;i<size1;i++)
     {
       double xi=BEAMCONTACT::CastToDouble(cpvariables_[i]->GetCP().first);
       double eta=BEAMCONTACT::CastToDouble(cpvariables_[i]->GetCP().second);
+      cps[i]=std::make_pair(xi,eta);
+    }
+
+    for (int i=size1;i<size2+size1;i++)
+    {
+      double xi=BEAMCONTACT::CastToDouble(gpvariables_[i-size1]->GetCP().first);
+      double eta=BEAMCONTACT::CastToDouble(gpvariables_[i-size1]->GetCP().second);
       cps[i]=std::make_pair(xi,eta);
     }
 
@@ -175,14 +207,18 @@ public:
   */
   std::vector<std::pair<int,int> > GetSegmentIds()
   {
-    std::vector<std::pair<int,int> > ids(1,std::make_pair(1,1));
+    int size1=cpvariables_.size();
+    int size2=gpvariables_.size();
+    std::vector<std::pair<int,int> > ids(size1+size2,std::make_pair(1,1));
 
-    if((int)cpvariables_.size()!=0)
-      ids.resize(cpvariables_.size());
-
-    for (int i=0;i<(int)cpvariables_.size();i++)
+    for (int i=0;i<size1;i++)
     {
       ids[i]=cpvariables_[i]->GetSegIds();
+    }
+
+    for (int i=size1;i<size2+size1;i++)
+    {
+      ids[i]=gpvariables_[i-size1]->GetSegIds();
     }
 
     return ids;
@@ -201,37 +237,66 @@ public:
   */
   bool GetContactFlag()
   {
+//
+//    std::cout << "cpvariables_.size(): " << cpvariables_.size() << std::endl;
+//    std::cout << "gpvariables_.size(): " << gpvariables_.size() << std::endl;
+
     //The element pair is assumed to be active when we have at least one active contact point
-    return (cpvariables_.size());
+    return (cpvariables_.size()+gpvariables_.size());
   };
 
-  //TODO:
   /*!
   \brief Get coordinates of contact point of element1
   */
-  const Epetra_SerialDenseVector GetX1()
+  const std::vector<LINALG::Matrix<3,1> > GetX1()
   {
-    Epetra_SerialDenseVector r1;
-    r1.Resize(3);
-    for (int i=0;i<3;i++)
-      r1(i)=0.0;
+    int size1=cpvariables_.size();
+    int size2=gpvariables_.size();
+    std::vector<LINALG::Matrix<3,1> > r1(size1+size2, LINALG::Matrix<3,1>(true));
+
+    for (int i=0;i<size1;i++)
+    {
+      TYPE eta1 = cpvariables_[i]->GetCP().first;
+      for(int j=0;j<3;j++)
+        r1[i](j) = BEAMCONTACT::CastToDouble(r(eta1,element1_)(j));
+    }
+
+    for (int i=size1;i<size2+size1;i++)
+    {
+      TYPE eta1 = gpvariables_[i-size1]->GetCP().first;
+      for(int j=0;j<3;j++)
+        r1[i](j) = BEAMCONTACT::CastToDouble(r(eta1,element1_)(j));
+    }
 
     return r1;
   };
 
-  //TODO:
   /*!
-  \brief Get coordinates of contact point of element2
-  */
-  const Epetra_SerialDenseVector GetX2()
-  {
-    Epetra_SerialDenseVector r2;
-    r2.Resize(3);
-    for (int i=0;i<3;i++)
-      r2(i)=0.0;
+    \brief Get coordinates of contact point of element2
+    */
+    const std::vector<LINALG::Matrix<3,1> > GetX2()
+    {
+      int size1=cpvariables_.size();
+      int size2=gpvariables_.size();
+      std::vector<LINALG::Matrix<3,1> > r2(size1+size2, LINALG::Matrix<3,1>(true));
 
-    return r2;
-  };
+      for (int i=0;i<size1;i++)
+      {
+        TYPE eta2 = cpvariables_[i]->GetCP().second;
+        for(int j=0;j<3;j++)
+          r2[i](j) = BEAMCONTACT::CastToDouble(r(eta2,element2_)(j));
+      }
+
+      for (int i=size1;i<size2+size1;i++)
+      {
+        TYPE eta2 = gpvariables_[i-size1]->GetCP().second;
+        for(int j=0;j<3;j++)
+          r2[i](j) = BEAMCONTACT::CastToDouble(r(eta2,element2_)(j));
+      }
+
+      return r2;
+    };
+
 
   //TODO:
   /*!
@@ -301,7 +366,8 @@ public:
                 Epetra_Vector& fint,
                 const double& pp,
                 std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap,
-                Teuchos::ParameterList& timeintparams);
+                Teuchos::ParameterList& timeintparams,
+                bool fdcheck=false);
 
   /*!
   \brief Reset Uzawa-based Lagrange multiplier
@@ -399,11 +465,55 @@ private:
   //! Number of segments on element2
   int numseg2_;
 
+  //! bound for search of large angle contact segment pairs
+  double deltalargeangle_;
+
+  //! bound for search of small angle contact segment pairs
+  double deltasmallangle_;
+
+  //! Indicates if the left / right node of the master element coincides with the endpoint of the physical beam (true) or not (false)
+  std::pair<bool,bool> boundarynode_;
+
+  //! Variables stored at the closest point of the large-angle-contact algorithm
   std::vector<Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > > cpvariables_;
+
+  //! Variables stored at an Gauss point of the small-angle-contact algorithm
+  std::vector<Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > > gpvariables_;
 
   //@}
 
   //! @name Private evaluation methods
+
+  /*!
+  \brief Get active large angle pairs
+  */
+  void GetActiveLargeAnglePairs( std::vector<LINALG::TMatrix<double,3,1> >& endpoints1,
+                                 std::vector<LINALG::TMatrix<double,3,1> >& endpoints2,
+                                 std::map<std::pair<int,int>,LINALG::TMatrix<double,3,1> >& closelargeanglesegments,
+                                 const double pp);
+
+  /*!
+  \brief Evaluate active large angle pairs
+  */
+  void EvaluateActiveLargeAnglePairs(LINALG::SparseMatrix& stiffmatrix,
+                                     Epetra_Vector& fint);
+
+  /*!
+  \brief Get active small angle pairs
+  */
+  void GetActiveSmallAnglePairs(std::map<std::pair<int,int>,LINALG::TMatrix<double,3,1> >& closesmallanglesegments,
+                                std::pair<int,int>* iminmax = NULL,
+                                std::pair<bool,bool>* leftrightsolutionwithinsegment = NULL,
+                                std::pair<double,double>* eta1_leftrightboundary = NULL);
+
+  /*!
+  \brief Evaluate active small angle pairs
+  */
+  void EvaluateActiveSmallAnglePairs(LINALG::SparseMatrix& stiffmatrix,
+                                     Epetra_Vector& fint,
+                                     std::pair<int,int>* iminmax = NULL,
+                                     std::pair<bool,bool>* leftrightsolutionwithinsegment = NULL,
+                                     std::pair<double,double>* eta1_leftrightboundary = NULL);
 
   /*!
   \brief Find segments close to each other
@@ -425,11 +535,22 @@ private:
                               std::pair<TYPE,TYPE>& solutionpoints);
 
   /*!
+  \brief Find closest point eta2_master on a line for a given slave point eta1_slave
+  */
+  bool PointToLineProjection( double& eta1_slave,
+                              double& eta_left2,
+                              double& l2,
+                              double& eta2_master,
+                              bool& pairactive,
+                              bool invertpairs=false);
+
+  /*!
   \brief Subdivide elements into segments for CPP
   */
   double CreateSegments(DRT::Element* ele,
                         std::vector<LINALG::TMatrix<double,3,1> >& endpoints_final,
-                        int& numsegment);
+                        int& numsegment,
+                        int i);
 
   /*!
   \brief Get maximal gap at which a contact can become active
@@ -449,7 +570,25 @@ private:
   /*!
   \brief Calculate scalar contact force
   */
-  void CalcPenaltyLaw(Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > cpvariables);
+  void CalcPenaltyLaw(Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > variables);
+
+  /*!
+  \brief Calculate angle-dependent penalty scale factor for small-angle-contact
+  */
+  void CalcPerpPenaltyScaleFac( Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > cpvariables,
+                            LINALG::TMatrix<TYPE,3,1>& r1_xi,
+                            LINALG::TMatrix<TYPE,3,1>& r2_xi,
+                            const double shiftangle1,
+                            const double shiftangle2);
+
+  /*!
+  \brief Calculate angle-dependent penalty scale factor for large-angle-contact
+  */
+  void CalcParPenaltyScaleFac(Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > gpvariables,
+                              LINALG::TMatrix<TYPE,3,1>& r1_xi,
+                              LINALG::TMatrix<TYPE,3,1>& r2_xi,
+                              const double shiftangle1,
+                              const double shiftangle2);
 
   /*!
    \brief Compute contact forces
@@ -458,6 +597,7 @@ private:
                           const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1,
                           const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2,
                           Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > cpvariables,
+                          const double& intfac,
                           LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 1>* fc1_FAD=NULL,
                           LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 1>* fc2_FAD=NULL);
 
@@ -477,7 +617,27 @@ private:
                              const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xi,
                              const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1_xixi,
                              const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xixi,
-                             Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > cpvariables);
+                             Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > variables,
+                             const double& intfac,
+                             bool cpp=true);
+
+  /*!
+  \brief FAD-based Evaluation of contact stiffness in case of ENDPOINTSEGMENTATION
+  */
+  void EvaluateStiffcContactIntSeg(LINALG::SparseMatrix& stiffmatrix,
+                                   const LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_xi_bound,
+                                   const LINALG::TMatrix<TYPE, 3, 1>& r1,
+                                   const LINALG::TMatrix<TYPE, 3, 1>& r2,
+                                   const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
+                                   const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
+                                   const LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
+                                   const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1,
+                                   const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2,
+                                   const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xi,
+                                   Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > cpvariables,
+                                   const double& intfac,
+                                   const double& d_xi_ele_d_xi_bound,
+                                   TYPE signed_jacobi_interval);
 
   /*!
   \brief Linearizations of contact point
@@ -495,6 +655,24 @@ private:
                               const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xi);
 
   /*!
+  \brief Lin. of contact point coordinate eta with fixed xi
+  */
+  void ComputeLinEtaFixXi(LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_eta,
+                          const LINALG::TMatrix<TYPE, 3, 1>& delta_r,
+                          const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
+                          const LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
+                          const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1,
+                          const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2,
+                          const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xi);
+
+  /*!
+  \brief Compute linearization of integration interval bounds (necessary in case of ENDPOINTSEGMENTATION)
+  */
+  void ComputeLinXiBound(LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_xi_bound,
+                         TYPE& eta1_bound,
+                         TYPE eta2);
+
+  /*!
   \brief Compute linearization of gap
   */
   void ComputeLinGap(LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_gap,
@@ -506,6 +684,19 @@ private:
                      const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
                      const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1,
                      const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2);
+
+  /*!
+  \brief Compute linearization of cosine of contact angle
+  */
+  void ComputeLinCosContactAngle(LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_coscontactangle,
+                                 LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_xi,
+                                 LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_eta,
+                                 const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
+                                 const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
+                                 const LINALG::TMatrix<TYPE, 3, 1>& r1_xixi,
+                                 const LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
+                                 const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1_xi,
+                                 const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xi);
 
   /*!
   \brief Compute linearization of normal vector
@@ -622,13 +813,30 @@ private:
                                           bool& elementscolinear);
 
   /*!
+  \brief Evaluate orthogonality cond. of point to line projeciton
+  */
+  void EvaluatePTLOrthogonalityCondition( TYPE& f,
+                                          const LINALG::TMatrix<TYPE,3,1>& delta_r,
+                                          const double norm_delta_r,
+                                          const LINALG::TMatrix<TYPE,3,1>& r2_xi);
+
+  /*!
+  \brief Evaluate Jacobian df of PTLOrthogonalityCondition
+  */
+  bool EvaluateLinPTLOrthogonalityCondition(TYPE& df,
+                                            const LINALG::TMatrix<TYPE,3,1>& delta_r,
+                                            const double norm_delta_r,
+                                            const LINALG::TMatrix<TYPE,3,1>& r2_xi,
+                                            const LINALG::TMatrix<TYPE,3,1>& r2_xixi);
+
+  /*!
   \brief Compute normal vector and gap function at contact point
   */
   void ComputeNormal( LINALG::TMatrix<TYPE, 3, 1>& r1,
                       LINALG::TMatrix<TYPE, 3, 1>& r2,
                       LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
                       LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
-                      Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > cpvariables);
+                      Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > variables);
 
   /*!
   \brief Check, if we have contact or not (e.g. gap < gmax [e.g. gmax=0]?)
@@ -682,6 +890,16 @@ private:
                                           const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
                                           const LINALG::TMatrix<TYPE, 3, 1>& t1,
                                           const LINALG::TMatrix<TYPE, 3, 1>& t2);
+
+  /*!
+    \brief FD-Check of stiffness matrix
+  */
+  void FDCheck( LINALG::SparseMatrix& stiffmatrix,
+                Epetra_Vector& fint,
+                const double& pp,
+                std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap,
+                Teuchos::ParameterList& timeintparams,
+                bool fdcheck);
 
   //@}
 

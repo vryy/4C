@@ -31,6 +31,7 @@ Maintainer: Christoph Meier
 #include "../drt_inpar/inpar_statmech.H"
 
 #include "Teuchos_TimeMonitor.hpp"
+//TODO: Abfangen, dass Kontaktpunkte am Elementübergang zweimal ausgewertet werden!!!
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/14|
@@ -55,7 +56,8 @@ maxactivegap_(GetMaxActiveDist()),
 maxsegdist1_(0.0),
 maxsegdist2_(0.0),
 numseg1_(1),
-numseg2_(1)
+numseg2_(1),
+boundarynode_(std::make_pair(0,0))
 {
   for (int i=0;i<3*numnodes*numnodalvalues;i++)
   {
@@ -83,14 +85,34 @@ numseg2_(1)
     }
   }
 
+  //In case we want to apply a segment-based integration at the endpoints of the physical beam (in order to avoid
+  //strong discontinuities in the integrand) we have to check, if a master beam element node coincides with a beams endpoint!
+  #ifdef ENDPOINTSEGMENTATION
+    neighbors2_ = CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(element2);
+
+    bool leftboundarynode = false;
+    bool rightboundarynode = false;
+
+    if(neighbors2_->GetLeftNeighbor()==NULL)
+      leftboundarynode=true;
+
+    if(neighbors2_->GetRightNeighbor()==NULL)
+      rightboundarynode=true;
+
+    boundarynode_=std::make_pair(leftboundarynode,rightboundarynode);
+  #endif
+
   //Calculate initial length of beam elements (approximation for initially curved elements!)
-  LINALG::TMatrix<TYPE,3,1> lvec1(true);
-  LINALG::TMatrix<TYPE,3,1> lvec2(true);
+  LINALG::TMatrix<double,3,1> lvec1(true);
+  LINALG::TMatrix<double,3,1> lvec2(true);
   for(int i=0;i<3;i++)
   {
     lvec1(i)=(element1_->Nodes())[0]->X()[i]-(element1_->Nodes())[1]->X()[i];
     lvec2(i)=(element2_->Nodes())[0]->X()[i]-(element2_->Nodes())[1]->X()[i];
   }
+
+  double l1=lvec1.Norm2();
+  double l2=lvec2.Norm2();
 
   if (element1->ElementType() != element2->ElementType())
     dserror("The class beam3contact only works for contact pairs of the same beam element type!");
@@ -106,12 +128,64 @@ numseg2_(1)
   }
 
   cpvariables_.resize(0);
+  gpvariables_.resize(0);
 
   if(DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcontactparams,"BEAMS_STRATEGY") == INPAR::BEAMCONTACT::bstr_uzawa)
     dserror("Uzawa is not implemented for beam3contact elements so far!");
 
   if (DRT::INPUT::IntegralValue<int>(bcparams_,"BEAMS_DAMPING")!=INPAR::BEAMCONTACT::bd_no)
     dserror("Damping is not implemented for beam3contact elements so far!");
+
+  double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1")/180.0*M_PI;
+  double parshiftangle2 = bcparams_.get<double>("BEAMS_PARSHIFTANGLE2")/180.0*M_PI;
+
+  if(parshiftangle2<=perpshiftangle1)
+    dserror("No angle overlap between large-angle and small-angle contact!");
+
+  bool beamsdebug = DRT::INPUT::IntegralValue<int>(beamcontactparams,"BEAMS_DEBUG");
+
+#ifdef DELTALARGEANGLE
+  deltalargeangle_=DELTALARGEANGLE;
+
+  if(deltalargeangle_<(2*SEGANGLE + UNIQUECPPANGLE + ANGLETOL))
+    dserror("DELTALARGEANGLE too small, no unique cpp possible!");
+
+  if(deltalargeangle_>(perpshiftangle1-2*SEGANGLE-ANGLETOL))
+    dserror("DELTALARGEANGLE too large, according to the values of BEAMS_PERPSHIFTANGLE1 and SEGANGLE not all relevant pairs can be found!");
+
+#else
+  deltalargeangle_=perpshiftangle1-2*SEGANGLE-ANGLETOL;
+
+  if(deltalargeangle_<(2*SEGANGLE + UNIQUECPPANGLE + ANGLETOL) and !beamsdebug)
+    dserror("DELTALARGEANGLE too small, no unique cpp possible!");
+#endif
+
+#ifdef DELTASMALLANGLE
+  deltasmallangle_=DELTASMALLANGLE;
+
+  if(deltasmallangle_ < (parshiftangle2+2*SEGANGLE+ANGLETOL))
+      dserror("DELTASMALLANGLE too small, according to the values of BEAMS_PARSHIFTANGLE2 and SEGANGLE not all relevant pairs can be found!");
+#else
+  deltasmallangle_ = parshiftangle2+2*SEGANGLE+ANGLETOL;
+#endif
+
+  if((deltasmallangle_ < ANGLETOL or deltalargeangle_ < ANGLETOL) and !beamsdebug)
+    dserror("Tolerance ANGLETOL has to be chosen smaller!");
+
+  //Check, if we have enough gauss points in order to find every contact point!!
+  //Calculate maximal length distance between two gauss points (the factor 1.5 takes into account the not evenly distributed locations
+  //of the Gauss points -> this does hold for a number of Gauss points <= 10!!!)
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::BEAMCONTACTGAUSSRULE);
+  int intintervals = bcparams_.get<int>("BEAMS_NUMINTEGRATIONINTERVAL");
+
+  double deltal1=1.5*l1/(intintervals*gausspoints.nquad);
+  double deltal2=1.5*l2/(intintervals*gausspoints.nquad);
+
+  if(gausspoints.nquad>10)
+    dserror("So far, not more than 10 Gauss points are allowed!");
+
+  if(((deltal1>R1_/sin(perpshiftangle1)) or (deltal2>R2_/sin(perpshiftangle1))) and !beamsdebug)
+    dserror("Not enough Gauss points crossing of beams possible!!!");
 
   return;
 }
@@ -127,7 +201,8 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
                                                                 Epetra_Vector& fint,
                                                                 const double& pp,
                                                                 std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap,
-                                                                Teuchos::ParameterList& timeintparams)
+                                                                Teuchos::ParameterList& timeintparams,
+                                                                bool fdcheck)
 {
   //**********************************************************************
   // Evaluation of contact forces and stiffness
@@ -144,6 +219,11 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
   //     -> only if the flag BEAMCONTACTFDCHECKS is defined
   //***************Get some parameters in the beginning*******************
 
+#ifdef FDCHECK
+  if(fdcheck==false)
+    FDCheck(stiffmatrix,fint,pp,contactpairmap,timeintparams,fdcheck);
+#endif
+
   //All updates that have to be done in every iteration have do be done here,
   //since most of the elements leave directly after the closest point projection!
   SetClassVariables(timeintparams);
@@ -151,11 +231,12 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
   //Subdevide the two elements in segments with linear approximation
   std::vector<LINALG::TMatrix<double,3,1> > endpoints1(0);
   std::vector<LINALG::TMatrix<double,3,1> > endpoints2(0);
-  maxsegdist1_=CreateSegments(element1_, endpoints1, numseg1_);
-  maxsegdist2_=CreateSegments(element2_, endpoints2, numseg2_);
 
-//  std::cout << "endpoints1.size(): " << endpoints1.size() << std::endl;
-//  std::cout << "endpoints2.size(): " << endpoints2.size() << std::endl;
+  //TODO: remove 0 and 1: So far the number 0 and 1 are used in order to distinguish
+  //between element 1 and element 2. However, this is only necessary for debugging purposes
+  //and can be removed later!
+  maxsegdist1_=CreateSegments(element1_, endpoints1, numseg1_,0);
+  maxsegdist2_=CreateSegments(element2_, endpoints2, numseg2_,1);
 
   //Make pairs of close segments: Most of the pairs are already sorted out
   //at this point and don't have to be considered further in the following CPP
@@ -163,6 +244,9 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
 
   std::map<std::pair<int,int>,LINALG::TMatrix<double,3,1> > closelargeanglesegments;
   std::map<std::pair<int,int>,LINALG::TMatrix<double,3,1> > closesmallanglesegments;
+  closelargeanglesegments.clear();
+  closesmallanglesegments.clear();
+
   GetCloseSegments(endpoints1,endpoints2,closesmallanglesegments,closelargeanglesegments,maxactivegap_);
 
   //std::cout << "closelargeanglesegments.size(): " << closelargeanglesegments.size() << std::endl;
@@ -170,39 +254,111 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
   //**********************************************************************
   // (1) Closest Point Projection for all close large angle segments(CPP)
   //**********************************************************************
+
+  //Get active large angle pairs (valid closest point projections) and create vector of cpvariables_
+  GetActiveLargeAnglePairs(endpoints1,endpoints2,closelargeanglesegments,pp);
+
+  //Evaluate contact contribution of large-angle-contact (residual and stiffness) for all closest points found before
+  EvaluateActiveLargeAnglePairs(stiffmatrix,fint);
+
+  //if we have no small angle contact pairs, we are already finished here!
+  if(!closesmallanglesegments.size())
+    return (true);
+
+  #ifndef ENDPOINTSEGMENTATION
+    //Get active small angle pairs (valid Gauss points) and create vector of gpvariables_
+    GetActiveSmallAnglePairs(closesmallanglesegments);
+
+    //Evaluate contact contribution of small-angle-contact (residual and stiffness) for all closest points found before
+    EvaluateActiveSmallAnglePairs(stiffmatrix,fint);
+  #else
+    //In case of endpoint segmentation some additional quantities have to be transfered between the methods
+    //GetActiveSmallAnglePairs() and EvaluateActiveSmallAnglePairs().
+    std::pair<int,int> iminmax = std::make_pair(0,0);
+    std::pair<bool,bool> leftrightsolutionwithinsegment = std::make_pair(false,false);
+    std::pair<double,double> eta1_leftrightboundary = std::make_pair(0.0, 0.0);
+
+    //Get active small angle pairs (valid Gauss points) and create vector of gpvariables_
+    GetActiveSmallAnglePairs(closesmallanglesegments,&iminmax,&leftrightsolutionwithinsegment,&eta1_leftrightboundary);
+
+    //Evaluate contact contribution of small-angle-contact (residual and stiffness) for all closest points found before
+    EvaluateActiveSmallAnglePairs(stiffmatrix,fint,&iminmax,&leftrightsolutionwithinsegment,&eta1_leftrightboundary);
+  #endif
+
+#ifdef FDCHECK
+  //FDCheck2(fint);
+#endif
+
+  return (true);
+}
+/*----------------------------------------------------------------------*
+ |  end: Evaluate the element
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  Get active large angle pairs                             meier 10/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveLargeAnglePairs(std::vector<LINALG::TMatrix<double,3,1> >& endpoints1,
+                                                                               std::vector<LINALG::TMatrix<double,3,1> >& endpoints2,
+                                                                               std::map<std::pair<int,int>,LINALG::TMatrix<double,3,1> >& closelargeanglesegments,
+                                                                               const double pp)
+{
   std::map<std::pair<int,int>,LINALG::TMatrix<double,3,1> >::iterator iter;
 
-  for (iter=closelargeanglesegments.begin(); iter != closelargeanglesegments.end(); ++iter)
-  {
-    LINALG::TMatrix<double,3,1> segmentdata = iter->second;
-    std::pair<int,int> leftpoint_ids = iter->first;
-    int nseg1 = endpoints1.size()-1;
-    int nseg2 = endpoints2.size()-1;
-    int segid1 = leftpoint_ids.first;
-    int segid2 = leftpoint_ids.second;
-    double l1 = 2.0/nseg1;
-    double l2 = 2.0/nseg2;
-    double eta_left1 = -1.0+segid1*l1;
-    double eta_left2 = -1.0+segid2*l2;
-
-    std::pair<TYPE,TYPE> closestpoint(0.0,0.0);
-    bool validpairfound=false;
-
-    //The method ClosestPointProjection() only delivers a valid solution (validpairfound=true), if eta1,eta2 \in [-1,1] and gap<maxactivegap_
-    validpairfound=ClosestPointProjection(eta_left1,eta_left2,l1,l2,segmentdata,closestpoint);
-
-    if(validpairfound)
+    for (iter=closelargeanglesegments.begin(); iter != closelargeanglesegments.end(); ++iter)
     {
-      cpvariables_.push_back(Teuchos::rcp (new CONTACT::Beam3contactvariables<numnodes,numnodalvalues>(closestpoint,leftpoint_ids,pp)));
-      //std::cout << "eta_left1: " << eta_left1 << std::endl;
-      //std::cout << "eta_left2: " << eta_left2 << std::endl;
-      //std::cout << "closestpoint: " << closestpoint.first << " / " << closestpoint.second << std::endl;
+      LINALG::TMatrix<double,3,1> segmentdata = iter->second;
+      std::pair<int,int> leftpoint_ids = iter->first;
+      int nseg1 = endpoints1.size()-1;
+      int nseg2 = endpoints2.size()-1;
+      int segid1 = leftpoint_ids.first;
+      int segid2 = leftpoint_ids.second;
+      double l1 = 2.0/nseg1;
+      double l2 = 2.0/nseg2;
+      double eta_left1 = -1.0+segid1*l1;
+      double eta_left2 = -1.0+segid2*l2;
+
+      std::pair<TYPE,TYPE> closestpoint(0.0,0.0);
+      bool validpairfound=false;
+
+      //The method ClosestPointProjection() only delivers a valid solution (validpairfound=true), if eta1 \in [eta_left1,eta_left1+l1],
+      //eta2 \in [eta_left2,eta_left2+l2] and gap<maxactivegap_!
+      validpairfound=ClosestPointProjection(eta_left1,eta_left2,l1,l2,segmentdata,closestpoint);
+
+      //With the following block we sort out identical contact points that occure more than once
+      //within this element pair -> this is possible, when the contact point lies on the boundary
+      //between two segments!
+      bool allready_found=false;
+
+      for(int i=0;i<(int)cpvariables_.size();i++)
+      {
+        double eta1_eval = BEAMCONTACT::CastToDouble(cpvariables_[i]->GetCP().first);
+        double eta2_eval = BEAMCONTACT::CastToDouble(cpvariables_[i]->GetCP().second);
+
+        if(fabs(eta1_eval-BEAMCONTACT::CastToDouble(closestpoint.first))<1.0e-10 and fabs(eta2_eval-BEAMCONTACT::CastToDouble(closestpoint.second))<1.0e-10)
+          allready_found=true;
+      }
+
+      if(validpairfound and !allready_found)
+      {
+
+        std::pair<int,int> integration_ids = std::make_pair(-2,-2);
+        cpvariables_.push_back(Teuchos::rcp (new CONTACT::Beam3contactvariables<numnodes,numnodalvalues>(closestpoint,leftpoint_ids,integration_ids,pp,1.0)));
+      }
     }
-  }
+}
+/*----------------------------------------------------------------------*
+ |  end: Get active large angle pairs
+ *----------------------------------------------------------------------*/
 
-  //std::cout << "cpvariables_.size(): " << cpvariables_.size() << std::endl;
-
-  //Evaluate contact contribution for all closest points found before
+/*----------------------------------------------------------------------*
+ |  Evaluate active large angle pairs                        meier 10/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateActiveLargeAnglePairs(LINALG::SparseMatrix& stiffmatrix,
+                                                                                    Epetra_Vector& fint)
+{
   for (int numcp=0;numcp<(int)cpvariables_.size();numcp++)
   {
     //**********************************************************************
@@ -229,8 +385,9 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
     TYPE eta1=cpvariables_[numcp]->GetCP().first;
     TYPE eta2=cpvariables_[numcp]->GetCP().second;
 
-    //std::cout << "eta1: " << eta1 << std::endl;
-    //std::cout << "eta2: " << eta2 << std::endl;
+    #ifdef AUTOMATICDIFF
+      BEAMCONTACT::SetFADParCoordDofs<numnodes, numnodalvalues>(eta1, eta2);
+    #endif
 
     // update shape functions and their derivatives
     GetShapeFunctions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, eta1, eta2);
@@ -243,56 +400,467 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
     // call function to compute penalty force
     CalcPenaltyLaw(cpvariables_[numcp]);
 
-    //std::cout << "cpvariables_[numcp]->GetNormal(): " << cpvariables_[numcp]->GetNormal() << std::endl;
+    // get shift angles from input file
+    double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1")/180.0*M_PI;
+    double perpshiftangle2 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE2")/180.0*M_PI;
 
+    // call function to compute scale factor of penalty parameter
+    CalcPerpPenaltyScaleFac(cpvariables_[numcp],r1_xi,r2_xi,perpshiftangle1,perpshiftangle2);
+
+//    std::cout << "cpvariables_[numcp]->GetNormal(): " << cpvariables_[numcp]->GetNormal() << std::endl;
 //    std::cout << "numcp: " << numcp << std::endl;
-//    std::cout << "xi: " << cpvariables_[numcp]->GetCP().first << std::endl;
-//    std::cout << "eta: " << cpvariables_[numcp]->GetCP().second << std::endl;
-//    std::cout << "gap: " << cpvariables_[numcp]->GetGap() << std::endl;
-//    std::cout << "angle: " << BEAMCONTACT::CalcAngle(r1_xi,r2_xi)/M_PI*180 << std::endl;
+//    std::cout << "xi: " << cpvariables_[numcp]->GetCP().first.val() << std::endl;
+//    std::cout << "eta: " << cpvariables_[numcp]->GetCP().second.val() << std::endl;
+//    std::cout << "gap: " << cpvariables_[numcp]->GetGap().val() << std::endl;
+//    std::cout << "angle: " << cpvariables_[numcp]->GetAngle()/M_PI*180.0 << std::endl;
 //    std::cout << "r1_xi: " << r1_xi << std::endl;
 //    std::cout << "r2_xi: " << r2_xi << std::endl;
 //    std::cout << "|r1_xi|: " << r1_xi.Norm2() << std::endl;
 //    std::cout << "|r2_xi|: " << r2_xi.Norm2() << std::endl;
 //    std::cout << "r1_xi*r2_xi: " << BEAMCONTACT::ScalarProduct(r1_xi,r2_xi) << std::endl;
-    //std::cout << "cpvariables_[numcp]->Getfp(): " << cpvariables_[numcp]->Getfp() << std::endl;
+//    std::cout << "cpvariables_[numcp]->Getfp(): " << cpvariables_[numcp]->Getfp() << std::endl;
 
     // call function to compute contact contribution to residual vector
-    EvaluateFcContact(&fint, N1, N2,cpvariables_[numcp]);
-
-    //std::cout << "fint: " << std::endl;
-    //fint.Print(std::cout);
-
-    //std::cout << "stiffmatrix1: " << std::endl;
-    //std::cout << *(stiffmatrix.EpetraMatrix()) << std::endl;
+    EvaluateFcContact(&fint, N1, N2,cpvariables_[numcp],1.0);
 
     // call function to compute contact contribution to stiffness matrix
-    EvaluateStiffcContact(stiffmatrix, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi,cpvariables_[numcp]);
-
-    //std::cout << "stiffmatrix2: " << std::endl;
-    //std::cout << *(stiffmatrix.EpetraMatrix()) << std::endl;
-
+    EvaluateStiffcContact(stiffmatrix, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi,cpvariables_[numcp],1.0);
 
   }
-
-  return (true);
 }
 /*----------------------------------------------------------------------*
- |  end: Evaluate the element
- *---------------------------------------------------------------------*/
+ |  end: Evaluate active large angle pairs
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  Get active small angle pairs                             meier 10/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs( std::map<std::pair<int,int>,LINALG::TMatrix<double,3,1> >& closesmallanglesegments,
+                                                                                std::pair<int,int>* iminmax,
+                                                                                std::pair<bool,bool>* leftrightsolutionwithinsegment,
+                                                                                std::pair<double,double>* eta1_leftrightboundary)
+{
+  //lengths in parameter space of created segments
+  double l1=2.0/numseg1_;
+  double l2=2.0/numseg2_;
+
+  int numpairs = closesmallanglesegments.size();
+  std::vector<std::pair<double, double > > inversepairs(numpairs,std::make_pair(0.0,0.0));
+  int pairiter=0;
+  int intintervals = bcparams_.get<int>("BEAMS_NUMINTEGRATIONINTERVAL");
+
+  std::map<std::pair<int,int>,LINALG::TMatrix<double,3,1> >::iterator iter;
+
+  for (iter=closesmallanglesegments.begin(); iter != closesmallanglesegments.end(); ++iter)
+  {
+    std::pair<int,int> segment_ids = iter->first;
+    int segid1 = segment_ids.first;
+    int segid2 = segment_ids.second;
+    double eta1_segleft = -1.0+segid1*l1;
+    double eta2_segleft = -1.0+segid2*l2;
+
+    inversepairs[numpairs-pairiter-1]=std::make_pair(eta1_segleft,eta2_segleft);
+    pairiter++;
+  }
+  int imin = 0;
+  int imax = intintervals -1;
+
+  #ifdef ENDPOINTSEGMENTATION
+  double eta1_leftboundary = -1.0;
+  double eta1_rightboundary = 1.0;
+  double leftintervallength = 2.0/intintervals;
+  double rightintervallength = 2.0/intintervals;
+  bool leftsolutionwithinsegment=false;
+  bool rightsolutionwithinsegment=false;
+
+  if(boundarynode_.first)
+  {
+    for (iter=closesmallanglesegments.begin(); iter != closesmallanglesegments.end(); ++iter)
+    {
+      std::pair<int,int> segment_ids = iter->first;
+      int segid2 = segment_ids.second;
+
+      if(segid2==0)
+      {
+        int segid1 = segment_ids.first;
+        double eta1_segleft = -1.0+segid1*l1;
+        double eta2_segleft = -1.0;
+        double eta1_leftboundary_trial = 0.0;
+        bool dummy;
+        leftsolutionwithinsegment=PointToLineProjection(eta2_segleft,eta1_segleft,l1,eta1_leftboundary_trial,dummy,true);
+        if(leftsolutionwithinsegment)
+        {
+          eta1_leftboundary=eta1_leftboundary_trial;
+          //determine ID of integration interval in which the point eta1_leftboundary lies
+          imin = BEAMCONTACT::GetIntervalId(eta1_leftboundary,intintervals,true);
+          //get length of segmented integration interval
+          leftintervallength=-1.0+(imin+1)*2.0/intintervals-eta1_leftboundary;
+          break;
+        }
+      }
+    }
+  }
+  if(boundarynode_.second)
+  {
+    for (iter=closesmallanglesegments.begin(); iter != closesmallanglesegments.end(); ++iter)
+    {
+      std::pair<int,int> segment_ids = iter->first;
+      int segid2 = segment_ids.second;
+
+      if(segid2==numseg2_-1)
+      {
+        int segid1 = segment_ids.first;
+        double eta1_segleft = -1.0+segid1*l1;
+        double eta2_segright = 1.0;
+        double eta1_rightboundary_trial = 0.0;
+        bool dummy;
+
+        rightsolutionwithinsegment=PointToLineProjection(eta2_segright,eta1_segleft,l1,eta1_rightboundary_trial,dummy,true);
+
+        if(rightsolutionwithinsegment)
+        {
+          eta1_rightboundary=eta1_rightboundary_trial;
+          //determine ID of integration interval in which the point eta1_leftboundary lies
+          imax = BEAMCONTACT::GetIntervalId(eta1_rightboundary,intintervals,false);
+          //get length of segmented integration interval
+
+          rightintervallength=eta1_rightboundary-(-1.0+imax*2.0/intintervals);
+          break;
+        }
+      }
+    }
+  }
+  if(leftsolutionwithinsegment and rightsolutionwithinsegment and imin==imax)
+    dserror("It is not possible to cut an integration interval from both sides, choose a larger value intintervals!");
+  #endif
+
+  // gaussian points
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::BEAMCONTACTGAUSSRULE);
+
+  //loop over all integration intervals
+  for(int interval=imin;interval<=imax;interval++)
+  {
+    //Calculate parameter bounds of considered intergration interval
+    double eta1_min = -1.0+interval*2.0/intintervals;
+    double eta1_max = -1.0+(interval+1)*2.0/intintervals;
+
+    //Get jacobi factor of considered interval
+    TYPE jacobi_interval=1.0;
+
+    //standard case of equidistant intervals
+    #ifndef ENDPOINTSEGMENTATION
+      //map from segment coordinate xi to element coordinate eta
+    jacobi_interval=1.0/intintervals;
+    //case of smaller integration intervals due to segmentation at the beams endpoints
+    #else
+      if(interval==imin and leftsolutionwithinsegment)
+      {
+        jacobi_interval= leftintervallength/2.0;
+      }
+      else if(interval==imax and rightsolutionwithinsegment)
+      {
+        jacobi_interval= rightintervallength/2.0;
+        //std::cout << "rightintervallength: " << rightintervallength << std::endl;
+      }
+      else
+      {
+        jacobi_interval=1.0/intintervals;
+      }
+    #endif
+
+    std::vector<std::pair<double, double > > curintsegpairs(0);
+    int size = inversepairs.size();
+
+    //All segment pairs for which the segment on the slave beam 1 intersects with the considered integration interval are filtered
+    //out and stored in the vector curintsegpairs. These pairs are relevant for the integration procedure on the current interval.
+    for(int k=0;k<size;k++)
+    {
+      double eta1_segleft = (inversepairs[size-1-k]).first;
+      double eta1_segright = eta1_segleft + l1;
+      //Since the vector inversepairs is sorted with respect to the location of the slave segment (the slave segment with
+      //the lowest bounding parameter coordinates eta1_segleft and eta1_segright lie on the last position of the vector
+      //inversepairs), it is sufficient to start with the last element and leave the k-loop as soon as we have found the first
+      //segment pair without intersection. This procedure only works, if we delete a segment pair as soon as we realize that it will
+      //not be relevant for the next integration interval anymore, see comment at (*).
+      if(eta1_segleft<eta1_max+XIETATOL)
+      {
+        //store relevant pairs in new vector
+        curintsegpairs.push_back(inversepairs[size-1-k]);
+
+        //(*) In case eta1_segright (the largest parameter coordinate lying within the slave segment) is smaller then
+        //eta1_max(the upper bound of the integration interval), the considered segment will not be relevant for the next
+        //integration interval at i+1 and has to be deleted. This is important, since we otherwise would leave the k-loop
+        //at the next integration interval i+1 without checking if the last but one segment pair in inversepairs is relevant or not!
+        if(eta1_segright< eta1_max-XIETATOL)
+        {
+          inversepairs.pop_back();
+        }
+      }
+      //In case we have no relevant segment pair, we will leave the loop already after the first iteration!
+      else
+      {
+        break;
+      }
+    }
+
+    //If segments exist, evaluate the corresponding Gauss points
+    if(curintsegpairs.size()>0)
+    {
+      //loop over Gauss point of considered integration interval
+      for (int numgp=0; numgp<gausspoints.nquad; ++numgp)
+      {
+        //integration points in parameter space and weights
+        const double xi = gausspoints.qxg[numgp][0];
+
+        //Get Gauss point coordinate at slave element
+        double eta1_slave=0.0;
+
+        //standard case of equidistant intervals
+        #ifndef ENDPOINTSEGMENTATION
+          //map from segment coordinate xi to element coordinate eta
+          eta1_slave=eta1_min + (1.0+xi)/intintervals;
+        //case of smaller integration intervals due to segmentation at the beams endpoints
+        #else
+          if(interval==imin and leftsolutionwithinsegment)
+          {
+            eta1_slave=eta1_leftboundary +(1.0+xi)/2.0*leftintervallength;
+          }
+          else if(interval==imax and rightsolutionwithinsegment)
+          {
+            eta1_slave=eta1_min +(1.0+xi)/2.0*rightintervallength;
+          }
+          else
+          {
+            eta1_slave=eta1_min + (1.0+xi)/intintervals;
+          }
+        #endif
+
+        for(int k=0;k<(int)curintsegpairs.size();k++)
+        {
+          double eta1_segleft = (curintsegpairs[k]).first;
+          double eta1_segright = eta1_segleft + l1;
+
+          //TODO: This procedure can also be made more efficient by deleting all segments of curintsegpairs which
+          //are not relevant for the following Gauss points anymore (see intersection of integration intervals and segment pairs)
+          if(BEAMCONTACT::WithinInterval(eta1_slave,eta1_segleft,eta1_segright))
+          {
+            double eta2_segleft = (curintsegpairs[k]).second;
+            double eta2_master = 0.0;
+            bool pairactive=false;
+
+            bool solutionwithinsegment=PointToLineProjection(eta1_slave,eta2_segleft,l2,eta2_master,pairactive);
+
+            if(solutionwithinsegment)
+            {
+
+              if(pairactive)
+              {
+                TYPE eta1=eta1_slave;
+                TYPE eta2=eta2_master;
+                std::pair<TYPE,TYPE> closestpoint(std::make_pair(eta1,eta2));
+                std::pair<int,int> integration_ids = std::make_pair(numgp,interval);
+                std::pair<int,int> leftpoint_ids = std::make_pair(-2,-2);;
+                TYPE jacobi = GetJacobi(element1_)*jacobi_interval;
+                const double parallel_pp = bcparams_.get<double>("BEAMS_BTBLINEPENALTYPARAM");
+                if(parallel_pp<0.0)
+                  dserror("BEAMS_BTBLINEPENALTYPARAM not set!");
+
+                //Create data container for each Gauss point (in case of small-angle contact the number of the Gauss point [numgp] and the number of the
+                //integration interval [interval] are stored in the pair segids_ of the class beamcontactvaribles!)
+                gpvariables_.push_back(Teuchos::rcp (new CONTACT::Beam3contactvariables<numnodes,numnodalvalues>(closestpoint,leftpoint_ids,integration_ids,parallel_pp,jacobi)));
+              }
+              //We can leave the k-loop as soon as we have found a valid projection for the given Gauss point eta1_slave
+              break;
+            }
+          }
+        }
+      }
+    }
+  }//for(int i=0;i<intintervals;i++)
+
+#ifdef ENDPOINTSEGMENTATION
+  if(iminmax==NULL or leftrightsolutionwithinsegment==NULL or eta1_leftrightboundary==NULL)
+    dserror("In case of ENDPOINTSEGMENTATION no NUll pointer should be handeld in!!!");
+
+  *iminmax = std::make_pair(imin,imax);
+  *leftrightsolutionwithinsegment = std::make_pair(leftsolutionwithinsegment,rightsolutionwithinsegment);
+  *eta1_leftrightboundary = std::make_pair(eta1_leftboundary, eta1_rightboundary);
+#endif
+
+}
+/*----------------------------------------------------------------------*
+ |  end: Get active small angle pairs
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  Evaluate active small angle pairs                        meier 10/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateActiveSmallAnglePairs(LINALG::SparseMatrix& stiffmatrix,
+                                                                                    Epetra_Vector& fint,
+                                                                                    std::pair<int,int>* iminmax,
+                                                                                    std::pair<bool,bool>* leftrightsolutionwithinsegment,
+                                                                                    std::pair<double,double>* eta1_leftrightboundary)
+{
+  //Compute linearizations of integration interval boundaries if necessary
+  #ifdef ENDPOINTSEGMENTATION
+
+  if(iminmax==NULL or leftrightsolutionwithinsegment==NULL or eta1_leftrightboundary==NULL)
+    dserror("In case of ENDPOINTSEGMENTATION no NUll pointer should be handeld in!!!");
+
+  int imin=(*iminmax).first;
+  int imax=(*iminmax).second;
+
+  bool leftsolutionwithinsegment=(*leftrightsolutionwithinsegment).first;
+  bool rightsolutionwithinsegment=(*leftrightsolutionwithinsegment).second;
+
+  double eta1_leftboundary =(*eta1_leftrightboundary).first;
+  double eta1_rightboundary =(*eta1_leftrightboundary).second;
+
+  LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1> delta_xi_R(true);
+  LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1> delta_xi_L(true);
+
+  if(leftsolutionwithinsegment)
+  {
+    TYPE eta1_bound=eta1_leftboundary;
+    TYPE eta2=-1.0;
+    ComputeLinXiBound(delta_xi_L,eta1_bound,eta2);
+  }
+  if(rightsolutionwithinsegment)
+  {
+    TYPE eta1_bound=eta1_rightboundary;
+    TYPE eta2=1.0;
+    ComputeLinXiBound(delta_xi_R,eta1_bound,eta2);
+  }
+  #endif
+
+  // gaussian points
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::BEAMCONTACTGAUSSRULE);
+
+  //Evaluate all active Gauss points
+  for (int numgptot=0;numgptot<(int)gpvariables_.size();numgptot++)
+  {
+    std::pair<TYPE,TYPE> closestpoint = gpvariables_[numgptot]->GetCP();
+    TYPE eta1=closestpoint.first;
+    TYPE eta2=closestpoint.second;
+
+    #ifdef AUTOMATICDIFF
+      BEAMCONTACT::SetFADParCoordDofs<numnodes, numnodalvalues>(eta1,eta2);
+    #endif
+
+    // vectors for shape functions and their derivatives
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N1(true);        // = N1
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N2(true);        // = N2
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N1_xi(true);     // = N1,xi
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N2_xi(true);     // = N2,eta
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N1_xixi(true);   // = N1,xixi
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N2_xixi(true);   // = N2,etaeta
+
+    // coords and derivatives of the two contacting points
+    LINALG::TMatrix<TYPE, 3, 1> r1(true);                               // = r1
+    LINALG::TMatrix<TYPE, 3, 1> r2(true);                               // = r2
+    LINALG::TMatrix<TYPE, 3, 1> r1_xi(true);                            // = r1,xi
+    LINALG::TMatrix<TYPE, 3, 1> r2_xi(true);                            // = r2,eta
+    LINALG::TMatrix<TYPE, 3, 1> r1_xixi(true);                          // = r1,xixi
+    LINALG::TMatrix<TYPE, 3, 1> r2_xixi(true);                          // = r2,etaeta
+    LINALG::TMatrix<TYPE, 3, 1> delta_r(true);                          // = r1-r2
+
+    // update shape functions and their derivatives
+    GetShapeFunctions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, eta1, eta2);
+    // update coordinates and derivatives of contact points
+    ComputeCoordsAndDerivs(r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi);
+
+    // call function to compute scaled normal and gap of contact point
+    ComputeNormal(r1, r2, r1_xi, r2_xi, gpvariables_[numgptot]);
+
+    // call function to compute penalty force
+    CalcPenaltyLaw(gpvariables_[numgptot]);
+
+    // get shift angles from input file
+    double parshiftangle1 = bcparams_.get<double>("BEAMS_PARSHIFTANGLE1")/180.0*M_PI;
+    double parshiftangle2 = bcparams_.get<double>("BEAMS_PARSHIFTANGLE2")/180.0*M_PI;
+
+    // call function to compute scale factor of penalty parameter
+    CalcParPenaltyScaleFac(gpvariables_[numgptot],r1_xi,r2_xi,parshiftangle1,parshiftangle2);
+
+//    std::cout << "gpvariables_[numgp]->GetNormal(): " << gpvariables_[numgp]->GetNormal() << std::endl;
+//    std::cout << "numgptot: " << numgptot << std::endl;
+//    std::cout << "xi: " << gpvariables_[numgptot]->GetCP().first.val() << std::endl;
+//    std::cout << "eta: " << gpvariables_[numgptot]->GetCP().second.val() << std::endl;
+//    std::cout << "gap: " << gpvariables_[numgptot]->GetGap().val() << std::endl;
+//    std::cout << "angle: " << gpvariables_[numgptot]->GetAngle()/M_PI*180.0 << std::endl;
+//    std::cout << "r1_xi: " << r1_xi << std::endl;
+//    std::cout << "r2_xi: " << r2_xi << std::endl;
+//    std::cout << "|r1_xi|: " << r1_xi.Norm2() << std::endl;
+//    std::cout << "|r2_xi|: " << r2_xi.Norm2() << std::endl;
+//    std::cout << "r1_xi*r2_xi: " << BEAMCONTACT::ScalarProduct(r1_xi,r2_xi) << std::endl;
+//    std::cout << "gpvariables_[numgptot]->Getfp(): " << gpvariables_[numgp]->Getfp() << std::endl;
+
+    //In member segids_ the interval-local Gauss point number (relevant for determination of Gauss point weight) is stored
+    int numgploc = gpvariables_[numgptot]->GetIntIds().first;
+
+    double weight = gausspoints.qwgt[numgploc];
+    TYPE jacobi = gpvariables_[numgptot]->GetJacobi();
+
+    #ifdef ENDPOINTSEGMENTATION
+      int numinterval = gpvariables_[numgptot]->GetSegIds().second;
+    #endif
+
+    //TODO: Here we apply an element jacobian that is constant along the beam element. This only works for initially straight elements!
+    //Furthermore we assume, that the element is subdivided in a total of intintervals integration intervals of equal length!
+    //TODO: the intfac has to be set to TYPE in order to deal with non-constant jacobis (in case of ENDPOINTSEGMENTATION)
+    double intfac = BEAMCONTACT::CastToDouble(jacobi)*weight;
+
+    // call function to compute contact contribution to residual vector
+    EvaluateFcContact(&fint, N1, N2,gpvariables_[numgptot],intfac);
+
+    #ifndef ENDPOINTSEGMENTATION
+    // call function to compute contact contribution to stiffness matrix
+    EvaluateStiffcContact(stiffmatrix, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi,gpvariables_[numgptot],intfac,false);
+    #else
+    TYPE jacobi_interval = jacobi/GetJacobi(element1_);
+    // In case of segment-based integration, we apply a special FAD linearization technique
+    // Case 1: segmentation on left side of integration interval
+    if(leftsolutionwithinsegment and numinterval==imin)
+    {
+      //We need the linearization of the mapping from the element parameter space to the integration interval parameter
+      //space: xi_ele=xi_left*(1.0-xi_local)/2.0+xi_right*(1.0+xi_local)/2.0.
+      //-> d(xi_ele)/d(xi_left)=-xi_local)/2.0 and d(xi_ele)/d(xi_right)=xi_local)/2.0
+
+      double d_xi_ele_d_xi_left=(1.0-gausspoints.qxg[numgploc][0])/2.0;
+      EvaluateStiffcContactIntSeg(stiffmatrix, delta_xi_L, r1, r2, r1_xi, r2_xi, r2_xixi, N1, N2, N2_xi, gpvariables_[numgptot],intfac,d_xi_ele_d_xi_left,-jacobi_interval);
+    }
+    // Case 2: segmentation on right side of integration interval
+    else if(rightsolutionwithinsegment and numinterval==imax)
+    {
+      double d_xi_ele_d_xi_right=(1.0+gausspoints.qxg[numgploc][0])/2.0;
+      EvaluateStiffcContactIntSeg(stiffmatrix, delta_xi_R, r1, r2, r1_xi, r2_xi, r2_xixi, N1, N2, N2_xi, gpvariables_[numgptot],intfac,d_xi_ele_d_xi_right,jacobi_interval);
+    }
+    // Case 3: No segmentation necessary
+    else
+    {
+      EvaluateStiffcContact(stiffmatrix, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi,gpvariables_[numgptot],intfac,false);
+    }
+    #endif
+  }
+}
+/*----------------------------------------------------------------------*
+ |  end: Evaluate active small angle pairs
+ *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  Calculate scalar contact force                           meier 10/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
-void CONTACT::Beam3contact<numnodes, numnodalvalues>::CalcPenaltyLaw(Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > cpvariables)
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::CalcPenaltyLaw(Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > variables)
 {
     //First parameter for contact force regularization
     double g0 = bcparams_.get<double>("BEAMS_PENREGPARAM_G0",-1.0);
     TYPE fp=0.0;
     TYPE dfp=0.0;
-    double pp=cpvariables->GetPP();
-    TYPE gap=cpvariables->GetGap();
+    double pp=variables->GetPP();
+    TYPE gap=variables->GetGap();
 
     switch (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW"))
     {
@@ -464,8 +1032,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::CalcPenaltyLaw(Teuchos::RC
       }
     }
 
-    cpvariables->Setfp(fp);
-    cpvariables->Setdfp(dfp);
+    variables->Setfp(fp);
+    variables->Setdfp(dfp);
 
   return;
 }
@@ -474,18 +1042,112 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::CalcPenaltyLaw(Teuchos::RC
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
+ |  Calculate angle-dependent perp-penalty scale factor       meier 10/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::CalcPerpPenaltyScaleFac(Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > cpvariables,
+                                                                              LINALG::TMatrix<TYPE,3,1>& r1_xi,
+                                                                              LINALG::TMatrix<TYPE,3,1>& r2_xi,
+                                                                              const double shiftangle1,
+                                                                              const double shiftangle2)
+{
+  //Penalty scale factor that reduces the penalty parameter for small angles
+  TYPE ppfac = 1.0;
+  TYPE dppfac = 0.0;
+
+  TYPE s = fabs(BEAMCONTACT::ScalarProduct(r1_xi,r2_xi)/(BEAMCONTACT::VectorNorm<3>(r1_xi)*BEAMCONTACT::VectorNorm<3>(r2_xi)));
+  double s1 = cos(shiftangle1);
+  double s2 = cos(shiftangle2);
+
+  if(shiftangle1<0.0 or shiftangle1>M_PI/2.0 or shiftangle2<0.0 or shiftangle2>M_PI/2.0 or shiftangle1>=shiftangle2)
+    dserror("Invalid choice of shift angles!");
+
+  if(BEAMCONTACT::CastToDouble(s)>s1)
+    ppfac=0.0;
+  else if(BEAMCONTACT::CastToDouble(s)>s2)
+  {
+    ppfac=0.5*(cos(M_PI*(s-s2)/(s1-s2))+1.0);
+    dppfac=-0.5*M_PI/(s1-s2)*sin(M_PI*(s-s2)/(s1-s2));
+  }
+
+  //set class variable
+  cpvariables->SetPPfac(ppfac);
+  cpvariables->SetDPPfac(dppfac);
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ |  end: Calculate angle-dependent perp-penalty scale factor
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  Calculate angle-dependent par-penalty scale factor       Meier 10/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::CalcParPenaltyScaleFac(Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > gpvariables,
+                                                                              LINALG::TMatrix<TYPE,3,1>& r1_xi,
+                                                                              LINALG::TMatrix<TYPE,3,1>& r2_xi,
+                                                                              const double shiftangle1,
+                                                                              const double shiftangle2)
+{
+  //Penalty scale factor that reduces the penalty parameter for small angles
+  TYPE ppfac = 1.0;
+  TYPE dppfac = 0.0;
+
+  TYPE s = fabs(BEAMCONTACT::ScalarProduct(r1_xi,r2_xi)/(BEAMCONTACT::VectorNorm<3>(r1_xi)*BEAMCONTACT::VectorNorm<3>(r2_xi)));
+  double s1 = cos(shiftangle1);
+  double s2 = cos(shiftangle2);
+
+  if(shiftangle1<0.0 or shiftangle1>M_PI/2.0 or shiftangle2<0.0 or shiftangle2>M_PI/2.0 or shiftangle1>=shiftangle2)
+    dserror("Invalid choice of shift angles!");
+
+  if(BEAMCONTACT::CastToDouble(s)>s1)
+    ppfac=1.0;
+  else if(BEAMCONTACT::CastToDouble(s)>s2)
+  {
+    ppfac=0.5*(cos(M_PI*(s1-s)/(s1-s2))+1.0);
+    dppfac=0.5*M_PI/(s1-s2)*sin(M_PI*(s1-s)/(s1-s2));
+  }
+  else
+    ppfac=0.0;
+
+  //set class variable
+  gpvariables->SetPPfac(ppfac);
+  gpvariables->SetDPPfac(dppfac);
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ |  end: Calculate angle-dependent par-penalty scale factor
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
  |  Subdivide elements into segments for CPP                 meier 10/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
 double CONTACT::Beam3contact<numnodes, numnodalvalues>::CreateSegments(DRT::Element* ele,
                                                                        std::vector<LINALG::TMatrix<double,3,1> >& endpoints_final,
-                                                                       int& numsegment)
+                                                                       int& numsegment,
+                                                                       int i)
 {
   //endpoints of the segments
   std::vector<LINALG::TMatrix<double,3,1> > endpoints((int)MAXNUMSEG+1,LINALG::TMatrix<double,3,1>(true));
 
   numsegment=1;
   double deltaxi=2.0;
+
+  if(i==0)
+  {
+    numsegment=INITSEG1;
+    deltaxi=2.0/INITSEG1;
+  }
+
+  if(i==1)
+  {
+    numsegment=INITSEG2;
+    deltaxi=2.0/INITSEG2;
+  }
+
   double xi1(0.0);
   double xi2(0.0);
   LINALG::TMatrix<double,3,1> r1(true);
@@ -505,6 +1167,9 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::CreateSegments(DRT::Elem
     moresegments = false;
     for(int i=0;i<numsegment;i++)
     {
+      if (numsegment>(int)MAXNUMSEG)
+              dserror("Not more segments than MAXNUMSEG per element possible! Increase MAXNUMSEG or apply finer discretization!");
+
       xi1= 0.0;
       xi2= 0.0;
       xi1= -1.0 +i/((double)numsegment)*2.0;
@@ -517,7 +1182,8 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::CreateSegments(DRT::Elem
       endpoints[i]=r1;
       endpoints[i+1]=r2;
       l=BEAMCONTACT::VectorNorm<3>(BEAMCONTACT::DiffVector(r1,r2));
-      double safetyfac2=1.1;
+      //TODO: adapt this tolerance if necessary!!!
+      double safetyfac2=2.0;
       segdist=safetyfac2*l/2.0*(1.0-cos(SEGANGLE))/sin(SEGANGLE);
 
       if(segdist>maxsegdist)
@@ -525,15 +1191,13 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::CreateSegments(DRT::Elem
       if(!CheckSegment(r1,t1,r2,t2,rm,segdist))
         moresegments = true;
     }
+
     deltaxi=deltaxi/2;
     numsegment=numsegment*2;
-    if (numsegment>(int)MAXNUMSEG)
-      dserror("Not more segments than MAXNUMSEG per element possible! Increase MAXNUMSEG or apply finer discretization!");
   }
   numsegment=numsegment/2;
 
   //std::cout << "numsegment: " << numsegment << std::endl;
-
   endpoints_final.resize(numsegment+1);
 
   for (int i=0;i<numsegment+1;i++)
@@ -541,10 +1205,9 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::CreateSegments(DRT::Elem
     endpoints_final[i]=endpoints[i];
   }
 
-  //Update class variable
-
-  if(maxsegdist<R1_ or maxsegdist<R2_)
-    std::cout << "      Warning: maxsegist is smaller than the beam radius, smaller number of segments is sufficient. Choose smaller segment angle!" << std::endl;
+  //TODO: Uncomment this line if necessary!
+//  if(maxsegdist<R1_ or maxsegdist<R2_)
+//    std::cout << "      Warning: maxsegist is smaller than the beam radius, smaller number of segments is sufficient. Choose smaller segment angle!" << std::endl;
 
   return maxsegdist;
 }
@@ -609,7 +1272,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::CheckSegment( LINALG::TMat
   double angle1(0.0);
   double angle2(0.0);
   double dist(0.0);
-//
+
 //  std::cout << "r1: " << r1 << std::endl;
 //  std::cout << "r2: " << r2 << std::endl;
 //  std::cout << "t1: " << t1 << std::endl;
@@ -622,9 +1285,6 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::CheckSegment( LINALG::TMat
     t_lin(i)=r2(i)-r1(i);
     rm_lin(i)=(r2(i)+r1(i))/2.0;
   }
-//
-//  std::cout << "t_lin: " << t_lin << std::endl;
-//  std::cout << "rm_lin: " << rm_lin << std::endl;
 
   LINALG::TMatrix<double,3,1> diffvec(true);
   diffvec = BEAMCONTACT::DiffVector(rm_lin, rm);
@@ -656,6 +1316,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetCloseSegments( const st
                                                                         std::map<std::pair<int,int>,LINALG::TMatrix<double,3,1> >& closelargeanglesegments,
                                                                         double maxactivedist)
 {
+
   LINALG::TMatrix<double,3,1> t1(true);
   LINALG::TMatrix<double,3,1> t2(true);
   LINALG::TMatrix<double,3,1> r1_a(true);
@@ -694,6 +1355,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetCloseSegments( const st
       r2_a=endpoints2[j];
       r2_b=endpoints2[j+1];
       t2=BEAMCONTACT::DiffVector(r2_b,r2_a);
+
       angle=BEAMCONTACT::CalcAngle(t1,t2);
 
       //*******1) intersection between two parallel cylinders*********************************************************
@@ -706,13 +1368,10 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetCloseSegments( const st
           segmentdata(1)=1000.0;    //eta1_seg
           segmentdata(2)=1000.0;    //eta2_seg
 
-          //Check, if we have sensible parameters
-          if(DELTASMALLANGLE < ANGLETOL or DELTALARGEANGLE < ANGLETOL)
-            dserror("Tolerance ANGLETOL has to be chosen smaller!");
-
           //Add new small angle pair since we always have: DELTASMALLANGLE > ANGLETOL and DELTALARGEANGLE > ANGLETOL
           closesmallanglesegments[std::make_pair(i,j)]=segmentdata;
         }
+
       }
       //*******2) intersection between two arbitrary oriented cylinders************************************************
       else
@@ -735,9 +1394,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetCloseSegments( const st
             segmentdata(2)=1000.0;   //eta2_seg
           }
           //Add new small angle pair
-          if(fabs(angle)<DELTASMALLANGLE)
+          if(fabs(angle)<=deltasmallangle_)
             closesmallanglesegments[std::make_pair(i,j)]=segmentdata;
-          if(fabs(angle)>DELTALARGEANGLE)
+          if(fabs(angle)>=deltalargeangle_)
             closelargeanglesegments[std::make_pair(i,j)]=segmentdata;
         }
       }
@@ -758,6 +1417,9 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
                                                                               LINALG::TMatrix<double,3,1>& segmentdata,
                                                                               std::pair<TYPE,TYPE>& solutionpoints)
 {
+//  std::cout << "element1_: " << element1_->Id() << std::endl;
+//  std::cout << "element2_: " << element2_->Id() << std::endl;
+
   std::vector<std::pair<double,double> > startingpoints(0);
   bool validpairfound=false;
   double gap=0.0;
@@ -872,9 +1534,13 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
       if (norm_delta_r < NORMTOL)
       {
         // this exludes pairs with IDs i and i+2, i.e. contact with the next but one element
-        if (BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(eta1)) + BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(eta2)) < NEIGHBORTOL)
+        if (BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(eta1)) <= 1.0 and BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(eta2)) <= 1.0)
         {
           dserror("Beam axis identical, choose smaller time step!");
+        }
+        else
+        {
+          break;
         }
       }
 
@@ -897,9 +1563,13 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
       // compute the scalar residuum
       // The residual is scaled with 1/element_length since an absolute
       // residual norm is used as local CPP convergence criteria and r_xi scales with the element_length
-      //residual = f(0)*f(0)/(jacobi1*jacobi1) + f(1)*f(1)/(jacobi2*jacobi2);
       residual = sqrt(BEAMCONTACT::CastToDouble(f(0)*f(0)/(jacobi1*jacobi1) + f(1)*f(1)/(jacobi2*jacobi2)));
 
+//      std::cout << "iter: " << iter << std::endl;
+//      std::cout << "residual: " << residual << std::endl;
+//      std::cout << "eta1: " << eta1 << std::endl;
+//      std::cout << "eta2: " << eta2 << std::endl;
+//      std::cout << "angle: " << BEAMCONTACT::CalcAngle(r1_xi,r2_xi) << std::endl;
 //      std::cout << "iter: " << iter << std::endl;
 //      std::cout << "residual: " << residual << std::endl;
 
@@ -947,7 +1617,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
     if (!converged)
     {
       //Check for cases where the residual has already been decreased considerably, but the tolerance has not been reached:
-      if(residual/residual0 < 1.0e-08 and fabs(eta1)< 1.0+XIETATOL and fabs(eta2)< 1.0+XIETATOL)
+      if(residual/residual0 < 1.0e-08 and eta_left1<=eta1 and eta1<= eta_right1 and eta_left2<=eta2 and eta2<=eta_right2)
       {
         std::cout << "iter: " << iter << std::endl;
         std::cout << "residual0: " << residual0 << std::endl;
@@ -963,12 +1633,32 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
     }
     else
     {
-      //if we have already found a converged solution with valid closest points eta1,eta2 \in [-1.0;1.0], we can finish here and don't have to apply more starting points
-      if( eta_left1<=eta1 and eta1<= eta_right1 and eta_left2<=eta2 and eta2<=eta_right2 and (CheckContactStatus(gap) or CheckDampingStatus(gap)))
+      //if we have already found a converged solution with valid closest points eta1 \in [eta_left1;eta_right1] and
+      //eta2 \in [eta_left2;eta_right2], we can finish here and don't have to apply more starting points
+      if( eta_left1 - 1.0e-12 <= eta1 and eta1 <= eta_right1 + 1.0e-12 and eta_left2 - 1.0e-12 <= eta2 and eta2 <= eta_right2 + 1.0e-12)
       {
+
+//TODO: It should be possible to delete these lines, and to only check the element boundaries (done in the next lines), sinces multiple evaluation at the
+//segment boundaries is already excluded in the Evaluate method!
+//        if(fabs(eta1-eta_left1)<1.0e-10 or fabs(eta1-eta_right1)<1.0e-10 or fabs(eta2-eta_left2)<1.0e-10 or fabs(eta2-eta_right2)<1.0e-10)
+//            dserror("|eta1|=1 or |eta2|=1, danger of multiple gauss point evaluation!");
+
+        if(fabs(eta1-1.0)<1.0e-10 or fabs(eta1+1.0)<1.0e-10 or fabs(eta2-1.0)<1.0e-10 or fabs(eta2+1.0)<1.0e-10)
+            dserror("|eta1|=1 or |eta2|=1, danger of multiple gauss point evaluation!");
+
+        if(BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(r1_xi))<1.0e-8 or BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(r2_xi))<1.0e-8)
+          dserror("Tangent vector of zero length, choose smaller time step!");
+
+        double angle=fabs(BEAMCONTACT::CalcAngle(BEAMCONTACT::CastToDouble<TYPE,3,1>(r1_xi),BEAMCONTACT::CastToDouble<TYPE,3,1>(r2_xi)));
+
+        double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1")/180.0*M_PI;
+
+        if((CheckContactStatus(gap) or CheckDampingStatus(gap)) and angle >=perpshiftangle1)
+          validpairfound=true;
+
         solutionpoints.first=BEAMCONTACT::CastToDouble(eta1);
         solutionpoints.second=BEAMCONTACT::CastToDouble(eta2);
-        validpairfound=true;
+
         break;
       }
     }
@@ -979,9 +1669,6 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
   // the increments of the primary displacement variables delta disp have to be given explicitly, since
   // no explicit relation between the finite quantities eta1, eta2 and disp exists.
   // The latter would have been necessary if the full linearization had to be computed directly with Sacado!!!
-  #ifdef AUTOMATICDIFF
-    BEAMCONTACT::SetFADParCoordDofs<numnodes, numnodalvalues>(solutionpoints.first, solutionpoints.second);
-  #endif
 
   return validpairfound;
 
@@ -991,13 +1678,249 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
+ |  Point-To-Line Projection                                 meier 10/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(double& eta1_slave,
+                                                                            double& eta_left2,
+                                                                            double& l2,
+                                                                            double& eta2_master,
+                                                                            bool& pairactive,
+                                                                            bool invertpairs)
+{
+  std::vector<double> startingpoints(3,0.0);
+  double gap=0.0;
+  double eta_right2=eta_left2+l2;
+
+  //We start with the segment midpoint, since there it is most likely to find a closest point solution within the segment
+  startingpoints[0]=eta_left2+0.5*l2; //segment midpoint as starting point
+  startingpoints[1]=eta_left2; //left segment point as starting point
+  startingpoints[2]=eta_left2+l2; //left segment point as starting point
+
+  for (int numstartpoint=0;numstartpoint<(int)startingpoints.size();numstartpoint++)
+  {
+
+    // vectors for shape functions and their derivatives
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N1(true);        // = N1
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N2(true);        // = N2
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N1_xi(true);     // = N1,xi
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N2_xi(true);     // = N2,eta
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N1_xixi(true);   // = N1,xixi
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N2_xixi(true);   // = N2,etaeta
+
+    // coords and derivatives of the two contacting points
+    LINALG::TMatrix<TYPE, 3, 1> r1(true);                               // = r1
+    LINALG::TMatrix<TYPE, 3, 1> r2(true);                               // = r2
+    LINALG::TMatrix<TYPE, 3, 1> r1_xi(true);                            // = r1,xi
+    LINALG::TMatrix<TYPE, 3, 1> r2_xi(true);                            // = r2,eta
+    LINALG::TMatrix<TYPE, 3, 1> r1_xixi(true);                          // = r1,xixi
+    LINALG::TMatrix<TYPE, 3, 1> r2_xixi(true);                          // = r2,etaeta
+    LINALG::TMatrix<TYPE, 3, 1> delta_r(true);                          // = r1-r2
+
+    // initialize function f and Jacobian df for Newton iteration
+    TYPE f=0.0;
+    TYPE df=0.0;
+    LINALG::TMatrix<TYPE,2,2> dfinv(true);
+
+    // initial scalar residual (L2-norm of f)
+    double residual = 0.0;
+    double lastresidual = 0.0;
+    double residual0 = 0.0;
+    int iter=0;
+
+    TYPE eta1=eta1_slave;
+    TYPE eta2=startingpoints[numstartpoint];
+    bool converged = false;
+
+    #ifdef FADCHECKS
+      BEAMCONTACT::SetFADParCoordDofs<numnodes, numnodalvalues>(eta1, eta2);
+    #endif
+
+    //**********************************************************************
+    // local Newton iteration
+    //**********************************************************************
+    for (int i=0;i<BEAMCONTACTMAXITER;++i)
+    {
+      //store residual of last iteration
+      lastresidual=residual;
+      iter++;
+
+      // reset shape function variables to zero
+      N1.Clear();
+      N2.Clear();
+      N1_xi.Clear();
+      N2_xi.Clear();
+      N1_xixi.Clear();
+      N2_xixi.Clear();
+
+      #ifndef ENDPOINTSEGMENTATION
+      // update shape functions and their derivatives
+      GetShapeFunctions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, eta1, eta2);
+      // update coordinates and derivatives of contact points
+      ComputeCoordsAndDerivs(r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi);
+      #else
+      //In the case of ENDPOINTSEGMENTATION it can be necessary to make an invere projection (from the master beam onto the slave beam). In this
+      //case, the local variables (e.g. r1, r1_xi...) inside PointToLineProjection() with index 1 represent the master beam which has the global index 2. In order
+      //to get the right nodal positions ele2pos_ for the local variables r1, r1_xi, r1_xixi, we have to invert the arguments of the function call ComputeCoordsAndDerivs()!
+      if(!invertpairs)
+      {
+        //update shape functions and their derivatives
+        GetShapeFunctions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, eta1, eta2);
+        //update coordinates and derivatives of contact points
+        ComputeCoordsAndDerivs(r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi);
+      }
+      else
+      {
+        //update shape functions and their derivatives
+        GetShapeFunctions(N2, N1, N2_xi, N1_xi, N2_xixi, N1_xixi, eta2, eta1);
+        //update coordinates and derivatives of contact points
+        ComputeCoordsAndDerivs(r2, r1, r2_xi, r1_xi, r2_xixi, r1_xixi, N2, N1, N2_xi, N1_xi, N2_xixi, N1_xixi);
+      }
+      #endif
+
+      // use delta_r = r1-r2 as auxiliary quantity
+      delta_r=BEAMCONTACT::DiffVector(r1,r2);
+
+      // compute norm of difference vector to scale the equations
+      // (this yields better conditioning)
+      // Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type double
+      // since this factor is needed for a pure scaling of the nonlinear CCP and has not to be linearized!
+      double norm_delta_r = BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(delta_r));
+      gap=norm_delta_r-R1_-R2_;
+
+      // The closer the beams get, the smaller is norm_delta_r, but
+      // norm_delta_r is not allowed to be too small, else numerical problems occur.
+      // It can happen quite often that the centerlines of two beam elements of the same physical beam
+      // cross in one point and norm_delta_r = 0. Since in this case |eta1|>1 and |eta2|>1 they will be sorted out later anyways.
+      //std::cout << "norm_delta_r: " << norm_delta_r << std::endl;
+      if (norm_delta_r < NORMTOL)
+      {
+        // this exludes pairs with IDs i and i+2, i.e. contact with the next but one element
+        if (BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(eta1)) + BEAMCONTACT::CastToDouble(BEAMCONTACT::Norm(eta2)) < NEIGHBORTOL)
+        {
+          dserror("Beam axis identical, choose smaller time step!");
+        }
+      }
+
+      // evaluate f at current eta1, eta2
+      EvaluatePTLOrthogonalityCondition(f, delta_r, norm_delta_r, r2_xi);
+
+      TYPE jacobi2 = 1.0;
+      jacobi2 =  GetJacobi(element2_);
+
+      // compute the scalar residuum
+      // The residual is scaled with 1/element_length since an absolute
+      // residual norm is used as local CPP convergence criteria and r_xi scales with the element_length
+      residual = fabs(BEAMCONTACT::CastToDouble(f/jacobi2));
+
+//      std::cout << "iter: " << iter << std::endl;
+//      std::cout << "residual: " << residual << std::endl;
+//      std::cout << "eta1: " << eta1.val() << std::endl;
+//      std::cout << "eta2: " << eta2.val() << std::endl;
+//      std::cout << "r1: " << r1 << std::endl;
+//      std::cout << "r2: " << r2 << std::endl;
+//      std::cout << "r1_xi: " << r1_xi << std::endl;
+//      std::cout << "r2_xi: " << r2_xi << std::endl;
+//      std::cout << "r1_xixi: " << r1_xixi << std::endl;
+//      std::cout << "r2_xixi: " << r2_xixi << std::endl;
+//      std::cout << "ele1pos_: " << ele1pos_ << std::endl;
+//      std::cout << "ele2pos_: " << ele2pos_ << std::endl;
+//      std::cout << "angle: " << BEAMCONTACT::CalcAngle(BEAMCONTACT::CastToDouble<TYPE,3,1>(r1_xi),BEAMCONTACT::CastToDouble<TYPE,3,1>(r2_xi))/M_PI*180.0 << std::endl;
+
+      if(iter==1)
+        residual0=residual;
+
+      // check if Newton iteration has converged
+      if (BEAMCONTACT::CastToDouble(residual) < BEAMCONTACTTOL)
+      { converged=true;
+        break;
+      }
+
+      // evaluate Jacobian of f at current eta1, eta2
+      // Note: It has to be checked, if the linearization is equal to zero;
+      bool validlinearization = EvaluateLinPTLOrthogonalityCondition(df, delta_r, norm_delta_r, r2_xi, r2_xixi);
+
+      if(!validlinearization)
+        dserror("Linearization of point to line projection is zero, choose tighter search boxes!");
+
+      #ifdef FADCHECKS
+        std::cout << "f: " << f << std::endl;
+        std::cout << "df: " << df << std::endl;
+        BEAMCONTACT::SetFADParCoordDofs<numnodes, numnodalvalues>(eta1, eta2);
+        FADCheckLinOrthogonalityCondition(delta_r, norm_delta_r, r1_xi,r2_xi, t1, t2);
+      #endif
+
+      //update master element coordinate of contact point
+      eta2 += -f/df;
+
+      #ifdef FADCHECKS
+        BEAMCONTACT::SetFADParCoordDofs<numnodes, numnodalvalues>(eta1, eta2);
+      #endif
+
+    }//for (int i=0;i<BEAMCONTACTMAXITER;++i)
+      //**********************************************************************
+
+    // Newton iteration unconverged after BEAMCONTACTMAXITER
+    if (!converged)
+    {
+      //Check for cases where the residual has already been decreased considerably, but the tolerance has not been reached:
+      if(residual/residual0 < 1.0e-08 and eta_left2<=eta2 and eta2<=eta_right2)
+      {
+        std::cout << "iter: " << iter << std::endl;
+        std::cout << "residual0: " << residual0 << std::endl;
+        std::cout << "lastresidual: " << lastresidual << std::endl;
+        std::cout << "residual: " << residual << std::endl;
+        std::cout << "eta1: " << eta1 << std::endl;
+        std::cout << "eta2: " << eta2 << std::endl;
+        dserror("Relative CPP residual norm is smaller than 1.0e-08 but Newton is not converged. Adapt BEAMCONTACTTOL or the maximal number BEAMCONTACTMAXITER of iterations!");
+      }
+
+      eta1 = 1e+12;
+      eta2 = 1e+12;
+    }
+    else
+    {
+      //if we have already found a converged solution with valid closest point eta2 \in [eta_left2;eta_right2], we can finish here and don't have to apply more starting points
+      if(eta_left2 - 1.0e-12 <= eta2 and eta2 <= eta_right2 + 1.0e-12)
+      {
+        if(fabs(eta2-1.0)<1.0e-10 or fabs(eta2+1.0)<1.0e-10)
+          dserror("|eta2|=1, danger of multiple gauss point evaluation!");
+
+        if(BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(r1_xi))<1.0e-8 or BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(r2_xi))<1.0e-8)
+          dserror("Tangent vector of zero length, choose smaller time step!");
+
+        double angle=fabs(BEAMCONTACT::CalcAngle(BEAMCONTACT::CastToDouble<TYPE,3,1>(r1_xi),BEAMCONTACT::CastToDouble<TYPE,3,1>(r2_xi)));
+
+        double parshiftangle2 = bcparams_.get<double>("BEAMS_PARSHIFTANGLE2")/180.0*M_PI;
+
+        if((CheckContactStatus(gap) or CheckDampingStatus(gap)) and angle<=parshiftangle2)
+          pairactive=true;
+
+        eta2_master=BEAMCONTACT::CastToDouble(eta2);
+
+        //eta2 \in [eta_left2;eta_right2] --> true
+        return true;
+      }
+    }
+  }//for (int numstartpoint=0;numstartpoint<startingpoints.size();numstartpoint++)
+
+  //no eta2 \in [eta_left2;eta_right2] --> false
+  return false;
+
+}
+/*----------------------------------------------------------------------*
+|  end: Point-To-Line Projection
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
  |  Compute contact forces                                   meier 10/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateFcContact(Epetra_Vector* fint,
                                                                         const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1,
                                                                         const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2,
-                                                                        Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > cpvariables,
+                                                                        Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > variables,
+                                                                        const double& intfac,
                                                                         LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 1>* fc1_FAD,
                                                                         LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 1>* fc2_FAD)
 {
@@ -1052,9 +1975,12 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateFcContact(Epetra_V
     }
   }
 
-  TYPE gap = cpvariables->GetGap();
-  LINALG::TMatrix<TYPE,3,1> normal = cpvariables->GetNormal();
-  TYPE fp = cpvariables->Getfp();
+  TYPE gap = variables->GetGap();
+  LINALG::TMatrix<TYPE,3,1> normal = variables->GetNormal();
+  TYPE fp = variables->Getfp();
+  //The factor ppfac reduces the penalty parameter for the large-angle and small-angle formulation
+  //in dependence of the current contact angle
+  TYPE ppfac = variables->GetPPfac();
 
   //**********************************************************************
   // evaluate contact forces for active pairs
@@ -1065,22 +1991,28 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateFcContact(Epetra_V
     //********************************************************************
     // Compute Fc1 (force acting on first element)
     //********************************************************************
+    //The variable intfac represents the integration factor containing the
+    //Gauss weight and the jacobian. This factor is only necessary for the
+    //small-angle formulation and is set to 1.0 otherwise!
     for (int i=0;i<dim1;++i)
     {
       for (int j=0;j<3;++j)
       {
-        fc1(i) +=  N1(j,i)*normal(j)*fp;
+        fc1(i) +=  N1(j,i)*normal(j)*fp*ppfac*intfac;
       }
     }
 
     //********************************************************************
     // Compute Fc2 (force acting on second element)
     //********************************************************************
+    //The variable intfac represents the integration factor containing the
+    //Gauss weight and the jacobian. This factor is only necessary for the
+    //small-angle formulation and is set to 1.0 otherwise!
     for (int i=0;i<dim2;++i)
     {
       for (int j=0;j<3;++j)
       {
-        fc2(i) +=  -N2(j,i)*normal(j)*fp;
+        fc2(i) +=  -N2(j,i)*normal(j)*fp*ppfac*intfac;
       }
     }
   }
@@ -1141,7 +2073,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact( LIN
                                                                              const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xi,
                                                                              const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1_xixi,
                                                                              const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xixi,
-                                                                             Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > cpvariables)
+                                                                             Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > variables,
+                                                                             const double& intfac,
+                                                                             bool cpp)
 {
   // get dimensions for vectors fc1 and fc2
   const int dim1 = 3*numnodes*numnodalvalues;
@@ -1163,7 +2097,11 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact( LIN
 
   // flag indicating assembly
   bool DoNotAssemble = true;
-  TYPE gap = cpvariables->GetGap();
+  TYPE gap = variables->GetGap();
+  //The factor ppfac reduces the penalty parameter for the large-angle and small-angle formulation
+  //in dependence of the current contact angle
+  TYPE ppfac = variables->GetPPfac();
+  TYPE dppfac = variables->GetDPPfac();
 
   //In order to accelerate convergence, we only apply the basic stiffness part in case of very large gaps!
   double basicstiffgap = bcparams_.get<double>("BEAMS_BASICSTIFFGAP",-1.0);
@@ -1266,24 +2204,31 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact( LIN
     LINALG::TMatrix<TYPE, dim1+dim2, 1> delta_gap_t(true);
     LINALG::TMatrix<TYPE, 3, dim1+dim2> delta_x1_minus_x2(true);
     LINALG::TMatrix<TYPE, 3, dim1+dim2> delta_n(true);
+    LINALG::TMatrix<TYPE, dim1+dim2, 1> delta_coscontactangle(true);
 
     LINALG::TMatrix<TYPE, 3, 1> delta_r = BEAMCONTACT::DiffVector(r1,r2);
     TYPE norm_delta_r = BEAMCONTACT::VectorNorm<3>(delta_r);
-    LINALG::TMatrix<TYPE, 3, 1> normal = cpvariables->GetNormal();
-    TYPE fp = cpvariables->Getfp();
-    TYPE dfp = cpvariables->Getdfp();
+    LINALG::TMatrix<TYPE, 3, 1> normal = variables->GetNormal();
+    TYPE fp = variables->Getfp();
+    TYPE dfp = variables->Getdfp();
 
     //********************************************************************
     // evaluate linearizations and distance
     //********************************************************************
     // linearization of contact point
-    ComputeLinXiAndLinEta(delta_xi,delta_eta,delta_r,r1_xi,r2_xi,r1_xixi,r2_xixi,N1,N2,N1_xi,N2_xi);
+    if(cpp)  //in case of large-angle-contact (standard closest-point-projection), we need delta_xi and delta_eta
+      ComputeLinXiAndLinEta(delta_xi,delta_eta,delta_r,r1_xi,r2_xi,r1_xixi,r2_xixi,N1,N2,N1_xi,N2_xi);
+    else     //in case of small-angle-contact (xi remains fixed), we only need delta_eta, delta_xi remains zero
+      ComputeLinEtaFixXi(delta_eta,delta_r,r2_xi,r2_xixi,N1,N2,N2_xi);
 
     // linearization of gap function which is equal to delta d
     ComputeLinGap(delta_gap,delta_xi,delta_eta,delta_r,norm_delta_r,r1_xi,r2_xi,N1,N2);
 
     // linearization of normal vector
     ComputeLinNormal(delta_n,delta_xi,delta_eta,delta_r,r1_xi,r2_xi,N1,N2);
+
+    // linearization of large-angle/small-angle scale factor
+    ComputeLinCosContactAngle(delta_coscontactangle,delta_xi,delta_eta,r1_xi,r2_xi,r1_xixi,r2_xixi,N1_xi,N2_xi);
 
     #ifdef FADCHECKS
     std::cout << "delta_xi: " << std::endl;
@@ -1309,6 +2254,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact( LIN
     //********************************************************************
     // part I - basic stiffness
     //********************************************************************
+
     LINALG::TMatrix<TYPE,dim1,1> N1T_normal(true);
     for (int i=0;i<3;i++)
     {
@@ -1321,7 +2267,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact( LIN
     {
       for (int j=0;j<dim1+dim2;j++)
       {
-        stiffc1(i,j) += basicstiffweightfac* dfp * N1T_normal(i) * delta_gap(j);
+        stiffc1(i,j) += basicstiffweightfac * N1T_normal(i) * ( ppfac * dfp * delta_gap(j) + dppfac * fp * delta_coscontactangle(j) );
       }
     }
 
@@ -1337,7 +2283,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact( LIN
         {
           for (int k=0;k<dim1+dim2;k++)
           {
-              stiffc1(j,k) += fp*N1(i,j)*delta_n(i,k);
+              stiffc1(j,k) += ppfac*fp*N1(i,j)*delta_n(i,k);
           }
         }
       }
@@ -1357,7 +2303,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact( LIN
       {
         for (int j=0;j<dim1+dim2;j++)
         {
-          stiffc1(i,j) += fp*N1xiT_normal(i)*delta_xi(j);
+          stiffc1(i,j) += ppfac*fp*N1xiT_normal(i)*delta_xi(j);
         }
       }
     }
@@ -1381,7 +2327,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact( LIN
     {
       for (int j=0;j<dim1+dim2;j++)
       {
-        stiffc2(i,j) += -basicstiffweightfac* dfp * N2T_normal(i) * delta_gap(j);
+        stiffc2(i,j) += -basicstiffweightfac * N2T_normal(i) * ( ppfac * dfp * delta_gap(j) + dppfac * fp * delta_coscontactangle(j) );
+
+
       }
     }
 
@@ -1396,7 +2344,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact( LIN
         {
           for (int k=0;k<dim1+dim2;k++)
           {
-              stiffc2(j,k) += -fp*N2(i,j)*delta_n(i,k);
+              stiffc2(j,k) += -ppfac*fp*N2(i,j)*delta_n(i,k);
           }
         }
       }
@@ -1416,67 +2364,95 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact( LIN
       {
         for (int j=0;j<dim1+dim2;j++)
         {
-          stiffc2(i,j) += -fp*N2xiT_normal(i)*delta_eta(j);
+          stiffc2(i,j) += -ppfac*fp*N2xiT_normal(i)*delta_eta(j);
         }
       }
     }
     //*************End of standard linearization of penalty contact forces****************
 
+    stiffc1.Scale(intfac);
+    stiffc2.Scale(intfac);
+
     // automatic differentiation for debugging
     #ifdef AUTOMATICDIFF
       LINALG::TMatrix<TYPE, dim1, 1> fc1_FAD(true);
       LINALG::TMatrix<TYPE, dim2, 1> fc2_FAD(true);
-      EvaluateFcContact(NULL, N1, N2, cpvariables, &fc1_FAD, &fc2_FAD);
-      for (int j=0;j<dim1+dim2;j++)
+      EvaluateFcContact(NULL, N1, N2, variables, intfac, &fc1_FAD, &fc2_FAD);
+      //Large-angle-contact: both parameter eta1 and eta2 have to be linearized
+      if(cpp)
       {
-        for (int i=0;i<dim1;i++)
-          stiffc1_FAD(i,j) = (fc1_FAD(i).dx(j)+fc1_FAD(i).dx(dim1+dim2)*delta_xi(j)+fc1_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
-        for (int i=0;i<dim2;i++)
-          stiffc2_FAD(i,j) = (fc2_FAD(i).dx(j)+fc2_FAD(i).dx(dim1+dim2)*delta_xi(j)+fc2_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
+        for (int j=0;j<dim1+dim2;j++)
+        {
+          for (int i=0;i<dim1;i++)
+            stiffc1_FAD(i,j) = (fc1_FAD(i).dx(j)+fc1_FAD(i).dx(dim1+dim2)*delta_xi(j)+fc1_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
+          for (int i=0;i<dim2;i++)
+            stiffc2_FAD(i,j) = (fc2_FAD(i).dx(j)+fc2_FAD(i).dx(dim1+dim2)*delta_xi(j)+fc2_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
+        }
+      }
+      //Small-angle-contact: only parameter eta2 has to be linearized
+      else
+      {
+        for (int j=0;j<dim1+dim2;j++)
+        {
+          for (int i=0;i<dim1;i++)
+            stiffc1_FAD(i,j) = (fc1_FAD(i).dx(j)+fc1_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
+          for (int i=0;i<dim2;i++)
+            stiffc2_FAD(i,j) = (fc2_FAD(i).dx(j)+fc2_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
+        }
       }
 
-      std::cout << "Pair: " << element1_->Id() << " / " << element2_->Id() << std::endl;
-
-      std::cout << "stiffc1: " << std::endl;
-      for (int i=0;i<dim1;i++)
-      {
-        for (int j=0;j<dim1+dim2;j++)
-        {
-          std::cout << stiffc1(i,j).val() << " ";
-        }
-        std::cout << std::endl;
-      }
-      std::cout << std::endl;
-      std::cout << "stiffc1_FAD: " << std::endl;
-      for (int i=0;i<dim1;i++)
-      {
-        for (int j=0;j<dim1+dim2;j++)
-        {
-          std::cout << stiffc1_FAD(i,j).val() << " ";
-        }
-        std::cout << std::endl;
-      }
-      std::cout << std::endl;
-      std::cout << "stiffc2: " << std::endl;
-      for (int i=0;i<dim1;i++)
-      {
-        for (int j=0;j<dim1+dim2;j++)
-        {
-          std::cout << stiffc2(i,j).val() << " ";
-        }
-        std::cout << std::endl;
-      }
-      std::cout << std::endl;
-      std::cout << "stiffc2_FAD: " << std::endl;
-      for (int i=0;i<dim1;i++)
-      {
-        for (int j=0;j<dim1+dim2;j++)
-        {
-          std::cout << stiffc2_FAD(i,j).val() << " ";
-        }
-        std::cout << std::endl;
-      }
-      std::cout << std::endl;
+//      std::cout << "Pair: " << element1_->Id() << " / " << element2_->Id() << std::endl;
+//
+//      std::cout << "stiffc1: " << std::endl;
+//      for (int i=0;i<dim1;i++)
+//      {
+//        for (int j=0;j<dim1+dim2;j++)
+//        {
+//          std::cout << stiffc1(i,j).val() << " ";
+//          if(fabs(stiffc1(i,j).val())>1.0e-8 and fabs((stiffc1(i,j).val()-stiffc1_FAD(i,j).val())/stiffc1(i,j).val())>1.0e-8)
+//          {
+//            std::cout << std::endl << std::endl << "stiffc1(i,j).val(): " << stiffc1(i,j).val() << "   stiffc1_FAD(i,j).val(): " << stiffc1_FAD(i,j).val() << std::endl;
+//            dserror("Error in linearization!");
+//          }
+//        }
+//        std::cout << std::endl;
+//      }
+//      std::cout << std::endl;
+//      std::cout << "stiffc1_FAD: " << std::endl;
+//      for (int i=0;i<dim1;i++)
+//      {
+//        for (int j=0;j<dim1+dim2;j++)
+//        {
+//          std::cout << stiffc1_FAD(i,j).val() << " ";
+//        }
+//        std::cout << std::endl;
+//      }
+//      std::cout << std::endl;
+//      std::cout << "stiffc2: " << std::endl;
+//      for (int i=0;i<dim1;i++)
+//      {
+//        for (int j=0;j<dim1+dim2;j++)
+//        {
+//          std::cout << stiffc2(i,j).val() << " ";
+//          if(fabs(stiffc2(i,j).val())>1.0e-8 and fabs((stiffc2(i,j).val()-stiffc2_FAD(i,j).val())/stiffc2(i,j).val())>1.0e-8)
+//          {
+//            std::cout << std::endl << std::endl <<"stiffc2(i,j).val(): " << stiffc2(i,j).val() << "   stiffc2_FAD(i,j).val(): " << stiffc2_FAD(i,j).val() << std::endl;
+//            dserror("Error in linearization!");
+//          }
+//        }
+//        std::cout << std::endl;
+//      }
+//      std::cout << std::endl;
+//      std::cout << "stiffc2_FAD: " << std::endl;
+//      for (int i=0;i<dim1;i++)
+//      {
+//        for (int j=0;j<dim1+dim2;j++)
+//        {
+//          std::cout << stiffc2_FAD(i,j).val() << " ";
+//        }
+//        std::cout << std::endl;
+//      }
+//      std::cout << std::endl;
     #endif
   }//if (CheckContactStatus(gap))
 
@@ -1517,6 +2493,180 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact( LIN
 /*----------------------------------------------------------------------*
  |  end: Evaluate contact stiffness
  *----------------------------------------------------------------------*/
+
+/*------------------------------------------------------------------------------------------*
+ |  FAD-based Evaluation of contact stiffness in case of ENDPOINTSEGMENTATION    meier 10/14|
+ *------------------------------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContactIntSeg( LINALG::SparseMatrix& stiffmatrix,
+                                                                                   const LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_xi_bound,
+                                                                                   const LINALG::TMatrix<TYPE, 3, 1>& r1,
+                                                                                   const LINALG::TMatrix<TYPE, 3, 1>& r2,
+                                                                                   const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
+                                                                                   const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
+                                                                                   const LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
+                                                                                   const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1,
+                                                                                   const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2,
+                                                                                   const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xi,
+                                                                                   Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > cpvariables,
+                                                                                   const double& intfac,
+                                                                                   const double& d_xi_ele_d_xi_bound,
+                                                                                   TYPE signed_jacobi_interval)
+{
+  #ifndef AUTOMATICDIFF
+    dserror("This method only works with automatic differentiation!");
+  #endif
+
+  // get dimensions for vectors fc1 and fc2
+  const int dim1 = 3*numnodes*numnodalvalues;
+  const int dim2 = 3*numnodes*numnodalvalues;
+
+  // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs
+  LINALG::TMatrix<TYPE, dim1, dim1+dim2> stiffc1_FAD(true);
+  LINALG::TMatrix<TYPE, dim2, dim1+dim2> stiffc2_FAD(true);
+  Epetra_SerialDenseMatrix stiffcontact1(dim1,dim1+dim2);
+  Epetra_SerialDenseMatrix stiffcontact2(dim2,dim1+dim2);
+  std::vector<int>  lmrow1(dim1);
+  std::vector<int>  lmrow2(dim2);
+  std::vector<int>  lmrowowner1(dim1);
+  std::vector<int>  lmrowowner2(dim2);
+  std::vector<int>  lmcol1(dim1+dim2);
+  std::vector<int>  lmcol2(dim1+dim2);
+
+  // flag indicating assembly
+  bool DoNotAssemble = true;
+  TYPE gap = cpvariables->GetGap();
+
+  //**********************************************************************
+  // evaluate contact stiffness for active pairs
+  //**********************************************************************
+  if (CheckContactStatus(BEAMCONTACT::CastToDouble(gap)))
+  {
+    DoNotAssemble = false;
+
+    // node ids of both elements
+    const int* node_ids1 = element1_->NodeIds();
+    const int* node_ids2 = element2_->NodeIds();
+
+    //TODO: Introduce this quantities as class variables?
+    //********************************************************************
+    // prepare assembly
+    //********************************************************************
+    // fill lmrow1 and lmrowowner1
+    for (int i=0;i<numnodes;++i)
+    {
+      // get pointer and dof ids
+      DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+      std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
+
+      for (int j=0;j<3*numnodalvalues;++j)
+      {
+        lmrow1[3*numnodalvalues*i+j]=NodeDofGIDs[j];
+        lmrowowner1[3*numnodalvalues*i+j]=node->Owner();
+      }
+    }
+
+    // fill lmrow2 and lmrowowner2
+    for (int i=0;i<numnodes;++i)
+    {
+      // get pointer and node ids
+      DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+      std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
+
+      for (int j=0;j<3*numnodalvalues;++j)
+      {
+        lmrow2[3*numnodalvalues*i+j]=NodeDofGIDs[j];
+        lmrowowner2[3*numnodalvalues*i+j]=node->Owner();
+      }
+    }
+
+    // fill lmcol1 and lmcol2
+    for (int i=0;i<numnodes;++i)
+    {
+      // get pointer and node ids
+      DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
+      std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
+
+      for (int j=0;j<3*numnodalvalues;++j)
+      {
+        lmcol1[3*numnodalvalues*i+j] = NodeDofGIDs[j];
+        lmcol2[3*numnodalvalues*i+j] = NodeDofGIDs[j];
+      }
+    }
+
+    // fill lmcol1 and lmcol2
+    for (int i=0;i<numnodes;++i)
+    {
+      // get pointer and node ids
+      DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
+      std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
+
+      for (int j=0;j<3*numnodalvalues;++j)
+      {
+        lmcol1[3*numnodalvalues*numnodes+3*numnodalvalues*i+j] = NodeDofGIDs[j];
+        lmcol2[3*numnodalvalues*numnodes+3*numnodalvalues*i+j] = NodeDofGIDs[j];
+      }
+    }
+
+    // initialize storage for linearizations
+    LINALG::TMatrix<TYPE, dim1+dim2, 1> delta_eta(true);
+    LINALG::TMatrix<TYPE, 3, 1> delta_r = BEAMCONTACT::DiffVector(r1,r2);
+
+    ComputeLinEtaFixXi(delta_eta,delta_r,r2_xi,r2_xixi,N1,N2,N2_xi);
+
+    LINALG::TMatrix<TYPE, dim1, 1> fc1_FAD(true);
+    LINALG::TMatrix<TYPE, dim2, 1> fc2_FAD(true);
+    EvaluateFcContact(NULL, N1, N2, cpvariables, intfac, &fc1_FAD, &fc2_FAD);
+
+    #ifdef AUTOMATICDIFF
+    TYPE fac1(0.0);
+    TYPE fac2(0.0);
+    fac2=-BEAMCONTACT::ScalarProduct(r2_xi, r2_xi) + BEAMCONTACT::ScalarProduct(delta_r, r2_xixi);
+    fac1=BEAMCONTACT::ScalarProduct(r2_xi, r1_xi);
+    for (int j=0;j<dim1+dim2;j++)
+    {
+      for (int i=0;i<dim1;i++)
+        stiffc1_FAD(i,j) = fc1_FAD(i).dx(j)+fc1_FAD(i).dx(dim1+dim2)*d_xi_ele_d_xi_bound*delta_xi_bound(j) +fc1_FAD(i).dx(dim1+dim2+1)*(delta_eta(j)-fac1/fac2*d_xi_ele_d_xi_bound*delta_xi_bound(j))+fc1_FAD(i).val()/(2.0*signed_jacobi_interval)*delta_xi_bound(j);
+                        // d(f)/d(disp)    +d(f)/d(xi,GP)           *d(xi,GP)/d(disp)                      +d(f)/d(eta,GP)            *d(eta,GP)/d(disp)                                             +d(f)/d(xi,Bound)*d(xi,Bound)/d(disp)
+
+      for (int i=0;i<dim2;i++)
+        stiffc2_FAD(i,j) = fc2_FAD(i).dx(j)+fc2_FAD(i).dx(dim1+dim2)*d_xi_ele_d_xi_bound*delta_xi_bound(j) +fc2_FAD(i).dx(dim1+dim2+1)*(delta_eta(j)-fac1/fac2*d_xi_ele_d_xi_bound*delta_xi_bound(j))+fc2_FAD(i).val()/(2.0*signed_jacobi_interval)*delta_xi_bound(j);
+    }
+    #endif
+
+  }//if (CheckContactStatus(gap))
+
+  //**********************************************************************
+  // assemble contact stiffness
+  //**********************************************************************
+  // change sign of stiffc1 and stiffc2 due to time integration.
+  // according to analytical derivation there is no minus sign, but for
+  // our time integration methods the negative stiffness must be assembled.
+
+  // now finally assemble stiffc1 and stiffc2
+  if (!DoNotAssemble)
+  {
+    #ifndef AUTOMATICDIFF
+      dserror("This method only works with AUTOMATICDIFF");
+    #else
+      for (int j=0;j<dim1+dim2;j++)
+      {
+        for (int i=0;i<dim1;i++)
+          stiffcontact1(i,j) = -BEAMCONTACT::CastToDouble(stiffc1_FAD(i,j));
+        for (int i=0;i<dim2;i++)
+          stiffcontact2(i,j) = -BEAMCONTACT::CastToDouble(stiffc2_FAD(i,j));
+      }
+    #endif
+
+    stiffmatrix.Assemble(0,stiffcontact1,lmrow1,lmrowowner1,lmcol1);
+    stiffmatrix.Assemble(0,stiffcontact2,lmrow2,lmrowowner2,lmcol2);
+  }
+
+  return;
+}
+/*------------------------------------------------------------------------------------------*
+ |  end: FAD-based Evaluation of contact stiffness in case of ENDPOINTSEGMENTATION
+ *------------------------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  Linearizations of contact point                          meier 10/14|
@@ -1606,6 +2756,134 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeLinXiAndLinEta(LINA
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
+ | Lin. of contact point coordinate eta with fixed xi        meier 10/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeLinEtaFixXi( LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_eta,
+                                                                            const LINALG::TMatrix<TYPE, 3, 1>& delta_r,
+                                                                            const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
+                                                                            const LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
+                                                                            const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1,
+                                                                            const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2,
+                                                                            const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xi)
+{
+
+  const int dim1 = 3*numnodes*numnodalvalues;
+  const int dim2 = 3*numnodes*numnodalvalues;
+
+  // matrices to compute Lin_Xi and Lin_Eta
+  TYPE L=0.0;
+  LINALG::TMatrix<TYPE,1,dim1+dim2> B(true);
+
+  // compute L elementwise
+  L=-BEAMCONTACT::ScalarProduct(r2_xi, r2_xi) + BEAMCONTACT::ScalarProduct(delta_r, r2_xixi);
+
+//  std::cout << "r2_xi: " << r2_xi << std::endl;
+//  std::cout << "r2_xixi: " << r2_xixi << std::endl;
+
+  if (fabs(BEAMCONTACT::CastToDouble(L)) < COLINEARTOL)
+      dserror("Linearization of point to line projection is zero, choose tighter search boxes!");
+
+  for (int i=0;i<3;i++)
+  {
+    for (int j=0;j<dim1;j++)
+    {
+      B(0,j)+= - r2_xi(i)*N1(i,j);
+    }
+  }
+
+  for (int i=0;i<3;i++)
+  {
+    for (int j=0;j<dim2;j++)
+    {
+      B(0,j+dim1)+= -delta_r(i)*N2_xi(i,j) + r2_xi(i)*N2(i,j);
+    }
+  }
+
+  // finally the linearizations / directional derivatives
+  for (int i=0;i<dim1+dim2;i++)
+  {
+    delta_eta(i) = 1.0/L*B(0,i);
+  }
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ |  end: Lin. of contact point coordinate eta with fixed xi
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | Compute linearization of integration interval bounds      meier 10/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeLinXiBound(LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_xi_bound,
+                                                                        TYPE& eta1_bound,
+                                                                        TYPE eta2)
+{
+
+    // vectors for shape functions and their derivatives
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N1(true);        // = N1
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N2(true);        // = N2
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N1_xi(true);     // = N1,xi
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N2_xi(true);     // = N2,eta
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N1_xixi(true);   // = N1,xixi
+    LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N2_xixi(true);   // = N2,etaeta
+
+    // coords and derivatives of the two contacting points
+    LINALG::TMatrix<TYPE, 3, 1> r1(true);                               // = r1
+    LINALG::TMatrix<TYPE, 3, 1> r2(true);                               // = r2
+    LINALG::TMatrix<TYPE, 3, 1> r1_xi(true);                            // = r1,xi
+    LINALG::TMatrix<TYPE, 3, 1> r2_xi(true);                            // = r2,eta
+    LINALG::TMatrix<TYPE, 3, 1> r1_xixi(true);                          // = r1,xixi
+    LINALG::TMatrix<TYPE, 3, 1> r2_xixi(true);                          // = r2,etaeta
+    LINALG::TMatrix<TYPE, 3, 1> delta_r(true);                          // = r1-r2
+
+    // update shape functions and their derivatives
+    GetShapeFunctions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, eta1_bound, eta2);
+    // update coordinates and derivatives of contact points
+    ComputeCoordsAndDerivs(r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi);
+
+    delta_r=BEAMCONTACT::DiffVector(r1,r2);
+
+    const int dim1 = 3*numnodes*numnodalvalues;
+    const int dim2 = 3*numnodes*numnodalvalues;
+
+    // matrices to compute Lin_Xi and Lin_Eta
+    TYPE L(0.0);
+    LINALG::TMatrix<TYPE,1,dim1+dim2> B(true);
+
+    // compute L elementwise
+    L=BEAMCONTACT::ScalarProduct(r1_xi, r1_xi) + BEAMCONTACT::ScalarProduct(delta_r, r1_xixi);
+
+    for (int i=0;i<3;i++)
+    {
+      for (int j=0;j<dim1;j++)
+      {
+        B(0,j)+= -delta_r(i)*N1_xi(i,j) - r1_xi(i)*N1(i,j);
+      }
+    }
+
+    for (int i=0;i<3;i++)
+    {
+      for (int j=0;j<dim2;j++)
+      {
+        B(0,j+dim1)+= r1_xi(i)*N2(i,j);
+      }
+    }
+
+    // finally the linearizations / directional derivatives
+    for (int i=0;i<dim1+dim2;i++)
+    {
+      delta_xi_bound(i) = B(0,i)/L;
+    }
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ |  end: Compute linearization of integration interval bounds
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
  | Compute linearization of gap                              meier 10/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
@@ -1663,6 +2941,85 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeLinGap( LINALG::TMa
 }
 /*----------------------------------------------------------------------*
  | end: Compute linearization of gap
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | Compute linearization of cosine of contact angle          meier 10/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeLinCosContactAngle( LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_coscontactangle,
+                                                                                 LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_xi,
+                                                                                 LINALG::TMatrix<TYPE, 2*3*numnodes*numnodalvalues, 1>& delta_eta,
+                                                                                 const LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
+                                                                                 const LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
+                                                                                 const LINALG::TMatrix<TYPE, 3, 1>& r1_xixi,
+                                                                                 const LINALG::TMatrix<TYPE, 3, 1>& r2_xixi,
+                                                                                 const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1_xi,
+                                                                                 const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xi)
+{
+  const int dim1 = 3*numnodes*numnodalvalues;
+  const int dim2 = 3*numnodes*numnodalvalues;
+
+  TYPE norm_r1xi = BEAMCONTACT::VectorNorm<3>(r1_xi);
+  TYPE norm_r2xi = BEAMCONTACT::VectorNorm<3>(r2_xi);
+  LINALG::TMatrix<TYPE, 3, 1> r1_xi_unit(r1_xi);
+  LINALG::TMatrix<TYPE, 3, 1> r2_xi_unit(r2_xi);
+  r1_xi_unit.Scale(1.0/norm_r1xi);
+  r2_xi_unit.Scale(1.0/norm_r2xi);
+  TYPE r1xi_unit_r2xi_unit = BEAMCONTACT::ScalarProduct(r1_xi_unit,r2_xi_unit);
+
+  //Pre-factor representing the modulus, since s=|r1xi_unit_r2xi_unit|
+  double modulus_factor = 1.0;
+
+  if(r1xi_unit_r2xi_unit<0.0)
+    modulus_factor=-1.0;
+
+  LINALG::TMatrix<TYPE, 3, 1> v1(r2_xi_unit);
+  LINALG::TMatrix<TYPE, 3, 1> v2(r1_xi_unit);
+  v1.Update(-r1xi_unit_r2xi_unit,r1_xi_unit,1.0);
+  v2.Update(-r1xi_unit_r2xi_unit,r2_xi_unit,1.0);
+  v1.Scale(1.0/norm_r1xi);
+  v2.Scale(1.0/norm_r2xi);
+
+  LINALG::TMatrix<TYPE, 3, dim1+dim2> delta_r1_xi(true);
+  LINALG::TMatrix<TYPE, 3, dim1+dim2> delta_r2_xi(true);
+
+  for(int i=0;i<3;i++)
+  {
+    for(int j=0;j<dim1+dim2;j++)
+    {
+      delta_r1_xi(i,j)=r1_xixi(i)*delta_xi(j);
+
+      if(j<dim1)
+        delta_r1_xi(i,j)+=N1_xi(i,j);
+    }
+  }
+
+  for(int i=0;i<3;i++)
+  {
+    for(int j=0;j<dim1+dim2;j++)
+    {
+      delta_r2_xi(i,j)=r2_xixi(i)*delta_eta(j);
+
+      if(j>=dim1)
+        delta_r2_xi(i,j)+=N2_xi(i,j-dim1);
+    }
+  }
+
+  LINALG::TMatrix<TYPE, 1, dim1+dim2> v1_delta_r1_xi(true);
+  LINALG::TMatrix<TYPE, 1, dim1+dim2> v2_delta_r2_xi(true);
+  v1_delta_r1_xi.MultiplyTN(v1,delta_r1_xi);
+  v2_delta_r2_xi.MultiplyTN(v2,delta_r2_xi);
+
+  for (int j=0;j<dim1+dim2;j++)
+  {
+    delta_coscontactangle(j)= modulus_factor*(v1_delta_r1_xi(j)+v2_delta_r2_xi(j));
+  }
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ | end: Compute linearization of cosine of contact angle
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -1791,6 +3148,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions( LINALG:
     DRT::UTILS::shape_function_hermite_1D_deriv1(N2_i_xi, eta2, length2, distype2);
     DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta1, length1, distype1);
     DRT::UTILS::shape_function_hermite_1D_deriv2(N2_i_xixi, eta2, length2, distype2);
+
   }
   else
     dserror("Only beam elements with one (nodal positions) or two (nodal positions + nodal tangents) values are valid!");
@@ -2132,15 +3490,6 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeCoordsAndDerivs(LIN
     }
   }
 
-//  // store coordinates of contact point into class variables
-//  for(int i=0;i<3;i++)
-//  {
-//    r1_(i)=r1(i);
-//    r2_(i)=r2(i);
-//    r1_xi_(i)=r1_xi(i);
-//    r2_xi_(i)=r2_xi(i);
-//  }
-
   return;
 }
 /*----------------------------------------------------------------------*
@@ -2277,6 +3626,62 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateLinOrthogonalityCo
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
+ | Evaluate orthogonality cond. of point to line projeciton  meier 10/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluatePTLOrthogonalityCondition(TYPE& f,
+                                                                                        const LINALG::TMatrix<TYPE,3,1>& delta_r,
+                                                                                        const double norm_delta_r,
+                                                                                        const LINALG::TMatrix<TYPE,3,1>& r2_xi)
+{
+  // reset f
+  f=0.0;
+
+  // evaluate f
+  for (int i=0;i<3;i++)
+  {
+    f += -delta_r(i)*r2_xi(i) / norm_delta_r;
+  }
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ |  end: Evaluate orthogonality cond. of point to line projeciton
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  Evaluate Jacobian df of PTLOrthogonalityCondition        meier 10/14|
+ *----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+bool CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateLinPTLOrthogonalityCondition( TYPE& df,
+                                                                                            const LINALG::TMatrix<TYPE,3,1>& delta_r,
+                                                                                            const double norm_delta_r,
+                                                                                            const LINALG::TMatrix<TYPE,3,1>& r2_xi,
+                                                                                            const LINALG::TMatrix<TYPE,3,1>& r2_xixi)
+
+{
+  // reset df
+  df=0.0;
+
+  // evaluate df
+  for(int i=0;i<3;i++)
+  {
+    df += (r2_xi(i)*r2_xi(i) - delta_r(i)*r2_xixi(i)) / norm_delta_r;
+  }
+
+  //check, if df=0: This can happen e.g. when the master beam 2 describes a circle geometry and the projectiong slave point
+  //coincides with the cetern of the circle
+
+  if(fabs(BEAMCONTACT::CastToDouble(df))<COLINEARTOL)
+    return false;
+  else
+    return true;
+}
+/*----------------------------------------------------------------------*
+ |  end: Evaluate Jacobian df in CPP
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
  |  Compute normal vector in contact point                   meier 02/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
@@ -2284,7 +3689,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeNormal(LINALG::TMat
                                                                     LINALG::TMatrix<TYPE, 3, 1>& r2,
                                                                     LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
                                                                     LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
-                                                                    Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > cpvariables)
+                                                                    Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > variables)
 {
 
   // compute non-unit normal
@@ -2302,12 +3707,12 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeNormal(LINALG::TMat
 
   TYPE gap=norm_delta_r - R1_ - R2_;
 
-  if (BEAMCONTACT::CastToDouble(gap)<-0.9*(R1_+R2_))
-    dserror("Gap to small, danger of penetration. Choose smaller time step!");
+  if (BEAMCONTACT::CastToDouble(gap)<-0.4*(R1_+R2_))
+    dserror("Gap too small, danger of penetration. Choose smaller time step!");
 
-  cpvariables->SetGap(gap);
-  cpvariables->SetNormal(normal);
-  cpvariables->SetAngle(BEAMCONTACT::CalcAngle(r1_xi,r2_xi));
+  variables->SetGap(gap);
+  variables->SetNormal(normal);
+  variables->SetAngle(BEAMCONTACT::CalcAngle(BEAMCONTACT::CastToDouble<TYPE,3,1>(r1_xi),BEAMCONTACT::CastToDouble<TYPE,3,1>(r2_xi)));
 
   return;
 }
@@ -2462,6 +3867,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::SetClassVariables(Teuchos:
     dserror("Invalid time integration parameter!");
 
   cpvariables_.clear();
+  gpvariables_.clear();
 }
 /*----------------------------------------------------------------------*
  |  end: Set all class variables
@@ -2679,6 +4085,121 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::GetJacobi(DRT::Element* 
    |  End: FAD-Check for Linearizations of CPP
    *----------------------------------------------------------------------*/
 #endif //#ifdef FADCHECKS
+
+/*----------------------------------------------------------------------*
+|  FD-Check of stiffness matrix                              meier 11/14|
+*-----------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::FDCheck(LINALG::SparseMatrix& stiffmatrix,
+                                                              Epetra_Vector& fint,
+                                                              const double& pp,
+                                                              std::map<std::pair<int,int>, Teuchos::RCP<Beam3contactinterface > >& contactpairmap,
+                                                              Teuchos::ParameterList& timeintparams,
+                                                              bool fdcheck)
+{
+  //This FD-Check is very general, since it applies the complete method "Evaluate" recursively.
+  //Therefore, all changes within this class are automatically considered and have not to be
+  //adapted in this finite difference check!
+  if(fint.GlobalLength()>2*3*numnodes*numnodalvalues)
+    dserror("So far, this FDCheck only works for simualtions with two elements!!!");
+
+  Epetra_Vector fint1(fint);
+  fint1.PutScalar(0.0);
+  Epetra_Vector fint2(fint);
+  fint2.PutScalar(0.0);
+
+  LINALG::SparseMatrix stiffmatrix_analyt(stiffmatrix);
+  stiffmatrix_analyt.PutScalar(0.0);
+
+  LINALG::SparseMatrix stiffmatrix_dummy(stiffmatrix);
+  stiffmatrix_dummy.PutScalar(0.0);
+
+  LINALG::Matrix<2*3*numnodes*numnodalvalues,2*3*numnodes*numnodalvalues> stiffmatrix_fd(true);
+
+  LINALG::Matrix<2*3*numnodes*numnodalvalues,2*3*numnodes*numnodalvalues> fint2_mat(true);
+
+  double delta = 1.0e-8;
+
+  std::cout << "undisturbed configuration: " << std::endl;
+
+  this->Evaluate(stiffmatrix_analyt,fint1,pp,contactpairmap,timeintparams,true);
+
+  std::cout << std::setprecision(25) << "fint1: " << std::endl;
+
+  fint1.Print(std::cout);
+
+  std::vector<double> xi1((int)gpvariables_.size(),0.0);
+  std::vector<double> eta1((int)gpvariables_.size(),0.0);
+
+  std::vector<LINALG::Matrix<2*3*numnodes*numnodalvalues,1> > xi2((int)gpvariables_.size());
+  std::vector<LINALG::Matrix<2*3*numnodes*numnodalvalues,1> > eta2((int)gpvariables_.size());
+
+
+  for (int i=0;i<(int)gpvariables_.size();i++)
+  {
+    xi1[i]=BEAMCONTACT::CastToDouble(gpvariables_[i]->GetCP().first);
+    eta1[i]=BEAMCONTACT::CastToDouble(gpvariables_[i]->GetCP().second);
+  }
+
+  for(int dof=0;dof<2*3*numnodes*numnodalvalues;dof++)
+  {
+    std::cout << "disturbed configuration: " << std::endl;
+
+    //Add delta
+    if(dof<3*numnodes*numnodalvalues)
+      ele1pos_(dof)+=delta;
+    else
+      ele2pos_(dof-3*numnodes*numnodalvalues)+=delta;
+
+    fint2.PutScalar(0.0);
+    stiffmatrix_dummy.PutScalar(0.0);
+
+    this->Evaluate(stiffmatrix_dummy,fint2,pp,contactpairmap,timeintparams,true);
+
+    std::cout << std::setprecision(25) << "fint2: " << std::endl;
+
+    fint2.Print(std::cout);
+
+    for(int i=0;i<(int)gpvariables_.size();i++)
+    {
+      xi2[i](dof)=BEAMCONTACT::CastToDouble(gpvariables_[i]->GetCP().first);
+      eta2[i](dof)=BEAMCONTACT::CastToDouble(gpvariables_[i]->GetCP().second);
+    }
+
+    for(int i=0;i<2*3*numnodalvalues*numnodes;i++)
+    {
+      fint2_mat(i,dof)=fint2[i];
+
+      if(fabs(fint2[i])<1.0e-10 and fabs(fint1[i])<1.0e-10)
+        stiffmatrix_fd(i,dof) = 999999999999;
+      else
+        stiffmatrix_fd(i,dof) = -(fint2[i]-fint1[i])/delta;
+    }
+
+    //restore original displacements
+    if(dof<3*numnodes*numnodalvalues)
+      ele1pos_(dof)-=delta;
+    else
+      ele2pos_(dof-3*numnodes*numnodalvalues)-=delta;
+  }
+
+  std::cout << "FD_LIN: " << std::endl;
+
+  for(int i=0;i<2*3*numnodes*numnodalvalues;i++)
+  {
+    for(int j=0;j<2*3*numnodes*numnodalvalues;j++)
+    {
+      std::cout << "row: " << i << "   " << "col: " << j << "   " << stiffmatrix_fd(i,j) << "   fint2: " << fint2_mat(i,j) << "   fint1: " << fint1[i] << std::endl;
+    }
+  }
+
+  std::cout << "ANALYT_LIN: " << std::endl;
+
+  std::cout << (*(stiffmatrix_analyt.EpetraMatrix())) << std::endl;
+}
+/*----------------------------------------------------------------------*
+|  end: FD-Check of stiffness matrix
+*-----------------------------------------------------------------------*/
 
 //Possible template cases: this is necessary for the compiler
 template class CONTACT::Beam3contact<2,1>;

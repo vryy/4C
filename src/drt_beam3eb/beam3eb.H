@@ -99,6 +99,8 @@ using namespace cln;
 #define mygaussruleeb intrule_line_4point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
 //Default: 4
 
+//#define ORTHOPRESSURE 3.1415926535897938
+
 //#define BEAM3EBROTPTC          //switch from standard PTC scheme to angular velocity based PTC for tangential DoFs
 
 //#define CONSTSTOCHFORCE       //Flag in order to hold stochastic forces constant over the element length
