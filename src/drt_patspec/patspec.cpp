@@ -309,7 +309,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
   const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   bool accurate_ilt_thick_calc=DRT::INPUT::IntegralValue<int>(pslist ,"CALC_ACCURATE_MAX_ILT_THICK");
 
-  double maxiltthick;
+  double maxiltthick=0.0;
   if(accurate_ilt_thick_calc)
   {
     maxiltthick = ComputeMaxILTThickness(dis);
@@ -320,7 +320,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
       dserror("UQ requires accurate computation of max ILT thickness, Set CALC_ACCURATE_MAX_ILT_THICK to yes");
     else
       iltthick->MaxValue(&maxiltthick);
-      maxiltthick -= 1; // subtract an approximate arterial wall thickness
+      maxiltthick -= 1.0; // subtract an approximate arterial wall thickness
       if (!dis->Comm().MyPID())
       {
         IO::cout << "WARNING: WALL THICKNESS IS CURRENTLY HARDCODED TO 1.0 mm FOR ILT THICK CALC" << IO::endl;
@@ -965,11 +965,11 @@ double PATSPEC::ComputeMaxILTThickness(Teuchos::RCP<DRT::Discretization> dis)
        if (!luminal_nodes) dserror("Cannot find node ids in condition");
    const std::vector<int>* wall_nodes = aaa_surface[1]->Nodes();
            if (!wall_nodes) dserror("Cannot find node ids in condition");
-   // now do a nice brute force search for maximum distance
 
+   // now do a nice brute force search for maximum distance
    const int n_lum_itl_nodes = (int)luminal_nodes->size();
    const int n_lum_wall_nodes = (int)wall_nodes->size();
-   // get coordinates for all nodes on luminla surface of ILT
+   // get coordinates for all nodes on luminal surface of ILT
    // and communicate them to all procs
    std::vector<double> lcoords_lum_ilt(n_lum_itl_nodes*3,0.0);
    std::vector<double> gcoords_lum_ilt(n_lum_itl_nodes*3,0.0);
@@ -988,6 +988,7 @@ double PATSPEC::ComputeMaxILTThickness(Teuchos::RCP<DRT::Discretization> dis)
      lcoords_lum_ilt[count_lum_ilt*3+2] = node->X()[2];
      count_lum_ilt++;
    }
+   dis->Comm().Barrier();
    dis->Comm().SumAll(&lcoords_lum_ilt[0],&gcoords_lum_ilt[0],n_lum_itl_nodes*3);
    lcoords_lum_ilt.clear();
    // because we have all nodes of luminal side stored redundant on all procs,
@@ -1002,13 +1003,13 @@ double PATSPEC::ComputeMaxILTThickness(Teuchos::RCP<DRT::Discretization> dis)
    {
      if (!dis->NodeRowMap()->MyGID(wall_nodes->at(i)))
      {
-       //count_lum_ilt++;
        continue;
      }
      const double* x = dis->gNode(wall_nodes->at(i))->X();
      // loop nodes from the condition and find minimum distance
      double mindist = 10e12;
-     for (int j=0; j<(int)gcoords_lum_ilt.size(); ++j)
+
+     for (int j=0; j<n_lum_itl_nodes; ++j)
      {
        double* xorth = &gcoords_lum_ilt[j*3];
        double dist = sqrt( (x[0]-xorth[0])*(x[0]-xorth[0]) +
@@ -1018,6 +1019,7 @@ double PATSPEC::ComputeMaxILTThickness(Teuchos::RCP<DRT::Discretization> dis)
      }
      (*iltthick)[dis->gNode(wall_nodes->at(i))->LID()] = mindist;
    }
+   dis->Comm().Barrier();
    gcoords_lum_ilt.clear();
    double maxiltthick;
    iltthick->MaxValue(&maxiltthick);
