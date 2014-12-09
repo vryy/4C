@@ -3590,6 +3590,9 @@ void FLD::FluidImplicitTimeInt::Output()
     // flow rate, flow volume and impedance in case of flow-dependent pressure bc
     if (nonlinearbc_)
       OutputNonlinearBC();
+
+    OutputExternalForces();
+
   }
 
 //#define PRINTALEDEFORMEDNODECOORDS // flag for printing all ALE nodes and xspatial in current configuration - only works for 1 processor  devaal 02.2011
