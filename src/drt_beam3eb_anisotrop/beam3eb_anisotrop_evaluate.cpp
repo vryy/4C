@@ -27,7 +27,6 @@ Maintainer: Christoph Meier
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_beamcontact/beam3contact_utils.H"
 
-
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 meier 10/12|
  *----------------------------------------------------------------------------------------------------------*/
@@ -248,13 +247,10 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
   const int vnode = 2;  //value + first derivative
 
   //internal force vector
-  LINALG::TMatrix<FAD,6*nnode+twistdofs,1> f_int;
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,1> f_int(true);
 
   LINALG::Matrix<6*nnode+twistdofs,6*nnode+twistdofs> R_orthopressure_tot(true);
   LINALG::Matrix<6*nnode+twistdofs,1> Res_orthopressure_tot(true);
-
-  //initialize
-  f_int.Clear();
 
   //matrix for current nodal positions and nodal tangents
   std::vector<FAD> disp_totlag(6*nnode+twistdofs, 0.0);
@@ -344,7 +340,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
   }
 
   //Get integration points for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebanisotrop);
 
   //Get DiscretizationType of beam element
   const DRT::Element::DiscretizationType distype = Shape();
@@ -380,18 +376,24 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
 
   //Calculate the nodal reference triads as well as the difference angle between the reference triad triad_ref_nodes[1]
   // and the intermediate triad (normal_bar, binormal_bar) at the right element node
-  DetermineNodalTriads(disp_totlag, triads_mat_nodes, theta_nodes,true, triads_ref_nodes);
+
+  FAD taubar0;
+  taubar0=0.0;
+
+  DetermineNodalTriads(disp_totlag, triads_mat_nodes, theta_nodes,true, triads_ref_nodes,taubar0);
 
   //end: quantities which are needed for NSRISR calculation
 
   //Calculation of tension at collocation points; this is needed for ANS approach
-  LINALG::TMatrix<FAD,3,1> epsilonCP;
+  LINALG::TMatrix<FAD,3,1> epsilonCP(true);
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,3> LINepsilonCP_T(true);
+  LINALG::TMatrix<FAD,6*nnode+twistdofs,1> LINepsilonCP_T_GP(true);
   //Calculate first epsilon in the element midpoint (2nd CP)
   LINALG::TMatrix<FAD,3,1> r_s_midpoint;
   double xi=0.0;
   Calculate_r_s(disp_totlag, xi, r_s_midpoint);
   //Fill all three epsilon values at CPs in matrix epsilonCP
-  CalculateEpsilonCP(disp_totlag, r_s_midpoint, epsilonCP);
+  CalculateEpsilonCP(disp_totlag, r_s_midpoint, epsilonCP, LINepsilonCP_T);
 
   //Calculate ANS interpolation of kappa
   #ifdef ANSKAPPA
@@ -422,135 +424,25 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     }
   #endif
 
-//    //**********************begin: calculation of original ANS variant epsilon4*****************************************************************
-//    LINALG::TMatrix<FAD,4,1> epsilon4;
-//    epsilon4.Clear();
+//  if (this->Id()==0)
+//  {
+//    FILE *outFile_torsion;
+//    outFile_torsion = fopen("beamtorsionalmoments.txt", "w");
+//    fclose(outFile_torsion);
 //
-//    for(int iter=0; iter < 4; iter++)
-//    {
-//      #if defined(TWISTDOFS) && (TWISTDOFS==2)
+//    FILE *outFile_bending;
+//    outFile_bending = fopen("beambendingmoments.txt", "w");
+//    fclose(outFile_bending);
 //
-//      int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
-//                                          {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
-//                                          {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
-//
-//      int assembly_C[2*6+TWISTDOFS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2};
-//
-//      #elif defined(TWISTDOFS) && (TWISTDOFS==3)
-//
-//      int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
-//                                          {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0},
-//                                          {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0}};
-//
-//      int assembly_C[2*6+TWISTDOFS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3};
-//
-//      #elif defined(TWISTDOFS) && (TWISTDOFS==4)
-//
-//      int assembly_N[3][2*6+TWISTDOFS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
-//                                             {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
-//                                             {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
-//
-//      #else
-//      dserror("TWISTDOFS has to be defined. Only the values 2,3 and 4 are valid for TWISTDOFS!!!");
-//      #endif
-//
-//      abs_r_s=0.0;
-//      N_i_xi.Clear();
-//      N_i_s.Clear();
-//      N_s.Clear();
-//      r_s.Clear();
-//      LINALG::TMatrix<FAD,3,1> r0_xi;
-//      r0_xi.Clear();
-//      FAD jacobi_local=0.0;
-//      double xi_help = 0.0;
-//
-//      switch(iter)
-//      {
-//      case 0:
-//      {
-//        //Get location and weight of GP in parameter space
-//        xi_help = -0.8605772;
-//      }
-//        break;
-//
-//      case 1:
-//      {
-//        //Get location and weight of GP in parameter space
-//        xi_help = -0.3269228;
-//      }
-//        break;
-//
-//      case 2:
-//      {
-//        //Get location and weight of GP in parameter space
-//        xi_help = 0.3269228;
-//      }
-//        break;
-//
-//      case 3:
-//      {
-//        //Get location and weight of GP in parameter space
-//        xi_help = 0.8605772;
-//      }
-//        break;
-//      }
-//
-//      const double xi=xi_help;
-//
-//      //Get hermite derivatives N'xi and N''xi
-//      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
-//
-//      //Calculate local jacobi factors
-//      for (int i=0;i<3;i++)
-//      {
-//        r0_xi(i)+=Nodes()[0]->X()[i]*N_i_xi(0) + Nodes()[1]->X()[i]*N_i_xi(2) +Tref_[0](i)*N_i_xi(1) + Tref_[1](i)*N_i_xi(3);
-//      }
-//      for (int i=0; i<3; i++)
-//      {
-//        jacobi_local+=pow(r0_xi(i),2.0);
-//      }
-//      jacobi_local=pow(jacobi_local,0.5);
-//
-//        N_i_s=N_i_xi;
-//        N_i_s.Scale(1/jacobi_local);
-//
-//      //Assemble the matrices of the shape functions
-//      for (int i=0; i<6*nnode+twistdofs; i++)
-//      {
-//        for (int j=0; j<3; j++)
-//        {
-//          if(assembly_N[j][i]==0)
-//          {
-//            N_s(j,i)=0;
-//          }
-//          else
-//          {
-//            N_s(j,i)=N_i_s(assembly_N[j][i]-1);
-//          }
-//        }
-//      }
-//
-//      //Calculation of r' and r'', gamma and gamma' at the gp
-//      for (int i=0; i<3; i++)
-//      {
-//        for (int j=0; j<6*nnode+twistdofs; j++)
-//        {
-//          r_s(i)+=N_s(i,j)*disp_totlag[j];
-//        }
-//      }
-//
-//      //Calculation of |r'| (r_s.Norm2() not available for FAD) and r'T r''
-//      for (int i=0; i<3; i++)
-//      {
-//        abs_r_s+=pow(r_s(i),2.0);
-//      }
-//      abs_r_s=pow(abs_r_s,0.5);
-//
-//      epsilon4(iter)=abs_r_s-1;
-//    }
-//    //**********************end: calculation of original ANS variant epsilon4*****************************************************************
+//    FILE *outFile_normalforce;
+//    outFile_normalforce = fopen("beamnormalforce.txt", "w");
+//    fclose(outFile_normalforce);
+//  }
 
 //**********************begin: gauss integration*********************************************************************
+
+  double bending_energy=0.0;
+  double tension_energy=0.0;
 
   //Loop through all GP and calculate their contribution to the internal forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -609,6 +501,8 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     M2_aux.Clear();
     m.Clear();
     n.Clear();
+    tau_bar_gp=0.0;
+    LINepsilonCP_T_GP.Clear();
 
     //Get location and weight of GP in parameter space
     const double xi = gausspoints.qxg[numgp][0];
@@ -626,7 +520,6 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     AssembleShapefunctions(N_i, N_i_xi, N_i_xixi, N_i_xixixi, C_i, C_i_xi, jacobi_[numgp], jacobi2_[numgp], jacobi3_[numgp], N_s, N_ss, N_sss, C, C_s);
     AssembleShapefunctions(N_i,N);
 
-
     //Calculation of r' and r'', gamma and gamma' at the gp
     for (int i=0; i<3; i++)
     {
@@ -637,53 +530,72 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
         r_sss(i)+=N_sss(i,j)*disp_totlag[j];
       }
     }
-
-    #ifdef BEAM3EBANISOTROPORTHOPRESSURE
-      LINALG::TMatrix<FAD,3,1> ortho_normal(true);
-      LINALG::Matrix<6*nnode+twistdofs,6*nnode+twistdofs> R_orthopressure(true);
-      LINALG::TMatrix<FAD,6*nnode+twistdofs,1> Res_orthopressure(true);
-
-      ortho_normal(0)=r_s(1,0);
-      ortho_normal(1)=-r_s(0,0);
-      ortho_normal(2)=0.0;
-      if (BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(ortho_normal))>1.0e-12)
-        ortho_normal.Scale(1.0/(BEAMCONTACT::VectorNorm<3>(ortho_normal)));
-
-      Res_orthopressure.Clear();
-      R_orthopressure.Clear();
-      Res_orthopressure.MultiplyTN(N,ortho_normal);
-      Res_orthopressure.Scale(-orthopressureload* wgt *jacobi_[numgp]);
-      for (int i= 0; i<6*nnode+twistdofs; i++)
-      {
-        for (int j= 0; j<6*nnode+twistdofs; j++)
-        {
-          R_orthopressure(i,j)=Res_orthopressure(i).dx(j);
-        }
-      }
-
-      for (int i= 0; i<6*nnode+twistdofs; i++)
-      {
-        for (int j= 0; j<6*nnode+twistdofs; j++)
-        {
-          R_orthopressure_tot(i,j)+=R_orthopressure(i,j);
-        }
-        Res_orthopressure_tot(i)+=Res_orthopressure(i).val();
-      }
-    #endif
-
     for (int i=0; i<6*nnode+twistdofs; i++)
     {
       gamma_+=C(i)*disp_totlag[i];
       gamma_s+=C_s(i)*disp_totlag[i];
     }
-    tangent=r_s;
+
+  #ifdef BEAM3EBANISOTROPORTHOPRESSURE
+    LINALG::TMatrix<FAD,3,1> ortho_normal(true);
+    LINALG::Matrix<6*nnode+twistdofs,6*nnode+twistdofs> R_orthopressure(true);
+    LINALG::TMatrix<FAD,6*nnode+twistdofs,1> Res_orthopressure(true);
+
+    ortho_normal(0)=r_s(1,0);
+    ortho_normal(1)=-r_s(0,0);
+    ortho_normal(2)=0.0;
+    if (BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(ortho_normal))>1.0e-12)
+      ortho_normal.Scale(1.0/(BEAMCONTACT::VectorNorm<3>(ortho_normal)));
+
+    Res_orthopressure.Clear();
+    R_orthopressure.Clear();
+    Res_orthopressure.MultiplyTN(N,ortho_normal);
+    Res_orthopressure.Scale(-orthopressureload* wgt *jacobi_[numgp]);
+    for (int i= 0; i<6*nnode+twistdofs; i++)
+    {
+      for (int j= 0; j<6*nnode+twistdofs; j++)
+      {
+        R_orthopressure(i,j)=Res_orthopressure(i).dx(j);
+      }
+    }
+
+    for (int i= 0; i<6*nnode+twistdofs; i++)
+    {
+      for (int j= 0; j<6*nnode+twistdofs; j++)
+      {
+        R_orthopressure_tot(i,j)+=R_orthopressure(i,j);
+      }
+      Res_orthopressure_tot(i)+=Res_orthopressure(i).val();
+    }
+  #endif
+
     abs_r_s=Norm(r_s);
+
+#ifndef ANS_BEAM3EB_ANISOTROP
+  epsilon=abs_r_s - 1.0;
+#else
+    epsilon=epsilonCP(0)*(-0.5*xi*(1.0 - xi)) + epsilonCP(1)*(1 - xi*xi) + epsilonCP(2)*(0.5*xi*(1.0 + xi));
+    //epsilon=epsilonCP(0)*(0.5*(1.0 - xi))  + epsilonCP(2)*(0.5*(1.0 + xi));
+    for (int i=0;i<12+TWISTDOFS;i++)
+    {
+      LINepsilonCP_T_GP(i)=LINepsilonCP_T(i,0)*(-0.5*xi*(1.0 - xi))+LINepsilonCP_T(i,1)*(1 - xi*xi)+LINepsilonCP_T(i,2)*(0.5*xi*(1.0 + xi));
+    }
+#endif
+
+    tangent=r_s;
     tangent.Scale(1.0/abs_r_s);
     rxTrxx=ScalarProduct(r_s,r_ss);
+
     for (int i=0; i<3; i++)
     {
       temp_vector(i)=r_ss(i)/pow(abs_r_s,2.0)-2*r_s(i)*rxTrxx/pow(abs_r_s,4.0);
     }
+
+//      for (int i=0; i<3; i++)
+//      {
+//        temp_vector(i)=r_ss(i)/pow(epsilon+1,2.0)-2*r_s(i)*rxTrxx/pow(epsilon+1,4.0);
+//      }
+
     LARGEROTATIONS::computespin<FAD>(Stemp_vector,temp_vector);
     for (int i=0;i<3;i++)
     {
@@ -780,7 +692,6 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     LARGEROTATIONS::computespin<FAD>(Srx,r_s);
     LARGEROTATIONS::computespin<FAD>(Srxx,r_ss);
 
-
     kappa_g2=0.0;
     kappa_g3=0.0;
     for (int i=0;i<3;i++)
@@ -789,29 +700,39 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
       kappa_g3+=kappa_vec(i)*triad_mat_gp(1,i);
     }
 
-    #ifndef ANS
-      epsilon=abs_r_s - 1.0;
-    #else
-      epsilon=epsilonCP(0)*(-0.5*xi*(1.0 - xi)) + epsilonCP(2)*(0.5*xi*(1.0 + xi)) + epsilonCP(1)*(1 - xi*xi);
-
-//***********begin: original ANS******************************************************************************
-//      double a = -0.8605772;
-//      double b = -0.3269228;
-//      double c = 0.3269228;
-//      double d = 0.8605772;
-//      epsilon=epsilon4(0)*(xi-b)*(xi-c)*(xi-d)/((a-b)*(a-c)*(a-d))
-//             +epsilon4(1)*(xi-a)*(xi-c)*(xi-d)/((b-a)*(b-c)*(b-d))
-//             +epsilon4(2)*(xi-a)*(xi-b)*(xi-d)/((c-a)*(c-b)*(c-d))
-//             +epsilon4(3)*(xi-a)*(xi-b)*(xi-c)/((d-a)*(d-b)*(d-c));
-//***********end: original ANS*********************************************************************************
-    #endif
-
     //Calculation of stress resultants m and n
     for (int i=0;i<3;i++)
     {
       m(i,0)= sm*Irr_*(tau_gp + gamma_s - tau0_[numgp])*tangent(i) + ym*Iyy_*(kappa_g2 - kappa0g20_[numgp])*triad_mat_gp(0,i) + ym*Izz_*(kappa_g3-kappa0g30_[numgp])*triad_mat_gp(1,i);
       n(i,0)= ym*crosssec_*epsilon*tangent(i);
     }
+
+    //for (int i=0;i<3;i++)
+    //{
+      //m(i)=ym*Izz_/pow(abs_r_s,2)*kappa_vec(i)+sm*Irr_*(tau_gp + gamma_s)*tangent(i);
+    //}
+
+//    double Mt = sm*Irr_*(tau_gp + gamma_s - tau0_[numgp]).val();
+//    double Mb = pow(pow(ym*Iyy_*(kappa_g2 - kappa0g20_[numgp]).val(),2.0)+pow(ym*Izz_*(kappa_g3-kappa0g30_[numgp]).val(),2.0),0.5);
+//    double N = (ym*crosssec_*epsilon).val();
+
+//    FILE *outFile_torsion;
+//    outFile_torsion = fopen("beamtorsionalmoments.txt", "a");
+//    fprintf(outFile_torsion, "%.16e  ", Mt);
+//    fprintf(outFile_torsion, "\n");
+//    fclose(outFile_torsion);
+//
+//    FILE *outFile_bending;
+//    outFile_bending = fopen("beambendingmoments.txt", "a");
+//    fprintf(outFile_bending, "%.16e  ", Mb);
+//    fprintf(outFile_bending, "\n");
+//    fclose(outFile_bending);
+//
+//    FILE *outFile_normalforce;
+//    outFile_normalforce = fopen("beamnormalforce.txt", "a");
+//    fprintf(outFile_normalforce, "%.16e  ", N);
+//    fprintf(outFile_normalforce, "\n");
+//    fclose(outFile_normalforce);
 
     M2_aux.MultiplyTN(N_ss,Srx);
     M2.MultiplyTN(N_s,Stemp_vector);
@@ -826,6 +747,16 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
       }
     }
 
+#ifdef CONSISTENTANS
+    for (int row=0; row<6*nnode+twistdofs; row++)
+    {
+      for (int column=0; column<3; column++)
+      {
+        f_int(row)+=wgt*jacobi_[numgp]*((M2(row,column)-M1(row,column))*m(column));
+      }
+      f_int(row)+=wgt*jacobi_[numgp]*(-ym*crosssec_*epsilon*LINepsilonCP_T_GP(row));
+    }
+#else
     //Calculation of the internal force vector (valid for all! triads)
     for (int row=0; row<6*nnode+twistdofs; row++)
     {
@@ -834,6 +765,8 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
         f_int(row)+=wgt*jacobi_[numgp]*(-N_s(column,row)*n(column)+(M2(row,column)-M1(row,column))*m(column));
       }
     }
+#endif
+
 
     //Calculate internal energy
     temp_energy=0.0;
@@ -842,6 +775,9 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     temp_energy+=ym*Izz_*(pow(kappa_g2 - kappa0g20_[numgp],2.0)+pow(kappa_g3 - kappa0g30_[numgp],2.0));
     temp_energy=temp_energy*0.5*wgt*jacobi_[numgp];
     int_energy_+=temp_energy.val();
+    //bending_energy+=(0.5*wgt*jacobi_[numgp]*(ym*Izz_*(pow(kappa_g2 - kappa0g20_[numgp],2.0)+pow(kappa_g3 - kappa0g30_[numgp],2.0)))).val();
+    bending_energy+=0.5*wgt*jacobi_[numgp]*(pow(m(2),2.0)/(ym*Izz_)).val();
+    tension_energy+=(0.5*wgt*jacobi_[numgp]*ym*crosssec_*pow(epsilon,2.0)).val();
     //End: Calculate internal energy
 
     //****************Update of the old reference triads at gauss points***********************************************
@@ -855,7 +791,107 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
 
   }//end of gauss integration
 
-  //cout << "int_energy_: " << int_energy_ << endl;
+  //cout << std::setprecision(16) << "bending_energy: " << bending_energy << endl;
+  //cout << "tension_energy: " << tension_energy << endl;
+
+#ifdef OPTCURVE
+  //**********************begin: optimal curve integration******************************************************************
+      //Loop through the tension GP and calculate their contribution to the internal forcevector and stiffnessmatrix
+      f_int.Clear();
+      n.Clear();
+      LINALG::TMatrix<FAD,3,1> r;
+      LINALG::TMatrix<FAD,3,1> r_analyt;
+      LINALG::TMatrix<FAD,3,1> rx_analyt;
+      r_analyt.Clear();
+      rx_analyt.Clear();
+
+      FAD phi = 0.0;
+      FAD M = 10.0;
+      FAD R0= ym*Izz_ / (2.0 *M);
+      FAD ele_length=1000.0/NUMELE;
+      int ele=this->Id()+1;
+      FAD phi1=(ele-1)*ele_length/(sqrt(2.0)*R0);
+      FAD phi2=(ele)*ele_length/(sqrt(2.0)*R0);
+
+      if (firstcall_)
+      {
+        firstcall_=false;
+        //cout << "firstcall_" << endl;
+
+        disp_totlag[0]=R0/sqrt(2.0)*(sin(phi1) + phi1);
+        disp_totlag[1]=R0*(1-cos(phi1));
+        disp_totlag[2]=R0/sqrt(2.0)*(-sin(phi1) + phi1);
+        disp_totlag[7]=R0/sqrt(2.0)*(sin(phi2) + phi2);
+        disp_totlag[8]=R0*(1-cos(phi2));
+        disp_totlag[9]=R0/sqrt(2.0)*(-sin(phi2) + phi2);
+
+        disp_totlag[3]=0.5*(cos(phi1) + 1);
+        disp_totlag[4]=1.0/sqrt(2.0)*(sin(phi1));
+        disp_totlag[5]=0.5*(-cos(phi1) + 1);
+        disp_totlag[10]=0.5*(cos(phi2) + 1);
+        disp_totlag[11]=1.0/sqrt(2.0)*(sin(phi2));;
+        disp_totlag[12]=0.5*(-cos(phi2) + 1);
+
+        for (int dof=0; dof<14; dof++)
+        {
+          disp_totlag[dof].diff(dof,14);
+          //cout << "disp_totlag: " << disp_totlag[dof] << endl;
+        }
+
+
+      }
+
+      for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+      {
+        N_i.Clear();
+        n.Clear();
+        r.Clear();
+        r_analyt.Clear();
+
+        //Get location and weight of GP in parameter space
+        const double xi = gausspoints.qxg[numgp][0];
+        const double wgt = gausspoints.qwgt[numgp];
+
+        //Get hermite derivatives N'xi and N''xi
+        DRT::UTILS::shape_function_hermite_1D(N_i,xi,length_,line2);
+
+        for (int i=0; i<3; i++)
+        {
+            r(i)+=N_i(0)*disp_totlag[i] + N_i(1)*disp_totlag[3 + i] + N_i(2)*disp_totlag[7 + i] + N_i(3)*disp_totlag[10 + i];
+        }
+
+        phi=(1-xi)/2*phi1 + (1+xi)/2*phi2;
+        r_analyt(0)=R0/sqrt(2.0)*(sin(phi) + phi);
+        r_analyt(1)=R0*(1-cos(phi));
+        r_analyt(2)=R0/sqrt(2.0)*(-sin(phi) + phi);
+
+        for (int i=0;i<3;i++)
+        {
+          n(i)=-r_analyt(i)+r(i);
+        }
+
+        for (int i=0;i<3;i++)
+        {
+          f_int(i)+= wgt*jacobi_[numgp]*N_i(0)*n(i);
+        }
+
+        for (int i=0;i<3;i++)
+        {
+          f_int(3+i)+= wgt*jacobi_[numgp]*N_i(1)*n(i);
+        }
+
+        for (int i=0;i<3;i++)
+        {
+          f_int(7+i)+= wgt*jacobi_[numgp]*N_i(2)*n(i);
+        }
+
+        for (int i=0;i<3;i++)
+        {
+          f_int(10+i)+= wgt*jacobi_[numgp]*N_i(3)*n(i);
+        }
+      }//end of gauss integration
+  //**********************end: optimal curve integration******************************************************************
+#endif
 
   //Update stiffness matrix and force vector
   if(stiffmatrix!=NULL)
@@ -877,7 +913,12 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
         }
       }
     #endif
+    #ifdef OPTCURVE
+          (*stiffmatrix)(6,6)=1.0;
+          (*stiffmatrix)(13,13)=1.0;
+    #endif
   }
+
   if(force!=NULL)
   {
     for (int i=0; i< 6*nnode+twistdofs; i++)
@@ -1044,7 +1085,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
   LINALG::TMatrix<FAD,3,1> n_inertia;
 
   //Get integration points for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebanisotrop);
 
   //Get DiscretizationType of beam element
   const DRT::Element::DiscretizationType distype = Shape();
@@ -1098,20 +1139,12 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
 
   //Calculate the nodal reference triads as well as the difference angle between the reference triad triad_ref_nodes[1]
   // and the intermediate triad (normal_bar, binormal_bar) at the right element node
-  DetermineNodalTriads(disp_totlag, triads_mat_nodes, theta_nodes,true, triads_ref_nodes);
+  FAD dummy;
+  DetermineNodalTriads(disp_totlag, triads_mat_nodes, theta_nodes,true, triads_ref_nodes,dummy);
 
   DetermineWrefNodes(disp_totlag, vel_totlag, acc_totlag, w_ref_nodes, w_ref_perp_t_nodes, w_ref_parallel_t_nodes, theta_t, theta_tt);
 
   //end: quantities which are needed for NSRISR calculation
-
-  //Calculation of tension at collocation points; this is needed for ANS approach
-  LINALG::TMatrix<FAD,3,1> epsilonCP;
-  //Calculate first epsilon in the element midpoint (2nd CP)
-  LINALG::TMatrix<FAD,3,1> r_s_midpoint;
-  double xi=0.0;
-  Calculate_r_s(disp_totlag, xi, r_s_midpoint);
-  //Fill all three epsilon values at CPs in matrix epsilonCP
-  CalculateEpsilonCP(disp_totlag, r_s_midpoint, epsilonCP);
 
 //**********************begin: gauss integration*********************************************************************
 
@@ -1294,8 +1327,22 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
   if(massmatrix != NULL)
   {
     double delta_t = params.get<double>("delta time");
+    //TODO: get general time integration params here. So far we set a dserror()!!!
+    //TODO: in the current implementation all contributions to the stiffness matrix (i.e linearization with respect to
+    // d, d_t and d_tt) are multiplied with the factor (1-alpha_m) in strtimint_genalpha.cpp. It chould be checked, if it
+    // is not more consistent to multiply the contributions of d and d_t with (1-alpha_f) as it is the case for internal
+    // and damping forces!
+    //TODO: Compare the update procedure of gamma_t and gamma_tt at the end of the time step (necessary due to the change of
+    // the nodal reference triad in every time step) with the procedure suggested in "On the Use of Lie Group Time Integrators in Multibody Dynamics",
+    //Olivier Brüls and Alberto Cardona, J. Comput. Nonlinear Dynam. 5(3), 031002 (May 14, 2010) (13 pages)
+    dserror("Check, if we have the correct time integration params!!!");
+    //old version
     double beta_newmark = params.get<double>("beta_newmark");
     double gamma_newmark = params.get<double>("gamma_newmark");
+    //change it to:
+    //double beta_newmark = params.get<double>("timintfac_dis");
+    //double gamma_newmark = params.get<double>("timintfac_vel");
+
     //Calculating mass matrix with FAD
     for(int i = 0; i < 6*nnode+twistdofs; i++)
     {
@@ -1305,7 +1352,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInertialForces(Teuchos::Parameter
       }
     }
 
-//    cout << "massmatrix gesamt: " << endl;
+//    std::cout << "massmatrix gesamt: " << std::endl;
 //    massmatrix->Print(std::cout);
   }
 
@@ -1343,7 +1390,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
   //const int dofpn = 6+twistdofpn;
   const int dofgamma = 6; //gamma is the seventh dof
 
-  //get element displacements
+  // get element displacements
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
   std::vector<double> mydisp(lm.size());
@@ -1475,7 +1522,9 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
     }
 
     //calculate |t|=|r'| at the boundary
-    abs_tangent=tangent.Norm2();
+    //abs_tangent=tangent.Norm2();
+    abs_tangent=1.0;
+
 
     //computespin = S ( tangent ) using the spinmatrix in namespace largerotations
     LARGEROTATIONS::computespin(St,tangent);
@@ -1541,7 +1590,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
     {
 
       // gaussian points
-      DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+      DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebanisotrop);
       LINALG::Matrix<1,4> N_i;
 
       //integration loops
@@ -1654,7 +1703,8 @@ void DRT::ELEMENTS::Beam3ebanisotrop::DetermineNodalTriads(std::vector<FAD> disp
                                                        LINALG::TMatrix<FAD,3,6>& triads_mat_nodes,
                                                        std::vector<FAD>& theta_nodes,
                                                        bool refcalc,
-                                                       std::vector<LINALG::TMatrix<FAD,2,3> >& triads_ref_nodes)
+                                                       std::vector<LINALG::TMatrix<FAD,2,3> >& triads_ref_nodes,
+                                                       FAD& taubar0)
 {
 
     const int twistdofs = TWISTDOFS;
@@ -1679,6 +1729,8 @@ void DRT::ELEMENTS::Beam3ebanisotrop::DetermineNodalTriads(std::vector<FAD> disp
 
     //Matrix to store r'
     LINALG::TMatrix<FAD,3,1> r_s;
+    LINALG::TMatrix<FAD,3,1> r_ss;
+    LINALG::TMatrix<FAD,3,1> r_sss;
     //Matrix for |r'|
     FAD abs_r_s=0.0;
     LINALG::TMatrix<FAD,3,1> tangent;
@@ -1720,6 +1772,8 @@ void DRT::ELEMENTS::Beam3ebanisotrop::DetermineNodalTriads(std::vector<FAD> disp
       double xi=-1.0 + pos*2.0;
 
       r_s.Clear();
+      r_ss.Clear();
+      r_sss.Clear();
       abs_r_s=0.0;
       normal_bar.Clear();
       binormal_bar.Clear();
@@ -1787,7 +1841,14 @@ void DRT::ELEMENTS::Beam3ebanisotrop::DetermineNodalTriads(std::vector<FAD> disp
         for (int j=0; j<6*nnode+twistdofs; j++)
         {
           r_s(i)+=N_s(i,j)*disp_totlag[j];
+          r_ss(i)+=N_ss(i,j)*disp_totlag[j];
+          r_sss(i)+=N_sss(i,j)*disp_totlag[j];
         }
+      }
+      if (pos==0)
+      {
+        FAD abs_r_s=Norm(r_s);
+        taubar0=-ScalarProduct(r_s,VectorProduct(r_ss,r_sss))/(pow(abs_r_s,3.0)+pow(abs_r_s,5.0))*pow(jacobi_local,2.0);
       }
       abs_r_s=Norm(r_s);
       for (int i=0; i<3; i++)
@@ -2675,6 +2736,8 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateIntermediateTriad(LINALG::TMatrix
   LINALG::TMatrix<FAD,3,3> triad_bar;
   triad_bar.Clear();
 
+  FAD abs_r_s = Norm(r_s);
+
   //triad from which the sr or vp mapping is made
   LINALG::TMatrix<FAD,3,1> tangent_ref;
   LINALG::TMatrix<FAD,3,1> normal_ref;
@@ -2703,8 +2766,6 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateIntermediateTriad(LINALG::TMatrix
 
   //tangent onto which the sr or vp mapping is made
   LINALG::TMatrix<FAD,3,1> tangent=r_s;
-  FAD abs_r_s=0.0;
-  abs_r_s=Norm(r_s);
 
   for (int i=0;i<3;i++)
   {
@@ -2751,12 +2812,12 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateIntermediateTriad(LINALG::TMatrix
 
   if (!isinit_)
   {
-    tau_bar_gp=-ScalarProduct(tangent_ref, kappa_vec)/(1+ScalarProduct(tangent_ref,tangent));
+    tau_bar_gp = -ScalarProduct(tangent_ref, kappa_vec)/(1+ScalarProduct(tangent_ref,tangent));
   }
   else
   {
     #if defined (NSRISR)
-      tau_bar_gp=-ScalarProduct(tangent_ref, kappa_vec)/(1+ScalarProduct(tangent_ref,tangent));
+      tau_bar_gp = -ScalarProduct(tangent_ref, kappa_vec)/(1+ScalarProduct(tangent_ref,tangent));
     #elif defined (SR1)
       tau_bar_gp=-ScalarProduct(db0ds, n0) -(ScalarProduct(tangent_ref, kappa_vec)-ScalarProduct(db0ds, tangent_ref)*ScalarProduct(n0, tangent)-ScalarProduct(n0, dt0ds)*ScalarProduct(b0, tangent))/(1+ScalarProduct(tangent_ref,tangent));
     #elif defined (VP)
@@ -3030,7 +3091,10 @@ std::vector<LINALG::TMatrix<FAD,3,1> > DRT::ELEMENTS::Beam3ebanisotrop::calculat
 /*-----------------------------------------------------------------------------------------------------------*
  |  Calculate tension at gauss point                                                              meier 05/13|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ebanisotrop::CalculateEpsilonCP(std::vector<FAD> disp_totlag, LINALG::TMatrix<FAD,3,1> r_s_midpoint, LINALG::TMatrix<FAD,3,1>& epsilonCP)
+void DRT::ELEMENTS::Beam3ebanisotrop::CalculateEpsilonCP( std::vector<FAD> disp_totlag,
+                                                          LINALG::TMatrix<FAD,3,1> r_s_midpoint,
+                                                          LINALG::TMatrix<FAD,3,1>& epsilonCP,
+                                                          LINALG::TMatrix<FAD,12+TWISTDOFS,3>& LINepsilonCP_T)
 {
 
       LINALG::TMatrix<FAD,2,1> nodal_epsilon;
@@ -3056,11 +3120,57 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateEpsilonCP(std::vector<FAD> disp_t
       epsilonCP(1)=midpoint_epsilon;
       epsilonCP(2)=nodal_epsilon(1);
 
+      for (int i=0;i<3;i++)
+      {
+        const double xi=-1.0+i*1.0;
+
+        LINALG::TMatrix<FAD,3,1> r0_xi;
+        r0_xi.Clear();
+
+        LINALG::TMatrix<FAD,3,1> t;
+        t.Clear();
+
+        LINALG::TMatrix<FAD,1,4> N_i_xi;
+        N_i_xi.Clear();
+
+        FAD jacobi_local=0.0;
+
+        LINALG::TMatrix<FAD,3,12+TWISTDOFS> N_s;
+        N_s.Clear();
+
+        DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
+
+        for (int n=0;n<3;n++)
+        {
+          r0_xi(n)+=Nodes()[0]->X()[n]*N_i_xi(0) + Nodes()[1]->X()[n]*N_i_xi(2) +Tref_[0](n)*N_i_xi(1) + Tref_[1](n)*N_i_xi(3);
+        }
+
+        jacobi_local=Norm(r0_xi);
+
+        AssembleShapefunctions(N_i_xi, jacobi_local, N_s);
+        for (int k=0;k<3;k++)
+        {
+          for (int l=0;l<12+TWISTDOFS;l++)
+          {
+            t(k)+=N_s(k,l)*disp_totlag[l];
+          }
+        }
+        t=ScaleVector(t,1/Norm(t));
+        for (int k=0;k<3;k++)
+        {
+          for (int l=0;l<12+TWISTDOFS;l++)
+          {
+            LINepsilonCP_T(l,i)+=N_s(k,l)*t(k);
+          }
+        }
+
+      }
+
   return;
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
- |  Calculate r_s at specific point xi                                                            meier 05/13|
+ |  Calculate r_s at specific point                                                               meier 05/13|
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ebanisotrop::Calculate_r_s(std::vector<FAD> disp_totlag, double xi, LINALG::TMatrix<FAD,3,1>& r_s_midpoint)
 {

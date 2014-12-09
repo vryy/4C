@@ -14,7 +14,7 @@ Maintainer: Christoph Meier
 also display initially curved beams. To be able to use this element correctly structural dynamic
 parameters need to be set to:
 
-  LOADLIN      Yes
+  LOADLIN       Yes
   MASSLIN      Yes (only necessary for dynamics)
 
 since due to this beam formulation external point loads are being linearized and have an effect on the stiffness matrix. For this reason a special
@@ -37,8 +37,8 @@ the material and a reference triad.
 #include "Epetra_Vector.h"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_node.H"
-#include "Sacado.hpp"
 
+#include "Sacado.hpp"
 typedef Sacado::Fad::DFad<double> FAD;
 
 //The default values of the following define flags have been used to create the corresponding test case beam3ebansiotrop_helix.dat
@@ -47,25 +47,35 @@ typedef Sacado::Fad::DFad<double> FAD;
 #define NSRISR  //Nodal Smallest Rotation Interpolation via Smallest Rotation
 //#define VP //Vector product Reference System
 //#define SR1 //Smallest Rotation Reference System
+//DEFAULT: NSRISR
 
-#define ANS //Apply Assumed Natural Strain approach for axial tension. DEFAULT: ON
+#define ANS_BEAM3EB_ANISOTROP 1 //Apply Assumed Natural Strain approach. 1=quadratic interpolation, 2=constant average value.
+//DEFAULT: ON
+//#define CONSISTENTANS //Decide wether the variational correct or the simplified ANS approach should be applied
+//DEFAULT: Off
 
 //#define ANSKAPPA 2 //Apply Assumed Natural Strain approach for curvature kappa. DEFAULT: OFF
 
-//#define MATERIALREF  //decide whether the old material or the old reference triad is used to define the new reference triad. DEFAULT: OUT
+//#define MATERIALREF  //decide whether the old material or the old reference triad is used to define the new reference triad.
+//DEFAULT: Off
 
-#define TWISTDOFS 4 //degrees of freedom per element related to twist angle; only the values 2,3,4 are valid. DEFAULT: 4
+#define TWISTDOFS 4 //degrees of freedom per element related to twist angle; only the values 2,3,4 are valid.
+// DEFAULT: 4
 
-//#define NODALALPHAT 2 //Needed for dynamics --> 1: alpha_t = 0; 2: old reference triad constant; 3: old reference triad non-constant. DEFAULT: OUT
+//#define NODALALPHAT 2 //Needed for dynamics --> 1: alpha_t = 0; 2: old reference triad constant; 3: old reference triad non-constant.
+//DEFAULT: OFF
 
-#define mygaussrule intrule_line_4point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented. DEFAULT: intrule_line_4point
+#define mygaussruleebanisotrop intrule_line_4point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented.
+//DEFAULT: intrule_line_3point
+
+//#define BEAM3EBANISOTROPORTHOPRESSURE 3.1415926535897938   //Apply orthopressure load. DEFAULT: off
+
+//#define OPTCURVE
+#define NUMELE 16
 
 #define ROTATIONTOL 1.0e-12 //Tolerance that ensures a rotation per load/time step, that is smaller than 180°: 1+t*t_old !< ROTATIONTOL. DEFAULT: 1.0e-12
 
 #define LENGTHCALCNEWTONTOL 10e-12 //Tolerance for iterative determination of element length. DEFAULT: 10e-12
-
-//#define BEAM3EBANISOTROPORTHOPRESSURE 3.1415926535897938   //Apply orthopressure load. DEFAULT: off
-
 
 #if !(defined NSRISR) and !(defined VP) and !(defined SR1)
   #error "Beam3ebanisotrop: No local triad defined!!!"
@@ -428,6 +438,8 @@ private:
   std::vector<double> tau0_;
   //! Length of the element
   double length_;
+  //! optimal Hermite constant, calculated via least square optimization
+  double copt_;
   //! Jacobi determinant of the element ds/dxi=abs(dr/dxi)=|r'0(xi)|
   std::vector<double> jacobi_;
   //! Variable holding a factor needed for the second derivative r'^T(xi)r''(xi)
@@ -457,12 +469,12 @@ private:
   //! @name Internal calculation methods
 
   //! Calculate stiffness matrix via FAD
-  void CalculateInternalForces( Teuchos::ParameterList& params,
-                                std::vector<double>&           vel,
-                                std::vector<double>&           disp,
-                                Epetra_SerialDenseMatrix* stiffmatrix,
-                                Epetra_SerialDenseVector* force,
-                                bool update);
+  void CalculateInternalForces(Teuchos::ParameterList& params,
+                               std::vector<double>& vel,
+                               std::vector<double>& disp,
+                               Epetra_SerialDenseMatrix* stiffmatrix,
+                               Epetra_SerialDenseVector* force,
+                               bool update);
 
   //! Calculate inertia forces
   void CalculateInertialForces(Teuchos::ParameterList& params,
@@ -507,7 +519,8 @@ private:
                              LINALG::TMatrix<FAD,3,6>& triads_mat_nodes,
                              std::vector<FAD>& theta_nodes,
                              bool refcalc,
-                             std::vector<LINALG::TMatrix<FAD,2,3> >& triads_ref_nodes);
+                             std::vector<LINALG::TMatrix<FAD,2,3> >& triads_ref_nodes,
+                             FAD& taubar0);
 
    //! Calculate the angular velocity of the reference system at the element nodes
    void DetermineWrefNodes(std::vector<FAD> disp_totlag,
@@ -638,7 +651,9 @@ private:
   //!Calculates tension at collocation points (CPs)
   void CalculateEpsilonCP( std::vector<FAD> disp_totlag,
                            LINALG::TMatrix<FAD,3,1> r_s_midpoint,
-                           LINALG::TMatrix<FAD,3,1>& epsilonCP);
+                           LINALG::TMatrix<FAD,3,1>& epsilonCP,
+                           LINALG::TMatrix<FAD,12+TWISTDOFS,3>& LINepsilonCP_T);
+
 
   //!Calculates derivative r' at certain point xi
   void Calculate_r_s( std::vector<FAD> disp_totlag,

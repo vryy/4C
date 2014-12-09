@@ -36,9 +36,9 @@ DRT::ParObject* DRT::ELEMENTS::Beam3ebanisotropType::Create( const std::vector<c
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebanisotropType::Create(const std::string eletype,
-															     const std::string eledistype,
-																 const int id,
-																 const int owner )
+                                                                       const std::string eledistype,
+                                                                       const int id,
+                                                                       const int owner )
 {
   if ( eletype=="BEAM3EBANISOTROP" )
   {
@@ -57,9 +57,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebanisotropType::Create( const in
 void DRT::ELEMENTS::Beam3ebanisotropType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
       dserror("method 'NodalBlockInformation' not implemented for element type beam3eb_anisotrop!");
-//	  numdf = 6 + TWISTDOFPN;
-//	  nv = 6 + TWISTDOFPN;
-//	  dimns = 4;
+//    numdf = 6 + TWISTDOFPN;
+//    nv = 6 + TWISTDOFPN;
+//    dimns = 4;
 }
 
 void DRT::ELEMENTS::Beam3ebanisotropType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
@@ -80,7 +80,7 @@ void DRT::ELEMENTS::Beam3ebanisotropType::SetupElementDefinition( std::map<std::
     .AddNamedDouble("MOMINPOL")
     .AddNamedDoubleVector("TANGENTS",6)
     .AddNamedDoubleVector("CURVATURE",6)
-    .AddNamedIntVector("DBC",2)
+    .AddNamedDouble("OPT")
     ;
 
   defs["LIN2"]
@@ -92,7 +92,7 @@ void DRT::ELEMENTS::Beam3ebanisotropType::SetupElementDefinition( std::map<std::
     .AddNamedDouble("MOMINPOL")
     .AddNamedDoubleVector("TANGENTS",6)
     .AddNamedDoubleVector("CURVATURE",6)
-    .AddNamedIntVector("DBC",2)
+    .AddNamedDouble("OPT")
     ;
 
   defs["LINE3"]
@@ -104,7 +104,7 @@ void DRT::ELEMENTS::Beam3ebanisotropType::SetupElementDefinition( std::map<std::
     .AddNamedDouble("MOMINPOL")
     .AddNamedDoubleVector("TANGENTS",6)
     .AddNamedDoubleVector("CURVATURE",6)
-    .AddNamedIntVector("DBC",2)
+    .AddNamedDouble("OPT")
     ;
 
   defs["LIN3"]
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::Beam3ebanisotropType::SetupElementDefinition( std::map<std::
     .AddNamedDouble("MOMINPOL")
     .AddNamedDoubleVector("TANGENTS",6)
     .AddNamedDoubleVector("CURVATURE",6)
-    .AddNamedIntVector("DBC",2)
+    .AddNamedDouble("OPT")
     ;
 
   defs["LINE4"]
@@ -128,7 +128,7 @@ void DRT::ELEMENTS::Beam3ebanisotropType::SetupElementDefinition( std::map<std::
       .AddNamedDouble("MOMINPOL")
       .AddNamedDoubleVector("TANGENTS",6)
       .AddNamedDoubleVector("CURVATURE",6)
-      .AddNamedIntVector("DBC",2)
+      .AddNamedDouble("OPT")
       ;
 
     defs["LIN4"]
@@ -140,7 +140,7 @@ void DRT::ELEMENTS::Beam3ebanisotropType::SetupElementDefinition( std::map<std::
       .AddNamedDouble("MOMINPOL")
       .AddNamedDoubleVector("TANGENTS",6)
       .AddNamedDoubleVector("CURVATURE",6)
-      .AddNamedIntVector("DBC",2)
+      .AddNamedDouble("OPT")
       ;
 
 }
@@ -205,6 +205,7 @@ DRT::ELEMENTS::Beam3ebanisotrop::Beam3ebanisotrop(const DRT::ELEMENTS::Beam3eban
  kappa0g30_(old.kappa0g30_),
  tau0_(old.tau0_),
  length_(old.length_),
+ copt_(old.copt_),
  jacobi_(old.jacobi_),
  jacobi2_(old.jacobi2_),
  jacobi3_(old.jacobi3_),
@@ -294,6 +295,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,jacobi2_);
   AddtoPack(data,jacobi3_);
   AddtoPack(data,length_);
+  AddtoPack(data,copt_);
   AddtoPack(data,kappa0_);
   AddtoPack(data,tau0_);
   AddtoPack<3,1>(data,t0_);
@@ -354,6 +356,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,jacobi2_);
   ExtractfromPack(position,data,jacobi3_);
   ExtractfromPack(position,data,length_);
+  ExtractfromPack(position,data,copt_);
   ExtractfromPack(position,data,kappa0_);
   ExtractfromPack(position,data,tau0_);
   ExtractfromPack<3,1>(position,data,t0_);
@@ -436,14 +439,14 @@ void DRT::ELEMENTS::Beam3ebanisotrop::SetUpReferenceGeometry(const std::vector<L
   if(!isinit_ || secondinit)
   {
 
-	  std::cout << "SetUpReferenceGeometry!!!" << std::endl;
+    std::cout << "SetUpReferenceGeometry!!!" << std::endl;
 
 
 
-	  //Get integration points for exact integration
-	  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+    //Get integration points for exact integration
+    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebanisotrop);
 
-	  //Resize vectors
+    //Resize vectors
     t0_.resize(gausspoints.nquad);
     n0_.resize(gausspoints.nquad);
     b0_.resize(gausspoints.nquad);
@@ -455,50 +458,50 @@ void DRT::ELEMENTS::Beam3ebanisotrop::SetUpReferenceGeometry(const std::vector<L
     dt0ds_nodes_.resize(2);
     db0ds_nodes_.resize(2);
 
-	  kappa0_.resize(gausspoints.nquad);
-	  kappa0g20_.resize(gausspoints.nquad);
-	  kappa0g30_.resize(gausspoints.nquad);
-	  tau0_.resize(gausspoints.nquad);
-	  jacobi_.resize(gausspoints.nquad);
-	  jacobi2_.resize(gausspoints.nquad);
-	  jacobi3_.resize(gausspoints.nquad);
+    kappa0_.resize(gausspoints.nquad);
+    kappa0g20_.resize(gausspoints.nquad);
+    kappa0g30_.resize(gausspoints.nquad);
+    tau0_.resize(gausspoints.nquad);
+    jacobi_.resize(gausspoints.nquad);
+    jacobi2_.resize(gausspoints.nquad);
+    jacobi3_.resize(gausspoints.nquad);
 
-	  //calculate the length of the element via Newton iteration
-	  calculate_length(xrefe, LENGTHCALCNEWTONTOL);
+    //calculate the length of the element via Newton iteration
+    calculate_length(xrefe, LENGTHCALCNEWTONTOL);
 
-	  //Matrices to store the function values of the shape functions
-	  LINALG::Matrix<1,vnode*nnode> shapefuncderiv;
-	  LINALG::Matrix<1,vnode*nnode> shapefuncderiv2;
-	  LINALG::Matrix<1,vnode*nnode> shapefuncderiv3;
+    //Matrices to store the function values of the shape functions
+    LINALG::Matrix<1,vnode*nnode> shapefuncderiv;
+    LINALG::Matrix<1,vnode*nnode> shapefuncderiv2;
+    LINALG::Matrix<1,vnode*nnode> shapefuncderiv3;
 
-	  //Matrices to store r, r' and r'' at gp, where (...)'=d/ds
-	  LINALG::Matrix<3,1> r_s;
-	  LINALG::Matrix<3,1> r_ss;
-	  LINALG::Matrix<3,1> r_sss;
+    //Matrices to store r, r' and r'' at gp, where (...)'=d/ds
+    LINALG::Matrix<3,1> r_s;
+    LINALG::Matrix<3,1> r_ss;
+    LINALG::Matrix<3,1> r_sss;
 
-	  //Matrices to store dr/dxi, d2r/dxi2 and d3r/dxi3
-	  LINALG::Matrix<3,1> r_xi;
-	  LINALG::Matrix<3,1> r_xixi;
-	  LINALG::Matrix<3,1> r_xixixi;
+    //Matrices to store dr/dxi, d2r/dxi2 and d3r/dxi3
+    LINALG::Matrix<3,1> r_xi;
+    LINALG::Matrix<3,1> r_xixi;
+    LINALG::Matrix<3,1> r_xixixi;
 
-	  //Frenet-Serret curvature vector
+    //Frenet-Serret curvature vector
     LINALG::Matrix<3,1> kappa_vec;
 
-	  //Calculate nodal reference triad and derivative
-	  for (int node=0;node<2;node++)
-	  {
-	    LINALG::TMatrix<FAD,3,3> Stangent;
-	    LINALG::TMatrix<FAD,3,1> tangent;
-	    Stangent.Clear();
-	    tangent.Clear();
-	    for (int i=0;i<3;i++)
-	    {
-	      tangent(i)=Tref_[node](i);
-	    }
-	    LARGEROTATIONS::computespin<FAD>(Stangent,tangent);
-	    //Extract material triads at elements nodes
-	    for (int i=0;i<3;i++)
-	    {
+    //Calculate nodal reference triad and derivative
+    for (int node=0;node<2;node++)
+    {
+      LINALG::TMatrix<FAD,3,3> Stangent;
+      LINALG::TMatrix<FAD,3,1> tangent;
+      Stangent.Clear();
+      tangent.Clear();
+      for (int i=0;i<3;i++)
+      {
+        tangent(i)=Tref_[node](i);
+      }
+      LARGEROTATIONS::computespin<FAD>(Stangent,tangent);
+      //Extract material triads at elements nodes
+      for (int i=0;i<3;i++)
+      {
         dt0ds_nodes_[node](i)=0.0;
         db0ds_nodes_[node](i)=0.0;
         t0_nodes_[node](i)=Tref_[node](i);
@@ -508,15 +511,15 @@ void DRT::ELEMENTS::Beam3ebanisotrop::SetUpReferenceGeometry(const std::vector<L
         {
           b0_nodes_[node](i)+=Stangent(i,j).val()*G2ref_[node](j);
         }
-	    }
-	  }
+      }
+    }
 
-	  //Quantities which are needed for NSRISR calculation
-	  //attention: The NSRISR interpolation is applied in order to create a C0-continuous initial triad field also when the
-	  //pure SR or VP formulation is used.
+    //Quantities which are needed for NSRISR calculation
+    //attention: The NSRISR interpolation is applied in order to create a C0-continuous initial triad field also when the
+    //pure SR or VP formulation is used.
 
-	  //difference angle between triad_ref and triad_bar at the element nodes (For the currently implemented NSRISR formulation,
-	  //the angle theta_nodes[0] is not needed, but it will for example be needed for the NSRIFS method)
+    //difference angle between triad_ref and triad_bar at the element nodes (For the currently implemented NSRISR formulation,
+    //the angle theta_nodes[0] is not needed, but it will for example be needed for the NSRIFS method)
     std::vector<FAD> theta_nodes(2,0.0);
     //material triads at the nodes
     LINALG::TMatrix<FAD,3,6> triads_mat_nodes;
@@ -536,58 +539,61 @@ void DRT::ELEMENTS::Beam3ebanisotrop::SetUpReferenceGeometry(const std::vector<L
     triads_ref_nodes[0].Clear();
     triads_ref_nodes[1].Clear();
 
+    FAD taubar0;
+    taubar0=0.0;
+
     //Calculate the nodal reference triads as well as the difference angle between the reference triad triad_ref_nodes[1]
     // and the intermediate triad (normal_bar, binormal_bar) at the right element node
-    DetermineNodalTriads(disp_totlag, triads_mat_nodes, theta_nodes,true, triads_ref_nodes);
+    DetermineNodalTriads(disp_totlag, triads_mat_nodes, theta_nodes,true, triads_ref_nodes,taubar0);
 
     //Set initial values for the difference angles
     theta_nodes_old_[0]=theta_nodes[0].val();
     theta_nodes_old_[1]=theta_nodes[1].val();
     sr_theta_nodes_old_=theta_nodes[1].val();
 
-	  //Loop through all GPs and computation of all relevant values at each gp
-	  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-	  {
-			//Get position xi of GP
-			const double xi = gausspoints.qxg[numgp][0];
+    //Loop through all GPs and computation of all relevant values at each gp
+    for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+    {
+      //Get position xi of GP
+      const double xi = gausspoints.qxg[numgp][0];
 
       //Get derivatives of the shape functions
       DRT::UTILS::shape_function_hermite_1D_deriv1(shapefuncderiv,xi,length_,line2);
       DRT::UTILS::shape_function_hermite_1D_deriv2(shapefuncderiv2,xi,length_,line2);
       DRT::UTILS::shape_function_hermite_1D_deriv3(shapefuncderiv3,xi,length_,line2);
 
-			//current value of derivatives at GP (derivatives in xi!)
-			r_xi.Clear();
-			r_xixi.Clear();
-			r_xixixi.Clear();
-			kappa_vec.Clear();
+      //current value of derivatives at GP (derivatives in xi!)
+      r_xi.Clear();
+      r_xixi.Clear();
+      r_xixixi.Clear();
+      kappa_vec.Clear();
       triad_mat_gp.Clear();
       tau_gp = 0.0;
       triad_bar_gp.Clear();
       tau_bar_gp = 0.0;
 
-			for (int i=0; i<3; i++)
-			{
+      for (int i=0; i<3; i++)
+      {
         r_xi(i)+=xrefe[0](i)*shapefuncderiv(0)+xrefe[1](i)*shapefuncderiv(2)+Tref_[0](i)*shapefuncderiv(1)+Tref_[1](i)*shapefuncderiv(3);
         r_xixi(i)+=xrefe[0](i)*shapefuncderiv2(0)+xrefe[1](i)*shapefuncderiv2(2)+Tref_[0](i)*shapefuncderiv2(1)+Tref_[1](i)*shapefuncderiv2(3);
         r_xixixi(i)+=xrefe[0](i)*shapefuncderiv3(0)+xrefe[1](i)*shapefuncderiv3(2)+Tref_[0](i)*shapefuncderiv3(1)+Tref_[1](i)*shapefuncderiv3(3);
-			}
+      }
 
-			//calculate jacobi jacobi_=|r'_0| jacobi2_=(r'_0)^T(r''_0) jacobi3_=(r''_0)^T(r''_0)+(r'_0)^T(r'''_0)
-			std::vector<double> jacobi(3);
-			jacobi=calculate_jacobi(r_xi,r_xixi,r_xixixi);
-			jacobi_[numgp]=jacobi[0];
-			jacobi2_[numgp]=jacobi[1];
-			jacobi3_[numgp]=jacobi[2];
+      //calculate jacobi jacobi_=|r'_0| jacobi2_=(r'_0)^T(r''_0) jacobi3_=(r''_0)^T(r''_0)+(r'_0)^T(r'''_0)
+      std::vector<double> jacobi(3);
+      jacobi=calculate_jacobi(r_xi,r_xixi,r_xixixi);
+      jacobi_[numgp]=jacobi[0];
+      jacobi2_[numgp]=jacobi[1];
+      jacobi3_[numgp]=jacobi[2];
 
-			//calculate derivatives in s
-			r_s=r_xi;
-			r_s.Scale(1/jacobi_[numgp]);
-			for (int i=0; i<3; i++)
-			{
-				r_ss(i)=r_xixi(i)/pow(jacobi_[numgp],2.0)-r_xi(i)*jacobi2_[numgp]/pow(jacobi_[numgp],4.0);
-				r_sss(i)=r_xixixi(i)/pow(jacobi_[numgp],3.0)-3.0*r_xixi(i)*jacobi2_[numgp]/pow(jacobi_[numgp],5.0)-r_xi(i)*jacobi3_[numgp]/pow(jacobi_[numgp],5)+4.0*r_xi(i)*pow(jacobi2_[numgp],2)/pow(jacobi_[numgp],7.0);
-			}
+      //calculate derivatives in s
+      r_s=r_xi;
+      r_s.Scale(1/jacobi_[numgp]);
+      for (int i=0; i<3; i++)
+      {
+        r_ss(i)=r_xixi(i)/pow(jacobi_[numgp],2.0)-r_xi(i)*jacobi2_[numgp]/pow(jacobi_[numgp],4.0);
+        r_sss(i)=r_xixixi(i)/pow(jacobi_[numgp],3.0)-3.0*r_xixi(i)*jacobi2_[numgp]/pow(jacobi_[numgp],5.0)-r_xi(i)*jacobi3_[numgp]/pow(jacobi_[numgp],5)+4.0*r_xi(i)*pow(jacobi2_[numgp],2)/pow(jacobi_[numgp],7.0);
+      }
 
       LINALG::TMatrix<FAD,3,1> r_s_FAD;
       LINALG::TMatrix<FAD,3,1> r_ss_FAD;
@@ -597,23 +603,30 @@ void DRT::ELEMENTS::Beam3ebanisotrop::SetUpReferenceGeometry(const std::vector<L
         r_ss_FAD(i)=r_ss(i);
       }
 
+      FAD abs_r_s = Norm(r_s_FAD);
+
       //calculate Frenet-Serret triad: triad[0]=tangent triad[1]=normal_fs triad[2]=binormal_fs
-			//attention: the vectors normal and binormal are set to zero for almost straight (|r'xr''|<1.0e-12) beams
+      //attention: the vectors normal and binormal are set to zero for almost straight (|r'xr''|<1.0e-12) beams
       std::vector<LINALG::TMatrix<FAD,3,1> > triad_fs(3);
       triad_fs=calculate_fs_triad(r_s_FAD, r_ss_FAD);
 
-			//calculate initial curvature
-			kappa_vec=calculate_curvature(r_s, r_ss);
-			kappa0_[numgp]=kappa_vec.Norm2();
+      //calculate initial curvature
+      kappa_vec=calculate_curvature(r_s, r_ss);
+      kappa0_[numgp]=kappa_vec.Norm2();
 
-			//Calculate the intermediate triad triad_bar_gp and the corresponding torsion tau_bar_gp at the gauss points
-			CalculateIntermediateTriad(r_s_FAD, r_ss_FAD, numgp, triads_ref_nodes, triad_bar_gp, tau_bar_gp);
+      //Calculate the intermediate triad triad_bar_gp and the corresponding torsion tau_bar_gp at the gauss points
+      CalculateIntermediateTriad(r_s_FAD, r_ss_FAD, numgp, triads_ref_nodes, triad_bar_gp, tau_bar_gp);
 
-			//calculate the material triad triad_mat_gp at current gp and the mechanical torsion tau_gp out of the reference system
-			//attention: for the initial configuration the angle gamma_0 is set to zero!
-		  CalculateMaterialTriad(xi, numgp, theta_nodes,triad_bar_gp, tau_bar_gp, 0.0, triad_mat_gp,tau_gp);
 
-		  //Set initial values of the class variables describing the initial geometry and the initial reference systems
+//      std::cout << "tau_bar_gp: " << tau_bar_gp.val() << std::endl;
+//      tau_bar_gp=(taubar0*(xi+1)*(xi+1)/2.0);
+//      std::cout << "tau_bar_gp: " << tau_bar_gp.val() << std::endl;
+
+      //calculate the material triad triad_mat_gp at current gp and the mechanical torsion tau_gp out of the reference system
+      //attention: for the initial configuration the angle gamma_0 is set to zero!
+      CalculateMaterialTriad(xi, numgp, theta_nodes,triad_bar_gp, tau_bar_gp, 0.0, triad_mat_gp,tau_gp);
+
+      //Set initial values of the class variables describing the initial geometry and the initial reference systems
       tau0_[numgp] = tau_gp.val();
       kappa0g20_[numgp]=0.0;
       kappa0g30_[numgp]=0.0;
@@ -632,9 +645,9 @@ void DRT::ELEMENTS::Beam3ebanisotrop::SetUpReferenceGeometry(const std::vector<L
         db0ds_[numgp](i)=kappa0g20_[numgp]*t0_[numgp](i) - tau0_[numgp]*triad_mat_gp(0,i).val();
       }
 
-	  }//End: Loop through all GPs and computation of all relevant values at each gp
+    }//End: Loop through all GPs and computation of all relevant values at each gp
 
-	  isinit_ = true;
+    isinit_ = true;
   }//if(!isinit_)
 
 
@@ -644,97 +657,98 @@ void DRT::ELEMENTS::Beam3ebanisotrop::SetUpReferenceGeometry(const std::vector<L
 //f(l)=l-int(|N'd|)dxi=0
 void DRT::ELEMENTS::Beam3ebanisotrop::calculate_length(const std::vector<LINALG::Matrix<3,1> >& xrefe, double tolerance)
 {
-	const int nnode = 2; //number of nodes
-	const int vnode = 2; //interpolated values per node (2: value + derivative of value)
+  const int nnode = 2; //number of nodes
+  const int vnode = 2; //interpolated values per node (2: value + derivative of value)
 
-	//Newton Iteration - Tolerance and residual
-	double res=1.0;
+  //Newton Iteration - Tolerance and residual
+  double res=1.0;
 
-	//Integral-value for Gauss Integration
-	double int_length=0.0;
-	//Derivative value of the length integral for Newton Iteration (=weighted sum over deriv_int, gauss quadrature of: int(d/dl(|N'd|))dxi)
-	double deriv_length=0.0;
-	//value needed to store the derivative of the integral at the GP: d/dl(|N'd|)
-	double deriv_int=0.0;
+  //Integral-value for Gauss Integration
+  double int_length=0.0;
+  //Derivative value of the length integral for Newton Iteration (=weighted sum over deriv_int, gauss quadrature of: int(d/dl(|N'd|))dxi)
+  double deriv_length=0.0;
+  //value needed to store the derivative of the integral at the GP: d/dl(|N'd|)
+  double deriv_int=0.0;
 
-	//inital value for iteration
-	{
-		LINALG::Matrix<3,1> tempvec;
-		tempvec.Clear();
-		for(int i=0; i<3; i++)
-		{
-			tempvec(i)=xrefe[1](i)-xrefe[0](i);
-		}
-		length_=tempvec.Norm2();
-	}
+  //inital value for iteration
+  {
+    LINALG::Matrix<3,1> tempvec;
+    tempvec.Clear();
+    for(int i=0; i<3; i++)
+    {
+      tempvec(i)=xrefe[1](i)-xrefe[0](i);
+    }
+    length_=tempvec.Norm2();
+  }
 
-	//Get integration points for exact integration
-	DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrule);
+  //Get integration points for exact integration
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebanisotrop);
 
-	//Matrices to store the function values of the shape functions
-	LINALG::Matrix<1,nnode*vnode> shapefuncderiv;
+  //Matrices to store the function values of the shape functions
+  LINALG::Matrix<1,nnode*vnode> shapefuncderiv;
 
-	shapefuncderiv.Clear();
+  shapefuncderiv.Clear();
 
-	//current value of the derivative at the GP
-	LINALG::Matrix<3,1> r_xi;
+  //current value of the derivative at the GP
+  LINALG::Matrix<3,1> r_xi;
 
-	while(res>tolerance)
-	{
-		int_length=0;
-		deriv_length=0;
-		//Loop through all GPs and computation of the length and the derivative of the length
-		for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-		{
-			deriv_int=0;
-			//Get position xi of GP
-			const double xi = gausspoints.qxg[numgp][0];
+  while(res>tolerance)
+  {
+    int_length=0;
+    deriv_length=0;
+    //Loop through all GPs and computation of the length and the derivative of the length
+    for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+    {
+      deriv_int=0;
+      //Get position xi of GP
+      const double xi = gausspoints.qxg[numgp][0];
 
-			//Get derivatives of the shape functions
-				DRT::UTILS::shape_function_hermite_1D_deriv1(shapefuncderiv,xi,length_,line2);
+      //Get derivatives of the shape functions
+        DRT::UTILS::shape_function_hermite_1D_deriv1(shapefuncderiv,xi,length_,line2);
 
-			//integral of the length
-			r_xi.Clear();
-			deriv_int=0;
-			for (int i=0; i<3; i++)
-			{
-					r_xi(i)+=xrefe[0](i)*shapefuncderiv(0)+xrefe[1](i)*shapefuncderiv(2)+Tref_[0](i)*shapefuncderiv(1)+Tref_[1](i)*shapefuncderiv(3);
-			}
-			int_length+=gausspoints.qwgt[numgp]*r_xi.Norm2();
+      //integral of the length
+      r_xi.Clear();
+      deriv_int=0;
+      for (int i=0; i<3; i++)
+      {
+          r_xi(i)+=xrefe[0](i)*shapefuncderiv(0)+xrefe[1](i)*shapefuncderiv(2)+Tref_[0](i)*shapefuncderiv(1)+Tref_[1](i)*shapefuncderiv(3);
+      }
+      int_length+=gausspoints.qwgt[numgp]*r_xi.Norm2();
 
-			//derivative of the integral of the length at GP
-			for (int i=0; i<3; i++)
-			{
-					deriv_int+=(Tref_[0](i)*shapefuncderiv(1)/length_+Tref_[1](i)*shapefuncderiv(3)/length_)*r_xi(i);
-			}
-			deriv_length+=gausspoints.qwgt[numgp]*deriv_int/r_xi.Norm2();
-		}
-		//cout << endl << "Länge:" << length_ << "\tIntegral:" << int_length << "\tAbleitung:" << deriv_length << endl;
-		res=length_-int_length;
-		length_=length_-res/(1-deriv_length); //the derivative of f(l)=l-int(|N'd|)dxi=0 is f'(l)=1-int(d/dl(|N'd|))dxi
-	}
-	return;
+      //derivative of the integral of the length at GP
+      for (int i=0; i<3; i++)
+      {
+          deriv_int+=(Tref_[0](i)*shapefuncderiv(1)/length_+Tref_[1](i)*shapefuncderiv(3)/length_)*r_xi(i);
+      }
+      deriv_length+=gausspoints.qwgt[numgp]*deriv_int/r_xi.Norm2();
+    }
+    //cout << endl << "Länge:" << length_ << "\tIntegral:" << int_length << "\tAbleitung:" << deriv_length << endl;
+    res=length_-int_length;
+    length_=length_-res/(1-deriv_length); //the derivative of f(l)=l-int(|N'd|)dxi=0 is f'(l)=1-int(d/dl(|N'd|))dxi
+  }
+  //length_=copt_;
+  return;
 }
 
 LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3ebanisotrop::calculate_curvature(const LINALG::Matrix<3,1>& r_s, const LINALG::Matrix<3,1>& r_ss)
 {
   LINALG::Matrix<3,1> curvature;
 
-	//spinmatrix Sr' = r'x
-	LINALG::Matrix<3,3> Srx;
-	LARGEROTATIONS::computespin(Srx,r_s);
+  //spinmatrix Sr' = r'x
+  LINALG::Matrix<3,3> Srx;
+  LARGEROTATIONS::computespin(Srx,r_s);
 
-	//cross-product r'xr''
-	LINALG::Matrix<3,1> Srxrxx;
-	Srxrxx.Clear();
-	Srxrxx.Multiply(Srx,r_ss);
+  //cross-product r'xr''
+  LINALG::Matrix<3,1> Srxrxx;
+  Srxrxx.Clear();
+  Srxrxx.Multiply(Srx,r_ss);
 
-	for (int i=0;i<3;i++)
-	{
-	  curvature(i)=Srxrxx(i)/pow(r_s.Norm2(),2);
-	}
+  for (int i=0;i<3;i++)
+  {
+    curvature(i)=Srxrxx(i)/pow(r_s.Norm2(),2);
+  }
 
-	return curvature;
+  return curvature;
 }
 
 LINALG::TMatrix<FAD,3,1> DRT::ELEMENTS::Beam3ebanisotrop::calculate_curvature(LINALG::TMatrix<FAD,3,1>& r_s, LINALG::TMatrix<FAD,3,1>& r_ss)
@@ -746,10 +760,10 @@ LINALG::TMatrix<FAD,3,1> DRT::ELEMENTS::Beam3ebanisotrop::calculate_curvature(LI
   LARGEROTATIONS::computespin(Srx,r_s);
 
   //cross-product r'xr''
-  LINALG::TMatrix<FAD,3,1> Srxrxx;
+  LINALG::TMatrix<FAD,3,1> Srxrxx(true);
   Srxrxx.Clear();
   Srxrxx.Multiply(Srx,r_ss);
-  FAD abs_r_s=Norm(r_s);
+  FAD abs_r_s = Norm(r_s);
 
   for (int i=0;i<3;i++)
   {
@@ -761,59 +775,59 @@ LINALG::TMatrix<FAD,3,1> DRT::ELEMENTS::Beam3ebanisotrop::calculate_curvature(LI
 
 double DRT::ELEMENTS::Beam3ebanisotrop::calculate_fstorsion(const LINALG::Matrix<3,1>& r_s, const LINALG::Matrix<3,1>& r_ss, const LINALG::Matrix<3,1>& r_sss, bool straight)
 {
-	double torsion;
+  double torsion;
 
-	if(straight==true)
-		torsion=0;
-	else
-	{
-		LINALG::Matrix<3,3> rxrxxrxxx;
-		for (int i=0; i<3; i++)
-		{
-			rxrxxrxxx(i,0)=r_s(i);
-			rxrxxrxxx(i,1)=r_ss(i);
-			rxrxxrxxx(i,2)=r_sss(i);
-		}
+  if(straight==true)
+    torsion=0;
+  else
+  {
+    LINALG::Matrix<3,3> rxrxxrxxx;
+    for (int i=0; i<3; i++)
+    {
+      rxrxxrxxx(i,0)=r_s(i);
+      rxrxxrxxx(i,1)=r_ss(i);
+      rxrxxrxxx(i,2)=r_sss(i);
+    }
 
-		//spinmatrix Sr' = r'x
-		LINALG::Matrix<3,3> Srx;
-		LARGEROTATIONS::computespin(Srx,r_s);
+    //spinmatrix Sr' = r'x
+    LINALG::Matrix<3,3> Srx;
+    LARGEROTATIONS::computespin(Srx,r_s);
 
-		//cross-product r'xr''
-		LINALG::Matrix<3,1> Srxrxx;
-		Srxrxx.Clear();
-		Srxrxx.Multiply(Srx,r_ss);
+    //cross-product r'xr''
+    LINALG::Matrix<3,1> Srxrxx;
+    Srxrxx.Clear();
+    Srxrxx.Multiply(Srx,r_ss);
 
-		torsion=rxrxxrxxx.Determinant()/Srxrxx.Norm2();
-	}
+    torsion=rxrxxrxxx.Determinant()/Srxrxx.Norm2();
+  }
 
-	return torsion;
+  return torsion;
 }
 std::vector<double> DRT::ELEMENTS::Beam3ebanisotrop::calculate_jacobi(const LINALG::Matrix<3,1>& r_xi, const LINALG::Matrix<3,1>& r_xixi, const LINALG::Matrix<3,1>& r_xixixi)
 {
-	std::vector<double> jacobi_(3);
-	double scalar1=0.0;
-	double scalar2=0.0;
+  std::vector<double> jacobi_(3);
+  double scalar1=0.0;
+  double scalar2=0.0;
 
-	//|r'(xi)|
-	jacobi_[0]=r_xi.Norm2();
+  //|r'(xi)|
+  jacobi_[0]=r_xi.Norm2();
 
-	//r'^T(xi)r''(xi)
-	jacobi_[1]=0;
-	for (int i=0; i<3; i++)
-	{
-		jacobi_[1]+=r_xi(i)*r_xixi(i);
-	}
+  //r'^T(xi)r''(xi)
+  jacobi_[1]=0;
+  for (int i=0; i<3; i++)
+  {
+    jacobi_[1]+=r_xi(i)*r_xixi(i);
+  }
 
-	//r''^T(xi)r''^T(xi)+r'^T(xi)r'''^T(xi)
-	jacobi_[2]=0;
-	for (int i=0; i<3; i++)
-	{
-		scalar1+=r_xixi(i)*r_xixi(i);
-		scalar2+=r_xi(i)*r_xixixi(i);
-	}
-	jacobi_[2]=scalar1+scalar2;
-	return jacobi_;
+  //r''^T(xi)r''^T(xi)+r'^T(xi)r'''^T(xi)
+  jacobi_[2]=0;
+  for (int i=0; i<3; i++)
+  {
+    scalar1+=r_xixi(i)*r_xixi(i);
+    scalar2+=r_xi(i)*r_xixixi(i);
+  }
+  jacobi_[2]=scalar1+scalar2;
+  return jacobi_;
 }
 
 /*----------------------------------------------------------------------*

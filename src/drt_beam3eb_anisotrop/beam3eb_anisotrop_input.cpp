@@ -23,8 +23,7 @@ bool DRT::ELEMENTS::Beam3ebanisotrop::ReadElement(const std::string& eletype,
                                        const std::string& distype,
                                        DRT::INPUT::LineDefinition* linedef)
 {
-
-	// read number of material model
+  // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
@@ -44,12 +43,12 @@ bool DRT::ELEMENTS::Beam3ebanisotrop::ReadElement(const std::string& eletype,
   Tref_.resize(2);
   for(int i=0; i<2; i++)
   {
-	  for(int j=0; j<3; j++)
-		  Tref_[i](j)=tangents[3*i+j];
+    for(int j=0; j<3; j++)
+      Tref_[i](j)=tangents[3*i+j];
 
-	  //make sure that Tref_ is a unit vector, otherwise later calculations would be wrong (those who make use of the fact that the nodal values at the
-	  //boundaries can be directly taken from the displacement vector
-	  Tref_[i].Scale(1/Tref_[i].Norm2());
+    //make sure that Tref_ is a unit vector, otherwise later calculations would be wrong (those who make use of the fact that the nodal values at the
+    //boundaries can be directly taken from the displacement vector
+    Tref_[i].Scale(1/Tref_[i].Norm2());
   }
   //Extract the curvature of the nodes of the element (NOTE: this is always done, even if it is not necessary for SR and CP system, as the mesh generation
   //is done without regard to the triad used - this choice was made as one only needs to generate a mesh once for all three triads
@@ -63,5 +62,6 @@ bool DRT::ELEMENTS::Beam3ebanisotrop::ReadElement(const std::string& eletype,
 
     G2ref_[i].Scale(1/G2ref_[i].Norm2());
   }
+  linedef->ExtractDouble("OPT",copt_);
   return true;
 }

@@ -984,10 +984,9 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
    //dimensions of freedom per node
   const int dofpn = 3*NODALDOFS;
 
+  #ifdef ORTHOPRESSURE
   const double time = params.get("total time",-1.0);
   double orthopressureload = 0.0;
-
-  #ifdef ORTHOPRESSURE
     if(time > 1.0)
       orthopressureload = ORTHOPRESSURE * (time-1.0)/0.1;
     if(time > 1.1)
