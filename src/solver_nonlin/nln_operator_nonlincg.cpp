@@ -213,8 +213,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner(
 
   dsassert(f.Map().PointSameAs(x.Map()), "Maps do not match");
 
-//  return nlnprec_->ApplyInverse(f, x);
-  return x.Update(1.0, f, 0.0);
+  return nlnprec_->ApplyInverse(f, x);
 }
 
 /*----------------------------------------------------------------------------*/
