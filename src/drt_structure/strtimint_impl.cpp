@@ -2493,14 +2493,14 @@ int STR::TimIntImpl::NlnSolver()
       params->sublist("Nonlinear Operator"), nlnproblem);
   nlnoperator->Setup();
 
-  // solve
-  const int nlnsolve_error =
-      nlnoperator->ApplyInverse(*fres_, noxSoln.getEpetraVector());
-
   // ---------------------------------------------------------------------------
+  // Apply the nonlinear operator
+  // ---------------------------------------------------------------------------
+  /* use local copy of #fres_ for ApplyInverse() to not mess with the member
+   * variable #fres_ in the Evaluate call */
+  Teuchos::RCP<Epetra_Vector> fres = Teuchos::rcp(new Epetra_Vector(*fres_));
 
-  // return error code
-  return nlnsolve_error;
+  return nlnoperator->ApplyInverse(*fres, noxSoln.getEpetraVector());
 }
 
 /*----------------------------------------------------------------------*/
