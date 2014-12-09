@@ -58,6 +58,9 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
     org_geom_(Teuchos::null),
     initial_wall_thickness_(-1.0),
     use_mean_field_from_cond_(false),
+    start_rand_geo_above_bif_(false),
+    z_pos_start_rf_(-10e12),
+    transition_width_(0.0),
     my_uncertain_nodes_normals_()
 {
   if (not discret_->Filled() || not discret_->HaveDofs())
@@ -80,6 +83,12 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
   initial_wall_thickness_ = mlmcp.get<double>("INITIALTHICKNESS");
   use_mean_field_from_cond_ = DRT::INPUT::IntegralValue<int>(mlmcp,
      "MEAN_GEO_FROM_ALE_POINTDBC");
+
+  start_rand_geo_above_bif_ = DRT::INPUT::IntegralValue<int>(mlmcp,
+     "START_RF_ABOVE_BIFURCATION");
+
+  z_pos_start_rf_ = mlmcp.get<double>("Z_POS_AAA_START_RF_");
+  transition_width_ = mlmcp.get<double>("TRANSITION_WIDTH");
 
 
   // create empty discretization and add it to the problem
@@ -493,11 +502,31 @@ void UQ::MCVarThicknessManager::ComputeNewAleDBCFromRF()
     {
       rf_thick = randomfield_->EvalFieldAtLocation(nodepos, 1.0, false, false);
     }
+    double delta_t;
 
-    double delta_t = rf_thick - initial_wall_thickness_;
+    //
+    if(start_rand_geo_above_bif_)
+    {
+      double z_rel= nodepos[2]-(z_pos_start_rf_);
+      if(z_rel > transition_width_)
+      {
+        delta_t= rf_thick - initial_wall_thickness_;
+      }
+      else if (z_rel > 0.0 && z_rel< transition_width_)
+      {
+        delta_t=(rf_thick - initial_wall_thickness_)*z_rel/transition_width_;
+      }
+      else // (z_rel< 0.0):
+      {
+        delta_t=0;
+      }
+    }
+    else
+    {
+      delta_t = rf_thick - initial_wall_thickness_;
+    }
 
     std::vector<double> temp_delta_t(3, 0.0);
-    //temp_delta_t[0] = delta_t;
     // use normals instead
     // note that my_uncertain_nodes_normals_ were computed on structural dis
     // hence it is assumed that node IDs of both discretizations are matching
@@ -529,14 +558,14 @@ void UQ::MCVarThicknessManager::ModifyGeometryBasedOnRF(const unsigned int mysee
   Teuchos::ParameterList ale_new_p(alep);
 
   ale_new_p.set("RESTARTEVRY", 0);
-  ale_new_p.set("RESULTSEVRY", 0);
+  ale_new_p.set("RESULTSEVRY", 1);
 
   // setup ale time integration
   Teuchos::RCP< ::ADAPTER::AleBaseAlgorithm> ale =
       Teuchos::rcp(new ::ADAPTER::AleBaseAlgorithm(ale_new_p, aledis_));
   Teuchos::RCP< ::ADAPTER::Ale> my_ale_timint = ale->AleField();
-  //my_ale_timint->WriteAccessDiscretization()->Writer()->NewResultFile("ladida",100);
-  //my_ale_timint->WriteAccessDiscretization()->Writer()->WriteMesh(0, 0.01);
+  my_ale_timint->WriteAccessDiscretization()->Writer()->NewResultFile("ladida",100);
+  my_ale_timint->WriteAccessDiscretization()->Writer()->WriteMesh(0, 0.01);
 
   ComputeNewAleDBCFromRF();
 

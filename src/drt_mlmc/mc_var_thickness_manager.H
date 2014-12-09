@@ -184,6 +184,15 @@ private:
   //! brief Use mean local wall thickness based on condition input
   bool use_mean_field_from_cond_;
 
+  //! brief start random geometry above bifurcation of AAA only
+  bool start_rand_geo_above_bif_;
+
+  //!brief location of bifurcation of AAA plus an offset
+  double z_pos_start_rf_;
+
+  //!brief width of transition domain in which random thickness is ramped up
+  double transition_width_;
+
   //! coupling of structure and ale (whole field)
   Teuchos::RCP<ADAPTER::Coupling> coupsa_;
 

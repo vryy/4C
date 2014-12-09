@@ -1601,6 +1601,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("INITIALTHICKNESS", 10., "wall thickness in input file",
       &mlmcp);
 
+  DoubleParameter("Z_POS_AAA_START_RF_", -1078., "Location of bifurcation of AAA including an offset ",
+      &mlmcp);
+
+  DoubleParameter("TRANSITION_WIDTH", 15., "Transition domain to blend in random wall thickness",
+      &mlmcp);
+  // For variable geometry/wall thickness
+  setStringToIntegralParameter<int>("START_RF_ABOVE_BIFURCATION", "No",
+      "Start random geometry above bifurcation", yesnotuple, yesnovalue, &mlmcp);
+
   // Legacy input parameters for multilevel mc
   IntParameter("WRITESTATS", 1000,
       "Write statistics to file every WRITESTATS (only for polongated Dis)",
