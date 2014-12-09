@@ -1858,7 +1858,8 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                       if(CheckOrientation(direction,bspottriadscol,LID) && !intersection)
                       {
                         numsetelements++;
-                        if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+                        if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol ||
+                           linkermodel_ == statmech_linker_myosinthick || statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
                         {
                           if((*crosslinkertype_)[irandom]==1.0)
                             numactlinkers++;
@@ -2098,19 +2099,6 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
         // add two more beam3 elements for myosin thick filament
         if(linkermodel_==statmech_linker_myosinthick)
           AddSupportElements(noderowmap,i,beamcmanager,nodalpositions,globalnodeids,bspotgid,xrefe,rotrefe);
-
-        // call of FillComplete() necessary after each added crosslinker because different linkers may share the same nodes (only BeamCL)
-//        if(i<addcrosselement.MyLength()-1 && (linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol))
-//        {
-//          discret_->CheckFilledGlobally();
-//          discret_->FillComplete(true, false, false);
-//
-//          if(beamcmanager!=Teuchos::null)
-//          {
-//            beamcmanager->BTSolDiscret().CheckFilledGlobally();
-//            beamcmanager->BTSolDiscret().FillComplete(true, false, false);
-//          }
-//        }
       }
     }
 
@@ -3067,7 +3055,7 @@ void STATMECH::StatMechManager::CreateTransverseNodePairs(Teuchos::RCP<std::vect
 void STATMECH::StatMechManager::ElementToCrosslinkMapping(Teuchos::RCP<Epetra_Vector>& element2crosslink)
 {
   // update element2crosslink_ for correct mapping. Reason: Before coming here, elements might have been deleted in
-  // SearchAndSetCrosslinkers(). The ElementRowMap might have changed -> Rebuild
+  // SearchAndDeleteCrosslinkers(). The ElementRowMap might have changed -> Rebuild
   if(element2crosslink!=Teuchos::null)
   {
     element2crosslink = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementColMap())));
@@ -3205,18 +3193,6 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
             (*unbindingprobability_)[0][crosslid] = 1 - exp(-dt * koffbspot1);
           }
         }
-
-  //      FILE* fp = NULL;
-  //      std::ostringstream filename;
-  //      filename << outputrootpath_<<"/StatMechOutput/LinkerInternalForces.dat";
-  //      fp = fopen(filename.str().c_str(), "a");
-  //      std::stringstream internalforces;
-  //      internalforces << sgn <<" " << Fnode0 << " " << Fnode1 <<std::endl;
-  //      fprintf(fp, internalforces.str().c_str());
-  //      fclose(fp);
-  //      std::cout<<"\n\nelement "<<crosslinker->Id()<<":"<<std::endl;
-  //      std::cout<<" bspot "<<bspotgid0<<std::setprecision(8)<<": F = "<<Fbspot0<<", eps = "<<eps<<", k_off = "<<koffbspot0<<", p = "<<(*punlink)[0][crosslid]<<std::endl;
-  //      std::cout<<" bspot "<<bspotgid1<<std::setprecision(8)<<": F = "<<Fbspot1<<", eps = "<<eps<<", k_off = "<<koffbspot1<<", p = "<<(*punlink)[1][crosslid]<<std::endl;
       }
     }
 
@@ -3245,6 +3221,9 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
                                                          Teuchos::RCP<Epetra_MultiVector> bspotpositions,
                                                          Teuchos::RCP<Epetra_MultiVector> bspotrotations)
 {
+//  std::cout<<"Pre-ChangeLinkerLegth:\n"<<*crosslinkeractlength_<<std::endl;
+
+
   int numprobshort = 0;
   int numproblong = 0;
   if(!revertchanges)
@@ -3349,11 +3328,11 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
   for(int i=0; i<actlinklengthout->MyLength(); i++)
   {
     int collid = discret_->ElementColMap()->LID((int)(*crosslink2element_)[i]);
+
     // if length of the active linker changed in the probability check
     if(fabs((*actlinklengthout)[i]-(*actlinklengthin)[i])>1e-6 && (int)(*crosslink2element_)[i]>-0.9 && collid != -1)
     {
       // just on the processor, where element is located
-      // scaling-factor = 0.75 (myosin II)
       int rowlid = discret_->ElementRowMap()->LID((int)(*crosslink2element_)[i]);
       double sca = statmechparams_.get<double>("LINKERSCALEFACTOR", 0.8);
 
@@ -3407,30 +3386,30 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
   discret_->Comm().SumAll(&tolong, &tolongglob,1);
 
   // number of changed crosslinker lengths
-  if(!discret_->Comm().MyPID() && printscreen)
+  if(revertchanges)
   {
-    if(revertchanges)
+    if(!discret_->Comm().MyPID() && printscreen)
       std::cout<<"\nRevert reference lengths..."<<std::endl;
-    else
-    {
-      if((toshortglob+tolongglob)>0)
-      {
-        std::cout<<"\n"<<"--Crosslinker length changes--"<<std::endl;
-        std::cout<<" - long to short: "<<toshortglob<<std::endl;
-        std::cout<<"   - due to prob: "<<numprobshortglob<<std::endl;
-        std::cout<<" - short to long: "<<tolongglob<<std::endl;
-        std::cout<<"   - due to prob: "<<numproblongglob<<std::endl;
-        std::cout<<"------------------------------"<<std::endl;
-      }
-    }
+  }
+  else
+  {
     // update cycle time
     for(int i=0; i<crosslinkeractcycletime_->MyLength(); i++)
       (*crosslinkeractcycletime_)[i] += dt;
+    Teuchos::RCP<Epetra_Vector> crosslinkeractcycletimetrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
+    CommunicateVector(crosslinkeractcycletimetrans,crosslinkeractcycletime_);
+
+    if(!discret_->Comm().MyPID() && (toshortglob+tolongglob)>0 && printscreen)
+    {
+      std::cout<<"\n"<<"--Crosslinker length changes--"<<std::endl;
+      std::cout<<" - long to short: "<<toshortglob<<std::endl;
+      std::cout<<"   - due to prob: "<<numprobshortglob<<std::endl;
+      std::cout<<" - short to long: "<<tolongglob<<std::endl;
+      std::cout<<"   - due to prob: "<<numproblongglob<<std::endl;
+      std::cout<<"------------------------------"<<std::endl;
+    }
   }
-
-  Teuchos::RCP<Epetra_Vector> crosslinkeractcycletimetrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
-  CommunicateVector(crosslinkeractcycletimetrans,crosslinkeractcycletime_);
-
+//    std::cout<<"Post-ChangeLinkerLegth:\n"<<*crosslinkeractlength_<<std::endl;
   return;
 }
 
@@ -3537,6 +3516,7 @@ void STATMECH::StatMechManager::ActiveLinkerPowerStroke(const int&              
   }
   else // standard case without rotation
   {
+    //TODO
     if(conformation==1)
       (dynamic_cast<DRT::ELEMENTS::BeamCL*>(activeele))->SetReferenceLength(sca);
     else

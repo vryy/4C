@@ -129,6 +129,7 @@ PHI0                0                     // preferred binding angle betw. two f
 PHI0DEV             0.392699081698724     // deviation from phi0
 ACTIVELINKERCYCLE   0.04                  // active linker time cycle (myosin)
 ACTIVERECOVERYFRACTION   0.95             // active linker recovery time fraction (myosin)
+ACTIVELINKERFRACTION 1.0
 REDUCECROSSLINKSBY  0                     // reduce the linker number by this number at starttimeact_
 //============== PTC parameters =============
 CTRANSPTC0          0                     // translational PTC damping

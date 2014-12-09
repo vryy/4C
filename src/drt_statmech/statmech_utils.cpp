@@ -458,8 +458,12 @@ void STATMECH::StatMechManager::WriteConv(Teuchos::RCP<CONTACT::Beam3cmanager> b
   crosslink2elementconv_ = Teuchos::rcp(new Epetra_Vector(*crosslink2element_));
   if(linkermodel_==statmech_linker_myosinthick)
     additionalcross2eleconv_ = Teuchos::rcp(new Epetra_MultiVector(*additionalcross2ele_));
-  if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_myosinthick)
+  if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_myosinthick ||
+     statmechparams_.get<double>("ACTIVELINKERFRACTION", 0.0)>0.0)
+  {
     crosslinkeractlengthconv_ = Teuchos::rcp(new Epetra_Vector(*crosslinkeractlength_));
+    crosslinkeractcycletimeconv_ = Teuchos::rcp(new Epetra_Vector(*crosslinkeractcycletime_));
+  }
 
   //set addedelements_, deletedelements_ empty vectors
   addedelements_.clear();
@@ -505,6 +509,7 @@ void STATMECH::StatMechManager::RestoreConv(Teuchos::RCP<Epetra_Vector>         
     }
     ChangeActiveLinkerLength(1e9, 1e9, crosslinkeractlength_, crosslinkeractlengthconv_, printscreen, true, bspotpositions, bspotrotations);
     crosslinkeractlength_ = Teuchos::rcp(new Epetra_Vector(*crosslinkeractlengthconv_));
+    crosslinkeractcycletime_ = Teuchos::rcp(new Epetra_Vector(*crosslinkeractcycletimeconv_));
   }
 
   /*restore state of the discretization at the beginning of this time step; note that to this and
@@ -662,8 +667,12 @@ void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWrit
 
   output->WriteRedundantDoubleVector("startindex",startindex_);
 
-  if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+  if(linkermodel_==statmech_linker_active || linkermodel_==statmech_linker_activeintpol || linkermodel_==statmech_linker_myosinthick || statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+  {
     WriteRestartRedundantMultivector(output,"crosslinkertype",crosslinkertype_);
+    WriteRestartRedundantMultivector(output,"crosslinkeractlength",crosslinkeractlength_);
+    WriteRestartRedundantMultivector(output,"crosslinkeractcycletime", crosslinkeractcycletime_);
+  }
   WriteRestartRedundantMultivector(output,"crosslinkerbond",crosslinkerbond_);
   WriteRestartRedundantMultivector(output,"crosslinkerpositions",crosslinkerpositions_);
   WriteRestartRedundantMultivector(output,"numbond",numbond_);
@@ -674,8 +683,6 @@ void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWrit
 
   if(crosslinkunbindingtimes_!=Teuchos::null)
     WriteRestartRedundantMultivector(output,"crosslinkunbindingtimes",crosslinkunbindingtimes_);
-
-
 
   return;
 } // StatMechManager::WriteRestart()
@@ -735,8 +742,7 @@ void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader, do
 
   //Read redundant Epetra_Multivectors and STL vectors
   reader.ReadRedundantDoubleVector(startindex_,"startindex");
-  if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
-    ReadRestartRedundantMultivector(reader,"crosslinkertype", crosslinkertype_);
+
   ReadRestartRedundantMultivector(reader,"crosslinkerbond",crosslinkerbond_);
   ReadRestartRedundantMultivector(reader,"crosslinkerpositions",crosslinkerpositions_);
   ReadRestartRedundantMultivector(reader,"numbond",numbond_);
@@ -747,6 +753,12 @@ void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader, do
   if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
     ReadRestartRedundantMultivector(reader,"crosslinkunbindingtimes",crosslinkunbindingtimes_);
 
+  if(linkermodel_==statmech_linker_active || linkermodel_==statmech_linker_activeintpol || linkermodel_==statmech_linker_myosinthick || statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+  {
+    ReadRestartRedundantMultivector(reader,"crosslinkertype", crosslinkertype_);
+    ReadRestartRedundantMultivector(reader,"crosslinkeractlength",crosslinkeractlength_);
+    ReadRestartRedundantMultivector(reader,"crosslinkeractcycletime", crosslinkeractcycletime_);
+  }
 
   return;
 }// StatMechManager::ReadRestart()

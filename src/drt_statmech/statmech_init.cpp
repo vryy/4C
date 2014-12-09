@@ -169,10 +169,12 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     dserror("The entered value %d for ACTIVELINKERFRACTION lies outside the valid interval [0;1]!");
   if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0 && linkermodel_!=statmech_linker_active && linkermodel_!=statmech_linker_activeintpol && linkermodel_!=statmech_linker_myosinthick)
     dserror("The parameter LINKERMODEL has to be set to active or activeintpol in order to work with ACTIVELINKERFRACTION>0.0!");
+  if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)==0.0 && (linkermodel_==statmech_linker_active || linkermodel_==statmech_linker_activeintpol || linkermodel_==statmech_linker_myosinthick))
+    dserror("Set ACTIVELINKERFRACTION to a value >0.0! Otherwise, the choice of LINKERMODEL is meaningless!");
   if((linkermodel_==statmech_linker_active || linkermodel_==statmech_linker_activeintpol || linkermodel_==statmech_linker_myosinthick) && statmechparams_.get<double>("DELTABELLSEQ",0.0)==0.0)
     dserror("Active linkers need a non-zero value DELTABELLSEQ for a force-dependent off-rate");
   if((linkermodel_==statmech_linker_std || linkermodel_==statmech_linker_stdintpol) && statmechparams_.get<double>("DELTABELLSEQ",0.0)!=0.0)
-    dserror("This linker model needs zero value of DELTABELLSEQ! Check your input file!");
+    dserror("This linker model requires DELTABELLSEQ==0.0! Check your input file!");
   if((linkermodel_==statmech_linker_stdintpol || linkermodel_ == statmech_linker_bellseqintpol || linkermodel_ == statmech_linker_activeintpol) && riseperbspot_->at(0)<=0.0)
     dserror("The input parameter RISEPERBSPOT has an invalid value %f", riseperbspot_->at(0));
   if(statmechparams_.get<double>("MAXRANDFORCE",-1.0)< 0.0 && statmechparams_.get<double>("MAXRANDFORCE",-1.0)!= -1.0)
@@ -1024,22 +1026,17 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
     crosslinkeractcycletime_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
     crosslinkeractcycletime_->PutScalar(statmechparams_.get<double>("ACTIVELINKERCYCLE",0.04));
 
-    if(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)>0.0)
+    // signals linker type
+    crosslinkertype_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
+    if(!discret_->Comm().MyPID())
     {
-      // signals linker type
-      crosslinkertype_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
-      if(!discret_->Comm().MyPID())
-      {
-        std::vector<int> activeorder = Permutation(statmechparams_.get<int>("N_crosslink",0));
+      std::vector<int> activeorder = Permutation(statmechparams_.get<int>("N_crosslink",0));
 
-        for(int i=0; i<(int)(floor(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)*statmechparams_.get<int>("N_crosslink",0))); i++)
-          (*crosslinkertype_)[activeorder[i]] = 1.0;
-      }
-      Teuchos::RCP<Epetra_Vector> crosslinkertypetrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
-      CommunicateVector(crosslinkertypetrans,crosslinkertype_);
+      for(int i=0; i<(int)(floor(statmechparams_.get<double>("ACTIVELINKERFRACTION",0.0)*statmechparams_.get<int>("N_crosslink",0))); i++)
+        (*crosslinkertype_)[activeorder[i]] = 1.0;
     }
-    else
-      crosslinkertype_ = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> crosslinkertypetrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
+    CommunicateVector(crosslinkertypetrans,crosslinkertype_);
   }
 
   // calculate  number of total binding spot depending on BSPOTINTERVAL

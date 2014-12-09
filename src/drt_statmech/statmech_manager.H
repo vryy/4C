@@ -1196,6 +1196,8 @@ protected:
   Teuchos::RCP<Epetra_MultiVector> additionalcross2eleconv_;
   //! \brief vector holding converged state of actlinklength__
   Teuchos::RCP<Epetra_Vector> crosslinkeractlengthconv_;
+  //! \brief vector holding converged state of crosslinkercycletime_
+  Teuchos::RCP<Epetra_Vector> crosslinkeractcycletimeconv_;
   //! \brief vector holding converged state of crosslinkertype_
   Teuchos::RCP<Epetra_Vector> crosslinkertypeconv_;
   //! \brief vector holding converged state of bspotstatus_
