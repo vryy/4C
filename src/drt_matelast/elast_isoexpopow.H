@@ -31,7 +31,8 @@ namespace ELASTIC
     /// material parameters for isochoric contribution of a exponential type material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_IsoExpo K1 1. K2 1.
+    /// MAT 1 ELAST_IsoExpoPow K1 5000. K2 5. C 1.
+    /// C = Exponent D
     class IsoExpoPow : public MAT::PAR::Parameter
     {
     public:

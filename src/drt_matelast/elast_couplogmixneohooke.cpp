@@ -5,9 +5,10 @@
 
 
 the input line should read either
-  MAT 1 ELAST_CoupLogMixNeoHooke YOUNG 1.044E7 NUE 0.3
+  MAT 1 ELAST_CoupLogMixNeoHooke MODE YN C1 1.044E7 C2 0.3
+  ( C1 = Young, c2 = nue)
 or
-  MAT 1 ELAST_CoupLogMixNeoHooke MUE 1. LAMBDA 1.
+  MAT 1 ELAST_CoupLogMixNeoHooke MODE Lame C1 1. C2 1.
 
 <pre>
 Maintainer: Philipp Farah

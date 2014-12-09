@@ -116,7 +116,7 @@ namespace ELASTIC
     ///\f[
     /// \Psi = \frac{\mu}{2} (I_{\boldsymbol{C}} - 3)
     ///       - \mu \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})
-    ///      + \frac{\lambda}{2} \big( I\!I\!I_{\boldsymbol{C}} -1 \big)^2
+    ///      + \frac{\lambda}{2} \big( log (\sqrt{I\!I\!I_{\boldsymbol{C}}}) \big)^2
     ///\f]
     ///
     /// Here is \f$I_{\boldsymbol{C}}\f$ the first principal invariant

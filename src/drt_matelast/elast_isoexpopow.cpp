@@ -5,6 +5,8 @@
 
 This file contains the routines required to calculate the isochoric contribution
 of an exponential  material
+MAT 1 ELAST_IsoExpoPow K1 5000. K2 5. C 1.
+C = Exponent D
 
 <pre>
 Maintainer: Sophie Rausch
