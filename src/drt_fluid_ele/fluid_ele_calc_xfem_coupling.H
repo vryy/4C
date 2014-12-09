@@ -72,6 +72,14 @@ namespace DRT
           TwoPhaseFlow
         };
 
+        //! set names of displacement and velocity states (differ dependent on the slave element)
+        static void DefineStateNames(
+            DRT::Element::DiscretizationType slave_distype,    ///< coupling slave discretization type
+            std::string &           disp_statename,  ///< name of displacement state at current step
+            std::string &           vel_statename,   ///< name of velocity state at current step
+            std::string &           veln_statename   ///< name of velocity state at previous step
+        );
+
         //! create a pure coupling slave element representation
         static Teuchos::RCP<SlaveElementInterface<distype> > CreateSlaveElementRepresentation(
           DRT::Element *              slave_ele,     ///< coupling slave element
@@ -84,7 +92,6 @@ namespace DRT
         //! add slave element's displacements and set current element's nodal coordinates
         virtual void AddSlaveEleDisp(
           const DRT::Discretization &  slavedis,     ///< coupling slave discretization
-          const std::string            state,        ///< state
           const std::vector<int>&      lm            ///< local map
         )
         { dserror("There is no concrete slave element available."); };
@@ -95,7 +102,13 @@ namespace DRT
         //! set slave element's nodal velocities
         virtual void SetSlaveState(
            const DRT::Discretization &  slavedis,     ///< embedded discretization
-           const std::string            state,        ///< state
+           const std::vector<int>&      lm            ///< local map
+        )
+        { dserror("There is no concrete slave element available."); };
+
+        //! set slave element's nodal velocities
+        virtual void SetSlaveStaten(
+           const DRT::Discretization &  slavedis,     ///< embedded discretization
            const std::vector<int>&      lm            ///< local map
         )
         { dserror("There is no concrete slave element available."); };
@@ -105,7 +118,19 @@ namespace DRT
          * element (level-set applications), this is correct - otherwise this method is
          * overloaded!!)
          */
-        virtual void GetInterfaceVel(
+        virtual void GetInterfaceVelnp(
+          LINALG::Matrix<nsd_,1>& ivelint             ///< interface velocity at coupling slave side
+        ) const
+        {
+          ivelint = LINALG::Matrix<nsd_,1>(true);
+        };
+
+        /*!
+         * get interface velocity - return 0 velocity (if we don't have a concrete slave
+         * element (level-set applications), this is correct - otherwise this method is
+         * overloaded!!)
+         */
+        virtual void GetInterfaceVeln(
           LINALG::Matrix<nsd_,1>& ivelint             ///< interface velocity at coupling slave side
         ) const
         {
@@ -113,12 +138,23 @@ namespace DRT
         };
 
         //! get interface pressure
-        virtual void GetInterfacePres(double & ipres  ///< interface pressure
+        virtual void GetInterfacePresnp(double & ipres  ///< interface pressure
+        ) const
+        { dserror("There is no concrete slave element available."); };
+
+        //! get interface pressure
+        virtual void GetInterfacePresn(double & ipres  ///< interface pressure
         ) const
         { dserror("There is no concrete slave element available."); };
 
         //! get interface velocity gradient
-        virtual void GetInterfaceVelGrad(
+        virtual void GetInterfaceVelGradnp(
+          LINALG::Matrix<nsd_,nsd_>& velgradint       ///< interface velocity gradients at coupling slave side
+        ) const
+        { dserror("There is no concrete slave element available."); };
+
+        //! get interface velocity gradient
+        virtual void GetInterfaceVelGradn(
           LINALG::Matrix<nsd_,nsd_>& velgradint       ///< interface velocity gradients at coupling slave side
         ) const
         { dserror("There is no concrete slave element available."); };
@@ -170,6 +206,8 @@ namespace DRT
         static const unsigned  master_numdof_ = nsd_ + 1;
 
         static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_XFluidWDBC(
+          Epetra_SerialDenseMatrix &  C_umum,                 ///< C_umum coupling matrix
+          Epetra_SerialDenseMatrix &  rhC_um,                 ///< C_um coupling rhs
           bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
           );
 
@@ -177,6 +215,8 @@ namespace DRT
         static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_XFluidWDBC(
           DRT::Element *              bele,                   ///< boundary element
           Epetra_SerialDenseMatrix &  bele_xyz,               ///< global node coordinates of boundary element
+          Epetra_SerialDenseMatrix &  C_umum,                 ///< C_umum coupling matrix
+          Epetra_SerialDenseMatrix &  rhC_um,                 ///< C_um coupling rhs
           bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
           );
 
@@ -184,10 +224,12 @@ namespace DRT
         static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_XFluidSided(
           DRT::Element *              bele,           ///< boundary element
           Epetra_SerialDenseMatrix &  bele_xyz,       ///< global node coordinates of boundary element
+          Epetra_SerialDenseMatrix &  C_umum,         ///< C_umum coupling matrix
           Epetra_SerialDenseMatrix &  C_usum,         ///< C_usum coupling matrix
           Epetra_SerialDenseMatrix &  C_umus,         ///< C_umus coupling matrix
-          Epetra_SerialDenseMatrix &  rhC_us,         ///< C_us coupling rhs
           Epetra_SerialDenseMatrix &  C_usus,         ///< C_usus coupling matrix
+          Epetra_SerialDenseMatrix &  rhC_um,         ///< C_um coupling rhs
+          Epetra_SerialDenseMatrix &  rhC_us,         ///< C_us coupling rhs
           bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
           );
 
@@ -196,10 +238,12 @@ namespace DRT
         static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_TwoSided(
           DRT::Element *              vele,           ///< volumetric element to couple with
           Epetra_SerialDenseMatrix &  vele_xyz,       ///< global node coordinates of volumetric element
+          Epetra_SerialDenseMatrix &  C_umum,         ///< C_umum coupling matrix
           Epetra_SerialDenseMatrix &  C_usum,         ///< C_usum coupling matrix
           Epetra_SerialDenseMatrix &  C_umus,         ///< C_umus coupling matrix
-          Epetra_SerialDenseMatrix &  rhC_us,         ///< C_us coupling rhs
           Epetra_SerialDenseMatrix &  C_usus,         ///< C_usus coupling matrix
+          Epetra_SerialDenseMatrix &  rhC_um,         ///< C_um coupling rhs
+          Epetra_SerialDenseMatrix &  rhC_us,         ///< C_us coupling rhs
           bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
           );
 
@@ -211,8 +255,6 @@ namespace DRT
         //! employing shape functions and velocities from another coupling object (HybridLMCoupling) slave_ele
         virtual void ApplyConvStabTerms(
           const Teuchos::RCP<SlaveElementInterface<distype> > & slave_ele,              ///< associated slave element coupling object
-          Epetra_SerialDenseMatrix &                            C_umum,                 ///< standard master-master-matrix
-          Epetra_SerialDenseVector &                            rhs_Cum,                ///< master rhs
           const LINALG::Matrix<nen_,1> &                        funct_m,                ///< master shape functions
           const LINALG::Matrix<nsd_,1> &                        velint_m,               ///< vector of slave shape functions
           const LINALG::Matrix<nsd_,1> &                        normal,                 ///< normal vector n^b
@@ -223,9 +265,7 @@ namespace DRT
         ) = 0;
 
         //! build coupling matrices for Nitsche's method (NIT)
-        virtual void NIT_buildCouplingMatrices(
-          Epetra_SerialDenseMatrix &        C_umum,                 ///< standard master-master-matrix
-          Epetra_SerialDenseVector &        rhs_Cum,                ///< standard master-rhs
+        virtual void NIT_evaluateCoupling(
           const LINALG::Matrix<nsd_,1> &    normal,                 ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
           const double &                    timefacfac,             ///< theta*dt
           const double &                    visceff_m,              ///< viscosity in coupling master fluid
@@ -240,6 +280,21 @@ namespace DRT
           const double &                    press_m,                ///< coupling master pressure
           const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
           INPAR::XFEM::XFF_ConvStabScaling  xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
+        ) = 0;
+
+        //! add rhs contributions from old time step in Nitsche's (NIT) method
+        virtual void NIT_evaluateCouplingOldState(
+          const LINALG::Matrix<nsd_,1> &    normal,                  ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
+          const double &                    timefacfacn,             ///< dt*(1-theta)*fac
+          const double &                    visceff_m,               ///< viscosity in coupling master fluid
+          const double &                    visceff_s,               ///< viscosity in coupling slave fluid
+          const double &                    kappa_m,                 ///< mortaring weight for coupling master
+          const double &                    kappa_s,                 ///< mortaring weight for coupling slave
+          const LINALG::Matrix<nen_,1> &    funct_m,                 ///< coupling master shape functions
+          const LINALG::Matrix<nsd_,nen_> & derxy_m,                 ///< spatial derivatives of coupling master shape functions
+          const LINALG::Matrix<nsd_,nsd_> & vderxyn_m,               ///< coupling master spatial velocity derivatives
+          const double &                    presn_m,                 ///< coupling master pressure
+          const LINALG::Matrix<nsd_,1> &    velintn_m                ///< coupling master interface velocity
         ) = 0;
 
       };

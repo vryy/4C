@@ -491,6 +491,7 @@ void FLD::XFluidFluid::XFluidFluidState::Evaluate(const Teuchos::RCP<DRT::Discre
   LINALG::Export(*(xfluid_.velnp_),*(xfluid_.ivelnp_));
 
   cutdiscret->SetState("ivelnp",xfluid_.ivelnp_);
+  cutdiscret->SetState("iveln",xfluid_.iveln_);
 
   // set interface dispnp needed for the elements
   if (xfluid_.alefluid_)
@@ -1936,6 +1937,7 @@ void FLD::XFluidFluid::Init()
   // -------------------------------------------------------
   boundarydofrowmap_ = Teuchos::RCP<const Epetra_Map>(boundarydis_->DofRowMap(),false);
   ivelnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
+  iveln_  = LINALG::CreateVector(*boundarydofrowmap_,true);
   idispnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
 
   //----------------------------------------------------------------------
@@ -3328,6 +3330,8 @@ void FLD::XFluidFluid::Update()
   veln_ ->Update(1.0,*velnp_,0.0);
 
   state_->fluidfluidveln_->Update(1.0,*state_->fluidfluidvelnp_,0.0);
+
+  iveln_->Update(1.0,*ivelnp_,0.0);
 
   if (alefluid_)
   {

@@ -314,6 +314,7 @@ void FLD::XFluid::XFluidState::Evaluate( DRT::Discretization & discret,
     // set general vector values of boundarydis needed by elements
     cutdiscret->ClearState();
     cutdiscret->SetState("ivelnp",xfluid_.ivelnp_);
+    cutdiscret->SetState("iveln",xfluid_.iveln_);
     cutdiscret->SetState("idispnp",xfluid_.idispnp_);
 
     eleparams.set("iforcenp",iforcecolnp);

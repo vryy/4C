@@ -198,24 +198,6 @@ public:
       bool                                                              fluidfluidcoupling = false///< indicates fluid-fluid coupling context
   );
 
-
-//  /// add Nitsche (NIT) interface condition to element matrix and rhs
-//  virtual void ElementXfemInterfaceNIT(
-//      DRT::ELEMENTS::Fluid *                                              ele,                ///< fluid element
-//      DRT::Discretization &                                               dis,               ///< background discretization
-//      const std::vector<int> &                                            lm,                ///< element local map
-//      const Teuchos::RCP<DRT::Discretization> &                           cutdis,            ///< cut discretization
-//      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
-//      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-//      std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
-//      Teuchos::ParameterList&                                             params,            ///< parameter list
-//      Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
-//      Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
-//      Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
-//      const GEO::CUT::plain_volumecell_set&                               vcSet,             ///< volumecell sets in this element
-//      bool                                                                fluidfluidcoupling = false ///< indicates fluid-fluid coupling context
-//  );
-
   /// add Nitsche (NIT) interface condition to element matrix and rhs
   virtual void ElementXfemInterfaceNIT(
       DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
@@ -298,7 +280,7 @@ private:
   );
 
   //! prepare coupling matrices, that include contributions from convective stabilization
-  void HybridLM_CreateConvStabMatrices(
+  void HybridLM_CreateSpecialContributionMatrices(
       std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
       DRT::Discretization &                                   cutdis,                  ///< cut discretization
       std::map<int, std::vector<Epetra_SerialDenseMatrix> > & conv_side_coupling       ///< contributions to coupling matrices from convective stabilizations
