@@ -18,15 +18,19 @@
 #include "../drt_adapter/ad_str_wrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | constructor                                               Thon 12/14 |
+ *----------------------------------------------------------------------*/
 SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams)
   : SSI_Part(comm, globaltimeparams, scatraparams, structparams),
-    scaincnp_(Teuchos::rcp(new Epetra_Vector(*(scatra_->ScaTraField()->Phinp())))),
-    dispincnp_(Teuchos::rcp(new Epetra_Vector(*(structure_()->Dispnp()))))
+    scaincnp_(LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true)),
+    dispincnp_(LINALG::CreateVector(*structure_->DofRowMap(0),true))
+    //dispnp_(structure_->Dispnp()),
+    //velnp_(structure_->Velnp()),
+    //phinp_(scatra_->ScaTraField()->Phinp())
 {
   // build a proxy of the structure discretization for the scatra field
   Teuchos::RCP<DRT::DofSet> structdofset
@@ -45,10 +49,13 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
     dserror("Different time stepping for two way coupling not implemented yet.");
   }
 
+  // call the SSI parameter lists
   const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
+  const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+
   // Get the parameters for the ConvergenceCheck
   itmax_ = ssicontrol.get<int>("ITEMAX"); // default: =10
-  ittol_ = ssicontrol.get<double>("CONVTOL"); // default: =1e-6
+  ittol_ = ssicontrolpart.get<double>("CONVTOL"); // default: =1e-6
 
   //do some checks
   {
@@ -60,8 +67,9 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | Timeloop for 2WC SSI problems                             Thon 12/14 |
+ *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC::Timeloop()
 {
   //InitialCalculations();
@@ -77,8 +85,9 @@ void SSI::SSI_Part2WC::Timeloop()
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | Solve structure filed                                     Thon 12/14 |
+ *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC::DoStructStep()
 {
   if (Comm().MyPID() == 0)
@@ -91,8 +100,9 @@ void SSI::SSI_Part2WC::DoStructStep()
   structure_-> Solve();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | Solve Scatra field                                        Thon 12/14 |
+ *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC::DoScatraStep()
 {
   if (Comm().MyPID() == 0)
@@ -117,9 +127,7 @@ void SSI::SSI_Part2WC::PrepareTimeStep()
   PrintHeader();
 
   structure_-> PrepareTimeStep();
-  SetStructSolution();
   scatra_->ScaTraField()->PrepareTimeStep();
-  SetScatraSolution();
 }
 
 /*----------------------------------------------------------------------*/
@@ -138,8 +146,9 @@ void SSI::SSI_Part2WC::UpdateAndOutput()
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | Outer Timeloop for 2WC SSi without relaxation             Thon 12/14 |
+ *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC::OuterLoop()
 {
   int  itnum = 0;
@@ -160,7 +169,7 @@ void SSI::SSI_Part2WC::OuterLoop()
     dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
 
     // set structure-based scalar transport values
-    SetScatraSolution();
+    SetScatraSolution(scatra_->ScaTraField()->Phinp());
 
     if(itnum!=1)
       structure_->PreparePartitionStep();
@@ -168,7 +177,7 @@ void SSI::SSI_Part2WC::OuterLoop()
     DoStructStep();
 
     // set mesh displacement and velocity fields
-    SetStructSolution();
+    SetStructSolution(structure_->Dispnp(),structure_->Velnp());
 
     // solve scalar transport equation
     DoScatraStep();
@@ -233,8 +242,7 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
   }
 
   // converged
-  if ((scaincnorm_L2/scanorm_L2 <= ittol_) &&
-      (dispincnorm_L2/dispnorm_L2 <= ittol_))
+  if ( (scaincnorm_L2/scanorm_L2 <= ittol_) and (dispincnorm_L2/dispnorm_L2 <= ittol_) )
   {
     stopnonliniter = true;
     if (Comm().MyPID()==0 )
@@ -245,11 +253,9 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
     }
   }
 
-  // warn if itemax is reached without convergence, but proceed to next
+  // stop if itemax is reached without convergence
   // timestep
-  if ((itnum==itmax_) and
-       ((scaincnorm_L2/scanorm_L2 > ittol_) || (dispincnorm_L2/dispnorm_L2 > ittol_))
-     )
+  if ( (itnum==itmax_) and ((scaincnorm_L2/scanorm_L2 > ittol_) or (dispincnorm_L2/dispnorm_L2 > ittol_)) )
   {
     stopnonliniter = true;
     if ((Comm().MyPID()==0) )
@@ -259,7 +265,347 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
       printf("\n");
       printf("\n");
     }
+    dserror("The partitioned SSI solver did not converged in ITEMAX steps!");
   }
 
   return stopnonliniter;
+}
+
+/*----------------------------------------------------------------------*
+ | calculate velocities by a FD approximation                 Thon 14/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC::CalcVelocity(
+  Teuchos::RCP<const Epetra_Vector> dispnp
+  )
+{
+  Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
+  // copy D_n onto V_n+1
+  vel = Teuchos::rcp(new Epetra_Vector( *(structure_->Dispn()) ) );
+  // calculate velocity with timestep Dt()
+  //  V_n+1^k = (D_n+1^k - D_n) / Dt
+  vel->Update(1./Dt(), *dispnp, -1./Dt());
+
+  return vel;
+}  // CalcVelocity()
+
+/*----------------------------------------------------------------------*
+ | Constructor                                               Thon 12/14 |
+ *----------------------------------------------------------------------*/
+SSI::SSI_Part2WC_SolidToScatra_Relax::SSI_Part2WC_SolidToScatra_Relax(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& structparams)
+  : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams)
+{
+  const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+
+  //Get minimal relaxation parameter from input file
+  omega_ = ssicontrolpart.get<double>("STARTOMEGA");
+}
+
+/*----------------------------------------------------------------------*
+ | Outer Timeloop for 2WC SSi with relaxed displacements     Thon 12/14 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
+{
+  int  itnum = 0;
+  bool stopnonliniter = false;
+
+  if (Comm().MyPID()==0)
+  {
+    std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+  }
+
+  Teuchos::RCP<Epetra_Vector> dispnp
+    = LINALG::CreateVector(*(structure_->DofRowMap(0)), true);
+  Teuchos::RCP<Epetra_Vector> velnp
+    = LINALG::CreateVector(*(structure_->DofRowMap(0)), true);
+
+  while (stopnonliniter==false)
+  {
+    itnum++;
+
+    if (itnum == 1)
+    {
+      dispnp->Update(1.0,*(structure_->Dispnp()),0.0); //TSI does Dispn()
+      velnp->Update(1.0,*(structure_->Velnp()),0.0);
+    }
+
+    // store scalar from first solution for convergence check (like in
+    // elch_algorithm: use current values)
+    scaincnp_->Update(1.0,*scatra_->ScaTraField()->Phinp(),0.0);
+    dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
+
+
+    // begin nonlinear solver / outer iteration ***************************
+    // set mesh displacement and velocity fields
+    SetStructSolution( dispnp , velnp);
+
+    // solve scalar transport equation
+    DoScatraStep();
+
+    SetScatraSolution(scatra_->ScaTraField()->Phinp());
+
+    if(itnum!=1)
+      structure_->PreparePartitionStep();
+
+    dispnp->Update(1.0,*structure_()->Dispnp(),0.0);
+
+    // solve structural system
+    DoStructStep();
+
+    // end nonlinear solver / outer iteration *****************************
+
+    // check convergence for all fields and stop iteration loop if
+    // convergence is achieved overall
+    stopnonliniter = ConvergenceCheck(itnum);
+
+    // get fixed relaxation parameter
+    CalcOmega(omega_,itnum);
+
+    // fixed relaxation can be applied even in the 1st iteration
+    // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
+    //         = d^i + omega^{i+1} * ( d^{i+1} - d^i )
+    dispnp->Update(omega_,*dispincnp_,1.0);
+
+    velnp = CalcVelocity(dispnp);
+  }
+
+}
+
+/*----------------------------------------------------------------------*
+ | Calculate relaxation parameter                            Thon 12/14 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_SolidToScatra_Relax::CalcOmega(double& omega, const int itnum)
+{
+  //nothing to do in here since we have a constant relaxation parameter: omega != startomega_;
+  std::cout<<"Fixed relaxation parameter omega is: " <<omega<<std::endl;
+}
+
+/*----------------------------------------------------------------------*
+ | Constructor                                               Thon 12/14 |
+ *----------------------------------------------------------------------*/
+SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::SSI_Part2WC_SolidToScatra_Relax_Aitken(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& structparams)
+  : SSI_Part2WC_SolidToScatra_Relax(comm, globaltimeparams, scatraparams, structparams),
+    del_(LINALG::CreateVector(*structure_->DofRowMap(0),true)),
+    delhist_(LINALG::CreateVector(*structure_->DofRowMap(0),true))
+{
+  const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");;
+
+  //Get maximal relaxation parameter from input file
+  maxomega_ = ssicontrolpart.get<double>("MAXOMEGA");
+
+  //Get minimal relaxation parameter from input file
+  minomega_ = ssicontrolpart.get<double>("MINOMEGA");
+
+  del_->PutScalar(1.0e05);
+  delhist_->PutScalar(0.0);
+}
+
+/*----------------------------------------------------------------------*
+ | Calculate relaxation parameter via Aitken                 Thon 12/14 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::CalcOmega(double& omega, const int itnum)
+{
+  // calculate difference of current (i+1) and old (i) residual vector
+  // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
+  // update history vector old increment r^i_{n+1}
+
+  delhist_->Update(1.0,*dispincnp_,(-1.0),*del_,0.0);  // update r^{i+1}_{n+1} - r^i_{n+1}
+
+  // del_ = r^{i+1}_{n+1} = Phi^{i+1}_{n+1} - Phi^{i}_{n+1}
+  del_->Update(1.0,*dispincnp_,0.0);
+
+  double delhistnorm = 0.0;
+  delhist_->Norm2(&delhistnorm);
+  if (delhistnorm <=1e-05)
+    std::cout<<"Warning: The structure increment is to small in order to use it for Aitken relaxation. Using the previous Omega instead!"<<std::endl;
+
+  // calculate dot product
+  double delsdot = 0.0; //delsdot = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
+  delhist_->Dot(*del_,&delsdot);
+
+  if (itnum != 1 and delhistnorm > 1e-05)
+  { // relaxation parameter
+    // omega^{i+1} = 1- mu^{i+1} and nu^{i+1} = nu^i + (nu^i -1) . (r^{i+1} - r^i)^T . (-r^{i+1}) / |r^{i+1} - r^{i}|^2 results in
+    omega = omega*(1  - (delsdot)/(delhistnorm * delhistnorm));
+
+    if (omega < minomega_)
+    {
+      if (Comm().MyPID()==0)
+        std::cout<<"Warning: The calculation of the relaxation parameter omega via Aitken did lead to a value smaller than MINOMEGA!"<<std::endl;
+      omega= minomega_;
+    }
+    if (omega > maxomega_)
+    {
+      if (Comm().MyPID()==0)
+        std::cout<<"Warning: The calculation of the relaxation parameter omega via Aitken did lead to a value bigger than MAXOMEGA!"<<std::endl;
+      omega= maxomega_;
+    }
+  }
+  //else //nothing to do here since we take the last omega from the previous step
+  std::cout<<"Using Aitken the relaxation parameter omega was estimated to: " <<omega<<std::endl;
+}
+
+
+/*----------------------------------------------------------------------*
+ | Constructor                                               Thon 12/14 |
+ *----------------------------------------------------------------------*/
+SSI::SSI_Part2WC_ScatraToSolid_Relax::SSI_Part2WC_ScatraToSolid_Relax(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& structparams)
+  : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams)
+{
+  const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+
+  //Get start relaxation parameter from input file
+  omega_ = ssicontrolpart.get<double>("STARTOMEGA");
+
+  if (Comm().MyPID()==0)
+  {
+    std::cout<<"\n#########################################################################\n  "<<std::endl;
+    std::cout<<"The ScatraToSolid relaxations are not well tested . Keep your eyes open!  "<<std::endl;
+    std::cout<<"\n#########################################################################\n  "<<std::endl;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | Outer Timeloop for 2WC SSi with relaxed scalar             Thon 12/14 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
+{
+  int  itnum = 0;
+  bool stopnonliniter = false;
+
+  if (Comm().MyPID()==0)
+  {
+    std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+  }
+
+  Teuchos::RCP<Epetra_Vector> phinp
+    = LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0), true);
+
+  while (stopnonliniter==false)
+  {
+    itnum++;
+
+    if (itnum == 1)
+    {
+      phinp->Update(1.0,*(scatra_->ScaTraField()->Phinp()),0.0); //TSI does Dispn()
+    }
+
+    // store scalar from first solution for convergence check (like in
+    // elch_algorithm: use current values)
+    scaincnp_->Update(1.0,*scatra_->ScaTraField()->Phinp(),0.0);
+    dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
+
+
+    // begin nonlinear solver / outer iteration ***************************
+    // set mesh displacement and velocity fields
+    SetScatraSolution(phinp);
+
+    if(itnum!=1)
+      structure_->PreparePartitionStep();
+
+    // solve structural system
+    DoStructStep();
+
+
+    SetStructSolution( structure_->Dispnp() , structure_->Velnp() );
+
+    // solve scalar transport equation
+    DoScatraStep();
+
+    // check convergence for all fields and stop iteration loop if
+    // convergence is achieved overall
+    stopnonliniter = ConvergenceCheck(itnum);
+
+    // get fixed relaxation parameter
+    CalcOmega(omega_,itnum);
+
+    // fixed relaxation can be applied even in the 1st iteration
+    // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
+    //         = d^i + omega^{i+1} * ( d^{i+1} - d^i )
+    phinp->Update(omega_,*scaincnp_,1.0);
+    }
+}
+
+/*----------------------------------------------------------------------*
+ | Calculate relaxation parameter                            Thon 12/14 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_ScatraToSolid_Relax::CalcOmega(double& omega, const int itnum)
+{
+  //nothing to do in here since we have a constant relaxation parameter: omega != startomega_;
+  std::cout<<"Fixed relaxation parameter omega is: " <<omega<<std::endl;
+}
+
+/*----------------------------------------------------------------------*
+ | Constructor                                               Thon 12/14 |
+ *----------------------------------------------------------------------*/
+SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::SSI_Part2WC_ScatraToSolid_Relax_Aitken(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& structparams)
+  : SSI_Part2WC_ScatraToSolid_Relax(comm, globaltimeparams, scatraparams, structparams),
+    del_(LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true)),
+    delhist_(LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true))
+{
+  const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");;
+
+  //Get maximal relaxation parameter from input file
+  maxomega_ = ssicontrolpart.get<double>("MAXOMEGA");
+
+  //Get minimal relaxation parameter from input file
+  minomega_ = ssicontrolpart.get<double>("MINOMEGA");
+
+  del_->PutScalar(1.0e05);
+  delhist_->PutScalar(0.0);
+}
+
+/*----------------------------------------------------------------------*
+ | Calculate relaxation parameter via Aitken                 Thon 12/14 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::CalcOmega(double& omega, const int itnum)
+{
+  //delhist =  r^{i+1}_{n+1} - r^i_{n+1}
+  delhist_->Update(1.0,*scaincnp_,(-1.0),*del_,0.0);
+
+  // del_ = r^{i+1}_{n+1} = Phi^{i+1}_{n+1} - Phi^{i}_{n+1}
+  del_->Update(1.0,*scaincnp_,0.0);
+
+  double delhistnorm = 0.0;
+  delhist_->Norm2(&delhistnorm);
+
+  if (delhistnorm <=1e-05)
+    std::cout<<"Warning: The scalar increment is to small in order to use it for Aitken relaxation. Using the previous omega instead!"<<std::endl;
+
+  // calculate dot product
+  double delsdot = 0.0; //delsdot = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
+  delhist_->Dot(*del_,&delsdot);
+
+  if (itnum != 1 and delhistnorm > 1e-05)
+  { // relaxation parameter
+    // omega^{i+1} = 1- mu^{i+1} and nu^{i+1} = nu^i + (nu^i -1) . (r^{i+1} - r^i)^T . (-r^{i+1}) / |r^{i+1} - r^{i}|^2 results in
+    omega = omega*(1  - (delsdot)/(delhistnorm * delhistnorm));
+
+    if (omega < minomega_)
+    {
+      if (Comm().MyPID()==0)
+        std::cout<<"Warning: The calculation of the relaxation parameter omega via Aitken did lead to a value smaller than MINOMEGA!"<<std::endl;
+      omega= minomega_;
+    }
+    if (omega > maxomega_)
+    {
+      if (Comm().MyPID()==0)
+        std::cout<<"Warning: The calculation of the relaxation parameter omega via Aitken did lead to a value bigger than MAXOMEGA!"<<std::endl;
+      omega= maxomega_;
+    }
+  }
+  //else //nothing to do here since we take the last omega from the previous step
+  std::cout<<"Using Aitken the relaxation parameter omega was estimated to: " <<omega<<std::endl;
+
 }

@@ -25,7 +25,6 @@ SSI::SSI_Part::SSI_Part(const Epetra_Comm& comm,
     const Teuchos::ParameterList& structparams)
   : SSI_Base(comm, globaltimeparams,scatraparams,structparams)
 {
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -37,27 +36,28 @@ void SSI::SSI_Part::SetupSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part::SetStructSolution()
+void SSI::SSI_Part::SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
+                                       Teuchos::RCP<const Epetra_Vector> vel )
 {
-  SetMeshDisp();
-  SetVelocityFields();
+  SetMeshDisp(disp);
+  SetVelocityFields(vel);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part::SetScatraSolution()
+void SSI::SSI_Part::SetScatraSolution( Teuchos::RCP<const Epetra_Vector> phi )
 {
-  structure_->Discretization()->SetState(1,"temperature",scatra_->ScaTraField()->Phinp());
+  structure_->Discretization()->SetState(1,"temperature",phi);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part::SetVelocityFields()
+void SSI::SSI_Part::SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel)
 {
   scatra_->ScaTraField()->SetVelocityField(
       zeros_, //convective vel.
       Teuchos::null, //acceleration
-      structure_->Velnp(), //velocity
+      vel, //velocity
       Teuchos::null, //fsvel
       Teuchos::null, //dofset
       structure_->Discretization()); //discretization
@@ -65,10 +65,10 @@ void SSI::SSI_Part::SetVelocityFields()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part::SetMeshDisp()
+void SSI::SSI_Part::SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp )
 {
   scatra_->ScaTraField()->ApplyMeshMovement(
-      structure_->Dispnp(),
+      disp,
       structure_->Discretization());
 }
 

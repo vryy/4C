@@ -149,9 +149,9 @@ void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
   {
     PrepareTimeStep();
     DoStructStep();  // It has its own time and timestep variables, and it increments them by itself.
-    SetStructSolution();
     if (structure_->Step() % diffsteps == 0)
     {
+      SetStructSolution(structure_->Dispn(),structure_->Velnp());
       DoScatraStep();  // It has its own time and timestep variables, and it increments them by itself.
     }
   }
@@ -178,16 +178,6 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& com
   //DRT::Problem* problem = DRT::Problem::Instance();
   isscatrafromfile_ = DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->SSIControlParams(),"SCATRA_FROM_RESTART_FILE");
 
-  /*
-  if (isscatrafromfile_){
-     std::string scatrafilename = Teuchos::getNumericStringParameter(problem->SSIControlParams()
-                                                                              ,"SCATRA_FILENAME");
-     Teuchos::RCP<IO::InputControl> inputscatra = Teuchos::rcp(new IO::InputControl(scatrafilename, comm));
-     problem->SetInputControlFile(inputscatra);
-  }
-  */
-
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -206,7 +196,7 @@ void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
     DoScatraStep();  // It has its own time and timestep variables, and it increments them by itself.
     if (scatra_->ScaTraField()->Step()  % diffsteps ==0)
     {
-      SetScatraSolution();
+      SetScatraSolution(scatra_->ScaTraField()->Phinp());
       DoStructStep();  // It has its own time and timestep variables, and it increments them by itself.
     }
   }

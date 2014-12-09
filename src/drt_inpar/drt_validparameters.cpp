@@ -3338,6 +3338,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                               &poroscatradyn);
 
   /*----------------------------------------------------------------------*/
+  /* parameters for SSI */
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& ssidyn = list->sublist(
    "SSI CONTROL",false,
    "Control paramters for scatra structure interaction"
@@ -3354,26 +3356,54 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("UPRESTIME",0,"increment for writing solution",&ssidyn);
   IntParameter("UPRES",1,"increment for writing solution",&ssidyn);
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&ssidyn);
-  DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&ssidyn);
   BoolParameter("SCATRA_FROM_RESTART_FILE","No","read scatra result from restart files (use option 'restartfromfile' during execution of baci)",&ssidyn);
   StringParameter("SCATRA_FILENAME","nil","Control-file name for reading scatra results in SSI",&ssidyn);
 
 
   // Coupling strategy for SSI solvers
   setStringToIntegralParameter<int>(
-                              "COUPALGO","two_way",
+                              "COUPALGO","ssi_IterStagg",
                               "Coupling strategies for SSI solvers",
                               tuple<std::string>(
-                                "scatra_to_solid",
-                                "solid_to_scatra",
-                                "two_way"
+                                "ssi_OneWay_ScatraToSolid",
+                                "ssi_OneWay_SolidToScatra",
+//                                "ssi_SequStagg_ScatraToSolid",
+//                                "ssi_SequStagg_SolidToScatra",
+                                "ssi_IterStagg",
+                                "ssi_IterStaggFixedRel_ScatraToSolid",
+                                "ssi_IterStaggFixedRel_SolidToScatra",
+                                "ssi_IterStaggAitken_ScatraToSolid",
+                                "ssi_IterStaggAitken_SolidToScatra"
                                 ),
                               tuple<int>(
-                                INPAR::SSI::Part_ScatraToSolid,
-                                INPAR::SSI::Part_SolidToScatra,
-                                INPAR::SSI::Part_TwoWay
+                                INPAR::SSI::ssi_OneWay_ScatraToSolid,
+                                INPAR::SSI::ssi_OneWay_SolidToScatra,
+//                                INPAR::SSI::ssi_SequStagg_ScatraToSolid,
+//                                INPAR::SSI::ssi_SequStagg_SolidToScatra,
+                                INPAR::SSI::ssi_IterStagg,
+                                INPAR::SSI::ssi_IterStaggFixedRel_ScatraToSolid,
+                                INPAR::SSI::ssi_IterStaggFixedRel_SolidToScatra,
+                                INPAR::SSI::ssi_IterStaggAitken_ScatraToSolid,
+                                INPAR::SSI::ssi_IterStaggAitken_SolidToScatra
                                 ),
                               &ssidyn);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for partitioned SSI */
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& ssidynpart = ssidyn.sublist(
+      "PARTITIONED",false,
+      "Partitioned Structure Scalar Interaction\n"
+      "Control section for partitioned SSI"
+       );
+
+  // Solver parameter for relaxation of iterative staggered partitioned SSI
+  DoubleParameter("MAXOMEGA",10.0,"largest omega allowed for Aitken relaxation",&ssidynpart);
+  DoubleParameter("MINOMEGA",0.1,"smallest omega allowed for Aitken relaxation",&ssidynpart);
+  DoubleParameter("STARTOMEGA",1.0,"fixed relaxation parameter",&ssidynpart);
+
+  // convergence tolerance of outer iteration loop
+  DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of outer iteraiton within partitioned TSI",&ssidynpart);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& flucthydro = list->sublist("FLUCTUATING HYDRODYNAMICS",false,"");

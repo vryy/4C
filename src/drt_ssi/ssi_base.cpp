@@ -57,7 +57,7 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
       = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(problem->SSIControlParams(),"COUPALGO");
 
   bool isale = true;
-  if(coupling == INPAR::SSI::Part_ScatraToSolid) isale = false;
+  if(coupling == INPAR::SSI::ssi_OneWay_ScatraToSolid) isale = false;
 
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(structparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));

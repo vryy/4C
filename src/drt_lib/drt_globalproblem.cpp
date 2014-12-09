@@ -246,6 +246,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--POROELASTICITY DYNAMIC", *list);
   reader.ReadGidSection("--POROSCATRA CONTROL", *list);
   reader.ReadGidSection("--SSI CONTROL", *list);
+  reader.ReadGidSection("--SSI CONTROL/PARTITIONED", *list);
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/EDGE-BASED STABILIZATION", *list);

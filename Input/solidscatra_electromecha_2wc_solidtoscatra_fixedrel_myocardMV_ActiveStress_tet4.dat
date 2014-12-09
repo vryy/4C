@@ -1,8 +1,16 @@
+//
+// Maintainer: Moritz Thon
+// thon@mhp.mw.tum.de
+// 089/289-10364
+// Two way electromechanics
+// Testing: 2wc partioned scalar-structure interaction with fixed relaxated displacements
+//
+
 ==================================================================
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Two way electromechanics
+
 Test for SolidScatra Material with Tet4 Elements
 Maintainer: C. Bertoglio
 ----------------------------------------------------------------PROBLEM SIZE
@@ -124,10 +132,11 @@ RESTARTEVRY                     1
 NUMSTEP                         10000
 MAXTIME                         0.5
 TIMESTEP                        0.1
-COUPALGO                        ssi_IterStagg //   ssi_IterStagg // ssi_IterStaggFixedRel_SolidToScatra
+COUPALGO                        ssi_IterStaggFixedRel_SolidToScatra //   ssi_IterStagg // ssi_IterStaggFixedRel_SolidToScatra //    scatra_to_solid //  solid_to_scatra // scatra_to_solid one_way two_way
 ITEMAX                          10
 --------------------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1e-08
+STARTOMEGA                      0.8
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 101
 

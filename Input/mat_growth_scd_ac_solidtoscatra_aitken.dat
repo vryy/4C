@@ -1,16 +1,15 @@
 //
-// Maintainer: Anh-Tu Vuong
-// tvuong@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15251
-//
+// Maintainer: Moritz Thon
+// thon@mhp.mw.tum.de
+// 089/289-10364
+// scalar dependent growth of a quadratic block
+// Testing: materials MAT_MAT_GrowthVolumetricScd and MAT_GrowthAC
 //
 ==================================================================
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-scalar dependent growth of quadratic block
-testing MAT_GROWTHSCD and MAT_SCATRA_GROWTHSCD material
+
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216
@@ -46,7 +45,7 @@ ALPHA_F                         0.5
 ALPHA_M                         0.5
 BLOCKPRECOND                    NO
 CALCERROR                       No
-CONVFORM                        conservative
+CONVFORM                        conservative //convective
 CONV_HEAT_TRANS                 no
 FSSUGRDIFF                      No
 GAMMA                           0.5
@@ -75,7 +74,7 @@ VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       No
 WRITEFLUX_IDS                   -1
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-ABSTOLRES                       1e-14
+ABSTOLRES                       1e-10
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-06
@@ -98,11 +97,11 @@ CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta
+DYNAMICTYP                      OneStepTheta //Statics
+MASSLIN                         Standard
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no
-MASSLIN                         standard
 MAXITER                         50
 MAXTIME                         100.0
 MINITER                         0
@@ -121,27 +120,30 @@ RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     10
 TIMESTEP                        0.1
-TOLCONSTR                       1e-08
-TOLDISP                         1e-08
-TOLINCO                         1e-08
-TOLPRE                          1e-08
-TOLRES                          1e-06
+TOLCONSTR                       1e-09
+TOLDISP                         1e-09
+TOLINCO                         1e-09
+TOLPRE                          1e-09
+TOLRES                          1e-09
 UZAWAALGO                       uzawa
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
-------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           1.0
+-----------------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           0.666666
 --------------------------------------------------------SSI CONTROL
-COUPALGO                        ssi_IterStagg
-ITEMAX                          10
+COUPALGO                        ssi_IterStaggFixedRel_SolidToScatra
+ITEMAX                          20
 MAXTIME                         100.0
-NUMSTEP                         10
+NUMSTEP                         20
 RESTARTEVRY                     1
-TIMESTEP                        0.1
+TIMESTEP                        0.05
 UPRES                           1
 --------------------------------------------------------SSI CONTROL/PARTITIONED
-CONVTOL                         1e-06
+CONVTOL                         1e-08
+STARTOMEGA                      0.8
+MAXOMEGA                        2.0
+MINOMEGA                        0.5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 AZBDIAG                         0
@@ -179,31 +181,39 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_GrowthVolumetricScd GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.1 ENDTIME 100.0 TOL 1.0E-10 REARATE 1 SATCOEFF 1.2
-MAT 4 MAT_GrowthLinear THETAPLUS 1.5 KPLUS 1.0 MPLUS 2.0 THETAMINUS 0.5 KMINUS 2.0 MMINUS 3.0 HOMMANDEL 0.0
+MAT 1 MAT_GrowthVolumetricScd GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 100.0 TOL 1.0E-10
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.0001
 MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3
-MAT 101 MAT_Scatra_GrowthScd DIFFUSIVITY 0.1 STRDENSITY 1.0 REARATE 1 SATCOEFF 1.2
+MAT 4 MAT_GrowthAC SCALAR1 2 ALPHA 2.0
+MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 51 52 NUMREAC 1 REACIDS 53 END
+MAT 51 MAT_scatra DIFFUSIVITY 0.0000001
+MAT 52 MAT_scatra DIFFUSIVITY 0.0000001
+MAT 53 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative
 --------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 101
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 ----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.1 FACTOR 0. 1.
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.1 100.0 FACTOR 1. 1.
+CURVE 1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.1 FACTOR 0. 1.
+CURVE 1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.1 100.0 FACTOR 1. 1.
 ----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0. 1.
-CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.5 100.0 FACTOR 1. 1.
+CURVE 2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0. 1.
+CURVE 2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.5 100.0 FACTOR 1. 1.
 ----------------------------------------------------------------------CURVE3
+// CURVE 3 on EXPR FUNC ((1-cos(2*pi*t))*0.5) t1 0.00 t2 1.0
+// CURVE 3 on EXPR FUNC (0.0) t1 1.00 t2 1000.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION    1.0 //y+0.2
+FUNCT 1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION    1.0 //(2*y) //y+0.2
+FUNCT 1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION    0.0
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 2.36441349541266499e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE 2.31791591765357109e-02 TOLERANCE 1e-6
-SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 1.22793768582815743e+00 TOLERANCE 1e-6
-SCATRA DIS scatra NODE 200 QUANTITY phi VALUE 8.31468888528263061e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 2.01541787222755980e-01 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE 2.01541791788305669e-01 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 2.20074704849820196e-01 TOLERANCE 1e-6
+SCATRA DIS scatra NODE 200 QUANTITY phi VALUE 2.20074249531334698e-01 TOLERANCE 1e-6
+SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE 3.63600959393438505e-01 TOLERANCE 1e-6
+SCATRA DIS scatra NODE 200 QUANTITY phi2 VALUE 3.63600111619801214e-01 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          8
@@ -226,61 +236,62 @@ DLINE                           0
 ------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
 DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          8
-// front upper left
-E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// back upper left
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// front lower left
-E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// back lower left
+DPOINT                          1
+// // front upper left
+// E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// // back upper left
+// E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// // front lower left
+// E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// // back lower left
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // front upper right
-E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
-// back upper right
-E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
-// front lower right
-E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
-// back lower right
-E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           8
-// right upper
-E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
-// right lower
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
-// right back
-E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
-// right front
-E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
-// left upper
-E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// left lower
-E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// left back
-E 7 - NUMDOF 3 ONOFF 1 1 00 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// left front
-E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // back upper right
+// E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // front lower right
+// E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // back lower right
+// E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+// DLINE                           8
+// // right upper
+// E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // right lower
+// E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // right back
+// E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // right front
+// E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // left upper
+// E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// // left lower
+// E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// // left back
+// E 7 - NUMDOF 3 ONOFF 1 1 00 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// // left front
+// E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           2
+DSURF                           0
 // left surface
-E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// right surface
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none none none FUNCT 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE                           0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF                           2
-// left surface
-E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0
-// right surface
-E 2 - NUMDOF 1 ONOFF 1 VAL 2.0 CURVE 2 FUNCT 0
---------------------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
-DVOL                            0
+//E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// // right surface
+// E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none none none FUNCT 0 0 0
+// ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+// DVOL                            0
+// ------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
+// DPOINT                          0
+// -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
+// DLINE                           0
+// -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
+// DSURF                           2
+// // left surface
+// E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0
+// // right surface
+// E 2 - NUMDOF 1 ONOFF 1 VAL 2.0 CURVE 2 FUNCT 0
+// --------------------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
+// DVOL                            1
+// E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 10.0 CURVE 3 3 FUNCT 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 181 DNODE 1
 NODE 1 DNODE 2

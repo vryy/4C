@@ -46,7 +46,6 @@ void ssi_drt()
   const INPAR::SSI::SolutionSchemeOverFields coupling
     = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssiparams,"COUPALGO");
 
-  //
 
   //3.- Creation of Poroelastic + Scalar_Transport problem. (Discretization called inside)
   Teuchos::RCP<SSI::SSI_Base> ssi = Teuchos::null;
@@ -54,14 +53,28 @@ void ssi_drt()
   //3.1 choose algorithm depending on solution type
   switch(coupling)
   {
-  case INPAR::SSI::Part_SolidToScatra:
-    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_SolidToScatra(comm, ssiparams, scatradyn, sdyn));
-    break;
-  case INPAR::SSI::Part_ScatraToSolid:
+  case INPAR::SSI::ssi_OneWay_ScatraToSolid:
     ssi = Teuchos::rcp(new SSI::SSI_Part1WC_ScatraToSolid(comm, ssiparams, scatradyn, sdyn));
     break;
-  case INPAR::SSI::Part_TwoWay:
+  case INPAR::SSI::ssi_OneWay_SolidToScatra:
+    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_SolidToScatra(comm, ssiparams, scatradyn, sdyn));
+    break;
+  //case INPAR::SSI::ssi_SequStagg_ScatraToSolid:
+  //case INPAR::SSI::ssi_SequStagg_SolidToScatra:
+  case INPAR::SSI::ssi_IterStagg:
     ssi = Teuchos::rcp(new SSI::SSI_Part2WC(comm, ssiparams, scatradyn, sdyn));
+    break;
+  case INPAR::SSI::ssi_IterStaggFixedRel_ScatraToSolid:
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax(comm, ssiparams, scatradyn, sdyn));
+    break;
+  case INPAR::SSI::ssi_IterStaggFixedRel_SolidToScatra:
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax(comm, ssiparams, scatradyn, sdyn));
+    break;
+  case INPAR::SSI::ssi_IterStaggAitken_ScatraToSolid:
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken(comm, ssiparams, scatradyn, sdyn));
+        break;
+  case INPAR::SSI::ssi_IterStaggAitken_SolidToScatra:
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken(comm, ssiparams, scatradyn, sdyn));
     break;
   default:
     dserror("unknown coupling algorithm for SSI!");
@@ -81,7 +94,7 @@ void ssi_drt()
 
   // 3.3 AFTER restart: reset inputfilename of the problem so that results from other runs can be read
   bool flag_readscatra = DRT::INPUT::IntegralValue<bool>(ssiparams,"SCATRA_FROM_RESTART_FILE");
-  if(coupling == INPAR::SSI::Part_ScatraToSolid and flag_readscatra ){
+  if(coupling == INPAR::SSI::ssi_OneWay_ScatraToSolid and flag_readscatra ){
        std::string filename = Teuchos::getNumericStringParameter(ssiparams,"SCATRA_FILENAME");
        Teuchos::RCP<IO::InputControl> inputscatra = Teuchos::rcp(new IO::InputControl(filename, comm));
        problem->SetInputControlFile(inputscatra);

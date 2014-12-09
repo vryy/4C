@@ -123,9 +123,8 @@ RESTARTEVRYTIME                 0.1
 NUMSTEP                         100000000
 MAXTIME                         1.0
 TIMESTEP                        0.05
-COUPALGO                        scatra_to_solid  // two_way // solid_to_scatra //
+COUPALGO                        ssi_OneWay_ScatraToSolid
 ITEMAX                          10
-CONVTOL                         1e-3
 SCATRA_FROM_RESTART_FILE        No
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 20 DENS 0.001

@@ -133,14 +133,15 @@ UZAWATOL                        1e-08
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 --------------------------------------------------------SSI CONTROL
-CONVTOL                         1e-06
-COUPALGO                        two_way
+COUPALGO                        ssi_IterStagg
 ITEMAX                          10
 MAXTIME                         100.0
 NUMSTEP                         50
 RESTARTEVRY                     1
 TIMESTEP                        0.1
 UPRES                           1
+--------------------------------------------------------SSI CONTROL/PARTITIONED
+CONVTOL                         1e-06
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 AZBDIAG                         0

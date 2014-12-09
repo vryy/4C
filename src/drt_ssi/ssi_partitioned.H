@@ -49,17 +49,18 @@ protected:
   virtual void DoScatraStep() = 0 ;
 
   /// set structure solution on scatra field
-  void SetStructSolution() ;
+  void SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
+                          Teuchos::RCP<const Epetra_Vector> vel ) ;
 
   /// set scatra solution on structure field
-  void SetScatraSolution() ;
+  void SetScatraSolution( Teuchos::RCP<const Epetra_Vector> phi ) ;
 
 private:
   /// set structure mesh displacement on scatra field
-  void SetMeshDisp() ;
+  void SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp ) ;
 
   /// set structure velocity fields on scatra field
-  void SetVelocityFields() ;
+  void SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel ) ;
 
 };
 
