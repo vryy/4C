@@ -132,7 +132,8 @@ void NLNSOL::NlnProblem::ComputeF(const Epetra_MultiVector& x,
   if (frcp.is_null())
     dserror("Could not extract Epetra_Vector from NOX::Epetra::Vector.");
 
-  int err = f.Update(1.0, *frcp, 0.0);
+  // switch sign to obtain a residual in descent direction
+  int err = f.Update(-1.0, *frcp, 0.0);
   if (err != 0) { dserror("Update failed."); }
 
   // check for correctness of maps
@@ -264,7 +265,7 @@ Teuchos::RCP<Epetra_Operator> NLNSOL::NlnProblem::GetJacobianOperator()
   if (jac_.is_null())
     dserror("Jacobian operator 'jac_' has not been initialized, yet.");
 
-//  // check if Jacobian operator is valid
+//  // check if Jacobian operator is valid // ToDo (mayr) re-introduce safety check
 //  if (not NOXGroup().isJacobian())
 //    dserror("Jacobian operator is not up-to-date.");
 

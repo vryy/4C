@@ -23,6 +23,7 @@ Maintainer: Matthias Mayr
 #include "linesearch_base.H"
 #include "linesearch_factory.H"
 #include "linesearch_fullstep.H"
+#include "linesearch_linear.H"
 #include "linesearch_polynomial.H"
 
 #include "../drt_lib/drt_dserror.H"
@@ -52,6 +53,10 @@ NLNSOL::LineSearchFactory::Create(const Teuchos::ParameterList& params)
   {
     return Teuchos::rcp(new NLNSOL::LineSearchFullStep());
   }
+//  else if (lstype == "linear")
+//  {
+//    return Teuchos::rcp(new NLNSOL::LineSearchLinear());
+//  }
   else
   {
     dserror("Unknown line search algorithm %s.", lstype.c_str());

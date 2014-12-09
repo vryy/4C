@@ -132,9 +132,18 @@ int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
   // applying the linear preconditioner
   int errorcode = linprec_->ApplyInverse(f, *inc);
 
-  // update solution by preconditioned increment
-  err = x.Update(-1.0, *inc, 1.0);
+  /* Update solution by preconditioned increment. Use negative sign due to the
+   * type of residual, that has been handed in.
+   */
+  err = x.Update(1.0, *inc, 1.0);
   if (err != 0) { dserror("Update failed."); }
+
+  Teuchos::RCP<Epetra_MultiVector> fnew =
+      Teuchos::rcp(new Epetra_MultiVector(f.Map(), true));
+  NlnProblem()->ComputeF(x, *fnew);
+  double fnorm2 = 1.0e+12;
+  NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
+  PrintIterSummary(-1, fnorm2);
 
   return errorcode;
 }

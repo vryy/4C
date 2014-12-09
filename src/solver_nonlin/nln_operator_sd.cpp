@@ -133,8 +133,12 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
 const int NLNSOL::NlnOperatorSD::ComputeSearchDirection(
     const Epetra_MultiVector& rhs, Epetra_MultiVector& inc) const
 {
-  // search direction = negative residual (gradient)
-  int err = inc.Update(-1.0, rhs, 0.0);
+  /* search direction = negative residual (gradient)
+   *
+   * Since NlnProblem()->ComputeF() already returns the steepest descent
+   * direction, we just have to copy it into the increment vector.
+   */
+  int err = inc.Update(1.0, rhs, 0.0);
   if (err != 0) { dserror("Update failed."); }
 
   return err;

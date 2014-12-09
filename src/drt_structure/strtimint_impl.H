@@ -207,6 +207,8 @@ namespace STR
      *  For now, this only provides basic functionalities, i.e. pure solid
      *  dynamics without contact, plasticity, constraints, ...
      *
+     *  \f[ f_{res} = f_{int} - f_{ext} \f]
+     *
      *  \author mayr.mt \date 09/2014
      */
     virtual void EvaluateForceResidual() = 0;
@@ -1038,6 +1040,9 @@ namespace STR
     double ptcdt_; //!< pseudo time step size for PTC
     double dti_;   //!< scaling factor for PTC (initially 1/ptcdt_, then adapted)
     //@}
+
+    Teuchos::RCP<Epetra_Vector> b_; ///< right hand side for linearized problem
+    Teuchos::RCP<LINALG::SparseOperator> A_; ///< linearized stiffness matrix
 
   };  // class TimIntImpl
 

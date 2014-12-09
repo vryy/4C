@@ -92,8 +92,8 @@ public:
   /*! \brief Apply the preconditioner
    *
    *  We use a linear preconditioner here, that usually solves the system
-   *  \f$Ax=b\f$. Though, when reformulating it to an interative process
-   *  \f$A\Delta x = b-Ax_i = -f_i\f$, we can directly use the evalutated
+   *  \f$Ax=b\f$. Though, when reformulating it to an iterative process
+   *  \f$A\Delta x = b-Ax_i = -f_i\f$, we can directly use the evaluated
    *  residual coming from NlnProblem::ComputeF().
    *
    *  To avoid an unnecessary scaling by \f$-1.0\f$, we solve for
@@ -104,7 +104,7 @@ public:
    *
    *  \author mayr.mt \date 08/2014
    */
-  virtual int ApplyInverse(const Epetra_MultiVector& f, ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
+  virtual int ApplyInverse(const Epetra_MultiVector& f, ///< residual in mechanical sense
       Epetra_MultiVector& x ///< solution
       ) const;
 

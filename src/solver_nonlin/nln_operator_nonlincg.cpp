@@ -115,12 +115,12 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
   // some initializations
   // ---------------------------------------------------------------------------
   double alpha = 1.0; // line search parameter
-  double beta = 1.0; // parameter for update of search direction
+  double beta = 0.0; // parameter for update of search direction
   double fnorm2 = 1.0e+12; // L2-norm of residual
   int iter = 0; // iteration counter
 
   // ---------------------------------------------------------------------------
-  // compute initial search direction
+  // compute initial residual and apply the preconditioner once
   // ---------------------------------------------------------------------------
   // evaluate current residual
   Teuchos::RCP<Epetra_MultiVector> fnew =
@@ -131,19 +131,19 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
   Teuchos::RCP<Epetra_MultiVector> fold =
       Teuchos::rcp(new Epetra_MultiVector(*fnew));
 
-  // Apply preconditioner to obtain search direction
-  Teuchos::RCP<Epetra_MultiVector> s = Teuchos::rcp(new Epetra_MultiVector(x));
+  // Apply preconditioner once: s = M^{-1}*fnew
+  Teuchos::RCP<Epetra_MultiVector> s =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
   err = ApplyPreconditioner(*fnew, *s);
   if (err != 0) { dserror("ApplyPreconditioner() failed."); }
-  err = s->Update(-1.0, x, 1.0);
-  if (err != 0) { dserror("Update failed."); }
 
   // prepare vector for preconditioned residual from previous iteration
   Teuchos::RCP<Epetra_MultiVector> sold =
       Teuchos::rcp(new Epetra_MultiVector(*s));
 
-  // prepare vector for search direction
-  Teuchos::RCP<Epetra_MultiVector> p = Teuchos::rcp(new Epetra_MultiVector(*s));
+  // prepare vector for search direction and initialize to zero
+  Teuchos::RCP<Epetra_MultiVector> p =
+      Teuchos::rcp(new Epetra_MultiVector(s->Map(), 1, true));
 
   // do an initial convergence check
   bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
@@ -154,6 +154,9 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
   // ---------------------------------------------------------------------------
   while (ContinueIterations(iter, converged))
   {
+    // Update search direction
+    p->Update(1.0, *s, beta);
+
     // compute line search parameter alpha
     alpha = ComputeStepLength(x, *p, fnorm2);
 
@@ -170,16 +173,14 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
     converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
 
     // compute preconditioned search direction
-    s->Update(1.0, x, 0.0);
     err = ApplyPreconditioner(*fnew, *s);
     if (err != 0) { dserror("ApplyPreconditioner() failed."); }
-    s->Update(-1.0, x, 1.0);
 
     ComputeBeta(beta, fnew, fold, s, sold);
 
     /* Account for possible restart:  We restart CG every #restartevery_
      * iterations or if beta <= 0.0. */
-    if ((iter % restartevery_ == 0) or (beta <= 0.0))
+    if (((iter + 1) % restartevery_ == 0) or (beta <= 0.0))
     {
       beta = 0.0;
 
@@ -190,9 +191,6 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
                  << IO::endl;
       }
     }
-
-    // Update search direction
-    p->Update(1.0, *s, beta);
 
     // finish current iteration
     ++iter;
@@ -215,7 +213,8 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyPreconditioner(
 
   dsassert(f.Map().PointSameAs(x.Map()), "Maps do not match");
 
-  return nlnprec_->ApplyInverse(f, x);
+//  return nlnprec_->ApplyInverse(f, x);
+  return x.Update(1.0, f, 0.0);
 }
 
 /*----------------------------------------------------------------------------*/

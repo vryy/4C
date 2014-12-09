@@ -123,7 +123,20 @@ namespace NLNSOL
      *  Updating the solution variables in the marching time integrator is done
      *  during computeF().
      *
-     *  Return the most recent residual in 'f'.
+     *  Return the most recent residual in 'f' as a descent direction.
+     *
+     *  \note Solvers implemented in the NLNSOL framework require a residual
+     *  that points into descent direction.
+     *
+     *  \note One can define the 'mechanical' residual as
+     *  \f$F(x) = f_{int} - f_{ext}\f$ or as \f$F(x) = f_{ext} - f_{int}\f$.
+     *  This choice is arbitrary, since both formulations result in exactly the
+     *  same solution \f$x\f$. In many Finite Element Codes as well as in baci,
+     *  often the first version is utilized which produces an ascent direction.
+     *  For a descent direction, one has to use the latter formula.
+     *  To be consistent with mathematical literature, the residual needs
+     *  to be a descent direction. Hence, we need to switch the sign of the
+     *  'mechanical' baci-residual.
      *
      *  \author mayr.mt \date 09/2014
      */

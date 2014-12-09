@@ -114,7 +114,7 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
   Teuchos::RCP<Epetra_MultiVector> inc =
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
 
-  // residual vector
+  // residual vector already including negative sign
   Teuchos::RCP<Epetra_MultiVector> rhs =
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
   NlnProblem()->ComputeF(x, *rhs);
@@ -136,7 +136,6 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
 
     // prepare linear solve
     NlnProblem()->ComputeJacobian();
-    rhs->Scale(-1.0);
     inc->PutScalar(0.0);
 
     // compute the Newton increment
@@ -151,7 +150,6 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
 
     // evaluate and check for convergence
     NlnProblem()->ComputeF(x, *rhs);
-
     converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2);
 
     PrintIterSummary(iter, fnorm2);
