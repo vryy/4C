@@ -12,27 +12,17 @@ Maintainer: Volker Gravemeier
 */
 /*----------------------------------------------------------------------*/
 
-#include "scatra_timint_genalpha.H"
-
+#include "scatra_timint_meshtying_strategy_base.H"
 #include "turbulence_hit_scalar_forcing.H"
-
-#include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 
-#include "../drt_inpar/drt_validparameters.H"
-
 #include "../drt_io/io.H"
-
-#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
-#include "../linalg/linalg_solver.H"
-
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_TimeMonitor.hpp>
+#include "scatra_timint_genalpha.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       vg 11/08 |
@@ -356,10 +346,7 @@ void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificVectors(bool forcedincrem
  *------------------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params)
 {
-  // set interface state vector iphinp_ with transformed dof values and add to discretization
-  imaps_->InsertVector(icoup_->SlaveToMaster(maps_->ExtractVector(*phiaf_,2)),0,iphinp_);
-  imaps_->InsertVector(icoup_->MasterToSlave(maps_->ExtractVector(*phiaf_,1)),1,iphinp_);
-  params.set<Teuchos::RCP<const Epetra_Vector> >("iphinp",iphinp_);
+  strategy_->AddTimeIntegrationSpecificInterfaceVector(phiaf_,params);
 
   return;
 }

@@ -1,0 +1,104 @@
+/*!----------------------------------------------------------------------
+\file scatra_timint_meshtying_strategy_base.H
+
+\brief Abstract interface for meshtying strategies in scalar transport problems (including standard strategy without meshtying)
+
+<pre>
+Maintainer: Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H
+#define SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H
+
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+
+// forward declarations
+namespace LINALG
+{
+  class KrylovProjector;
+  class Solver;
+  class SparseOperator;
+}
+
+namespace SCATRA
+{
+  class ScaTraTimIntImpl;
+
+/*!
+\brief Abstract interface for meshtying strategies in scalar transport problems (including standard strategy without meshtying)
+
+To keep the scalar transport time integrator class and derived classes as plain as possible,
+several algorithmic parts have been encapsulated within separate meshtying strategy classes.
+These algorithmic parts include initializing the system matrix and other relevant objects,
+computing meshtying residual terms and their linearizations, and solving the resulting
+linear system of equations. By introducing a hierarchy of strategies for these algorithmic
+parts, a bunch of unhandy if-else selections within the time integrator classes themselves
+can be circumvented. Every specific meshtying strategy, e.g. fluid-fluid meshtying, scatra-
+scatra interface coupling, and also the standard algorithm without meshtying, has to be
+implemented in a subclass derived from this abstract, purely virtual interface class.
+
+\author fang (fang@lnm.mw.tum.de)
+*/
+
+class MeshtyingStrategyBase
+{
+  public:
+
+    //! constructor
+    MeshtyingStrategyBase(
+        SCATRA::ScaTraTimIntImpl* scatratimint
+        ) :
+    scatratimint_(scatratimint)
+    {return;}
+
+
+    //! destructor
+    virtual ~MeshtyingStrategyBase(){return;};
+
+    //! add interface state vector specific for time-integration scheme
+    virtual void AddTimeIntegrationSpecificInterfaceVector(
+        const Teuchos::RCP<const Epetra_Vector>&   statevector,   //! full state vector at time n+alpha_f (gen-alpha) or n+1 (otherwise)
+        Teuchos::ParameterList&                    parameters     //! parameter list passed to interface elements
+        ) const
+    {return;};
+
+    //! compute meshtying residual terms and their linearizations
+    virtual void EvaluateMeshtying() const = 0;
+
+    //! include Dirichlet conditions into condensation
+    virtual void IncludeDirichletInCondensation() const {return;};
+
+    //! initialize meshtying objects
+    virtual void InitMeshtying() = 0;
+
+    //! initialize system matrix
+    virtual Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const = 0;
+
+    //! solve resulting linear system of equations
+    virtual void Solve(
+        const Teuchos::RCP<LINALG::Solver>&            solver,         //! solver
+        const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //! system matrix
+        const Teuchos::RCP<Epetra_Vector>&             increment,      //! increment vector
+        const Teuchos::RCP<Epetra_Vector>&             residual,       //! residual vector
+        const Teuchos::RCP<Epetra_Vector>&             phinp,          //! state vector at time n+1
+        const int&                                     iteration,      //! number of current Newton-Raphson iteration
+        const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //! Krylov projector
+        ) const = 0;
+
+  protected:
+
+    //! scalar transport time integrator
+    SCATRA::ScaTraTimIntImpl* scatratimint_;
+
+  private:
+
+    //! copy constructor
+    MeshtyingStrategyBase(const MeshtyingStrategyBase& old);
+}; // class MeshtyingStrategyBase
+} // namespace SCATRA
+#endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H

@@ -14,9 +14,9 @@ Maintainer: Andreas Ehrl
 #ifndef SCATRA_TIMINT_ELCH_H
 #define SCATRA_TIMINT_ELCH_H
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-
 #include "../drt_inpar/inpar_elch.H"
+
+#include "../drt_scatra/scatra_timint_implicit.H"
 
 /*==========================================================================*/
 // forward declarations
@@ -55,12 +55,6 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! initialize algorithm
   virtual void Init();
-
-  //! Initialization of system matrix
-  virtual void InitSystemMatrix();
-
-  //! setup meshtying system
-  virtual void SetupMeshtying();
 
   /*========================================================================*/
   //! @name general framework
@@ -108,6 +102,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
     double& electrodepot,      //!< electrode potential (metal side)
     double& meanoverpot        //!< mean surface overpotential
   );
+
+  //! output type of closing equation for electric potential
+  const INPAR::ELCH::EquPot EquPot() const { return equpot_; }
 
   protected:
 
@@ -157,6 +154,12 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! Initialize Nernst-BC
   void InitNernstBC();
+
+  //! initialize meshtying strategy (including standard case without meshtying)
+  void CreateMeshtyingStrategy();
+
+  //! adapt number of transported scalars
+  void AdaptNumScal();
 
   /*--- calculate and update -----------------------------------------------*/
 

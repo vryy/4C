@@ -22,16 +22,17 @@ Maintainer: Andreas Ehrl
 */
 /*----------------------------------------------------------------------*/
 
-#include "scatra_timint_implicit.H"
-
-#include "../drt_adapter/adapter_coupling.H"
+#include "scatra_timint_meshtying_strategy_fluid.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
+#include "scatra_timint_meshtying_strategy_std.H"
+#include "turbulence_hit_initial_scalar_field.H"
+#include "turbulence_hit_scalar_forcing.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_krylov_projector.H"
 
-#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_inpar/drt_validparameters.H"
@@ -40,23 +41,16 @@ Maintainer: Andreas Ehrl
 #include "../drt_mat/scatra_mat.H"
 
 #include "../drt_fluid/drt_periodicbc.H"
-#include "../drt_fluid/fluid_meshtying.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
-#include "../drt_fluid/fluid_utils.H"
-#include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
-
-#include "../drt_fsi/fsi_matrixtransform.H"
 
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 
 #include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
 
-#include "turbulence_hit_initial_scalar_field.H"
-#include "turbulence_hit_scalar_forcing.H"
+#include "scatra_timint_implicit.H"
 
 // for the condition writer output
 /*
@@ -98,6 +92,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   myrank_ (actdis->Comm().MyPID()),
   splitter_(Teuchos::null),
   errfile_  (extraparams->get<FILE*>("err file")),
+  strategy_(Teuchos::null),
   scatratype_  (DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(*params,"SCATRATYPE")),
   isale_    (extraparams->get<bool>("isale")),
   solvtype_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
@@ -133,7 +128,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   phin_(Teuchos::null),
   phinp_(Teuchos::null),
   phiatmeshfreenodes_(Teuchos::null),
-  iphinp_(Teuchos::null),
   phidtn_(Teuchos::null),
   phidtnp_(Teuchos::null),
   hist_(Teuchos::null),
@@ -163,7 +157,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   residual_(Teuchos::null),
   trueresidual_(Teuchos::null),
   increment_(Teuchos::null),
-  meshtying_(Teuchos::null),
   msht_(DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(*params,"MESHTYING")),
   // Initialization of AVM3 variables
   sysmat_sd_(Teuchos::null),
@@ -256,6 +249,35 @@ void SCATRA::ScaTraTimIntImpl::Init()
     break;
   }
 
+  // -----------------------------------------------------------------------
+  // determine number of degrees of freedom and transported scalars per node
+  // -----------------------------------------------------------------------
+  int mynumdofpernode = 0;
+  if (discret_->NumMyRowNodes() > 0)
+    mynumdofpernode = discret_->NumDof(0,discret_->lRowNode(0));
+
+  // to support completely empty procs, communication is required
+  discret_->Comm().MaxAll(&mynumdofpernode,&numdofpernode_,1);
+
+  numscal_ = numdofpernode_;
+
+  // adapt number of transported scalars if necessary
+  AdaptNumScal();
+
+  // -----------------------------------------------------------------------------
+  // initialize meshtying strategy (including standard strategy without meshtying)
+  // -----------------------------------------------------------------------------
+  // safety checks
+  if(msht_ != INPAR::FLUID::no_meshtying and s2icoupling_)
+    dserror("Fluid-fluid meshtying in combination with scatra-scatra interface coupling is not implemented yet!");
+  if(s2icoupling_ and !incremental_)
+    dserror("Scatra-scatra interface coupling only working for incremental solve so far!");
+
+  CreateMeshtyingStrategy();
+
+  // initialize strategy
+  strategy_->InitMeshtying();
+
   // -------------------------------------------------------------------
   // check compatibility of boundary conditions
   // -------------------------------------------------------------------
@@ -277,15 +299,15 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // -------------------------------------------------------------------
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  int mynumscal= 0;
-  if (discret_->NumMyRowNodes()>0)
-    mynumscal = discret_->NumDof(0,discret_->lRowNode(0));
-  // to support completely empty procs, communication is required
-  discret_->Comm().MaxAll(&mynumscal,&numscal_,1);
-  numdofpernode_=numscal_;
+  // safety check
+  if (prbtype != prb_elch and DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
+    dserror("Block preconditioning is only for electrochemistry problems!");
 
-  // Initialization of system matrix
-  InitSystemMatrix();
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
+    // do not save the graph if fine-scale subgrid diffusivity is used in non-incremental case (very special case)
+    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()),27));
+  else
+    sysmat_ = strategy_->InitSystemMatrix();
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
@@ -435,61 +457,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
 
 
 /*----------------------------------------------------------------------*
- | initialization of system matrix                           ehrl 12/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::InitSystemMatrix()
-{
-  // scalar transport problem type does not support a block matrix
-  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
-    dserror("Block-Preconditioning is only for ELCH problems");
-
-  if(msht_ != INPAR::FLUID::no_meshtying)
-    SetupMeshtying();
-
-  else if(s2icoupling_)
-    SetupS2ICoupling();
-
-  else
-  {
-    // initialize standard (stabilized) system matrix (and save its graph!)
-    // in standard case, but do not save the graph if fine-scale subgrid
-    // diffusivity is used in non-incremental case
-    if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
-    {
-      // this is a very special case
-      // only fssugrdiff_artificial is allowed in combination with non-incremental
-      sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()),27));
-    }
-    else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()),27,false,true));
-  }
-
-  return;
-} // ScaTraTimIntImpl::InitSystemMatrix()
-
-
-/*----------------------------------------------------------------------*
- | setup meshtying system                                    ehrl 12/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetupMeshtying()
-{
-  // Important:
-  // Meshtying in scatra is not tested at all!!
-  if(msht_== INPAR::FLUID::condensed_bmat)
-    dserror("The 2x2 block solver algorithm, which is necessary for a block matrix system,\n"
-            "is not integrated into the adapter_scatra_base_algorithm. Just do it!!");
-
-  // define coupling
-  std::vector<int> coupleddof(numscal_, 1);
-
-  // setup of meshtying
-  meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim()));
-  sysmat_ = meshtying_->Setup(coupleddof);
-
-  return;
-} // ScaTraTimIntImpl::SetupMeshtying()
-
-
-/*----------------------------------------------------------------------*
  | perform setup of natural convection                       fang 08/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetupNatConv()
@@ -570,85 +537,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
 
 
 /*----------------------------------------------------------------------*
- | perform setup of scatra-scatra interface coupling         fang 10/14 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetupS2ICoupling()
-{
-  // safety check
-  if(!incremental_)
-    dserror("Scatra-scatra interface coupling only working for incremental solve so far!");
-
-  // extract scatra-scatra coupling conditions from discretization
-  std::vector<DRT::Condition*> s2icouplingconditions;
-  discret_->GetCondition("S2ICoupling", s2icouplingconditions);
-
-  // initialize int sets for global ids of interface nodes
-  std::set<int> ithisnodegidset;
-  std::set<int> iothernodegidset;
-
-  // fill sets
-  for (unsigned icond=0; icond<s2icouplingconditions.size(); ++icond)
-  {
-    const std::vector<int>* inodegids = s2icouplingconditions[icond]->Nodes();
-
-    for (unsigned inode=0; inode<inodegids->size(); ++inode)
-    {
-      const int inodegid = (*inodegids)[inode];
-
-      // insert global id of current node into associated set only if node is owned by current processor
-      // need to make sure that node is stored on current processor, otherwise cannot resolve "->Owner()"
-      if(discret_->HaveGlobalNode(inodegid) and discret_->gNode(inodegid)->Owner() == myrank_)
-      {
-        // determine whether node is located on "This" or "Other" side of scatra-scatra interface
-        if(*(s2icouplingconditions[icond]->Get<std::string>("Side")) == "This")
-          ithisnodegidset.insert(inodegid);
-        else if(*(s2icouplingconditions[icond]->Get<std::string>("Side")) == "Other")
-          iothernodegidset.insert(inodegid);
-        else
-          dserror("Interface side must be either \"This\" or \"Other\"!");
-      }
-    }
-  }
-
-  // copy sets into vectors
-  std::vector<int> ithisnodegidvec(ithisnodegidset.begin(),ithisnodegidset.end());
-  std::vector<int> iothernodegidvec(iothernodegidset.begin(),iothernodegidset.end());
-
-  // initialize coupling adapter
-  icoup_ = Teuchos::rcp(new ADAPTER::Coupling());
-  icoup_->SetupCoupling(*discret_,*discret_,ithisnodegidvec,iothernodegidvec,numscal_);
-
-  // generate interior and interface maps
-  Teuchos::RCP<Epetra_Map> ifullmap = LINALG::MergeMap(icoup_->MasterDofMap(),icoup_->SlaveDofMap(),false);
-  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
-  maps.push_back(LINALG::SplitMap(*(discret_->DofRowMap()),*ifullmap));
-  maps.push_back(icoup_->MasterDofMap());
-  maps.push_back(icoup_->SlaveDofMap());
-
-  // initialize global and interface map extractors
-  maps_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*(discret_->DofRowMap()),maps));
-  maps_->CheckForValidMapExtractor();
-  imaps_ = Teuchos::rcp(new LINALG::MapExtractor(*ifullmap,icoup_->SlaveDofMap(),icoup_->MasterDofMap()));
-  imaps_->CheckForValidMapExtractor();
-
-  // initialize interface vector
-  iphinp_ = LINALG::CreateVector(*ifullmap,false);
-
-  // initialize system matrix and associated strategy
-  sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(*maps_,*maps_));
-  Teuchos::rcp_static_cast<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> >(sysmat_)->SetCondElements(DRT::UTILS::ConditionedElementMap(*discret_,"S2ICoupling"));
-
-  // initialize auxiliary system matrix and associated transformation operators
-  auxmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*imaps_,*imaps_));
-  imastertoslavetransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  islavetomastertransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-
-  return;
-} // ScaTraTimIntImpl::SetupS2ICoupling
-
-
-/*----------------------------------------------------------------------*
- | initialization of system matrix                           ehrl 05/14 |
+ | initialization of turbulence model                        ehrl 05/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::InitTurbulenceModel(
     const Epetra_Map* dofrowmap,
@@ -1002,8 +891,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // has to be assigned to the DOF's on the slave side in order to evaluate the system matrix completely
 
   // Preparation for including DC on the master side in the condensation process
-  if(msht_ != INPAR::FLUID::no_meshtying)
-    meshtying_->IncludeDirichletInCondensation(phinp_, phin_);
+  strategy_->IncludeDirichletInCondensation();
 
   // -------------------------------------------------------------------
   //     update velocity field if given by function AND time curve
@@ -2343,6 +2231,27 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
 } // ScaTraTimIntImpl::UpdateKrylovSpaceProjection
 
 
+/*----------------------------------------------------------------------------------------*
+ | initialize meshtying strategy (including standard case without meshtying)   fang 12/14 |
+ *----------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CreateMeshtyingStrategy()
+{
+  // fluid meshtying
+  if(msht_ != INPAR::FLUID::no_meshtying)
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyFluid(this));
+
+  // scatra-scatra interface coupling
+  else if(s2icoupling_)
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this));
+
+  // standard case without meshtying
+  else
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyStd(this));
+
+  return;
+} // ScaTraTimIntImpl::UpdateKrylovSpaceProjection
+
+
 /*----------------------------------------------------------------------*
  | add approximation to flux vectors to a parameter list      gjb 05/10 |
  *----------------------------------------------------------------------*/
@@ -2479,66 +2388,17 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
  *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
-    Teuchos::RCP<LINALG::SparseOperator> auxiliarymatrix,   //!< auxiliary matrix for interface coupling terms
     Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
 )
 {
   // evaluate electrode boundary conditions
   EvaluateElectrodeBoundaryConditions(systemmatrix,rhs);
 
-  // evaluate scatra-scatra interface coupling conditions
-  if(s2icoupling_)
-    EvaluateS2ICoupling(systemmatrix,auxiliarymatrix,rhs);
+  // evaluate meshtying
+  strategy_->EvaluateMeshtying();
 
   return;
 } // ScaTraTimIntImpl::EvaluateSolutionDependingConditions
-
-
-/*-----------------------------------------------------------------------*
- | evaluate scatra-scatra interface coupling conditions       fang 10/14 |
- *-----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::EvaluateS2ICoupling(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
-    Teuchos::RCP<LINALG::SparseOperator> auxiliarymatrix,   //!< auxiliary matrix for coupling terms
-    Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
-)
-{
-  // time measurement: evaluate condition 'S2ICoupling'
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'S2ICoupling'");
-
-  // check matrices
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix);
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockauxiliarymatrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(auxiliarymatrix);
-  if(blocksystemmatrix == Teuchos::null or blockauxiliarymatrix == Teuchos::null)
-    dserror("Either system matrix or auxiliary matrix is not a block matrix!");
-
-  // create parameter list
-  Teuchos::ParameterList condparams;
-
-  // action for elements
-  condparams.set<int>("action",SCATRA::bd_calc_s2icoupling);
-  condparams.set<int>("scatratype",scatratype_);
-  condparams.set("isale",isale_);
-
-  // set global and interface state vectors according to time-integration scheme
-  discret_->ClearState();
-  AddTimeIntegrationSpecificVectors();
-  AddTimeIntegrationSpecificInterfaceVector(condparams);
-
-  // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
-  blockauxiliarymatrix->Zero();
-  discret_->EvaluateCondition(condparams,blocksystemmatrix,blockauxiliarymatrix,rhs,Teuchos::null,Teuchos::null,"S2ICoupling");
-  discret_->ClearState();
-
-  // transform master and slave blocks of auxiliary system matrix and assemble into global system matrix
-  blockauxiliarymatrix->Complete();
-  (*imastertoslavetransform_)(blockauxiliarymatrix->FullRowMap(),blockauxiliarymatrix->FullColMap(),blockauxiliarymatrix->Matrix(0,0),1.,
-      ADAPTER::CouplingMasterConverter(*icoup_),blocksystemmatrix->Matrix(1,2));
-  (*islavetomastertransform_)(blockauxiliarymatrix->FullRowMap(),blockauxiliarymatrix->FullColMap(),blockauxiliarymatrix->Matrix(1,1),1.,
-      ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(2,1));
-
-  return;
-} // ScaTraTimIntImpl::EvaluateS2ICoupling
 
 
 /*----------------------------------------------------------------------*
@@ -2685,24 +2545,13 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   ScalingAndNeumann();
 
   // evaluate solution-depending boundary and interface conditions
-  EvaluateSolutionDependingConditions(sysmat_,auxmat_,residual_);
+  EvaluateSolutionDependingConditions(sysmat_,residual_);
 
   // finalize assembly of system matrix
   sysmat_->Complete();
 
   // end time measurement for element
   dtele_=Teuchos::Time::wallTime()-tcpuele;
-
-  if (msht_!=INPAR::FLUID::no_meshtying)
-  {
-    if (isale_)
-    {
-      dserror("ALE case for mesh tying not yet supported in SCATRA!");
-      //meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,phinp_,dispnp_);
-    }
-    else
-      meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,phinp_);
-  }
 
   return;
 } // ScaTraTimIntImpl::AssembleMatAndRHS
@@ -2733,10 +2582,7 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     // get cpu time
     const double tcpusolve=Teuchos::Time::wallTime();
 
-    if (msht_==INPAR::FLUID::no_meshtying)
-      solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,true);
-    else
-      meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, phinp_, 1, Teuchos::null);
+    strategy_->Solve(solver_,sysmat_,increment_,residual_,phinp_,1,Teuchos::null);
 
     // end time measurement for solver
     dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
@@ -2770,12 +2616,7 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     // get cpu time
     const double tcpusolve=Teuchos::Time::wallTime();
 
-    if (msht_==INPAR::FLUID::no_meshtying)
-      solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
-    else
-      meshtying_->SolveMeshtying(*solver_, sysmat_, phinp_, residual_, phinp_, 1, Teuchos::null);
-
-    //solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
+    strategy_->Solve(solver_,sysmat_,phinp_,residual_,phinp_,1,Teuchos::null);
 
     // end time measurement for solver
     dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
@@ -2892,10 +2733,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       if (updateprojection_)
         UpdateKrylovSpaceProjection();
 
-      if (msht_==INPAR::FLUID::no_meshtying)
-        solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,iternum_==1, projector_);
-      else
-        meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, phinp_, iternum_, projector_);
+      strategy_->Solve(solver_,sysmat_,increment_,residual_,phinp_,iternum_,projector_);
 
       solver_->ResetTolerance();
 

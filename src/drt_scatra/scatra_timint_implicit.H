@@ -30,8 +30,8 @@ Maintainer: Andreas Ehrl
 #include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseVector.h>
 
-#include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_scatra.H"
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12
@@ -48,13 +48,6 @@ Maintainer: Andreas Ehrl
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
-
-class PeriodicBoundaryConditions;
-
-namespace ADAPTER
-{
-  class Coupling;
-}
 
 namespace DRT
 {
@@ -73,7 +66,6 @@ namespace LINALG
   class Solver;
   class SparseMatrix;
   class MapExtractor;
-  class MultiMapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
   class KrylovProjector;
@@ -81,19 +73,9 @@ namespace LINALG
 
 namespace FLD
 {
-  class Meshtying;
   class DynSmagFilter;
   class Vreman;
 }
-
-namespace FSI
-{
-  namespace UTILS
-  {
-    class MatrixColTransform;
-  }
-}
-
 
 /*==========================================================================*/
 //! Algorithm and time integration classes for scalar transport problems
@@ -102,6 +84,7 @@ namespace SCATRA
 {
 
 class HomIsoTurbScalarForcing;
+class MeshtyingStrategyBase;
 
 /*!
  * \brief implicit time integration for scalar transport problems
@@ -131,12 +114,6 @@ public:
   //! initialize time integration
   virtual void Init();
 
-  //! Initialization of system matrix
-  virtual void InitSystemMatrix();
-
-  //! setup meshtying system
-  virtual void SetupMeshtying();
-
   //! Initialization of turbulence models
   void InitTurbulenceModel(
       const Epetra_Map* dofrowmap,
@@ -147,6 +124,12 @@ public:
   /*========================================================================*/
 
   /*--- set, prepare, and predict ------------------------------------------*/
+
+  //! add global state vectors specific for time-integration scheme
+  virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false) = 0;
+
+  //! add interface state vector specific for time-integration scheme
+  virtual void AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params) = 0;
 
   //! setup the variables to do a new time step
   virtual void PrepareTimeStep();
@@ -251,32 +234,44 @@ public:
 
   /*--- query and output ---------------------------------------------------*/
 
+  //! return ALE flag
+  bool IsALE() const { return isale_; }
+
   //! Provide enum of time integration scheme
-  enum INPAR::SCATRA::TimeIntegrationScheme MethodName(){ return timealgo_; }
+  const INPAR::SCATRA::TimeIntegrationScheme MethodName() const { return timealgo_; }
 
   //! Provide title of time integration scheme
   std::string MethodTitle(){ return MapTimIntEnumToString(MethodName()); }
 
   //! return type of physics we are solving for
-  INPAR::SCATRA::ScaTraType ScaTraType() const { return scatratype_; };
+  const INPAR::SCATRA::ScaTraType ScaTraType() const { return scatratype_; };
 
   //! Print information about current time step to screen
   virtual void PrintTimeStepInfo();
 
-  //! return system matrix down-casted as sparse matrix
+  //! return system matrix as sparse operator
+  Teuchos::RCP<LINALG::SparseOperator> SystemMatrixOperator() { return sysmat_; };
+
+  //! return system matrix downcasted as sparse matrix
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
   //! return system matrix downcasted as block sparse matrix
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
-  //! return residual
+  //! return residual vector
   Teuchos::RCP<Epetra_Vector> Residual() { return residual_; };
 
-  //! return trueresidual
+  //! return trueresidual vector
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
+
+  //! return increment vector
+  Teuchos::RCP<Epetra_Vector> Increment() { return increment_; };
 
   //! return flag indicating if an incremental solution approach is used
   bool IsIncremental() { return incremental_; }
+
+  //! return Krylov projector
+  Teuchos::RCP<LINALG::KrylovProjector> Projector() { return projector_; }
 
   //! return scalar field convective velocity at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConVel() { return convel_; }
@@ -325,6 +320,9 @@ public:
   bool ConvergenceCheck(int          itnum,
                         int          itmax,
                         const double ittol);
+
+  //! return solver
+  const Teuchos::RCP<LINALG::Solver>& Solver() const { return solver_; }
 
   /*========================================================================*/
   //! @name Time, time-step and related methods
@@ -457,7 +455,6 @@ public:
   //! compute contributions of solution-depending boundary and interface conditions to global system of equations
   void EvaluateSolutionDependingConditions(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
-    Teuchos::RCP<LINALG::SparseOperator> auxiliarymatrix,   //!< auxiliary matrix for interface coupling terms
     Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
   );
 
@@ -598,9 +595,6 @@ protected:
   //! setup natural convection
   virtual void SetupNatConv();
 
-  //! perform setup of scatra-scatra interface coupling
-  void SetupS2ICoupling();
-
   /*========================================================================*/
   //! @name general framework
   /*========================================================================*/
@@ -621,11 +615,8 @@ protected:
     const enum INPAR::SCATRA::FluxType fluxtype //!< switch for flux calculation
   );
 
-  //! add global state vectors specific for time-integration scheme
-  virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false) = 0;
-
-  //! add interface state vector specific for time-integration scheme
-  virtual void AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params) = 0;
+  //! initialize meshtying strategy (including standard case without meshtying)
+  virtual void CreateMeshtyingStrategy();
 
   /*--- calculate and update -----------------------------------------------*/
 
@@ -776,6 +767,9 @@ protected:
 
   /*--- set, prepare, and predict ------------------------------------------*/
 
+  //! adapt number of transported scalars if necessary
+  virtual void AdaptNumScal(){return;};
+
   /*--- calculate and update -----------------------------------------------*/
 
   /*--- query and output ---------------------------------------------------*/
@@ -847,13 +841,13 @@ protected:
   //! @name general framework variables
   /*========================================================================*/
 
-  //! the solver
+  //! solver
   Teuchos::RCP<LINALG::Solver>         solver_;
 
-  //! the parameter list
+  //! parameter list
   Teuchos::RCP<Teuchos::ParameterList> params_;
 
-  //! the parameter list containing extra parameters (application dependent)
+  //! parameter list containing extra parameters (application dependent)
   Teuchos::RCP<Teuchos::ParameterList> extraparams_;
 
   //! processor id
@@ -864,6 +858,9 @@ protected:
 
   //! error file handle
   FILE* errfile_;
+
+  //! meshtying strategy (includes standard case without meshtying)
+  Teuchos::RCP<SCATRA::MeshtyingStrategyBase> strategy_;
 
   /*========================================================================*/
   //! @name flags and enums
@@ -888,7 +885,7 @@ protected:
   INPAR::SCATRA::FSSUGRDIFF fssgd_;
 
   //! LOMA-specific parameter: turbulence model
-  enum INPAR::FLUID::TurbModelAction turbmodel_;
+  INPAR::FLUID::TurbModelAction turbmodel_;
 
   //! flag indicating scatra-scatra coupling
   bool s2icoupling_;
@@ -977,8 +974,6 @@ protected:
   Teuchos::RCP<Epetra_Vector> phinp_;
   //! phi at meshfree nodes (for non-interpolatory meshfree basis functions)
   Teuchos::RCP<Epetra_Vector> phiatmeshfreenodes_;
-  //! phi at times n+1 at scatra-scatra interface
-  Teuchos::RCP<Epetra_Vector> iphinp_;
 
   //! time derivative of phi at times n
   Teuchos::RCP<Epetra_Vector> phidtn_;
@@ -1078,27 +1073,8 @@ protected:
   //! Nonlinear iteration increment vector
   Teuchos::RCP<Epetra_Vector> increment_;
 
-  //! coupling of fluid-fluid at an internal interface
-  Teuchos::RCP<FLD::Meshtying> meshtying_;
-
   //! options for meshtying
-  enum INPAR::FLUID::MeshTying msht_;
-
-  //! global map extractor for interface problems
-  Teuchos::RCP<LINALG::MultiMapExtractor> maps_;
-
-  //! interface map extractor for interface problems
-  Teuchos::RCP<LINALG::MapExtractor> imaps_;
-
-  //! interface coupling adapter
-  Teuchos::RCP<ADAPTER::Coupling> icoup_;
-
-  //! auxiliary system matrix for coupling terms (either sparse matrix or block sparse matrix)
-  Teuchos::RCP<LINALG::SparseOperator> auxmat_;
-
-  //! transformation operators for auxiliary system matrix
-  Teuchos::RCP<FSI::UTILS::MatrixColTransform> imastertoslavetransform_;
-  Teuchos::RCP<FSI::UTILS::MatrixColTransform> islavetomastertransform_;
+  INPAR::FLUID::MeshTying msht_;
 
   /*========================================================================*/
   //! @name AVM3 variables

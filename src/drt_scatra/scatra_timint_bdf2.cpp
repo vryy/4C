@@ -12,13 +12,8 @@ Maintainer: Andreas Ehrl
 */
 /*----------------------------------------------------------------------*/
 
-#include "scatra_timint_bdf2.H"
-
+#include "scatra_timint_meshtying_strategy_base.H"
 #include "turbulence_hit_scalar_forcing.H"
-
-#include "../drt_adapter/adapter_coupling.H"
-
-#include "../drt_inpar/inpar_elch.H"
 
 #include "../drt_io/io.H"
 
@@ -27,8 +22,7 @@ Maintainer: Andreas Ehrl
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_TimeMonitor.hpp>
+#include "scatra_timint_bdf2.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
@@ -304,10 +298,7 @@ void SCATRA::TimIntBDF2::AddTimeIntegrationSpecificVectors(bool forcedincrementa
  *------------------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params)
 {
-  // set interface state vector iphinp_ with transformed dof values and add to discretization
-  imaps_->InsertVector(icoup_->SlaveToMaster(maps_->ExtractVector(*phinp_,2)),0,iphinp_);
-  imaps_->InsertVector(icoup_->MasterToSlave(maps_->ExtractVector(*phinp_,1)),1,iphinp_);
-  params.set<Teuchos::RCP<const Epetra_Vector> >("iphinp",iphinp_);
+  strategy_->AddTimeIntegrationSpecificInterfaceVector(phinp_,params);
 
   return;
 }

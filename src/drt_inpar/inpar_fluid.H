@@ -259,7 +259,7 @@ namespace INPAR
       fsi_fluid_pusher  ///< pseudo 1D FSI fluid pusher
     };
 
-    /// initial field
+    /// meshtying algorithm
     enum MeshTying
     {
       no_meshtying,

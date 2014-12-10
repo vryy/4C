@@ -12,23 +12,19 @@ Maintainer: Andreas Ehrl
 */
 /*----------------------------------------------------------------------*/
 
-#include "scatra_timint_ost.H"
+#include "scatra_timint_meshtying_strategy_base.H"
 #include "turbulence_hit_scalar_forcing.H"
 
-#include "../drt_adapter/adapter_coupling.H"
-
-#include "../drt_scatra_ele/scatra_ele_action.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_TimeMonitor.hpp>
-#include "../drt_inpar/inpar_elch.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
-#include "../linalg/linalg_solver.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
-#include "../drt_lib/drt_globalproblem.H"
+
+#include "../drt_io/io.H"
+
 #include "../drt_inpar/drt_validparameters.H"
 
+#include "../drt_scatra_ele/scatra_ele_action.H"
+
+#include "scatra_timint_ost.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
@@ -294,10 +290,7 @@ void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(bool forcedin
  *------------------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params)
 {
-  // set interface state vector iphinp_ with transformed dof values and add to discretization
-  imaps_->InsertVector(icoup_->SlaveToMaster(maps_->ExtractVector(*phinp_,2)),0,iphinp_);
-  imaps_->InsertVector(icoup_->MasterToSlave(maps_->ExtractVector(*phinp_,1)),1,iphinp_);
-  params.set<Teuchos::RCP<const Epetra_Vector> >("iphinp",iphinp_);
+  strategy_->AddTimeIntegrationSpecificInterfaceVector(phinp_,params);
 
   return;
 }

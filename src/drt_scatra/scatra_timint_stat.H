@@ -18,10 +18,8 @@ Maintainer: Andreas Ehrl
 
 #include "../linalg/linalg_utils.H"
 
-
 namespace SCATRA
 {
-
 class TimIntStationary : public virtual ScaTraTimIntImpl
 {
 

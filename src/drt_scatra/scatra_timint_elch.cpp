@@ -11,20 +11,27 @@ Maintainer: Andreas Ehrl
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#include "scatra_utils_splitstrategy.H" // for blockmatrix-splitstrategy
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/matlist.H"
-#include "../drt_mat/ion.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fluid/fluid_utils.H" // for splitter
+
 #include "../drt_io/io_control.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_solver.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+
+#include "../drt_mat/ion.H"
+#include "../drt_mat/matlist.H"
+
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+
+#include "../drt_scatra/scatra_timint_meshtying_strategy_fluid_elch.H"
+#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "../drt_scatra/scatra_timint_meshtying_strategy_std_elch.H"
+
+#include "../drt_scatra_ele/scatra_ele_action.H"
+
 #include "../linalg/linalg_krylov_projector.H"
-#include "../drt_fluid/fluid_meshtying.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+
 #include "scatra_timint_elch.H"
 
 /*----------------------------------------------------------------------*
@@ -60,6 +67,15 @@ void SCATRA::ScaTraTimIntElch::Init()
 {
   if(elchtype_==INPAR::ELCH::elchtype_undefined)
     dserror("The ElchType is not specified in the input file!");
+
+  // The diffusion-conduction formulation does not support all options of the Nernst-Planck formulation
+  // Let's check for valid options
+  if(elchtype_==INPAR::ELCH::elchtype_diffcond)
+    ValidParameterDiffCond();
+
+  // set up the concentration-el.potential splitter
+  splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
+  FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
 
   // initialize time-dependent electrode kinetics variables (galvanostatic mode or double layer contribution)
   ComputeTimeDerivPot0(true);
@@ -126,103 +142,6 @@ void SCATRA::ScaTraTimIntElch::Init()
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- | initialization of system matrix                           ehrl 12/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::InitSystemMatrix()
-{
-  if (numscal_ > 1) // we have at least two ion species + el. potential
-  {
-    // number of concentrations transported is numdof-1
-    numscal_ -= 1;
-
-    Teuchos::ParameterList& diffcondparams = elchparams_->sublist("DIFFCOND");
-
-    // current is a solution variable
-    if(DRT::INPUT::IntegralValue<int>(diffcondparams,"CURRENT_SOLUTION_VAR"))
-    {
-      // shape of local row element(0) -> number of space dimensions
-      // int dim = DRT::Problem::Instance()->NDim();
-      int dim = DRT::UTILS::getDimension(discret_->lRowElement(0)->Shape());
-      // number of concentrations transported is numdof-1-nsd
-      numscal_ -= dim;
-    }
-
-    // The diffusion-conduction formulation does not support all options of the Nernst-Planck formulation
-    // Let's check for valid options
-    if(elchtype_==INPAR::ELCH::elchtype_diffcond)
-      ValidParameterDiffCond();
-  }
-
-  // set up the concentration-el.potential splitter
-  splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
-  FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
-
-  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND")
-      and msht_ == INPAR::FLUID::no_meshtying)
-  {
-    if ((equpot_!=INPAR::ELCH::equpot_enc))
-      dserror("Special ELCH assemble strategy for block-matrix will not assemble A_11 block!");
-
-    // initial guess for non-zeros per row: 27 neighboring nodes for hex8
-    // this is enough! A higher guess would require too much memory!
-    // A more precise guess for every submatrix would read:
-    // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal_ due to electroneutrality, A_11: EMPTY matrix !!!!!
-    // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
-    Teuchos::RCP<LINALG::BlockSparseMatrix<SCATRA::SplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(*splitter_,*splitter_,27,false,true));
-
-    blocksysmat->SetNumScal(numscal_);
-
-    sysmat_ = blocksysmat;
-  }
-  else
-    ScaTraTimIntImpl::InitSystemMatrix();
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | setup meshtying system                                    ehrl 12/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::SetupMeshtying()
-{
-  // Important:
-  // Meshtying in elch is not tested well!!
-
-  bool onlypotential = (DRT::INPUT::IntegralValue<int>(*params_,"ONLYPOTENTIAL"));
-
-  if(msht_== INPAR::FLUID::condensed_bmat)
-    dserror("The 2x2 block solver algorithm, which is necessary for a block matrix system,\n"
-            "is not integrated into the adapter_scatra_base_algorithm. Just do it!!");
-
-  if ((msht_== INPAR::FLUID::condensed_bmat or
-      msht_== INPAR::FLUID::condensed_bmat_merged) and
-      (equpot_== INPAR::ELCH::equpot_enc))
-    dserror("In the context of mesh-tying, the ion-transport system inluding the electroneutrality condition \n"
-        "cannot be solved in a block matrix");
-
-  // meshtying: all dofs (all scalars + potential) are coupled
-  int numdof = numscal_+1;
-
-  // define coupling
-  std::vector<int> coupleddof(numdof, 1);
-  if(onlypotential==true)
-  {
-    // meshtying: only potential is coupled
-    // coupleddof = [0, 0, ..., 0, 1]
-    for(int ii=0;ii<numscal_;++ii)
-      coupleddof[ii]=0;
-  }
-
-  meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim()));
-  sysmat_ = meshtying_->Setup(coupleddof);
-
-  return;
-} // ScaTraTimIntImpl::SetupMeshtying()
 
 
 /*----------------------------------------------------------------------*
@@ -1012,6 +931,51 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
   return;
 } //SCATRA::ScaTraTimIntImpl::InitNernstBC
 
+
+/*----------------------------------------------------------------------------------------*
+ | initialize meshtying strategy (including standard case without meshtying)   fang 12/14 |
+ *----------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
+{
+  // fluid meshtying
+  if(msht_ != INPAR::FLUID::no_meshtying)
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyFluidElch(this));
+
+  // scatra-scatra interface coupling
+  else if(s2icoupling_)
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this));
+
+  // standard case without meshtying
+  else
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyStdElch(this));
+
+  return;
+} // ScaTraTimIntImpl::UpdateKrylovSpaceProjection
+
+
+/*----------------------------------------------------------------------*
+ | adapt number of transported scalars                       fang 12/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::AdaptNumScal()
+{
+  if (numscal_ > 1) // we have at least two ion species + el. potential
+  {
+    // number of concentrations transported is numdof-1
+    numscal_ -= 1;
+
+    // current is a solution variable
+    if(DRT::INPUT::IntegralValue<int>(elchparams_->sublist("DIFFCOND"),"CURRENT_SOLUTION_VAR"))
+    {
+      // shape of local row element(0) -> number of space dimensions
+      // int dim = DRT::Problem::Instance()->NDim();
+      int dim = DRT::UTILS::getDimension(discret_->lRowElement(0)->Shape());
+      // number of concentrations transported is numdof-1-nsd
+      numscal_ -= dim;
+    }
+  }
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*

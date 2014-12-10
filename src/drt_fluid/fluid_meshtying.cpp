@@ -413,8 +413,8 @@ void FLD::Meshtying::DirichletOnMaster(
 /*  Include Dirichlet BC in condensation operation     ehrl (08/13) */
 /*------------------------------------------------------------------*/
 void FLD::Meshtying::IncludeDirichletInCondensation(
-    Teuchos::RCP<Epetra_Vector>&  velnp,
-    Teuchos::RCP<Epetra_Vector>&  veln)
+    const Teuchos::RCP<Epetra_Vector>&  velnp,
+    const Teuchos::RCP<Epetra_Vector>&  veln)
 {
   if(dconmaster_==true)
   {
@@ -450,9 +450,9 @@ void FLD::Meshtying::EvaluateWithMeshRelocation(
 /*  Prepare Meshtying system            ehrl (04/11) */
 /*---------------------------------------------------*/
 void FLD::Meshtying::PrepareMeshtyingSystem(
-    Teuchos::RCP<LINALG::SparseOperator>&  sysmat,
-    Teuchos::RCP<Epetra_Vector>&           residual,
-    Teuchos::RCP<Epetra_Vector>&           velnp)
+    const Teuchos::RCP<LINALG::SparseOperator>&  sysmat,
+    const Teuchos::RCP<Epetra_Vector>&           residual,
+    const Teuchos::RCP<Epetra_Vector>&           velnp)
 {
   switch (msht_)
   {
@@ -464,7 +464,7 @@ void FLD::Meshtying::PrepareMeshtyingSystem(
     CondensationSparseMatrix(sysmat,residual,velnp);
     break;
   default:
-    dserror("");
+    dserror("Meshtying algorithm not recognized!");
     break;
   }
 
@@ -534,13 +534,13 @@ Teuchos::RCP<Epetra_Vector> FLD::Meshtying::AdaptKrylovProjector(Teuchos::RCP<Ep
 /* (including ALE case   vg 01/14)                       */
 /*-------------------------------------------------------*/
 void FLD::Meshtying::SolveMeshtying(
-    LINALG::Solver&                        solver,
-    Teuchos::RCP<LINALG::SparseOperator>   sysmat,
-    Teuchos::RCP<Epetra_Vector>&           incvel,
-    Teuchos::RCP<Epetra_Vector>            residual,
-    Teuchos::RCP<Epetra_Vector>            velnp,
-    int                                    itnum,
-    Teuchos::RCP<LINALG::KrylovProjector>  projector)
+    LINALG::Solver&                               solver,
+    const Teuchos::RCP<LINALG::SparseOperator>&   sysmat,
+    const Teuchos::RCP<Epetra_Vector>&            incvel,
+    const Teuchos::RCP<Epetra_Vector>&            residual,
+    const Teuchos::RCP<Epetra_Vector>&            velnp,
+    const int&                                    itnum,
+    const Teuchos::RCP<LINALG::KrylovProjector>&  projector)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3)   Solve meshtying system");
@@ -655,9 +655,9 @@ void FLD::Meshtying::SolveMeshtying(
 /* (including ALE case   vg 01/14)                       */
 /*-------------------------------------------------------*/
 void FLD::Meshtying::CondensationSparseMatrix(
-    Teuchos::RCP<LINALG::SparseOperator>&  sysmat,
-    Teuchos::RCP<Epetra_Vector>&           residual,
-    Teuchos::RCP<Epetra_Vector>&           velnp)
+    const Teuchos::RCP<LINALG::SparseOperator>&  sysmat,
+    const Teuchos::RCP<Epetra_Vector>&           residual,
+    const Teuchos::RCP<Epetra_Vector>&           velnp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2)   Condensation sparse matrix");
 
@@ -689,9 +689,9 @@ void FLD::Meshtying::CondensationSparseMatrix(
 /* (including ALE case   vg 01/14)                       */
 /*-------------------------------------------------------*/
 void FLD::Meshtying::CondensationBlockMatrix(
-  Teuchos::RCP<LINALG::SparseOperator>&  sysmat,
-  Teuchos::RCP<Epetra_Vector>&           residual,
-  Teuchos::RCP<Epetra_Vector>&           velnp)
+  const Teuchos::RCP<LINALG::SparseOperator>&  sysmat,
+  const Teuchos::RCP<Epetra_Vector>&           residual,
+  const Teuchos::RCP<Epetra_Vector>&           velnp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2)   Condensation block matrix");
 
@@ -839,11 +839,11 @@ void FLD::Meshtying::SplitVectorBasedOn3x3(Teuchos::RCP<Epetra_Vector>   orgvect
 /* (including ALE case   vg 01/14)                       */
 /*-------------------------------------------------------*/
 void FLD::Meshtying::CondensationOperationSparseMatrix(
-    Teuchos::RCP<LINALG::SparseOperator>&              sysmat,
-    Teuchos::RCP<Epetra_Vector>&                       residual,
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix> >&  splitmatrix,
-    std::vector<Teuchos::RCP<Epetra_Vector> >&         splitres,
-    std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvel)
+    const Teuchos::RCP<LINALG::SparseOperator>&              sysmat,
+    const Teuchos::RCP<Epetra_Vector>&                       residual,
+    const std::vector<Teuchos::RCP<LINALG::SparseMatrix> >&  splitmatrix,
+    const std::vector<Teuchos::RCP<Epetra_Vector> >&         splitres,
+    const std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvel)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2.3)   - Condensation Operation");
 
@@ -1166,7 +1166,7 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
     resnew->Update(-1.0,*fn_exp,1.0);
   }
 
-  residual=resnew;
+  residual->Update(1.0,*resnew,0.0);
 
   return;
 }
@@ -1176,10 +1176,10 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
 /* (including ALE case   vg 01/14)                       */
 /*-------------------------------------------------------*/
 void FLD::Meshtying::CondensationOperationBlockMatrix(
-    Teuchos::RCP<LINALG::SparseOperator>&             sysmat,
-    Teuchos::RCP<Epetra_Vector>&                      residual,
-    std::vector<Teuchos::RCP<Epetra_Vector> >&        splitres,
-    std::vector<Teuchos::RCP<Epetra_Vector> >&        splitvel)
+    const Teuchos::RCP<LINALG::SparseOperator>&             sysmat,
+    const Teuchos::RCP<Epetra_Vector>&                      residual,
+    const std::vector<Teuchos::RCP<Epetra_Vector> >&        splitres,
+    const std::vector<Teuchos::RCP<Epetra_Vector> >&        splitvel)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2.1)   - Condensation Operation");
 
@@ -1328,8 +1328,8 @@ void FLD::Meshtying::CondensationOperationBlockMatrix(
 /* (including ALE case   vg 01/14)                       */
 /*-------------------------------------------------------*/
 void FLD::Meshtying::UpdateSlaveDOF(
-  Teuchos::RCP<Epetra_Vector>&   inc,
-  Teuchos::RCP<Epetra_Vector>&   velnp)
+  const Teuchos::RCP<Epetra_Vector>&   inc,
+  const Teuchos::RCP<Epetra_Vector>&   velnp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.4)   - Update slave DOF");
 
@@ -1400,7 +1400,7 @@ void FLD::Meshtying::UpdateSlaveDOF(
     firstnonliniter_ = false;
 
   // define incremental vector to new incremental vector
-  inc = incnew;
+  inc->Update(1.0,*incnew,0.0);
 
   return;
 }

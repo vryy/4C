@@ -1996,7 +1996,7 @@ bool LINALG::SplitVector(const Epetra_Map& xmap, const Epetra_Vector& x,
   // map extractor with fullmap(xmap) and two other maps (x1map and x2map)
   LINALG::MapExtractor extractor(xmap, x1map, x2map);
 
-  // ectract subvectors from fullvector
+  // extract subvectors from fullvector
   x1 = extractor.ExtractVector(x, 1);
   x2 = extractor.ExtractVector(x, 0);
 

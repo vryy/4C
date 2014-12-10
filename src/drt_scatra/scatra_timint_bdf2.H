@@ -14,15 +14,10 @@ Maintainer: Andreas Ehrl
 #ifndef SCATRA_TIMINT_BDF2_H
 #define SCATRA_TIMINT_BDF2_H
 
-
 #include "scatra_timint_implicit.H"
-
-#include "../linalg/linalg_utils.H"
-
 
 namespace SCATRA
 {
-
 class TimIntBDF2 : public virtual ScaTraTimIntImpl
 {
 public:
@@ -154,10 +149,6 @@ protected:
 
   /// fine-scale solution vector at time n+1
   Teuchos::RCP<Epetra_Vector>  fsphinp_;
-
 }; // class TimIntBDF2
-
 } // namespace SCATRA
-
-
 #endif  // #ifndef SCATRA_TIMINT_BDF2_H

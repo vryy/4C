@@ -351,17 +351,7 @@ discret_(discret)
         comm_,
         alphaf,
         maxdof));
-  else if (stype == INPAR::CONTACT::solution_penalty)
-    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(
-        Discret().DofRowMap(),
-        Discret().NodeRowMap(),
-        mtparams,
-        interfaces,
-        dim,
-        comm_,
-        alphaf,
-        maxdof));
-  else if (stype == INPAR::CONTACT::solution_uzawa)
+  else if (stype == INPAR::CONTACT::solution_penalty or stype == INPAR::CONTACT::solution_uzawa)
     strategy_ = Teuchos::rcp(new MtPenaltyStrategy(
         Discret().DofRowMap(),
         Discret().NodeRowMap(),

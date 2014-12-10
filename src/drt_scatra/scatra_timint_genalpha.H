@@ -18,10 +18,8 @@ Maintainer: Volker Gravemeier
 
 #include "../linalg/linalg_utils.H"
 
-
 namespace SCATRA
 {
-
 class TimIntGenAlpha : public virtual ScaTraTimIntImpl
 {
 
