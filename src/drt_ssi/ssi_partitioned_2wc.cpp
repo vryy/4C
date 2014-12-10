@@ -147,7 +147,7 @@ void SSI::SSI_Part2WC::UpdateAndOutput()
 
 
 /*----------------------------------------------------------------------*
- | Outer Timeloop for 2WC SSi without relaxation             Thon 12/14 |
+ | Outer Timeloop for 2WC SSi without relaxation
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC::OuterLoop()
 {
@@ -316,6 +316,7 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
     std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
   }
 
+  //these are the relaxed inputs
   Teuchos::RCP<Epetra_Vector> dispnp
     = LINALG::CreateVector(*(structure_->DofRowMap(0)), true);
   Teuchos::RCP<Epetra_Vector> velnp
@@ -331,24 +332,27 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
       velnp->Update(1.0,*(structure_->Velnp()),0.0);
     }
 
-    // store scalar from first solution for convergence check (like in
-    // elch_algorithm: use current values)
+    // store scalars and displacements for the convergence check later
     scaincnp_->Update(1.0,*scatra_->ScaTraField()->Phinp(),0.0);
     dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
 
 
     // begin nonlinear solver / outer iteration ***************************
-    // set mesh displacement and velocity fields
+
+    // set relaxed mesh displacements and velocity field
     SetStructSolution( dispnp , velnp);
 
     // solve scalar transport equation
     DoScatraStep();
 
+    // set scalar fields
     SetScatraSolution(scatra_->ScaTraField()->Phinp());
 
+    //prepare a partitioned structure step
     if(itnum!=1)
       structure_->PreparePartitionStep();
 
+    //update variable whic is going to be relaxed later
     dispnp->Update(1.0,*structure_()->Dispnp(),0.0);
 
     // solve structural system
@@ -360,14 +364,16 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
     // convergence is achieved overall
     stopnonliniter = ConvergenceCheck(itnum);
 
-    // get fixed relaxation parameter
+    // get relaxation parameter
     CalcOmega(omega_,itnum);
 
-    // fixed relaxation can be applied even in the 1st iteration
+    // do the relaxation
     // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
     //         = d^i + omega^{i+1} * ( d^{i+1} - d^i )
     dispnp->Update(omega_,*dispincnp_,1.0);
 
+    // since the velocity field has to fit to the relaxated displacements we also have to relaxate them.
+    // since the velocity depends nonlinear on the displacements we can just approximate them via finite differences here.
     velnp = CalcVelocity(dispnp);
   }
 
@@ -379,7 +385,8 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
 void SSI::SSI_Part2WC_SolidToScatra_Relax::CalcOmega(double& omega, const int itnum)
 {
   //nothing to do in here since we have a constant relaxation parameter: omega != startomega_;
-  std::cout<<"Fixed relaxation parameter omega is: " <<omega<<std::endl;
+  if (Comm().MyPID()==0 )
+    std::cout<<"Fixed relaxation parameter omega is: " <<omega<<std::endl;
 }
 
 /*----------------------------------------------------------------------*
@@ -431,8 +438,9 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::CalcOmega(double& omega, const
   if (itnum != 1 and delhistnorm > 1e-05)
   { // relaxation parameter
     // omega^{i+1} = 1- mu^{i+1} and nu^{i+1} = nu^i + (nu^i -1) . (r^{i+1} - r^i)^T . (-r^{i+1}) / |r^{i+1} - r^{i}|^2 results in
-    omega = omega*(1  - (delsdot)/(delhistnorm * delhistnorm));
+    omega = omega*(1  - (delsdot)/(delhistnorm * delhistnorm)); //compare e.g. PhD thesis U. Kuettler
 
+    //we force omega to be in the range defined in the input file
     if (omega < minomega_)
     {
       if (Comm().MyPID()==0)
@@ -446,8 +454,10 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::CalcOmega(double& omega, const
       omega= maxomega_;
     }
   }
-  //else //nothing to do here since we take the last omega from the previous step
-  std::cout<<"Using Aitken the relaxation parameter omega was estimated to: " <<omega<<std::endl;
+
+  //else //if itnum==1 nothing is to do here since we want to take the last omega from the previous step
+  if (Comm().MyPID()==0 )
+    std::cout<<"Using Aitken the relaxation parameter omega was estimated to: " <<omega<<std::endl;
 }
 
 
@@ -486,6 +496,7 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
     std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
   }
 
+  //this is the relaxed input
   Teuchos::RCP<Epetra_Vector> phinp
     = LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0), true);
 
@@ -498,24 +509,28 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
       phinp->Update(1.0,*(scatra_->ScaTraField()->Phinp()),0.0); //TSI does Dispn()
     }
 
-    // store scalar from first solution for convergence check (like in
-    // elch_algorithm: use current values)
+    // store scalars and displacements for the convergence check later
     scaincnp_->Update(1.0,*scatra_->ScaTraField()->Phinp(),0.0);
     dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
 
 
     // begin nonlinear solver / outer iteration ***************************
-    // set mesh displacement and velocity fields
+
+    // set relaxed scalars
     SetScatraSolution(phinp);
 
+    //prepare partioned tructure step
     if(itnum!=1)
       structure_->PreparePartitionStep();
 
     // solve structural system
     DoStructStep();
 
-
+    // set mesh displacement and velocity fields
     SetStructSolution( structure_->Dispnp() , structure_->Velnp() );
+
+    //update variable whic is going to be relaxed later
+    phinp->Update(1.0,*scatra_->ScaTraField()->Phinp(),0.0);
 
     // solve scalar transport equation
     DoScatraStep();
@@ -524,10 +539,10 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
     // convergence is achieved overall
     stopnonliniter = ConvergenceCheck(itnum);
 
-    // get fixed relaxation parameter
+    // get relaxation parameter
     CalcOmega(omega_,itnum);
 
-    // fixed relaxation can be applied even in the 1st iteration
+    // do the relaxation
     // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
     //         = d^i + omega^{i+1} * ( d^{i+1} - d^i )
     phinp->Update(omega_,*scaincnp_,1.0);
@@ -540,7 +555,8 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
 void SSI::SSI_Part2WC_ScatraToSolid_Relax::CalcOmega(double& omega, const int itnum)
 {
   //nothing to do in here since we have a constant relaxation parameter: omega != startomega_;
-  std::cout<<"Fixed relaxation parameter omega is: " <<omega<<std::endl;
+  if (Comm().MyPID()==0 )
+    std::cout<<"Fixed relaxation parameter omega is: " <<omega<<std::endl;
 }
 
 /*----------------------------------------------------------------------*
@@ -590,8 +606,9 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::CalcOmega(double& omega, const
   if (itnum != 1 and delhistnorm > 1e-05)
   { // relaxation parameter
     // omega^{i+1} = 1- mu^{i+1} and nu^{i+1} = nu^i + (nu^i -1) . (r^{i+1} - r^i)^T . (-r^{i+1}) / |r^{i+1} - r^{i}|^2 results in
-    omega = omega*(1  - (delsdot)/(delhistnorm * delhistnorm));
+    omega = omega*(1  - (delsdot)/(delhistnorm * delhistnorm)); //compare e.g. PhD thesis U. Kuettler
 
+    //we force omega to be in the range defined in the input file
     if (omega < minomega_)
     {
       if (Comm().MyPID()==0)
@@ -605,7 +622,9 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::CalcOmega(double& omega, const
       omega= maxomega_;
     }
   }
-  //else //nothing to do here since we take the last omega from the previous step
-  std::cout<<"Using Aitken the relaxation parameter omega was estimated to: " <<omega<<std::endl;
+
+  //else //if itnum==1 nothing is to do here since we want to take the last omega from the previous step
+  if (Comm().MyPID()==0 )
+    std::cout<<"Using Aitken the relaxation parameter omega was estimated to: " <<omega<<std::endl;
 
 }
