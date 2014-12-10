@@ -369,6 +369,9 @@ namespace DRT
         //! \brief return reference Coordinates of interpolated nodes
         const std::vector<double>& XRef() const {return xrefe_;}
 
+        //! \brief return nodal reference rotations
+        const std::vector<double>& RotRef() const {return rotrefe_;}
+
         //! \brief Get current fictitious nodal triads as quaternions
         const std::vector<LINALG::Matrix<4, 1> >& Qnew() const {return Qnew_;}
 
@@ -493,6 +496,7 @@ namespace DRT
             // Do not overwrite rotational displacements in case of a second initialization (e.g. due to breakage by Periodic Boundary)
             xrefe_.resize(3*fnnode);
             xrefe_ = xrefe;
+
             if (rotrefe.size() > 6 && !secondinit)
             {
               rotrefe_.resize(3*2*fnnode);
@@ -690,7 +694,7 @@ namespace DRT
 
         //! changes the actual linker length
         void SetReferenceLength(const double& scalefac);
-      
+
         //! Set rotation to precalculated value and update additive rotation increment (this is something like a 'prescribed' rotation)
         void SetRotation(LINALG::Matrix<3,1>& theta);
 

@@ -175,6 +175,7 @@ nodeI_(0),
 nodeJ_(0),
 crosssec_(0),
 crosssecshear_(0),
+lscalefac_(1.0),
 Iyy_(0),
 Izz_(0),
 Irr_(0),
@@ -302,12 +303,12 @@ void DRT::ELEMENTS::BeamCL::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,rdispthetaconv_);
   AddtoPack<3,1>(data,rdispthetaold_);
   AddtoPack<3,1>(data,rdispthetanew_);
-  AddtoPack(data,xrefe_);
   AddtoPack(data,mybindingposition_);
   AddtoPack(data,eps_);
   AddtoPack(data,xrefe_);
   AddtoPack(data,rotrefe_);
   AddtoPack(data,f_);
+  AddtoPack(data, lscalefac_);
 
 
   return;
@@ -357,12 +358,12 @@ void DRT::ELEMENTS::BeamCL::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,rdispthetaconv_);
   ExtractfromPack<3,1>(position,data,rdispthetaold_);
   ExtractfromPack<3,1>(position,data,rdispthetanew_);
-  ExtractfromPack(position,data,xrefe_);
   ExtractfromPack(position,data,mybindingposition_);
   ExtractfromPack(position,data,eps_);
   ExtractfromPack(position,data,xrefe_);
   ExtractfromPack(position,data,rotrefe_);
   ExtractfromPack(position,data,f_);
+  ExtractfromPack(position,data,lscalefac_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -587,17 +588,20 @@ void DRT::ELEMENTS::BeamCL::SetRotation(LINALG::Matrix<3,1>& theta)
 void DRT::ELEMENTS::BeamCL::SetReferenceLength(const double& scalefac)
 {
   // new reference length = initial reference length * scale
-  xrefe_.at(3) = xrefe_.at(0) + (scalefac * (xrefe_.at(3)-xrefe_.at(0)));
-  xrefe_.at(4) = xrefe_.at(1) + (scalefac * (xrefe_.at(4)-xrefe_.at(1)));
-  xrefe_.at(5) = xrefe_.at(2) + (scalefac * (xrefe_.at(5)-xrefe_.at(2)));
+  std::vector<double> xrefe(xrefe_);
+
+  xrefe[3] = xrefe[0] + (scalefac * (xrefe[3]-xrefe[0]));
+  xrefe[4] = xrefe[1] + (scalefac * (xrefe[4]-xrefe[1]));
+  xrefe[5] = xrefe[2] + (scalefac * (xrefe[5]-xrefe[2]));
 
   lscalefac_ = scalefac;
+
   // call function to update the linker with the new coordinates
   // SetUpReferenceGeoemetry recalculates rQold_, which is unwanted in case of a change of reference length only
   // Hence, it is temporarily stored and reassigned afterwards. rQconv_ is assigned the value of rQold prior to SetUpRefGeo
 
   std::vector<LINALG::Matrix<4,1> > rQoldtmp = rQold_;
-  SetUpReferenceGeometry<2>(xrefe_,rotrefe_,true);
+  SetUpReferenceGeometry<2>(xrefe,rotrefe_,true);
   rQold_ = rQoldtmp;
 
   return;

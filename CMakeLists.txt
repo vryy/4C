@@ -519,16 +519,17 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/activefiber.cpp
 )
 set(OBJS_DRT_STATMECH
+  src/drt_statmech/statmech_dirichlet.cpp
+  src/drt_statmech/statmech_gmsh.cpp
+  src/drt_statmech/statmech_init.cpp
   src/drt_statmech/statmech_manager.cpp
+  src/drt_statmech/statmech_mechanaly.cpp
+  src/drt_statmech/statmech_motor.cpp
+  src/drt_statmech/statmech_neumann.cpp
   src/drt_statmech/statmech_output.cpp
   src/drt_statmech/statmech_search_octree.cpp
   src/drt_statmech/statmech_search_binning.cpp
-  src/drt_statmech/statmech_gmsh.cpp
-  src/drt_statmech/statmech_dirichlet.cpp
-  src/drt_statmech/statmech_init.cpp
   src/drt_statmech/statmech_structanaly.cpp
-  src/drt_statmech/statmech_mechanaly.cpp
-  src/drt_statmech/statmech_neumann.cpp
   src/drt_statmech/statmech_utils.cpp
 )
 set(OBJS_DRT_PLASTIC_SSN

@@ -863,7 +863,7 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
   //interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
   std::vector<LINALG::Matrix<3,1> > rPsil(2);
   // Interpolation of Translational displacements at fictive nodes
-  // Evaluate Shape Funktions at Binding positions
+  // Evaluate Shape Functions at Binding positions
   std::vector<LINALG::Matrix<1,2> > Ibp(2);
   std::vector<std::vector<LINALG::Matrix<3,3> > > Itildebp(2);
   const DiscretizationType distype = this->Shape();
@@ -1049,7 +1049,7 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
 
    if(stiffmatrix != NULL)
    {
-     //Transform 12x12 stiffness matrix for fictitious nodal beam back to 24x24 stiffness matrix of 4-noded beam
+     //Transform 12x12 stiffness matrix for fictitious nodal beam back to 24x24 stiffness matrix of with four real nodes
       //upper left block & lower left block
      //auxiliary variables for storing intermediate matrices in computation of entries of stiffness matrix
      LINALG::Matrix<3,3> auxmatrix1;
