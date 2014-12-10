@@ -109,10 +109,6 @@ bool DRT::ELEMENTS::SoDisp::ReadElement(const std::string& eletype,
     break;
   } // end switch distype
 
-  // set up of materials with GP data (e.g., history variables)
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  so3mat->Setup(numgpt_disp_, linedef);
-
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);
 
@@ -132,6 +128,10 @@ bool DRT::ELEMENTS::SoDisp::ReadElement(const std::string& eletype,
   numdof_disp_ = NumNode() * NODDOF_DISP;     // total dofs per element
   const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule_);
   numgpt_disp_ = intpoints.nquad;      // total gauss points per element
+
+  // set up of materials with GP data (e.g., history variables)
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->Setup(numgpt_disp_, linedef);
 
   return true;
 }

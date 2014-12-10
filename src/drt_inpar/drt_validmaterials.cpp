@@ -575,15 +575,15 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"YOUNG","Young's modulus");
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
-    AddNamedReal(m,"CTE","coefficient of thermal expansion");
-    AddNamedReal(m,"INITTEMP","initial, reference temperature");
+    AddNamedReal(m,"CTE","coefficient of thermal expansion",0.,true);
+    AddNamedReal(m,"INITTEMP","initial, reference temperature",0.,true);
     AddNamedReal(m,"YIELD","initial yield stress");
-    AddNamedReal(m,"ISOHARD","isotropic hardening modulus");
-    AddNamedReal(m,"SATHARDENING","saturation hardening");
-    AddNamedReal(m,"HARDEXPO","hardening exponent");
-    AddNamedReal(m,"YIELDSOFT","yield stress softening");
-    AddNamedReal(m,"HARDSOFT","hardening softening");
-    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+    AddNamedReal(m,"ISOHARD","isotropic hardening modulus",0.,true);
+    AddNamedReal(m,"SATHARDENING","saturation hardening",0.,true);
+    AddNamedReal(m,"HARDEXPO","hardening exponent",0.,true);
+    AddNamedReal(m,"YIELDSOFT","yield stress softening",0.,true);
+    AddNamedReal(m,"HARDSOFT","hardening softening",0.,true);
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration",1.e-8,true);
 
     AppendMaterialDefinition(matlist,m);
   }
