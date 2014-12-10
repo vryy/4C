@@ -67,11 +67,6 @@ namespace FSI
     /// setup of extractor for merged Dirichlet maps
     void SetupDBCMapExtractor();
 
-    /// flag, that indicates ALE-relaxation
-    bool relaxing_ale_;
-
-    /// number of timesteps in between ALE-relaxation
-    int relaxing_ale_every_;
 
     /// type-cast pointer to problem-specific fluid-wrapper
     Teuchos::RCP<ADAPTER::FluidFluidFSI> fluid_;

@@ -44,23 +44,10 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(cons
   // cast to problem-specific ALE-wrapper
   ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleXFFsiWrapper>(MonolithicStructureSplit::AleField());
 
-  // determine the type of monolithic approach
-  const Teuchos::ParameterList& xfluiddyn  = DRT::Problem::Instance()->XFluidDynamicParams();
-  enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
-               (xfluiddyn.sublist("GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
-
   // XFFSI_Full_Newton is an invalid choice together with NOX,
   // because DOF-maps can change from one iteration step to the other (XFEM cut)
-  if (monolithic_approach == INPAR::XFEM::XFFSI_Full_Newton)
+  if (FluidField()->MonolithicXffsiApproach() == INPAR::XFEM::XFFSI_Full_Newton)
     dserror("NOX-based XFFSI Approach does not work with XFFSI_Full_Newton!");
-
-  // should ALE-relaxation be carried out?
-  relaxing_ale_ = (bool)DRT::INPUT::IntegralValue<int>(xfluiddyn.sublist("GENERAL"),"RELAXING_ALE");
-  // get no. of timesteps, after which ALE-mesh should be relaxed
-  relaxing_ale_every_ = xfluiddyn.sublist("GENERAL").get<int>("RELAXING_ALE_EVERY");
-
-  if (! relaxing_ale_ && relaxing_ale_every_ != 0)
-    dserror("You don't want to relax the ALE but provide a relaxation interval != 0 ?!");
 
 }
 
@@ -68,9 +55,8 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(cons
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplit::Update()
 {
-  bool relaxing_ale = (relaxing_ale_ && relaxing_ale_every_ != 0) ? (Step() % relaxing_ale_every_ == 0) : false;
-
-  if (relaxing_ale)
+  // time to relax the ALE-mesh?
+  if (FluidField()->IsAleRelaxationStep(Step()))
   {
     FluidField()->ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
 
@@ -95,16 +81,11 @@ void FSI::FluidFluidMonolithicStructureSplit::PrepareTimeStep()
   // when this is the first call or we haven't relaxed the ALE-mesh
   // previously, the DOF-maps have not
   // changed since system setup
-  if (Step() == 0 || !relaxing_ale_)
+  if (Step() == 0 || !FluidField()->IsAleRelaxationStep(Step()))
     return;
 
-  // rebuild maps and reset fluid matrix, if we relaxed the ALE-mesh in
-  // the previous step
-  if (relaxing_ale_every_ < 1)
-    dserror("You want to relax the ALE-mesh, but provide a relaxation interval of %d?!", relaxing_ale_every_);
-
   // previous step was no relaxation step? leave!
-  if ((Step()-1) % relaxing_ale_every_ != 0)
+  if (FluidField()->IsAleRelaxationStep(Step()-1))
     return;
 
   // REMARK:

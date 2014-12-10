@@ -81,9 +81,6 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(const Epetra_Comm& comm,
   TOL_VEL_INC_L2_  = fsimono.get<double>("TOL_VEL_INC_L2");
   TOL_VEL_INC_INF_ = fsimono.get<double>("TOL_VEL_INC_INF");
   // set tolerances for nonlinear solver
-
-  // validate parameters for monolithic approach
-  ValidateParameters();
 }
 
 void FSI::MonolithicNoNOX::SetupSystem()
@@ -610,35 +607,16 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText()
   }
 }
 
-void FSI::MonolithicNoNOX::ValidateParameters()
-{
-  // Extract parameter list XFLUID_DYNAMIC
-  const Teuchos::ParameterList& xfluiddyn  = DRT::Problem::Instance()->XFluidDynamicParams();
-
-  monolithic_approach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
-               (xfluiddyn.sublist("GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
-
-  // Should ALE-relaxation be carried out?
-  relaxing_ale_ = DRT::INPUT::IntegralValue<bool>(xfluiddyn.sublist("GENERAL"),"RELAXING_ALE");
-  // Get no. of steps, after which ALE field should be relaxed
-  relaxing_ale_every_ = xfluiddyn.sublist("GENERAL").get<int>("RELAXING_ALE_EVERY");
-}
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::Update()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicNoNOX::Update");
 
-  // ALE relaxation flag
-  bool aleupdate = relaxing_ale_;
-
-  // In case of ale relaxation: Check, if the current step is an ale relaxation step!
-  if (relaxing_ale_ && relaxing_ale_every_ != 0)
-    if (Step() % relaxing_ale_every_ != 0) aleupdate=false;
 
   // In case of ALE relaxation
-  if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton and aleupdate )
+  if ( fluid_->MonolithicXffsiApproach() != INPAR::XFEM::XFFSI_Full_Newton and
+       fluid_->IsAleRelaxationStep(Step()))
   {
     // Set the old state of ALE displacement before relaxation
     fluid_->ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
@@ -647,7 +625,8 @@ void FSI::MonolithicNoNOX::Update()
   RecoverLagrangeMultiplier();
 
   // In case of ALE relaxation
-  if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton and aleupdate )
+  if ( fluid_->MonolithicXffsiApproach() != INPAR::XFEM::XFFSI_Full_Newton and
+      fluid_->IsAleRelaxationStep(Step()))
   {
     if (Comm().MyPID() == 0)
       IO::cout << "Relaxing ALE!" << IO::endl;
@@ -664,7 +643,8 @@ void FSI::MonolithicNoNOX::Update()
   FluidField()->Update();
   AleField()->Update();
 
-  if ( monolithic_approach_ != INPAR::XFEM::XFFSI_Full_Newton and aleupdate )
+  if ( fluid_->MonolithicXffsiApproach() != INPAR::XFEM::XFFSI_Full_Newton and
+       fluid_->IsAleRelaxationStep(Step()))
   {
     // Build the ALE-matrix after the update
     AleField()->CreateSystemMatrix(AleField()->Interface());
@@ -685,15 +665,8 @@ void FSI::MonolithicNoNOX::PrepareTimeStep()
   AleField()->PrepareTimeStep();
 
   // no ALE-relaxation or still at the first step? leave!
-  if ( monolithic_approach_ == INPAR::XFEM::XFFSI_Full_Newton ||
-       Step() == 0 ||
-       ! relaxing_ale_) return;
-
-  if (relaxing_ale_every_ < 1)
-    dserror("You want to relax the ALE-mesh, but provide a relaxation interval of %d?!", relaxing_ale_every_);
-
-  // previous step was no relaxation step? leave!
-  if ((Step()-1) % relaxing_ale_every_ != 0)
+  if ( fluid_->MonolithicXffsiApproach() == INPAR::XFEM::XFFSI_Full_Newton ||
+       Step() == 0 || fluid_->IsAleRelaxationStep(Step()-1) )
     return;
 
   // recreate the combined dof-map and create a new block system matrix

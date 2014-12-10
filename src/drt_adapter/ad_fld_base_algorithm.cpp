@@ -776,26 +776,15 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     {
       // actdis is the embedded fluid discretization
       Teuchos::RCP<DRT::Discretization> xfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
-      bool monolithicfluidfluidfsi = false;
-      Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(xfluiddis,actdis,solver,fluidtimeparams,output,isale,monolithicfluidfluidfsi));
+      fluidtimeparams->set<bool>("shape derivatives",false);
+      Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(xfluiddis,actdis,solver,fluidtimeparams,output,isale));
       fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid,actdis,xfluiddis,solver,fluidtimeparams,output,isale,dirichletcond));
     }
     break;
     case prb_fluid_fluid_fsi:
     {
       Teuchos::RCP<DRT::Discretization> xfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
-      const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-      const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
-      bool monolithicfluidfluidfsi;
-      if(coupling == fsi_iter_fluidfluid_monolithicstructuresplit
-         or coupling == fsi_iter_fluidfluid_monolithicfluidsplit
-         or coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nox
-         or coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nox)
-        monolithicfluidfluidfsi = true;
-      else
-        monolithicfluidfluidfsi = false;
-
-      Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(xfluiddis,actdis,solver,fluidtimeparams,output,isale,monolithicfluidfluidfsi));
+      Teuchos::RCP<FLD::XFluidFluid> tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(xfluiddis,actdis,solver,fluidtimeparams,output,isale));
       fluid_ = Teuchos::rcp(new FluidFluidFSI(tmpfluid,actdis,xfluiddis,solver,fluidtimeparams,output,isale,dirichletcond));
     }
     break;

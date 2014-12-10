@@ -66,12 +66,6 @@ namespace FSI
     /// access type-cast pointer to problem-specific ALE-wrapper
     const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& AleField(){ return ale_; }
 
-    /// flag, that indicates ALE-relaxation
-    bool relaxing_ale_;
-
-    /// number of timesteps in between ALE-relaxation
-    int relaxing_ale_every_;
-
     /// type-cast pointer to problem-specific fluid-wrapper
     Teuchos::RCP<ADAPTER::FluidFluidFSI> fluid_;
 

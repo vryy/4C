@@ -276,15 +276,6 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> zeros_;     //!< a zero vector of full length
     Teuchos::RCP<LINALG::Solver> solver_;   //!< linear algebraic solver
 
-    /// the monolithic xffsi approach
-    enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_;
-
-    /// ALE-relaxation flag
-    bool relaxing_ale_;
-
-    /// timestep when to relax the ale
-    int relaxing_ale_every_;
-
     /// type-cast pointer to problem-specific fluid-wrapper
     Teuchos::RCP<ADAPTER::FluidFluidFSI> fluid_;
 

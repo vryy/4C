@@ -70,9 +70,15 @@ namespace ADAPTER {
     /// initialize and prepare maps
     virtual void Init();
 
+    /// prepare time step
+    void PrepareTimeStep();
+
     /// save results of current time step, do XFEM cut and refresh the
     /// merged fluid map extractor
     virtual void Update();
+
+    /// solve for pure fluid-fluid-ale problem
+    void Solve();
 
     /// @name Accessors
     //@{
@@ -124,6 +130,15 @@ namespace ADAPTER {
     /// (indicated monolithic XFFSI with fluidsplit)
     virtual void UseBlockMatrix(bool split_fluidsysmat = false);
 
+    /// determine, whether the ALE-mesh should be relaxed at current time step
+    bool IsAleRelaxationStep(int step) const;
+
+    /// get type of monolithic XFFSI approach
+    INPAR::XFEM::Monolithic_xffsi_Approach MonolithicXffsiApproach() const
+    {
+      return monolithic_approach_;
+    }
+
   private:
 
     /// setup of map extractor to distinguish between FSI DOF-map and
@@ -145,6 +160,12 @@ namespace ADAPTER {
     /// type of monolithic XFluid-Fluid approach (decides whether ALE-mesh is fixed during
     /// Newton iteration)
     enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_;
+
+    /// flag, that indicates, whether ALE-relaxation is activated
+    bool relaxing_ale_;
+
+    /// no. of timesteps, after which ALE-mesh should be relaxed
+    int relaxing_ale_every_;
   };
 }
 

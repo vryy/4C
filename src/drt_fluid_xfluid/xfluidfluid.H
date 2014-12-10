@@ -77,26 +77,14 @@ namespace FLD
           Epetra_Vector & idispcol ///< column vector of fluid-fluid interface displacements
           );
 
-      /// setup of fluid-fluid coupling terms
-      void Evaluate(
-          const Teuchos::RCP<DRT::Discretization>    & bgdis,     ///< background fluid discretization
-          const Teuchos::RCP<DRT::Discretization>    & cutdiscret,///< fluid-fluid boundary discretization
-          const Teuchos::RCP<DRT::Discretization>    & embdis     ///< embedded fluid discretization
-          );
-
       /// create combined map extractor for Dirichlet-constrained DOF from background and embedded fluid
       void CreateMergedDBCMapExtractor();
 
-      /// write gmsh-output
-      void GmshOutput( DRT::Discretization & bgdis,
-                       DRT::Discretization & embdis,
-                       DRT::Discretization & cutdiscret,
-                       const std::string & filename_base,
-                       int countiter,
-                       int step,
-                       Teuchos::RCP<Epetra_Vector> vel,
-                       Teuchos::RCP<Epetra_Vector> alevel,
-                       Teuchos::RCP<Epetra_Vector> disptotal );
+      /*!
+       * \brief prepare fluid-fluid coupling matrices & rhs for evaluation
+       * \param (in) initial_call flag, that indicates first call
+       */
+      void PrepareCouplingMatrices(bool initial_call=false);
 
       /// background fluid dof-map
       Teuchos::RCP<const Epetra_Map> fluiddofrowmap_;
@@ -173,7 +161,7 @@ namespace FLD
 
 
       /// vector with Newton increments (used for monolithic fully newton fsi approach)
-      Teuchos::RCP<Epetra_Vector>    stepinc_;
+      Teuchos::RCP<Epetra_Vector>       stepinc_;
 
       /// edge stabilization and ghost penalty object
       Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
@@ -227,54 +215,6 @@ namespace FLD
 
       //@}
 
-      void GenAlphaIntermediateValues();
-      void GenAlphaUpdateAcceleration();
-
-      /// return edgestab object
-      Teuchos::RCP<XFEM::XFEM_EdgeStab> EdgeStab() {return edgestab_;}
-
-    private:
-
-      //! @name write gmsh-output
-      //@{
-      /// background element output
-      void GmshOutputElement( DRT::Discretization & discret,
-                              std::ofstream & vel_f,
-                              std::ofstream & press_f,
-                              DRT::Element * actele,
-                              Teuchos::RCP<const Epetra_Vector> vel );
-
-      /// volume-cell output
-      void GmshOutputVolumeCell( DRT::Discretization & discret,
-                                 std::ofstream & vel_f,
-                                 std::ofstream & press_f,
-                                 DRT::Element * actele,
-                                 GEO::CUT::ElementHandle * e,
-                                 GEO::CUT::VolumeCell * vc,
-                                 Teuchos::RCP<const Epetra_Vector> vel,
-                                 const std::vector<int> & nds);
-
-      /// boundary-cell output
-      void GmshOutputBoundaryCell( DRT::Discretization & discret,
-                                   DRT::Discretization & cutdiscret,
-                                   std::ofstream & bound_f,
-                                   DRT::Element * actele,
-                                   GEO::CUT::ElementHandle * e,
-                                   GEO::CUT::VolumeCell * vc );
-
-      /// embedded element output
-      void GmshOutputElementEmb( DRT::Discretization & discret,
-                                 std::ofstream & vel_f,
-                                 std::ofstream & press_f,
-                                 DRT::Element * actele,
-                                 Teuchos::RCP<const Epetra_Vector> vel,
-                                 Teuchos::RCP<const Epetra_Vector> disp);
-      //@}
-
-      /// prepare fluid-fluid coupling matrices & rhs for evaluation
-      /// \param (in) initial_call flag, that indicates first call
-      void PrepareCouplingMatrices(bool initial_call=false);
-
       Teuchos::RCP<XFEM::FluidDofSet> dofset_;
     };
 
@@ -301,13 +241,12 @@ namespace FLD
 
     /// constructor
     XFluidFluid(
-        const Teuchos::RCP<DRT::Discretization>&      bgdis,                         ///< background fluid discretization
+        const Teuchos::RCP<DRT::Discretization>&      bgdis,                          ///< background fluid discretization
         const Teuchos::RCP<DRT::Discretization>&      embdis,                         ///< embedded fluid discretization
         const Teuchos::RCP<LINALG::Solver>&           solver,                         ///< linear solver
         const Teuchos::RCP<Teuchos::ParameterList>&   params,                         ///< parameters
-        const Teuchos::RCP<IO::DiscretizationWriter>& emboutput,                         ///< discretization writer
-        bool                                          alefluid = false,               ///< true, if embedded fluid is ale-fluid
-        bool                                          monolithicfluidfluidfsi = false ///< true for monolithic fluid-fluid-fsi context
+        const Teuchos::RCP<IO::DiscretizationWriter>& emboutput,                      ///< discretization writer
+        bool                                          alefluid = false                ///< true, if embedded fluid is ale-fluid
     );
 
     /// initialization
@@ -315,18 +254,19 @@ namespace FLD
 
     /// start time loop for startingalgo, normal problems and restarts
     /// of Fluid-Fluid problems
-    void IntegrateFluidFluid();
+    void Integrate();
 
     /// Do time integration (time loop)
     void TimeLoop();
 
-    void Integrate() { IntegrateFluidFluid(); }
-
     /// Solve stationary problem
-    void SolveStationaryProblemFluidFluid();
+    void SolveStationaryProblem();
 
     /// setup the variables to do a new time step
     void PrepareTimeStep();
+
+    /// prepare solution step (set initial flow field & background state vectors)
+    void PrepareSolve();
 
     /// do nonlinear iteration, e.g. full Newton, Newton-like or Fixpoint iteration
     void Solve();
@@ -354,10 +294,6 @@ namespace FLD
     /// error evaluation routine for a cases with analytical solution
     void EvaluateErrorComparedToAnalyticalSol();
 
-    void SetDirichletNeumannBC();
-
-    void SetHistoryValues();
-
     /// determine grid velocity
     void UpdateGridv();
 
@@ -366,31 +302,6 @@ namespace FLD
 
     /// read restart data for embedded discretization
     void ReadRestartEmb(int step);
-
-    /*!
-     * \brief save the old state, do new cut for this time step and save
-     * status of background fluid (node-to-dofset mapping)
-     */
-    void CutAndSetStateVectors();
-
-    /*!
-     * \brief as part of time integration: determine new background state vectors
-     * \param disp displacement of the ALE-fluid at the time we want to interpolate
-     * values from it
-     */
-    void SetBgStateVectors(Teuchos::RCP<Epetra_Vector> disp);
-
-    /*!
-     * \brief in fixed-ALE-interpolation XFFSI: interpolate embedded state vectors
-     * from embedded elements at previous position
-     */
-    void SetEmbStateVectors(Teuchos::RCP<Epetra_Vector> disp);
-
-    /*!
-     * \brief in fixed-ALE-partitioned XFFSI: update the fluid solution by
-     * solving fluid problem with FSI velocities as dirichlet values
-     */
-    void UpdateMonolithicFluidSolution();
 
     void SetInitialFlowField(
       const INPAR::FLUID::InitialField initfield,
@@ -504,7 +415,69 @@ namespace FLD
     /// create field test
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
+    /*!
+     * \brief save the old state, do new cut for this time step
+     */
+    void CutAndSetState();
+
+    /*!
+     * \brief interpolate values for new interface position
+     */
+    void DoTimeStepTransfer();
+
+    /*!
+     * \brief in fixed-ALE-partitioned XFFSI: update the fluid solution by
+     * solving fluid problem with FSI velocities as dirichlet values
+     */
+    void UpdateMonolithicFluidSolution(const Teuchos::RCP<const Epetra_Map>& fsidofmap);
+
   private:
+
+    /*!
+      \brief call elements to calculate system matrix/rhs and assemble
+    */
+    void AssembleMatAndRHS();
+
+    //! @name write gmsh-output
+    //@{
+
+    /// write gmsh-output
+    void GmshOutput( DRT::Discretization & bgdis,
+                     DRT::Discretization & embdis,
+                     DRT::Discretization & cutdiscret,
+                     const std::string & filename_base,
+                     int countiter,
+                     int step,
+                     Teuchos::RCP<Epetra_Vector> vel,
+                     Teuchos::RCP<Epetra_Vector> alevel,
+                     Teuchos::RCP<Epetra_Vector> disptotal );
+
+    /// volume-cell output
+    void GmshOutputVolumeCell( DRT::Discretization & discret,
+                               std::ofstream & vel_f,
+                               std::ofstream & press_f,
+                               DRT::Element * actele,
+                               GEO::CUT::ElementHandle * e,
+                               GEO::CUT::VolumeCell * vc,
+                               Teuchos::RCP<const Epetra_Vector> vel,
+                               const std::vector<int> & nds);
+
+    /// boundary-cell output
+    void GmshOutputBoundaryCell( DRT::Discretization & discret,
+                                 DRT::Discretization & cutdiscret,
+                                 std::ofstream & bound_f,
+                                 DRT::Element * actele,
+                                 GEO::CUT::ElementHandle * e,
+                                 GEO::CUT::VolumeCell * vc );
+
+    /// embedded element output
+    void GmshOutputElement(    DRT::Discretization & discret,
+                               std::ofstream & vel_f,
+                               std::ofstream & press_f,
+                               DRT::Element * actele,
+                               Teuchos::RCP<const Epetra_Vector> vel,
+                               Teuchos::RCP<const Epetra_Vector> disp = Teuchos::null);
+    //@}
 
     ///  prepare embedded discretization for coupling type embedded-sided Nitsche
     void PrepareEmbeddedDistribution();
@@ -517,8 +490,6 @@ namespace FLD
     /// that contribute to the fluid-fluid interface with at least one face
     void CreateEmbeddedBoundaryDiscretization();
 
-    /// new cut, xfem-time integration and fluid solution for monolithic fixed-ale approach
-    void PrepareMonolithicFixedAle();
 
     //! @name Set general xfem specific element parameter in class FluidEleParameterXFEM
     /*!
@@ -540,6 +511,10 @@ namespace FLD
     */
     void SetElementTimeParameter();
 
+    void SetDirichletNeumannBC();
+
+    void SetHistoryValues();
+
     //! @name Set general parameter in parameter list class for fluid internal face elements
     /*!
 
@@ -549,15 +524,24 @@ namespace FLD
     */
     void SetFaceGeneralFluidXFEMParameter();
 
+
+    /*!
+     * \brief as part of time integration: determine new background state vectors
+     * \param disp displacement of the ALE-fluid at the time we want to interpolate
+     * values from it
+     */
+    void SetBgStateVectors(Teuchos::RCP<Epetra_Vector> disp);
+
+    /*!
+     * \brief in fixed-ALE-interpolation XFFSI: interpolate embedded state vectors
+     * from embedded elements at previous position
+     */
+    void SetEmbStateVectors(Teuchos::RCP<Epetra_Vector> disp);
+
     /*!
       \brief compute values at intermediate time steps for gen.-alpha
     */
     void GenAlphaIntermediateValues();
-
-    /*!
-      \brief call elements to calculate system matrix/rhs and assemble
-    */
-    void AssembleMatAndRHS();
 
     /*!
       \brief update acceleration for generalized-alpha time integration
@@ -846,21 +830,13 @@ namespace FLD
     /// xfem time integration object
     Teuchos::RCP<XFEM::XFluidFluidTimeIntegration> xfluidfluid_timeint_;
 
-    /// flag, that indicates monolithic XFFSI-context
-    bool monolithicfluidfluidfsi_;
-
     /// flag set to true, if there was no change in the dof-maps over the current cut
     /// (same maps for the current cut and the last cut)
     bool samemaps_;
 
-    /// boolean indicating if we relax the ale mesh
-    bool relaxing_ale_;
-    /// number of time steps, after which the ale-mesh will be relaxed
-    int  relaxing_ale_every_;
-
     // used for monolithic_fixedale_partitioned
     Teuchos::RCP<Epetra_Vector>    toggle_;
-    Teuchos::RCP<const Epetra_Map> fixedfsidofmap_;
+    Teuchos::RCP<Epetra_Vector>    fixedfsizeros_;
 
     /// maximum number of DOFsets for the background fluid
     int maxnumdofsets_;

@@ -51,8 +51,22 @@ void ADAPTER::FluidFluidFSI::Init()
   // call base class init
   FluidWrapper::Init();
 
+  // determine the type of monolithic approach
+  const Teuchos::ParameterList& xfluiddyn  = params_->sublist("XFLUID DYNAMIC/GENERAL");
   monolithic_approach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
-                        (params_->sublist("XFLUID DYNAMIC/GENERAL"),"MONOLITHIC_XFFSI_APPROACH");
+               (xfluiddyn,"MONOLITHIC_XFFSI_APPROACH");
+
+  // should ALE-relaxation be carried out?
+  relaxing_ale_ = (bool)DRT::INPUT::IntegralValue<int>(xfluiddyn,"RELAXING_ALE");
+
+  // get no. of timesteps, after which ALE-mesh should be relaxed
+  relaxing_ale_every_ = xfluiddyn.get<int>("RELAXING_ALE_EVERY");
+
+  if (! relaxing_ale_ && relaxing_ale_every_ != 0)
+    dserror("You don't want to relax the ALE but provide a relaxation interval != 0 ?!");
+
+  if (relaxing_ale_every_ < 0)
+    dserror("Please provide a reasonable relaxation interval. We can't travel back in time yet.");
 
   // create map extractor for combined fluid domains
   // (to distinguish between FSI interface DOF / merged inner embedded & background fluid DOF)
@@ -67,14 +81,47 @@ void ADAPTER::FluidFluidFSI::Init()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidFSI::PrepareTimeStep()
+{
+  xfluidfluid_->PrepareTimeStep();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::DofRowMap()
 {
   return xfluidfluid_->DofRowMap();
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidFSI::Solve()
+{
+  // cut and do XFEM time integration
+  xfluidfluid_->PrepareSolve();
+  // solve
+  xfluidfluid_->Solve();
+}
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::Update()
 {
+  if ( IsAleRelaxationStep(Step())
+       && (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Partitioned ||
+           monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Interpolation))
+  {
+    // cut to abtain new interface position
+    xfluidfluid_->CutAndSetState();
+
+    // perform xfem time integration
+    xfluidfluid_->DoTimeStepTransfer();
+
+    if (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Partitioned)
+      xfluidfluid_->UpdateMonolithicFluidSolution(FluidFSI::Interface()->FSICondMap());
+  }
+
   FluidWrapper::Update();
 
   // refresh the merged fluid map extractor
@@ -191,6 +238,13 @@ const Teuchos::RCP<IO::DiscretizationWriter>& ADAPTER::FluidFluidFSI::DiscWriter
 void ADAPTER::FluidFluidFSI::UseBlockMatrix(bool split_fluidsysmat)
 {
   PrepareShapeDerivatives();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool ADAPTER::FluidFluidFSI::IsAleRelaxationStep(int step) const
+{
+  return relaxing_ale_ && step % relaxing_ale_every_ == 0;
 }
 
 /*----------------------------------------------------------------------*
