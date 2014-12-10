@@ -17,7 +17,7 @@
        [mm,ms,kg,K,GPa]
        MAT 1 MAT_Struct_ThrPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 7.8e-6
          CTE 1e-5 INITTEMP 293 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715
-         HARDEXPO 16.93 YIELDSOFT 0.002 HARDSOFT 0.002 DISSFACT 0.9 TOL 1.0e-06 
+         HARDEXPO 16.93 YIELDSOFT 0.002 HARDSOFT 0.002 DISSFACT 0.9 TOL 1.0e-06
 
 <pre>
 Maintainer: Caroline Danowski
@@ -308,7 +308,7 @@ namespace MAT
       const LINALG::Matrix<3,3>& id2,  //!< second-order identity
       int gp  //!< current Gauss-point
       );
-      
+
 
     //! main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
@@ -320,7 +320,7 @@ namespace MAT
       LINALG::Matrix<NUM_STRESS_3D,1>& stresstemp,  //!< temperature-dependent stress term
       Teuchos::ParameterList& params  //!< parameter list
       );
-      
+
     //! computes temperature-dependent isotropic thermal elasticity tensor in
     //! matrix notion for 3d
     void SetupCthermo(
@@ -347,6 +347,9 @@ namespace MAT
       const LINALG::Matrix<1,1>& Ntemp,  // scalar-valued current temperature
       Teuchos::ParameterList& params  // parameter list including F,C^{-1},...
       );
+
+    /// Return whether the material requires the deformation gradient for its evaluation
+    virtual bool NeedsDefgrd() { return true; };
 
     //@}
 
