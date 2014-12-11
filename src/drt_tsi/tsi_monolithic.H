@@ -433,7 +433,7 @@ namespace TSI
     const Teuchos::ParameterList& sdyn_;  //!< structural dynamic parameter list
 
     Epetra_Time timernewton_; //!< timer for measurement of solution time of newton iterations
-
+    double dtsolve_; //!< linear solver time
     //@}
 
     //! @name Pseudo-transient continuation parameters

@@ -577,9 +577,15 @@ void TSI::Monolithic::NewtonFull()
     // (STR/THR)-RHS is put negative in PrepareSystemForNewtonSolve()
     SetupRHS();
 
+    // *********** time measurement ***********
+    double dtcpu = timernewton_.WallTime();
+    // *********** time measurement ***********
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
+    // *********** time measurement ***********
+    dtsolve_ = timernewton_.WallTime() - dtcpu;
+    // *********** time measurement ***********
 
     // recover LM in the case of contact
     RecoverStructThermLM();
@@ -1725,6 +1731,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   }
 
   // add solution time
+  oss << std::setw(12)<< "ts";
   oss << std::setw(12)<< "wct";
 
   // add plasticity information
@@ -1884,6 +1891,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   }
 
   // add solution time of to print to screen
+  oss << std::setw(12) << std::setprecision(2) << std::scientific << dtsolve_;
   oss << std::setw(12) << std::setprecision(2) << std::scientific << timernewton_.ElapsedTime();
 
   // add plasticity information
