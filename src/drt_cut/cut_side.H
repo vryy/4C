@@ -181,6 +181,11 @@ public:
     }
   }
 
+  /*!
+   \brief Returns true if this is a cut side
+   */
+  virtual bool IsLevelSetSide(){return false;};
+
   virtual void MakeOwnedSideFacets(Mesh & mesh, Element * element,
       plain_facet_set & facets);
 

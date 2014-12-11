@@ -84,6 +84,11 @@ void GEO::CUT::LevelSetSide::MakeInternalFacets( Mesh & mesh, Element * element,
   }
 }
 
+int GEO::CUT::LevelSetSide::Id()
+{
+  return Side::Id();
+}
+
 bool GEO::CUT::LevelSetSide::IsCut()
 {
   return Side::IsCut();
