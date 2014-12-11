@@ -65,10 +65,9 @@ namespace NLNSOL
      *  We use the analytical formula to compute the exact and optimal line
      *  search parameter for the case of a linear problem:
      *
-     *  \[\alpha = \]
+     *  \[\alpha = \frac{F_k^Ts_k}{F(x_k+s_k)^Ts_k - F_k^Ts_k}\]
      *
-     *  \author mayr.mt
-     *  \date 10/2014
+     *  \author mayr.mt \date 10/2014
      */
     virtual const double ComputeLSParam() const;
 
@@ -80,7 +79,5 @@ namespace NLNSOL
 
   }; // class LineSearchLinear
 } // namespace NLNSOL
-
-
 
 #endif /* LINESEARCH_LINEAR_H */

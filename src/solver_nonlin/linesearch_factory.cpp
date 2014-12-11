@@ -53,10 +53,10 @@ NLNSOL::LineSearchFactory::Create(const Teuchos::ParameterList& params)
   {
     return Teuchos::rcp(new NLNSOL::LineSearchFullStep());
   }
-//  else if (lstype == "linear")
-//  {
-//    return Teuchos::rcp(new NLNSOL::LineSearchLinear());
-//  }
+  else if (lstype == "linear")
+  {
+    return Teuchos::rcp(new NLNSOL::LineSearchLinear());
+  }
   else
   {
     dserror("Unknown line search algorithm %s.", lstype.c_str());

@@ -27,6 +27,11 @@ Maintainer: Matthias Mayr
 
 class Epetra_MultiVector;
 
+namespace Teuchos
+{
+  class ParameterList;
+} // namespace Teuchos
+
 namespace NLNSOL
 {
   class NlnOperator;

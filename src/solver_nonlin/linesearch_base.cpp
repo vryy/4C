@@ -14,9 +14,6 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 /* headers */
 
-// standard
-#include <iostream>
-
 // Epetra
 #include <Epetra_MultiVector.h>
 
@@ -28,7 +25,6 @@ Maintainer: Matthias Mayr
 #include "linesearch_base.H"
 #include "nln_problem.H"
 
-#include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------------*/
