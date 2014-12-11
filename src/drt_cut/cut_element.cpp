@@ -7,6 +7,8 @@
 #include "cut_facetgraph.H"
 #include "cut_output.H"
 
+#include "../drt_geometry/element_volume.H"
+
 #include "../drt_inpar/inpar_cut.H"
 
 #include <string>
@@ -154,7 +156,7 @@ bool GEO::CUT::Element::Cut(Mesh & mesh, Side & cut_side, int recursion)
 {
   bool cut = false;
 
-  // find nodal points inside the element
+  // find nodal points inside the element (a level-set side does not have nodes)
   const std::vector<Node*> side_nodes = cut_side.Nodes();
 
   for (std::vector<Node*>::const_iterator i = side_nodes.begin();
@@ -178,6 +180,7 @@ bool GEO::CUT::Element::Cut(Mesh & mesh, Side & cut_side, int recursion)
   }
 
   // all the other cut points lie on sides of the element (s is an element side, cut_side is the cutter side)
+  // entry point for level-set cuts
   const std::vector<Side*> & sides = Sides();
   for (std::vector<Side*>::const_iterator i = sides.begin(); i != sides.end();
       ++i)
@@ -416,6 +419,8 @@ void GEO::CUT::Element::FindNodePositions()
       {
         Side * s = *i;
 
+        if(s->IsLevelSetSide()) continue; // do not deal with level-set sides here!
+
         // check if the point lies on one of the element's cut sides
         if (p->IsCut(s))
         {
@@ -438,10 +443,10 @@ void GEO::CUT::Element::FindNodePositions()
       const plain_facet_set & facets = p->Facets();
 
       // loop all the facets sharing this node
-      for (plain_facet_set::const_iterator i = facets.begin();
-          i != facets.end(); ++i)
+      for (plain_facet_set::const_iterator j = facets.begin();
+          j != facets.end(); ++j)
       {
-        Facet * f = *i;
+        Facet * f = *j;
 
         // loop all the cut-faces stored for this element
         // (includes cut-faces that only touch the element at points, edges, sides or parts of them)
@@ -449,6 +454,9 @@ void GEO::CUT::Element::FindNodePositions()
             i != cut_faces_.end(); ++i)
         {
           Side * s = *i;
+
+          if(s->IsLevelSetSide()) continue; // do not deal with level-set sides here!
+
 
           // is there a common point between facet and side?
           // and belongs the facet to the element (otherwise we enter the neighboring element via the facet)?
@@ -523,10 +531,10 @@ void GEO::CUT::Element::FindNodePositions()
       // facets are already set, this will not have much effect anyway. But on
       // multiple cuts we avoid unset facets this way.
       const plain_facet_set & facets = p->Facets();
-      for (plain_facet_set::const_iterator i = facets.begin();
-          i != facets.end(); ++i)
+      for (plain_facet_set::const_iterator k = facets.begin();
+          k != facets.end(); ++k)
       {
-        Facet * f = *i;
+        Facet * f = *k;
         f->Position(pos);
       }
     } // end if outside or inside
@@ -1108,11 +1116,20 @@ void GEO::CUT::Element::GetCutPoints(PointSet & cut_points)
   }
 }
 
-void GEO::CUT::Element::CreateIntegrationCells(Mesh & mesh, int count,
-    bool levelset, bool tetcellsonly)
+
+void GEO::CUT::Element::CreateIntegrationCells(Mesh & mesh, int count, bool tetcellsonly)
 {
   if (not active_)
     return;
+
+  if (not tetcellsonly )
+  {
+    // try to create one single simple shaped integration cell if possible
+    if(CreateSimpleShapedIntegrationCells(mesh)) return;
+    // return if this was possible
+  }
+
+  eleinttype_ = INPAR::CUT::EleIntType_Tessellation;
 
 #ifdef DEBUGCUTLIBRARY
   {
@@ -1132,16 +1149,6 @@ void GEO::CUT::Element::CreateIntegrationCells(Mesh & mesh, int count,
 
   if (not tetcellsonly)
   {
-    if (cells_.size() == 1) // in case there is only one volumecell, check if a simple shaped integration cell is possible
-    {
-      VolumeCell * vc = *cells_.begin();
-      if (IntegrationCellCreator::CreateCell(mesh, Shape(), vc))
-      {
-        CalculateVolumeOfCellsTessellation();
-        return; // return if this was possible
-      }
-    }
-
     if (mesh.CreateOptions().SimpleShapes()) // try to create only simple-shaped integration cells for all! volumecells
     {
       if (IntegrationCellCreator::CreateCells(mesh, this, cells_))
@@ -1151,6 +1158,7 @@ void GEO::CUT::Element::CreateIntegrationCells(Mesh & mesh, int count,
       }
     }
   }
+
 
   PointSet cut_points;
 
@@ -1166,7 +1174,7 @@ void GEO::CUT::Element::CreateIntegrationCells(Mesh & mesh, int count,
       throw std::runtime_error("no holes in cut facet possible");
     //f->GetAllPoints( mesh, cut_points, f->OnCutSide() );
 #if 1
-    f->GetAllPoints(mesh, cut_points, levelset and f->OnCutSide());
+    f->GetAllPoints(mesh, cut_points, f->ParentSide()->IsLevelSetSide() and f->OnCutSide());
 #else
     f->GetAllPoints( mesh, cut_points, false );
 #endif
@@ -1202,11 +1210,53 @@ void GEO::CUT::Element::CreateIntegrationCells(Mesh & mesh, int count,
   // standard subtetrahedralization starts here, there also the boundary cells will be created
 
   TetMesh tetmesh(points, facets_, false);
-  tetmesh.CreateElementTets(mesh, this, cells_, cut_faces_, count, levelset,
-      tetcellsonly);
+  tetmesh.CreateElementTets(mesh, this, cells_, cut_faces_, count, tetcellsonly);
 
   CalculateVolumeOfCellsTessellation();
 }
+
+
+bool GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh & mesh)
+{
+
+  if (cells_.size() == 1) // in case there is only one volumecell, check if a simple shaped integration cell is possible
+  {
+    VolumeCell * vc = *cells_.begin();
+    if (IntegrationCellCreator::CreateCell(mesh, Shape(), vc))
+    {
+      CalculateVolumeOfCellsTessellation();
+
+//      // check if the unique integration cell equals the whole (sub-)element
+//      plain_integrationcell_set intcells;
+//      vc->GetIntegrationCells( intcells );
+//      if(intcells.size() != 1) dserror("there is not a unique integration cell");
+//      if(this->Shape() == intcells[0]->Shape())
+//      {
+//        Epetra_SerialDenseMatrix xyze(3, intcells[0]->Points().size());
+//        this->Coordinates(xyze.A());
+//
+//        double vol_diff = vc->Volume() - GEO::ElementVolume( this->Shape(), xyze );
+//
+//        if(fabs(vol_diff)<1e-14)
+//        {
+//          eleinttype_ = INPAR::CUT::EleIntType_StandardUncut;
+//          return true;
+//        }
+//      }
+
+      // simple integration cells could be created, however, does not equal the element itself
+      eleinttype_ = INPAR::CUT::EleIntType_Tessellation;
+      return true; // return if this was possible
+    }
+  }
+
+
+
+  return false;
+}
+
+
+
 
 void GEO::CUT::Element::RemoveEmptyVolumeCells()
 {
@@ -1525,6 +1575,10 @@ void GEO::CUT::Element::MomentFitGaussWeights(Mesh & mesh, bool include_inner,
   if (not active_)
     return;
 
+  // try to create one single simple shaped integration cell if possible
+  if(CreateSimpleShapedIntegrationCells(mesh)) return;
+  // return if this was possible
+
   //When the cut side touches the element the shape of the element is retained
   /*if(cells_.size()==1)
    {
@@ -1543,6 +1597,8 @@ void GEO::CUT::Element::MomentFitGaussWeights(Mesh & mesh, bool include_inner,
    }
    }*/
 
+  eleinttype_ = INPAR::CUT::EleIntType_MomentFitting;
+
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end();
       i++)
   {
@@ -1560,6 +1616,12 @@ void GEO::CUT::Element::DirectDivergenceGaussRule(Mesh & mesh,
 {
   if (not active_)
     return;
+
+  // try to create one single simple shaped integration cell if possible
+  if(CreateSimpleShapedIntegrationCells(mesh)) return;
+  // return if this was possible
+
+  eleinttype_ = INPAR::CUT::EleIntType_DirectDivergence;
 
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end();
       i++)

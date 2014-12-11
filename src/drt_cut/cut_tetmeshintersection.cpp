@@ -15,8 +15,8 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( Options & options,
                                                     const std::vector<std::vector<int> > & tets,
                                                     const std::vector<int> & accept_tets,
                                                     const std::vector<Point*> & points,
-                                                    const plain_side_set & cut_sides,
-                                                    bool levelset )
+                                                    const plain_side_set & cut_sides
+)
   : pp_( Teuchos::rcp( new PointPool ) ),
     mesh_( options, 1, pp_ ),
     cut_mesh_( options, 1, pp_, true )
@@ -74,7 +74,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( Options & options,
     {
       Facet * f = *i;
 
-      if ( levelset or f->IsTriangulated() )
+      if ( f->ParentSide()->IsLevelSetSide() or f->IsTriangulated() )
       {
         triangulated.push_back( f );
         PointSet points;
@@ -239,7 +239,6 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh,
                                          Element * element,
                                          const plain_volumecell_set & parent_cells,
                                          int count,
-                                         bool levelset,
                                          bool tetcellsonly)
 {
   mesh_.Status();
@@ -291,7 +290,7 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh,
   mesh_.DumpGmsh( "mesh.pos" );
 #endif
 
-  mesh_.CreateIntegrationCells( count, levelset, tetcellsonly );
+  mesh_.CreateIntegrationCells( count, tetcellsonly );
   //mesh_.RemoveEmptyVolumeCells();
 
 #ifdef DEBUGCUTLIBRARY

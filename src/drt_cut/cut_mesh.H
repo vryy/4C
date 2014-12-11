@@ -256,6 +256,7 @@ public:
 
   /// Execute Tessellation with QHULL for each element to generate integrationcells
   void CreateIntegrationCells( int count, bool levelset,bool tetcellsonly=false );
+  //void CreateIntegrationCells( int count, bool tetcellsonly=false );
 
   /// Call the moment fitting method for each element to generate the Gaussian integration rule
   void MomentFitGaussWeights(bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype);

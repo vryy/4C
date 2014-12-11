@@ -23,14 +23,13 @@ namespace GEO
                            const std::vector<std::vector<int> > & tets,
                            const std::vector<int> & accept_tets,
                            const std::vector<Point*> & points,
-                           const plain_side_set & cut_sides,
-                           bool levelset );
+                           const plain_side_set & cut_sides
+      );
 
       void Cut( Mesh & parent_mesh,
                 Element * element,
                 const plain_volumecell_set & parent_cells,
                 int count,
-                bool levelset,
                 bool tetcellsonly = false);
 
       void Status();

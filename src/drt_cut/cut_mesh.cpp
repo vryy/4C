@@ -1023,16 +1023,17 @@ void GEO::CUT::Mesh::FindLSNodePositions()
     Point * p = n->point();
     if ( p->Position()==Point::undecided )
     {
+      // we have to take into account the tolerance for which a node lies on the levelset-side
       double lsv = n->LSV();
-      if ( lsv > 0 )
+      if ( lsv > TOLERANCE )
       {
         p->Position( Point::outside );
       }
-      else if ( lsv < 0 )
+      else if ( lsv < -TOLERANCE )
       {
         p->Position( Point::inside );
       }
-      else
+      else //
       {
         //throw std::runtime_error( "undecided nodal point on levelset
         //surface" );
@@ -1337,6 +1338,7 @@ void GEO::CUT::Mesh::FindNodalDOFSets( bool include_inner )
  * Execute Tessellation with QHULL for each element to generate integrationcells
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset, bool tetcellsonly )
+//void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool tetcellsonly )
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
@@ -1345,7 +1347,7 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset, bool tetc
     Element & e = *i->second;
     try
     {
-      e.CreateIntegrationCells( *this, count+1, levelset, tetcellsonly );
+      e.CreateIntegrationCells( *this, count+1, tetcellsonly );
     }
     catch ( std::runtime_error & err )
     {
@@ -1360,7 +1362,7 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset, bool tetc
     Element & e = *i->second;
     try
     {
-      e.CreateIntegrationCells( *this, count+1, levelset, tetcellsonly );
+      e.CreateIntegrationCells( *this, count+1, tetcellsonly );
     }
     catch ( std::runtime_error & err )
     {

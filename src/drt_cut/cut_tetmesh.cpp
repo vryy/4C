@@ -111,7 +111,6 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
                                            const plain_volumecell_set & cells,
                                            const plain_side_set & cut_sides,
                                            int count,
-                                           bool levelset,
                                            bool tetcellsonly)
 {
   FixBrokenTets();
@@ -241,8 +240,8 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
   {
     //if ( count <= 3 )
     {
-      TetMeshIntersection intersection( mesh.CreateOptions(), element, tets_, accept_tets_, points_, cut_sides, levelset );
-      intersection.Cut( mesh, element, cells, count, levelset ,tetcellsonly);
+      TetMeshIntersection intersection( mesh.CreateOptions(), element, tets_, accept_tets_, points_, cut_sides );
+      intersection.Cut( mesh, element, cells, count ,tetcellsonly);
     }
   }
 }

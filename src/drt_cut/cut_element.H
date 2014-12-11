@@ -37,7 +37,8 @@ public:
     : eid_( eid ),
       active_( active ),
       sides_( sides ),
-      nodes_( nodes )
+      nodes_( nodes ),
+      eleinttype_(INPAR::CUT::EleIntType_Undecided)
   {
     for ( std::vector<Side*>::const_iterator i=sides.begin();
           i!=sides.end();
@@ -131,7 +132,12 @@ public:
   /*!
   \brief Create integrationcells by performing tessellation over the volumecells of the element. This uses QHULL
    */
-  void CreateIntegrationCells( Mesh & mesh, int count, bool levelset, bool tetcellsonly =false );
+  void CreateIntegrationCells( Mesh & mesh, int count, bool tetcellsonly =false );
+
+  /*!
+  \brief Try to create simpled shaped integrationcells
+   */
+  bool CreateSimpleShapedIntegrationCells( Mesh & mesh );
 
   /*!
   \brief Construct quadrature rules for the volumecells by solving the moment fitting equations
@@ -186,6 +192,12 @@ public:
   bool OnSide( Facet * f );
 
   bool OnSide( const std::vector<Point*> & facet_points );
+
+  /*!
+  \brief Get the integrationcells created from this element
+   */
+  INPAR::CUT::ElementIntegrationType GetElementIntegrationType(){return eleinttype_;}
+
 
   /*!
   \brief Get the integrationcells created from this element
@@ -462,6 +474,9 @@ private:
 
   /// the bounding volume of the element
   BoundingBox boundingvolume_;
+
+  /// type of integration-rule for this element
+  INPAR::CUT::ElementIntegrationType eleinttype_;
 
 };
 
