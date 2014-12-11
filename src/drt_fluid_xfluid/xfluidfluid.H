@@ -39,6 +39,8 @@ namespace LINALG
 }
 namespace GEO
 {
+  class CutWizardNEW;
+
   namespace CUT
   {
     class ElementHandle;
@@ -53,10 +55,9 @@ namespace IO
 
 namespace XFEM
 {
+  class XFEMDofSet;
   class XFluidFluidTimeIntegration;
   class XFEM_EdgeStab;
-  class FluidWizardMesh;
-  class FluidDofSet;
 }
 
 namespace FLD
@@ -74,7 +75,7 @@ namespace FLD
       /// constructor (this is where the cut takes place)
       explicit XFluidFluidState(
           XFluidFluid & xfluid,    ///< owning fluid-fluid class
-          Epetra_Vector & idispcol ///< column vector of fluid-fluid interface displacements
+          Teuchos::RCP<const Epetra_Vector> idispcol ///< column vector of fluid-fluid interface displacements
           );
 
       /// create combined map extractor for Dirichlet-constrained DOF from background and embedded fluid
@@ -169,7 +170,7 @@ namespace FLD
       XFluidFluid & xfluid_;
 
       /// provides access to the xfem-dofsets of the background fluid
-      Teuchos::RCP<XFEM::FluidWizardMesh> wizard_;
+      Teuchos::RCP<GEO::CutWizardNEW> wizard_;
 
       //@name State variables of the merged system
       //@{
@@ -215,7 +216,7 @@ namespace FLD
 
       //@}
 
-      Teuchos::RCP<XFEM::FluidDofSet> dofset_;
+      Teuchos::RCP<XFEM::XFEMDofSet> dofset_;
     };
 
   public:

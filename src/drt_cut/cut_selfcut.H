@@ -14,10 +14,19 @@
 #ifndef CUT_SELFCUT_H
 #define CUT_SELFCUT_H
 
+#include "cut_point.H"
+
+
 namespace GEO
 {
 namespace CUT
 {
+class Point;
+class Node;
+class Edge;
+class Side;
+class Cycle;
+class Mesh;
 
 class SelfCut
 {

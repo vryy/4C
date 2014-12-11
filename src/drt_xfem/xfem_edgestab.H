@@ -40,9 +40,11 @@ namespace DRT
 
 namespace GEO
 {
+  class CutWizardNEW;
+
   namespace CUT
   {
-    class Side;
+    class SideHandle;
   }
 }
 
@@ -54,7 +56,6 @@ namespace LINALG
 
 namespace XFEM
 {
-  class FluidWizard;
 
 /*!
 \brief provides the xfem fluid and ghost penalty stabilization based on EOS/CIP (edge-oriented, continuous interior penalty) scheme
@@ -65,7 +66,7 @@ public:
 
   //! constructor
   explicit XFEM_EdgeStab(
-      Teuchos::RCP<XFEM::FluidWizard>              wizard,                ///< fluid wizard
+      Teuchos::RCP<GEO::CutWizardNEW>              wizard,                ///< cut wizard
       Teuchos::RCP<DRT::Discretization>            discret,               ///< discretization
       bool                                         include_inner = false  ///< stabilize also facets with inside position
   );
@@ -126,10 +127,10 @@ public:
   private:
 
   //! get the cut side for face's element identified using the sorted node ids
-  GEO::CUT::SideHandle* GetCutSide(DRT::Element* faceele);
+  GEO::CUT::SideHandle* GetFace(DRT::Element* faceele);
 
 
-  Teuchos::RCP<XFEM::FluidWizard> wizard_;    ///< fluid wizard
+  Teuchos::RCP<GEO::CutWizardNEW> wizard_;    ///< cut wizard
   Teuchos::RCP<DRT::Discretization> discret_; ///< discretization
 
   bool include_inner_; ///< do we have to stabilize facets with inside position?

@@ -13,7 +13,6 @@ Maintainer: Benedikt Schott
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-#include "../drt_fluid_xfluid/xfluid_defines.H"
 
 #include "../drt_io/io_pstream.H"
 
@@ -21,18 +20,11 @@ Maintainer: Benedikt Schott
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 
-#include "../drt_cut/cut_boundarycell.H"
 #include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_facet.H"
-#include "../drt_cut/cut_integrationcell.H"
 #include "../drt_cut/cut_mesh.H"
 #include "../drt_cut/cut_node.H"
-#include "../drt_cut/cut_point.H"
 #include "../drt_cut/cut_side.H"
-#include "../drt_cut/cut_volumecell.H"
 #include "../drt_cut/cut_parallel.H"
-
-#include "geo_utils.H"
 
 #include "geo_intersection.H"
 
@@ -77,15 +69,164 @@ GEO::CUT::Node * GEO::CutWizard::GetNode( int nid )
   return mesh_->GetNode( nid );
 }
 
-/*
- * Output
- */
 
+/*------------------------------------------------------------------------------------------------*
+ * cut routine for parallel framework in XFSI and XFLUIDFLUID                        schott 03/12 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CutWizard::Run_Cut(
+    bool include_inner,
+    INPAR::CUT::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
+    INPAR::CUT::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
+    bool tetcellsonly,
+    bool screenoutput)
+{
+
+  mesh_->Status();
+
+  // just for time measurement
+  dis_.Comm().Barrier();
+
+  //----------------------------------------------------------
+  // Selfcut (2/6 Cut_SelfCut)
+  {
+    const double t_start = Teuchos::Time::wallTime();
+
+    // cut the mesh
+    mesh_->Cut_SelfCut(include_inner, screenoutput);
+
+    // just for time measurement
+    dis_.Comm().Barrier();
+
+    const double t_diff = Teuchos::Time::wallTime() - t_start;
+    if (myrank_ == 0)
+      IO::cout << "\t\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
+  }
+  //----------------------------------------------------------
+  // Cut Part I: Collision Detection (3/6 Cut_CollisionDetection)
+  {
+    const double t_start = Teuchos::Time::wallTime();
+
+    // cut the mesh
+    mesh_->Cut_CollisionDetection(include_inner, screenoutput);
+
+    // just for time measurement
+    dis_.Comm().Barrier();
+
+    const double t_diff = Teuchos::Time::wallTime() - t_start;
+    if (myrank_ == 0)
+      IO::cout << "\t\t... Success (" << t_diff << " secs)" << IO::endl;
+  }
+
+  //----------------------------------------------------------
+  // Cut Part II: Intersection (4/6 Cut_Intersection)
+  {
+    const double t_start = Teuchos::Time::wallTime();
+
+    // call cut for cutting with a mesh
+    mesh_->Cut_MeshIntersection( screenoutput );
+    // call cut for cutting with a levelset field
+    mesh_->Cut_Mesh( screenoutput );
+
+    // just for time measurement
+    dis_.Comm().Barrier();
+
+    const double t_diff = Teuchos::Time::wallTime()-t_start;
+    if ( myrank_ == 0 ) IO::cout << "\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
+  }
+
+  //----------------------------------------------------------
+  // Cut Part III & IV: Element Selection and DOF-Set Management (5/6 Cut_Positions_Dofsets)
+  {
+    const double t_start = Teuchos::Time::wallTime();
+
+    FindPositionDofSets( include_inner, screenoutput );
+
+    // just for time measurement
+    dis_.Comm().Barrier();
+
+    const double t_diff = Teuchos::Time::wallTime()-t_start;
+    if ( myrank_ == 0 ) IO::cout << "\t... Success (" << t_diff  <<  " secs)" << IO::endl;
+  }
+
+  //----------------------------------------------------------
+  // Cut Part V & VI: Polyhedra Integration and Boundary Tessellation (6/6 Cut_Finalize)
+  {
+    const double t_start = Teuchos::Time::wallTime();
+
+    // perform tessellation or moment fitting on the mesh
+    mesh_->Cut_Finalize( include_inner, VCellgausstype, BCellgausstype, tetcellsonly, screenoutput );
+
+    // just for time measurement
+    dis_.Comm().Barrier();
+
+    const double t_diff = Teuchos::Time::wallTime()-t_start;
+    if ( myrank_ == 0 ) IO::cout << "\t\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
+  }
+
+  mesh_->Status(VCellgausstype);
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ * routine for finding node positions and computing vc dofsets in a parallel way     schott 03/12 *
+ *------------------------------------------------------------------------------------------------*/
+void GEO::CutWizard::FindPositionDofSets(bool include_inner, bool screenoutput)
+{
+
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets (parallel)" );
+
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 2/3 Cut_Positions_Dofsets (parallel) ...";
+
+//  const double t_start = Teuchos::Time::wallTime();
+
+  //----------------------------------------------------------
+
+  GEO::CUT::Options options;
+  mesh_->GetOptions(options);
+
+  if ( options.FindPositions() )
+  {
+
+    GEO::CUT::Mesh & m = mesh_->NormalMesh();
+
+    // find inside and outside positions of nodes
+    FindNodePositions();
+
+
+    //TWO_PHASE_XFEM_FIX: Does this apply for level set cut as well?
+    // find undecided nodes
+    // * for serial simulations all node positions should be set
+    // * for parallel simulations there can be some undecided nodes
+
+    // create a parallel Cut object for the current background mesh to communicate missing data
+    Teuchos::RCP<GEO::CUT::Parallel> cut_parallel = Teuchos::rcp( new GEO::CUT::Parallel( dis_, m, *mesh_ ) );
+
+    cut_parallel->CommunicateNodePositions();
+
+
+    m.FindFacetPositions();
+
+    // find number and connection of dofsets at nodes from cut volumes
+    mesh_->CreateNodalDofSet( include_inner, dis_);
+
+    cut_parallel->CommunicateNodeDofSetNumbers(include_inner);
+
+  }
+
+}
+
+/*------------------------------------------------------------------------------------------------*
+ * Print the number of volumecells and boundarycells generated over the whole mesh during the cut *
+ *------------------------------------------------------------------------------------------------*/
 void GEO::CutWizard::PrintCellStats()
 {
   mesh_->PrintCellStats();
 }
 
+
+/*------------------------------------------------------------------------------------------------*
+ * Write the DOF details of the nodes                                                             *
+ *------------------------------------------------------------------------------------------------*/
 void GEO::CutWizard::DumpGmshNumDOFSets( bool include_inner)
 {
   std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -95,6 +236,10 @@ void GEO::CutWizard::DumpGmshNumDOFSets( bool include_inner)
   mesh_->DumpGmshNumDOFSets( str.str(), include_inner, dis_ );
 }
 
+
+/*------------------------------------------------------------------------------------------------*
+ * Write volumecell output in GMSH format throughout the domain                                   *
+ *------------------------------------------------------------------------------------------------*/
 void GEO::CutWizard::DumpGmshVolumeCells( bool include_inner )
 {
   std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -106,6 +251,9 @@ void GEO::CutWizard::DumpGmshVolumeCells( bool include_inner )
   mesh_->DumpGmshVolumeCells( str.str(), include_inner );
 }
 
+/*------------------------------------------------------------------------------------------------*
+ * Write the integrationcells and boundarycells in GMSH format throughout the domain              *
+ *------------------------------------------------------------------------------------------------*/
 void GEO::CutWizard::DumpGmshIntegrationCells()
 {
   std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -117,137 +265,4 @@ void GEO::CutWizard::DumpGmshIntegrationCells()
   mesh_->DumpGmshIntegrationCells( str.str() );
 }
 
-#if 0
-Teuchos::RCP<Epetra_CrsGraph> GEO::CutWizard::MatrixGraph( const CutDofSet & dofset, const Epetra_Map & dbcmap )
-{
-  const Epetra_Map & noderowmap = * dis_.NodeRowMap();
-  const Epetra_Map & dofrowmap  = * dofset.DofRowMap();
-
-  int numnode = noderowmap.NumMyElements();
-
-  // build graph
-
-  std::map<int, std::set<int> > graph;
-
-  int row = 0;
-  for ( int i=0; i<numnode; ++i )
-  {
-    DRT::Node * rn = dis_.lRowNode( i );
-
-    int numelements = rn->NumElement();
-    DRT::Element** elements = rn->Elements();
-    if ( elements==NULL )
-      dserror( "no elements at node %d", rn->Id() );
-
-    GEO::CUT::Node * crn = mesh_->GetNode( rn->Id() );
-    if ( crn!=NULL )
-    {
-      std::vector<int> rdofs = dis_.Dof( rn );
-      int rplain_numdf = dofset.PlainNumDofPerNode( *rn );
-      for ( int k=0; k<numelements; ++k )
-      {
-        DRT::Element * e = elements[k];
-        int numnodes = e->NumNode();
-        DRT::Node ** nodes = e->Nodes();
-
-        GEO::CUT::ElementHandle * ce = mesh_->GetElement( e->Id() );
-        if ( ce!=NULL )
-        {
-          std::set<GEO::CUT::VolumeCell*> cells;
-          ce->GetVolumeCells( cells );
-          for ( std::set<GEO::CUT::VolumeCell*>::iterator i=cells.begin();
-                i!=cells.end();
-                ++i )
-          {
-            GEO::CUT::VolumeCell * c = *i;
-            const std::vector<int> & nodaldofset = c->NodalDofSet();
-            if ( nodaldofset.size()!=numnodes )
-            {
-              throw std::runtime_error( "number of nodes mismatch" );
-            }
-            for ( int l=0; l<numnodes; ++l )
-            {
-              DRT::Node * cn = nodes[l];
-              std::vector<int> cdofs;
-              dofset.Dof( *cn, nodaldofset[l], cdofs );
-            }
-          }
-        }
-        else
-        {
-          for ( int l=0; l<numnodes; ++l )
-          {
-            DRT::Node * cn = nodes[l];
-
-            std::vector<int> cdofs = dis_.Dof( cn );
-          }
-        }
-      }
-    }
-    else
-    {
-      std::vector<int> rdofs = dis_.Dof( rn );
-      for ( unsigned rj=0; rj<rdofs.size(); ++rj, ++row )
-      {
-        std::set<int> & rowset = graph[rdofs[rj]];
-        if ( not dbcmap.MyGID( rdofs[rj] ) )
-        {
-          // non-Dirichlet row
-          for ( int k=0; k<numelements; ++k )
-          {
-            DRT::Element * e = elements[k];
-            int numnodes = e->NumNode();
-            DRT::Node ** nodes = e->Nodes();
-            for ( int l=0; l<numnodes; ++l )
-            {
-              DRT::Node * cn = nodes[l];
-
-              std::vector<int> cdofs = dis_.Dof( cn );
-              rowset.insert( cdofs.begin(), cdofs.end() );
-            }
-          }
-        }
-        else
-        {
-          // just diagonal entry on Dirichlet rows
-          rowset.insert( rdofs[rj] );
-        }
-      }
-    }
-  }
-
-  // setup graph with row length and column indices per row
-
-  std::vector<int> sizes;
-  sizes.reserve( graph.size() );
-  for ( std::map<int, std::set<int> >::iterator i=graph.begin(); i!=graph.end(); ++i )
-  {
-    std::set<int> & rowset = i->second;
-    unsigned s = rowset.size();
-    sizes.push_back( s );
-  }
-
-  Teuchos::RCP<Epetra_CrsGraph> crsgraph =
-    Teuchos::rcp( new Epetra_CrsGraph( Copy, dofrowmap, &sizes[0], true ) );
-
-  for ( std::map<int, std::set<int> >::iterator i=graph.begin(); i!=graph.end(); ++i )
-  {
-    int gid = i->first;
-    std::set<int> & rowset = i->second;
-    unsigned s = rowset.size();
-    std::vector<int> row;
-    row.reserve( s );
-    row.assign( rowset.begin(), rowset.end() );
-
-    int err = crsgraph->InsertGlobalIndices( gid, row.size(), &row[0] );
-    if ( err )
-      dserror( "InsertGlobalIndices failed: %d", err );
-  }
-
-  crsgraph->FillComplete();
-
-  return crsgraph;
-  return Teuchos::null;
-}
-#endif
 

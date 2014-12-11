@@ -84,6 +84,7 @@ public:
     return MinAllGID() + numMyReservedDofs_;
   }
 
+  /// Get minimum GID of degree of freedom row map
   virtual int MinAllGID() const
   {
     int mymindof;
@@ -97,14 +98,15 @@ public:
     return mymindof;
   }
 
-  virtual void MinGID(int mingid) {}
+  /// set the minimal global id
+  virtual void SetMinGID(int mingid) {minGID_ = mingid;}
 
   ///Get Reserved Max Number Dofs per Node
   virtual void GetReservedMaxNumDofperNode(int& maxnodenumdf)
   {
     if (maxnodenumdf > numMyReservedDofsperNode_)
     {
-      dserror("FixedSizeDofSet::GetReservedMaxNumDofperNode: Not enought Dofs reserved!!!");
+      dserror("FixedSizeDofSet::GetReservedMaxNumDofperNode: Not enough Dofs reserved!!!");
       return;
     }
     maxnodenumdf = numMyReservedDofsperNode_;
@@ -112,6 +114,7 @@ public:
     return;
   }
 
+  /// minimal global dof id
   int minGID_ ;
 
 protected:
@@ -124,8 +127,8 @@ protected:
 
 private:
 
-}; // class StdDofSet
+}; // class FixedSizeDofSet
 
 }
 
-#endif  // #ifndef DOFSET_INDEPENDENT_H
+#endif  // #ifndef DOFSET_FIXED_SIZE_H

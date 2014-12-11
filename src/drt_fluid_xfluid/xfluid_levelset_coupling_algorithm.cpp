@@ -99,7 +99,7 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
 
     // create new state class
     //TODO
-    //      xfluid->CreateInitialStateLS();
+    //      xfluid->CreateNewState
 
   }
   break;

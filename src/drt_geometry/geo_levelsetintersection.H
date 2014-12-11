@@ -14,7 +14,8 @@ Maintainer: Benedikt Schott and Magnus Winter
 #ifndef GEO_LEVELSETINTERSECTION_H
 #define GEO_LEVELSETINTERSECTION_H
 
-#include "../drt_geometry/geo_intersection.H"
+#include "geo_intersection.H"
+
 
 namespace DRT
 {
@@ -27,7 +28,6 @@ namespace GEO
   namespace CUT
   {
     class LevelSetIntersection;
-
   }
 
   /// contains the cut
@@ -54,20 +54,6 @@ namespace GEO
     /*========================================================================*/
 
     /*!
-    \brief Cut routine for parallel framework of level set cut
-    */
-    void CutParallel( bool include_inner,
-                      INPAR::CUT::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
-                      INPAR::CUT::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
-                      bool tetcellsonly =false,
-                      bool screenoutput = true);
-
-    /*!
-    \brief Routine for finding node positions and computing volumecell dofsets in a parallel way (level set specific)
-    */
-    void CutParallel_FindPositionDofSets(bool include_inner, bool communicate, bool screenoutput=true);
-
-    /*!
     \brief Cut routine for standard non-parallel framework which is used only for cut_test (level set specific)
     */
     void Cut(
@@ -86,7 +72,13 @@ namespace GEO
      */
     GEO::CUT::LevelSetIntersection & Mesh() {return *levelsetintersection_; }
 
+  protected:
+
+    void FindNodePositions();
+
+
   private:
+
 
     /*========================================================================*/
     //! @name private class variables

@@ -21,9 +21,9 @@ Maintainer: Shadan Shahmiri
 #include "../drt_lib/drt_discret.H"
 
 
-namespace XFEM
+namespace GEO
 {
-  class FluidWizard;
+  class CutWizardNEW;
 }
 
 namespace DRT
@@ -52,7 +52,7 @@ namespace DRT
 
     explicit TransparentIndependentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,
                                           bool parallel,
-                                          Teuchos::RCP<XFEM::FluidWizard> wizard);
+                                          Teuchos::RCP<GEO::CutWizardNEW> wizard);
 
     /*!
     \brief Destructor
@@ -75,7 +75,7 @@ namespace DRT
 
   private:
 
-    Teuchos::RCP<XFEM::FluidWizard> wizard_;
+    Teuchos::RCP<GEO::CutWizardNEW> wizard_;
 
   }; // class TransparentDofSet
 } //namespace

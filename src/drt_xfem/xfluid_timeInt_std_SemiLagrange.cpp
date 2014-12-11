@@ -15,14 +15,14 @@ Maintainer: Benedikt Schott
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_integrationcell.H"
 #include "../drt_cut/cut_volumecell.H"
+#include "../drt_cut/cut_cutwizard.H"
 
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_inpar/inpar_xfem.H"
 
-#include "../drt_xfem/xfem_fluiddofset.H"
-#include "../drt_xfem/xfem_fluidwizard.H"
+#include "../drt_xfem/xfem_dofset.H"
 
 #include "xfluid_timeInt_std_SemiLagrange.H"
 
@@ -1011,7 +1011,7 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
     std::vector<int> lm;
     std::vector<int> dofs;
 
-    dofset_new_->Dof(node, 0, dofs ); // dofs for standard dofset
+    dofset_new_->Dof(dofs, node, 0 ); // dofs for standard dofset
 
     int size = dofs.size();
 
@@ -1293,7 +1293,7 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
   {
     DRT::Node* node = ele->Nodes()[inode];
     std::vector<int> dofs;
-    dofset_old_->Dof(node, data->nds_[inode], dofs );
+    dofset_old_->Dof(dofs, node, data->nds_[inode] );
 
     int size = dofs.size();
 
@@ -1504,7 +1504,7 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(
 #endif
 
 
-  Teuchos::RCP<XFEM::FluidWizardMesh> wizard = step_np ? wizard_new_ : wizard_old_;
+  Teuchos::RCP<GEO::CutWizardNEW> wizard = step_np ? wizard_new_ : wizard_old_;
 
   GEO::CUT::ElementHandle* e = wizard->GetElement(ele);
 
@@ -1656,7 +1656,7 @@ void XFEM::XFLUID_SemiLagrange::computeNodalGradient(
     DRT::Node*                         node,           ///< node at which we reconstruct the gradients
     std::vector<DRT::Element*>&        eles,           ///< elements around node used for the reconstruction
     std::vector<std::vector<int> >&    ele_nds,        ///< corresonding elements nodal dofset information
-    XFEM::FluidDofSet &                dofset,         ///< fluid dofset
+    XFEM::XFEMDofSet &                 dofset,         ///< fluid dofset
     std::vector<LINALG::Matrix<3,3> >& velDeriv_avg,   ///< velocity/acc component derivatives for several vectors
     std::vector<LINALG::Matrix<1,3> >& preDeriv_avg    ///< pressure-component derivatives for several vectors
 ) const

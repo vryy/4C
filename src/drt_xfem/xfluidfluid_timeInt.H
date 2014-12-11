@@ -30,6 +30,11 @@ Maintainer:
 class Epetra_Map;
 class Epetra_Vector;
 
+namespace GEO
+{
+  class CutWizardNEW;
+}
+
 namespace DRT
 {
   class Discretization;
@@ -51,7 +56,8 @@ namespace Teuchos
 
 namespace XFEM
 {
-  class FluidWizardMesh;
+
+  class XFEMDofSet;
 
 /*!
 \brief basic time integration class for xfluid-fluid problems
@@ -72,7 +78,7 @@ public:
   explicit XFluidFluidTimeIntegration(
     const Teuchos::RCP<DRT::Discretization> &  bgdis,
     const Teuchos::RCP<DRT::Discretization> &  embdis,
-    Teuchos::RCP<XFEM::FluidWizardMesh>        wizard,
+    Teuchos::RCP<GEO::CutWizardNEW>            wizard,
     int                                        step,
     enum INPAR::XFEM::XFluidFluidTimeInt       xfem_timeintapproach,
     const Teuchos::ParameterList&              params
@@ -88,10 +94,10 @@ public:
    * \brief Save the old state (maps of node-ids to dof-ids) and create a new one
    * \return true, if the maps have changed compared to the old state
    */
-  bool SaveBgNodeMapsAndCreateNew(Teuchos::RCP<XFEM::FluidWizardMesh> wizard);
+  bool SaveBgNodeMapsAndCreateNew(Teuchos::RCP<GEO::CutWizardNEW> wizard);
 
   //! Create the background node maps
-  void CreateBgNodeMapsForRestart(Teuchos::RCP<XFEM::FluidWizardMesh> wizard);
+  void CreateBgNodeMapsForRestart(Teuchos::RCP<GEO::CutWizardNEW> wizard);
 
 
   /*!
@@ -130,8 +136,8 @@ public:
    * by solution of an optimization problem
    */
   void EnforceIncompAfterProjection(
-      Teuchos::RCP<XFEM::FluidWizardMesh>               wizard,         ///< xfem fluid wizard
-      Teuchos::RCP<XFEM::FluidWizardMesh>               wizard_n,       ///< xfem fluid wizard from timestep n
+      Teuchos::RCP<GEO::CutWizardNEW>               wizard,         ///< xfem fluid wizard
+      Teuchos::RCP<GEO::CutWizardNEW>               wizard_n,       ///< xfem fluid wizard from timestep n
       Teuchos::RCP<Epetra_Vector> &                     bgstate_velnp,  ///< background fluid velocity at timestep n+1
       Teuchos::RCP<Epetra_Vector> &                     bgstate_veln,   ///< background fluid velocity at timestep n
       Teuchos::RCP<Epetra_Vector> &                     bgstate_velnm,  ///< background fluid velocity at timestep n-1
@@ -219,7 +225,7 @@ private:
   };
 
   /// Create maps of bgfluid's nodes needed for time integration
-  void CreateBgNodeMaps(Teuchos::RCP<XFEM::FluidWizardMesh> wizard);
+  void CreateBgNodeMaps(Teuchos::RCP<GEO::CutWizardNEW> wizard);
 
   /// Save the state (maps of node-ids to dof-ids)
   void SaveBgNodeMaps();
@@ -330,16 +336,16 @@ private:
 
   //! @name Methods for subsequent enforcement of incompressibility on background element patch after projection
   //@{
-  void BuildElementPatchForIncompOpt( Teuchos::RCP<XFEM::FluidWizardMesh>               wizard_n,
-                                      Teuchos::RCP<XFEM::FluidWizardMesh>               wizard_np,
+  void BuildElementPatchForIncompOpt( Teuchos::RCP<GEO::CutWizardNEW>               wizard_n,
+                                      Teuchos::RCP<GEO::CutWizardNEW>               wizard_np,
                                       const Teuchos::RCP<const LINALG::MapExtractor>  & dbcmaps);
 
 
   /// build a discretization from the element patch, on which incompressibility shall be enforced
-  void PrepareIncompOptDiscret(Teuchos::RCP<XFEM::FluidWizardMesh> wizard_np);
+  void PrepareIncompOptDiscret(Teuchos::RCP<GEO::CutWizardNEW> wizard_np);
 
   /// evaluate incompressibility on element level
-  void EvaluateIncompOpt(Teuchos::RCP<XFEM::FluidWizardMesh> wizard);
+  void EvaluateIncompOpt(Teuchos::RCP<GEO::CutWizardNEW> wizard);
 
   /// solve optimization problem
   void SolveIncompOptProblem(Teuchos::RCP<Epetra_Vector> initialvel);

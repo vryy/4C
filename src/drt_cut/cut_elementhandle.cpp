@@ -15,13 +15,18 @@ Maintainer:  Benedikt Schott
 
 #include <Teuchos_TimeMonitor.hpp>
 
+#include "cut_boundarycell.H"
 #include "cut_integrationcell.H"
-#include "cut_meshintersection.H"
 #include "cut_position.H"
 #include "cut_point.H"
+#include "cut_node.H"
 #include "cut_volumecell.H"
+#include "cut_mesh.H"
+
 
 #include "../drt_inpar/inpar_xfem.H"
+
+#include "cut_elementhandle.H"
 
 #include<fstream>
 
@@ -59,238 +64,145 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected(
 }
 
 
-
 /*----------------------------------------------------------------------*/
 // Collect the Gaussian points of all volume-cells belonging to this element in such a way
 // that Gaussian rule for every volume-cell can be separated
 /*----------------------------------------------------------------------*/
 void GEO::CUT::ElementHandle::VolumeCellGaussPoints(
     plain_volumecell_set &                      cells,
-    std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-    INPAR::CUT::VCellGaussPts                   gausstype
+    std::vector<DRT::UTILS::GaussIntegration> & intpoints
 )
 {
-  /*cells.clear(); //check whether any problems with gmsh output
-  GetVolumeCells( cells );*/
 
   intpoints.clear();
   intpoints.reserve( cells.size() );
+
+  for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+  {
+    GEO::CUT::VolumeCell * vc = *i;
+
+    Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
+        Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
+
+    if(vc->ParentElement()->GetElementIntegrationType() == INPAR::CUT::EleIntType_Tessellation)
+      AppendVolumeCellGaussPoints_Tessellation(gpc, vc);
+    else if(vc->ParentElement()->GetElementIntegrationType() == INPAR::CUT::EleIntType_MomentFitting)
+      AppendVolumeCellGaussPoints_MomentFitting(gpc, vc);
+    else if(vc->ParentElement()->GetElementIntegrationType() == INPAR::CUT::EleIntType_DirectDivergence)
+      AppendVolumeCellGaussPoints_DirectDivergence(gpc,vc);
+    else dserror("non supported element integration type for given volume-cell %i", vc->ParentElement()->GetElementIntegrationType());
+
+    intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
+  }
+}
+
+
+void GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_Tessellation(Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc, GEO::CUT::VolumeCell* vc)
+{
 
   //---------------
   // For tessellation, we have Gauss points calculated at local coordinates of each integrationcells
   // we transform this to local coordinates of background ElementHandle
   //----------------
-  if(gausstype == INPAR::CUT::VCellGaussPts_Tessellation)
+  const GEO::CUT::plain_integrationcell_set & cells = vc->IntegrationCells();
+  for ( GEO::CUT::plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
   {
-    for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+    GEO::CUT::IntegrationCell * ic = *i;
+
+    Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic = DRT::UTILS::GaussPointCache::Instance().
+                                                                Create( ic->Shape(), ic->CubatureDegree( ic->Shape() ) );
+    const std::vector<GEO::CUT::Point*> & cpoints = ic->Points();
+
+    switch ( ic->Shape() )
     {
-      GEO::CUT::VolumeCell * vc = *i;
-
-      Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
-          Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
-
-      const plain_integrationcell_set & cells = vc->IntegrationCells();
-      for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
-      {
-        GEO::CUT::IntegrationCell * ic = *i;
-
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic = DRT::UTILS::GaussPointCache::Instance().
-                                                                    Create( ic->Shape(), ic->CubatureDegree( ic->Shape() ) );
-        const std::vector<GEO::CUT::Point*> & cpoints = ic->Points();
-
-        switch ( ic->Shape() )
-        {
-        case DRT::Element::hex8:
-        {
-          Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( cpoints, gp_ic );
-          gpc->Append( gp );
-          break;
-        }
-        case DRT::Element::tet4:
-        {
-          Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( cpoints, gp_ic );
-          gpc->Append( gp );
-          break;
-        }
-        case DRT::Element::wedge6:
-        {
-          Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::wedge6>( cpoints, gp_ic );
-          gpc->Append( gp );
-          break;
-        }
-        case DRT::Element::pyramid5:
-        {
-          Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::pyramid5>( cpoints, gp_ic );
-          gpc->Append( gp );
-          break;
-        }
-        default:
-          throw std::runtime_error( "unsupported integration cell type" );
-        }
-      }
-
-      intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
+    case DRT::Element::hex8:
+    {
+      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( cpoints, gp_ic );
+      gpc->Append( gp );
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( cpoints, gp_ic );
+      gpc->Append( gp );
+      break;
+    }
+    case DRT::Element::wedge6:
+    {
+      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::wedge6>( cpoints, gp_ic );
+      gpc->Append( gp );
+      break;
+    }
+    case DRT::Element::pyramid5:
+    {
+      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::pyramid5>( cpoints, gp_ic );
+      gpc->Append( gp );
+      break;
+    }
+    default:
+      throw std::runtime_error( "unsupported integration cell type" );
     }
   }
+}
 
+void GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_MomentFitting(Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc, GEO::CUT::VolumeCell* vc)
+{
   //-------------------
   // For MomentFitting, we have Gauss points that are calculated w.r to local coordinates of linear shadow element
   // If background ElementHandle is linear, then no need for any mapping
   // Else, we map these points to local coordinates of corresponding Quad element
   //-------------------
-  else if( gausstype == INPAR::CUT::VCellGaussPts_MomentFitting)
+
+  //---------------------------------------------
+  const std::vector<GEO::CUT::Point*> & cpoints = vc->ParentElement()->Points();
+  Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic = vc->GetGaussRule();
+
+
+  switch( Shape() )
   {
-    for(plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i)
-    {
-      GEO::CUT::VolumeCell *vc = *i;
-
-      Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic = vc->GetGaussRule();
-      Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
-                      Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
-
-      const std::vector<GEO::CUT::Point*> & cpoints = vc->ParentElement()->Points();
-
-      switch( Shape() )
-      {
-      case DRT::Element::hex8:
-      case DRT::Element::tet4:
-      case DRT::Element::wedge6:
-      case DRT::Element::pyramid5:
-      {
-        gpc->Append(gp_ic);
-        break;
-      }
-
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
-      {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( cpoints, gp_ic );
-        gpc->Append( gp );
-        break;
-      }
-      case DRT::Element::tet10:
-      {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( cpoints, gp_ic );
-        gpc->Append( gp );
-        break;
-      }
-      default:
-      {
-        dserror("element handle for this element is not available\n");
-        break;
-      }
-      }
-
-      intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
-    }
+  case DRT::Element::hex8:
+  case DRT::Element::tet4:
+  case DRT::Element::wedge6:
+  case DRT::Element::pyramid5:
+  {
+    gpc->Append(gp_ic);
+    break;
   }
 
-  //-------------------
-  // For DirectDivergence, we calculate Gauss points at the correct local coord. during construction itself
-  // This method is handled separately because
-  // 1. main Gauss pts should be mapped w.r to each facet of vcell
-  //         --> element volume mapping as done for tessellation and moment fitting do not work
-  // 2. Internal Gauss pts can be obtained only if we have correctly mapped main Gauss points
-  //-------------------
-  else if( gausstype==INPAR::CUT::VCellGaussPts_DirectDivergence )
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
   {
-    for(plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i)
-    {
-      GEO::CUT::VolumeCell *vc = *i;
-      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = vc->GetGaussRule();
-      Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
-               Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
-      gpc->Append(gp);
-      intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
-    }
+    Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( cpoints, gp_ic );
+    gpc->Append( gp );
+    break;
   }
-
-  /*if(IsCut())
+  case DRT::Element::tet10:
   {
-    static int eeno=0;
-    eeno++;
-    if(1)//eeno==1 || eeno==2 || eeno==3)
-    {
-  for(std::vector<DRT::UTILS::GaussIntegration>::iterator i=intpoints.begin();i!=intpoints.end();i++)
+    Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( cpoints, gp_ic );
+    gpc->Append( gp );
+    break;
+  }
+  default:
   {
-    DRT::UTILS::GaussIntegration ga = *i;
-    static int sideno = 0;
-          sideno++;
-    std::string filename="wrong";
-      std::ofstream file;
-
-          std::stringstream out;
-          out <<"gauss"<<sideno<<".dat";
-          filename = out.str();
-          file.open(filename.c_str());
-    for ( DRT::UTILS::GaussIntegration::const_iterator iquad=ga.begin(); iquad!=ga.end(); ++iquad )
-    {
-      const double* gpp = iquad.Point();
-      file<<gpp[0]<<"\t"<<gpp[1]<<"\t"<<gpp[2]<<"\t";
-      file<<iquad.Weight()<<std::endl;
-    }
-    file.close();
+    dserror("element handle for this element is not available\n");
+    break;
   }
   }
-  }*/
-
-#if 0
-
-  // assume normal integration of element
-  DRT::UTILS::GaussIntegration element_intpoints( Shape() );
-
-  // see if we benefit from a "negative" integartion
-  int numgps = element_intpoints.NumPoints();
-  for ( std::vector<DRT::UTILS::GaussIntegration>::iterator i=intpoints.begin(); i!=intpoints.end(); ++i )
-  {
-    const DRT::UTILS::GaussIntegration & gi = *i;
-    numgps += gi.NumPoints();
-  }
-
-  for ( std::vector<DRT::UTILS::GaussIntegration>::iterator i=intpoints.begin(); i!=intpoints.end(); ++i )
-  {
-    DRT::UTILS::GaussIntegration & gi = *i;
-    if ( gi.NumPoints() > numgps / 2 )
-    {
-      // Here we have the expensive bastard.
-      // Exchange gauss points. Use all other points instead.
-
-      Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
-        Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( intpoints.size() ) );
-
-      gpc->Append( element_intpoints.Points() );
-
-      for ( std::vector<DRT::UTILS::GaussIntegration>::iterator j=intpoints.begin(); j!=intpoints.end(); ++j )
-      {
-        const DRT::UTILS::GaussIntegration & gi = *j;
-        if ( i!=j )
-        {
-          gpc->Append( gi.Points() );
-        }
-      }
-
-      gi.SetPoints( gpc );
-
-      break;
-    }
-  }
-#endif
-
-//   if ( not include_inner )
-//   {
-//     int count = 0;
-//     for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
-//     {
-//       GEO::CUT::VolumeCell * vc = *i;
-//       if ( vc->Position()==Point::inside )
-//       {
-//         intpoints[count].Clear();
-//       }
-//       count += 1;
-//     }
-//   }
 }
 
+
+void GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_DirectDivergence(Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc, GEO::CUT::VolumeCell* vc)
+{
+  //-------------------
+   // For DirectDivergence, we calculate Gauss points at the correct local coord. during construction itself
+   // This method is handled separately because
+   // 1. main Gauss pts should be mapped w.r to each facet of vcell
+   //         --> element volume mapping as done for tessellation and moment fitting do not work
+   // 2. Internal Gauss pts can be obtained only if we have correctly mapped main Gauss points
+   //-------------------
+  Teuchos::RCP<DRT::UTILS::GaussPoints> gp = vc->GetGaussRule();
+  gpc->Append(gp);
+}
 
 /*----------------------------------------------------------------------*/
 // Collect the Gaussian points of all the volume-cells belonging to this element.
@@ -462,8 +374,6 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPoints(
 // This is the method used now in the new implementation
 /*----------------------------------------------------------------------*/
 void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
-    MeshIntersection & mesh,
-    int mi,
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
     std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints
     )
@@ -474,39 +384,23 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
     const std::vector<GEO::CUT::BoundaryCell*> & cells = i->second;
     std::vector<DRT::UTILS::GaussIntegration> & cell_points = intpoints[sid];
 
-    SideHandle * side = mesh.GetCutSide( sid, mi );
-    if ( side==NULL )
-    {
-      throw std::runtime_error( "no such side" );
-    }
-
-    cell_points.clear();
-    cell_points.reserve( cells.size() );
-
-    for ( std::vector<GEO::CUT::BoundaryCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
-    {
-      GEO::CUT::BoundaryCell * bc = *i;
-
-      // Create (unmodified) gauss points for integration cell with requested
-      // polynomial order. This is supposed to be fast, since there is a cache.
-      cell_points.push_back(bc->gaussRule());
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*/
-// Collect the Gauss points of all the boundary-cells belong to this element.
-// Used for Level set applications as cutside does not exist here.
-/*----------------------------------------------------------------------*/
-void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin( const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
-                                                               std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints )
-{
-
-  for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
-  {
-    int sid = i->first;
-    const std::vector<GEO::CUT::BoundaryCell*> & cells = i->second;
-    std::vector<DRT::UTILS::GaussIntegration> & cell_points = intpoints[sid];
+//    // safety check
+//    if(sid < 0)
+//    {
+//      dserror("invalid sid: %i", sid);
+//    }
+//    else
+//    {
+//      // ask for a mesh cutting side
+//      SideHandle * side = wizard->GetMeshCuttingSide( sid, 0 );
+//
+//      // ask for level-set cutting side
+//      bool is_ls_side = wizard->HasLSCuttingSide( sid );
+//      if ( side==NULL and !is_ls_side )
+//      {
+//        throw std::runtime_error( "no side with given id available fo combined mesh and level-set cut" );
+//      }
+//    }
 
     cell_points.clear();
     cell_points.reserve( cells.size() );
@@ -598,12 +492,12 @@ void GEO::CUT::LinearElementHandle::CollectVolumeCells (
 
 /*----------------------------------------------------------------------*/
 // get all the element' sets of volume-cells, nds-vectors and integration points
+// return true is a specific XFEM-Gaussrule is available and necessary
 /*----------------------------------------------------------------------*/
-void GEO::CUT::LinearElementHandle::GetCellSets_DofSets_GaussPoints (
+bool GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints (
     std::vector< plain_volumecell_set >                        & cell_sets ,
     std::vector< std::vector< int > >                          & nds_sets,
     std::vector< std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-    INPAR::CUT::VCellGaussPts                                    gausstype,
     bool                                                         include_inner
 )
 {
@@ -613,17 +507,35 @@ void GEO::CUT::LinearElementHandle::GetCellSets_DofSets_GaussPoints (
 
   intpoints_sets.clear();
 
+  // switch this on to only integrate cut elements
+#if(0)
+  // only one cell_sets for current element and element is not intersected, then use a non-XFEM Gaussrule
+  if(!IsIntersected())
+  {
+    // perform  standard integration on an uncut element
+    if(cell_sets.size() == 1) return false;
+    else if(cell_sets.size() == 0)
+    {
+      // the element does not have a physical but only a ghost set, therefore no integration is necessary and intpoints remains empty
+    }
+    else dserror("number of cell_sets for a non-intersected element is invalid: %i", cell_sets.size());
+  }
+#endif
+
+
+  intpoints_sets.reserve( cell_sets.size() );
+
   for(std::vector<plain_volumecell_set>::iterator i= cell_sets.begin(); i!=cell_sets.end(); i++)
   {
     plain_volumecell_set & cells = *i;
 
-    if(cells.size() != 1) dserror("number of volumecells in set not equal 1, this should not be for linear elements!");
-
     std::vector<DRT::UTILS::GaussIntegration> gaussCellsets;
-    VolumeCellGaussPoints( cells, gaussCellsets, gausstype );
+    VolumeCellGaussPoints( cells, gaussCellsets );
 
     intpoints_sets.push_back( gaussCellsets );
   }
+
+  return true; // specific XFEM-integration rule available
 }
 
 
@@ -803,33 +715,56 @@ void GEO::CUT::QuadraticElementHandle::GetBoundaryCells( plain_boundarycell_set 
 }
 
 
-/*----------------------------------------------------------------------*/
-// get all the element' sets of volume-cells, nds-vectors and integration points
-/*----------------------------------------------------------------------*/
-void GEO::CUT::QuadraticElementHandle::GetCellSets_DofSets_GaussPoints (
-    std::vector< plain_volumecell_set >                        & cell_sets ,
-    std::vector< std::vector< int > >                          & nds_sets,
-    std::vector< std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-    INPAR::CUT::VCellGaussPts                                    gausstype,
-    bool                                                         include_inner
-    )
-{
-  GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner );
-
-  intpoints_sets.clear();
-  intpoints_sets.reserve( cell_sets.size() );
-
-  for(std::vector<plain_volumecell_set>::iterator i= cell_sets.begin(); i!=cell_sets.end(); i++)
-  {
-    plain_volumecell_set & cells = *i;
-
-    std::vector<DRT::UTILS::GaussIntegration> gaussCellsets;
-    VolumeCellGaussPoints( cells, gaussCellsets, gausstype );
-
-    intpoints_sets.push_back( gaussCellsets );
-  }
-
-}
+///*----------------------------------------------------------------------*/
+//// get all the element' sets of volume-cells, nds-vectors and integration points
+///*----------------------------------------------------------------------*/
+//INPAR::CUT::ElementIntegrationType GEO::CUT::QuadraticElementHandle::GetCellSets_DofSets_GaussPoints (
+//    std::vector< plain_volumecell_set >                        & cell_sets ,
+//    std::vector< std::vector< int > >                          & nds_sets,
+//    std::vector< std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
+//    INPAR::CUT::VCellGaussPts                                    gausstype,
+//    bool                                                         include_inner
+//    )
+//{
+//  GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner );
+//
+//  intpoints_sets.clear();
+//
+//  INPAR::CUT::ElementIntegrationType eleinttype= INPAR::CUT::EleIntType_Undecided;
+//  for(int i=0; i<(int)subelements_.size(); i++)
+//  {
+//    INPAR::CUT::ElementIntegrationType subeleinttype = subelements_[i]->GetElementIntegrationType();
+//
+//    if(eleinttype == INPAR::CUT::EleIntType_Undecided) eleinttype = subeleinttype;
+////    else if(subeleinttype  == INPAR::CUT::EleIntType_Undecided)
+////    {
+////      // some subelements can be uncut, which does not change the integration type of the whole element
+////    }
+//    else if(subeleinttype != eleinttype) dserror("we have different element-integration types for the subelements of a quadradtic element");
+//  }
+//
+//  if(eleinttype == INPAR::CUT::EleIntType_Undecided)
+//    dserror("which type of element integration to use is not known!");
+//
+//  // fill Gauss points only when specific XFEM-integration is necessary
+//  if(eleinttype != INPAR::CUT::EleIntType_StandardUncut)
+//  {
+//
+//    intpoints_sets.reserve( cell_sets.size() );
+//
+//    for(std::vector<plain_volumecell_set>::iterator i= cell_sets.begin(); i!=cell_sets.end(); i++)
+//    {
+//      plain_volumecell_set & cells = *i;
+//
+//      std::vector<DRT::UTILS::GaussIntegration> gaussCellsets;
+//      VolumeCellGaussPoints( cells, gaussCellsets );
+//
+//      intpoints_sets.push_back( gaussCellsets );
+//    }
+//  }
+//
+//  return eleinttype;
+//}
 
 
 /*----------------------------------------------------------------------*/

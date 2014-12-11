@@ -17,12 +17,15 @@ Maintainer:  Benedikt Schott
 
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
+#include "../drt_lib/drt_discret.H"
 
 #include "../drt_fluid/fluid_timint.H"
 
 #include "../linalg/linalg_blocksparsematrix.H"
 
 #include "../drt_lib/drt_resulttest.H"
+
+#include "xfluid_state.H"
 
 namespace DRT
 {
@@ -41,6 +44,8 @@ namespace LINALG
 }
 namespace GEO
 {
+  class CutWizardNEW;
+
   namespace CUT
   {
     class ElementHandle;
@@ -55,11 +60,8 @@ namespace IO
 
 namespace XFEM
 {
+  class XFEMDofSet;
   class XFEM_EdgeStab;
-  class FluidWizardMesh;
-  class FluidWizardLevelSet;
-  class FluidWizard;
-  class FluidDofSet;
   class XFluidTimeInt;
 }
 
@@ -71,28 +73,9 @@ namespace FLD
     class FluidInfNormScaling;
   }
 
+  class XFluidStateCreator;
+  class XFluidState;
   class XFluid;
-
-  /*!
-    ResultTest class for XFluid
-  */
-  class XFluidResultTest2 : public DRT::ResultTest
-  {
-  public:
-
-    XFluidResultTest2( XFluid * xfluid );
-
-    /// our version of nodal value tests
-    /*!
-      Possible position flags are "velx", "vely", "velz" and
-      "pressure". With the obvious meaning.
-    */
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
-
-  private:
-    DRT::Discretization & discret_;
-    Teuchos::RCP<Epetra_Vector> velnp_;
-  };
 
   /*!
     This class holds the Fluid implementation for XFEM
@@ -102,214 +85,212 @@ namespace FLD
   */
   class XFluid : public TimInt
   {
-    friend class XFluidResultTest2;
-    friend class XFluidState;
+    friend class XFluidResultTest;
+//    friend class XFluidState;
 
-    /*!
-      This class holds the state class for XFluid (XFluidState).
-
-      \author schott
-      \date 03/12
-    */
-    class XFluidState
-    {
-    public:
-
-      /// Constructor
-      explicit XFluidState( XFluid & xfluid,          ///< xfluid object
-                            const Epetra_Vector & cutvector  ///< col vector of interface diplacements
-                            );
-
-      /// call the loop over elements to assemble volume and interface integrals
-      void Evaluate( DRT::Discretization & discret,      ///< background fluid discretization
-                     Teuchos::RCP<DRT::Discretization> & cutdiscret,   ///< cutter surface discretization
-                     int itnum                           ///< iteration number
-                     );
-
-      /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
-      void IntegrateShapeFunction(
-          Teuchos::ParameterList & eleparams, ///< element parameters
-          DRT::Discretization & discret,       ///< background fluid discretization
-          Teuchos::RCP<Epetra_Vector> vec     ///< vector into which we assemble
-          );
-
-      /// GmshOutput for background mesh and cut mesh
-      void GmshOutput( const std::string & name,            ///< name for output file
-                       const int step,                      ///< step number
-                       const int count,                     ///< counter for iterations within a global time step
-                       Teuchos::RCP<Epetra_Vector> vel,     ///< vector holding velocity and pressure dofs
-                       Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
-                       );
-
-      /// call the loop over elements to assemble volume and interface integrals
-      void GradientPenalty( Teuchos::ParameterList & eleparams, ///< element parameters
-                     DRT::Discretization & discret,      ///< background fluid discretization
-                     DRT::Discretization & cutdiscret,   ///< cutter surface discretization
-                     Teuchos::RCP<Epetra_Vector> vec,
-                     int itnum                           ///< iteration number
-                     );
-
-      /// system matrix filled with EpetraFECrs matrix
-      Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
-
-      /// fluid-structure coupling matrices filled with EpetraFECrs matrix
-      Teuchos::RCP<LINALG::SparseMatrix> C_sf_;             /// structure_interface - fluid coupling block
-      Teuchos::RCP<LINALG::SparseMatrix> C_fs_;             /// fluid - structure_interface coupling block
-      Teuchos::RCP<LINALG::SparseMatrix> C_ss_;             /// structure_interface - structure_interface coupling block
-
-      // fluid-structure coupling rhs vector
-      Teuchos::RCP<Epetra_Vector>        rhC_s_;            /// structure_interface rhs block
-      Teuchos::RCP<Epetra_Vector>        rhC_s_col_;            /// structure_interface rhs block in col map
-
-
-      /// maps for extracting Dirichlet and free DOF sets
-      Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
-
-      /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-      Teuchos::RCP<Epetra_Vector>    zeros_;
-
-      /// the vector containing body and surface forces
-      Teuchos::RCP<Epetra_Vector>    neumann_loads_;
-
-      /// (standard) residual vector (rhs for the incremental form),
-      Teuchos::RCP<Epetra_Vector>    residual_;
-
-      /// true (rescaled) residual vector without zeros at dirichlet positions
-      Teuchos::RCP<Epetra_Vector>    trueresidual_;
-
-      /// rhs: right hand side vector for linearised flow solution
-      Teuchos::RCP<Epetra_Vector>    rhs_;
-
-      /// Nonlinear iteration increment vector
-      Teuchos::RCP<Epetra_Vector>    incvel_;
-
-      //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
-      Teuchos::RCP<Epetra_Vector>    accnp_;
-      Teuchos::RCP<Epetra_Vector>    accn_;
-      Teuchos::RCP<Epetra_Vector>    accam_;
-      //@}
-
-      //! @name velocity and pressure at time n+1, n, n-1 and n+alpha_F
-      Teuchos::RCP<Epetra_Vector>    velnp_;
-      Teuchos::RCP<Epetra_Vector>    veln_;
-      Teuchos::RCP<Epetra_Vector>    velnm_;
-      Teuchos::RCP<Epetra_Vector>    velaf_;
-      //@}
-
-      //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
-      Teuchos::RCP<Epetra_Vector>    scaaf_;
-      Teuchos::RCP<Epetra_Vector>    scaam_;
-      //@}
-
-      //! @name displacemets at time n+1, n and n-1
-      Teuchos::RCP<Epetra_Vector>    dispnp_;
-//      Teuchos::RCP<Epetra_Vector>    dispn_; //until now not required in state
-//      Teuchos::RCP<Epetra_Vector>    dispnm_; //until now not required in state
-      //@}
-
-      /// grid velocity (set from the adapter!)
-      Teuchos::RCP<Epetra_Vector>    gridvnp_;
-
-      /// histvector --- a linear combination of velnm, veln (BDF)
-      ///                or veln, accn (One-Step-Theta)
-      Teuchos::RCP<Epetra_Vector>    hist_;
-
-      //! Extractor used for convergence check
-      Teuchos::RCP<LINALG::MapExtractor>      velpressplitter_;
-
-      /// row dof map extractor
-      const UTILS::MapExtractor* surfacesplitter_;
-
-      /// Krylov space projection map extractor
-      Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
-
-      // dof-row maps
-      Teuchos::RCP<const Epetra_Map> fluiddofrowmap_;
-
-      //! @name dof-row maps for output
-      Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
-      Teuchos::RCP<const Epetra_Map> outputpressuredofrowmap_;
-      //@}
-
-
-      void GenAlphaIntermediateValues();
-      void GenAlphaUpdateAcceleration();
-
-      /// return system matrix down-casted as sparse matrix
-      Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
-
-      /// return system matrix downcasted as block sparse matrix
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
-
-      /// return the wizard
-      Teuchos::RCP<XFEM::FluidWizardMesh> Wizard() { return wizard_; }
-
-      /// return the wizard
-      Teuchos::RCP<XFEM::FluidWizardLevelSet> WizardLS() { return wizardls_; }
-
-      /// return edgestab object
-      Teuchos::RCP<XFEM::XFEM_EdgeStab> EdgeStab() {return edgestab_;}
-
-      /// return xfem fluid dofset
-      Teuchos::RCP<XFEM::FluidDofSet> Dofset() {return dofset_;}
-
-      /// XFluid object
-      XFluid & xfluid_;
-
-      /// FluidWizardMesh
-      Teuchos::RCP<XFEM::FluidWizardMesh> wizard_;
-
-      /// FluidWizardLevelSet
-      Teuchos::RCP<XFEM::FluidWizardLevelSet> wizardls_;
-
-    private:
-
-      /// Initialize state variables after cut.
-      void InitStateVariables();
-
-      /// Perform Cut and manage DofSet handling
-      void CutAndSetDofSet(Teuchos::RCP<XFEM::FluidWizard> wizard, const Epetra_Vector & cutvector, bool include_inner);
-
-      /// Gmsh output function for elements without an GEO::CUT::ElementHandle
-      void GmshOutputElement( DRT::Discretization & discret, ///< background fluid discretization
-                              std::ofstream & vel_f,         ///< output file stream for velocity
-                              std::ofstream & press_f,       ///< output file stream for pressure
-                              std::ofstream & acc_f,         ///< output file stream for acceleration
-                              DRT::Element * actele,         ///< element
-                              std::vector<int> & nds,        ///< vector holding the nodal dofsets
-                              Teuchos::RCP<Epetra_Vector> vel, ///< vector holding velocity and pressure dofs
-                              Teuchos::RCP<Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
-                              );
-
-      /// Gmsh output function for volumecells
-      void GmshOutputVolumeCell( DRT::Discretization & discret,    ///< background fluid discretization
-                                 std::ofstream & vel_f,            ///< output file stream for velocity
-                                 std::ofstream & press_f,          ///< output file stream for pressure
-                                 std::ofstream & acc_f,            ///< output file stream for acceleration
-                                 DRT::Element * actele,            ///< element
-                                 GEO::CUT::ElementHandle * e,      ///<elementhandle
-                                 GEO::CUT::VolumeCell * vc,        ///< volumecell
-                                 const std::vector<int> & nds,     ///< vector holding the nodal dofsets
-                                 Teuchos::RCP<Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
-                                 Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding acceleration
-                                 );
-
-      /// Gmsh output function for boundarycells
-      void GmshOutputBoundaryCell( DRT::Discretization & discret,    ///< background fluid discretization
-                                   DRT::Discretization & cutdiscret, ///< cutter surface discretization
-                                   std::ofstream & bound_f,          ///< output file stream for boundary mesh
-                                   DRT::Element * actele,            ///< element
-                                   GEO::CUT::ElementHandle * e,      ///< elementhandle
-                                   GEO::CUT::VolumeCell * vc         ///< volumecell
-                                   );
-
-      /// Fluid dofset
-      Teuchos::RCP<XFEM::FluidDofSet> dofset_;
-
-      /// edge stabilization and ghost penalty object
-      Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
-
-    };
+//    /*!
+//      This class holds the state class for XFluid (XFluidState).
+//
+//      \author schott
+//      \date 03/12
+//    */
+//    class XFluidState
+//    {
+//    public:
+//
+//      /// Constructor
+//      explicit XFluidState( XFluid & xfluid,          ///< xfluid object
+//                            Teuchos::RCP<const Epetra_Vector> cutvector  ///< col vector of interface diplacements
+//                            );
+//
+//      /// call the loop over elements to assemble volume and interface integrals
+//      void Evaluate( DRT::Discretization & discret,      ///< background fluid discretization
+//                     Teuchos::RCP<DRT::Discretization> & cutdiscret,   ///< cutter surface discretization
+//                     int itnum                           ///< iteration number
+//                     );
+//
+//      /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
+//      void IntegrateShapeFunction(
+//          Teuchos::ParameterList & eleparams, ///< element parameters
+//          DRT::Discretization & discret,       ///< background fluid discretization
+//          Teuchos::RCP<Epetra_Vector> vec     ///< vector into which we assemble
+//          );
+//
+//      /// GmshOutput for background mesh and cut mesh
+//      void GmshOutput( const std::string & name,            ///< name for output file
+//                       const int step,                      ///< step number
+//                       const int count,                     ///< counter for iterations within a global time step
+//                       Teuchos::RCP<Epetra_Vector> vel,     ///< vector holding velocity and pressure dofs
+//                       Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
+//                       );
+//
+//      /// call the loop over elements to assemble volume and interface integrals
+//      void GradientPenalty( Teuchos::ParameterList & eleparams, ///< element parameters
+//                     DRT::Discretization & discret,      ///< background fluid discretization
+//                     DRT::Discretization & cutdiscret,   ///< cutter surface discretization
+//                     Teuchos::RCP<Epetra_Vector> vec,
+//                     int itnum                           ///< iteration number
+//                     );
+//
+//      /// system matrix filled with EpetraFECrs matrix
+//      Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
+//
+//      /// fluid-structure coupling matrices filled with EpetraFECrs matrix
+//      Teuchos::RCP<LINALG::SparseMatrix> C_sf_;             /// structure_interface - fluid coupling block
+//      Teuchos::RCP<LINALG::SparseMatrix> C_fs_;             /// fluid - structure_interface coupling block
+//      Teuchos::RCP<LINALG::SparseMatrix> C_ss_;             /// structure_interface - structure_interface coupling block
+//
+//      // fluid-structure coupling rhs vector
+//      Teuchos::RCP<Epetra_Vector>        rhC_s_;            /// structure_interface rhs block
+//      Teuchos::RCP<Epetra_Vector>        rhC_s_col_;            /// structure_interface rhs block in col map
+//
+//
+//      /// maps for extracting Dirichlet and free DOF sets
+//      Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+//
+//      /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
+//      Teuchos::RCP<Epetra_Vector>    zeros_;
+//
+//      /// the vector containing body and surface forces
+//      Teuchos::RCP<Epetra_Vector>    neumann_loads_;
+//
+//      /// (standard) residual vector (rhs for the incremental form),
+//      Teuchos::RCP<Epetra_Vector>    residual_;
+//
+//      /// true (rescaled) residual vector without zeros at dirichlet positions
+//      Teuchos::RCP<Epetra_Vector>    trueresidual_;
+//
+//      /// rhs: right hand side vector for linearised flow solution
+//      Teuchos::RCP<Epetra_Vector>    rhs_;
+//
+//      /// Nonlinear iteration increment vector
+//      Teuchos::RCP<Epetra_Vector>    incvel_;
+//
+//      //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
+//      Teuchos::RCP<Epetra_Vector>    accnp_;
+//      Teuchos::RCP<Epetra_Vector>    accn_;
+//      Teuchos::RCP<Epetra_Vector>    accam_;
+//      //@}
+//
+//      //! @name velocity and pressure at time n+1, n, n-1 and n+alpha_F
+//      Teuchos::RCP<Epetra_Vector>    velnp_;
+//      Teuchos::RCP<Epetra_Vector>    veln_;
+//      Teuchos::RCP<Epetra_Vector>    velnm_;
+//      Teuchos::RCP<Epetra_Vector>    velaf_;
+//      //@}
+//
+//      //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
+//      Teuchos::RCP<Epetra_Vector>    scaaf_;
+//      Teuchos::RCP<Epetra_Vector>    scaam_;
+//      //@}
+//
+//      //! @name displacemets at time n+1, n and n-1
+//      Teuchos::RCP<Epetra_Vector>    dispnp_;
+////      Teuchos::RCP<Epetra_Vector>    dispn_; //until now not required in state
+////      Teuchos::RCP<Epetra_Vector>    dispnm_; //until now not required in state
+//      //@}
+//
+//      /// grid velocity (set from the adapter!)
+//      Teuchos::RCP<Epetra_Vector>    gridvnp_;
+//
+//      /// histvector --- a linear combination of velnm, veln (BDF)
+//      ///                or veln, accn (One-Step-Theta)
+//      Teuchos::RCP<Epetra_Vector>    hist_;
+//
+//      //! Extractor used for convergence check
+//      Teuchos::RCP<LINALG::MapExtractor>      velpressplitter_;
+//
+//      /// row dof map extractor
+//      const UTILS::MapExtractor* surfacesplitter_;
+//
+//      /// Krylov space projection map extractor
+//      Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
+//
+//      // dof-row maps
+//      Teuchos::RCP<const Epetra_Map> fluiddofrowmap_;
+//
+//      //! @name dof-row maps for output
+//      Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
+//      Teuchos::RCP<const Epetra_Map> outputpressuredofrowmap_;
+//      //@}
+//
+//
+//      void GenAlphaIntermediateValues();
+//      void GenAlphaUpdateAcceleration();
+//
+//      /// return system matrix down-casted as sparse matrix
+//      Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+//
+//      /// return system matrix downcasted as block sparse matrix
+//      Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+//
+//      /// return the wizard
+//      Teuchos::RCP<GEO::CutWizardNEW> Wizard() { return wizard_; }
+//
+//      /// return edgestab object
+//      Teuchos::RCP<XFEM::XFEM_EdgeStab> EdgeStab() {return edgestab_;}
+//
+//      /// return xfem fluid dofset
+////      Teuchos::RCP<XFEM::FluidDofSet> Dofset() {return dofset_;}
+//      Teuchos::RCP<XFEM::XFEMDofSet> Dofset() {return dofset_;}
+//
+//
+//      /// XFluid object
+//      XFluid & xfluid_;
+//
+//      /// CutWizard
+//      Teuchos::RCP<GEO::CutWizardNEW> wizard_;
+//
+//
+//    private:
+//
+//      /// Initialize state variables after cut.
+//      void InitStateVariables();
+//
+//      /// Perform Cut and manage DofSet handling
+//      void CutAndSetDofSet(Teuchos::RCP<GEO::CutWizardNEW> wizard, Teuchos::RCP<const Epetra_Vector> cutvector, bool include_inner);
+//
+//      /// Gmsh output function for elements without an GEO::CUT::ElementHandle
+//      void GmshOutputElement( DRT::Discretization & discret, ///< background fluid discretization
+//                              std::ofstream & vel_f,         ///< output file stream for velocity
+//                              std::ofstream & press_f,       ///< output file stream for pressure
+//                              std::ofstream & acc_f,         ///< output file stream for acceleration
+//                              DRT::Element * actele,         ///< element
+//                              std::vector<int> & nds,        ///< vector holding the nodal dofsets
+//                              Teuchos::RCP<Epetra_Vector> vel, ///< vector holding velocity and pressure dofs
+//                              Teuchos::RCP<Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
+//                              );
+//
+//      /// Gmsh output function for volumecells
+//      void GmshOutputVolumeCell( DRT::Discretization & discret,    ///< background fluid discretization
+//                                 std::ofstream & vel_f,            ///< output file stream for velocity
+//                                 std::ofstream & press_f,          ///< output file stream for pressure
+//                                 std::ofstream & acc_f,            ///< output file stream for acceleration
+//                                 DRT::Element * actele,            ///< element
+//                                 GEO::CUT::ElementHandle * e,      ///<elementhandle
+//                                 GEO::CUT::VolumeCell * vc,        ///< volumecell
+//                                 const std::vector<int> & nds,     ///< vector holding the nodal dofsets
+//                                 Teuchos::RCP<Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
+//                                 Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding acceleration
+//                                 );
+//
+//      /// Gmsh output function for boundarycells
+//      void GmshOutputBoundaryCell( DRT::Discretization & discret,    ///< background fluid discretization
+//                                   DRT::Discretization & cutdiscret, ///< cutter surface discretization
+//                                   std::ofstream & bound_f,          ///< output file stream for boundary mesh
+//                                   DRT::Element * actele,            ///< element
+//                                   GEO::CUT::ElementHandle * e,      ///< elementhandle
+//                                   GEO::CUT::VolumeCell * vc         ///< volumecell
+//                                   );
+//
+//      /// Fluid dofset
+////      Teuchos::RCP<XFEM::FluidDofSet> dofset_;
+//      Teuchos::RCP<XFEM::XFEMDofSet> dofset_;
+//
+//      /// edge stabilization and ghost penalty object
+//      Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
+//
+//    };
 
   public:
 
@@ -357,6 +338,7 @@ namespace FLD
     void LinearSolve();
 
     /// create vectors for KrylovSpaceProjection
+    void InitKrylovSpaceProjection();
     void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
     void UpdateKrylovSpaceProjection();
     void CheckMatrixNullspace();
@@ -409,10 +391,7 @@ namespace FLD
                      const int count,                     ///< counter for iterations within a global time step
                      Teuchos::RCP<Epetra_Vector> vel,     ///< vector holding velocity and pressure dofs
                      Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
-                     )
-    {
-      state_->GmshOutput(name, step, count, vel, acc);
-    }
+                     );
 
     /// initialize the state vectors for the interface
     void InitStateVectorsForInterface();
@@ -472,7 +451,7 @@ namespace FLD
     // @}
 
 
-    Teuchos::RCP<const Epetra_Map>     DofRowMap() { return state_->fluiddofrowmap_; }
+    Teuchos::RCP<const Epetra_Map> DofRowMap(){return state_->xfluiddofrowmap_;}
 
     Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter() { return state_->velpressplitter_; }
     Teuchos::RCP<const Epetra_Map>     VelocityRowMap() { return state_->velpressplitter_->OtherMap(); }
@@ -483,8 +462,8 @@ namespace FLD
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(state_->sysmat_); }
 
     /// return coupling matrix between fluid and structure as sparse matrices
-    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix(){ return state_->C_sf_; }
-    Teuchos::RCP<LINALG::SparseMatrix> C_Fluid_Struct_Matrix(){ return state_->C_fs_; }
+    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix(){ return state_->C_sx_; }
+    Teuchos::RCP<LINALG::SparseMatrix> C_Fluid_Struct_Matrix(){ return state_->C_xs_; }
     Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Struct_Matrix(){ return state_->C_ss_;}
 
     Teuchos::RCP<Epetra_Vector> RHS_Struct_Vec(){ return state_->rhC_s_; }
@@ -513,13 +492,6 @@ namespace FLD
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
        {//dserror("not implemented");
        return Teuchos::null;}
-
-    /// introduce surface split extractor object
-    /*!
-      This method must (and will) be called during setup with a properly
-      initialized extractor object iff we are on an ale mesh.
-     */
-    void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) { state_->surfacesplitter_ = surfacesplitter; }
 
     /// create field test
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
@@ -571,9 +543,12 @@ namespace FLD
 
     Teuchos::RCP<FLD::Vreman> Vreman() {return Teuchos::null;}
 
-    void CreateInitialState( const Epetra_Vector & idispcol );
+    void CreateInitialState();
 
-    void CreateInitialStateLS();
+    void CreateState();
+
+    Teuchos::RCP<FLD::XFluidState> GetNewState();
+
 
     void SetLevelSetField(
        Teuchos::RCP<const Epetra_Vector> scalaraf,
@@ -589,6 +564,75 @@ namespace FLD
 
   private:
 
+
+    /// call the loop over elements to assemble volume and interface integrals
+    void Evaluate(
+        DRT::Discretization & discret,      ///< background fluid discretization
+        Teuchos::RCP<DRT::Discretization> & cutdiscret,   ///< cutter surface discretization
+        int itnum                           ///< iteration number
+    );
+
+    /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
+    void IntegrateShapeFunction(
+        Teuchos::ParameterList & eleparams, ///< element parameters
+        DRT::Discretization & discret,       ///< background fluid discretization
+        Teuchos::RCP<Epetra_Vector> vec     ///< vector into which we assemble
+    );
+
+    /// Gmsh output function for elements without an GEO::CUT::ElementHandle
+    void GmshOutputElement(
+        DRT::Discretization & discret, ///< background fluid discretization
+        std::ofstream & vel_f,         ///< output file stream for velocity
+        std::ofstream & press_f,       ///< output file stream for pressure
+        std::ofstream & acc_f,         ///< output file stream for acceleration
+        DRT::Element * actele,         ///< element
+        std::vector<int> & nds,        ///< vector holding the nodal dofsets
+        Teuchos::RCP<Epetra_Vector> vel, ///< vector holding velocity and pressure dofs
+        Teuchos::RCP<Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
+    );
+
+    /// Gmsh output function for volumecells
+    void GmshOutputVolumeCell(
+        DRT::Discretization & discret,    ///< background fluid discretization
+        std::ofstream & vel_f,            ///< output file stream for velocity
+        std::ofstream & press_f,          ///< output file stream for pressure
+        std::ofstream & acc_f,            ///< output file stream for acceleration
+        DRT::Element * actele,            ///< element
+        GEO::CUT::ElementHandle * e,      ///<elementhandle
+        GEO::CUT::VolumeCell * vc,        ///< volumecell
+        const std::vector<int> & nds,     ///< vector holding the nodal dofsets
+        Teuchos::RCP<Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
+        Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding acceleration
+    );
+
+    /// Gmsh output function for boundarycells
+    void GmshOutputBoundaryCell(
+        DRT::Discretization & discret,    ///< background fluid discretization
+        DRT::Discretization & cutdiscret, ///< cutter surface discretization
+        std::ofstream & bound_f,          ///< output file stream for boundary mesh
+        DRT::Element * actele,            ///< element
+        GEO::CUT::ElementHandle * e,      ///< elementhandle
+        GEO::CUT::VolumeCell * vc         ///< volumecell
+    );
+
+    /// call the loop over elements to assemble volume and interface integrals
+    void GradientPenalty( Teuchos::ParameterList & eleparams, ///< element parameters
+        DRT::Discretization & discret,      ///< background fluid discretization
+        DRT::Discretization & cutdiscret,   ///< cutter surface discretization
+        Teuchos::RCP<Epetra_Vector> vec,
+        int itnum                           ///< iteration number
+    );
+
+
+
+
+
+
+
+
+
+
+
     //-----------------------------XFEM time-integration specific function------------------
 
     //! @name XFEM time-integration specific function
@@ -601,8 +645,8 @@ namespace FLD
         const bool                        timint_ghost_penalty,    ///< dofs have to be reconstructed via ghost penalty reconstruction techniques
         const bool                        timint_semi_lagrangean,  ///< dofs have to be reconstructed via semi-Lagrangean reconstruction techniques
         Teuchos::RCP<DRT::Discretization> dis,                     ///< discretization
-        Teuchos::RCP<XFEM::FluidDofSet>   dofset_i,                ///< dofset last iteration
-        Teuchos::RCP<XFEM::FluidDofSet>   dofset_ip,               ///< dofset current iteration
+        Teuchos::RCP<XFEM::XFEMDofSet>    dofset_i,                ///< dofset last iteration
+        Teuchos::RCP<XFEM::XFEMDofSet>    dofset_ip,               ///< dofset current iteration
         const bool                        screen_out               ///< screen output?
     );
 
@@ -619,8 +663,8 @@ namespace FLD
     /// did the dofsets change?
     bool XTimint_ChangedDofsets(
         Teuchos::RCP<DRT::Discretization> dis,                       ///< discretization
-        Teuchos::RCP<XFEM::FluidDofSet>   dofset,                    ///< first dofset
-        Teuchos::RCP<XFEM::FluidDofSet>   dofset_other               ///< other dofset
+        Teuchos::RCP<XFEM::XFEMDofSet>   dofset,                     ///< first dofset
+        Teuchos::RCP<XFEM::XFEMDofSet>   dofset_other                ///< other dofset
     );
 
     /// transfer vectors between two time-steps or Newton steps
@@ -628,10 +672,10 @@ namespace FLD
         const Teuchos::RCP<DRT::Discretization>          dis,                      ///< discretization
         std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,       ///< row map based vectors w.r.t old interface position
         std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,       ///< row map based vectors w.r.t new interface position
-        const Teuchos::RCP<XFEM::FluidWizardMesh>        wizard_old,               ///< fluid wizard w.r.t old interface position
-        const Teuchos::RCP<XFEM::FluidWizardMesh>        wizard_new,               ///< fluid wizard w.r.t new interface position
-        const Teuchos::RCP<XFEM::FluidDofSet>            dofset_old,               ///< dofset w.r.t old interface position
-        const Teuchos::RCP<XFEM::FluidDofSet>            dofset_new,               ///< dofset w.r.t new interface position
+        const Teuchos::RCP<GEO::CutWizardNEW>            wizard_old,               ///< cut wizard w.r.t old interface position
+        const Teuchos::RCP<GEO::CutWizardNEW>            wizard_new,               ///< cut wizard w.r.t new interface position
+        const Teuchos::RCP<XFEM::XFEMDofSet>             dofset_old,               ///< dofset w.r.t old interface position
+        const Teuchos::RCP<XFEM::XFEMDofSet>             dofset_new,               ///< dofset w.r.t new interface position
         std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  ///< reconstruction map for nodes and its dofsets
         Teuchos::RCP<std::set<int> >                     dbcgids,                  ///< set of dof gids that must not be changed by ghost penalty reconstruction
         bool                                             fill_permutation_map      ///< do we have to fill the permutation map?
@@ -809,6 +853,9 @@ namespace FLD
     /// coupling strategy (xfluid-sided, embedded-sided)
     enum INPAR::XFEM::CouplingStrategy coupling_strategy_;
 
+    /// do we have to evaluate coupling matrices?
+    bool coupling_;
+
 //    /// monolithic fsi coupling or standard fluid routine with weak Dirichlet boundary conditions?
 //    bool monolithic_fsi_coupling_;
 
@@ -849,6 +896,9 @@ namespace FLD
     //! @name
     INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy_;
     INPAR::CUT::BCellGaussPts BoundCellGaussPointBy_;
+
+    /// edge stabilization and ghost penalty object
+    Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
 
     /// edgebased stabilization
     bool edge_based_;
@@ -957,7 +1007,8 @@ namespace FLD
     //--------------------------------------------------------------------
 
     /// state object at current new time step
-    Teuchos::RCP<XFluidState> state_;
+    Teuchos::RCP<FLD::XFluidState> state_;
+
 
     /// counter how often a state class has been created during one time-step
     int state_it_;
@@ -1010,8 +1061,8 @@ namespace FLD
     //! @name old time-step state data w.r.t old interface position and dofsets from t^n used for XFEM time-integration
     Teuchos::RCP<Epetra_Vector>         veln_Intn_;      //!< velocity solution from last time-step t^n
     Teuchos::RCP<Epetra_Vector>         accn_Intn_;      //!< acceleration from last time-step t^n
-    Teuchos::RCP<XFEM::FluidWizardMesh> wizard_Intn_;    //!< fluid wizard from last time-step t^n
-    Teuchos::RCP<XFEM::FluidDofSet>     dofset_Intn_;    //!< dofset from last time-step t^n
+    Teuchos::RCP<GEO::CutWizardNEW>     wizard_Intn_;    //!< cut wizard from last time-step t^n
+    Teuchos::RCP<XFEM::XFEMDofSet>      dofset_Intn_;    //!< dofset from last time-step t^n
 
     Teuchos::RCP<Epetra_Map> dofcolmap_Intn_;
     //@}
@@ -1019,8 +1070,8 @@ namespace FLD
 
     //! @name last iteration step state data from t^(n+1) used for pseudo XFEM time-integration during monolithic Newton or partitioned schemes
     Teuchos::RCP<Epetra_Vector>         velnp_Intnpi_;   //!< velocity solution from last iteration w.r.t last dofset and interface position
-    Teuchos::RCP<XFEM::FluidWizardMesh> wizard_Intnpi_;  //!< fluid wizard from last iteration-step t^(n+1)
-    Teuchos::RCP<XFEM::FluidDofSet>     dofset_Intnpi_;  //!< dofset from last iteration-step t^(n+1)
+    Teuchos::RCP<GEO::CutWizardNEW>     wizard_Intnpi_;  //!< cut wizard from last iteration-step t^(n+1)
+    Teuchos::RCP<XFEM::XFEMDofSet>      dofset_Intnpi_;  //!< dofset from last iteration-step t^(n+1)
 
     //! is a restart of the monolithic Newton necessary caused by changing dofsets?
     bool newton_restart_monolithic_;

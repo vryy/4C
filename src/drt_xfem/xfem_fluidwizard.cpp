@@ -13,15 +13,11 @@ Maintainer: Benedikt Schott and Magnus Winter
 
 #include <Teuchos_TimeMonitor.hpp>
 
-//#include "../drt_io/io_control.H"
-//#include "../drt_lib/drt_utils.H"
-//#include "../drt_geometry/integrationcell.H"
-//#include "../drt_geometry/geo_intersection.H"
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_discret_xfem.H"
 
+#include "../drt_geometry/geo_intersection.H"
 #include "../drt_geometry/geo_meshintersection.H"
 #include "../drt_geometry/geo_levelsetintersection.H"
 
@@ -31,6 +27,29 @@ Maintainer: Benedikt Schott and Magnus Winter
 
 #include "xfem_fluidwizard.H"
 
+
+
+/*-------------------------------------------------------------*
+*--------------------------------------------------------------*/
+void XFEM::FluidWizard::SetOptions(
+    INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
+    INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
+    bool gmsh_output,                           //!< print write gmsh output for cut
+    bool positions,                             //!< set inside and outside point, facet and volumecell positions
+    bool tetcellsonly,                          //!< generate only tet cells
+    bool screenoutput                           //!< print screen output
+    )
+{
+  if(!is_created_) dserror("call Create() before options can be set");
+
+  VCellgausstype_ = VCellgausstype;
+  BCellgausstype_ = BCellgausstype;
+  gmsh_output_ = gmsh_output;
+  tetcellsonly_ = tetcellsonly;
+  screenoutput_ = screenoutput;
+
+  parentcut_->SetFindPositions( positions );
+}
 
 /*-------------------------------------------------------------*
 * creates a new fluid dofset                                   *
@@ -43,9 +62,7 @@ Teuchos::RCP<XFEM::FluidDofSet> XFEM::FluidWizard::DofSet(int maxNumMyReservedDo
 /*-------------------------------------------------------------*
 * get the elementhandle created within the cut                 *
 *--------------------------------------------------------------*/
-GEO::CUT::ElementHandle * XFEM::FluidWizard::GetElement(
-    DRT::Element * ele
-)
+GEO::CUT::ElementHandle * XFEM::FluidWizard::GetElement( DRT::Element * ele )
 {
   return parentcut_->GetElement( ele );
 }
@@ -53,7 +70,7 @@ GEO::CUT::ElementHandle * XFEM::FluidWizard::GetElement(
 /*-------------------------------------------------------------*
 * get the sidehandle created within the cut                 *
 *--------------------------------------------------------------*/
-GEO::CUT::SideHandle * XFEM::FluidWizard::GetSide( std::vector<int> & nodeids)
+GEO::CUT::SideHandle * XFEM::FluidWizard::GetSide( std::vector<int> & nodeids )
 {
   return parentcut_->GetSide( nodeids );
 }
@@ -69,46 +86,59 @@ GEO::CUT::SideHandle * XFEM::FluidWizard::GetSideHandle( int sid )
 /*-------------------------------------------------------------*
 * get the node created within the cut                          *
 *--------------------------------------------------------------*/
-GEO::CUT::Node * XFEM::FluidWizard::GetNode(
-    int nid
-)
+GEO::CUT::Node * XFEM::FluidWizard::GetNode( int nid )
 {
   return parentcut_->GetNode( nid );
 }
 
+
+void XFEM::FluidWizard::Output(bool include_inner)
+{
+  if(gmsh_output_) parentcut_->DumpGmshNumDOFSets(include_inner);
+
+#ifdef DEBUG
+  cut_->PrintCellStats();
+#endif
+
+  if(gmsh_output_)
+  {
+    parentcut_->DumpGmshIntegrationCells();
+    parentcut_->DumpGmshVolumeCells( include_inner );
+  }
+}
+
+
+
+void XFEM::FluidWizardMesh::Create()
+{
+  // set a new CutWizardMesh based on the background discretization
+  cut_ = Teuchos::rcp( new GEO::CutWizardMesh( *backdis_, 1 ) );
+  parentcut_ = cut_;
+
+  is_created_ = true;
+}
+
+
 /*-------------------------------------------------------------*
 * Cut routine for the new XFEM framework (XFSI and XFLUIDFLUID)*
 *--------------------------------------------------------------*/
-void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //!< perform cut within the structure
-                              const Epetra_Vector & idispcol,             //!< col vector holding interface displacements
-                              INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
-                              INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
-                              bool parallel,                              //!< use parallel cut algorithms
-                              bool gmsh_output,                           //!< print write gmsh output for cut
-                              const Teuchos::RCP<Epetra_Vector> & dispnpcol, //!< background displacements
-                              bool positions,                             //!< set inside and outside point, facet and volumecell positions
-                              bool tetcellsonly,                          //!< generate only tet cells
-                              bool screenoutput,                          //!< print screen output
-                              bool cutinrefconf                           //!< do not try to update node coordinates
-                              )
+void XFEM::FluidWizardMesh::Cut(
+    bool include_inner,                            //!< perform cut within the structure
+    Teuchos::RCP< const Epetra_Vector> idispcol,   //!< col vector holding interface displacements
+    const Teuchos::RCP<Epetra_Vector> & dispnpcol  //!< background displacements
+)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizardMesh::Cut" );
 
-  if ( backdis_->Comm().MyPID() == 0 and screenoutput)
+  if ( backdis_->Comm().MyPID() == 0 and screenoutput_)
     IO::cout << "\nXFEM::FluidWizardMesh::Cut:" << IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
 
-  // set a new CutWizardMesh based on the background discretization
-  cut_ = Teuchos::rcp( new GEO::CutWizardMesh( *backdis_, 1 ) );
-  parentcut_ = cut_;
-  cut_->SetFindPositions( positions );
-  GEO::CutWizardMesh & cw = *cut_;
-
   {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/6 --- Cut_Initialize" );
 
-  if(backdis_->Comm().MyPID()==0 and screenoutput)
+  if(backdis_->Comm().MyPID()==0 and screenoutput_)
     IO::cout << "\n\t * 1/6 Cut_Initialize ...";
 
   std::vector<int> lm;
@@ -152,11 +182,11 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
 
       LINALG::Matrix<3, 1> x( node.X() );
 
-      if(!cutinrefconf)
+      if(idispcol != Teuchos::null)
       {
         if(lm.size() == 3) // case for BELE3 boundary elements
         {
-          DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
+          DRT::UTILS::ExtractMyValues(*idispcol,mydisp,lm);
         }
         else if(lm.size() == 4) // case for BELE3_4 boundary elements
         {
@@ -165,7 +195,7 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
           lm_red.clear();
           for(int k=0; k< 3; k++) lm_red.push_back(lm[k]);
 
-          DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm_red);
+          DRT::UTILS::ExtractMyValues(*idispcol,mydisp,lm_red);
         }
         else dserror("wrong number of dofs for node %i", lm.size());
 
@@ -200,7 +230,7 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
   }
 
     // add the side of the cutter-discretization to the FluidWizardMesh
-    cw.AddCutSide( 0, element, xyze );
+    cut_->AddCutSide( 0, element, xyze );
   }
 
   // 2. add background elements dependent on bounding box created by the CutSides in 1.
@@ -209,15 +239,15 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
   //Cast Discretisation to DiscretisationXFEM just used in case of AleBackground!
 
   Teuchos::RCP<DRT::DiscretizationXFEM>  xbackdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(backdis_);
-   if(!cutinrefconf && dispnpcol != Teuchos::null)
-   {
-   if (xbackdis == Teuchos::null)
-     dserror("XFEM::FluidWizardMesh::Cut: Cast to DiscretizationXFEM failed!");
-   }
+  if( dispnpcol != Teuchos::null)
+  {
+    if (xbackdis == Teuchos::null)
+      dserror("XFEM::FluidWizardMesh::Cut: Cast to DiscretizationXFEM failed!");
+  }
 
   for ( int k = 0; k < numbackelements; ++k )
   {
-    DRT::Element * element = backdis_->lColElement(k);
+    DRT::Element * element = backdis_->lColElement( k );
 
     const int numnode = element->NumNode();
     DRT::Node ** nodes = element->Nodes();
@@ -230,7 +260,7 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
 
       LINALG::Matrix<3, 1> x( node.X() );
 
-      if(!cutinrefconf && dispnpcol != Teuchos::null)
+      if(dispnpcol != Teuchos::null)
       {
         lm.clear();
         mydisp.clear();
@@ -260,19 +290,21 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
         //update x-position of cutter node for current time step (update with displacement)
         x.Update( 1, disp, 1 );
       }
-    std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
-  }
-    cw.AddElement( element , xyze );
+
+      std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
+    }
+
+    cut_->AddElement( element, xyze );
   }
 
   // build the bounding volume tree for the collision detection in the context of the selfcut
-//  cw.BuildBVTree();
+//  cut_->BuildBVTree();
 
   // build the static search tree for the collision detection
-  cw.BuildStaticSearchTree();
+  cut_->BuildStaticSearchTree();
 
   const double t_mid = Teuchos::Time::wallTime()-t_start;
-  if ( backdis_->Comm().MyPID() == 0  and screenoutput)
+  if ( backdis_->Comm().MyPID() == 0  and screenoutput_)
   {
     IO::cout << "\t\t\t... Success (" << t_mid  <<  " secs)" << IO::endl;
   }
@@ -282,44 +314,27 @@ void XFEM::FluidWizardMesh::Cut(  bool include_inner,                         //
   // runtime:       everything below should be done in every Newton increment
 
   // run the (parallel) Cut
-  if(parallel)
-  {
-    cw.CutParallel( include_inner, VCellgausstype, BCellgausstype,tetcellsonly,screenoutput );
-  }
-  else
-  {
-    dserror("the non-parallel cutwizard does not support the DofsetNEW framework");
-//    cw.Cut( include_inner, VCellgausstype, BCellgausstype );
-  }
+  cut_->Run_Cut( include_inner, VCellgausstype_, BCellgausstype_,tetcellsonly_,screenoutput_ );
+
 
   // cleanup
 
   const double t_end = Teuchos::Time::wallTime()-t_start;
-  if ( backdis_->Comm().MyPID() == 0  and screenoutput)
+  if ( backdis_->Comm().MyPID() == 0  and screenoutput_)
   {
     IO::cout << "\n\t\t\t\t\t\t\t... Success (" << t_end  <<  " secs)\n" << IO::endl;
   }
 
-  if(gmsh_output) cw.DumpGmshNumDOFSets(include_inner);
-
-#ifdef DEBUG
-  cw.PrintCellStats();
-#endif
-
-  if(gmsh_output)
-  {
-    cw.DumpGmshIntegrationCells();
-    cw.DumpGmshVolumeCells( include_inner );
-  }
+  Output(include_inner);
 
 }
 
 /*-------------------------------------------------------------*
 * get the cut wizard                                           *
 *--------------------------------------------------------------*/
-GEO::CutWizardMesh & XFEM::FluidWizardMesh::CutWizard()
+Teuchos::RCP<GEO::CutWizardMesh> XFEM::FluidWizardMesh::CutWizard()
 {
-  return *cut_;
+  return cut_;
 }
 
 GEO::CUT::SideHandle * XFEM::FluidWizardMesh::GetCutSide( int sid, int mi )
@@ -327,33 +342,36 @@ GEO::CUT::SideHandle * XFEM::FluidWizardMesh::GetCutSide( int sid, int mi )
   return cut_->GetCutSide(sid, mi);
 }
 
+
+
+
+void XFEM::FluidWizardLevelSet::Create()
+{
+  // set a new CutWizardMesh based on the background discretization
+  cut_ = Teuchos::rcp( new GEO::CutWizardLevelSet( *backdis_ ) );
+  parentcut_ = cut_;
+
+  is_created_ = true;
+}
+
+
 /*--------------------------------------------------------------------------*
 * Cut routine for the new XFEM framework (TPFX)* utilizing level set for cut.
 *---------------------------------------------------------------------------*/
 void XFEM::FluidWizardLevelSet::Cut(
-                              bool include_inner,                         //!< perform cut within the structure
-                              const Epetra_Vector & phinpnode,            //!< node based values for the level set function
-                              INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
-                              INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
-                              bool parallel,                              //!< use parallel cut algorithms
-                              bool gmsh_output,                           //!< print write gmsh output for cut
-                              const Teuchos::RCP<Epetra_Vector> & dispnpcol, //!< background displacements
-                              bool positions,                             //!< set inside and outside point, facet and volumecell positions
-                              bool tetcellsonly,                          //!< generate only tet cells
-                              bool screenoutput,                          //!< print screen output
-                              bool cutinrefconf                           //!< do not try to perform coordinate update
+    bool include_inner,                                //!< perform cut within the structure
+    Teuchos::RCP< const Epetra_Vector> idispcol,       //!< col vector holding interface displacements
+    const Teuchos::RCP<Epetra_Vector> & dispnpcol      //!< background displacements
 )
 {
+  if(idispcol == Teuchos::null) dserror("level-set Cut needs a vector with node-based level-set values");
+
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizardLevelSet::Cut" );
 
   //fluiddis_ = backdis_
 
-  if ( backdis_->Comm().MyPID() == 0 and screenoutput)
+  if ( backdis_->Comm().MyPID() == 0 and screenoutput_)
     IO::cout << "\nXFEM::FluidWizardLevelSet::Cut:" << IO::endl;
-
-  cut_ = Teuchos::rcp( new GEO::CutWizardLevelSet( *backdis_ ) );
-  parentcut_ = cut_;
-  cut_->SetFindPositions( positions );
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -372,45 +390,30 @@ void XFEM::FluidWizardLevelSet::Cut(
 
     DRT::Element * element = backdis_->lColElement(lid);
 
-    DRT::UTILS::ExtractMyNodeBasedValues(element, myphinp, phinpnode);
+    DRT::UTILS::ExtractMyNodeBasedValues(element, myphinp, *idispcol);
     cut_->AddElement(element,myphinp,include_inner);
   }
 
   // run the (parallel) Cut
-  if(parallel)
-  {
-    cut_->CutParallel( include_inner, VCellgausstype, BCellgausstype,tetcellsonly,screenoutput );
-  }
-  else
-  {
-//    dserror("the non-parallel cutwizard does not support the DofsetNEW framework");
-    cut_->Cut( include_inner, VCellgausstype, BCellgausstype );
-  }
+  cut_->Run_Cut( include_inner, VCellgausstype_, BCellgausstype_,tetcellsonly_,screenoutput_ );
+
+
 
   const double t_end = Teuchos::Time::wallTime()-t_start;
-  if ( backdis_->Comm().MyPID() == 0  and screenoutput)
+  if ( backdis_->Comm().MyPID() == 0  and screenoutput_)
   {
     IO::cout << "\n\t ... Success (" << t_end  <<  " secs)\n" << IO::endl;
   }
 
-  if(gmsh_output) cut_->DumpGmshNumDOFSets(include_inner);
 
-#ifdef DEBUG
-  cut_->PrintCellStats();
-#endif
-
-  if(gmsh_output)
-  {
-    cut_->DumpGmshIntegrationCells();
-    cut_->DumpGmshVolumeCells( include_inner );
-  }
+  Output(include_inner);
 
 }
 
 /*-------------------------------------------------------------*
 * get the cut wizard                                           *
 *--------------------------------------------------------------*/
-GEO::CutWizardLevelSet & XFEM::FluidWizardLevelSet::CutWizard()
+Teuchos::RCP<GEO::CutWizardLevelSet> XFEM::FluidWizardLevelSet::CutWizard()
 {
-  return *cut_;
+  return cut_;
 }

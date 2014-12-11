@@ -16,6 +16,7 @@ Maintainer: Benedikt Schott
 
 #include "cut_parentintersection.H"
 
+
 namespace DRT
 {
   class Discretization;
@@ -34,8 +35,12 @@ namespace CUT
 /*!
 \brief Interface class for the surface mesh cut. The surface mesh is in general triangulated.
 */
-class MeshIntersection : public ParentIntersection
+class MeshIntersection : public virtual ParentIntersection
 {
+
+  typedef ParentIntersection my;
+
+
 public:
 
   /// constructur for MeshIntersecton class
@@ -54,7 +59,7 @@ public:
   /*========================================================================*/
 
   /// add this background element if it falls within the bounding box of cut mesh
-  ElementHandle * AddElement( int eid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype );
+  ElementHandle * AddElement( int eid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype, const double * lsv = NULL );
 
   /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for quadratic sides)
   SideHandle * AddCutSide( int sid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype, int mi=0 );
@@ -86,7 +91,7 @@ public:
   void Cut_CollisionDetection( bool include_inner,bool screenoutput=true);
 
   /// Routine for cutting the mesh. This creates lines, facets, volumecells and quadrature rules
-  void Cut_MeshIntersection( bool include_inner,bool screenoutput=true);
+  void Cut_MeshIntersection( bool screenoutput=true);
 
   /// Routine for deciding the inside-outside position. This creates the dofset data, just serial
   void Cut_Positions_Dofsets( bool include_inner ,bool screenoutput=true);

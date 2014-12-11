@@ -16,6 +16,7 @@ Maintainer: Benedikt Schott
 
 #include "../drt_geometry/geo_intersection.H"
 
+
 class Epetra_SerialDenseMatrix;
 
 namespace DRT
@@ -30,7 +31,6 @@ namespace GEO
   {
     class MeshIntersection;
     class SideHandle;
-
   }
 
   /// contains the cut
@@ -72,20 +72,6 @@ namespace GEO
     /*========================================================================*/
 
     /*!
-    \brief Cut routine for parallel framework in XFSI and XFLUIDFLUID
-    */
-    void CutParallel( bool include_inner,
-                      INPAR::CUT::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
-                      INPAR::CUT::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
-                      bool tetcellsonly =false,
-                      bool screenoutput = true);
-
-    /*!
-    \brief Routine for finding node positions and computing volumecell dofsets in a parallel way
-    */
-    void CutParallel_FindPositionDofSets(bool include_inner, bool communicate, bool screenoutput=true);
-
-    /*!
     \brief Cut routine for standard non-parallel framework which is used only for cut_test
     */
     void Cut(
@@ -94,6 +80,7 @@ namespace GEO
         INPAR::CUT::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
         bool screenoutput=true
     );
+
 
     /*========================================================================*/
     //! @name Get routines
@@ -107,9 +94,15 @@ namespace GEO
     /*!
     \brief get the mesh intersection object
      */
-    GEO::CUT::MeshIntersection & Mesh() {return *meshintersection_; }
+    Teuchos::RCP<GEO::CUT::MeshIntersection> Mesh() {return meshintersection_; }
+
+
+  protected:
+
+    void FindNodePositions();
 
   private:
+
 
     /*========================================================================*/
     //! @name private class variables

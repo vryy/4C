@@ -14,7 +14,8 @@ Maintainer: Benedikt Schott
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_cut/cut_meshintersection.H"
-#include "../drt_cut/cut_parallel.H"
+
+#include "../drt_geometry/geo_intersection.H"
 
 #include "geo_meshintersection.H"
 
@@ -68,169 +69,12 @@ void GEO::CutWizardMesh::BuildStaticSearchTree()
 }
 
 /*------------------------------------------------------------------------------------------------*
- * cut routine for parallel framework in XFSI and XFLUIDFLUID                        schott 03/12 *
+ * find positions                                                                    schott 11/14 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardMesh::CutParallel( bool include_inner,
-                                  INPAR::CUT::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
-                                  INPAR::CUT::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
-                                  bool tetcellsonly,
-                                  bool screenoutput)
+void GEO::CutWizardMesh::FindNodePositions()
 {
-  // for XFSI and XFLUIDFLUID we have communicate node positions and dofset data
-  bool communicate = true;
-
-  if(dis_.Comm().NumProc() == 1) communicate = false;
-
-  meshintersection_->Status();
-
-  // just for time measurement
-  dis_.Comm().Barrier();
-
-  //----------------------------------------------------------
-  // Selfcut (2/6 Cut_SelfCut)
-  {
-    const double t_start = Teuchos::Time::wallTime();
-
-    // cut the mesh
-    meshintersection_->Cut_SelfCut(include_inner, screenoutput);
-
-    // just for time measurement
-    dis_.Comm().Barrier();
-
-    const double t_diff = Teuchos::Time::wallTime() - t_start;
-    if (myrank_ == 0)
-      IO::cout << "\t\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
-  }
-  //----------------------------------------------------------
-  // Cut Part I: Collision Detection (3/6 Cut_CollisionDetection)
-  {
-    const double t_start = Teuchos::Time::wallTime();
-
-    // cut the mesh
-    meshintersection_->Cut_CollisionDetection(include_inner, screenoutput);
-
-    // just for time measurement
-    dis_.Comm().Barrier();
-
-    const double t_diff = Teuchos::Time::wallTime() - t_start;
-    if (myrank_ == 0)
-      IO::cout << "\t\t... Success (" << t_diff << " secs)" << IO::endl;
-  }
-
-  //----------------------------------------------------------
-  // Cut Part II: Mesh Intersection (4/6 Cut_MeshIntersection)
-  {
-    const double t_start = Teuchos::Time::wallTime();
-
-    // cut the mesh
-    meshintersection_->Cut_MeshIntersection( include_inner, screenoutput );
-
-    // just for time measurement
-    dis_.Comm().Barrier();
-
-    const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 ) IO::cout << "\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
-  }
-
-  //----------------------------------------------------------
-  // Cut Part III & IV: Element Selection and DOF-Set Management (5/6 Cut_Positions_Dofsets)
-  {
-    const double t_start = Teuchos::Time::wallTime();
-
-    CutParallel_FindPositionDofSets( include_inner, communicate, screenoutput );
-
-    // just for time measurement
-    dis_.Comm().Barrier();
-
-    const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 ) IO::cout << "\t... Success (" << t_diff  <<  " secs)" << IO::endl;
-  }
-
-  //----------------------------------------------------------
-  // Cut Part V & VI: Polyhedra Integration and Boundary Tessellation (6/6 Cut_Finalize)
-  {
-    const double t_start = Teuchos::Time::wallTime();
-
-    // perform tessellation or moment fitting on the mesh
-    meshintersection_->Cut_Finalize( include_inner, VCellgausstype, BCellgausstype, false, tetcellsonly, screenoutput );
-
-    // just for time measurement
-    dis_.Comm().Barrier();
-
-    const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 ) IO::cout << "\t\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
-  }
-
-  meshintersection_->Status(VCellgausstype);
-}
-
-
-/*------------------------------------------------------------------------------------------------*
- * routine for finding node positions and computing vc dofsets in a parallel way     schott 03/12 *
- *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardMesh::CutParallel_FindPositionDofSets(bool include_inner, bool communicate, bool screenoutput)
-{
-
-
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel)" );
-
-
-  if(myrank_==0 and screenoutput) IO::cout << "\t * 5/6 Cut_Positions_Dofsets (parallel) ...";
-
-//  const double t_start = Teuchos::Time::wallTime();
-
-  //----------------------------------------------------------
-
-  GEO::CUT::Options options;
-  mesh_->GetOptions(options);
-
-  if ( options.FindPositions() )
-  {
-
-    GEO::CUT::Mesh & m = mesh_->NormalMesh();
-
-    // find inside and outside positions of nodes
-    m.FindNodePositions(); // Prevents this function from being in CutWizard.
-
-    // find undecided nodes
-    // * for serial simulations all node positions should be set
-    // * for parallel simulations there can be some undecided nodes
-
-    // create a parallel Cut object for the current background mesh to communicate missing data
-    Teuchos::RCP<GEO::CUT::Parallel> cut_parallel = Teuchos::rcp( new GEO::CUT::Parallel( dis_, m, *meshintersection_ ) );
-
-    if(communicate) cut_parallel->CommunicateNodePositions();
-
-    m.FindFacetPositions();
-
-    // find number and connection of dofsets at nodes from cut volumes
-    mesh_->CreateNodalDofSetNEW( include_inner, dis_);
-
-    //DumpGmshNumDOFSets(false);
-
-    if(communicate) cut_parallel->CommunicateNodeDofSetNumbers(include_inner);
-
-
-  }
-
-//  // just for time measurement
-//  dis_.Comm().Barrier();
-//
-//  //----------------------------------------------------------
-//
-//  const double t_diff = Teuchos::Time::wallTime()-t_start;
-//  if ( myrank_ == 0 )
-//  {
-//    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-//  }
-//
-//
-//  const double t_diff = Teuchos::Time::wallTime()-t_start;
-//  if ( myrank_ == 0  and screenoutput)
-//  {
-//    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-//  }
-
+  GEO::CUT::Mesh & m = mesh_->NormalMesh();
+  m.FindNodePositions();
 }
 
 /*------------------------------------------------------------------------------------------------*

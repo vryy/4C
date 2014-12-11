@@ -37,11 +37,17 @@ namespace DRT
   class Exporter;
   class Node;
 }
-// namespace CUT
-// {
-//   class Cmp;
-//   class Node;
-// }
+
+namespace GEO
+{
+  class CutWizardNEW;
+
+  namespace CUT
+  {
+    class SideHandle;
+  }
+}
+
 namespace LINALG
 {
   class MapExtractor;
@@ -54,7 +60,7 @@ namespace Teuchos
 
 namespace XFEM
 {
-  class FluidWizardMesh;
+  class XFEMDofSet;
 
 /*!
 \brief this class is the basic TIMEINT class for the projection, adaption or
@@ -67,10 +73,10 @@ public:
   //! constructor
   explicit XFluidTimeInt(
       const Teuchos::RCP<DRT::Discretization>                        dis,                    /// discretization
-      const Teuchos::RCP<XFEM::FluidWizardMesh>                          wizard_old,             /// fluid wizard at t^n
-      const Teuchos::RCP<XFEM::FluidWizardMesh>                          wizard_new,             /// fluid wizard at t^(n+1)
-      const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_old,             /// dofset at t^n
-      const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_new,             /// dofset at t^(n+1)
+      const Teuchos::RCP<GEO::CutWizardNEW>                          wizard_old,             /// cut wizard at t^n
+      const Teuchos::RCP<GEO::CutWizardNEW>                          wizard_new,             /// cut wizard at t^(n+1)
+      const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_old,             /// XFEM dofset at t^n
+      const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_new,             /// XFEM dofset at t^(n+1)
       const INPAR::XFEM::XFluidTimeIntScheme                         xfluid_timintapproach,  /// xfluid_timintapproch
       std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&       reconstr_method,        /// reconstruction map for nodes and its dofsets
       const int                                                      step                    /// global time step
@@ -113,7 +119,7 @@ public:
   );
 
   /// all surrounding elements non-intersected?
-  bool NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<XFEM::FluidWizardMesh> wizard);
+  bool NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<GEO::CutWizardNEW> wizard);
 
   /// find all ghost dofsets around this node and its std-dofset
   void FindSurroundingGhostDofsets(
@@ -217,13 +223,11 @@ public:
 
   Teuchos::RCP<DRT::Discretization> dis_;         /// background  discretization
 
-  Teuchos::RCP<XFEM::FluidWizardMesh> wizard_old_;    /// old fluid wizard w.r.t old interface position
-  Teuchos::RCP<XFEM::FluidWizardMesh> wizard_new_;    /// new fluid wizard w.r.t new interface position
+  Teuchos::RCP<GEO::CutWizardNEW> wizard_old_;    /// old cut wizard w.r.t old interface position
+  Teuchos::RCP<GEO::CutWizardNEW> wizard_new_;    /// new cut wizard w.r.t new interface position
 
-  Teuchos::RCP<XFEM::FluidDofSet> dofset_old_;    /// old dofset w.r.t old interface position
-  Teuchos::RCP<XFEM::FluidDofSet> dofset_new_;    /// new dofset w.r.t new interface position
-
-  //Teuchos::ParameterList params_;                 /// parameter list
+  Teuchos::RCP<XFEM::XFEMDofSet> dofset_old_;    /// old XFEM dofset w.r.t old interface position
+  Teuchos::RCP<XFEM::XFEMDofSet> dofset_new_;    /// new XFEM dofset w.r.t new interface position
 
   // current processor id and number of procs
   int myrank_;

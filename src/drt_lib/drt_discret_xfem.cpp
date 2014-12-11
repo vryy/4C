@@ -105,8 +105,9 @@ void DRT::DiscretizationXFEM::StoreInitialDofs()
  * Export Vector with initialdofrowmap (all nodes have one dofset) - to Vector  |
 * with all active dofs (public)                                       ager 11/14|
  *  *---------------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::ExportInitialtoActiveVector(Teuchos::RCP<Epetra_Vector>& initialvec,
-                                                    Teuchos::RCP<Epetra_Vector>& activevec)
+void DRT::DiscretizationXFEM::ExportInitialtoActiveVector(
+    Teuchos::RCP<const Epetra_Vector>& initialvec,
+    Teuchos::RCP< Epetra_Vector>& activevec)
 {
   // Is the discretization initialized?
   Initialized();

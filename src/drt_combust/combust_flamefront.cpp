@@ -719,7 +719,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
       }
 
       // check if this refinement cell is cut, according to its G-function values -> add it to 'levelset'
-      levelset.AddElement( 1, nids, cellcoord, &gfuncvalues[0], distype_cell );
+      levelset.AddElement( 1, nids, cellcoord, distype_cell, &gfuncvalues[0], false );
 
       try
       {
@@ -2510,7 +2510,7 @@ void COMBUST::FlameFront::buildPLC(
 
     GEO::CUT::LevelSetIntersection levelset;
 
-    levelset.AddElement( 1, nids, globalcellcoord, &gfuncvalues[0], distype_cell );
+    levelset.AddElement( 1, nids, globalcellcoord, distype_cell, &gfuncvalues[0] );
 
     try
     {

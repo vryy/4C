@@ -13,19 +13,20 @@ Maintainer: Benedikt Schott
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "cut_integrationcell.H"
 #include "cut_selfcut.H"
-
 #include "cut_meshintersection.H"
 
 /*-----------------------------------------------------------------------------------------*
  * add this background element if it falls within the bounding box of cut mesh
  * If it is not within BB, this element is never cut
  *-----------------------------------------------------------------------------------------*/
-GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::AddElement( int eid,
-                                                                  const std::vector<int> & nids,
-                                                                  const Epetra_SerialDenseMatrix & xyz,
-                                                                  DRT::Element::DiscretizationType distype )
+GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::AddElement(
+    int eid,
+    const std::vector<int> & nids,
+    const Epetra_SerialDenseMatrix & xyz,
+    DRT::Element::DiscretizationType distype,
+    const double * lsv
+)
 {
   for ( std::vector<Teuchos::RCP<MeshHandle> >::iterator i=cut_mesh_.begin();
         i!=cut_mesh_.end();
@@ -47,13 +48,11 @@ GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::AddElement( int eid,
       // make sure all nodes are there
       for ( int i=0; i<numnode; ++i )
       {
-        NormalMesh().GetNode( nids[i], &xyz( 0, i ) );
-//         if ( n==NULL )
-//         {
-//           // if there is no node with that id but a node at the given
-//           // location, the element is illegal and cannot be created
-//           return;
-//         }
+        if (lsv != NULL)
+          NormalMesh().GetNode( nids[i], &xyz( 0, i ), lsv[i] );
+        else
+          NormalMesh().GetNode( nids[i], &xyz( 0, i ));
+
       }
 
       // create element
@@ -141,8 +140,9 @@ void GEO::CUT::MeshIntersection::BuildStaticSearchTree()
 }
 
 /*------------------------------------------------------------------------------------------------*
- * standard Cut routine for two phase flow and combustion where dofsets and node positions        *
- * have not to be computed, standard cut for cut_est                                 schott 03/12 *
+ * standard Cut routine for two phase flow and combustion via COMBUST-code                        *
+ * where dofsets and node positions                                                               *
+ * have not to be computed, standard cut for cut_test                                schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::Cut(
     bool include_inner,
@@ -163,13 +163,13 @@ void GEO::CUT::MeshIntersection::Cut(
   Cut_CollisionDetection( include_inner, screenoutput);
 
   // cut the mesh and create cutlines, facets, volumecells
-  Cut_MeshIntersection( include_inner, screenoutput);
+  Cut_MeshIntersection( screenoutput);
 
   // determine inside-outside position and dofset-data, parallel communication if required
   Cut_Positions_Dofsets( include_inner, screenoutput );
 
   // create integration points and/or subtetrahedralization
-  Cut_Finalize( include_inner, VCellgausstype, BCellgausstype, false, tetcellsonly, screenoutput);
+  Cut_Finalize( include_inner, VCellgausstype, BCellgausstype, tetcellsonly, screenoutput);
 
   // DumpGmshVolumeCells("CUT_vc", true);
   // DumpGmshIntegrationCells("CUT_intcells");
@@ -215,14 +215,12 @@ void GEO::CUT::MeshIntersection::Cut_CollisionDetection( bool include_inner,bool
  * standard Cut routine for parallel XFSI and XFLUIDFLUID where dofsets and node positions        *
  * have to be parallelized                                                           schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshIntersection::Cut_MeshIntersection( bool include_inner,bool screenoutput)
+void GEO::CUT::MeshIntersection::Cut_MeshIntersection( bool screenoutput)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 4/6 --- Cut_MeshIntersection" );
 
   if(myrank_==0 and screenoutput) IO::cout << "\t * 4/6 Cut_MeshIntersection ...";
-
-//  const double t_start = Teuchos::Time::wallTime();
 
   //----------------------------------------------------------
 
@@ -232,14 +230,6 @@ void GEO::CUT::MeshIntersection::Cut_MeshIntersection( bool include_inner,bool s
   m.MakeCutLines();
   m.MakeFacets();
   m.MakeVolumeCells();
-
-  //----------------------------------------------------------
-
-//  const double t_diff = Teuchos::Time::wallTime()-t_start;
-//  if ( myrank_ == 0  and screenoutput)
-//  {
-//    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-//  }
 
 } // GEO::CUT::MeshIntersection::Cut_MeshIntersection
 
@@ -253,10 +243,7 @@ void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner , boo
 
   if(myrank_==0 and screenoutput) IO::cout << "\t * 5/6 Cut_Positions_Dofsets ...";
 
-//  const double t_start = Teuchos::Time::wallTime();
-
   //----------------------------------------------------------
-
 
   Mesh & m = NormalMesh();
 
@@ -274,14 +261,6 @@ void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner , boo
 
   }
 
-
-//  //----------------------------------------------------------
-//
-//   const double t_diff = Teuchos::Time::wallTime()-t_start;
-//   if ( myrank_ == 0 and screenoutput)
-//   {
-//     IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-//   }
 } //GEO::CUT::MeshIntersection::Cut_Positions_Dofsets
 
 
@@ -293,10 +272,16 @@ GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::GetCutSide( int sid, int mi )
   return cut_mesh_[mi]->GetSide( sid );
 }
 
+
+/*--------------------------------------------------------------------------------------*
+ * status
+ *-------------------------------------------------------------------------------------*/
 void GEO::CUT::MeshIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
 {
+  // call status of parent intersection
+  my::Status(gausstype);
+
 #ifdef DEBUG
-  NormalMesh().Status();
   for ( std::vector<Teuchos::RCP<MeshHandle> >::iterator i=cut_mesh_.begin();
         i!=cut_mesh_.end();
         ++i )
@@ -307,7 +292,6 @@ void GEO::CUT::MeshIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
   }
 
 #ifdef DEBUGCUTLIBRARY
-  NormalMesh().DumpGmsh( "mesh.pos" );
   int count = 0;
   for ( std::vector<Teuchos::RCP<MeshHandle> >::iterator i=cut_mesh_.begin();
         i!=cut_mesh_.end();
@@ -320,15 +304,6 @@ void GEO::CUT::MeshIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
     cut_mesh.DumpGmsh( str.str().c_str() );
     count++;
   }
-
-  //NormalMesh().DumpGmshVolumeCells( "volumecells" );
-  if(gausstype==INPAR::CUT::VCellGaussPts_Tessellation)
-  {
-    DumpGmshIntegrationCells( "integrationcells.pos" );
-    DumpGmshVolumeCells("volumecells.pos");
-  }
-  else
-    DumpGmshVolumeCells("volumecells.pos");
 #endif
 #endif
 }

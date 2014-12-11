@@ -14,7 +14,6 @@ Maintainer: Benedikt Schott
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_cut/cut_levelsetintersection.H"
-#include "../drt_cut/cut_parallel.H"
 
 #include "geo_levelsetintersection.H"
 
@@ -47,132 +46,15 @@ void GEO::CutWizardLevelSet::AddElement(DRT::Element * ele, std::vector<double> 
 
   std::vector<int> nids( nodeids, nodeids+numnode );
   //If include_inner == false then add elements with negative level set values to discretization.
-  levelsetintersection_->AddElement( ele->Id(), nids, xyze, &myphinp[0], ele->Shape(), !include_inner );
+  levelsetintersection_->AddElement( ele->Id(), nids, xyze, ele->Shape(), &myphinp[0], !include_inner );
 }
 
-/*------------------------------------------------------------------------------------------------*
- * cut routine for parallel framework of level set cut                               schott 03/12 *
- *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardLevelSet::CutParallel( bool include_inner,
-                                  INPAR::CUT::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
-                                  INPAR::CUT::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
-                                  bool tetcellsonly,
-                                  bool screenoutput)
+
+
+void GEO::CutWizardLevelSet::FindNodePositions()
 {
-  // for level set cut we have to communicate dofset data
-  bool communicate = true;
-
-  if(dis_.Comm().NumProc() == 1) communicate = false;
-
-  levelsetintersection_->Status();
-
-  // just for time measurement
-  dis_.Comm().Barrier();
-
-  //----------------------------------------------------------
-  // FIRST step (1/3): cut the mesh
-  {
-    const double t_start = Teuchos::Time::wallTime();
-
-    // cut the mesh
-    levelsetintersection_->Cut_Mesh( include_inner,screenoutput );
-
-    // just for time measurement
-    dis_.Comm().Barrier();
-
-    const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 ) IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-  }
-
-  //----------------------------------------------------------
-  // SECOND step (2/3): find node positions and create dofset in PARALLEL
-  {
-    const double t_start = Teuchos::Time::wallTime();
-
-    CutParallel_FindPositionDofSets( include_inner, communicate ,screenoutput );
-
-    // just for time measurement
-    dis_.Comm().Barrier();
-
-    const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 ) IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-  }
-
-  //----------------------------------------------------------
-  // THIRD step (3/3): perform tessellation or moment fitting on the mesh
-  {
-    const double t_start = Teuchos::Time::wallTime();
-
-    // perform tessellation or moment fitting on the mesh
-    levelsetintersection_->Cut_Finalize( include_inner, VCellgausstype, BCellgausstype, true, tetcellsonly, screenoutput );
-
-    // just for time measurement
-    dis_.Comm().Barrier();
-
-    const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 ) IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-  }
-
-  levelsetintersection_->Status(VCellgausstype);
-}
-
-/*------------------------------------------------------------------------------------------------*
- * routine for finding node positions and computing vc dofsets in a parallel way     schott 03/12 *
- *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardLevelSet::CutParallel_FindPositionDofSets(bool include_inner, bool communicate, bool screenoutput)
-{
-
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets (parallel)" );
-
-  if(myrank_==0 and screenoutput) IO::cout << "\t * 2/3 Cut_Positions_Dofsets (parallel) ...";
-
-//  const double t_start = Teuchos::Time::wallTime();
-
-  //----------------------------------------------------------
-
-  GEO::CUT::Options options;
-  mesh_->GetOptions(options);
-
-  if ( options.FindPositions() )
-  {
-
-    GEO::CUT::Mesh & m = mesh_->NormalMesh();
-
-    // find inside and outside positions of nodes
-    m.FindLSNodePositions(); // Prevents this function from being in CutWizard.
-
-
-    //TWO_PHASE_XFEM_FIX: Does this apply for level set cut as well?
-    // find undecided nodes
-    // * for serial simulations all node positions should be set
-    // * for parallel simulations there can be some undecided nodes
-
-    // create a parallel Cut object for the current background mesh to communicate missing data
-    Teuchos::RCP<GEO::CUT::Parallel> cut_parallel = Teuchos::rcp( new GEO::CUT::Parallel( dis_, m, *levelsetintersection_ ) );
-
-    if(communicate) cut_parallel->CommunicateNodePositions();
-
-
-    m.FindFacetPositions();
-
-    // find number and connection of dofsets at nodes from cut volumes
-    mesh_->CreateNodalDofSetNEW( include_inner, dis_);
-
-    if(communicate) cut_parallel->CommunicateNodeDofSetNumbers(include_inner);
-
-  }
-
-//  // just for time measurement
-//  dis_.Comm().Barrier();
-//
-//  //----------------------------------------------------------
-//
-//  const double t_diff = Teuchos::Time::wallTime()-t_start;
-//  if ( myrank_ == 0 )
-//  {
-//    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
-//  }
-
+  GEO::CUT::Mesh & m = mesh_->NormalMesh();
+  m.FindLSNodePositions();
 }
 
 /*------------------------------------------------------------------------------------------------*

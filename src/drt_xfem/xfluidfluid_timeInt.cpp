@@ -18,7 +18,8 @@ Maintainer:
 #include <EpetraExt_MatrixMatrix.h>
 
 #include "xfluidfluid_timeInt.H"
-#include "xfem_fluidwizard.H"
+
+#include "../drt_xfem/xfem_dofset.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -38,11 +39,13 @@ Maintainer:
 #include "../drt_cut/cut_position.H"
 #include "../drt_cut/cut_point.H"
 #include "../drt_cut/cut_element.H"
+#include "../drt_cut/cut_volumecell.H"
+#include "../drt_cut/cut_cutwizard.H"
 
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_cut/cut_volumecell.H"
+
 
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_interface.H"
@@ -63,7 +66,7 @@ Maintainer:
 XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
   const Teuchos::RCP<DRT::Discretization> &  bgdis,
   const Teuchos::RCP<DRT::Discretization> &  embdis,
-  Teuchos::RCP<XFEM::FluidWizardMesh>        wizard,
+  Teuchos::RCP<GEO::CutWizardNEW>            wizard,
   int                                        step,
   enum INPAR::XFEM::XFluidFluidTimeInt       xfem_timeintapproach,
   const Teuchos::ParameterList&              params
@@ -106,7 +109,7 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
 // -------------------------------------------------------------------
 // build maps of node ids to their dof-gids in this time step
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(Teuchos::RCP<XFEM::FluidWizardMesh> wizard)
+void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(Teuchos::RCP<GEO::CutWizardNEW> wizard)
 {
   // map of standard nodes and their dof-ids
 
@@ -236,7 +239,7 @@ void XFEM::XFluidFluidTimeIntegration::SaveBgNodeMaps()
 // - give gmsh-output
 // - return true, if the maps haven't changed
 // -------------------------------------------------------------------
-bool XFEM::XFluidFluidTimeIntegration::SaveBgNodeMapsAndCreateNew(Teuchos::RCP<XFEM::FluidWizardMesh> wizard)
+bool XFEM::XFluidFluidTimeIntegration::SaveBgNodeMapsAndCreateNew(Teuchos::RCP<GEO::CutWizardNEW> wizard)
 {
 
   // save the old maps and clear the maps for the new cut
@@ -265,7 +268,7 @@ bool XFEM::XFluidFluidTimeIntegration::SaveBgNodeMapsAndCreateNew(Teuchos::RCP<X
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
-void  XFEM::XFluidFluidTimeIntegration::CreateBgNodeMapsForRestart(Teuchos::RCP<XFEM::FluidWizardMesh>  wizard)
+void  XFEM::XFluidFluidTimeIntegration::CreateBgNodeMapsForRestart(Teuchos::RCP<GEO::CutWizardNEW>  wizard)
 {
   // Create new maps
   CreateBgNodeMaps(wizard);
@@ -1512,8 +1515,8 @@ void XFEM::XFluidFluidTimeIntegration::GmshOutputForInterpolateFSI( const Teucho
 // patch after projection by solution of an optimization problem
 // -------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::EnforceIncompAfterProjection(
-  Teuchos::RCP<XFEM::FluidWizardMesh>               wizard,         ///< xfem fluid wizard
-  Teuchos::RCP<XFEM::FluidWizardMesh>               wizard_n,       ///< xfem fluid wizard from timestep n
+  Teuchos::RCP<GEO::CutWizardNEW>               wizard,         ///< cut wizard
+  Teuchos::RCP<GEO::CutWizardNEW>               wizard_n,       ///< cut wizard from timestep n
   Teuchos::RCP<Epetra_Vector> &                     bgstate_velnp,  ///< background fluid velocity at timestep n+1
   Teuchos::RCP<Epetra_Vector> &                     bgstate_veln,   ///< background fluid velocity at timestep n
   Teuchos::RCP<Epetra_Vector> &                     bgstate_velnm,  ///< background fluid velocity at timestep n-1
@@ -1540,8 +1543,8 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompAfterProjection(
 // have the full dofs again.
 // -------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::BuildElementPatchForIncompOpt(
-    Teuchos::RCP<XFEM::FluidWizardMesh>               wizard_n,
-    Teuchos::RCP<XFEM::FluidWizardMesh>               wizard_np,
+    Teuchos::RCP<GEO::CutWizardNEW>               wizard_n,
+    Teuchos::RCP<GEO::CutWizardNEW>               wizard_np,
     const Teuchos::RCP<const LINALG::MapExtractor>  & dbcmaps)
 {
   //---------------------------------------------
@@ -1707,7 +1710,7 @@ void XFEM::XFluidFluidTimeIntegration::BuildElementPatchForIncompOpt(
 // -------------------------------------------------------------------
 // build an incompressibility discretization
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::PrepareIncompOptDiscret(Teuchos::RCP<XFEM::FluidWizardMesh> wizard_np)
+void XFEM::XFluidFluidTimeIntegration::PrepareIncompOptDiscret(Teuchos::RCP<GEO::CutWizardNEW> wizard_np)
 {
 
   // generate an empty boundary discretisation
@@ -1848,7 +1851,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompOptDiscret(Teuchos::RCP<XFEM
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::EvaluateIncompOpt(Teuchos::RCP<XFEM::FluidWizardMesh>          wizard)
+void XFEM::XFluidFluidTimeIntegration::EvaluateIncompOpt(Teuchos::RCP<GEO::CutWizardNEW>          wizard)
 {
 
   C_ = LINALG::CreateVector(*incompdis_->DofRowMap(),true);
@@ -1895,9 +1898,9 @@ void XFEM::XFluidFluidTimeIntegration::EvaluateIncompOpt(Teuchos::RCP<XFEM::Flui
       std::vector<GEO::CUT::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int> > nds_sets;
       std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoints_sets;
-      INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy = DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_.sublist("XFEM"), "VOLUME_GAUSS_POINTS_BY");
 
-      e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, VolumeCellGaussPointBy, false); //(include_inner=false)
+      bool has_xfem_integration_rule =
+          e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, false); //(include_inner=false)
 
       if (cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
       if (cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -1928,13 +1931,25 @@ void XFEM::XFluidFluidTimeIntegration::EvaluateIncompOpt(Teuchos::RCP<XFEM::Flui
 
         for( unsigned cellcount=0; cellcount != s->size(); cellcount++ )
         {
-          // call element method
-          DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")->CalculateContinuityXFEM(ele,
-                                                                                                         *incompdis_,
-                                                                                                         la[0].lm_,
-                                                                                                         C_elevec,
-                                                                                                         intpoints_sets[setpos][cellcount]);
 
+          if(!has_xfem_integration_rule)
+          {
+            DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")->CalculateContinuityXFEM(
+                ele,
+                *incompdis_,
+                la[0].lm_,
+                C_elevec);
+          }
+          else
+          {
+            // call element method
+            DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")->CalculateContinuityXFEM(
+                ele,
+                *incompdis_,
+                la[0].lm_,
+                C_elevec,
+                intpoints_sets[setpos][cellcount]);
+          }
 
         }
 

@@ -36,6 +36,9 @@ Maintainer: Raffaela Kruse /Benedikt Schott
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_function.H"
 
+#include "../drt_lib/drt_condition_utils.H"
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
@@ -3159,6 +3162,26 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     {
       side = cutdis->gElement( sid );
       side->LocationVector(*cutdis,cutla,false);
+
+
+      std::vector<DRT::Condition*> mycond;
+
+//      // check whether all nodes have a unique Neumann condition
+//      if (my::nsd_==3)
+//        DRT::UTILS::FindElementConditions(ele,"FSICoupling",mycond);
+////      else if (nsd_==2)
+////        DRT::UTILS::FindElementConditions(ele,"TransportSurfaceNeumann",mycond);
+//      else
+//        dserror("FSICoupling for 1D problem not yet implemented!");
+//
+//      if (mycond.size()>1)
+//        dserror("More than one condition on one node!");
+//      else if (mycond.size()<=0)
+//        dserror("No condition on node!");
+//      else std::cout << "unique condition found!" << std::endl;
+
+
+
 
       const int numnodes = side->NumNode();
       DRT::Node ** nodes = side->Nodes();

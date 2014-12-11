@@ -16,14 +16,14 @@ Maintainer: Shadan Shahmiri
 #include "drt_dofset.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_cut/cut_node.H"
-#include "../drt_xfem/xfem_fluidwizard.H"
+#include "../drt_cut/cut_cutwizard.H"
 #include "../drt_geometry/geo_meshintersection.H"
 
 
 DRT::TransparentIndependentDofSet::TransparentIndependentDofSet(
   Teuchos::RCP<DRT::Discretization> sourcedis,
   bool parallel,
-  Teuchos::RCP<XFEM::FluidWizard> wizard = Teuchos::null)
+  Teuchos::RCP<GEO::CutWizardNEW> wizard = Teuchos::null)
   : DRT::TransparentDofSet(sourcedis, parallel),
     wizard_(wizard)
 {
@@ -55,7 +55,7 @@ int DRT::TransparentIndependentDofSet::NumDofPerNode( const DRT::Node & node ) c
 {
   if (wizard_ != Teuchos::null)
   {
-    GEO::CUT::Node *n = wizard_->GetNode( node.Id() );  //CutWizard().GetNode( node.Id() )
+    GEO::CUT::Node *n = wizard_->GetNode( node.Id() );
     if ( n!=NULL )
     {
       int numdofpernode = DRT::DofSet::NumDofPerNode( node );

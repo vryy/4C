@@ -15,12 +15,10 @@ Maintainer: Benedikt Schott and Magnus Winter
 #define XFEM_FLUIDWIZARD_H
 
 #include <Teuchos_RCP.hpp>
-//#include "../drt_geometry/geo_utils.H"
-//#include "physics.H"
+
 #include "../drt_inpar/inpar_cut.H"
 
 class Epetra_Vector;
-//class Epetra_IntVector;
 
 namespace DRT
 {
@@ -49,8 +47,6 @@ namespace Teuchos
 
 namespace XFEM
 {
-  class FieldEnr;
-  class ElementAnsatz;
   class FluidDofSet;
 
 
@@ -62,28 +58,33 @@ public:
   */
   FluidWizard(Teuchos::RCP<DRT::Discretization> backdis)
   : backdis_ ( backdis ),
-    parentcut_(Teuchos::null)
+    parentcut_(Teuchos::null),
+    is_created_(false)
   {
   }
 
+
   virtual ~FluidWizard(){}
+
+  virtual void Create() = 0;
 
   /*!
   \brief Cut routine for the new XFEM framework (XFSI and XFLUIDFLUID)
   */
   virtual void Cut(
-              bool include_inner,                         //!< perform cut within the structure
-              const Epetra_Vector & idispcol,             //!< col vector holding interface displacements
-              INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
-              INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
-              bool parallel,                              //!< use parallel cut algorithms
-              bool gmsh_output,                           //!< print write gmsh output for cut
-              const Teuchos::RCP<Epetra_Vector> & dispnpcol = Teuchos::null, //!< background displacements
-              bool positions = true,                      //!< set inside and outside point, facet and volumecell positions);
-              bool tetcellsonly = false,                  //!< generate only tet cells
-              bool screenoutput = true,                   //!< print screen output
-              bool cutinrefconf = false                   //!< do not try to perform coordinate update
+      bool include_inner,                                //!< perform cut within the structure
+      Teuchos::RCP< const Epetra_Vector> idispcol,       //!< col vector holding interface displacements
+      const Teuchos::RCP<Epetra_Vector> & dispnpcol = Teuchos::null //!< background displacements
   ) = 0;
+
+  void SetOptions(
+      INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
+      INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
+      bool gmsh_output,                           //!< print write gmsh output for cut
+      bool positions = true,                      //!< set inside and outside point, facet and volumecell positions);
+      bool tetcellsonly = false,                  //!< generate only tet cells
+      bool screenoutput = true                    //!< print screen output
+  );
 
   /*========================================================================*/
   //! @name DofSet handling
@@ -110,6 +111,9 @@ public:
 
 protected:
 
+  //! gmsh output and statistics output
+  void Output(bool include_inner);
+
   /*========================================================================*/
   //! @name protected class variables
   /*========================================================================*/
@@ -120,20 +124,32 @@ protected:
   /// parent cut wizard
   Teuchos::RCP<GEO::CutWizard> parentcut_;
 
+  /// flag if wizard is finally created
+  bool is_created_;
+
+  //! Options
+  INPAR::CUT::VCellGaussPts VCellgausstype_;
+  INPAR::CUT::BCellGaussPts BCellgausstype_;
+  bool gmsh_output_;
+  bool tetcellsonly_;
+  bool screenoutput_;
+
 }; //FluidWizard
 
-class FluidWizardMesh : public FluidWizard //Change to FluidWizardMesh
+class FluidWizardMesh : public FluidWizard
 {
 public:
 
   /*!
   \brief The interface that bridges the cut libraries and fluid part of XFEM for mesh cut
   */
-  FluidWizardMesh(Teuchos::RCP<DRT::Discretization> backdis, Teuchos::RCP<DRT::Discretization> cutterdis )
+  FluidWizardMesh( Teuchos::RCP<DRT::Discretization> backdis, Teuchos::RCP<DRT::Discretization> cutterdis)
   : FluidWizard(backdis),
     cutterdis_( cutterdis )
     {
     }
+
+  void Create();
 
   /*========================================================================*/
   //! @name Cut routines
@@ -142,17 +158,10 @@ public:
   /*!
   \brief Cut routine for the new XFEM framework (XFSI and XFLUIDFLUID)
   */
-  void Cut(   bool include_inner,                         //!< perform cut within the structure
-              const Epetra_Vector & idispcol,             //!< col vector holding interface displacements
-              INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
-              INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
-              bool parallel,                              //!< use parallel cut algorithms
-              bool gmsh_output,                           //!< print write gmsh output for cut
-              const Teuchos::RCP<Epetra_Vector> & dispnpcol = Teuchos::null, //!< background displacements
-              bool positions = true,                      //!< set inside and outside point, facet and volumecell positions);
-              bool tetcellsonly = false,                  //!< generate only tet cells
-              bool screenoutput = true,                   //!< print screen output
-              bool cutinrefconf = false                   //!< do not try to perform coordinate update
+  void Cut(
+      bool include_inner,                         //!< perform cut within the structure
+      Teuchos::RCP< const Epetra_Vector> idispcol = Teuchos::null,      //!< col vector holding interface displacements
+      const Teuchos::RCP<Epetra_Vector> & dispnpcol = Teuchos::null //!< background displacements
   );
 
   /*========================================================================*/
@@ -160,7 +169,7 @@ public:
   /*========================================================================*/
 
   //! get the cut wizard
-  GEO::CutWizardMesh& CutWizard();
+  Teuchos::RCP<GEO::CutWizardMesh> CutWizard();
 
   //! get the sidehandle for cut sides
   GEO::CUT::SideHandle * GetCutSide( int sid, int mi );
@@ -200,6 +209,8 @@ public:
   {
   }
 
+  void Create();
+
   /*========================================================================*/
   //! @name Cut routines
   /*========================================================================*/
@@ -207,17 +218,10 @@ public:
   /*!
   \brief Cut routine for the new XFEM framework (utilizing levelset for Cut)
   */
-  void Cut(   bool include_inner,                          //!< perform cut within the structure
-              const Epetra_Vector & phinpnode,             //!< col vector holding level set values at nodes
-              INPAR::CUT::VCellGaussPts VCellgausstype,    //!< Gauss point generation method for Volumecell
-              INPAR::CUT::BCellGaussPts BCellgausstype,    //!< Gauss point generation method for Boundarycell
-              bool parallel,                               //!< use parallel cut algorithms
-              bool gmsh_output,                            //!< print write gmsh output for cut
-              const Teuchos::RCP<Epetra_Vector> & dispnpcol = Teuchos::null, //!< background displacements
-              bool positions = true,                       //!< set inside and outside point, facet and volumecell positions);
-              bool tetcellsonly = false,                   //!< generate only tet cells
-              bool screenoutput = true,                    //!< print screen output
-              bool cutinrefconf = false                    //!< do not try to perform coordinate update
+  void Cut(
+      bool include_inner,                          //!< perform cut within the structure
+      Teuchos::RCP< const Epetra_Vector> idispcol,        //!< col vector holding interface displacements
+      const Teuchos::RCP<Epetra_Vector> & dispnpcol = Teuchos::null //!< background displacements
   );
 
   /*========================================================================*/
@@ -225,7 +229,7 @@ public:
   /*========================================================================*/
 
   //! get the cut wizard
-  GEO::CutWizardLevelSet& CutWizard();
+  Teuchos::RCP<GEO::CutWizardLevelSet> CutWizard();
 
 protected:
 

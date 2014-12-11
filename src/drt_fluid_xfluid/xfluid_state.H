@@ -29,7 +29,14 @@ Maintainer:  Raffaela Kruse
 namespace DRT
 {
   class Discretization;
+  class DiscretizationXFEM;
 }
+
+namespace GEO
+{
+  class CutWizardNEW;
+}
+
 namespace LINALG
 {
   class SparseMatrix;
@@ -44,10 +51,7 @@ namespace IO
 
 namespace XFEM
 {
-  class FluidWizard;
-  class FluidWizardMesh;
-  class FluidWizardLevelSet;
-  class FluidDofSet;
+  class XFEMDofSet;
 }
 
 namespace FLD
@@ -66,7 +70,10 @@ class XFluidState
 {
   friend class XFluid;
   friend class XFluidFluid;
-  friend class XFluidResultTest2;
+  friend class XFluidResultTest;
+  friend class XFluidFluidResultTest;
+
+  friend class XFluidStateCreator;
 
 public:
 
@@ -74,17 +81,7 @@ public:
    ctor for one-sided problems
    @param xfluiddofrowmap dof-rowmap of intersected fluid
    */
-  explicit XFluidState(Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap);
-
-  /*!
-   ctor for two-sided problems
-   @param xfluiddofrowmap dof-rowmap of intersected fluid
-   @param slavedofrowmap dof-row map of discretization to couple with
-   @param slavedofcolmap dof-column map of discretization to couple with
-   */
-  explicit XFluidState(Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap,
-                       const Epetra_Map &               slavedofrowmap,
-                       const Epetra_Map &               slavedofcolmap);
+  explicit XFluidState(Teuchos::RCP<GEO::CutWizardNEW>& wizard, Teuchos::RCP<XFEM::XFEMDofSet>& dofset, Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap);
 
   /// dtor
   virtual ~XFluidState(){}
@@ -95,10 +92,23 @@ public:
     const double & time
     );
 
-  /// setup map extractors for krylov space projection
-  void SetupKSPMapExtractor(
-    const Teuchos::RCP<DRT::Discretization> & xfluiddiscret
-    );
+  /// zero all coupling matrices and rhs vectors
+  void ZeroCouplingMatricesAndRhs();
+
+  /// access to the cut wizard
+  Teuchos::RCP<GEO::CutWizardNEW> Wizard()
+  {
+    if (wizard_ == Teuchos::null)
+      dserror("Cut wizard is uninitialized!");
+    return wizard_;
+  }
+
+
+  //! access to the xfem-dofset
+  Teuchos::RCP<XFEM::XFEMDofSet> DofSet()
+  {
+    return dofset_;
+  }
 
 protected:
 
@@ -108,13 +118,6 @@ protected:
   /// initialize the system matrix of the intersected fluid
   void InitSystemMatrix();
 
-  /*!
-   \brief initialize coupling matrices & rhs
-   @param slavedofrowmap dof-row map of discretization to couple with
-   @param slavedofcolmap dof-column map of discretization to couple with
-   */
-  void InitCouplingMatricesAndRhs(const Epetra_Map & slavedofrowmap,
-                                  const Epetra_Map & slavedofcolmap);
 
   /// dof-rowmap of intersected fluid
   Teuchos::RCP<const Epetra_Map>      xfluiddofrowmap_;
@@ -164,12 +167,12 @@ protected:
   //! @name displacemets at time n+1, n and n-1 (if we have an XFEM-ALE-fluid)
   //@{
   Teuchos::RCP<Epetra_Vector>         dispnp_;
-  Teuchos::RCP<Epetra_Vector>         dispn_;
-  Teuchos::RCP<Epetra_Vector>         dispnm_;
+//  Teuchos::RCP<Epetra_Vector>         dispn_;
+//  Teuchos::RCP<Epetra_Vector>         dispnm_;
   //@}
 
-  /// grid velocity (if we have an XFEM-ALE-fluid)
-  Teuchos::RCP<Epetra_Vector>         gridv_;
+  /// grid velocity (if we have an XFEM-ALE-fluid) (set from the adapter!)
+  Teuchos::RCP<Epetra_Vector>         gridvnp_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)
@@ -193,9 +196,17 @@ protected:
   /// velocity/pressure map extractor, used for convergence check
   Teuchos::RCP<LINALG::MapExtractor>        velpressplitter_;
 
-  /// Krylov space projection map extractor
-  Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
   //@}
+
+
+private:
+
+  /// XFEM dofset
+  Teuchos::RCP<XFEM::XFEMDofSet> dofset_;
+
+  /// cut wizard
+  Teuchos::RCP<GEO::CutWizardNEW> wizard_;
+
 };
 
 /**
@@ -222,36 +233,50 @@ public:
   {
   }
 
-  /// create a xfem fluid wizard (mesh)
-  void SetWizard(
-      const Teuchos::RCP<DRT::Discretization> & discret,
-      const Teuchos::RCP<DRT::Discretization> & boundarydiscret);
-
-  /// create a xfem fluid wizard (level-set)
-  void SetWizard(
-      const Teuchos::RCP<DRT::Discretization> & discret);
+  /// create a cut wizard
+  void SetupWizard(
+      const Teuchos::RCP<DRT::DiscretizationXFEM> & xdiscret,            //!< xfluid background discretization, defines the mesh which is cut
+      const Teuchos::RCP<DRT::Discretization> & boundarydiscret,    //!< boundary discretization, a discretization whose surface elements cut the background mesh
+      Teuchos::RCP<const Epetra_Vector>         back_disp_col,      //!< col vector holding background ALE displacements for backdis
+      Teuchos::RCP<const Epetra_Vector>         cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
+      Teuchos::RCP<const Epetra_Vector>         back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
+      std::map<int, LINALG::Matrix<3,1> > &     tip_nodes           //!< tip nodes for crack application
+  );
 
   /// create a state-object after a cut
   Teuchos::RCP<XFluidState> Create(
-    const Teuchos::RCP<DRT::Discretization> & discret,
-    const Teuchos::RCP<DRT::Discretization> & boundarydiscret,
-    const Epetra_Vector &                     idispcol,
-    Teuchos::ParameterList &                  solver_params,
-    const int                                 step,
-    const double &                            time,
-    bool                                      coupling = true);
+      const Teuchos::RCP<DRT::DiscretizationXFEM>&      xdiscret,           //!< xfluid background discretization
+      const Teuchos::RCP<DRT::Discretization> &         boundarydiscret,    //!< boundary discretization, a discretization whose surface elements cut the background mesh
+      Teuchos::RCP<const Epetra_Vector>                 back_disp_col,      //!< col vector holding background ALE displacements for backdis
+      Teuchos::RCP<const Epetra_Vector>                 cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
+      Teuchos::RCP<const Epetra_Vector>                 back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
+      std::map<int, LINALG::Matrix<3,1> > &             tip_nodes,          //!< tip nodes for crack application
+      Teuchos::ParameterList &                          solver_params,
+      const int                                         step,
+      const double &                                    time
+      );
 
-  /// access to the fluid wizard (boundary mesh)
-  Teuchos::RCP<XFEM::FluidWizard> Wizard()
-  {
-    return wizard_;
-  }
+  /*!
+   \brief initialize coupling matrices
+   @param slave discretization for matrices to couple with
+   */
+  void InitCouplingMatrices(const Teuchos::RCP<DRT::Discretization>&  slavediscret);
 
-  //! access to the xfem-dofset
-  Teuchos::RCP<XFEM::FluidDofSet> DofSet()
-  {
-    return dofset_;
-  }
+  /*!
+   \brief initialize coupling rhs vectors
+   @param slave discretization for rhs-vector to couple with
+   */
+  void InitCouplingRhs(const Teuchos::RCP<DRT::Discretization>&  slavediscret);
+
+  /*!
+   \brief initialize ALE state vectors
+   @param dispnp and grivnp vectors w.r.t initial full dofrowmap
+   */
+  void InitALEStateVectors(
+      const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
+      Teuchos::RCP<const Epetra_Vector> dispnp_initmap,
+      Teuchos::RCP<const Epetra_Vector> gridvnp_initmap
+  );
 
 private:
 
@@ -267,65 +292,11 @@ private:
   int minnumdofsets_;
   //@}
 
-  /// xfem-fluid dofset
-  Teuchos::RCP<XFEM::FluidDofSet>  dofset_;
-
-  /// xfem fluid wizard (boundary mesh)
-  Teuchos::RCP<XFEM::FluidWizard>  wizard_;
+  /// state class
+  Teuchos::RCP<FLD::XFluidState> state_;
 
 };
 
-//class XFluidMeshState : public XFluidState
-//{
-//
-//public:
-//
-//  /*!
-//   ctor
-//   @param xfluiddofrowmap dof-rowmap of intersected fluid
-//   */
-//  explicit XFluidMeshState( Teuchos::RCP<const Epetra_Map> &  xfluiddofrowmap ) :
-//    XFluidState(xfluiddofrowmap)
-//  {
-//  }
-//
-//  /*!
-//   ctor
-//   @param xfluiddofrowmap dof-rowmap of intersected fluid
-//   @param slavedofrowmap  dof-rowmap from elements to couple with
-//   @param slavedofrowmap  dof-colmap from elements to couple with
-//   */
-//  explicit XFluidMeshState( Teuchos::RCP<const Epetra_Map> &  xfluiddofrowmap,
-//                            const Epetra_Map &                slavedofrowmap,
-//                            const Epetra_Map &                slavedofcolmap);
-//
-//private:
-//
-//  /// initialize all state members, that are tied to the fact, that the interface is described by a mesh
-//  void InitStateVectors();
-//
-//};
-//
-//class XFluidLevelSetState : public XFluidState
-//{
-//
-//public:
-//
-//  /*!
-//   \brief Create a container class based on the background fluid dof-rowmap
-//   @param xfluiddofrowmap dof-rowmap of intersected fluid
-//   */
-//  explicit XFluidLevelSetState( Teuchos::RCP<const Epetra_Map> &  xfluiddofrowmap ) :
-//    XFluidState(xfluiddofrowmap)
-//  {
-//  }
-//
-//private:
-//
-//  /// initialize all state members, that are tied to the fact, that the interface is described by a level
-//  void InitStateVectors();
-//
-//};
 }
 
 #endif

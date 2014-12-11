@@ -18,6 +18,8 @@ Maintainer: Benedikt Schott
 
 namespace GEO
 {
+  class CutWizardNEW;
+
   namespace CUT
   {
     class SideHandle;
@@ -27,7 +29,7 @@ namespace GEO
 
 namespace XFEM
 {
-  class FluidWizardMesh;
+  class XFEMDofSet;
 
 /*!
 \brief this class is the basic TIMEINT class for the projection, adaption or
@@ -308,13 +310,13 @@ public:
   explicit XFLUID_TIMEINT_BASE(
       const Teuchos::RCP<DRT::Discretization>          discret,          /// background discretization
       const Teuchos::RCP<DRT::Discretization>          boundarydis,      /// cut discretization
-      Teuchos::RCP<XFEM::FluidWizardMesh>         wizard_old,       /// fluid wizard w.r.t. old interface position
-      Teuchos::RCP<XFEM::FluidWizardMesh>         wizard_new,       /// fluid wizard w.r.t. new interface position
-      Teuchos::RCP<XFEM::FluidDofSet>         dofset_old,       /// fluid dofset w.r.t. old interface position
-      Teuchos::RCP<XFEM::FluidDofSet>         dofset_new,       /// fluid dofset w.r.t. new interface position
+      Teuchos::RCP<GEO::CutWizardNEW>                  wizard_old,       /// fluid wizard w.r.t. old interface position
+      Teuchos::RCP<GEO::CutWizardNEW>                  wizard_new,       /// fluid wizard w.r.t. new interface position
+      Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_old,       /// fluid dofset w.r.t. old interface position
+      Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_new,       /// fluid dofset w.r.t. new interface position
       std::vector<Teuchos::RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
-      const Epetra_Map&                       olddofcolmap,     /// dofcolmap w.r.t. old interface position
-      const Epetra_Map&                       newdofrowmap,     /// dofcolmap w.r.t. new interface position
+      const Epetra_Map&                                olddofcolmap,     /// dofcolmap w.r.t. old interface position
+      const Epetra_Map&                                newdofrowmap,     /// dofcolmap w.r.t. new interface position
       const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap        /// map of periodic boundary conditions
   );
 
@@ -546,11 +548,11 @@ protected:
   Teuchos::RCP<DRT::Discretization> discret_;                  //! background discretization
   Teuchos::RCP<DRT::Discretization> boundarydis_;              //! cut discretization
 
-  Teuchos::RCP<XFEM::FluidWizardMesh> wizard_old_;                 //! fluid wizard w.r.t. old interface position
-  Teuchos::RCP<XFEM::FluidWizardMesh> wizard_new_;                 //! fluid wizard w.r.t. new interface position
+  Teuchos::RCP<GEO::CutWizardNEW> wizard_old_;                 //! cut wizard w.r.t. old interface position
+  Teuchos::RCP<GEO::CutWizardNEW> wizard_new_;                 //! cut wizard w.r.t. new interface position
 
-  Teuchos::RCP<XFEM::FluidDofSet> dofset_old_;        //! fluid dofset w.r.t. old interface position
-  Teuchos::RCP<XFEM::FluidDofSet> dofset_new_;        //! fluid dofset w.r.t. new interface position
+  Teuchos::RCP<XFEM::XFEMDofSet>  dofset_old_;        //! XFEM dofset w.r.t. old interface position
+  Teuchos::RCP<XFEM::XFEMDofSet>  dofset_new_;        //! XFEM dofset w.r.t. new interface position
 
   const Epetra_Map olddofcolmap_;                     //! dofcolmap w.r.t. old interface position
   const Epetra_Map newdofrowmap_;                     //! dofcolmap w.r.t. new interface position
@@ -639,7 +641,7 @@ public:
       DRT::Element*                 ele,                 ///< pointer to element
       LINALG::Matrix<3,1>&          xi,                  ///< local coordinates of point w.r.t element
       std::vector<int>&             nds,                 ///< nodal dofset of point for elemental nodes
-      XFEM::FluidDofSet&            dofset,              ///< fluid dofset
+      XFEM::XFEMDofSet&             dofset,              ///< XFEM dofset
       LINALG::Matrix<3,1>&          vel,                 ///< determine velocity at point
       LINALG::Matrix<3,3>&          vel_deriv,           ///< determine velocity derivatives at point
       double &                      pres,                ///< pressure
@@ -654,7 +656,7 @@ public:
       DRT::Element*                 ele,                 ///< pointer to element
       LINALG::Matrix<3,1>&          xi,                  ///< local coordinates of point w.r.t element
       std::vector<int>&             nds,                 ///< nodal dofset of point for elemental nodes
-      XFEM::FluidDofSet&            dofset,              ///< fluid dofset
+      XFEM::XFEMDofSet&             dofset,              ///< xfem dofset
       LINALG::Matrix<3,1>&          vel,                 ///< determine velocity at point
       LINALG::Matrix<3,3>&          vel_deriv,           ///< determine velocity derivatives at point
       double &                      pres,                ///< pressure

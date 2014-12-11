@@ -22,6 +22,8 @@ Maintainer: Benedikt Schott
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_sidehandle.H"
 #include "../drt_cut/cut_volumecell.H"
+#include "../drt_cut/cut_cutwizard.H"
+
 
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_intfaces_calc.H"
@@ -32,7 +34,6 @@ Maintainer: Benedikt Schott
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_fluid.H"
 
-#include "xfem_fluidwizard.H"
 
 #include "xfem_edgestab.H"
 
@@ -41,7 +42,7 @@ Maintainer: Benedikt Schott
  |  Constructor for XFEM_EdgeStab                          schott 03/12 |
  *----------------------------------------------------------------------*/
 XFEM::XFEM_EdgeStab::XFEM_EdgeStab(
-  Teuchos::RCP<XFEM::FluidWizard>              wizard,                ///< fluid wizard
+  Teuchos::RCP<GEO::CutWizardNEW>              wizard,                ///< fluid wizard
   Teuchos::RCP<DRT::Discretization>            discret,               ///< discretization
   bool                                         include_inner          ///< stabilize also facets with inside position
   ) :
@@ -177,7 +178,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         or p_master->Shape() == DRT::Element::pyramid5)
     {
 
-      GEO::CUT::SideHandle* side = GetCutSide(faceele);
+      GEO::CUT::SideHandle* side = GetFace(faceele);
 
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
@@ -283,7 +284,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         or p_master->Shape() == DRT::Element::hex27
         or p_master->Shape() == DRT::Element::tet10)
     {
-      GEO::CUT::SideHandle* side = GetCutSide(faceele);   // the side of the quadratic element
+      GEO::CUT::SideHandle* side = GetFace(faceele);   // the side of the quadratic element
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
       std::vector<GEO::CUT::Facet*> facets;
@@ -426,7 +427,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         or p_master->Shape() == DRT::Element::tet10)
     {
 
-      GEO::CUT::SideHandle * side = GetCutSide(faceele);
+      GEO::CUT::SideHandle * side = GetFace(faceele);
 
       // facet of current side
       std::vector<GEO::CUT::Facet*> facets;
@@ -586,10 +587,10 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
  | get the cut side for face's element identified using the sorted      |
  | node ids                                                schott 04/12 |
  *----------------------------------------------------------------------*/
-GEO::CUT::SideHandle* XFEM::XFEM_EdgeStab::GetCutSide(DRT::Element* faceele)
+GEO::CUT::SideHandle* XFEM::XFEM_EdgeStab::GetFace(DRT::Element* faceele)
 {
 
-  TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: FindSide" );
+  TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: GetFace" );
 
   // get faceele's nodes
   const int numnode = faceele->NumNode();

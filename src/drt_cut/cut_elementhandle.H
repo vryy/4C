@@ -15,19 +15,21 @@ Maintainer:  Benedikt Schott
 #ifndef CUT_ELEMENTHANDLE_H
 #define CUT_ELEMENTHANDLE_H
 
-#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 
 #include "cut_element.H"
 
+#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
+
+
 namespace GEO
 {
+
 namespace CUT
 {
   class Point;
   class Node;
   class Element;
   class Mesh;
-  class MeshIntersection;
 
 
   /*!
@@ -123,9 +125,15 @@ public:
       */
      void VolumeCellGaussPoints(
          plain_volumecell_set &                      cells,
-         std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-         INPAR::CUT::VCellGaussPts                   gausstype
+         std::vector<DRT::UTILS::GaussIntegration> & intpoints
      );
+
+     void AppendVolumeCellGaussPoints_Tessellation(Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc, GEO::CUT::VolumeCell* vc);
+
+     void AppendVolumeCellGaussPoints_MomentFitting(Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc, GEO::CUT::VolumeCell* vc);
+
+     void AppendVolumeCellGaussPoints_DirectDivergence(Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc, GEO::CUT::VolumeCell* vc);
+
 
      /*!
       \brief Collect the Gaussian points of all the volume-cells belonging to this element.
@@ -174,17 +182,10 @@ public:
      This is the method used now in the new implementation
       */
      void BoundaryCellGaussPointsLin(
-         MeshIntersection & mesh,
-         int mi,
          const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
          std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints
          );
 
-     //! Without safety check (not possible for level set cuts)
-     void BoundaryCellGaussPointsLin(
-         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
-         std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints
-         );
      //@}
 
 
@@ -192,13 +193,12 @@ public:
      //! @name access to the element's sets of volume-cells, nds-vectors and integration points
 
      //! get all the element' sets of volume-cells, nds-vectors and integration points
-     virtual void GetCellSets_DofSets_GaussPoints(
+     virtual bool GetCellSets_DofSets_GaussPoints(
          std::vector< plain_volumecell_set >                        & cell_sets ,
          std::vector< std::vector< int > >                          & nds_sets,
          std::vector< std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-         INPAR::CUT::VCellGaussPts                                    gausstype,
          bool                                                         include_inner
-     ) = 0;
+     );
 
 
      //! get the element's sets of volume-cells ordered by inside/outside position
@@ -387,16 +387,6 @@ public:
   //--------------------------------------------------------------------------//
   //! @name access to the element's sets of volume-cells, nds-vectors and integration points
 
-  //! get all the element' sets of volume-cells, nds-vectors and integration points
-  virtual void GetCellSets_DofSets_GaussPoints(
-      std::vector< plain_volumecell_set >                        & cell_sets ,
-      std::vector< std::vector< int > >                          & nds_sets,
-      std::vector< std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-      INPAR::CUT::VCellGaussPts                                    gausstype,
-      bool                                                         include_inner
-  );
-
-
   //! get the element's sets of volume-cells ordered by inside/outside position
   virtual void VolumeCellSets(
       bool include_inner,
@@ -523,16 +513,6 @@ public:
 
   //--------------------------------------------------------------------------//
   //! @name access to the element's sets of volume-cells, nds-vectors and integration points
-
-  //! get all the element' sets of volume-cells, nds-vectors and integration points
-  virtual void GetCellSets_DofSets_GaussPoints(
-      std::vector< plain_volumecell_set >                        & cell_sets ,
-      std::vector< std::vector< int > >                          & nds_sets,
-      std::vector< std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-      INPAR::CUT::VCellGaussPts                                    gausstype,
-      bool                                                         include_inner
-  );
-
 
   //! get the element's sets of volume-cells ordered by inside/outside position
   virtual void VolumeCellSets(

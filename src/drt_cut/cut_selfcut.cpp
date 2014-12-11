@@ -18,7 +18,7 @@
 #include "cut_triangulateFacet.H"
 #include "cut_side.H"
 #include "cut_pointpool.H"
-//#include "cut_output.H"
+
 #include "cut_selfcut.H"
 
 #include <Teuchos_TimeMonitor.hpp>

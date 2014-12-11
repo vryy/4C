@@ -21,10 +21,9 @@ Maintainer: Dipl.-Math. Benedikt Schott
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_xfem/xfem_fluidwizard.H"
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_volumecell.H"
-
+#include "../drt_cut/cut_cutwizard.H"
 
 
 
@@ -32,17 +31,16 @@ Maintainer: Dipl.-Math. Benedikt Schott
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumann(                    Teuchos::RCP<XFEM::FluidWizard>      wizard,
+void XFEM::EvaluateNeumann(                    Teuchos::RCP<GEO::CutWizardNEW>      wizard,
                                                Teuchos::ParameterList&              params,
-                                               DRT::Discretization &                discret,
-                                               Teuchos::RCP<DRT::Discretization>    cutdiscret,
+                                               Teuchos::RCP<DRT::Discretization>    discret,
                                                Teuchos::RCP<Epetra_Vector>          systemvector,
                                                Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
 {
   if (systemmatrix==Teuchos::null)
-    EvaluateNeumann(wizard,params,discret,cutdiscret,*systemvector);
+    EvaluateNeumann(wizard,params,discret,*systemvector);
   else
-    EvaluateNeumann(wizard,params,discret,cutdiscret,*systemvector,systemmatrix.get());
+    EvaluateNeumann(wizard,params,discret,*systemvector,systemmatrix.get());
   return;
 }
 
@@ -50,10 +48,9 @@ void XFEM::EvaluateNeumann(                    Teuchos::RCP<XFEM::FluidWizard>  
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
+void XFEM::EvaluateNeumann(  Teuchos::RCP<GEO::CutWizardNEW>      wizard,
                              Teuchos::ParameterList&              params,
-                             DRT::Discretization &                discret,
-                             Teuchos::RCP<DRT::Discretization>    cutdiscret,
+                             Teuchos::RCP<DRT::Discretization>    discret,
                              Epetra_Vector&                       systemvector,
                              LINALG::SparseOperator*              systemmatrix)
 {
@@ -61,8 +58,8 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 5) EvaluateNeumann" );
 
 
-  if (!discret.Filled()) dserror("FillComplete() was not called");
-  if (!discret.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+  if (!discret->Filled()) dserror("FillComplete() was not called");
+  if (!discret->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
   bool assemblemat = (systemmatrix != NULL);
 
@@ -85,7 +82,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
 
   // get standard Point Neumann conditions
   condition_vec.clear();
-  discret.GetCondition("PointNeumann", condition_vec);
+  discret->GetCondition("PointNeumann", condition_vec);
   // copy conditions to a condition multimap
   for(size_t i=0; i< condition_vec.size(); i++)
   {
@@ -94,7 +91,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
 
   // get standard Surface Neumann conditions
   condition_vec.clear();
-  discret.GetCondition("LineNeumann", condition_vec);
+  discret->GetCondition("LineNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
     condition.insert( std::pair<std::string,DRT::Condition* >(std::string("LineNeumann"),condition_vec[i]));
@@ -102,7 +99,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
 
   // get standard Surface Neumann conditions
   condition_vec.clear();
-  discret.GetCondition("SurfaceNeumann", condition_vec);
+  discret->GetCondition("SurfaceNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
     condition.insert( std::pair<std::string,DRT::Condition* >(std::string("SurfaceNeumann"),condition_vec[i]));
@@ -110,7 +107,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
 
   // get XFEM Point Neumann conditions
   condition_vec.clear();
-  discret.GetCondition("PointXFEMNeumann", condition_vec);
+  discret->GetCondition("PointXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
     condition.insert( std::pair<std::string,DRT::Condition* >(std::string("PointXFEMNeumann"),condition_vec[i]));
@@ -118,7 +115,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
 
   // get XFEM Line Neumann conditions
   condition_vec.clear();
-  discret.GetCondition("LineXFEMNeumann", condition_vec);
+  discret->GetCondition("LineXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
     condition.insert( std::pair<std::string,DRT::Condition* >(std::string("LineXFEMNeumann"),condition_vec[i]));
@@ -126,7 +123,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
 
   // get XFEM Surface Neumann conditions
   condition_vec.clear();
-  discret.GetCondition("SurfaceXFEMNeumann", condition_vec);
+  discret->GetCondition("SurfaceXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
     condition.insert( std::pair<std::string,DRT::Condition* >(std::string("SurfaceXFEMNeumann"),condition_vec[i]));
@@ -134,7 +131,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
 
   // get XFEM Surface Neumann conditions
   condition_vec.clear();
-  discret.GetCondition("VolXFEMNeumann", condition_vec);
+  discret->GetCondition("VolXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
     condition.insert( std::pair<std::string,DRT::Condition* >(std::string("VolXFEMNeumann"),condition_vec[i]));
@@ -158,7 +155,6 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
       assemblemat,
       params,
       discret,
-      cutdiscret,
       systemvector,
       systemmatrix);
 
@@ -177,7 +173,7 @@ void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > 
                                     const double                          time,
                                     bool                                  assemblemat,
                                     Teuchos::ParameterList&               params,
-                                    DRT::Discretization &                 discret,
+                                    Teuchos::RCP<DRT::Discretization>     discret,
                                     Epetra_Vector&                        systemvector,
                                     LINALG::SparseOperator*               systemmatrix)
 {
@@ -209,11 +205,11 @@ void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > 
     for (int i=0; i<nnode; ++i)
     {
       // do only nodes in my row map
-      if (!discret.NodeRowMap()->MyGID((*nodeids)[i])) continue;
-      DRT::Node* actnode = discret.gNode((*nodeids)[i]);
+      if (!discret->NodeRowMap()->MyGID((*nodeids)[i])) continue;
+      DRT::Node* actnode = discret->gNode((*nodeids)[i]);
       if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
       // call explicitly the main dofset, i.e. the first column
-      std::vector<int> dofs = discret.Dof(0,actnode);
+      std::vector<int> dofs = discret->Dof(0,actnode);
       const unsigned numdf = dofs.size();
       for (unsigned j=0; j<numdf; ++j)
       {
@@ -248,11 +244,11 @@ void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > 
         std::vector<int> lm;
         std::vector<int> lmowner;
         std::vector<int> lmstride;
-        curr->second->LocationVector(discret,lm,lmowner,lmstride);
+        curr->second->LocationVector(*discret,lm,lmowner,lmstride);
         elevector.Size((int)lm.size());
         if (!assemblemat)
         {
-          curr->second->EvaluateNeumann(params,discret,cond,lm,elevector);
+          curr->second->EvaluateNeumann(params,*discret,cond,lm,elevector);
           LINALG::Assemble(systemvector,elevector,lm,lmowner);
         }
         else
@@ -260,7 +256,7 @@ void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > 
           const int size = (int)lm.size();
           if (elematrix.M() != size) elematrix.Shape(size,size);
           else memset(elematrix.A(),0,size*size*sizeof(double));
-          curr->second->EvaluateNeumann(params,discret,cond,lm,elevector,&elematrix);
+          curr->second->EvaluateNeumann(params,*discret,cond,lm,elevector,&elematrix);
           LINALG::Assemble(systemvector,elevector,lm,lmowner);
           systemmatrix->Assemble(curr->second->Id(),lmstride,elematrix,lm,lmowner);
         }
@@ -274,14 +270,13 @@ void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > 
 /*----------------------------------------------------------------------*
  |  evaluate Neumann for XFEM conditions (public)           schott 09/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
+void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<GEO::CutWizardNEW>      wizard,
                                 std::multimap<std::string,DRT::Condition* > &  condition,
                                 bool                                 usetime,
                                 const double                         time,
                                 bool                                 assemblemat,
                                 Teuchos::ParameterList&              params,
-                                DRT::Discretization &                discret,
-                                Teuchos::RCP<DRT::Discretization>    cutdiscret,
+                                Teuchos::RCP<DRT::Discretization>    discret,
                                 Epetra_Vector&                       systemvector,
                                 LINALG::SparseOperator*              systemmatrix)
 {
@@ -326,7 +321,7 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
           int ele_id = getParentElementId(discret, curr->second);
 
           // get the element
-          DRT::Element* parent_ele = discret.gElement(ele_id);
+          DRT::Element* parent_ele = discret->gElement(ele_id);
 
           DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( parent_ele );
           if ( ele==NULL ) dserror( "expect fluid element" );
@@ -396,11 +391,11 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
               std::vector<int> lm;
               std::vector<int> lmowner;
               std::vector<int> lmstride;
-              curr->second->LocationVector(discret,lm,lmowner,lmstride);
+              curr->second->LocationVector(*discret,lm,lmowner,lmstride);
               elevector.Size((int)lm.size());
               if (!assemblemat)
               {
-                curr->second->EvaluateNeumann(params,discret,cond,lm,elevector);
+                curr->second->EvaluateNeumann(params,*discret,cond,lm,elevector);
                 LINALG::Assemble(systemvector,elevector,lm,lmowner);
               }
               else
@@ -408,7 +403,7 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
                 const int size = (int)lm.size();
                 if (elematrix.M() != size) elematrix.Shape(size,size);
                 else memset(elematrix.A(),0,size*size*sizeof(double));
-                curr->second->EvaluateNeumann(params,discret,cond,lm,elevector,&elematrix);
+                curr->second->EvaluateNeumann(params,*discret,cond,lm,elevector,&elematrix);
                 LINALG::Assemble(systemvector,elevector,lm,lmowner);
                 systemmatrix->Assemble(curr->second->Id(),lmstride,elematrix,lm,lmowner);
               }
@@ -433,7 +428,7 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
 
 
 
-int XFEM::getParentElementId(DRT::Discretization& discret, Teuchos::RCP<DRT::Element> surf_ele)
+int XFEM::getParentElementId(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<DRT::Element> surf_ele)
 {
   int parent_ele_id = -1;
 
@@ -450,7 +445,7 @@ int XFEM::getParentElementId(DRT::Discretization& discret, Teuchos::RCP<DRT::Ele
   {
     // get element Ids of current node
     {
-      DRT::Node* node = discret.gNode(nodeids[node_it]);
+      DRT::Node* node = discret->gNode(nodeids[node_it]);
 
       const int numele = node->NumElement();
       DRT::Element* * elements = node->Elements();

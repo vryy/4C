@@ -1204,27 +1204,23 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
   // create cut wizard
   Teuchos::RCP<XFEM::FluidWizardMesh> wizard = Teuchos::rcp( new XFEM::FluidWizardMesh(mauxdis, sauxdis ));
 
-  //dummy displacement vector --> zero due to coupling in reference configuration
-  Teuchos::RCP<Epetra_Vector> idispcol = LINALG::CreateVector(
-      *sauxdis->DofRowMap(0), true);
-
   // *************************************
   // TESSELATION *************************
   if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(), "CUTTYPE")
       == INPAR::VOLMORTAR::cuttype_tessellation)
   {
-    wizard->Cut(true, // include_inner
-        *idispcol, // interface displacements
-        INPAR::CUT::VCellGaussPts_Tessellation, // how to create volume cell Gauss points?
-        INPAR::CUT::BCellGaussPts_Tessellation, // how to create boundary cell Gauss points?
-        true,  // parallel cut framework
-        false, // gmsh output for cut library
-        Teuchos::null, //no ale displacements
-        true,  // find point positions
-        true,  // create tet cells only
-        false, // screen output
-        true   // cut in reference coordinates
-        );
+    wizard->Create();
+
+    wizard->SetOptions(
+            INPAR::CUT::VCellGaussPts_Tessellation, // how to create volume cell Gauss points?
+            INPAR::CUT::BCellGaussPts_Tessellation, // how to create boundary cell Gauss points?
+            false, // gmsh output for cut library
+            true,  // find point positions
+            true,  // create tet cells only
+            false  // screen output
+            );
+
+    wizard->Cut(true);  // include_inner
 
     GEO::CUT::plain_volumecell_set mcells_out;
     GEO::CUT::plain_volumecell_set mcells_in;
@@ -1267,18 +1263,18 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
   else if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(),
       "CUTTYPE") == INPAR::VOLMORTAR::cuttype_directdivergence)
   {
-    wizard->Cut(true, // include_inner
-        *idispcol, // interface displacements
+    wizard->Create();
+
+    wizard->SetOptions(
         INPAR::CUT::VCellGaussPts_DirectDivergence, // how to create volume cell Gauss points?
         INPAR::CUT::BCellGaussPts_DirectDivergence, // how to create boundary cell Gauss points?
-        true,  // parallel cut framework
         false, // gmsh output for cut library
-        Teuchos::null, // no ale displacements
         true,  // find point positions
         false, // create tet cells only
-        false, // suppress screen output
-        true   // cut in reference coordinates
+        false // suppress screen output
         );
+
+    wizard->Cut(true); // include_inner
 
     GEO::CUT::plain_volumecell_set mcells_out;
     GEO::CUT::plain_volumecell_set mcells_in;

@@ -65,7 +65,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     Teuchos::RCP<FLD::XFluid> xfluid = Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField(), true);
 
     xfluid->SetLevelSetField(ScaTraField()->Phinp(), ScaTraField()->Discretization());
-    xfluid->CreateInitialStateLS();
+    xfluid->CreateInitialState();
   }
 
   // set also initial field

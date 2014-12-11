@@ -32,6 +32,8 @@ Maintainer: Benedikt Schott
 #include "../drt_cut/cut_point.H"
 #include "../drt_cut/cut_element.H"
 #include "../drt_cut/cut_volumecell.H"
+#include "../drt_cut/cut_cutwizard.H"
+
 
 #include "../drt_inpar/inpar_xfem.H"
 
@@ -40,8 +42,7 @@ Maintainer: Benedikt Schott
 #include "../drt_fluid_ele/fluid_ele_interface.H"
 #include "../drt_fluid_ele/fluid_ele_factory.H"
 
-#include "xfem_fluidwizard.H"
-#include "xfem_fluiddofset.H"
+#include "xfem_dofset.H"
 
 #include "xfluid_timeInt.H"
 
@@ -56,10 +57,10 @@ Maintainer: Benedikt Schott
 // -------------------------------------------------------------------
 XFEM::XFluidTimeInt::XFluidTimeInt(
     const Teuchos::RCP<DRT::Discretization>                        dis,                    /// discretization
-    const Teuchos::RCP<XFEM::FluidWizardMesh>                      wizard_old,             /// fluid wizard at t^n
-    const Teuchos::RCP<XFEM::FluidWizardMesh>                      wizard_new,             /// fluid wizard at t^(n+1)
-    const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_old,             /// dofset at t^n
-    const Teuchos::RCP<XFEM::FluidDofSet>                          dofset_new,             /// dofset at t^(n+1)
+    const Teuchos::RCP<GEO::CutWizardNEW>                          wizard_old,             /// fluid wizard at t^n
+    const Teuchos::RCP<GEO::CutWizardNEW>                          wizard_new,             /// fluid wizard at t^(n+1)
+    const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_old,             /// dofset at t^n
+    const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_new,             /// dofset at t^(n+1)
     const INPAR::XFEM::XFluidTimeIntScheme                         xfluid_timintapproach,  /// xfluid_timintapproch
     std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&       reconstr_method,        /// reconstruction map for nodes and its dofsets
     const int                                                      step                    /// global time step
@@ -304,7 +305,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
       const int nds_new = 0;
 
       std::vector<int> dofs_new;
-      dofset_new_->Dof(node, nds_new, dofs_new );
+      dofset_new_->Dof(dofs_new, node, nds_new );
 
 #ifdef DEBUG_TIMINT
       const int numdofs_new = (int)(dofs_new.size());
@@ -426,7 +427,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
       const int nds_old = 0;
 
       std::vector<int> dofs_old;
-      dofset_old_->Dof(node, nds_old, dofs_old );
+      dofset_old_->Dof(dofs_old, node, nds_old );
 
 #ifdef DEBUG_TIMINT
       const int numdofs_old = (int)(dofs_old.size());
@@ -726,7 +727,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 // -------------------------------------------------------------------
 // all surrounding elements non-intersected ?
 // -------------------------------------------------------------------
-bool XFEM::XFluidTimeInt::NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<XFEM::FluidWizardMesh> wizard)
+bool XFEM::XFluidTimeInt::NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<GEO::CutWizardNEW> wizard)
 {
   const int numele = n->NumElement();
 
@@ -848,8 +849,8 @@ void XFEM::XFluidTimeInt::CopyDofs(
   std::vector<int> dofs_old;
   std::vector<int> dofs_new;
 
-  dofset_new_->Dof(node, nds_new, dofs_new );
-  dofset_old_->Dof(node, nds_old, dofs_old );
+  dofset_new_->Dof(dofs_new, node, nds_new );
+  dofset_old_->Dof(dofs_old, node, nds_old );
 
 #ifdef DEBUG_TIMINT
   if(dofs_new.size() != dofs_old.size())
@@ -972,7 +973,7 @@ void XFEM::XFluidTimeInt::MarkDofs(
 
   // get nodal dofs for current dofset w.r.t new interface position
   std::vector<int> dofs_new;
-  dofset_new_->Dof(node, nds_new, dofs_new );
+  dofset_new_->Dof(dofs_new, node, nds_new );
 
   // loop vectors
   for(std::vector<Teuchos::RCP<Epetra_Vector> >::const_iterator it=newRowStateVectors.begin(); it!=newRowStateVectors.end(); it++)
@@ -1436,8 +1437,8 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
 #endif
 
     int sid = *sides;
-    GEO::CUT::SideHandle* side_old = wizard_old_->GetCutSide(sid, 0);
-    GEO::CUT::SideHandle* side_new = wizard_new_->GetCutSide(sid, 0);
+    GEO::CUT::SideHandle* side_old = wizard_old_->GetMeshCuttingSide(sid, 0);
+    GEO::CUT::SideHandle* side_new = wizard_new_->GetMeshCuttingSide(sid, 0);
 
     if(side_old == NULL or side_new == NULL) dserror("no sidehandles available for side %d", sid);
 

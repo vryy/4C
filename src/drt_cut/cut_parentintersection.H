@@ -113,6 +113,9 @@ public:
   {
   }
 
+  /// destructor
+  virtual ~ParentIntersection(){};
+
   /*========================================================================*/
   //! @name set and get routines for options
   /*========================================================================*/
@@ -127,6 +130,30 @@ public:
   //! @name Cut functionality routines
   /*========================================================================*/
 
+
+  virtual void Cut_SelfCut(bool include_inner, bool screenoutput)
+  {
+    if(myrank_==0 and screenoutput) IO::cout << "\t * 2/6 Cut_SelfCut ... not performed";
+    return;
+  };
+
+  virtual void Cut_CollisionDetection(bool include_inner, bool screenoutput){
+    if(myrank_==0 and screenoutput) IO::cout << "\t * 3/6 Cut_CollisionDetection ... not performed";
+    return;
+  };
+
+  virtual void Cut_Mesh( bool screenoutput )
+  {
+    if(myrank_==0 and screenoutput) IO::cout << "\t * 4/6 Cut_Mesh (LevelSet-Cut) ... not performed";
+    return;
+  };
+
+  virtual void Cut_MeshIntersection( bool screenoutput )
+  {
+    if(myrank_==0 and screenoutput) IO::cout << "\t * 4/6 Cut_MeshIntersection (Mesh-Cut) ... not performed";
+    return;
+  };
+
   /*!
   \brief The routine which splits the volumecell into integrationcells by tessellation, or create Gaussian
   integration rules by moment fitting equations
@@ -134,17 +161,15 @@ public:
   void Cut_Finalize( bool include_inner,
                      INPAR::CUT::VCellGaussPts VCellgausstype,
                      INPAR::CUT::BCellGaussPts BCellgausstype,
-                     bool levelset,
-                     bool tetcellsonly = false,
-                     bool screenoutput = true);
-
+                     bool tetcellsonly,
+                     bool screenoutput);
 
   /*========================================================================*/
   //! @name nodal dofset routines
   /*========================================================================*/
 
   /// Create nodal dofset sets within the parallel cut framework
-  void CreateNodalDofSetNEW ( bool include_inner, const DRT::Discretization & dis);
+  void CreateNodalDofSet ( bool include_inner, const DRT::Discretization & dis);
 
   /// fill parallel DofSetData with information that has to be communicated
   void FillParallelDofSetData(Teuchos::RCP<std::vector<DofSetData> > parallel_dofSetData, const DRT::Discretization& dis, bool include_inner);
@@ -165,7 +190,7 @@ public:
   /// connect sets of volumecells for neighboring elements around a node
   void ConnectNodalDOFSets( std::vector<Node *> &                      nodes,
                             bool                                       include_inner,
-                            const DRT::Discretization&                       dis,
+                            const DRT::Discretization&                 dis,
                             const std::vector<plain_volumecell_set> &  connected_vc_sets,
                             std::vector<std::vector<int> > &           nodaldofset_vc_sets,
                             std::vector<std::map<int,int> >&           vcsets_nid_dofsetnumber_map_toComm);
@@ -222,6 +247,9 @@ public:
 
   /// print cell statistics
   void PrintCellStats();
+
+  /// status
+  virtual void Status(INPAR::CUT::VCellGaussPts gausstype = INPAR::CUT::VCellGaussPts_Tessellation);
 
 protected:
 

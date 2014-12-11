@@ -27,13 +27,14 @@ Maintainer: Benedikt Schott
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_intersection.H"
 #include "../drt_cut/cut_position.H"
+#include "../drt_cut/cut_cutwizard.H"
+
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_control.H"
 
-#include "../drt_xfem/xfem_fluidwizard.H"
-#include "../drt_xfem/xfem_fluiddofset.H"
+#include "../drt_xfem/xfem_dofset.H"
 
 #include "xfluid_timeInt_base.H"
 
@@ -46,10 +47,10 @@ Maintainer: Benedikt Schott
 XFEM::XFLUID_TIMEINT_BASE::XFLUID_TIMEINT_BASE(
     const Teuchos::RCP<DRT::Discretization>          discret,          /// background discretization
     const Teuchos::RCP<DRT::Discretization>          boundarydis,      /// cut discretization
-    Teuchos::RCP<XFEM::FluidWizardMesh>         wizard_old,       /// fluid wizard w.r.t. old interface position
-    Teuchos::RCP<XFEM::FluidWizardMesh>         wizard_new,       /// fluid wizard w.r.t. new interface position
-    Teuchos::RCP<XFEM::FluidDofSet>         dofset_old,       /// fluid dofset w.r.t. old interface position
-    Teuchos::RCP<XFEM::FluidDofSet>         dofset_new,       /// fluid dofset w.r.t. new interface position
+    Teuchos::RCP<GEO::CutWizardNEW>                  wizard_old,       /// fluid wizard w.r.t. old interface position
+    Teuchos::RCP<GEO::CutWizardNEW>                  wizard_new,       /// fluid wizard w.r.t. new interface position
+    Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_old,       /// fluid dofset w.r.t. old interface position
+    Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_new,       /// fluid dofset w.r.t. new interface position
     std::vector<Teuchos::RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
     const Epetra_Map&                       olddofcolmap,     /// dofcolmap w.r.t. old interface position
     const Epetra_Map&                       newdofrowmap,     /// dofcolmap w.r.t. new interface position
@@ -140,7 +141,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
   //-----------------------------------------------------------------------
   // standard case of a real line between x1 and x2
 
-  Teuchos::RCP<XFEM::FluidWizardMesh> wizard = newTimeStep ? wizard_new_ : wizard_old_;
+  Teuchos::RCP<GEO::CutWizardNEW> wizard = newTimeStep ? wizard_new_ : wizard_old_;
 
   // REMARK:
   // changing the side of a point at two times (newton steps) with coordinates x1 and x2 is done
@@ -309,7 +310,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
   for(std::set<int>::iterator side_it= cut_sides.begin(); side_it!=cut_sides.end(); side_it++)
   {
     // get the side via sidehandle
-    GEO::CUT::SideHandle* sh = wizard->GetCutSide(*side_it, mi);
+    GEO::CUT::SideHandle* sh = wizard->GetMeshCuttingSide(*side_it, mi);
 
 #ifdef DEBUG_TIMINT_STD
     IO::cout << "\n\t\t\t\t\t SIDE-CHECK with side=" << *side_it << IO::endl;
@@ -990,7 +991,7 @@ void XFEM::XFLUID_STD::getGPValues(
     DRT::Element*                 ele,            ///< pointer to element
     LINALG::Matrix<3,1>&          xi,             ///< local coordinates of point w.r.t element
     std::vector<int>&             nds,            ///< nodal dofset of point for elemental nodes
-    XFEM::FluidDofSet&            dofset,         ///< fluid dofset
+    XFEM::XFEMDofSet&             dofset,         ///< fluid dofset
     LINALG::Matrix<3,1>&          vel,            ///< determine velocity at point
     LINALG::Matrix<3,3>&          vel_deriv,      ///< determine velocity derivatives at point
     double &                      pres,           ///< pressure
@@ -1024,7 +1025,7 @@ void XFEM::XFLUID_STD::getGPValuesT(
     DRT::Element*                 ele,                 ///< pointer to element
     LINALG::Matrix<3,1>&          xi,                  ///< local coordinates of point w.r.t element
     std::vector<int>&             nds,                 ///< nodal dofset of point for elemental nodes
-    XFEM::FluidDofSet&            dofset,              ///< fluid dofset
+    XFEM::XFEMDofSet&             dofset,              ///< fluid dofset
     LINALG::Matrix<3,1>&          vel,                 ///< determine velocity at point
     LINALG::Matrix<3,3>&          vel_deriv,           ///< determine velocity derivatives at point
     double &                      pres,                ///< pressure
@@ -1057,7 +1058,7 @@ void XFEM::XFLUID_STD::getGPValuesT(
   {
     DRT::Node* node = ele->Nodes()[inode];
     std::vector<int> dofs;
-    dofset.Dof(node, nds[inode], dofs );
+    dofset.Dof(dofs, node, nds[inode] );
 
     int size = dofs.size();
 
@@ -3126,7 +3127,7 @@ void XFEM::XFLUID_STD::setFinalData()
     if(data->nds_np_ == -1) dserror("cannot get dofs for dofset with number %d", data->nds_np_);
 
     std::vector<int> dofs;
-    dofset_new_->Dof(node, data->nds_np_, dofs );
+    dofset_new_->Dof(dofs, node, data->nds_np_ );
 
     if(dofs.size() != (nsd+1) ) dserror("not the right number of dofs %d for this node ", dofs.size());
 

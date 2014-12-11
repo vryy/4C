@@ -32,6 +32,7 @@ namespace GEO
   namespace CUT
   {
     class ParentIntersection;
+    class MeshIntersection;
     class SideHandle;
     class ElementHandle;
     class Node;
@@ -46,6 +47,11 @@ namespace GEO
     \brief Constructor
     */
     CutWizard( const DRT::Discretization & dis);
+
+    /*!
+    \brief Destructor
+    */
+    virtual ~CutWizard(){};
 
     /*========================================================================*/
     //! @name Set routines
@@ -80,7 +86,18 @@ namespace GEO
      */
     GEO::CUT::Node * GetNode( int nid );
 
-//    virtual Teuchos::RCP<Epetra_CrsGraph> MatrixGraph( const CutDofSet & dofset, const Epetra_Map & dbcmap );
+
+    /*========================================================================*/
+    //! @name main Cut call
+    /*========================================================================*/
+
+    void Run_Cut(
+        bool include_inner,
+        INPAR::CUT::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
+        INPAR::CUT::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
+        bool tetcellsonly,
+        bool screenoutput);
+
 
     /*========================================================================*/
     //! @name Output routines
@@ -106,15 +123,32 @@ namespace GEO
      */
     void DumpGmshIntegrationCells();
 
-  protected:
+
+  private:
+
+    /*!
+     * routine for finding node positions and computing vc dofsets in a parallel way
+     */
+    void FindPositionDofSets(bool include_inner, bool screenoutput);
 
     /*========================================================================*/
     //! @name protected class variables
     /*========================================================================*/
 
     const DRT::Discretization & dis_;                            ///< discretization
-    int myrank_;                                                 ///< my processor Id
-    Teuchos::RCP<GEO::CUT::ParentIntersection> mesh_;            ///< parent intersection object
+
+
+protected:
+
+  /*!
+   * routine for finding node positions on current processor
+   */
+  virtual void FindNodePositions() = 0;
+
+
+  Teuchos::RCP<GEO::CUT::ParentIntersection> mesh_;            ///< parent intersection object
+  int myrank_;                                                 ///< my processor Id
+
 
   };
 }

@@ -14,9 +14,10 @@ Maintainer: Benedikt Schott
 #ifndef CUT_LEVELSETINTERSECTION_H
 #define CUT_LEVELSETINTERSECTION_H
 
-#include <Epetra_SerialDenseMatrix.h>
-
 #include "cut_parentintersection.H"
+
+
+class Epetra_SerialDenseMatrix;
 
 namespace GEO
 {
@@ -31,46 +32,53 @@ namespace CUT
   /*!
   \brief Interface class for the level set cut.
   */
-class LevelSetIntersection : public ParentIntersection
+class LevelSetIntersection : public virtual ParentIntersection
 {
+  typedef ParentIntersection my;
+
+
 public:
 
   /// constructur for LevelSetIntersecton class
-  LevelSetIntersection(int myrank =-1);
+  LevelSetIntersection(int myrank =-1, bool create_side = true);
+
+  ///
+  void AddCutSide( int levelset_sid );
+
+  ///
+  bool HasLSCuttingSide(int sid){ return true; /*return sid == side_->Id();*/ };
 
   /*========================================================================*/
   //! @name Cut functionality, routines
   /*========================================================================*/
-  /*!
-  \brief Performs all the level set cut operations.(Used for the test cases)
-   */
-  void Cut( bool include_inner=true, bool screenoutput = false );
 
   /*!
   \brief Performs the cut of the mesh with the level set
   */
-  void Cut_Mesh( bool include_inner, bool screenoutput = false );
+  void Cut_Mesh( bool screenoutput = false );
+
+  /*!
+  \brief Performs all the level set cut operations including find positions and triangulation. (Used for the test cases)
+   */
+  void Cut( bool include_inner=true, bool screenoutput = false );
+
+
 
   /*========================================================================*/
   //! @name Add functionality for elements
   /*========================================================================*/
 
   /// add this background element if it is cut (determined by level set)
-  void AddElement( int eid,
-                   const std::vector<int> & nids,
-                   const Epetra_SerialDenseMatrix & xyz,
-                   const double * lsv,
-                   DRT::Element::DiscretizationType distype,
-                   const bool include_inner_ele = false);
+  GEO::CUT::ElementHandle * AddElement(
+      int eid,
+      const std::vector<int> & nids,
+      const Epetra_SerialDenseMatrix & xyz,
+      DRT::Element::DiscretizationType distype,
+      const double * lsv,
+      const bool lsv_only_plus_domain = false
+  );
 
-  /*========================================================================*/
-  //! @name statistics, output
-  /*========================================================================*/
-
-  /// status
-  void Status(INPAR::CUT::VCellGaussPts gausstype = INPAR::CUT::VCellGaussPts_Tessellation);
-
-private:
+protected:
 
   /*========================================================================*/
   //! @name private class variables

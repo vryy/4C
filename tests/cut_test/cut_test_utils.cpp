@@ -269,7 +269,7 @@ void cutmesh( GEO::CUT::Mesh & mesh )
   /*std::vector<double> tessVol,momFitVol,dirDivVol;
   const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();*/
 
-  mesh.CreateIntegrationCells( 0, false );
+  mesh.CreateIntegrationCells( 0 );
   /*for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
           i!=other_cells.end();
           ++i )

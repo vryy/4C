@@ -17,6 +17,8 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_fluid/fluid_utils.H"
 
 #include "../drt_lib/drt_discret_faces.H"
+#include "../drt_lib/drt_discret_xfem.H"
+
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_assemblestrategy.H"
@@ -41,6 +43,7 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_cut/cut_point.H"
 #include "../drt_cut/cut_meshintersection.H"
 #include "../drt_cut/cut_position.H"
+#include "../drt_cut/cut_cutwizard.H"
 
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
@@ -55,8 +58,7 @@ Maintainer:  Shadan Shahmiri
 
 #include "../drt_xfem/xfem_edgestab.H"
 #include "../drt_xfem/xfem_neumann.H"
-#include "../drt_xfem/xfem_fluiddofset.H"
-#include "../drt_xfem/xfem_fluidwizard.H"
+#include "../drt_xfem/xfem_dofset.H"
 #include "../drt_xfem/xfluidfluid_timeInt.H"
 
 #include "../drt_combust/combust_utils_time_integration.H"
@@ -66,27 +68,42 @@ Maintainer:  Shadan Shahmiri
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epetra_Vector & idispcol )
-  : xfluid_( xfluid ),
-    wizard_( Teuchos::rcp( new XFEM::FluidWizardMesh(xfluid.bgdis_, xfluid.boundarydis_ )))
+FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Teuchos::RCP<const Epetra_Vector> idispcol )
+  : xfluid_( xfluid )
 {
-  // do the (parallel!) cut for the 0 timestep and find the fluid dofset
-  wizard_->Cut( false,                                 // include_inner
-                idispcol,                              // interface displacements
-                xfluid_.VolumeCellGaussPointBy_,       // how to create volume cell Gauss points?
-                xfluid_.BoundCellGaussPointBy_,        // how to create boundary cell Gauss points?
-                true,                                  // use parallel cut framework
-                xfluid_.gmsh_cut_out_,                 // gmsh output for cut library
-                Teuchos::null,                         // no ale displacements on background fluid
-                true                                   // find point positions
-                );
+  // Initialize the cut wizard
+  Teuchos::RCP<DRT::DiscretizationXFEM> xdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid.bgdis_, true);
 
-  // estimate (and reserve) the maximum number of dof
-  // (nodes)*4*(max. number of xfem-dofsets p. node)
-  const int maxNumMyReservedDofsperNode = (xfluid.maxnumdofsets_)*4;
+  wizard_ = Teuchos::rcp( new GEO::CutWizardNEW(xdis, xfluid.boundarydis_) );
 
-  // ask fluid wizard for new background fluid dofset
-  dofset_ = wizard_->DofSet(maxNumMyReservedDofsperNode);
+  // Set options for the cut wizard
+  wizard_->SetOptions(
+      xfluid.VolumeCellGaussPointBy_,       // how to create volume cell Gauss points?
+      xfluid.BoundCellGaussPointBy_,        // how to create boundary cell Gauss points?
+      xfluid.gmsh_cut_out_,                 // gmsh output for cut library
+      true,                          // find point positions
+      false,                         // generate only tet cells
+      true                           // print screen output
+  );
+
+  // Set the state vectors used for the cut
+  wizard_->SetState(
+      Teuchos::null,      //!< col vector holding background ALE displacements for backdis
+      idispcol,           //!< col vector holding interface displacements for cutterdis
+      Teuchos::null       //!< col vector holding nodal level-set values based on backdis
+  );
+
+  wizard_->Cut(false);
+  //--------------------------------------------------------------------------------------
+
+
+  //--------------------------------------------------------------------------------------
+  // set the new dofset after cut
+  int maxNumMyReservedDofsperNode = (xfluid.maxnumdofsets_)*4;
+
+  // create a new XFEM-dofset
+  dofset_ = Teuchos::rcp( new XFEM::XFEMDofSet( wizard_ , maxNumMyReservedDofsperNode, xfluid.bgdis_ ) );
+
 
   // get minimal GID
   const int restart = DRT::Problem::Instance()->Restart();
@@ -95,7 +112,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
     xfluid.minnumdofsets_ = xfluid.bgdis_->DofRowMap()->MinAllGID();
   }
   // set the minimal GID of xfem dis
-  dofset_->MinGID(xfluid.minnumdofsets_);
+  dofset_->SetMinGID(xfluid.minnumdofsets_);
   // set new dofset
   xfluid_.bgdis_->ReplaceDofSet( dofset_, true);
   xfluid_.bgdis_->FillComplete();
@@ -228,7 +245,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   // create object for edgebased stabilization
   if(xfluid_.eval_eos_)
-    edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid.bgdis_));
+    edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid_.bgdis_));
 
   // allocate memory for fluid-fluid coupling matrices
   PrepareCouplingMatrices(true);
@@ -611,10 +628,9 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
       // the volume-cell set at position i in cell_sets is associated with
       // the nodal dofset vector at position i in nds_sets
       // and with the set of gauss points at position i in intpoints_sets
-      e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, VolumeCellGaussPointBy_, false); //(include_inner=false)
+      bool has_xfem_integration_rule =
+          e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, false); //(include_inner=false)
 
-      if ( cell_sets.size() != intpoints_sets.size() )
-        dserror("Non-matching number of volume-cell sets (%d) and integration point sets (%d).", cell_sets.size(), intpoints_sets.size());
       if ( cell_sets.size() != nds_sets.size() )
         dserror("Non-matching number of volume-cell sets (%d) and sets of nodal dofsets (%d).", cell_sets.size(), nds_sets.size());
 
@@ -640,20 +656,39 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
         // Reshapelement matrices and vectors and init to zero
         strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
 
+
+        if(!has_xfem_integration_rule)
+        {
+          TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::Evaluate normal" );
+
+          const int err = impl->Evaluate( ele, *discret_, la[0].lm_, eleparams, mat,
+              strategy.Elematrix1(),
+              strategy.Elematrix2(),
+              strategy.Elevector1(),
+              strategy.Elevector2(),
+              strategy.Elevector3());
+
+          if (err) dserror("Proc %d: Element %d returned err=%d",discret_->Comm().MyPID(),actele->Id(),err);
+        }
+        else
         {
           // ---------------------------------------------------------------------------
           // Evaluate domain integrals
           TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::AssembleMatAndRHS cut domain" );
 
+          if ( cell_sets.size() != intpoints_sets.size() )
+            dserror("Non-matching number of volume-cell sets (%d) and integration point sets (%d).", cell_sets.size(), intpoints_sets.size());
+
+
           // call the element evaluate method
           int err = impl->EvaluateXFEM( ele, *discret_, la[0].lm_, eleparams, mat,
-                                        strategy.Elematrix1(),
-                                        strategy.Elematrix2(),
-                                        strategy.Elevector1(),
-                                        strategy.Elevector2(),
-                                        strategy.Elevector3(),
-                                        intpoints_sets[set_counter],
-                                        cells);
+              strategy.Elematrix1(),
+              strategy.Elematrix2(),
+              strategy.Elevector1(),
+              strategy.Elevector2(),
+              strategy.Elevector3(),
+              intpoints_sets[set_counter],
+              cells);
 
           if (err)
             dserror("Proc %d: Element %d returned err=%d",discret_->Comm().MyPID(),actele->Id(),err);
@@ -679,7 +714,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
           TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::AssembleMatAndRHS boundary" );
 
           // get boundary cell integration points
-          e->BoundaryCellGaussPointsLin( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+          e->BoundaryCellGaussPointsLin( bcells, bintpoints);
 
           std::vector<int> patchelementslm;
           std::vector<int> patchelementslmowner;
@@ -1268,7 +1303,7 @@ void FLD::XFluidFluid::GmshOutput( DRT::Discretization & discret,
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
 
       e->GetVolumeCells( cells );
-      e->VolumeCellGaussPoints( cells, intpoints,VolumeCellGaussPointBy_);//modify gauss type
+      e->VolumeCellGaussPoints( cells, intpoints);//modify gauss type
 
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -1612,8 +1647,6 @@ void FLD::XFluidFluid::GmshOutputBoundaryCell( DRT::Discretization & discret,
   LINALG::Matrix<2,2> metrictensor;
   double drs;
 
-  GEO::CUT::MeshIntersection & mesh = state_->wizard_->CutWizard().Mesh();
-
   std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
   vc->GetBoundaryCells( bcells );
   for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::iterator i=bcells.begin();
@@ -1624,7 +1657,7 @@ void FLD::XFluidFluid::GmshOutputBoundaryCell( DRT::Discretization & discret,
     std::vector<GEO::CUT::BoundaryCell*> & bcs = i->second;
 
     DRT::Element * side = cutdiscret.gElement( sid );
-    GEO::CUT::SideHandle * s = mesh.GetCutSide( sid, 0 );
+    GEO::CUT::SideHandle * s = state_->wizard_->GetMeshCuttingSide( sid, 0 );
 
     const int numnodes = side->NumNode();
     DRT::Node ** nodes = side->Nodes();
@@ -1924,8 +1957,7 @@ void FLD::XFluidFluid::Init()
   // XFluidFluid State
   //-----------------------------------------------
   const int restart = DRT::Problem::Instance()->Restart();
-  Epetra_Vector idispcol( *boundarydis_->DofColMap() );
-  idispcol.PutScalar( 0.0 );
+  Teuchos::RCP<Epetra_Vector> idispcol = LINALG::CreateVector(*boundarydis_->DofColMap(), true );
 
   if (alefluid_)
   {
@@ -1939,7 +1971,7 @@ void FLD::XFluidFluid::Init()
     ReadRestartEmb(restart);
 
     if (alefluid_)
-      LINALG::Export(*dispn_,idispcol);
+      LINALG::Export(*dispn_,*idispcol);
   }
 
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
@@ -3276,9 +3308,9 @@ void FLD::XFluidFluid::CutAndSetState()
   }
 
   // new cut for this time step
-  Epetra_Vector idispcol( *boundarydis_->DofColMap() );
-  idispcol.PutScalar( 0.0 );
-  LINALG::Export(*dispnp_,idispcol);
+  Teuchos::RCP<Epetra_Vector> idispcol = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+  LINALG::Export(*dispnp_,*idispcol);
+
   // we obtain a new state
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
 
@@ -3495,8 +3527,9 @@ void FLD::XFluidFluid::SetDirichletNeumannBC()
   // Neumann
   state_->neumann_loads_->PutScalar(0.0);
   bgdis_->SetState("scaaf",state_->scaaf_);
-//    bgdis_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
-  XFEM::EvaluateNeumann(state_->wizard_, eleparams, *bgdis_, boundarydis_, state_->neumann_loads_);
+
+  XFEM::EvaluateNeumann(state_->wizard_, eleparams, bgdis_, state_->neumann_loads_);
+
   bgdis_->ClearState();
 
   neumann_loads_->PutScalar(0.0);
@@ -4528,10 +4561,9 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
         std::vector< std::vector<int> > nds_sets;
         std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoint_sets;
 
-        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoint_sets, VolumeCellGaussPointBy_, false); //(include_inner=false)
+        bool has_xfem_integration_rule =
+            e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoint_sets, false); //(include_inner=false)
 
-        if(cell_sets.size() != intpoint_sets.size())
-        dserror("Mismatch in the number of volume-cell sets (%d) and integration point sets (%d)", cell_sets.size(), intpoint_sets.size());
         if(cell_sets.size() != nds_sets.size())
         dserror("Mismatch in the number of volume-cell sets (%d) and nodal dofsets (%d)", cell_sets.size(), nds_sets.size());
 
@@ -4560,16 +4592,47 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
           for ( GEO::CUT::plain_volumecell_set::const_iterator ivc = cells.begin(); ivc != cells.end(); ++ ivc )
           {
             const int vc_pos = ivc - cells.begin();
-            //------------------------------------------------------------
-            // Evaluate domain integral errors
-            impl->ComputeError(ele,
-                               *params_,
-                               mat,
-                               *bgdis_,
-                               la[0].lm_,
-                               ele_dom_norms_bg,
-                               intpoint_sets[set_pos][vc_pos]
-            );
+
+            if(!has_xfem_integration_rule)
+            {
+              TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol::Evaluate normal" );
+
+              // get element location vector, dirichlet flags and ownerships
+              actele->LocationVector(*bgdis_,la,false);
+
+              Epetra_SerialDenseMatrix elemat1;
+              Epetra_SerialDenseMatrix elemat2;
+              Epetra_SerialDenseVector elevec2;
+              Epetra_SerialDenseVector elevec3;
+              params_->set<int>("action",FLD::calc_fluid_error);
+
+              DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem")->EvaluateService(ele,
+                                                                                                   *params_,
+                                                                                                   mat,
+                                                                                                   *bgdis_,
+                                                                                                   la[0].lm_,
+                                                                                                   elemat1,
+                                                                                                   elemat2,
+                                                                                                   ele_dom_norms_bg,
+                                                                                                   elevec2,
+                                                                                                   elevec3);
+            }
+            else
+            {
+              if(cell_sets.size() != intpoint_sets.size())
+              dserror("Mismatch in the number of volume-cell sets (%d) and integration point sets (%d)", cell_sets.size(), intpoint_sets.size());
+
+              //------------------------------------------------------------
+              // Evaluate domain integral errors
+              impl->ComputeError(ele,
+                                 *params_,
+                                 mat,
+                                 *bgdis_,
+                                 la[0].lm_,
+                                 ele_dom_norms_bg,
+                                 intpoint_sets[set_pos][vc_pos]
+              );
+            }
 
             // that's the way it has been computed previously
             //cpu_dom_norms_bg += ele_dom_norms_bg;
@@ -4590,7 +4653,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
             TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::AssembleMatAndRHS 2) interface" );
 
             // get boundary cell integration points
-            e->BoundaryCellGaussPointsLin( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+            e->BoundaryCellGaussPointsLin( bcells, bintpoints);
 
             if(coupling_method_ == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
                coupling_method_ == INPAR::XFEM::Hybrid_LM_viscous_stress or

@@ -14,8 +14,6 @@ Maintainer: Benedikt Schott and Magnus Winter
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_lib/drt_discret.H"
-//#include "../drt_lib/drt_globalproblem.H"
-//#include "../drt_io/io_control.H"
 
 #include "cut_volumecell.H"
 
@@ -24,7 +22,7 @@ Maintainer: Benedikt Schott and Magnus Winter
 /*------------------------------------------------------------------------------------------------*
  * Create nodal dofset sets within the parallel cut framework
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::CreateNodalDofSetNEW( bool include_inner, const DRT::Discretization& dis)
+void GEO::CUT::ParentIntersection::CreateNodalDofSet( bool include_inner, const DRT::Discretization& dis)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CreateNodalDofSet" );
 
@@ -209,8 +207,6 @@ void GEO::CUT::ParentIntersection::FillParallelDofSetData(Teuchos::RCP<std::vect
                                                         const DRT::Discretization& dis,
                                                         bool include_inner)
 {
-
-//  bool include_inner = false;
 
   // find volumecell sets and non-row nodes for that dofset numbers has to be communicated parallel
   // the communication is done element wise for all its sets of volumecells when there is a non-row node in this element
@@ -516,10 +512,10 @@ void GEO::CUT::ParentIntersection::ConnectNodalDOFSets( std::vector<Node *> &   
 void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
                                                INPAR::CUT::VCellGaussPts VCellgausstype,
                                                INPAR::CUT::BCellGaussPts BCellgausstype,
-                                               bool levelset,
                                                bool tetcellsonly,
                                                bool screenoutput)
 {
+
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 6/6 --- Cut_Finalize" );
 
   if(myrank_==0 and screenoutput) IO::cout << "\t * 6/6 Cut_Finalize";
@@ -533,7 +529,7 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
   if(VCellgausstype==INPAR::CUT::VCellGaussPts_Tessellation)
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::Tessellation" );
-    m.CreateIntegrationCells( 0, levelset ,tetcellsonly ); // boundary cells will be created within TetMesh.CreateElementTets
+    m.CreateIntegrationCells( 0 ,tetcellsonly ); // boundary cells will be created within TetMesh.CreateElementTets
     //m.RemoveEmptyVolumeCells();
 
 #ifdef DEBUGCUTLIBRARY
@@ -941,3 +937,27 @@ void GEO::CUT::ParentIntersection::DumpGmshVolumeCells( std::string name )
 {
   NormalMesh().DumpGmshVolumeCells( name );
 }
+
+
+/*--------------------------------------------------------------------------------------*
+ * status
+ *-------------------------------------------------------------------------------------*/
+void GEO::CUT::ParentIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
+{
+#ifdef DEBUG
+  NormalMesh().Status();
+
+#ifdef DEBUGCUTLIBRARY
+  NormalMesh().DumpGmsh( "mesh.pos" );
+
+  if(gausstype==INPAR::CUT::VCellGaussPts_Tessellation)
+  {
+    DumpGmshIntegrationCells( "integrationcells.pos" );
+    DumpGmshVolumeCells("volumecells.pos");
+  }
+  else
+    DumpGmshVolumeCells("volumecells.pos");
+#endif
+#endif
+}
+

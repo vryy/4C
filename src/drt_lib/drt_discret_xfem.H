@@ -91,8 +91,10 @@ public:
                            bool doboundaryconditions = true);
 
   /// Export Vector with initialdofrowmap (all nodes have one dofset) - to Vector with all active dofs
-  void ExportInitialtoActiveVector(Teuchos::RCP<Epetra_Vector>& initialvec,
-                             Teuchos::RCP<Epetra_Vector>& activevec);
+  void ExportInitialtoActiveVector(
+      Teuchos::RCP<const Epetra_Vector>& initialvec,
+      Teuchos::RCP<Epetra_Vector>& activevec
+      );
 
 
   /*!

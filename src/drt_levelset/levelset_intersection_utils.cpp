@@ -104,7 +104,7 @@ void SCATRA::CaptureZeroLevelSet(
 
     // check if this element is cut, according to its level-set values -> add it to 'levelset'
     // note: cut is performed in physical space
-    levelset.AddElement( 1, nids, xyze, &phi_nodes[0], ele->Shape());
+    levelset.AddElement( 1, nids, xyze, ele->Shape(), &phi_nodes[0], false);
 
     try
     {

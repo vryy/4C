@@ -639,6 +639,7 @@ set(OBJS_INTERSECTION
   src/drt_xfem/xdofmapcreation_combust.cpp
   src/drt_xfem/xdofmapcreation_parallel_utils.cpp
   src/drt_xfem/xfem_edgestab.cpp
+  src/drt_xfem/xfem_dofset.cpp
   src/drt_xfem/xfem_fluiddofset.cpp
   src/drt_xfem/xfem_fluidwizard.cpp
   src/drt_xfem/xfem_neumann.cpp
@@ -1144,6 +1145,7 @@ set(OBJS_DRT_FLUID_TURBULENCE
 set(OBJS_DRT_FLUID_XFLUID
   src/drt_fluid_xfluid/xfluid.cpp
   src/drt_fluid_xfluid/xfluidfluid.cpp
+  src/drt_fluid_xfluid/xfluidresulttest.cpp
   src/drt_fluid_xfluid/xfluidfluidresulttest.cpp
   src/drt_fluid_xfluid/xfluid_state.cpp
   src/drt_fluid_xfluid/xfluid_levelset_coupling_algorithm.cpp
@@ -1739,6 +1741,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_integrationcell.cpp
   src/drt_cut/cut_integrationcellcreator.cpp
   src/drt_cut/cut_kernel.cpp
+  src/drt_cut/cut_combintersection.cpp
   src/drt_cut/cut_levelsetintersection.cpp
   src/drt_cut/cut_levelsetside.cpp
   src/drt_cut/cut_line.cpp
@@ -1765,6 +1768,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/boundarycell_integration.cpp
   src/drt_cut/volume_integration.cpp
   src/drt_cut/least_squares.cpp
+  src/drt_cut/cut_cutwizard.cpp
 )
 set(OBJS_CUT_TEST
   tests/cut_test/cut_test_double.cpp
