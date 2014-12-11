@@ -1577,7 +1577,7 @@ void STATMECH::StatMechManager::MotilityAssayOutput(const Epetra_Vector&      di
           linkerforces<<riseperbspot_->at(1)<<"\t";
         else
           linkerforces<<-1e9<<"\t";
-        linkerforces<<-1e9<<"\t"<<-1e9<<std::endl;
+        linkerforces<<statmechparams_.get<double>("R_LINK", 0.1)<<"\t"<<statmechparams_.get<double>("STROKEDISTANCE",0.005)<<std::endl;
       }
       for(int i=0; i<crosslink2element_->MyLength(); i++)
       {
