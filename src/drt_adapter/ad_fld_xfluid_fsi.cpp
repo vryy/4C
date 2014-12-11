@@ -70,7 +70,6 @@ void ADAPTER::XFluidFSI::Init()
   // the solid mesh has to match the interface mesh
   // so we have to compute a interface true residual vector itrueresidual_
   structinterface_->Setup(*xfluid_->BoundaryDiscretization());
-  xfluid_->SetSurfaceSplitter(&(*structinterface_));
 
   interface_->Setup(*xfluiddis_,false, true); //Always Create overlapping FSI/FPSI Interface
 
@@ -210,8 +209,6 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidFSI::RHS_Struct_Vec()
 void ADAPTER::XFluidFSI::RebuildFSIStructInterface()
 {
   StructInterface()->Setup(*xfluid_->BoundaryDiscretization());
-    // do we need this line?
-  xfluid_->SetSurfaceSplitter(&(*StructInterface()));
 }
 
 /// GmshOutput for background mesh and cut mesh
