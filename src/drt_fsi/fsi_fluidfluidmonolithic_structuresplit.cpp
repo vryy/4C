@@ -7,7 +7,8 @@
 <pre>
 Maintainer: Raffaela Kruse
             kruse@lnm.mw.tum.de
-            089 289 15249
+            http://www.lnm.mw.tum.de
+            089 - 289-15249
 </pre>
 */
 /*------------------------------------------------------*/
@@ -81,11 +82,7 @@ void FSI::FluidFluidMonolithicStructureSplit::PrepareTimeStep()
   // when this is the first call or we haven't relaxed the ALE-mesh
   // previously, the DOF-maps have not
   // changed since system setup
-  if (Step() == 0 || !FluidField()->IsAleRelaxationStep(Step()))
-    return;
-
-  // previous step was no relaxation step? leave!
-  if (FluidField()->IsAleRelaxationStep(Step()-1))
+  if (Step() == 0 || !FluidField()->IsAleRelaxationStep(Step()-1))
     return;
 
   // REMARK:
@@ -96,7 +93,6 @@ void FSI::FluidFluidMonolithicStructureSplit::PrepareTimeStep()
   FSI::MonolithicStructureSplit::CreateCombinedDofRowMap();
   SetupDBCMapExtractor();
   FSI::MonolithicStructureSplit::CreateSystemMatrix();
-
 }
 
 /*----------------------------------------------------------------------*/

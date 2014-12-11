@@ -120,14 +120,14 @@ void ADAPTER::FluidFluidFSI::Update()
 
     if (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Partitioned)
       xfluidfluid_->UpdateMonolithicFluidSolution(FluidFSI::Interface()->FSICondMap());
+
+    // refresh the merged fluid map extractor
+    SetupInterface();
+    // create new extended shape derivatives matrix
+    PrepareShapeDerivatives();
   }
 
   FluidWrapper::Update();
-
-  // refresh the merged fluid map extractor
-  SetupInterface();
-  // create new extended shape derivatives matrix
-  PrepareShapeDerivatives();
 }
 
 /*----------------------------------------------------------------------*/
