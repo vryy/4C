@@ -23,6 +23,7 @@ Maintainer: Benedikt Schott
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_gmsh.H"
 
 #include "../drt_cut/cut_boundingbox.H"
@@ -1416,7 +1417,29 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
     dserror("point is on cut surface at least at one time t(n) or t(n+1), CheckChangingSide in the right way?");
   }
 
+  //------------------------------------
+  // Get all the connected elements from this nodes at old and new position         sudhakar 12/14
+  // If all these elements have same cut situation in both configurations, then the point did not change side
+  // This is not as generalized as its alternative, but since in FSI-crack problem, certain
+  // surfaces are eliminated/added from the FSI interface, this is only working option we have
 
+  if ( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+  {
+    const GEO::CUT::plain_element_set & eleold = n_old->Elements();
+    const GEO::CUT::plain_element_set & elenew = n_new->Elements();
+
+    std::set<int> old_ele_set, new_ele_set;
+    for(GEO::CUT::plain_element_set::const_iterator it=eleold.begin(); it!=eleold.end(); it++)
+      old_ele_set.insert( (*it)->Id() );
+    for(GEO::CUT::plain_element_set::const_iterator it=elenew.begin(); it!=elenew.end(); it++)
+      new_ele_set.insert( (*it)->Id() );
+
+    if( old_ele_set == new_ele_set )
+      return false;
+    else
+      return true;
+  }
+  //------------------------------------
 
   LINALG::Matrix<3,1> n_coord(true);
   n_old->Coordinates(&n_coord(0,0));
@@ -1501,6 +1524,9 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
 
   Epetra_SerialDenseMatrix xyze_old;
   Epetra_SerialDenseMatrix xyze_new;
+
+  if( side_new == NULL )
+    dserror("encountered NULL pointer\n");
 
   side_old->Coordinates(xyze_old);
   side_new->Coordinates(xyze_new);

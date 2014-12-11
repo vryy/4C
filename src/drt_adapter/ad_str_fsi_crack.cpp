@@ -59,22 +59,20 @@ ADAPTER::FSICrackingStructure::FSICrackingStructure
  * Add newly formed crack surfaces into cut discretization                    sudhakar 03/14
  * This is the only function that communicates with FSI implementation
  *------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides(
-    std::map<int, LINALG::Matrix<3,1> >& tip_nodes
-)
+void ADAPTER::FSICrackingStructure::addCrackSurfacesToCutSides( Teuchos::RCP<DRT::Discretization>& boundary_dis,
+                                                                std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
 {
-  // return RebuildInterfaceWithConditionCheck( tip_nodes );
+  // return RebuildInterfaceWithConditionCheck( boundary_dis, tip_nodes );
 
-  return RebuildInterfaceWithoutConditionCheck( tip_nodes );
+  return RebuildInterfaceWithoutConditionCheck( boundary_dis, tip_nodes );
 }
 
 /*------------------------------------------------------------------------------------*
  * Rebuild FSI interface only when the crack mouth opening displacement        sudhakar 03/14
  * reaches a predefined given value.
  *------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck(
-    std::map<int, LINALG::Matrix<3,1> >& tip_nodes
-)
+void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos::RCP<DRT::Discretization>& boundary_dis,
+                                                                        std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
 {
   std::map<int,int> tips = getOldNewCrackNodes();
   std::vector<int> crtip = GetCrackTipNodes();
@@ -82,10 +80,13 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfac
   if( tips.size() == 0 )
     dserror("atleast one new node should have been added during the crack propagation\n");
 
+  if( crtip.size() == 0 )
+    dserror("there should be atleast one crack tip node\n");
+
   tipHistory_.push_back( tips );
 
   if( not isCrackMouthOpeningConditionSatisfied( tipHistory_[0] ) )
-    return Teuchos::null;
+    return;
 
   // We do not explicitly add new elements to the discretization
   // Instead, we add the new nodes to FSI condition in structual discretization
@@ -118,8 +119,6 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfac
   // In order to build discretization based on this condition, it is necessary to rebuild
   // the geometry of the conditions
   structdis_->FillComplete();
-
-  Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
 
   // build boundary discretization based on FSI condition
   std::vector<std::string> conditions_to_copy;
@@ -191,8 +190,6 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfac
   boundary_dis->ExportColumnElements(elemcolmap);
 
   boundary_dis->FillComplete();
-
-  return boundary_dis;
 }
 
 /*------------------------------------------------------------------------------------*
@@ -236,10 +233,85 @@ bool ADAPTER::FSICrackingStructure::isCrackMouthOpeningConditionSatisfied( const
  * are added to cut discretization; so fluid will enter into this which may
  * create some problems
  *------------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
+void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuchos::RCP<DRT::Discretization>& boundary_dis,
+                                                                            std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
 {
   std::map<int,int> tips = getOldNewCrackNodes();
   std::vector<int> crtip = GetCrackTipNodes();
+
+  // check whether crack tip nodes are contained in old new nodes
+  // This means the body is completely split into two
+  // For the following creation boundary discretization algorithm to work, we clear nodes in crtip
+  bool found = false;
+  for( std::vector<int>::iterator it = crtip.begin(); it != crtip.end(); it++ )
+  {
+    if( tips.find( *it ) != tips.end() )
+    {
+      found = true;
+      break;
+    }
+  }
+
+  tip_nodes.clear();
+
+  if( found )
+  {
+    /*Teuchos::RCP<const Epetra_Vector> disp = Dispnp();
+
+    disp->Print(std::cout);
+
+    LINALG::Matrix<3,1> avg_disp_loc;
+    std::map<int,double> node_z_coo;
+
+    for( std::vector<int>::iterator it = crtip.begin(); it != crtip.end(); it++ )
+    {
+      int node_id = *it;
+      if( structdis_->HaveGlobalNode( node_id ) )
+      {
+        DRT::Node * nod = structdis_->gNode( node_id );
+        if( nod->Owner() == structdis_->Comm().MyPID() )
+        {
+          const double * nodcord = nod->X();
+          node_z_coo[node_id] = nodcord[2];
+
+          std::vector<int> lm;
+          structdis_->Dof( nod, lm );
+          std::vector<double> mydisp;
+          DRT::UTILS::ExtractMyValues( *disp, mydisp, lm );
+          std::cout<<"degrees of freedom = "<<lm[0]<<" "<<lm[1]<<" "<<lm[2]<<"\n";
+
+          for( int dim = 0; dim < 2; dim++ )
+            avg_disp_loc(dim,0) += mydisp[dim] + nodcord[dim];
+        }
+      }
+    }
+
+    avg_disp_loc(0,0) = avg_disp_loc(0,0)/crtip.size();
+    avg_disp_loc(1,0) = avg_disp_loc(1,0)/crtip.size();
+
+
+    std::cout<<"average disp local = "<<avg_disp_loc(0,0)<<" "<<avg_disp_loc(1,0)<<" "<<avg_disp_loc(2,0)<<"\n";
+
+
+    LINALG::Matrix<3,1> avg_disp;
+
+    std::cout<<"before sumall\n";
+
+    structdis_->Comm().SumAll( &avg_disp_loc(0,0), &avg_disp(0,0), 3 );
+    LINALG::GatherAll( node_z_coo, structdis_->Comm() );
+
+    std::cout<<"after sumall\n";
+
+    std::cout<<"-=-=-=average displacement = "<<avg_disp(0,0)<<" "<<avg_disp(1,0)<<" "<<avg_disp(2,0)<<"\n";
+
+    for( std::vector<int>::iterator it = crtip.begin(); it != crtip.end(); it++ )
+    {
+      avg_disp(2,0) = node_z_coo[*it];
+      tip_nodes[*it] = avg_disp;
+    }*/
+
+    crtip.clear();
+  }
 
   if( tips.size() == 0 )
     dserror("atleast one new node should have been added during the crack propagation\n");
@@ -261,9 +333,12 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfac
     }
 
     // activate this if you are adding crack nodes irrespective of the opening displacement
-    DRT::CRACK::UTILS::addNodesToConditions( cond_fsi, crtip );
-    DRT::CRACK::UTILS::addNodesToConditions( cond_xfem, crtip );
-    firstTime_ = false;
+    if( crtip.size() > 0 )
+    {
+      DRT::CRACK::UTILS::addNodesToConditions( cond_fsi, crtip );
+      DRT::CRACK::UTILS::addNodesToConditions( cond_xfem, crtip );
+      firstTime_ = false;
+    }
   }
 
   // Fillcomplete() is necessary here because we introduced new nodes into conditions
@@ -276,10 +351,9 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfac
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
 
+#if 0
 
-#if 1
-
-  Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
+  //Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
 
   boundary_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
 
@@ -301,12 +375,14 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfac
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true,Teuchos::null));
   temp_dis->ReplaceDofSet(newdofset);
 
+  if( structdis_->Comm().MyPID() == 0 )
+    std::cout<<"entering first fill\n";
   temp_dis->FillComplete();
+  if( structdis_->Comm().MyPID() == 0 )
+    std::cout<<"cameout first fill\n";
 
-  deleteWrongElements( temp_dis, crtip, tips );
-
-  tip_nodes.clear();
-
+  //if( crtip.size() > 0 )
+    deleteWrongElements( temp_dis, crtip, tips );
 
 #if 0 //seems to be easier implementation. but with some strange errors
 
@@ -448,7 +524,14 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfac
   for( unsigned i=0; i<crtip.size(); i++ )
     addnodes.push_back(crtip[i]);
   for( std::map<int,int>::iterator it = tips.begin(); it != tips.end(); it++)
-    addnodes.push_back( it->second );
+  {
+    int node1_id = it->first;
+    int node2_id = it->second;
+    if( not boundary_dis->HaveGlobalNode( node1_id ) )
+      addnodes.push_back( node1_id );
+    if( not boundary_dis->HaveGlobalNode( node2_id ) )
+      addnodes.push_back( node2_id );
+  }
 
   for( unsigned i=0; i< addnodes.size(); i++ )
   {
@@ -489,10 +572,33 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfac
   {
     DRT::Element* actele = temp_dis->lRowElement(i);
 
-    for( unsigned crid = 0; crid < crtip.size(); crid++ )
+    if( crtip.size() != 0 )
     {
-      if( DRT::CRACK::UTILS::ElementHasThisNodeId( actele, crtip[crid] ) )
+      for( unsigned crid = 0; crid < crtip.size(); crid++ )
+      {
+        if( DRT::CRACK::UTILS::ElementHasThisNodeId( actele, crtip[crid] ) )
+          neweles.insert( actele->Id() );
+      }
+    }
+
+    // If there are no crack tip ids, then we take the last two nodes from tips
+    // This is the case when the structure is completely split into two
+    else
+    {
+      std::map<int,int>::iterator it = tips.end();
+      std::advance(it,-1);
+      int node1_id = it->first;
+      int node2_id = it->second;
+      std::advance(it,-2);
+      int node3_id = it->first;
+      int node4_id = it->second;
+      if( DRT::CRACK::UTILS::ElementHasThisNodeId( actele, node1_id ) or
+          DRT::CRACK::UTILS::ElementHasThisNodeId( actele, node2_id ) or
+          DRT::CRACK::UTILS::ElementHasThisNodeId( actele, node3_id ) or
+          DRT::CRACK::UTILS::ElementHasThisNodeId( actele, node4_id ) )
+      {
         neweles.insert( actele->Id() );
+      }
     }
   }
 
@@ -617,10 +723,11 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfac
   if( cond_fsi_boun == NULL or cond_xfem_boun == NULL )
     dserror( "XFEM or FSI coupling conditions undefined in old boundary discretization?\n" );
 
-  addNodesToConditions( cond_fsi_boun, addnodes );
-  addNodesToConditions( cond_xfem_boun, addnodes );
+  DRT::CRACK::UTILS::addNodesToConditions( cond_fsi_boun, addnodes );
+  DRT::CRACK::UTILS::addNodesToConditions( cond_xfem_boun, addnodes );
 
   boundary_dis->FillComplete();
+
 #endif
 
   //--------------------------------------------------------------------------------------------------
@@ -629,8 +736,6 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FSICrackingStructure::RebuildInterfac
   distributeDisToAllProcs( boundary_dis );
 
 #endif
-
-  return boundary_dis;
 }
 
 /*---------------------------------------------------------------------------------------------------*
@@ -726,11 +831,22 @@ bool ADAPTER::FSICrackingStructure::checkElementExist( Teuchos::RCP<DRT::Discret
  * in the crack tip region. Here we delete all these unwanted elements
  * IDEA: If an element is connected to the new tip node, all its nodes should be contained in
  * crack tip, or the double nodes that are created. If not, we must delete this element
+ *
+ *         *       *-----*
+ *          \     /      |
+ *           \   /       |
+ *            \ /        |
+ *             *         *
+ *             |
+ *             |----------------------------------> This element is created because both its connected nodes
+ *             |                                    are in FSI coupling BC, but this should be deleted
+ *     --*-----*---------*--
  *-----------------------------------------------------------------------------------------------------------*/
 void ADAPTER::FSICrackingStructure::deleteWrongElements( Teuchos::RCP<DRT::Discretization>& dis,
                                                          std::vector<int> crtip,
                                                          std::map<int,int> doubNodes )
 {
+#if 0
   // copy the data available in doubleNodes into two separate vector for easier comparison
   std::vector<int> doub1,doub2;
   for( std::map<int,int>::iterator it = doubNodes.begin(); it != doubNodes.end(); it++ )
@@ -742,9 +858,9 @@ void ADAPTER::FSICrackingStructure::deleteWrongElements( Teuchos::RCP<DRT::Discr
   std::set<int> delEle;
   for( unsigned i=0; i<crtip.size(); i++ )
   {
-    if( dis->HaveGlobalNode( crtip[0] ) )
+    if( dis->HaveGlobalNode( crtip[i] ) )
     {
-      DRT::Node * tipnode = dis->gNode( crtip[0] );
+      DRT::Node * tipnode = dis->gNode( crtip[i] );
       const DRT::Element* const * ElementsPtr = tipnode->Elements();
       int NumElement = tipnode->NumElement();
 
@@ -782,5 +898,76 @@ void ADAPTER::FSICrackingStructure::deleteWrongElements( Teuchos::RCP<DRT::Discr
   LINALG::GatherAll( delEle, dis->Comm() );
   if( delEle.size() > 0 )
     dis->FillComplete();
+#else
+  // key is the node number and value is dummy here
+  std::set<int> more_ele_nodes;
 
+  const Epetra_Map* noderowmap = dis->NodeRowMap();
+
+  for (int i=0; i<noderowmap->NumMyElements(); ++i)
+  {
+    const int nodeid = noderowmap->GID( i );
+    const DRT::Node * sourcenode = dis->gNode( nodeid );
+
+    const DRT::Element*const* eles = sourcenode->Elements();
+    int numele = sourcenode->NumElement();
+
+    if( numele == 2 )
+      continue;
+
+    int numquad = 0;
+
+    for( int eleno = 0; eleno < numele; eleno++ )
+    {
+      const DRT::Element * onele = eles[eleno];
+      if( onele->Shape() == DRT::Element::quad4 )
+        numquad++;
+    }
+
+    if( numquad > 2 )
+      more_ele_nodes.insert(nodeid);
+  }
+
+  LINALG::GatherAll( more_ele_nodes, dis->Comm() );
+
+  if( more_ele_nodes.size() == 0 )
+    return;
+
+  const Epetra_Map* elecolmap = dis->ElementColMap();
+  std::set<int> delEle;
+  for (int i=0; i<elecolmap->NumMyElements(); ++i)
+  {
+    bool delete_ele = true;
+
+    const int gid = elecolmap->GID(i);
+    const DRT::Element* sourele = dis->gElement( gid );
+
+    const int* sournod = sourele->NodeIds();
+    const int numnode = sourele->NumNode();
+
+    for( int nod = 0; nod < numnode; nod++ )
+    {
+      if( std::find( more_ele_nodes.begin(), more_ele_nodes.end(), sournod[nod] ) == more_ele_nodes.end() )
+      {
+        delete_ele = false;
+        break;
+      }
+    }
+
+    if( delete_ele )
+      delEle.insert( gid );
+  }
+
+  for( std::set<int>::iterator it = delEle.begin(); it != delEle.end(); it++ )
+    dis->DeleteElement( *it );
+
+  // Call FillComplete only when atleast one element is deleted
+  LINALG::GatherAll( delEle, dis->Comm() );
+
+  if( delEle.size() > 0 )
+  {
+    dis->FillComplete();
+  }
+
+#endif
 }
