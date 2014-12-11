@@ -36,7 +36,7 @@ void GEO::CUT::OUTPUT::GmshElementDump( std::ofstream & file, Element * ele )
     elementtype = 'I';
     break;
   default:
-    throw std::runtime_error( "unknown element type" );
+    throw std::runtime_error( "unknown element type in GmshElementDump" );
   }
   GmshElementDump( file, nodes, elementtype );
 }
@@ -86,7 +86,7 @@ void GEO::CUT::OUTPUT::GmshSideDump( std::ofstream & file, const Side* s )
     elementtype = 'Q';
     break;
   default:
-    throw std::runtime_error( "unknown element type" );
+    throw std::runtime_error( "unknown element type in GmshSideDump" );
   }
   GmshElementDump( file, nodes, elementtype );
 }
