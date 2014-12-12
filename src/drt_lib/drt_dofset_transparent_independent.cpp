@@ -17,7 +17,6 @@ Maintainer: Shadan Shahmiri
 #include "../linalg/linalg_utils.H"
 #include "../drt_cut/cut_node.H"
 #include "../drt_cut/cut_cutwizard.H"
-#include "../drt_geometry/geo_meshintersection.H"
 
 
 DRT::TransparentIndependentDofSet::TransparentIndependentDofSet(

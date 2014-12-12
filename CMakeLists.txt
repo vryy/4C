@@ -645,9 +645,6 @@ set(OBJS_INTERSECTION
   src/drt_xfem/xfluid_timeInt_base.cpp
   src/drt_xfem/xfluid_timeInt_std_SemiLagrange.cpp
   src/drt_xfem/xfluid_timeInt.cpp
-  src/drt_geometry/geo_meshintersection.cpp
-  src/drt_geometry/geo_levelsetintersection.cpp
-  src/drt_geometry/geo_intersection.cpp
   src/drt_combust/combust_interface.cpp
   src/drt_combust/combust_flamefront.cpp
   src/drt_combust/combust_flamefront_utils.cpp

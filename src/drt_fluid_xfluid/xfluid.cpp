@@ -41,9 +41,6 @@ Maintainer:  Benedikt Schott
 
 #include "../drt_xfem/xfluid_timeInt.H"
 
-#include "../drt_geometry/geo_meshintersection.H"
-#include "../drt_geometry/geo_levelsetintersection.H"
-
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_sidehandle.H"
 #include "../drt_cut/cut_volumecell.H"

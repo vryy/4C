@@ -34,8 +34,6 @@ Maintainer:  Shadan Shahmiri
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_geometry/geo_meshintersection.H"
-
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_sidehandle.H"
 #include "../drt_cut/cut_volumecell.H"
