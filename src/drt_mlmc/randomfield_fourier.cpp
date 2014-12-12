@@ -266,7 +266,7 @@ double UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> location,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 double UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> location,
-    double local_mean, double paracont_parameter, bool writetofile, bool output)
+    double local_median, double paracont_parameter, bool writetofile, bool output)
 {
   // safety check
   if(mean_!=0)
@@ -306,10 +306,13 @@ double UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> location,
   }
   if (marginal_pdf_ == normal)
     temp_rf_val = det_value_paracont_ * (1.0 - paracont_parameter)
-        + (paracont_parameter) * (local_mean + sigma_0_ * tempgp);
+        + (paracont_parameter) * (local_median + sigma_0_ * tempgp);
+  // computing exp(log(local_media)) might seem strange. It is done to
+  // allow for a consistent input of local median in both cases: gauss and
+  // lognormal
   else if (marginal_pdf_ == lognormal)
     temp_rf_val = det_value_paracont_ * (1.0 - paracont_parameter)
-        + (paracont_parameter) * exp((local_mean + sigma_0_ * tempgp));
+        + (paracont_parameter) * exp((log(local_median) + sigma_0_ * tempgp));
   else
   {
     dserror("unknown marginal density ");

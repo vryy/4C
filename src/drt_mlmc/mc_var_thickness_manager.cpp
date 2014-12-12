@@ -87,7 +87,7 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
   start_rand_geo_above_bif_ = DRT::INPUT::IntegralValue<int>(mlmcp,
      "START_RF_ABOVE_BIFURCATION");
 
-  z_pos_start_rf_ = mlmcp.get<double>("Z_POS_AAA_START_RF_");
+  z_pos_start_rf_ = mlmcp.get<double>("Z_POS_AAA_START_RF");
   transition_width_ = mlmcp.get<double>("TRANSITION_WIDTH");
 
 
@@ -558,14 +558,14 @@ void UQ::MCVarThicknessManager::ModifyGeometryBasedOnRF(const unsigned int mysee
   Teuchos::ParameterList ale_new_p(alep);
 
   ale_new_p.set("RESTARTEVRY", 0);
-  ale_new_p.set("RESULTSEVRY", 1);
+  ale_new_p.set("RESULTSEVRY", 0);
 
   // setup ale time integration
   Teuchos::RCP< ::ADAPTER::AleBaseAlgorithm> ale =
       Teuchos::rcp(new ::ADAPTER::AleBaseAlgorithm(ale_new_p, aledis_));
   Teuchos::RCP< ::ADAPTER::Ale> my_ale_timint = ale->AleField();
-  my_ale_timint->WriteAccessDiscretization()->Writer()->NewResultFile("ladida",100);
-  my_ale_timint->WriteAccessDiscretization()->Writer()->WriteMesh(0, 0.01);
+  //my_ale_timint->WriteAccessDiscretization()->Writer()->NewResultFile("ladida",100);
+  //my_ale_timint->WriteAccessDiscretization()->Writer()->WriteMesh(0, 0.01);
 
   ComputeNewAleDBCFromRF();
 

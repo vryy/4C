@@ -1601,7 +1601,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("INITIALTHICKNESS", 10., "wall thickness in input file",
       &mlmcp);
 
-  DoubleParameter("Z_POS_AAA_START_RF_", -1078., "Location of bifurcation of AAA including an offset ",
+  DoubleParameter("Z_POS_AAA_START_RF", -1078., "Location of bifurcation of AAA including an offset ",
       &mlmcp);
 
   DoubleParameter("TRANSITION_WIDTH", 15., "Transition domain to blend in random wall thickness",
