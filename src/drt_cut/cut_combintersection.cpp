@@ -23,8 +23,10 @@ Maintainer: Benedikt Schott and Magnus Winter
  *-----------------------------------------------------------------------------------------*/
 
 GEO::CUT::CombIntersection::CombIntersection(int myrank)
-:   LevelSetIntersection( myrank, false), MeshIntersection(1, myrank), myrank_(myrank)
+:   ParentIntersection(myrank), LevelSetIntersection( myrank, false), MeshIntersection(1, myrank)
 {
+  // call also the ParentIntersection-constructor first, otherwise according to the public virtual inheritance of diamond shape
+  // the standard constructor of ParentIntersection() with default value of myrank is called
 }
 
 

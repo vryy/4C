@@ -16,7 +16,7 @@ Maintainer: Ager
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "drt_discret_xfem.H"
-#include "../drt_xfem/xfem_fluiddofset.H"
+#include "../drt_xfem/xfem_dofset.H"
 #include "../linalg/linalg_utils.H"
 
 
@@ -80,9 +80,9 @@ void DRT::DiscretizationXFEM::StoreInitialDofs()
   if (fsds == Teuchos::null)
     dserror("DiscretizationXFEM: Cast to DRT::FixedSizeDofSet failed!");
 
-  Teuchos::RCP<XFEM::FluidDofSet> xfds = Teuchos::rcp_dynamic_cast<XFEM::FluidDofSet>(initialdofsets_[0]);
+  Teuchos::RCP<XFEM::XFEMDofSet> xfds = Teuchos::rcp_dynamic_cast<XFEM::XFEMDofSet>(initialdofsets_[0]);
   if (xfds != Teuchos::null)
-    dserror("DiscretizationXFEM: Initial Dofset shouldn't be a XFEM::FluidDofSet!");
+    dserror("DiscretizationXFEM: Initial Dofset shouldn't be a XFEM::XFEMDofSet!");
 
   int numdofspernode = 0;
   fsds->GetReservedMaxNumDofperNode(numdofspernode);
@@ -98,7 +98,8 @@ void DRT::DiscretizationXFEM::StoreInitialDofs()
   initialpermdofrowmap_ = ExtendMap(fsds->DofRowMap(),numdofspernodedofset,numdofsetspernode,false);
 
   initialized_ = true;
-    return;
+
+  return;
 }
 
 /*------------------------------------------------------------------------------*

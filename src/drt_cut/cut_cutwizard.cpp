@@ -33,15 +33,17 @@ Maintainer: Benedikt Schott
 /*-------------------------------------------------------------*
  * constructor
 *--------------------------------------------------------------*/
-GEO::CutWizardNEW::CutWizardNEW( Teuchos::RCP<DRT::DiscretizationXFEM> xdis, Teuchos::RCP<DRT::Discretization> cutterdis)
-  : backdis_( xdis ),
+GEO::CutWizardNEW::CutWizardNEW( Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Discretization> cutterdis)
+  : backdis_( dis ),
     cutterdis_( cutterdis ),
     myrank_ ( backdis_->Comm().MyPID() ),
     intersection_(Teuchos::rcp( new GEO::CUT::CombIntersection( myrank_ ))),
     do_mesh_intersection_(false),
     do_levelset_intersection_(false),
     lsv_only_plus_domain_(true),
-    is_crack_(false)
+    is_crack_(false),
+    is_set_options_(false),
+    is_set_state_(false)
 {
   if(backdis_ == Teuchos::null) dserror("null pointer to background dis, invalid!");
 }
@@ -75,6 +77,7 @@ void GEO::CutWizardNEW::SetOptions(
   // set position option to the intersection class
   intersection_->SetFindPositions( positions );
 
+  is_set_options_ = true;
 }
 
 
@@ -104,6 +107,8 @@ void GEO::CutWizardNEW::SetState(
     do_levelset_intersection_ = true;
 
   if(!do_mesh_intersection_ and !do_levelset_intersection_) dserror(" no mesh intersection and no level-set intersection! Why do you call the CUT-library?");
+
+  is_set_state_ = true;
 }
 
 
@@ -128,6 +133,10 @@ void GEO::CutWizardNEW::Cut(
     bool include_inner //!< perform cut in the interior of the cutting mesh
 )
 {
+  // safety checks if the cut is initialized correctly
+  if(!is_set_options_) dserror("you have call SetOptions() before you can use the CutWizard");
+  if(!is_set_state_)   dserror("you have call SetState() before you can use the CutWizard");
+
 
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CutWizardNEW::Cut" );
 
@@ -370,10 +379,13 @@ void GEO::CutWizardNEW::AddBackgroundElements()
 
       if( back_disp_col_ != Teuchos::null)
       {
+        // castt to DiscretizationXFEM
+        Teuchos::RCP<DRT::DiscretizationXFEM>  xbackdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(backdis_, true);
+
         lm.clear();
         mydisp.clear();
 
-        backdis_->InitialDof(&node, lm); //to get all dofs of background (also not active ones at the moment!)
+        xbackdis->InitialDof(&node, lm); //to get all dofs of background (also not active ones at the moment!)
 
         if(lm.size() == 3) // case used actually?
         {
@@ -457,7 +469,7 @@ void GEO::CutWizardNEW::Run_Cut(
       backdis_->Comm().Barrier();
 
       const double t_diff = Teuchos::Time::wallTime() - t_start;
-      if (myrank_ == 0)
+      if (myrank_ == 0 and screenoutput_)
         IO::cout << "\t\t\t\t... Success (" << t_diff << " secs)" << IO::endl;
     }
     //----------------------------------------------------------
@@ -472,7 +484,7 @@ void GEO::CutWizardNEW::Run_Cut(
       backdis_->Comm().Barrier();
 
       const double t_diff = Teuchos::Time::wallTime() - t_start;
-      if (myrank_ == 0)
+      if (myrank_ == 0 and screenoutput_)
         IO::cout << "\t\t... Success (" << t_diff << " secs)" << IO::endl;
     }
   }
@@ -488,7 +500,7 @@ void GEO::CutWizardNEW::Run_Cut(
     backdis_->Comm().Barrier();
 
     const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 ) IO::cout << "\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
+    if ( myrank_ == 0 and screenoutput_ ) IO::cout << "\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
   }
 
   //----------------------------------------------------------
@@ -496,13 +508,13 @@ void GEO::CutWizardNEW::Run_Cut(
   {
     const double t_start = Teuchos::Time::wallTime();
 
-    FindPositionDofSets( include_inner, screenoutput_ );
+    FindPositionDofSets( include_inner );
 
     // just for time measurement
     backdis_->Comm().Barrier();
 
     const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 ) IO::cout << "\t... Success (" << t_diff  <<  " secs)" << IO::endl;
+    if ( myrank_ == 0 and screenoutput_ ) IO::cout << "\t... Success (" << t_diff  <<  " secs)" << IO::endl;
   }
 
   //----------------------------------------------------------
@@ -517,7 +529,7 @@ void GEO::CutWizardNEW::Run_Cut(
     backdis_->Comm().Barrier();
 
     const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 ) IO::cout << "\t\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
+    if ( myrank_ == 0 and screenoutput_ ) IO::cout << "\t\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
   }
 
   intersection_->Status(VCellgausstype_);
@@ -527,12 +539,12 @@ void GEO::CutWizardNEW::Run_Cut(
 /*------------------------------------------------------------------------------------------------*
  * routine for finding node positions and computing vc dofsets in a parallel way
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardNEW::FindPositionDofSets(bool include_inner, bool screenoutput)
+void GEO::CutWizardNEW::FindPositionDofSets(bool include_inner)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel)" );
 
-  if(myrank_==0 and screenoutput) IO::cout << "\t * 5/6 Cut_Positions_Dofsets (parallel) ...";
+  if(myrank_==0 and screenoutput_) IO::cout << "\t * 5/6 Cut_Positions_Dofsets (parallel) ...";
 
 //  const double t_start = Teuchos::Time::wallTime();
 

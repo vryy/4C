@@ -59,10 +59,6 @@ public:
 
   void AddMeshCuttingSide( int sid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype, int mi );
 
-private:
-
-  int myrank_;
-
 };
 
 }

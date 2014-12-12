@@ -36,9 +36,9 @@
 #include "../drt_mortar/mortar_element.H"
 
 // Cut
-#include "../drt_xfem/xfem_fluidwizard.H"
 #include "../drt_cut/cut_volumecell.H"
 #include "../drt_cut/cut_elementhandle.H"
+#include "../drt_cut/cut_cutwizard.H"
 
 // search
 #include "../drt_geometry/searchtree.H"
@@ -1201,24 +1201,29 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
   sauxdis->FillComplete(true, false, false);
   mauxdis->FillComplete(true, false, false);
 
-  // create cut wizard
-  Teuchos::RCP<XFEM::FluidWizardMesh> wizard = Teuchos::rcp( new XFEM::FluidWizardMesh(mauxdis, sauxdis ));
+  //--------------------------------------------------------------------------------------
+   // Initialize the cut wizard
+
+   // create new cut wizard
+   Teuchos::RCP<GEO::CutWizardNEW> wizard = Teuchos::rcp( new GEO::CutWizardNEW(mauxdis, sauxdis) );
 
   // *************************************
   // TESSELATION *************************
   if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(), "CUTTYPE")
       == INPAR::VOLMORTAR::cuttype_tessellation)
   {
-    wizard->Create();
-
+    // Set options for the cut wizard
     wizard->SetOptions(
-            INPAR::CUT::VCellGaussPts_Tessellation, // how to create volume cell Gauss points?
-            INPAR::CUT::BCellGaussPts_Tessellation, // how to create boundary cell Gauss points?
-            false, // gmsh output for cut library
-            true,  // find point positions
-            true,  // create tet cells only
-            false  // screen output
-            );
+        INPAR::CUT::VCellGaussPts_Tessellation, // how to create volume cell Gauss points?
+        INPAR::CUT::BCellGaussPts_Tessellation, // how to create boundary cell Gauss points?
+        false,                                  // gmsh output for cut library
+        true,                                   // find point positions
+        true,                                   // generate only tet cells
+        false                                   // print screen output
+    );
+
+    // cut in reference configuration
+    wizard->SetState(Teuchos::null, Teuchos::null, Teuchos::null);
 
     wizard->Cut(true);  // include_inner
 
@@ -1263,18 +1268,20 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
   else if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CutType>(Params(),
       "CUTTYPE") == INPAR::VOLMORTAR::cuttype_directdivergence)
   {
-    wizard->Create();
-
+    // Set options for the cut wizard
     wizard->SetOptions(
         INPAR::CUT::VCellGaussPts_DirectDivergence, // how to create volume cell Gauss points?
         INPAR::CUT::BCellGaussPts_DirectDivergence, // how to create boundary cell Gauss points?
-        false, // gmsh output for cut library
-        true,  // find point positions
-        false, // create tet cells only
-        false // suppress screen output
-        );
+        false,                                      // gmsh output for cut library
+        true,                                       // find point positions
+        false,                                      // generate only tet cells
+        false                                       // print screen output
+    );
 
-    wizard->Cut(true); // include_inner
+    // cut in reference configuration
+    wizard->SetState(Teuchos::null, Teuchos::null, Teuchos::null);
+
+    wizard->Cut(true);  // include_inner
 
     GEO::CUT::plain_volumecell_set mcells_out;
     GEO::CUT::plain_volumecell_set mcells_in;

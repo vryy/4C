@@ -640,8 +640,6 @@ set(OBJS_INTERSECTION
   src/drt_xfem/xdofmapcreation_parallel_utils.cpp
   src/drt_xfem/xfem_edgestab.cpp
   src/drt_xfem/xfem_dofset.cpp
-  src/drt_xfem/xfem_fluiddofset.cpp
-  src/drt_xfem/xfem_fluidwizard.cpp
   src/drt_xfem/xfem_neumann.cpp
   src/drt_xfem/xfluidfluid_timeInt.cpp
   src/drt_xfem/xfluid_timeInt_base.cpp

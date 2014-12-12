@@ -24,7 +24,6 @@ class Epetra_SerialDenseMatrix;
 namespace DRT
 {
   class Discretization;
-  class DiscretizationXFEM;
   class Element;
 }
 
@@ -51,7 +50,7 @@ namespace GEO
     /*!
     \brief Constructor
     */
-    CutWizardNEW( Teuchos::RCP<DRT::DiscretizationXFEM> xdis, Teuchos::RCP<DRT::Discretization> cutterdis );
+    CutWizardNEW( Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Discretization> cutterdis );
 
     /*!
     \brief Destructor
@@ -162,7 +161,7 @@ namespace GEO
     );
 
     //! routine for finding node positions and computing volume-cell dofsets in a parallel way
-    void FindPositionDofSets(bool include_inner, bool screenoutput);
+    void FindPositionDofSets(bool include_inner);
 
     //! write statistics and output to screen and files
     void Output(bool include_inner);
@@ -192,10 +191,10 @@ namespace GEO
     //---------------------------------discretizations----------------------------
 
     //! @name discretizations
-    Teuchos::RCP<DRT::DiscretizationXFEM> backdis_;              ///< background discretization
-    Teuchos::RCP<DRT::Discretization> cutterdis_;                ///< cutter discretization
+    Teuchos::RCP<DRT::Discretization> backdis_;              ///< background discretization
+    Teuchos::RCP<DRT::Discretization> cutterdis_;            ///< cutter discretization
 
-    int myrank_;                                                 ///< my processor Id
+    int myrank_;                                             ///< my processor Id
     //@}
 
 
@@ -232,6 +231,14 @@ namespace GEO
     //! @name Options
     std::map<int, LINALG::Matrix<3,1> > tip_nodes_;        ///< nodes of the crack tip when simulating FSI with crack
     bool is_crack_;                                        ///< are crack tipnodes involved?
+    //@}
+
+
+    //--------------------------------- Initialization flags ----------------------------
+
+    //! @name Flags whether wizard is initialized correctly
+    bool is_set_options_;
+    bool is_set_state_;
     //@}
 
   };
