@@ -123,16 +123,28 @@ public:
     {
     case DRT::Element::tet4:
     {
-      const DRT::ELEMENTS::So_tet4* ele = dynamic_cast<const DRT::ELEMENTS::So_tet4*>(this);
-      if(ele != NULL)
-       return So_tet4ScatraType::Instance().UniqueParObjectId();
+      //const DRT::ELEMENTS::So_tet4* ele = dynamic_cast<const DRT::ELEMENTS::So_tet4*>(this);
+      //if(ele != NULL)
+      return So_tet4ScatraType::Instance().UniqueParObjectId();
       // else
        // return NStet5ScatraType::Instance().UniqueParObjectId();
     }
     case DRT::Element::tet10:
       return So_tet10ScatraType::Instance().UniqueParObjectId();
     case DRT::Element::hex8:
-      return So_hex8ScatraType::Instance().UniqueParObjectId();
+    {
+      // cast the most specialised element
+      // otherwise cast fails, because hex8fbar == hex8
+      const DRT::ELEMENTS::So_hex8fbar* ele
+        = dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
+
+      if(ele != NULL)
+        return So_hex8fbarScatraType::Instance().UniqueParObjectId();
+      else
+        return So_hex8ScatraType::Instance().UniqueParObjectId();
+
+      break;
+    }
     case DRT::Element::wedge6:
       return So_weg6ScatraType::Instance().UniqueParObjectId();
     default: dserror("unknown element type!");
@@ -183,7 +195,20 @@ public:
     case DRT::Element::tet10:
       return So_tet10ScatraType::Instance();
     case DRT::Element::hex8:
-      return So_hex8ScatraType::Instance();
+    {
+      // cast the most specialised element
+      // otherwise cast fails, because hex8fbar == hex8
+      const DRT::ELEMENTS::So_hex8fbar* ele
+        = dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
+
+      if(ele != NULL)
+        return So_hex8fbarScatraType::Instance();
+      else
+        return So_hex8ScatraType::Instance();
+
+      break;
+    }
+      return so3_ele::ElementType();
     case DRT::Element::wedge6:
       return So_weg6ScatraType::Instance();
     default:

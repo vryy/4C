@@ -77,6 +77,69 @@ int DRT::ELEMENTS::So_hex8ScatraType::Initialize(DRT::Discretization& dis)
 
 
 /*----------------------------------------------------------------------*
+ |  HEX 8 fbar Element                                       Thon 12/14 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::So_hex8fbarScatraType DRT::ELEMENTS::So_hex8fbarScatraType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_hex8fbarScatraType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* object =
+         new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarScatraType::Create( const std::string eletype,
+                                                            const std::string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDH8FBARSCATRA" )
+  {
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>
+                                                                    (id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarScatraType::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>
+                                                                        (id,owner));
+  return ele;
+}
+
+void DRT::ELEMENTS::So_hex8fbarScatraType::SetupElementDefinition(
+    std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions
+)
+{
+
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_hex8;
+  So_hex8fbarType::SetupElementDefinition(definitions_hex8);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8 =
+      definitions_hex8["SOLIDH8FBAR"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs =
+      definitions["SOLIDH8FBARSCATRA"];
+
+  defs["HEX8"]=defs_hex8["HEX8"];
+
+}
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                           |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_hex8fbarScatraType::Initialize(DRT::Discretization& dis)
+{
+
+  So_hex8fbarType::Initialize(dis);
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
  |  TET 4 Element                                       |
  *----------------------------------------------------------------------*/
 

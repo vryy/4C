@@ -13,6 +13,7 @@
 #define SO3_SCATRA_ELETYPES_H_
 
 #include "so_hex8.H"
+#include "so_hex8fbar.H"
 #include "so_tet4.H"
 #include "so_tet10.H"
 #include "so_weg6.H"
@@ -53,6 +54,37 @@ private:
 
   static So_hex8ScatraType instance_;
 };
+
+
+/*----------------------------------------------------------------------*
+ |  HEX 8 fbar Element                                        Thon 12/14 |
+ *----------------------------------------------------------------------*/
+class So_hex8fbarScatraType : public So_hex8fbarType
+{
+public:
+
+  std::string Name() const { return "So_hex8fbarScatraType"; }
+
+  static So_hex8fbarScatraType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+private:
+
+  static So_hex8fbarScatraType instance_;
+};
+
 
 /*----------------------------------------------------------------------*
  |  TET 4 Element                                       |
