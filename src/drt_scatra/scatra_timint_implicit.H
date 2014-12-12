@@ -128,9 +128,6 @@ public:
   //! add global state vectors specific for time-integration scheme
   virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false) = 0;
 
-  //! add interface state vector specific for time-integration scheme
-  virtual void AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params) = 0;
-
   //! setup the variables to do a new time step
   virtual void PrepareTimeStep();
 
@@ -194,9 +191,6 @@ public:
   virtual void Update(
       const int            num=0 //!< field number
   ) = 0;
-
-  //! update density field for natural convection
-  virtual void UpdateDensity() = 0;
 
   //! apply moving mesh data
   void ApplyMeshMovement(
@@ -377,7 +371,7 @@ public:
   //! compute values at intermediate time steps (required for generalized-alpha) ? rename?
   virtual void ComputeIntermediateValues() = 0;
 
-  //! compute density field from concentration(s) for natural convection
+  //! compute nodal density values from nodal concentration values (natural convection)
   void ComputeDensity();
 
   //! iterative update of phinp
@@ -390,37 +384,40 @@ public:
   //! return number of transported scalars
   int NumScal() const { return numscal_; }
 
-  // return scalar field phi at time step n-1
+  // return scalar field phi at time n-1
   virtual Teuchos::RCP<Epetra_Vector> Phinm() = 0;
 
-  //! return scalar field phi at time step n
+  //! return scalar field phi at time n
   Teuchos::RCP<Epetra_Vector> Phin() { return phin_; }
 
-  //! return scalar field phi at time step n+1
+  //! return scalar field phi at time n+1
   Teuchos::RCP<Epetra_Vector> Phinp() { return phinp_; }
 
   //! return values of scalar field phi at nodes (meshfree)
   Teuchos::RCP<Epetra_Vector> Phiatmeshfreenodes() { return phiatmeshfreenodes_; }
 
-  //! return time derivative of scalar field phi at time step n
+  //! return time derivative of scalar field phi at time n
   Teuchos::RCP<Epetra_Vector> Phidtn() { return phidtn_; }
 
-  //! return time derivative of scalar field phi at time step n+1
+  //! return time derivative of scalar field phi at time n+1
   Teuchos::RCP<Epetra_Vector> Phidtnp() { return phidtnp_; }
 
   //! return scalar field history
   Teuchos::RCP<Epetra_Vector> Hist() { return hist_; }
 
-  //! return scalar field phi at time step n+alpha_F
+  //! return scalar field phi at time n+alpha_F
   virtual Teuchos::RCP<Epetra_Vector> Phiaf() = 0;
 
-  //! return scalar field phi at time step n+alpha_M
+  //! return scalar field phi at time n+alpha_F (gen-alpha) or n+1 (otherwise)
+  virtual Teuchos::RCP<Epetra_Vector> Phiafnp() { return phinp_; }
+
+  //! return scalar field phi at time n+alpha_M
   virtual Teuchos::RCP<Epetra_Vector> Phiam() = 0;
 
-  //! return time derivative of scalar field phi at time step n+alpha_M
+  //! return time derivative of scalar field phi at time n+alpha_M
   virtual Teuchos::RCP<Epetra_Vector> Phidtam() = 0;
 
-  //! return fine-scale scalar field fsphi at time step n+1 or alpha_M
+  //! return fine-scale scalar field fsphi at time n+1 or alpha_M
   virtual Teuchos::RCP<Epetra_Vector> FsPhi() = 0;
 
   //! output of mean values of scalar(s)
@@ -429,14 +426,8 @@ public:
   //! output of reaction(s) integral
   void OutputIntegrReac(const int num=0);
 
-  //! return density field at time n+1 for natural convection
-  Teuchos::RCP<Epetra_Vector> DensNp() { return densnp_; }
-
-  //! return density field at time n for natural convection
-  Teuchos::RCP<Epetra_Vector> DensN() { return densn_; }
-
-  //! return density field at time n-1 for natural convection
-  Teuchos::RCP<Epetra_Vector> DensNm() { return densnm_; }
+  //! return density field at time n+alpha_F (gen-alpha) or n+1 (otherwise) for natural convection
+  Teuchos::RCP<Epetra_Vector> Densafnp() { return densafnp_; }
 
   /*========================================================================*/
   //! @name Elch methods
@@ -968,28 +959,24 @@ protected:
   //! number of transported scalars
   int numdofpernode_;
 
-  //! phi at times n
+  //! phi at time n
   Teuchos::RCP<Epetra_Vector> phin_;
-  //! phi at times n+1
+  //! phi at time n+1
   Teuchos::RCP<Epetra_Vector> phinp_;
   //! phi at meshfree nodes (for non-interpolatory meshfree basis functions)
   Teuchos::RCP<Epetra_Vector> phiatmeshfreenodes_;
 
-  //! time derivative of phi at times n
+  //! time derivative of phi at time n
   Teuchos::RCP<Epetra_Vector> phidtn_;
-  //! time derivative of phi at times n+1
+  //! time derivative of phi at time n+1
   Teuchos::RCP<Epetra_Vector> phidtnp_;
 
   //! histvector --- a linear combination of phinm, phin (BDF)
   //!                or phin, phidtn (One-Step-Theta)
   Teuchos::RCP<Epetra_Vector>    hist_;
 
-  //! density (nodebased!) at times n-1 for natural convection algorithm
-  Teuchos::RCP<Epetra_Vector> densnm_;
-  //! density (nodebased!) at times n for natural convection algorithm
-  Teuchos::RCP<Epetra_Vector> densn_;
-  //! density (nodebased!) at times n+1 for natural convection algorithm
-  Teuchos::RCP<Epetra_Vector> densnp_;
+  //! density at time n+alpha_F (gen-alpha) or n+1 (otherwise) for natural convection algorithm
+  Teuchos::RCP<Epetra_Vector> densafnp_;
 
   /*========================================================================*/
   //! @name velocity, pressure, and related

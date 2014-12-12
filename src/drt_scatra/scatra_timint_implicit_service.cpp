@@ -676,60 +676,61 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve()
 } // SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve
 
 
-/*----------------------------------------------------------------------*
- | compute density from concentration(s)                      gjb 07/09 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | compute nodal density values from nodal concentration values   fang 12/14 |
+ *---------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeDensity()
 {
-  double newdensity(0.0);
-  int err(0);
-
-  // loop over all local nodes
-  for(int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
+  // loop over all nodes owned by current processor
+  for(int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); ++lnodeid)
   {
-    // get the processor's local node
+    // get current node
     DRT::Node* lnode = discret_->lRowNode(lnodeid);
 
-    // get the degrees of freedom associated with this node
-    std::vector<int> nodedofs;
-    nodedofs = discret_->Dof(lnode);
-    int numdof = nodedofs.size();
+    // get associated degrees of freedom
+    std::vector<int> nodedofs = discret_->Dof(lnode);
+    const int numdof = nodedofs.size();
 
-    newdensity= 1.0;
-    // loop over all species
-    for(int k=0; k<numscal_; k++)
+    // initialize nodal density value
+    double density = 1.;
+
+    // loop over all transported scalars
+    for(int k=0; k<numscal_; ++k)
     {
       /*
         //                  k=numscal_-1
         //          /       ----                         \
         //         |        \                            |
-        // rho_0 * | 1 +    /       alfa_k * (c_k - c_0) |
+        // rho_0 * | 1 +    /      alpha_k * (c_k - c_0) |
         //         |        ----                         |
         //          \       k=0                          /
         //
-        // For use of molar mass M_k:  alfa_k = M_k/rho_0  !!
+        // For use of molar mass M_k:  alpha_k = M_k/rho_0
        */
 
-      // global and processor's local DOF ID
+      // global and local dof ID
       const int globaldofid = nodedofs[k];
-      const int localdofid = phinp_->Map().LID(globaldofid);
+      const int localdofid = Phiafnp()->Map().LID(globaldofid);
       if (localdofid < 0)
-        dserror("localdofid not found in map for given globaldofid");
+        dserror("Local dof ID not found in dof map!");
 
-      // compute contribution to density due to ionic species k
-      newdensity += densific_[k]*((*phinp_)[localdofid]-c0_[k]);
+      // add contribution of scalar k to nodal density value
+      density += densific_[k] * ((*(Phiafnp()))[localdofid] - c0_[k]);
     }
 
-    // insert the current density value for this node
-    // (has to be at position of el potential/ the position of the last dof!
+    // insert nodal density value into global density vector
+    // note that the density vector has been initialized with the dofrowmap of the discretization
+    // in case there is more than one dof per node, the nodal density value is inserted into the position of the last dof
+    // this way, all nodal density values will be correctly extracted in the fluid algorithm
     const int globaldofid = nodedofs[numdof-1];
-    const int localdofid = phinp_->Map().LID(globaldofid);
+    const int localdofid = Phiafnp()->Map().LID(globaldofid);
     if (localdofid < 0)
-      dserror("localdofid not found in map for given globaldofid");
+      dserror("Local dof ID not found in dof map!");
 
-    err = densnp_->ReplaceMyValue(localdofid,0,newdensity);
+    int err = densafnp_->ReplaceMyValue(localdofid,0,density);
 
-    if (err != 0) dserror("error while inserting a value into densnp_");
+    if(err)
+      dserror("Error while inserting nodal density value into global density vector!");
   } // loop over all local nodes
   return;
 } // SCATRA::ScaTraTimIntImpl::ComputeDensity

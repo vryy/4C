@@ -60,9 +60,6 @@ public:
   /// Current solution becomes old solution of next timestep.
   virtual void Update(const int num=0);
 
-  //! update density field for natural convection
-  void UpdateDensity(){dserror("Fully-coupled system is not implemented for the generalized-alpha time integration scheme"); return;};
-
   /// read restart data
   void ReadRestart(int step);
 
@@ -71,6 +68,9 @@ public:
 
   /// routine to return scalar field phi at time step n+alpha_F
   Teuchos::RCP<Epetra_Vector> Phiaf() { return phiaf_; }
+
+  //! return scalar field phi at time n+alpha_F (gen-alpha) or n+1 (otherwise)
+  Teuchos::RCP<Epetra_Vector> Phiafnp() { return phiaf_; }
 
   /// routine to return scalar field phi at time step n+alpha_M
   Teuchos::RCP<Epetra_Vector> Phiam() { return phiam_; }
@@ -138,9 +138,6 @@ protected:
 
   /// add parameters specific for time-integration scheme
   void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
-
-  //! add interface state vector specific for time-integration scheme
-  void AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params);
 
   /// write additional data required for restart
   void OutputRestart();

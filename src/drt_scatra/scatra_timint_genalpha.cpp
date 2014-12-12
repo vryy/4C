@@ -123,10 +123,6 @@ void SCATRA::TimIntGenAlpha::Init()
     }
   }
 
-  // safety check
-  if (DRT::INPUT::IntegralValue<int>(*params_,"NATURAL_CONVECTION") == true)
-    dserror("Natural convection for generalized-alpha time integration scheme is not implemented!");
-
   return;
 }
 
@@ -336,17 +332,6 @@ void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificVectors(bool forcedincrem
     discret_->SetState("hist",hist_);
     discret_->SetState("phin",phin_);
   }
-
-  return;
-}
-
-
-/*------------------------------------------------------------------------------*
- | add interface state vector specific for time-integration scheme   fang 11/14 |
- *------------------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params)
-{
-  strategy_->AddTimeIntegrationSpecificInterfaceVector(phiaf_,params);
 
   return;
 }

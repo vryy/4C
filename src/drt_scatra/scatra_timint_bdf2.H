@@ -47,14 +47,11 @@ public:
   /// Current solution becomes old solution of next timestep.
   virtual void Update(const int num=0);
 
-  /// update density field for natural convection
-  void UpdateDensity();
-
   /// read restart data
   virtual void ReadRestart(int step);
 
   // routine to return scalar field phi at time step n-1
-  Teuchos::RCP<Epetra_Vector> Phinm() { return Teuchos::null; }
+  Teuchos::RCP<Epetra_Vector> Phinm(){return Teuchos::null;}
 
   /// routine to return scalar field phi at time step n+alpha_F
   Teuchos::RCP<Epetra_Vector> Phiaf(){return Teuchos::null;}
@@ -122,9 +119,6 @@ protected:
 
   /// add parameters specific for time-integration scheme
   void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
-
-  //! add interface state vector specific for time-integration scheme
-  void AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params);
 
   /// write additional data required for restart
   virtual void OutputRestart();

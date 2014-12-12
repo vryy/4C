@@ -131,9 +131,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   phidtn_(Teuchos::null),
   phidtnp_(Teuchos::null),
   hist_(Teuchos::null),
-  densnm_(Teuchos::null),
-  densn_(Teuchos::null),
-  densnp_(Teuchos::null),
+  densafnp_(Teuchos::null),
   vel_(Teuchos::null),
   convel_(Teuchos::null),
   fsvel_(Teuchos::null),
@@ -451,6 +449,19 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // -------------------------------------------------------------------
   SetInitialField(DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_,"INITIALFIELD"),
       params_->get<int>("INITFUNCNO"));
+
+  // -------------------------------------------------------------------
+  // preparations for natural convection
+  // -------------------------------------------------------------------
+  if (DRT::INPUT::IntegralValue<int>(*params_,"NATURAL_CONVECTION") == true)
+  {
+    // allocate global density vector and initialize
+    densafnp_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    densafnp_->PutScalar(1.);
+
+    // compute initial mean concentrations and load densification coefficients
+    SetupNatConv();
+  }
 
   return;
 } // ScaTraTimIntImpl::Init()

@@ -2109,8 +2109,8 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
     densn_  = densaf_;
 
     deltadens_ =  (funct_.Dot(escaaf)- 1.0)*density_0;
-    // divison by density_0 was removed here since we keep the density in all
-    // terms of the momentum equation (no divison by rho -> using dynamic viscosity)
+    // division by density_0 was removed here since we keep the density in all
+    // terms of the momentum equation (no division by rho -> using dynamic viscosity)
   }
   // incompressible flow (standard case)
   else
@@ -3889,13 +3889,21 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeSubgridScaleVelocity(
   //----------------------------------------------------------------------
   if (fldparatimint_->IsGenalpha())
   {
-    if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
-      dserror("The combination of generalized-alpha time integration and a Boussinesq approximation has not been implemented yet!");
-
     // rhs of momentum equation: density*bodyforce at n+alpha_F
-    rhsmom_.Update(densaf_,bodyforce_,0.0);
-    // and pressure gradient prescribed as body force
-    // caution: not density weighted
+    if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
+    {
+      // safety check
+      if(fldparatimint_->AlphaF() != 1.0 or fldparatimint_->Gamma() != 1.0)
+        dserror("Boussinesq approximation in combination with generalized-alpha time integration "
+                "has only been tested for BDF2-equivalent time integration parameters! "
+                "Feel free to remove this error at your own risk!");
+
+      rhsmom_.Update(deltadens_,bodyforce_,0.0);
+    }
+    else
+      rhsmom_.Update(densaf_,bodyforce_,0.0);
+
+    // add pressure gradient prescribed as body force (caution: not density weighted)
     rhsmom_.Update(1.0,generalbodyforce_,1.0);
 
     // get acceleration at time n+alpha_M at integration point
@@ -3903,10 +3911,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeSubgridScaleVelocity(
 
     // evaluate momentum residual once for all stabilization right hand sides
     for (int rr=0;rr<nsd_;++rr)
-    {
       momres_old_(rr) = densam_*accint_(rr)+densaf_*conv_old_(rr)+gradp_(rr)
-                       -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)-densaf_*bodyforce_(rr)-generalbodyforce_(rr);
-    }
+                       -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)-rhsmom_(rr);
 
     // add consistency terms for MFS if applicable
     MultfracSubGridScalesConsistentResidual();
@@ -3919,31 +3925,21 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeSubgridScaleVelocity(
       // density*theta*bodyforce at n+1 + density*(histmom/dt)
       // in the case of a Boussinesq approximation: f = rho_0*[(rho - rho_0)/rho_0]*g = (rho - rho_0)*g
       // else:                                      f = rho * g
+      // Changed density from densn_ to densaf_. Makes the OST consistent with the gen-alpha.
       if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
-      {
-        //Changed density from densn_ to densaf_. Makes the OST consistent with the gen-alpha.
         rhsmom_.Update((densaf_/fldparatimint_->Dt()/fldparatimint_->Theta()),histmom_,deltadens_,bodyforce_);
-        // and pressure gradient prescribed as body force
-        // caution: not density weighted
-        rhsmom_.Update(1.0,generalbodyforce_,1.0);
-      }
       else
-      {
-        //Changed density from densn_ to densaf_. Makes the OST consistent with the gen-alpha.
         rhsmom_.Update((densaf_/fldparatimint_->Dt()/fldparatimint_->Theta()),histmom_,densaf_,bodyforce_);
-        // and pressure gradient prescribed as body force
-        // caution: not density weighted
-        rhsmom_.Update(1.0,generalbodyforce_,1.0);
-      }
+
+      // add pressure gradient prescribed as body force (caution: not density weighted)
+      rhsmom_.Update(1.0,generalbodyforce_,1.0);
 
       // compute instationary momentum residual:
       // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
       for (int rr=0;rr<nsd_;++rr)
-      {
         momres_old_(rr) = ((densaf_*velint_(rr)/fldparatimint_->Dt()
                          +fldparatimint_->Theta()*(densaf_*conv_old_(rr)+gradp_(rr)
                          -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)))/fldparatimint_->Theta())-rhsmom_(rr);
-      }
     }
     else
     {

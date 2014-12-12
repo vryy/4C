@@ -187,17 +187,6 @@ void SCATRA::TimIntStationary::AddTimeIntegrationSpecificVectors(bool forcedincr
 }
 
 
-/*------------------------------------------------------------------------------*
- | add interface state vector specific for time-integration scheme   fang 11/14 |
- *------------------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params)
-{
-  strategy_->AddTimeIntegrationSpecificInterfaceVector(phinp_,params);
-
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  |                                                            gjb 09/08 |
  -----------------------------------------------------------------------*/

@@ -67,12 +67,6 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! destructor
     virtual ~MeshtyingStrategyS2I() {};
 
-    //! add interface state vector specific for time-integration scheme
-    void AddTimeIntegrationSpecificInterfaceVector(
-        const Teuchos::RCP<const Epetra_Vector>&   statevector,   //! full state vector at time n+alpha_f (gen-alpha) or n+1 (otherwise)
-        Teuchos::ParameterList&                    parameters     //! parameter list passed to interface elements
-        ) const;
-
     //! compute meshtying residual terms and their linearizations
     void EvaluateMeshtying() const;
 

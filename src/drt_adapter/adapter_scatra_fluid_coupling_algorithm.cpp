@@ -95,21 +95,22 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   case INPAR::SCATRA::timeint_stationary:
   {
     if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_stationary)
-      dserror("Fluid and Scatra time integration schemes do not match");
+      if (comm.MyPID()==0)
+        dserror("Fluid and scatra time integration schemes do not match!");
     break;
   }
   case INPAR::SCATRA::timeint_one_step_theta:
   {
     if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_one_step_theta)
       if (comm.MyPID()==0)
-        std::cout << "Fluid and Scatra time integration do not match!" << std::endl;
+        std::cout << "WARNING: Fluid and scatra time integration schemes do not match!" << std::endl;
     break;
   }
   case INPAR::SCATRA::timeint_bdf2:
   {
     if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_bdf2)
       if (comm.MyPID()==0)
-        std::cout << "Fluid and Scatra time integration do not match!" << std::endl;
+        std::cout << "WARNING: Fluid and scatra time integration schemes do not match!" << std::endl;
     break;
   }
   case INPAR::SCATRA::timeint_gen_alpha:
@@ -117,10 +118,14 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     if (FluidField()->TimIntScheme() != INPAR::FLUID::timeint_npgenalpha and
         FluidField()->TimIntScheme() != INPAR::FLUID::timeint_afgenalpha)
       if (comm.MyPID()==0)
-        std::cout << "Fluid and Scatra time integration do not match!" << std::endl;
+        std::cout << "WARNING: Fluid and scatra time integration schemes do not match!" << std::endl;
     break;
   }
-  default: dserror("Fluid and Scatra time integration schemes do not match"); break;
+  default:
+  {
+    dserror("Time integration scheme for scalar transport not recognized!");
+    break;
+  }
   }
 
   // if applicable, provide scatra data to the turbulence statistics

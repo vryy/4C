@@ -51,9 +51,6 @@ public:
   /// Current solution becomes old solution of next timestep.
   virtual void Update(const int num=0);
 
-  //! update density field for natural convection
-  void UpdateDensity(){dserror("Fully-coupled system is not implemented for the stationary scheme"); return;};
-
   /// read restart data
   void ReadRestart(int step);
 
@@ -115,9 +112,6 @@ protected:
 
   /// add parameters specific for time-integration scheme
   void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
-
-  //! add interface state vector specific for time-integration scheme
-  void AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params);
 
   /// dynamic Smagorinsky model
   void DynamicComputationOfCs() {dserror("no turbulence in stationary flows!"); return;};

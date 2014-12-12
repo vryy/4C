@@ -129,22 +129,23 @@ void SCATRA::ScaTraAlgorithm::TimeLoopTwoWay()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::PrepareTimeLoopTwoWay()
 {
-  // a safety check
+  // safety check
   switch((FluidField()->TimIntScheme()))
   {
-  case INPAR::FLUID::timeint_stationary:
-  case INPAR::FLUID::timeint_one_step_theta:
+  case INPAR::FLUID::timeint_afgenalpha:
   case INPAR::FLUID::timeint_bdf2:
+  case INPAR::FLUID::timeint_one_step_theta:
+  case INPAR::FLUID::timeint_stationary:
     break;
-  default: dserror("Selected time integration scheme is not available!");
+  default:
+  {
+    dserror("Selected time integration scheme is not available!");
     break;
+  }
   }
 
   // compute initial density
-  // set initial density to time step n+1 and n
   ScaTraField()->ComputeDensity();
-  // not essential
-  ScaTraField()->UpdateDensity();
 
   return;
 }
@@ -186,27 +187,23 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStepConvection()
 
   switch((FluidField()->TimIntScheme()))
   {
+  case INPAR::FLUID::timeint_afgenalpha:
+  case INPAR::FLUID::timeint_bdf2:
+  case INPAR::FLUID::timeint_one_step_theta:
   case INPAR::FLUID::timeint_stationary:
   {
     FluidField()->SetIterScalarFields(
-        ScaTraField()->DensNp(),
-        ScaTraField()->DensNp(), // we have to provide something here
+        ScaTraField()->Densafnp(),
+        ScaTraField()->Densafnp(), // not needed, provided as dummy vector
         Teuchos::null,
         ScaTraField()->Discretization());
     break;
   }
-  case INPAR::FLUID::timeint_one_step_theta:
-  case INPAR::FLUID::timeint_bdf2:
+  default:
   {
-    FluidField()->SetIterScalarFields(
-        ScaTraField()->DensNp(),
-        ScaTraField()->DensN(),
-        Teuchos::null,
-        ScaTraField()->Discretization());
+    dserror("Selected time integration scheme is not available!");
     break;
   }
-  default: dserror("Selected time integration scheme is not available");
-    break;
   }
 
   FluidField()->PrepareTimeStep();
@@ -282,9 +279,9 @@ void SCATRA::ScaTraAlgorithm::DoTransportStep()
         FluidField()->Velaf(),
         FluidField()->FsVel(),
         Teuchos::null,
-        FluidField()->Discretization());;
+        FluidField()->Discretization());
+    break;
   }
-  break;
   case INPAR::FLUID::timeint_one_step_theta:
   case INPAR::FLUID::timeint_bdf2:
   case INPAR::FLUID::timeint_stationary:
@@ -295,13 +292,14 @@ void SCATRA::ScaTraAlgorithm::DoTransportStep()
         FluidField()->Velnp(),
         FluidField()->FsVel(),
         Teuchos::null,
-        FluidField()->Discretization()
-    );
+        FluidField()->Discretization());
+    break;
   }
-  break;
   default:
+  {
     dserror("Time integration scheme not supported");
     break;
+  }
   }
 
   // solve the transport equation(s)
@@ -355,15 +353,13 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
     // solve nonlinear Navier-Stokes system with body forces
     DoFluidStep();
 
-    // solve nonlinear electrochemical transport equation
+    // solve scalar transport equation
     DoTransportStep();
 
-    // compute new densnp_ and pass it to the fluid discretisation
-    // pass actual density field to fluid discretisation
-    // Density derivative is not used for OST, BDF2 and convective formulation
+    // compute new density field and pass it to the fluid discretization
     ScaTraField()->ComputeDensity();
     FluidField()->SetScalarFields(
-        ScaTraField()->DensNp(),
+        ScaTraField()->Densafnp(),
         0.0,
         Teuchos::null,
         ScaTraField()->Discretization());
@@ -411,46 +407,9 @@ void SCATRA::ScaTraAlgorithm::Update(const int num)
 /*----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::UpdateConvection()
 {
-  // Update ScaTra fields
+  // update scatra and fluid fields
   ScaTraField()->Update();
-
-  // OST/BDF2 time integration schemes are implemented
-  // pass density to fluid discretization at time steps n+1 and n
-  // density time derivative is not used for OST and BDF2 (pass zero vector)
-  // thermodynamic pressure values are set to 1.0 and its derivative to 0.0
-
-  // here SetIterScalarFields is only necessary if the density is used to update the accelerations
-  // otherwise it is a redundant step since the density is multiplied to the history vector in the element
-  /*
-  int numscal = 1;
-
-  switch((FluidField()->TimIntScheme()))
-  {
-  case timeint_stationary:
-  case timeint_one_step_theta:
-  case timeint_bdf2:
-  {
-    FluidField()->SetIterScalarFields(
-        ScaTraField().DensNp(),
-        ScaTraField().DensN(),
-        Teuchos::null,
-        Teuchos::null,
-        1.0,
-        1.0,
-        0.0,
-        0.0,
-        numscal);
-    break;
-  }
-  default: dserror("Selected time integration scheme is not available");
-  }
-  */
-
   FluidField()->Update();
-
-  // Update density at time steps n+1 and n
-  // Update density after SetScalarFields
-  ScaTraField()->UpdateDensity();
 
   return;
 }

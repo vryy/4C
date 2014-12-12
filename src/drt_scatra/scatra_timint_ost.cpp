@@ -93,21 +93,6 @@ void SCATRA::TimIntOneStepTheta::Init()
     }
   }
 
-  // -------------------------------------------------------------------
-  // preparations for natural convection
-  // -------------------------------------------------------------------
-  if (DRT::INPUT::IntegralValue<int>(*params_,"NATURAL_CONVECTION") == true)
-  {
-    // allocate densn_ and densnp_ with *dofrowmap and initialize
-    densn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    densn_->PutScalar(1.0);
-    densnp_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    densnp_->PutScalar(1.0);
-
-    // compute initial mean concentrations and load densification coefficients
-    SetupNatConv();
-  }
-
   return;
 }
 
@@ -285,17 +270,6 @@ void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(bool forcedin
 }
 
 
-/*------------------------------------------------------------------------------*
- | add interface state vector specific for time-integration scheme   fang 11/14 |
- *------------------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificInterfaceVector(Teuchos::ParameterList& params)
-{
-  strategy_->AddTimeIntegrationSpecificInterfaceVector(phinp_,params);
-
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  | compute time derivative                                     vg 09/09 |
  *----------------------------------------------------------------------*/
@@ -349,17 +323,6 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
   // call time update of forcing routine
   if (homisoturb_forcing_ != Teuchos::null)
     homisoturb_forcing_->TimeUpdateForcing();
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | update density at n for natural convection                 gjb 07/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::UpdateDensity()
-{
-  densn_->Update(1.0,*densnp_,0.0);
 
   return;
 }

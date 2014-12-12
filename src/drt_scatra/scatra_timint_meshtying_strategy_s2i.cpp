@@ -48,23 +48,6 @@ islavetomastertransform_(Teuchos::null)
 } // SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I
 
 
-/*------------------------------------------------------------------------------*
- | add interface state vector specific for time-integration scheme   fang 11/14 |
- *------------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::AddTimeIntegrationSpecificInterfaceVector(
-    const Teuchos::RCP<const Epetra_Vector>&   statevector,   //! full state vector at time n+alpha_f (gen-alpha) or n+1 (otherwise)
-    Teuchos::ParameterList&                    parameters     //! parameter list passed to interface elements
-    ) const
-{
-  // set interface state vector iphinp_ with transformed dof values and add to element parameter list
-  imaps_->InsertVector(icoup_->SlaveToMaster(maps_->ExtractVector(*statevector,1)),0,iphinp_);
-  imaps_->InsertVector(icoup_->MasterToSlave(maps_->ExtractVector(*statevector,2)),1,iphinp_);
-  parameters.set<Teuchos::RCP<const Epetra_Vector> >("iphinp",iphinp_);
-
-  return;
-} // SCATRA::MeshtyingStrategyS2I::AddTimeIntegrationSpecificInterfaceVector
-
-
 /*-----------------------------------------------------------------------*
  | evaluate scatra-scatra interface coupling conditions       fang 10/14 |
  *-----------------------------------------------------------------------*/
@@ -89,7 +72,11 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
   // set global and interface state vectors according to time-integration scheme
   scatratimint_->Discretization()->ClearState();
   scatratimint_->AddTimeIntegrationSpecificVectors();
-  scatratimint_->AddTimeIntegrationSpecificInterfaceVector(condparams);
+
+  // set interface state vector iphinp_ with transformed dof values and add to element parameter list
+  imaps_->InsertVector(icoup_->SlaveToMaster(maps_->ExtractVector(*(scatratimint_->Phiafnp()),1)),0,iphinp_);
+  imaps_->InsertVector(icoup_->MasterToSlave(maps_->ExtractVector(*(scatratimint_->Phiafnp()),2)),1,iphinp_);
+  condparams.set<Teuchos::RCP<const Epetra_Vector> >("iphinp",iphinp_);
 
   // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
   auxmat_->Zero();
