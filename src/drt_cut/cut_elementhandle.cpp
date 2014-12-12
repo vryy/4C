@@ -492,7 +492,7 @@ void GEO::CUT::LinearElementHandle::CollectVolumeCells (
 
 /*----------------------------------------------------------------------*/
 // get all the element' sets of volume-cells, nds-vectors and integration points
-// return true is a specific XFEM-Gaussrule is available and necessary
+// return true if a specific XFEM-Gaussrule is available and necessary
 /*----------------------------------------------------------------------*/
 bool GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints (
     std::vector< plain_volumecell_set >                        & cell_sets ,
@@ -508,7 +508,6 @@ bool GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints (
   intpoints_sets.clear();
 
   // switch this on to only integrate cut elements
-#if(0)
   // only one cell_sets for current element and element is not intersected, then use a non-XFEM Gaussrule
   if(!IsIntersected())
   {
@@ -520,7 +519,6 @@ bool GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints (
     }
     else dserror("number of cell_sets for a non-intersected element is invalid: %i", cell_sets.size());
   }
-#endif
 
 
   intpoints_sets.reserve( cell_sets.size() );
