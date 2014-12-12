@@ -27,7 +27,7 @@ namespace DRT
 
 namespace GEO
 {
-  class CutWizardNEW;
+  class CutWizard;
 }
 
 namespace XFEM
@@ -38,7 +38,7 @@ namespace XFEM
   public:
 
     /// constructor
-    XFEMDofSet( const Teuchos::RCP<GEO::CutWizardNEW>& wizard , int numMyReservedDofsperNode, const Teuchos::RCP<DRT::Discretization>& dis)
+    XFEMDofSet( const Teuchos::RCP<GEO::CutWizard>& wizard , int numMyReservedDofsperNode, const Teuchos::RCP<DRT::Discretization>& dis)
       : FixedSizeDofSet(numMyReservedDofsperNode,dis->NumGlobalNodes()),
         wizard_( wizard ),
         dis_(dis)
@@ -92,7 +92,7 @@ namespace XFEM
   private:
 
     /// the cut wizard, holds information about the number of XFEM dofsets per node
-    Teuchos::RCP<GEO::CutWizardNEW> wizard_;
+    Teuchos::RCP<GEO::CutWizard> wizard_;
 
     /// background discretization
     Teuchos::RCP<DRT::Discretization> dis_;

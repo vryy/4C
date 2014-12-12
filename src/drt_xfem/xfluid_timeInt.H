@@ -40,7 +40,7 @@ namespace DRT
 
 namespace GEO
 {
-  class CutWizardNEW;
+  class CutWizard;
 
   namespace CUT
   {
@@ -73,8 +73,8 @@ public:
   //! constructor
   explicit XFluidTimeInt(
       const Teuchos::RCP<DRT::Discretization>                        dis,                    /// discretization
-      const Teuchos::RCP<GEO::CutWizardNEW>                          wizard_old,             /// cut wizard at t^n
-      const Teuchos::RCP<GEO::CutWizardNEW>                          wizard_new,             /// cut wizard at t^(n+1)
+      const Teuchos::RCP<GEO::CutWizard>                             wizard_old,             /// cut wizard at t^n
+      const Teuchos::RCP<GEO::CutWizard>                             wizard_new,             /// cut wizard at t^(n+1)
       const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_old,             /// XFEM dofset at t^n
       const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_new,             /// XFEM dofset at t^(n+1)
       const INPAR::XFEM::XFluidTimeIntScheme                         xfluid_timintapproach,  /// xfluid_timintapproch
@@ -119,7 +119,7 @@ public:
   );
 
   /// all surrounding elements non-intersected?
-  bool NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<GEO::CutWizardNEW> wizard);
+  bool NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<GEO::CutWizard> wizard);
 
   /// find all ghost dofsets around this node and its std-dofset
   void FindSurroundingGhostDofsets(
@@ -223,8 +223,8 @@ public:
 
   Teuchos::RCP<DRT::Discretization> dis_;         /// background  discretization
 
-  Teuchos::RCP<GEO::CutWizardNEW> wizard_old_;    /// old cut wizard w.r.t old interface position
-  Teuchos::RCP<GEO::CutWizardNEW> wizard_new_;    /// new cut wizard w.r.t new interface position
+  Teuchos::RCP<GEO::CutWizard> wizard_old_;       /// old cut wizard w.r.t old interface position
+  Teuchos::RCP<GEO::CutWizard> wizard_new_;       /// new cut wizard w.r.t new interface position
 
   Teuchos::RCP<XFEM::XFEMDofSet> dofset_old_;    /// old XFEM dofset w.r.t old interface position
   Teuchos::RCP<XFEM::XFEMDofSet> dofset_new_;    /// new XFEM dofset w.r.t new interface position

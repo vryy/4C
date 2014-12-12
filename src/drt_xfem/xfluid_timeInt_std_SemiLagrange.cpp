@@ -1504,7 +1504,7 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(
 #endif
 
 
-  Teuchos::RCP<GEO::CutWizardNEW> wizard = step_np ? wizard_new_ : wizard_old_;
+  Teuchos::RCP<GEO::CutWizard> wizard = step_np ? wizard_new_ : wizard_old_;
 
   GEO::CUT::ElementHandle* e = wizard->GetElement(ele);
 
@@ -1656,7 +1656,7 @@ void XFEM::XFLUID_SemiLagrange::computeNodalGradient(
     DRT::Node*                         node,           ///< node at which we reconstruct the gradients
     std::vector<DRT::Element*>&        eles,           ///< elements around node used for the reconstruction
     std::vector<std::vector<int> >&    ele_nds,        ///< corresonding elements nodal dofset information
-    XFEM::XFEMDofSet &                 dofset,         ///< fluid dofset
+    XFEM::XFEMDofSet &                 dofset,         ///< XFEM dofset
     std::vector<LINALG::Matrix<3,3> >& velDeriv_avg,   ///< velocity/acc component derivatives for several vectors
     std::vector<LINALG::Matrix<1,3> >& preDeriv_avg    ///< pressure-component derivatives for several vectors
 ) const

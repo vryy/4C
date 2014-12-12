@@ -1205,7 +1205,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
    // Initialize the cut wizard
 
    // create new cut wizard
-   Teuchos::RCP<GEO::CutWizardNEW> wizard = Teuchos::rcp( new GEO::CutWizardNEW(mauxdis, sauxdis) );
+   Teuchos::RCP<GEO::CutWizard> wizard = Teuchos::rcp( new GEO::CutWizard(mauxdis, sauxdis) );
 
   // *************************************
   // TESSELATION *************************

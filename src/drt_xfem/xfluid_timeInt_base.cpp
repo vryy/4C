@@ -47,13 +47,13 @@ Maintainer: Benedikt Schott
 XFEM::XFLUID_TIMEINT_BASE::XFLUID_TIMEINT_BASE(
     const Teuchos::RCP<DRT::Discretization>          discret,          /// background discretization
     const Teuchos::RCP<DRT::Discretization>          boundarydis,      /// cut discretization
-    Teuchos::RCP<GEO::CutWizardNEW>                  wizard_old,       /// fluid wizard w.r.t. old interface position
-    Teuchos::RCP<GEO::CutWizardNEW>                  wizard_new,       /// fluid wizard w.r.t. new interface position
-    Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_old,       /// fluid dofset w.r.t. old interface position
-    Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_new,       /// fluid dofset w.r.t. new interface position
+    Teuchos::RCP<GEO::CutWizard>                     wizard_old,       /// cut wizard w.r.t. old interface position
+    Teuchos::RCP<GEO::CutWizard>                     wizard_new,       /// cut wizard w.r.t. new interface position
+    Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_old,       /// XFEM dofset w.r.t. old interface position
+    Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_new,       /// XFEM dofset w.r.t. new interface position
     std::vector<Teuchos::RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
-    const Epetra_Map&                       olddofcolmap,     /// dofcolmap w.r.t. old interface position
-    const Epetra_Map&                       newdofrowmap,     /// dofcolmap w.r.t. new interface position
+    const Epetra_Map&                                olddofcolmap,     /// dofcolmap w.r.t. old interface position
+    const Epetra_Map&                                newdofrowmap,     /// dofcolmap w.r.t. new interface position
     const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap        /// map of periodic boundary conditions
 ) :
 discret_(discret),
@@ -141,7 +141,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
   //-----------------------------------------------------------------------
   // standard case of a real line between x1 and x2
 
-  Teuchos::RCP<GEO::CutWizardNEW> wizard = newTimeStep ? wizard_new_ : wizard_old_;
+  Teuchos::RCP<GEO::CutWizard> wizard = newTimeStep ? wizard_new_ : wizard_old_;
 
   // REMARK:
   // changing the side of a point at two times (newton steps) with coordinates x1 and x2 is done
@@ -991,7 +991,7 @@ void XFEM::XFLUID_STD::getGPValues(
     DRT::Element*                 ele,            ///< pointer to element
     LINALG::Matrix<3,1>&          xi,             ///< local coordinates of point w.r.t element
     std::vector<int>&             nds,            ///< nodal dofset of point for elemental nodes
-    XFEM::XFEMDofSet&             dofset,         ///< fluid dofset
+    XFEM::XFEMDofSet&             dofset,         ///< XFEM dofset
     LINALG::Matrix<3,1>&          vel,            ///< determine velocity at point
     LINALG::Matrix<3,3>&          vel_deriv,      ///< determine velocity derivatives at point
     double &                      pres,           ///< pressure
@@ -1025,7 +1025,7 @@ void XFEM::XFLUID_STD::getGPValuesT(
     DRT::Element*                 ele,                 ///< pointer to element
     LINALG::Matrix<3,1>&          xi,                  ///< local coordinates of point w.r.t element
     std::vector<int>&             nds,                 ///< nodal dofset of point for elemental nodes
-    XFEM::XFEMDofSet&             dofset,              ///< fluid dofset
+    XFEM::XFEMDofSet&             dofset,              ///< XFEM dofset
     LINALG::Matrix<3,1>&          vel,                 ///< determine velocity at point
     LINALG::Matrix<3,3>&          vel_deriv,           ///< determine velocity derivatives at point
     double &                      pres,                ///< pressure

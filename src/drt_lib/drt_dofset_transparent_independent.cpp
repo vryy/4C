@@ -22,7 +22,7 @@ Maintainer: Shadan Shahmiri
 DRT::TransparentIndependentDofSet::TransparentIndependentDofSet(
   Teuchos::RCP<DRT::Discretization> sourcedis,
   bool parallel,
-  Teuchos::RCP<GEO::CutWizardNEW> wizard = Teuchos::null)
+  Teuchos::RCP<GEO::CutWizard> wizard = Teuchos::null)
   : DRT::TransparentDofSet(sourcedis, parallel),
     wizard_(wizard)
 {

@@ -44,7 +44,7 @@ namespace LINALG
 }
 namespace GEO
 {
-  class CutWizardNEW;
+  class CutWizard;
 
   namespace CUT
   {
@@ -467,8 +467,8 @@ namespace FLD
         const Teuchos::RCP<DRT::Discretization>          dis,                      ///< discretization
         std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,       ///< row map based vectors w.r.t old interface position
         std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,       ///< row map based vectors w.r.t new interface position
-        const Teuchos::RCP<GEO::CutWizardNEW>            wizard_old,               ///< cut wizard w.r.t old interface position
-        const Teuchos::RCP<GEO::CutWizardNEW>            wizard_new,               ///< cut wizard w.r.t new interface position
+        const Teuchos::RCP<GEO::CutWizard>               wizard_old,               ///< cut wizard w.r.t old interface position
+        const Teuchos::RCP<GEO::CutWizard>               wizard_new,               ///< cut wizard w.r.t new interface position
         const Teuchos::RCP<XFEM::XFEMDofSet>             dofset_old,               ///< dofset w.r.t old interface position
         const Teuchos::RCP<XFEM::XFEMDofSet>             dofset_new,               ///< dofset w.r.t new interface position
         std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  ///< reconstruction map for nodes and its dofsets
@@ -856,7 +856,7 @@ namespace FLD
     //! @name old time-step state data w.r.t old interface position and dofsets from t^n used for XFEM time-integration
     Teuchos::RCP<Epetra_Vector>         veln_Intn_;      //!< velocity solution from last time-step t^n
     Teuchos::RCP<Epetra_Vector>         accn_Intn_;      //!< acceleration from last time-step t^n
-    Teuchos::RCP<GEO::CutWizardNEW>     wizard_Intn_;    //!< cut wizard from last time-step t^n
+    Teuchos::RCP<GEO::CutWizard>        wizard_Intn_;    //!< cut wizard from last time-step t^n
     Teuchos::RCP<XFEM::XFEMDofSet>      dofset_Intn_;    //!< dofset from last time-step t^n
 
     Teuchos::RCP<Epetra_Map> dofcolmap_Intn_;
@@ -865,7 +865,7 @@ namespace FLD
 
     //! @name last iteration step state data from t^(n+1) used for pseudo XFEM time-integration during monolithic Newton or partitioned schemes
     Teuchos::RCP<Epetra_Vector>         velnp_Intnpi_;   //!< velocity solution from last iteration w.r.t last dofset and interface position
-    Teuchos::RCP<GEO::CutWizardNEW>     wizard_Intnpi_;  //!< cut wizard from last iteration-step t^(n+1)
+    Teuchos::RCP<GEO::CutWizard>        wizard_Intnpi_;  //!< cut wizard from last iteration-step t^(n+1)
     Teuchos::RCP<XFEM::XFEMDofSet>      dofset_Intnpi_;  //!< dofset from last iteration-step t^(n+1)
 
     //! is a restart of the monolithic Newton necessary caused by changing dofsets?

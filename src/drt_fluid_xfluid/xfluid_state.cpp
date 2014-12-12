@@ -41,7 +41,7 @@ Maintainer:  Raffaela Kruse and Benedikt Schott
  |  Constructor for XFluidState                             kruse 08/14 |
  *----------------------------------------------------------------------*/
 FLD::XFluidState::XFluidState(
-  Teuchos::RCP<GEO::CutWizardNEW> & wizard,
+  Teuchos::RCP<GEO::CutWizard> & wizard,
   Teuchos::RCP<XFEM::XFEMDofSet> &  dofset,
   Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap) :
   xfluiddofrowmap_(xfluiddofrowmap),
@@ -165,43 +165,6 @@ void FLD::XFluidState::SetupMapExtractors(const Teuchos::RCP<DRT::Discretization
 
 
 /*----------------------------------------------------------------------*
- |  Set cut wizard                                         schott 12/14 |
- *----------------------------------------------------------------------*/
-void FLD::XFluidStateCreator::SetupWizard(
-  const Teuchos::RCP<DRT::DiscretizationXFEM> & xdiscret,            //!< xfluid background discretization, defines the mesh which is cut
-  const Teuchos::RCP<DRT::Discretization> & boundarydiscret,    //!< boundary discretization, a discretization whose surface elements cut the background mesh
-  Teuchos::RCP<const Epetra_Vector>         back_disp_col,      //!< col vector holding background ALE displacements for backdis
-  Teuchos::RCP<const Epetra_Vector>         cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-  Teuchos::RCP<const Epetra_Vector>         back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
-  std::map<int, LINALG::Matrix<3,1> > &     tip_nodes           //!< tip nodes for crack application
-  )
-{
-//  // Initialize the cut wizard
-//  wizard_ = Teuchos::rcp( new GEO::CutWizardNEW(xdiscret, boundarydiscret) );
-//
-//  // Set options for the cut wizard
-//  wizard_->SetOptions(
-//      VolumeCellGaussPointBy_,       // how to create volume cell Gauss points?
-//      BoundCellGaussPointBy_,        // how to create boundary cell Gauss points?
-//      gmsh_cut_out_,                 // gmsh output for cut library
-//      true,                          // find point positions
-//      false,                         // generate only tet cells
-//      true                           // print screen output
-//  );
-//
-//  // Set the state vectors used for the cut
-//  wizard_->SetState(
-//      back_disp_col,      //!< col vector holding background ALE displacements for backdis
-//      cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-//      back_levelset_col   //!< col vector holding nodal level-set values based on backdis
-//  );
-//
-//  // Set crack tip nodes in case of crack application
-//  wizard_->setCrackTipNodes(tip_nodes);
-}
-
-
-/*----------------------------------------------------------------------*
  |  Perform the cut and fill state container                kruse 08/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
@@ -220,7 +183,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
   // Initialize the cut wizard
 
   // create new cut wizard
-  Teuchos::RCP<GEO::CutWizardNEW> wizard = Teuchos::rcp( new GEO::CutWizardNEW(xdiscret, boundarydiscret) );
+  Teuchos::RCP<GEO::CutWizard> wizard = Teuchos::rcp( new GEO::CutWizard(xdiscret, boundarydiscret) );
 
   // Set options for the cut wizard
   wizard->SetOptions(

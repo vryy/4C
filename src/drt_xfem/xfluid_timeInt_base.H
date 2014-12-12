@@ -18,7 +18,7 @@ Maintainer: Benedikt Schott
 
 namespace GEO
 {
-  class CutWizardNEW;
+  class CutWizard;
 
   namespace CUT
   {
@@ -310,10 +310,10 @@ public:
   explicit XFLUID_TIMEINT_BASE(
       const Teuchos::RCP<DRT::Discretization>          discret,          /// background discretization
       const Teuchos::RCP<DRT::Discretization>          boundarydis,      /// cut discretization
-      Teuchos::RCP<GEO::CutWizardNEW>                  wizard_old,       /// fluid wizard w.r.t. old interface position
-      Teuchos::RCP<GEO::CutWizardNEW>                  wizard_new,       /// fluid wizard w.r.t. new interface position
-      Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_old,       /// fluid dofset w.r.t. old interface position
-      Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_new,       /// fluid dofset w.r.t. new interface position
+      Teuchos::RCP<GEO::CutWizard>                     wizard_old,       /// cut wizard w.r.t. old interface position
+      Teuchos::RCP<GEO::CutWizard>                     wizard_new,       /// cut wizard w.r.t. new interface position
+      Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_old,       /// XFEM dofset w.r.t. old interface position
+      Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_new,       /// XFEM dofset w.r.t. new interface position
       std::vector<Teuchos::RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
       const Epetra_Map&                                olddofcolmap,     /// dofcolmap w.r.t. old interface position
       const Epetra_Map&                                newdofrowmap,     /// dofcolmap w.r.t. new interface position
@@ -548,8 +548,8 @@ protected:
   Teuchos::RCP<DRT::Discretization> discret_;                  //! background discretization
   Teuchos::RCP<DRT::Discretization> boundarydis_;              //! cut discretization
 
-  Teuchos::RCP<GEO::CutWizardNEW> wizard_old_;                 //! cut wizard w.r.t. old interface position
-  Teuchos::RCP<GEO::CutWizardNEW> wizard_new_;                 //! cut wizard w.r.t. new interface position
+  Teuchos::RCP<GEO::CutWizard> wizard_old_;                 //! cut wizard w.r.t. old interface position
+  Teuchos::RCP<GEO::CutWizard> wizard_new_;                 //! cut wizard w.r.t. new interface position
 
   Teuchos::RCP<XFEM::XFEMDofSet>  dofset_old_;        //! XFEM dofset w.r.t. old interface position
   Teuchos::RCP<XFEM::XFEMDofSet>  dofset_new_;        //! XFEM dofset w.r.t. new interface position

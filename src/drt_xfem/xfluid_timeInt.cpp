@@ -58,10 +58,10 @@ Maintainer: Benedikt Schott
 // -------------------------------------------------------------------
 XFEM::XFluidTimeInt::XFluidTimeInt(
     const Teuchos::RCP<DRT::Discretization>                        dis,                    /// discretization
-    const Teuchos::RCP<GEO::CutWizardNEW>                          wizard_old,             /// fluid wizard at t^n
-    const Teuchos::RCP<GEO::CutWizardNEW>                          wizard_new,             /// fluid wizard at t^(n+1)
-    const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_old,             /// dofset at t^n
-    const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_new,             /// dofset at t^(n+1)
+    const Teuchos::RCP<GEO::CutWizard>                             wizard_old,             /// cut wizard at t^n
+    const Teuchos::RCP<GEO::CutWizard>                             wizard_new,             /// cut wizard at t^(n+1)
+    const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_old,             /// XFEM dofset at t^n
+    const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_new,             /// XFEM dofset at t^(n+1)
     const INPAR::XFEM::XFluidTimeIntScheme                         xfluid_timintapproach,  /// xfluid_timintapproch
     std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&       reconstr_method,        /// reconstruction map for nodes and its dofsets
     const int                                                      step                    /// global time step
@@ -225,7 +225,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
     // get the node
     DRT::Node* node = dis_->gNode(gid);
 
-    // get cut nodes with respect to fluid wizards at t^n and t^(n+1)
+    // get cut nodes with respect to cut wizards at t^n and t^(n+1)
     GEO::CUT::Node * n_new = wizard_new_->GetNode(gid);
     GEO::CUT::Node * n_old = wizard_old_->GetNode(gid);
 
@@ -728,7 +728,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 // -------------------------------------------------------------------
 // all surrounding elements non-intersected ?
 // -------------------------------------------------------------------
-bool XFEM::XFluidTimeInt::NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<GEO::CutWizardNEW> wizard)
+bool XFEM::XFluidTimeInt::NonIntersectedElements(DRT::Node* n, const Teuchos::RCP<GEO::CutWizard> wizard)
 {
   const int numele = n->NumElement();
 

@@ -66,7 +66,7 @@ Maintainer:
 XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
   const Teuchos::RCP<DRT::Discretization> &  bgdis,
   const Teuchos::RCP<DRT::Discretization> &  embdis,
-  Teuchos::RCP<GEO::CutWizardNEW>            wizard,
+  Teuchos::RCP<GEO::CutWizard>               wizard,
   int                                        step,
   enum INPAR::XFEM::XFluidFluidTimeInt       xfem_timeintapproach,
   const Teuchos::ParameterList&              params
@@ -109,7 +109,7 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
 // -------------------------------------------------------------------
 // build maps of node ids to their dof-gids in this time step
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(Teuchos::RCP<GEO::CutWizardNEW> wizard)
+void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(Teuchos::RCP<GEO::CutWizard> wizard)
 {
   // map of standard nodes and their dof-ids
 
@@ -239,7 +239,7 @@ void XFEM::XFluidFluidTimeIntegration::SaveBgNodeMaps()
 // - give gmsh-output
 // - return true, if the maps haven't changed
 // -------------------------------------------------------------------
-bool XFEM::XFluidFluidTimeIntegration::SaveBgNodeMapsAndCreateNew(Teuchos::RCP<GEO::CutWizardNEW> wizard)
+bool XFEM::XFluidFluidTimeIntegration::SaveBgNodeMapsAndCreateNew(Teuchos::RCP<GEO::CutWizard> wizard)
 {
 
   // save the old maps and clear the maps for the new cut
@@ -268,7 +268,7 @@ bool XFEM::XFluidFluidTimeIntegration::SaveBgNodeMapsAndCreateNew(Teuchos::RCP<G
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
-void  XFEM::XFluidFluidTimeIntegration::CreateBgNodeMapsForRestart(Teuchos::RCP<GEO::CutWizardNEW>  wizard)
+void  XFEM::XFluidFluidTimeIntegration::CreateBgNodeMapsForRestart(Teuchos::RCP<GEO::CutWizard>  wizard)
 {
   // Create new maps
   CreateBgNodeMaps(wizard);
@@ -1515,8 +1515,8 @@ void XFEM::XFluidFluidTimeIntegration::GmshOutputForInterpolateFSI( const Teucho
 // patch after projection by solution of an optimization problem
 // -------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::EnforceIncompAfterProjection(
-  Teuchos::RCP<GEO::CutWizardNEW>               wizard,         ///< cut wizard
-  Teuchos::RCP<GEO::CutWizardNEW>               wizard_n,       ///< cut wizard from timestep n
+  Teuchos::RCP<GEO::CutWizard>                      wizard,         ///< cut wizard from timestep n+1
+  Teuchos::RCP<GEO::CutWizard>                      wizard_n,       ///< cut wizard from timestep n
   Teuchos::RCP<Epetra_Vector> &                     bgstate_velnp,  ///< background fluid velocity at timestep n+1
   Teuchos::RCP<Epetra_Vector> &                     bgstate_veln,   ///< background fluid velocity at timestep n
   Teuchos::RCP<Epetra_Vector> &                     bgstate_velnm,  ///< background fluid velocity at timestep n-1
@@ -1543,8 +1543,8 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompAfterProjection(
 // have the full dofs again.
 // -------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::BuildElementPatchForIncompOpt(
-    Teuchos::RCP<GEO::CutWizardNEW>               wizard_n,
-    Teuchos::RCP<GEO::CutWizardNEW>               wizard_np,
+    Teuchos::RCP<GEO::CutWizard>                      wizard_n,
+    Teuchos::RCP<GEO::CutWizard>                      wizard_np,
     const Teuchos::RCP<const LINALG::MapExtractor>  & dbcmaps)
 {
   //---------------------------------------------
@@ -1710,7 +1710,7 @@ void XFEM::XFluidFluidTimeIntegration::BuildElementPatchForIncompOpt(
 // -------------------------------------------------------------------
 // build an incompressibility discretization
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::PrepareIncompOptDiscret(Teuchos::RCP<GEO::CutWizardNEW> wizard_np)
+void XFEM::XFluidFluidTimeIntegration::PrepareIncompOptDiscret(Teuchos::RCP<GEO::CutWizard> wizard_np)
 {
 
   // generate an empty boundary discretisation
@@ -1851,7 +1851,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompOptDiscret(Teuchos::RCP<GEO:
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::EvaluateIncompOpt(Teuchos::RCP<GEO::CutWizardNEW>          wizard)
+void XFEM::XFluidFluidTimeIntegration::EvaluateIncompOpt(Teuchos::RCP<GEO::CutWizard>          wizard)
 {
 
   C_ = LINALG::CreateVector(*incompdis_->DofRowMap(),true);

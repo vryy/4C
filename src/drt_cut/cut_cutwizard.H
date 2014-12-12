@@ -38,7 +38,7 @@ namespace GEO
   }
 
   /// contains the cut, and shared functionality between the level set and mesh cut.
-  class CutWizardNEW
+  class CutWizard
   {
   public:
 
@@ -50,12 +50,12 @@ namespace GEO
     /*!
     \brief Constructor
     */
-    CutWizardNEW( Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Discretization> cutterdis );
+    CutWizard( Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Discretization> cutterdis );
 
     /*!
     \brief Destructor
     */
-    virtual ~CutWizardNEW(){};
+    virtual ~CutWizard(){};
 
     //@}
 

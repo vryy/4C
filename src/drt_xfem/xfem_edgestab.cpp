@@ -42,7 +42,7 @@ Maintainer: Benedikt Schott
  |  Constructor for XFEM_EdgeStab                          schott 03/12 |
  *----------------------------------------------------------------------*/
 XFEM::XFEM_EdgeStab::XFEM_EdgeStab(
-  Teuchos::RCP<GEO::CutWizardNEW>              wizard,                ///< fluid wizard
+  Teuchos::RCP<GEO::CutWizard>                 wizard,                ///< cu wizard
   Teuchos::RCP<DRT::Discretization>            discret,               ///< discretization
   bool                                         include_inner          ///< stabilize also facets with inside position
   ) :

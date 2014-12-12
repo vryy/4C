@@ -34,7 +34,7 @@ namespace DRT
 
 namespace GEO
 {
-  class CutWizardNEW;
+  class CutWizard;
 }
 
 namespace LINALG
@@ -81,7 +81,7 @@ public:
    ctor for one-sided problems
    @param xfluiddofrowmap dof-rowmap of intersected fluid
    */
-  explicit XFluidState(Teuchos::RCP<GEO::CutWizardNEW>& wizard, Teuchos::RCP<XFEM::XFEMDofSet>& dofset, Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap);
+  explicit XFluidState(Teuchos::RCP<GEO::CutWizard>& wizard, Teuchos::RCP<XFEM::XFEMDofSet>& dofset, Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap);
 
   /// dtor
   virtual ~XFluidState(){}
@@ -96,7 +96,7 @@ public:
   void ZeroCouplingMatricesAndRhs();
 
   /// access to the cut wizard
-  Teuchos::RCP<GEO::CutWizardNEW> Wizard()
+  Teuchos::RCP<GEO::CutWizard> Wizard()
   {
     if (wizard_ == Teuchos::null)
       dserror("Cut wizard is uninitialized!");
@@ -205,7 +205,7 @@ private:
   Teuchos::RCP<XFEM::XFEMDofSet> dofset_;
 
   /// cut wizard
-  Teuchos::RCP<GEO::CutWizardNEW> wizard_;
+  Teuchos::RCP<GEO::CutWizard> wizard_;
 
 };
 
@@ -232,16 +232,6 @@ public:
       minnumdofsets_(minnumdofsets)
   {
   }
-
-  /// create a cut wizard
-  void SetupWizard(
-      const Teuchos::RCP<DRT::DiscretizationXFEM> & xdiscret,            //!< xfluid background discretization, defines the mesh which is cut
-      const Teuchos::RCP<DRT::Discretization> & boundarydiscret,    //!< boundary discretization, a discretization whose surface elements cut the background mesh
-      Teuchos::RCP<const Epetra_Vector>         back_disp_col,      //!< col vector holding background ALE displacements for backdis
-      Teuchos::RCP<const Epetra_Vector>         cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-      Teuchos::RCP<const Epetra_Vector>         back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
-      std::map<int, LINALG::Matrix<3,1> > &     tip_nodes           //!< tip nodes for crack application
-  );
 
   /// create a state-object after a cut
   Teuchos::RCP<XFluidState> Create(

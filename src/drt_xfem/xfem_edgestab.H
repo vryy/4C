@@ -40,7 +40,7 @@ namespace DRT
 
 namespace GEO
 {
-  class CutWizardNEW;
+  class CutWizard;
 
   namespace CUT
   {
@@ -66,7 +66,7 @@ public:
 
   //! constructor
   explicit XFEM_EdgeStab(
-      Teuchos::RCP<GEO::CutWizardNEW>              wizard,                ///< cut wizard
+      Teuchos::RCP<GEO::CutWizard>                 wizard,                ///< cut wizard
       Teuchos::RCP<DRT::Discretization>            discret,               ///< discretization
       bool                                         include_inner = false  ///< stabilize also facets with inside position
   );
@@ -130,7 +130,7 @@ public:
   GEO::CUT::SideHandle* GetFace(DRT::Element* faceele);
 
 
-  Teuchos::RCP<GEO::CutWizardNEW> wizard_;    ///< cut wizard
+  Teuchos::RCP<GEO::CutWizard> wizard_;       ///< cut wizard
   Teuchos::RCP<DRT::Discretization> discret_; ///< discretization
 
   bool include_inner_; ///< do we have to stabilize facets with inside position?

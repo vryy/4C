@@ -33,7 +33,7 @@ Maintainer: Benedikt Schott
 /*-------------------------------------------------------------*
  * constructor
 *--------------------------------------------------------------*/
-GEO::CutWizardNEW::CutWizardNEW( Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Discretization> cutterdis)
+GEO::CutWizard::CutWizard( Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Discretization> cutterdis)
   : backdis_( dis ),
     cutterdis_( cutterdis ),
     myrank_ ( backdis_->Comm().MyPID() ),
@@ -58,7 +58,7 @@ GEO::CutWizardNEW::CutWizardNEW( Teuchos::RCP<DRT::Discretization> dis, Teuchos:
 /*-------------------------------------------------------------*
  * set options and flags used during the cut
 *--------------------------------------------------------------*/
-void GEO::CutWizardNEW::SetOptions(
+void GEO::CutWizard::SetOptions(
     INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
     INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
     bool gmsh_output,                           //!< print write gmsh output for cut
@@ -84,7 +84,7 @@ void GEO::CutWizardNEW::SetOptions(
 /*-------------------------------------------------------------*
  * set displacement and level-set vectors used during the cut
 *--------------------------------------------------------------*/
-void GEO::CutWizardNEW::SetState(
+void GEO::CutWizard::SetState(
     Teuchos::RCP<const Epetra_Vector> back_disp_col,      //!< col vector holding background ALE displacements for backdis
     Teuchos::RCP<const Epetra_Vector> cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
     Teuchos::RCP<const Epetra_Vector> back_levelset_col   //!< col vector holding nodal level-set values based on backdis
@@ -114,7 +114,7 @@ void GEO::CutWizardNEW::SetState(
 
 
 //! set the nodes representing crack tip in FSI with crack structure simulations
-void GEO::CutWizardNEW::setCrackTipNodes( std::map<int, LINALG::Matrix<3,1> > & tip )
+void GEO::CutWizard::setCrackTipNodes( std::map<int, LINALG::Matrix<3,1> > & tip )
 {
   tip_nodes_ = tip;
 
@@ -129,7 +129,7 @@ void GEO::CutWizardNEW::setCrackTipNodes( std::map<int, LINALG::Matrix<3,1> > & 
 /*-------------------------------------------------------------*
 * main Cut call
 *--------------------------------------------------------------*/
-void GEO::CutWizardNEW::Cut(
+void GEO::CutWizard::Cut(
     bool include_inner //!< perform cut in the interior of the cutting mesh
 )
 {
@@ -138,7 +138,7 @@ void GEO::CutWizardNEW::Cut(
   if(!is_set_state_)   dserror("you have call SetState() before you can use the CutWizard");
 
 
-  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CutWizardNEW::Cut" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CutWizard::Cut" );
 
   if ( backdis_->Comm().MyPID() == 0 and screenoutput_)
     IO::cout << "\nGEO::CutWizard::Cut:" << IO::endl;
@@ -178,7 +178,7 @@ void GEO::CutWizardNEW::Cut(
 /*-------------------------------------------------------------*
 * prepare the cut, add background elements and cutting sides
 *--------------------------------------------------------------*/
-void GEO::CutWizardNEW::Prepare()
+void GEO::CutWizard::Prepare()
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/6 --- Cut_Initialize" );
@@ -227,7 +227,7 @@ void GEO::CutWizardNEW::Prepare()
 /*-------------------------------------------------------------*
 * add all cutting sides (mesh and level-set sides)
 *--------------------------------------------------------------*/
-void GEO::CutWizardNEW::AddCuttingSides()
+void GEO::CutWizard::AddCuttingSides()
 {
   // add a new level-set side
   if(do_levelset_intersection_) AddLSCuttingSide();
@@ -239,7 +239,7 @@ void GEO::CutWizardNEW::AddCuttingSides()
 /*-------------------------------------------------------------*
 * add level-set cutting side
 *--------------------------------------------------------------*/
-void GEO::CutWizardNEW::AddLSCuttingSide()
+void GEO::CutWizard::AddLSCuttingSide()
 {
   int level_set_sid = 1;
 
@@ -253,7 +253,7 @@ void GEO::CutWizardNEW::AddLSCuttingSide()
 /*-------------------------------------------------------------*
 * add all cutting sides from the cut-discretization
 *--------------------------------------------------------------*/
-void GEO::CutWizardNEW::AddMeshCuttingSide()
+void GEO::CutWizard::AddMeshCuttingSide()
 {
   std::vector<int> lm;
   std::vector<double> mydisp;
@@ -335,7 +335,7 @@ void GEO::CutWizardNEW::AddMeshCuttingSide()
 /*-------------------------------------------------------------*
 * prepare the cut, add background elements and cutting sides
 *--------------------------------------------------------------*/
-void GEO::CutWizardNEW::AddMeshCuttingSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze )
+void GEO::CutWizard::AddMeshCuttingSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze )
 {
   const int numnode = ele->NumNode();
   const int * nodeids = ele->NodeIds();
@@ -347,7 +347,7 @@ void GEO::CutWizardNEW::AddMeshCuttingSide( int mi, DRT::Element * ele, const Ep
 /*-------------------------------------------------------------*
 * add elements from the background discretization
 *--------------------------------------------------------------*/
-void GEO::CutWizardNEW::AddBackgroundElements()
+void GEO::CutWizard::AddBackgroundElements()
 {
 
   std::vector<int> lm;
@@ -431,7 +431,7 @@ void GEO::CutWizardNEW::AddBackgroundElements()
 /*-------------------------------------------------------------*
 * Add this background mesh element to the intersection class
 *--------------------------------------------------------------*/
-void GEO::CutWizardNEW::AddElement( DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze, double* myphinp, bool lsv_only_plus_domain )
+void GEO::CutWizard::AddElement( DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze, double* myphinp, bool lsv_only_plus_domain )
 {
   const int numnode = ele->NumNode();
   const int * nodeids = ele->NodeIds();
@@ -445,7 +445,7 @@ void GEO::CutWizardNEW::AddElement( DRT::Element * ele, const Epetra_SerialDense
 /*------------------------------------------------------------------------------------------------*
  * perform the actual cut, the intersection
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardNEW::Run_Cut(
+void GEO::CutWizard::Run_Cut(
     bool include_inner  //!< perform cut in the interior of the cutting mesh
     )
 {
@@ -539,7 +539,7 @@ void GEO::CutWizardNEW::Run_Cut(
 /*------------------------------------------------------------------------------------------------*
  * routine for finding node positions and computing vc dofsets in a parallel way
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardNEW::FindPositionDofSets(bool include_inner)
+void GEO::CutWizard::FindPositionDofSets(bool include_inner)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel)" );
@@ -597,12 +597,12 @@ void GEO::CutWizardNEW::FindPositionDofSets(bool include_inner)
 /*------------------------------------------------------------------------------------------------*
  * write statistics and output to screen and files
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardNEW::Output(bool include_inner)
+void GEO::CutWizard::Output(bool include_inner)
 {
   if(gmsh_output_) DumpGmshNumDOFSets(include_inner);
 
 #ifdef DEBUG
-  cut_->PrintCellStats();
+  PrintCellStats();
 #endif
 
   if(gmsh_output_)
@@ -616,7 +616,7 @@ void GEO::CutWizardNEW::Output(bool include_inner)
 /*------------------------------------------------------------------------------------------------*
  * Print the number of volumecells and boundarycells generated over the whole mesh during the cut *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardNEW::PrintCellStats()
+void GEO::CutWizard::PrintCellStats()
 {
   intersection_->PrintCellStats();
 }
@@ -625,7 +625,7 @@ void GEO::CutWizardNEW::PrintCellStats()
 /*------------------------------------------------------------------------------------------------*
  * Write the DOF details of the nodes                                                             *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardNEW::DumpGmshNumDOFSets( bool include_inner)
+void GEO::CutWizard::DumpGmshNumDOFSets( bool include_inner)
 {
   std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
@@ -638,7 +638,7 @@ void GEO::CutWizardNEW::DumpGmshNumDOFSets( bool include_inner)
 /*------------------------------------------------------------------------------------------------*
  * Write volumecell output in GMSH format throughout the domain                                   *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardNEW::DumpGmshVolumeCells( bool include_inner )
+void GEO::CutWizard::DumpGmshVolumeCells( bool include_inner )
 {
   std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
@@ -652,7 +652,7 @@ void GEO::CutWizardNEW::DumpGmshVolumeCells( bool include_inner )
 /*------------------------------------------------------------------------------------------------*
  * Write the integrationcells and boundarycells in GMSH format throughout the domain              *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CutWizardNEW::DumpGmshIntegrationCells()
+void GEO::CutWizard::DumpGmshIntegrationCells()
 {
   std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
@@ -668,32 +668,32 @@ void GEO::CutWizardNEW::DumpGmshIntegrationCells()
 //! @name Getters
 /*========================================================================*/
 
-GEO::CUT::SideHandle * GEO::CutWizardNEW::GetSide( std::vector<int>& nodeids )
+GEO::CUT::SideHandle * GEO::CutWizard::GetSide( std::vector<int>& nodeids )
 {
   return intersection_->GetSide( nodeids );
 }
 
-GEO::CUT::SideHandle * GEO::CutWizardNEW::GetSide( int sid )
+GEO::CUT::SideHandle * GEO::CutWizard::GetSide( int sid )
 {
   return intersection_->GetSide( sid );
 }
 
-GEO::CUT::ElementHandle * GEO::CutWizardNEW::GetElement( DRT::Element * ele )
+GEO::CUT::ElementHandle * GEO::CutWizard::GetElement( DRT::Element * ele )
 {
   return intersection_->GetElement( ele->Id() );
 }
 
-GEO::CUT::Node * GEO::CutWizardNEW::GetNode( int nid )
+GEO::CUT::Node * GEO::CutWizard::GetNode( int nid )
 {
   return intersection_->GetNode( nid );
 }
 
-GEO::CUT::SideHandle * GEO::CutWizardNEW::GetMeshCuttingSide( int sid, int mi )
+GEO::CUT::SideHandle * GEO::CutWizard::GetMeshCuttingSide( int sid, int mi )
 {
   return intersection_->GetCutSide(sid, mi);
 }
 
-bool GEO::CutWizardNEW::HasLSCuttingSide( int sid )
+bool GEO::CutWizard::HasLSCuttingSide( int sid )
 {
   return intersection_->HasLSCuttingSide(sid);
 }

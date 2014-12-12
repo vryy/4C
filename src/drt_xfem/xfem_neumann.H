@@ -30,7 +30,7 @@ namespace DRT
 
 namespace GEO
 {
-  class CutWizardNEW;
+  class CutWizard;
 
   namespace CUT
   {
@@ -52,14 +52,14 @@ namespace XFEM
 {
 
 /// evaluate Neumann boundary conditions
-void EvaluateNeumann(  Teuchos::RCP<GEO::CutWizardNEW>      wizard,
+void EvaluateNeumann(  Teuchos::RCP<GEO::CutWizard>         wizard,
                        Teuchos::ParameterList &             params,
                        Teuchos::RCP<DRT::Discretization>    discret,
                        Teuchos::RCP<Epetra_Vector>          systemvector,
                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix = Teuchos::null );
 
 /// evaluate Neumann boundary conditions
-void EvaluateNeumann(  Teuchos::RCP<GEO::CutWizardNEW>      wizard,
+void EvaluateNeumann(  Teuchos::RCP<GEO::CutWizard>         wizard,
                        Teuchos::ParameterList &             params,
                        Teuchos::RCP<DRT::Discretization>    discret,
                        Epetra_Vector&                       systemvector,
@@ -82,7 +82,7 @@ void CutNeumannSurf(
     bool & xfem_eval_Neumann);
 
 /// evaluate XFEM Neumann boundary conditions
-void EvaluateNeumannXFEM(     Teuchos::RCP<GEO::CutWizardNEW>               wizard,
+void EvaluateNeumannXFEM(     Teuchos::RCP<GEO::CutWizard>                  wizard,
                               std::multimap<std::string,DRT::Condition* >&  condition,
                               bool                                          usetime,
                               const double                                  time,

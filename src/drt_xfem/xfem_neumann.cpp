@@ -31,7 +31,7 @@ Maintainer: Dipl.-Math. Benedikt Schott
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumann(                    Teuchos::RCP<GEO::CutWizardNEW>      wizard,
+void XFEM::EvaluateNeumann(                    Teuchos::RCP<GEO::CutWizard>         wizard,
                                                Teuchos::ParameterList&              params,
                                                Teuchos::RCP<DRT::Discretization>    discret,
                                                Teuchos::RCP<Epetra_Vector>          systemvector,
@@ -48,7 +48,7 @@ void XFEM::EvaluateNeumann(                    Teuchos::RCP<GEO::CutWizardNEW>  
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumann(  Teuchos::RCP<GEO::CutWizardNEW>      wizard,
+void XFEM::EvaluateNeumann(  Teuchos::RCP<GEO::CutWizard>         wizard,
                              Teuchos::ParameterList&              params,
                              Teuchos::RCP<DRT::Discretization>    discret,
                              Epetra_Vector&                       systemvector,
@@ -270,7 +270,7 @@ void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > 
 /*----------------------------------------------------------------------*
  |  evaluate Neumann for XFEM conditions (public)           schott 09/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<GEO::CutWizardNEW>      wizard,
+void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<GEO::CutWizard>         wizard,
                                 std::multimap<std::string,DRT::Condition* > &  condition,
                                 bool                                 usetime,
                                 const double                         time,

@@ -23,7 +23,7 @@ Maintainer: Shadan Shahmiri
 
 namespace GEO
 {
-  class CutWizardNEW;
+  class CutWizard;
 }
 
 namespace DRT
@@ -52,7 +52,7 @@ namespace DRT
 
     explicit TransparentIndependentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,
                                           bool parallel,
-                                          Teuchos::RCP<GEO::CutWizardNEW> wizard);
+                                          Teuchos::RCP<GEO::CutWizard> wizard);
 
     /*!
     \brief Destructor
@@ -75,7 +75,7 @@ namespace DRT
 
   private:
 
-    Teuchos::RCP<GEO::CutWizardNEW> wizard_;
+    Teuchos::RCP<GEO::CutWizard> wizard_;
 
   }; // class TransparentDofSet
 } //namespace

@@ -72,7 +72,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Teuc
   // Initialize the cut wizard
   Teuchos::RCP<DRT::DiscretizationXFEM> xdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid.bgdis_, true);
 
-  wizard_ = Teuchos::rcp( new GEO::CutWizardNEW(xdis, xfluid.boundarydis_) );
+  wizard_ = Teuchos::rcp( new GEO::CutWizard(xdis, xfluid.boundarydis_) );
 
   // Set options for the cut wizard
   wizard_->SetOptions(

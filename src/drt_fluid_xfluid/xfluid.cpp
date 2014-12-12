@@ -4375,8 +4375,8 @@ void FLD::XFluid::XTimint_TransferVectorsBetweenSteps(
     const Teuchos::RCP<DRT::Discretization>          dis,                      /// discretization
     std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,       /// row map based vectors w.r.t old interface position
     std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,       /// row map based vectors w.r.t new interface position
-    const Teuchos::RCP<GEO::CutWizardNEW>            wizard_old,               /// fluid wizard w.r.t old interface position
-    const Teuchos::RCP<GEO::CutWizardNEW>            wizard_new,               /// fluid wizard w.r.t new interface position
+    const Teuchos::RCP<GEO::CutWizard>               wizard_old,               /// cut wizard w.r.t old interface position
+    const Teuchos::RCP<GEO::CutWizard>               wizard_new,               /// cut wizard w.r.t new interface position
     const Teuchos::RCP<XFEM::XFEMDofSet>             dofset_old,               /// dofset w.r.t old interface position
     const Teuchos::RCP<XFEM::XFEMDofSet>             dofset_new,               /// dofset w.r.t new interface position
     std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  /// reconstruction map for nodes and its dofsets

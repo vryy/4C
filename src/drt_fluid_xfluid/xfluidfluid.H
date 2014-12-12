@@ -39,7 +39,7 @@ namespace LINALG
 }
 namespace GEO
 {
-  class CutWizardNEW;
+  class CutWizard;
 
   namespace CUT
   {
@@ -170,7 +170,7 @@ namespace FLD
       XFluidFluid & xfluid_;
 
       /// provides access to the xfem-dofsets of the background fluid
-      Teuchos::RCP<GEO::CutWizardNEW> wizard_;
+      Teuchos::RCP<GEO::CutWizard> wizard_;
 
       //@name State variables of the merged system
       //@{
