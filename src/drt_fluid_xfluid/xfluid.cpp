@@ -375,6 +375,9 @@ void FLD::XFluid::Evaluate(
               const size_t nui = patchelementslm.size();
               Epetra_SerialDenseMatrix C_ss(nui,nui); // coupling matrix for monolithic fluid-structure interaction
 
+              {
+              TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 2) interface (only evaluate)" );
+
               if(CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
                  CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress)
                 impl->ElementXfemInterfaceHybridLM(
@@ -411,6 +414,8 @@ void FLD::XFluid::Evaluate(
                                                  Teuchos::null
                                                  );
 
+              }
+
               //------------------------------------------------------------------------------------------
               // Assemble bgele-side coupling matrices for monolithic fluid-structure interaction
               //------------------------------------------------------------------------------------------
@@ -438,14 +443,19 @@ void FLD::XFluid::Evaluate(
                     std::vector<int> mypatchlmowner;
                     for(size_t index=0; index<patchlmowner.size(); index++) mypatchlmowner.push_back(myrank_);
 
-                    state_->C_sx_->FEAssemble(-1, couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
+                    {
+                      TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 6) FEAssemble" );
+                      state_->C_sx_->FEAssemble(-1, couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
+                    }
 
                     // assemble C_fs_ = Cuui
                     std::vector<int> mylmowner;
                     for(size_t index=0; index<la[0].lmowner_.size(); index++) mylmowner.push_back(myrank_);
 
-                    state_->C_xs_->FEAssemble(-1, couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
-
+                    {
+                      TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 6) FEAssemble" );
+                      state_->C_xs_->FEAssemble(-1, couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
+                    }
 
                     // assemble rhC_s_col = rhC_ui_col
                     Epetra_SerialDenseVector rhC_s_eptvec(::View,couplingmatrices[2].A(),patchlm.size());
@@ -495,8 +505,6 @@ void FLD::XFluid::Evaluate(
       } // end of if(e!=NULL) // assembly for cut elements
       else
       {
-        TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 3) standard domain" );
-
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(discret,la,false);
 
@@ -504,15 +512,20 @@ void FLD::XFluid::Evaluate(
         // Reshape element matrices and vectors and init to zero
         strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
 
-        // call the element evaluate method
-        int err = impl->Evaluate( ele, discret, la[0].lm_, eleparams, mat,
-                                  strategy.Elematrix1(),
-                                  strategy.Elematrix2(),
-                                  strategy.Elevector1(),
-                                  strategy.Elevector2(),
-                                  strategy.Elevector3() );
+        {
+          TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 3) standard domain" );
 
-        if (err) dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
+          // call the element evaluate method
+          int err = impl->Evaluate(
+              ele, discret, la[0].lm_, eleparams, mat,
+              strategy.Elematrix1(),
+              strategy.Elematrix2(),
+              strategy.Elevector1(),
+              strategy.Elevector2(),
+              strategy.Elevector3() );
+
+          if (err) dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
+        }
 
         int eid = actele->Id();
 
@@ -7093,13 +7106,16 @@ void FLD::XFluid::SetXFluidParams()
   }
 
   // load GMSH output flags
-  gmsh_sol_out_          = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_SOL_OUT");
-  gmsh_debug_out_        = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT");
-  gmsh_debug_out_screen_ = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT_SCREEN");
-  gmsh_EOS_out_          = ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_));
-  gmsh_discret_out_      = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DISCRET_OUT");
-  gmsh_cut_out_          = (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_CUT_OUT");
+  bool gmsh = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH");
+
+  gmsh_sol_out_          = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_SOL_OUT");
+  gmsh_debug_out_        = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT");
+  gmsh_debug_out_screen_ = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT_SCREEN");
+  gmsh_EOS_out_          = gmsh && ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_));
+  gmsh_discret_out_      = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DISCRET_OUT");
+  gmsh_cut_out_          = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_CUT_OUT");
   gmsh_step_diff_        = 500;
+
 
   // set XFEM-related parameters on element level
   SetElementGeneralFluidXFEMParameter();

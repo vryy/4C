@@ -5423,13 +5423,15 @@ void FLD::XFluidFluid::SetXFluidParams()
   gmsh_count_ = 0;
 
   // load GMSH output flags
-  gmsh_sol_out_          = DRT::INPUT::IntegralValue<bool>(params_xfem,"GMSH_SOL_OUT");
-  gmsh_debug_out_        = DRT::INPUT::IntegralValue<bool>(params_xfem,"GMSH_DEBUG_OUT");
-  gmsh_debug_out_screen_ = DRT::INPUT::IntegralValue<bool>(params_xfem,"GMSH_DEBUG_OUT_SCREEN");
-  gmsh_EOS_out_          = DRT::INPUT::IntegralValue<bool>(params_xfem,"GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_);
-  gmsh_discret_out_      = DRT::INPUT::IntegralValue<bool>(params_xfem,"GMSH_DISCRET_OUT");
+  bool gmsh = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH");
+
+  gmsh_sol_out_          = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_SOL_OUT");
+  gmsh_debug_out_        = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT");
+  gmsh_debug_out_screen_ = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT_SCREEN");
+  gmsh_EOS_out_          = gmsh && ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_));
+  gmsh_discret_out_      = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DISCRET_OUT");
+  gmsh_cut_out_          = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_CUT_OUT");
   gmsh_step_diff_        = 500;
-  gmsh_cut_out_          = DRT::INPUT::IntegralValue<bool>(params_xfem,"GMSH_CUT_OUT");
 
   // compute or set 1.0 - theta for time-integration schemes
   if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)

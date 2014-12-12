@@ -128,7 +128,7 @@ SOLVER                          UMFPACK
 GMSH_DEBUG_OUT_SCREEN           No
 GMSH_DEBUG_OUT                  No
 GMSH_EOS_OUT                    No
-GMSH_SOL_OUT                    yes
+GMSH_SOL_OUT                    no
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation

@@ -165,10 +165,10 @@ NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  no
-GMSH_SOL_OUT                    yes
-GMSH_EOS_OUT                    yes
-GMSH_DISCRET_OUT                yes
-GMSH_CUT_OUT                    yes
+GMSH_SOL_OUT                    no
+GMSH_EOS_OUT                    no
+GMSH_DISCRET_OUT                no
+GMSH_CUT_OUT                    no
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
