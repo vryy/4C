@@ -179,6 +179,9 @@ public:
   //! read restart data
   virtual void ReadRestart(int step) = 0;
 
+  //! setup natural convection
+  virtual void SetupNatConv();
+
   /*--- calculate and update -----------------------------------------------*/
 
   //! do time integration (time loop)
@@ -582,9 +585,6 @@ protected:
 
   //! Deactivate element parameter specific for turbulence
   void SetElementTurbulenceParameterDeactivated();
-
-  //! setup natural convection
-  virtual void SetupNatConv();
 
   /*========================================================================*/
   //! @name general framework

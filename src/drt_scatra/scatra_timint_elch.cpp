@@ -182,6 +182,7 @@ void SCATRA::ScaTraTimIntElch::AddProblemSpecificParametersAndVectors(
   return;
 }
 
+
 /*--------------------------------------------------------------------------*
  | add parameters depending on the problem for inital phidt rasthofer 12/13 |
  *--------------------------------------------------------------------------*/
@@ -724,7 +725,6 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
 
   return singleelectkin;
 } // SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo
-
 
 
 /*----------------------------------------------------------------------*

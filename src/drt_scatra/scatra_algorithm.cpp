@@ -144,6 +144,9 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeLoopTwoWay()
   }
   }
 
+  // compute initial mean concentrations and load densification coefficients
+  ScaTraField()->SetupNatConv();
+
   // compute initial density
   ScaTraField()->ComputeDensity();
 

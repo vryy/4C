@@ -458,9 +458,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
     // allocate global density vector and initialize
     densafnp_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
     densafnp_->PutScalar(1.);
-
-    // compute initial mean concentrations and load densification coefficients
-    SetupNatConv();
   }
 
   return;
@@ -495,13 +492,11 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();   // clean up
 
-  // calculate mean concentration
+  // calculate mean concentrations
   const double domint = (*scalars)[numscal_];
-
   if (std::abs(domint) < EPS15)
-    dserror("Division by zero!");
-
-  for(int k=0;k<numscal_;k++)
+    dserror("Domain has zero volume!");
+  for(int k=0; k<numscal_; ++k)
     c0_[k] = (*scalars)[k]/domint;
 
   // initialization of the densification coefficient vector
@@ -530,6 +525,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
         dserror("Material type is not allowed!");
     }
   }
+
   // for a single species calculation
   else if (mat->MaterialType() == INPAR::MAT::m_scatra)
   {

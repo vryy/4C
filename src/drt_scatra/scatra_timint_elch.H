@@ -75,6 +75,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   /*--- set, prepare, and predict ------------------------------------------*/
 
+  //! setup natural convection
+  void SetupNatConv();
+
   /*--- calculate and update -----------------------------------------------*/
 
   //! Update the solution after convergence of the nonlinear iteration.
@@ -145,9 +148,6 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   /*========================================================================*/
 
   /*--- set, prepare, and predict ------------------------------------------*/
-
-  //! setup natural convection
-  void SetupNatConv();
 
   //! Parameter check for diffusion-conduction formulation
   void ValidParameterDiffCond();
