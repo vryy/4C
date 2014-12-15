@@ -28,7 +28,7 @@ Maintainer: Jonas Biehler
 #define NUMGPT_MASS_SOTET10  11      ///< number gauss points per element for mass integration
 #define NUMDIM_SOTET10       3      ///< number of dimensions
 #define NUMCOORD_SOTET10     4      ///< number of shape function coordinates (ksi1-ksi4)
-#define NUMNOD_SOTET10_FACE  6	    ///< number of nodes on a TET10 face (which is a TRI6)
+#define NUMNOD_SOTET10_FACE  6      ///< number of nodes on a TET10 face (which is a TRI6)
 #define NUMGPT_SOTET10_FACE  3      ///< number of GP    on a TET10 face (which is a TRI6)
 
 namespace DRT
@@ -83,10 +83,10 @@ class So_tet10 : public DRT::Element
 {
 public:
 
-	 //! @name Friends
-	  friend class So_tet10Type;
+   //! @name Friends
+    friend class So_tet10Type;
 
-	  //@}
+    //@}
   //! @name Constructors and destructors and related methods
 
   /*!
@@ -352,18 +352,11 @@ protected:
     calc_global_gpstresses_map
   };
 
-  //! kinematic types of so_tet10 but yet only total-lagrangian is implemented
-  enum KinematicType
-  {
-    so_tet10_linear,
-    so_tet10_nonlinear
-  };
-
 
   //! kinematic type
-  KinematicType                                          			  kintype_;
+  INPAR::STR::KinemType                         kintype_;
    //! container containing all kind of solid3 thisandthat
-  DRT::Container      												  data_;
+  DRT::Container                                data_;
   //! vector of inverses of the jacobian in material frame
   std::vector<LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> >         invJ_;
   // determinant of Jacobian in material frame

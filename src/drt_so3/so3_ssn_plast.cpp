@@ -537,6 +537,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
 
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
   so3mat->Setup(numgpt_, linedef);
+  so3mat->ValidKinematics(INPAR::STR::kinem_nonlinearTotLag);
   if (so3mat->MaterialType()!=INPAR::MAT::m_plelasthyper)
     std::cout << "*** warning *** so3plast used w/o PlasticElastHyper material. Better use standard solid element!\n";
   if (HavePlasticSpin())

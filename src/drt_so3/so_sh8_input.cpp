@@ -44,12 +44,15 @@ bool DRT::ELEMENTS::So_sh8::ReadElement(const std::string& eletype,
   }
   else if (buffer=="nonlinear")
   {
-   kintype_ = soh8_nonlinear;
+   kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   }
   else dserror ("Reading SO_HEX8p1j1 element failed KINEM unknown");
 
   // we expect kintype to be total lagrangian
-  kintype_ = soh8_nonlinear;
+  kintype_ = INPAR::STR::kinem_nonlinearTotLag;
+
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(kintype_);
 
   // read EAS technology flag
   linedef->ExtractString("EAS",buffer);

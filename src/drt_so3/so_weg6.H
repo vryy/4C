@@ -369,14 +369,8 @@ protected:
 
   };
 
-  //! kinematic types of so_weg6
-  enum KinematicType
-  {
-    sow6_linear,
-    sow6_nonlinear,
-  };
   //! kinematic type
-  KinematicType                                            kintype_;
+  INPAR::STR::KinemType                                    kintype_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                           data_;
   //! vector of inverses of the jacobian in material frame

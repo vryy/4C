@@ -23,7 +23,7 @@ Maintainer: Michael Gee
 #define NUMNOD_SOTET4       4      ///< number of nodes
 #define NODDOF_SOTET4       3      ///< number of dofs per node
 #define NUMDOF_SOTET4      12      ///< total dofs per element
-#define NUMGPT_SOTET4       1      ///< total gauss points per element	/****/
+#define NUMGPT_SOTET4       1      ///< total gauss points per element  /****/
 #define NUMDIM_SOTET4       3      ///< number of dimensions/****/
 #define NUMCOORD_SOTET4     4      ///< number of shape function cooordinates (ksi1-ksi4)
 #define NUMNOD_SOTET4_FACE  3      ///< number of nodes on a TET4 face (which is a TRI3)
@@ -383,15 +383,8 @@ protected:
     multi_readrestart
   };
 
-  //! kinematic types of so_tet10
-  enum KinematicType
-  {
-    so_tet4_linear,
-    so_tet4_nonlinear
-  };
-
   //! kinematic type
-  KinematicType                                                            kintype_;
+  INPAR::STR::KinemType                                                     kintype_;
   //! number of the material law
   //int                                                                      material_;
 

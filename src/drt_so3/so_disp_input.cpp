@@ -113,13 +113,15 @@ bool DRT::ELEMENTS::SoDisp::ReadElement(const std::string& eletype,
   linedef->ExtractString("KINEM",buffer);
 
   // geometrically linear
-  if      (buffer=="Geolin")    kintype_ = sodisp_geolin;
+  if      (buffer=="Geolin"){
+    kintype_ = INPAR::STR::kinem_linear;
+    dserror("no linear kinematics implemented in SOLID3");
+  }
   // geometrically non-linear with Total Lagrangean approach
-  else if (buffer=="Totlag")    kintype_ = sodisp_totlag;
+  else if (buffer=="Totlag")    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   // geometrically non-linear with Updated Lagrangean approach
   else if (buffer=="Updlag")
   {
-    kintype_ = sodisp_updlag;
     dserror("Updated Lagrange for SOLID3 is not implemented!");
   }
   else dserror("Reading of SOLID3 element failed");
@@ -132,6 +134,9 @@ bool DRT::ELEMENTS::SoDisp::ReadElement(const std::string& eletype,
   // set up of materials with GP data (e.g., history variables)
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
   so3mat->Setup(numgpt_disp_, linedef);
+
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(kintype_);
 
   return true;
 }

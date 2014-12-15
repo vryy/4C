@@ -49,6 +49,9 @@ bool DRT::ELEMENTS::So_sh18::ReadElement(const std::string& eletype,
   { /* everything ok */ }
   else dserror ("Reading SO_HEX18 element failed KINEM unknown");
 
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(INPAR::STR::kinem_nonlinearTotLag);
+
   // transverse shear locking
   linedef->ExtractString("TSL",buffer);
   if      (buffer=="dsg" ) dsg_shear_=true;

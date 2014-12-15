@@ -46,6 +46,10 @@ bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement(const std::string& eletype,
     // kintype_ = soh8_nonlinear;
   }
    else dserror ("Reading SO_HEX8p1j1 element failed KINEM unknown");
+
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(kintype_);
+
   return true;
 }
 

@@ -393,6 +393,7 @@ bool DRT::ELEMENTS::So_sh8Plast::ReadElement(const std::string& eletype,
 
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
   so3mat->Setup(numgpt_, linedef);
+  so3mat->ValidKinematics(INPAR::STR::kinem_nonlinearTotLag);
   if (HavePlasticSpin())
     plspintype_=plspin;
   else

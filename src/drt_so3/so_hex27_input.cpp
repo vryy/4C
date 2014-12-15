@@ -37,26 +37,16 @@ bool DRT::ELEMENTS::So_hex27::ReadElement(const std::string& eletype,
 
   if (buffer=="linear")
   {
-    kintype_ = soh27_linear;
+    kintype_ = INPAR::STR::kinem_linear;
   }
   else if (buffer=="nonlinear")
   {
-    kintype_ = soh27_nonlinear;
+    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   }
   else dserror ("Reading SO_HEX27 element failed KINEM unknown");
 
-  // only for linear SVK materials and small strain plastic materials
-  bool admissibl_mat = false;
-  if ( (mat->MaterialType() == INPAR::MAT::m_stvenant)
-       or (mat->MaterialType() == INPAR::MAT::m_thermostvenant)
-       or (mat->MaterialType() == INPAR::MAT::m_pllinelast)
-       or (mat->MaterialType() == INPAR::MAT::m_thermopllinelast)
-       or (mat->MaterialType() == INPAR::MAT::m_elpldamage) )
-    admissibl_mat = true;
-
-  // check for SVK material if geometrically linear
-  if ( (kintype_ == soh27_linear) and (admissibl_mat == false) )
-    dserror("ERROR: Only linear elasticity (SVK) for geometrically linear hex27 element");
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(kintype_);
 
   return true;
 }

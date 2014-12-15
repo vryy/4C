@@ -103,17 +103,19 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
       // special case: geometrically linear
-      if (kintype_ == DRT::ELEMENTS::So_hex20::soh20_linear)
+      if (kintype_ == INPAR::STR::kinem_linear)
       {
         soh20_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
-      else
+      else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
       {
         soh20_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
+      else
+        dserror("unknown kinematic type");
     }
     break;
 
@@ -132,17 +134,19 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
       LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20> myemat(true);
 
       // special case: geometrically linear
-      if (kintype_ == DRT::ELEMENTS::So_hex20::soh20_linear)
+      if (kintype_ == INPAR::STR::kinem_linear)
       {
         soh20_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
-      else
+      else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
       {
         soh20_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
                           INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
+      else
+        dserror("unknown kinematic type");
     }
     break;
 
@@ -165,17 +169,19 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       // special case: geometrically linear
-      if (kintype_ == DRT::ELEMENTS::So_hex20::soh20_linear)
+      if (kintype_ == INPAR::STR::kinem_linear)
       {
         soh20_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
-      else
+      else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
       {
         soh20_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
+      else
+        dserror("unknown kinematic type");
 
       if (act==calc_struct_nlnstifflmass) soh20_lumpmass(&elemat2);
     }
@@ -204,15 +210,17 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         // special case: geometrically linear
-        if (kintype_ == DRT::ELEMENTS::So_hex20::soh20_linear)
+        if (kintype_ == INPAR::STR::kinem_linear)
         {
           soh20_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         }
         // standard is: geometrically non-linear with Total Lagrangean approach
-        else
+        else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
         {
           soh20_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         }
+        else
+          dserror("unknown kinematic type");
 
         {
           DRT::PackBuffer data;

@@ -230,13 +230,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
+      if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
       {
         soh8_nlnstiffmass_gemm(lm,mydispo,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // special case: geometric linear
-      else  // (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
+      else  // kintype_ != INPAR::STR::kinem_nonlinearTotLag)
       {
         dserror("ERROR: Generalized EMM only makes sense in nonlinear realm");
       }
@@ -1629,7 +1629,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       Fnew.Multiply(defgrd,Fhist);
       defgrd = Fnew;
     }
-    else if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
+    else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
     {
       // standard kinematically nonlinear analysis
       defgrd.MultiplyTT(xcurr,N_XYZ);
@@ -1711,7 +1711,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
-    if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
+    if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
     {
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
       glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
@@ -2074,7 +2074,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     }
 
 
-      if(kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
+      if(kintype_ == INPAR::STR::kinem_nonlinearTotLag)
       {
         // integrate `geometric' stiffness matrix and add to keu *****************
         LINALG::Matrix<6,1> sfac(stress); // auxiliary integrated stress

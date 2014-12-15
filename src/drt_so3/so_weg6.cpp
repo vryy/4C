@@ -105,7 +105,7 @@ pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
 time_(0.0)
 {
-  kintype_ = sow6_nonlinear;
+  kintype_ = INPAR::STR::kinem_vague;
   invJ_.resize(NUMGPT_WEG6);
   detJ_.resize(NUMGPT_WEG6);
   for (int i=0; i<NUMGPT_WEG6; ++i)
@@ -241,7 +241,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // kintype_
-  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
+  kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
   // data_
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

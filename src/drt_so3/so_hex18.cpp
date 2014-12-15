@@ -287,6 +287,9 @@ bool DRT::ELEMENTS::So_hex18::ReadElement(const std::string& eletype,
   { /* everything ok */ }
   else dserror ("Reading SO_HEX18 element failed KINEM unknown");
 
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(INPAR::STR::kinem_nonlinearTotLag);
+
   return true;
 }
 

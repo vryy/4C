@@ -111,7 +111,7 @@ pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
 time_(0.0)
 {
-  kintype_ = soh8_nonlinear;
+  kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   eastype_ = soh8_easnone;
   neas_ = 0;
   invJ_.resize(NUMGPT_SOH8, LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>(true));
@@ -134,7 +134,7 @@ time_(0.0)
 
   if(DRT::Problem::Instance()->ProblemType() == prb_struct_ale)
   {
-    if (kintype_==soh8_linear)
+    if (kintype_==INPAR::STR::kinem_linear)
       dserror("Structure-Ale approach only for nonlinear kinematics !!!");
 
     structale_ = true;
@@ -178,7 +178,7 @@ time_(old.time_)
 
   if(DRT::Problem::Instance()->ProblemType() == prb_struct_ale)
   {
-    if (kintype_==soh8_linear)
+    if (kintype_==INPAR::STR::kinem_linear)
       dserror("Structure-Ale approach only for nonlinear kinematics !!!");
 
     structale_ = true;
@@ -277,7 +277,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // kintype_
-  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
+  kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
   // eastype_
   eastype_ = static_cast<EASType>( ExtractInt(position,data) );
   // neas_

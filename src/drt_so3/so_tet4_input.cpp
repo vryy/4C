@@ -8,7 +8,7 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 writen by : Alexander Volf
-			alexander.volf@mytum.de
+            alexander.volf@mytum.de
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -39,12 +39,15 @@ bool DRT::ELEMENTS::So_tet4::ReadElement(const std::string& eletype,
   // geometrically linear
   if(buffer=="linear")
   {
-    kintype_ = so_tet4_linear;
+    kintype_ = INPAR::STR::kinem_linear;
     dserror("Reading of SO_TET4 element failed only nonlinear kinematics implemented");
   }
   // geometrically non-linear with Total Lagrangean approach
-  else if (buffer=="nonlinear")    kintype_ = so_tet4_nonlinear;
+  else if (buffer=="nonlinear")    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   else dserror("Reading of SO_TET4 element failed KINEM unknown");
+
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(kintype_);
 
   return true;
 }

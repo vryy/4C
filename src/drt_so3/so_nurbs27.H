@@ -330,15 +330,8 @@ protected:
     calc_struct_reset_istep
   };
 
-  //! kinematic types of So_nurbs27; only total-lagrangian
-  //! is implemented
-  enum KinematicType
-  {
-    sonurbs27_totlag
-  };
-
    //! kinematic type
-  KinematicType                 kintype_;
+  INPAR::STR::KinemType         kintype_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                data_;
   //! vector of inverses of the jacobian in material frame

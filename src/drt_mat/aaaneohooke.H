@@ -90,6 +90,11 @@ private:
     // constructor with given material parameters
     AAAneohooke(MAT::PAR::AAAneohooke* params);
 
+    /// check if element kinematics and material kinematics are compatible
+    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+    dserror("element and material kinematics are not compatible");}
+
     //! @name Packing and Unpacking
 
     /*!

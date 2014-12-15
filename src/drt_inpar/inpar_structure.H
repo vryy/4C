@@ -481,6 +481,13 @@ namespace INPAR
       }
     }
 
+    /// kinematic description
+    enum KinemType
+    {
+      kinem_vague = 0,      ///< undetermined kinematics
+      kinem_linear,         ///< linear kinematics
+      kinem_nonlinearTotLag ///< nonlinear kinematics Total Lagrange
+    };
     //@}
 
   }  // namespace STR

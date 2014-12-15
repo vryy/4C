@@ -41,9 +41,12 @@ bool DRT::ELEMENTS::So_hex8fbar::ReadElement(const std::string& eletype,
   }
   else if (buffer=="nonlinear")
   {
-    kintype_ = soh8_nonlinear;
+    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   }
   else dserror ("Reading SO_HEX8FBAR element failed KINEM unknown");
+
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(kintype_);
 
   return true;
 }

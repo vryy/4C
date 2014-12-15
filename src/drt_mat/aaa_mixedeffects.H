@@ -148,14 +148,19 @@ private:
     // material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaa_mixedeffects; }
 
+    /// check if element kinematics and material kinematics are compatible
+    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    { if(!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");}
+
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAA_mixedeffects( *this ) ); }
 
     // THE material routine
     void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-		  Epetra_SerialDenseMatrix* cmat_e,
-		  Epetra_SerialDenseVector* stress_e,
-		  double elelocalrad);
+      Epetra_SerialDenseMatrix* cmat_e,
+      Epetra_SerialDenseVector* stress_e,
+      double elelocalrad);
 
     // THE material routine
     virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,

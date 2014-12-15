@@ -43,13 +43,16 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
   linedef->ExtractString("KINEM",buffer);
   if (buffer=="linear")
   {
-   kintype_ = soh8_linear;
+   kintype_ = INPAR::STR::kinem_linear;
   }
   else if (buffer=="nonlinear")
   {
-   kintype_ = soh8_nonlinear;
+   kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   }
   else dserror ("Reading SO_HEX8 element failed");
+
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(kintype_);
 
   // read EAS technology flag
   linedef->ExtractString("EAS",buffer);

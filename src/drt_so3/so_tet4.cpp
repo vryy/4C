@@ -238,7 +238,7 @@ void DRT::ELEMENTS::So_tet4::Unpack(const std::vector<char>& data)
   // material_
   //ExtractfromPack(position,data,material_);
   // kintype_
-  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
+  kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
   // data_
   //vector<char> tmp(0);
   //ExtractfromPack(position,data,tmp);

@@ -34,14 +34,17 @@ bool DRT::ELEMENTS::So_weg6::ReadElement(const std::string& eletype,
   linedef->ExtractString("KINEM",buffer);
   if (buffer=="linear")
   {
-    kintype_ = sow6_linear;
+    kintype_ = INPAR::STR::kinem_linear;
     dserror("Reading of SO_WEG6 element failed only nonlinear kinematics implemented");
   }
   else if (buffer=="nonlinear")
   {
-    kintype_ = sow6_nonlinear;
+    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   }
   else dserror ("Reading SO_WEG6 element failed KINEM unknwon");
+
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(kintype_);
 
   return true;
 }

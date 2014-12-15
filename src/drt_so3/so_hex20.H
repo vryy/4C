@@ -361,15 +361,8 @@ protected:
     multi_calc_dens           //!< multi-scale: calculate homogenized density
   };
 
-  //! kinematic types of So_hex20, but yet only total-lagrangian is implemented
-  enum KinematicType
-  {
-    soh20_linear,
-    soh20_nonlinear
-  };
-
    //! kinematic type
-  KinematicType                                                         kintype_;
+  INPAR::STR::KinemType                                                 kintype_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                                        data_;
   //! vector of inverses of the jacobian in material frame

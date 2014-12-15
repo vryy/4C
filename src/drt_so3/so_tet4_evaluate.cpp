@@ -8,7 +8,7 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 written by : Alexander Volf
-			alexander.volf@mytum.de
+             alexander.volf@mytum.de
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -100,8 +100,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="calc_struct_errornorms")           act = So_tet4::calc_struct_errornorms;
   else if (action=="calc_struct_prestress_update")     act = So_tet4::prestress_update;
   else if (action=="calc_global_gpstresses_map")       act = So_tet4::calc_global_gpstresses_map;
-  else if (action=="calc_struct_energy")	             act = So_tet4::calc_struct_energy;
-  else if (action=="calc_struct_output_E")	           act = So_tet4::calc_struct_output_E;
+  else if (action=="calc_struct_energy")               act = So_tet4::calc_struct_energy;
+  else if (action=="calc_struct_output_E")             act = So_tet4::calc_struct_output_E;
   else if (action=="calc_struct_inversedesign_update") act = So_tet4::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch") act = So_tet4::inversedesign_switch;
   else if (action=="multi_calc_dens")                  act = So_tet4::multi_calc_dens;
@@ -824,7 +824,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
 
 
         // if a linear analysis is desired
-        if (kintype_ == DRT::ELEMENTS::So_tet4::so_tet4_linear)
+        if (kintype_ == INPAR::STR::kinem_linear)
         {
           dserror("Linear case not implemented");
         }
@@ -946,7 +946,7 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
     **             [  1    1    1    1  ]
     ** jac_coord = [ x_1  x_2  x_3  x_4 ]
     **             [ y_1  y_2  y_3  y_4 ]
-    **		   [ z_1  z_2  z_3  z_4 ]
+    **             [ z_1  z_2  z_3  z_4 ]
     */
     LINALG::Matrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> jac_coord;
     for (int i=0; i<4; i++) jac_coord(0,i)=1;
@@ -999,7 +999,7 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
   **             [  1    1    1    1  ]
   **         J = [ X_1  X_2  X_3  X_4 ]
   **             [ Y_1  Y_2  Y_3  Y_4 ]
-  **		 [ Z_1  Z_2  Z_3  Z_4 ]
+  **             [ Z_1  Z_2  Z_3  Z_4 ]
   */
   LINALG::Matrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> jac;
   for (int i=0; i<4; i++)  jac(0,i)=1;
@@ -1036,7 +1036,7 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     int err2 = solve_for_inverseJac.Factor();
     int err = solve_for_inverseJac.Solve();         // partials = jac^-1.I_aug
     if ((err != 0) || (err2!=0))
-    	dserror("Inversion of Jacobian failed");
+      dserror("Inversion of Jacobian failed");
 
     //nxyz_[gp] = N_xsi_k*partials
     nxyz_.Multiply(derivs[gp],partials);

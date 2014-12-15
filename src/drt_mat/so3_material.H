@@ -13,6 +13,7 @@ Maintainer: Lena Yoshihara
 
 #include "material.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_inpar/inpar_structure.H"
 
 namespace MAT
 {
@@ -78,6 +79,9 @@ namespace MAT
     }
 
     //! @name Handling of Gauss point data
+
+    /// check if element kinematics and material kinematics are compatible
+    virtual void ValidKinematics(INPAR::STR::KinemType kinem) = 0;
 
     /// Set up for materials with GP data (e.g., history variables)
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef)

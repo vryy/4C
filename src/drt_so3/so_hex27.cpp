@@ -101,7 +101,7 @@ pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
 time_(0.0)
 {
-  kintype_ = soh27_nonlinear;
+  kintype_ = INPAR::STR::kinem_vague;
   invJ_.resize(NUMGPT_SOH27, LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27>(true));
   detJ_.resize(NUMGPT_SOH27, 0.0);
 
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::So_hex27::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // kintype_
-  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
+  kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
   // data_
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

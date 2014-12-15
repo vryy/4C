@@ -75,7 +75,7 @@ TOLDELTALP                      1.e-8
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 1.0 CTE 1e-5 INITTEMP 293 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715 HARDEXPO 16.93 YIELDSOFT 0.0 HARDSOFT 0.0 TOL 1.0e-06
+MAT 1 MAT_Struct_ThrPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 1.0 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715 HARDEXPO 16.93
 -------------------------------------------------------------CURVE1
 CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 7  FACTOR 0 7
 ------------------------------------------------DESIGN DESCRIPTION

@@ -415,13 +415,6 @@ protected:
     interpolate_velocity_to_point, //! interpolate the structural velocity to a given point
   };
 
-  //! kinematic types of so_hex8 (default: total-lagrangian)
-  enum KinematicType
-  {
-    soh8_linear,
-    soh8_nonlinear
-  };
-
   /*!
    * \brief EAS technology enhancement types of so_hex8
    *
@@ -444,7 +437,7 @@ protected:
                       //!< NOTE: not the actual number of EAS parameters
   };
   //! kinematic type
-  KinematicType                                                         kintype_;
+  INPAR::STR::KinemType                                                 kintype_;
   //! type of EAS technology
   EASType                                                               eastype_;
   //! number of EAS parameters (alphas), defined by 'EASType'

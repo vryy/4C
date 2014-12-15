@@ -119,6 +119,11 @@ private:
       return ThermoStVenantKirchhoffType::Instance().UniqueParObjectId();
     }
 
+    /// check if element kinematics and material kinematics are compatible
+    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    { if (!(kinem == INPAR::STR::kinem_linear || kinem == INPAR::STR::kinem_nonlinearTotLag))
+      dserror("element and material kinematics are not compatible");}
+
     /*!
       \brief Pack this class so it can be communicated
 
@@ -223,7 +228,7 @@ private:
       dserror("return value 'mu' not available due to possibly temperature-dependent Young's modulus");
       return 0.5*(params_->youngs_)[0]/(1.0+params_->poissonratio_);
     }
-    
+
     //! Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
@@ -262,7 +267,7 @@ private:
       LINALG::Matrix<6,1>& derivctemp,  //!< linearisation of ctemp w.r.t. T
       Teuchos::ParameterList& params  //!< parameter list
       );
-      
+
     //! calculate temperature dependent material parameter and return value
     double GetMatParameterAtTempnp(
       const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
@@ -274,7 +279,7 @@ private:
       const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
       const double& tempnp  // tmpr (i) current temperature
       ) const ;
-      
+
     //@}
 
   private:

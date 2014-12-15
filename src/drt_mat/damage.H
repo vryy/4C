@@ -189,6 +189,11 @@ private:
       return Teuchos::rcp( new Damage( *this ) );
     }
 
+    /// check if element kinematics and material kinematics are compatible
+    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    { if (!(kinem == INPAR::STR::kinem_linear))
+       dserror("element and material kinematics are not compatible");}
+
     //! initialise internal stress variables
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 

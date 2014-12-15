@@ -178,6 +178,10 @@ namespace MAT
         return INPAR::MAT::m_structporo;
       }
 
+      /// check if element kinematics and material kinematics are compatible
+      virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+      { mat_->ValidKinematics(kinem);}
+
       /// return material
       Teuchos::RCP<MAT::Material> GetMaterial() const
       {

@@ -541,7 +541,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
 
 
         // if a linear analysis is desired
-        if (kintype_ == DRT::ELEMENTS::So_weg6::sow6_linear)
+        if (kintype_ == INPAR::STR::kinem_linear)
         {
           dserror("Linear case not implemented");
         }

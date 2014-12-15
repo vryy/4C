@@ -50,16 +50,16 @@ namespace MAT
       /// @name material parameters
       //@{
 
-      const double bulk_; 	/// Bulk's modulus (Volumetric)
+      const double bulk_;       /// Bulk's modulus (Volumetric)
       const double alpha_;      /// 1st parameter, alpha (Isochoric)
       const double beta_;       /// 2nd parameter, beta (Isochoric)
 
       /// damage parameters
 
       const double eqstrmin_;   /// equivalent strain initial damage
-      const double a_;       	/// 1st parameter, a
-      const double b_;       	/// 2nd parameter, b
-      const double density_;	/// mass density
+      const double a_;          /// 1st parameter, a
+      const double b_;          /// 2nd parameter, b
+      const double density_;    /// mass density
 
       //@}
 
@@ -154,6 +154,11 @@ private:
     // material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaaraghavanvorp_damage; }
 
+    /// check if element kinematics and material kinematics are compatible
+    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+    dserror("element and material kinematics are not compatible");}
+
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAAraghavanvorp_damage( *this ) ); }
 
@@ -177,11 +182,11 @@ private:
 
     // THE material routine
     virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
-    		                  const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain, ///< green lagrange strain
-    		                  Teuchos::ParameterList& params,      ///< parameter list for communication
-    		                  LINALG::Matrix<NUM_STRESS_3D,1>* stress,          ///< 2nd PK-stress
-    		                  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,           ///< material stiffness matrix
-    		                  const int eleGID);
+                          const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain, ///< green lagrange strain
+                          Teuchos::ParameterList& params,      ///< parameter list for communication
+                          LINALG::Matrix<NUM_STRESS_3D,1>* stress,          ///< 2nd PK-stress
+                          LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,           ///< material stiffness matrix
+                          const int eleGID);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

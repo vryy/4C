@@ -48,7 +48,7 @@ namespace MAT
       /// mass density
       const double density_;
       /// Type of volumetric Strain Energy Density ('OgSiMi' for Ogden-Simo-Miehe, 'SuBa' for Sussman-Bathe, 'SiTa' for Simo-Taylor)
-	    const std::string* vol_;
+      const std::string* vol_;
       /// poisson's ratio
       const double nue_;
       /// parameter from Holzapfel
@@ -213,6 +213,11 @@ private:
 
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaagasser; }
+
+    /// check if element kinematics and material kinematics are compatible
+    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+        dserror("element and material kinematics are not compatible");}
 
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAAgasser( *this ) ); }

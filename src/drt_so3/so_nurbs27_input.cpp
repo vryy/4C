@@ -37,7 +37,10 @@ bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(const std::string& eletype,
       dserror("Only version with 3 GP for So_N27 implemented");
 
   // we expect kintype to be total lagrangian
-  kintype_ = sonurbs27_totlag;
+  kintype_ = INPAR::STR::kinem_nonlinearTotLag;
+
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(kintype_);
 
   return true;
 }

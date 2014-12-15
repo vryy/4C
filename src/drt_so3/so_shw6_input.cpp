@@ -38,18 +38,21 @@ bool DRT::ELEMENTS::So_shw6::ReadElement(const std::string& eletype,
   // geometrically non-linear with Total Lagrangean approach
   if (buffer=="nonlinear")
     {
-      kintype_ = sow6_nonlinear;
+      kintype_ = INPAR::STR::kinem_nonlinearTotLag;
 
     }
   // geometrically linear
   else if (buffer=="linear")
     {
-    kintype_ = sow6_linear;
+    kintype_ = INPAR::STR::kinem_linear;
     dserror("Reading of SOLIDSHW6 element failed onlz nonlinear kinetmatics implemented");
     }
 
   // geometrically non-linear with Updated Lagrangean approach
   else dserror("Reading of SOLIDSHW6 element failed KINEM unknown");
+
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(kintype_);
 
   linedef->ExtractString("EAS",buffer);
 

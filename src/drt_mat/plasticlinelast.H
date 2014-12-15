@@ -163,6 +163,11 @@ private:
       return INPAR::MAT::m_pllinelast;
     }
 
+    /// check if element kinematics and material kinematics are compatible
+    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    { if (!(kinem == INPAR::STR::kinem_linear))
+        dserror("element and material kinematics are not compatible");}
+
     //! return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const
     {

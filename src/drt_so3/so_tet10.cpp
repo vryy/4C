@@ -93,7 +93,7 @@ void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition( std::map<std::string,s
 
 
 /*----------------------------------------------------------------------***
- |  ctor (public)                                              			|
+ |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_tet10::So_tet10(int id, int owner) :
@@ -103,7 +103,7 @@ pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
 time_(0.0)
 {
-  kintype_ = so_tet10_nonlinear;
+  kintype_ = INPAR::STR::kinem_vague;
   invJ_.resize(NUMGPT_SOTET10, LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10>(true));
   detJ_.resize(NUMGPT_SOTET10, 0.0);
   invJ_mass_.resize(NUMGPT_MASS_SOTET10, LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10>(true));
@@ -124,7 +124,7 @@ time_(0.0)
 }
 
 /*----------------------------------------------------------------------***
- |  copy-ctor (public)                                         			|
+ |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_tet10::So_tet10(const DRT::ELEMENTS::So_tet10& old) :
@@ -158,7 +158,7 @@ time_(old.time_)
 
 /*----------------------------------------------------------------------***
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
- |                                                            		    |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_tet10::Clone() const
 {
@@ -168,7 +168,7 @@ DRT::Element* DRT::ELEMENTS::So_tet10::Clone() const
 
 /*----------------------------------------------------------------------***
  |                                                             (public) |
- |                                                            		    |
+ |                                                                      |
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::So_tet10::Shape() const
 {
@@ -223,7 +223,7 @@ void DRT::ELEMENTS::So_tet10::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------***
  |  Unpack data                                                (public) |
- |                                                            			|
+ |                                                                      |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10::Unpack(const std::vector<char>& data)
 {
@@ -237,7 +237,7 @@ void DRT::ELEMENTS::So_tet10::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // kintype_
-  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
+  kintype_= static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
   // data_
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
@@ -280,7 +280,7 @@ void DRT::ELEMENTS::So_tet10::Unpack(const std::vector<char>& data)
 
 
 /*----------------------------------------------------------------------***
- |  dtor (public)                                              			|
+ |  dtor (public)                                                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_tet10::~So_tet10()
 {
@@ -289,7 +289,7 @@ DRT::ELEMENTS::So_tet10::~So_tet10()
 
 
 /*----------------------------------------------------------------------***
- |  print this element (public)                             	 		|
+ |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10::Print(std::ostream& os) const
 {
@@ -427,7 +427,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol
   /*====================================================================*/
 
 /*----------------------------------------------------------------------***
- |  get vector of volumes (length 1) (public)                  			|
+ |  get vector of volumes (length 1) (public)                           |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Volumes()
 {
@@ -438,7 +438,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Volumes()
 
 
  /*----------------------------------------------------------------------**#
- |  get vector of surfaces (public)                             		|
+ |  get vector of surfaces (public)                                     |
  |  surface normals always point outward                                |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Surfaces()
@@ -454,7 +454,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Surfaces()
 }
 
 /*----------------------------------------------------------------------***++
- |  get vector of lines (public)                               			|
+ |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Lines()
 {

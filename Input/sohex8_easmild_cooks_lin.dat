@@ -45,8 +45,8 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     200
 NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
-TIMESTEP                        1.0
-NUMSTEP                         100
+TIMESTEP                        100.0
+NUMSTEP                         1
 MAXTIME                         100.0
 DAMPING                         No
 M_DAMP                          0.00001
@@ -61,8 +61,7 @@ MAXITER                         20
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
-MAT 2 ELAST_CoupNeoHooke YOUNG 240.5653612 NUE 0.4999
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 240.5653612 NUE 0.4999 DENS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
 ----------------------------------------------------------------------CURVE2
@@ -70,7 +69,7 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 8.10563220758443848e+00 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 7.71168186685653190e+00 TOLERANCE 1e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

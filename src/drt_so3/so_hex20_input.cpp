@@ -35,17 +35,16 @@ bool DRT::ELEMENTS::So_hex20::ReadElement(const std::string& eletype,
 
   if (buffer=="linear")
   {
-    kintype_ = soh20_linear;
+    kintype_ = INPAR::STR::kinem_linear;
   }
   else if (buffer=="nonlinear")
   {
-    kintype_ = soh20_nonlinear;
+    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   }
   else dserror ("Reading SO_HEX20 element failed KINEM unknown");
 
-  // check for SVK material if geometrically linear
-  if (kintype_==soh20_linear && Material()->MaterialType()!=INPAR::MAT::m_stvenant)
-    dserror("ERROR: Only linear elasticity (SVK) for geometrically linear hex20 element");
+  // check if material kinematics is compatible to element kinematics
+  so3mat->ValidKinematics(kintype_);
 
   return true;
 }

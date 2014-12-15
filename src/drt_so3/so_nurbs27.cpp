@@ -85,7 +85,7 @@ DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(int id, int owner) :
 DRT::Element(id,owner),
 data_()
 {
-  kintype_ = sonurbs27_totlag;
+  kintype_ = INPAR::STR::kinem_vague;
 
   invJ_.resize(NUMGPT_SONURBS27, LINALG::Matrix<NUMDIM_SONURBS27,NUMDIM_SONURBS27>(true));
   detJ_.resize(NUMGPT_SONURBS27, 0.0);
@@ -174,7 +174,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // kintype_
-  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
+  kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
   // data_
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_mat/material.H"
+#include "../drt_inpar/inpar_structure.H"
 
 // Several parameters which are fixed three dimensional solid elements
 const int NUMDIM_DISP = 3;      ///< number of dimensions
@@ -300,13 +301,6 @@ protected:
     calc_init_vol
   };
 
-  //! kinematic types of so_disp
-  enum KinematicType
-  {
-    sodisp_geolin,
-    sodisp_totlag,
-    sodisp_updlag
-  };
   //! stress evaluation types of so_disp
   enum StressType
   {
@@ -319,7 +313,7 @@ protected:
     sodisp_stress_nd123
   };
 
-  KinematicType              kintype_;    ///< kinematic type
+  INPAR::STR::KinemType      kintype_;    ///< kinematic type
   StressType                 stresstype_; ///< type of stress evaluation
   DRT::UTILS::GaussRule3D    gaussrule_;  ///< Gaussrule
 

@@ -101,7 +101,7 @@ pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
 time_(0.0)
 {
-  kintype_ = soh20_nonlinear;
+  kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   invJ_.resize(NUMGPT_SOH20, LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20>(true));
   detJ_.resize(NUMGPT_SOH20, 0.0);
 
@@ -217,7 +217,7 @@ void DRT::ELEMENTS::So_hex20::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // kintype_
-  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
+  kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
   // data_
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

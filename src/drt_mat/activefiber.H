@@ -161,6 +161,11 @@ namespace MAT
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_activefiber; }
 
+    /// check if element kinematics and material kinematics are compatible
+    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    { if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+    dserror("element and material kinematics are not compatible");}
+
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ActiveFiber( *this ) ); }
 

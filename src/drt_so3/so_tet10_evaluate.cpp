@@ -30,7 +30,7 @@ Maintainer: Jonas Biehler
 #include "prestress.H"
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                              			|
+ |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
                                     DRT::Discretization&      discretization,
@@ -643,7 +643,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
     ;// there is nothing to do here at the moment
   }
-	break;
+  break;
 
 // evaluate stresses and strains at gauss points and store gpstresses in map <EleId, gpstresses >
   case calc_global_gpstresses_map:
@@ -677,7 +677,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
 
       // if a linear analysis is desired
-      if (kintype_ == DRT::ELEMENTS::So_tet10::so_tet10_linear)
+      if (kintype_ == INPAR::STR::kinem_linear)
       {
         dserror("Linear case not implemented");
       }
@@ -754,7 +754,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Volume Neumann boundary condition (public)     			|
+ |  Integrate a Volume Neumann boundary condition (public)              |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
                                            DRT::Discretization&      discretization,
@@ -871,7 +871,7 @@ void DRT::ELEMENTS::So_tet10::InitJacobianMapping()
    detJ_mass_.resize(NUMGPT_MASS_SOTET10);
    for (int gp=0; gp<NUMGPT_MASS_SOTET10; ++gp)
      {
-	   invJ_mass_[gp].Multiply(derivs11gp[gp],xrefe);
+       invJ_mass_[gp].Multiply(derivs11gp[gp],xrefe);
        detJ_mass_[gp] = invJ_mass_[gp].Invert();
        if (detJ_mass_[gp] == 0.0)
          dserror("ZERO JACOBIAN DETERMINANT");
@@ -1204,9 +1204,9 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
-    	//consistent mass matrix evaluated using a 11-point rule
-    	for (int gp=0; gp<NUMGPT_MASS_SOTET10; gp++)
-    	{
+      //consistent mass matrix evaluated using a 11-point rule
+      for (int gp=0; gp<NUMGPT_MASS_SOTET10; gp++)
+      {
           double density = Material()->Density();
           // integrate consistent mass matrix
           double detJ_mass = detJ_mass_[gp];
@@ -1236,7 +1236,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 
 
 /*----------------------------------------------------------------------*
- |  lump mass matrix                                         			|
+ |  lump mass matrix                                                    |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10::so_tet10_lumpmass(LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* emass)
 {
@@ -1308,17 +1308,17 @@ const std::vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS
  *----------------------------------------------------------------------*/
 const std::vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_4gp_weights()
 {
-	static std::vector<double> weights(NUMGPT_SOTET10);
-	static bool weights_done = false;
-	if (weights_done) return weights;
+  static std::vector<double> weights(NUMGPT_SOTET10);
+  static bool weights_done = false;
+  if (weights_done) return weights;
 
-	const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_4point;
-	const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-	for (int gp=0; gp<NUMGPT_SOTET10; gp++)
-		weights[gp] = intpoints.qwgt[gp];
-	weights_done = true;
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_4point;
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+  for (int gp=0; gp<NUMGPT_SOTET10; gp++)
+    weights[gp] = intpoints.qwgt[gp];
+  weights_done = true;
 
-	return weights;
+  return weights;
 }
 
 
