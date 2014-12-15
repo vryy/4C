@@ -341,17 +341,12 @@ namespace INPAR
     enum XWallTauwType
     {
       constant,
-      mean_between_steps,
-      mean_iter,
-      between_steps,
-      fix_point_iter_with_step_control,
-      fully_linearized
+      between_steps
     };
 
     enum XWallTauwCalcType
     {
       residual,
-      spalding,
       gradient,
       gradient_to_residual
     };
@@ -359,8 +354,7 @@ namespace INPAR
     enum XWallBlendingType
     {
       none,
-      ramp_function,
-      tauw_transformation
+      ramp_function
     };
 
   }  // namespace FLUID

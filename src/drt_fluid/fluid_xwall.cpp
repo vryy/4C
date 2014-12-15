@@ -73,16 +73,8 @@ FLD::XWall::XWall(
 
   if(tauwtype=="constant")
     tauwtype_=INPAR::FLUID::constant;
-  else if(tauwtype=="mean_between_steps")
-    tauwtype_=INPAR::FLUID::mean_between_steps;
-  else if(tauwtype=="mean_iter")
-    tauwtype_=INPAR::FLUID::mean_iter;
   else if(tauwtype=="between_steps")
     tauwtype_=INPAR::FLUID::between_steps;
-  else if(tauwtype=="fix_point_iter_with_step_control")
-    tauwtype_=INPAR::FLUID::fix_point_iter_with_step_control;
-  else if(tauwtype=="fully_linearized")
-    tauwtype_=INPAR::FLUID::fully_linearized;
   else
     dserror("unknown Tauw_Type");
 
@@ -90,8 +82,6 @@ FLD::XWall::XWall(
 
   if(tauwcalctype=="residual")
     tauwcalctype_=INPAR::FLUID::residual;
-  else if(tauwcalctype=="spalding")
-    tauwcalctype_=INPAR::FLUID::spalding;
   else if(tauwcalctype=="gradient")
     tauwcalctype_=INPAR::FLUID::gradient;
   else if(tauwcalctype=="gradient_to_residual")
@@ -121,20 +111,9 @@ FLD::XWall::XWall(
   std::string projectiontype = params_->sublist("WALL MODEL").get<std::string>("Projection","No");
 
   if(projectiontype=="onlyl2projection")
-  {
-    projconstr_=false;
     proj_=true;
-  }
-  else if(projectiontype=="l2projectionwithcontinuityconstraint")
-  {
-    projconstr_=true;
-    proj_=false;
-  }
   else if(projectiontype=="No")
-  {
-    projconstr_=false;
     proj_=false;
-  }
   else
     dserror("unknown projection type");
 
@@ -146,12 +125,8 @@ FLD::XWall::XWall(
     blendingtype_=INPAR::FLUID::none;
   else if(blendingtype=="ramp_function")
     blendingtype_=INPAR::FLUID::ramp_function;
-  else if(blendingtype=="tauw_transformation")
-    blendingtype_=INPAR::FLUID::tauw_transformation;
   else
     dserror("unknown Blending_Type");
-  if(myrank_==0)
-    std::cout << "\nConsider changing the element formulation such that y+ lives on the standard finite element space! this would improve tauw_transformation blending" << std::endl;
 
   inctauwnorm_=0.0;
 
@@ -177,8 +152,6 @@ FLD::XWall::XWall(
   if (scale_sep != "algebraic_multigrid_operator" && mfs_fs_)
     dserror("enrichment can only be fine-scale velocity if the AVM3 method is used");
 
-
-
   //output:
   if(myrank_==0)
   {
@@ -198,14 +171,13 @@ FLD::XWall::XWall(
     std::cout << "Solver for projection:        " << params_->sublist("WALL MODEL").get<int>("PROJECTION_SOLVER") << std::endl;
     std::cout << "Enrichment fine scale vel:    " << mfs_fs_ << std::endl;
     std::cout << std::endl;
-    std::cout << "WARNING: ramp functions are used to treat fluid Neumann inflow conditions" << std::endl;
     std::cout << "WARNING: ramp functions are used to treat fluid Mortar coupling conditions" << std::endl;
     std::cout << "WARNING: face element with enrichment not implemented" << std::endl;
+    std::cout << "WARNING: stabilization terms for Neumann inflow only on standard space" << std::endl;
   }
 
   Setup();
 
-//todo possible to change this to xwdiscret? how does dbcmaps look like in this case?
   turbulent_inflow_condition_
     = Teuchos::rcp(new TransferTurbulentInflowConditionNodal(discret_,dbcmaps));
 
@@ -546,12 +518,6 @@ void FLD::XWall::InitToggleVector()
 
       bool fullyenriched=true;
 
-      // Neumann inflow
-      std::vector<DRT::Condition*> inflcond;
-      xwallnode->GetCondition("FluidNeumannInflow",inflcond);
-      if(not inflcond.empty())
-        fullyenriched=false;
-
       // Mortar interface
       std::vector<DRT::Condition*> mortarcond;
       xwallnode->GetCondition("Mortar",mortarcond);
@@ -735,36 +701,6 @@ void FLD::XWall::SetupL2Projection()
     mergedmap_=Teuchos::null;
     lagrdofrowmap_=Teuchos::null;
   }
-  else if (projconstr_)
-  {
-    //build the dof maps of p and u_y
-
-    std::vector<int> enrdf;          // enriched dofs
-    std::vector<int> lagrdf;          // lagrange dofs
-
-    for (int i=0; i<xwdiscret_->DofRowMap()->NumMyElements(); ++i)
-    {
-      int gdfid=xwdiscret_->DofRowMap()->GID(i);
-      if(gdfid%8>3&&gdfid%8<7)
-        enrdf.push_back(gdfid);
-      if(gdfid%8>6)
-        lagrdf.push_back(gdfid);
-    }
-
-    enrdofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)enrdf.size(),&enrdf[0],0,xwdiscret_->Comm()));
-    lagrdofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)lagrdf.size(),&lagrdf[0],0,xwdiscret_->Comm()));
-    mergedmap_=LINALG::MergeMap(*enrdofrowmap_,*lagrdofrowmap_,false);
-
-    massmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap_,108,false,true));
-
-    incveln_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
-    incvelnp_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
-    incaccn_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
-
-    stateveln_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->DofRowMap()),true));
-    statevelnp_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->DofRowMap()),true));
-    stateaccn_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->DofRowMap()),true));
-  }
   else
   {
     massmatrix_=Teuchos::null;
@@ -779,7 +715,7 @@ void FLD::XWall::SetupL2Projection()
   }
 
     //setup solver
-  if(proj_ || projconstr_)
+  if(proj_)
   {
     const int solvernumber = params_->sublist("WALL MODEL").get<int>("PROJECTION_SOLVER");
     if(solvernumber<0)
@@ -808,7 +744,7 @@ void FLD::XWall::SetupL2Projection()
       case INPAR::SOLVER::azprec_MueLuAMG_sym:
       case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
       {
-        if(projconstr_||proj_)
+        if(proj_)
         { //has 3 dofs, velocity dofs
           //BUT: enriched nodes have 8 dofs, so we have to calculate our own nullspace for 3 dofs
           // store nv and np at unique location in solver parameter list
@@ -929,16 +865,6 @@ void FLD::XWall::SetupL2Projection()
       return;
     }
     break;
-    case INPAR::FLUID::mean_between_steps:
-    {
-      dserror("calculation of tauw not supported right now");
-    }
-    break;
-    case INPAR::FLUID::mean_iter: //works
-    {
-      dserror("calculation of tauw not supported right now");
-    }
-    break;
     case INPAR::FLUID::between_steps:
     {
       inctauw_->PutScalar(0.0);
@@ -947,16 +873,6 @@ void FLD::XWall::SetupL2Projection()
         CalcTauW(step,trueresidual,velnp,wss);
       else
         return;
-    }
-    break;
-    case INPAR::FLUID::fix_point_iter_with_step_control:
-    {
-      dserror("calculation of tauw not supported right now");
-    }
-    break;
-    case INPAR::FLUID::fully_linearized:
-    {
-      dserror("not yet implemented");
     }
     break;
     default: dserror("unknown tauwtype_");
@@ -1006,31 +922,6 @@ void FLD::XWall::SetupL2Projection()
     if(myrank_==0)
       std::cout << "done!" << std::endl;
   }
-  else if(projconstr_)
-  {
-    if(myrank_==0)
-      std::cout << "  L2-project wcc... ";
-    const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(9), "SOLVER");
-
-    if(solvertype == INPAR::SOLVER::umfpack||solvertype == INPAR::SOLVER::aztec_msr)
-    {
-      L2ProjectVectorWithContinuityConstraint(veln,Teuchos::null,Teuchos::null);
-      L2ProjectVectorWithContinuityConstraint(accn,Teuchos::null,Teuchos::null);
-      //at the beginning of this time step they are equal -> calculate only one of them
-      velnp->Update(1.0,*veln,0.0);
-    }
-    else if(tauwtype_==INPAR::FLUID::between_steps)
-    {
-      L2ProjectVectorWithContinuityConstraint(veln,Teuchos::null,accn);
-      //at the beginning of this time step they are equal -> calculate only one of them
-      velnp->Update(1.0,*veln,0.0);
-    }
-    else
-      L2ProjectVectorWithContinuityConstraint(veln,velnp,accn);
-
-    if(myrank_==0)
-      std::cout << "done!" << std::endl;
-  }
   else
     std::cout << std::endl;
 
@@ -1052,125 +943,8 @@ void FLD::XWall::CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   trueresidual,T
   if(tauwcalctype_ == INPAR::FLUID::gradient_to_residual && switch_step_ == step && myrank_ == 0)
     std::cout << "\n switching from gradient to residual \n" << std::endl;
 
-  if(tauwcalctype_==INPAR::FLUID::spalding)
-  {
-    Teuchos::RCP<Epetra_Vector> velnpxw = Teuchos::rcp(new Epetra_Vector(*(discret_->DofColMap()),true));
 
-    LINALG::Export(*velnp,*velnpxw);
-
-    for (int j=0; j<dircolnodemap_->NumMyElements();++j)
-    {
-      int xwallgid = dircolnodemap_->GID(j);
-
-      if (discret_->NodeRowMap()->MyGID(xwallgid)) //just in case
-      {
-        DRT::Node* xwallnode = discret_->gNode(xwallgid);
-        if(!xwallnode) dserror("Cannot find node");
-
-        DRT::Element** surrele = xwallnode->Elements();
-
-        for (int k=0;k<xwallnode->NumElement();++k)
-        {
-          DRT::Node** surrnodes=surrele[k]->Nodes();
-
-          for(int i=0; i<surrele[k]->NumNode();i++)
-          {
-            //now I need the velocity at this node,
-            //the distance from the wall
-            //and the spalding's law
-
-            if(!surrnodes[i])
-              dserror("can't find surrounding node");
-
-            std::vector<DRT::Condition*> nodedircond;
-            surrnodes[i]->GetCondition("FluidStressCalc",nodedircond);
-
-            if(nodedircond.empty())
-            {
-              int firstgdofid=discret_->Dof(0,surrnodes[i],0);
-
-              int firstldofid=velnpxw->Map().LID(firstgdofid);
-        //      std::cout << der2psiold/der2psinew << std::endl;
-              double velx =(*velnpxw)[firstldofid];
-              double vely =(*velnpxw)[firstldofid+1];
-              double velz =(*velnpxw)[firstldofid+2];
-              double u=sqrt(velx*velx+vely*vely+velz*velz); //we approximate the wall-parallel velocity
-                                                            //by its norm
-
-              int ylid=wdist_->Map().LID(surrnodes[i]->Id());
-              double y=(*wdist_)[ylid];
-
-              double k=0.409836066;
-              double B=5.17;
-
-              int tauwlid=tauw_->Map().LID(surrnodes[i]->Id());
-              double tauw=(*tauw_)[tauwlid];//use old value for a start...
-              if(tauw<1e-6)
-                tauw=1.0;
-              double yp=0.0;
-              double up=0.0;
-              double derup=0.0;
-              double utau=0.0;
-              double derutau=0.0;
-              double inc=100.0;
-              double fn=0.0;
-              double dfn=0.0;
-
-              int count=0;
-              while (abs(inc)>1e-8)
-              {
-
-                utau=sqrt(tauw/dens_);
-                derutau=1.0/(2.0*dens_*tauw);
-
-                yp=utau*y/visc_;
-                up=u/utau;
-
-                derup=-u/(utau*utau)*derutau;
-                fn=-yp+up+exp(-k*B)*(exp(k*up)-1.0-k*up-(k*up)*(k*up)*0.5-(k*up)*(k*up)*(k*up)/6.0);
-                dfn=-y/visc_*derutau+derup+exp(-k*B)*(k*exp(k*up)*derup-k*derup-k*k*up*derup-k*k*k*up*up*derup*0.5);
-
-                if(abs(dfn)<1.0e-10||abs(dfn)>1e100||std::isinf(dfn)!=0)
-                {
-                  inc=-2.0e-8;//dummy value
-                }
-                else
-                  inc=fn/dfn;
-
-                if(tauw-inc<0.0|| count>50)
-                  inc/=2.0; //damping for robustness
-
-                tauw-=inc;
-                if(tauw<1.0e-5)
-                  tauw+=0.001*abs(inc); //it is problematic if tauw approaches zero, thus go a step away of zero
-
-                tauw=abs(tauw);//just in case, because it can happen, that it becomes negative during newton iteration
-
-                count++;
-                //this converges very slowly... might there be a mistake somewhere?
-                if(count>100000)
-                {
-                  std::cout << "Tauw does not converge... u= " << u << "  tauw= " << tauw << "  inc= " << inc<< "  dfn= " << dfn << std::endl;
-                  inc=0.0;
-                }
-              }
-
-              if(tauw < min_tauw_)
-                tauw = min_tauw_;
-
-              //store in vector
-              int err =     newtauw->ReplaceGlobalValue(xwallgid,0,tauw);
-              if(err==1)
-                dserror("global row not on proc");
-              else if(err==-1)
-                dserror("wrong vector index");
-            }
-          }
-        }
-      }
-    }
-  }
-  else if(tauwcalctype_==INPAR::FLUID::residual || (tauwcalctype_ == INPAR::FLUID::gradient_to_residual && step >= switch_step_))
+  if(tauwcalctype_==INPAR::FLUID::residual || (tauwcalctype_ == INPAR::FLUID::gradient_to_residual && step >= switch_step_))
   {
     for(int lnodeid=0;lnodeid<dircolnodemap_->NumMyElements();lnodeid++)
     {
@@ -1298,10 +1072,6 @@ void FLD::XWall::CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   trueresidual,T
 
   tauwcouplingmattrans_->Multiply(true,*newtauw,*newtauw2);
 
-
-  //here i can modify newtauw2 to get rid of ramp functions!
-  BlendingViaModificationOfTauw(newtauw2);
-
   LINALG::Export(*newtauw2,*tauw);
   inctauw_->Update(fac_,*tauw,-fac_); //now this is the increment (new-old)
 
@@ -1324,61 +1094,6 @@ void FLD::XWall::CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   trueresidual,T
   if(myrank_==0)
   std::cout << "tauw mean:  "  << meansp ;
 
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Modify Tauw so that ramp functions are not necessary       bk 08/14 |
- *----------------------------------------------------------------------*/
-void FLD::XWall::BlendingViaModificationOfTauw(Teuchos::RCP<Epetra_Vector>   newtauw2)
-{
-  if(blendingtype_==INPAR::FLUID::tauw_transformation)
-  {
-    Teuchos::RCP<Epetra_Vector> yp = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
-    double sumyp=0.0;
-    int count=0;
-    for (int j=0; j<xwallrownodemap_->NumMyElements();++j)
-    {
-      double toggle=(*xtoggleloc_)[j];
-      if(toggle>0.5&&toggle<0.9)
-      {
-        double wdist=(*walldist_)[j];
-        double tauw=(*newtauw2)[j];
-
-        double utau=sqrt(tauw/dens_);
-        double yplus=wdist*utau/visc_;
-        sumyp+=yplus;
-        count++;
-        int err  =     yp->ReplaceMyValue(j,0,yplus);
-        if(err!=0)
-          dserror("cannot replace my value");
-      }
-    }
-    double max=0.0;
-    yp->MaxValue(&max);
-    double sumypall;
-    int countall;
-    (discret_->Comm()).SumAll(&count,&countall,1);
-    (discret_->Comm()).SumAll(&sumyp,&sumypall,1);
-    double ypint=0.0*max+1.0*sumypall/(double)countall;
-
-    //now calculate respective tauw and replace in newtauw2
-    for (int j=0; j<xwallrownodemap_->NumMyElements();++j)
-    {
-      double toggle=(*xtoggleloc_)[j];
-      if(toggle>0.5&&toggle<0.9)
-      {
-        double wdist=(*walldist_)[j];
-        if(wdist<1e-9)
-          dserror("blending nodes may not be wall nodes if transformation is used");
-        double tauw=dens_*ypint*ypint*visc_*visc_/(wdist*wdist);
-        int err  =     newtauw2->ReplaceMyValue(j,0,tauw);
-        if(err!=0)
-          dserror("cannot replace my value");
-      }
-    }
-  }
   return;
 }
 
@@ -1518,214 +1233,6 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector>   veln,Teuchos::RCP
   if(velnp!=Teuchos::null)
     velnp->Update(1.0,*incvelnp_,1.0);
 
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  L2-project enriched dofs of vector                         bk 07/14 |
- |  with a penalty continuity constraint                                |
- *----------------------------------------------------------------------*/
-void FLD::XWall::L2ProjectVectorWithContinuityConstraint(Teuchos::RCP<Epetra_Vector>   veln,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   accn)
-{
-
-  if(not veln->Map().SameAs(*discret_->DofRowMap()))
-    dserror("input map is not the dof row map of the fluid discretization");
-
-  massmatrix_->Zero();
-
-  incveln_->PutScalar(0.0);
-  if(accn!=Teuchos::null)
-    incaccn_->PutScalar(0.0);
-  if(velnp!=Teuchos::null)
-    incvelnp_->PutScalar(0.0);
-
-  LINALG::Export(*veln,*stateveln_);
-  if(accn!=Teuchos::null)
-    LINALG::Export(*accn,*stateaccn_);
-  if(velnp!=Teuchos::null)
-    LINALG::Export(*velnp,*statevelnp_);
-
-  //number of right hand sides during solving
-  //is the number of velocity components that is solved for
-  //3 since we are in 3D
-  int numberofrhs=0;
-  if(velnp==Teuchos::null&&accn==Teuchos::null)
-    numberofrhs=1;
-  else if(velnp==Teuchos::null||accn==Teuchos::null)
-    numberofrhs=2;
-  else
-    numberofrhs=3;
-
-  xwdiscret_->SetState("veln",stateveln_);
-  if(accn!=Teuchos::null)
-    xwdiscret_->SetState("accn",stateaccn_);
-  if(velnp!=Teuchos::null)
-    xwdiscret_->SetState("velnp",statevelnp_);
-
-  // set action in order to project nodal enriched values to new shape functions
-  Teuchos::ParameterList params;
-  SetXWallParamsXWDis(params);
-  params.set<int>("action",FLD::xwall_l2_projection_with_continuity_constraint);
-
-  // create empty right hand side
-  Teuchos::RCP<Epetra_MultiVector> rhsassemble = Teuchos::rcp(new Epetra_MultiVector(*mergedmap_, numberofrhs));
-
-  std::vector<int> lm;
-  std::vector<int> lmowner;
-  std::vector<int> lmstride;
-
-  // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevectordummy;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
-
-  // get number of elements
-  const int numele = xwdiscret_->NumMyColElements();
-
-  // loop column elements
-  for (int i=0; i<numele; ++i)
-  {
-    DRT::Element* actele = xwdiscret_->lColElement(i);
-    DRT::ELEMENTS::FluidXWall* xwallele=dynamic_cast<DRT::ELEMENTS::FluidXWall*>(actele);
-    if(!xwallele)//not a xwall element and the node row maps don't know it's nodes
-      dserror("must be xwallele");
-    const int numnode = actele->NumNode();
-    const int numdf=4;
-
-    // get element location vector and ownerships
-    actele->LocationVector(*xwdiscret_,lm,lmowner,lmstride);
-
-    // Reshape element matrices and vectors and initialize to zero
-    elematrix1.Shape(numnode*numdf,numnode*numdf);
-    // Reshape element matrices and vectors and initialize to zero
-    elematrix2.Shape(numnode*numdf,numberofrhs);//we have 3 right hand sides for now: 3 velocity components
-
-    // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
-    actele->Evaluate(params,*xwdiscret_,lm,elematrix1,elematrix2,elevectordummy,elevector2,elevector3);
-
-    // get element location vector for enriched dofs
-    std::vector<int> lmassemble;
-    std::vector<int> lmownerassemble;
-    lmassemble.resize(numnode*numdf);
-    lmownerassemble.resize(numnode*numdf);
-
-    for(int n=0; n<numnode; ++n)
-    {
-      for(int df=4;df<8;++df)
-      {
-        lmassemble[n*numdf+df-4] = lm[n*8+df];
-        lmownerassemble[n*numdf+df-4] = lmowner[n*8+df];
-      }
-    }
-
-    // assembling into node maps
-    massmatrix_->Assemble(actele->Id(),elematrix1,lmassemble,lmownerassemble);
-
-    // assembling into node maps
-    // assemble numberofrhs entries in rhs vector sequentially
-    elevector1.Size(numnode*numdf);
-    for(int n=0; n<numberofrhs; ++n)
-    {
-      // copy results into Serial_DenseVector for assembling
-      for(int idf=0; idf<numnode*numdf; ++idf)
-        elevector1(idf) = elematrix2(idf,n);
-      // assemble into nth vector of MultiVector
-//      std::cout << elevector1 << std::endl;
-      LINALG::Assemble(*rhsassemble,n,elevector1,lmassemble,lmownerassemble);
-    }
-  } //end element loop
-
-  xwdiscret_->ClearState();
-  // finalize the matrix
-  massmatrix_->Complete();
-
-  // we want to split M into 2 groups = 4 blocks
-  Teuchos::RCP<LINALG::SparseMatrix> massmatrix_solve, B, ktemp1, ktemp2;
-  // create empty right hand side
-  Teuchos::RCP<Epetra_MultiVector> rhssolve = Teuchos::rcp(new Epetra_MultiVector(*enrdofrowmap_, numberofrhs));
-
-  // split into enriched and lagrange multiplyer dof's
-  LINALG::SplitMatrix2x2(massmatrix_,enrdofrowmap_,lagrdofrowmap_,enrdofrowmap_,lagrdofrowmap_,massmatrix_solve,ktemp1,B,ktemp2);
-
-  Teuchos::RCP<LINALG::SparseMatrix> kbtb_add = MLMultiply(*B,true,*B,false,false,false,true);
-
-  // we want to split f into 2 groups
-  Teuchos::RCP<Epetra_Vector> fm1, fb1,fb1_add;
-  // do the vector splitting
-  LINALG::SplitVector(*mergedmap_,*((*rhsassemble)(0)),enrdofrowmap_,fm1,lagrdofrowmap_,fb1);
-
-  fb1_add=Teuchos::rcp(new Epetra_Vector(*enrdofrowmap_,true));
-  B->Multiply(true,*fb1,*fb1_add);
-
-  //determine penalty parameter
-  double normconstr=0.0;
-  fb1_add->Norm2(&normconstr);
-  double normeq=0.0;
-  fm1->Norm2(&normeq);
-
-  double k=0.0;
-  if(normconstr>1e-8)
-    k= penalty_param_*normeq/normconstr;
-  //else use 0.0, no continuity constraint
-  if(myrank_==0)
-    std::cout << "k = " << k << " ... " ;
-
-//  std::cout << *B << std::endl;
-  massmatrix_solve->UnComplete();
-  massmatrix_solve->Add(*kbtb_add,false,k,1.0);
-
-  massmatrix_solve->Complete();
-
-  fm1->Update(k,*fb1_add,1.0);
-
-  ((*rhssolve)(0))->Update(1.0,*fm1,0.0);
-
-  // do the vector splitting smn -> sm+n
-  if(numberofrhs>1)
-  {
-    // we want to split f into 3 groups s.m,n
-    Teuchos::RCP<Epetra_Vector> fm2, fb2,fb2_add;
-    fb2_add=Teuchos::rcp(new Epetra_Vector(*enrdofrowmap_,true));
-    LINALG::SplitVector(*mergedmap_,*(*rhsassemble)(1),enrdofrowmap_,fm2,lagrdofrowmap_,fb2);
-    B->Multiply(true,*fb2,*fb2_add);
-    fm2->Update(k,*fb2_add,1.0);
-    ((*rhssolve)(1))->Update(1.0,*fm2,0.0);
-  }
-
-  // do the vector splitting smn -> sm+n
-  if(numberofrhs>2)
-  {
-    // we want to split f into 3 groups s.m,n
-    Teuchos::RCP<Epetra_Vector> fm2, fb2,fb2_add;
-    fb2_add=Teuchos::rcp(new Epetra_Vector(*enrdofrowmap_,true));
-    LINALG::SplitVector(*mergedmap_,*(*rhsassemble)(2),enrdofrowmap_,fm2,lagrdofrowmap_,fb2);
-    B->Multiply(true,*fb2,*fb2_add);
-    fm2->Update(k,*fb2_add,1.0);
-    ((*rhssolve)(2))->Update(1.0,*fm2,0.0);
-  }
-
-  // solution vector
-  Teuchos::RCP<Epetra_MultiVector> resultvec = Teuchos::rcp(new Epetra_MultiVector(*enrdofrowmap_,numberofrhs));
-
-  // solve for 1, 2 or 3 right hand sides at the same time --> thanks to Belos
-  solver_->Solve(massmatrix_solve->EpetraOperator(), resultvec, rhssolve, true, true, Teuchos::null);
-
-  //now copy result in original vector: the result is an increment of the velocity/ acceleration
-  LINALG::Export(*((*resultvec)(0)),*incveln_);
-  if(numberofrhs>1)
-  LINALG::Export(*((*resultvec)(1)),*incaccn_);
-  if(numberofrhs>2)
-    LINALG::Export(*((*resultvec)(2)),*incvelnp_);
-
-  veln->Update(1.0,*incveln_,1.0);
-  if(accn!=Teuchos::null)
-    accn->Update(1.0,*incaccn_,1.0);
-  if(velnp!=Teuchos::null)
-    velnp->Update(1.0,*incvelnp_,1.0);
 
   return;
 }

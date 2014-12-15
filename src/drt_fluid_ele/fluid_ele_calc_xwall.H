@@ -179,19 +179,6 @@ private:
       Epetra_SerialDenseMatrix&            elemat1,
       Epetra_SerialDenseMatrix&            elemat2);
 
-  /*! \brief Calculate Projection on updated shape functions (matrix and rhs) including continuity constraint
-   *
-   *  \author bk \date 07/2014
-   */
-  virtual int XWallProjectionWithContinuityConstraint(
-      DRT::ELEMENTS::Fluid*                ele,
-      Teuchos::ParameterList&              params,
-      DRT::Discretization &                discretization,
-      const std::vector<int> &             lm,
-      Teuchos::RCP<MAT::Material> &        mat,
-      Epetra_SerialDenseMatrix&            elemat1,
-      Epetra_SerialDenseMatrix&            elemat2,
-      Epetra_SerialDenseVector&            elevec1);
 
   //! nodal values of wall distance
   LINALG::Matrix<enren_,1>    ewdist_;

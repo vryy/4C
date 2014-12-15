@@ -785,7 +785,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::interpolate_velocity_to_given_point:
     case FLD::calc_turbulence_statistics:
     case FLD::xwall_l2_projection:
-    case FLD::xwall_l2_projection_with_continuity_constraint:
     case FLD::xwall_calc_mk:
     case FLD::tauw_via_gradient:
     case FLD::velgradient_projection:

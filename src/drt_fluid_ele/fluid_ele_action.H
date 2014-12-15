@@ -64,7 +64,6 @@ enum Action {
     interpolate_velocity_to_given_point,
     interpolate_velgrad_to_given_point,
     xwall_l2_projection,
-    xwall_l2_projection_with_continuity_constraint,
     xwall_calc_mk,
     tauw_via_gradient,
     set_two_phase_parameter,

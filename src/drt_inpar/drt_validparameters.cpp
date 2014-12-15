@@ -4729,19 +4729,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Methods for calculating/updating the wall shear stress necessary for Spalding's law.",
     tuple<std::string>(
       "constant",
-      "mean_between_steps",
-      "mean_iter",
-      "between_steps",
-      "fix_point_iter_with_step_control",
-      "fully_linearized"),
+      "between_steps"),
     tuple<std::string>(
       "Use the constant wall shear stress given in the input file for the whole simulation.",
-      "Calculate wall shear stress in between time steps and use the mean value.",
-      "Calculate wall shear stress at every iteration and use the mean value.",
-      "Calculate wall shear stress in between time steps.",
-      "Calculate wall shear stress in between every non-linear iteration and use fix point iteration to converge.\n Since this results in an unstable behavior, the increment of tauw is reduced if necessary.",
-      "Fully linearized wall shear stress."),
-    tuple<int>(0,1,2,3,4,5),
+      "Calculate wall shear stress in between time steps."),
+    tuple<int>(0,1),
     &fdyn_wallmodel);
 
   setStringToIntegralParameter<int>(
@@ -4750,15 +4742,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Methods for calculating the wall shear stress necessary for Spalding's law.",
     tuple<std::string>(
       "residual",
-      "spalding",
       "gradient",
       "gradient_to_residual"),
     tuple<std::string>(
       "Residual (force) devided by area.",
-      "Shear stress by inverse calculation via Spalding's law.",
       "Gradient via shape functions and nodal values.",
       "First gradient, then residual."),
-    tuple<int>(0,1,2,3),
+    tuple<int>(0,1,3),
     &fdyn_wallmodel);
 
   IntParameter(
@@ -4796,13 +4786,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Methods for blending the enrichment space.",
     tuple<std::string>(
       "none",
-      "ramp_function",
-      "tauw_transformation"),
+      "ramp_function"),
     tuple<std::string>(
       "No ramp function, does not converge!",
-      "Enrichment is multiplied with linear ramp function resulting in zero enrichment at the interface",
-      "Wall shear stress is modified at blending nodes such that y+ is constant at the interface"),
-    tuple<int>(0,1,2),
+      "Enrichment is multiplied with linear ramp function resulting in zero enrichment at the interface"),
+    tuple<int>(0,1),
     &fdyn_wallmodel);
 
   IntParameter("GP_Wall_Normal",3,"Gauss points in wall normal direction",&fdyn_wallmodel);

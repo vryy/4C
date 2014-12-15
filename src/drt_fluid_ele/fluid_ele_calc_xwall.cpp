@@ -117,7 +117,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::EvaluateService(
 {
   calcoldandnewpsi_=false;
   const FLD::Action act = DRT::INPUT::get<FLD::Action>(params,"action");
-  if(act==FLD::xwall_l2_projection||act==FLD::xwall_l2_projection_with_continuity_constraint)
+  if(act==FLD::xwall_l2_projection)
     calcoldandnewpsi_=true;
 //  std::cout << my::nen_ << std::endl;
 //  std::cout << elemat1_epetra.M() << "  " << elemat1_epetra.N() << std::endl;
@@ -200,14 +200,6 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::EvaluateServiceXWall(
       //I only need funct_ and maybe the first derivative
       my::is_higher_order_ele_=false;
       return XWallProjection(ele,params,discretization,lm,mat,elemat1,elemat2);//here we can go further in the element and implement the matrix and rhs terms
-    }
-    break;
-    case FLD::xwall_l2_projection_with_continuity_constraint:
-    {
-      //this action only considers enriched elements
-      //I only need funct_ and maybe the first derivative
-      my::is_higher_order_ele_=false;
-      return XWallProjectionWithContinuityConstraint(ele,params,discretization,lm,mat,elemat1,elemat2,elevec1);//here we can go further in the element and implement the matrix and rhs terms
     }
     break;
     case FLD::tauw_via_gradient:
@@ -695,32 +687,10 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::EvalEnrichment()
     {
       for(int sdm=0;sdm<my::numderiv2_;++sdm)
       {
-        int i=0;
-        int j=0;
-        if(sdm<my::nsd_)
-        {
-          i=sdm;
-          j=sdm;
-        }
-        else if (sdm==3)
-        {
-          i=0;
-          j=1;
-        }
-        else if (sdm==4)
-        {
-          i=0;
-          j=2;
-        }
-        else if(sdm==5)
-        {
-          i=1;
-          j=2;
-        }
-        else
-          dserror("index does not exist");
+        const int i[6]={0, 1, 2, 0, 0, 1};
+        const int j[6]={0, 1, 2, 1, 2, 2};
         derxyenr2_(sdm,inode)+=derxy2_(sdm,inode)*(psigp-epsi_(inode))
-                             + derxy_(i,inode)*derpsigp(j)+derxy_(j,inode)*derpsigp(i)
+                             + derxy_(i[sdm],inode)*derpsigp(j[sdm])+derxy_(j[sdm],inode)*derpsigp(i[sdm])
                              + funct_(inode)*der2psigp(sdm);
       }
     }
@@ -889,8 +859,8 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::SpaldingsLaw(double di
   {
     double psiquad=psi*psi;
     double exppsi=exp(psi);
-           fn=-yplus + psi*km1+expmkmb_*(exppsi-1.0-psi-psiquad*0.5 - psiquad*psi/6.0);
-    double dfn= km1+expmkmb_*(exppsi-1.0-psi-psiquad*0.5);
+           fn=-yplus + psi*km1+expmkmb_*(exppsi-1.0-psi-psiquad*0.5 - psiquad*psi/6.0 - psiquad*psiquad/24.0);
+    double dfn= km1+expmkmb_*(exppsi-1.0-psi-psiquad*0.5 - psiquad*psi/6.0);
 
     inc=fn/dfn;
 
@@ -911,7 +881,7 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::DerSpaldingsLaw(double
 {
   //derivative with respect to y+!
   //spaldings law according to paper (derivative)
-  return 1.0/(1.0/k_+expmkmb_*(exp(psi)-1.0-psi-psi*psi*0.5));
+  return 1.0/(1.0/k_+expmkmb_*(exp(psi)-1.0-psi-psi*psi*0.5-psi*psi*psi/6.0));
 
 // Reichardt's law
 //  double yplus=dist*utau*viscinv_;
@@ -926,7 +896,7 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Der2SpaldingsLaw(doubl
 {
   //derivative with respect to y+!
   //spaldings law according to paper (2nd derivative)
-  return -expmkmb_*(exp(psi)-1-psi)*derpsi*derpsi*derpsi;
+  return -expmkmb_*(exp(psi)-1-psi-psi*psi*0.5)*derpsi*derpsi*derpsi;
 
   // Reichardt's law
 //  double yplus=dist*utau*viscinv_;
@@ -1413,405 +1383,6 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::XWallProjection(
     }
   }
 
-
-  return 0;
-}
-
-/*-----------------------------------------------------------------------------*
- | Calculate matrix for l2 projection                               bk 07/2014 |
- *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::XWallProjectionWithContinuityConstraint(
-    DRT::ELEMENTS::Fluid*                ele,
-    Teuchos::ParameterList&              params,
-    DRT::Discretization &                discretization,
-    const std::vector<int> &             lm,
-    Teuchos::RCP<MAT::Material> &        mat,
-    Epetra_SerialDenseMatrix&            elemat1,
-    Epetra_SerialDenseMatrix&            elemat2,
-    Epetra_SerialDenseVector&            elevec1
-    )
-{
-
-  //----------------------------------------------------------------------------
-  //   Extract velocity/pressure from global vectors
-  //----------------------------------------------------------------------------
-
-  LINALG::Matrix<my::nsd_,my::nen_> eveln(true);
-  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eveln, NULL,"veln");
-
-  LINALG::Matrix<my::nsd_,my::nen_> eaccn(true);
-  bool switchonaccn = discretization.HasState("accn");
-  if(switchonaccn)
-    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &eaccn, NULL,"accn");
-
-  LINALG::Matrix<my::nsd_,my::nen_> evelnp(true);
-  bool switchonvelnp = discretization.HasState("velnp");
-  if(switchonvelnp)
-    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelnp, NULL,"velnp");
-
-  //----------------------------------------------------------------------------
-  //                         ELEMENT GEOMETRY
-  //----------------------------------------------------------------------------
-
-  GEO::fillInitialPositionArray<distype,my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
-
-  if (ele->IsAle())
-    dserror("ale is not supported with xwall so far");
-
-//  DRT::UTILS::GaussIntegration intpoints(DRT::Element::line6);
-
-  //------------------------------------------------------------------
-  //                       INTEGRATION LOOP
-  //------------------------------------------------------------------
-  for ( DRT::UTILS::GaussIntegration::iterator iquad=my::intpoints_.begin(); iquad!=my::intpoints_.end(); ++iquad )
-  {
-  // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
-
-    LINALG::Matrix<my::nen_,1> newfunct(my::funct_);
-    LINALG::Matrix<my::nsd_,my::nen_> newderxy(my::derxy_);
-
-    XWallTauWIncBack();
-
-    // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
-
-    LINALG::Matrix<my::nen_,1> oldfunct(my::funct_);
-    LINALG::Matrix<my::nsd_,my::nen_> oldderxy(my::derxy_);
-
-    XWallTauWIncForward();
-
-    //----------------------------------------------------------------------------
-    //                         MASS MATRIX
-    //----------------------------------------------------------------------------
-    int idim_nsd_p_idim[my::nsd_];
-    LINALG::Matrix<my::nsd_*my::nsd_,enren_> lin_resM_Du(true);
-    LINALG::Matrix<enren_*my::nsd_,enren_*my::nsd_> estif_u(true);
-    LINALG::Matrix<enren_, enren_*my::nsd_> estif_q_u(true);
-
-    for (int idim = 0; idim <my::nsd_; ++idim)
-    {
-      idim_nsd_p_idim[idim]=idim*my::nsd_+idim;
-    }
-
-    for (int ui=1; ui<my::nen_; ui+=2)
-    {
-      const double v=my::fac_*newfunct(ui);
-      int nodeui=0;
-      if(ui%2==1)
-        nodeui=(ui-1)/2;
-      else dserror("something wrong with indices. also correct in all following terms");
-
-      for (int idim = 0; idim <my::nsd_; ++idim)
-      {
-        lin_resM_Du(idim_nsd_p_idim[idim],nodeui)+=v;
-      }
-    }
-
-    for (int ui=1; ui<my::nen_; ui+=2)
-    {
-      const int nodeui=(ui-1)/2;
-      const int nsd_nodeui = my::nsd_*nodeui;
-      for (int vi=1; vi<my::nen_; vi+=2)
-      {
-        const int nsd_nodevi=my::nsd_*(vi-1)/2;
-
-        for (int idim = 0; idim <my::nsd_; ++idim)
-        {
-          estif_u(nsd_nodevi+idim,nsd_nodeui+idim) += newfunct(vi)*lin_resM_Du(idim_nsd_p_idim[idim],nodeui);
-        } // end for (idim)
-      } //vi
-    } // ui
-
-    /* continuity term */
-    /*
-         /                \
-        |                  |
-        | nabla o Du  , q  |
-        |                  |
-         \                /
-    */
-    for (int vi=1; vi<my::nen_; vi+=2)
-    {
-      const int nodevi=(vi-1)/2;
-      const double v = my::fac_*newfunct(vi);
-
-      for (int ui=1; ui<my::nen_; ui+=2)
-      {
-        const int nodeui=(ui-1)/2;
-        const int fui = my::nsd_*nodeui;
-
-        for (int idim = 0; idim <my::nsd_; ++idim)
-        {
-          estif_q_u(nodevi,fui+idim) += v*newderxy(idim,ui);
-        }
-      }
-    }  // end for(idim)
-
-    // add velocity-velocity part to matrix
-    for (int ui=0; ui<enren_; ++ui)
-    {
-      const int numdof_ui = my::numdofpernode_*ui;
-      const int nsd_ui = my::nsd_*ui;
-
-      for (int jdim=0; jdim < my::nsd_;++jdim)
-      {
-        const int numdof_ui_jdim = numdof_ui+jdim;
-        const int nsd_ui_jdim = nsd_ui+jdim;
-
-        for (int vi=0; vi<enren_; ++vi)
-        {
-          const int numdof_vi = my::numdofpernode_*vi;
-          const int nsd_vi = my::nsd_*vi;
-
-          for (int idim=0; idim <my::nsd_; ++idim)
-          {
-            elemat1(numdof_vi+idim, numdof_ui_jdim) += estif_u(nsd_vi+idim, nsd_ui_jdim);
-          }
-        }
-      }
-    }
-
-    // add pressure-velocity part to matrix
-    for (int ui=0; ui<enren_; ++ui)
-    {
-      const int numdof_ui = my::numdofpernode_*ui;
-      const int nsd_ui = my::nsd_*ui;
-
-      for (int jdim=0; jdim < my::nsd_;++jdim)
-      {
-        const int numdof_ui_jdim = numdof_ui+jdim;
-        const int nsd_ui_jdim = nsd_ui+jdim;
-
-        for (int vi=0; vi<enren_; ++vi)
-          elemat1(my::numdofpernode_*vi+my::nsd_, numdof_ui_jdim) += estif_q_u(vi, nsd_ui_jdim);
-      }
-    }
-
-    //----------------------------------------------------------------------------
-    //                         RHS
-    //----------------------------------------------------------------------------
-    estif_u.Clear();
-    lin_resM_Du.Clear();
-
-    for (int ui=1; ui<my::nen_; ui+=2)
-    {
-      const double v=my::fac_*(oldfunct(ui)-newfunct(ui));
-      const int nodeui=(ui-1)/2;
-
-      for (int idim = 0; idim <my::nsd_; ++idim)
-      {
-        lin_resM_Du(idim_nsd_p_idim[idim],nodeui)+=v;
-      }
-    }
-
-    for (int ui=1; ui<my::nen_; ui+=2)
-    {
-      const int nodeui = (ui-1)/2;
-      const int nsd_nodeui = my::nsd_*nodeui;
-      for (int vi=1; vi<my::nen_; vi += 2)
-      {
-        const int nsd_nodevi=my::nsd_*(vi-1)/2;
-        for (int idim = 0; idim <my::nsd_; ++idim)
-        {
-          estif_u(nsd_nodevi+idim,nsd_nodeui+idim) += newfunct(vi)*lin_resM_Du(idim_nsd_p_idim[idim],nodeui);
-        } // end for (idim)
-      } //vi
-    } // ui
-
-
-    /* continuity term */
-    /*
-         /                \
-        |                  |
-        | nabla o Du  , q  |
-        |                  |
-         \                /
-    */
-//second part
-    LINALG::Matrix<enren_, enren_*my::nsd_> estif_q_uhat(true);
-
-    for (int vi=1; vi<my::nen_; vi+=2)
-    {
-      const int nodevi=(vi-1)/2;
-      const double v = my::fac_*newfunct(vi);
-      for (int ui=1; ui<my::nen_; ui+=2)
-      {
-        const int nodeui=(ui-1)/2;
-        const int fui = my::nsd_*nodeui;
-
-        for (int idim = 0; idim <my::nsd_; ++idim)
-        {
-          estif_q_uhat(nodevi,fui+idim) += v*(oldderxy(idim,ui));
-        }
-      }
-    }  // end for(idim)
-
-
-    //veln
-    // add velocity-velocity part to rhs
-    for (int ui=0; ui<enren_; ++ui)
-    {
-      const int nsd_ui = my::nsd_*ui;
-      const int uix = 2*ui+1;
-
-      for (int jdim=0; jdim < my::nsd_;++jdim)
-      {
-        const int nsd_ui_jdim = nsd_ui+jdim;
-
-        for (int vi=0; vi<enren_; ++vi)
-        {
-          const int numdof_vi = my::numdofpernode_*vi;
-          const int nsd_vi = my::nsd_*vi;
-
-          for (int idim=0; idim <my::nsd_; ++idim)
-          {
-            elemat2(numdof_vi+idim, 0) += estif_u(nsd_vi+idim, nsd_ui_jdim)*eveln(jdim,uix);
-          }
-        }
-      }
-    }
-
-    // add pressure-velocity part to rhs a^1
-    for (int ui=0; ui<enren_; ++ui)
-    {
-      const int nsd_ui = my::nsd_*ui;
-      const int uix = 2*ui+1;
-
-      for (int jdim=0; jdim < my::nsd_;++jdim)
-      {
-        const int nsd_ui_jdim = nsd_ui+jdim;
-        for (int vi=0; vi<enren_; ++vi)
-          elemat2(my::numdofpernode_*vi+my::nsd_, 0) -= estif_q_u(vi, nsd_ui_jdim)*eveln(jdim,uix);
-      }
-    }
-
-    // add pressure-velocity part to rhs uhat
-    for (int ui=0; ui<enren_; ++ui)
-    {
-      const int nsd_ui = my::nsd_*ui;
-      const int uix = 2*ui+1;
-
-      for (int jdim=0; jdim < my::nsd_;++jdim)
-      {
-        const int nsd_ui_jdim = nsd_ui+jdim;
-        for (int vi=0; vi<enren_; ++vi)
-          elemat2(my::numdofpernode_*vi+my::nsd_, 0) += estif_q_uhat(vi, nsd_ui_jdim)*eveln(jdim,uix);
-      }
-    }
-
-    //accn
-    if(switchonaccn)
-    {
-      // add velocity-velocity part to rhs
-      for (int ui=0; ui<enren_; ++ui)
-      {
-        const int nsd_ui = my::nsd_*ui;
-        const int uix = 2*ui+1;
-
-        for (int jdim=0; jdim < my::nsd_;++jdim)
-        {
-          const int nsd_ui_jdim = nsd_ui+jdim;
-
-          for (int vi=0; vi<enren_; ++vi)
-          {
-            const int numdof_vi = my::numdofpernode_*vi;
-            const int nsd_vi = my::nsd_*vi;
-
-            for (int idim=0; idim <my::nsd_; ++idim)
-            {
-              elemat2(numdof_vi+idim, 1) += estif_u(nsd_vi+idim, nsd_ui_jdim)*eaccn(jdim,uix);
-            }
-          }
-        }
-      }
-
-      // add pressure-velocity part to rhs
-      for (int ui=0; ui<enren_; ++ui)
-      {
-        const int nsd_ui = my::nsd_*ui;
-        const int uix = 2*ui+1;
-
-        for (int jdim=0; jdim < my::nsd_;++jdim)
-        {
-          const int nsd_ui_jdim = nsd_ui+jdim;
-          for (int vi=0; vi<enren_; ++vi)
-            elemat2(my::numdofpernode_*vi+my::nsd_, 1) -= estif_q_u(vi, nsd_ui_jdim)*eaccn(jdim,uix);
-        }
-      }
-
-      // add pressure-velocity part to rhs uhat
-      for (int ui=0; ui<enren_; ++ui)
-      {
-        const int nsd_ui = my::nsd_*ui;
-        const int uix = 2*ui+1;
-
-        for (int jdim=0; jdim < my::nsd_;++jdim)
-        {
-          const int nsd_ui_jdim = nsd_ui+jdim;
-          for (int vi=0; vi<enren_; ++vi)
-            elemat2(my::numdofpernode_*vi+my::nsd_, 1) += estif_q_uhat(vi, nsd_ui_jdim)*eaccn(jdim,uix);
-        }
-      }
-    }
-
-    if(switchonvelnp)
-    {
-      //velnp
-      // add velocity-velocity part to rhs
-      for (int ui=0; ui<enren_; ++ui)
-      {
-        const int nsd_ui = my::nsd_*ui;
-        const int uix = 2*ui+1;
-
-        for (int jdim=0; jdim < my::nsd_;++jdim)
-        {
-          const int nsd_ui_jdim = nsd_ui+jdim;
-
-          for (int vi=0; vi<enren_; ++vi)
-          {
-            const int numdof_vi = my::numdofpernode_*vi;
-            const int nsd_vi = my::nsd_*vi;
-
-            for (int idim=0; idim <my::nsd_; ++idim)
-            {
-              elemat2(numdof_vi+idim, 2) += estif_u(nsd_vi+idim, nsd_ui_jdim)*evelnp(jdim,uix);
-            }
-          }
-        }
-      }
-
-      // add pressure-velocity part to rhs
-      for (int ui=0; ui<enren_; ++ui)
-      {
-        const int nsd_ui = my::nsd_*ui;
-        const int uix = 2*ui+1;
-
-        for (int jdim=0; jdim < my::nsd_;++jdim)
-        {
-          const int nsd_ui_jdim = nsd_ui+jdim;
-
-          for (int vi=0; vi<enren_; ++vi)
-            elemat2(my::numdofpernode_*vi+my::nsd_, 2) -= estif_q_u(vi, nsd_ui_jdim)*evelnp(jdim,uix);
-        }
-      }
-
-      // add pressure-velocity part to rhs uhat
-      for (int ui=0; ui<enren_; ++ui)
-      {
-        const int nsd_ui = my::nsd_*ui;
-        const int uix = 2*ui+1;
-
-        for (int jdim=0; jdim < my::nsd_;++jdim)
-        {
-          const int nsd_ui_jdim = nsd_ui+jdim;
-          for (int vi=0; vi<enren_; ++vi)
-            elemat2(my::numdofpernode_*vi+my::nsd_, 2) += estif_q_uhat(vi, nsd_ui_jdim)*evelnp(jdim,uix);
-        }
-      }
-    }
-  }
 
   return 0;
 }

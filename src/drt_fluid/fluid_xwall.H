@@ -101,14 +101,8 @@ protected:
   // l2 project vectors
   void L2ProjectVector(Teuchos::RCP<Epetra_Vector>   veln,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   accn);
 
-  // l2 project vectors with continuity constraint
-  void L2ProjectVectorWithContinuityConstraint(Teuchos::RCP<Epetra_Vector>   veln,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   accn);
-
   // calculate parameter for stabilization parameter mk
   void CalcMK();
-
-  // make enrichment function constant on interface resulting in a natural blending
-  void BlendingViaModificationOfTauw(Teuchos::RCP<Epetra_Vector>   newtauw2);
 
 private:
 
@@ -258,9 +252,6 @@ private:
 
   //! projection
   bool proj_;
-
-  //! projection with continuity constraint
-  bool projconstr_;
 
   //! smoothing through aggregation of residual
   bool smooth_res_aggregation_;
