@@ -931,11 +931,30 @@ void COMM_UTILS::CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, cons
   // last proc in gcomm sends its data to proc 0 which does the comparison
   if(myglobalrank == 0)
   {
+    // compare names
     int lengthRecv = 0;
-    std::vector<double> receivebuf;
+    std::vector<char> receivename;
     MPI_Status status;
+    //first: receive length of name
+    int tag = 1336;
+    MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
+    if(lengthRecv == 0)
+      dserror("Length of data received from second run is incorrect.");
+
+    //second: receive name
+    tag = 2672;
+    receivename.resize(lengthRecv);
+    MPI_Recv(&receivename[0], lengthRecv, MPI_CHAR, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
+
+    // do comparison of names
+    if (std::strcmp(name, &receivename[0]))
+      dserror("comparison of different vectors: group 0 (%s) and group 1 (%s)", name, &receivename[0]);
+
+    // compare data
+    lengthRecv = 0;
+    std::vector<double> receivebuf;
     //first: receive length of data
-    int tag = 1337;
+    tag = 1337;
     MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
     if(lengthRecv == 0)
       dserror("Length of data received from second run is incorrect.");
@@ -969,9 +988,21 @@ void COMM_UTILS::CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, cons
   }
   else if (myglobalrank == gcomm->NumProc()-1)
   {
-    int lengthSend = fullvec->MyLength()*vec->NumVectors();
+    // compare names
+    // include terminating \0 of char array
+    int lengthSend = std::strlen(name)+1;
+    //first: send length of name
+    int tag = 1336;
+    MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, mpi_gcomm);
+
+    //second: send name
+    tag = 2672;
+    MPI_Send(const_cast<char*>(name), lengthSend, MPI_CHAR, 0, tag, mpi_gcomm);
+
+    // compare data
+    lengthSend = fullvec->MyLength()*vec->NumVectors();
     //first: send length of data
-    int tag = 1337;
+    tag = 1337;
     MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, mpi_gcomm);
 
     //second: send data
