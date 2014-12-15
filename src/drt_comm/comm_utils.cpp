@@ -29,6 +29,7 @@ Maintainer: Georg Hammerl
 #include <vector>
 #include <sstream>
 #include <string>
+#include <iomanip>
 
 
 /*----------------------------------------------------------------------*
@@ -956,9 +957,15 @@ void COMM_UTILS::CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, cons
       maxdiff = std::max(maxdiff, difference);
     }
     if (maxdiff > 1.0e-14)
-      dserror("vectors %s do not match, maximum difference between entries is: %lf", name, maxdiff);
+    {
+      std::stringstream diff;
+      diff << std::scientific << std::setprecision(16) << maxdiff;
+      dserror("vectors %s do not match, maximum difference between entries is: %s", name, diff.str().c_str());
+    }
     else
+    {
       IO::cout << "compared vectors of length: " << mylength << " are identical." << IO::endl;
+    }
   }
   else if (myglobalrank == gcomm->NumProc()-1)
   {
