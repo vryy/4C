@@ -3698,6 +3698,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("CFL_NUMBER",-1.0,"CFL number for adaptive time step",&fdyn);
   IntParameter("FREEZE_ADAPTIVE_DT_AT",1000000,"keep time step constant after this step, otherwise turbulence statistics sampling is not consistent",&fdyn);
+  DoubleParameter("ADAPTIVE_DT_INC",0.8,"Increment of whole step for adaptive dt via CFL",&fdyn);
 
   setStringToIntegralParameter<int>("STRONG_REDD_3D_COUPLING_TYPE",
                                "no",

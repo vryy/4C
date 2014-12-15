@@ -5015,10 +5015,13 @@ void FLD::FluidImplicitTimeInt::EvaluateDtWithCFL()
     //if the initial velocity field is zero and there are no non-zero Dirichlet-boundaries,
     //min_h_u is zero. In this case, we use the time step stated in the input file
     //and write this to the screen
+
+    double inc = params_->get<double>("ADAPTIVE_DT_INC",0.8);
+
     if(min_h_u<1.0e3)
     {
       if(step_>0)
-        dta_+=0.8*(CFL*min_h_u-dtp_);
+        dta_+=inc*(CFL*min_h_u-dtp_);
       else //start of simulation
         dta_=CFL*min_h_u;
     }
