@@ -38,6 +38,7 @@ Maintainer: Alexander Popp
 
 #include <Teuchos_Time.hpp>
 #include <Epetra_Time.h>
+#include <Epetra_SerialComm.h>
 
 #include "../drt_particle/binning_strategy.H"
 
@@ -663,49 +664,49 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
     Teuchos::RCP<Epetra_Comm> copycomm = Teuchos::rcp(Comm().Clone());
     Epetra_MpiComm* epetrampicomm =
         dynamic_cast<Epetra_MpiComm*>(copycomm.get());
-    if (!epetrampicomm)
-      dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
-
-    // split the communicator into participating and none-participating procs
-    int color;
-    int key = Comm().MyPID();
-    // I am taking part in the new comm if I have any ownership
-    if (gin[Comm().MyPID()])
-      color = 0;
-    // I am not taking part in the new comm
-    else
-      color = MPI_UNDEFINED;
-
-    // tidy up
-    gin.clear();
-
-    // free lcomm_ first
-    if (lcomm_ != Teuchos::null)
+    if (epetrampicomm != NULL)
     {
-      MPI_Comm oldcomm =
-          Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(lcomm_)->GetMpiComm();
-      lcomm_ = Teuchos::null;
-      MPI_Comm_free(&oldcomm);
+      // split the communicator into participating and none-participating procs
+      int color;
+      int key = Comm().MyPID();
+      // I am taking part in the new comm if I have any ownership
+      if (gin[Comm().MyPID()])
+        color = 0;
+      // I am not taking part in the new comm
+      else
+        color = MPI_UNDEFINED;
+
+      // tidy up
+      gin.clear();
+
+      // free lcomm_ first
+      if (lcomm_ != Teuchos::null)
+      {
+        MPI_Comm oldcomm =
+            Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(lcomm_)->GetMpiComm();
+        lcomm_ = Teuchos::null;
+        MPI_Comm_free(&oldcomm);
+      }
+
+      // create new local communicator
+      MPI_Comm mpi_global_comm = epetrampicomm->GetMpiComm();
+      MPI_Comm mpi_local_comm;
+      MPI_Comm_split(mpi_global_comm, color, key, &mpi_local_comm);
+
+      // create the new Epetra_MpiComm only for participating procs
+      if (mpi_local_comm != MPI_COMM_NULL)
+        lcomm_ = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
+    } else
+    {
+      // check for serial communicator
+      if(Comm().NumProc() != 1)
+        dserror("ERROR: Epetra_SerialComm can only handle 1 processor!");
+      Epetra_SerialComm* serialcomm = dynamic_cast<Epetra_SerialComm*>(copycomm.get());
+      if (!serialcomm)
+        dserror("ERROR: casting Epetra_Comm -> Epetra_SerialComm failed");
+      lcomm_ = Teuchos::rcp(new Epetra_SerialComm(*serialcomm));
     }
-
-    // create new local communicator
-    MPI_Comm mpi_global_comm = epetrampicomm->GetMpiComm();
-    MPI_Comm mpi_local_comm;
-    MPI_Comm_split(mpi_global_comm, color, key, &mpi_local_comm);
-
-    // create the new Epetra_MpiComm only for participating procs
-    if (mpi_local_comm != MPI_COMM_NULL)
-      lcomm_ = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
   }
-
-//  // the easy serial case
-//  {
-//    Teuchos::RCP<Epetra_Comm> copycomm = Teuchos::rcp(Comm().Clone());
-//    Epetra_SerialComm* serialcomm = dynamic_cast<Epetra_SerialComm*>(copycomm.get());
-//    if (!serialcomm)
-//    dserror("ERROR: casting Epetra_Comm -> Epetra_SerialComm failed");
-//    lcomm_ = Teuchos::rcp(new Epetra_SerialComm(*serialcomm));
-//  }
 
   // create interface ghosting
   // (currently, the slave is kept with the standard overlap of one,
