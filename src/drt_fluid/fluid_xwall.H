@@ -232,9 +232,6 @@ private:
   int gp_norm_;
   int gp_par_;
 
-  //! penalty parameter
-  double penalty_param_;
-
   //! viscosity
   double visc_;
 

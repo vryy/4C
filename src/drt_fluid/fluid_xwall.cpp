@@ -117,8 +117,6 @@ FLD::XWall::XWall(
   else
     dserror("unknown projection type");
 
-  penalty_param_ =params_->sublist("WALL MODEL").get<double>("Penalty_Param") ;
-
   std::string blendingtype = params_->sublist("WALL MODEL").get<std::string>("Blending_Type","none");
 
   if(blendingtype=="none")
@@ -164,7 +162,6 @@ FLD::XWall::XWall(
     std::cout << "Increment of tau_w:           " << fac_ << std::endl;
     std::cout << "Gauss rule:                   normal:  " << gp_norm_ << "  parallel:  " << gp_par_ << "  overall:  " << gp_norm_*gp_par_*gp_par_ << std::endl;
     std::cout << "Enriched DOFs l2-projected:   "<< projectiontype << std::endl;
-    std::cout << "Penalty parameter:            " << penalty_param_ << std::endl;
     std::cout << "Blending method:              " << blendingtype << std::endl;
     std::cout << "Smooth tau_w:                 " << smooth_res_aggregation_ << std::endl;
     std::cout << "Solver for tau_w smoothing:   " << (DRT::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER") << std::endl;

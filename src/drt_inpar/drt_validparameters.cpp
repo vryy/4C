@@ -4779,8 +4779,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("Inc_Tauw",1.0,"Increment of Tauw of full step, between 0.0 and 1.0",&fdyn_wallmodel);
 
-  DoubleParameter("Penalty_Param",1000.0,"Penalty parameter for divergence free projection",&fdyn_wallmodel);
-
   setStringToIntegralParameter<int>(
     "Blending_Type",
     "none",

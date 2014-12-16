@@ -62,9 +62,8 @@ Switch_Step                     3
 C_Tauw                          0.011662523800000
 Min_Tauw                        0.005
 Inc_Tauw                        1.0
-Projection                      onlyl2projection//l2projectionwithcontinuityconstraint
-Blending_Type                   ramp_function//tauw_transformation////tauw_transformation
-Penalty_Param                   0.0
+Projection                      onlyl2projection
+Blending_Type                   ramp_function
 GP_Wall_Normal                  8
 GP_Wall_Parallel                4
 PROJECTION_SOLVER               9

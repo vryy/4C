@@ -1096,9 +1096,6 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::CalcMK()
 
   const double maxeigenvalue = LINALG::GeneralizedEigen(elemat_epetra1,elemat_epetra2);
 
-  if(maxeigenvalue<1.0)
-    dserror("I don't think that this eigenvalue is correct");
-
 
   double h_u=0.0;
   if(my::fldpara_->WhichTau()==INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall||my::fldpara_->WhichTau()==INPAR::FLUID::tau_codina||my::fldpara_->WhichTau()==INPAR::FLUID::tau_codina_convscaled)
@@ -1110,6 +1107,13 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::CalcMK()
     h_u = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
   }
   else dserror("Element length not defined for dynamic determination of mk for your stabilization parameter");
+
+  if(1.0/(maxeigenvalue*h_u*h_u)>0.33)
+  {
+    std::cout << "eigenvalue:  " << maxeigenvalue*h_u*h_u << std::endl;
+    dserror("I don't think that this eigenvalue is correct");
+  }
+
   //safety factor
   const double sfac=1.0;
 //  std::cout << sfac/(maxeigenvalue*h_u*h_u) << std::endl;
