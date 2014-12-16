@@ -51,8 +51,8 @@ MAXTIME                         100.0
 DAMPING                         No
 M_DAMP                          0.00001
 K_DAMP                          0.00001
-TOLRES                          1.0E-7
-TOLDISP                         1.0E-7
+TOLRES                          1.0E-12
+TOLDISP                         1.0E-12
 NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              Or
@@ -69,7 +69,7 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 7.71168186685653190e+00 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 7.71168186703178016e+00 TOLERANCE 1e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
