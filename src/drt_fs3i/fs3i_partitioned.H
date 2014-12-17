@@ -20,6 +20,8 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include "../drt_inpar/drt_validparameters.H"
+
 
 #include "fs3i.H"
 
@@ -117,6 +119,8 @@ namespace FS3I
 
     /// extract Wall Shear Stresses at the interface
     void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
+
+    Teuchos::ParameterList& ManipulateDt(const Teuchos::ParameterList& fs3idyn);
 
     //@}
 

@@ -77,7 +77,7 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
   }
   //##################       1.- Parameter reading          //#########################
   DRT::Problem* problem = DRT::Problem::Instance();
-  const Teuchos::ParameterList& fs3icontrol = problem->FS3IControlParams();
+  const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
   const Teuchos::ParameterList& fpsidynparams       = problem->FPSIDynamicParams();
   const Teuchos::ParameterList& poroelastdynparams  = problem->PoroelastDynamicParams();
 
@@ -172,19 +172,19 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
   // solver and arrange them in combined vector
   //---------------------------------------------------------------------
   // get the solver number used for structural ScalarTransport solver
-  const int linsolver1number = fs3icontrol.get<int>("LINEAR_SOLVER1");
+  const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
   // get the solver number used for structural ScalarTransport solver
-  const int linsolver2number = fs3icontrol.get<int>("LINEAR_SOLVER2");
+  const int linsolver2number = fs3idyn.get<int>("LINEAR_SOLVER2");
 
   // check if the linear solver has a valid solver number
   if (linsolver1number == (-1))
-    dserror("no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I CONTROL to a valid number!");
+    dserror("no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
   if (linsolver2number == (-1))
-    dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I CONTROL to a valid number!");
+    dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3icontrol,true,"scatra1",problem->SolverParams(linsolver1number)));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,true,"scatra1",problem->SolverParams(linsolver1number)));
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3icontrol,true,"scatra2",problem->SolverParams(linsolver2number)));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,true,"scatra2",problem->SolverParams(linsolver2number)));
 
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);
@@ -404,12 +404,12 @@ void FS3I::PartFPS3I::SetupSystem()
                                          firstscatradis->Comm(),
                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
 #else
-  const Teuchos::ParameterList& fs3icontrol = DRT::Problem::Instance()->FS3IControlParams();
+  const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
   // get solver number used for fs3i
-  const int linsolvernumber = fs3icontrol.get<int>("COUPLED_LINEAR_SOLVER");
+  const int linsolvernumber = fs3idyn.get<int>("COUPLED_LINEAR_SOLVER");
   // check if LOMA solvers has a valid number
   if (linsolvernumber == (-1))
-    dserror("no linear solver defined for FS3I problems. Please set COUPLED_LINEAR_SOLVER in FS3I CONTROL to a valid number!");
+    dserror("no linear solver defined for FS3I problems. Please set COUPLED_LINEAR_SOLVER in FS3I DYNAMIC to a valid number!");
   const Teuchos::ParameterList& coupledscatrasolvparams =
     DRT::Problem::Instance()->SolverParams(linsolvernumber);
   const int solvertype =
@@ -426,15 +426,15 @@ void FS3I::PartFPS3I::SetupSystem()
                                          firstscatradis->Comm(),
                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
   // get the solver number used for structural ScalarTransport solver
-  const int linsolver1number = fs3icontrol.get<int>("LINEAR_SOLVER1");
+  const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
   // get the solver number used for structural ScalarTransport solver
-  const int linsolver2number = fs3icontrol.get<int>("LINEAR_SOLVER2");
+  const int linsolver2number = fs3idyn.get<int>("LINEAR_SOLVER2");
 
   // check if the linear solver has a valid solver number
   if (linsolver1number == (-1))
-    dserror("no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I CONTROL to a valid number!");
+    dserror("no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
   if (linsolver2number == (-1))
-    dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I CONTROL to a valid number!");
+    dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
   scatrasolver_->PutSolverParamsToSubParams("Inverse1",DRT::Problem::Instance()->SolverParams(linsolver1number));
   scatrasolver_->PutSolverParamsToSubParams("Inverse2",DRT::Problem::Instance()->SolverParams(linsolver2number));
   (scatravec_[0])->ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(scatrasolver_->Params().sublist("Inverse1"));

@@ -263,7 +263,9 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/NONLINEAR", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
-  reader.ReadGidSection("--FS3I CONTROL", *list);
+  reader.ReadGidSection("--FS3I DYNAMIC", *list);
+  reader.ReadGidSection("--FS3I DYNAMIC/PARTITIONED", *list);
+  reader.ReadGidSection("--FS3I DYNAMIC/AC", *list);
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC/CONSTRAINT", *list);
@@ -1014,6 +1016,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
   case prb_gas_fsi:
+  case prb_ac_fsi:
   case prb_thermo_fsi:
   {
     if(distype == "Nurbs")

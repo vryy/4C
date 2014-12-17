@@ -443,6 +443,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     case prb_fsi_redmodels:
     case prb_fsi_lung:
     case prb_gas_fsi:
+    case prb_ac_fsi:
     case prb_biofilm_fsi:
     case prb_thermo_fsi:
     case prb_fsi_xfem:

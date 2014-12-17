@@ -29,6 +29,7 @@ typedef enum _PROBLEM_TYP
      prb_fsi_lung,           // airway fsi problem with attached parenchyma balloon
      prb_fsi_redmodels,      // fluid structure interaction problem
      prb_gas_fsi,            // fsi with gas transport
+     prb_ac_fsi,             // atherosclerosis growth/multiscale problem
      prb_biofilm_fsi,        // biofilm growth problem
      prb_thermo_fsi,         // thermo-fluid-structure-interaction problem
      prb_tfsi_aero,          // thermo fluid structure interaction problem including the aero code

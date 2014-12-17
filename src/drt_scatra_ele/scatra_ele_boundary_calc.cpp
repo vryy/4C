@@ -861,14 +861,22 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
             {
               tempnod(inode) = ephinp[(inode+1)*numdofpernode_-1];
             }
-
             // compute temperature
             const double temp = funct_.Dot(tempnod);
 
             // compute density based on temperature and thermodynamic pressure
             dens = actsinglemat->ComputeDensity(temp,thermpress_);
           }
+          else if (singlemat->MaterialType() == INPAR::MAT::m_scatra )
+          {
+            dens = 1.0;
+          }
           else dserror("type of material found in material list is not supported");
+        }
+        else if ( material->MaterialType() == INPAR::MAT::m_matlist_reactions )
+        {
+          // set density
+          dens = 1.0;
         }
         else if (material->MaterialType() == INPAR::MAT::m_scatra)
         {

@@ -97,6 +97,7 @@ void ntacal()
       xfpsi_drt();
       break;
     case prb_gas_fsi:
+    case prb_ac_fsi:
     case prb_biofilm_fsi:
     case prb_thermo_fsi:
     case prb_tfsi_aero:

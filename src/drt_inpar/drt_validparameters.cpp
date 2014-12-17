@@ -51,6 +51,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_immersed.H"
 #include "inpar_fpsi.H"
 #include "inpar_ssi.H"
+#include "inpar_fs3i.H"
 #include "inpar_cavitation.H"
 #include "inpar_crack.H"
 #include "inpar_levelset.H"
@@ -3412,7 +3413,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("STARTOMEGA",1.0,"fixed relaxation parameter",&ssidynpart);
 
   // convergence tolerance of outer iteration loop
-  DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of outer iteraiton within partitioned TSI",&ssidynpart);
+  DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of outer iteration within partitioned SSI",&ssidynpart);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& flucthydro = list->sublist("FLUCTUATING HYDRODYNAMICS",false,"");
@@ -5591,16 +5592,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &scatradyn_stab);
 
   /*----------------------------------------------------------------------*/
+  /* Control parameters for FS3I */
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fs3idyn = list->sublist(
-      "FS3I CONTROL",
+      "FS3I DYNAMIC",
       false,
       "control parameters for FS3I problems\n");
 
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&fs3idyn);
   IntParameter("NUMSTEP",20,"Total number of time steps",&fs3idyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fs3idyn);
-  IntParameter("ITEMAX",10,"Maximum number of outer iterations",&fs3idyn);
-  DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&fs3idyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fs3idyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&fs3idyn);
   setStringToIntegralParameter<int>("SCATRA_SOLVERTYPE","nonlinear",
@@ -5630,6 +5631,50 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("LINEAR_SOLVER2",-1,"number of linear solver used for structural problem",&fs3idyn);
 
   /*----------------------------------------------------------------------*/
+  /* parameters for partitioned FS3I */
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& fs3idynpart = fs3idyn.sublist(
+      "PARTITIONED",false,
+      "Fluid-Structure-Scalar-Scalar Interaction control section"
+       );
+
+// Coupling strategy for partitioned FS3I
+  setStringToIntegralParameter<int>(
+                              "COUPALGO","fs3i_IterStagg",
+                              "Coupling strategies for FS3I solvers",
+                              tuple<std::string>(
+                                "fs3i_SequStagg",
+                                "fs3i_IterStagg"
+                                ),
+                              tuple<int>(
+                                INPAR::FS3I::fs3i_SequStagg,
+                                INPAR::FS3I::fs3i_IterStagg
+                                ),
+                              &fs3idynpart);
+
+  // convergence tolerance of outer iteration loop
+  DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of outer iteration within partitioned FS3I",&fs3idynpart);
+
+  IntParameter("ITEMAX",10,"Maximum number of outer iterations",&fs3idynpart);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for Atherosclerosis FSI */
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& fs3idynac = fs3idyn.sublist(
+      "AC",false,
+      "Atherosclerosis Fluid-Structure Interaction Control section for partitioned FS3I"
+       );
+
+  // FSI time steps per SSI time step
+  IntParameter("FSISTEPSPERSCATRASTEP",1,"FSI time steps per SSI time step",&fs3idynac);
+
+  // Periodicity of the FSI problem
+  DoubleParameter("PERIODICITY",-1.0,"Periodicity of the FSI problem",&fs3idynac);
+
+  // Periodicity of the FSI problem
+  IntParameter("PERIODSTOSTEADYSTATE",-1.0,"Periods after FSI problem is steady state",&fs3idynac);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& lomacontrol = list->sublist(
       "LOMA CONTROL",
       false,
@@ -5640,7 +5685,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&lomacontrol);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&lomacontrol);
   IntParameter("ITEMAX",10,"Maximum number of outer iterations",&lomacontrol);
-  IntParameter("ITEMAX_BEFORE_SAMPLING",1,"Maximum number of outer iterations before samling (for turbulent flows only)",&lomacontrol);
+  IntParameter("ITEMAX_BEFORE_SAMPLING",1,"Maximum number of outer iterations before sampling (for turbulent flows only)",&lomacontrol);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&lomacontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&lomacontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&lomacontrol);

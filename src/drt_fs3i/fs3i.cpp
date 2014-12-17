@@ -54,12 +54,12 @@ FS3I::FS3I_Base::FS3I_Base()
   //---------------------------------------------------------------------
   // read in and set private members of FS3I problem
   //---------------------------------------------------------------------
-  const Teuchos::ParameterList& fs3icontrol = problem->FS3IControlParams();
-  dt_      = fs3icontrol.get<double>("TIMESTEP");
-  numstep_ = fs3icontrol.get<int>("NUMSTEP");
-  timemax_ = fs3icontrol.get<double>("MAXTIME");
+  const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
+  dt_      = fs3idyn.get<double>("TIMESTEP");
+  numstep_ = fs3idyn.get<int>("NUMSTEP");
+  timemax_ = fs3idyn.get<double>("MAXTIME");
 
-  infperm_ = DRT::INPUT::IntegralValue<int>(fs3icontrol,"INF_PERM");
+  infperm_ = DRT::INPUT::IntegralValue<int>(fs3idyn,"INF_PERM");
   wssdependperm_ = false;
 
 
@@ -150,21 +150,17 @@ void FS3I::FS3I_Base::CheckInterfaceDirichletBC()
 }
 
 /*----------------------------------------------------------------------*
- | Check scatra-scatra interface conditions                  Thon 11/14 |
+ | Check FS3I specific inputs                                Thon 11/14 |
  *----------------------------------------------------------------------*/
 void FS3I::FS3I_Base::CheckFS3IInputs()
 {
-  //Check FS3I control parameters
+  //Check FS3I dynamic parameters
   DRT::Problem* problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& ioparams = problem->IOParams();
-  const Teuchos::ParameterList& fs3icontrol = problem->FS3IControlParams();
+  //const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
   const Teuchos::ParameterList& structdynparams = problem->StructuralDynamicParams();
   const Teuchos::ParameterList& scatradynparams = problem->ScalarTransportDynamicParams();
-  const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
-
-  //are UPRESes the same?
-  if ( fs3icontrol.get<int>("UPRES") != fsidyn.get<int>("UPRES") )
-    dserror("In sections FS3I CONTROL and FSI DYNAMIC the output parameter UPRES must be the same! ");
+  //const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
   //is scatra calculated conservative?
   if ( DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatradynparams,"CONVFORM") != INPAR::SCATRA::convform_conservative )
@@ -222,7 +218,7 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
 
           std::vector<DRT::Condition*> FSCCond;
           problem->GetDis("fluid")->GetCondition("FluidStressCalc",FSCCond);
-          std::cout<<"FSCOND.size():\t"<<FSCCond.size()<<std::endl;
+
           if (FSCCond.size() == 0)
             dserror("If you have a WSS dependent interface permeablity you need at least one FLUID STRESS CALC CONDITION to specify the region you want to evaluate the WSS. Typically this region is equal to the SSI interface...");
         }
@@ -271,7 +267,6 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
       //TODO: (Thon) find a better place to do this
       if ( fluid_permcoeffs->at(3) == 1 ) //iff we have WSS dependency
       {
-        std::cout<<__FILE__<<std::endl;
         wssdependperm_ = true; //we assume here that
       }
     }

@@ -174,7 +174,7 @@ THERM_TEMPGRAD                  None
 PROBLEMTYP                      Biofilm_Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
-----------------------------------------------------------------FS3I CONTROL
+----------------------------------------------------------------FS3I DYNAMIC
 MAXTIME                         10000.0
 TIMESTEP                        10
 NUMSTEP                         5

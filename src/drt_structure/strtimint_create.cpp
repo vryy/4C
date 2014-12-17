@@ -60,7 +60,7 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate
   {
     sti = TimIntExplCreate(ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
   }
-  
+
   // deliver
   return sti;
 }
@@ -87,10 +87,10 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
   if (pstype==INPAR::STR::prestress_mulf || pstype==INPAR::STR::prestress_id)
   {
     sti = Teuchos::rcp(new STR::TimIntPrestress(ioflags, sdyn, xparams, actdis,
-						solver, contactsolver, output));
+            solver, contactsolver, output));
     return sti;
   }
-  
+
   // create specific time integrator
   switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
   {
@@ -168,6 +168,7 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
       probtype == prb_fsi_redmodels or
       probtype == prb_fsi_lung or
       probtype == prb_gas_fsi or
+      probtype == prb_ac_fsi or
       probtype == prb_biofilm_fsi or
       probtype == prb_thermo_fsi or
       probtype == prb_fluid_fluid_fsi)

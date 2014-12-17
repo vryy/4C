@@ -982,6 +982,8 @@ namespace FSI
     /// counter to reuse the block matrix preconditioner
     int precondreusecount_;
 
+    const Teuchos::ParameterList& timeparams_;
+
   private:
 
     //! @name Setup of RHS vector

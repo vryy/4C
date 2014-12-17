@@ -75,7 +75,8 @@ void FS3I::PartFS3I_1WC::DoScatraStep()
 {
   if (Comm().MyPID()==0)
   {
-    std::cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n";
+    std::cout<<"\n***********************\n GAS TRANSPORT SOLVER \n***********************\n"<<std::endl;
+    std::cout<<"+- step/max -+- tol ---- [norm] -+-- scal-res --+-- scal-inc --+"<<std::endl;
   }
 
   // first scatra field is associated with fluid, second scatra field is
@@ -123,8 +124,8 @@ void FS3I::PartFS3I_1WC::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
 {
-  const Teuchos::ParameterList& fs3icontrol = DRT::Problem::Instance()->FS3IControlParams();
-  INPAR::SCATRA::SolverType scatra_solvtype = DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(fs3icontrol,"SCATRA_SOLVERTYPE");
+  const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
+  INPAR::SCATRA::SolverType scatra_solvtype = DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(fs3idyn,"SCATRA_SOLVERTYPE");
 
   double conresnorm(0.0);
   scatrarhs_->Norm2(&conresnorm);

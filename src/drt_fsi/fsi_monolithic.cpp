@@ -1002,7 +1002,8 @@ void FSI::Monolithic::WriteInterfaceEnergyFile(const double energystep,
 FSI::BlockMonolithic::BlockMonolithic(const Epetra_Comm& comm,
                                       const Teuchos::ParameterList& timeparams)
   : Monolithic(comm,timeparams),
-    precondreusecount_(0)
+    precondreusecount_(0),
+    timeparams_(timeparams)
 {
 }
 

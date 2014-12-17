@@ -34,12 +34,12 @@ FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
   // get input parameters for two-way-coupled problems, which is
   // thermo-fluid-structure interaction, for the time being
   //---------------------------------------------------------------------
-  const Teuchos::ParameterList& fs3icontrol = DRT::Problem::Instance()->FS3IControlParams();
-  ittol_ = fs3icontrol.get<double>("CONVTOL");
-  itmax_ = fs3icontrol.get<int>("ITEMAX");
+  const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
+  ittol_ = fs3idyn.get<double>("CONVTOL");
+  itmax_ = fs3idyn.get<int>("ITEMAX");
 
   // flag for constant thermodynamic pressure
-  consthermpress_ = fs3icontrol.get<std::string>("CONSTHERMPRESS");
+  consthermpress_ = fs3idyn.get<std::string>("CONSTHERMPRESS");
 
   // define fluid- and structure-based scalar transport problem
   fluidscatra_     = scatravec_[0];

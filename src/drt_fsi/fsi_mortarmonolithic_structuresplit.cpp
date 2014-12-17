@@ -1429,9 +1429,8 @@ void FSI::MortarMonolithicStructureSplit::Output()
      * output or restart data.
      */
     Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(lambda_);
-    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-    const int uprestart = fsidyn.get<int>("RESTARTEVRY");
-    const int upres = fsidyn.get<int>("UPRES");
+    const int uprestart = timeparams_.get<int>("RESTARTEVRY");
+    const int upres = timeparams_.get<int>("UPRES");
     if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
       StructureField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
   }
@@ -1440,8 +1439,7 @@ void FSI::MortarMonolithicStructureSplit::Output()
 
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
   {
-    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-    int uprestart = fsidyn.get<int>("RESTARTEVRY");
+    int uprestart = timeparams_.get<int>("RESTARTEVRY");
     if (uprestart != 0 && FluidField()->Step() % uprestart == 0)
     {
       FluidField()->DiscWriter()->WriteVector("slideALE", iprojdisp_);

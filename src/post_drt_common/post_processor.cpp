@@ -73,6 +73,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
         break;
     }
     case prb_gas_fsi:
+    case prb_ac_fsi:
     case prb_thermo_fsi:
     {
       std::string basename = problem.outname();

@@ -1519,21 +1519,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   /*----------------------------------------------------------------------*/
    // integration point based and scalar dependent growth
    {
-     Teuchos::RCP<MaterialDefinition> m
+     Teuchos::RCP<MaterialDefinition> mm
        = Teuchos::rcp(new MaterialDefinition("MAT_GrowthVolumetricScd",
                                              "integration point based and scalar dependent growth",
                                              INPAR::MAT::m_growth_volumetric_scd));
 
-     AddNamedInt(m,"GROWTHLAW","growth function: linear(Default) or exponential");
-     AddNamedInt(m,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
-     AddNamedReal(m,"STARTTIME","start growth after this time");
-     AddNamedReal(m,"ENDTIME","end growth after this time");
-     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
-     AddNamedReal(m,"REARATE","substrate uptake rate coefficient",-1.0,true);
-     AddNamedReal(m,"SATCOEFF","saturation coefficient for concentration dependent growth law",-1.0,true);
-     AddNamedString(m,"GROWTHCOUPL","Coupling between stress dependent growth and reaction dependent growth","ScaleConc", true);
+     AddNamedInt(mm,"GROWTHLAW","growth function: linear(Default) or exponential");
+     AddNamedInt(mm,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
+     AddNamedReal(mm,"STARTTIME","start growth after this time");
+     AddNamedReal(mm,"ENDTIME","end growth after this time");
+     AddNamedReal(mm,"TOL","tolerance for local Newton iteration",1e-06,true);
+     AddNamedReal(mm,"REARATE","substrate uptake rate coefficient",-1.0,true);
+     AddNamedReal(mm,"SATCOEFF","saturation coefficient for concentration dependent growth law",-1.0,true);
+     AddNamedString(mm,"GROWTHCOUPL","Coupling between stress dependent growth and reaction dependent growth","ScaleConc", true);
 
-     AppendMaterialDefinition(matlist,m);
+     AppendMaterialDefinition(matlist,mm);
    }
 
   /*----------------------------------------------------------------------*/

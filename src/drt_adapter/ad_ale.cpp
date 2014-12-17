@@ -176,6 +176,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
   }
   case prb_fsi:
   case prb_gas_fsi:
+  case prb_ac_fsi:
   case prb_biofilm_fsi:
   {
     const Teuchos::ParameterList& fsidyn =

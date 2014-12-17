@@ -50,6 +50,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["AeroCode_Thermo_Fluid_Structure_Interaction"] = prb_tfsi_aero;
     string2prbtype["ReducedDimensionalAirWays"] =                 prb_red_airways;
     string2prbtype["Gas_Fluid_Structure_Interaction"] =           prb_gas_fsi;
+    string2prbtype["Atherosclerosis_Fluid_Structure_Interaction"] = prb_ac_fsi;
     string2prbtype["Biofilm_Fluid_Structure_Interaction"] =       prb_biofilm_fsi;
     string2prbtype["Thermo_Fluid_Structure_Interaction"] =        prb_thermo_fsi;
     string2prbtype["Fluid_Top_Opt"] =                             prb_fluid_topopt;

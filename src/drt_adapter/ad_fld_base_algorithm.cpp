@@ -452,6 +452,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   if (probtype == prb_fsi or
       probtype == prb_fsi_lung or
       probtype == prb_gas_fsi or
+      probtype == prb_ac_fsi or
       probtype == prb_biofilm_fsi or
       probtype == prb_thermo_fsi or
       probtype == prb_fluid_fluid_fsi or
@@ -637,6 +638,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     if (probtype == prb_fsi or
         probtype == prb_fsi_lung or
         probtype == prb_gas_fsi or
+        probtype == prb_ac_fsi or
         probtype == prb_biofilm_fsi or
         probtype == prb_thermo_fsi or
         probtype == prb_fluid_fluid_fsi or
@@ -791,6 +793,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_fsi:
     case prb_immersed_fsi:
     case prb_gas_fsi:
+    case prb_ac_fsi:
     case prb_biofilm_fsi:
     case prb_thermo_fsi:
     case prb_fluid_ale:
