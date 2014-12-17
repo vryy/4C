@@ -181,7 +181,7 @@ SOLVER                          UMFPACK
 MAT 1 MAT_GrowthVolumetricScd GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 100.0 TOL 1.0E-10
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.0001
 MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3
-MAT 4 MAT_GrowthAC SCALAR1 1 ALPHA 2.0
+MAT 4 MAT_GrowthAC SCALAR1 2 ALPHA 2.0
 MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 51 52 NUMREAC 1 REACIDS 53 END
 MAT 51 MAT_scatra DIFFUSIVITY 0.0000001
 MAT 52 MAT_scatra DIFFUSIVITY 0.0000001
@@ -195,7 +195,7 @@ CURVE 1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.1 100.0 FACTOR 1. 1.
 CURVE 2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0. 1.
 CURVE 2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.5 100.0 FACTOR 1. 1.
 ----------------------------------------------------------------------CURVE3
-CURVE 3 on EXPR FUNC ((1-cos(pi*t))*0.5) t1 0.00 t2 1.0
+// CURVE 3 on EXPR FUNC ((1-cos(2*pi*t))*0.5) t1 0.00 t2 1.0
 // CURVE 3 on EXPR FUNC (0.0) t1 1.00 t2 1000.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
@@ -213,7 +213,7 @@ SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE 3.62218614269337269e-01 TOLERANCE
 SCATRA DIS scatra NODE 200 QUANTITY phi2 VALUE 3.62217644316147780e-01 TOLERANCE 1e-7
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
-NDLINE                          9
+NDLINE                          8
 NDSURF                          2
 NDVOL                           1
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
@@ -250,8 +250,8 @@ E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
 // // back lower right
 // E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           3
+// -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+// DLINE                           8
 // // right upper
 // E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
 // // right lower
@@ -262,13 +262,12 @@ DLINE                           3
 // E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
 // // left upper
 // E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// left lower
-E 6 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// left back
-E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// // left lower
+// E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// // left back
+// E 7 - NUMDOF 3 ONOFF 1 1 00 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // // left front
 // E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 9 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
 // left surface
@@ -287,9 +286,9 @@ DSURF                           0
 // E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0
 // // right surface
 // E 2 - NUMDOF 1 ONOFF 1 VAL 2.0 CURVE 2 FUNCT 0
---------------------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
-DVOL                            1
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 10.0 CURVE 3 3 FUNCT 0 0
+// --------------------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
+// DVOL                            1
+// E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 10.0 CURVE 3 3 FUNCT 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 181 DNODE 1
 NODE 1 DNODE 2
@@ -348,12 +347,6 @@ NODE 185 DLINE 8
 NODE 187 DLINE 8
 NODE 189 DLINE 8
 NODE 191 DLINE 8
-NODE 21 DLINE 9
-NODE 22 DLINE 9
-NODE 35 DLINE 9
-NODE 47 DLINE 9
-NODE 59 DLINE 9
-NODE 71 DLINE 9
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
