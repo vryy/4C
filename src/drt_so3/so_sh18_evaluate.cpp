@@ -221,8 +221,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(
         // displacement-based deformation gradient
         LINALG::Matrix<NUMDIM_SOH18,NUMDIM_SOH18> defgrd_disp;
         defgrd_disp.MultiplyNT(defgrd_loc,invJ_[gp]);
-        if (eas_ || dsg_shear_ || dsg_membrane_ || dsg_ctl_)
-          CalcConsistentDefgrd(defgrd_disp,glstrain,defgrd);
+        CalcConsistentDefgrd(defgrd_disp,glstrain,defgrd);
       }
 
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
