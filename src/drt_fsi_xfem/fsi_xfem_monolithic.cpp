@@ -1952,7 +1952,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
          (solvertype != INPAR::SOLVER::stratimikos_aztec) and
          (solvertype != INPAR::SOLVER::stratimikos_belos)
        )
-      dserror("Teko expects a STRATIMIKOS solver object in fluid solver %3d",tlinsolvernumber);
+      dserror("Teko expects a STRATIMIKOS solver object in fluid solver %3d",flinsolvernumber);
 #else
     dserror("Teko preconditioners only available with HAVE_TEKO flag for TRILINOS_DEV (>Q1/2011)");
 #endif
