@@ -316,6 +316,31 @@ namespace LINALG
         double omega_;
     };
 
+    class AMGnxn_Operator; // Forward declaration
+
+    class AMG_BlockSmoother : public AMGnxn_BlockSmootherBase
+    {
+
+      public:
+
+        AMG_BlockSmoother(
+            Teuchos::RCP<BlockSparseMatrixBase> A,
+            std::vector<int> num_pdes,
+            std::vector<int> null_spaces_dim,
+            std::vector<Teuchos::RCP<std::vector<double> > > null_spaces_data,
+            const Teuchos::ParameterList& amgnxn_params,
+            const Teuchos::ParameterList& smoothers_params);
+
+        virtual void Apply( const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+            bool InitialGuessIsZero=false) const;
+      private:
+        Teuchos::RCP<LINALG::SOLVER::AMGnxn_Operator>  P_;
+
+
+
+    };
+
+
     // Auxiliary class to wrap the null space data to be used within the smoothers
     class NullSpaceInfo
     {
@@ -439,6 +464,12 @@ namespace LINALG
         void ParseSmootherNames(
             const std::string& smoothers_string,
             std::vector<std::string>& smoothers_vector,std::vector<std::vector<int> > superblocks);
+    };
+
+    class AMG_BlockSmootherFactory : public  AMGnxn_ParticularSmootherFactory
+    {
+      public:
+        virtual Teuchos::RCP<AMGnxn_SmootherBase> Create();
     };
 
     class SIMPLE_BlockSmootherFactory : public AMGnxn_ParticularSmootherFactory

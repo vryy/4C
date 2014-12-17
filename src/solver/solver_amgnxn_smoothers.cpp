@@ -25,6 +25,7 @@ Created on: Feb 27, 2014
 #include "../drt_lib/drt_dserror.H"
 #include "solver_amgnxn_smoothers.H"
 #include "solver_amgnxn_hierarchies.H"
+#include "solver_amgnxn_preconditioner.H"
 
 
 /*------------------------------------------------------------------------------*/
@@ -877,6 +878,33 @@ void LINALG::SOLVER::BGS_BlockSmoother::Apply(
   return;
 }
 
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+LINALG::SOLVER::AMG_BlockSmoother::AMG_BlockSmoother(
+    Teuchos::RCP<BlockSparseMatrixBase> A,
+    std::vector<int> num_pdes,
+    std::vector<int> null_spaces_dim,
+    std::vector<Teuchos::RCP<std::vector<double> > > null_spaces_data,
+    const Teuchos::ParameterList& amgnxn_params,
+    const Teuchos::ParameterList& smoothers_params)
+{
+  P_ = Teuchos::rcp(new AMGnxn_Operator(
+        A,num_pdes,null_spaces_dim,null_spaces_data,amgnxn_params,smoothers_params,smoothers_params
+        ));
+}
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+void LINALG::SOLVER::AMG_BlockSmoother::Apply(
+    const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
+{
+  P_->ApplyInverse(X,Y);
+  return;
+}
+
+
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
@@ -1121,6 +1149,7 @@ void LINALG::SOLVER::AMGnxn_SmootherFactory::SetTypeAndParams()
   valid_types.push_back("NEW_MUELU_AMG");
   valid_types.push_back("DIRECT_SOLVER");
   valid_types.push_back("MERGE_AND_SOLVE");
+  valid_types.push_back("BLOCK_AMG");
 
   std::string smoother_type;
   Teuchos::ParameterList smoother_params;
@@ -1177,6 +1206,15 @@ Teuchos::RCP<LINALG::SOLVER::AMGnxn_SmootherBase> LINALG::SOLVER::AMGnxn_Smoothe
     mySmootherFactory->SetParams(GetParams());
     mySmootherFactory->SetParamsSmoother(GetParamsSmoother());
     mySmootherFactory->SetHierarchies(GetHierarchies());
+    mySmootherFactory->SetBlocks(GetBlocks());
+    mySmootherFactory->SetNullSpaceAllBlocks(GetNullSpaceAllBlocks());
+  }
+  else if (GetType() == "BLOCK_AMG")
+  {
+    mySmootherFactory = Teuchos::rcp(new AMG_BlockSmootherFactory());
+    mySmootherFactory->SetOperator(GetOperator());
+    mySmootherFactory->SetParams(GetParams());
+    mySmootherFactory->SetParamsSmoother(GetParamsSmoother());
     mySmootherFactory->SetBlocks(GetBlocks());
     mySmootherFactory->SetNullSpaceAllBlocks(GetNullSpaceAllBlocks());
   }
@@ -1522,6 +1560,67 @@ LINALG::SOLVER::MergeAndSolveFactory::Create()
 
   return S;
 }
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+
+Teuchos::RCP<LINALG::SOLVER::AMGnxn_SmootherBase> LINALG::SOLVER::AMG_BlockSmootherFactory::Create()
+{
+
+  //<ParameterList name="parameters">
+  //
+  //  <Parameter name="number of levels"                 type="int"  value="..."/>
+  //
+  //  <Parameter name="smoother: all but coarsest level" type="string"  value="myFinestSmoother"/>
+  //
+  //  <Parameter name="smoother: coarsest level"         type="string"  value="myCoarsestSmoother"/>
+  //
+  //  <Parameter name="verbosity"                        type="string"  value="on"/>
+  //
+  //  <Parameter name="muelu parameters for block 0"       type="string"  value="myMuelu0"/>
+  //
+  //  <Parameter name="muelu parameters for block 1"       type="string"  value="myMuelu1"/>
+  //
+  //   ....
+  //
+  //  <Parameter name="muelu parameters for block N"       type="string"  value="myMueluN"/>
+  //
+  //</ParameterList>
+  // WARNING: here the blocks are in local numeration of the submatrix passed to this factory
+
+  // Recover the operator
+  Teuchos::RCP<BlockSparseMatrixBase> A =
+    Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(GetOperator());
+  if (A==Teuchos::null)
+    dserror("You have to provide a block sparse matrix in AMG_BlockSmootherFactory");
+
+  // Recover the null space info
+  int nBlocks = GetBlocks().size();
+  const std::vector<int>& Blocks = GetBlocks();
+  int b = 0;
+  std::vector<int> num_pdes(nBlocks,0);
+  std::vector<int> null_spaces_dim(nBlocks,0);
+  std::vector<Teuchos::RCP<std::vector<double> > > null_spaces_data(nBlocks,Teuchos::null);
+  for (int i=0;i<nBlocks;i++)
+  {
+    b = Blocks[i];
+    num_pdes[i] = GetNullSpaceAllBlocks()[b].GetNumPDEs();
+    null_spaces_dim[i] = GetNullSpaceAllBlocks()[b].GetNullSpaceDim();
+    null_spaces_data[i] = GetNullSpaceAllBlocks()[b].GetNullSpaceData();
+  }
+
+  // Recover the lists
+  const Teuchos::ParameterList& amgnxn_params = GetParams();
+  const Teuchos::ParameterList& smoothers_params = GetParamsSmoother();
+
+  return Teuchos::rcp(new AMG_BlockSmoother(
+        A, num_pdes, null_spaces_dim, null_spaces_data, amgnxn_params, smoothers_params));
+
+}
+
+
+
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
