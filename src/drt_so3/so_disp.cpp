@@ -78,6 +78,12 @@ void DRT::ELEMENTS::SoDispType::SetupElementDefinition( std::map<std::string,std
     .AddNamedInt("GP_TET")
     .AddNamedString("GP_ALT")
     .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("FIBER1",3)
+    .AddOptionalNamedDoubleVector("FIBER2",3)
+    .AddOptionalNamedDoubleVector("FIBER3",3)
     ;
 
   defs["HEX20"]
@@ -88,6 +94,12 @@ void DRT::ELEMENTS::SoDispType::SetupElementDefinition( std::map<std::string,std
     .AddNamedInt("GP_TET")
     .AddNamedString("GP_ALT")
     .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("FIBER1",3)
+    .AddOptionalNamedDoubleVector("FIBER2",3)
+    .AddOptionalNamedDoubleVector("FIBER3",3)
     ;
 
   defs["HEX27"]
@@ -98,6 +110,12 @@ void DRT::ELEMENTS::SoDispType::SetupElementDefinition( std::map<std::string,std
     .AddNamedInt("GP_TET")
     .AddNamedString("GP_ALT")
     .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("FIBER1",3)
+    .AddOptionalNamedDoubleVector("FIBER2",3)
+    .AddOptionalNamedDoubleVector("FIBER3",3)
     ;
 
   defs["TET4"]
@@ -108,6 +126,12 @@ void DRT::ELEMENTS::SoDispType::SetupElementDefinition( std::map<std::string,std
     .AddNamedInt("GP_TET")
     .AddNamedString("GP_ALT")
     .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("FIBER1",3)
+    .AddOptionalNamedDoubleVector("FIBER2",3)
+    .AddOptionalNamedDoubleVector("FIBER3",3)
     ;
 
   defs["TET10"]
@@ -118,6 +142,12 @@ void DRT::ELEMENTS::SoDispType::SetupElementDefinition( std::map<std::string,std
     .AddNamedInt("GP_TET")
     .AddNamedString("GP_ALT")
     .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("FIBER1",3)
+    .AddOptionalNamedDoubleVector("FIBER2",3)
+    .AddOptionalNamedDoubleVector("FIBER3",3)
     ;
 
   defs["WEDGE6"]
@@ -128,6 +158,12 @@ void DRT::ELEMENTS::SoDispType::SetupElementDefinition( std::map<std::string,std
     .AddNamedInt("GP_TET")
     .AddNamedString("GP_ALT")
     .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("FIBER1",3)
+    .AddOptionalNamedDoubleVector("FIBER2",3)
+    .AddOptionalNamedDoubleVector("FIBER3",3)
     ;
 
   defs["WEDGE15"]
@@ -138,6 +174,12 @@ void DRT::ELEMENTS::SoDispType::SetupElementDefinition( std::map<std::string,std
     .AddNamedInt("GP_TET")
     .AddNamedString("GP_ALT")
     .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("FIBER1",3)
+    .AddOptionalNamedDoubleVector("FIBER2",3)
+    .AddOptionalNamedDoubleVector("FIBER3",3)
     ;
 
   defs["PYRAMID5"]
@@ -148,6 +190,12 @@ void DRT::ELEMENTS::SoDispType::SetupElementDefinition( std::map<std::string,std
     .AddNamedInt("GP_TET")
     .AddNamedString("GP_ALT")
     .AddNamedString("KINEM")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDoubleVector("FIBER1",3)
+    .AddOptionalNamedDoubleVector("FIBER2",3)
+    .AddOptionalNamedDoubleVector("FIBER3",3)
     ;
 
 }
