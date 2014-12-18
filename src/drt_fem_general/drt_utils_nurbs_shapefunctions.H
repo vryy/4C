@@ -233,8 +233,8 @@ namespace UTILS
 
     // get bsplinevalue
     bspline_xi.EvaluateBspline(bspline_xi_value,
-			       xi              ,
-			       rr              );
+                               xi              ,
+                               rr              );
 
     // add value to bezier_shape_funct
     bezier_shape_funct(rr)=bspline_xi_value;
@@ -269,12 +269,12 @@ namespace UTILS
                     w_{i} * B_{i}(xi)
 
        N_{i} = ------------------------
-               +----+				
-                \				
+               +----+
+                \
                  +    w_{k} * B_{k}(xi)
-      		/				
-      	       +----+				
-      		  k
+                /
+               +----+
+                 k
   */
 
   // loop all basis functions
@@ -525,9 +525,9 @@ namespace UTILS
 
     // get bsplinevalue and derivative
     bspline_xi.EvaluateBsplineAndDeriv(bspline_xi_value,
-				       bspline_xi_derivative,
-				       xi,
-				       rr);
+                                       bspline_xi_derivative,
+                                       xi,
+                                       rr);
 
     // add value to bezier_shape_funct
     bezier_shape_funct(rr)=bspline_xi_value;
@@ -576,29 +576,29 @@ namespace UTILS
                   w_{i} * B_{i}(xi)
 
        N_{i} = ------------------------
-               +----+				
-                \				
+               +----+
+                \
                  +    w_{k} * B_{k}(xi)
-      	        /				
-      	       +----+				
-      	          k
+                /
+               +----+
+                  k
   */
 
   // Nurbs derivatives are defined by the chain rule
   //
   //                         +- +----+          -+               +- +----+             -+
-  //                         |   \               |               |   \	         dB_{k} |
+  //                         |   \               |               |   \           dB_{k} |
   //                  dB_{i} |    +  w_{k}*B_{k} |               |    +    w_{k}*------ |
   //            w_{i}*------*|   /               | - w_{i}*B_{i}*|   /             dxi  |
-  //	  	       dxi   |  +----+           |               |  +----+              |
+  //                   dxi   |  +----+           |               |  +----+              |
   // dN_{i}                  +-   k             -+               +-   k                -+
   // ------ = ----------------------------------------------------------------------------
   //  dxi                         +- +----+                  -+ 2
   //                              |   \                       |
   //                              |    +    w_{k} * B_{k}(xi) |
-  //		                  |   /                       |
-  //		                  |  +----+                   |
-  //		                  +-   k                     -+
+  //                              |   /                       |
+  //                              |  +----+                   |
+  //                              +-   k                     -+
 
   // loop all basis functions
   for(int rr=0;rr<size;++rr)
@@ -799,8 +799,8 @@ void nurbs_get_1D_funct_deriv_deriv2(
           |XXX|XXX|         Psi     *   |XXX|   *
         --+---+---+-->    ------>   *   |XXX|   * --->
           |XXX|XXX|   u             *   |XXX|   *   xi
-       -1 +---+---+ -1		   *+***+---+***+*
-         -1   |  +1		    *   *   *   *
+       -1 +---+---+ -1              *+***+---+***+*
+         -1   |  +1                 *   *   *   *
                                         *   *
                 \       (knot[0])(degree)   (knot[0])(degree+1)
                  \
@@ -823,12 +823,12 @@ void nurbs_get_1D_funct_deriv_deriv2(
                                   \       |
                                           v
                                   *
-      			         *+-------+*
-      				   \XXXXXX|
-                               	    \XXXXX|
+                                  *+-------+*
+                                   \XXXXXX|
+                                    \XXXXX|
                                      \XXXX|
-      				    **+---+**
-      				      *   *
+                                    **+---+**
+                                      *   *
 
                             'real' geometry element
 
@@ -849,12 +849,12 @@ PART  II: PROJECTING TO NURBS SHAPE FUNCTIONS
                       w_{i,j} * B_{i,j}(xi,eta)
 
        N_{i,j} = ----------------------------------
-                  +----+				
-                   \				
+                  +----+
+                   \
                     +    w_{k,l} * B_{k,l}(xi,eta)
-      		   /				
-      		  +----+				
-      		    k,l
+                   /
+                  +----+
+                   k,l
 
 \endverbatim
 
@@ -918,8 +918,8 @@ void nurbs_get_2D_funct(
           |XXX|XXX|         Psi     *   |XXX|   *
         --+---+---+-->    ------>   *   |XXX|   * --->
           |XXX|XXX|   u             *   |XXX|   *   xi
-       -1 +---+---+ -1		   *+***+---+***+*
-         -1   |  +1		    *   *   *   *
+       -1 +---+---+ -1              *+***+---+***+*
+         -1   |  +1                 *   *   *   *
                                         *   *
                 \       (knot[0])(degree)   (knot[0])(degree+1)
                  \
@@ -942,12 +942,12 @@ void nurbs_get_2D_funct(
                                   \       |
                                           v
                                   *
-      			         *+-------+*
-      				   \XXXXXX|
-                               	    \XXXXX|
+                                 *+-------+*
+                                   \XXXXXX|
+                                    \XXXXX|
                                      \XXXX|
-      				    **+---+**
-      				      *   *
+                                    **+---+**
+                                      *   *
 
                             'real' geometry element
   */
@@ -1019,8 +1019,8 @@ void nurbs_get_2D_funct(
 
     // get bsplinevalue and derivative
     bspline_xi.EvaluateBspline(bspline_xi_value,
-			       xi,
-			       rr);
+                               xi,
+                               rr);
 
     for(int mm=0;mm<degree+1;++mm)
     {
@@ -1028,8 +1028,8 @@ void nurbs_get_2D_funct(
 
       // get bsplinevalue and derivative
       bspline_eta.EvaluateBspline(bspline_eta_value,
-				  eta,
-				  mm);
+                                  eta,
+                                  mm);
 
       // get the number of the basis function
       id = rr+mm*(degree+1);
@@ -1068,12 +1068,12 @@ void nurbs_get_2D_funct(
                       w_{i,j} * B_{i,j}(xi,eta)
 
        N_{i,j} = ----------------------------------
-                  +----+				
-                   \				
+                  +----+
+                   \
                     +    w_{k,l} * B_{k,l}(xi,eta)
-      		   /				
-      		  +----+				
-      		    k,l
+                   /
+                  +----+
+                   k,l
   */
 
   // loop all basis functions
@@ -1103,8 +1103,8 @@ of nurbs basis functions.
           |XXX|XXX|         Psi     *   |XXX|   *
         --+---+---+-->    ------>   *   |XXX|   * --->
           |XXX|XXX|   u             *   |XXX|   *   xi
-       -1 +---+---+ -1		   *+***+---+***+*
-         -1   |  +1		    *   *   *   *
+       -1 +---+---+ -1              *+***+---+***+*
+         -1   |  +1                  *   *   *   *
                                         *   *
                 \       (knot[0])(degree)   (knot[0])(degree+1)
                  \
@@ -1127,12 +1127,12 @@ of nurbs basis functions.
                                   \       |
                                           v
                                   *
-      			         *+-------+*
-      				   \XXXXXX|
-                               	    \XXXXX|
+                                  *+-------+*
+                                   \XXXXXX|
+                                    \XXXXX|
                                      \XXXX|
-      				    **+---+**
-      				      *   *
+                                    **+---+**
+                                      *   *
 
                             'real' geometry element
 
@@ -1164,12 +1164,12 @@ PART  II: PROJECTING TO NURBS SHAPE FUNCTIONS
                       w_{i,j} * B_{i,j}(xi,eta)
 
        N_{i,j} = ----------------------------------
-                  +----+				
-                   \				
+                  +----+
+                   \
                     +    w_{k,l} * B_{k,l}(xi,eta)
-      		   /				
-      		  +----+				
-      		    k,l
+                   /
+                  +----+
+                   k,l
 
 \endverbatim
 
@@ -1250,8 +1250,8 @@ void nurbs_get_2D_funct_deriv(
           |XXX|XXX|         Psi     *   |XXX|   *
         --+---+---+-->    ------>   *   |XXX|   * --->
           |XXX|XXX|   u             *   |XXX|   *   xi
-       -1 +---+---+ -1		   *+***+---+***+*
-         -1   |  +1		    *   *   *   *
+       -1 +---+---+ -1             *+***+---+***+*
+         -1   |  +1                 *   *   *   *
                                         *   *
                 \       (knot[0])(degree)   (knot[0])(degree+1)
                  \
@@ -1274,12 +1274,12 @@ void nurbs_get_2D_funct_deriv(
                                   \       |
                                           v
                                   *
-      			         *+-------+*
-      				   \XXXXXX|
-                               	    \XXXXX|
+                                 *+-------+*
+                                   \XXXXXX|
+                                    \XXXXX|
                                      \XXXX|
-      				    **+---+**
-      				      *   *
+                                    **+---+**
+                                      *   *
 
                             'real' geometry element
   */
@@ -1362,9 +1362,9 @@ void nurbs_get_2D_funct_deriv(
 
     // get bsplinevalue and derivative
     bspline_xi.EvaluateBsplineAndDeriv(bspline_xi_value,
-				       bspline_xi_derivative,
-				       xi,
-				       rr);
+                                       bspline_xi_derivative,
+                                       xi,
+                                       rr);
 
     for(int mm=0;mm<degree+1;++mm)
     {
@@ -1372,9 +1372,9 @@ void nurbs_get_2D_funct_deriv(
 
       // get bsplinevalue and derivative
       bspline_eta.EvaluateBsplineAndDeriv(bspline_eta_value,
-					  bspline_eta_derivative,
-					  eta,
-					  mm);
+                                          bspline_eta_derivative,
+                                          eta,
+                                          mm);
 
       // get the number of the basis function
       id = rr+mm*(degree+1);
@@ -1432,29 +1432,29 @@ void nurbs_get_2D_funct_deriv(
                       w_{i,j} * B_{i,j}(xi,eta)
 
        N_{i,j} = ----------------------------------
-                  +----+				
-                   \				
+                  +----+
+                   \
                     +    w_{k,l} * B_{k,l}(xi,eta)
-      		   /				
-      		  +----+				
-      		    k,l
+                   /
+                  +----+
+                   k,l
   */
 
   // Nurbs derivatives are defined by the chain rule
   //
   //                             +- +----+              -+                   +- +----+                 -+
-  //                             |   \                   |                   |   \	       dB_{k,l} |
+  //                             |   \                   |                   |   \             dB_{k,l} |
   //                    dB_{i,j} |    +  w_{k,l}*B_{k,l} |                   |    +    w_{k,l}*-------- |
   //            w_{i,j}*--------*|   /                   | - w_{i,j}*B_{i,j}*|   /                dxi   |
-  //	  	            dxi  |  +----+               |                   |  +----+                  |
-  // dN_{i,j}               	 +-   k,l               -+                   +-   k,l                  -+
+  //                        dxi  |  +----+               |                   |  +----+                  |
+  // dN_{i,j}                    +-   k,l               -+                   +-   k,l                  -+
   // -------- = -----------------------------------------------------------------------------------------
   //   dxi                             +- +----+                          -+ 2
   //                                   |   \                               |
   //                                   |    +    w_{k,l} * B_{k,l}(xi,eta) |
-  //		                       |   /                               |
-  //		                       |  +----+                           |
-  //		                       +-   k,l                           -+
+  //                                   |   /                               |
+  //                                   |  +----+                           |
+  //                                   +-   k,l                           -+
 
   // loop all basis functions
   for(int rr=0;rr<size;++rr)
@@ -1466,10 +1466,10 @@ void nurbs_get_2D_funct_deriv(
     for(int mm=0;mm<2;++mm)
     {
       nurbs_shape_deriv(mm,rr)
-	=
-	bezier_shape_deriv(mm,rr)*sum_funct_weight
-	-
-	bezier_shape_funct(rr)*sum_deriv_weight[mm];
+                              =
+                                  bezier_shape_deriv(mm,rr)*sum_funct_weight
+                                  -
+                                  bezier_shape_funct(rr)*sum_deriv_weight[mm];
 
       nurbs_shape_deriv(mm,rr)*=weights(rr)/(sum_funct_weight*sum_funct_weight);
     }
@@ -1521,8 +1521,8 @@ void nurbs_get_2D_funct_deriv(
           |XXX|XXX|         Psi     *   |XXX|   *
         --+---+---+-->    ------>   *   |XXX|   * --->
           |XXX|XXX|   u             *   |XXX|   *   xi
-       -1 +---+---+ -1		   *+***+---+***+*
-         -1   |  +1		    *   *   *   *
+       -1 +---+---+ -1             *+***+---+***+*
+         -1   |  +1                 *   *   *   *
                                         *   *
                 \       (knot[0])(degree)   (knot[0])(degree+1)
                  \
@@ -1545,12 +1545,12 @@ void nurbs_get_2D_funct_deriv(
                                   \       |
                                           v
                                   *
-      			         *+-------+*
-      				   \XXXXXX|
-                               	    \XXXXX|
+                                 *+-------+*
+                                   \XXXXXX|
+                                    \XXXXX|
                                      \XXXX|
-      				    **+---+**
-      				      *   *
+                                    **+---+**
+                                      *   *
 
                             'real' geometry element
 
@@ -1582,12 +1582,12 @@ PART  II: PROJECTING TO NURBS SHAPE FUNCTIONS
                       w_{i,j} * B_{i,j}(xi,eta)
 
        N_{i,j} = ----------------------------------
-                  +----+				
-                   \				
+                  +----+
+                   \
                     +    w_{k,l} * B_{k,l}(xi,eta)
-      		   /				
-      		  +----+				
-      		    k,l
+                   /
+                  +----+
+                    k,l
 
 \endverbatim
 
@@ -1675,8 +1675,8 @@ void nurbs_get_2D_funct_deriv_deriv2(
           |XXX|XXX|         Psi     *   |XXX|   *
         --+---+---+-->    ------>   *   |XXX|   * --->
           |XXX|XXX|   u             *   |XXX|   *   xi
-       -1 +---+---+ -1		   *+***+---+***+*
-         -1   |  +1		    *   *   *   *
+       -1 +---+---+ -1             *+***+---+***+*
+         -1   |  +1                 *   *   *   *
                                         *   *
                 \       (knot[0])(degree)   (knot[0])(degree+1)
                  \
@@ -1699,12 +1699,12 @@ void nurbs_get_2D_funct_deriv_deriv2(
                                   \       |
                                           v
                                   *
-      			         *+-------+*
-      				   \XXXXXX|
-                               	    \XXXXX|
+                                  *+-------+*
+                                   \XXXXXX|
+                                    \XXXXX|
                                      \XXXX|
-      				    **+---+**
-      				      *   *
+                                    **+---+**
+                                      *   *
 
                             'real' geometry element
   */
@@ -1824,11 +1824,11 @@ void nurbs_get_2D_funct_deriv_deriv2(
 
       // get bsplinevalue and derivative
       bspline_eta.EvaluateBsplineFirstAndSecondDeriv(
-	bspline_eta_value,
-	bspline_eta_derivative,
-	bspline_eta_deriv2,
-	eta,
-	mm);
+          bspline_eta_value,
+          bspline_eta_derivative,
+          bspline_eta_deriv2,
+          eta,
+          mm);
 
       // get the number of the basis function
       id = rr+mm*(degree+1);
@@ -1924,29 +1924,29 @@ void nurbs_get_2D_funct_deriv_deriv2(
                       w_{i,j} * B_{i,j}(xi,eta)
 
        N_{i,j} = ----------------------------------
-                  +----+				
-                   \				
+                  +----+
+                   \
                     +    w_{k,l} * B_{k,l}(xi,eta)
-      		   /				
-      		  +----+				
-      		    k,l
+                   /
+                  +----+
+                   k,l
   */
 
   /* Nurbs derivatives are defined by the chain rule
 
                                  +- +----+              -+                   +- +----+                 -+
-                                 |   \                   |                   |   \	       dB_{k,l} |
+                                 |   \                   |                   |   \             dB_{k,l} |
                         dB_{i,j} |    +  w_{k,l}*B_{k,l} |                   |    +    w_{k,l}*-------- |
                 w_{i,j}*--------*|   /                   | - w_{i,j}*B_{i,j}*|   /                dxi   |
-    	  	            dxi  |  +----+               |                   |  +----+                  |
-     dN_{i,j}               	 +-   k,l               -+                   +-   k,l                  -+
+                            dxi  |  +----+               |                   |  +----+                  |
+     dN_{i,j}                    +-   k,l               -+                   +-   k,l                  -+
      -------- = -----------------------------------------------------------------------------------------
        dxi                             +- +----+                          -+ 2
                                        |   \                               |
                                        |    +    w_{k,l} * B_{k,l}(xi,eta) |
-    		                       |   /                               |
-    		                       |  +----+                           |
-    		                       +-   k,l                           -+
+                                       |   /                               |
+                                       |  +----+                           |
+                                       +-   k,l                           -+
   */
 
   /* Nurbs second derivatives are calculated by a
@@ -1958,7 +1958,7 @@ void nurbs_get_2D_funct_deriv_deriv2(
                                                          |
                                                          |
                                                          |
-    	  	              w_{i,j}                    |   2
+                              w_{i,j}                    |   2
      d N_{i,j}                                           |  d B_{i,j}
      --------- = ------------------------------------- * |  --------- -
      dxi  dxi    +- +----+                          -+   |  dxi  dxi
@@ -2040,10 +2040,10 @@ void nurbs_get_2D_funct_deriv_deriv2(
     for(int mm=0;mm<2;++mm)
     {
       nurbs_shape_deriv(mm,rr)
-	=
-	bezier_shape_deriv(mm,rr)*sum_funct_weight
-	-
-	bezier_shape_funct(rr)*sum_deriv_weight[mm];
+                              =
+                                  bezier_shape_deriv(mm,rr)*sum_funct_weight
+                                  -
+                                  bezier_shape_funct(rr)*sum_deriv_weight[mm];
 
       nurbs_shape_deriv(mm,rr)*=weights(rr)/(sum_funct_weight*sum_funct_weight);
     }
@@ -2112,17 +2112,17 @@ void nurbs_get_2D_funct_deriv_deriv2(
 
 
 /*!
-\brief Evaluate 2d basis functions of nurbs basis functions.
+\brief Evaluate 3d basis functions of nurbs basis functions.
 
 \verbatim
 
        reference element          element in knotspan
 
-                                              nu ^		
-				                 |		
-                w		                 |   		
-                |		                 |  		
-                |		                 |  		
+                                              nu ^
+                                                 |
+                w                                |
+                |                                |
+                |                                |
               +-|--+----+                        +---------+
              /  | /    /|                       /         /|
             /   |/    / |                      /         / |
@@ -2138,9 +2138,9 @@ void nurbs_get_2D_funct_deriv_deriv2(
         +-/--+----+                        +---------+
          /                                /|         |
       u /     \                          / |         |
-               \                        /  | 	     |		
-		\		       /   |         | 			
-		 \		  eta v    |         |
+               \                        /  |         |
+                \                      /   |         |
+                 \                eta v    |         |
                   \                        |         |
                    \                       |         |
                     \                      |         |
@@ -2199,12 +2199,12 @@ PART  II: PROJECTING TO NURBS SHAPE FUNCTIONS
                         w_{i,j,k} * B_{i,j,k}(xi,eta,nu)
 
        N_{i,j,k} = ---------------------------------------
-                   +----+				
-                    \				
+                   +----+
+                    \
                      +    w_{s,t,r} * B_{s,t,r}(xi,eta,nu)
-      		    /				
-      		   +----+				
-      		   s,t,r
+                    /
+                   +----+
+                   s,t,r
 
 \endverbatim
 
@@ -2223,7 +2223,7 @@ template <class V,class UV,class WG>
 void nurbs_get_3D_funct(
     V                                      & nurbs_shape_funct,
     const UV                               & uv               ,
-    const std::vector<Epetra_SerialDenseVector> & knots            ,
+    const std::vector<Epetra_SerialDenseVector> & knots       ,
     const WG                               & weights          ,
     const DRT::Element::DiscretizationType & distype          )
 {
@@ -2262,11 +2262,11 @@ void nurbs_get_3D_funct(
   /*
        reference element                element in knotspan
 
-                                              nu ^		
-				                 |		
-                w		                 |   		
-                |		                 |  		
-                |		                 |  		
+                                              nu ^
+                                                 |
+                w                                |
+                |                                |
+                |                                |
               +-|--+----+                        +---------+
              /  | /    /|                       /         /|
             /   |/    / |                      /         / |
@@ -2282,9 +2282,9 @@ void nurbs_get_3D_funct(
         +-/--+----+                        +---------+
          /                                /|         |
       u /     \                          / |         |
-               \                        /  | 	     |		
-		\		       /   |         | 			
-		 \		  eta v    |         |
+               \                        /  |         |
+                \                      /   |         |
+                 \                eta v    |         |
                   \                        |         |
                    \                       |         |
                     \                      |         |
@@ -2334,7 +2334,7 @@ void nurbs_get_3D_funct(
   //
   //                                        Ju     Jv
   //                                        |       |
-  //                                        |       |		 				
+  //                                        |       |
   //           +   dxi   dxi   dxi -+   +-  du      |    -+
   //           |   ---   ---   ---  |   |  ---   0  | 0   |
   //           |    du    dv    dw  |   |  2.0      |     |
@@ -2418,25 +2418,25 @@ void nurbs_get_3D_funct(
 
       // get bsplinevalue and derivative
       bspline_eta.EvaluateBspline(
-	bspline_eta_value,
-	eta,
-	mm);
+          bspline_eta_value,
+          eta,
+          mm);
 
       for(int nn=0;nn<degree+1;++nn)
       {
-	// in third direction:
+        // in third direction:
 
-	// get bsplinevalue and derivative
-	bspline_nu.EvaluateBspline(
-	  bspline_nu_value,
-	  nu,
-	  nn);
+        // get bsplinevalue and derivative
+        bspline_nu.EvaluateBspline(
+            bspline_nu_value,
+            nu,
+            nn);
 
-	// get the number of the basis function
-	id = rr+(degree+1)*(mm+nn*(degree+1));
+        // get the number of the basis function
+        id = rr+(degree+1)*(mm+nn*(degree+1));
 
-	// set value to bezier_shape_funct
-	bezier_shape_funct(id)=bspline_xi_value*bspline_eta_value*bspline_nu_value;
+        // set value to bezier_shape_funct
+        bezier_shape_funct(id)=bspline_xi_value*bspline_eta_value*bspline_nu_value;
       }
     }
   }
@@ -2475,12 +2475,12 @@ void nurbs_get_3D_funct(
                       w_{i,j,k} * B_{i,j,k}(xi,eta,nu)
 
        N_{i,j,k} = ---------------------------------------
-                   +----+				
-                    \				
+                   +----+
+                    \
                      +    w_{r,s,t} * B_{r,s,t}(xi,eta,nu)
-      		    /				
-      		   +----+				
-      		    r,s,t
+                    /
+                   +----+
+                   r,s,t
     */
 
     nurbs_shape_funct(rr)=weights(rr)*bezier_shape_funct(rr)/sum_funct_weight;
@@ -2500,11 +2500,11 @@ of nurbs basis functions.
 
        reference element          element in knotspan
 
-                                              nu ^		
-				                 |		
-                w		                 |   		
-                |		                 |  		
-                |		                 |  		
+                                              nu ^
+                                                 |
+                w                                |
+                |                                |
+                |                                |
               +-|--+----+                        +---------+
              /  | /    /|                       /         /|
             /   |/    / |                      /         / |
@@ -2520,9 +2520,9 @@ of nurbs basis functions.
         +-/--+----+                        +---------+
          /                                /|         |
       u /     \                          / |         |
-               \                        /  | 	     |		
-		\		       /   |         | 			
-		 \		  eta v    |         |
+               \                        /  |         |
+                \                      /   |         |
+                 \                eta v    |         |
                   \                        |         |
                    \                       |         |
                     \                      |         |
@@ -2597,12 +2597,12 @@ PART  II: PROJECTING TO NURBS SHAPE FUNCTIONS
                         w_{i,j,k} * B_{i,j,k}(xi,eta,nu)
 
        N_{i,j,k} = ---------------------------------------
-                   +----+				
-                    \				
+                   +----+
+                    \
                      +    w_{s,t,r} * B_{s,t,r}(xi,eta,nu)
-      		    /				
-      		   +----+				
-      		   s,t,r
+                   /
+                  +----+
+                  s,t,r
 
 \endverbatim
 
@@ -2682,11 +2682,11 @@ void nurbs_get_3D_funct_deriv(
   /*
        reference element                element in knotspan
 
-                                              nu ^		
-				                 |		
-                w		                 |   		
-                |		                 |  		
-                |		                 |  		
+                                              nu ^
+                                                 |
+                w                                |
+                |                                |
+                |                                |
               +-|--+----+                        +---------+
              /  | /    /|                       /         /|
             /   |/    / |                      /         / |
@@ -2702,9 +2702,9 @@ void nurbs_get_3D_funct_deriv(
         +-/--+----+                        +---------+
          /                                /|         |
       u /     \                          / |         |
-               \                        /  | 	     |		
-		\		       /   |         | 			
-		 \		  eta v    |         |
+               \                        /  |         |
+                \                      /   |         |
+                 \                eta v    |         |
                   \                        |         |
                    \                       |         |
                     \                      |         |
@@ -2754,7 +2754,7 @@ void nurbs_get_3D_funct_deriv(
   //
   //                                        Ju     Jv
   //                                        |       |
-  //                                        |       |		 				
+  //                                        |       |
   //           +   dxi   dxi   dxi -+   +-  du      |    -+
   //           |   ---   ---   ---  |   |  ---   0  | 0   |
   //           |    du    dv    dw  |   |  2.0      |     |
@@ -2860,32 +2860,32 @@ void nurbs_get_3D_funct_deriv(
 
       // get bsplinevalue and derivative
       bspline_eta.EvaluateBsplineAndDeriv(
-	bspline_eta_value,
-	bspline_eta_derivative,
-	eta,
-	mm);
+          bspline_eta_value,
+          bspline_eta_derivative,
+          eta,
+          mm);
 
       for(int nn=0;nn<degree+1;++nn)
       {
-	// in third direction:
+        // in third direction:
 
-	// get bsplinevalue and derivative
-	bspline_nu.EvaluateBsplineAndDeriv(
-	  bspline_nu_value,
-	  bspline_nu_derivative,
-	  nu,
-	  nn);
+        // get bsplinevalue and derivative
+        bspline_nu.EvaluateBsplineAndDeriv(
+            bspline_nu_value,
+            bspline_nu_derivative,
+            nu,
+            nn);
 
-	// get the number of the basis function
-	id = rr+(degree+1)*(mm+nn*(degree+1));
+        // get the number of the basis function
+        id = rr+(degree+1)*(mm+nn*(degree+1));
 
-	// set value to bezier_shape_funct
-	bezier_shape_funct(id)=bspline_xi_value*bspline_eta_value*bspline_nu_value;
+        // set value to bezier_shape_funct
+        bezier_shape_funct(id)=bspline_xi_value*bspline_eta_value*bspline_nu_value;
 
-	// set values to bezier_shape_deriv
-	bezier_shape_deriv(0,id)=bspline_xi_derivative*bspline_eta_value*bspline_nu_value;
-	bezier_shape_deriv(1,id)=bspline_xi_value*bspline_eta_derivative*bspline_nu_value;
-	bezier_shape_deriv(2,id)=bspline_xi_value*bspline_eta_value*bspline_nu_derivative;
+        // set values to bezier_shape_deriv
+        bezier_shape_deriv(0,id)=bspline_xi_derivative*bspline_eta_value*bspline_nu_value;
+        bezier_shape_deriv(1,id)=bspline_xi_value*bspline_eta_derivative*bspline_nu_value;
+        bezier_shape_deriv(2,id)=bspline_xi_value*bspline_eta_value*bspline_nu_derivative;
       }
     }
   }
@@ -2952,39 +2952,39 @@ void nurbs_get_3D_funct_deriv(
                       w_{i,j,k} * B_{i,j,k}(xi,eta,nu)
 
        N_{i,j,k} = ---------------------------------------
-                   +----+				
-                    \				
+                   +----+
+                    \
                      +    w_{r,s,t} * B_{r,s,t}(xi,eta,nu)
-      		    /				
-      		   +----+				
-      		    r,s,t
+                    /
+                   +----+
+                   r,s,t
     */
     nurbs_shape_funct(rr)=weights(rr)*bezier_shape_funct(rr)/sum_funct_weight;
 
     /* Nurbs derivatives are defined by the chain rule
 
                                        +- +----+                  -+                       +- +----+                     -+
-                                       |   \                       |                       |   \	       dB_{r,s,t} |
+                                       |   \                       |                       |   \               dB_{r,s,t} |
                             dB_{i,j,k} |    +  w_{r,s,t}*B_{r,s,t} |                       |    +    w_{r,s,t}*---------- |
                   w_{i,j,k}*----------*|   /                       | - w_{i,j,k}*B_{i,j,k}*|   /                   dxi    |
-    	  	                dxi    |  +----+                   |                       |  +----+                      |
+                                dxi    |  +----+                   |                       |  +----+                      |
      dN_{i,j,k}                        +-  r,s,t                  -+                       +-  r,s,t                     -+
      ---------- = ---------------------------------------------------------------------------------------------------------
          dxi                           +- +----+                                 -+ 2
                                        |   \                                      |
                                        |    +    w_{r,s,t} * B_{r,s,t}(xi,eta,nu) |
-    		                       |   /                                      |
-    		                       |  +----+                                  |
-    		                       +-  r,s,t                                 -+
-    */
+                                       |   /                                      |
+                                       |  +----+                                  |
+                                       +-  r,s,t                                 -+
+     */
     // loop directions to compute derivatives
     for(int mm=0;mm<3;++mm)
     {
       nurbs_shape_deriv(mm,rr)
-	=
-	bezier_shape_deriv(mm,rr)*sum_funct_weight
-	-
-	bezier_shape_funct(rr)*sum_deriv_weight[mm];
+                              =
+                                  bezier_shape_deriv(mm,rr)*sum_funct_weight
+                                  -
+                                  bezier_shape_funct(rr)*sum_deriv_weight[mm];
 
       nurbs_shape_deriv(mm,rr)*=weights(rr)/(sum_funct_weight*sum_funct_weight);
     }
@@ -3036,11 +3036,11 @@ void nurbs_get_3D_funct_deriv(
 
        reference element          element in knotspan
 
-                                              nu ^		
-				                 |		
-                w		                 |   		
-                |		                 |  		
-                |		                 |  		
+                                              nu ^
+                                                 |
+                w                                |
+                |                                |
+                |                                |
               +-|--+----+                        +---------+
              /  | /    /|                       /         /|
             /   |/    / |                      /         / |
@@ -3056,9 +3056,9 @@ void nurbs_get_3D_funct_deriv(
         +-/--+----+                        +---------+
          /                                /|         |
       u /     \                          / |         |
-               \                        /  | 	     |		
-		\		       /   |         | 			
-		 \		  eta v    |         |
+               \                        /  |         |
+                \                      /   |         |
+                 \                eta v    |         |
                   \                        |         |
                    \                       |         |
                     \                      |         |
@@ -3166,12 +3166,12 @@ PART  II: PROJECTING TO NURBS SHAPE FUNCTIONS
                         w_{i,j,k} * B_{i,j,k}(xi,eta,nu)
 
        N_{i,j,k} = ---------------------------------------
-                   +----+				
-                    \				
+                   +----+
+                    \
                      +    w_{s,t,r} * B_{s,t,r}(xi,eta,nu)
-      		    /				
-      		   +----+				
-      		   s,t,r
+                    /
+                   +----+
+                   s,t,r
 
 \endverbatim
 
@@ -3306,11 +3306,11 @@ void nurbs_get_3D_funct_deriv_deriv2(
   /*
        reference element                element in knotspan
 
-                                              nu ^		
-				                 |		
-                w		                 |   		
-                |		                 |  		
-                |		                 |  		
+                                              nu ^
+                                                 |
+                w                                |
+                |                                |
+                |                                |
               +-|--+----+                        +---------+
              /  | /    /|                       /         /|
             /   |/    / |                      /         / |
@@ -3326,9 +3326,9 @@ void nurbs_get_3D_funct_deriv_deriv2(
         +-/--+----+                        +---------+
          /                                /|         |
       u /     \                          / |         |
-               \                        /  | 	     |		
-		\		       /   |         | 			
-		 \		  eta v    |         |
+               \                        /  |         |
+                \                      /   |         |
+                 \                eta v    |         |
                   \                        |         |
                    \                       |         |
                     \                      |         |
@@ -3377,7 +3377,7 @@ void nurbs_get_3D_funct_deriv_deriv2(
   //
   //                                        Ju     Jv
   //                                        |       |
-  //                                        |       |		 				
+  //                                        |       |
   //           +   dxi   dxi   dxi -+   +-  du      |    -+
   //           |   ---   ---   ---  |   |  ---   0  | 0   |
   //           |    du    dv    dw  |   |  2.0      |     |
@@ -3521,11 +3521,11 @@ void nurbs_get_3D_funct_deriv_deriv2(
 
       // get bsplinevalue and derivative
       bspline_eta.EvaluateBsplineFirstAndSecondDeriv(
- 	bspline_eta_value,
- 	bspline_eta_derivative,
- 	bspline_eta_deriv2,
- 	eta,
- 	mm);
+          bspline_eta_value,
+          bspline_eta_derivative,
+          bspline_eta_deriv2,
+          eta,
+          mm);
 
       const double M_eta_L_nu  =bspline_eta_value     *bspline_nu_value     ;
       const double M_eta_dL_nu =bspline_eta_value     *bspline_nu_derivative;
@@ -3538,35 +3538,35 @@ void nurbs_get_3D_funct_deriv_deriv2(
 
       for(int rr=0;rr<degreep;++rr)
       {
-	// in first direction:
-	
-	// get bsplinevalue and derivative
-	bspline_xi.EvaluateBsplineFirstAndSecondDeriv(
-	  bspline_xi_value,
-	  bspline_xi_derivative,
-	  bspline_xi_deriv2,
-	  xi,
-	  rr);
+        // in first direction:
+
+        // get bsplinevalue and derivative
+        bspline_xi.EvaluateBsplineFirstAndSecondDeriv(
+            bspline_xi_value,
+            bspline_xi_derivative,
+            bspline_xi_deriv2,
+            xi,
+            rr);
 
 
-	// get the number of the basis function
-	id = rr+layerid;
+        // get the number of the basis function
+        id = rr+layerid;
 
-	// set value to bezier_shape_funct
-	bezier_shape_funct(id)=bspline_xi_value*M_eta_L_nu;
+        // set value to bezier_shape_funct
+        bezier_shape_funct(id)=bspline_xi_value*M_eta_L_nu;
 
-	// set values to bezier_shape_deriv
-	bezier_shape_deriv(0,id)=bspline_xi_derivative*M_eta_L_nu;
-	bezier_shape_deriv(1,id)=bspline_xi_value     *dM_eta_L_nu;
-	bezier_shape_deriv(2,id)=bspline_xi_value     *M_eta_dL_nu;
+        // set values to bezier_shape_deriv
+        bezier_shape_deriv(0,id)=bspline_xi_derivative*M_eta_L_nu;
+        bezier_shape_deriv(1,id)=bspline_xi_value     *dM_eta_L_nu;
+        bezier_shape_deriv(2,id)=bspline_xi_value     *M_eta_dL_nu;
 
-	// set values to bezier_shape_deriv2
-	bezier_shape_deriv2(0,id)=bspline_xi_deriv2    *M_eta_L_nu  ;
-	bezier_shape_deriv2(1,id)=bspline_xi_value     *ddM_eta_L_nu;
-	bezier_shape_deriv2(2,id)=bspline_xi_value     *M_eta_ddL_nu;
-	bezier_shape_deriv2(3,id)=bspline_xi_derivative*dM_eta_L_nu ;
-	bezier_shape_deriv2(4,id)=bspline_xi_derivative*M_eta_dL_nu ;
-	bezier_shape_deriv2(5,id)=bspline_xi_value     *dM_eta_dL_nu;
+        // set values to bezier_shape_deriv2
+        bezier_shape_deriv2(0,id)=bspline_xi_deriv2    *M_eta_L_nu  ;
+        bezier_shape_deriv2(1,id)=bspline_xi_value     *ddM_eta_L_nu;
+        bezier_shape_deriv2(2,id)=bspline_xi_value     *M_eta_ddL_nu;
+        bezier_shape_deriv2(3,id)=bspline_xi_derivative*dM_eta_L_nu ;
+        bezier_shape_deriv2(4,id)=bspline_xi_derivative*M_eta_dL_nu ;
+        bezier_shape_deriv2(5,id)=bspline_xi_value     *dM_eta_dL_nu;
       }
     }
   }
@@ -3688,39 +3688,39 @@ void nurbs_get_3D_funct_deriv_deriv2(
                       w_{i,j,k} * B_{i,j,k}(xi,eta,nu)
 
        N_{i,j,k} = ---------------------------------------
-                   +----+				
-                    \				
+                   +----+
+                    \
                      +    w_{r,s,t} * B_{r,s,t}(xi,eta,nu)
-      		    /				
-      		   +----+				
-      		    r,s,t
+                    /
+                   +----+
+                    r,s,t
     */
     nurbs_shape_funct(rr)=bezier_shape_funct(rr)*normed_weight;
 
     /* Nurbs derivatives are defined by the chain rule
 
                                        +- +----+                  -+                       +- +----+                     -+
-                                       |   \                       |                       |   \	       dB_{r,s,t} |
+                                       |   \                       |                       |   \               dB_{r,s,t} |
                             dB_{i,j,k} |    +  w_{r,s,t}*B_{r,s,t} |                       |    +    w_{r,s,t}*---------- |
                   w_{i,j,k}*----------*|   /                       | - w_{i,j,k}*B_{i,j,k}*|   /                   dxi    |
-    	  	                dxi    |  +----+                   |                       |  +----+                      |
+                                dxi    |  +----+                   |                       |  +----+                      |
      dN_{i,j,k}                        +-  r,s,t                  -+                       +-  r,s,t                     -+
      ---------- = ---------------------------------------------------------------------------------------------------------
          dxi                           +- +----+                                 -+ 2
                                        |   \                                      |
                                        |    +    w_{r,s,t} * B_{r,s,t}(xi,eta,nu) |
-    		                       |   /                                      |
-    		                       |  +----+                                  |
-    		                       +-  r,s,t                                 -+
-    */
+                                       |   /                                      |
+                                       |  +----+                                  |
+                                       +-  r,s,t                                 -+
+     */
     // loop directions to compute derivatives
     for(int mm=0;mm<3;++mm)
     {
       nurbs_shape_deriv(mm,rr)
-	=
-	bezier_shape_deriv(mm,rr)
-	-
-	bezier_shape_funct(rr)*sum_deriv_weight[mm]/sum_funct_weight;
+                              =
+                                  bezier_shape_deriv(mm,rr)
+                                  -
+                                  bezier_shape_funct(rr)*sum_deriv_weight[mm]/sum_funct_weight;
 
       nurbs_shape_deriv(mm,rr)*=normed_weight;
     }
@@ -3732,7 +3732,7 @@ void nurbs_get_3D_funct_deriv_deriv2(
                                                                   |
                                                                   |
                                                                   |
-    	  	                     w_{i,j,k}                    |   2
+                                     w_{i,j,k}                    |   2
      d N_{i,j,k}                                                  |  d B_{i,j,k}
      ----------- = -------------------------------------------- * |  ----------- -
       dxi  dxi     +- +----+                                 -+   |   dxi  dxi
