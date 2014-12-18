@@ -132,10 +132,11 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
       Teuchos::rcp(new Epetra_MultiVector(*fnew));
 
   // Apply preconditioner once: s = M^{-1}*fnew
-  Teuchos::RCP<Epetra_MultiVector> s =
-      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  Teuchos::RCP<Epetra_MultiVector> s = Teuchos::rcp(new Epetra_MultiVector(x));
   err = ApplyPreconditioner(*fnew, *s);
   if (err != 0) { dserror("ApplyPreconditioner() failed."); }
+  s->Update(-1.0, x, 1.0);
+  if (err != 0) { dserror("Update failed."); }
 
   // prepare vector for preconditioned residual from previous iteration
   Teuchos::RCP<Epetra_MultiVector> sold =
@@ -173,8 +174,11 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
     converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
 
     // compute preconditioned search direction
+    s->Update(1.0, x, 0.0);
     err = ApplyPreconditioner(*fnew, *s);
     if (err != 0) { dserror("ApplyPreconditioner() failed."); }
+    s->Update(-1.0, x, 1.0);
+    if (err != 0) { dserror("Update failed."); }
 
     ComputeBeta(beta, fnew, fold, s, sold);
 
