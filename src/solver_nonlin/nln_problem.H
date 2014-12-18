@@ -188,7 +188,7 @@ namespace NLNSOL
     //@{
 
     //! get Jacobian as Epetra_Operator
-    virtual Teuchos::RCP<Epetra_Operator> GetJacobianOperator();
+    virtual Teuchos::RCP<Epetra_Operator> GetJacobianOperator() const;
 
     //@}
 

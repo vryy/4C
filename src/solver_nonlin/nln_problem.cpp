@@ -259,7 +259,7 @@ NOX::Abstract::Group& NLNSOL::NlnProblem::NOXGroup() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Operator> NLNSOL::NlnProblem::GetJacobianOperator()
+Teuchos::RCP<Epetra_Operator> NLNSOL::NlnProblem::GetJacobianOperator() const
 {
   // check if Jacobian operator has already been set
   if (jac_.is_null())
