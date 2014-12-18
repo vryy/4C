@@ -188,13 +188,14 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
       /* -------------------------------------------------------------------- */
       // Step 1: Generate a new tentative iterate
       /* -------------------------------------------------------------------- */
-      err = xbar->Update(1.0, *sol.back(), 0.0);
+      err = xbar->Update(1.0, *(sol.back()), 0.0);
       if (err != 0) { dserror("Update failed."); }
-      err = fbar->Update(1.0, *res.back(), 0.0);
+      err = fbar->Update(1.0, *(res.back()), 0.0);
       if (err != 0) { dserror("Update failed."); }
 
       // compute a tentative iterate by applying the preconditioner once
-      ComputeTentativeIterate(*fbar, *xbar);
+      err = ComputeTentativeIterate(*fbar, *xbar);
+      if (err != 0) { dserror("Failed."); }
 
       // evaluate the residual based on the new tentative solution
       NlnProblem()->ComputeF(*xbar, *fbar);
@@ -206,6 +207,8 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
       Teuchos::RCP<Epetra_MultiVector> xhat =
           ComputeAcceleratedIterate(xbar, fbar, sol, res);
 
+      // evaluate the residual based on the new tentative solution
+      NlnProblem()->ComputeF(*xbar, *fbar);
       /* -------------------------------------------------------------------- */
 
       /* -------------------------------------------------------------------- */
@@ -217,9 +220,14 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
       err = inc->Update(-1.0, *xbar, 1.0);
       if (err != 0) { dserror("Update failed."); }
 
-      // Is 'inc' a descent direction? Otherwise restart the algorithm.
+      /* Is 'inc' a descent direction? Otherwise restart the algorithm.
+       *
+       * fbar is the residual pointing in descent direction. Thus, the inner
+       * product of fbar and inc has to be larger than zero if inc is a descent
+       * direction.
+       */
       inc->Dot(*fbar, &dotproduct);
-      if (dotproduct >= 0.0) // ascent direction --> restart required
+      if (dotproduct <= 0.0) // ascent direction --> restart required
       {
         restart = true;
         if (Comm().MyPID() == 0)
@@ -289,33 +297,37 @@ int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector>
 NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
-    const Teuchos::RCP<const Epetra_MultiVector>& xbar,
-    const Teuchos::RCP<const Epetra_MultiVector>& fbar,
+    const Teuchos::RCP<const Epetra_MultiVector> xbar, // ToDo (mayr) use reference instead of RCP?
+    const Teuchos::RCP<const Epetra_MultiVector> fbar, // ToDo (mayr) use reference instead of RCP?
     const std::vector<Teuchos::RCP<Epetra_MultiVector> >& sol,
     const std::vector<Teuchos::RCP<Epetra_MultiVector> >& res
     ) const
 {
   int err = 0;
 
-  // create quantities needed for least squares problem
+  // create quantities needed for normal equations of least squares problem
   LINALG::SerialDenseVector alpha; // weights for linear combination
   LINALG::SerialDenseVector Ptg; // right hand side vector
   LINALG::SerialDenseMatrix PtP; // "system matrix"
 
   // set suitable sizes for least squares problem and initialize to zero
-  const int wsize = sol.size(); // current window size
-  alpha.Size(wsize);
-  Ptg.Size(wsize);
-  PtP.Shape(wsize, wsize);
+  {
+    const int wsize = sol.size(); // current window size
+    alpha.Size(wsize);
+    Ptg.Size(wsize);
+    PtP.Shape(wsize, wsize);
+  }
 
   // construct least squares problem
-  Teuchos::Array<Teuchos::RCP<Epetra_MultiVector> > P;
+  std::vector<Teuchos::RCP<Epetra_MultiVector> > P;
   P.clear();
   {
-    Teuchos::RCP<Epetra_MultiVector> p =
-        Teuchos::rcp(new Epetra_MultiVector(fbar->Map(), true));
     for (std::vector<Teuchos::RCP<Epetra_MultiVector> >::const_iterator it = res.begin(); it < res.end(); ++it)
     {
+      // allocate new vector as column of matrix P
+      Teuchos::RCP<Epetra_MultiVector> p =
+          Teuchos::rcp(new Epetra_MultiVector(fbar->Map(), true));
+
       /* difference between most recent residual and the one from the 'it'
        * previous iteration */
       err = p->Update(1.0, *fbar, -1.0, *(*it), 0.0);
@@ -333,7 +345,7 @@ NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
     double matrixentry = 0.0;
     for (unsigned int i = 0; i < P.size(); ++i)
     {
-      // right hand side product P^T * g
+      // right hand side product -P^T * g
       err = P[i]->Dot(*fbar, &rhsentry);
       if (err != 0) { dserror("Failed."); }
       Ptg[i] = -1.0 * rhsentry;
@@ -362,18 +374,22 @@ NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
     }
   }
 
-  // fix diagonal of 'PtP' to ensure non-singularity
-  /* Literature proposed different options how to ensure the non-singularity
+  /* Fix diagonal of 'PtP' to ensure non-singularity
+   *
+   * Literature proposed different options how to ensure the non-singularity
    * of the matrix PtP. Currently, we have too less experience to prefer one
    * or the other.
    *
+   * Note: There is no theoretical reason why we need this. It's more a
+   * technical fix of numerical problems that might occur sometimes.
+   *
    * ToDo (mayr) Drop one of them or introduce control via input flag
    */
-  for (int i = 0; i < PtP.RowDim(); ++i)
-  {
-    PtP[i][i] += 1.0e-8 * maxdiagentry; // [Sterck2012a]
-//    PtP[i][i] += 1.0e-6; // [Washio1997a]
-  }
+//  for (int i = 0; i < PtP.RowDim(); ++i)
+//  {
+//    PtP[i][i] += 1.0e-8 * maxdiagentry; // [Sterck2012a]
+////    PtP[i][i] += 1.0e-6; // [Washio1997a]
+//  }
 
   /* Solve normal equations with direct solver since it is just a very small
    * system (size = window size) */

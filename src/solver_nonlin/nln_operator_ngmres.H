@@ -194,12 +194,16 @@ namespace NLNSOL
      *  needed to compute the accelerated iterate as linear combination of
      *  previous iterates.
      *
+     *  Implementation follows this publication: Sterck, Hans De: A Nonlinear
+     *  GMRES Optimization Algorithm for Canonical Tensor Decomposition,
+     *  SIAM J. Sci. Comput., Vol. 34, pp. A1351-1379, 2012
+     *
      *  \author mayr.mt \date 03/2014
      */
     virtual Teuchos::RCP<Epetra_MultiVector> ComputeAcceleratedIterate
     (
-      const Teuchos::RCP<const Epetra_MultiVector>& xbar, ///< tentative iterate / current solution
-      const Teuchos::RCP<const Epetra_MultiVector>& fbar, ///< residual based on tentative iterate / current solution
+      const Teuchos::RCP<const Epetra_MultiVector> xbar, ///< tentative iterate / current solution
+      const Teuchos::RCP<const Epetra_MultiVector> fbar, ///< residual based on tentative iterate / current solution
       const std::vector<Teuchos::RCP<Epetra_MultiVector> >& sol, ///< collection of previous solution iterates
       const std::vector<Teuchos::RCP<Epetra_MultiVector> >& res ///< collection of previous residuals
     ) const;
