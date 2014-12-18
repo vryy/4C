@@ -365,27 +365,29 @@ void DRT::UTILS::FindElementConditions(const DRT::Element* ele, const std::strin
   // We assume the conditions have unique ids. The framework has to provide
   // those.
 
+  // the final set of conditions all nodes of this elements have in common
+  std::set<DRT::Condition*> fcond;
+
   // we assume to always have at least one node
+  // the first vector of conditions
   std::vector<DRT::Condition*> neumcond0;
   nodes[0]->GetCondition(condname,neumcond0);
 
-  // the first set of conditions
+  // the first set of conditions (copy vector to set)
   std::set<DRT::Condition*> cond0;
   std::copy(neumcond0.begin(),
             neumcond0.end(),
             std::inserter(cond0,cond0.begin()));
 
-  // the final set
-  std::set<DRT::Condition*> fcond;
 
   // loop all remaining nodes
-
   int iel = ele->NumNode();
   for (int inode=1; inode<iel; ++inode)
   {
     std::vector<DRT::Condition*> neumcondn;
     nodes[inode]->GetCondition(condname,neumcondn);
 
+    // the current set of conditions (copy vector to set)
     std::set<DRT::Condition*> condn;
     std::copy(neumcondn.begin(),
               neumcondn.end(),
@@ -397,12 +399,14 @@ void DRT::UTILS::FindElementConditions(const DRT::Element* ele, const std::strin
                           inserter(fcond,fcond.begin()));
 
     // make intersection to new starting condition
-    cond0.clear();
+    cond0.clear(); // ensures that fcond is cleared in the next iteration
     std::swap(cond0,fcond);
 
-    if (fcond.size()==0)
-      // No intersections. Done.
+    if (cond0.size()==0)
+    {
+      // No intersections. Done. empty set is copied into condition-vector
       break;
+    }
   }
 
   condition.clear();
