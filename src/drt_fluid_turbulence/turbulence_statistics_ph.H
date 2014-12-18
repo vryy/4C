@@ -55,6 +55,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "Teuchos_SerialDenseMatrix.hpp"
 
 
 namespace FLD
@@ -134,6 +135,9 @@ private:
    geometry_LES_flow_with_heating
   };
 
+  //! number of dump loops
+  int dumploop;
+
   //! number of samples taken
   int  numsamp_;
 
@@ -209,10 +213,11 @@ private:
   Teuchos::RCP<std::vector<double> >     x2coordinates_;
 
   //! coordinates of locations in x1- and x2-direction for statistical evaluation
-  LINALG::Matrix<4,1> x1statlocations_;
+  LINALG::Matrix<9,1> x1statlocations_;
 //  LINALG::Matrix<17,1> x2statlocations_;
-
-  LINALG::Matrix<4,17> x2statlocations;
+  //! matrix for r-coordinates (columns are evaluation planes
+  Teuchos::SerialDenseMatrix<int,double> x2statlocations;
+//  LINALG::Matrix<4,17> x2statlocations;
 
 
   //! set coordinates of locations in x1-direction for statistical evaluation

@@ -1277,7 +1277,7 @@ PeriodicHillForcing::PeriodicHillForcing(
         sum_(0.0)
 {
   if(discret_->Comm().MyPID()==0)
-    std::cout << "forcing for periodic hill such that a mass flow of 392.6 is achieved" << std::endl;
+    std::cout << "\nforcing for periodic hill such that a mass flow of " << idealmassflow_ << " is achieved" << std::endl;
   std::vector<DRT::Condition*> bodycond;
   discret_->GetCondition("VolumeNeumann",bodycond);
   const std::vector<double>* val   = bodycond[0]->Get<std::vector<double> >("val"  );
