@@ -125,7 +125,7 @@ LineSearch                      No  // Yes No
 FDCheck                         No
 FDCheck_row                     -1
 FDCheck_column                  -1
-----------------------------------------------------------------FS3I CONTROL
+----------------------------------------------------------------FS3I DYNAMIC
 MAXTIME                         100.0
 TIMESTEP                        0.1
 NUMSTEP                         3
