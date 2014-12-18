@@ -116,8 +116,12 @@ namespace NLNSOL
     /*! \brief Compute search direction
      *
      *  The new search direction \f$p\f$ is computed via
-     *  \[ p = - D^{-1} f \]
+     *  \[ p = D^{-1} f \]
      *  with \f$D = diag(J)\f$ denoting the diagonal of the Jacobian matrix.
+     *
+     *  \note Since NlnProblem()->ComputeF() delivers a residual in descent
+     *  direction, we do not have to modify the sign to obtain an descending
+     *  search direction.
      *
      *  \author mayr.mt \date 10/2014
      */

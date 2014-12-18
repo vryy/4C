@@ -157,8 +157,6 @@ const int NLNSOL::NlnOperatorDInverse::ComputeSearchDirection(
   err = stiffdiag->ApplyInverse(rhs, inc);
   if (err != 0) { dserror("Update failed."); }
 
-  inc.Scale(-1.0);
-
   return err;
 }
 
