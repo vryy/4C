@@ -224,7 +224,7 @@ double base_func_line_int(LINALG::Matrix<2,1> pt, int inte_num,std::vector<doubl
     return basef_line*z4;
   }
 
-        
+
   double a06=pow(alfa[0],6),a16=pow(alfa[1],6),a26=pow(alfa[2],6),z6=pow(pt(1,0),6),y7=pow(pt(0,0),7);
   if(inte_num==36) //f(x,y,z) = x^5
   {
@@ -353,7 +353,7 @@ double base_func_line_int(LINALG::Matrix<2,1> pt, int inte_num,std::vector<doubl
   }
 
   double y8=pow(pt(0,0),8);
-//    	double a07=pow(alfa[0],7),a17=pow(alfa[1],7),a27=pow(alfa[2],7),z7=pow(pt(1,0),7),y8=pow(pt(0,0),8);
+//      double a07=pow(alfa[0],7),a17=pow(alfa[1],7),a27=pow(alfa[2],7),z7=pow(pt(1,0),7),y8=pow(pt(0,0),8);
   if(inte_num==57) //f(x,y,z) = x^6
   {
     if(fabs(alfa[1])<0.0000001)

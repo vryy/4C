@@ -30,8 +30,8 @@ public:
     {
       for ( std::vector<std::vector<Point*> >::iterator i=inlists.begin(); i!=inlists.end(); ++i)
       {
-    	  std::vector<Point*> inlist = * i;
-    	  inlists_.push_back( inlist );
+        std::vector<Point*> inlist = * i;
+        inlists_.push_back( inlist );
       }
     }
 

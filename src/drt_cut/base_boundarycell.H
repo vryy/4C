@@ -125,7 +125,7 @@ double base_func_surfX(const LINALG::Matrix<2,1>& pt, int inte_num,std::vector<d
     basef_surf = y*z3;
     return basef_surf;
   }
-		
+
   double a04=pow(a0,4),a14=pow(a1,4),a24=pow(a2,4);
   double y5=pow(y,5),z4=pow(z,4);
   if(inte_num==21) //f(x,y,z) = x^4
@@ -1455,6 +1455,6 @@ double base_func_surfZ(const LINALG::Matrix<2,1>& pt, int inte_num,std::vector<d
   dserror("The base function for boundarycell integration undefined");
   exit(1);
   return 0.0;
- 
+
 }
 #endif

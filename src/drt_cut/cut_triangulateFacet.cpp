@@ -405,7 +405,7 @@ bool GEO::CUT::TriangulateFacet::HasTwoContinuousConcavePts( std::vector<int> pt
 *--------------------------------------------------------------------------------------------------*/
 void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   // list of concave points
                                               bool triOnly,                  // whether to create triangles only?
-                                              bool DeleteInlinePts )		// how to deal with collinear points?
+                                              bool DeleteInlinePts )    // how to deal with collinear points?
 {
   std::vector<int> convex;
 
@@ -421,7 +421,7 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   //
   if( triOnly )
   {
     split_.clear();
-    
+
     if ( DeleteInlinePts )
     {
       KERNEL::DeleteInlinePts( ptlist_ );
@@ -432,7 +432,7 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   //
       }
       if ( ptlist_.size() < 3 )
       {
-      	return;
+        return;
       }
     }
 
@@ -530,7 +530,7 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   //
 
     if( ptlist_.size()<3 )
       dserror( "ear clipping produced 2 vertices polygon" );
-      
+
     if ( DeleteInlinePts )
     {
       KERNEL::DeleteInlinePts( ptlist_ ); // delete inline points in the new polygon
@@ -607,262 +607,262 @@ void GEO::CUT::TriangulateFacet::EarClippingWithHoles( Side * parentside )
       for ( std::vector<Point*>::iterator i=holecyclepoints.begin(); i!=holecyclepoints.end(); ++i)
       {
         Point * holecyclepoint = * i;
-  	    LINALG::Matrix<3,1> holecyclepointcoordinates;
-  	    LINALG::Matrix<3,1> localholecyclepointcoordinates;
-  	    holecyclepoint->Coordinates( holecyclepointcoordinates.A() );
-  	    parentside->LocalCoordinates( holecyclepointcoordinates, localholecyclepointcoordinates, false );
-  	    localholecyclespoints[k] = localholecyclepointcoordinates;
-  	    k[1] = k[1] +1;
+        LINALG::Matrix<3,1> holecyclepointcoordinates;
+        LINALG::Matrix<3,1> localholecyclepointcoordinates;
+        holecyclepoint->Coordinates( holecyclepointcoordinates.A() );
+        parentside->LocalCoordinates( holecyclepointcoordinates, localholecyclepointcoordinates, false );
+        localholecyclespoints[k] = localholecyclepointcoordinates;
+        k[1] = k[1] +1;
       }
       k[0] = k[0] + 1;
-  	  k[1] = 1;
+      k[1] = 1;
     }
 // 2) Holecyclepoint with the maximum x-value
     double maximumxvalue = -1;
     std::vector<int> maximumxvalueid(2);
     for( std::map<std::vector<int>, LINALG::Matrix<3,1> >::iterator i=localholecyclespoints.begin(); i!=localholecyclespoints.end(); ++i )
     {
-    	LINALG::Matrix<3,1> localholecyclespoint = i->second;
-    	if ( localholecyclespoint(0,0) > maximumxvalue)
-    	{
-    		maximumxvalue = localholecyclespoint(0,0);
-    		maximumxvalueid = i->first;
-    	}
+      LINALG::Matrix<3,1> localholecyclespoint = i->second;
+      if ( localholecyclespoint(0,0) > maximumxvalue)
+      {
+        maximumxvalue = localholecyclespoint(0,0);
+        maximumxvalueid = i->first;
+      }
     }
     double correspondingyvalue = (localholecyclespoints[maximumxvalueid])(1,0);
     LINALG::Matrix<3,1> maximumpoint;
     maximumpoint(0,0) = maximumxvalue;
     maximumpoint(1,0) = correspondingyvalue;
-	  maximumpoint(2,0) = 0;
+    maximumpoint(2,0) = 0;
 // 3) Closest visible point
-	  int maincyclesize = ptlist_.size();
-	  double closestedgexvalue = 2;
-	  std::vector<int> closestedgexvalueid(2);
-	  int intersectioncount = 0;   // counts the edges which are intersected by the ray to check whether the holecycle is inside or outside the maincycle
-	  bool intersectioninpoint = false;// the counting with m is disturbed in case the ray hits a point of the maincycle
-	  for ( int i=1; i<=maincyclesize; ++i )
-	  {
-	  	double edgepointxvalue1 = (localmaincyclepoints[i])(0,0);
-	  	double edgepointxvalue2 = (localmaincyclepoints[(i%maincyclesize)+1])(0,0);
-	  	double edgepointyvalue1 = (localmaincyclepoints[i])(1,0);
-	  	double edgepointyvalue2 = (localmaincyclepoints[(i%maincyclesize)+1])(1,0);
-	  	if ( ( (edgepointyvalue1 <= correspondingyvalue ) and (edgepointyvalue2 >= correspondingyvalue ) ) or
+    int maincyclesize = ptlist_.size();
+    double closestedgexvalue = 2;
+    std::vector<int> closestedgexvalueid(2);
+    int intersectioncount = 0;   // counts the edges which are intersected by the ray to check whether the holecycle is inside or outside the maincycle
+    bool intersectioninpoint = false;// the counting with m is disturbed in case the ray hits a point of the maincycle
+    for ( int i=1; i<=maincyclesize; ++i )
+    {
+      double edgepointxvalue1 = (localmaincyclepoints[i])(0,0);
+      double edgepointxvalue2 = (localmaincyclepoints[(i%maincyclesize)+1])(0,0);
+      double edgepointyvalue1 = (localmaincyclepoints[i])(1,0);
+      double edgepointyvalue2 = (localmaincyclepoints[(i%maincyclesize)+1])(1,0);
+      if ( ( (edgepointyvalue1 <= correspondingyvalue ) and (edgepointyvalue2 >= correspondingyvalue ) ) or
            ( (edgepointyvalue2 <= correspondingyvalue ) and (edgepointyvalue1 >= correspondingyvalue ) ) )
-	  	{
-	  		double edgepointxvalue = ((edgepointxvalue2 - edgepointxvalue1) * correspondingyvalue + edgepointxvalue1*edgepointyvalue2
+      {
+        double edgepointxvalue = ((edgepointxvalue2 - edgepointxvalue1) * correspondingyvalue + edgepointxvalue1*edgepointyvalue2
                                  - edgepointxvalue2*edgepointyvalue1 )/(edgepointyvalue2 - edgepointyvalue1);
-	  		if ( edgepointxvalue > maximumxvalue )
-	  		{
-	  			if ( edgepointxvalue < closestedgexvalue )
-	  			{
-	  				closestedgexvalue = edgepointxvalue;
-	  				closestedgexvalueid[0] = i;
-	  				closestedgexvalueid[1] = (i%maincyclesize)+1;
-	  			}
-	  			intersectioncount++;
-	  			if ( (abs(edgepointxvalue - edgepointxvalue1) < TOLERANCE and abs(correspondingyvalue - edgepointyvalue1) < TOLERANCE ) or
-	  					 (abs(edgepointxvalue - edgepointxvalue2) < TOLERANCE and abs(correspondingyvalue - edgepointyvalue2) < TOLERANCE ) )
-	  			{
-	  				intersectioninpoint = true;
-	  			}
-	  		}
-	  	}
-	  }
-	  double epsilon = TOLERANCE;
-	  while ( intersectioninpoint )
-	  {
-	  	intersectioninpoint = false;
-	  	for ( int i=1; i<=maincyclesize; ++i )
-	  	{
-				double edgepointxvalue1 = (localmaincyclepoints[i])(0,0);
-				double edgepointxvalue2 = (localmaincyclepoints[(i%maincyclesize)+1])(0,0);
-				double edgepointyvalue1 = (localmaincyclepoints[i])(1,0);
-				double edgepointyvalue2 = (localmaincyclepoints[(i%maincyclesize)+1])(1,0);
-				double A = edgepointxvalue1 - edgepointxvalue2;
-				double B = edgepointyvalue1 - edgepointyvalue2;
-				double C = edgepointxvalue1 + edgepointxvalue2 - 2*maximumxvalue - 2;
-				double D = edgepointyvalue1 + edgepointyvalue2 - 2*correspondingyvalue - epsilon;
-				double N = 2*B - epsilon*A;
-				if ( abs(N) > TOLERANCE )
-				{
-					double eta = ( B*C - A*D )/N;
-					double xsi = ( 2*D - epsilon*C )/N;
-					if ( eta < 1 and eta > -1 and xsi < 1 and xsi > -1)
-					{
-						intersectioncount++;
-						double xlocalcoord = maximumxvalue + 1 + eta;
-						double ylocalcoord = (2*correspondingyvalue + epsilon + epsilon*eta)/2;
-						if ( (abs(xlocalcoord - edgepointxvalue1) < TOLERANCE and abs(ylocalcoord - edgepointyvalue1) < TOLERANCE ) or
-								 (abs(xlocalcoord - edgepointxvalue2) < TOLERANCE and abs(ylocalcoord - edgepointyvalue2) < TOLERANCE ) )
-						{
-							intersectioninpoint = true;
-							intersectioncount = 0;
-							epsilon += TOLERANCE;
-							break;
-						}
-					}
-				}
-			}
-		}
-		if ( intersectioncount%2 == 0 )
-		{
-			int l = 1;   // index for searching the maximumxvalueid
-			std::list<std::vector<Point*> >::iterator iter;
-			for ( std::list<std::vector<Point*> >::iterator i=inlists_.begin(); i!=inlists_.end(); ++i )
-			{
-				if ( l == maximumxvalueid[0] )
-				{
-					iter = i;
-				}
-				l++;
-			}
-			inlists_.erase(iter);
-			continue;
-		}
-		LINALG::Matrix<3,1> closestpoint;
-		closestpoint(0,0) = closestedgexvalue;
-		closestpoint(1,0) = correspondingyvalue;
-		closestpoint(2,0) = 0;
-	// 4) Closest visible point is node
-		int mutuallyvisiblepointid = 0;
-		if ( (abs(closestpoint(0,0) - localmaincyclepoints[closestedgexvalueid[0]](0,0)) < TOLERANCE ) and
-				 (abs(closestpoint(1,0) - localmaincyclepoints[closestedgexvalueid[0]](1,0)) < TOLERANCE ) )
-		{
-			mutuallyvisiblepointid = closestedgexvalueid[0];
-		}
-		else if ( (abs(closestpoint(0,0) - localmaincyclepoints[closestedgexvalueid[1]](0,0)) < TOLERANCE ) and
-							(abs(closestpoint(1,0) - localmaincyclepoints[closestedgexvalueid[1]](1,0)) < TOLERANCE ) )
-		{
-			mutuallyvisiblepointid = closestedgexvalueid[1];
-		}
-		else
-		{
-	// 5) Closest edge point with the maximum x value
-			int potentuallyvisiblepointid;
-			LINALG::Matrix<3,1> potentuallyvisiblepoint;
-			if ( localmaincyclepoints[closestedgexvalueid[0]](0,0) > localmaincyclepoints[closestedgexvalueid[1]](0,0) )
-			{
-				potentuallyvisiblepointid = closestedgexvalueid[0];
-				potentuallyvisiblepoint(0,0) = localmaincyclepoints[closestedgexvalueid[0]](0,0);
-				potentuallyvisiblepoint(1,0) = localmaincyclepoints[closestedgexvalueid[0]](1,0);
-				potentuallyvisiblepoint(2,0) = 0;
-			}
-			else
-			{
-				potentuallyvisiblepointid = closestedgexvalueid[1];
-				potentuallyvisiblepoint(0,0) = localmaincyclepoints[closestedgexvalueid[1]](0,0);
-				potentuallyvisiblepoint(1,0) = localmaincyclepoints[closestedgexvalueid[1]](1,0);
-				potentuallyvisiblepoint(2,0) = 0;
-			}
-	// 6) Reflex points in triangle
-			std::string geoType;
-			std::vector<int> reflexmaincyclepointids = KERNEL::CheckConvexity( ptlist_, geoType, false, false );
-			for ( std::vector<int>::iterator i=reflexmaincyclepointids.begin(); i!=reflexmaincyclepointids.end(); ++i )
-			{
-				int *reflexmaincyclepointid = &*i;
-				(*reflexmaincyclepointid)++;   // a little inconsistency here with KERNEL::CheckConvexity
-			}
-			std::vector<int> insidemaincyclepointids;
-			LINALG::Matrix<3,3> triangle;
-			for ( int i=0; i<3; ++i )
-			{
-				triangle(i,0) = maximumpoint(i,0);
-				triangle(i,1) = closestpoint(i,0);
-				triangle(i,2) = potentuallyvisiblepoint(i,0);
-			}
-			for ( std::vector<int>::iterator i=reflexmaincyclepointids.begin(); i!=reflexmaincyclepointids.end(); ++i )
-			{
-				int reflexmaincyclepointid = * i;
-				LINALG::Matrix<3,1> reflexmaincyclepoint = localmaincyclepoints[reflexmaincyclepointid];
-				Position2d<DRT::Element::tri3> pos( triangle, reflexmaincyclepoint );
-				pos.Compute( false );
-				if( pos.WithinLimitsTol( 1.0e-8, false, TOLERANCE) )
-				{
-					insidemaincyclepointids.push_back( reflexmaincyclepointid );
-				}
-			}
-			if ( insidemaincyclepointids.size() == 0 )
-			{
-				mutuallyvisiblepointid = potentuallyvisiblepointid;
-			}
-			else
-			{
-	// 7) Closest angle
-				double closestangle = 4;
-				std::vector<int> closestanglemaincyclepointids;
-				for ( std::vector<int>::iterator i=insidemaincyclepointids.begin(); i!=insidemaincyclepointids.end(); ++i )
-				{
-					int insidemaincyclepointid = * i;
-					LINALG::Matrix<3,1> insidemaincyclepoint = localmaincyclepoints[insidemaincyclepointid];
-					double distance1 = sqrt(pow((closestpoint(0,0) - maximumpoint(0,0)),2) + pow((closestpoint(1,0) - maximumpoint(1,0)),2));
-					double distance2 = sqrt(pow((insidemaincyclepoint(0,0) - maximumpoint(0,0)),2) + pow((insidemaincyclepoint(1,0) - maximumpoint(1,0)),2));
-					double distance3 = sqrt(pow((insidemaincyclepoint(0,0) - closestpoint(0,0)),2) + pow((insidemaincyclepoint(1,0) - closestpoint(1,0)),2));
-					if ( (distance1 > 1.0e-8) && (distance2 > 1.0e-8)  )
-					{
-						double alpha = acos( ( distance1 * distance1 + distance2 * distance2 - distance3 * distance3 ) / ( 2 * distance1 * distance2 ) );
-						if ( alpha - closestangle <= 1.0e-16 )
-						{
-							closestangle = alpha;
-							closestanglemaincyclepointids.push_back( insidemaincyclepointid );
-						}
-					}
-				}
-				if ( closestanglemaincyclepointids.size() == 1 )
-				{
-					mutuallyvisiblepointid = closestanglemaincyclepointids[0];
-				}
-				else
-				{
-	// 8) Mutually visible point
-					double closestdistance = 5;
-					for ( std::vector<int>::iterator i=closestanglemaincyclepointids.begin(); i!=closestanglemaincyclepointids.end(); ++i )
-					{
-						int closestanglemaincyclepointid = * i;
-						LINALG::Matrix<3,1> closestanglemaincyclepoint = localmaincyclepoints[closestanglemaincyclepointid];
-						double distance = sqrt(pow((closestanglemaincyclepoint(0,0) - maximumpoint(0,0)),2) + pow((closestanglemaincyclepoint(1,0) - maximumpoint(1,0)),2));
-						if ( distance < closestdistance )
-						{
-							mutuallyvisiblepointid = closestanglemaincyclepointid;
-						}
-					}
-				}
-			}
-		}
-	// 9) Make new pointlist
-		std::vector<Point*> pttemp( ptlist_ );
-		ptlist_.clear();
-		for ( int i=0; i<mutuallyvisiblepointid; ++i )
-		{
-			ptlist_.push_back( pttemp[i] );
-		}
-		std::vector<Point*> inlist;
-		int l = 1;
-		std::list<std::vector<Point*> >::iterator iter;
-		for ( std::list<std::vector<Point*> >::iterator i=inlists_.begin(); i!=inlists_.end(); ++i )
-		{
-			if ( l == maximumxvalueid[0] )
-			{
-				inlist = *i;
-				iter = i;
-				break;
-			}
-			l++;
-		}
-		for ( unsigned int j=(maximumxvalueid[1]-1); j<inlist.size(); ++j )
-		{
-			ptlist_.push_back( inlist[j] );
-		}
-		for ( int j=0; j<(maximumxvalueid[1]); ++j )
-		{
-			ptlist_.push_back( inlist[j] );
-		}
-		inlists_.erase(iter);
-		for ( unsigned int i=mutuallyvisiblepointid-1; i<pttemp.size(); ++i )
-		{
-			ptlist_.push_back( pttemp[i] );
-		}
-	}
-	std::vector<int> ptConcavity;
-	this->EarClipping( ptConcavity, true, false );
+        if ( edgepointxvalue > maximumxvalue )
+        {
+          if ( edgepointxvalue < closestedgexvalue )
+          {
+            closestedgexvalue = edgepointxvalue;
+            closestedgexvalueid[0] = i;
+            closestedgexvalueid[1] = (i%maincyclesize)+1;
+          }
+          intersectioncount++;
+          if ( (abs(edgepointxvalue - edgepointxvalue1) < TOLERANCE and abs(correspondingyvalue - edgepointyvalue1) < TOLERANCE ) or
+               (abs(edgepointxvalue - edgepointxvalue2) < TOLERANCE and abs(correspondingyvalue - edgepointyvalue2) < TOLERANCE ) )
+          {
+            intersectioninpoint = true;
+          }
+        }
+      }
+    }
+    double epsilon = TOLERANCE;
+    while ( intersectioninpoint )
+    {
+      intersectioninpoint = false;
+      for ( int i=1; i<=maincyclesize; ++i )
+      {
+        double edgepointxvalue1 = (localmaincyclepoints[i])(0,0);
+        double edgepointxvalue2 = (localmaincyclepoints[(i%maincyclesize)+1])(0,0);
+        double edgepointyvalue1 = (localmaincyclepoints[i])(1,0);
+        double edgepointyvalue2 = (localmaincyclepoints[(i%maincyclesize)+1])(1,0);
+        double A = edgepointxvalue1 - edgepointxvalue2;
+        double B = edgepointyvalue1 - edgepointyvalue2;
+        double C = edgepointxvalue1 + edgepointxvalue2 - 2*maximumxvalue - 2;
+        double D = edgepointyvalue1 + edgepointyvalue2 - 2*correspondingyvalue - epsilon;
+        double N = 2*B - epsilon*A;
+        if ( abs(N) > TOLERANCE )
+        {
+          double eta = ( B*C - A*D )/N;
+          double xsi = ( 2*D - epsilon*C )/N;
+          if ( eta < 1 and eta > -1 and xsi < 1 and xsi > -1)
+          {
+            intersectioncount++;
+            double xlocalcoord = maximumxvalue + 1 + eta;
+            double ylocalcoord = (2*correspondingyvalue + epsilon + epsilon*eta)/2;
+            if ( (abs(xlocalcoord - edgepointxvalue1) < TOLERANCE and abs(ylocalcoord - edgepointyvalue1) < TOLERANCE ) or
+                 (abs(xlocalcoord - edgepointxvalue2) < TOLERANCE and abs(ylocalcoord - edgepointyvalue2) < TOLERANCE ) )
+            {
+              intersectioninpoint = true;
+              intersectioncount = 0;
+              epsilon += TOLERANCE;
+              break;
+            }
+          }
+        }
+      }
+    }
+    if ( intersectioncount%2 == 0 )
+    {
+      int l = 1;   // index for searching the maximumxvalueid
+      std::list<std::vector<Point*> >::iterator iter;
+      for ( std::list<std::vector<Point*> >::iterator i=inlists_.begin(); i!=inlists_.end(); ++i )
+      {
+        if ( l == maximumxvalueid[0] )
+        {
+          iter = i;
+        }
+        l++;
+      }
+      inlists_.erase(iter);
+      continue;
+    }
+    LINALG::Matrix<3,1> closestpoint;
+    closestpoint(0,0) = closestedgexvalue;
+    closestpoint(1,0) = correspondingyvalue;
+    closestpoint(2,0) = 0;
+  // 4) Closest visible point is node
+    int mutuallyvisiblepointid = 0;
+    if ( (abs(closestpoint(0,0) - localmaincyclepoints[closestedgexvalueid[0]](0,0)) < TOLERANCE ) and
+         (abs(closestpoint(1,0) - localmaincyclepoints[closestedgexvalueid[0]](1,0)) < TOLERANCE ) )
+    {
+      mutuallyvisiblepointid = closestedgexvalueid[0];
+    }
+    else if ( (abs(closestpoint(0,0) - localmaincyclepoints[closestedgexvalueid[1]](0,0)) < TOLERANCE ) and
+              (abs(closestpoint(1,0) - localmaincyclepoints[closestedgexvalueid[1]](1,0)) < TOLERANCE ) )
+    {
+      mutuallyvisiblepointid = closestedgexvalueid[1];
+    }
+    else
+    {
+  // 5) Closest edge point with the maximum x value
+      int potentuallyvisiblepointid;
+      LINALG::Matrix<3,1> potentuallyvisiblepoint;
+      if ( localmaincyclepoints[closestedgexvalueid[0]](0,0) > localmaincyclepoints[closestedgexvalueid[1]](0,0) )
+      {
+        potentuallyvisiblepointid = closestedgexvalueid[0];
+        potentuallyvisiblepoint(0,0) = localmaincyclepoints[closestedgexvalueid[0]](0,0);
+        potentuallyvisiblepoint(1,0) = localmaincyclepoints[closestedgexvalueid[0]](1,0);
+        potentuallyvisiblepoint(2,0) = 0;
+      }
+      else
+      {
+        potentuallyvisiblepointid = closestedgexvalueid[1];
+        potentuallyvisiblepoint(0,0) = localmaincyclepoints[closestedgexvalueid[1]](0,0);
+        potentuallyvisiblepoint(1,0) = localmaincyclepoints[closestedgexvalueid[1]](1,0);
+        potentuallyvisiblepoint(2,0) = 0;
+      }
+  // 6) Reflex points in triangle
+      std::string geoType;
+      std::vector<int> reflexmaincyclepointids = KERNEL::CheckConvexity( ptlist_, geoType, false, false );
+      for ( std::vector<int>::iterator i=reflexmaincyclepointids.begin(); i!=reflexmaincyclepointids.end(); ++i )
+      {
+        int *reflexmaincyclepointid = &*i;
+        (*reflexmaincyclepointid)++;   // a little inconsistency here with KERNEL::CheckConvexity
+      }
+      std::vector<int> insidemaincyclepointids;
+      LINALG::Matrix<3,3> triangle;
+      for ( int i=0; i<3; ++i )
+      {
+        triangle(i,0) = maximumpoint(i,0);
+        triangle(i,1) = closestpoint(i,0);
+        triangle(i,2) = potentuallyvisiblepoint(i,0);
+      }
+      for ( std::vector<int>::iterator i=reflexmaincyclepointids.begin(); i!=reflexmaincyclepointids.end(); ++i )
+      {
+        int reflexmaincyclepointid = * i;
+        LINALG::Matrix<3,1> reflexmaincyclepoint = localmaincyclepoints[reflexmaincyclepointid];
+        Position2d<DRT::Element::tri3> pos( triangle, reflexmaincyclepoint );
+        pos.Compute( false );
+        if( pos.WithinLimitsTol( 1.0e-8, false, TOLERANCE) )
+        {
+          insidemaincyclepointids.push_back( reflexmaincyclepointid );
+        }
+      }
+      if ( insidemaincyclepointids.size() == 0 )
+      {
+        mutuallyvisiblepointid = potentuallyvisiblepointid;
+      }
+      else
+      {
+  // 7) Closest angle
+        double closestangle = 4;
+        std::vector<int> closestanglemaincyclepointids;
+        for ( std::vector<int>::iterator i=insidemaincyclepointids.begin(); i!=insidemaincyclepointids.end(); ++i )
+        {
+          int insidemaincyclepointid = * i;
+          LINALG::Matrix<3,1> insidemaincyclepoint = localmaincyclepoints[insidemaincyclepointid];
+          double distance1 = sqrt(pow((closestpoint(0,0) - maximumpoint(0,0)),2) + pow((closestpoint(1,0) - maximumpoint(1,0)),2));
+          double distance2 = sqrt(pow((insidemaincyclepoint(0,0) - maximumpoint(0,0)),2) + pow((insidemaincyclepoint(1,0) - maximumpoint(1,0)),2));
+          double distance3 = sqrt(pow((insidemaincyclepoint(0,0) - closestpoint(0,0)),2) + pow((insidemaincyclepoint(1,0) - closestpoint(1,0)),2));
+          if ( (distance1 > 1.0e-8) && (distance2 > 1.0e-8)  )
+          {
+            double alpha = acos( ( distance1 * distance1 + distance2 * distance2 - distance3 * distance3 ) / ( 2 * distance1 * distance2 ) );
+            if ( alpha - closestangle <= 1.0e-16 )
+            {
+              closestangle = alpha;
+              closestanglemaincyclepointids.push_back( insidemaincyclepointid );
+            }
+          }
+        }
+        if ( closestanglemaincyclepointids.size() == 1 )
+        {
+          mutuallyvisiblepointid = closestanglemaincyclepointids[0];
+        }
+        else
+        {
+  // 8) Mutually visible point
+          double closestdistance = 5;
+          for ( std::vector<int>::iterator i=closestanglemaincyclepointids.begin(); i!=closestanglemaincyclepointids.end(); ++i )
+          {
+            int closestanglemaincyclepointid = * i;
+            LINALG::Matrix<3,1> closestanglemaincyclepoint = localmaincyclepoints[closestanglemaincyclepointid];
+            double distance = sqrt(pow((closestanglemaincyclepoint(0,0) - maximumpoint(0,0)),2) + pow((closestanglemaincyclepoint(1,0) - maximumpoint(1,0)),2));
+            if ( distance < closestdistance )
+            {
+              mutuallyvisiblepointid = closestanglemaincyclepointid;
+            }
+          }
+        }
+      }
+    }
+  // 9) Make new pointlist
+    std::vector<Point*> pttemp( ptlist_ );
+    ptlist_.clear();
+    for ( int i=0; i<mutuallyvisiblepointid; ++i )
+    {
+      ptlist_.push_back( pttemp[i] );
+    }
+    std::vector<Point*> inlist;
+    int l = 1;
+    std::list<std::vector<Point*> >::iterator iter;
+    for ( std::list<std::vector<Point*> >::iterator i=inlists_.begin(); i!=inlists_.end(); ++i )
+    {
+      if ( l == maximumxvalueid[0] )
+      {
+        inlist = *i;
+        iter = i;
+        break;
+      }
+      l++;
+    }
+    for ( unsigned int j=(maximumxvalueid[1]-1); j<inlist.size(); ++j )
+    {
+      ptlist_.push_back( inlist[j] );
+    }
+    for ( int j=0; j<(maximumxvalueid[1]); ++j )
+    {
+      ptlist_.push_back( inlist[j] );
+    }
+    inlists_.erase(iter);
+    for ( unsigned int i=mutuallyvisiblepointid-1; i<pttemp.size(); ++i )
+    {
+      ptlist_.push_back( pttemp[i] );
+    }
+  }
+  std::vector<int> ptConcavity;
+  this->EarClipping( ptConcavity, true, false );
 
 }

@@ -124,8 +124,8 @@ void GEO::CUT::IMPL::PointGraph::FillGraph( Side * side, Cycle & cycle )
   const plain_edge_set & selfcutedges = side->SelfCutEdges();
   for ( plain_edge_set::const_iterator i=selfcutedges.begin(); i!=selfcutedges.end(); ++i )
   {
-	  Edge * selfcutedge = *i;
-	  graph_.AddEdge( selfcutedge->BeginNode()->point(), selfcutedge->EndNode()->point() );
+    Edge * selfcutedge = *i;
+    graph_.AddEdge( selfcutedge->BeginNode()->point(), selfcutedge->EndNode()->point() );
   }
 
 }
@@ -394,7 +394,7 @@ bool FindCycles( graph_t & g, Cycle & cycle, std::map<vertex_t, LINALG::Matrix<3
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::IMPL::PointGraph::Graph::FindCycles( Side * side, Cycle & cycle )
 {
-	  graph_t g;
+    graph_t g;
 
   // create boost graph
 

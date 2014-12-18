@@ -17,15 +17,15 @@
 
 //      for(unsigned i=0;i<rhs.size();i++)
 //                std::cout<<soln[i]<<std::endl;
-	int ittno = 0;
-	double epsi = 1e-12;
+  int ittno = 0;
+  double epsi = 1e-12;
         while(1)
         {
-		ittno++;
+    ittno++;
                 tempo = multiply(coeff,p);
-                double alpha = multi_vec(resi,resi)/multi_vec(p,tempo); 
+                double alpha = multi_vec(resi,resi)/multi_vec(p,tempo);
 //double alpha = multi_vec(resi,resi);
-                
+
                 for(unsigned i=0;i<rhs.size();i++)
                 {
                         soln[i] = soln[i]+alpha*p[i];
@@ -35,21 +35,21 @@
           //    std::cout<<sqrt(conv_check)<<std::endl;
                 if(conv_check<epsi || ittno>900)
                         break;
-		if(ittno>250)
-			epsi = 1e-08;
-		if(ittno>300)
-			epsi = 1e-06;
-		if(ittno>450)
-			epsi = 1e-05;
+    if(ittno>250)
+      epsi = 1e-08;
+    if(ittno>300)
+      epsi = 1e-06;
+    if(ittno>450)
+      epsi = 1e-05;
                 double beta = multi_vec(resi_new,resi_new)/multi_vec(resi,resi);
                 for(unsigned i=0;i<rhs.size();i++)
                 {
                         p[i] = resi_new[i]+beta*p[i];
                         resi[i] = resi_new[i];
                 }
-		std::cout<<"conv_check"<<conv_check<<"\n";
+    std::cout<<"conv_check"<<conv_check<<"\n";
         }
-	std::cout<<"least_iter = "<<ittno<<"\t"<<"epsi = "<<epsi<<"\n";
+  std::cout<<"least_iter = "<<ittno<<"\t"<<"epsi = "<<epsi<<"\n";
         return soln;
 }*/
 
@@ -79,13 +79,13 @@ double GEO::CUT::LeastSquares::multi_vec(std::vector<double> mm1, std::vector<do
 
 double GEO::CUT::LeastSquares::maxAbsolute(std::vector<double>a)
 {
-	double maxx=0.0;
-	for(unsigned i=0;i<a.size();i++)
-	{
-		if(fabs(a[i])>maxx)
-			maxx = fabs(a[i]);
-	}
-	return maxx;
+  double maxx=0.0;
+  for(unsigned i=0;i<a.size();i++)
+  {
+    if(fabs(a[i])>maxx)
+      maxx = fabs(a[i]);
+  }
+  return maxx;
 }
 #endif
 
