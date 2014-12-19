@@ -440,22 +440,6 @@ protected:
     const INPAR::STR::StrainType ioplstrain
     );
 
-  void linstiffmass(
-    std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,  // current displacements
-    std::vector<double>& residual,  // current residual displacements or displacement increment
-    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,  // element stiffness matrix
-    LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,  // element mass matrix
-    LINALG::Matrix<NUMDOF_SOTET4,1>* force,  // element internal force vector
-    LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
-    LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
-    LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
-    Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress,  // stress output option
-    const INPAR::STR::StrainType iostrain,  // strain output option
-    const INPAR::STR::StrainType ioplstrain  // plastic strain output option
-    );
-
   //! lump mass matrix (bborn 07/08)
   void so_tet4_lumpmass(LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* emass);  //!< element mass matrix
 

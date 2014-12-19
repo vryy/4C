@@ -634,7 +634,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
 
       // deformation gradient = identity tensor (geometrically linear case!)
       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
-      for (int i=0;i<NUMDIM_SOH8;++i) defgrd(i,i) = 1;
+      for (int i=0;i<NUMDIM_SOH8;++i)
+        defgrd(i,i) = 1.0;
 
       //----------------------------------------------------------------
       // loop over all Gauss points
@@ -2790,8 +2791,11 @@ void DRT::ELEMENTS::So_hex8::DefGradient(const std::vector<double>& disp,
     N_xyz.Multiply(invJdef,derivs[gp]);
 
     // build defgrd (independent of xrefe!)
-    LINALG::Matrix<3,3> defgrd;
-    defgrd.MultiplyTT(xdisp,N_xyz);
+    LINALG::Matrix<3,3> defgrd(true);
+    if(kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    {
+      defgrd.MultiplyTT(xdisp,N_xyz);
+    }
     defgrd(0,0) += 1.0;
     defgrd(1,1) += 1.0;
     defgrd(2,2) += 1.0;
@@ -2821,7 +2825,7 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
 
   LINALG::Matrix<3,3> invJhist;
   LINALG::Matrix<3,3> invJ;
-  LINALG::Matrix<3,3> defgrd;
+  LINALG::Matrix<3,3> defgrd(true);
   LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_xyz;
   LINALG::Matrix<3,3> invJnew;
   for (int gp=0; gp<NUMGPT_SOH8; ++gp)
@@ -2831,7 +2835,10 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
     // get derivatives wrt to invJhist
     N_xyz.Multiply(invJhist,derivs[gp]);
     // build defgrd \partial x_new / \parial x_old , where x_old != X
-    defgrd.MultiplyTT(xdisp,N_xyz);
+    if(kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    {
+      defgrd.MultiplyTT(xdisp,N_xyz);
+    }
     defgrd(0,0) += 1.0;
     defgrd(1,1) += 1.0;
     defgrd(2,2) += 1.0;

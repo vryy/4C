@@ -117,22 +117,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
   switch(act)
   {
     //==================================================================================
-    // linear stiffness
-    case calc_struct_linstiff:
-    {
-      // need current displacement and residual forces
-      std::vector<double> mydisp(lm.size());
-      for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
-      std::vector<double> myres(lm.size());
-      for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
-        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
-   }
-    break;
-
-    //==================================================================================
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff:
+    case calc_struct_linstiff:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -176,6 +163,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
     // nonlinear stiffness, internal force vector, and consistent mass matrix
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass:
+    case calc_struct_linstiffmass:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -409,9 +397,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
        */
 
        // size is 3x3
-       LINALG::Matrix<3,3> defgrd(false);
+       LINALG::Matrix<3,3> defgrd(true);
        // Gauss weights and Jacobian determinant
-         double fac = detJ * gpweights[gp];
+       double fac = detJ * gpweights[gp];
 
        if (pstype_==INPAR::STR::prestress_mulf)
        {
@@ -421,7 +409,10 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
 
          // build multiplicative incremental defgrd
          //defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
-         defgrd.MultiplyTN(xdisp,N_xyz);
+         if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+         {
+           defgrd.MultiplyTN(xdisp,N_xyz);
+         }
          defgrd(0,0) += 1.0;
          defgrd(1,1) += 1.0;
          defgrd(2,2) += 1.0;
@@ -437,11 +428,16 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
        }
        else
        {
-         defgrd.MultiplyTN(xdisp,nxyz);
-         defgrd(0,0)+=1;
-         defgrd(1,1)+=1;
-         defgrd(2,2)+=1;
+         // in kinematically linear analysis the deformation gradient is equal to identity
+         if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+         {
+           defgrd.MultiplyTN(xdisp,nxyz);
+         }
+         defgrd(0,0)+=1.0;
+         defgrd(1,1)+=1.0;
+         defgrd(2,2)+=1.0;
        }
+
 
        if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
        {
@@ -576,12 +572,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
     break;
 
     //==================================================================================
-    // linear stiffness and consistent mass matrix
-    case calc_struct_linstiffmass:
-      dserror("Case 'calc_struct_linstiffmass' not yet implemented");
-      break;
-
-    //==================================================================================
     case calc_struct_errornorms:
     {
       // IMPORTANT NOTES (popp 10/2010):
@@ -639,7 +629,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
 
         // deformation gradient = identity tensor (geometrically linear case!)
         LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> defgrd(true);
-        for (int i=0;i<NUMDIM_SOTET4;++i) defgrd(i,i) = 1;
+        for (int i=0;i<NUMDIM_SOTET4;++i)
+          defgrd(i,i) = 1.0;
 
         //----------------------------------------------------------------
         // loop over all Gauss points
@@ -1159,7 +1150,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
     */
 
     // size is 3x3
-    LINALG::Matrix<3,3> defgrd(false);
+    LINALG::Matrix<3,3> defgrd(true);
 
     if (pstype_==INPAR::STR::prestress_mulf)
     {
@@ -1168,8 +1159,11 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
       prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
 
       // build multiplicative incremental defgrd
-      //defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
-      defgrd.MultiplyTN(xdisp,N_xyz);
+      if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+      {
+        //defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
+        defgrd.MultiplyTN(xdisp,N_xyz);
+      }
       defgrd(0,0) += 1.0;
       defgrd(1,1) += 1.0;
       defgrd(2,2) += 1.0;
@@ -1185,10 +1179,14 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
     }
     else
     {
-      defgrd.MultiplyTN(xdisp,nxyz);
-      defgrd(0,0)+=1;
-      defgrd(1,1)+=1;
-      defgrd(2,2)+=1;
+      // in kinematically linear analysis the deformation gradient is equal to identity
+      if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+      {
+        defgrd.MultiplyTN(xdisp,nxyz);
+      }
+      defgrd(0,0)+=1.0;
+      defgrd(1,1)+=1.0;
+      defgrd(2,2)+=1.0;
     }
 
     if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
@@ -1208,6 +1206,55 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
       invdesign_->StoragetoMatrix(gp,nxyz,invdesign_->JHistory());
     }
 
+    /*----------------------------------------------------------------------*
+       the B-operator used is equivalent to the one used in hex8, this needs
+       to be checked if it is ok, but from the mathematics point of view, the only
+       thing that needed to be changed is the NUMDOF
+       ----------------------------------------------------------------------*/
+     /*
+     ** B = F . Bl *
+     **
+     **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
+     **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
+     **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
+     ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
+     **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
+     **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
+     **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
+     **      [                                                         ]
+     **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
+     **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
+     **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
+     **      [                                                         ]
+     **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
+     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
+     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+     */
+     // size is 6x12
+     LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOTET4> bop;
+     for (int i=0; i<NUMNOD_SOTET4; i++)
+     {
+       bop(0,NODDOF_SOTET4*i+0) = defgrd(0,0)*nxyz(i,0);
+       bop(0,NODDOF_SOTET4*i+1) = defgrd(1,0)*nxyz(i,0);
+       bop(0,NODDOF_SOTET4*i+2) = defgrd(2,0)*nxyz(i,0);
+       bop(1,NODDOF_SOTET4*i+0) = defgrd(0,1)*nxyz(i,1);
+       bop(1,NODDOF_SOTET4*i+1) = defgrd(1,1)*nxyz(i,1);
+       bop(1,NODDOF_SOTET4*i+2) = defgrd(2,1)*nxyz(i,1);
+       bop(2,NODDOF_SOTET4*i+0) = defgrd(0,2)*nxyz(i,2);
+       bop(2,NODDOF_SOTET4*i+1) = defgrd(1,2)*nxyz(i,2);
+       bop(2,NODDOF_SOTET4*i+2) = defgrd(2,2)*nxyz(i,2);
+       /* ~~~ */
+       bop(3,NODDOF_SOTET4*i+0) = defgrd(0,0)*nxyz(i,1) + defgrd(0,1)*nxyz(i,0);
+       bop(3,NODDOF_SOTET4*i+1) = defgrd(1,0)*nxyz(i,1) + defgrd(1,1)*nxyz(i,0);
+       bop(3,NODDOF_SOTET4*i+2) = defgrd(2,0)*nxyz(i,1) + defgrd(2,1)*nxyz(i,0);
+       bop(4,NODDOF_SOTET4*i+0) = defgrd(0,1)*nxyz(i,2) + defgrd(0,2)*nxyz(i,1);
+       bop(4,NODDOF_SOTET4*i+1) = defgrd(1,1)*nxyz(i,2) + defgrd(1,2)*nxyz(i,1);
+       bop(4,NODDOF_SOTET4*i+2) = defgrd(2,1)*nxyz(i,2) + defgrd(2,2)*nxyz(i,1);
+       bop(5,NODDOF_SOTET4*i+0) = defgrd(0,2)*nxyz(i,0) + defgrd(0,0)*nxyz(i,2);
+       bop(5,NODDOF_SOTET4*i+1) = defgrd(1,2)*nxyz(i,0) + defgrd(1,0)*nxyz(i,2);
+       bop(5,NODDOF_SOTET4*i+2) = defgrd(2,2)*nxyz(i,0) + defgrd(2,0)*nxyz(i,2);
+     }
+
     // Right Cauchy-Green tensor = F^T * F
     // size is 3x3
     LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchygreen;
@@ -1215,13 +1262,30 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    LINALG::Matrix<6,1> glstrain(false);
-    glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-    glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-    glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-    glstrain(3) = cauchygreen(0,1);
-    glstrain(4) = cauchygreen(1,2);
-    glstrain(5) = cauchygreen(2,0);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(false);
+    if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    {
+      // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+      glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+      glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+      glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+      glstrain(3) = cauchygreen(0,1);
+      glstrain(4) = cauchygreen(1,2);
+      glstrain(5) = cauchygreen(2,0);
+    }
+    else
+    {
+      LINALG::Matrix<NUMDOF_SOTET4,1> nodaldisp;
+      for (int i=0; i<NUMNOD_SOTET4; ++i)
+      {
+        nodaldisp(3*i,0)   = xdisp(i,0);
+        nodaldisp(3*i+1,0) = xdisp(i,1);
+        nodaldisp(3*i+2,0) = xdisp(i,2);
+      }
+
+      // build the linearised strain epsilon = B_L . d
+      glstrain.Multiply(bop,nodaldisp);
+    }
 
     // return gp strains (only in case of stress/strain output)
     switch (iostrain)
@@ -1370,55 +1434,6 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
       break;
     }
 
-    /*----------------------------------------------------------------------*
-      the B-operator used is equivalent to the one used in hex8, this needs
-      to be checked if it is ok, but from the mathematics point of view, the only
-      thing that needed to be changed is the NUMDOF
-      ----------------------------------------------------------------------*/
-    /*
-    ** B = F . Bl *
-    **
-    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
-    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
-    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
-    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
-    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
-    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
-    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
-    **      [                                                         ]
-    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
-    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
-    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
-    **      [                                                         ]
-    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
-    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
-    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
-    */
-    // size is 6x12
-    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOTET4> bop;
-    for (int i=0; i<NUMNOD_SOTET4; i++)
-    {
-      bop(0,NODDOF_SOTET4*i+0) = defgrd(0,0)*nxyz(i,0);
-      bop(0,NODDOF_SOTET4*i+1) = defgrd(1,0)*nxyz(i,0);
-      bop(0,NODDOF_SOTET4*i+2) = defgrd(2,0)*nxyz(i,0);
-      bop(1,NODDOF_SOTET4*i+0) = defgrd(0,1)*nxyz(i,1);
-      bop(1,NODDOF_SOTET4*i+1) = defgrd(1,1)*nxyz(i,1);
-      bop(1,NODDOF_SOTET4*i+2) = defgrd(2,1)*nxyz(i,1);
-      bop(2,NODDOF_SOTET4*i+0) = defgrd(0,2)*nxyz(i,2);
-      bop(2,NODDOF_SOTET4*i+1) = defgrd(1,2)*nxyz(i,2);
-      bop(2,NODDOF_SOTET4*i+2) = defgrd(2,2)*nxyz(i,2);
-      /* ~~~ */
-      bop(3,NODDOF_SOTET4*i+0) = defgrd(0,0)*nxyz(i,1) + defgrd(0,1)*nxyz(i,0);
-      bop(3,NODDOF_SOTET4*i+1) = defgrd(1,0)*nxyz(i,1) + defgrd(1,1)*nxyz(i,0);
-      bop(3,NODDOF_SOTET4*i+2) = defgrd(2,0)*nxyz(i,1) + defgrd(2,1)*nxyz(i,0);
-      bop(4,NODDOF_SOTET4*i+0) = defgrd(0,1)*nxyz(i,2) + defgrd(0,2)*nxyz(i,1);
-      bop(4,NODDOF_SOTET4*i+1) = defgrd(1,1)*nxyz(i,2) + defgrd(1,2)*nxyz(i,1);
-      bop(4,NODDOF_SOTET4*i+2) = defgrd(2,1)*nxyz(i,2) + defgrd(2,2)*nxyz(i,1);
-      bop(5,NODDOF_SOTET4*i+0) = defgrd(0,2)*nxyz(i,0) + defgrd(0,0)*nxyz(i,2);
-      bop(5,NODDOF_SOTET4*i+1) = defgrd(1,2)*nxyz(i,0) + defgrd(1,0)*nxyz(i,2);
-      bop(5,NODDOF_SOTET4*i+2) = defgrd(2,2)*nxyz(i,0) + defgrd(2,0)*nxyz(i,2);
-    }
-
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
@@ -1503,28 +1518,31 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
       // size is 12x12
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
-      // integrate `geometric' stiffness matrix and add to keu
-      // auxiliary integrated stress
-      LINALG::Matrix<MAT::NUM_STRESS_3D,1> sfac(stress);
-      // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-      sfac.Scale(detJ_w);
-      // intermediate Sm.B_L
-      double SmB_L[NUMDIM_SOTET4];
-      // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)
-      // with B_L = Ni,Xj see NiliFEM-Skript
-      for (int inod=0; inod<NUMNOD_SOTET4; ++inod)
+      if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
       {
-        SmB_L[0] = sfac(0) * nxyz(inod,0) + sfac(3) * nxyz(inod,1) + sfac(5) * nxyz(inod,2);
-        SmB_L[1] = sfac(3) * nxyz(inod,0) + sfac(1) * nxyz(inod,1) + sfac(4) * nxyz(inod,2);
-        SmB_L[2] = sfac(5) * nxyz(inod,0) + sfac(4) * nxyz(inod,1) + sfac(2) * nxyz(inod,2);
-        for (int jnod=0; jnod<NUMNOD_SOTET4; ++jnod)
+        // integrate `geometric' stiffness matrix and add to keu
+        // auxiliary integrated stress
+        LINALG::Matrix<MAT::NUM_STRESS_3D,1> sfac(stress);
+        // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+        sfac.Scale(detJ_w);
+        // intermediate Sm.B_L
+        double SmB_L[NUMDIM_SOTET4];
+        // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)
+        // with B_L = Ni,Xj see NiliFEM-Skript
+        for (int inod=0; inod<NUMNOD_SOTET4; ++inod)
         {
-          double bopstrbop = 0.0;            // intermediate value
-          for (int idim=0; idim<NUMDIM_SOTET4; ++idim)
-            bopstrbop += nxyz(jnod,idim)* SmB_L[idim];
-          (*stiffmatrix)(NUMDIM_SOTET4*inod+0,NUMDIM_SOTET4*jnod+0) += bopstrbop;
-          (*stiffmatrix)(NUMDIM_SOTET4*inod+1,NUMDIM_SOTET4*jnod+1) += bopstrbop;
-          (*stiffmatrix)(NUMDIM_SOTET4*inod+2,NUMDIM_SOTET4*jnod+2) += bopstrbop;
+          SmB_L[0] = sfac(0) * nxyz(inod,0) + sfac(3) * nxyz(inod,1) + sfac(5) * nxyz(inod,2);
+          SmB_L[1] = sfac(3) * nxyz(inod,0) + sfac(1) * nxyz(inod,1) + sfac(4) * nxyz(inod,2);
+          SmB_L[2] = sfac(5) * nxyz(inod,0) + sfac(4) * nxyz(inod,1) + sfac(2) * nxyz(inod,2);
+          for (int jnod=0; jnod<NUMNOD_SOTET4; ++jnod)
+          {
+            double bopstrbop = 0.0;            // intermediate value
+            for (int idim=0; idim<NUMDIM_SOTET4; ++idim)
+              bopstrbop += nxyz(jnod,idim)* SmB_L[idim];
+            (*stiffmatrix)(NUMDIM_SOTET4*inod+0,NUMDIM_SOTET4*jnod+0) += bopstrbop;
+            (*stiffmatrix)(NUMDIM_SOTET4*inod+1,NUMDIM_SOTET4*jnod+1) += bopstrbop;
+            (*stiffmatrix)(NUMDIM_SOTET4*inod+2,NUMDIM_SOTET4*jnod+2) += bopstrbop;
+          }
         }
       }
     }
@@ -1561,380 +1579,6 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
 
   return;
 }  // DRT::ELEMENTS::So_tet4::nlnstiffmass
-
-
-/*----------------------------------------------------------------------*
- |  evaluate the element (private)                           dano 11/12 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet4::linstiffmass(
-  std::vector<int>& lm,  // location matrix
-  std::vector<double>& disp,  // current displacements
-  std::vector<double>& residual,  // current residual displacements or displacement increment
-  LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,  // element stiffness matrix
-  LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,  // element mass matrix
-  LINALG::Matrix<NUMDOF_SOTET4,1>* force,  // element internal force vector
-  LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
-  LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
-  LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
-  Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
-  const INPAR::STR::StressType iostress,  // stress output option
-  const INPAR::STR::StrainType iostrain,  // strain output option
-  const INPAR::STR::StrainType ioplstrain  // plastic strain output option
-  )
-{
-/* =============================================================================*
-** CONST DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
-** =============================================================================*/
-  const static std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = so_tet4_1gp_derivs();
-  const static std::vector<double> gpweights = so_tet4_1gp_weights();
-/* ============================================================================*/
-  // element geometry
-  /* structure of xrefe:
-    **             [  X_1   Y_1   Z_1  ]
-    **     xrefe = [  X_2   Y_2   Z_2  ]
-    **             [   |     |     |   ]
-    **             [  X_4   Y_4   Z_4  ]
-    */
-  /* structure of xcurr:
-    **             [  x_1   y_1   z_1  ]
-    **     xcurr = [  x_2   y_2   z_2  ]
-    **             [   |     |     |   ]
-    **             [  x_4   y_4   z_4  ]
-    */
-  // current  displacements of element
-  LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xdisp;
-  for (int i=0; i<NUMNOD_SOTET4; ++i)
-  {
-    xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
-    xdisp(i,1) = disp[i*NODDOF_SOTET4+1];
-    xdisp(i,2) = disp[i*NODDOF_SOTET4+2];
-  }
-
-
-  //volume of a tetrahedra
-  double detJ = V_;
-
-  /* =========================================================================*/
-  /* ============================================== Loop over Gauss Points ===*/
-  /* =========================================================================*/
-  for (int gp=0; gp<NUMGPT_SOTET4; gp++)
-  {
-    LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> nxyz(nxyz_); // copy!
-
-    //                                      d xcurr
-    // (material) deformation gradient F = --------- = xcurr^T * nxyz^T
-    //                                      d xrefe
-
-    /*structure of F
-    **             [    dx       dy       dz    ]
-    **             [  ------   ------   ------  ]
-    **             [    dX       dX       dX    ]
-    **             [                            ]
-    **      F   =  [    dx       dy       dz    ]
-    **             [  ------   ------   ------  ]
-    **             [    dY       dY       dY    ]
-    **             [                            ]
-    **             [    dx       dy       dz    ]
-    **             [  ------   ------   ------  ]
-    **             [    dZ       dZ       dZ    ]
-    */
-
-    // size is 3x3
-    LINALG::Matrix<3,3> defgrd(true);
-
-    if (pstype_==INPAR::STR::prestress_mulf)
-    {
-      // get derivatives wrt to last spatial configuration
-      LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> N_xyz;
-      prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
-
-      // build multiplicative incremental defgrd
-      //defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
-      defgrd(0,0) += 1.0;
-      defgrd(1,1) += 1.0;
-      defgrd(2,2) += 1.0;
-
-      // get stored old incremental F
-      LINALG::Matrix<3,3> Fhist;
-      prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
-
-      // build total defgrd = delta F * F_old
-      LINALG::Matrix<3,3> Fnew;
-      Fnew.Multiply(defgrd,Fhist);
-      defgrd = Fnew;
-    }
-    else
-    {
-      defgrd(0,0)+=1;
-      defgrd(1,1)+=1;
-      defgrd(2,2)+=1;
-    }
-
-    if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
-    {
-      // make the multiplicative update so that defgrd refers to
-      // the reference configuration that resulted from the inverse
-      // design analysis
-      LINALG::Matrix<3,3> Fhist;
-      invdesign_->StoragetoMatrix(gp,Fhist,invdesign_->FHistory());
-      LINALG::Matrix<3,3> tmp3x3;
-      tmp3x3.Multiply(defgrd,Fhist);
-      defgrd = tmp3x3;
-
-      // make detJ and nxyzmat refer to the ref. configuration that resulted from
-      // the inverse design analysis
-      detJ = invdesign_->DetJHistory()[gp];
-      invdesign_->StoragetoMatrix(gp,nxyz,invdesign_->JHistory());
-    }
-
-    // Right Cauchy-Green tensor = F^T * F
-    // size is 3x3
-    LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd,defgrd);
-
-    // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
-    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    LINALG::Matrix<6,1> glstrain(false);
-    glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-    glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-    glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-    glstrain(3) = cauchygreen(0,1);
-    glstrain(4) = cauchygreen(1,2);
-    glstrain(5) = cauchygreen(2,0);
-
-    // return gp strains (only in case of stress/strain output)
-    switch (iostrain)
-    {
-    case INPAR::STR::strain_gl:
-    {
-      if (elestrain == NULL) dserror("no strain data available");
-      for (int i = 0; i < 3; ++i)
-        (*elestrain)(gp,i) = glstrain(i);
-      for (int i = 3; i < 6; ++i)
-        (*elestrain)(gp,i) = 0.5 * glstrain(i);
-    }
-    break;
-    case INPAR::STR::strain_ea:
-    {
-      if (elestrain == NULL) dserror("no strain data available");
-
-      // rewriting Green-Lagrange strains in matrix format
-      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> gl;
-      gl(0,0) = glstrain(0);
-      gl(0,1) = 0.5*glstrain(3);
-      gl(0,2) = 0.5*glstrain(5);
-      gl(1,0) = gl(0,1);
-      gl(1,1) = glstrain(1);
-      gl(1,2) = 0.5*glstrain(4);
-      gl(2,0) = gl(0,2);
-      gl(2,1) = gl(1,2);
-      gl(2,2) = glstrain(2);
-
-      // inverse of deformation gradient
-      //Epetra_SerialDenseMatrix invdefgrd(defgrd); // make a copy here otherwise defgrd is destroyed!
-      //LINALG::NonsymInverse3x3(invdefgrd);
-      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> invdefgrd;
-      invdefgrd.Invert(defgrd);
-
-      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
-      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> euler_almansi;
-      temp.Multiply(gl,invdefgrd);
-      euler_almansi.MultiplyTN(invdefgrd,temp);
-
-      (*elestrain)(gp,0) = euler_almansi(0,0);
-      (*elestrain)(gp,1) = euler_almansi(1,1);
-      (*elestrain)(gp,2) = euler_almansi(2,2);
-      (*elestrain)(gp,3) = euler_almansi(0,1);
-      (*elestrain)(gp,4) = euler_almansi(1,2);
-      (*elestrain)(gp,5) = euler_almansi(0,2);
-    }
-    break;
-    case INPAR::STR::strain_none:
-    break;
-    default:
-      dserror("requested strain option not available");
-      break;
-    }
-
-    /*----------------------------------------------------------------------*
-     the B-operator used is equivalent to the one used in hex8, this needs
-     to be checked if it is ok, but from the mathematics point of view, the only
-     thing that needed to be changed is the NUMDOF
-     ----------------------------------------------------------------------*/
-    /*
-    ** B = F . Bl *
-    **
-    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
-    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
-    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
-    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
-    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
-    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
-    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
-    **      [                                                         ]
-    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
-    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
-    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
-    **      [                                                         ]
-    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
-    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
-    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
-    */
-    // size is 6x12
-    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOTET4> bop;
-    for (int i=0; i<NUMNOD_SOTET4; i++)
-    {
-      bop(0,NODDOF_SOTET4*i+0) = defgrd(0,0)*nxyz(i,0);
-      bop(0,NODDOF_SOTET4*i+1) = defgrd(1,0)*nxyz(i,0);
-      bop(0,NODDOF_SOTET4*i+2) = defgrd(2,0)*nxyz(i,0);
-      bop(1,NODDOF_SOTET4*i+0) = defgrd(0,1)*nxyz(i,1);
-      bop(1,NODDOF_SOTET4*i+1) = defgrd(1,1)*nxyz(i,1);
-      bop(1,NODDOF_SOTET4*i+2) = defgrd(2,1)*nxyz(i,1);
-      bop(2,NODDOF_SOTET4*i+0) = defgrd(0,2)*nxyz(i,2);
-      bop(2,NODDOF_SOTET4*i+1) = defgrd(1,2)*nxyz(i,2);
-      bop(2,NODDOF_SOTET4*i+2) = defgrd(2,2)*nxyz(i,2);
-      /* ~~~ */
-      bop(3,NODDOF_SOTET4*i+0) = defgrd(0,0)*nxyz(i,1) + defgrd(0,1)*nxyz(i,0);
-      bop(3,NODDOF_SOTET4*i+1) = defgrd(1,0)*nxyz(i,1) + defgrd(1,1)*nxyz(i,0);
-      bop(3,NODDOF_SOTET4*i+2) = defgrd(2,0)*nxyz(i,1) + defgrd(2,1)*nxyz(i,0);
-      bop(4,NODDOF_SOTET4*i+0) = defgrd(0,1)*nxyz(i,2) + defgrd(0,2)*nxyz(i,1);
-      bop(4,NODDOF_SOTET4*i+1) = defgrd(1,1)*nxyz(i,2) + defgrd(1,2)*nxyz(i,1);
-      bop(4,NODDOF_SOTET4*i+2) = defgrd(2,1)*nxyz(i,2) + defgrd(2,2)*nxyz(i,1);
-      bop(5,NODDOF_SOTET4*i+0) = defgrd(0,2)*nxyz(i,0) + defgrd(0,0)*nxyz(i,2);
-      bop(5,NODDOF_SOTET4*i+1) = defgrd(1,2)*nxyz(i,0) + defgrd(1,0)*nxyz(i,2);
-      bop(5,NODDOF_SOTET4*i+2) = defgrd(2,2)*nxyz(i,0) + defgrd(2,0)*nxyz(i,2);
-    }
-
-    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
-    LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
-    params.set<int>("gp",gp);
-    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
-
-    // return gp stresses
-    switch (iostress)
-    {
-    case INPAR::STR::stress_2pk:
-    {
-      if (elestress == NULL) dserror("no stress data available");
-      for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
-        (*elestress)(gp,i) = stress(i);
-    }
-    break;
-    case INPAR::STR::stress_cauchy:
-    {
-      if (elestress == NULL) dserror("no stress data available");
-      double detF = defgrd.Determinant();
-
-      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> pkstress;
-      pkstress(0,0) = stress(0);
-      pkstress(0,1) = stress(3);
-      pkstress(0,2) = stress(5);
-      pkstress(1,0) = pkstress(0,1);
-      pkstress(1,1) = stress(1);
-      pkstress(1,2) = stress(4);
-      pkstress(2,0) = pkstress(0,2);
-      pkstress(2,1) = pkstress(1,2);
-      pkstress(2,2) = stress(2);
-
-      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> temp;
-      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchystress;
-      temp.Multiply(1.0/detF,defgrd,pkstress);
-      cauchystress.MultiplyNT(temp,defgrd);
-
-      (*elestress)(gp,0) = cauchystress(0,0);
-      (*elestress)(gp,1) = cauchystress(1,1);
-      (*elestress)(gp,2) = cauchystress(2,2);
-      (*elestress)(gp,3) = cauchystress(0,1);
-      (*elestress)(gp,4) = cauchystress(1,2);
-      (*elestress)(gp,5) = cauchystress(0,2);
-    }
-    break;
-    case INPAR::STR::stress_none:
-     break;
-    default:
-      dserror("requested stress type not available");
-      break;
-    }
-
-    double detJ_w = detJ * (gpweights)[gp];
-
-    // update of internal force vector
-    if (force != NULL)
-    {
-      // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-      force->MultiplyTN(detJ_w,bop,stress,1.0);
-    }
-
-    // update of stiffness matrix
-    if (stiffmatrix != NULL)
-    {
-      // integrate `elastic' and `initial-displacement' stiffness matrix
-      // keu = keu + (B^T . C . B) * detJ * w(gp)
-      // size is 6x12
-      LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOTET4> cb;
-      cb.Multiply(cmat,bop);          // temporary C . B
-      // size is 12x12
-      stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
-
-      // integrate `geometric' stiffness matrix and add to keu
-      // auxiliary integrated stress
-      LINALG::Matrix<MAT::NUM_STRESS_3D,1> sfac(stress);
-      // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-      sfac.Scale(detJ_w);
-      // intermediate Sm.B_L
-      double SmB_L[NUMDIM_SOTET4];
-      // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)
-      // with B_L = Ni,Xj see NiliFEM-Skript
-      for (int inod=0; inod<NUMNOD_SOTET4; ++inod)
-      {
-        SmB_L[0] = sfac(0) * nxyz(inod,0) + sfac(3) * nxyz(inod,1) + sfac(5) * nxyz(inod,2);
-        SmB_L[1] = sfac(3) * nxyz(inod,0) + sfac(1) * nxyz(inod,1) + sfac(4) * nxyz(inod,2);
-        SmB_L[2] = sfac(5) * nxyz(inod,0) + sfac(4) * nxyz(inod,1) + sfac(2) * nxyz(inod,2);
-        for (int jnod=0; jnod<NUMNOD_SOTET4; ++jnod)
-        {
-          double bopstrbop = 0.0;            // intermediate value
-          for (int idim=0; idim<NUMDIM_SOTET4; ++idim)
-            bopstrbop += nxyz(jnod,idim)* SmB_L[idim];
-          (*stiffmatrix)(NUMDIM_SOTET4*inod+0,NUMDIM_SOTET4*jnod+0) += bopstrbop;
-          (*stiffmatrix)(NUMDIM_SOTET4*inod+1,NUMDIM_SOTET4*jnod+1) += bopstrbop;
-          (*stiffmatrix)(NUMDIM_SOTET4*inod+2,NUMDIM_SOTET4*jnod+2) += bopstrbop;
-        }
-      }
-    }
-  /* =========================================================================*/
-  }/* ==================================================== end of Loop over GP */
-  /* =========================================================================*/
-
-  // static integrator created in any case to safe "if-case"
-  const static std::vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts4gp = so_tet4_4gp_shapefcts();
-  const static std::vector<double> gpweights4gp = so_tet4_4gp_weights();
-  // evaluate mass matrix
-  if (massmatrix != NULL)
-  {
-    double density = Material()->Density();
-    //consistent mass matrix evaluated using a 4-point rule
-    for (int gp=0; gp<4; gp++)
-    {
-      double factor = density * detJ * gpweights4gp[gp];
-      double ifactor, massfactor;
-      for (int inod=0; inod<NUMNOD_SOTET4; ++inod)
-      {
-        ifactor = (shapefcts4gp[gp])(inod) * factor;
-        for (int jnod=0; jnod<NUMNOD_SOTET4; ++jnod)
-        {
-          massfactor = (shapefcts4gp[gp])(jnod) * ifactor;
-          (*massmatrix)(NUMDIM_SOTET4*inod+0,NUMDIM_SOTET4*jnod+0) += massfactor;
-          (*massmatrix)(NUMDIM_SOTET4*inod+1,NUMDIM_SOTET4*jnod+1) += massfactor;
-          (*massmatrix)(NUMDIM_SOTET4*inod+2,NUMDIM_SOTET4*jnod+2) += massfactor;
-        }
-      }
-    }
-  }// end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  return;
-} // DRT::ELEMENTS::So_tet4::linstiffmass
 
 
 /*----------------------------------------------------------------------*
@@ -2129,8 +1773,11 @@ void DRT::ELEMENTS::So_tet4::DefGradient(const std::vector<double>& disp,
     prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
 
     // build multiplicative incremental defgrd
-    LINALG::Matrix<3,3> defgrd;
-    defgrd.MultiplyTN(xdisp,N_xyz);
+    LINALG::Matrix<3,3> defgrd(true);
+    if(kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    {
+      defgrd.MultiplyTN(xdisp,N_xyz);
+    }
     defgrd(0,0) += 1.0;
     defgrd(1,1) += 1.0;
     defgrd(2,2) += 1.0;
@@ -2158,14 +1805,17 @@ void DRT::ELEMENTS::So_tet4::UpdateJacobianMapping(
 
   LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> nxyzhist;
   LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> nxyznew;
-  LINALG::Matrix<3,3>                         defgrd;
+  LINALG::Matrix<3,3>                         defgrd(true);
 
   for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
   {
     // get the nxyz old state
     prestress.StoragetoMatrix(gp,nxyzhist,prestress.JHistory());
     // build multiplicative incremental defgrd
-    defgrd.MultiplyTN(xdisp,nxyzhist);
+    if(kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    {
+      defgrd.MultiplyTN(xdisp,nxyzhist);
+    }
     defgrd(0,0) += 1.0;
     defgrd(1,1) += 1.0;
     defgrd(2,2) += 1.0;
