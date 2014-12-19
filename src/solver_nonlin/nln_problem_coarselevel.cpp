@@ -75,7 +75,7 @@ void NLNSOL::NlnProblemCoarseLevel::ComputeF(const Epetra_MultiVector& xc,
   Teuchos::RCP<Epetra_MultiVector> xf =
       Hierarchy().ProlongateToFineLevel(xc, levelid_);
 
-  // call evaluate from the outer nonlinear solver
+  // call evaluate on the fine level
   Teuchos::RCP<Epetra_MultiVector> ffine =
       Teuchos::rcp(new Epetra_MultiVector(xf->Map(), true));
   NLNSOL::NlnProblem::ComputeF(*xf,*ffine);

@@ -21,14 +21,13 @@ Maintainer: Matthias Mayr
 #include <Xpetra_EpetraCrsMatrix.hpp>
 
 // MueLu
-#include <MueLu_DirectSolver_fwd.hpp>
 #include <MueLu_Hierarchy.hpp>
 #include <MueLu_MapTransferFactory_fwd.hpp>
 #include <MueLu_MLParameterListInterpreter.hpp>
 #include <MueLu_Utilities.hpp>
 
 /* MueLu typedefs: header files for default types, must be included after all
- *other MueLu/Xpetra headers */
+ * other MueLu/Xpetra headers */
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar = double, LocalOrdinal = GlobalOrdinal = int
 #include <MueLu_UseShortNames.hpp>
 
@@ -109,6 +108,7 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
+  // ToDo (mayr) Use MueLu-Utils to transform Epetra to Xpetra
   // ---------------------------------------------------------------------------
   // First, convert Epetra to Xpetra (needed for MueLu)
   // ---------------------------------------------------------------------------
