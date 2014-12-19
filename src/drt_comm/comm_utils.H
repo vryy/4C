@@ -63,8 +63,11 @@ namespace COMM_UTILS
                                  Teuchos::RCP<DRT::Discretization> dis,
                                  Teuchos::RCP<Epetra_MpiComm> icomm);
 
-  //! comparison of two vectors from parallel baci runs for debugging reason
-  void CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, const char* name);
+  //! comparison of two vectors from parallel baci runs for debugging reason using the given tolerance for each entry
+  void CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, const char* name, double tol = 1.0e-14);
+
+  //! comparison of two sparse matrices from parallel baci runs for debugging reason using the given tolerance for each entry
+  void CompareSparseMatrices(Teuchos::RCP<Epetra_CrsMatrix> matrix, const char* name, double tol = 1.0e-14);
 
   //! transform Epetra_Comm to Teuchos::Comm, Teuchos::RCP version
   template<class datatype>

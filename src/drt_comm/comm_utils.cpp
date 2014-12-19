@@ -26,6 +26,9 @@ Maintainer: Georg Hammerl
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
 
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Import.h>
+
 #include <vector>
 #include <sstream>
 #include <string>
@@ -894,7 +897,11 @@ void COMM_UTILS::NPDuplicateDiscretization(
  | Note: you need to add the CompareVectors method in both executables  |
  | at the same position in the code                                     |
  *----------------------------------------------------------------------*/
-void COMM_UTILS::CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, const char* name)
+void COMM_UTILS::CompareVectors(
+  Teuchos::RCP<const Epetra_MultiVector> vec,
+  const char* name,
+  double tol /*= 1.0e-14*/
+  )
 {
   DRT::Problem* problem = DRT::Problem::Instance();
   Teuchos::RCP<COMM_UTILS::NestedParGroup> group = problem->GetNPGroup();
@@ -975,7 +982,7 @@ void COMM_UTILS::CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, cons
       double difference = std::abs(fullvec->Values()[i] - receivebuf[i]);
       maxdiff = std::max(maxdiff, difference);
     }
-    if (maxdiff > 1.0e-14)
+    if (maxdiff > tol)
     {
       std::stringstream diff;
       diff << std::scientific << std::setprecision(16) << maxdiff;
@@ -983,7 +990,7 @@ void COMM_UTILS::CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, cons
     }
     else
     {
-      IO::cout << "compared vectors of length: " << mylength << " are identical." << IO::endl;
+      IO::cout << "compared vectors " << name << " of length: " << mylength << " which are identical." << IO::endl;
     }
   }
   else if (myglobalrank == gcomm->NumProc()-1)
@@ -1008,6 +1015,197 @@ void COMM_UTILS::CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, cons
     //second: send data
     tag = 2674;
     MPI_Send(&fullvec->Values()[0], lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | see comment of CompareVectors above                      ghamm 12/14 |
+ | from LINALG::SparseOperator to CrsMatrix, just do:                   |
+ | Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(yoursparseoperator)->EpetraMatrix()
+ *----------------------------------------------------------------------*/
+void COMM_UTILS::CompareSparseMatrices(
+  Teuchos::RCP<Epetra_CrsMatrix> matrix,
+  const char* name,
+  double tol /*= 1.0e-14*/
+  )
+{
+  DRT::Problem* problem = DRT::Problem::Instance();
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = problem->GetNPGroup();
+  Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
+  Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
+  MPI_Comm mpi_lcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(lcomm)->GetMpiComm();
+  MPI_Comm mpi_gcomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(gcomm)->GetMpiComm();
+  const int myglobalrank = gcomm->MyPID();
+
+  int result = -1;
+  MPI_Comm_compare(mpi_gcomm, mpi_lcomm, &result);
+  if(result == 0)
+  {
+    IO::cout << "WARNING:: Matrices " << name << " cannot be compared because second baci run is missing" << IO::endl;
+    return;
+  }
+
+  const Epetra_Map& originalmap = matrix->RowMap() ;
+
+  // gather data of vector to compare on gcomm proc 0 and last gcomm proc
+  Teuchos::RCP<Epetra_Map> serialmap;
+  if(lcomm->MyPID() == gcomm->MyPID())
+    serialmap = LINALG::AllreduceOverlappingEMap(originalmap,0);
+  else
+    serialmap = LINALG::AllreduceOverlappingEMap(originalmap,lcomm->NumProc()-1);
+
+  // export full matrices to the two desired processors
+  Teuchos::RCP<Epetra_Import> serialimporter = Teuchos::rcp(new Epetra_Import (*serialmap, originalmap));
+  Teuchos::RCP<Epetra_CrsMatrix> serialCrsMatrix = Teuchos::rcp(new Epetra_CrsMatrix(Copy, *serialmap, 0));
+  serialCrsMatrix->Import(*matrix, *serialimporter,Insert);
+  serialCrsMatrix->FillComplete();
+
+  // fill data of matrices to container which can be easily communicated via MPI
+  std::vector<int> data_indices;
+  data_indices.reserve(serialCrsMatrix->NumMyNonzeros());
+  std::vector<double> data_values;
+  data_values.reserve(serialCrsMatrix->NumMyNonzeros());
+  if(myglobalrank == 0 || myglobalrank == gcomm->NumProc()-1)
+  {
+    for (int i=0; i<serialmap->NumMyElements(); ++i)
+    {
+      int rowgid = serialmap->GID(i);
+      int NumEntries;
+      double *Values;
+      int *Indices;
+      int err = serialCrsMatrix->ExtractMyRowView(i, NumEntries, Values, Indices);
+      if (err!=0)
+        dserror("ExtractMyRowView error: %d", err);
+
+      for(int j=0; j<NumEntries; ++j)
+      {
+        // in order to check row and col gid both are combined by summing them up (other calculations are also possible)
+        data_indices.push_back(rowgid+Indices[j]);
+        data_values.push_back(Values[j]);
+      }
+    }
+  }
+
+  // last proc in gcomm sends its data to proc 0 which does the comparison
+  if(myglobalrank == 0)
+  {
+    // compare names
+    int lengthRecv = 0;
+    std::vector<char> receivename;
+    MPI_Status status;
+    //first: receive length of name
+    int tag = 1336;
+    MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
+    if(lengthRecv == 0)
+      dserror("Length of data received from second run is incorrect.");
+
+    // second: receive name
+    tag = 2672;
+    receivename.resize(lengthRecv);
+    MPI_Recv(&receivename[0], lengthRecv, MPI_CHAR, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
+
+    // do comparison of names
+    if (std::strcmp(name, &receivename[0]))
+      dserror("comparison of different vectors: group 0 (%s) and group 1 (%s)", name, &receivename[0]);
+
+    // compare data: indices
+    lengthRecv = 0;
+    std::vector<int> receivebuf_indices;
+    // first: receive length of data
+    tag = 1337;
+    MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
+    if(lengthRecv == 0)
+      dserror("Length of data received from second run is incorrect.");
+
+    // second: receive data
+    tag = 2674;
+    receivebuf_indices.resize(lengthRecv);
+    MPI_Recv(&receivebuf_indices[0], lengthRecv, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
+
+    // start comparison
+    int mylength = data_indices.size();
+    if (mylength != lengthRecv)
+      dserror("length of received data (%i) does not match own data (%i)", lengthRecv, mylength);
+
+    double maxdiff = 0.0;
+    for (int i=0; i<mylength ; ++i)
+    {
+      if(data_indices[i] != receivebuf_indices[i])
+        dserror("index of matrix %s does not match: group 0 (%i) and group 1 (%i)", name, data_indices[i], receivebuf_indices[i]);
+    }
+    IO::cout << "indices of compared matrices " << name << " of length: " << mylength << " are identical." << IO::endl;
+
+    // compare data: values
+    lengthRecv = 0;
+    std::vector<double> receivebuf_values;
+    //first: receive length of data
+    tag = 1338;
+    MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
+    if(lengthRecv == 0)
+      dserror("Length of data received from second run is incorrect.");
+
+    //second: receive data
+    tag = 2676;
+    receivebuf_values.resize(lengthRecv);
+    MPI_Recv(&receivebuf_values[0], lengthRecv, MPI_DOUBLE, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
+
+    // start comparison
+    mylength = data_values.size();
+    if (mylength != lengthRecv)
+      dserror("length of received data (%i) does not match own data (%i)", lengthRecv, mylength);
+
+    maxdiff = 0.0;
+    for (int i=0; i<mylength ; ++i)
+    {
+      double difference = std::abs(data_values[i] - receivebuf_values[i]);
+      maxdiff = std::max(maxdiff, difference);
+    }
+    if (maxdiff > tol)
+    {
+      std::stringstream diff;
+      diff << std::scientific << std::setprecision(16) << maxdiff;
+      dserror("matrices %s do not match, maximum difference between entries is: %s", name, diff.str().c_str());
+    }
+    else
+    {
+      IO::cout << "values of compared matrices " << name << " of length: " << mylength << " are identical." << IO::endl;
+    }
+  }
+  else if (myglobalrank == gcomm->NumProc()-1)
+  {
+    // compare names
+    // include terminating \0 of char array
+    int lengthSend = std::strlen(name)+1;
+    //first: send length of name
+    int tag = 1336;
+    MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, mpi_gcomm);
+
+    //second: send name
+    tag = 2672;
+    MPI_Send(const_cast<char*>(name), lengthSend, MPI_CHAR, 0, tag, mpi_gcomm);
+
+    // compare data: indices
+    lengthSend = data_indices.size();
+    // first: send length of data
+    tag = 1337;
+    MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, mpi_gcomm);
+
+    // second: send data
+    tag = 2674;
+    MPI_Send(&data_indices[0], lengthSend, MPI_INT, 0, tag, mpi_gcomm);
+
+    // compare data: values
+    lengthSend = data_values.size();
+    // first: send length of data
+    tag = 1338;
+    MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, mpi_gcomm);
+
+    // second: send data
+    tag = 2676;
+    MPI_Send(&data_values[0], lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
   }
 
   return;
