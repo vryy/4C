@@ -241,10 +241,10 @@ void GEO::CutWizard::AddCuttingSides()
 *--------------------------------------------------------------*/
 void GEO::CutWizard::AddLSCuttingSide()
 {
-  int level_set_sid = 1;
+  int level_set_sid = 0;
 
-  // use the next higher GID not used in the cut-discretization
-  if(cutterdis_ != Teuchos::null) level_set_sid = cutterdis_->NumGlobalElements() +1;
+  // use the next higher GID not used in the cut-discretization (cutter dis counts from 0 to NumGlobalElements-1
+  if(cutterdis_ != Teuchos::null) level_set_sid = cutterdis_->NumGlobalElements();
 
   // add a new level-set side
   intersection_->AddLevelSetSide(level_set_sid);
@@ -573,7 +573,6 @@ void GEO::CutWizard::FindPositionDofSets(bool include_inner)
 
       cut_parallel->CommunicateNodePositions();
 
-      m.FindFacetPositions();
     }
 
     //--------------------------------------------
@@ -582,6 +581,10 @@ void GEO::CutWizard::FindPositionDofSets(bool include_inner)
     {
       m.FindLSNodePositions();
     }
+
+    if(do_mesh_intersection_)
+    m.FindFacetPositions();
+
 
     //--------------------------------------------
 
