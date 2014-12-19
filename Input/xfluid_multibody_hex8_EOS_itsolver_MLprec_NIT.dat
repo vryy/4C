@@ -23,6 +23,7 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
+OUTPUT_GMSH                     no
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
@@ -76,9 +77,9 @@ EOS_DEFINITION_TAU              Burman_Fernandez
 EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   // EOS_he_surf_with_max_diameter
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
-GMSH_SOL_OUT                    No
-GMSH_DISCRET_OUT                No
-GMSH_CUT_OUT                    No
+GMSH_SOL_OUT                    no
+GMSH_DISCRET_OUT                no
+GMSH_CUT_OUT                    no
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
@@ -142,14 +143,14 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1103 QUANTITY velx VALUE 6.91969667977055169e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1103 QUANTITY vely VALUE 1.60941742661038570e-02 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY velx VALUE 6.29642453742272901e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY vely VALUE 1.47319885315656506e-02 TOLERANCE 1e-8
 FLUID DIS fluid NODE 1103 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 1103 QUANTITY pressure VALUE 1.60666694260807041e+01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 803 QUANTITY velx VALUE 1.31609642467520938e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 803 QUANTITY vely VALUE 3.14737514331598300e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1103 QUANTITY pressure VALUE 1.34784557580848219e+01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 803 QUANTITY velx VALUE 1.20322216699748585e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 803 QUANTITY vely VALUE 2.89700621157004012e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 803 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 803 QUANTITY pressure VALUE 1.93070930317372920e+01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 803 QUANTITY pressure VALUE 1.53805827395060781e+01 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         34
 NDLINE                          57
@@ -217,12 +218,11 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
-//DVOL                          0
-DVOL 1 //bodyforce
-//E 1 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+DVOL 4 //bodyforce
+E 1 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 E 2 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
-//E 3 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
-//E 4 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 3 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 4 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DLINE                           0
@@ -233,24 +233,13 @@ E 22 - 1 structure conforming
 E 23 - 1 structure conforming
 E 24 - 1 structure conforming
 E 25 - 1 structure conforming
-E 28 - 2 structure conforming
-E 29 - 2 structure conforming
-E 30 - 2 structure conforming
-E 31 - 2 structure conforming
+E 28 - 1 structure conforming
+E 29 - 1 structure conforming
+E 30 - 1 structure conforming
+E 31 - 1 structure conforming
 ----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-// DOBJECT COUPLING BCFLUID
-DSURF                           8
-E 22 - 1
-E 23 - 1
-E 24 - 1
-E 25 - 1
-E 28 - 2
-E 29 - 2
-E 30 - 2
-E 31 - 2
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 5561 DNODE 1
 NODE 7217 DNODE 2
