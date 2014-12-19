@@ -166,11 +166,6 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
         level, Hierarchy()->NumLevels() - 1);
   }
 
-  Teuchos::RCP<Epetra_MultiVector> fhatbar =
-      Teuchos::rcp(new Epetra_MultiVector(*fhat));
-  err = fhatbar->Update(1.0, *fbar, -1.0);
-  if (err != 0) { dserror("Failed!"); }
-
 #ifdef DEBUG
   // additional safety checks w.r.t. maps
   if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(fbar->Map()))
@@ -186,12 +181,15 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
   // do further coarsening only in case we are not on the coarsest level, yet.
   if (level + 1 < Hierarchy()->NumLevels())
   {
-    // presmoothing
-    Hierarchy()->NlnLevel(level)->DoPreSmoothing(*fhatbar, *xtemp);
-
     // evaluate current residual
     Teuchos::RCP<Epetra_MultiVector> fsmoothed =
         Teuchos::rcp(new Epetra_MultiVector(xtemp->Map(), true));
+    Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(*xtemp, *fsmoothed);
+
+    // presmoothing
+    Hierarchy()->NlnLevel(level)->DoPreSmoothing(*fsmoothed, *xtemp);
+
+    // evaluate current residual
     Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(*xtemp, *fsmoothed);
 
     // call VCycle on next coarser level recursively
