@@ -535,11 +535,13 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::KrylovProjector::MultiplyMultiVecterM
   for (int i=1; i<nsdim_; ++i)
     prod.Multiply(1.0,*((*temp)(i)),prod,1.0);
   int numnonzero = 0;
-  for (int i=0; i<prod.GlobalLength();++i)
+  for (int i=0; i<prod.MyLength();++i)
     if (prod[i]!=0.0) numnonzero++;
 
+  int glob_numnonzero = 0;
+  prod.Comm().SumAll(&numnonzero, &glob_numnonzero, 1);
   // initialization of mat with map of mv1
-  Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp(new LINALG::SparseMatrix(mv1->Map(),numnonzero));
+  Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp(new LINALG::SparseMatrix(mv1->Map(),glob_numnonzero));
 
   //-------------------------------
   // make mv2 redundant on al procs:
