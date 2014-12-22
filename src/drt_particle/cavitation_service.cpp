@@ -27,6 +27,7 @@ Maintainer: Georg Hammerl
 #include "../drt_geometry/intersection_math.H"
 #include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_geometry/position_array.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -35,6 +36,9 @@ Maintainer: Georg Hammerl
 void CAVITATION::Algorithm::CalculateVoidFraction()
 {
   Teuchos::RCP<Epetra_FEVector> void_volumes = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->ElementRowMap()));
+  // export element volume to col layout
+  Teuchos::RCP<Epetra_Vector> ele_volume_col = LINALG::CreateVector(*fluiddis_->ElementColMap(), false);
+  LINALG::Export(*ele_volume_, *ele_volume_col);
 
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
   Teuchos::RCP<const Epetra_Vector> particleradius = particles_->Radius();
@@ -137,9 +141,11 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
       // check for very small bubbles whose volume can be directly assigned to a
       // single fluid element
       {
-        const int elelid = ele_volume_->Map().LID((*neighboringfluideles.begin())->Id());
-        const double charactelelength = std::pow((*ele_volume_)[elelid], 1.0/3.0);
-        // heuristic criterion of 1/20th of the characteristic fluid element length
+        const int elelid = ele_volume_col->Map().LID((*neighboringfluideles.begin())->Id());
+        if(elelid < 0)
+          dserror("element id %i is not on this proc", (*neighboringfluideles.begin())->Id());
+        const double charactelelength = std::pow((*ele_volume_col)[elelid], 1.0/3.0);
+        // heuristic criterion of 1/20th of the characteristic element length of one fluid element in the neighborhood
         if (influence < 0.05*charactelelength)
         {
         // loop all surrounding fluid elements and find possible candidates for assigning
