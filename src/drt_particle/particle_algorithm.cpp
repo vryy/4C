@@ -28,6 +28,7 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 #include "../drt_inpar/inpar_meshfree.H"
+#include "../drt_inpar/inpar_cavitation.H"
 
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/intersection_math.H"
@@ -252,13 +253,17 @@ void PARTICLE::Algorithm::PrepareTimeStep()
 void PARTICLE::Algorithm::Integrate()
 {
   // rough safety check whether bin size is large enough for proper contact detection
+  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
+  INPAR::PARTICLE::ContactStrategy contact_strategy =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ContactStrategy>(particleparams,"CONTACT_STRATEGY");
+  if(contact_strategy != INPAR::PARTICLE::None)
   {
     double maxvel = 0.0;
     particles_->Veln()->MaxValue(&maxvel);
     double maxrad = 0.0;
     particles_->Radius()->MaxValue(&maxrad);
     if(maxrad + maxvel*Dt() > 0.5*cutoff_radius_)
-      dserror("Particles travel more than one bin per time step. Increase bin size or reduce step size");
+      dserror("Particles travel more than one bin per time step (%f > %f). Increase bin size or reduce step size", 2.0*(maxrad + maxvel*Dt()), cutoff_radius_);
   }
 
   CalculateAndApplyForcesToParticles();

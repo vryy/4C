@@ -52,6 +52,7 @@ Maintainer: Lena Wiechert
 #include "yoghurt.H"
 #include "permeablefluid.H"
 #include "matlist.H"
+#include "cavitationfluid.H"
 #include "elchmat.H"
 #include "elchphase.H"
 #include "ion.H"
@@ -344,6 +345,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
         curmat->SetParameter(new MAT::PAR::FluidPoro(curmat));
       MAT::PAR::FluidPoro* params = static_cast<MAT::PAR::FluidPoro*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_cavitation:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::CavitationFluid(curmat));
+    MAT::PAR::CavitationFluid* params = static_cast<MAT::PAR::CavitationFluid*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_matlist:

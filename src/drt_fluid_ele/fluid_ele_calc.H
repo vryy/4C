@@ -243,12 +243,13 @@ public:
       Teuchos::RCP<MAT::Material> &        mat
       );
 
-  /*! \brief Calculate void fraction for this element by using a fourth order clipped polynomial
+  /*! \brief Calculate volume integral over the element for computing the fluid fraction
+   *  for this element using a fourth order clipped polynomial
    *
    *   \author ghamm
    *   \date   07/2013
    */
-  virtual int ComputeVoidFraction(
+  virtual int ComputeVolumeIntegral(
     DRT::ELEMENTS::Fluid*     ele,
     Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,

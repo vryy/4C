@@ -185,7 +185,7 @@ void FLD::FluidResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& ner
 
       std::string position;
       res.ExtractString("QUANTITY",position);
-      if (position=="voidfraction")
+      if (position=="fluidfraction")
       {
         result = (*mydensity_scaling_)[elerowmap.LID(actelement->Id())];
       }

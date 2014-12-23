@@ -28,14 +28,15 @@ Maintainer: Georg Hammerl
 #include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_geometry/position_array.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_io/io_pstream.H"
 
 
 /*----------------------------------------------------------------------*
  | void fraction calculation                               ghamm 08/13  |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::CalculateVoidFraction()
+void CAVITATION::Algorithm::CalculateFluidFraction()
 {
-  Teuchos::RCP<Epetra_FEVector> void_volumes = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->ElementRowMap()));
+  Teuchos::RCP<Epetra_FEVector> fluid_fraction = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->ElementRowMap()));
   // export element volume to col layout
   Teuchos::RCP<Epetra_Vector> ele_volume_col = LINALG::CreateVector(*fluiddis_->ElementColMap(), false);
   LINALG::Export(*ele_volume_, *ele_volume_col);
@@ -157,7 +158,7 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
               insideeles.push_back(ele->Id());
           }
           // assign to the correct fluid element
-          AssignSmallBubbles(bubblevol, particleposition, insideeles, void_volumes);
+          AssignSmallBubbles(bubblevol, particleposition, insideeles, fluid_fraction);
 
           continue; // with next particle in this bin
         }
@@ -165,10 +166,9 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
 
       // process larger bubbles whose volume is distributed among the surrounding fluid elements
       {
-        double vol_influence = 0.0;
-
         // variable to store not yet normalized volume for each fluid element
         std::map<int, double> volumefraction;
+        double vol_influence = 0.0;
         bool surfaceoverlap = false;
 
         // do while volume is not negative which is important for overlapping surfaces/points of bubble and fluid
@@ -200,7 +200,7 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
               case INPAR::CAVITATION::analytical_constpoly:
               case INPAR::CAVITATION::analytical_quadraticpoly:
               {
-                DoAnalyticalIntegration(ele, particleposition, influence, vol_ele, surfaceoverlap);
+                DoAnalyticalIntegrationFluidFrac(ele, particleposition, influence, vol_ele, surfaceoverlap);
 
                 // in case of polynomial influence, twisted surfaces and tight cut situations,
                 // the polynomial can become negative very close to the bubble influence area
@@ -210,7 +210,7 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
               break;
               case INPAR::CAVITATION::gaussian_integration:
               {
-                DoGaussianIntegration(ele, particleposition, influence, vol_ele);
+                DoGaussianIntegrationFluidFrac(ele, particleposition, influence, vol_ele);
               }
               break;
               default:
@@ -233,11 +233,11 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
               vol_influence += vol_ele;
               volumefraction[ele->Id()] = vol_ele;
             } // end if xaabboverlap
-
           } // end loop neighboring eles
 
         } while(surfaceoverlap == true);
 
+        // distribute volumes stored in volumefraction
         if(vol_influence != 0.0)
         {
           // normalize with volume of bubble divided by volume of influence
@@ -248,40 +248,51 @@ void CAVITATION::Algorithm::CalculateVoidFraction()
             const double val = iter->second * normalization;
 
             // do assembly of void fraction into fluid
-            int err = void_volumes->SumIntoGlobalValues(1, &(iter->first), &val);
+            int err = fluid_fraction->SumIntoGlobalValues(1, &(iter->first), &val);
             if (err<0)
               dserror("summing into Epetra_FEVector failed");
           }
         }
         else
         {
-          AssignSmallBubbles(bubblevol, particleposition, insideeles, void_volumes);
+          AssignSmallBubbles(bubblevol, particleposition, insideeles, fluid_fraction);
         }
-
       }
 
     } // loop over particles in one bin
   } // loop over outer particles
 
   // call global assemble
-  int err = void_volumes->GlobalAssemble(Add, false);
+  int err = fluid_fraction->GlobalAssemble(Add, false);
   if (err<0)
     dserror("global assemble into fluidforces failed");
 
-  // divide element wise void volume by element volume
-  void_volumes->ReciprocalMultiply(1.0, *ele_volume_, *void_volumes, 0.0);
+  // compute fluid fraction in elements (= ele_volume - void fraction)
+  fluid_fraction->Update(1.0, *ele_volume_, -1.0);
 
-  // apply void fraction to fluid
-  Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_)->SetVoidVolume(void_volumes);
+  // divide element wise fluid volume by element volume
+  fluid_fraction->ReciprocalMultiply(1.0, *ele_volume_, *fluid_fraction, 0.0);
+
+  double minfluidfrac = 0.0;
+  fluid_fraction->MinValue(&minfluidfrac);
+
+  double maxfluidfrac = 0.0;
+  fluid_fraction->MaxValue(&maxfluidfrac);
+  if(myrank_ == 0)
+    IO::cout << "minimum fluid fraction is: " << minfluidfrac << " and maximimum fluid fraction is: " << maxfluidfrac << IO::endl;
+
+  // apply fluid fraction to fluid on element level for visualization purpose
+  Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_)->SetFluidFraction(fluid_fraction);
+
 
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- | Gaussian integration for void fraction calculation      ghamm 08/13  |
+ | Gaussian integration for void volume calculation        ghamm 08/13  |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::DoGaussianIntegration(
+void CAVITATION::Algorithm::DoGaussianIntegrationFluidFrac(
   DRT::Element* ele,
   LINALG::Matrix<3,1>& particleposition,
   const double influence,
@@ -304,17 +315,15 @@ void CAVITATION::Algorithm::DoGaussianIntegration(
   // Reshape element matrices and vectors and initialize to zero
   elevector1.Size(1);
 
-  // set action in order to calculate the velocity and material derivative of the velocity
+  // set action in order to calculate fluid fraction in this element
   Teuchos::ParameterList params;
-  params.set<int>("action",FLD::void_fraction_gaussian_integration);
-
-  params.set<LINALG::Matrix<3,1> >("particle_pos", particleposition);
-
+  params.set<int>("action",FLD::calc_volume_gaussint);
+  params.set<LINALG::Matrix<3,1> >("particlepos", particleposition);
   params.set<double>("influence", influence);
 
   params.set<int>("gp_per_dir", gauss_rule_per_dir_);
 
-  // call the element specific evaluate method (elevec1 = void fraction)
+  // call the element specific evaluate method (elevec1 = void volume)
   ele->Evaluate(params,*fluiddis_,lm_f,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 
   vol_ele = elevector1[0];
@@ -324,9 +333,9 @@ void CAVITATION::Algorithm::DoGaussianIntegration(
 
 
 /*----------------------------------------------------------------------*
- | analytic integration for void fraction calculation      ghamm 08/13  |
+ | analytic integration for void volume calculation        ghamm 08/13  |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::DoAnalyticalIntegration(
+void CAVITATION::Algorithm::DoAnalyticalIntegrationFluidFrac(
   DRT::Element* ele,
   LINALG::Matrix<3,1>& particleposition,
   const double influence,

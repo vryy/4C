@@ -50,6 +50,7 @@ namespace INPAR
       m_herschelbulkley, ///< fluid with nonlinear viscosity according to Herschel-Bulkley
       m_yoghurt,  ///< "yoghurt-type" fluid with nonlinear viscosity according to a power law and extended by an Arrhenius-type term to account for temperature dependence
       m_permeable_fluid,       ///< permeable fluid
+      m_cavitation,   ///< fluid with varying density
       m_scatra,   ///< scalar transport material
       m_scatra_aniso,   ///< anisotropic scalar transport material
       m_myocard,   ///< anisotropic electrophysical model of heart tissue

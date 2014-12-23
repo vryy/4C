@@ -3461,8 +3461,8 @@ void FLD::FluidImplicitTimeInt::Output()
       output_->WriteVector("fld_growth_displ", fldgrdisp_);
     }
 
-    // cavitation: void fraction
-    WriteOutputCavitationVoidFraction();
+    // cavitation: fluid fraction
+    WriteOutputFluidFraction();
 
     if (params_->get<bool>("COMPUTE_EKIN"))
       WriteOutputKineticEnergy();
@@ -4255,7 +4255,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
       // the noise is proportional to the bulk mean velocity of the
       // undisturbed initial field (=2/3*maximum velocity)
-      mybmvel=2*mybmvel/3;
+      mybmvel=(2.0/3.0)*mybmvel;
       discret_->Comm().MaxAll(&mybmvel,&bmvel,1);
 
       // loop all nodes on the processor
@@ -6391,23 +6391,23 @@ void FLD::FluidImplicitTimeInt::SetupMeshtying()
 }
 
 /*------------------------------------------------------------------------------------------------*
- | set void volume for cavitation problems                                          (ghamm 08/13) |
+ | set fluid fraction for cavitation problems                                       (ghamm 08/13) |
  *------------------------------------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::SetVoidVolume(Teuchos::RCP<Epetra_MultiVector> voidvolume)
+void FLD::FluidImplicitTimeInt::SetFluidFraction(Teuchos::RCP<Epetra_MultiVector> fluidfraction)
 {
   if(density_scaling_ == Teuchos::null)
     density_scaling_ = LINALG::CreateVector(*discret_->ElementRowMap(),false);
-  density_scaling_->Update(1.0, *voidvolume, 0.0);
+  density_scaling_->Update(1.0, *fluidfraction, 0.0);
 }
 
 /*------------------------------------------------------------------------------------------------*
- | cavitation: output void fraction, overloaded (switched off) in TimIntTopOpt           bk 12/13 |
+ | cavitation: output fluid fraction, overloaded (switched off) in TimIntTopOpt          bk 12/13 |
  *------------------------------------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::WriteOutputCavitationVoidFraction()
+void FLD::FluidImplicitTimeInt::WriteOutputFluidFraction()
 {
   if (density_scaling_ != Teuchos::null)
   {
-    output_->WriteVector("voidfraction", density_scaling_, IO::DiscretizationWriter::elementvector);
+    output_->WriteVector("fluidfraction", density_scaling_, IO::DiscretizationWriter::elementvector);
   }
   return;
 }

@@ -184,6 +184,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // cavitation fluid
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_cavitation",
+                                            "Cavitation fluid",
+                                            INPAR::MAT::m_cavitation));
+
+    AddNamedReal(m,"DYNVISCOSITY","dynamic viscosity");
+    AddNamedReal(m,"DENSITY","spatial mass density");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // scalar transport material (with potential reaction coefficient)
   {
     Teuchos::RCP<MaterialDefinition> m

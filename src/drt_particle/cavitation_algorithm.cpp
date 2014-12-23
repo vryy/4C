@@ -23,6 +23,7 @@ Maintainer: Georg Hammerl
 #include "../drt_fluid_ele/fluid_ele_calc.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/cavitationfluid.H"
 #include "../drt_mat/particle_mat.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 
@@ -217,8 +218,8 @@ void CAVITATION::Algorithm::PrepareTimeStep()
 void CAVITATION::Algorithm::Integrate()
 {
   {
-    TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateVoidFraction");
-    CalculateVoidFraction();
+    TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateFluidFraction");
+    CalculateFluidFraction();
   }
 
   // apply forces and solve particle time step
@@ -257,14 +258,33 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   Teuchos::RCP<Epetra_Vector> bubbleforces = LINALG::CreateVector(*particledis_->DofRowMap(),true);
   Teuchos::RCP<Epetra_FEVector> fluidforces = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->DofRowMap()));
 
-  if(fluiddis_->NumMyColElements() <= 0)
-    dserror("there is no fluid element to ask for material parameters");
-  Teuchos::RCP<MAT::NewtonianFluid> actmat = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(fluiddis_->lColElement(0)->Material());
-  if(actmat == Teuchos::null)
-    dserror("type cast of fluid material failed");
+  // fluid density and dynamic viscosity
+  double rho_l;
+  double mu_l;
+  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull)
+  {
+    // get cavitation material
+    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_cavitation);
+    if (id == -1)
+      dserror("no cavitation fluid material specified");
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::CavitationFluid* actmat = static_cast<const MAT::PAR::CavitationFluid*>(mat);
+    rho_l = actmat->density_;
+    mu_l = actmat->viscosity_;
+  }
+  else
+  {
+    // get fluid material
+    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+    if (id == -1)
+      dserror("no cavitation fluid material specified");
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+    rho_l = actmat->density_;
+    mu_l = actmat->viscosity_;
+  }
 
-  double rho_l = actmat->Density();
-  double mu_l = actmat->Viscosity();
+  // bubble density
   double rho_b = particles_->ParticleDensity();
 
   // define element matrices and vectors
@@ -403,7 +423,10 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     bool output = false;
     if(output)
     {
-      std::cout << "v_rel: " << v_rel(0) << "  " << v_rel(1) << "  " << v_rel(2) << "  " << std::endl;
+      std::cout << "radius_bub: " << r_bub << std::endl;
+      std::cout << "v_bub: " << v_bub[0] << " " << v_bub[1] << " " << v_bub[2] << " " << std::endl;
+      std::cout << "v_fl: " << elevector1[0] << " " << elevector1[1] << " " << elevector1[2] << " " << std::endl;
+      std::cout << "v_rel: " << v_rel(0) << " " << v_rel(1) << " " << v_rel(2) << " " << std::endl;
       std::cout << "v_relabs: " << v_relabs << std::endl;
       std::cout << "bubble Reynolds number: " << Re_b << std::endl;
     }

@@ -133,6 +133,9 @@ namespace ADAPTER
     //! Return velocities \f$V_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
 
+    //! Return accelerations \f$A_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Accnp() = 0;
+
     //! Return radii of particles
     virtual Teuchos::RCP<const Epetra_Vector> Radius() = 0;
 

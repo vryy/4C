@@ -56,7 +56,7 @@ public:
 
     /// our version of element value tests
     /*!
-    Possible flag is "voidfraction". With the obvious meaning.
+    Possible flag is "fluidfraction". With the obvious meaning.
     */
     virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 

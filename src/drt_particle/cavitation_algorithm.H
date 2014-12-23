@@ -117,7 +117,7 @@ namespace CAVITATION
       );
 
     /// get adjacent bins to corner, where ijk is in 1st octant
-    std::vector<int> AdjacentBinstoCorner(
+    virtual std::vector<int> AdjacentBinstoCorner(
       int* ijk   ///< ijk is 1st octant
       );
 
@@ -125,19 +125,19 @@ namespace CAVITATION
     //! For details see Bachelor thesis Marcel Menner
     //@{
 
-    /// void fraction calculation of dispersed phase in fluid
-    void CalculateVoidFraction();
+    /// fluid fraction calculation of dispersed phase in fluid
+    virtual void CalculateFluidFraction();
 
-    // use Gaussian integration for solving volume integral to obtain void fraction
-    void DoGaussianIntegration(
+    // use Gaussian integration for solving volume integral to obtain void volume
+    virtual void DoGaussianIntegrationFluidFrac(
       DRT::Element*         ele,
       LINALG::Matrix<3,1>&  particleposition,
       const double          influence,
       double&               vol_ele
       );
 
-    // use analytical integration for solving volume integral to obtain void fraction
-    void DoAnalyticalIntegration(
+    // use analytical integration for solving volume integral to obtain void volume
+    virtual void DoAnalyticalIntegrationFluidFrac(
       DRT::Element*         ele,
       LINALG::Matrix<3,1>&  particleposition,
       const double          influence,
@@ -146,7 +146,7 @@ namespace CAVITATION
       );
 
     /// compute integration points for analytic integration
-    void EvaluateSurface(
+    virtual void EvaluateSurface(
       std::vector<LINALG::Matrix<3,1> >& surfacenodes,
       const LINALG::Matrix<3,1>&       n,
       const LINALG::Matrix<3,1>&       centerele ,
@@ -157,7 +157,7 @@ namespace CAVITATION
       );
 
     /// find penetration points of bubble surfaces (+x and -x)
-    void GetPenetrationPointsOfXSurfaces(
+    virtual void GetPenetrationPointsOfXSurfaces(
       const LINALG::Matrix<3,1>&         n,
       std::vector<LINALG::Matrix<3,1> >& surfacenodes,
       const double                       influence,
@@ -168,7 +168,7 @@ namespace CAVITATION
       );
 
     /// calculation of bubble corner points
-    void CalculateBubbleCornerPoint(
+    virtual void CalculateBubbleCornerPoint(
       const LINALG::Matrix<3,1>&    n,
       const LINALG::Matrix<3,1>&    centersurface,
       int                           bubblesurface1,
@@ -178,7 +178,7 @@ namespace CAVITATION
       );
 
     /// check whether a given point is inside of a surface
-    bool CheckPointInSurface(
+    virtual bool CheckPointInSurface(
       std::vector<LINALG::Matrix<3,1> >& surfacenodes,
       const LINALG::Matrix<3,1>&         centersurface,
       const LINALG::Matrix<3,1>&         centerele,
@@ -186,12 +186,12 @@ namespace CAVITATION
       );
 
     /// build convex hull of points in y-z plane
-    void BuildConvexHull(
+    virtual void BuildConvexHull(
       std::vector<LINALG::Matrix<3,1> >& surfacenodes
       );
 
     /// evaluate line integral for analytic integration (constan polynomial)
-    void EvaluateTwoPointsConstPoly(
+    virtual void EvaluateTwoPointsConstPoly(
       const LINALG::Matrix<3,1>&    n,
       const LINALG::Matrix<3,1>&    CenterRing,
       const LINALG::Matrix<3,1>&    point1,
@@ -200,7 +200,7 @@ namespace CAVITATION
       );
 
     /// evaluate line integral for analytic integration (quadratic polynomial)
-    void EvaluateTwoPointsQuadraticPoly(
+    virtual void EvaluateTwoPointsQuadraticPoly(
       const LINALG::Matrix<3,1>&    n,
       const LINALG::Matrix<3,1>&    centerringintgral,
       LINALG::Matrix<3,1>&          point1,
@@ -213,14 +213,14 @@ namespace CAVITATION
     //@}
 
     /// test for overlap of the XAABB of bubble and element
-    bool XAABBoverlap(
+    virtual bool XAABBoverlap(
       DRT::Element* ele,
       const double influence,
       LINALG::Matrix<3,1> particleposition
       );
 
     /// assign bubble volume to the underlying fluid element
-    void AssignSmallBubbles(
+    virtual void AssignSmallBubbles(
       const double bubblevol,
       const LINALG::Matrix<3,1> particleposition,
       const std::vector<int> insideeles,

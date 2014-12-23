@@ -32,7 +32,7 @@ UPRES                           5
 RESTARTEVRY                     15
 TIMESTEP                        5.0e-3
 NUMSTEP                         20
-MAXTIME                         0.5                             // 5000.0
+MAXTIME                         0.5
 VOID_FRACTION_CALC              analytical_quadraticpoly //analytical_constpoly,gaussian_integration
 NUM_GP_VOID_FRACTION            5
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -43,12 +43,12 @@ ALPHA_F                         1.0                             // 0.666666
 ALPHA_M                         1.0                             // 0.833333
 GAMMA                           0.66
 CONVCHECK                       L_2_norm
-CONVFORM                        convective //conservative
+CONVFORM                        convective
 CONVTOL                         1e-06
 GRIDVEL                         BE
 ITEMAX                          3
 MAXTIME                         0.5
-NONLINITER                      Newton //fixed_point_like
+NONLINITER                      Newton
 NUMSTEP                         8
 PREDICTOR                       steady_state
 RESTARTEVRY                     20
@@ -98,7 +98,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 SGS                             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  SGS                             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               Umfpack                         // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES 2 2 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES                     2 2 1                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     0.45                            // damping fine grid
 ML_DAMPMED                      0.66                            // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
@@ -5415,13 +5415,13 @@ FLUID DIS fluid NODE 202 QUANTITY velx VALUE 0.0 TOLERANCE 1e-12
 FLUID DIS fluid NODE 202 QUANTITY vely VALUE 0.0 TOLERANCE 1e-12
 FLUID DIS fluid NODE 202 QUANTITY velz VALUE 0.0 TOLERANCE 1e-12
 FLUID DIS fluid NODE 202 QUANTITY pressure VALUE 0.0 TOLERANCE 1e-12
-FLUID DIS fluid ELEMENT 202 QUANTITY voidfraction VALUE 0.0 TOLERANCE 1e-12
-FLUID DIS fluid ELEMENT 314 QUANTITY voidfraction VALUE 6.94750123236629897e-03 TOLERANCE 1e-12
-FLUID DIS fluid ELEMENT 348 QUANTITY voidfraction VALUE 9.10535239458763225e-03 TOLERANCE 1e-12
-FLUID DIS fluid ELEMENT 757 QUANTITY voidfraction VALUE 7.04089910768527702e-07 TOLERANCE 1e-12
-FLUID DIS fluid ELEMENT 764 QUANTITY voidfraction VALUE 3.75786920482445441e-01 TOLERANCE 1e-11
-FLUID DIS fluid ELEMENT 774 QUANTITY voidfraction VALUE 1.99436155213300825e-01 TOLERANCE 1e-12
-FLUID DIS fluid ELEMENT 969 QUANTITY voidfraction VALUE 2.28398735527342440e-06 TOLERANCE 1e-12
+FLUID DIS fluid ELEMENT 202 QUANTITY fluidfraction VALUE 1.0 TOLERANCE 1e-12
+FLUID DIS fluid ELEMENT 314 QUANTITY fluidfraction VALUE 9.93052498767633796e-01 TOLERANCE 1e-12
+FLUID DIS fluid ELEMENT 348 QUANTITY fluidfraction VALUE 9.90894647605412349e-01 TOLERANCE 1e-12
+FLUID DIS fluid ELEMENT 757 QUANTITY fluidfraction VALUE 9.99999295910089292e-01 TOLERANCE 1e-12
+FLUID DIS fluid ELEMENT 764 QUANTITY fluidfraction VALUE 6.24213079517554559e-01 TOLERANCE 1e-11
+FLUID DIS fluid ELEMENT 774 QUANTITY fluidfraction VALUE 8.00563844786699064e-01 TOLERANCE 1e-12
+FLUID DIS fluid ELEMENT 969 QUANTITY fluidfraction VALUE 9.99997716012644866e-01 TOLERANCE 1e-12
 PARTICLE DIS particle NODE 1 QUANTITY velx VALUE 1.76423423836870241 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 1 QUANTITY vely VALUE 0.0 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 1 QUANTITY velz VALUE 0.0 TOLERANCE 1.0e-12

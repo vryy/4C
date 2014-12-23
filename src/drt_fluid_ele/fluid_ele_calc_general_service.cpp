@@ -115,10 +115,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
           elevec3);
     }
     break;
-    case FLD::void_fraction_gaussian_integration:
+    case FLD::calc_volume_gaussint:
     {
-      // calculate void fraction of the element for cavitation problems
-      return ComputeVoidFraction(ele, params, discretization, lm, elevec1);
+      // calculate volume integral over the element for fluid fraction
+      return ComputeVolumeIntegral(ele, params, discretization, lm, elevec1);
     }
     break;
     case FLD::calc_mass_matrix:
@@ -398,11 +398,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMatDerivAndRotU(
 
 
 /*---------------------------------------------------------------------*
- | Action type: void_fraction_gaussian_integration                     |
- | calculate void fraction for this element                ghamm 01/13 |
+ | Action type: calc_volume_gaussint                                   |
+ | calculate volume integral over the element for fluid                |
+ | fraction                                                ghamm 01/13 |
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeVoidFraction(
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeVolumeIntegral(
   DRT::ELEMENTS::Fluid*     ele,
   Teuchos::ParameterList&   params,
   DRT::Discretization&      discretization,
@@ -410,7 +411,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeVoidFraction(
   Epetra_SerialDenseVector& elevec1)
 {
   const double influence = params.get<double>("influence");
-  LINALG::Matrix<3,1> pos = params.get<LINALG::Matrix<3,1> >("particle_pos");
+  LINALG::Matrix<3,1> pos = params.get<LINALG::Matrix<3,1> >("particlepos");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -532,9 +533,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeVoidFraction(
       }
     }
 
+    const double integrandtimesfac = integrand*fac_;
+    // sum void fraction over all gauss points
     for (int i=0; i<nen_; ++i)
     {
-      elevec1[0] += integrand*fac_*funct_(i);
+      elevec1[0] += integrandtimesfac*funct_(i);
     }
 
   }

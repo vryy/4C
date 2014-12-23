@@ -253,6 +253,9 @@ namespace PARTICLE
     //! Return velocities \f$V_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return veln_; }
 
+    //! Return accelerations \f$A_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Accnp() { return accn_; }
+
     //! Return radii of particles
     virtual Teuchos::RCP<const Epetra_Vector> Radius() { return radius_; }
 

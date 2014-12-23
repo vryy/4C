@@ -78,7 +78,7 @@ public:
   \brief switched off in TopOpt
 
   */
-  void WriteOutputCavitationVoidFraction(){return;}
+  void WriteOutputFluidFraction(){return;}
 
   /*!
   \brief (multiple) corrector

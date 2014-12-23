@@ -847,11 +847,11 @@ public:
 
   //! @name Cavitation methods
   //@{
-  /// void volume in fluid is set from outside
-  virtual void SetVoidVolume(Teuchos::RCP<Epetra_MultiVector> voidvolume);
+  /// fluid fraction in each element is set from outside
+  virtual void SetFluidFraction(Teuchos::RCP<Epetra_MultiVector> fluidfraction);
 
   /// Output of density_scaling_ is written
-  virtual void WriteOutputCavitationVoidFraction();
+  virtual void WriteOutputFluidFraction();
   //@}
 
   /*!

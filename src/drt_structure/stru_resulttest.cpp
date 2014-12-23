@@ -43,12 +43,13 @@ StruResultTest::StruResultTest(PARTICLE::TimInt& tintegrator)
   : DRT::ResultTest("PARTICLE")
 {
   dis_  = tintegrator.Dispnp();
-  if (DRT::Problem::Instance()->ProblemType() != prb_level_set and
-      DRT::Problem::Instance()->ProblemType() != prb_combust and
-      DRT::Problem::Instance()->ProblemType() != prb_two_phase_flow)
+  if (tintegrator.Velnp() != Teuchos::null)
   {
-    vel_  = tintegrator.Veln();
-    acc_  = tintegrator.Accn();
+    vel_  = tintegrator.Velnp();
+  }
+  if (tintegrator.Accnp() != Teuchos::null)
+  {
+    acc_  = tintegrator.Accnp();
   }
   strudisc_ = tintegrator.Discretization();
 }
