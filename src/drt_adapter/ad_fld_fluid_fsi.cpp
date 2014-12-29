@@ -229,6 +229,15 @@ void ADAPTER::FluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> 
   fluidimpl_->UpdateGridv();
 }
 
+/*----------------------------------------------------------------------*
+ | Update fluid griv velocity via FD approximation           Thon 12/14 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::UpdateGridv()
+{
+  // new grid velocity via FD approximation
+  fluidimpl_->UpdateGridv();
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)

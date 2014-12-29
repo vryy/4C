@@ -37,6 +37,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_fluid/fluid_timint_loma_bdf2.H"
 #include "../drt_fluid/fluid_timint_poro_ost.H"
 #include "../drt_fluid/fluid_timint_poro_stat.H"
+#include "../drt_fluid/fluid_timint_ac_ost.H"
 #include "../drt_fluid/fluid_timint_topopt_genalpha.H"
 #include "../drt_fluid/fluid_timint_topopt_bdf2.H"
 #include "../drt_fluid/fluid_timint_topopt_ost.H"
@@ -793,7 +794,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_fsi:
     case prb_immersed_fsi:
     case prb_gas_fsi:
-    case prb_ac_fsi:
     case prb_biofilm_fsi:
     case prb_thermo_fsi:
     case prb_fluid_ale:
@@ -809,6 +809,17 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       else if(timeint == INPAR::FLUID::timeint_afgenalpha or
           timeint == INPAR::FLUID::timeint_npgenalpha)
         tmpfluid = Teuchos::rcp(new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+      else
+        dserror("Unknown time integration for this fluid problem type\n");
+
+      fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
+    }
+    break;
+    case prb_ac_fsi:
+    { //
+      Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
+      if(timeint == INPAR::FLUID::timeint_one_step_theta)
+        tmpfluid = Teuchos::rcp(new FLD::TimIntACOst(actdis, solver, fluidtimeparams, output, isale));
       else
         dserror("Unknown time integration for this fluid problem type\n");
 

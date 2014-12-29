@@ -807,6 +807,9 @@ namespace STR
     virtual void SetTimen(const double time) { timen_ = time; }
 
     //! Sets the current step \f$n+1\f$
+    virtual void SetStep(int step) { step_=step; }
+
+    //! Sets the current step \f$n+1\f$
     virtual void SetStepn(int step) { stepn_=step; }
 
     //! Get upper limit of time range of interest

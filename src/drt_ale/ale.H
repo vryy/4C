@@ -335,6 +335,13 @@ public:
   /// Reset state vectors to zero
   void Reset();
 
+  //! Set time and step
+  void SetTimeStep(const double time, const int step)
+  {
+    time_=time;
+    step_=step;
+  }
+
   //@}
 
 private:

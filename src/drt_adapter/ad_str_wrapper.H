@@ -177,6 +177,10 @@ namespace ADAPTER
     virtual void SetTimen(const double time)
     { structure_->SetTimen(time); }
 
+    //! Sets the target step \f$n\f$
+    virtual void SetStep(int step)
+    { return structure_->SetStep(step);}
+
     //! Sets the target step \f$n+1\f$
     virtual void SetStepn(int step)
     { return structure_->SetStepn(step);}

@@ -105,6 +105,9 @@ namespace ADAPTER {
 
     virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 
+    ///Update fluid griv velocity via FD approximation
+    void UpdateGridv();
+
     virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc){dserror("not implemented!");};
 
     virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel);

@@ -5674,6 +5674,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // Periodicity of the FSI problem
   IntParameter("PERIODSTOSTEADYSTATE",-1.0,"Periods after FSI problem is steady state",&fs3idynac);
 
+  // Periodicity of the FSI problem
+  IntParameter("PERIODSTOFSIUPDATE",-1.0,"Periods after FSI problem is steady state",&fs3idynac);
+
+  // Periodicity of the FSI problem
+  DoubleParameter("FSIUPDATETOL",-1.0,"Tolerance to determine the time to recalculate a FSI period",&fs3idynac);
+
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& lomacontrol = list->sublist(
       "LOMA CONTROL",

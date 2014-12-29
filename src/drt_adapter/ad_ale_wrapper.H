@@ -179,6 +179,12 @@ public:
     ale_->SetDt(dtnew);
   }
 
+  //! Set time and step
+  void SetTimeStep(const double time, const int step)
+  {
+    ale_->SetTimeStep(time, step);
+  }
+
   //! start new time step
   virtual void PrepareTimeStep()
   {

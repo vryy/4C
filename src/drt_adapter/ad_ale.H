@@ -154,6 +154,9 @@ public:
   //! set time step size
   virtual void SetDt(const double dtnew) = 0;
 
+  //! Set time and step
+  virtual void SetTimeStep(const double time, const int step) = 0;
+
   /*! \brief update displacement and evaluate elements
    *
    *  We use a step increment such that the update reads

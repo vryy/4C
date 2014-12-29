@@ -32,6 +32,9 @@ namespace FS3I
 
     virtual ~ACFSI(){};
 
+    ///Read restart
+    void ReadRestart();
+
     //timeloop
     void Timeloop();
 
@@ -47,31 +50,40 @@ namespace FS3I
     ///OuterLoop for iterative staggered FS3I scheme
     void OuterLoopIterStagg();
 
-    ///Update and output everything
-    void UpdateAndOutput();
-
     ///Do a single fsi step (including all subcycles)
     void DoFSIStep();
+
+    ///Decide if fsi problem is already periodic
+    bool IsFsiPeriodic();
+
+    ///Do a standard fsi step
+    void DoFSIStepStandard();
+
+    ///Do a fsi step with subcycling
+    void DoFSIStepSubcycled();
+
+    ///Get fsi solution from one period before
+    void DoFSIStepPeriodic();
+
+    ///Get filename in which the equivalent step of the last period is written
+    std::string GetFileName();
+
+    ///Set time and step in FSI and all subfields
+    void SetTimeStepInFSI(const double time, const int step);
 
     ///Do a single scatra step
     void DoScatraStep();
 
-    ///Convergence check for iterative staggered FS3I scheme
-    bool PartFs3iConvergenceCkeck( const int itnum);
+    ///Update and output everything
+    void UpdateAndOutput();
 
     ///check convergence of scatra fields
     bool ScatraConvergenceCheck(int itnum);
 
-    ///Read restart
-    void ReadRestart();
+    ///Convergence check for iterative staggered FS3I scheme
+    bool PartFs3iConvergenceCkeck( const int itnum);
 
   private:
-
-    ///maximum number of iterationsfor outer iteration
-    int     itmax_;
-    ///tolerance for outer iteration
-    double  ittol_;
-
 
     /// scatra increment vector
     Teuchos::RCP<Epetra_Vector> structureincrement_;
@@ -80,11 +92,20 @@ namespace FS3I
     /// scatra increment vector
     Teuchos::RCP<Epetra_Vector> aleincrement_;
 
-    // coupling of fluid-structure interaction and scalar-scalar interaction problems
-    INPAR::FS3I::SolutionSchemeOverFields couplingalgo_;
-
-    //do how many fsi time steps in comparison to the scalars time steps
+    ///do how many fsi time steps in comparison to the scalars time steps
     int fsiperssisteps_;
+
+    ///time of one fsi period, e.g. time of a heart cycle
+    double fsiperiod_;
+
+    ///from which fsi period is the fsi problem assumed to be periodic
+    int periodstillfsiisperiodic_;
+
+    ///amount of fsi periods till we update the fsi problem
+    int periodstoupdatefsi_;
+
+    ///tolerance to define the the time when the fsi problem needs to be updated
+    double fsiupdatetol_;
   };
 
 }
