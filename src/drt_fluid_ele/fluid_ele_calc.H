@@ -155,8 +155,9 @@ public:
 
   /*! \brief Calculate material derivative of fluid velocity at specified element coordinates
    *
-   *   The vector valued operator \f$B\f$ is constructed such that
-   *   \f$\frac{Du}{Dt} = \frac{du}{dt} + u grad(u)\f$
+   *   elevec1 contains on return \f$u\f$
+   *   elevec2 contains on return \f$\frac{Du}{Dt} = \frac{du}{dt} + u grad(u)\f$
+   *   elevec3 contains on return \f$rot(u)\f$
    *
    *   \author ghamm
    *   \date   01/2013
@@ -169,6 +170,23 @@ public:
       Epetra_SerialDenseVector&       elevec1,          //< reference to element vector to be filled
       Epetra_SerialDenseVector&       elevec2,          //< reference to element vector to be filled
       Epetra_SerialDenseVector&       elevec3           //< reference to element vector to be filled
+      );
+
+  /*! \brief Calculate pressure gradient and stress term at specified element coordinates
+   *
+   *   elevec1 contains on return \f$grad(p)\f$
+   *   elevec2 contains on return \f$div(epsilon(u)) - div((1/3)*(div u)*I)\f$
+   *
+   *   \author ghamm
+   *   \date   06/2014
+   */
+  virtual int CalcPressGradAndDivEps(
+      DRT::ELEMENTS::Fluid*     ele,                    //< current fluid element
+      Teuchos::ParameterList&   params,                 //< parameter list
+      DRT::Discretization&      discretization,         //< fluid discretization
+      std::vector<int>&         lm,                     //< location vector for DOF management
+      Epetra_SerialDenseVector& elevec1,                //< reference to element vector to be filled
+      Epetra_SerialDenseVector& elevec2                 //< reference to element vector to be filled
       );
 
   /*! \brief Calculate element mass matrix
@@ -271,7 +289,6 @@ public:
       Teuchos::RCP<MAT::Material> &        mat
   );
 
-
   /*! \brief Project velocity gradient to nodal level
    *
    *   \author ghamm
@@ -284,7 +301,6 @@ public:
     std::vector<int>&         lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2);
-
 
   /*! \brief Calculate a divergence of velocity at the element center
    *

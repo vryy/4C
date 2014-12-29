@@ -7550,6 +7550,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("APPROX_ELECOORDS_INIT","no","switch on/off approximate initial guess for computing element coordinates",&cavitationdyn);
 
+  BoolParameter("SIMPLIFIED_BUBBLE_FORCES","no","switch on/off simplified bubble force computation",&cavitationdyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& crackdyn = list->sublist("CRACK",false,"");
 

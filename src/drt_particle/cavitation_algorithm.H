@@ -239,6 +239,8 @@ namespace CAVITATION
 
     bool approxelecoordsinit_;   ///< bool whether a fast and approximate initial guess is used for computing natural coords
 
+    bool simplebubbleforce_;   ///< bool whether a simplified force computation is applied
+
     //@}
 
     //! @name fluid related stuff

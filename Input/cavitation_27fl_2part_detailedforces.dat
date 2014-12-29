@@ -9,8 +9,8 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 small cavitation example with one-way coupling
-using a simplified force computation for buoyancy forces;
-fluid is gravity loaded but fully clamped such that no fluid velocity/acceleration occur
+using the pressure gradient for computing buoyancy forces;
+fluid is gravity loaded but fully clamped such that no viscous forces occur
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      27
 //NODES                         64
@@ -41,7 +41,7 @@ COUPALGO                        cavitation_oneway //cavitation_twowaymomentum
 MAXTIME                         0.5
 NUMSTEP                         5
 RESTARTEVRY                     3
-SIMPLIFIED_BUBBLE_FORCES        Yes
+SIMPLIFIED_BUBBLE_FORCES        No
 TIMESTEP                        5.0e-3
 UPRES                           1
 ---------------------------------------------------------------FLUID DYNAMIC

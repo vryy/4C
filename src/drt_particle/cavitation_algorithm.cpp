@@ -19,6 +19,7 @@ Maintainer: Georg Hammerl
 #include "../drt_adapter/adapter_particle.H"
 #include "particle_node.H"
 #include "../drt_adapter/ad_fld_base_algorithm.H"
+#include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_calc.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -61,6 +62,7 @@ CAVITATION::Algorithm::Algorithm(
   void_frac_strategy_(DRT::INPUT::IntegralValue<INPAR::CAVITATION::VoidFractionCalculation>(params,"VOID_FRACTION_CALC")),
   gauss_rule_per_dir_(params.get<int>("NUM_GP_VOID_FRACTION")),
   approxelecoordsinit_((bool)DRT::INPUT::IntegralValue<int>(params,"APPROX_ELECOORDS_INIT")),
+  simplebubbleforce_((bool)DRT::INPUT::IntegralValue<int>(params,"SIMPLIFIED_BUBBLE_FORCES")),
   fluiddis_(Teuchos::null),
   fluid_(Teuchos::null),
   ele_volume_(Teuchos::null)
@@ -71,6 +73,39 @@ CAVITATION::Algorithm::Algorithm(
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(),DRT::Problem::Instance()->FluidDynamicParams(),"fluid",false));
   fluid_ = fluid->FluidField();
+
+  // check whether gravity acceleration for fluid and particles match
+    if(gravity_acc_.Norm2() > 0.0)
+    {
+      std::vector<DRT::Condition*> condition;
+      fluiddis_->GetCondition("VolumeNeumann", condition);
+
+      if(condition.size() != 1)
+        dserror("exactly one VOL NEUMANN boundary condition expected to represent body forces in fluid");
+      const std::vector<int>*    onoff = condition[0]->Get<std::vector<int> >   ("onoff");
+      const std::vector<double>* val   = condition[0]->Get<std::vector<double> >("val"  );
+
+      const int dim = 3;
+      for(int i=0; i<dim; ++i)
+      {
+        if(gravity_acc_(i) != (*val)[i])
+          dserror("body force for particles does not match body force for fluid");
+        if(gravity_acc_(i) != 0.0 and (*onoff)[i] == 0)
+          dserror("body force for %d. dof deactivated in VOL NEUMANN bc for fluid although body force acts on particles in this direction.", i);
+      }
+
+      // check whether an initial pressure field is set due to the gravity load
+      const int startfuncno = DRT::Problem::Instance()->FluidDynamicParams().get<int>("STARTFUNCNO");
+      if(startfuncno < 0)
+        dserror("pressure field needs to be initialized due to gravity load");
+    }
+
+    if(!simplebubbleforce_)
+    {
+      // check for solver for L2 projection of velocity gradient
+      if(DRT::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER") < 0)
+        dserror("no solver for L2 projection of velocity gradient specified: check VELGRAD_PROJ_SOLVER");
+    }
 
   return;
 }
@@ -176,10 +211,6 @@ void CAVITATION::Algorithm::InitCavitation()
   particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
   particles_->Init();
 
-  // determine consistent initial acceleration for the particles
-  CalculateAndApplyForcesToParticles();
-  particles_->DetermineMassDampConsistAccel();
-
   // compute volume of each fluid element and store it
   ele_volume_ = LINALG::CreateVector(*fluiddis_->ElementRowMap(), false);
   int numfluidele = fluiddis_->NumMyRowElements();
@@ -190,6 +221,10 @@ void CAVITATION::Algorithm::InitCavitation()
     double ev = GEO::ElementVolume( fluidele->Shape(), xyze );
     (*ele_volume_)[i] = ev;
   }
+
+  // determine consistent initial acceleration for the particles
+  CalculateAndApplyForcesToParticles();
+  particles_->DetermineMassDampConsistAccel();
 
   // some output
   if (myrank_ == 0)
@@ -245,6 +280,14 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   fluiddis_->ClearState();
   particledis_->ClearState();
 
+  Teuchos::ParameterList p;
+  if(!simplebubbleforce_)
+  {
+    // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
+    Teuchos::RCP<Epetra_MultiVector> projected_velgrad = FLD::UTILS::ComputeL2ProjectedVelGradient(fluiddis_,fluid_->Veln());
+    fluiddis_->AddMultiVectorToParameterList(p, "velgradient", projected_velgrad);
+  }
+
   // at the beginning of the coupling step: veln = velnp(previous step) and current velnp contains fluid predictor
   fluiddis_->SetState("veln",fluid_->Veln());
   fluiddis_->SetState("velnm",fluid_->Velnm());
@@ -293,6 +336,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   Epetra_SerialDenseVector elevector1;
   Epetra_SerialDenseVector elevector2;
   Epetra_SerialDenseVector elevector3;
+  Epetra_SerialDenseVector elevector4;
+  Epetra_SerialDenseVector elevector5;
 
   // only row particles are evaluated
   for(int i=0; i<particledis_->NodeRowMap()->NumMyElements(); ++i)
@@ -405,6 +450,21 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     // call the element specific evaluate method (elevec1 = fluid vel u; elevec2 = mat deriv of fluid vel, elevec3 = rot of fluid vel)
     targetfluidele->Evaluate(params,*fluiddis_,lm_f,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 
+    if(!simplebubbleforce_)
+    {
+      // Reshape element matrices and vectors and initialize to zero
+      elevector4.Size(dim);
+      elevector5.Size(dim);
+
+      // set action in order to calculate the pressure gradient and divergence of the stress tensor
+      Teuchos::ParameterList params_surfintegrals(p);
+      params_surfintegrals.set<int>("action",FLD::calc_press_grad_and_div_eps);
+      params_surfintegrals.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
+
+      // call the element specific evaluate method (elevec4 = pressure gradient; elevec5 = viscous stress term)
+      targetfluidele->Evaluate(params_surfintegrals,*fluiddis_,lm_f,elematrix1,elematrix2,elevector4,elevector5,elevector3);
+    }
+
     // get bubble velocity and acceleration
     std::vector<double> v_bub(lm_b.size());
     DRT::UTILS::ExtractMyValues(*bubblevel,v_bub,lm_b);
@@ -420,7 +480,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     const double v_relabs = v_rel.Norm2();
     const double Re_b = 2.0 * r_bub * v_relabs * rho_l / mu_l;
 
-    bool output = false;
+    bool output = true;
     if(output)
     {
       std::cout << "radius_bub: " << r_bub << std::endl;
@@ -477,19 +537,45 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     couplingforce.Update(sumforces);
     /*------------------------------------------------------------------*/
 
-    /*------------------------------------------------------------------*/
-    //// 2.3) gravity and buoyancy forces = volume_b * rho_bub * g - volume_b * rho_l * ( g - Du/Dt )
+    // material fluid acceleration at bubble position
     static LINALG::Matrix<3,1> Du_Dt(false);
     for (int d=0; d<dim; ++d)
       Du_Dt(d) = elevector2[d];
 
-    static LINALG::Matrix<3,1> grav_buoy_force(false);
-    grav_buoy_force.Update(rho_b, gravity_acc_);
-    grav_buoy_force.Update(-rho_l, gravity_acc_, rho_l, Du_Dt, 1.0);
-    grav_buoy_force.Scale(vol_b);
-    //assemble
-    sumforces.Update(1.0, grav_buoy_force, 1.0);
-    /*------------------------------------------------------------------*/
+    if(simplebubbleforce_)
+    {
+      /*------------------------------------------------------------------*/
+      //// 2.3) gravity and buoyancy forces = volume_b * rho_bub * g - volume_b * rho_l * ( g - Du/Dt )
+
+      static LINALG::Matrix<3,1> grav_buoy_force(false);
+      grav_buoy_force.Update(rho_b, gravity_acc_);
+      grav_buoy_force.Update(-rho_l, gravity_acc_, rho_l, Du_Dt, 1.0);
+      grav_buoy_force.Scale(vol_b);
+      // assemble
+      sumforces.Update(1.0, grav_buoy_force, 1.0);
+      /*------------------------------------------------------------------*/
+    }
+    else
+    {
+      /*------------------------------------------------------------------*/
+      //// 2.3) gravity, pressure gradient and viscous stress term = volume_b * rho_bub * g + volume_b * ( -grad_p + dTau/dx )
+
+      static LINALG::Matrix<3,1> grad_p(false);
+      static LINALG::Matrix<3,1> visc_stress(false);
+      for (int d=0; d<dim; ++d)
+      {
+        grad_p(d) = elevector4[d];
+        visc_stress(d) = elevector5[d];
+      }
+
+      static LINALG::Matrix<3,1> grav_surface_force(false);
+      grav_surface_force.Update(rho_b, gravity_acc_);
+      grav_surface_force.Update(-1.0, grad_p, 2.0*mu_l, visc_stress, 1.0);
+      grav_surface_force.Scale(vol_b);
+      // assemble
+      sumforces.Update(1.0, grav_surface_force, 1.0);
+      /*------------------------------------------------------------------*/
+    }
 
     /*------------------------------------------------------------------*/
     //// 2.4) virtual/added mass = c_VM * rho_l * volume_b * ( Du/Dt - Dv/Dt )
@@ -507,7 +593,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 
 
     //--------------------------------------------------------------------
-    // 3rd step: assemble bubble forces
+    // 3rd step: assemble bubble/fluid forces
     //--------------------------------------------------------------------
 
     // assemble of bubble forces (note: row nodes evaluated)
@@ -560,31 +646,56 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     if(output)
     {
       // gravity
-      LINALG::Matrix<3,1> gravityforce(gravity_acc_);
-      gravityforce.Scale(rho_b*vol_b);
-      std::cout << "gravity force       : " << gravityforce << std::endl;
+      double m_b = vol_b * rho_b;
+      static LINALG::Matrix<3,1> gravityforce(false);
+      gravityforce.Update(m_b, gravity_acc_);
+      std::cout << "t: " << Time() << " gravity force         : " << gravityforce << std::endl;
 
-      // buoyancy
-      double coeff5 = - vol_b * rho_l;
-      LINALG::Matrix<3,1> buoyancyforce(true);
-      buoyancyforce.Update(coeff5, gravity_acc_);
-      std::cout << "buoyancy force      : " << buoyancyforce << std::endl;
+      if(simplebubbleforce_)
+      {
+        static LINALG::Matrix<3,1> buoy_force(false);
+        buoy_force.Update(-rho_l,gravity_acc_);
+        buoy_force.Scale(vol_b);
+        std::cout << "t: " << Time() << " buoy_force          : " << buoy_force << std::endl;
 
-      // effective buoyancy / inertia term
-      LINALG::Matrix<3,1> effectbuoyancyforce;
-      effectbuoyancyforce.Update(-coeff5, Du_Dt);
-      std::cout << "effective buoy force: " << effectbuoyancyforce << std::endl;
+        static LINALG::Matrix<3,1> inertia_force(false);
+        inertia_force.Update(rho_l,Du_Dt);
+        inertia_force.Scale(vol_b);
+        std::cout << "t: " << Time() << " inertia_force       : " << inertia_force << std::endl;
+      }
+      else
+      {
+        static LINALG::Matrix<3,1> grad_p(false);
+        static LINALG::Matrix<3,1> visc_stress(false);
+        for (int d=0; d<dim; ++d)
+        {
+          grad_p(d) = elevector4[d];
+          visc_stress(d) = elevector5[d];
+        }
+
+        static LINALG::Matrix<3,1> pressgrad_force(false);
+        pressgrad_force.Update(-vol_b,grad_p);
+        std::cout << "t: " << Time() << " pressgrad force     : " << pressgrad_force << std::endl;
+
+        static LINALG::Matrix<3,1> viscous_force(false);
+        viscous_force.Update(2.0*mu_l*vol_b, visc_stress);
+        std::cout << "t: " << Time() << " viscous force       : " << viscous_force << std::endl;
+      }
+
+      // added mass force
+      static LINALG::Matrix<3,1> addedmassforce(false);
+      addedmassforce.Update(coeff3, Du_Dt, -coeff3/m_b, bubbleforce);
 
       // drag, lift and added mass force
-      std::cout << "dragforce force     : " << dragforce << std::endl;
-      std::cout << "liftforce force     : " << liftforce << std::endl;
-      std::cout << "added mass force    : " << addedmassforce << std::endl;
+      std::cout << "t: " << Time() << " dragforce force     : " << dragforce << std::endl;
+      std::cout << "t: " << Time() << " liftforce force     : " << liftforce << std::endl;
+      std::cout << "t: " << Time() << " added mass force    : " << addedmassforce << std::endl;
 
       // sum over all bubble forces
-      std::cout << "sum over all forces : " << bubbleforce << std::endl;
+      std::cout << "t: " << Time() << " particle force      : " << bubbleforce << std::endl;
 
       // fluid force
-      std::cout << "fluid force         : " << couplingforce << std::endl;
+      std::cout << "t: " << Time() << " fluid force         : " << couplingforce << std::endl;
     }
 
   } // end iparticle

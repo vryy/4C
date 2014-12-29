@@ -115,6 +115,18 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
           elevec3);
     }
     break;
+    case FLD::calc_press_grad_and_div_eps:
+    {
+      // calculate pressure gradient and stress term at specified element coordinates
+      return CalcPressGradAndDivEps(
+          ele,
+          params,
+          discretization,
+          lm,
+          elevec1,
+          elevec2);
+    }
+    break;
     case FLD::calc_volume_gaussint:
     {
       // calculate volume integral over the element for fluid fraction
@@ -392,6 +404,141 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMatDerivAndRotU(
   }
   else
     dserror("not implemented");
+
+  return 0;
+}
+
+
+/*---------------------------------------------------------------------*
+ | Action type: calc_press_grad_and_div_eps                            |
+ | calculate pressure gradient and stress term             ghamm 06/14 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcPressGradAndDivEps(
+    DRT::ELEMENTS::Fluid*     ele,
+    Teuchos::ParameterList&   params,
+    DRT::Discretization&      discretization,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2)
+{
+  //--------------------------------------------------------------------------------
+  // extract element based or nodal values
+  //--------------------------------------------------------------------------------
+
+  // get velocity gradient at the nodes
+  const Teuchos::RCP<Epetra_MultiVector> velocity_gradient = params.get< Teuchos::RCP<Epetra_MultiVector> >("velgradient");
+
+  const int nsdsquare = nsd_*nsd_;
+
+  Epetra_SerialDenseVector evelgrad(nen_*nsdsquare);
+  DRT::UTILS::ExtractMyNodeBasedValues(ele,evelgrad,velocity_gradient,nsdsquare);
+
+  // insert into element arrays
+  for (int i=0;i<nen_;++i)
+  {
+    // insert velocity gradient field into element array
+    for (int idim=0 ; idim < nsdsquare; ++idim)
+    {
+      viscs2_(idim,i) = evelgrad[idim + i*nsdsquare];
+    }
+  }
+
+  //----------------------------------------------------------------------------
+  //   Extract velocity/pressure from global vectors
+  //----------------------------------------------------------------------------
+
+  // fill the local element vector with the global values
+  LINALG::Matrix<nen_,1>    epre(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &epre,"veln");
+
+  // coordinates of the current integration point
+  LINALG::Matrix<nsd_,1> elecoords = params.get<LINALG::Matrix<nsd_,1> >("elecoords");
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  // set element id
+  eid_ = ele->Id();
+
+  if (ele->IsAle())
+  {
+    LINALG::Matrix<nsd_,nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"disp");
+
+    // get new node positions for isale
+     xyze_ += edispnp;
+  }
+
+  // the int point considered is the point given from outside
+  EvalShapeFuncAndDerivsAtIntPoint(elecoords.A(), -1.0);
+
+  // elevec1 contains the pressure gradient
+  gradp_.Multiply(derxy_,epre);
+  for (int isd=0; isd<nsd_; ++isd)
+  {
+    elevec1[isd] = gradp_(isd);
+  }
+
+  /*--- viscous term: div(epsilon(u)) --------------------------------*/
+  /*   /                                                \
+       |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
+     1 |                                                |
+     - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+     2 |                                                |
+       |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
+       \                                                /
+
+       with N_x .. x-line of N
+       N_y .. y-line of N                                             */
+
+  /*--- subtraction for low-Mach-number flow: div((1/3)*(div u)*I) */
+  /*   /                            \
+       |  N_x,xx + N_y,yx + N_z,zx  |
+     1 |                            |
+  -  - |  N_x,xy + N_y,yy + N_z,zy  |
+     3 |                            |
+       |  N_x,xz + N_y,yz + N_z,zz  |
+       \                            /
+
+         with N_x .. x-line of N
+         N_y .. y-line of N                                             */
+
+  // get second derivatives w.r.t. xyz of velocity at given point
+  LINALG::Matrix<nsd_*nsd_,nsd_> evelgrad2(true);
+  evelgrad2.MultiplyNT(viscs2_,derxy_);
+
+  /*--- evelgrad2 --------------------------------*/
+  /*
+     /                        \
+     |   u,xx   u,xy   u,xz   |
+     |   u,yx   u,yy   u,yz   |
+     |   u,zx   u,zy   u,zz   |
+     |                        |
+     |   v,xx   v,xy   v,xz   |
+     |   v,yx   v,yy   v,yz   |
+     |   v,zx   v,zy   v,zz   |
+     |                        |
+     |   w,xx   w,xy   w,xz   |
+     |   w,yx   w,yy   w,yz   |
+     |   w,zx   w,zy   w,zz   |
+     \                        /
+                                                  */
+
+  // elevec2 contains div(eps(u))
+  elevec2[0] = 2.0 * evelgrad2(0,0) + evelgrad2(1,1) + evelgrad2(3,1) + evelgrad2(2,2) + evelgrad2(6,2);
+  elevec2[1] = evelgrad2(3,0) + evelgrad2(1,0) + 2.0 * evelgrad2(4,1) + evelgrad2(5,2) + evelgrad2(7,2);
+  elevec2[2] = evelgrad2(6,0) + evelgrad2(2,0) + evelgrad2(7,1) + evelgrad2(5,1) + 2.0 * evelgrad2(8,2);
+  elevec2.Scale(0.5);
+
+  // subtraction of div((1/3)*(div u)*I)
+  const double onethird = 1.0/3.0;
+  elevec2[0] -= onethird * (evelgrad2(0,0) + evelgrad2(4,0) + evelgrad2(8,0));
+  elevec2[1] -= onethird * (evelgrad2(0,1) + evelgrad2(4,1) + evelgrad2(8,1));
+  elevec2[2] -= onethird * (evelgrad2(0,2) + evelgrad2(4,2) + evelgrad2(8,2));
 
   return 0;
 }
