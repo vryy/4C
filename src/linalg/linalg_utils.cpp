@@ -2179,7 +2179,7 @@ void LINALG::PrintVectorInMatlabFormat(std::string fname,
           int iii;
           if (MaxElementSize1 == 1)
           {
-            os << std::setw(10) << MyGlobalElements1[i];
+            os << std::setw(10) << MyGlobalElements1[i] + 1; // add +1 for Matlab convention
             iii = i;
           }
           else

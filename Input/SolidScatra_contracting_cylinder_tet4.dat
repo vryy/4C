@@ -9,12 +9,10 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 Contracting Cylinder
-  - Test for SolidScatra Elements using the ELAST_CoupAnisoNeoHooke_VarProp
-    Material with Tet4 Elements.
-  - Test case uses a linear activation function for FUNCT1
-  - Beware that there is no fixation involved. The system is still, since
-    the dynamic case is used.
-  - Used unit system is mm/g/s
+* Test for SolidScatra Elements using the ELAST_CoupAnisoNeoHooke_VarProp Material with Tet4 Elements.
+* Test case uses a linear activation function for FUNCT1
+* Beware that there is no fixation involved. The system is still, since the dynamic case is used.
+* Used unit system is mm/g/s
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 --------------------------------------------------------------DISCRETISATION
