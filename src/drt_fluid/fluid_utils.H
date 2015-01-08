@@ -334,7 +334,8 @@ namespace UTILS
 
     ///return WSS vector
     Teuchos::RCP<Epetra_Vector> GetWallShearStresses( Teuchos::RCP<const Epetra_Vector> trueresidual );
-
+    ///return WSS vector always without aggregation, even if scale separation matrix exists
+    Teuchos::RCP<Epetra_Vector> GetWallShearStressesWOAgg( Teuchos::RCP<const Epetra_Vector> trueresidual );
     /*!
     \brief calculate stresses
 

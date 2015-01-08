@@ -1,59 +1,36 @@
 /*!----------------------------------------------------------------------
-\file turbulence_statistics_Ph.cpp
+\file turbulence_statistics_ph.cpp
 
 \brief calculate pressures, mean velocity values and fluctuations for
-turbulent flow over a backward-facing step
+turbulent flow over a periodic constrictions
+literature see Froehlich Mellen Rodi Temmerman Leschziner (2004) and Rapp Breuer Manhart Peller (2010)
+created in a Semesterarbeit by Stephan Jaeger 2015
 
 <pre>
-o Create sets for various evaluation lines in domain
-  (Construction based on a round robin communication pattern):
-  - 21 lines in x2-direction
-  - lines along upper and lower wall
-
-o loop nodes closest to / on lines
-
-o values on lines are averaged in time over all steps between two
-  outputs
-
-Maintainer: Volker Gravemeier
-            vgravem@lnm.mw.tum.de
+Maintainer: Benjamin Krank
+            krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15245
+            089 - 289-15252/-245
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
 
 #include "turbulence_statistics_ph.H"
 
-//#define COMBINE_SAMPLES
+#define SAMP_ALL
 
-/*----------------------------------------------------------------------*/
-/*!
-  \brief Standard Constructor (public)
-
-  <pre>
-  o Create sets for lines
-
-  o Allocate distributed vector for squares
-  </pre>
-
-*/
-/*----------------------------------------------------------------------*/
+//----------------------------------------------------------------------
+// constructor
+//----------------------------------------------------------------------
 FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::ParameterList&          params):
   discret_      (actdis),
-  params_       (params),
-  x1statlocations_(true)
-//  x2statlocations_(true)
-//  inflowchannel_(DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
-//  inflowmax_    (params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE",0.0))
+  params_       (params)
 {
   if (discret_->Comm().MyPID()==0)
   {
     std::cout << "This is the turbulence statistics manager of periodic hill problem" << std::endl;
     std::cout << "based on the geometry of ERCOFTAC" << std::endl;
-    std::cout << "If additional output in front of the step is required, it has to be set manually (look for numx1supplocations_)." << std::endl;
   }
 
   //----------------------------------------------------------------------
@@ -62,36 +39,17 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
   if (numdim!=3)
     dserror("Evaluation of turbulence statistics only for 3d flow problems!");
 
-  // type of fluid flow solver: incompressible, Boussinesq approximation, varying density
-//  const INPAR::FLUID::PhysicalType physicaltype = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
-
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  //for multiple output files -> see dumpstatistics
-  dumploop=0;
-
   squaredvelnp_ = LINALG::CreateVector(*dofrowmap,true);
-  squaredscanp_ = LINALG::CreateVector(*dofrowmap,true);
-  invscanp_ = LINALG::CreateVector(*dofrowmap,true);
-  squaredinvscanp_ = LINALG::CreateVector(*dofrowmap,true);
 
   toggleu_      = LINALG::CreateVector(*dofrowmap,true);
   togglev_      = LINALG::CreateVector(*dofrowmap,true);
   togglew_      = LINALG::CreateVector(*dofrowmap,true);
   togglep_      = LINALG::CreateVector(*dofrowmap,true);
-
-// Resize matrix for x2statlocations coordinates in a first step (final size is later set)
-//  x2statlocations.reshape(1,1);
-
-  // bounds for extension of flow domain in x2-direction
-  x2min_ = +10e+19;
-  x2max_ = -10e+19;
-  // bounds for extension of flow domain in x3-direction
-  x3min_ = +10e+19;
-  x3max_ = -10e+19;
 
   //----------------------------------------------------------------------
   // create sets of coordinates
@@ -106,65 +64,17 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
   std::set<double,LineSortCriterion> x2statlocat;
 
 
-  // loop nodes and build sets of lines in x1- and x2-direction
-  // accessible on this proc
-  // For x1-direction: consider horizontal line at x2=0
-  // and assume no change in discretization behind the step
-  // For x2-direction: consider vertical line at x1=0
-  // and assume no change in discretization behind the step
   for (int i=0; i<discret_->NumMyRowNodes(); ++i)
   {
-
     DRT::Node* node = discret_->lRowNode(i);
-//    std::cout << *node << std::endl;
 
     if (node->X()[1]<85.008+2e-9 && node->X()[1]>85.008-2e-9)
       x1avcoords.insert(node->X()[0]);
 
     if (node->X()[0]<2e-9 && node->X()[0]>-2e-9)
       x2avcoords.insert(node->X()[1]);
-
-    // find mins and maxs
-
-    if (x1min_>node->X()[0]) x1min_=node->X()[0];
-    if (x1max_<node->X()[0]) x1max_=node->X()[0];
-
-
-    if (x2min_>node->X()[1]) x2min_=node->X()[1];
-    if (x2max_<node->X()[1]) x2max_=node->X()[1];
-
-
-    if (x3min_>node->X()[2]) x3min_=node->X()[2];
-    if (x3max_<node->X()[2]) x3max_=node->X()[2];
   }
-//  std::cout << "x1avcoords: " << x1avcoords.size() << std::endl;
-//  std::cout << "x2avcoords: " << x2avcoords.size() << std::endl;
-  // communicate x1mins and x1maxs
-  double min1;
-  discret_->Comm().MinAll(&x1min_,&min1,1);
-  x1min_=min1;
 
-  double max1;
-  discret_->Comm().MaxAll(&x1max_,&max1,1);
-  x1max_=max1;
-
-  // communicate x2mins and x2maxs
-  double min2;
-  discret_->Comm().MinAll(&x2min_,&min2,1);
-  x2min_=min2;
-
-  double max2;
-  discret_->Comm().MaxAll(&x2max_,&max2,1);
-  x2max_=max2;
-
-  // communicate x3mins and x3maxs
-  double min3;
-  discret_->Comm().MinAll(&x3min_,&min3,1);
-  x3min_=min3;
-
-  double max3;
-  discret_->Comm().MaxAll(&x3max_,&max3,1);
-  x3max_=max3;
   //--------------------------------------------------------------------
   // round robin loop to communicate coordinates to all procs
   //--------------------------------------------------------------------
@@ -187,12 +97,6 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
     {
       DRT::PackBuffer data;
 
-//      for (std::set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
-//           x1line!=x1avcoords.end();
-//           ++x1line)
-//      {
-//        DRT::ParObject::AddtoPack(data,*x1line);
-//      }
       data.StartPacking();
       for (std::set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
            x1line!=x1avcoords.end();
@@ -337,7 +241,6 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
         ++coord1)
     {
       x1coordinates_->push_back(*coord1);
-//      std::cout << x1coordinates_ << std::endl;
     }
 
     for(std::set<double,LineSortCriterion>::iterator coord2=x2avcoords.begin();
@@ -345,7 +248,6 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
         ++coord2)
     {
       x2coordinates_->push_back(*coord2);
-//      std::cout << x2coordinates_ << std::endl;
     }
   }
   //----------------------------------------------------------------------
@@ -354,21 +256,16 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
   numx1coor_ = x1coordinates_->size();
   numx2coor_ = x2coordinates_->size();
 
-//  std::cout << numx1coor_ << std::endl;
-//  std::cout << numx2coor_ << std::endl;
-
-//  x1statlocations_(1,1)=4.5;
-//  std::cout << "x1statlocations_(1,1): " << x1statlocations_(1,1) << std::endl;
-
-
   //----------------------------------------------------------------------
   // define locations in x1-direction for statistical evaluation
   //----------------------------------------------------------------------
+
+#ifndef SAMP_ALL
   //define vector containing x1-coords for sampling
 
   x1setstatlocations_ = Teuchos::rcp(new std::vector<double> );
 
-  //! x1-coordinates for statistical sampling
+  //! x1-coordinates for statistical sampling  !!! in sampling routine the offwall distance has to be modified for different statlocations
   x1setstatlocations_->push_back(0);
   x1setstatlocations_->push_back(14);
   x1setstatlocations_->push_back(28);
@@ -376,20 +273,26 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
   x1setstatlocations_->push_back(84);
   x1setstatlocations_->push_back(112);
   x1setstatlocations_->push_back(140);
+  x1setstatlocations_->push_back(168);
   x1setstatlocations_->push_back(196);
   x1setstatlocations_->push_back(224);
 //
-//  for (unsigned x1stat=0; x1stat < 4; x1stat++)
-//      x1setstatlocations_->push_back(x1setstatloc[x1stat]);
-
+#endif
+#ifdef SAMP_ALL
+  x1setstatlocations_ = x1coordinates_;
+#endif
   numx1statlocations_ = x1setstatlocations_->size();
-//  std::cout << "numx1statlocations: " << numx1statlocations_ << std::endl;
-//  x1dist_ = x1max_ - x1min_;
-//  numx1elem_ = numx1coor_-1;
 
-// Resize matrix for x2statlocations coordinates in a first step (final size is later set)
+  if(discret_->Comm().MyPID()==0)
+  {
+    std::cout << "Sample at " << numx1statlocations_ << " numx1statlocations_ \n" << std::endl;
+  }
+
+// Resize matrix for x1statlocations and x2statlocations coordinates
+  x1statlocations.reshape(numx1statlocations_,1);
   x2statlocations.reshape(numx1statlocations_,numx2coor_);
 
+#ifndef SAMP_ALL
   x1elemlengthhalf = (x1max_ - x1min_)/(numx1coor_-1);
   for (int x1line =0 ; x1line < numx1statlocations_; ++x1line)
   {
@@ -404,9 +307,15 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
         pos = x1linecoords;
       }
     }
-    x1statlocations_(x1line,0) = x1coordinates_->at(pos);
-    std::cout << "x1statlocations_(x1line,0): " << x1statlocations_(x1line,0) << std::endl;
+    x1statlocations(x1line,0) = x1coordinates_->at(pos);
   }
+#endif
+#ifdef SAMP_ALL
+  for (int x1line =0 ; x1line < numx1statlocations_; ++x1line)
+  {
+    x1statlocations(x1line,0) = x1setstatlocations_->at(x1line);
+  }
+#endif
 
   //----------------------------------------------------------------------
   // define locations in x2-direction for statistical evaluation
@@ -421,20 +330,12 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
     {
       DRT::Node* node = discret_->lRowNode(i);
       if (node->X()[2] < +2e-9 && node->X()[2] > -2e-9
-          && node->X()[0] < x1statlocations_(x1stat,0)+2e-9 && node->X()[0] > x1statlocations_(x1stat,0)-2e-9)
+          && node->X()[0] < x1statlocations(x1stat,0)+2e-9 && node->X()[0] > x1statlocations(x1stat,0)-2e-9)
       {
-//        std::cout << "node X1: " << node->X()[1] << std::endl;
         x2statlocat.insert(node->X()[1]);
       }
     }
 
-    for (std::set<double,LineSortCriterion>::iterator x2=x2statlocat.begin();
-         x2!=x2statlocat.end();
-         ++x2)
-    {
-//      std::cout << " proc  " << discret_-> Comm().MyPID()<< "  " << *x2 << std::endl;
-    }
-//    std::cout << "sizeofthisproc  "<< x2statlocat.size() << std::endl;
 //////////////////////////////////////////////
 //  communication of x2-ccordinates
 //////////////////////////////////////////////
@@ -514,20 +415,15 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-//        std::cout <<  " proc "<< discret_-> Comm().MyPID() << std::endl;
         std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
           DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
-//          std::cout << "onecoord: "  << onecoord << " proc "<< discret_-> Comm().MyPID() << std::endl;
           x2statlocat.insert(onecoord);
         }
-
       }
-
     }
-
     }
 
   int x2it = -1;
@@ -536,70 +432,27 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
        ++x2locc)
   {
     x2it += 1;
-    //std::cout << "PID, x1stat, x2it, x2locc: " << discret_-> Comm().MyPID() << ", " << x1stat << ", " << x2it << ", " << *x2locc << std::endl;
     x2statlocations(x1stat,x2it) = *x2locc;
   }
-std::cout << "x2statlocations: " << x2statlocations << std::endl;
   }
 
-
-//----------------------------------------------------------------------
-// define locations in x2-direction for statistical evaluation
-//----------------------------------------------------------------------
 ///////////////////////////////////////////
 //    end of communication in x2-direction
 ///////////////////////////////////////////
 
-
-//  std::cout << x2statlocations_ << std::endl;
-//  numx2statlocations_=17;
-
-  //----------------------------------------------------------------------
-  // define locations in x2-direction for statistical evaluation
-  // (lower and upper wall)
-  //----------------------------------------------------------------------
-//  if (geotype_ == TurbulenceStatisticsPh::geometry_LES_flow_with_heating)
-//  {
-//    // num2statlocations_ also defines number of supplocations
-//    numx2statlocations_ = 2;
-//
-//    x2statlocations_(0) = x2min_;
-//    x2statlocations_(1) = x2max_;
-//    //----------------------------------------------------------------------
-//    // define supplementary locations in x2-direction for statistical
-//    // evaluation of velocity derivative at wall
-//    // (first nodes off lower and upper wall, respectively)
-//    //----------------------------------------------------------------------
-//    x2supplocations_(0) = x2coordinates_->at(1);
-//    x2supplocations_(1) = x2coordinates_->at(x2coordinates_->size()-2);
-//  }
-//  else if (geotype_ == TurbulenceStatisticsPh::geometry_DNS_incomp_flow)
-//  {
-//    // num2statlocations_ also defines number of supplocations
-//    numx2statlocations_ = 1;
-//
-//    x2statlocations_(0) = x2min_;
-//    x2statlocations_(1) = x2max_; //not needed here, upper wall is slip wall
-//    //----------------------------------------------------------------------
-//    // define supplementary locations in x2-direction for statistical
-//    // evaluation of velocity derivative at wall
-//    // (first nodes off lower and upper wall, respectively)
-//    //----------------------------------------------------------------------
-//    x2supplocations_(0) = x2coordinates_->at(1);
-//    x2supplocations_(1) = x2coordinates_->at(x2coordinates_->size()-2); //not needed here, upper wall is slip wall
-//  }
-//  else
-//    dserror("Unknown geometry of backward facing step!");
-
   //----------------------------------------------------------------------
   // allocate arrays for sums of mean values
   //----------------------------------------------------------------------
+
   // x1-direction
   x1sump_ =  Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x1sump_->Reshape(numx1coor_,1);
+  x1sump_->Reshape(numx1statlocations_,1);
 
   x1sumu_ =  Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x1sumu_->Reshape(numx1coor_,1);
+  x1sumu_->Reshape(numx1statlocations_,1);
+
+  x1sumf_ =  Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x1sumf_->Reshape(numx1statlocations_,3);
 
 
   // x2-direction
@@ -658,17 +511,14 @@ std::cout << "x2statlocations: " << x2statlocations << std::endl;
 
   Teuchos::RCP<std::ofstream> log;
 
-//  std::cout << "Comm().MyPID: " << discret_->Comm().MyPID() << std::endl;
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
-//    std::cout << s << std::endl;
 
       s.append(".flow_statistics");
 
       log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
       (*log) << "# Statistics for turbulent incompressible flow over periodic hill (first- and second-order moments)\n\n";
-//    }
 
     log->flush();
   }
@@ -688,10 +538,12 @@ FLD::TurbulenceStatisticsPh::~TurbulenceStatisticsPh()
 //----------------------------------------------------------------------
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp)
+void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp,Teuchos::RCP<Epetra_Vector> stresses)
 {
   if(discret_->Comm().MyPID()==0)
     std::cout << "------------Time Sampling Routine begins---------" <<std::endl;
+
+
   // compute squared values of velocity
   squaredvelnp_->Multiply(1.0,*velnp,*velnp,0.0);
 
@@ -700,25 +552,80 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp
   //----------------------------------------------------------------------
   numsamp_++;
 
-//  int x1nodnum = -1;
-//  ----------------------------------------------------------------------
-//   values at lower wall
-//  ----------------------------------------------------------------------
-  for (int x1nodnum=0; x1nodnum<numx1statlocations_;++x1nodnum)
-  {
-//    std::cout << "x1line: " << *x1line <<std::endl;
-//    x1nodnum++;
+#ifdef SAMP_ALL
 
+    for (int k=0; k <numx1statlocations_; ++k)
+    {
+
+        // current x2-coordinate of respective wall
+        //constant offset from wall at the middle bottom; has to be adapted for different statlocations
+        double x2cwall = x2statlocations(k,1);
+        double x1cwall = x1statlocations(k,0);
+
+        // toggle vectors are one in the position of a dof of this node,
+        toggleu_->PutScalar(0.0);
+        togglep_->PutScalar(0.0);
+
+        // count the number of nodes in x3-direction contributing to this nodal value
+        int countnodes=0;
+
+        for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+        {
+          DRT::Node* node = discret_->lRowNode(nn);
+          // this is the wall node
+          if (node->X()[0]<(x1cwall+2e-9) and node->X()[0]>(x1cwall-2e-9) and
+              node->X()[1]<(x2cwall+2e-9) and node->X()[1]>(x2cwall-2e-9))
+          {
+            std::vector<int> dof = discret_->Dof(node);
+            double           one = 1.0;
+
+            toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+            togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+            countnodes++;
+          }
+        }
+        int countnodesonallprocs=0;
+
+        discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
+
+        // reduce by 1 due to periodic boundary condition
+        countnodesonallprocs-=1;
+        if (countnodesonallprocs)
+        {
+          //----------------------------------------------------------------------
+          // get values for velocity derivative and pressure
+          //----------------------------------------------------------------------
+          double u;
+          velnp->Dot(*toggleu_,&u);
+          double p;
+          velnp->Dot(*togglep_,&p);
+
+          //----------------------------------------------------------------------
+          // calculate spatial means
+          //----------------------------------------------------------------------
+          double usm=u/countnodesonallprocs;
+          double psm=p/countnodesonallprocs;
+          //----------------------------------------------------------------------
+          // add spatial mean values to statistical sample
+          //----------------------------------------------------------------------
+          (*x1sumu_)(k,0)+=usm;
+          (*x1sump_)(k,0)+=psm;
+        }
+      }
+
+    //wall stresses
+    for (int k=0; k <numx1statlocations_; ++k)
+    {
       // current x2-coordinate of respective wall
-      double x2cwall = x2statlocations(x1nodnum,1);
-//      std::cout << "x1statlocations_(x1nodnum,0): " << x1statlocations_(x1nodnum,0) << std::endl;
-//      std::cout << "x2statlocations(x1nodnum,1) " << x2statlocations(x1nodnum,1) << std::endl;
-//      std::cout << "x2cwall: " << x2cwall << std::endl;
+      //constant offset from wall at the middle bottom; has to be adapted for different statlocations
+      double x2cwall = x2statlocations(k,0);
+      double x1cwall = x1statlocations(k,0);
 
       // toggle vectors are one in the position of a dof of this node,
       // else 0
       toggleu_->PutScalar(0.0);
-//      togglep_->PutScalar(0.0);
+      togglev_->PutScalar(0.0);
+      togglew_->PutScalar(0.0);
 
       // count the number of nodes in x3-direction contributing to this nodal value
       int countnodes=0;
@@ -727,13 +634,15 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp
       {
         DRT::Node* node = discret_->lRowNode(nn);
         // this is the wall node
-        if (node->X()[0]<(x1statlocations_(x1nodnum,0)+2e-9) and node->X()[0]>(x1statlocations_(x1nodnum,0)-2e-9) and
+        if (node->X()[0]<(x1cwall+2e-9) and node->X()[0]>(x1cwall-2e-9) and
             node->X()[1]<(x2cwall+2e-9) and node->X()[1]>(x2cwall-2e-9))
         {
           std::vector<int> dof = discret_->Dof(node);
           double           one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+          togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+          togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
           countnodes++;
         }
       }
@@ -748,29 +657,27 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp
         //----------------------------------------------------------------------
         // get values for velocity derivative and pressure
         //----------------------------------------------------------------------
-        double u;
-        velnp->Dot(*toggleu_,&u);
-//        double p;
-//        velnp->Dot(*togglep_,&p);
+        double fx;
+        stresses->Dot(*toggleu_,&fx);
+        double fy;
+        stresses->Dot(*togglev_,&fy);
+        double fz;
+        stresses->Dot(*togglew_,&fz);
 
-        //----------------------------------------------------------------------
-        // calculate spatial means
-        //----------------------------------------------------------------------
-        double usm=u/countnodesonallprocs;
-//        double psm=p/countnodesonallprocs;
         //----------------------------------------------------------------------
         // add spatial mean values to statistical sample
         //----------------------------------------------------------------------
-        (*x1sumu_)(x1nodnum,0)+=usm;
-//        (*x1sump_)(x1nodnum,1)+=psm;
+        (*x1sumf_)(k,0)+=fx/(double)countnodesonallprocs;
+        (*x1sumf_)(k,1)+=fy/(double)countnodesonallprocs;
+        (*x1sumf_)(k,2)+=fz/(double)countnodesonallprocs;
       }
     }
- // }
+//    }
 
-  //----------------------------------------------------------------------
-  // end of loop velocity gradient at lower wall
-  //----------------------------------------------------------------------
-
+    //----------------------------------------------------------------------
+    // end of loop velocity gradient at lower wall
+    //----------------------------------------------------------------------
+#endif
 
   //----------------------------------------------------------------------
   // loop locations for statistical evaluation in x1-direction
@@ -778,11 +685,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp
 
   for (int x1nodnum=0; x1nodnum<numx1statlocations_; ++x1nodnum)
   {
-    // current x1-coordinate
-//    double x1c = 1.0e20;
-//    x1c = x1statlocations_(x1nodnum,1);
 
-//    int x2nodnum = -1;
     //----------------------------------------------------------------------
     // loop nodes in x2-direction
     //----------------------------------------------------------------------
@@ -805,7 +708,7 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp
         DRT::Node* node = discret_->lRowNode(nn);
 
         // this is the node
-        if (node->X()[0] < x1statlocations_(x1nodnum,0)+2e-5 && node->X()[0] > x1statlocations_(x1nodnum,0)-2e-5 &&
+        if (node->X()[0] < x1statlocations(x1nodnum,0)+2e-5 && node->X()[0] > x1statlocations(x1nodnum,0)-2e-5 &&
             node->X()[1] < x2statlocations(x1nodnum,x2line)+2e-9 && node->X()[1] > x2statlocations(x1nodnum,x2line)-2e-9) //the last node in x3 direction has to be sampled
         {
           std::vector<int> dof = discret_->Dof(node);
@@ -826,8 +729,6 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp
 
       // reduce by 1 due to periodic boundary condition
       countnodesonallprocs-=1;
-
-//      std::cout << "countnodesonallprocs: " << countnodesonallprocs << std::endl;
 
       if (countnodesonallprocs)
       {
@@ -910,10 +811,9 @@ void FLD::TurbulenceStatisticsPh::DumpStatistics(int step)
 
   if (discret_->Comm().MyPID()==0)
   {
-    dumploop += 1;
     std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
-    s.append(".flow_statistics_");
-//    s.append();
+    s.append(".flow_statistics");
+
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
     (*log) << "# Statistics for turbulent incompressible flow for a periodic hill (first- and second-order moments)";
     (*log) << "\n\n";
@@ -921,29 +821,34 @@ void FLD::TurbulenceStatisticsPh::DumpStatistics(int step)
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n\n\n";
     (*log) << std::scientific;
     (*log) << "\n\n\n";
+
+#ifdef SAMP_ALL
     (*log) << "# lower wall behind step\n";
     (*log) << "#     x1";
-    (*log) << "           duxdy         pmean\n";
+    (*log) << "           duxdy         pmean         tau_w          dist\n";
     // distance from wall to first node off wall
-    for (int i=0;i<numx1statlocations_;++i)
+    for (int i=0; i<numx1statlocations_; ++i)
     {
-//      std::cout <<"x1coordinates: "<< (*x1coordinates_)[i] << std:endl;
         double lwx1u     = (*x1sumu_)(i,0)/numsamp_;
-        double dist =  x2statlocations(i,1)-x2statlocations(i,0);
-//        std::cout << "dist: " << dist << std::endl;
+        double dist =  x2statlocations(i,1) - x2statlocations(i,0);
         double lwx1duxdy = lwx1u/dist;
-//        double lwx1p     = (*x1sump_)(i,1)/numsamp_;
-        (*log) <<  " "  << std::setw(11) << std::setprecision(4) << x1coordinates_->at(i);
+        double lwx1p     = (*x1sump_)(i,0)/numsamp_;
+        double fx     = (*x1sumf_)(i,0)/numsamp_;
+        double fy     = (*x1sumf_)(i,1)/numsamp_;
+        double fz     = (*x1sumf_)(i,2)/numsamp_;
+        (*log) <<  " "  << std::setw(11) << std::setprecision(4) << x1statlocations(i,0);
         (*log) << "   " << std::setw(11) << std::setprecision(4) << lwx1duxdy;
-//        (*log) << "   " << std::setw(11) << std::setprecision(4) << lwx1p;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << lwx1p;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << std::sqrt(fx*fx+fy*fy+fz*fz);
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << dist;
         (*log) << "\n";
     }
-
+#endif
     for (int i=0; i<numx1statlocations_; ++i)
     {
       // current x1-coordinate
       double x1 = 1.0e20;
-      x1 = x1statlocations_(i);
+      x1 = x1statlocations(i,0);
 
       (*log) << "\n\n\n";
       (*log) << "# line in x2-direction at x1 = " << std::setw(11) << std::setprecision(4) << x1 << "\n";

@@ -83,6 +83,22 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStresses(
     return wss;
 }
 
+/*----------------------------------------------------------------------*
+ | return WSS vector always without aggregation        Thon/Krank 11/14 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStressesWOAgg(
+    Teuchos::RCP<const Epetra_Vector> trueresidual
+)
+{
+  if(not isinit_)
+    dserror("not initialized");
+  Teuchos::RCP<Epetra_Vector> stresses = CalcStresses(trueresidual);
+  //calculate wss from stresses
+  Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses(stresses);
+
+  return wss;
+}
+
 /*-----------------------------------------------------------------------------*
  |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/

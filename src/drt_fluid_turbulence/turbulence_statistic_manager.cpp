@@ -65,7 +65,8 @@ namespace FLD
     myfilteredreystr_(fluid.filteredreystr_),
     myfsvelaf_       (fluid.fsvelaf_       ),
     myfsscaaf_       (fluid.fsscaaf_       ),
-    myxwall_       (fluid.xwall_       ),
+    myxwall_         (fluid.xwall_       ),
+    mystressmanager_ (fluid.stressmanager_),
     flow_            (no_special_flow      ),
     withscatra_      (false                ),
     turbmodel_      (INPAR::FLUID::no_model),
@@ -842,7 +843,7 @@ namespace FLD
         if(statistics_ph_==Teuchos::null)
           dserror("need statistics_ph_ to do a time sample for a flow over a backward-facing step");
 
-        statistics_ph_->DoTimeSample(myvelnp_);
+        statistics_ph_->DoTimeSample(myvelnp_,mystressmanager_->GetWallShearStressesWOAgg(myforce_));
         break;
       }
       case loma_backward_facing_step:

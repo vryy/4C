@@ -66,6 +66,10 @@ class TurbulenceStatisticsHit;
 class TurbulenceStatisticsGeneralMean;
 class TurbulenceStatisticsPh;
 class TurbulenceStatisticsBfda;
+namespace UTILS
+{
+  class StressManager;
+}
 
 
 class TurbulenceStatisticManager
@@ -272,6 +276,8 @@ private:
   Teuchos::RCP<Epetra_Vector>           myfsscaaf_;
   //xwall object is required for evaluating inner element planes of channel
   Teuchos::RCP<FLD::XWall>              myxwall_;
+
+  Teuchos::RCP<FLD::UTILS::StressManager> mystressmanager_;
 
   //! scatra result vector (defined on the scatra dofrowmap!)
   Teuchos::RCP<Epetra_Vector>                   myphinp_;
