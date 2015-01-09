@@ -1,6 +1,6 @@
 /*!---------------------------------------------------------------------------
 
-\file linalg_orthogonal_projector.cpp
+\file linalg_krylov_projector.cpp
 
 <pre>
 Maintainer: Keijo Nissen
@@ -361,9 +361,6 @@ void LINALG::KrylovProjector::CreateProjector(
    *              temp1
    */
 
-  // initialization of P with map of v1
-  P = Teuchos::rcp(new LINALG::SparseMatrix(v1->Map(),81));
-
   // compute temp1
   Teuchos::RCP<Epetra_MultiVector> temp1 = MultiplyMultiVecterDenseMatrix(v2, inv_v1Tv2);
   temp1->Scale(-1.0);
@@ -376,7 +373,7 @@ void LINALG::KrylovProjector::CreateProjector(
   // Add identity matrix
   //--------------------------------------------------------
   const int nummyrows = v1->MyLength();
-  const double one = 1;
+  const double one = 1.0;
   // loop over all proc-rows
   for(int rr=0; rr<nummyrows; ++rr)
   {
@@ -540,14 +537,21 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::KrylovProjector::MultiplyMultiVecterM
 
   int glob_numnonzero = 0;
   prod.Comm().SumAll(&numnonzero, &glob_numnonzero, 1);
+
+  // do stupid conversion into Epetra map
+  Teuchos::RCP<Epetra_Map> mv1map = Teuchos::rcp(new Epetra_Map(mv1->Map().NumGlobalElements(),
+                                                                mv1->Map().NumMyElements(),
+                                                                mv1->Map().MyGlobalElements(),
+                                                                0,
+                                                                mv1->Map().Comm()));
   // initialization of mat with map of mv1
-  Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp(new LINALG::SparseMatrix(mv1->Map(),glob_numnonzero));
+  Teuchos::RCP<LINALG::SparseMatrix> mat = Teuchos::rcp(new LINALG::SparseMatrix(*mv1map,glob_numnonzero,false));
 
   //-------------------------------
-  // make mv2 redundant on al procs:
+  // make mv2 redundant on all procs:
   //-------------------------------
   // auxiliary variables
-  const int nummyrows = mv2->MyLength();
+  const int nummyrows = mv1->MyLength();
   const int numvals = mv2->GlobalLength();
 
   // do stupid conversion into Epetra map
@@ -579,14 +583,14 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::KrylovProjector::MultiplyMultiVecterM
     std::vector<double> rowvals;
     rowvals.reserve(numvals);
 
-    // vector of indices cooresponding to vector of rowvalues
+    // vector of indices corresponding to vector of row values
     std::vector<int>    indices;
     indices.reserve(numvals);
 
     // loop over all entries of global w
     for(int mm=0; mm<numvals; ++mm)
     {
-      double sum = 0;
+      double sum = 0.0;
       // loop over all kernel/weight vector
       for(int vv=0; vv<nsdim_; ++vv)
       {
@@ -594,10 +598,10 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::KrylovProjector::MultiplyMultiVecterM
       }
 
       // add value to vector only if non-zero
-      if (sum != 0)
+      if (sum != 0.0)
       {
         rowvals.push_back(sum);
-        indices.push_back(mv2map->GID(mm));
+        indices.push_back(redundant_map->GID(mm));
       }
     }
 
@@ -605,9 +609,8 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::KrylovProjector::MultiplyMultiVecterM
     int err = mat->EpetraMatrix()->InsertGlobalValues(grid,indices.size(),rowvals.data(),indices.data());
     if (err < 0)
     {
-      dserror("insertion error when trying to computekrylov projection matrix.");
+      dserror("insertion error when trying to compute krylov projection matrix (error code: %i).", err);
     }
-
   }
 
   // call fill complete
