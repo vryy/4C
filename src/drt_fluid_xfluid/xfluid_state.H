@@ -2,9 +2,6 @@
 \file xfluid_state.H
 \brief State class for (in)stationary XFEM fluid problems
 
-Attention:
-These classes are still prototypes and have to be completed.
-
 <pre>
 Maintainer:  Raffaela Kruse
              kruse@lnm.mw.tum.de
@@ -21,6 +18,8 @@ Maintainer:  Raffaela Kruse
 #include <Epetra_Map.h>
 
 #include <Teuchos_RCP.hpp>
+
+#include "../drt_lib/drt_dserror.H"
 
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_xfem.H"
@@ -68,12 +67,6 @@ namespace UTILS
  */
 class XFluidState
 {
-  friend class XFluid;
-  friend class XFluidFluid;
-  friend class XFluidResultTest;
-  friend class XFluidFluidResultTest;
-
-  friend class XFluidStateCreator;
 
 public:
 
@@ -109,14 +102,6 @@ public:
   {
     return dofset_;
   }
-
-protected:
-
-  /// initialize all state members based on the xfluid dof-rowmap
-  virtual void InitStateVectors();
-
-  /// initialize the system matrix of the intersected fluid
-  void InitSystemMatrix();
 
 
   /// dof-rowmap of intersected fluid
@@ -198,93 +183,19 @@ protected:
 
   //@}
 
+protected:
 
-private:
+  /// initialize all state members based on the xfluid dof-rowmap
+  void InitStateVectors();
+
+  /// initialize the system matrix of the intersected fluid
+  void InitSystemMatrix();
 
   /// XFEM dofset
   Teuchos::RCP<XFEM::XFEMDofSet> dofset_;
 
   /// cut wizard
   Teuchos::RCP<GEO::CutWizard> wizard_;
-
-};
-
-/**
- * Builder class for XFluidState.
- * Creates the appropriate wizard & handles the cut state (level-set field or boundary discretization).
- */
-class XFluidStateCreator
-{
-
-public:
-
-  /// ctor
-  XFluidStateCreator(
-    INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy,
-    INPAR::CUT::BCellGaussPts BoundCellGaussPointBy,
-    bool gmsh_cut_out,
-    int maxnumdofsets,
-    int minnumdofsets ) :
-      VolumeCellGaussPointBy_(VolumeCellGaussPointBy),
-      BoundCellGaussPointBy_(BoundCellGaussPointBy),
-      gmsh_cut_out_(gmsh_cut_out),
-      maxnumdofsets_(maxnumdofsets),
-      minnumdofsets_(minnumdofsets)
-  {
-  }
-
-  /// create a state-object after a cut
-  Teuchos::RCP<XFluidState> Create(
-      const Teuchos::RCP<DRT::DiscretizationXFEM>&      xdiscret,           //!< xfluid background discretization
-      const Teuchos::RCP<DRT::Discretization> &         boundarydiscret,    //!< boundary discretization, a discretization whose surface elements cut the background mesh
-      Teuchos::RCP<const Epetra_Vector>                 back_disp_col,      //!< col vector holding background ALE displacements for backdis
-      Teuchos::RCP<const Epetra_Vector>                 cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-      Teuchos::RCP<const Epetra_Vector>                 back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
-      std::map<int, LINALG::Matrix<3,1> > &             tip_nodes,          //!< tip nodes for crack application
-      Teuchos::ParameterList &                          solver_params,
-      const int                                         step,
-      const double &                                    time
-      );
-
-  /*!
-   \brief initialize coupling matrices
-   @param slave discretization for matrices to couple with
-   */
-  void InitCouplingMatrices(const Teuchos::RCP<DRT::Discretization>&  slavediscret);
-
-  /*!
-   \brief initialize coupling rhs vectors
-   @param slave discretization for rhs-vector to couple with
-   */
-  void InitCouplingRhs(const Teuchos::RCP<DRT::Discretization>&  slavediscret);
-
-  /*!
-   \brief initialize ALE state vectors
-   @param dispnp and grivnp vectors w.r.t initial full dofrowmap
-   */
-  void InitALEStateVectors(
-      const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
-      Teuchos::RCP<const Epetra_Vector> dispnp_initmap,
-      Teuchos::RCP<const Epetra_Vector> gridvnp_initmap
-  );
-
-private:
-
-  const INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy_;
-  const INPAR::CUT::BCellGaussPts BoundCellGaussPointBy_;
-
-  /// is gmsh-output active?
-  const bool gmsh_cut_out_;
-
-  //! @name size limits for dofsets with variable size
-  //@{
-  const int maxnumdofsets_;
-  int minnumdofsets_;
-  //@}
-
-  /// state class
-  Teuchos::RCP<FLD::XFluidState> state_;
-
 };
 
 }

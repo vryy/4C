@@ -22,6 +22,8 @@ Maintainer:  Shadan Shahmiri
 
 #include "../drt_fluid/fluid_timint.H"
 
+#include "xfluidfluid_state.H"
+
 namespace DRT
 {
   class Discretization;
@@ -66,158 +68,6 @@ namespace FLD
   class XFluidFluid : public TimInt
   {
     friend class XFluidFluidResultTest;
-
-    /// class to handle the background fluid state
-    class XFluidFluidState
-    {
-    public:
-
-      /// constructor (this is where the cut takes place)
-      explicit XFluidFluidState(
-          XFluidFluid & xfluid,    ///< owning fluid-fluid class
-          Teuchos::RCP<const Epetra_Vector> idispcol ///< column vector of fluid-fluid interface displacements
-          );
-
-      /// create combined map extractor for Dirichlet-constrained DOF from background and embedded fluid
-      void CreateMergedDBCMapExtractor();
-
-      /*!
-       * \brief prepare fluid-fluid coupling matrices & rhs for evaluation
-       * \param (in) initial_call flag, that indicates first call
-       */
-      void PrepareCouplingMatrices(bool initial_call=false);
-
-      /// background fluid dof-map
-      Teuchos::RCP<const Epetra_Map> fluiddofrowmap_;
-
-      /// (standard) system matrix for background fluid
-      Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
-
-      /// Dirichlet map extractor for background fluid
-      Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
-
-      /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-      Teuchos::RCP<Epetra_Vector>    zeros_;
-
-      /// the vector containing body and surface forces
-      Teuchos::RCP<Epetra_Vector>    neumann_loads_;
-
-      /// (standard) residual vector (rhs for the incremental form),
-      Teuchos::RCP<Epetra_Vector>    residual_;
-
-      /// rhs: right hand side vector for linearised flow solution
-      Teuchos::RCP<Epetra_Vector>    rhs_;
-
-      /// true (rescaled) residual vector without zeros at dirichlet positions
-      Teuchos::RCP<Epetra_Vector>    trueresidual_;
-
-      /// Nonlinear iteration increment vector
-      Teuchos::RCP<Epetra_Vector>    incvel_;
-      Teuchos::RCP<Epetra_Vector>    aleincvel_;
-
-      //! @name background fluid acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
-      Teuchos::RCP<Epetra_Vector>    accnp_;
-      Teuchos::RCP<Epetra_Vector>    accn_;
-      Teuchos::RCP<Epetra_Vector>    accam_;
-      //@}
-
-      //! @name background fluid velocity and pressure at time n+1, n, n-1 and \f$n+\alpha_F\f$
-      //@{
-      /// \f$ \mathbf{u}^{b,n+1} \f$
-      Teuchos::RCP<Epetra_Vector>    velnp_;
-      /// \f$ \mathbf{u}^{b,n} \f$
-      Teuchos::RCP<Epetra_Vector>    veln_;
-      /// \f$ \mathbf{u}^{b,n-1} \f$
-      Teuchos::RCP<Epetra_Vector>    velnm_;
-      /// \f$ \mathbf{u}^{b,n+\alpha_F} \f$
-      Teuchos::RCP<Epetra_Vector>    velaf_;
-      /// velocity at time n+1 for output
-      Teuchos::RCP<Epetra_Vector>    velnpoutput_;
-      //@}
-
-      //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
-      //@{
-      Teuchos::RCP<Epetra_Vector>    scaaf_;
-      Teuchos::RCP<Epetra_Vector>    scaam_;
-      //@}
-
-      /// grid velocity (set from the adapter!)
-      Teuchos::RCP<Epetra_Vector>    gridv_;
-
-      /// histvector --- a linear combination of velnm, veln (BDF)
-      ///                or veln, accn (One-Step-Theta)
-      Teuchos::RCP<Epetra_Vector>    hist_;
-
-      //! extractor to split background fluid velocity from pressure dof
-      //! (used for convergence check)
-      Teuchos::RCP<LINALG::MapExtractor> velpressplitter_;
-
-      //! @name fluid-fluid coupling matrices and rhs-vector
-      //@{
-      Teuchos::RCP<LINALG::SparseMatrix> Cuiu_;
-      Teuchos::RCP<LINALG::SparseMatrix> Cuui_;
-      Teuchos::RCP<LINALG::SparseMatrix> Cuiui_;
-      Teuchos::RCP<Epetra_Vector>        rhC_ui_;
-      //@}
-
-
-      /// vector with Newton increments (used for monolithic fully newton fsi approach)
-      Teuchos::RCP<Epetra_Vector>       stepinc_;
-
-      /// edge stabilization and ghost penalty object
-      Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
-
-      XFluidFluid & xfluid_;
-
-      /// provides access to the xfem-dofsets of the background fluid
-      Teuchos::RCP<GEO::CutWizard> wizard_;
-
-      //@name State variables of the merged system
-      //@{
-      /// Extractor used for splitting fluid and ale_fluid
-      Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> fluidfluidsplitter_;
-
-      /// extractor used for splitting between velocity and pressure dof from
-      /// the combined background & embedded fluid dof-map
-      Teuchos::RCP<LINALG::MapExtractor> fluidfluidvelpressplitter_;
-
-      //! @name dof-row maps
-      //@{
-
-      /// combined background and embedded fluid dof-map
-      Teuchos::RCP<Epetra_Map>       fluidfluiddofrowmap_;
-      /// background fluid dof-map for output
-      Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
-      /// pressure dof-map for output
-      Teuchos::RCP<const Epetra_Map> outputpressuredofrowmap_;
-      /// combined background and embedded fluid map extractor for dirichlet-constrained dof
-      Teuchos::RCP<const LINALG::MapExtractor> fluidfluiddbcmaps_;
-      //@}
-
-      /// full system matrix for coupled background and embedded fluid
-      Teuchos::RCP<LINALG::SparseOperator> fluidfluidsysmat_;
-
-      /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-      Teuchos::RCP<Epetra_Vector>    fluidfluidzeros_;
-
-      /// (standard) residual vector (rhs for the incremental form),
-      Teuchos::RCP<Epetra_Vector>    fluidfluidresidual_;
-
-      //! @name combined background and embedded fluid
-      //! velocity and pressure at time n+1, n and increment
-      //@{
-      /// \f$ \mathbf{u}^{b\cup e,n+1} \f$
-      Teuchos::RCP<Epetra_Vector>    fluidfluidvelnp_;
-      /// \f$ \mathbf{u}^{b\cup e,n+1} \f$
-      Teuchos::RCP<Epetra_Vector>    fluidfluidveln_;
-      /// \f$ \Delta \mathbf{u}^{b\cup e,n+1}_{i+1} \f$
-      Teuchos::RCP<Epetra_Vector>    fluidfluidincvel_;
-      //@}
-
-      //@}
-
-      Teuchos::RCP<XFEM::XFEMDofSet> dofset_;
-    };
 
   public:
 
@@ -315,26 +165,26 @@ namespace FLD
     /// update configuration and output to file/screen
     void Output();
 
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() { return state_->fluidfluidincvel_; }
-    Teuchos::RCP<Epetra_Vector> Residual() { return state_->fluidfluidresidual_; }
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() { return state_->xffluidincvel_; }
+    Teuchos::RCP<Epetra_Vector> Residual() { return state_->xffluidresidual_; }
     /// implement adapter fluid
     Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
     Teuchos::RCP<const Epetra_Vector> TrueResidual() { return trueresidual_; }
 
-    Teuchos::RCP<const Epetra_Vector> Velnp() { return state_->fluidfluidvelnp_; }
-    Teuchos::RCP<      Epetra_Vector> WriteAccessVelnp() { return state_->fluidfluidvelnp_; }
+    Teuchos::RCP<const Epetra_Vector> Velnp() { return state_->xffluidvelnp_; }
+    Teuchos::RCP<      Epetra_Vector> WriteAccessVelnp() { return state_->xffluidvelnp_; }
     Teuchos::RCP<const Epetra_Vector> Velaf() { dserror("Gen. alpha not implemented for XFluidFluid problems."); return Teuchos::null; }
-    Teuchos::RCP<const Epetra_Vector> Veln() { return state_->fluidfluidveln_; }
+    Teuchos::RCP<const Epetra_Vector> Veln() { return state_->xffluidveln_; }
     Teuchos::RCP<const Epetra_Vector> GridVel() {return gridv_; }
     Teuchos::RCP<      Epetra_Vector> WriteAccessGridVel() {return gridv_; }
-    Teuchos::RCP<const Epetra_Vector> Stepinc() {return state_->stepinc_;}
+    Teuchos::RCP<const Epetra_Vector> Stepinc() {return stepinc_;}
 
     Teuchos::RCP<const Epetra_Vector> Dispnp() {return dispnp_; }
     Teuchos::RCP<      Epetra_Vector> WriteAccessDispnp() {return dispnp_; }
     Teuchos::RCP<      Epetra_Vector> WriteAccessDispOldState() {return dispnpoldstate_; }
     Teuchos::RCP<const Epetra_Vector> Dispn() { return dispn_; }
 
-    Teuchos::RCP<const Epetra_Map> DofRowMap() { return state_->fluidfluiddofrowmap_; }
+    Teuchos::RCP<const Epetra_Map> DofRowMap() { return state_->xffluiddofrowmap_; }
 
     Teuchos::RCP<const Epetra_Map>PressureRowMap();
     Teuchos::RCP<const Epetra_Map>VelocityRowMap();
@@ -343,10 +193,10 @@ namespace FLD
     /// get the combined fluid-fluid system matrix
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
-    Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor(){ return state_->fluidfluidsplitter_; }
+    Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor(){ return state_->xffluidsplitter_; }
 
     //! get combined background and embedded fluid dirichlet map extractor
-    Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return state_->fluidfluiddbcmaps_; }
+    Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return state_->xffluiddbcmaps_; }
 
     /*!
      * \brief return fluid-fluid system matrix as block matrix
@@ -433,6 +283,9 @@ namespace FLD
     void UpdateMonolithicFluidSolution(const Teuchos::RCP<const Epetra_Map>& fsidofmap);
 
   private:
+
+    /// create a new xfluid-fluid state (cut, rebuild vectors and maps)
+    Teuchos::RCP<FLD::XFluidFluidState> GetNewState();
 
     /*!
       \brief call elements to calculate system matrix/rhs and assemble
@@ -700,6 +553,8 @@ namespace FLD
     //@{
     //! background fluid discretization
     Teuchos::RCP<DRT::Discretization>      bgdis_;
+    //! xfem fluid discretization
+    Teuchos::RCP<DRT::DiscretizationXFEM>  xdiscret_;
     //! embedded fluid discretization
     Teuchos::RCP<DRT::Discretization>      embdis_;
     //! fluid-fluid interface discretization
@@ -708,15 +563,6 @@ namespace FLD
     //! that contribute to the fluid-fluid interface with at least one face
     Teuchos::RCP<DRT::Discretization>      embboundarydis_;
     //@}
-
-
-//     //! project nullspace (useful for completely Dirichlet bounded problems)
-//     bool                          project_;
-//     //! integrated basis vector (pressure component)
-//     Teuchos::RCP<Epetra_Vector>   w_;
-//     //! basis vector for nullspace (vector of ones in the pressure component)
-//     Teuchos::RCP<Epetra_Vector>   c_;
-
 
     /// for coupling using stress-based LM: L2-projection between stress fields on whole cut element
     /// or on physical volume
@@ -768,7 +614,7 @@ namespace FLD
     //@}
 
     /// output context of embedded discretization
-    Teuchos::RCP<IO::DiscretizationWriter>     emboutput_;
+    Teuchos::RCP<IO::DiscretizationWriter> emboutput_;
 
     //! @name general algorithm parameters
     //@{
@@ -824,9 +670,15 @@ namespace FLD
     double  dtsolve_;
 
     /// fluid state (cut-dependent) at time n+1
-    Teuchos::RCP<XFluidFluidState> state_;
+    Teuchos::RCP<FLD::XFluidFluidState> state_;
     /// fluid state (cut-dependent) at time n
-    Teuchos::RCP<XFluidFluidState> staten_;
+    Teuchos::RCP<FLD::XFluidFluidState> staten_;
+
+    /// vector with Newton increments (used for monolithic fully newton fsi approach)
+    Teuchos::RCP<Epetra_Vector>       stepinc_;
+
+    /// edge stabilization and ghost penalty object
+    Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
 
     /// xfem time integration object
     Teuchos::RCP<XFEM::XFluidFluidTimeIntegration> xfluidfluid_timeint_;

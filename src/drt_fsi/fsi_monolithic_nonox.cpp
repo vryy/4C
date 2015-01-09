@@ -666,7 +666,7 @@ void FSI::MonolithicNoNOX::PrepareTimeStep()
 
   // no ALE-relaxation or still at the first step? leave!
   if ( fluid_->MonolithicXffsiApproach() == INPAR::XFEM::XFFSI_Full_Newton ||
-       Step() == 0 || fluid_->IsAleRelaxationStep(Step()-1) )
+       Step() == 0 || !fluid_->IsAleRelaxationStep(Step()-1) )
     return;
 
   // recreate the combined dof-map and create a new block system matrix

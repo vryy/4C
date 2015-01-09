@@ -12,6 +12,7 @@ Maintainer:  Shadan Shahmiri
 *----------------------------------------------------------------------*/
 
 #include "xfluidfluid.H"
+#include "xfluid_state_creator.H"
 #include "xfluidfluidresulttest.H"
 
 #include "../drt_fluid/fluid_utils.H"
@@ -63,253 +64,6 @@ Maintainer:  Shadan Shahmiri
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
-
-/*------------------------------------------------------------------------------------------------*
- *------------------------------------------------------------------------------------------------*/
-FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Teuchos::RCP<const Epetra_Vector> idispcol )
-  : xfluid_( xfluid )
-{
-  // Initialize the cut wizard
-  Teuchos::RCP<DRT::DiscretizationXFEM> xdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(xfluid.bgdis_, true);
-
-  wizard_ = Teuchos::rcp( new GEO::CutWizard(xdis, xfluid.boundarydis_) );
-
-  // Set options for the cut wizard
-  wizard_->SetOptions(
-      xfluid.VolumeCellGaussPointBy_,       // how to create volume cell Gauss points?
-      xfluid.BoundCellGaussPointBy_,        // how to create boundary cell Gauss points?
-      xfluid.gmsh_cut_out_,                 // gmsh output for cut library
-      true,                          // find point positions
-      false,                         // generate only tet cells
-      true                           // print screen output
-  );
-
-  // Set the state vectors used for the cut
-  wizard_->SetState(
-      Teuchos::null,      //!< col vector holding background ALE displacements for backdis
-      idispcol,           //!< col vector holding interface displacements for cutterdis
-      Teuchos::null       //!< col vector holding nodal level-set values based on backdis
-  );
-
-  wizard_->Cut(false);
-  //--------------------------------------------------------------------------------------
-
-
-  //--------------------------------------------------------------------------------------
-  // set the new dofset after cut
-  int maxNumMyReservedDofsperNode = (xfluid.maxnumdofsets_)*4;
-
-  // create a new XFEM-dofset
-  dofset_ = Teuchos::rcp( new XFEM::XFEMDofSet( wizard_ , maxNumMyReservedDofsperNode, xfluid.bgdis_ ) );
-
-
-  // get minimal GID
-  const int restart = DRT::Problem::Instance()->Restart();
-  if ((xfluid.step_ < 1) or restart)
-  {
-    xfluid.minnumdofsets_ = xfluid.bgdis_->DofRowMap()->MinAllGID();
-  }
-  // set the minimal GID of xfem dis
-  dofset_->SetMinGID(xfluid.minnumdofsets_);
-  // set new dofset
-  xfluid_.bgdis_->ReplaceDofSet( dofset_, true);
-  xfluid_.bgdis_->FillComplete();
-
-  // print all dofsets
-  //---Str---|---Emb---|---Bg---|---ALE---|
-  xfluid_.bgdis_->GetDofSetProxy()->PrintAllDofsets(xfluid_.bgdis_->Comm());
-
-  // ---------------------------------------------------------------------------
-
-  // split dof row map into velocity and pressure dof
-  // (btw this has nothing to do with monolithic fluidsplit FSI)
-  velpressplitter_ = Teuchos::rcp(new LINALG::MapExtractor());
-  FLD::UTILS::SetupFluidSplit(*xfluid.bgdis_,xfluid.numdim_, 1,*velpressplitter_);
-
-  // get the background fluid dof-rowmap
-  fluiddofrowmap_ = Teuchos::rcp(xfluid.bgdis_->DofRowMap(), false);
-
-  // create an EpetraFECrs matrix that does communication for non-local rows and columns
-  // * this enables to do the evaluate loop over just row elements instead of col elements
-  // * time consuming assemble for cut elements is done only once on a unique row processor
-  // REMARK: call the SparseMatrix: * explicitdirichlet = true (is used in ApplyDirichlet, false uses Epetra memory based operations
-  //                                                            that are not ensured to be always compatible with baci)
-  //                                * savegraph = true, store the matrix graph (pattern for non-zero entries)
-  //                                * with FE_MATRIX flag
-
-  // REMARK: The max. number of entries to be reserved for the sparse matrix is set together as follows:
-  // for a standard hex8 element one would obtain 27(nodes)*4(dof)=108.
-  // Additionally, for edge-based stabilization, one obtains additional 6(faces)*9(nodes)*1(dof)=54 entries per row.
-  // (Why 1(dof)? --> edge-based stabilization couples v_x->u_x, v_y->u_y, v_z->u_z, q->p)
-
-  // setup of background fluid system matrix
-  // savegraph-option set to true, as the matrix graph will not change throughout the lifetime of
-  // this state-object (cut happens in ctor)
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,108+54,true,true,LINALG::SparseMatrix::FE_MATRIX));
-
-  // ---------------------------------------------------------------------------
-  // background fluid vectors
-  // ---------------------------------------------------------------------------
-
-  // background fluid velocity/pressure at time n+1, n and n-1
-  velnp_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-  veln_  = LINALG::CreateVector(*fluiddofrowmap_,true);
-  velnm_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-
-  // acceleration/(scalar time derivative) at time n+1 and n
-  accnp_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-  accn_  = LINALG::CreateVector(*fluiddofrowmap_,true);
-
-  // velocity/pressure at time n+alpha_F
-  velaf_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-
-  // acceleration/(scalar time derivative) at time n+alpha_M/(n+alpha_M/n)
-  accam_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-
-  // scalar at time n+alpha_F/n+1 and n+alpha_M/n
-  // (only required for low-Mach-number case)
-  scaaf_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-  scaam_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-
-  // history vector
-  hist_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-
-  // the vector containing body and surface forces
-  neumann_loads_= LINALG::CreateVector(*fluiddofrowmap_,true);
-
-  // rhs: standard (stabilized) residual vector (rhs for the incremental form)
-  residual_     = LINALG::CreateVector(*fluiddofrowmap_,true);
-  trueresidual_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-
-  // right hand side vector for linearised solution;
-  rhs_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-
-  // Nonlinear iteration increment vector
-  incvel_ = LINALG::CreateVector(*fluiddofrowmap_,true);
-
-  // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_  = LINALG::CreateVector(*fluiddofrowmap_,true);
-
-  // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
-
-  {
-    Teuchos::ParameterList eleparams;
-    // other parameters needed by the elements
-    eleparams.set("total time",xfluid.time_);
-    xfluid.bgdis_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
-                                     Teuchos::null, dbcmaps_);
-
-    zeros_->PutScalar(0.0); // just in case of change
-  }
-
-  // ---------------------------------------------------------------------------
-  // combined dof-maps & map extractors for merged background & embedded fluid
-  // ---------------------------------------------------------------------------
-
-  // merge the background and embedded fluid dof-maps
-  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
-  Teuchos::RCP<const Epetra_Map> embfluiddofrowmap = Teuchos::rcp(xfluid.embdis_->DofRowMap(),false);
-  maps.push_back(fluiddofrowmap_);
-
-  maps.push_back(embfluiddofrowmap);
-  fluidfluiddofrowmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
-
-  // setup the embedded fluid/background fluid map extractor
-  fluidfluidsplitter_ = Teuchos::rcp(new FLD::UTILS::FluidXFluidMapExtractor());
-  fluidfluidvelpressplitter_ = Teuchos::rcp(new LINALG::MapExtractor());
-  fluidfluidsplitter_->Setup(*fluidfluiddofrowmap_,embfluiddofrowmap,fluiddofrowmap_);
-
-  FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluid.bgdis_,xfluid.numdim_,*xfluid.embdis_,*fluidfluidvelpressplitter_,fluidfluiddofrowmap_);
-
-  // ---------------------------------------------------------------------------
-  // matrices & vectors for merged background & embedded fluid
-  // ---------------------------------------------------------------------------
-
-  // the combined fluid system matrix is not of FECrs-type - it is solely composed out of
-  // fully assembled submatrices
-  fluidfluidsysmat_   = Teuchos::rcp(new LINALG::SparseMatrix(*fluidfluiddofrowmap_,108,false,true));
-
-  fluidfluidresidual_ = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
-  fluidfluidincvel_   = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
-  fluidfluidvelnp_    = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
-  fluidfluidveln_     = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
-  fluidfluidzeros_    = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
-
-  // increment vector for merged background & embedded fluid
-  // (not the classical Newton increment but the difference to
-  // the value at the last time step)
-  stepinc_ = LINALG::CreateVector(*fluidfluiddofrowmap_,true);
-
-  // create object for edgebased stabilization
-  if(xfluid_.eval_eos_)
-    edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(wizard_, xfluid_.bgdis_));
-
-  // allocate memory for fluid-fluid coupling matrices
-  PrepareCouplingMatrices(true);
-
-  // build merged fluid dirichlet maps
-  CreateMergedDBCMapExtractor();
-}
-
-/*------------------------------------------------------------------------------------------------*
- | prepare fluid-fluid coupling matrices for evaluation routine
- *------------------------------------------------------------------------------------------------*/
-void FLD::XFluidFluid::XFluidFluidState::PrepareCouplingMatrices(bool initial_call)
-{
-  // allocate, if this is the first call after construction.
-  // the boundary and embedded fluid dof maps will never change,
-  // and the background fluid map also won't change during the lifetime of this state object
-  if (initial_call)
-  {
-    if (xfluid_.coupling_approach_ == CouplingMHCS_XFluid or
-        xfluid_.coupling_approach_ == CouplingNitsche_XFluid or
-        xfluid_.coupling_approach_ == CouplingMHVS_XFluid)
-    {
-      Cuui_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
-      Cuiu_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.boundarydofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
-      Cuiui_ = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.boundarydofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
-      rhC_ui_= LINALG::CreateVector(*xfluid_.boundarydofrowmap_,true);
-    }
-    else if (xfluid_.coupling_approach_ == CouplingNitsche_EmbFluid or xfluid_.coupling_approach_ == CouplingNitsche_TwoSided)
-    {
-      Cuui_  = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
-      Cuiu_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.embdis_->DofRowMap(),0,true,true,LINALG::SparseMatrix::FE_MATRIX));
-      Cuiui_ = Teuchos::rcp(new LINALG::SparseMatrix(*xfluid_.embdis_->DofRowMap(),0,true,true,LINALG::SparseMatrix::FE_MATRIX));
-      rhC_ui_= LINALG::CreateVector(*xfluid_.embdis_->DofRowMap(),true);
-    }
-    else
-      dserror("Unknown fluid-fluid coupling type. Failed to prepare coupling matrices.");
-
-    return;
-  }
-
-  // if this is not the initial call, set everything to zero
-  Cuui_->Zero();
-  Cuiu_->Zero();
-  Cuiui_->Zero();
-  rhC_ui_->Scale(0.0);
-}
-
-/*------------------------------------------------------------------------------------------------*
- | create map of dirichlet-constrained dof from both fluids
- *------------------------------------------------------------------------------------------------*/
-void FLD::XFluidFluid::XFluidFluidState::CreateMergedDBCMapExtractor()
-{
-  // create merged dbc map from both fluids
-  std::vector<Teuchos::RCP<const Epetra_Map> > dbcmaps;
-  dbcmaps.push_back(dbcmaps_->CondMap());
-  dbcmaps.push_back(xfluid_.dbcmaps_->CondMap());
-
-  Teuchos::RCP<const Epetra_Map> fluidfluiddbcmap = LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
-
-  std::vector<Teuchos::RCP<const Epetra_Map> > othermaps;
-  othermaps.push_back(dbcmaps_->OtherMap());
-  othermaps.push_back(xfluid_.dbcmaps_->OtherMap());
-  Teuchos::RCP<const Epetra_Map> fluidfluidothermap = LINALG::MultiMapExtractor::MergeMaps(othermaps);
-
-  fluidfluiddbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*fluidfluiddofrowmap_,fluidfluiddbcmap,fluidfluidothermap));
-}
 
 /*------------------------------------------------------------------------------------------------*
  * estimate the scaling from the trace inequality via solving local eigenvalue problems for Nitsche's method
@@ -506,7 +260,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
   Teuchos::RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*(discret_->DofColMap()),true);
   // create an column fluid-fluid coupling rhs-vector for assembly over row elements,
   // that has to be communicated at the end
-  Teuchos::RCP<Epetra_Vector> rhC_ui_col;
+  Teuchos::RCP<Epetra_Vector> rhC_s_col;
 
   // ---------------------------------------------------------------------------
 
@@ -526,8 +280,8 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
   embdis_->SetState("scaaf",scaaf_);
   embdis_->SetState("scaam",scaam_);
 
-  state_->fluidfluidsplitter_->InsertFluidVector(veln_,state_->fluidfluidveln_);
-  state_->fluidfluidsplitter_->InsertXFluidVector(state_->veln_,state_->fluidfluidveln_);
+  state_->xffluidsplitter_->InsertFluidVector(veln_,state_->xffluidveln_);
+  state_->xffluidsplitter_->InsertXFluidVector(state_->veln_,state_->xffluidveln_);
 
   // if we have a moving embedded fluid or embedded-sided coupling,
   // set the embedded fluid displacement
@@ -566,17 +320,17 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
   DRT::AssembleStrategy strategy(0, 0, state_->sysmat_,Teuchos::null,residual_col,Teuchos::null,Teuchos::null);
   DRT::AssembleStrategy emb_strategy(0, 0, sysmat_,shapederivatives_, residual_,Teuchos::null,Teuchos::null);
 
-  state_->PrepareCouplingMatrices();
+  state_->ZeroCouplingMatricesAndRhs();
 
   if (coupling_approach_ == CouplingMHCS_XFluid or
       coupling_approach_ == CouplingNitsche_XFluid or
       coupling_approach_ == CouplingMHVS_XFluid)
   {
-    rhC_ui_col= LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+    rhC_s_col= LINALG::CreateVector(*boundarydis_->DofColMap(),true);
   }
   else if (coupling_approach_ == CouplingNitsche_EmbFluid or coupling_approach_ == CouplingNitsche_TwoSided)
   {
-    rhC_ui_col= LINALG::CreateVector(*embdis_->DofColMap(),true);
+    rhC_s_col= LINALG::CreateVector(*embdis_->DofColMap(),true);
   }
 
   DRT::Element::LocationArray la( 1 );
@@ -611,7 +365,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
     DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem");
 
     // wizard returns NULL, if element is not intersected
-    GEO::CUT::ElementHandle * e = state_->wizard_->GetElement( actele );
+    GEO::CUT::ElementHandle * e = state_->Wizard()->GetElement( actele );
 
     // evaluate an intersected background fluid element
     if ( e!=NULL )
@@ -759,14 +513,14 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
             couplingmatrices.resize(3);
 
             // no coupling for pressure in stress based method, but the coupling matrices include entries for pressure coupling
-            couplingmatrices[0].Reshape(ndof_i,ndof);  //C_uiu
-            couplingmatrices[1].Reshape(ndof,ndof_i);  //C_uui
-            couplingmatrices[2].Reshape(ndof_i,1);     //rhC_ui
+            couplingmatrices[0].Reshape(ndof_i,ndof);  //C_sx
+            couplingmatrices[1].Reshape(ndof,ndof_i);  //C_xs
+            couplingmatrices[2].Reshape(ndof_i,1);     //rhC_s
 
           }
 
           const size_t nui = patchelementslm.size();
-          Epetra_SerialDenseMatrix  Cuiui(nui,nui);
+          Epetra_SerialDenseMatrix  C_ss(nui,nui);
 
           if (coupling_approach_ == CouplingMHCS_XFluid or coupling_approach_ == CouplingMHVS_XFluid)
             impl->ElementXfemInterfaceHybridLM(
@@ -782,7 +536,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
                                               mat,
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
-                                              Cuiui,
+                                              C_ss,
                                               cells,
                                               true);
           else if (coupling_approach_ == CouplingNitsche_XFluid)
@@ -798,7 +552,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
                                               strategy.Elevector1(),
                                               cells,
                                               side_coupling,
-                                              Cuiui,
+                                              C_ss,
                                               Teuchos::null);
           else if (coupling_approach_ == CouplingNitsche_EmbFluid or coupling_approach_ == CouplingNitsche_TwoSided)
             impl->ElementXfemInterfaceNIT(    ele,
@@ -813,7 +567,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
                                               strategy.Elevector1(),
                                               cells,
                                               side_coupling,
-                                              Cuiui,
+                                              C_ss,
                                               embdis_);
           else
             dserror("The coupling method you have chosen is not (yet) implemented.");
@@ -846,31 +600,31 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
                 emb_ele->LocationVector(*embdis_, patchlm, patchlmowner, patchlmstride);
               }
 
-              // assemble Cuiu
+              // assemble Csx
               //create a dummy mypatchlmowner that assembles also non-local rows and communicates the required data
               std::vector<int> mypatchlmowner;
               for(size_t index=0; index<patchlmowner.size(); index++) mypatchlmowner.push_back(myrank_);
 
-              state_->Cuiu_->FEAssemble(-1, couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
+              state_->C_sx_->FEAssemble(-1, couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
 
-              // assemble Cuui
+              // assemble Cxs
               std::vector<int> mylmowner;
               for(size_t index=0; index<la[0].lmowner_.size(); index++) mylmowner.push_back(myrank_);
 
-              state_->Cuui_->FEAssemble(-1, couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
+              state_->C_xs_->FEAssemble(-1, couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
 
 
-              // assemble rhC_ui_col
-              Epetra_SerialDenseVector rhC_ui_eptvec(::View,couplingmatrices[2].A(),patchlm.size());
-              LINALG::Assemble(*rhC_ui_col, rhC_ui_eptvec, patchlm, mypatchlmowner);
+              // assemble rhC_s_col
+              Epetra_SerialDenseVector rhC_s_eptvec(::View,couplingmatrices[2].A(),patchlm.size());
+              LINALG::Assemble(*rhC_s_col, rhC_s_eptvec, patchlm, mypatchlmowner);
             }
           }
 
-          // assemble Cuiui
+          // assemble C_ss
           std::vector<int> mypatchelementslmowner;
           for(size_t index=0; index<patchelementslm.size(); index++) mypatchelementslmowner.push_back(myrank_);
 
-          state_->Cuiui_->FEAssemble(-1,Cuiui, patchelementslm, mypatchelementslmowner, patchelementslm );
+          state_->C_ss_->FEAssemble(-1,C_ss, patchelementslm, mypatchelementslmowner, patchelementslm );
 
         }
 
@@ -963,7 +717,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
       DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
       if ( ele==NULL ) dserror( "expect FluidIntFace element" );
 
-      state_->edgestab_->EvaluateEdgeStabGhostPenalty(faceparams, discret_, ele, state_->sysmat_, strategy.Systemvector1(), gmsh_EOS_out_);
+      edgestab_->EvaluateEdgeStabGhostPenalty(faceparams, discret_, ele, state_->sysmat_, strategy.Systemvector1(), gmsh_EOS_out_);
     }
   }
 
@@ -975,26 +729,26 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
       coupling_approach_ == CouplingMHVS_XFluid)
   {
     // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
-    state_->Cuui_->Complete(*boundarydofrowmap_,*state_->fluiddofrowmap_);
-    state_->Cuiu_->Complete(*state_->fluiddofrowmap_,*boundarydofrowmap_);
-    state_->Cuiui_->Complete(*boundarydofrowmap_,*boundarydofrowmap_);
+    state_->C_xs_->Complete(*boundarydofrowmap_,*state_->xfluiddofrowmap_);
+    state_->C_sx_->Complete(*state_->xfluiddofrowmap_,*boundarydofrowmap_);
+    state_->C_ss_->Complete(*boundarydofrowmap_,*boundarydofrowmap_);
   }
   else if (coupling_approach_ == CouplingNitsche_EmbFluid or coupling_approach_ == CouplingNitsche_TwoSided)
   {
     // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
-    state_->Cuui_->Complete(*embdis_->DofRowMap(),*state_->fluiddofrowmap_);
-    state_->Cuiu_->Complete(*state_->fluiddofrowmap_,*embdis_->DofRowMap());
-    state_->Cuiui_->Complete(*embdis_->DofRowMap(),*embdis_->DofRowMap());
+    state_->C_xs_->Complete(*embdis_->DofRowMap(),*state_->xfluiddofrowmap_);
+    state_->C_sx_->Complete(*state_->xfluiddofrowmap_,*embdis_->DofRowMap());
+    state_->C_ss_->Complete(*embdis_->DofRowMap(),*embdis_->DofRowMap());
   }
 
   //-------------------------------------------------------------------------------
   // export the rhs coupling vector to a row vector
-  Epetra_Vector rhC_ui_tmp(state_->rhC_ui_->Map(),true);
-  Epetra_Export exporter_rhC_ui_col(rhC_ui_col->Map(),rhC_ui_tmp.Map());
+  Epetra_Vector rhC_s_tmp(state_->rhC_s_->Map(),true);
+  Epetra_Export exporter_rhC_s_col(rhC_s_col->Map(),rhC_s_tmp.Map());
   {
-    const int err = rhC_ui_tmp.Export(*rhC_ui_col,exporter_rhC_ui_col,Add);
+    const int err = rhC_s_tmp.Export(*rhC_s_col,exporter_rhC_s_col,Add);
     if (err) dserror("Export using exporter returned err=%d",err);
-    state_->rhC_ui_->Update(1.0,rhC_ui_tmp,0.0);
+    state_->rhC_s_->Update(1.0,rhC_s_tmp,0.0);
   }
 
   //-------------------------------------------------------------------------------
@@ -1032,7 +786,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
 
     DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(act_emb_ele->Shape(), "xfem");
 
-    GEO::CUT::ElementHandle * e = state_->wizard_->GetElement( act_emb_ele );
+    GEO::CUT::ElementHandle * e = state_->Wizard()->GetElement( act_emb_ele );
     if ( e!=NULL )
     {
       dserror("Obtained valid cut-handle for element %d. Expected embedded element.");
@@ -1108,9 +862,9 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
       DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
       if ( ele==NULL ) dserror( "expect FluidIntFace element" );
       if (xff_eos_pres_emb_layer_)
-        state_->edgestab_->EvaluateEdgeStabBoundaryGP(faceparams, embdis_,embboundarydis_, ele, sysmat_linalg, residual_col);
+        edgestab_->EvaluateEdgeStabBoundaryGP(faceparams, embdis_,embboundarydis_, ele, sysmat_linalg, residual_col);
       else
-        state_->edgestab_->EvaluateEdgeStabStd(faceparams, embdis_, ele, sysmat_linalg, residual_col);
+        edgestab_->EvaluateEdgeStabStd(faceparams, embdis_, ele, sysmat_linalg, residual_col);
     }
 
     //------------------------------------------------------------
@@ -1135,14 +889,14 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
   // finalize the complete matrices
   sysmat_->Complete();
 
-  // adding rhC_ui_ to fluidale residual
-  for (int iter=0; iter<state_->rhC_ui_->MyLength();++iter)
+  // adding rhC_s_ to fluidale residual
+  for (int iter=0; iter<state_->rhC_s_->MyLength();++iter)
   {
-    const int rhsdgid = state_->rhC_ui_->Map().GID(iter);
-    if (state_->rhC_ui_->Map().MyGID(rhsdgid) == false) dserror("rhsd_ should be on all processors");
+    const int rhsdgid = state_->rhC_s_->Map().GID(iter);
+    if (state_->rhC_s_->Map().MyGID(rhsdgid) == false) dserror("rhsd_ should be on all processors");
     if (residual_->Map().MyGID(rhsdgid))
       (*residual_)[residual_->Map().LID(rhsdgid)]=(*residual_)[residual_->Map().LID(rhsdgid)] +
-                                                                        (*state_->rhC_ui_)[state_->rhC_ui_->Map().LID(rhsdgid)];
+                                                                        (*state_->rhC_s_)[state_->rhC_s_->Map().LID(rhsdgid)];
     else dserror("Interface dof %d does not belong to embedded discretization!",rhsdgid);
   }
 }
@@ -1209,7 +963,7 @@ void FLD::XFluidFluid::GmshOutput( DRT::Discretization & discret,
   {
     DRT::Element* actele = discret.lRowElement(i);
 
-    GEO::CUT::ElementHandle * e = state_->wizard_->GetElement( actele );
+    GEO::CUT::ElementHandle * e = state_->Wizard()->GetElement( actele );
     if ( e!=NULL )
     {
 
@@ -1294,7 +1048,7 @@ void FLD::XFluidFluid::GmshOutput( DRT::Discretization & discret,
   {
     DRT::Element* actele = discret.lRowElement(i);
 
-    GEO::CUT::ElementHandle * e = state_->wizard_->GetElement( actele );
+    GEO::CUT::ElementHandle * e = state_->Wizard()->GetElement( actele );
     if ( e!=NULL )
     {
       GEO::CUT::plain_volumecell_set cells;
@@ -1655,7 +1409,7 @@ void FLD::XFluidFluid::GmshOutputBoundaryCell( DRT::Discretization & discret,
     std::vector<GEO::CUT::BoundaryCell*> & bcs = i->second;
 
     DRT::Element * side = cutdiscret.gElement( sid );
-    GEO::CUT::SideHandle * s = state_->wizard_->GetMeshCuttingSide( sid, 0 );
+    GEO::CUT::SideHandle * s = state_->Wizard()->GetMeshCuttingSide( sid, 0 );
 
     const int numnodes = side->NumNode();
     DRT::Node ** nodes = side->Nodes();
@@ -1772,11 +1526,13 @@ FLD::XFluidFluid::XFluidFluid(
     bool                                          alefluid
 ):TimInt(bgdis, solver, params, bgdis->Writer()),
   bgdis_(bgdis),
+  xdiscret_(Teuchos::null),
   embdis_(embdis),
   emboutput_(emboutput),
   alefluid_(alefluid)
 {
   output_->WriteMesh(0,0.0);
+  xdiscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(bgdis, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -1952,10 +1708,9 @@ void FLD::XFluidFluid::Init()
   //----------------------------------------------------------------------
 
   //--------------------------------------------------
-  // XFluidFluid State
+  // Create XFluidFluid State
   //-----------------------------------------------
   const int restart = DRT::Problem::Instance()->Restart();
-  Teuchos::RCP<Epetra_Vector> idispcol = LINALG::CreateVector(*boundarydis_->DofColMap(), true );
 
   if (alefluid_)
   {
@@ -1967,16 +1722,9 @@ void FLD::XFluidFluid::Init()
   if (restart)
   {
     ReadRestartEmb(restart);
-
-    if (alefluid_)
-      LINALG::Export(*dispn_,*idispcol);
   }
 
-  state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
-
-
-  if ( not bgdis_->Filled() or not bgdis_->HaveDofs() )
-    bgdis_->FillComplete();
+  state_ = GetNewState();
 
   //----------------------------------------------------------------
   // create embedded-boundary discretization needed for solving
@@ -1993,7 +1741,7 @@ void FLD::XFluidFluid::Init()
   }
 
   if (alefluid_)
-    xfluidfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidFluidTimeIntegration(bgdis_, embdis_, state_->wizard_, step_,
+    xfluidfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidFluidTimeIntegration(bgdis_, embdis_, state_->Wizard(), step_,
                                                                               xfem_timeintapproach_,*params_));
 
   return;
@@ -2002,12 +1750,12 @@ void FLD::XFluidFluid::Init()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> FLD::XFluidFluid::VelocityRowMap()
-{ return state_->fluidfluidvelpressplitter_->OtherMap(); }
+{ return state_->xffluidvelpressplitter_->OtherMap(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> FLD::XFluidFluid::PressureRowMap()
-{ return state_->fluidfluidvelpressplitter_->CondMap(); }
+{ return state_->xffluidvelpressplitter_->CondMap(); }
 
 // ------------------------------------------------------------------------
 // prepare embedded discretization for Ale-sided-coupling
@@ -2624,8 +2372,8 @@ void FLD::XFluidFluid::Solve()
   while (stopnonliniter==false)
   {
     // Insert fluid and xfluid vectors to fluidxfluid
-    state_->fluidfluidsplitter_->InsertXFluidVector(state_->velnp_, state_->fluidfluidvelnp_);
-    state_->fluidfluidsplitter_->InsertFluidVector(velnp_, state_->fluidfluidvelnp_);
+    state_->xffluidsplitter_->InsertXFluidVector(state_->velnp_, state_->xffluidvelnp_);
+    state_->xffluidsplitter_->InsertFluidVector(velnp_, state_->xffluidvelnp_);
 
     itnum++;
 
@@ -2651,6 +2399,7 @@ void FLD::XFluidFluid::Solve()
 
       if (itnum != itemax)
       {
+        // call elements
         AssembleMatAndRHS();
       }
 
@@ -2681,9 +2430,9 @@ void FLD::XFluidFluid::Solve()
       LINALG::Export(*fixedfsizeros_,*residual_);
     }
 
-    // insert fluid and alefluid residuals to fluidfluidresidual
-    state_->fluidfluidsplitter_->InsertXFluidVector(state_->residual_, state_->fluidfluidresidual_);
-    state_->fluidfluidsplitter_->InsertFluidVector(residual_, state_->fluidfluidresidual_);
+    // insert xfluid and embedded fluid residuals to xffluidresidual
+    state_->xffluidsplitter_->InsertXFluidVector(state_->residual_, state_->xffluidresidual_);
+    state_->xffluidsplitter_->InsertFluidVector(residual_, state_->xffluidresidual_);
 
     double incvelnorm_L2 = 0.0;
     double incprenorm_L2 = 0.0;
@@ -2695,23 +2444,23 @@ void FLD::XFluidFluid::Solve()
     double presnorm = 0.0;
 
 
-    Teuchos::RCP<Epetra_Vector> onlyvel =  state_->fluidfluidvelpressplitter_->ExtractOtherVector(state_->fluidfluidresidual_);
+    Teuchos::RCP<Epetra_Vector> onlyvel =  state_->xffluidvelpressplitter_->ExtractOtherVector(state_->xffluidresidual_);
     onlyvel->Norm2(&vresnorm);
 
-    state_->fluidfluidvelpressplitter_->ExtractOtherVector( state_->fluidfluidincvel_,onlyvel);
+    state_->xffluidvelpressplitter_->ExtractOtherVector( state_->xffluidincvel_,onlyvel);
     onlyvel->Norm2(&incvelnorm_L2);
 
-    state_->fluidfluidvelpressplitter_->ExtractOtherVector( state_->fluidfluidvelnp_,onlyvel);;
+    state_->xffluidvelpressplitter_->ExtractOtherVector( state_->xffluidvelnp_,onlyvel);;
     onlyvel->Norm2(&velnorm_L2);
 
 
-    Teuchos::RCP<Epetra_Vector> onlypre =  state_->fluidfluidvelpressplitter_->ExtractCondVector( state_->fluidfluidresidual_);
+    Teuchos::RCP<Epetra_Vector> onlypre =  state_->xffluidvelpressplitter_->ExtractCondVector( state_->xffluidresidual_);
     onlypre->Norm2(&presnorm);
 
-    state_->fluidfluidvelpressplitter_->ExtractCondVector( state_->fluidfluidincvel_,onlypre);
+    state_->xffluidvelpressplitter_->ExtractCondVector( state_->xffluidincvel_,onlypre);
     onlypre->Norm2(&incprenorm_L2);
 
-    state_->fluidfluidvelpressplitter_->ExtractCondVector( state_->fluidfluidvelnp_,onlypre);
+    state_->xffluidvelpressplitter_->ExtractCondVector( state_->xffluidvelnp_,onlypre);
     onlypre->Norm2(&prenorm_L2);
 
 
@@ -2827,27 +2576,27 @@ void FLD::XFluidFluid::Solve()
     //--------- Apply Dirichlet boundary conditions to system of equations
     //          residual displacements are supposed to be zero at
     //          boundary conditions
-    state_->fluidfluidincvel_->PutScalar(0.0);
+    state_->xffluidincvel_->PutScalar(0.0);
 
     // Add the fluid & xfluid & couple-matrices to fluidxfluidsysmat;
-    state_->fluidfluidsysmat_->Zero();
-    state_->fluidfluidsysmat_->Add(*state_->sysmat_,false,1.0,0.0);
-    state_->fluidfluidsysmat_->Add(*sysmat_,false,1.0,1.0);
-    state_->fluidfluidsysmat_->Add(*state_->Cuui_,false,1.0,1.0);
-    state_->fluidfluidsysmat_->Add(*state_->Cuiu_,false,1.0,1.0);
-    state_->fluidfluidsysmat_->Add(*state_->Cuiui_,false,1.0,1.0);
-    state_->fluidfluidsysmat_->Complete();
+    state_->xffluidsysmat_->Zero();
+    state_->xffluidsysmat_->Add(*state_->sysmat_,false,1.0,0.0);
+    state_->xffluidsysmat_->Add(*sysmat_,false,1.0,1.0);
+    state_->xffluidsysmat_->Add(*state_->C_xs_,false,1.0,1.0);
+    state_->xffluidsysmat_->Add(*state_->C_sx_,false,1.0,1.0);
+    state_->xffluidsysmat_->Add(*state_->C_ss_,false,1.0,1.0);
+    state_->xffluidsysmat_->Complete();
 
     // build a merged map from fluid-fluid dirichlet-maps
-    state_->CreateMergedDBCMapExtractor();
+    state_->CreateMergedDBCMapExtractor(dbcmaps_);
 
-    LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,
-        state_->fluidfluidresidual_,state_->fluidfluidzeros_,*state_->fluidfluiddbcmaps_->CondMap());
+    LINALG::ApplyDirichlettoSystem(state_->xffluidsysmat_,state_->xffluidincvel_,
+        state_->xffluidresidual_,state_->xffluidzeros_,*state_->xffluiddbcmaps_->CondMap());
 
     // set the fsi dirichlet values for monolithic_fixedale_partitioned
     if (toggle_ != Teuchos::null)
     {
-      LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,state_->fluidfluidzeros_,toggle_);
+      LINALG::ApplyDirichlettoSystem(state_->xffluidsysmat_,state_->xffluidincvel_,state_->xffluidresidual_,state_->xffluidzeros_,toggle_);
     }
 
     //-------solve for residual displacements to correct incremental displacements
@@ -2865,8 +2614,8 @@ void FLD::XFluidFluid::Solve()
       }
 
 
-      Teuchos::RCP<LINALG::SparseMatrix> sysmatmatrixmatlab = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->fluidfluidsysmat_);
-      solver_->Solve(state_->fluidfluidsysmat_->EpetraOperator(),state_->fluidfluidincvel_,state_->fluidfluidresidual_,true,itnum==1);
+      Teuchos::RCP<LINALG::SparseMatrix> sysmatmatrixmatlab = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->xffluidsysmat_);
+      solver_->Solve(state_->xffluidsysmat_->EpetraOperator(),state_->xffluidincvel_,state_->xffluidresidual_,true,itnum==1);
       solver_->ResetTolerance();
 
       // end time measurement for solver
@@ -2877,14 +2626,14 @@ void FLD::XFluidFluid::Solve()
     // update velocity and pressure values by increments
     //
     // -------------------------------------------------------------------
-    state_->fluidfluidvelnp_->Update(1.0,*state_->fluidfluidincvel_,1.0);
+    state_->xffluidvelnp_->Update(1.0,*state_->xffluidincvel_,1.0);
     // extract velnp_
-    state_->velnp_ = state_->fluidfluidsplitter_->ExtractXFluidVector(state_->fluidfluidvelnp_);
-    velnp_ = state_->fluidfluidsplitter_->ExtractFluidVector(state_->fluidfluidvelnp_);
+    state_->velnp_ = state_->xffluidsplitter_->ExtractXFluidVector(state_->xffluidvelnp_);
+    velnp_ = state_->xffluidsplitter_->ExtractFluidVector(state_->xffluidvelnp_);
 
     // extract residual
-    state_->residual_ = state_->fluidfluidsplitter_->ExtractXFluidVector(state_->fluidfluidresidual_);
-    residual_ = state_->fluidfluidsplitter_->ExtractFluidVector(state_->fluidfluidresidual_);
+    state_->residual_ = state_->xffluidsplitter_->ExtractXFluidVector(state_->xffluidresidual_);
+    residual_ = state_->xffluidsplitter_->ExtractFluidVector(state_->xffluidresidual_);
 
     // Update the fluid material velocity along the interface (ivelnp_), source (in): state_.velnp_
     LINALG::Export(*(velnp_),*(ivelnp_));
@@ -2940,13 +2689,13 @@ void FLD::XFluidFluid::Evaluate(
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
 
-    Teuchos::RCP<Epetra_Vector> stepinc_bg = LINALG::CreateVector(*state_->fluiddofrowmap_,true);
+    Teuchos::RCP<Epetra_Vector> stepinc_bg = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
     Teuchos::RCP<Epetra_Vector> stepinc_emb = LINALG::CreateVector(*embdis_->DofRowMap(),true);
 
-    stepinc_bg = state_->fluidfluidsplitter_->ExtractXFluidVector(stepinc);
-    stepinc_emb = state_->fluidfluidsplitter_->ExtractFluidVector(stepinc);
+    stepinc_bg = state_->xffluidsplitter_->ExtractXFluidVector(stepinc);
+    stepinc_emb = state_->xffluidsplitter_->ExtractFluidVector(stepinc);
 
-    Teuchos::RCP<Epetra_Vector> stepinc_bg_tmp = LINALG::CreateVector(*state_->fluiddofrowmap_,true);
+    Teuchos::RCP<Epetra_Vector> stepinc_bg_tmp = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
     Teuchos::RCP<Epetra_Vector> stepinc_emb_tmp = LINALG::CreateVector(*embdis_->DofRowMap(),true);
 
     stepinc_bg_tmp->Update(1.0, *state_->veln_, 1.0, *stepinc_bg, 0.0);
@@ -2970,34 +2719,35 @@ void FLD::XFluidFluid::Evaluate(
       SetDirichletNeumannBC();
       SetHistoryValues();
 
-      stepinc_bg = LINALG::CreateVector(*state_->fluiddofrowmap_,true);
+      stepinc_bg = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
 
       // calculate the stepinc for both fluids. This is needed in
       // monolithic fsi to sum up the iteration steps
       stepinc_bg->Update(1.0,*state_->velnp_,-1.0,*state_->veln_,0.0);
       stepinc_emb->Update(1.0,*velnp_,-1.0,*veln_,0.0);
 
-      state_->fluidfluidsplitter_->InsertXFluidVector(stepinc_bg,state_->stepinc_);
-      state_->fluidfluidsplitter_->InsertFluidVector(stepinc_emb,state_->stepinc_);
+      state_->xffluidsplitter_->InsertXFluidVector(stepinc_bg,stepinc_);
+      state_->xffluidsplitter_->InsertFluidVector(stepinc_emb,stepinc_);
     }
 
-    state_->fluidfluidsplitter_->InsertXFluidVector(state_->velnp_,state_->fluidfluidvelnp_);
-    state_->fluidfluidsplitter_->InsertFluidVector(velnp_,state_->fluidfluidvelnp_);
+    state_->xffluidsplitter_->InsertXFluidVector(state_->velnp_,state_->xffluidvelnp_);
+    state_->xffluidsplitter_->InsertFluidVector(velnp_,state_->xffluidvelnp_);
 
     // mit iterinc--------------------------------------
-//     state_->fluidfluidvelnp_->Update(1.0,*stepinc,1.0);
+//     state_->xffluidvelnp_->Update(1.0,*stepinc,1.0);
 //     // extract velnp_
-//     state_->velnp_ = state_->fluidfluidsplitter_->ExtractXFluidVector(state_->fluidfluidvelnp_);
-//     velnp_ = state_->fluidfluidsplitter_->ExtractFluidVector(state_->fluidfluidvelnp_);
+//     state_->velnp_ = state_->xffluidsplitter_->ExtractXFluidVector(state_->xffluidvelnp_);
+//     velnp_ = state_->xffluidsplitter_->ExtractFluidVector(state_->xffluidvelnp_);
 
     // extract residual
-    state_->residual_ = state_->fluidfluidsplitter_->ExtractXFluidVector(state_->fluidfluidresidual_);
-    residual_ = state_->fluidfluidsplitter_->ExtractFluidVector(state_->fluidfluidresidual_);
+    state_->residual_ = state_->xffluidsplitter_->ExtractXFluidVector(state_->xffluidresidual_);
+    residual_ = state_->xffluidsplitter_->ExtractFluidVector(state_->xffluidresidual_);
 
     // Update the fluid material velocity along the interface (ivelnp_), source (in): state_.velnp_
     LINALG::Export(*(velnp_),*(ivelnp_));
   }
 
+  //call elements
   AssembleMatAndRHS();
 
   // scaling to get true residual vector
@@ -3005,27 +2755,27 @@ void FLD::XFluidFluid::Evaluate(
   trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
   // Add the fluid & xfluid & couple-matrices to fluidxfluidsysmat
-  state_->fluidfluidsysmat_->Add(*state_->sysmat_,false,1.0,0.0);
-  state_->fluidfluidsysmat_->Add(*sysmat_,false,1.0,1.0);
-  state_->fluidfluidsysmat_->Add(*state_->Cuui_,false,1.0,1.0);
-  state_->fluidfluidsysmat_->Add(*state_->Cuiu_,false,1.0,1.0);
-  state_->fluidfluidsysmat_->Add(*state_->Cuiui_,false,1.0,1.0);
-  state_->fluidfluidsysmat_->Complete();
+  state_->xffluidsysmat_->Add(*state_->sysmat_,false,1.0,0.0);
+  state_->xffluidsysmat_->Add(*sysmat_,false,1.0,1.0);
+  state_->xffluidsysmat_->Add(*state_->C_xs_,false,1.0,1.0);
+  state_->xffluidsysmat_->Add(*state_->C_sx_,false,1.0,1.0);
+  state_->xffluidsysmat_->Add(*state_->C_ss_,false,1.0,1.0);
+  state_->xffluidsysmat_->Complete();
 
-  state_->fluidfluidincvel_->PutScalar(0.0);
+  state_->xffluidincvel_->PutScalar(0.0);
 
   state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->zeros_), state_->residual_);
   dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
-  // insert fluid and embfluid residuals to fluidfluidresidual
-  state_->fluidfluidsplitter_->InsertXFluidVector(state_->residual_,state_->fluidfluidresidual_);
-  state_->fluidfluidsplitter_->InsertFluidVector(residual_,state_->fluidfluidresidual_);
+  // insert fluid and embfluid residuals to xffluidresidual
+  state_->xffluidsplitter_->InsertXFluidVector(state_->residual_,state_->xffluidresidual_);
+  state_->xffluidsplitter_->InsertFluidVector(residual_,state_->xffluidresidual_);
 
   // build a merged map from fluid-fluid dbc-maps
-  state_->CreateMergedDBCMapExtractor();
+  state_->CreateMergedDBCMapExtractor(dbcmaps_);
 
-  LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,
-      state_->fluidfluidzeros_,*state_->fluidfluiddbcmaps_->CondMap());
+  LINALG::ApplyDirichlettoSystem(state_->xffluidsysmat_,state_->xffluidincvel_,state_->xffluidresidual_,
+      state_->xffluidzeros_,*state_->xffluiddbcmaps_->CondMap());
 
   if (active_shapederivatives_)
   {
@@ -3272,7 +3022,7 @@ void FLD::XFluidFluid::Update()
   velnm_->Update(1.0,*veln_ ,0.0);
   veln_ ->Update(1.0,*velnp_,0.0);
 
-  state_->fluidfluidveln_->Update(1.0,*state_->fluidfluidvelnp_,0.0);
+  state_->xffluidveln_->Update(1.0,*state_->xffluidvelnp_,0.0);
 
   iveln_->Update(1.0,*ivelnp_,0.0);
 
@@ -3302,19 +3052,14 @@ void FLD::XFluidFluid::CutAndSetState()
   // if restart
   if (restart and ((restart+1) == step_))
   {
-    xfluidfluid_timeint_->CreateBgNodeMapsForRestart(staten_->wizard_);
+    xfluidfluid_timeint_->CreateBgNodeMapsForRestart(staten_->Wizard());
   }
 
   // new cut for this time step
-  Teuchos::RCP<Epetra_Vector> idispcol = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-  LINALG::Export(*dispnp_,*idispcol);
-
-  // we obtain a new state
-  state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
-
+  state_ = GetNewState();
   // map of background-fluid's standard and enriched node-ids and
   // their dof-gids for new cut
-  samemaps_ = xfluidfluid_timeint_->SaveBgNodeMapsAndCreateNew(state_->wizard_);
+  samemaps_ = xfluidfluid_timeint_->SaveBgNodeMapsAndCreateNew(state_->Wizard());
 }//CutAndSetState()
 
 
@@ -3391,8 +3136,8 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector> disp)
     if (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_IncompProj)
     {
       xfluidfluid_timeint_->EnforceIncompAfterProjection(
-          state_->wizard_,
-          staten_->wizard_,
+          state_->Wizard(),
+          staten_->Wizard(),
           state_->velnp_,
           state_->veln_,
           state_->velnm_,
@@ -3475,7 +3220,7 @@ void FLD::XFluidFluid::UpdateMonolithicFluidSolution(const Teuchos::RCP<const Ep
   fixedfsizeros_->PutScalar(1.0);
 
   // the toggle vector with values 1 and 0
-  toggle_ = LINALG::CreateVector(*state_->fluidfluiddofrowmap_,true);
+  toggle_ = LINALG::CreateVector(*state_->xffluiddofrowmap_,true);
   LINALG::Export(*fixedfsizeros_,*toggle_);
 
   fixedfsizeros_->PutScalar(0.0);
@@ -3483,8 +3228,8 @@ void FLD::XFluidFluid::UpdateMonolithicFluidSolution(const Teuchos::RCP<const Ep
   if (gmsh_debug_out_)
   {
     int count = 1;
-    Teuchos::RCP<Epetra_Vector> testbg = state_->fluidfluidsplitter_->ExtractXFluidVector(toggle_);
-    Teuchos::RCP<Epetra_Vector> testemb = state_->fluidfluidsplitter_->ExtractFluidVector(toggle_);
+    Teuchos::RCP<Epetra_Vector> testbg = state_->xffluidsplitter_->ExtractXFluidVector(toggle_);
+    Teuchos::RCP<Epetra_Vector> testemb = state_->xffluidsplitter_->ExtractFluidVector(toggle_);
     GmshOutput( *bgdis_, *embdis_, *boundarydis_, "toggle", count,  step_, testbg , testemb, dispnp_);
     GmshOutput( *bgdis_,* embdis_, *boundarydis_, "res_nachcut", gmsh_count_, step_, state_->velnp_, velnp_,
                        dispnp_);
@@ -3526,7 +3271,7 @@ void FLD::XFluidFluid::SetDirichletNeumannBC()
   state_->neumann_loads_->PutScalar(0.0);
   bgdis_->SetState("scaaf",state_->scaaf_);
 
-  XFEM::EvaluateNeumann(state_->wizard_, eleparams, bgdis_, state_->neumann_loads_);
+  XFEM::EvaluateNeumann(state_->Wizard(), eleparams, bgdis_, state_->neumann_loads_);
 
   bgdis_->ClearState();
 
@@ -3685,7 +3430,7 @@ void FLD::XFluidFluid::Output()
       for (int i=0; i<xdiscret->NumMyRowFaces(); ++i)
       {
         const DRT::Element* actele = xdiscret->lRowFace(i);
-        std::map<int,int> & ghost_penalty_map = state_->edgestab_->GetGhostPenaltyMap();
+        std::map<int,int> & ghost_penalty_map = edgestab_->GetGhostPenaltyMap();
 
         std::map<int,int>::iterator it = ghost_penalty_map.find(actele->Id());
         if(it != ghost_penalty_map.end())
@@ -3706,7 +3451,7 @@ void FLD::XFluidFluid::Output()
       for (int i=0; i<xdiscret->NumMyRowFaces(); ++i)
       {
         const DRT::Element* actele = xdiscret->lRowFace(i);
-        std::map<int,int> & edge_based_map = state_->edgestab_->GetEdgeBasedMap();
+        std::map<int,int> & edge_based_map = edgestab_->GetEdgeBasedMap();
         std::map<int,int>::iterator it = edge_based_map.find(actele->Id());
 
         if(it != edge_based_map.end())
@@ -3831,7 +3576,7 @@ void FLD::XFluidFluid::Output()
       else if(gdofs_current.size() % gdofs_original.size() == 0) //multiple dofsets
       {
         // if there are multiple dofsets we write output for the standard dofset
-        GEO::CUT::Node* node = state_->wizard_->GetNode(xfemnode->Id());
+        GEO::CUT::Node* node = state_->Wizard()->GetNode(xfemnode->Id());
 
         GEO::CUT::Point* p = node->point();
 
@@ -4546,7 +4291,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 
       DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
 
-      GEO::CUT::ElementHandle * e = state_->wizard_->GetElement( actele );
+      GEO::CUT::ElementHandle * e = state_->Wizard()->GetElement( actele );
       DRT::Element::LocationArray la( 1 );
 
       DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem");
@@ -5243,7 +4988,7 @@ Teuchos::RCP<DRT::ResultTest> FLD::XFluidFluid::CreateFieldTest()
  *------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> FLD::XFluidFluid::SystemMatrix()
 {
-  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->fluidfluidsysmat_);
+  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->xffluidsysmat_);
 }
 
 // -------------------------------------------------------------------
@@ -5266,8 +5011,6 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluidFluid::ExtrapolateEndPoint
 }
 
 /*------------------------------------------------------------------------------------------------*
- | get fluid-fluid system matrix as block matrix
- | for the case of monolithic fluid-fluid fsi with fluidsplit
  *------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> FLD::XFluidFluid::BlockSystemMatrix(
     Teuchos::RCP<Epetra_Map> innermap,
@@ -5292,7 +5035,8 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> FLD::XFluidFluid::BlockSystemMatrix(
   return blockmat_;
 }
 
-
+/*------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------*/
 void FLD::XFluidFluid::SetXFluidParams()
 {
   numdim_            = DRT::Problem::Instance()->NDim(); //params_->get<int>("DIM");
@@ -5448,4 +5192,65 @@ void FLD::XFluidFluid::SetXFluidParams()
   // set XFEM-related parameters on element level
   SetElementGeneralFluidXFEMParameter();
   SetFaceGeneralFluidXFEMParameter();
+}
+
+/*------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------*/
+Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidFluid::GetNewState()
+{
+  // new cut for this time step
+  Teuchos::RCP<Epetra_Vector> idispcol = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
+
+  if (alefluid_)
+  {
+    LINALG::Export(*dispnp_,*idispcol);
+  }
+
+  Teuchos::RCP<FLD::XFluidStateCreator> state_creator = Teuchos::rcp(
+      new FLD::XFluidStateCreator(
+        VolumeCellGaussPointBy_,
+        BoundCellGaussPointBy_,
+        gmsh_cut_out_,
+        maxnumdofsets_,
+        minnumdofsets_));
+
+  Teuchos::RCP<FLD::XFluidFluidState> state = state_creator->Create(
+    xdiscret_,
+    boundarydis_,
+    embdis_,
+    Teuchos::null, //!< col vector holding background ALE displacements for backdis
+    idispcol,      //!< col vector holding interface displacements for cutterdis
+    Teuchos::null, //!< col vector holding nodal level-set values based on backdis
+    solver_->Params(),
+    step_,
+    time_);
+
+  if(coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_Coupling)
+  {
+    state_creator->InitCouplingMatrices(boundarydis_);
+
+    // we just allow for xfluid-sided couplings
+    state_creator->InitCouplingRhs(boundarydis_);
+  }
+  else
+  {
+    state_creator->InitCouplingMatrices(embdis_);
+
+    // we just allow for xfluid-sided couplings
+    state_creator->InitCouplingRhs(embdis_);
+  }
+
+  // increment vector for merged background & embedded fluid
+  // (not the classical Newton increment but the difference to
+  // the value at the last time step)
+  stepinc_ = LINALG::CreateVector(*state->xffluiddofrowmap_,true);
+
+  // build a merged map from fluid-fluid dbc-maps
+  state->CreateMergedDBCMapExtractor(dbcmaps_);
+
+  // create object for edgebased stabilization
+  if(eval_eos_)
+    edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(state->Wizard(), bgdis_));
+
+  return state;
 }

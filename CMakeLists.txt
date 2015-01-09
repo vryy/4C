@@ -1144,9 +1144,11 @@ set(OBJS_DRT_FLUID_TURBULENCE
 set(OBJS_DRT_FLUID_XFLUID
   src/drt_fluid_xfluid/xfluid.cpp
   src/drt_fluid_xfluid/xfluidfluid.cpp
-  src/drt_fluid_xfluid/xfluidresulttest.cpp
   src/drt_fluid_xfluid/xfluidfluidresulttest.cpp
+  src/drt_fluid_xfluid/xfluidfluid_state.cpp
+  src/drt_fluid_xfluid/xfluidresulttest.cpp
   src/drt_fluid_xfluid/xfluid_state.cpp
+  src/drt_fluid_xfluid/xfluid_state_creator.cpp
   src/drt_fluid_xfluid/xfluid_levelset_coupling_algorithm.cpp
 )
 set(OBJS_DRT_SR_LIB

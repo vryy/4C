@@ -14,7 +14,9 @@ Maintainer:  Benedikt Schott
 
 #include "xfluid_defines.H"
 #include "xfluid.H"
-
+#include "xfluid_state_creator.H"
+#include "xfluid_state.H"
+#include "xfluidresulttest.H"
 
 #include "../drt_fluid/fluid_utils.H"
 
@@ -75,10 +77,6 @@ Maintainer:  Benedikt Schott
 #include "../drt_mat/matpar_bundle.H"
 
 #include "../drt_crack/crackUtils.H"
-
-#include "xfluidresulttest.H"
-#include "xfluid_state.H"
-#include "xfluid.H"
 
 
 /*----------------------------------------------------------------------*
