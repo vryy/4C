@@ -406,6 +406,15 @@ bool DRT::Discretization::BuildSurfacesinCondition(
   else if (cond->Type() == DRT::Condition::RedAirwayTissue)
     FindAssociatedEleIDs(cond, VolEleIDs, "StructFluidVolCoupling");
 
+  //Just for information - remove later
+  if ((cond->Type() == DRT::Condition::StructFluidSurfCoupling) or (cond->Type() == DRT::Condition::RedAirwayTissue))
+  {
+    if (cond->comm_->MyPID()==0)
+    {
+      std::cout << "Volume Coupling Condition ID: " << cond->Id()+1 << " found and checked..."<< std::endl;
+    }
+  }
+
   /* First: Create the surface objects that belong to the condition. */
 
   // get ptrs to all node ids that have this condition
@@ -483,20 +492,99 @@ bool DRT::Discretization::BuildSurfacesinCondition(
             // if all nodes are in our cloud, add surface
             if (allin)
             {
-              std::vector<int> nodes( actsurf->NumNode() );
-              transform( actsurf->Nodes(), actsurf->Nodes() + actsurf->NumNode(),
-                         nodes.begin(), std::mem_fun( &DRT::Node::Id ) );
-              sort( nodes.begin(), nodes.end() );
-
-              if ( surfmap.find( nodes ) == surfmap.end() )
+              //If condition type is a volume coupling condition, remove internal surfaces
+              if ((cond->Type() == DRT::Condition::StructFluidSurfCoupling) or (cond->Type() == DRT::Condition::RedAirwayTissue))
               {
-                Teuchos::RCP<DRT::Element> surf = Teuchos::rcp( actsurf->Clone() );
-                // Set owning process of surface to node with smallest gid.
-                surf->SetOwner( gNode( nodes[0] )->Owner() );
-                surfmap[nodes] = surf;
-              }
+                // remove internal surfaces that are connected to two volume elements
+                DRT::Node** actsurfnodes = actsurf->Nodes();
+                const int actsurfnumnode = actsurf->NumNode();
 
-              foundvolele = true;
+                // to be tested
+                std::vector<int> nodes( actsurf->NumNode() );
+                transform( actsurf->Nodes(), actsurf->Nodes() + actsurf->NumNode(),
+                           nodes.begin(), std::mem_fun( &DRT::Node::Id ) );
+                sort( nodes.begin(), nodes.end() );
+
+                // get all volume elements connected to the nodes of this surface element
+                std::set<DRT::Element*> adjacentvoleles;
+                for(int n=0; n<actsurfnumnode; ++n)
+                {
+                  DRT::Node* actsurfnode = actsurfnodes[n];
+                  DRT::Element** eles = actsurfnode->Elements();
+                  int numeles = actsurfnode->NumElement();
+                  for(int e=0; e<numeles; ++e)
+                  {
+                    // do not consider volume elements that do not belong to VolEleIDs
+                    if (VolEleIDs.size())
+                      if (VolEleIDs.find(eles[e]->Id()) == VolEleIDs.end())
+                        continue;
+                    adjacentvoleles.insert(eles[e]);
+                  }
+                }
+
+                int identical = 0;
+                // get surfaces of all adjacent vol eles and check how often actsurf is included via comparison of node ids
+                for(std::set<DRT::Element*>::const_iterator iter=adjacentvoleles.begin(); iter!=adjacentvoleles.end(); ++iter)
+                {
+                  std::vector<Teuchos::RCP<DRT::Element> >  adjacentvolelesurfs = (*iter)->Surfaces();
+                  const int adjacentvolelenumsurfs = (*iter)->NumSurface();
+                  for(int n=0; n<adjacentvolelenumsurfs; ++n)
+                  {
+                    // current surf of adjacent vol ele
+                    std::vector<int> nodesadj( adjacentvolelesurfs[n]->NumNode() );
+                    transform( adjacentvolelesurfs[n]->Nodes(), adjacentvolelesurfs[n]->Nodes() + adjacentvolelesurfs[n]->NumNode(),
+                               nodesadj.begin(), std::mem_fun( &DRT::Node::Id ) );
+                    sort( nodesadj.begin(), nodesadj.end() );
+
+                    if (nodes.size() == nodesadj.size())
+                    {
+                      if ( std::equal (nodes.begin(), nodes.end(), nodesadj.begin()) )
+                        identical++;
+                    }
+                  }
+                }
+
+                if(identical == 0)
+                  dserror("surface found with missing underlying volume element");
+                else if(identical > 1)
+                {
+                  /*const int* actsurfnodeids = actsurf->NodeIds();
+                  std::cout << "A surface element which was included unintentionally was removed (node ids: ";
+                  for(int n=0; n<actsurfnumnode; ++n)
+                    std::cout << actsurfnodeids[n] << " ";
+                  std::cout << " )" << std::endl;*/
+                }
+                else
+                {
+                  // now we can add the surface
+                  if ( surfmap.find( nodes ) == surfmap.end() )
+                  {
+                    Teuchos::RCP<DRT::Element> surf = Teuchos::rcp( actsurf->Clone() );
+                    // Set owning process of surface to node with smallest gid.
+                    surf->SetOwner( gNode( nodes[0] )->Owner() );
+                    surfmap[nodes] = surf;
+                  }
+                  foundvolele = true;
+                }
+
+              } //end of special volume condition checking
+              else
+              {
+                std::vector<int> nodes( actsurf->NumNode() );
+                transform( actsurf->Nodes(), actsurf->Nodes() + actsurf->NumNode(),
+                           nodes.begin(), std::mem_fun( &DRT::Node::Id ) );
+                sort( nodes.begin(), nodes.end() );
+
+                if ( surfmap.find( nodes ) == surfmap.end() )
+                {
+                  Teuchos::RCP<DRT::Element> surf = Teuchos::rcp( actsurf->Clone() );
+                  // Set owning process of surface to node with smallest gid.
+                  surf->SetOwner( gNode( nodes[0] )->Owner() );
+                  surfmap[nodes] = surf;
+                }
+
+                foundvolele = true;
+              }
             }
             break;
           }
@@ -505,6 +593,13 @@ bool DRT::Discretization::BuildSurfacesinCondition(
     }
     if (VolEleIDs.size() and foundvolele == false)
       dserror("special surface condition: missing associated volume element");
+  }
+
+  //Write output for Gmsh format for debugging of StructFluidSurfCoupling surface correction,
+  //note that this can only be done on one proc
+  if ((cond->Type() == DRT::Condition::StructFluidSurfCoupling) or (cond->Type() == DRT::Condition::RedAirwayTissue))
+  {
+    DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(surfmap,cond->Id(),cond->comm_->NumProc(),cond->comm_->MyPID());
   }
 
   // Surfaces be added to the condition: (line_id) -> (surface).
