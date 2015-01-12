@@ -1360,7 +1360,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::Transpose()
   }
   else if(matrixtype_ == FE_MATRIX)
   {
-    Epetra_FECrsMatrix* Aprime = &(dynamic_cast<Epetra_FECrsMatrix&>(trans(*sysmat_)));
+    Epetra_CrsMatrix* Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(trans(*sysmat_)));
     matrix = Teuchos::rcp(new SparseMatrix(Teuchos::rcp(Aprime,false),Copy,explicitdirichlet_, savegraph_, FE_MATRIX));
   }
   else

@@ -844,7 +844,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
     }
     else dserror("embsysmat is NULL!");
 
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(new LINALG::SparseMatrix(sysmat_FE,View,true,true,LINALG::SparseMatrix::FE_MATRIX));
+    Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(new LINALG::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),View,true,true,LINALG::SparseMatrix::FE_MATRIX));
 
     //------------------------------------------------------------
     // loop over row faces

@@ -90,9 +90,11 @@ class SparseMatrix : public SparseMatrixBase
 #if __cplusplus >= 201103L
   template <typename... T> foo(T...) = delete;
 #else
-  template <typename T0>                           SparseMatrix(T0)         {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor");}
-  template <typename T0, typename T1>              SparseMatrix(T0, T1)     {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor");}
-  template <typename T0, typename T1, typename T2> SparseMatrix(T0, T1, T2) {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor");}
+  template <typename T0>                                                     SparseMatrix(T0)                 {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") __attribute__((unused));}
+  template <typename T0, typename T1>                                        SparseMatrix(T0, T1)             {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") __attribute__((unused));}
+  template <typename T0, typename T1, typename T2>                           SparseMatrix(T0, T1, T2)         {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") __attribute__((unused));}
+  template <typename T0, typename T1, typename T2, typename T3>              SparseMatrix(T0, T1, T2, T3)     {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") __attribute__((unused));}
+  template <typename T0, typename T1, typename T2, typename T3, typename T4> SparseMatrix(T0, T1, T2, T3, T4) {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") __attribute__((unused));}
 #endif
 
     /// construction of sparse matrix
@@ -138,7 +140,7 @@ class SparseMatrix : public SparseMatrixBase
 
     /// construction of a diagonal matrix from a vector
     /*!
-      Creates diagonal matrix with range and domain map euqal to vector map.
+      Creates diagonal matrix with range and domain map equal to vector map.
       Sets diagonal values from vector and does NOT call Complete() on matrix
 
       Does not make a copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix
