@@ -237,14 +237,6 @@ namespace DRT
         const std::string&                        name                   ///< name of the condition
         );
 
-    //
-    void WriteBoundarySurfacesVolumeCoupling(
-        std::map< std::vector<int>, Teuchos::RCP<DRT::Element> > surfmap, //map containing the surfaces of the boundary condition
-        int condID,                                                       //condition ID
-        int numproc,                                                      //number of procs
-        int mypid                                                         //current proc
-        );
-
   }
 }
 

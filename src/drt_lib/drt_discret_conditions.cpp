@@ -18,6 +18,7 @@ Maintainer: Michael Gee
 
 #include "drt_globalproblem.H"
 #include "drt_condition_utils.H"
+#include "drt_condition_utils_baci.H"
 #include "../linalg/linalg_utils.H"
 
 #include <numeric>
