@@ -4805,6 +4805,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Set solver number for l2-projection.",
   &fdyn_wallmodel);
 
+  DoubleParameter("Quadrature_Tol",-1.0,"Increment of Tauw of full step, between 0.0 and 1.0",&fdyn_wallmodel);
+
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for multifractal subgrid-scales
   Teuchos::ParameterList& fdyn_turbmfs = fdyn.sublist("MULTIFRACTAL SUBGRID SCALES",false,"");

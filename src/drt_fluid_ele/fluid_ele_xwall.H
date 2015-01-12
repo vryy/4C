@@ -121,62 +121,6 @@ public:
   //the standard element is 10.0
   virtual double EvaluationCost() { return 50.0; }
 
-//  //@}
-//
-//  //! @name Evaluation
-//
-//  /*!
-//  \brief Evaluate an element, that is, call the element routines to evaluate fluid
-//  element matrices and vectors or evaluate errors, statistics or updates etc. directly.
-//
-//  \param params (in/out): ParameterList for communication between control routine
-//                          and elements
-//  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-//                          the controling method does not epxect the element to fill
-//                          this matrix.
-//  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-//                          the controling method does not epxect the element to fill
-//                          this matrix.
-//  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-//                          the controlling method does not epxect the element
-//                          to fill this vector
-//  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-//                          the controlling method does not epxect the element
-//                          to fill this vector
-//  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-//                          the controlling method does not epxect the element
-//                          to fill this vector
-//  \return 0 if successful, negative otherwise
-//  */
-//  virtual int Evaluate(Teuchos::ParameterList&   params,
-//               DRT::Discretization&      discretization,
-//               std::vector<int>&         lm,
-//               Epetra_SerialDenseMatrix& elemat1,
-//               Epetra_SerialDenseMatrix& elemat2,
-//               Epetra_SerialDenseVector& elevec1,
-//               Epetra_SerialDenseVector& elevec2,
-//               Epetra_SerialDenseVector& elevec3);
-
-
-//  /*!
-//  \brief Evaluate Neumann boundary condition
-//
-//  \param params (in/out)    : ParameterList for communication between control routine
-//                              and elements
-//  \param discretization (in): reference to the underlying discretization
-//  \param condition (in)     : condition to be evaluated
-//  \param lm (in)            : location vector of this element
-//  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-//
-//  \return 0 if successful, negative otherwise
-//  */
-//  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
-//                              DRT::Discretization&      discretization,
-//                              DRT::Condition&           condition,
-//                              std::vector<int>&         lm,
-//                              Epetra_SerialDenseVector& elevec1,
-//                              Epetra_SerialDenseMatrix* elemat1 = NULL);
-
   virtual int UniqueParObjectId() const { return FluidXWallType::Instance().UniqueParObjectId(); }
 
   virtual void Pack(DRT::PackBuffer& data) const;

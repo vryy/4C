@@ -25,6 +25,7 @@ namespace DRT
 {
 namespace ELEMENTS
 {
+  class FluidXWall;
 
   template<DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
   class FluidEleCalcXWall : public FluidEleCalc<distype,enrtype>
@@ -84,6 +85,49 @@ public:
       Epetra_SerialDenseVector&     elevec3_epetra,
       bool                          offdiag = false);
 
+  virtual void Sysmat(const LINALG::Matrix<my::nsd_,my::nen_> &             ebofoaf,
+                      const LINALG::Matrix<my::nsd_,my::nen_> &             eprescpgaf,
+                      const LINALG::Matrix<my::nsd_,my::nen_> &             ebofon,
+                      const LINALG::Matrix<my::nsd_,my::nen_> &             eprescpgn,
+                      const LINALG::Matrix<my::nsd_,my::nen_>&              evelaf,
+                      const LINALG::Matrix<my::nsd_,my::nen_>&              eveln,
+                      const LINALG::Matrix<my::nsd_,my::nen_> &             evelnp,
+                      const LINALG::Matrix<my::nsd_,my::nen_>&              fsevelaf,
+                      const LINALG::Matrix<my::nen_,1> &                fsescaaf,
+                      const LINALG::Matrix<my::nsd_,my::nen_>&              evel_hat,
+                      const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&         ereynoldsstress_hat,
+                      const LINALG::Matrix<my::nen_,1>&                 epreaf,
+                      const LINALG::Matrix<my::nen_,1>&                 epren,
+                      const LINALG::Matrix<my::nen_,1>&                 eprenp,
+                      const LINALG::Matrix<my::nsd_,my::nen_>&              eaccam,
+                      const LINALG::Matrix<my::nen_,1>&                 escaaf,
+                      const LINALG::Matrix<my::nen_,1>&                 escaam,
+                      const LINALG::Matrix<my::nen_,1>&                 escadtam,
+                      const LINALG::Matrix<my::nen_,1>&                 escabofoaf,
+                      const LINALG::Matrix<my::nen_,1>&                 escabofon,
+                      const LINALG::Matrix<my::nsd_,my::nen_>&              emhist,
+                      const LINALG::Matrix<my::nsd_,my::nen_>&              edispnp,
+                      const LINALG::Matrix<my::nsd_,my::nen_>&              egridv,
+                      LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_>&  estif,
+                      LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_>&  emesh,
+                      LINALG::Matrix<(my::nsd_+1)*my::nen_,    1>&          eforce,
+                      const LINALG::Matrix<my::nen_,1> &                eporo,
+                      const LINALG::Matrix<my::nsd_,my::nen_> &             egradphi,
+                      const LINALG::Matrix<my::nen_,1> &                ecurvature,
+                      const double                                  thermpressaf,
+                      const double                                  thermpressam,
+                      const double                                  thermpressdtaf,
+                      const double                                  thermpressdtam,
+                      Teuchos::RCP<const MAT::Material>             material,
+                      double&                                       Cs_delta_sq,
+                      double&                                       Ci_delta_sq,
+                      double&                                       Cv,
+                      bool                                          isale,
+                      double *                                      saccn,
+                      double *                                      sveln,
+                      double *                                      svelnp,
+                      const DRT::UTILS::GaussIntegration &          intpoints);
+
 private:
 
   const static int enren_=DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -97,7 +141,7 @@ private:
                                         );
 
   //! prepare special Gauss rule for quadrature
-  virtual void PrepareGaussRule(Teuchos::ParameterList&    params);
+  virtual void PrepareGaussRule();
 
   //! get properties of xwall element
   virtual void GetEleProperties(DRT::ELEMENTS::Fluid*    ele,
@@ -221,6 +265,7 @@ private:
 
   //! bool if old and new psi should be calculated
   bool calcoldandnewpsi_;
+  bool evaluate_sysmat_;
 
   //! node coordinates
   LINALG::Matrix<my::nsd_,enren_> xyze_;
@@ -261,6 +306,14 @@ private:
 
   // element parameter mk
   double mk_;
+
+  double quadraturetol_;
+
+  int numgpnorm_;
+  int numgpplane_;
+
+  Teuchos::RCP<Epetra_Vector> gpvecnorm_;
+  Teuchos::RCP<Epetra_Vector> gpvecpar_;
 
   //! object to construct gauss points in several dimensions
   Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp_;

@@ -150,6 +150,8 @@ FLD::XWall::XWall(
   if (scale_sep != "algebraic_multigrid_operator" && mfs_fs_)
     dserror("enrichment can only be fine-scale velocity if the AVM3 method is used");
 
+  quadraturetol_=params_->sublist("WALL MODEL").get<double>("Quadrature_Tol") ;
+
   //output:
   if(myrank_==0)
   {
@@ -167,6 +169,7 @@ FLD::XWall::XWall(
     std::cout << "Solver for tau_w smoothing:   " << (DRT::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER") << std::endl;
     std::cout << "Solver for projection:        " << params_->sublist("WALL MODEL").get<int>("PROJECTION_SOLVER") << std::endl;
     std::cout << "Enrichment fine scale vel:    " << mfs_fs_ << std::endl;
+    std::cout << "Tolerance of adaptive quadr.: " << quadraturetol_ << std::endl;
     std::cout << std::endl;
     std::cout << "WARNING: ramp functions are used to treat fluid Mortar coupling conditions" << std::endl;
     std::cout << "WARNING: face element with enrichment not implemented" << std::endl;
@@ -204,8 +207,10 @@ void FLD::XWall::SetXWallParams(Teuchos::ParameterList& eleparams)
 
   eleparams.set("mk",mkstate_);
 
-  eleparams.set<int>("gpnorm",gp_norm_);
-  eleparams.set<int>("gppar",gp_par_);
+  eleparams.set<double>("qtol",quadraturetol_);
+
+  eleparams.set("gpnorm",gpvecnorm_);
+  eleparams.set("gppar",gpvecpar_);
 
   return;
 }
@@ -225,9 +230,8 @@ void FLD::XWall::SetXWallParamsXWDis(Teuchos::ParameterList& eleparams)
 
   eleparams.set("mk",mkxwstate_);
 
-  eleparams.set<int>("gpnorm",gp_norm_);
-  eleparams.set<int>("gppar",gp_par_);
-
+  eleparams.set("gpnorm",gpvecnormxw_);
+  eleparams.set("gppar",gpvecparxw_);
   return;
 }
 
@@ -271,6 +275,15 @@ void FLD::XWall::Setup()
     mkxwstate_->PutScalar(0.33333333333);
     mkstate_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementColMap()),true));
     mkstate_->PutScalar(0.33333333333);
+
+    gpvecnorm_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementColMap()),true));
+    gpvecpar_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementColMap()),true));
+    gpvecnorm_->PutScalar((double)gp_norm_);
+    gpvecpar_->PutScalar((double)gp_par_);
+    gpvecnormxw_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->ElementColMap()),true));
+    gpvecparxw_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->ElementColMap()),true));
+    gpvecnormxw_->PutScalar((double)gp_norm_);
+    gpvecparxw_->PutScalar((double)gp_par_);
   }
 
   return;
@@ -840,6 +853,19 @@ void FLD::XWall::SetupL2Projection()
  *----------------------------------------------------------------------*/
   void FLD::XWall::UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual, int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln)
 {
+
+  {//export Gauss points to xw discretization
+    Teuchos::RCP<Epetra_Vector> gpvxw=Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->ElementRowMap()),true));
+    Teuchos::RCP<Epetra_Vector> gpv=Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap()),true));
+
+    LINALG::Export(*gpvecnorm_,*gpv);
+    LINALG::Export(*gpv,*gpvxw);
+    LINALG::Export(*gpvxw,*gpvecnormxw_);
+    LINALG::Export(*gpvecpar_,*gpv);
+    LINALG::Export(*gpv,*gpvxw);
+    LINALG::Export(*gpvxw,*gpvecparxw_);
+  }
+
   TransferAndSaveTauw();
 
   Teuchos::RCP<Epetra_Vector> newtauw = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
@@ -1068,6 +1094,8 @@ void FLD::XWall::CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   trueresidual,T
   tauw->PutScalar(0.0);
 
   tauwcouplingmattrans_->Multiply(true,*newtauw,*newtauw2);
+  double meansp=0.0;
+  newtauw2->MeanValue(&meansp);
 
   LINALG::Export(*newtauw2,*tauw);
   inctauw_->Update(fac_,*tauw,-fac_); //now this is the increment (new-old)
@@ -1075,10 +1103,6 @@ void FLD::XWall::CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   trueresidual,T
   tauw_->Update(1.0,*inctauw_,1.0);
 
   OverwriteTransferedValues();
-
-  LINALG::Export(*tauw_,*newtauw2);
-  double meansp=0.0;
-  newtauw2->MeanValue(&meansp);
 
   LINALG::Export(*inctauw_,*newtauw2);
   LINALG::Export(*newtauw2,*inctauwxwdis_);

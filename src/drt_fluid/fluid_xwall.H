@@ -214,6 +214,12 @@ private:
   //! MK for xwall discretization
   Teuchos::RCP<Epetra_Vector> mkxwstate_;
 
+  Teuchos::RCP<Epetra_Vector> gpvecnorm_;
+  Teuchos::RCP<Epetra_Vector> gpvecpar_;
+
+  Teuchos::RCP<Epetra_Vector> gpvecnormxw_;
+  Teuchos::RCP<Epetra_Vector> gpvecparxw_;
+
   Teuchos::RCP<TransferTurbulentInflowConditionNodal> turbulent_inflow_condition_;
 
   //! increment factor of tauw
@@ -258,6 +264,9 @@ private:
 
   //! switch from gradient-based to residual-based calculation of tauw
   int switch_step_;
+
+  //! increment factor of tauw
+  double quadraturetol_;
 
 }; // class XWall
 
