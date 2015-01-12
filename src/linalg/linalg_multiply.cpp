@@ -214,5 +214,5 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
     return Teuchos::rcp(new SparseMatrix(finalresult,explicitdirichlet,savegraph));
 #endif
   }
-  return Teuchos::rcp(new SparseMatrix(result,explicitdirichlet,savegraph));
+  return Teuchos::rcp(new SparseMatrix(result,View,explicitdirichlet,savegraph));
 }

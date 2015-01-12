@@ -1325,7 +1325,7 @@ void POROELAST::PORO_SCATRA_Mono::FDCheck()
 
   Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
   Teuchos::RCP<LINALG::SparseMatrix> sparse_copy = Teuchos::rcp(
-      new LINALG::SparseMatrix(*(sparse->EpetraMatrix())));
+      new LINALG::SparseMatrix(sparse->EpetraMatrix(),Copy));
 
   if (false)
   {
@@ -1423,7 +1423,7 @@ void POROELAST::PORO_SCATRA_Mono::FDCheck()
   stiff_approx->FillComplete();
 
   Teuchos::RCP<LINALG::SparseMatrix> stiff_approx_sparse = Teuchos::null;
-  stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(*stiff_approx));
+  stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(stiff_approx,Copy));
 
   stiff_approx_sparse->Add(*sparse_copy, false, -1.0, 1.0);
 

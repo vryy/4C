@@ -792,7 +792,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
   crsPRmat->FillComplete();
 
   // store matrix
-  Sep_ = Teuchos::rcp(new LINALG::SparseMatrix(crsPRmat));
+  Sep_ = Teuchos::rcp(new LINALG::SparseMatrix(crsPRmat,View));
   //complete scale-separation matrix and check maps
   Sep_->Complete(Sep_->DomainMap(),Sep_->RangeMap());
 

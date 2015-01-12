@@ -500,7 +500,7 @@ void THR::TimIntImpl::NewtonFull()
     // finite difference check
     FDCheck();
 #endif
-    
+
     // apply Dirichlet BCs to system of equations
     tempi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(tang_, tempi_, fres_,
@@ -984,7 +984,7 @@ void THR::TimIntImpl::FDCheck()
     = LINALG::CreateMatrix((tang_->RowMap()), 81);
 
   Teuchos::RCP<LINALG::SparseMatrix> tang_copy
-    = Teuchos::rcp(new LINALG::SparseMatrix(*(tang_->EpetraMatrix())));
+    = Teuchos::rcp(new LINALG::SparseMatrix(tang_->EpetraMatrix(),Copy));
   std::cout << "\n****************** THR finite difference check ******************" << endl;
   std::cout << "thermo field has " << dofs << " DOFs"<< endl;
 
@@ -1040,7 +1040,7 @@ void THR::TimIntImpl::FDCheck()
   tang_approx->FillComplete();
   // copy tang_approx
   Teuchos::RCP<LINALG::SparseMatrix> tang_approx_sparse
-    = Teuchos::rcp(new LINALG::SparseMatrix(*tang_approx));
+    = Teuchos::rcp(new LINALG::SparseMatrix(tang_approx,Copy));
   // tang_approx_sparse = tang_approx_sparse - tang_copy
   tang_approx_sparse->Add(*tang_copy, false, -1.0, 1.0);
 

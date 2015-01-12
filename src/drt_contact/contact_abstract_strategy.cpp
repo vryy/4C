@@ -411,10 +411,10 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
 
     // setup global Mortar matrices Dold and Mold
-    dold_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+    dold_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,1,true,false));
     dold_->Zero();
     dold_->Complete();
-    mold_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+    mold_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,1,true,false));
     mold_->Zero();
     mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
   }
@@ -473,7 +473,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
     // setup global Mortar matrices Dold and Mold
     if (dold_ == Teuchos::null)
     {
-      dold_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+      dold_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,1,true,false));
       dold_->Zero();
       dold_->Complete();
     }
@@ -482,7 +482,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
 
     if (mold_ == Teuchos::null)
     {
-      mold_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+      mold_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,1,true,false));
       mold_->Zero();
       mold_->Complete(*gmdofrowmap_, *gsdofrowmap_);
     }
@@ -540,7 +540,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   {
     if (doldmod_ == Teuchos::null)
     {
-      doldmod_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+      doldmod_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,1,true,false));
       doldmod_->Zero();
       doldmod_->Complete();
     }

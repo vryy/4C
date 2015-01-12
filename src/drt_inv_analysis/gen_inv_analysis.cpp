@@ -2597,13 +2597,13 @@ void STR::GenInvAnalysis::InitPatches()
   // multiply matrices to get final smoothing matrix
   if (smoothingsteps_ == 0)
   {
-    smoother_ = Teuchos::rcp(new LINALG::SparseMatrix(*patches));
+    smoother_ = Teuchos::rcp(new LINALG::SparseMatrix(patches,Copy));
   }
   else
   {
     smoother_ = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->ElementRowMap(),numpatches_));
     smoother_ = LINALG::MLMultiply(*laplace,*patches,false,false,true);
-    LINALG::SparseMatrix linalg_laplace(*laplace);
+    LINALG::SparseMatrix linalg_laplace(laplace,Copy);
     for (int idsmooth = 1; idsmooth<smoothingsteps_; idsmooth++)
       smoother_ = LINALG::MLMultiply(linalg_laplace,*smoother_,false,false,true);
   }

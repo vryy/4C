@@ -2106,7 +2106,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProblem(Teuchos::RCP<Epetr
     incompdis_->Comm().Barrier();
     Q_i->FillComplete(*veldofrowmap,*veldofrowmap);
 
-    Teuchos::RCP<LINALG::SparseMatrix> Q_i_spr = Teuchos::rcp(new LINALG::SparseMatrix(Q_i));
+    Teuchos::RCP<LINALG::SparseMatrix> Q_i_spr = Teuchos::rcp(new LINALG::SparseMatrix(Q_i,View));
     Q_i_spr->Complete(*veldofrowmap,*veldofrowmap);
 
     // Update of C_vel (which is after every update Qc)
@@ -2200,7 +2200,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProblem(Teuchos::RCP<Epetr
         Q_i->FillComplete(*veldofrowmap,*veldofrowmap);
 
 
-        Teuchos::RCP<LINALG::SparseMatrix> Q_i_spr = Teuchos::rcp(new LINALG::SparseMatrix(Q_i));
+        Teuchos::RCP<LINALG::SparseMatrix> Q_i_spr = Teuchos::rcp(new LINALG::SparseMatrix(Q_i,View));
         Q_i_spr->Complete(*veldofrowmap,*veldofrowmap);
 
         Teuchos::RCP<Epetra_Vector> C_vel_test =  LINALG::CreateVector(*veldofrowmap,true);

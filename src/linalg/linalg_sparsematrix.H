@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 #include "linalg_mapextractor.H"
 #include "../drt_lib/drt_dserror.H"
 
+#include <boost/static_assert.hpp>
 
 
 namespace LINALG
@@ -83,6 +84,17 @@ class SparseMatrix : public SparseMatrixBase
      */
     enum MatrixType {CRS_MATRIX, FE_MATRIX};
 
+    /// The following dummy templated constructors will catch all attempts to call any constructor with arguments
+    /// that require implicit casting. Therefore you have to instantiate this class with exactly the types
+    /// matching one of the constructors
+#if __cplusplus >= 201103L
+  template <typename... T> foo(T...) = delete;
+#else
+  template <typename T0>                           SparseMatrix(T0)         {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor");}
+  template <typename T0, typename T1>              SparseMatrix(T0, T1)     {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor");}
+  template <typename T0, typename T1, typename T2> SparseMatrix(T0, T1, T2) {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor");}
+#endif
+
     /// construction of sparse matrix
     SparseMatrix(
       Teuchos::RCP<Epetra_CrsGraph> crsgraph,
@@ -98,31 +110,31 @@ class SparseMatrix : public SparseMatrixBase
 
     /// construction of sparse matrix
     /*!
-      Implicit construction from a Epetra_CrsMatrix or Epetra_FECrsMatrix
-
-      Makes a copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix.
-
-      \pre matrix.Filled()==true
+       Makes either a deep copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix.
+       (Note: \pre matrix.Filled()==true)
+       or an implicit construction from a Epetra_CrsMatrix or Epetra_FECrsMatrix
+       where the Teuchos::RCP is copied internally leading to a new view on the
+       Epetra_CrsMatrix or Epetra_FECrsMatrix.
      */
-    explicit SparseMatrix(
-        const Epetra_CrsMatrix&   matrix,
-        bool                      explicitdirichlet=true,
-        bool                      savegraph=false,
-        MatrixType                matrixtype = CRS_MATRIX);
-
-    /// construction of sparse matrix
-    /*!
-      Implicit construction from a Epetra_CrsMatrix or Epetra_FECrsMatrix
-
-      \warning Does not make a copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix. The Teuchos::RCP is copied
-      internally. So this constructor creates a new view on the
-      Epetra_CrsMatrix or Epetra_FECrsMatrix.
-     */
-    explicit SparseMatrix(
+    SparseMatrix(
         Teuchos::RCP<Epetra_CrsMatrix>  matrix,
+        Epetra_DataAccess               access,
         bool                            explicitdirichlet=true,
         bool                            savegraph=false,
         MatrixType                      matrixtype = CRS_MATRIX);
+
+    /// construction of a diagonal matrix from a vector
+    /*!
+      Creates diagonal matrix with range and domain map equal to vector map.
+      Sets diagonal values from vector and does NOT call Complete() on matrix
+
+      Does not make a copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix
+     */
+    SparseMatrix(
+        const Epetra_Vector&  diag,
+        bool                  explicitdirichlet,
+        bool                  savegraph,
+        MatrixType            matrixtype = CRS_MATRIX);
 
     /// construction of a diagonal matrix from a vector
     /*!
@@ -132,10 +144,10 @@ class SparseMatrix : public SparseMatrixBase
       Does not make a copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix
      */
     explicit SparseMatrix(
-        const Epetra_Vector&  diag,
-        bool                  explicitdirichlet=true,
-        bool                  savegraph=false,
-        MatrixType            matrixtype = CRS_MATRIX);
+      const Epetra_Vector&  diag)
+    {
+      SparseMatrix(diag,true,false,CRS_MATRIX);
+    }
 
     /// Copy constructor. Deep copy or view on matrix.
     /*!
@@ -535,9 +547,6 @@ class SparseMatrix : public SparseMatrixBase
 
     /// whether to save the graph and assemble to a filled matrix next time
     bool savegraph_;
-
-    /// (estimated) maximum number of entries per row
-    int maxnumentries_;
 
     /// matrix type (Epetra_CrsMatrix or Epetra_FECrsMatrix)
     MatrixType matrixtype_;

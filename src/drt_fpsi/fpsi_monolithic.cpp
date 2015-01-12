@@ -2076,7 +2076,7 @@ void FPSI::Monolithic::FPSIFDCheck()
 
   Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
-  Teuchos::RCP<LINALG::SparseMatrix> sparse_copy = Teuchos::rcp(new LINALG::SparseMatrix(*(sparse->EpetraMatrix())));
+  Teuchos::RCP<LINALG::SparseMatrix> sparse_copy = Teuchos::rcp(new LINALG::SparseMatrix(sparse->EpetraMatrix(), Copy));
 
 
   std::cout << "\n****************** FPSI finite difference check ******************" << std::endl;
@@ -2151,7 +2151,7 @@ void FPSI::Monolithic::FPSIFDCheck()
   if (err)
     dserror("FD_Check: FillComplete failed with err-code: %d",err);
 
-  Teuchos::RCP<LINALG::SparseMatrix> temp = Teuchos::rcp(new LINALG::SparseMatrix(*stiff_approx));
+  Teuchos::RCP<LINALG::SparseMatrix> temp = Teuchos::rcp(new LINALG::SparseMatrix(stiff_approx, Copy));
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx_sparse = temp->EpetraMatrix();
 

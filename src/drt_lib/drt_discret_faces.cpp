@@ -123,7 +123,7 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
   }
   else dserror("sysmat is NULL!");
 
-  Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(new LINALG::SparseMatrix(sysmat_FE,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(new LINALG::SparseMatrix(sysmat_FE,View,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
   const int numrowintfaces = NumMyRowFaces();
 

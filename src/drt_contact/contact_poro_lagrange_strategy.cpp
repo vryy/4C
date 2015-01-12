@@ -170,7 +170,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
     //
     //************************************************************************************************
     //
-    fdoldtransp_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_));
+    fdoldtransp_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_,1,true,false));
     (*doldtransform_)(*dold_->Transpose(),
                            1.0,
                            ADAPTER::CouplingMasterConverter(coupfs),
@@ -180,7 +180,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
     //
     //************************************************************************************************
     //
-    fmoldtransp_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_));
+    fmoldtransp_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_,1,true,false));
     (*moldtransform_)(*mold_->Transpose(),
                            1.0,
                            ADAPTER::CouplingMasterConverter(coupfs),
@@ -190,7 +190,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
     //
     //************************************************************************************************
     //
-    fporolindmatrix_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_));
+    fporolindmatrix_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_,1,true,false));
     (*porolindmatrixtransform_)(*porolindmatrix_,
                            1.0,
                            ADAPTER::CouplingMasterConverter(coupfs),
@@ -204,7 +204,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
     //
     //************************************************************************************************
     //
-    fmhataam_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_));
+    fmhataam_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_,1,true,false));
     (*mhataamtransform_)(*mhataam_,
                            1.0,
                            ADAPTER::CouplingMasterConverter(coupfs),
@@ -214,7 +214,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
     //
     //************************************************************************************************
     //
-    fdhat_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_));
+    fdhat_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_,1,true,false));
     (*dhattransform_)(*dhat_,
                            1.0,
                            ADAPTER::CouplingMasterConverter(coupfs),
@@ -227,7 +227,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
     if (gactivedofs_->NumGlobalElements())
     {
       Teuchos::RCP<LINALG::SparseMatrix> tanginvD  = LINALG::MLMultiply(*Tangential_,false,*invda_,true,false,false,true);
-      Teuchos::RCP<LINALG::SparseMatrix> tmpftanginvD = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_));
+      Teuchos::RCP<LINALG::SparseMatrix> tmpftanginvD = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_,1,true,false));
       (*tanginvtransform_)(*tanginvD,
                           1.0,
                           ADAPTER::CouplingMasterConverter(coupfs),
@@ -247,7 +247,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
 #if(0)
 //Some solutions that do not work!
 
-    //    ftanginvD_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*fgactivet_));
+    //    ftanginvD_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*fgactivet_,1,true,false));
     //  ftanginvD_->Assign(View,*tmpftanginvD);
 
    //   ftanginvD_->Add(*tmpftanginvD,false,1.0,1.0);
@@ -321,7 +321,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
   //
   //************************************************************************************************
   //
-    finvda_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_));
+    finvda_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_,1,true,false));
     (*invDatransform_)(*invda_,
                            1.0,
                            ADAPTER::CouplingMasterConverter(coupfs),

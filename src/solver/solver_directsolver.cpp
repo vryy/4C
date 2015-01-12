@@ -85,7 +85,7 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
     // check whether cast was successfull
     if (crsA==Teuchos::null) {dserror("Could not cast system matrix to Epetra_CrsMatrix.");}
     // get view on systemmatrix as LINALG::SparseMatrix - this is no copy!
-    LINALG::SparseMatrix A_view(crsA);
+    LINALG::SparseMatrix A_view(crsA,View);
 
     // apply projection to A without computing projection matrix thus avoiding
     // matrix-matrix multiplication
