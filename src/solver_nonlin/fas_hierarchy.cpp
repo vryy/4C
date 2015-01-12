@@ -156,7 +156,7 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
     // extract matrix
     Teuchos::RCP<Matrix> myMatrix = muelulevel->Get<Teuchos::RCP<Matrix> >("A");
     myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myMatrix);
-    myA = Teuchos::rcp(new LINALG::SparseMatrix(myAcrs, false, true, LINALG::SparseMatrix::CRS_MATRIX));
+    myA = Teuchos::rcp(new LINALG::SparseMatrix(myAcrs, View, false, true, LINALG::SparseMatrix::CRS_MATRIX));
 
     // extract transfer operators
     if (level > 0) // defined only on coarse grids
