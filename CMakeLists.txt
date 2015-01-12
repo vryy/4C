@@ -831,7 +831,6 @@ set(OBJS_DRT_UTILS
   src/drt_geometry/tetrahedradecomposition.cpp
   src/drt_lib/drt_condition_selector.cpp
   src/drt_lib/drt_condition_utils.cpp
-  src/drt_lib/drt_condition_utils_baci.cpp
   src/drt_lib/drt_dirichletextractor.cpp
   src/drt_lib/drt_dserror.cpp
   src/drt_lib/drt_elementdefinition.cpp
