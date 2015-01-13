@@ -130,26 +130,13 @@ class SparseMatrix : public SparseMatrixBase
       Creates diagonal matrix with range and domain map equal to vector map.
       Sets diagonal values from vector and does NOT call Complete() on matrix
 
-      Does not make a copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix
+      Allocates new memory for the Epetra_CrsMatrix or Epetra_FECrsMatrix
      */
     SparseMatrix(
         const Epetra_Vector&  diag,
-        bool                  explicitdirichlet,
-        bool                  savegraph,
+        bool                  explicitdirichlet=true,
+        bool                  savegraph=false,
         MatrixType            matrixtype = CRS_MATRIX);
-
-    /// construction of a diagonal matrix from a vector
-    /*!
-      Creates diagonal matrix with range and domain map equal to vector map.
-      Sets diagonal values from vector and does NOT call Complete() on matrix
-
-      Does not make a copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix
-     */
-    explicit SparseMatrix(
-      const Epetra_Vector&  diag)
-    {
-      SparseMatrix(diag,true,false,CRS_MATRIX);
-    }
 
     /// Copy constructor. Deep copy or view on matrix.
     /*!
