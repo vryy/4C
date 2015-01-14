@@ -16,16 +16,13 @@ Maintainer: Andreas Ehrl
 #ifndef SCATRA_ELE_BOUNDARY_CALC_H
 #define SCATRA_ELE_BOUNDARY_CALC_H
 
+#include "scatra_ele_action.H"
 #include "scatra_ele_boundary_interface.H"
 #include "scatra_ele_calc_utils.H"
-#include "scatra_ele_action.H"
-
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_discret.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_inpar/inpar_elch.H"
 
+#include "../drt_inpar/inpar_elch.H"
 
   /// Internal Scalar transport element implementation
   /*!
@@ -189,9 +186,9 @@ public:
       Teuchos::ParameterList&     params,           ///< parameter list
       DRT::Discretization&        discretization,   ///< discretization
       std::vector<int>&           lm,               ///< location vector
-      Epetra_SerialDenseMatrix&   emat,             ///< element matrix
-      Epetra_SerialDenseMatrix&   eauxmat,          ///< auxiliary element matrix (for coupling terms)
-      Epetra_SerialDenseVector&   erhs              ///< element right-hand side
+      Epetra_SerialDenseMatrix&   eslavematrix,     ///< element matrix for slave side
+      Epetra_SerialDenseMatrix&   emastermatrix,    ///< element matrix for master side
+      Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
   );
 
     //! evaluate Kedem-Katchalsky interface condition

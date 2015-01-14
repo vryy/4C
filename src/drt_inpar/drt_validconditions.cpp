@@ -861,22 +861,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
 
   /*--------------------------------------------------------------------*/
-  // scatra-scatra interface coupling
+  // scatra-scatra interface coupling (slave side)
   {
-    // definition of scatra-scatra interface coupling line condition
-    Teuchos::RCP<ConditionDefinition> lines2i =
-        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING LINE CONDITIONS",
-                                             "S2ICoupling",
-                                             "Scatra-scatra line interface coupling",
+    // definition of scatra-scatra interface coupling line condition (slave side)
+    Teuchos::RCP<ConditionDefinition> s2ilineslave =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING LINE CONDITIONS / SLAVE",
+                                             "S2ICouplingSlave",
+                                             "Scatra-scatra line interface coupling (slave side)",
                                              DRT::Condition::S2ICoupling,
                                              true,
                                              DRT::Condition::Line));
 
-    // definition of scatra-scatra interface coupling surface condition
-    Teuchos::RCP<ConditionDefinition> surfs2i =
-        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING SURF CONDITIONS",
-                                             "S2ICoupling",
-                                             "Scatra-scatra surface interface coupling",
+    // definition of scatra-scatra interface coupling surface condition (slave side)
+    Teuchos::RCP<ConditionDefinition> s2isurfslave =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING SURF CONDITIONS / SLAVE",
+                                             "S2ICouplingSlave",
+                                             "Scatra-scatra surface interface coupling (slave side)",
                                              DRT::Condition::S2ICoupling,
                                              true,
                                              DRT::Condition::Surface));
@@ -885,14 +885,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     std::vector<Teuchos::RCP<ConditionComponent> > s2icomponents;
 
     {
-      // interface ID
-      s2icomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
-
-      // interface side
-      s2icomponents.push_back(Teuchos::rcp(new StringConditionComponent("Side","This",
-            Teuchos::tuple<std::string>("This","Other"),
-            Teuchos::tuple<std::string>("This","Other"))));
-
       // kinetic models for scatra-scatra interface
       std::vector<Teuchos::RCP<CondCompBundle> > kineticmodels;
 
@@ -932,13 +924,40 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     // insert input file line components into condition definitions
     for (unsigned i=0; i<s2icomponents.size(); ++i)
     {
-      lines2i->AddComponent(s2icomponents[i]);
-      surfs2i->AddComponent(s2icomponents[i]);
+      s2ilineslave->AddComponent(s2icomponents[i]);
+      s2isurfslave->AddComponent(s2icomponents[i]);
     }
 
     // insert condition definitions into global list of valid condition definitions
-    condlist.push_back(lines2i);
-    condlist.push_back(surfs2i);
+    condlist.push_back(s2ilineslave);
+    condlist.push_back(s2isurfslave);
+  }
+
+
+  /*--------------------------------------------------------------------*/
+  // scatra-scatra interface coupling (master side)
+  {
+    // definition of scatra-scatra interface coupling line condition (master side)
+    Teuchos::RCP<ConditionDefinition> s2ilinemaster =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING LINE CONDITIONS / MASTER",
+                                             "S2ICouplingMaster",
+                                             "Scatra-scatra line interface coupling (master side)",
+                                             DRT::Condition::S2ICoupling,
+                                             true,
+                                             DRT::Condition::Line));
+
+    // definition of scatra-scatra interface coupling surface condition (master side)
+    Teuchos::RCP<ConditionDefinition> s2isurfmaster =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING SURF CONDITIONS / MASTER",
+                                             "S2ICouplingMaster",
+                                             "Scatra-scatra surface interface coupling (master side)",
+                                             DRT::Condition::S2ICoupling,
+                                             true,
+                                             DRT::Condition::Surface));
+
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(s2ilinemaster);
+    condlist.push_back(s2isurfmaster);
   }
 
 

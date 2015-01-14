@@ -1258,29 +1258,29 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
     Teuchos::ParameterList&     params,           ///< parameter list
     DRT::Discretization&        discretization,   ///< discretization
     std::vector<int>&           lm,               ///< location vector
-    Epetra_SerialDenseMatrix&   emat,             ///< element matrix
-    Epetra_SerialDenseMatrix&   eauxmat,          ///< auxiliary element matrix (for coupling terms)
-    Epetra_SerialDenseVector&   erhs              ///< element right-hand side
+    Epetra_SerialDenseMatrix&   eslavematrix,     ///< element matrix for slave side
+    Epetra_SerialDenseMatrix&   emastermatrix,    ///< element matrix for master side
+    Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
     )
 {
   // get global and interface state vectors
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  Teuchos::RCP<const Epetra_Vector> iphinp = params.get<Teuchos::RCP<const Epetra_Vector> >("iphinp");
-  if (phinp == Teuchos::null or iphinp == Teuchos::null) dserror("Cannot get state vector 'phinp' or 'iphinp'!");
+  Teuchos::RCP<const Epetra_Vector> imasterphinp = params.get<Teuchos::RCP<const Epetra_Vector> >("imasterphinp");
+  if (phinp == Teuchos::null or imasterphinp == Teuchos::null) dserror("Cannot get state vector 'phinp' or 'imasterphinp'!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  std::vector<double> ephinpvec(lm.size());
-  DRT::UTILS::ExtractMyValues(*phinp,ephinpvec,lm);
-  std::vector<LINALG::Matrix<nen_,1> > ephinp(numscal_);
-  std::vector<double> eauxphinpvec(lm.size());
-  DRT::UTILS::ExtractMyValues(*iphinp,eauxphinpvec,lm);
-  std::vector<LINALG::Matrix<nen_,1> > eauxphinp(numscal_);
+  std::vector<double> eslavephinpvec(lm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,eslavephinpvec,lm);
+  std::vector<LINALG::Matrix<nen_,1> > eslavephinp(numscal_);
+  std::vector<double> emasterphinpvec(lm.size());
+  DRT::UTILS::ExtractMyValues(*imasterphinp,emasterphinpvec,lm);
+  std::vector<LINALG::Matrix<nen_,1> > emasterphinp(numscal_);
   for(int inode=0; inode<nen_; ++inode)
   {
     for(int k=0; k<numscal_; ++k)
     {
-      ephinp[k](inode,0) = ephinpvec[inode*numscal_+k];
-      eauxphinp[k](inode,0) = eauxphinpvec[inode*numscal_+k];
+      eslavephinp[k](inode,0) = eslavephinpvec[inode*numscal_+k];
+      emasterphinp[k](inode,0) = emasterphinpvec[inode*numscal_+k];
     }
   }
 
@@ -1309,8 +1309,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
     for(int k=0; k<numscal_; ++k)
     {
       // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
-      const double phiint = funct_.Dot(ephinp[k]);
-      const double auxphiint = funct_.Dot(eauxphinp[k]);
+      const double slavephiint = funct_.Dot(eslavephinp[k]);
+      const double masterphiint = funct_.Dot(emasterphinp[k]);
 
       // compute matrix and vector contributions according to kinetic model for current scatra-scatra interface coupling condition
       switch(kineticmodel)
@@ -1331,11 +1331,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
 
             for (int ui=0; ui<nen_; ++ui)
             {
-              emat(fvi,ui*numscal_+k) += funct_(vi)*(*permeabilities)[k]*funct_(ui)*timefacfac;
-              eauxmat(fvi,ui*numscal_+k) -= funct_(vi)*(*permeabilities)[k]*funct_(ui)*timefacfac;
+              eslavematrix(fvi,ui*numscal_+k) += funct_(vi)*(*permeabilities)[k]*funct_(ui)*timefacfac;
+              emastermatrix(fvi,ui*numscal_+k) -= funct_(vi)*(*permeabilities)[k]*funct_(ui)*timefacfac;
             }
 
-            erhs[fvi] -= funct_(vi)*(*permeabilities)[k]*(phiint-auxphiint)*timefacrhsfac;
+            eslaveresidual[fvi] -= funct_(vi)*(*permeabilities)[k]*(slavephiint-masterphiint)*timefacrhsfac;
           }
 
           break;
@@ -1409,7 +1409,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateSurfacePermeability(
         // scalar at integration point
         const double phi = funct_.Dot(phinod);
 
-        // mean concentartion at integration point
+        // mean concentration at integration point
         const double facWSS = funct_.Dot(fwssnod);
 
 
@@ -1521,10 +1521,10 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateKedemKatchalsky(
         // pressure at integration point
         const double p = funct_.Dot(pnod);
 
-        // mean concentartion at integration point
+        // mean concentration at integration point
         const double phibar = funct_.Dot(phibarnod);
 
-        // mean concentartion at integration point
+        // mean concentration at integration point
         const double facWSS = funct_.Dot(fwssnod);
 
 

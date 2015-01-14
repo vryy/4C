@@ -27,14 +27,15 @@ namespace FSI
   namespace UTILS
   {
     class MatrixColTransform;
+    class MatrixRowTransform;
+    class MatrixRowColTransform;
   }
 }
 
 namespace LINALG
 {
   class MultiMapExtractor;
-  class MapExtractor;
-  class BlockSparseMatrixBase;
+  class SparseMatrix;
 }
 
 namespace SCATRA
@@ -95,22 +96,23 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! global map extractor (0: other, 1: slave, 2: master)
     Teuchos::RCP<LINALG::MultiMapExtractor> maps_;
 
-    //! interface map extractor (0: master, 1: slave)
-    Teuchos::RCP<LINALG::MapExtractor> imaps_;
-
     //! interface coupling adapter
     Teuchos::RCP<ADAPTER::Coupling> icoup_;
 
-    //! auxiliary system matrix for coupling terms
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> auxmat_;
+    //! auxiliary system matrices for linearizations of slave fluxes w.r.t. slave and master dofs, respectively
+    Teuchos::RCP<LINALG::SparseMatrix> islavematrix_;
+    Teuchos::RCP<LINALG::SparseMatrix> imastermatrix_;
 
-    //! transformed state variables at scatra-scatra interface
-    Teuchos::RCP<Epetra_Vector> iphinp_;
+    //! transformation operators for auxiliary system matrices
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform> islavetomastercoltransform_;
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> islavetomasterrowtransform_;
+    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> islavetomasterrowcoltransform_;
 
-    //! transformation operators for auxiliary system matrix
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> imastertoslavetransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform> islavetomastertransform_;
+    //! auxiliary residual vector for slave residuals
+    Teuchos::RCP<Epetra_Vector> islaveresidual_;
 
+    //! master dofs transformed to slave side of scatra-scatra interface
+    Teuchos::RCP<Epetra_Vector> imasterphinp_;
 }; // class MeshtyingStrategyS2I
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H

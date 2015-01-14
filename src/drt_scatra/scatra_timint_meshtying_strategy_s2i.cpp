@@ -18,8 +18,6 @@ Maintainer: Rui Fang
 
 #include "../drt_fsi/fsi_matrixtransform.H"
 
-#include "../drt_lib/drt_condition_utils.H"
-
 #include "../drt_scatra/scatra_timint_implicit.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
@@ -37,12 +35,14 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
     ) :
 MeshtyingStrategyBase(scatratimint),
 maps_(Teuchos::null),
-imaps_(Teuchos::null),
 icoup_(Teuchos::null),
-auxmat_(Teuchos::null),
-iphinp_(Teuchos::null),
-imastertoslavetransform_(Teuchos::null),
-islavetomastertransform_(Teuchos::null)
+islavematrix_(Teuchos::null),
+imastermatrix_(Teuchos::null),
+islavetomastercoltransform_(Teuchos::null),
+islavetomasterrowtransform_(Teuchos::null),
+islavetomasterrowcoltransform_(Teuchos::null),
+islaveresidual_(Teuchos::null),
+imasterphinp_(Teuchos::null)
 {
   return;
 } // SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I
@@ -73,22 +73,37 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
   scatratimint_->Discretization()->ClearState();
   scatratimint_->AddTimeIntegrationSpecificVectors();
 
-  // set interface state vector iphinp_ with transformed dof values and add to element parameter list
-  imaps_->InsertVector(icoup_->SlaveToMaster(maps_->ExtractVector(*(scatratimint_->Phiafnp()),1)),0,iphinp_);
-  imaps_->InsertVector(icoup_->MasterToSlave(maps_->ExtractVector(*(scatratimint_->Phiafnp()),2)),1,iphinp_);
-  condparams.set<Teuchos::RCP<const Epetra_Vector> >("iphinp",iphinp_);
+  // set interface state vector imasterphinp_ with transformed master dof values and add to element parameter list
+  imasterphinp_->Update(1.,*(icoup_->MasterToSlave(maps_->ExtractVector(*(scatratimint_->Phiafnp()),2))),0.);
+  condparams.set<Teuchos::RCP<const Epetra_Vector> >("imasterphinp",imasterphinp_);
 
   // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
-  auxmat_->Zero();
-  scatratimint_->Discretization()->EvaluateCondition(condparams,blocksystemmatrix,auxmat_,scatratimint_->Residual(),Teuchos::null,Teuchos::null,"S2ICoupling");
+  islavematrix_->Zero();
+  imastermatrix_->Zero();
+  islaveresidual_->PutScalar(0.);
+  scatratimint_->Discretization()->EvaluateCondition(condparams,islavematrix_,imastermatrix_,islaveresidual_,Teuchos::null,Teuchos::null,"S2ICouplingSlave");
   scatratimint_->Discretization()->ClearState();
 
-  // transform master and slave blocks of auxiliary system matrix and assemble into global system matrix
-  auxmat_->Complete();
-  (*imastertoslavetransform_)(auxmat_->FullRowMap(),auxmat_->FullColMap(),auxmat_->Matrix(0,0),1.,
-      ADAPTER::CouplingMasterConverter(*icoup_),blocksystemmatrix->Matrix(2,1));
-  (*islavetomastertransform_)(auxmat_->FullRowMap(),auxmat_->FullColMap(),auxmat_->Matrix(1,1),1.,
+  // assemble linearizations of slave fluxes w.r.t. slave dofs into global system matrix
+  islavematrix_->Complete();
+  blocksystemmatrix->Matrix(1,1).Add(*islavematrix_,false,1.,1.);
+
+  // transform linearizations of slave fluxes w.r.t. master dofs and assemble into global system matrix
+  imastermatrix_->Complete();
+  (*islavetomastercoltransform_)(imastermatrix_->RowMap(),imastermatrix_->ColMap(),*imastermatrix_,1.,
       ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(1,2));
+
+  // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global system matrix
+  (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(2,1));
+
+  // derive linearizations of master fluxes w.r.t. master dofs and assemble into global system matrix
+  (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(2,2),true,true);
+
+  // assemble slave residuals into global residual vector
+  maps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
+
+  // transform master residuals and assemble into global residual vector
+  maps_->AddVector(icoup_->SlaveToMaster(islaveresidual_),2,scatratimint_->Residual(),-1.);
 
   return;
 } // SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying
@@ -100,67 +115,80 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
 void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 {
   // extract scatra-scatra coupling conditions from discretization
-  std::vector<DRT::Condition*> s2icouplingconditions;
-  scatratimint_->Discretization()->GetCondition("S2ICoupling", s2icouplingconditions);
+  std::vector<DRT::Condition*> slaveconditions;
+  scatratimint_->Discretization()->GetCondition("S2ICouplingSlave", slaveconditions);
+  std::vector<DRT::Condition*> masterconditions;
+  scatratimint_->Discretization()->GetCondition("S2ICouplingMaster", masterconditions);
 
-  // initialize int sets for global ids of interface nodes
-  std::set<int> ithisnodegidset;
-  std::set<int> iothernodegidset;
+  // initialize int vectors for global ids of slave and master interface nodes
+  std::vector<int> islavenodegidvec;
+  std::vector<int> imasternodegidvec;
 
-  // fill sets
-  for (unsigned icond=0; icond<s2icouplingconditions.size(); ++icond)
+  // fill vectors
+  for (unsigned islavecondition=0; islavecondition<slaveconditions.size(); ++islavecondition)
   {
-    const std::vector<int>* inodegids = s2icouplingconditions[icond]->Nodes();
+    const std::vector<int>* islavenodegids = slaveconditions[islavecondition]->Nodes();
 
-    for (unsigned inode=0; inode<inodegids->size(); ++inode)
+    for (unsigned islavenode=0; islavenode<islavenodegids->size(); ++islavenode)
     {
-      const int inodegid = (*inodegids)[inode];
+      const int islavenodegid = (*islavenodegids)[islavenode];
 
-      // insert global id of current node into associated set only if node is owned by current processor
+      // insert global id of current node into associated vector only if node is owned by current processor
       // need to make sure that node is stored on current processor, otherwise cannot resolve "->Owner()"
-      if(scatratimint_->Discretization()->HaveGlobalNode(inodegid) and scatratimint_->Discretization()->gNode(inodegid)->Owner() == scatratimint_->Discretization()->Comm().MyPID())
-      {
-        // determine whether node is located on "This" or "Other" side of scatra-scatra interface
-        if(*(s2icouplingconditions[icond]->Get<std::string>("Side")) == "This")
-          ithisnodegidset.insert(inodegid);
-        else if(*(s2icouplingconditions[icond]->Get<std::string>("Side")) == "Other")
-          iothernodegidset.insert(inodegid);
-        else
-          dserror("Interface side must be either \"This\" or \"Other\"!");
-      }
+      if(scatratimint_->Discretization()->HaveGlobalNode(islavenodegid) and scatratimint_->Discretization()->gNode(islavenodegid)->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+        islavenodegidvec.push_back(islavenodegid);
+    }
+  }
+  for (unsigned imastercondition=0; imastercondition<masterconditions.size(); ++imastercondition)
+  {
+    const std::vector<int>* imasternodegids = masterconditions[imastercondition]->Nodes();
+
+    for (unsigned imasternode=0; imasternode<imasternodegids->size(); ++imasternode)
+    {
+      const int imasternodegid = (*imasternodegids)[imasternode];
+
+      // insert global id of current node into associated vector only if node is owned by current processor
+      // need to make sure that node is stored on current processor, otherwise cannot resolve "->Owner()"
+      if(scatratimint_->Discretization()->HaveGlobalNode(imasternodegid) and scatratimint_->Discretization()->gNode(imasternodegid)->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+        imasternodegidvec.push_back(imasternodegid);
     }
   }
 
-  // copy sets into vectors
-  std::vector<int> ithisnodegidvec(ithisnodegidset.begin(),ithisnodegidset.end());
-  std::vector<int> iothernodegidvec(iothernodegidset.begin(),iothernodegidset.end());
+  // remove potential duplicates from vectors
+  std::sort(islavenodegidvec.begin(),islavenodegidvec.end());
+  islavenodegidvec.erase(unique(islavenodegidvec.begin(),islavenodegidvec.end()),islavenodegidvec.end());
+  std::sort(imasternodegidvec.begin(),imasternodegidvec.end());
+  imasternodegidvec.erase(unique(imasternodegidvec.begin(),imasternodegidvec.end()),imasternodegidvec.end());
 
   // initialize coupling adapter
   if(scatratimint_->NumScal() < 1)
     dserror("Number of transported scalars not correctly set!");
   icoup_ = Teuchos::rcp(new ADAPTER::Coupling());
-  icoup_->SetupCoupling(*(scatratimint_->Discretization()),*(scatratimint_->Discretization()),ithisnodegidvec,iothernodegidvec,scatratimint_->NumScal());
+  icoup_->SetupCoupling(*(scatratimint_->Discretization()),*(scatratimint_->Discretization()),imasternodegidvec,islavenodegidvec,scatratimint_->NumScal());
 
   // generate interior and interface maps
-  Teuchos::RCP<Epetra_Map> ifullmap = LINALG::MergeMap(icoup_->MasterDofMap(),icoup_->SlaveDofMap(),false);
+  Teuchos::RCP<Epetra_Map> ifullmap = LINALG::MergeMap(icoup_->SlaveDofMap(),icoup_->MasterDofMap(),false);
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   maps.push_back(LINALG::SplitMap(*(scatratimint_->Discretization()->DofRowMap()),*ifullmap));
   maps.push_back(icoup_->SlaveDofMap());
   maps.push_back(icoup_->MasterDofMap());
 
-  // initialize global and interface map extractors
+  // initialize global map extractor
   maps_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*(scatratimint_->Discretization()->DofRowMap()),maps));
   maps_->CheckForValidMapExtractor();
-  imaps_ = Teuchos::rcp(new LINALG::MapExtractor(*ifullmap,icoup_->SlaveDofMap(),icoup_->MasterDofMap()));
-  imaps_->CheckForValidMapExtractor();
 
   // initialize interface vector
-  iphinp_ = LINALG::CreateVector(*ifullmap,false);
+  imasterphinp_ = LINALG::CreateVector(*(icoup_->SlaveDofMap()),false);
 
-  // initialize auxiliary system matrix and associated transformation operators
-  auxmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*imaps_,*imaps_));
-  imastertoslavetransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-  islavetomastertransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
+  // initialize auxiliary system matrices and associated transformation operators
+  islavematrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_->SlaveDofMap()),81));
+  imastermatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_->SlaveDofMap()),81));
+  islavetomastercoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
+  islavetomasterrowtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+  islavetomasterrowcoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
+
+  // initialize auxiliary residual vector
+  islaveresidual_ = Teuchos::rcp(new Epetra_Vector(*(icoup_->SlaveDofMap())));
 
   return;
 } // SCATRA::MeshtyingStrategyS2I::InitMeshtying
@@ -172,8 +200,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyS2I::InitSystemMatrix() const
 {
   // initialize system matrix and associated strategy for scatra-scatra interface coupling
-  Teuchos::RCP<LINALG::SparseOperator> systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(*maps_,*maps_));
-  Teuchos::rcp_static_cast<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> >(systemmatrix)->SetCondElements(DRT::UTILS::ConditionedElementMap(*(scatratimint_->Discretization()),"S2ICoupling"));
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*maps_,*maps_));
 
   return systemmatrix;
 } // SCATRA::MeshtyingStrategyS2I::InitSystemMatrix

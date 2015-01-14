@@ -91,12 +91,14 @@ DSURF  2
 E 1 - ScaTra 1
 //
 E 2 - ScaTra 2
--------------------------------DESIGN S2I COUPLING LINE CONDITIONS
-DLINE  4
-E 1 - 1 This ConstantPermeability numscal 3 permeabilities 1.0 0.0 0.01
-E 2 - 2 This ConstantPermeability numscal 3 permeabilities 0.01 0.0 1.0
-E 3 - 1 Other ConstantPermeability numscal 3 permeabilities 1.0 0.0 0.01
-E 4 - 2 Other ConstantPermeability numscal 3 permeabilities 0.01 0.0 1.0
+-----------------------DESIGN S2I COUPLING LINE CONDITIONS / SLAVE
+DLINE  2
+E 1 - ConstantPermeability numscal 3 permeabilities 1.0 0.0 0.01
+E 2 - ConstantPermeability numscal 3 permeabilities 0.01 0.0 1.0
+----------------------DESIGN S2I COUPLING LINE CONDITIONS / MASTER
+DLINE  2
+E 3 -
+E 4 -
 ----------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE  4
 E 1 - OUTPUT standard
