@@ -160,6 +160,26 @@ public:
   TYPE Getdfp() { return dfp_; };
 
   /*!
+  \brief Set penalty energy
+  */
+  void SetEnergy(TYPE e) { energy_=e; };
+
+  /*!
+  \brief Get penalty energy
+  */
+  TYPE GetEnergy() { return energy_; };
+
+  /*!
+  \brief Set length integrated penalty energy
+  */
+  void SetIntegratedEnergy(double inte) { integratedenergy_=inte; };
+
+  /*!
+  \brief Get length integrated penalty energy
+  */
+  double GetIntegratedEnergy() { return integratedenergy_; };
+
+  /*!
   \brief Set contact angle
   */
   void SetAngle(double angle) { angle_=angle; };
@@ -207,6 +227,12 @@ private:
 
   //derivative of penalty force with respect to gap: d(fp_)/d(gap_)
   TYPE dfp_;
+
+  //penalty energy of collocation point / Gauss point
+  TYPE energy_;
+
+  //length integrated penalty energy of collocation point (in this case identical to energy_) / Gauss point
+  double integratedenergy_;
 
   //contact angle
   double angle_;

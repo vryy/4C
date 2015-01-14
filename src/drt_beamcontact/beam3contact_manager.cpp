@@ -2012,11 +2012,13 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 
     // Newton index is always needed, of course
     if (newtonstep<10)
-      filename << "_n0";
+      filename << "_n00";
     else if (newtonstep<100)
+      filename << "_n0";
+    else if (newtonstep<1000)
       filename << "_n";
-    else /*(newtonstep>=100*/
-      dserror("ERROR: Gmsh output implemented for max 99 Newton steps");
+    else /*(newtonstep>=1000*/
+      dserror("ERROR: Gmsh output implemented for max 999 Newton steps");
     filename << newtonstep;
   }
 
@@ -2642,7 +2644,6 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
     if (pairs_[i]->GetContactFlag() == true)
     {
       //Update penalty energy
-      //TODO: error, falls nicht linpen law
       totpenaltyenergy_ += pairs_[i]->GetEnergy();
 
       //get smaller radius of the two elements:
@@ -2828,8 +2829,8 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
     // begin output
     if (Comm().MyPID()==0)
     {
-      std::cout << "\n      Active contact set--------------------------------------------------------\n";
-      printf("      ID1            ID2              xi     eta    angle   gap         force \n");
+      std::cout << "\n      Active contact set------------------------------------------------------------\n";
+      printf("      ID1            ID2              T xi       eta      angle   gap         force \n");
     }
     Comm().Barrier();
 
@@ -2848,6 +2849,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
         int id1 = (pairs_[i]->Element1())->Id();
         int id2 = (pairs_[i]->Element2())->Id();
         std::vector<double> gaps = pairs_[i]->GetGap();
+        std::vector<int> types = pairs_[i]->GetContactType();
         std::vector<double> forces = pairs_[i]->GetContactForce();
         std::vector<double> angles = pairs_[i]->GetContactAngle();
         std::vector<std::pair<double,double> > closestpoints = pairs_[i]->GetClosestPoint();
@@ -2859,7 +2861,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
         {
           for(int j=0;j<(int)gaps.size();j++)
           {
-            printf("      %-6d (%2d/%-2d) %-6d (%2d/%-2d)   %-6.2f %-6.2f %-7.2f %-11.2e %-11.2e \n",id1,segmentids[j].first+1,numsegments.first,id2,segmentids[j].second+1,numsegments.second,closestpoints[j].first,closestpoints[j].second,angles[j]/M_PI*180.0,gaps[j],forces[j]);
+            printf("      %-6d (%2d/%-2d) %-6d (%2d/%-2d)   %-1d  %-6.2f %-6.2f %-7.2f %-11.2e %-11.2e \n",id1,segmentids[j].first+1,numsegments.first,id2,segmentids[j].second+1,numsegments.second,types[j],closestpoints[j].first,closestpoints[j].second,angles[j]/M_PI*180.0,gaps[j],forces[j]);
             fflush(stdout);
           }
         }

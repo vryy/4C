@@ -1005,7 +1005,12 @@ namespace STR
                                                   //!< containing non-overlapping
                                                   //!< map of global DOFs on Dirichlet
                                                   //!< boundary conditions
+
     enum INPAR::STR::DivContAct divcontype_ ; // what to do when nonlinear solution fails
+    int divconrefinementlevel_;               // number of refinement level in case of divercontype_ == adapt_step
+    int divconnumfinestep_;                   // number of converged time steps on current refinement level
+                                              // in case of divercontype_ == adapt_step
+
     //@}
 
     //! @name Printing and output

@@ -40,7 +40,7 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton //fullnewton modnewton nlncg ptc
-DIVERCONT                       halve_step
+DIVERCONT                       stop
 TIMESTEP                        0.1
 NUMSTEP                         18
 MAXTIME                         1.8

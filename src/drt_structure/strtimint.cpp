@@ -111,6 +111,8 @@ STR::TimInt::TimInt
   solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
   dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
   divcontype_(DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams,"DIVERCONT")),
+  divconrefinementlevel_(0),
+  divconnumfinestep_(0),
   output_(output),
   printscreen_(ioparams.get<int>("STDOUTEVRY")),
   printlogo_(bool (printscreen_)),  // no std out no logo
@@ -3101,9 +3103,7 @@ void STR::TimInt::ApplyForceInternal
 INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv)
 {
   // what to do when nonlinear solver does not converge
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  enum INPAR::STR::DivContAct divcontype = (DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdyn,"DIVERCONT"));
-  switch (divcontype)
+  switch (divcontype_)
   {
     case INPAR::STR::divcont_stop:
     {
@@ -3139,6 +3139,29 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
       stepmax_= stepmax_ + (stepmax_-stepn_)+1;
       // reset timen_ because it is set in the constructor
       timen_ = (*time_)[0] + (*dt_)[0];;
+      return INPAR::STR::conv_success;
+    }
+    break;
+    case INPAR::STR::divcont_adapt_step:
+    {
+      // maximal possible refinementlevel
+      const int maxdivconrefinementlevel = 10;
+      IO::cout << "Nonlinear solver failed to converge divide timestep in half"
+               << IO::endl;
+
+      // halve the time step size
+      (*dt_)[0]=(*dt_)[0]*0.5;
+      // update the number of max time steps
+      stepmax_= stepmax_ + (stepmax_-stepn_)+1;
+      // reset timen_ because it is set in the constructor
+      timen_ = (*time_)[0] + (*dt_)[0];
+
+      divconrefinementlevel_++;
+      divconnumfinestep_=0;
+
+      if(divconrefinementlevel_==maxdivconrefinementlevel)
+        dserror("Maximal divercont refinement level reached. Adapt your time basic time step size!");
+
       return INPAR::STR::conv_success;
     }
     break;

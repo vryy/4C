@@ -53,6 +53,8 @@ ppfac_(0.0),
 dppfac_(0.0),
 fp_(0.0),
 dfp_(0.0),
+energy_(0.0),
+integratedenergy_(0.0),
 angle_(0.0)
 {
   return;

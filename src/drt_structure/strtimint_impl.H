@@ -766,6 +766,9 @@ namespace STR
     //! update all EpetraVectors as discretization changes after crack insertion
     void updateEpetraVectorsCrack( std::map<int,int>& oldnew );
 
+    //! check, if according to divercont flag time step size can be increased
+    void CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& status);
+
     /// update all the field vectors to account for new node introduced by crack
     virtual void updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew ) = 0;
 
@@ -968,7 +971,6 @@ namespace STR
     int itermax_;  //!< maximally permitted iterations
     int itermin_;  //!< minimally requested iterations
 
-    enum INPAR::STR::DivContAct divcontype_ ; // what to do when nonlinear solution fails
     double toldisi_;        //!< tolerance residual displacements
     double tolfres_;        //!< tolerance force residual
     double tolpfres_;       //!< norm of residual pressure forces

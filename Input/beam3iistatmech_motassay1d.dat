@@ -38,19 +38,19 @@ STDOUTEVRY             1
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER          1
 DYNAMICTYP             StatMech
-RESULTSEVRY            0    // write results every n-th step (Attention: problems with mem leak)
+RESULTSEVRY            0 // write results every n-th step (Attention: problems with mem leak)
 RESTARTEVRY            1000 // set restart points every n-th step
-RESEVRYERGY            0    // output energy evry n-th step
-NLNSOL                 ptc     // fullnewton modnewton nlncg ptc
-DIVERCONT              continue     // Continue even if results are divergent
-TIMESTEP               0.001    // step size
+RESEVRYERGY            0 // output energy evry n-th step
+NLNSOL                 ptc // fullnewton modnewton nlncg ptc
+DIVERCONT              repeat_step // Continue even if results are divergent
+TIMESTEP               0.001 // step size
 NUMSTEP                100 // total number of steps  //rumpf2.txt end
 MAXTIME                10000
 DAMPING                No
 M_DAMP                 0
 K_DAMP                 0
-PREDICT                ConstDis  //  ConstDisVelAcc ConstDis
-TOLDISP                8.0E-04   // 5.5e-05 1.0E-06
+PREDICT                ConstDis //  ConstDisVelAcc ConstDis
+TOLDISP                8.0E-04 // 5.5e-05 1.0E-06
 TOLRES                 1.0E-01
 TOLCONSTR              1.0E-03
 ADAPTCONV              No
@@ -63,70 +63,70 @@ THETA        1 //header_01 end
 //==== GENERAL STATMECH SIMULATION FLAGS ====
 THERMALBATH         uniform
 FRICTION_MODEL      anisotropicconsistent // isotropicconsistent isotropiclumped
-DBCTYPE             none                   // none shearfixed sheartrans pinnodes,  choose DBC type
+DBCTYPE             none                  // none shearfixed sheartrans pinnodes,  choose DBC type
 NETWORKTYPE         motassay              // specify network / simulation type
 CHECKORIENT         Yes                   // check orientation betw. two filaments before linking them
-FIXEDSEED           Yes                    // (de)activate pesudo-randomness
+FIXEDSEED           Yes                   // (de)activate pesudo-randomness
 INITIALSEED         1                     // manipulate initial seed of pseudo random numbers
 //============== OUTPUT SET UP ==============
-GMSHOUTPUT          No                   // visualization via Gmsh
+GMSHOUTPUT          No                    // visualization via Gmsh
 GMSHNETSTRUCT       No                    // visualize structure detection
 PlotFactorThick     0                     // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
-SPECIAL_OUTPUT      none             // structanaly viscoelasticity
-GMSHOUTINTERVALS    1                  // gmsh output interval
+SPECIAL_OUTPUT      none                  // structanaly viscoelasticity
+GMSHOUTINTERVALS    1                     // gmsh output interval
 OUTPUTINTERVALS     5000                  // specialoutput interval
 //============== EVENT TRIGGERS =============
 STARTTIMEOUT        0                     // start writing output
-ACTIONTIME          0 0 10000              // start actions equilibration time, kt switch time,...,starttimeact
-ACTIONDT            0.001 0.001 0.001       // time step sizes corresponding to actiontime
+ACTIONTIME          0 0 10000             // start actions equilibration time, kt switch time,...,starttimeact
+ACTIONDT            0.001 0.001 0.001     // time step sizes corresponding to actiontime
 BCTIMEINDEX         2                     // controls entry in actiontime at which DBCs are applied
 //============= SIMULATION SPECS ============
-PERIODLENGTH        2 0.2 0.2          // edge lengths of the cuboid volume
+PERIODLENGTH        2 0.2 0.2             // edge lengths of the cuboid volume
 SEARCHRES           23                    // resolution for search routine linkers x binding spots
 HISTOGRAMBINS       60                    // number of bins for specialoutput densitydensitycorr
 NUMRASTERPOINTS     15                    // creates numrasterpoints^3 rasterpoints, preferably numrasterpoints=2*n+1, n=1,2,3,...
-SHEARAMPLITUDE      0.04                   // amplitude of shear in micrometers
-ETA                 0.00044022           // ~ 1e-3 / 2.27 according to Cyron2011 eq 52 ff, viscosity of surrounding fluid
-KT                  5e-7 //0.00404531            // thermal energy
-KTACT               5e-7 //0.00404531            // thermal energy after starttimeact_
+SHEARAMPLITUDE      0.04                  // amplitude of shear in micrometers
+ETA                 0.00044022            // ~ 1e-3 / 2.27 according to Cyron2011 eq 52 ff, viscosity of surrounding fluid
+KT                  5e-7 //0.00404531     // thermal energy
+KTACT               5e-7 //0.00404531     // thermal energy after starttimeact_
 K_ON_start          90                    // chemical association-rate before ktswitchtime
 K_ON_end            90                    // chemical dissociation-rate after ktswitchtime // 100.0 1000.0
 K_ON_SELF           0                     // chemical association-rate in case of linker with both ends on the same filament
-K_OFF_start         90                     // in analogy to k_on
-K_OFF_end           90                     // in analogy to k_on
+K_OFF_start         90                    // in analogy to k_on
+K_OFF_end           90                    // in analogy to k_on
 K_ACT_SHORT_start   900                   // rate from long to short
-K_ACT_SHORT_end     900                     // in analogy to K_ACT_SHORT_start
-K_ACT_LONG_start    0                    // rate from short to long
-K_ACT_LONG_end      0                      // in analogy to K_ACT_LONG_start
-DELTABELLSEQ        -0.004                   // deltaD in Bell's equation, change in reaction variable
+K_ACT_SHORT_end     900                   // in analogy to K_ACT_SHORT_start
+K_ACT_LONG_start    0                     // rate from short to long
+K_ACT_LONG_end      0                     // in analogy to K_ACT_LONG_start
+DELTABELLSEQ        -0.004                // deltaD in Bell's equation, change in reaction variable
 DBCDISPDIR          1                     // direction of dbc displacement after starttimeact_ (x==1, y==2, z==3)
 CURVENUMBER         1                     // applied time curve after starttimeact_
 //============== FILAMENT MODEL =============
-FILAMENTMODEL       std                  // select filament model: std, helical
+FILAMENTMODEL       std                   // select filament model: std, helical
 FILAMENTPOLARITY    Yes
-NUM_EVAL_ELEMENTS   100                  // number of (initial) beam elements
+NUM_EVAL_ELEMENTS   100                   // number of (initial) beam elements
 RISEPERBSPOT        0.00277               // rise per monomer in the actin helix
 ROTPERBSPOT         -2.8999               // rotation per monomer in the actin helix
 BSPOTOFFSET         -1.5707963            // angular offset of binding spots per filament with respect to the nodes' material triads
-PHIBSPOT            1.0472 //0.5234                // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
+PHIBSPOT            1.0472 //0.5234       // angle betw. binding spot orientation of dist. vector bindinspot->crosslinker
 BSPOTINTERVAL       1                     // every n-th binding spot is available for binding
 //============ CROSSLINKER MODEL ============
 LINKERMODEL         active                // set linker model: none, std, bellseq, active, stdintpol
-N_crosslink         80                  // number of crosslinkers in the simulated volume
-INITOCCUPIEDBSPOTS  80                     // number of crosslinker elements set up before the first time step
+N_crosslink         80                    // number of crosslinkers in the simulated volume
+INITOCCUPIEDBSPOTS  80                    // number of crosslinker elements set up before the first time step
 NUMSUBSTRATEFIL     1                     // number of substrate filaments
-R_LINK              0.085                   // distance between the two binding domains of a linker
+R_LINK              0.085                 // distance between the two binding domains of a linker
 DeltaR_LINK         0.01                  // deviation from r_link
-ALINK               4.751658e-06           // assuming circular cross section of crosslinker with diameter according to PhD Tharmann
+ALINK               4.751658e-06          // assuming circular cross section of crosslinker with diameter according to PhD Tharmann
 ILINK               4.4918e-11            // ilink=0 ->Stab!
 IPLINK              8.9836e-11            // 2xilink
-ELINK               2560000              // torsion stiffness from Nishizaka 2000 and ilink from PhD Tharmann
-LINKERSCALEFACTOR   0.7           // length compression factor for active crosslinkers
+ELINK               2560000               // torsion stiffness from Nishizaka 2000 and ilink from PhD Tharmann
+LINKERSCALEFACTOR   0.7                   // length compression factor for active crosslinkers
 CORIENT             0                     // stiffness of the potential which determines probability of a certain crosslinker orientation
 PHI0                0                     // preferred binding angle betw. two filaments
 PHI0DEV             0.392699081698724     // deviation from phi0
 ACTIVELINKERCYCLE   0.04                  // active linker time cycle (myosin)
-ACTIVERECOVERYFRACTION   0.95            // active linker recovery time fraction (myosin)
+ACTIVERECOVERYFRACTION   0.95             // active linker recovery time fraction (myosin)
 ACTIVELINKERFRACTION     1.0              // fraction of active linkers based on N_crosslink
 REDUCECROSSLINKSBY  0                     // reduce the linker number by this number at starttimeact_
 //============== PTC parameters =============

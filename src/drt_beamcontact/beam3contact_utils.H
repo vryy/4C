@@ -205,19 +205,6 @@ namespace BEAMCONTACT
   }
 
   /*!
-  \brief Set primary parameter coordinate DoF on master beam for automatic differentiation with Sacado
-  */
-  template<int numnodes, int numnodalvalues>
-  void SetFADParCoordDof(FAD& eta)
-  {
-    // The 2*3*numnodes*numnodalvalues primary DoFs are the components of the nodal positions / tangents. The one additional
-    // degree of freedom represents the dependency on the master parameter coordinate eta, which is necessary in beam contact.
-    eta.diff((2*3*numnodes*numnodalvalues+1)-1,2*3*numnodes*numnodalvalues+1);
-
-    return;
-  }
-
-  /*!
   \brief Check, if current node belongs to a beam element
   */
   bool BeamNode(DRT::Node& node);
@@ -307,7 +294,7 @@ namespace BEAMCONTACT
     unrounded_id=(point+1.0)/2.0*numberofintervals;
     interval_id=floor(unrounded_id);
 
-    //if the size of the interval becomes smaller than 0.1% of the interval length we simply shift the point to the next higher/lower interval
+    //Size Check: If the size of the interval becomes smaller than RELSEGMENTTOL times the interval length we simply shift the point to the next higher/lower interval
     double segmenttol=RELSEGMENTTOL*numberofintervals/2.0;
 
     //The necessary shifting procedure depends on the fact, weather we are searching for the left bound
@@ -327,6 +314,28 @@ namespace BEAMCONTACT
       dserror("Interval-ID can't be negative!");
 
     return interval_id;
+  }
+
+  /*
+  \brief Get segment-id out of numberofsegments segmenets, in which the given point lies
+  */
+  inline int GetSegmentId(double& point, int numberofsegments)
+  {
+    int segment_id=0;
+    double unrounded_id=0.0;
+
+    //The method is similar to GetIntervalId() above. However, since it is purely used as output quantity and it does
+    //does not influence algorithmic quantities such as the integration interval length, we don't need a Size Check such as
+    //the method GetIntervalId() above.
+    //By inserting any double value lying within the segment, we get as result a double value that
+    //is larger than the sought-after segment ID but smaller than the next highter ID, i.e. we have to round down the solution.
+    unrounded_id=(point+1.0)/2.0*numberofsegments;
+    segment_id=floor(unrounded_id);
+
+    if(segment_id<0)
+      dserror("Segment-ID can't be negative!");
+
+    return segment_id;
   }
 
 } // namespace BEAMCONTACT

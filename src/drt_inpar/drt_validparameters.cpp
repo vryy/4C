@@ -1125,12 +1125,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                   "continue",
                                   "repeat_step",
                                   "halve_step",
+                                  "adapt_step",
                                   "repeat_simulation"),
                                 tuple<int>(
                                   INPAR::STR::divcont_stop,
                                   INPAR::STR::divcont_continue,
                                   INPAR::STR::divcont_repeat_step,
                                   INPAR::STR::divcont_halve_step,
+                                  INPAR::STR::divcont_adapt_step,
                                   INPAR::STR::divcont_repeat_simulation),
                                 &sdyn);
 

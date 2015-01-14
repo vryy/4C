@@ -29,6 +29,14 @@ Maintainer: Christoph Meier
 //default: 50
 #define BEAMCONTACTTOL 1.0e-10    /* convergence tolerance for local Newton */
 //default: 1.0e-10
+#define XIETAITERATIVEDISPTOL 1.0e-10  /* second convergence tolerance for local Newton: norm of iterative displacements in xi and eta */
+//default: 1.0e-10
+#define XIETARESOLUTIONFAC 10     /*this quantity defines the smallest possible difference in parameter space between two different closest points as multiple of XIETAITERATIVEDISPTOL*/
+//default: 10
+#define XIETASAFETYFAC            /*safety factor for closest point projection*/
+//default: 10
+#define CRITICALRELNORM 1.0e-6    /*we get an error message, if the relative norm of the local Newton is decreased by CRITICALRELNORM, but no convergence is reached nevertheless*/
+//default: 1.0e-8
 #define XIETATOL 1.0e-7           /* tolerance for valid values of beam parameters Xi and Eta
 //default: 1.0e-9                                     (e.g. Xi \in [-1 - XIETATOL; 1 + XIETATOL]) */
 #define NORMTOL  1.0e-12           /* tolerance when the to contact points are to close and one
@@ -97,26 +105,44 @@ Maintainer: Christoph Meier
 #define ANGLETOL 0.1/180*M_PI                      //within the search algorithm, for angles<ANGLETOL two segments are assumed to be parallel
 #define UNIQUECPPANGLE 1.0/180.0*M_PI              //angle above which it is assumed that a unique cpp can be found by the local Newton
 
-//#define DELTALARGEANGLE   6.0/180.0*M_PI           //bound for search of large angle contact segment pairs
+//#define DELTALARGEANGLE   1.0/180.0*M_PI           //bound for search of large angle contact segment pairs
 //#define DELTASMALLANGLE   35.0/180.0*M_PI          //bound for search of small angle contact segment pairs
 
 #define BEAMCONTACTGAUSSRULE intrule_line_5point   //Gauss rule applied in each segment
 
+//#define CONSISTENTTRANSITION
 //#define ENDPOINTSEGMENTATION                     //build integration segments at the physical beam endpoints
+#define ENDPOINTPENALTY                            //treat beam endpoints as additional contact points
 #define RELSEGMENTTOL 0.001                        //minimal (relative) size of a cut integration interval
 
 #define INITSEG1 1                                 //minimal number of segments of element1 (necessary for debugging)
 #define INITSEG2 1                                 //minimal number of segments of element2 (necessary for debugging)
 
+#if defined(ENDPOINTPENALTY) and defined(CONSISTENTTRANSITION)
+  dserror("So far, CONSISTENTTRANSITION does not work in combination with ENDPOINTPENALTY!");
+#endif
+
 #if defined(ENDPOINTSEGMENTATION) and !defined(AUTOMATICDIFF)
   dserror("ENDPOINTSEGMENTATION only works in combination with AUTOMATICDIFF!")
 #endif
 
+#if defined(CONSISTENTTRANSITION) and !defined(AUTOMATICDIFF)
+  dserror("CONSISTENTTRANSITION only works in combination with AUTOMATICDIFF!")
+#endif
+
+//For the CONSISTENTTRANSITION case, the variations of the contact point coordinates are necessary. For the small-angle contact
+//formulation, this is only implemented in a way that considers variable eta while xi is fixed. However, in case of
+//ENDPOINTSEGMENTATION both, xi and eta, are variable!
+#if defined(CONSISTENTTRANSITION) and defined(ENDPOINTSEGMENTATION)
+  dserror("CONSISTENTTRANSITION does not work in combination with ENDPOINTSEGMENTATION!")
+#endif
+
+
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
-#define N_CIRCUMFERENTIAL 20      /* number of gmsh visualization devisions of beam element in circumferential direction*/
-#define N_Axial 30                /* number of gmsh visualization devisions of beam element in axial direction*/
+#define N_CIRCUMFERENTIAL 4      /* number of gmsh visualization devisions of beam element in circumferential direction*/
+#define N_Axial 5                /* number of gmsh visualization devisions of beam element in axial direction*/
 
 #define OUTPUTEVERY 1          //Write output only every OUTPUTEVERY^th step
 #define OUTPUTEVERYNEWTONSTEP  //Write output also after each Newton step

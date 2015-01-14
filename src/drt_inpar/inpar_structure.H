@@ -232,6 +232,7 @@ namespace INPAR
       divcont_continue,           ///< continue nevertheless
       divcont_repeat_step,        ///< repeat time step
       divcont_halve_step,         ///< halve time step and carry on with simulation
+      divcont_adapt_step,         ///< adapt (halve or double) time step and carry on with simulation
       divcont_repeat_simulation,  ///< repeat the whole simulation
     };
 
@@ -254,6 +255,9 @@ namespace INPAR
         break;
       case  divcont_halve_step :
         return "halve_step";
+        break;
+      case  divcont_adapt_step :
+        return "adapt_step";
         break;
       case divcont_repeat_simulation :
          return "repeat_simulation";

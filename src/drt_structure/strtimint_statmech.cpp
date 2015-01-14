@@ -23,7 +23,10 @@ Maintainer: Kei Müller
 #include "../linalg/linalg_solver.H"
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_inpar/inpar_statmech.H"
+#include "../drt_io/io_pstream.H"
+#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_gmsh.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -56,7 +59,8 @@ STR::TimIntStatMech::TimIntStatMech(const Teuchos::ParameterList& params,
                                     Teuchos::RCP<LINALG::Solver> contactsolver,
                                     Teuchos::RCP<IO::DiscretizationWriter> output) :
 TimIntOneStepTheta(params,sdynparams, xparams, actdis,solver,contactsolver,output),
-isconverged_(false)
+isconverged_(false),
+iterges_(0)
 {
   // create StatMechManager object
   //statmechmanager_ = Teuchos::rcp(new STATMECH::StatMechManager(params_,*actdis));
@@ -281,94 +285,94 @@ void STR::TimIntStatMech::InitializeBeamContact()
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  integrate in time          (static/public)             mueller 03/12|
- *----------------------------------------------------------------------*/
-int STR::TimIntStatMech::Integrate()
-{
-  dserror("time loop of statmech problems moved to ADAPTER::StructureStatMech::Integrate()"
-      "this method will be removed soon");
-  // set statmech internal time and time step size
-  statmechman_->UpdateTimeAndStepSize((*dt_)[0],(*time_)[0],true);
-  // this is necessary in case the time step size changed with the initial step (originally timen_ is set in strtimint.cpp)
-  timen_ = (*time_)[0] + (*dt_)[0];
-
-  double eps = 1.0e-12;
-  while( (timen_ <= timemax_+eps) and (stepn_ <= stepmax_) )
-  {
-#ifdef MEASURETIME
-    const double t0 = Teuchos::Time::wallTime();
-#endif
-
-    // preparations for statistical mechanics in this time step
-    StatMechPrepareStep();
-#ifdef MEASURETIME
-    const double t1 = Teuchos::Time::wallTime();
-#endif
-    //redo time step in case of bad random configuration
-    do
-    {
-      // Update of statmech specific quantities as well as new set of random numbers
-      StatMechUpdate();
-
-      // Solve system of equations according to parameters and methods chosen by input file
-      if(HaveBeamContact())
-        BeamContactNonlinearSolve();
-      else // standard procedure without beam contact
-      {
-        //pay attention: for a constant predictor an incremental velocity update is necessary, which has
-        //been deleted out of the code in order to simplify it
-//        if(!discret_->Comm().MyPID())
-//          std::cout<<"target time = "<<timen_<<", time step = "<<(*dt_)[0]<<std::endl;
-        Predict();
-
-        Solve();
-      }
-
-      /*if iterations have not converged a new trial requires setting all intern element variables, statmechmanager class variables
-       *and the state of the discretization to status at the beginning of this time step*/
-      StatMechRestoreConvState();
-    }
-    while(!isconverged_);
-
-#ifdef MEASURETIME
-    const double t2 = Teuchos::Time::wallTime();
-#endif
-
-    //periodic shift of configuration at the end of the time step in order to avoid improper output
-    statmechman_->PeriodicBoundaryShift(*disn_, ndim_, timen_, (*dt_)[0]);
-
-#ifdef MEASURETIME
-    const double t3 = Teuchos::Time::wallTime();
-#endif
-
-    // update all that is relevant
-    UpdateAndOutput();
-
-#ifdef MEASURETIME
-    const double t4 = Teuchos::Time::wallTime();
-#endif
-
-    //special output for statistical mechanics
-    StatMechOutput();
-
-#ifdef MEASURETIME
-    if(!discret_->Comm().MyPID())
-    {
-      std::cout<<"\n=================Time  Measurement================"<<std::endl;
-      std::cout<<"TimIntStatMech::Integrate"<<std::endl;
-      std::cout<<"StatMechPrepareStep :\t"<<std::setprecision(4)<<t1-t0<<"\ts"<<std::endl;
-      std::cout<<"Newton              :\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<std::endl;
-      std::cout<<"PeriodicShift       :\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<std::endl;
-      std::cout<<"UpdateAndOutput     :\t"<<std::setprecision(4)<<t4-t3<<"\ts"<<std::endl;
-      std::cout<<"StatMechOutput      :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t4<<"\ts"<<std::endl;
-      std::cout<<"=================================================="<<std::endl;
-      std::cout<<"total time         :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t0<<"\ts"<<std::endl;
-    }
-#endif
-  }
-  return 0;
-} // void STR::TimIntStatMech::Integrate()
+///*----------------------------------------------------------------------*
+// |  integrate in time          (static/public)             mueller 03/12|
+// *----------------------------------------------------------------------*/
+//int STR::TimIntStatMech::Integrate()
+//{
+//  dserror("time loop of statmech problems moved to ADAPTER::StructureStatMech::Integrate()"
+//      "this method will be removed soon");
+//  // set statmech internal time and time step size
+//  statmechman_->UpdateTimeAndStepSize((*dt_)[0],(*time_)[0],true);
+//  // this is necessary in case the time step size changed with the initial step (originally timen_ is set in strtimint.cpp)
+//  timen_ = (*time_)[0] + (*dt_)[0];
+//
+//  double eps = 1.0e-12;
+//  while( (timen_ <= timemax_+eps) and (stepn_ <= stepmax_) )
+//  {
+//#ifdef MEASURETIME
+//    const double t0 = Teuchos::Time::wallTime();
+//#endif
+//
+//    // preparations for statistical mechanics in this time step
+//    StatMechPrepareStep();
+//#ifdef MEASURETIME
+//    const double t1 = Teuchos::Time::wallTime();
+//#endif
+//    //redo time step in case of bad random configuration
+//    do
+//    {
+//      // Update of statmech specific quantities as well as new set of random numbers
+//      StatMechUpdate();
+//
+//      // Solve system of equations according to parameters and methods chosen by input file
+//      if(HaveBeamContact())
+//        BeamContactNonlinearSolve();
+//      else // standard procedure without beam contact
+//      {
+//        //pay attention: for a constant predictor an incremental velocity update is necessary, which has
+//        //been deleted out of the code in order to simplify it
+////        if(!discret_->Comm().MyPID())
+////          std::cout<<"target time = "<<timen_<<", time step = "<<(*dt_)[0]<<std::endl;
+//        Predict();
+//
+//        Solve();
+//      }
+//
+//      /*if iterations have not converged a new trial requires setting all intern element variables, statmechmanager class variables
+//       *and the state of the discretization to status at the beginning of this time step*/
+//      StatMechRestoreConvState();
+//    }
+//    while(!isconverged_);
+//
+//#ifdef MEASURETIME
+//    const double t2 = Teuchos::Time::wallTime();
+//#endif
+//
+//    //periodic shift of configuration at the end of the time step in order to avoid improper output
+//    statmechman_->PeriodicBoundaryShift(*disn_, ndim_, timen_, (*dt_)[0]);
+//
+//#ifdef MEASURETIME
+//    const double t3 = Teuchos::Time::wallTime();
+//#endif
+//
+//    // update all that is relevant
+//    UpdateAndOutput();
+//
+//#ifdef MEASURETIME
+//    const double t4 = Teuchos::Time::wallTime();
+//#endif
+//
+//    //special output for statistical mechanics
+//    StatMechOutput();
+//
+//#ifdef MEASURETIME
+//    if(!discret_->Comm().MyPID())
+//    {
+//      std::cout<<"\n=================Time  Measurement================"<<std::endl;
+//      std::cout<<"TimIntStatMech::Integrate"<<std::endl;
+//      std::cout<<"StatMechPrepareStep :\t"<<std::setprecision(4)<<t1-t0<<"\ts"<<std::endl;
+//      std::cout<<"Newton              :\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<std::endl;
+//      std::cout<<"PeriodicShift       :\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<std::endl;
+//      std::cout<<"UpdateAndOutput     :\t"<<std::setprecision(4)<<t4-t3<<"\ts"<<std::endl;
+//      std::cout<<"StatMechOutput      :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t4<<"\ts"<<std::endl;
+//      std::cout<<"=================================================="<<std::endl;
+//      std::cout<<"total time         :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t0<<"\ts"<<std::endl;
+//    }
+//#endif
+//  }
+//  return 0;
+//} // void STR::TimIntStatMech::Integrate()
 
 
 /*----------------------------------------------------------------------*
@@ -494,16 +498,122 @@ void STR::TimIntStatMech::PredictConstDisConsistVel()
  *----------------------------------------------------------------------*/
 INPAR::STR::ConvergenceStatus STR::TimIntStatMech::Solve()
 {
-  if(itertype_==INPAR::STR::soltech_ptc)
-    PTC();
-  else if(itertype_==INPAR::STR::soltech_newtonfull)
-    NewtonFull();
-  else if(itertype_==INPAR::STR::soltech_newtonls)
-    NewtonLS();
+  if(HaveBeamContact())
+  {
+    BeamContactNonlinearSolve();
+  }
   else
-    dserror("itertype %d not implemented for StatMech applications! Choose either ptc or fullnewton!", itertype_);
+  {
+    if(itertype_==INPAR::STR::soltech_ptc)
+      PTC();
+    else if(itertype_==INPAR::STR::soltech_newtonfull)
+      NewtonFull();
+    else
+      dserror("itertype %d not implemented for StatMech applications! Choose either ptc or fullnewton!", itertype_);
+  }
 
-  return INPAR::STR::conv_success;
+  INPAR::STR::ConvergenceStatus status = INPAR::STR::conv_success;
+
+  if(isconverged_)
+    status = INPAR::STR::conv_success;
+  else
+    status = INPAR::STR::conv_nonlin_fail;
+
+  // Only relevant, if the input parameter DIVERCONT is used and set to divcontype_ == adapt_step:
+  // In this case, the time step size is halved as consequence of a non-converging nonlinear solver.
+  // After a prescribed number of converged time steps, the time step is doubled again. The following
+  // methods checks, if the time step size can be increased again.
+  CheckForTimeStepIncrease(status);
+
+  return status;
+}
+
+/*-----------------------------------------------------------------------------------*
+ | error action in case of non-convergence of nonlinear solver  (public)   meier 01/15|
+ *-----------------------------------------------------------------------------------*/
+bool STR::TimIntStatMech::PerformErrorAction()
+{
+  // what to do when nonlinear solver does not converge
+
+  /*if iterations have not converged a new trial requires setting all intern element variables, statmechmanager class variables
+   *and the state of the discretization to status at the beginning of this time step*/
+  StatMechRestoreConvState();
+
+  switch (divcontype_)
+  {
+    case INPAR::STR::divcont_stop:
+    {
+      // write restart output of last converged step before stopping
+      OutputStep(true);
+
+      // we should not get here, dserror for safety
+      dserror("Nonlinear solver did not converge! ");
+      return false;
+    }
+    case INPAR::STR::divcont_continue:
+    {
+      dserror("DIVERCONT-Type divcont_continue not supported by statmech so far! ");
+      return false;
+    }
+    break;
+    case INPAR::STR::divcont_repeat_step:
+    {
+      IO::cout << "Nonlinear solver failed to converge. Repeat time step with new random numbers!"
+               << IO::endl;
+      // do nothing since we didn't update yet
+      return true;
+    }
+    break;
+    case INPAR::STR::divcont_halve_step:
+    {
+      IO::cout << "Nonlinear solver failed to converge. Divide timestep in half!"
+               << IO::endl;
+
+      // undo last time step increment
+      timen_-=(*dt_)[0];
+      // halve the time step size
+      (*dt_)[0]=(*dt_)[0]*0.5;
+      // update the number of max time steps
+      stepmax_= stepmax_ + (stepmax_-stepn_)+1;
+      // reset timen_ according to new time step increment
+      timen_+= (*dt_)[0];
+
+      return false;
+    }
+    break;
+    case INPAR::STR::divcont_adapt_step:
+    {
+      IO::cout << "Nonlinear solver failed to converge. Divide timestep in half!"
+               << IO::endl;
+
+      // undo last time step increment
+      timen_-=(*dt_)[0];
+      // halve the time step size
+      (*dt_)[0]=(*dt_)[0]*0.5;
+      // update the number of max time steps
+      stepmax_= stepmax_ + (stepmax_-stepn_)+1;
+      // reset timen_ according to new time step increment
+      timen_+= (*dt_)[0];
+
+      divconrefinementlevel_++;
+      divconnumfinestep_=0;
+
+      return false;
+    }
+    break;
+    case INPAR::STR::divcont_repeat_simulation:
+    {
+      dserror("DIVERCONT-Type divcont_repeat_simulation not supported by statmech so far! ");
+      return false;
+    }
+    break;
+    default:
+      dserror("Unknown DIVER_CONT case");
+    return false;
+    break;
+  }
+
+  return false; // make compiler happy
 }
 
 /*----------------------------------------------------------------------*
@@ -754,11 +864,10 @@ void STR::TimIntStatMech::NewtonFull()
   if(HaveBeamContact())
     InitializeNewtonUzawa();
 
-  // equilibrium iteration loop
-  bool fresmnormdivergent = false;
-
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
+    // increment total number of iterations
+    iterges_++;
     // make negative residual
     fres_->Scale(-1.0);
 
@@ -849,7 +958,7 @@ void STR::TimIntStatMech::NewtonFull()
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
     if(normfres_>1.0e4 && iter_>4)
     {
-      fresmnormdivergent = true;
+      std::cout << "Attention: Left nonlinear equilibrium loop since normfres_>1.0e4!" << std::endl;
       break;
     }
   }  // end equilibrium loop
@@ -863,35 +972,15 @@ void STR::TimIntStatMech::NewtonFull()
 
   ConvergenceStatusUpdate(Converged());
 
-  INPAR::BEAMCONTACT::Strategy strategy = INPAR::BEAMCONTACT::bstr_penalty;
-
   // test whether max iterations was hit
-  if ( (Converged()) && !discret_->Comm().MyPID() && printscreen_)
+  if ( isconverged_ && !discret_->Comm().MyPID() && printscreen_)
   {
     std::cout<<"Newton-Raphson-iteration converged with..."<<std::endl;
     PrintNewtonIter();
   }
 
-  switch(divcontype_)
-  {
-    case INPAR::STR::divcont_stop:
-    {
-      if(fresmnormdivergent || iter_ >= itermax_)
-      {
-        dserror("Newton unconverged in %d iterations", iter_);
-        return;
-      }
-    }
-    break;
-    case INPAR::STR::divcont_continue:
-    {
-      if(strategy != INPAR::BEAMCONTACT::bstr_uzawa && !discret_->Comm().MyPID() && (fresmnormdivergent || iter_ >= itermax_))
-        printf("Newton unconverged in %d iterations - new trial with new random numbers!\n\n", iter_);
-      return;
-    }
-    break;
-    default: dserror("Unknown DIVERCONT type! Check input file!"); break;
-  }
+  return;
+
 } // STR::TimIntStatMech::FullNewton()
 
 /*----------------------------------------------------------------------*
@@ -1270,6 +1359,9 @@ void STR::TimIntStatMech::PTC()
 
   while (((!Converged() || ctransptcold > 0.0 || crotptcold > 0.0) and iter_<=itermax_) or (iter_ <= itermin_))
   {
+    // increment total number of iterations
+    iterges_++;
+
     //save PTC parameters of the so far last iteration step
     ctransptcold = ctransptc;
     crotptcold   = crotptc;
@@ -1352,7 +1444,7 @@ void STR::TimIntStatMech::PTC()
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
     if(normfres_>1.0e4 && iter_>4)
     {
-      fresnormdivergent = true;
+      std::cout << "Attention: Left nonlinear equilibrium loop since normfres_>1.0e4!" << std::endl;
       break;
     }
   }
@@ -1361,33 +1453,17 @@ void STR::TimIntStatMech::PTC()
   iter_--;
 //  print_unconv = false;
 
-  //-------------------------------- test whether max iterations was hit
-  PTCConvergenceStatus(iter_, itermax_, fresnormdivergent);
+  ConvergenceStatusUpdate(Converged());
 
-  // terminate nonlinear solve for divcont type set in the input file
-  if ( (iter_ >= itermax_ || fresnormdivergent) && divcontype_==INPAR::STR::divcont_stop)
-    dserror("Newton unconverged in %d iterations", iter_);
-
-  // output to screen depending on how the PTC scheme is applied
-  if(printscreen_)
+  // test whether max iterations was hit
+  if ( isconverged_ && !discret_->Comm().MyPID() && printscreen_)
   {
-    if(isconverged_)
-    {
-      if(isconverged_  && !myrank_ && printscreen_)
-        PrintNewtonIter();
-    }
-    else
-    {
-      INPAR::BEAMCONTACT::Strategy strategy = INPAR::BEAMCONTACT::bstr_penalty;
-      if(HaveBeamContact())
-        strategy = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcman_->BeamContactParameters(),"BEAMS_STRATEGY");
-      if(!myrank_ && strategy != INPAR::BEAMCONTACT::bstr_uzawa)
-        std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
-    }
+    std::cout<<"PTC-iteration converged with..."<<std::endl;
+    PrintNewtonIter();
 
-    if(!myrank_)
-      std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nptc time: "<< sumptc <<" seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<Teuchos::Time::wallTime() - tbegin<<" seconds\n***\n";
+    std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nptc time: "<< sumptc <<" seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<Teuchos::Time::wallTime() - tbegin<<" seconds\n***\n";
   }
+
   return;
 } // STR::TimIntStatMech::PTC()
 
@@ -1444,48 +1520,6 @@ void STR::TimIntStatMech::PTCStatMechUpdate(double& ctransptc, double& crotptc, 
   }
   return;
 }//STR::TimIntStatMech::PTCStatMechUpdate()
-
-/*----------------------------------------------------------------------*
- |  evaluate outcome of PTC and chose action accordingly   mueller 02/12|
- *----------------------------------------------------------------------*/
-void STR::TimIntStatMech::PTCConvergenceStatus(int& numiter, int& maxiter, bool fresnormdivergent)
-{
-  if(numiter>=maxiter || fresnormdivergent)
-  {
-    ConvergenceStatusUpdate();
-
-    // Only Uzawa augmented lagrange:
-    // We take a look at the change in the contact constraint norm.
-    // Reason: when the constraint tolerance is a relative measure (gap compared to the smaller of the two beam radii),
-    // configurations arise, where (especially in network simulations) the constraint is fullfilled by almost all of the contact
-    // pairs except for a very tiny number of pairs (often only 1 pair), where one radius is significantly smaller than the other
-    // (pair linker/filament).
-//    INPAR::BEAMCONTACT::Strategy strategy = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(beamcman_->BeamContactParameters(),"BEAMS_STRATEGY");
-//    if(strategy==INPAR::BEAMCONTACT::bstr_uzawa)
-//    {
-//      double cnorm = 1e6;
-//      // get the constraint norm and decrease penalty parameter
-//      beamcman_->UpdateConstrNorm(&cnorm);
-//
-//      if(numiter>=maxiter)
-//      {
-//        // accept step starting from second uzawa step
-//        if(cnorm<0.5 && beamcman_->GetUzawaIter()>=2 && fresnorm_<1e-2)
-//          ConvergenceStatusUpdate(true,false);
-//        else
-//          ConvergenceStatusUpdate(false,false);
-//      }
-//      else if(fresnormdivergent)
-//        ConvergenceStatusUpdate(false,false);
-//    }
-  }
-  else
-  {
-    if(!myrank_ && printscreen_)
-      std::cout<<"PTC converged with..."<<std::endl;
-  }
-  return;
-}//STR::TimIntStatMech::PTCConvergenceStatus()
 
 /*----------------------------------------------------------------------*
  |  incremental iteration update of state                  mueller 03/12|
@@ -1571,19 +1605,16 @@ void STR::TimIntStatMech::UpdateIterIteratively()
 /*----------------------------------------------------------------------*
  | set relevant variables signaling divergence of PTC      mueller 02/12|
  *----------------------------------------------------------------------*/
-void STR::TimIntStatMech::ConvergenceStatusUpdate(bool converged, bool increasestepcount)
+void STR::TimIntStatMech::ConvergenceStatusUpdate(bool converged)
 {
-  if(!converged)
+  if(converged)
   {
-    isconverged_ = false;
-    if(increasestepcount)
-      statmechman_->UpdateNumberOfUnconvergedSteps();
+    isconverged_ = true;
   }
   else
   {
-    isconverged_ = true;
-    if(!increasestepcount)
-      statmechman_->UpdateNumberOfUnconvergedSteps(false);
+    isconverged_ = false;
+    statmechman_->UpdateNumberOfUnconvergedSteps();
   }
   return;
 }
@@ -1619,17 +1650,11 @@ void STR::TimIntStatMech::BeamContactNonlinearSolve()
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::BeamContactPenalty()
 {
-  Predict();
 
   if(itertype_==INPAR::STR::soltech_ptc)
     PTC();
   else if(itertype_==INPAR::STR::soltech_newtonfull)
     NewtonFull();
-  else if(itertype_==INPAR::STR::soltech_newtonls)
-  {
-    NewtonLS();
-    ConvergenceStatusUpdate(Converged());
-  }
   else
     dserror("itertype %d not implemented for StatMech applications! Choose either ptc or fullnewton!", itertype_);
 
@@ -1648,9 +1673,6 @@ void STR::TimIntStatMech::BeamContactAugLag()
   int maxuzawaiter = beamcman_->BeamContactParameters().get<int>("BEAMS_BTBUZAWAMAXSTEPS");
 
   Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
-  if(!discret_->Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-    std::cout<<"Predictor:"<<std::endl;
-  Predict();
 
   // LOOP2: augmented Lagrangian (Uzawa)
   do
@@ -1660,7 +1682,9 @@ void STR::TimIntStatMech::BeamContactAugLag()
 
     // if unconverged
     if(BeamContactExitUzawaAt(maxuzawaiter))
-      break;
+    {
+      dserror("Maximal number of uzawa iterations reached. Adapt your tolerance or allow for larger number of uzawa iterations!");
+    }
 
     if (discret_->Comm().MyPID() == 0 && ioparams.get<int>("STDOUTEVRY",0))
       std::cout << std::endl << "Starting Uzawa step No. " << beamcman_->GetUzawaIter() << std::endl;
@@ -1669,8 +1693,6 @@ void STR::TimIntStatMech::BeamContactAugLag()
       PTC();
     else if(itertype_==INPAR::STR::soltech_newtonfull)
       NewtonFull();
-    else if(itertype_==INPAR::STR::soltech_newtonls)
-      NewtonLS();
     else
       dserror("itertype %d not implemented for StatMech applications! Choose either ptc or fullnewton!", itertype_);
 
@@ -1702,24 +1724,10 @@ void STR::TimIntStatMech::BeamContactAugLag()
  *----------------------------------------------------------------------*/
 bool STR::TimIntStatMech::BeamContactExitUzawaAt(int& maxuzawaiter)
 {
-  bool exituzawa = false;
-//
   if (beamcman_->GetUzawaIter() > maxuzawaiter)
-  {
-    isconverged_ = false;
-    // note pair crosslinker/filament is the problem here. Since relative constraint norm, half of the crosslinker radius is ok
-    if(beamcman_->GetConstrNorm()<0.5)
-      isconverged_ = true;
-    else
-    {
-      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
-      if(!discret_->Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
-        std::cout << "Uzawa unconverged in "<< beamcman_->GetUzawaIter() << " iterations" << std::endl;
-    }
-    exituzawa = true;
-    //dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
-  }
-  return exituzawa;
+    return true;
+  else
+    return false;
 }
 
 /*----------------------------------------------------------------------*
@@ -1766,20 +1774,25 @@ void STR::TimIntStatMech::StatMechPrepareStep()
  |  Call statmechmanager Update according to options chosen             |
  |                                            (private)    mueller 02/12|
  *----------------------------------------------------------------------*/
-void STR::TimIntStatMech::StatMechUpdate()
+void STR::TimIntStatMech::StatMechUpdate(bool newrandomnumbers)
 {
-  if(HaveStatMech())
+  if(!HaveStatMech())
+    dserror("You should not be here!");
+
+  Teuchos::ParameterList statmechparams = statmechman_->GetStatMechParams();
+  //assuming that iterations will converge
+  isconverged_ = true;
+  const double t_admin = Teuchos::Time::wallTime();
+  if(HaveBeamContact())
+    statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_,buildoctree_, printscreen_);
+  else
+    statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_, Teuchos::null,false,printscreen_);
+  // print to screen
+  StatMechPrintUpdate(t_admin);
+
+  //Only generate new random numbers if necessary (for repeated time steps this depends on the type of divercont_ action)
+  if(newrandomnumbers)
   {
-    Teuchos::ParameterList statmechparams = statmechman_->GetStatMechParams();
-    //assuming that iterations will converge
-    isconverged_ = true;
-    const double t_admin = Teuchos::Time::wallTime();
-    if(HaveBeamContact())
-      statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_,buildoctree_, printscreen_);
-    else
-      statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_, Teuchos::null,false,printscreen_);
-    // print to screen
-    StatMechPrintUpdate(t_admin);
     /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
      *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
      *for synchrinisation of these random numbers in parallel computing*/

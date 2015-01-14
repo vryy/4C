@@ -98,7 +98,6 @@ STR::TimIntImpl::TimIntImpl
   iternorm_(DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdynparams,"ITERNORM")),
   itermax_(sdynparams.get<int>("MAXITER")),
   itermin_(sdynparams.get<int>("MINITER")),
-  divcontype_ (DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams,"DIVERCONT")),
   toldisi_(sdynparams.get<double>("TOLDISP")),
   tolfres_(sdynparams.get<double>("TOLRES")),
   tolpfres_(sdynparams.get<double>("TOLINCO")),
@@ -1571,6 +1570,13 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
 
   INPAR::STR::ConvergenceStatus status = static_cast<INPAR::STR::ConvergenceStatus>(nonlin_error);
 
+  // Only relevant, if the input parameter DIVERCONT is used and set to divcontype_ == adapt_step:
+  // In this case, the time step size is halved as consequence of a non-converging nonlinear solver.
+  // After a prescribed number of converged time steps, the time step is doubled again. The following
+  // methods checks, if the time step size can be increased again.
+  CheckForTimeStepIncrease(status);
+
+
   return status;
 }
 /*----------------------------------------------------------------------*/
@@ -1817,7 +1823,7 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror)
   // now some error checks
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
+  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
   {
     return linerror;
   }
@@ -1837,7 +1843,7 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror)
         IO::cout<<"Newton unconverged in " << iter_ << " iterations, continuing" <<IO::endl;
       return 0;
     }
-    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
+    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
     {
       if (myrank_ == 0)
         IO::cout<< "Newton unconverged in " << iter_ << " iterations " << IO::endl;
@@ -1853,11 +1859,11 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror)
 int STR::TimIntImpl::LinSolveErrorCheck(int linerror)
 {
   // we only care about problems in the linear solver if we have a fancy divcont action
-  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation) )
+  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation) )
   {
     if (myrank_ == 0)
     IO::cout<< "Linear solver is having trouble " << IO::endl;
-    return linerror;
+    return 2;
   }
   else
   {
@@ -2877,7 +2883,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
   // now some error checks
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation) )
+  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation) )
   {
     return linerror;
   }
@@ -2896,7 +2902,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
           conman_->ComputeMonitorValues(disn_);
       return 0;
     }
-    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
+    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
     {
       dserror("Fancy divcont actions not implemented forUzawaLinearNewtonFull ");
       return 1;
@@ -4662,4 +4668,43 @@ void STR::TimIntImpl::updateEpetraVectorsCrack( std::map<int,int>& oldnew )
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, freact_, oldnew );
 
   updateMethodSpecificEpetraCrack( oldnew );
+}
+
+/*-----------------------------------------------------------------------------*
+ * check, if according to divercont flag                             meier 01/15
+ * time step size can be increased
+ *-----------------------------------------------------------------------------*/
+void STR::TimIntImpl::CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& status)
+{
+  const int maxnumfinestep = 4;
+
+  if(divcontype_!=INPAR::STR::divcont_adapt_step)
+    return;
+  else if(status == INPAR::STR::conv_success and divconrefinementlevel_!=0)
+  {
+    divconnumfinestep_++;
+
+    if(divconnumfinestep_==maxnumfinestep)
+    {
+      // increase the step size if the remaining number of steps is a even number
+      if(((stepmax_-stepn_)%2)==0 and stepmax_!=stepn_)
+      {
+        IO::cout << "Nonlinear solver successful. Double timestep size!"
+                 << IO::endl;
+
+        divconrefinementlevel_--;
+        divconnumfinestep_=0;
+
+        stepmax_= stepmax_ - (stepmax_-stepn_)/2;
+
+        // double the time step size
+        (*dt_)[0]=(*dt_)[0]*2;
+      }
+      else  //otherwise we have to wait one more time step until the step size can be increased
+      {
+        divconnumfinestep_--;
+      }
+    }
+    return;
+  }
 }

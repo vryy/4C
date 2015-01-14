@@ -384,7 +384,7 @@ public:
   const int& NumberOfUnconvergedSteps() const {return unconvergedsteps_;}
 
   //! \brief return number of unconverged steps since beginning of the simulation
-  void UpdateNumberOfUnconvergedSteps(bool flag = true);
+  void UpdateNumberOfUnconvergedSteps();
 
   //! \brief pass statistical mechanics parameters to parameter list
   void AddStatMechParamsTo(Teuchos::ParameterList&          params,

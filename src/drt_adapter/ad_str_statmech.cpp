@@ -38,6 +38,9 @@ int ADAPTER::StructureStatMech::Integrate()
   // this is necessary in case the time step size changed with the initial step (originally timen_ is set in strtimint.cpp)
   SetTimen(TimeOld()+Dt());
 
+  // error checking variables
+  INPAR::STR::ConvergenceStatus convergencestatus = INPAR::STR::conv_success;
+
   while(NotFinished())
   {
 #ifdef MEASURETIME
@@ -49,29 +52,25 @@ int ADAPTER::StructureStatMech::Integrate()
 #ifdef MEASURETIME
     const double t1 = Teuchos::Time::wallTime();
 #endif
+
+    //check if new random numbers are needed for a repeated time step
+    bool newrandomnumbers=true;
     //redo time step in case of bad random configuration
     do
     {
       // Update of statmech specific quantities as well as new set of random numbers
-      statmechstructure->StatMechUpdate();
+      statmechstructure->StatMechUpdate(newrandomnumbers);
 
-      // Solve system of equations according to parameters and methods chosen by input file
-      if(statmechstructure->HaveBeamContact())
-        statmechstructure->BeamContactNonlinearSolve();
-      else // standard procedure without beam contact
-      {
-        //pay attention: for a constant predictor an incremental velocity update is necessary, which has
-        //been deleted out of the code in order to simplify it
-//        if(!Discretization()->Comm().MyPID())
-//          std::cout<<"target time = "<<Time()<<", time step = "<<Dt()<<std::endl;
-        statmechstructure->Predict();
+      // pay attention: for a constant predictor an incremental velocity update is necessary, which has
+      // been deleted out of the code in order to simplify it
+      // if(!Discretization()->Comm().MyPID())
+      // std::cout<<"target time = "<<Time()<<", time step = "<<Dt()<<std::endl;
+      statmechstructure->Predict();
 
-        Solve();
-      }
+      convergencestatus=Solve();
 
-      /*if iterations have not converged a new trial requires setting all intern element variables, statmechmanager class variables
-       *and the state of the discretization to status at the beginning of this time step*/
-      statmechstructure->StatMechRestoreConvState();
+      if(convergencestatus!=INPAR::STR::conv_success)
+        newrandomnumbers=statmechstructure->PerformErrorAction();
     }
     while(!statmechstructure->IsConverged());
 

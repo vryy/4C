@@ -3458,12 +3458,10 @@ void STATMECH::StatMechManager::UpdateForceSensors(std::vector<int>& sensornodes
 /*----------------------------------------------------------------------*
  | update number of unconverged steps              (public) mueller 3/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::UpdateNumberOfUnconvergedSteps(bool flag)
+void STATMECH::StatMechManager::UpdateNumberOfUnconvergedSteps()
 {
-  if(flag)
-    unconvergedsteps_++;
-  else
-    unconvergedsteps_--;
+  unconvergedsteps_++;
+
   return;
 }
 

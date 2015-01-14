@@ -79,8 +79,8 @@ namespace STR
     //! \brief initialize beam contact
     void InitializeBeamContact();
 
-    //! \brief Do time integration
-    int Integrate();
+//    //! \brief Do time integration
+//    int Integrate();
 
     //! \brief do predictor step
     void Predict();
@@ -90,6 +90,9 @@ namespace STR
 
     //! nonlinear solve
     virtual INPAR::STR::ConvergenceStatus Solve();
+
+    //! error action in case of non-convergence of nonlinear solver
+    bool PerformErrorAction();
 
     //! \brief evaluate residual
     void EvaluateForceStiffResidual(Teuchos::ParameterList& params);
@@ -151,7 +154,7 @@ namespace STR
     void StatMechRestoreConvState();
 
     //! \brief call Update() method of statmechmanager_ according to options chosen
-    void StatMechUpdate();
+    void StatMechUpdate(bool newrandomnumbers);
 
     //! \brief call Output() method of statmechmanager_ according to options chosen
     void StatMechOutput();
@@ -186,9 +189,6 @@ namespace STR
     //! \brief Statistical Mechanics PTC Update
     void PTCStatMechUpdate(double& ctransptc, double& crotptc, double& nc, double& resinit, double& alphaptc);
 
-    //! \brief evaluate whether to repeat the time step or just the uzawa step with altered penalty parameter
-    void PTCConvergenceStatus(int& numiter, int& maxiter, bool fresmnormdivergent);
-
     void UpdateIter(const int iter);
 
     void UpdateIterIncrementally();
@@ -196,7 +196,7 @@ namespace STR
     void UpdateIterIteratively();
 
     //! \brief set PTC status to unconverged
-    void ConvergenceStatusUpdate(bool converged = false, bool increasestepcount = true);
+    void ConvergenceStatusUpdate(bool converged);
 
     //! \brief spatial dimension
     int ndim_;
@@ -209,6 +209,9 @@ namespace STR
 
     //! \brief false if in current time step the iterative solution of the nonlinear system of equations has not converged
     bool   isconverged_;
+
+    //! total number of Newton iterations in simulation
+    int iterges_;
 
     //! \brief flag signaling a new octree search for contact detection (especially important if a time step has to be repeated)
     bool buildoctree_;

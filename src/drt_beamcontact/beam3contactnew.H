@@ -98,6 +98,17 @@ public:
   int GetNumCps(){return 1;};
 
   /*!
+  \brief Get vector of type declarations (0=closest point contact, 1=gauss point contact, 2= end point contact) of all contact pairs
+  */
+  std::vector<int> GetContactType()
+  {
+
+    std::vector<int > types(1, 0);
+
+    return types;
+  };
+
+  /*!
   \brief Get gap of this contact pair
   */
   std::vector<double> GetGap()

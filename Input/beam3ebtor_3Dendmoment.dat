@@ -40,8 +40,9 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
-TIMESTEP                        0.001
-NUMSTEP                         1000
+DIVERCONT                       adapt_step     // Continue even if results are divergent
+TIMESTEP                        0.05
+NUMSTEP                         20
 MAXTIME                         1
 DAMPING                         No
 M_DAMP                          0
@@ -52,9 +53,8 @@ TOLDISP                         1.0E-10
 NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              Or
-MAXITER                         80
+MAXITER                         10
 LOADLIN                         Yes
-DIVERCONT                       stop
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.5
@@ -171,9 +171,9 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.3e9 THEXPANS 0.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 //Results with ANS and 4 GP
-STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE -1.89137399069066237e+00 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 17 QUANTITY dispy VALUE 5.50762972191083944e-02 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 17 QUANTITY dispz VALUE 1.89702907371511548e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE -1.89137399069066237e+00 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 17 QUANTITY dispy VALUE 5.50762972191083944e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 17 QUANTITY dispz VALUE 1.89702907371511548e-01 TOLERANCE 1e-9
 //Results without ANS and 6 GP
 //STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE -1.89139688011828166e+00 TOLERANCE 1e-12
 //STRUCTURE DIS structure NODE 17 QUANTITY dispy VALUE 5.46449025392710744e-02 TOLERANCE 1e-12
