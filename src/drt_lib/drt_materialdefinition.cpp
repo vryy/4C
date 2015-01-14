@@ -292,11 +292,20 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
 
     // try to convert to integer
     char *check;
-    integer = strtol(sinteger.c_str(),&check,10);
+
+    // check if it actually is an integer
+    double double_val =strtod(sinteger.c_str(),&check);
+    double int_val;
+    if (modf(double_val, &int_val) == 0.0)
+      integer = int_val;
+    else
+      dserror("Value of parameter '%s' for material '%s' expected INT but got DOUBLE!", Name().c_str(), def->Name().c_str());
 
     // return error in case the conversion was not successful
     if(sinteger == check)
       dserror("Value of parameter '%s' for material '%s' not properly specified in input file!", Name().c_str(), def->Name().c_str());
+
+    integer = strtol(sinteger.c_str(),&check,10);
 
     // remove double parameter value from stringstream "condline"
     condline->str(condline->str().erase((size_t)condline->tellg()-sinteger.size(),sinteger.size()));

@@ -74,8 +74,6 @@ TOLEASINCR                      1e-8
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-AZPREC                         ILU
-AZSOLVE                        GMRES
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 248
 MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 69e4 C2 0.3
