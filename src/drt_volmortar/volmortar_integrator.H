@@ -213,8 +213,8 @@ protected:
   \brief check node projection
 
   */
-  bool CheckMapping3D(DRT::Element& ele,
-                 double* xi);
+  bool CheckMapping(DRT::Element& ele,
+                    double* xi);
 
 };
 

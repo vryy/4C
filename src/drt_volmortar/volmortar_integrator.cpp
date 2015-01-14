@@ -30,6 +30,7 @@ Maintainer: Philipp Farah
 #include "../drt_lib/drt_discret.H"
 #include "../drt_cut/cut_volumecell.H"
 
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
@@ -42,6 +43,7 @@ VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::VolMortarIntegrator(Teuchos::
   // define gp rule
   InitializeGP();
 }
+
 
 /*----------------------------------------------------------------------*
  |  Initialize gauss points                                  farah 01/14|
@@ -186,6 +188,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::InitializeGP(bool integr
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
@@ -343,6 +346,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
@@ -482,6 +486,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D(
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
@@ -631,6 +636,8 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D_DirectD
 
   return;
 }
+
+
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
@@ -759,6 +766,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
@@ -885,6 +893,8 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
 
   return;
 }
+
+
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  |  This function is for element-wise integration when an               |
@@ -1034,6 +1044,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEle3D(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
@@ -1089,6 +1100,7 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping2D(DRT::Elem
 
   return true;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
@@ -1187,6 +1199,8 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping3D(DRT::Elem
 
   return true;
 }
+
+
 /*----------------------------------------------------------------------*
  |  possible slave/master element pairs                       farah 01/14|
  *----------------------------------------------------------------------*/
@@ -1243,6 +1257,7 @@ VOLMORTAR::ConsInterpolator<distype>::ConsInterpolator()
   // empty
 }
 
+
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 06/14|
  *----------------------------------------------------------------------*/
@@ -1289,11 +1304,13 @@ void VOLMORTAR::ConsInterpolator<distype>::Interpolate(DRT::Node* node,
     }
 
     // Check parameter space mapping
-    bool proj = CheckMapping3D(*ele,xi);
+    bool proj = CheckMapping(*ele,xi);
 
     // if node outside --> continue or eval nearest gp
     if(!proj and j!=((int)elediscret->NumMyColElements()-1))
+    {
       continue;
+    }
     else if(!proj and j==((int)elediscret->NumMyColElements()-1))
     {
       xi[0] = AuxXi[0];
@@ -1329,11 +1346,12 @@ void VOLMORTAR::ConsInterpolator<distype>::Interpolate(DRT::Node* node,
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Check mapping                                            farah 06/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-bool VOLMORTAR::ConsInterpolator<distype>::CheckMapping3D(DRT::Element& ele,
+bool VOLMORTAR::ConsInterpolator<distype>::CheckMapping(DRT::Element& ele,
                                                           double* xi)
 {
   // check node projection
@@ -1352,20 +1370,43 @@ bool VOLMORTAR::ConsInterpolator<distype>::CheckMapping3D(DRT::Element& ele,
       return false;
     }
   }
+  else if (distype==DRT::Element::quad4 || distype==DRT::Element::quad8 || distype==DRT::Element::quad9)
+  {
+    if (xi[0]<-1.0-tol || xi[1]<-1.0-tol || xi[0]>1.0+tol || xi[1]>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if (distype==DRT::Element::tri3 || distype==DRT::Element::tri6)
+  {
+    if (xi[0]<-tol || xi[1]<-tol || xi[0]>1.0+tol || xi[1]>1.0+tol || xi[0]+xi[1]>1.0+2*tol)
+    {
+      return false;
+    }
+  }
   else
-    dserror("Wrong element type!");
+  {
+    dserror("ERROR: Wrong element type!");
+  }
 
   return true;
 }
+
 
 /*----------------------------------------------------------------------*
  |  possible elements for interpolation                      farah 06/14|
  *----------------------------------------------------------------------*/
 template class VOLMORTAR::ConsInterpolator<DRT::Element::quad4>;
+template class VOLMORTAR::ConsInterpolator<DRT::Element::quad8>;
+template class VOLMORTAR::ConsInterpolator<DRT::Element::quad9>;
+
 template class VOLMORTAR::ConsInterpolator<DRT::Element::tri3>;
+template class VOLMORTAR::ConsInterpolator<DRT::Element::tri6>;
+
 template class VOLMORTAR::ConsInterpolator<DRT::Element::hex8>;
 template class VOLMORTAR::ConsInterpolator<DRT::Element::hex20>;
 template class VOLMORTAR::ConsInterpolator<DRT::Element::hex27>;
+
 template class VOLMORTAR::ConsInterpolator<DRT::Element::tet4>;
 template class VOLMORTAR::ConsInterpolator<DRT::Element::tet10>;
 

@@ -345,6 +345,8 @@ void GlobalToLocal(
    for(int p=0;p<ndim;++p)
    {
      if(distype == DRT::Element::quad4 or
+        distype == DRT::Element::quad8 or
+        distype == DRT::Element::quad9 or
         distype == DRT::Element::hex8  or
         distype == DRT::Element::hex20 or
         distype == DRT::Element::hex27)
@@ -355,7 +357,7 @@ void GlobalToLocal(
        xi[p] = 1.0/3.0;
      }
      else
-       dserror("Element type not supported for parameter space mapping!");
+       dserror("ERROR: Element type not supported for parameter space mapping!");
    }
 
    double rhs[ndim];

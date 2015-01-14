@@ -216,7 +216,7 @@ protected:
    \brief compute projection matrices D^-1 * M
 
    */
-  virtual void CreateProjectionOpterator();
+  virtual void CreateProjectionOperator();
 
   /*!
    \brief compute trafo operator

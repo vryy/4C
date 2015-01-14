@@ -67,15 +67,15 @@ VOLMORTAR::VolMortarCoupl::VolMortarCoupl(
   if ((Adiscret_->NumDofSets() == 1) or (Bdiscret_->NumDofSets() == 1))
     dserror("ERROR: Both discretizations need to own at least two dofsets for mortar coupling!");
 
+  // its the same communicator for all discr.
+  comm_ = Teuchos::rcp(Adis->Comm().Clone());
+  myrank_ = comm_->MyPID();
+
   // get required parameter list
   ReadAndCheckInput();
 
   // init dop normals
   InitDopNormals();
-
-  // its the same communicator for all discr.
-  comm_ = Teuchos::rcp(Adis->Comm().Clone());
-  myrank_ = comm_->MyPID();
 
   // init aux normal TODO: no fixed direction!!! ONLY FOR 2D CASE !!!
   auxn_[0] = 0.0;
@@ -140,7 +140,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
    * complete global matrices and create projection operator *
    ***********************************************************/
   Complete();
-  CreateProjectionOpterator();
+  CreateProjectionOperator();
 
   /***********************************************************
    * Check initial residuum and perform mesh init             *
@@ -2481,6 +2481,36 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_ADis(
 
   switch (btype)
   {
+  case DRT::Element::quad4:
+  {
+    static ConsInterpolator<DRT::Element::quad4> interpolator;
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    break;
+  }
+  case DRT::Element::quad8:
+  {
+    static ConsInterpolator<DRT::Element::quad8> interpolator;
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    break;
+  }
+  case DRT::Element::quad9:
+  {
+    static ConsInterpolator<DRT::Element::quad9> interpolator;
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    break;
+  }
+  case DRT::Element::tri3:
+  {
+    static ConsInterpolator<DRT::Element::tri3> interpolator;
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    break;
+  }
+  case DRT::Element::tri6:
+  {
+    static ConsInterpolator<DRT::Element::tri6> interpolator;
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    break;
+  }
   case DRT::Element::hex8:
   {
     static ConsInterpolator<DRT::Element::hex8> interpolator;
@@ -2532,6 +2562,36 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_BDis(
 
   switch (atype)
   {
+  case DRT::Element::quad4:
+  {
+    static ConsInterpolator<DRT::Element::quad4> interpolator;
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    break;
+  }
+  case DRT::Element::quad8:
+  {
+    static ConsInterpolator<DRT::Element::quad8> interpolator;
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    break;
+  }
+  case DRT::Element::quad9:
+  {
+    static ConsInterpolator<DRT::Element::quad9> interpolator;
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    break;
+  }
+  case DRT::Element::tri3:
+  {
+    static ConsInterpolator<DRT::Element::tri3> interpolator;
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    break;
+  }
+  case DRT::Element::tri6:
+  {
+    static ConsInterpolator<DRT::Element::tri6> interpolator;
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    break;
+  }
   case DRT::Element::hex8:
   {
     static ConsInterpolator<DRT::Element::hex8> interpolator;
@@ -2819,7 +2879,7 @@ void VOLMORTAR::VolMortarCoupl::Complete()
 /*----------------------------------------------------------------------*
  |  compute projection operator P                            farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::CreateProjectionOpterator()
+void VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
 {
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
