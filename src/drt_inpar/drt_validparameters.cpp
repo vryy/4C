@@ -7533,11 +7533,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                               tuple<std::string>(
                                 "cavitation_oneway",
                                 "cavitation_twowaymomentum",
+                                "cavitation_voidfrac_only",
                                 "cavitation_twowayfull"
                                 ),
                               tuple<int>(
                                 INPAR::CAVITATION::OneWay,
                                 INPAR::CAVITATION::TwoWayMomentum,
+                                INPAR::CAVITATION::VoidFracOnly,
                                 INPAR::CAVITATION::TwoWayFull
                                 ),
                               &cavitationdyn);
@@ -7560,6 +7562,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("APPROX_ELECOORDS_INIT","no","switch on/off approximate initial guess for computing element coordinates",&cavitationdyn);
 
   BoolParameter("SIMPLIFIED_BUBBLE_FORCES","no","switch on/off simplified bubble force computation",&cavitationdyn);
+
+  IntParameter("VOIDFRAC_PROJ_SOLVER",-1,"Number of linear solver used for L2 projection",&cavitationdyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& crackdyn = list->sublist("CRACK",false,"");

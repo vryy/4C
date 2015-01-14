@@ -41,6 +41,10 @@ namespace DRT
 {
   class Element;
 }
+namespace LINALG
+{
+  class SparseMatrix;
+}
 
 /*----------------------------------------------------------------------*
  | cavitation algorithm                                     ghamm 11/12 |
@@ -89,6 +93,9 @@ namespace CAVITATION
 
     /// solve the current particle time step
     virtual void Integrate();
+
+    /// apply fluid fraction to fluid field
+    virtual void SetFluidFraction();
 
     /// force on particles is calculated and applied
     virtual void CalculateAndApplyForcesToParticles();
@@ -227,6 +234,19 @@ namespace CAVITATION
       Teuchos::RCP<Epetra_FEVector> void_volumes
       );
 
+    /// L2 projection of a single value per element to nodal value distribution
+    virtual void ComputeL2ProjectedFluidFraction(
+      Teuchos::RCP<const Epetra_MultiVector>
+      );
+
+     /// solve for a node based linear system
+    virtual Teuchos::RCP<Epetra_Vector> SolveOnNodeBasedVector(
+      const int solvernumber,
+      Teuchos::RCP<Epetra_Map> noderowmap,
+      Teuchos::RCP<LINALG::SparseMatrix> matrix,
+      Teuchos::RCP<Epetra_Vector> rhs
+      );
+
   private:
     //! @name cavitation related stuff
     //@{
@@ -253,6 +273,10 @@ namespace CAVITATION
     std::map<int, std::list<Teuchos::RCP<BubbleSource> > > bubble_source_;   ///< store particle sources for each bin
 
     Teuchos::RCP<Epetra_Vector> ele_volume_;   ///< element row map containing the volume of each element
+
+    Teuchos::RCP<Epetra_Vector> fluidfracn_;   ///< fluid fraction in pressure dof of dofrowmap at t_n
+
+    Teuchos::RCP<Epetra_Vector> fluidfracnp_;   ///< fluid fraction in pressure dof of dofrowmap at t_n+1
 
     //@}
 

@@ -19,6 +19,7 @@ Maintainer: Georg Hammerl
 #include "../drt_adapter/adapter_particle.H"
 #include "particle_node.H"
 #include "../drt_adapter/ad_fld_base_algorithm.H"
+#include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_calc.H"
@@ -43,8 +44,11 @@ Maintainer: Georg Hammerl
 #include "../drt_geometry/element_volume.H"
 #include "../drt_cut/cut_position.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_solver.H"
 
 #include "../drt_inpar/inpar_cavitation.H"
+#include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../headers/definitions.h"
 
@@ -65,7 +69,9 @@ CAVITATION::Algorithm::Algorithm(
   simplebubbleforce_((bool)DRT::INPUT::IntegralValue<int>(params,"SIMPLIFIED_BUBBLE_FORCES")),
   fluiddis_(Teuchos::null),
   fluid_(Teuchos::null),
-  ele_volume_(Teuchos::null)
+  ele_volume_(Teuchos::null),
+  fluidfracn_(Teuchos::null),
+  fluidfracnp_(Teuchos::null)
 {
   // setup fluid time integrator
   fluiddis_ = DRT::Problem::Instance()->GetDis("fluid");
@@ -74,38 +80,75 @@ CAVITATION::Algorithm::Algorithm(
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(),DRT::Problem::Instance()->FluidDynamicParams(),"fluid",false));
   fluid_ = fluid->FluidField();
 
+  // validate input file
+
   // check whether gravity acceleration for fluid and particles match
-    if(gravity_acc_.Norm2() > 0.0)
+  if(gravity_acc_.Norm2() > 0.0)
+  {
+    std::vector<DRT::Condition*> condition;
+    fluiddis_->GetCondition("VolumeNeumann", condition);
+
+    if(condition.size() != 1)
+      dserror("exactly one VOL NEUMANN boundary condition expected to represent body forces in fluid");
+    const std::vector<int>*    onoff = condition[0]->Get<std::vector<int> >   ("onoff");
+    const std::vector<double>* val   = condition[0]->Get<std::vector<double> >("val"  );
+
+    const int dim = 3;
+    for(int i=0; i<dim; ++i)
     {
-      std::vector<DRT::Condition*> condition;
-      fluiddis_->GetCondition("VolumeNeumann", condition);
-
-      if(condition.size() != 1)
-        dserror("exactly one VOL NEUMANN boundary condition expected to represent body forces in fluid");
-      const std::vector<int>*    onoff = condition[0]->Get<std::vector<int> >   ("onoff");
-      const std::vector<double>* val   = condition[0]->Get<std::vector<double> >("val"  );
-
-      const int dim = 3;
-      for(int i=0; i<dim; ++i)
-      {
-        if(gravity_acc_(i) != (*val)[i])
-          dserror("body force for particles does not match body force for fluid");
-        if(gravity_acc_(i) != 0.0 and (*onoff)[i] == 0)
-          dserror("body force for %d. dof deactivated in VOL NEUMANN bc for fluid although body force acts on particles in this direction.", i);
-      }
-
-      // check whether an initial pressure field is set due to the gravity load
-      const int startfuncno = DRT::Problem::Instance()->FluidDynamicParams().get<int>("STARTFUNCNO");
-      if(startfuncno < 0)
-        dserror("pressure field needs to be initialized due to gravity load");
+      if(gravity_acc_(i) != (*val)[i])
+        dserror("body force for particles does not match body force for fluid");
+      if(gravity_acc_(i) != 0.0 and (*onoff)[i] == 0)
+        dserror("body force for %d. dof deactivated in VOL NEUMANN bc for fluid although body force acts on particles in this direction.", i);
     }
 
-    if(!simplebubbleforce_)
-    {
-      // check for solver for L2 projection of velocity gradient
-      if(DRT::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER") < 0)
-        dserror("no solver for L2 projection of velocity gradient specified: check VELGRAD_PROJ_SOLVER");
-    }
+    // check whether an initial pressure field is set due to the gravity load
+    const int startfuncno = DRT::Problem::Instance()->FluidDynamicParams().get<int>("STARTFUNCNO");
+    if(startfuncno < 0)
+      dserror("pressure field needs to be initialized due to gravity load");
+  }
+
+  if(!simplebubbleforce_)
+  {
+    // check for solver for L2 projection of velocity gradient
+    if(DRT::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER") < 0)
+      dserror("no solver for L2 projection of velocity gradient specified: check VELGRAD_PROJ_SOLVER");
+  }
+
+  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull)
+  {
+    // check for correct time integration scheme of fluid
+    if(fluid_->TimIntScheme() != INPAR::FLUID::timeint_afgenalpha)
+      dserror("two way full coupled cavitation problem only works with TIMEINTEGR = Af_Gen_Alpha");
+
+    // check for correct physical type of fluid
+    if(fluid_->PhysicalType() != INPAR::FLUID::loma)
+      dserror("two way full coupled cavitation problem only works with PHYSICAL_TYPE = Loma");
+
+    // check fluid material
+    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_cavitation);
+    if (id == -1)
+      dserror("no cavitation fluid material specified");
+
+    // check for solver for L2 projection
+    if(DRT::Problem::Instance()->CavitationParams().get<int>("VOIDFRAC_PROJ_SOLVER") < 0)
+      dserror("no solver for L2 projection of fluid fraction specified: check VOIDFRAC_PROJ_SOLVER");
+  }
+  else
+  {
+    // check for correct time integration scheme of fluid
+    if(fluid_->TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
+      dserror("momentum coupled or one-way coupled cavitation problem does not work with TIMEINTEGR = Af_Gen_Alpha");
+
+    // check for correct physical type of fluid
+    if(fluid_->PhysicalType() != INPAR::FLUID::incompressible)
+      dserror("two way momentum and one way coupled cavitation problems only works with PHYSICAL_TYPE = Incompressible");
+
+    // check fluid material
+    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+    if (id == -1)
+      dserror("specify fluid material");
+  }
 
   return;
 }
@@ -222,6 +265,29 @@ void CAVITATION::Algorithm::InitCavitation()
     (*ele_volume_)[i] = ev;
   }
 
+  // compute initial fluid fraction
+  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
+  {
+    fluidfracnp_ = LINALG::CreateVector(*fluiddis_->DofRowMap(), true);
+    CalculateFluidFraction();
+    // and copy values from n+1 to n
+    // leading to an initial zero time derivative
+    fluidfracn_ = Teuchos::rcp(new Epetra_Vector(*fluidfracnp_));
+    // set fluid fraction in fluid for computation
+    SetFluidFraction();
+  }
+  else
+  {
+    // fluid fraction is assumed constant equal unity
+    fluidfracnp_ = LINALG::CreateVector(*fluiddis_->DofRowMap(), false);
+    fluidfracnp_->PutScalar(1.0);
+    fluidfracn_ = Teuchos::rcp(new Epetra_Vector(*fluidfracnp_));
+    Teuchos::RCP<Epetra_Vector> fluid_fraction = Teuchos::rcp(new Epetra_Vector(*fluiddis_->ElementRowMap()));
+    fluid_fraction->PutScalar(1.0);
+    // apply fluid fraction to fluid on element level for visualization purpose
+    Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_)->SetFluidFraction(fluid_fraction);
+  }
+
   // determine consistent initial acceleration for the particles
   CalculateAndApplyForcesToParticles();
   particles_->DetermineMassDampConsistAccel();
@@ -252,9 +318,11 @@ void CAVITATION::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Integrate()
 {
+  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
   {
     TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateFluidFraction");
     CalculateFluidFraction();
+    SetFluidFraction();
   }
 
   // apply forces and solve particle time step
@@ -264,6 +332,31 @@ void CAVITATION::Algorithm::Integrate()
     TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::IntegrateFluid");
     fluid_->Solve();
   }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | apply fluid fraction to fluid field                     ghamm 04/14  |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::SetFluidFraction()
+{
+  if(fluid_->PhysicalType() != INPAR::FLUID::loma && myrank_ == 0)
+    IO::cout << "Info: Fluid fraction is calculated and can be visualized but it is not "
+        "used for the actual calculation" << IO::endl;
+
+  // compute intermediate values for time integration scheme
+  Teuchos::RCP<Epetra_Vector> fluidfracaf = Teuchos::rcp(new Epetra_Vector(*fluidfracnp_));
+  Teuchos::RCP<Epetra_Vector> fluidfracam = Teuchos::rcp(new Epetra_Vector(*fluidfracn_));
+  Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_)->GenAlphaIntermediateValues(fluidfracaf, fluidfracam);
+  // compute time derivative of fluid fraction
+  const double invdt = 1.0/Dt();
+  Teuchos::RCP<Epetra_Vector> fluidfracdtam = Teuchos::rcp(new Epetra_Vector(*fluidfracnp_));
+  fluidfracdtam->Update(-invdt, *fluidfracn_, invdt);
+
+  // set fluid fraction in fluid for computation
+  fluid_->SetIterScalarFields(fluidfracaf, fluidfracam, fluidfracdtam, Teuchos::null);
 
   return;
 }
@@ -320,7 +413,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     // get fluid material
     int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
     if (id == -1)
-      dserror("no cavitation fluid material specified");
+      dserror("no fluid material specified");
     const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
     rho_l = actmat->density_;
@@ -480,7 +573,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     const double v_relabs = v_rel.Norm2();
     const double Re_b = 2.0 * r_bub * v_relabs * rho_l / mu_l;
 
-    bool output = true;
+    bool output = false;
     if(output)
     {
       std::cout << "radius_bub: " << r_bub << std::endl;
@@ -591,7 +684,6 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     bubbleforce.Update(invcoeff4, sumforces, coeff3*invcoeff4, Du_Dt);
     /*------------------------------------------------------------------*/
 
-
     //--------------------------------------------------------------------
     // 3rd step: assemble bubble/fluid forces
     //--------------------------------------------------------------------
@@ -604,16 +696,19 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     LINALG::Assemble(*bubbleforces,forcecurrbubble,lm_b,lmowner_b);
 
     // coupling forces between fluid and particle only include certain forces
-    // calculate added mass force
-    LINALG::Matrix<3,1> addedmassforce;
-    double m_b = vol_b * rho_b;
-    addedmassforce.Update(coeff3, Du_Dt, -coeff3/m_b, bubbleforce);
-    //// coupling force = -(dragforce + liftforce + addedmassforce); actio = reactio --> minus sign
-    couplingforce.Update(-1.0, addedmassforce, -1.0);
-
-    // assembly of fluid forces
-    if(coupalgo_ != INPAR::CAVITATION::OneWay)
+    switch(coupalgo_)
     {
+    case INPAR::CAVITATION::TwoWayFull:
+    case INPAR::CAVITATION::TwoWayMomentum:
+    {
+      // calculate added mass force
+      static LINALG::Matrix<3,1> addedmassforce(false);
+      const double m_b = vol_b * rho_b;
+      addedmassforce.Update(coeff3, Du_Dt, -coeff3/m_b, bubbleforce);
+
+      //// coupling force = -(dragforce + liftforce + addedmassforce); actio = reactio --> minus sign
+      couplingforce.Update(-1.0, addedmassforce, -1.0);
+
       // assemble of fluid forces must be done globally because col entries in the fluid can occur
       // although only row particles are evaluated
       const int numnode = targetfluidele->NumNode();
@@ -637,8 +732,19 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       int err = fluidforces->SumIntoGlobalValues(numdofperfluidele, &lm_f[0], &val[0]);
       if (err<0)
         dserror("summing into Epetra_FEVector failed");
+      break;
     }
-
+    case INPAR::CAVITATION::OneWay:
+    case INPAR::CAVITATION::VoidFracOnly:
+    {
+      //// coupling force = 0
+      couplingforce.PutScalar(0.0);
+      break;
+    }
+    default:
+      dserror("coupalgo not available");
+      break;
+    }
 
     //--------------------------------------------------------------------
     // 4th step: output
@@ -701,18 +807,46 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   } // end iparticle
 
   //--------------------------------------------------------------------
-  // 4th step: apply forces to bubbles and fluid field
+  // 5th step: apply forces to bubbles and fluid field
   //--------------------------------------------------------------------
   particles_->SetForceInterface(bubbleforces);
 
-  if(coupalgo_ != INPAR::CAVITATION::OneWay)
-  {
-    // call global assemble
-    int err = fluidforces->GlobalAssemble(Add, false);
-    if (err<0)
-      dserror("global assemble into fluidforces failed");
+  if(coupalgo_ == INPAR::CAVITATION::OneWay || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
+    return; // leave here because nothing to add to fluid
 
+  // call global assemble
+  int err = fluidforces->GlobalAssemble(Add, false);
+  if (err<0)
+    dserror("global assemble into fluidforces failed");
+
+  switch(coupalgo_)
+  {
+  case INPAR::CAVITATION::TwoWayFull:
+  {
+    // divide nodal wise fluid forces by fluid fraction
+    // due to the special choice of Euler-Lagrange coupling
+    const int numnodes = fluid_->Discretization()->NumMyRowNodes();
+    for(int i=0; i<numnodes; ++i)
+    {
+      // fluid fraction is stored in pressure dof
+      const double invnodalfraction = 1.0 / (*fluidfracnp_)[i*4+3];
+
+      for(int j=0; j<3; ++j)
+      {
+        (*(*fluidforces)(0))[i*4+j] *= invnodalfraction;
+      }
+    }
+    // no break here
+  }
+  case INPAR::CAVITATION::TwoWayMomentum:
+  {
+    // apply forces to fluid
     fluid_->ApplyExternalForces(fluidforces);
+    break;
+  }
+  default:
+    dserror("this case is not yet implemented");
+    break;
   }
 
   return;
@@ -827,6 +961,10 @@ void CAVITATION::Algorithm::Update()
 {
   PARTICLE::Algorithm::Update();
   fluid_->Update();
+
+  // update fluid fraction
+  fluidfracn_->Update(1.0,*fluidfracnp_,0.0);
+
   return;
 }
 
@@ -838,6 +976,10 @@ void CAVITATION::Algorithm::ReadRestart(int restart)
 {
   PARTICLE::Algorithm::ReadRestart(restart);
   fluid_->ReadRestart(restart);
+
+  // additionally read restart data for fluid fraction
+  IO::DiscretizationReader reader(fluid_->Discretization(),restart);
+  reader.ReadVector(fluidfracn_,"fluid_fraction");
   return;
 }
 
@@ -1015,8 +1157,14 @@ void CAVITATION::Algorithm::TestResults(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Output()
 {
+  // call fluid output and add restart data for fluid fraction if necessary
   fluid_->Output();
+  const int uprestart = DRT::Problem::Instance()->CavitationParams().get<int>("RESTARTEVRY");
+  if( Step()%uprestart == 0 && uprestart != 0 )
+    fluid_->DiscWriter()->WriteVector("fluid_fraction", fluidfracn_, IO::DiscretizationWriter::dofvector);
+
   PARTICLE::Algorithm::Output();
+
   return;
 }
 

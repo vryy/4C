@@ -135,7 +135,6 @@ public:
     Epetra_SerialDenseVector& elevec3
     );
 
-
   /*! \brief Calculate a integrated divergence operator in vector form
    *
    *   The vector valued operator \f$B\f$ is constructed such that
@@ -151,7 +150,6 @@ public:
     std::vector<int>&         lm,             //< some DOF management
     Epetra_SerialDenseVector& elevec1         //< reference to element vector to be filled
   );
-
 
   /*! \brief Calculate material derivative of fluid velocity at specified element coordinates
    *
@@ -261,7 +259,7 @@ public:
       Teuchos::RCP<MAT::Material> &        mat
       );
 
-  /*! \brief Calculate volume integral over the element for computing the fluid fraction
+  /*! \brief Calculate volume integral over the element for computing the void fraction
    *  for this element using a fourth order clipped polynomial
    *
    *   \author ghamm
@@ -288,6 +286,19 @@ public:
       Epetra_SerialDenseVector&            elevec1,
       Teuchos::RCP<MAT::Material> &        mat
   );
+
+  /*! \brief Project void fraction from element level to nodal level
+   *
+   *   \author ghamm
+   *   \date   04/2014
+   */
+  virtual int FluidFractionProjection(
+    DRT::ELEMENTS::Fluid*     ele,
+    Teuchos::ParameterList&   params,
+    DRT::Discretization&      discretization,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseVector& elevec1);
 
   /*! \brief Project velocity gradient to nodal level
    *

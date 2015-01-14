@@ -71,6 +71,7 @@ namespace INPAR
     {
       OneWay,
       TwoWayMomentum,
+      VoidFracOnly,
       TwoWayFull
     };
 

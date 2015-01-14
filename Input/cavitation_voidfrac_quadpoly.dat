@@ -27,7 +27,7 @@ CUTOFF_RADIUS                   0.5
 DYNAMICTYP                      CentrDiff
 GRAVITY_ACCELERATION            -9.81 0.0 0.0
 ----------------------------------------------------------CAVITATION DYNAMIC
-COUPALGO                        cavitation_oneway
+COUPALGO                        cavitation_voidfrac_only //cavitation_twowayfull // cavitation_oneway
 UPRES                           5
 RESTARTEVRY                     15
 TIMESTEP                        5.0e-3
@@ -36,6 +36,7 @@ MAXTIME                         0.5
 VOID_FRACTION_CALC              analytical_quadraticpoly //analytical_constpoly,gaussian_integration
 NUM_GP_VOID_FRACTION            5
 SIMPLIFIED_BUBBLE_FORCES        Yes
+VOIDFRAC_PROJ_SOLVER            1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       yes
@@ -47,15 +48,13 @@ ITEMAX                          3
 MAXTIME                         0.5
 NONLINITER                      Newton
 NUMSTEP                         8
+PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
 RESTARTEVRY                     20
 STARTFUNCNO                     1
 START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.05
-UPRES                           1
-MESHTYING                       no
 INITIALFIELD                    field_by_function
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross

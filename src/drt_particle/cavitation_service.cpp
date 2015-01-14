@@ -22,17 +22,21 @@ Maintainer: Georg Hammerl
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/intersection_math.H"
 #include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_geometry/position_array.H"
-#include "../linalg/linalg_utils.H"
+#include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 
 
 /*----------------------------------------------------------------------*
- | void fraction calculation                               ghamm 08/13  |
+ | fluid fraction calculation                              ghamm 08/13  |
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::CalculateFluidFraction()
 {
@@ -275,6 +279,8 @@ void CAVITATION::Algorithm::CalculateFluidFraction()
 
   double minfluidfrac = 0.0;
   fluid_fraction->MinValue(&minfluidfrac);
+  if(minfluidfrac < 0.05 && fluid_->PhysicalType() == INPAR::FLUID::loma)
+    dserror("minimum fluid fraction is low (%f), increase mesh size or reduce particle size", minfluidfrac);
 
   double maxfluidfrac = 0.0;
   fluid_fraction->MaxValue(&maxfluidfrac);
@@ -284,6 +290,9 @@ void CAVITATION::Algorithm::CalculateFluidFraction()
   // apply fluid fraction to fluid on element level for visualization purpose
   Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_)->SetFluidFraction(fluid_fraction);
 
+  // transform fluid fraction from element level to node level
+  // nodal values are stored in pressure dof of vector as expected in time integration
+  ComputeL2ProjectedFluidFraction(fluid_fraction);
 
   return;
 }
@@ -1137,4 +1146,225 @@ void CAVITATION::Algorithm::AssignSmallBubbles(
   }
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute nodal fluid fraction based on L2 projection      ghamm 04/14 |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::ComputeL2ProjectedFluidFraction(
+  Teuchos::RCP<const Epetra_MultiVector> fluidfraction
+  )
+{
+  if(not fluidfraction->Map().SameAs(*fluiddis_->ElementRowMap()))
+    dserror("input map is not an element row map");
+  Teuchos::RCP<Epetra_Vector> eleveccol = Teuchos::rcp(new Epetra_Vector(*fluiddis_->ElementColMap(),true));
+  LINALG::Export(*fluidfraction, *eleveccol);
+
+  // handle pbcs if existing
+  // build inverse map from slave to master nodes
+  std::map<int,int> slavetomastercolnodesmap;
+  {
+    Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledcolnodes = fluiddis_->GetAllPBCCoupledColNodes();
+
+    for(std::map<int,std::vector<int> >::const_iterator masterslavepair = allcoupledcolnodes->begin();
+        masterslavepair != allcoupledcolnodes->end() ; ++masterslavepair)
+    {
+      // loop slave nodes associated with master
+      for(std::vector<int>::const_iterator iter=masterslavepair->second.begin(); iter!=masterslavepair->second.end(); ++iter)
+      {
+        const int slavegid = *iter;
+        slavetomastercolnodesmap[slavegid] = masterslavepair->first;
+      }
+    }
+  }
+
+  // get reduced node row map of fluid field --> will be used for setting up linear system
+  const Epetra_Map* fullnoderowmap = fluiddis_->NodeRowMap();
+  // remove pbc slave nodes from full noderowmap
+  std::vector<int> reducednoderowmap;
+  // a little more memory than necessary is possibly reserved here
+  reducednoderowmap.reserve(fullnoderowmap->NumMyElements());
+  for(int i=0; i<fullnoderowmap->NumMyElements(); ++i)
+  {
+    const int nodeid = fullnoderowmap->GID(i);
+    // do not add slave pbc nodes here
+    if(slavetomastercolnodesmap.count(nodeid) == 0)
+      reducednoderowmap.push_back(nodeid);
+  }
+
+  // build node row map which does not include slave pbc nodes
+  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(-1,(int)reducednoderowmap.size(),&reducednoderowmap[0],0,fullnoderowmap->Comm()));
+
+  // create empty matrix
+  Teuchos::RCP<LINALG::SparseMatrix> matrix = Teuchos::rcp(new LINALG::SparseMatrix(*noderowmap,108,false,true));
+  // create empty right hand side
+  Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*noderowmap,true);
+
+  std::vector<int> lm;
+  std::vector<int> lmowner;
+  std::vector<int> lmstride;
+
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector1;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+  // get number of elements
+  const int numele = fluiddis_->NumMyColElements();
+
+  // loop column elements
+  for (int i=0; i<numele; ++i)
+  {
+    DRT::Element* actele = fluiddis_->lColElement(i);
+    const int numnode = actele->NumNode();
+
+    // get element location vector for nodes
+    lm.resize(numnode);
+    lmowner.resize(numnode);
+
+    DRT::Node** nodes = actele->Nodes();
+    for(int n=0; n<numnode; ++n)
+    {
+      const int nodeid = nodes[n]->Id();
+
+      std::map<int,int>::iterator slavemasterpair = slavetomastercolnodesmap.find(nodeid);
+      if(slavemasterpair != slavetomastercolnodesmap.end())
+        lm[n] = slavemasterpair->second;
+      else
+        lm[n] = nodeid;
+
+      // owner of pbc master and slave nodes are identical
+      lmowner[n] = nodes[n]->Owner();
+    }
+
+    // Reshape element matrices and vectors and initialize to zero
+    elevector1.Size(numnode);
+    elematrix1.Shape(numnode,numnode);
+
+    // set action in order to project element fluid fraction to nodal fluid fraction
+    Teuchos::ParameterList params;
+    params.set<int>("action",FLD::calc_fluidfrac_projection);
+
+    // fill element fluid fraction value into params
+    int eid = actele->Id();
+    int lid = eleveccol->Map().LID(eid);
+    if(lid < 0)
+      dserror("element %i is not on this processor", eid);
+    double eleval = (*eleveccol)[lid];
+    params.set<double >("elefluidfrac", eleval);
+
+    // call the element specific evaluate method (elevec1 = rhs, elemat1 = mass matrix)
+    actele->Evaluate(params,*fluiddis_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+
+   // assembling into node maps
+   matrix->Assemble(eid,elematrix1,lm,lmowner);
+   LINALG::Assemble(*rhs,elevector1,lm,lmowner);
+  } //end element loop
+
+  // finalize the matrix
+  matrix->Complete();
+
+  // get solver parameter list of linear solver
+  const int solvernumber = DRT::Problem::Instance()->CavitationParams().get<int>("VOIDFRAC_PROJ_SOLVER");
+  // solve system
+  Teuchos::RCP<Epetra_Vector> nodevec = SolveOnNodeBasedVector(solvernumber, noderowmap, matrix, rhs);
+
+  // dofrowmap does not include separate dofs for slave pbc nodes
+  for(int i=0; i<noderowmap->NumMyElements(); ++i)
+  {
+    const int nodeid = noderowmap->GID(i);
+
+    // fill fluid fraction into pressure dof of dof row map --> always 3D problem!
+    const int pressuredof = fluiddis_->Dof(fluiddis_->gNode(nodeid), 3);
+    const int lid = fluidfracnp_->Map().LID(pressuredof);
+
+    (*fluidfracnp_)[lid] = (*nodevec)[i];
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | solver: node based vector and full nullspace             ghamm 04/14 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> CAVITATION::Algorithm::SolveOnNodeBasedVector(
+  const int solvernumber,
+  Teuchos::RCP<Epetra_Map> noderowmap,
+  Teuchos::RCP<LINALG::SparseMatrix> matrix,
+  Teuchos::RCP<Epetra_Vector> rhs
+  )
+{
+  const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(solvernumber);
+
+  Teuchos::RCP<LINALG::Solver> solver =
+                                  Teuchos::rcp(new LINALG::Solver(solverparams,
+                                  fluiddis_->Comm(),
+                                  DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+  const int prectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(solverparams,"AZPREC");
+  switch (prectyp)
+  {
+  case INPAR::SOLVER::azprec_ML:
+  case INPAR::SOLVER::azprec_MLfluid:
+  case INPAR::SOLVER::azprec_MLAPI:
+  case INPAR::SOLVER::azprec_MLfluid2:
+  case INPAR::SOLVER::azprec_MueLuAMG_sym:
+  case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
+  {
+    Teuchos::ParameterList* preclist_ptr = NULL;
+    // switch here between ML and MueLu cases
+    if(prectyp == INPAR::SOLVER::azprec_ML
+        or prectyp == INPAR::SOLVER::azprec_MLfluid
+        or prectyp == INPAR::SOLVER::azprec_MLAPI
+        or prectyp == INPAR::SOLVER::azprec_MLfluid2)
+      preclist_ptr = &((solver->Params()).sublist("ML Parameters"));
+    else if(prectyp == INPAR::SOLVER::azprec_MueLuAMG_sym
+        or prectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym)
+      preclist_ptr = &((solver->Params()).sublist("MueLu Parameters"));
+    else
+      dserror("please add correct parameter list");
+
+    Teuchos::ParameterList& preclist = *preclist_ptr;
+    preclist.set<Teuchos::RCP<std::vector<double> > > ("nullspace",Teuchos::null);
+    // ML would not tolerate this Teuchos::rcp-ptr in its list otherwise
+    preclist.set<bool>("ML validate parameter list",false);
+
+    preclist.set("PDE equations",1);
+    preclist.set("null space: dimension",1);
+    preclist.set("null space: type","pre-computed");
+    preclist.set("null space: add default vectors",false);
+
+    // allocate the local length of the rowmap
+    const int lrows = noderowmap->NumMyElements();
+    Teuchos::RCP<std::vector<double> > ns = Teuchos::rcp(new std::vector<double>(lrows));
+    double* nullsp = &((*ns)[0]);
+
+    // compute null space manually
+    for (int j=0; j<lrows; ++j)
+      nullsp[j] = 1.0;
+
+    preclist.set<Teuchos::RCP<std::vector<double> > >("nullspace",ns);
+    preclist.set("null space: vectors",nullsp);
+  }
+  break;
+  case INPAR::SOLVER::azprec_ILU:
+  case INPAR::SOLVER::azprec_ILUT:
+    // do nothing
+  break;
+  default:
+    dserror("You have to choose ML, MueLu or ILU preconditioning");
+  break;
+  }
+
+  // solution vector based on node row map
+  Teuchos::RCP<Epetra_Vector> nodevec = Teuchos::rcp(new Epetra_Vector(*noderowmap));
+
+  // solve
+  solver->Solve(matrix->EpetraOperator(), nodevec, rhs, true, true);
+
+  return nodevec;
 }

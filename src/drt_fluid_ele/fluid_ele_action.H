@@ -47,6 +47,7 @@ enum Action {
     calc_mat_deriv_u_and_rot_u,
     calc_press_grad_and_div_eps,
     calc_volume_gaussint,
+    calc_fluidfrac_projection,
     calc_node_normal,
     set_general_fluid_parameter,
     set_time_parameter,

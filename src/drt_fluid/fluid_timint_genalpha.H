@@ -107,6 +107,17 @@ public:
   );
 
   /*!
+  \brief compute values at intermediate time steps for gen.-alpha
+         for given vectors and store result in given vectors
+         Helper method which can be called from outside fluid (e.g. for coupled problems)
+
+  */
+  virtual void GenAlphaIntermediateValues(
+      Teuchos::RCP<Epetra_Vector>& vecnp,
+      Teuchos::RCP<Epetra_Vector>& vecn
+  );
+
+  /*!
   \brief Set gamma to a value
 
   */

@@ -133,6 +133,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
       return ComputeVolumeIntegral(ele, params, discretization, lm, elevec1);
     }
     break;
+    case FLD::calc_fluidfrac_projection:
+    {
+      // project element fluid fraction to nodal level
+      return FluidFractionProjection(ele, params, discretization, lm, elemat1, elevec1);
+    }
+    break;
     case FLD::calc_mass_matrix:
     {
       // compute element mass matrix
@@ -546,7 +552,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcPressGradAndDivEps(
 
 /*---------------------------------------------------------------------*
  | Action type: calc_volume_gaussint                                   |
- | calculate volume integral over the element for fluid                |
+ | calculate volume integral over the element for void                 |
  | fraction                                                ghamm 01/13 |
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
@@ -688,6 +694,65 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeVolumeIntegral(
     }
 
   }
+
+  return 0;
+}
+
+
+/*---------------------------------------------------------------------*
+ | Action type: calc_fluidfrac_projection                               |
+ | project element fluid fraction to nodal level            ghamm 04/14 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::FluidFractionProjection(
+  DRT::ELEMENTS::Fluid*     ele,
+  Teuchos::ParameterList&   params,
+  DRT::Discretization&      discretization,
+  std::vector<int>&         lm,
+  Epetra_SerialDenseMatrix& elemat1,
+  Epetra_SerialDenseVector& elevec1)
+{
+  // get fluid fraction of element
+  double elefluidfrac = params.get<double>("elefluidfrac");
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  // set element id
+  eid_ = ele->Id();
+
+  if (ele->IsAle())
+  {
+    LINALG::Matrix<nsd_,nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+
+    // get new node positions for isale
+     xyze_ += edispnp;
+  }
+
+  //------------------------------------------------------------------
+  //                       INTEGRATION LOOP
+  //------------------------------------------------------------------
+
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
+
+    // fill element matrix (mass matrix) and elevec in each node
+    for (int vi=0; vi<nen_; ++vi) // loop rows
+    {
+      for (int ui=0; ui<nen_; ++ui) // loop columns
+      {
+        elemat1(vi,ui) += fac_*funct_(ui)*funct_(vi);
+      }
+
+     elevec1(vi) += fac_*funct_(vi)*elefluidfrac;
+    }
+  } // end of integration loop
 
   return 0;
 }

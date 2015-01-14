@@ -270,6 +270,43 @@ void FLD::TimIntGenAlpha::GenAlphaIntermediateValues()
 
 
 /*----------------------------------------------------------------------*
+ | compute values at intermediate time steps for gen.-alpha             |
+ | for given vectors at n and n+1                           ghamm 04/14 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntGenAlpha::GenAlphaIntermediateValues(
+    Teuchos::RCP<Epetra_Vector>& vecnp,
+    Teuchos::RCP<Epetra_Vector>& vecn)
+{
+  // compute intermediate values for given vectors
+  //
+  //       n+alphaM
+  //    vec         = alpha_M * vecnp     + (1-alpha_M) *  vecn
+  //
+  //       n+alphaF
+  //    vec         = alpha_F * vecnp     + (1-alpha_F) *  vecn
+
+  // do stupid conversion into Epetra map
+  Teuchos::RCP<Epetra_Map> vecmap = Teuchos::rcp(new Epetra_Map(vecnp->Map().NumGlobalElements(),
+                                                                vecnp->Map().NumMyElements(),
+                                                                vecnp->Map().MyGlobalElements(),
+                                                                0,
+                                                                vecnp->Map().Comm()));
+
+  Teuchos::RCP<Epetra_Vector> vecam = LINALG::CreateVector(*vecmap, true);
+  vecam->Update((alphaM_),*vecnp,(1.0-alphaM_),*vecn,0.0);
+
+  Teuchos::RCP<Epetra_Vector> vecaf = LINALG::CreateVector(*vecmap, true);
+  vecaf->Update((alphaF_),*vecnp,(1.0-alphaF_),*vecn,0.0);
+
+  // store computed intermediate values in given vectors
+  vecnp = vecaf;
+  vecn = vecam;
+
+  return;
+} // TimIntGenAlpha::GenAlphaIntermediateValues
+
+
+/*----------------------------------------------------------------------*
 | set integration-scheme-specific state                        bk 12/13 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::SetStateTimInt()
