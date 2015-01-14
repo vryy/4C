@@ -13,6 +13,7 @@ Maintainer: Lena Yoshihara
 /*----------------------------------------------------------------------*/
 #include "fsi_lungmonolithic.H"
 #include "fsi_lung_overlapprec.H"
+#include "fsi_overlapprec_amgnxn.H"
 #include "../drt_adapter/ad_str_lung.H"
 #include "../drt_adapter/ad_fld_lung.H"
 #include "../drt_adapter/adapter_coupling.H"
@@ -633,6 +634,7 @@ FSI::LungMonolithic::CreateLinearSystem(Teuchos::ParameterList& nlParams,
   switch (linearsolverstrategy_)
   {
   case INPAR::FSI::PreconditionedKrylov:
+  case INPAR::FSI::AMGnxn:
     linSys =
       Teuchos::rcp(new //NOX::Epetra::LinearSystemAztecOO(
                      FSI::MonolithicLinearSystem(
@@ -1042,6 +1044,36 @@ void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
                                                                 apciter[0],
                                                                 DRT::Problem::Instance()->ErrorFile()->Handle()));
   break;
+  case INPAR::FSI::AMGnxn:
+#ifdef HAVE_MueLu
+  {
+    // Parse BLOCKSMOOTHER list
+    std::vector<std::string> blocksmoother;
+    std::string word;
+    std::istringstream blocksmootherstream(
+        Teuchos::getNumericStringParameter(fsimono,"BLOCKSMOOTHER"));
+    while (blocksmootherstream >> word)
+      blocksmoother.push_back(word);
+    // We assume that the xml file is given in the first position of the BLOCKSMOOTHER list
+    std::string amgnxn_xml = "none";
+    if ((int)blocksmoother.size() > 0)
+      amgnxn_xml = blocksmoother[0];
+    else
+      dserror("Not found xml file in the first position of the BLOCKSMOOTHER list");
+    systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixAMGnxn(
+          Extractor(),
+          *StructureField(),
+          *FluidField(),
+          *AleField(),
+          structuresplit,
+          amgnxn_xml,
+          DRT::Problem::Instance()->ErrorFile()->Handle(),
+          "LungFSI"));
+  }
+#else
+    dserror("The AMGnxn preconditioner works only with MueLu activated");
+#endif // HAVE_MueLu
+    break;
   case INPAR::FSI::FSIAMG:
   default:
     dserror("Unsupported type of monolithic solver");

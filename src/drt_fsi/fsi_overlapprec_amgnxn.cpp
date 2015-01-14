@@ -15,6 +15,7 @@ Maintainer: Francesc Verdugo
 #ifdef HAVE_MueLu
 
 #include <Teuchos_PtrDecl.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_XMLParameterListHelpers.hpp>
 
 #include "fsi_overlapprec_amgnxn.H"
@@ -30,7 +31,8 @@ FSI::OverlappingBlockMatrixAMGnxn::OverlappingBlockMatrixAMGnxn(
     ADAPTER::AleFsiWrapper& ale,
     bool structuresplit,
     std::string xml_file,
-    FILE* err)
+    FILE* err,
+    std::string ProblemType)
     :
       OverlappingBlockMatrix(
           Teuchos::null,
@@ -51,12 +53,17 @@ FSI::OverlappingBlockMatrixAMGnxn::OverlappingBlockMatrixAMGnxn(
           err),// Many of this inputs are irrelevant for the AMGnxn preconditioner
           P_(Teuchos::null),
           A_(Teuchos::null),
-          xml_file_(xml_file){ }
+          xml_file_(xml_file),
+          ProblemType_(ProblemType){ }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixAMGnxn::SetupPreconditioner()
 {
+
+
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::OverlappingBlockMatrixAMGnxn::SetupPreconditioner");
+
   // Free old matrix and preconditioner
   A_ = Teuchos::null;
   P_ = Teuchos::null;
@@ -69,35 +76,46 @@ void FSI::OverlappingBlockMatrixAMGnxn::SetupPreconditioner()
 
   // Determine number of blocks
   int NumBlocks = A_->Rows();
-  if (NumBlocks != 3) dserror("We expect a 3x3 block matrix");
   if(A_->Rows() != A_->Cols())
     dserror("The AMGnxn preconditioner works only for block square matrices");
 
-  // Pick-up the input parameters
-  AMGnxnInterfaceFSI myInterface(structuresolver_,fluidsolver_,alesolver_,xml_file_);
+  // choose the right interface
+  Teuchos::RCP<AMGnxnInterfaceFSI> myInterface = Teuchos::null;
+  if (ProblemType_=="FSI")
+  {
+    if (NumBlocks != 3) dserror("We expect a 3x3 block matrix");
+    myInterface =
+      Teuchos::rcp(new AMGnxnInterfaceFSI(structuresolver_,fluidsolver_,alesolver_,xml_file_));
+  }
+  else if (ProblemType_=="LungFSI")
+  {
+    if (NumBlocks != 4) dserror("We expect a 4x4 block matrix");
+    myInterface =
+      Teuchos::rcp(new AMGnxnInterfaceLungFSI(structuresolver_,fluidsolver_,alesolver_,xml_file_));
+  }
 
   // Create the Operator
-  if (myInterface.GetPreconditionerType() == "AMG(BlockSmoother)")
+  if (myInterface->GetPreconditionerType() == "AMG(BlockSmoother)")
   {
     P_ = Teuchos::rcp(new LINALG::SOLVER::AMGnxn_Operator(
           A_,
-          myInterface.GetNumPdes(),
-          myInterface.GetNullSpacesDim(),
-          myInterface.GetNullSpacesData(),
-          myInterface.GetPreconditionerParams(),
-          myInterface.GetSmoothersParams(),
-          myInterface.GetSmoothersParams()
+          myInterface->GetNumPdes(),
+          myInterface->GetNullSpacesDim(),
+          myInterface->GetNullSpacesData(),
+          myInterface->GetPreconditionerParams(),
+          myInterface->GetSmoothersParams(),
+          myInterface->GetSmoothersParams()
           ));
   }
-  else if (myInterface.GetPreconditionerType() == "BlockSmoother(X)")
+  else if (myInterface->GetPreconditionerType() == "BlockSmoother(X)")
   {
     P_ = Teuchos::rcp(new LINALG::SOLVER::BlockSmoother_Operator(
           A_,
-          myInterface.GetNumPdes(),
-          myInterface.GetNullSpacesDim(),
-          myInterface.GetNullSpacesData(),
-          myInterface.GetPreconditionerParams(),
-          myInterface.GetSmoothersParams()));
+          myInterface->GetNumPdes(),
+          myInterface->GetNullSpacesDim(),
+          myInterface->GetNullSpacesData(),
+          myInterface->GetPreconditionerParams(),
+          myInterface->GetSmoothersParams()));
   }
   else
     dserror("Unknown preconditioner type");
@@ -387,5 +405,29 @@ void FSI::AMGnxnInterfaceFSI::Default_AMG_BGS(Teuchos::ParameterList& params)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::AMGnxnInterfaceLungFSI::AMGnxnInterfaceLungFSI(
+    Teuchos::RCP<LINALG::Preconditioner> structuresolver,
+    Teuchos::RCP<LINALG::Preconditioner> fluidsolver,
+    Teuchos::RCP<LINALG::Preconditioner> alesolver,
+    std::string amgnxn_xml):
+    AMGnxnInterfaceFSI(structuresolver,fluidsolver,alesolver,amgnxn_xml)
+{
+  // The blocks are ordered as follows
+  //  structure dof < fluid dof < ale dof < constrain dof
+
+  // Here we append null space info for the constrain block
+  // TODO Generate null space info for the second block
+  num_pdes_.push_back(-1);
+  null_spaces_dim_.push_back(-1);
+  null_spaces_data_.push_back(Teuchos::null);
+
+  // Some safety checks
+  if (amgnxn_xml_ == "AMG(BGS)")
+    dserror("A default AMG(BGS) preconditioner is not implemented for lung fsi simulations");
+  if (prec_type_ == "AMG(BlockSmoother)")
+    dserror("A AMG(BlockSmoother) preconditioner is not implemented yet for lung fsi simulations");
+}
 
 #endif // HAVE_MueLu

@@ -102,6 +102,9 @@ aiterations_(aiterations)
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner");
+
 #ifdef BLOCKMATRIXMERGE
   dserror("class OverlappingBlockMatrixFSIAMG does not support #define BLOCKMATRIXMERGE");
 #endif

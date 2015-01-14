@@ -12,6 +12,7 @@ Maintainer: Michael Gee
 
 
 #include <Ifpack.h>
+#include <Teuchos_TimeMonitor.hpp>
 
 #include "linalg_precond.H"
 #include "linalg_solver.H"
@@ -48,6 +49,9 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
                                    Teuchos::RCP<Epetra_Map>           inodes,
                                    bool                               structuresplit)
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::Preconditioner::Setup");
+
   std::string solvertype = solver_->Params().get("solver","none");
   if (solvertype=="aztec" || solvertype=="belos")
   {

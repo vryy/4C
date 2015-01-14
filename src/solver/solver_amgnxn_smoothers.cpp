@@ -114,6 +114,9 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase>
   bool explicitdirichlet,
   bool savegraph)
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::BlockSparseMatrix_Creator::CreateBlockSparseMatrix");
+
   // Check if the number of given of blocks is consistent with rows and cols
   int NumBlocks = blocks.size();
   bool flag_all_blocks_are_given = false;
@@ -126,13 +129,13 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase>
 
   // Determine the estimated number of non zero entries per row
   int npr = 0;
-  for(int i=0; i<(int)blocks.size();i++)
-  {
-    if(blocks[i]==Teuchos::null)
-      dserror("The given blocks cannot be null pointers");
-    if(blocks[i]->MaxNumEntries()>npr)
-      npr = blocks[i]->MaxNumEntries();
-  }
+  //for(int i=0; i<(int)blocks.size();i++)
+  //{
+  //  if(blocks[i]==Teuchos::null)
+  //    dserror("The given blocks cannot be null pointers");
+  //  if(blocks[i]->MaxNumEntries()>npr)
+  //    npr = blocks[i]->MaxNumEntries();
+  //}
 
   // Some checks
   if(flag_all_blocks_are_given)
@@ -397,6 +400,9 @@ muelu_list_       (muelu_list       )
 /*------------------------------------------------------------------------------*/
 void LINALG::SOLVER::MueluAMGWrapper::Setup()
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::MueluAMGWrapper::Setup");
+
   //Prepare operator for MueLu
   Teuchos::RCP<Epetra_CrsMatrix> A_crs
     = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_->EpetraOperator());
@@ -552,7 +558,9 @@ void LINALG::SOLVER::DirectSolverWrapper::Setup(
   b_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorRangeMap(),1));
 
   // Create linear solver
-  solver_ = Teuchos::rcp(new LINALG::Solver(A_->Comm(),NULL));
+  Teuchos::RCP<Teuchos::ParameterList> solvparams = Teuchos::rcp(new Teuchos::ParameterList);
+  solvparams->set("solver","klu");
+  solver_ = Teuchos::rcp(new LINALG::Solver(solvparams,A_->Comm(),NULL));
 
   // Set up solver
   solver_->Setup(A_,x_,b_,true,true);
@@ -2054,7 +2062,49 @@ LINALG::SOLVER::SIMPLE_BlockSmootherFactory::Create()
   //  std::cout << "   Domain  MinAllGID = " << myDomain.MinAllGID()  << std::endl;
   //  std::cout << "   Domain  MaxAllGID = " << myDomain.MaxAllGID()  << std::endl;
   //}
+  //{
+  //  Epetra_Map myRange  = Ass->OperatorRangeMap();
+  //  Epetra_Map myDomain = Ass->OperatorDomainMap();
+  //  std::cout << "Matrix App" << std::endl;
+  //  std::cout << "   Range   MinAllGID = " << myRange.MinAllGID()  << std::endl;
+  //  std::cout << "   Range   MaxAllGID = " << myRange.MaxAllGID()  << std::endl;
+  //  std::cout << "   Domain  MinAllGID = " << myDomain.MinAllGID()  << std::endl;
+  //  std::cout << "   Domain  MaxAllGID = " << myDomain.MaxAllGID()  << std::endl;
+  //}
 
+  // =============================================================
+  // Approximate the schur complement
+  // =============================================================
+
+  // Approximate the inverse of App
+  Teuchos::RCP<SparseOperator>  invApp = Teuchos::null;
+  Teuchos::RCP<SparseMatrix> App_sp = Teuchos::rcp_dynamic_cast<SparseMatrix>(App);
+  Teuchos::RCP<BlockSparseMatrixBase> App_bl
+    = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(App);
+  if(App_bl==Teuchos::null)
+  {
+    if(App_sp==Teuchos::null)
+      dserror("Something wrong");
+    invApp = ApproximateInverse(*App_sp,inverse_method);
+  }
+  else
+  {
+    if(App_bl==Teuchos::null)
+      dserror("Something wrong");
+    if(inverse_method=="row sums")
+      dserror("The \"row sums\" option is not implemented yet for Block matrices");
+    if(App_bl->Rows()!=App_bl->Cols())
+      dserror("The number of block rows and columns has to be the same!");
+    std::vector<Teuchos::RCP<SparseMatrix> > DiagBlocks(App_bl->Rows(),Teuchos::null);
+    for(int row=0;row<App_bl->Rows();row++)
+      DiagBlocks[row] = ApproximateInverse(App_bl->Matrix(row,row),inverse_method);
+    BlockSparseMatrix_Creator myBlockMatrixCreator;
+    invApp
+      = myBlockMatrixCreator.CreateBlockSparseMatrix(DiagBlocks,App_bl->Rows(),App_bl->Rows(),View);
+  }
+
+  // Compute the schur complement
+  Teuchos::RCP<SparseOperator> S = ComputeSchurComplement(invApp,Aps,Asp,Ass);
 
   // =============================================================
   // Construct smoothers for diagonal superblocks
@@ -2096,45 +2146,9 @@ LINALG::SOLVER::SIMPLE_BlockSmootherFactory::Create()
   }
 
   mySmootherCreator.SetSmootherName   (schur_smoother);
-  mySmootherCreator.SetOperator       (Ass);
+  mySmootherCreator.SetOperator       (S);
   Teuchos::RCP<AMGnxn_SmootherBase>  Smoother_S = mySmootherCreator.Create();
 
-  // =============================================================
-  // Approximate the schur complement
-  // =============================================================
-
-  // Approximate the inverse of App
-  Teuchos::RCP<SparseOperator>  invApp = Teuchos::null;
-  Teuchos::RCP<SparseMatrix> App_sp = Teuchos::rcp_dynamic_cast<SparseMatrix>(App);
-  Teuchos::RCP<BlockSparseMatrixBase> App_bl
-    = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(App);
-  if(App_bl==Teuchos::null)
-  {
-    if(App_sp==Teuchos::null)
-      dserror("Something wrong");
-    invApp = ApproximateInverse(*App_sp,inverse_method);
-  }
-  else
-  {
-    if(App_bl==Teuchos::null)
-      dserror("Something wrong");
-    if(inverse_method=="row sums")
-      dserror("The \"row sums\" option is not implemented yet for Block matrices");
-    if(App_bl->Rows()!=App_bl->Cols())
-      dserror("The number of block rows and columns has to be the same!");
-    std::vector<Teuchos::RCP<SparseMatrix> > DiagBlocks(App_bl->Rows(),Teuchos::null);
-    for(int row=0;row<App_bl->Rows();row++)
-      DiagBlocks[row] = ApproximateInverse(App_bl->Matrix(row,row),inverse_method);
-    BlockSparseMatrix_Creator myBlockMatrixCreator;
-    invApp
-      = myBlockMatrixCreator.CreateBlockSparseMatrix(DiagBlocks,App_bl->Rows(),App_bl->Rows(),Copy);
-  }
-
-  // Compute the schur complement
-  Teuchos::RCP<SparseOperator> Aps_aux = Multiply(invApp,false,Aps,false,true);
-  Teuchos::RCP<SparseOperator> S = Multiply(Asp,false,Aps_aux,false,false);
-  S->Add(*Ass,false,1.0,-1.0*beta);
-  S->Complete();
 
 
 
@@ -2167,6 +2181,74 @@ LINALG::SOLVER::SIMPLE_BlockSmootherFactory::Create()
   //return Skkbase;
 }
 
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+
+Teuchos::RCP<LINALG::SparseOperator>
+LINALG::SOLVER::SIMPLE_BlockSmootherFactory::ComputeSchurComplement(
+    Teuchos::RCP<SparseOperator> invApp,
+    Teuchos::RCP<SparseOperator> Aps,
+    Teuchos::RCP<SparseOperator> Asp,
+    Teuchos::RCP<SparseOperator> Ass)
+{
+
+  Teuchos::RCP<SparseOperator> S = Teuchos::null;
+
+  Teuchos::RCP<SparseMatrix> invApp_sp = Teuchos::rcp_dynamic_cast<SparseMatrix>(invApp);
+  Teuchos::RCP<BlockSparseMatrixBase> invApp_bl = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(invApp);
+  Teuchos::RCP<SparseMatrix> Ass_sp = Teuchos::rcp_dynamic_cast<SparseMatrix>(Ass);
+  Teuchos::RCP<BlockSparseMatrixBase> Ass_bl = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Ass);
+
+
+  if (invApp_sp != Teuchos::null and invApp_bl == Teuchos::null)
+  {
+    if (Ass_sp != Teuchos::null and Ass_bl == Teuchos::null)
+    {
+      Teuchos::RCP<SparseMatrix> Asp_sp = Teuchos::rcp_dynamic_cast<SparseMatrix>(Asp);
+      Teuchos::RCP<SparseMatrix> Aps_sp = Teuchos::rcp_dynamic_cast<SparseMatrix>(Aps);
+      Teuchos::RCP<SparseMatrix> temp = LINALG::MLMultiply(*Asp_sp,*invApp_sp, true);
+      Teuchos::RCP<SparseMatrix> S_sp = LINALG::MLMultiply(*temp,*Aps_sp, true);
+      S_sp->Add(*Ass_sp,false,1.0,-1.0);
+      S_sp->Complete();
+      S = Teuchos::rcp_dynamic_cast<SparseOperator>(S_sp);
+    }
+    else if (Ass_sp == Teuchos::null and Ass_bl != Teuchos::null)
+    {
+      dserror("TODO: Branch not implemented yet");
+    }
+    else dserror("Something went wrong");
+  }
+  else if (invApp_sp == Teuchos::null and invApp_bl != Teuchos::null)
+  {
+    if (Ass_sp != Teuchos::null and Ass_bl == Teuchos::null)
+    {
+      Teuchos::RCP<BlockSparseMatrixBase> Asp_bl = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Asp);
+      Teuchos::RCP<BlockSparseMatrixBase> Aps_bl = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Aps);
+      int NumBlocks_pp = invApp_bl->Rows();
+      Teuchos::RCP<SparseMatrix> S_sp = Teuchos::null;
+      for(int b=0;b<NumBlocks_pp;b++)
+      {
+        Teuchos::RCP<SparseMatrix> temp = LINALG::MLMultiply(Asp_bl->Matrix(0,b),invApp_bl->Matrix(b,b),true);
+        Teuchos::RCP<SparseMatrix> S_sp_tmp = LINALG::MLMultiply(*temp,Aps_bl->Matrix(b,0), true);
+        if (b==0) S_sp = S_sp_tmp;
+        else S_sp->Add(*S_sp_tmp,false,1.0,1.0);
+      }
+      S_sp->Add(*Ass_sp,false,1.0,-1.0);
+      S_sp->Complete();
+      S = Teuchos::rcp_dynamic_cast<SparseOperator>(S_sp);
+    }
+    else if (Ass_sp == Teuchos::null and Ass_bl != Teuchos::null)
+    {
+      dserror("TODO: Branch not implemented yet");
+    }
+    else dserror("Something went wrong");
+  }
+  else dserror("Something went wrong");
+
+
+  return S;
+
+}
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/

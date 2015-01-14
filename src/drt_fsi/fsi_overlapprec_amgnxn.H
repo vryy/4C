@@ -39,7 +39,8 @@ namespace FSI
           ADAPTER::AleFsiWrapper& ale,
           bool structuresplit,
           std::string xml_file,
-          FILE* err=NULL);
+          FILE* err=NULL,
+          std::string ProblemType="FSI");
 
       // This function is used to apply the preconditioner
       virtual void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
@@ -56,6 +57,7 @@ namespace FSI
       Teuchos::RCP<Epetra_Operator> P_; // The underlying preconditioner object
       Teuchos::RCP<BlockSparseMatrixBase> A_; // A own copy of the system matrix
       std::string xml_file_; //XMLfile containing the amg nxn prec
+      std::string ProblemType_;
 
 
   };
@@ -76,8 +78,7 @@ namespace FSI
       Teuchos::ParameterList GetSmoothersParams(){return smoo_params_;}
       std::string GetPreconditionerType(){return prec_type_;}
 
-    private:
-      void Setup();
+    protected:
       std::vector<int> num_pdes_;
       std::vector<int> null_spaces_dim_;
       std::vector<Teuchos::RCP<std::vector<double> > > null_spaces_data_;
@@ -88,9 +89,21 @@ namespace FSI
       Teuchos::RCP<LINALG::Preconditioner> fluidsolver_;
       Teuchos::RCP<LINALG::Preconditioner> alesolver_;
       std::string amgnxn_xml_;
+
+    private:
+      void Setup();
       void Default_AMG_BGS(Teuchos::ParameterList& params);
   };
 
+  class AMGnxnInterfaceLungFSI : public AMGnxnInterfaceFSI
+  {
+    public:
+      AMGnxnInterfaceLungFSI(
+          Teuchos::RCP<LINALG::Preconditioner> structuresolver,
+          Teuchos::RCP<LINALG::Preconditioner> fluidsolver,
+          Teuchos::RCP<LINALG::Preconditioner> alesolver,
+          std::string amgnxn_xml);
+  };
 
 
 

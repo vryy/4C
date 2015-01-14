@@ -478,6 +478,11 @@ namespace LINALG
         virtual Teuchos::RCP<AMGnxn_SmootherBase> Create();
       private:
         Teuchos::RCP<SparseMatrix> ApproximateInverse(const SparseMatrix& A,std::string method);
+        Teuchos::RCP<LINALG::SparseOperator> ComputeSchurComplement(
+            Teuchos::RCP<SparseOperator> invApp,
+            Teuchos::RCP<SparseOperator> Aps,
+            Teuchos::RCP<SparseOperator> Asp,
+            Teuchos::RCP<SparseOperator> Ass);
     };
 
     class MergeAndSolveFactory : public AMGnxn_ParticularSmootherFactory

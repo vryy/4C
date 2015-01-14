@@ -291,6 +291,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
     int offsetFineLevel)
 {
 
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy");
+
   //Some cheks
   if(numdf<1 or dimns<1)
     dserror("Error: PDE equations or null space dimension wrong.");
@@ -539,7 +541,7 @@ int LINALG::SOLVER::AMGnxn_MonolithicHierarchy::GetNumLevels()
 void LINALG::SOLVER::AMGnxn_MonolithicHierarchy::Setup()
 {
 
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_MonolithicHierarchy");
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_MonolithicHierarchy::Setup()");
 
   // ====================================================
   // Create block transfer operators
@@ -588,13 +590,16 @@ void LINALG::SOLVER::AMGnxn_MonolithicHierarchy::Setup()
       Pblocks[block]=H_->GetP(block,level);
       Rblocks[block]=H_->GetR(block,level);
     }
-    P_[level] = myBlockMatrixCreator.CreateBlockSparseMatrix(Pblocks,NumBlocks_,NumBlocks_,Copy);
-    R_[level] = myBlockMatrixCreator.CreateBlockSparseMatrix(Rblocks,NumBlocks_,NumBlocks_,Copy);
+    P_[level] = myBlockMatrixCreator.CreateBlockSparseMatrix(Pblocks,NumBlocks_,NumBlocks_,View);
+    R_[level] = myBlockMatrixCreator.CreateBlockSparseMatrix(Rblocks,NumBlocks_,NumBlocks_,View);
   }
 
   // ====================================================
   // Create coarser matrices
   // ====================================================
+  //
+  bool explicitdirichlet = H_->GetBlockMatrix()->Matrix(0,0).ExplicitDirichlet();
+  bool savegraph         = H_->GetBlockMatrix()->Matrix(0,0).SaveGraph();
 
   A_.assign(NumLevels_,Teuchos::null);
   for(int level=0;level<NumLevels_;level++)
@@ -615,17 +620,17 @@ void LINALG::SOLVER::AMGnxn_MonolithicHierarchy::Setup()
             const SparseMatrix& P_spa   = P_[level-1]->Matrix(col,col);
             const SparseMatrix& R_spa   = R_[level-1]->Matrix(row,row);
             Teuchos::RCP<SparseMatrix>  AP_spa  = Teuchos::null;
-            AP_spa  = LINALG::Multiply(A_spa,false,P_spa,false,true);
+            AP_spa  = LINALG::MLMultiply(A_spa,false,P_spa,false,explicitdirichlet,savegraph,true);
             if(AP_spa==Teuchos::null)
               dserror("Error in AP");
             Teuchos::RCP<SparseMatrix>  RAP_spa = Teuchos::null;
-            RAP_spa = LINALG::Multiply(R_spa,false,*AP_spa,false,true);
+            RAP_spa = LINALG::MLMultiply(R_spa,false,*AP_spa,false,explicitdirichlet,savegraph,true);
             if(RAP_spa==Teuchos::null)
               dserror("Error in RAP");
             Ablocks[row*NumBlocks_+col] = RAP_spa;
           }
         }
-      A_[level] = myBlockMatrixCreator.CreateBlockSparseMatrix(Ablocks,NumBlocks_,NumBlocks_,Copy);
+      A_[level] = myBlockMatrixCreator.CreateBlockSparseMatrix(Ablocks,NumBlocks_,NumBlocks_,View);
     }
   }
 
