@@ -97,25 +97,23 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       if (dis_ != Teuchos::null)
       {
         const Epetra_BlockMap& disnpmap = dis_->Map();
-        if (position=="dispx")
+        int idx = -1;
+        if (position == "dispx")
+          idx = 0;
+        else if (position == "dispy")
+          idx = 1;
+        else if (position == "dispz")
+          idx = 2;
+        else if (position == "press")
+          idx = 3;
+
+        if (idx >= 0)
         {
           unknownpos = false;
-          result = (*dis_)[disnpmap.LID(strudisc_->Dof(0,actnode,0))];
-        }
-        else if (position=="dispy")
-        {
-          unknownpos = false;
-          result = (*dis_)[disnpmap.LID(strudisc_->Dof(0,actnode,1))];
-        }
-        else if (position=="dispz")
-        {
-          unknownpos = false;
-          result = (*dis_)[disnpmap.LID(strudisc_->Dof(0,actnode,2))];
-        }
-        else if (position=="press")
-        {
-          unknownpos = false;
-          result = (*dis_)[disnpmap.LID(strudisc_->Dof(0,actnode,3))];
+          int lid = disnpmap.LID(strudisc_->Dof(0,actnode,idx));
+          if (lid < 0)
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+          result = (*dis_)[lid];
         }
       }
 
@@ -123,20 +121,21 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       if (dism_ != Teuchos::null)
       {
         const Epetra_BlockMap& dismpmap = dism_->Map();
-        if (position=="dispmx")
+        int idx = -1;
+        if (position == "dispmx")
+          idx = 0;
+        else if (position == "dispmy")
+          idx = 1;
+        else if (position == "dispmz")
+          idx = 2;
+
+        if (idx >= 0)
         {
           unknownpos = false;
-          result = (*dism_)[dismpmap.LID(strudisc_->Dof(0,actnode,0))];
-        }
-        else if (position=="dispmy")
-        {
-          unknownpos = false;
-          result = (*dism_)[dismpmap.LID(strudisc_->Dof(0,actnode,1))];
-        }
-        else if (position=="dispmz")
-        {
-          unknownpos = false;
-          result = (*dism_)[dismpmap.LID(strudisc_->Dof(0,actnode,2))];
+          int lid = dismpmap.LID(strudisc_->Dof(0,actnode,idx));
+          if (lid < 0)
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+          result = (*dism_)[lid];
         }
       }
 
@@ -144,21 +143,21 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       if (vel_ != Teuchos::null)
       {
         const Epetra_BlockMap& velnpmap = vel_->Map();
+        int idx = -1;
+        if (position == "velx")
+          idx = 0;
+        else if (position == "vely")
+          idx = 1;
+        else if (position == "velz")
+          idx = 2;
 
-        if (position=="velx")
+        if (idx >= 0)
         {
           unknownpos = false;
-          result = (*vel_)[velnpmap.LID(strudisc_->Dof(0,actnode,0))];
-        }
-        else if (position=="vely")
-        {
-          unknownpos = false;
-          result = (*vel_)[velnpmap.LID(strudisc_->Dof(0,actnode,1))];
-        }
-        else if (position=="velz")
-        {
-          unknownpos = false;
-          result = (*vel_)[velnpmap.LID(strudisc_->Dof(0,actnode,2))];
+          int lid = velnpmap.LID(strudisc_->Dof(0,actnode,idx));
+          if (lid < 0)
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+          result = (*vel_)[lid];
         }
       }
 
@@ -166,21 +165,21 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       if (acc_ != Teuchos::null)
       {
         const Epetra_BlockMap& accnpmap = acc_->Map();
+        int idx = -1;
+        if (position == "accx")
+          idx = 0;
+        else if (position == "accy")
+          idx = 1;
+        else if (position == "accz")
+          idx = 2;
 
-        if (position=="accx")
+        if (idx >= 0)
         {
           unknownpos = false;
-          result = (*acc_)[accnpmap.LID(strudisc_->Dof(0,actnode,0))];
-        }
-        else if (position=="accy")
-        {
-          unknownpos = false;
-          result = (*acc_)[accnpmap.LID(strudisc_->Dof(0,actnode,1))];
-        }
-        else if (position=="accz")
-        {
-          unknownpos = false;
-          result = (*acc_)[accnpmap.LID(strudisc_->Dof(0,actnode,2))];
+          int lid = accnpmap.LID(strudisc_->Dof(0,actnode,idx));
+          if (lid < 0)
+            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
+          result = (*acc_)[lid];
         }
       }
 
