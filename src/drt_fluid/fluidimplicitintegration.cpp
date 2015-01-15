@@ -3446,7 +3446,7 @@ void FLD::FluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-      Teuchos::RCP<Epetra_Vector> traction = stressmanager_->CalcStresses(trueresidual_);
+      Teuchos::RCP<Epetra_Vector> traction = stressmanager_->GetStresses(trueresidual_);
       output_->WriteVector("traction",traction);
       if (myrank_==0)
         std::cout<<"Writing stresses"<<std::endl;
@@ -3574,7 +3574,7 @@ void FLD::FluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-      Teuchos::RCP<Epetra_Vector> traction = stressmanager_->CalcStresses(trueresidual_);
+      Teuchos::RCP<Epetra_Vector> traction = stressmanager_->GetStresses(trueresidual_);
       output_->WriteVector("traction",traction);
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)

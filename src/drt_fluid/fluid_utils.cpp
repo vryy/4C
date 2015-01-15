@@ -71,11 +71,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStresses(
     Teuchos::RCP<const Epetra_Vector> trueresidual
 )
 {
-  if(not isinit_)
-    dserror("not initialized");
-  Teuchos::RCP<Epetra_Vector> stresses = CalcStresses(trueresidual);
-  //calculate wss from stresses
-  Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses(stresses);
+  Teuchos::RCP<Epetra_Vector> wss = GetWallShearStressesWOAgg(trueresidual);
 
   if (ML_solver_ != -1) //iff we have a ML solver we aggregate the WSS
     return AggreagteStresses(wss);
@@ -102,6 +98,30 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStressesWOAgg
 /*-----------------------------------------------------------------------------*
  |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetStressesWOAgg(Teuchos::RCP<const Epetra_Vector> trueresidual)
+{
+  Teuchos::RCP<Epetra_Vector> stresses = CalcStresses(trueresidual);
+
+  return stresses;
+} // FLD::UTILS::StressManager::GetStressesWOAgg()
+
+/*-----------------------------------------------------------------------------*
+ |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
+ *-----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetStresses(Teuchos::RCP<const Epetra_Vector> trueresidual)
+{
+  Teuchos::RCP<Epetra_Vector> stresses = GetStressesWOAgg(trueresidual);
+
+  if (ML_solver_ != -1) //iff we have a ML solver we aggregate the WSS
+    return AggreagteStresses(stresses);
+  else
+    return stresses;
+
+} // FLD::UTILS::StressManager::GetStresses()
+
+/*-----------------------------------------------------------------------------*
+ |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
+ *-----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcStresses(Teuchos::RCP<const Epetra_Vector> trueresidual)
 {
   if(not isinit_)
@@ -121,12 +141,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcStresses(Teuchos::RCP
     }
   }
 
-  if (ML_solver_ != -1) //iff we have a ML solver we aggregate the WSS
-    return AggreagteStresses(integratedshapefunc);
-  else
-    return integratedshapefunc;
-
-} // FluidImplicitTimeInt::CalcStresses()
+  return integratedshapefunc;
+} // FLD::UTILS::StressManager::CalcStresses()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

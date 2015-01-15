@@ -1140,8 +1140,9 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::CalcMK()
 
   if(1.0/(maxeigenvalue*h_u*h_u)>0.33)
   {
-    std::cout << "eigenvalue:  " << maxeigenvalue*h_u*h_u << std::endl;
-    dserror("I don't think that this eigenvalue is correct");
+    std::cout << "Warning: mk larger than 0.33:  " << maxeigenvalue*h_u*h_u << std::endl;
+
+    return 0.33333333333;
   }
 
   //safety factor
@@ -1657,7 +1658,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Sysmat(
       for(int idof=0 ; (my::nsd_+1)*my::nen_!=idof; idof++)
         for(int jdof=0 ; (my::nsd_+1)*my::nen_!=jdof; jdof++)
         {
-          if(abs(exactestifdummy(idof,jdof))*quadraturetol_>1.0e-13)
+          if(abs(exactestifdummy(idof,jdof))>1.0e-12)
           {
             double newerr=abs(estifdummy(idof,jdof)-exactestifdummy(idof,jdof))/abs(exactestifdummy(idof,jdof));
             if(err<newerr)
@@ -1838,7 +1839,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Sysmat(
         for(int idof=0 ; (my::nsd_+1)*my::nen_!=idof; idof++)
           for(int jdof=0 ; (my::nsd_+1)*my::nen_!=jdof; jdof++)
           {
-            if(abs(exactestifdummy(idof,jdof))*quadraturetol_>1.0e-13)
+            if(abs(exactestifdummy(idof,jdof))>1.0e-12)
             {
               double newerr=abs(estifdummy(idof,jdof)-exactestifdummy(idof,jdof))/abs(exactestifdummy(idof,jdof));
                if(err<newerr)

@@ -336,16 +336,17 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> GetWallShearStresses( Teuchos::RCP<const Epetra_Vector> trueresidual );
     ///return WSS vector always without aggregation, even if scale separation matrix exists
     Teuchos::RCP<Epetra_Vector> GetWallShearStressesWOAgg( Teuchos::RCP<const Epetra_Vector> trueresidual );
-    /*!
-    \brief calculate stresses
-
-    */
 
     ///return stress vector
-    Teuchos::RCP<Epetra_Vector> CalcStresses(Teuchos::RCP<const Epetra_Vector> trueresidual);
+    Teuchos::RCP<Epetra_Vector> GetStresses(Teuchos::RCP<const Epetra_Vector> trueresidual);
+    ///return stress vector always without aggregation, even if scale separation matrix exists
+    Teuchos::RCP<Epetra_Vector> GetStressesWOAgg(Teuchos::RCP<const Epetra_Vector> trueresidual);
 
     bool IsInit(){return isinit_;}
 private:
+
+    ///return stress vector
+    Teuchos::RCP<Epetra_Vector> CalcStresses(Teuchos::RCP<const Epetra_Vector> trueresidual);
 
     /// integrate shape functions at nodes marked by condition
     Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);

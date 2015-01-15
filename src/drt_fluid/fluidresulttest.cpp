@@ -29,7 +29,7 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
   fluiddis_= fluid.discret_;
   mysol_   = fluid.velnp_;
   myvan_   = fluid.velatmeshfreenodes_;
-  mytraction_ = fluid.stressmanager_->CalcStresses(fluid.trueresidual_);
+  mytraction_ = fluid.stressmanager_->GetStresses(fluid.trueresidual_);
   mywss_ = fluid.stressmanager_->GetWallShearStresses(fluid.trueresidual_);
   myerror_ = fluid.EvaluateErrorComparedToAnalyticalSol();
   mydivu_ = fluid.EvaluateDivU();
