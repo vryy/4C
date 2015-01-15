@@ -334,6 +334,7 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector(bool outputtofile)
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
+    sti_->PreUpdate();
     sti_->UpdateStepState();
 
     // gets the displacements per timestep
@@ -352,12 +353,13 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector(bool outputtofile)
 
     // Update Element
     sti_->UpdateStepElement();
+    sti_->PostUpdate();
 
     // print info about finished time step
     sti_->PrintStep();
 
     // write output
-    if (outputtofile) sti_->OutputStep();
+    if (outputtofile) sti_->Output();
 
   }
   return cvector;

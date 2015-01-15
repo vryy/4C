@@ -35,7 +35,7 @@ void LINALG::SOLVER::KrylovProjectionPreconditioner::Setup( bool create,
   // setup wrapped preconditioner
   preconditioner_->Setup( create, matrix, x, b );
 
-  // Wrap the linar operator of the contained preconditioner. This way the
+  // Wrap the linear operator of the contained preconditioner. This way the
   // actual preconditioner is called first and the projection is done
   // afterwards.
 

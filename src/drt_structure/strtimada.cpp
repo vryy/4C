@@ -195,9 +195,13 @@ int STR::TimAda::Integrate()
 
     // printing and output
     PrepareOutputPeriod();
+    sti_->PreUpdate();
     sti_->UpdateStepState();
     sti_->UpdateStepElement();
+    sti_->PostUpdate();
+    sti_->PreOutput();
     OutputPeriod();
+    sti_->PostOutput();
     OutputStepSize();
     sti_->PrintStep();
 

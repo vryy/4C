@@ -64,12 +64,6 @@ int ADAPTER::StructureTimeLoop::Integrate()
 
       // print info about finished time step
       PrintStep();
-
-      // propagate crack within the structure
-      UpdateCrackInformation( Dispnp() );
-
-      // write Gmsh output
-      writeGmshStrucOutputStep();
     }
     else // something went wrong update error code according to chosen divcont action
     {

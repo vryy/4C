@@ -847,15 +847,18 @@ namespace STR
     //! Update routine for coupled problems with monolithic approach
     virtual void Update()
     {
+      PreUpdate();
       UpdateStepState();
       UpdateStepTime();
       UpdateStepElement();
+      PostUpdate();
       return;
     }
 
     //! Update routine for coupled problems with monolithic approach with time adaptivity
     virtual void Update(const double endtime)
     {
+      PreUpdate();
       UpdateStepState();
 
       timen_ = endtime;
@@ -866,15 +869,18 @@ namespace STR
       stepn_ += 1;
 
       UpdateStepElement();
+      PostUpdate();
       return;
     }
-
-
 
     //! Output routine for coupled problems with monolithic approach
     void Output(bool forced_writerestart = false)
     {
+      PreOutput();
       OutputStep(forced_writerestart);
+      // write Gmsh output
+      writeGmshStrucOutputStep();
+      PostOutput();
     }
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$

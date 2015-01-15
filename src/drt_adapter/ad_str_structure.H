@@ -358,6 +358,33 @@ namespace ADAPTER {
       Teuchos::RCP<std::vector<char> > nodedata
     ) = 0;
 
+    /// wrapper for things that should be done before PrepareTimeStep is called
+    virtual void PrePredict() = 0;
+
+    /// wrapper for things that should be done after PrepareTimeStep is called
+    virtual void PostPredict() = 0;
+
+    /// wrapper for things that should be done before solving the nonlinear iterations
+    virtual void PreSolve() = 0;
+
+    /// wrapper for things that should be done after solving the nonlinear iterations
+    virtual void PostSolve() = 0;
+
+    /// wrapper for things that should be done before updating
+    virtual void PreUpdate() = 0;
+
+    /// wrapper for things that should be done after solving the update
+    virtual void PostUpdate() = 0;
+
+    /// wrapper for things that should be done before the output
+    virtual void PreOutput() = 0;
+
+    /// wrapper for things that should be done after the output
+    virtual void PostOutput() = 0;
+
+    /// wrapper for things that should be done after the actual time loop is finished
+    virtual void PostTimeLoop() = 0;
+
     //@}
 
     //! @name Solver calls

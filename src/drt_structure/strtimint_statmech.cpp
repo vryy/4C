@@ -406,7 +406,7 @@ void STR::TimIntStatMech::UpdateAndOutput()
   UpdateStepElement();
 
   // write output
-  OutputStep();
+  Output();
 
   // print info about finished time step
   PrintStep();

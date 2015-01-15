@@ -97,6 +97,9 @@ void STR::TimIntAB2::ResizeMStep()
 /* Integrate step */
 int STR::TimIntAB2::IntegrateStep()
 {
+  // things to be done before integrating
+  PreSolve();
+
   // time this step
   timer_->ResetStartTime();
 
@@ -219,6 +222,9 @@ int STR::TimIntAB2::IntegrateStep()
 
   // apply Dirichlet BCs on accelerations
   ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);
+
+  // things to be done after integrating
+  PostSolve();
 
   return 0;
 }

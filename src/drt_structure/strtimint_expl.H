@@ -196,8 +196,14 @@ namespace STR
       // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
       SetTimen( (*time_)[0]+(*dt_)[0] );
 
+      // things that need to be done before Predict
+      PrePredict();
+
       // prepare contact for new time step
       PrepareStepContact();
+
+      // things that need to be done after Predict
+      PostPredict();
 
       return;
     }
@@ -224,16 +230,22 @@ namespace STR
     /// has to be renamed either here or PrintStep()
     virtual void Output(bool forced_writerestart)
     {
+      PreOutput();
       OutputStep(forced_writerestart);
+      // write Gmsh output
+      writeGmshStrucOutputStep();
+      PostOutput();
       return;
     }
 
     /// has to be renamed either here or UpdateStepState() /UpdateStepStateElement()
     virtual void Update()
     {
+      PreUpdate();
       UpdateStepState();
       UpdateStepTime();
       UpdateStepElement();
+      PostUpdate();
       return;
     }
 

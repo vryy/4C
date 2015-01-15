@@ -906,6 +906,33 @@ namespace STR
     //! evaluate reference state for frictional contact at t=0)
     void PrepareStepContact();
 
+    /// wrapper for things that should be done before PrepareTimeStep is called
+    virtual void PrePredict(){};
+
+    /// wrapper for things that should be done after PrepareTimeStep is called
+    virtual void PostPredict(){};
+
+    /// wrapper for things that should be done before solving the nonlinear iterations
+    virtual void PreSolve(){};
+
+    /// wrapper for things that should be done after solving the nonlinear iterations
+    virtual void PostSolve(){};
+
+    /// wrapper for things that should be done before updating
+    virtual void PreUpdate(){};
+
+    /// wrapper for things that should be done after solving the update
+    virtual void PostUpdate(){};
+
+    /// wrapper for things that should be done before the output
+    virtual void PreOutput(){};
+
+    /// wrapper for things that should be done after the output
+    virtual void PostOutput();
+
+    /// wrapper for things that should be done after the actual time loop is finished
+    virtual void PostTimeLoop();
+
     //@}
 
     //! @name Beam contact specific methods

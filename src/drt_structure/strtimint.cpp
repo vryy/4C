@@ -938,6 +938,29 @@ void STR::TimInt::PrepareStatMech()
 }
 
 /*----------------------------------------------------------------------*/
+/* things that should be done after the output */
+void STR::TimInt::PostOutput()
+{
+  // propagate crack within the structure
+  UpdateCrackInformation( Dispnp() );
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* things that should be done after the actual time loop is finished */
+void STR::TimInt::PostTimeLoop()
+{
+  if(HaveMicroMat())
+  {
+    // stop supporting processors in multi scale simulations
+    STRUMULTI::stop_np_multiscale();
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* equilibrate system at initial state
  * and identify consistent accelerations */
 void STR::TimInt::DetermineMassDampConsistAccel()
@@ -3108,7 +3131,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
     case INPAR::STR::divcont_stop:
     {
       // write restart output of last converged step before stopping
-      OutputStep(true);
+      Output(true);
 
       // we should not get here, dserror for safety
       dserror("Nonlinear solver did not converge! ");

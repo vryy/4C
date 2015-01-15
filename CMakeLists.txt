@@ -574,7 +574,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_fsi_crack.cpp
   src/drt_adapter/ad_str_timeloop.cpp
   src/drt_adapter/ad_str_statmech.cpp
-  src/drt_adapter/ad_str_multiscale.cpp
   src/drt_adapter/ad_str_invana.cpp
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/ad_ale.cpp

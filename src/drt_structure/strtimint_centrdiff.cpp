@@ -90,6 +90,9 @@ void STR::TimIntCentrDiff::ResizeMStep()
 /* Integrate step */
 int STR::TimIntCentrDiff::IntegrateStep()
 {
+  // things to be done before integrating
+  PreSolve();
+
   // time this step
   timer_->ResetStartTime();
 
@@ -211,6 +214,9 @@ int STR::TimIntCentrDiff::IntegrateStep()
 
   // update of end-velocities \f$V_{n+1}\f$
   veln_->Update(dthalf, *accn_, 1.0);
+
+  // things to be done after integrating
+  PostSolve();
 
   // wassup?
   return 0;

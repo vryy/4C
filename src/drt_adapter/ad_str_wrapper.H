@@ -306,6 +306,42 @@ namespace ADAPTER
     )
     {return structure_->SetRestart(step,time,disn,veln,accn,elementdata,nodedata);}
 
+    /// wrapper for things that should be done before PrepareTimeStep is called
+    virtual void PrePredict()
+    { structure_->PrePredict(); }
+
+    /// wrapper for things that should be done after PrepareTimeStep is called
+    virtual void PostPredict()
+    { structure_->PostPredict(); }
+
+    /// wrapper for things that should be done before solving the nonlinear iterations
+    virtual void PreSolve()
+    { structure_->PreSolve(); }
+
+    /// wrapper for things that should be done after solving the nonlinear iterations
+    virtual void PostSolve()
+    { structure_->PostSolve(); }
+
+    /// wrapper for things that should be done before updating
+    virtual void PreUpdate()
+    { structure_->PreUpdate(); }
+
+    /// wrapper for things that should be done after solving the update
+    virtual void PostUpdate()
+    { structure_->PostUpdate(); }
+
+    /// wrapper for things that should be done before the output
+    virtual void PreOutput()
+    { structure_->PreOutput(); }
+
+    /// wrapper for things that should be done after the output
+    virtual void PostOutput()
+    { structure_->PostOutput(); }
+
+    /// wrapper for things that should be done after the actual time loop is finished
+    virtual void PostTimeLoop()
+    { structure_->PostTimeLoop(); }
+
     //@}
 
 

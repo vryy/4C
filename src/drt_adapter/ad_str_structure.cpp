@@ -24,7 +24,6 @@ Maintainer: Georg Hammerl
 #include "ad_str_fsi_crack.H"
 #include "ad_str_fpsiwrapper.H"
 #include "ad_str_statmech.H"
-#include "ad_str_multiscale.H"
 #include "ad_str_invana.H"
 
 #include "../drt_lib/drt_utils_timintmstep.H"
@@ -529,10 +528,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     }
     break;
     }
-
-    /// wrap time loop if micro material is used
-    if(structure_->HaveMicroMat())
-      structure_ = (Teuchos::rcp(new StructureMultiScale(structure_)));
   }
   else
   {

@@ -745,19 +745,15 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
-    sti_->UpdateStepState();
-
     // update time and step
-    sti_->UpdateStepTime();
-
-    // Update Element
-    sti_->UpdateStepElement();
+    // update everything on the element level
+    sti_->Update();
 
     // print info about finished time step
     sti_->PrintStep();
 
     // write output
-    if (outputtofile) sti_->OutputStep();
+    if (outputtofile) sti_->Output();
 
     // get current time
     double time = sti_->TimeOld();
@@ -834,19 +830,15 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
-    sti_->UpdateStepState();
-
     // update time and step
-    sti_->UpdateStepTime();
-
-    // Update Element
-    sti_->UpdateStepElement();
+    // update everything on the element level
+    sti_->Update();
 
     // print info about finished time step
     sti_->PrintStep();
 
     // write output
-    if (outputtofile) sti_->OutputStep();
+    if (outputtofile) sti_->Output();
 
     // get current time
     double time = sti_->TimeOld();

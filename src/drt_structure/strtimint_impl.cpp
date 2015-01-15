@@ -270,6 +270,9 @@ int STR::TimIntImpl::IntegrateStep()
 /* predict solution */
 void STR::TimIntImpl::Predict()
 {
+  // things that need to be done before Predict
+  PrePredict();
+
   // set iteration step to 0 (predictor)
   iter_ = 0;
 
@@ -410,6 +413,9 @@ void STR::TimIntImpl::Predict()
 
   // output
   PrintPredictor();
+
+  // things that need to be done after Predict
+  PostPredict();
 
   // enjoy your meal
   return;
@@ -1511,6 +1517,9 @@ bool STR::TimIntImpl::Converged()
 /* solve equilibrium */
 INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
 {
+  // things to be done before solving
+  PreSolve();
+
   int nonlin_error = 0 ;
   // special nonlinear iterations for contact / meshtying
   if (HaveContactMeshtying())
@@ -1576,6 +1585,8 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
   // methods checks, if the time step size can be increased again.
   CheckForTimeStepIncrease(status);
 
+  // things to be done after solving
+  PostSolve();
 
   return status;
 }
@@ -1832,7 +1843,7 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror)
     if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_stop ) )
     {
       // write restart output of last converged step before stopping
-      OutputStep(true);
+      Output(true);
 
       dserror("Newton unconverged in %d iterations", iter_);
       return 1;
