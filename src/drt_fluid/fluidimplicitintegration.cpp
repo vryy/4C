@@ -3412,6 +3412,9 @@ void FLD::FluidImplicitTimeInt::Output()
     // step number and time
     output_->NewStep(step_,time_);
 
+    // time step, especially necessary for adaptive dt
+    output_->WriteDouble("timestep",dta_);
+
     // velocity/pressure vector
     output_->WriteVector("velnp",velnp_);
     // (hydrodynamic) pressure
@@ -3419,7 +3422,10 @@ void FLD::FluidImplicitTimeInt::Output()
     output_->WriteVector("pressure", pressure);
 
     if(xwall_!=Teuchos::null)
-      output_->WriteVector("enrvelnp",xwall_->GetOutputVector(velnp_));
+    {
+      output_->WriteVector("xwall_enrvelnp",xwall_->GetOutputVector(velnp_));
+      output_->WriteVector("xwall_tauw",xwall_->GetTauwVector());
+    }
 
     // velocity/pressure at nodes for meshfree problems with non-interpolatory basis functions
     if(velatmeshfreenodes_!=Teuchos::null)
@@ -3528,6 +3534,11 @@ void FLD::FluidImplicitTimeInt::Output()
         output_->WriteVector("dispnm",dispnm_);
         output_->WriteVector("gridvn", gridvn_);
       }
+      if(xwall_!=Teuchos::null)
+      {
+        if (not write_wall_shear_stresses_)
+          output_->WriteVector("wss",stressmanager_->GetWallShearStresses(trueresidual_));
+      }
 
       // flow rate, flow volume and impedance in case of flow-dependent pressure bc
       if (nonlinearbc_)
@@ -3586,6 +3597,13 @@ void FLD::FluidImplicitTimeInt::Output()
     output_->WriteVector("accn", accn_);
     output_->WriteVector("veln", veln_);
     output_->WriteVector("velnm",velnm_);
+
+    if(xwall_!=Teuchos::null)
+    {
+      output_->WriteVector("xwall_tauw",xwall_->GetTauwVector());
+      if (not write_wall_shear_stresses_)
+        output_->WriteVector("wss",stressmanager_->GetWallShearStresses(trueresidual_));
+    }
 
     // flow rate, flow volume and impedance in case of flow-dependent pressure bc
     if (nonlinearbc_)
@@ -3763,6 +3781,8 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
+  dta_ = reader.ReadDouble("timestep");
+  dtp_ = dta_;
 
   reader.ReadVector(velnp_,"velnp");
   reader.ReadVector(veln_, "veln");
@@ -3781,6 +3801,10 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   {
     AVM3Preparation();
   }
+
+  if(xwall_ != Teuchos::null)
+    xwall_->ReadRestart(reader);
+
 
   if (alefluid_)
   {

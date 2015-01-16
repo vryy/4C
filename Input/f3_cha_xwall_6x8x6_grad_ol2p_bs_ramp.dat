@@ -32,7 +32,7 @@ CONVFORM                        convective
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 UPRES                           1
-RESTARTEVRY                     50000
+RESTARTEVRY                     1
 NUMSTEP                         5
 STEADYSTEP                      -1
 STARTFUNCNO                     1

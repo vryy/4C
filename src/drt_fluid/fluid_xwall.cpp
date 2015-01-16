@@ -33,6 +33,7 @@ Maintainer: Benjamin Krank
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid_turbulence/drt_transfer_turb_inflow.H"
+#include "../drt_io/io.H"
 
 #include <MLAPI_Workspace.h>
 #include <MLAPI_Aggregation.h>
@@ -284,6 +285,8 @@ void FLD::XWall::Setup()
     gpvecparxw_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->ElementColMap()),true));
     gpvecnormxw_->PutScalar((double)gp_norm_);
     gpvecparxw_->PutScalar((double)gp_par_);
+
+    restart_wss_=Teuchos::null;
   }
 
   return;
@@ -870,9 +873,12 @@ void FLD::XWall::SetupL2Projection()
 
   Teuchos::RCP<Epetra_Vector> newtauw = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
   //calculate wall stress
-  Teuchos::RCP<Epetra_Vector> wss ;//= fluid.CalcWallShearStresses();
-
-  if(((tauwcalctype_ == INPAR::FLUID::gradient_to_residual && step >= switch_step_) || (tauwcalctype_ != INPAR::FLUID::gradient_to_residual && step > 1)))
+  Teuchos::RCP<Epetra_Vector> wss ;
+  if(restart_wss_!=Teuchos::null)
+  {
+    wss=restart_wss_;
+  }
+  else if(((tauwcalctype_ == INPAR::FLUID::gradient_to_residual && step >= switch_step_) || (tauwcalctype_ != INPAR::FLUID::gradient_to_residual && step > 1)))
   {
     if(mystressmanager_==Teuchos::null)
       dserror("wssmanager not available in xwall");
@@ -949,6 +955,10 @@ void FLD::XWall::SetupL2Projection()
     std::cout << std::endl;
 
   CalcMK();
+
+  //destruct vector so that we don't use it next time
+  if(restart_wss_!=Teuchos::null)
+    restart_wss_=Teuchos::null;
 
   return;
 }
@@ -1468,5 +1478,20 @@ void FLD::XWall::AssembleOnesOnDiagonal(Teuchos::RCP<LINALG::SparseMatrix> Sep)
       }
     }
   }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Read Restart                                               bk 01/15 |
+ *----------------------------------------------------------------------*/
+void FLD::XWall::ReadRestart(IO::DiscretizationReader& reader)
+{
+  Teuchos::RCP<Epetra_Vector> tauw=Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()),true));
+  reader.ReadVector(tauw,"xwall_tauw");
+  LINALG::Export(*tauw,*tauw_);
+  LINALG::Export(*tauw,*tauwxwdis_);
+
+  restart_wss_=Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
+  reader.ReadVector(restart_wss_,"wss");
   return;
 }

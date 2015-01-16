@@ -32,6 +32,10 @@ namespace LINALG
   class Solver;
 }
 
+namespace IO
+{
+  class DiscretizationReader;
+}
 
 namespace FLD
 {
@@ -72,6 +76,15 @@ public:
   Teuchos::RCP<Epetra_Vector>   GetTauw();
 
   void AssembleOnesOnDiagonal(Teuchos::RCP<LINALG::SparseMatrix> Sep);
+
+  Teuchos::RCP<Epetra_Vector> GetTauwVector()
+      {
+        Teuchos::RCP<Epetra_Vector> tauw=Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()),true));
+        LINALG::Export(*tauw_,*tauw);
+        return tauw;
+      }
+
+  void ReadRestart(IO::DiscretizationReader& reader);
 protected:
 
   // set element params for xwall EnrichmentType, distributed for xwall discretization
@@ -219,6 +232,8 @@ private:
 
   Teuchos::RCP<Epetra_Vector> gpvecnormxw_;
   Teuchos::RCP<Epetra_Vector> gpvecparxw_;
+
+  Teuchos::RCP<Epetra_Vector> restart_wss_;
 
   Teuchos::RCP<TransferTurbulentInflowConditionNodal> turbulent_inflow_condition_;
 
