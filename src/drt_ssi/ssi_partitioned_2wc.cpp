@@ -265,7 +265,7 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
       printf("\n");
       printf("\n");
     }
-    dserror("The partitioned SSI solver did not converged in ITEMAX steps!");
+    dserror("The partitioned SSI solver did not converge in ITEMAX steps!");
   }
 
   return stopnonliniter;
@@ -428,7 +428,7 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::CalcOmega(double& omega, const
 
   double delhistnorm = 0.0;
   delhist_->Norm2(&delhistnorm);
-  if (delhistnorm <=1e-05)
+  if ( delhistnorm <=1e-05 and Comm().MyPID()==0 )
     std::cout<<"Warning: The structure increment is to small in order to use it for Aitken relaxation. Using the previous Omega instead!"<<std::endl;
 
   // calculate dot product
@@ -596,7 +596,7 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::CalcOmega(double& omega, const
   double delhistnorm = 0.0;
   delhist_->Norm2(&delhistnorm);
 
-  if (delhistnorm <=1e-05)
+  if (delhistnorm <=1e-05 and Comm().MyPID()==0 )
     std::cout<<"Warning: The scalar increment is to small in order to use it for Aitken relaxation. Using the previous omega instead!"<<std::endl;
 
   // calculate dot product

@@ -570,8 +570,17 @@ void MAT::GrowthScdAC::Evaluate
 /*----------------------------------------------------------------------*
  |  Calculate the volumetric growth parameter                 Thon 11/14|
  *----------------------------------------------------------------------*/
-double MAT::GrowthScdAC::CalculateTheta()
+double MAT::GrowthScdAC::CalculateTheta( const double J )
 {
-  double theta = Parameter()->growthlaw_->CalculateTheta( concentrations_ );
+  double theta = Parameter()->growthlaw_->CalculateTheta( concentrations_ , J );
+
   return theta;
+}
+
+/*--------------------------------------------------------------------------------*
+ |  Calculate the volumetric growth derived w.r.t. chauy-green strains  Thon 01/15|
+ *--------------------------------------------------------------------------------*/
+void MAT::GrowthScdAC::CalculateThetaDerivC( LINALG::Matrix<3,3>& dThetadC , const LINALG::Matrix<3,3>& C , const double J )
+{
+  Parameter()->growthlaw_->CalculateThetaDerivC( dThetadC , C , concentrations_ , J );
 }

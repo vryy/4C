@@ -74,7 +74,17 @@ namespace MAT
     /// Calculate Theta from the given mean concentrations
     virtual double CalculateTheta
     (
-        Teuchos::RCP<std::vector<double> > concentrations
+        Teuchos::RCP<std::vector<double> > concentrations,
+        const double J
+    ) =0;
+
+    /// Calculate derivative of Theta w.r.t right  cauchy-green strains
+    virtual void CalculateThetaDerivC
+    (
+        LINALG::Matrix<3,3>& dThetadC,
+        const LINALG::Matrix<3,3>& C, ///< right cauchy-green strains
+        Teuchos::RCP<std::vector<double> > concentrations, ///< mean concentrations
+        const double J ///< det(F)
     ) =0;
 
     /// material type
@@ -175,8 +185,18 @@ namespace MAT
     /// Calculate Theta from the given mean concentrations
     virtual double CalculateTheta
     (
-        Teuchos::RCP<std::vector<double> > concentrations
+        Teuchos::RCP<std::vector<double> > concentrations,
+        const double J
     ) {dserror("In case of GrowthLawLinear one doesn't have to compute this!"); return -1.0; };
+
+    /// Calculate derivative of Theta w.r.t right cauchy-green strains
+    virtual void CalculateThetaDerivC
+    (
+        LINALG::Matrix<3,3>& dThetadC,
+        const LINALG::Matrix<3,3>& C, ///< right cauchy-green strains
+        Teuchos::RCP<std::vector<double> > concentrations, ///< mean concentrations
+        const double J ///< det(F)
+    ) {dserror("In case of GrowthLawLinear one doesn't have to compute this!"); };
 
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_linear; };
@@ -264,8 +284,18 @@ namespace MAT
     /// Calculate Theta from the given mean concentrations
     virtual double CalculateTheta
     (
-        Teuchos::RCP<std::vector<double> > concentrations
+        Teuchos::RCP<std::vector<double> > concentrations,
+        const double J
     ) {dserror("In case of GrowthLawExp one doesn't have to compute this!"); return -1.0; };
+
+    /// Calculate derivative of Theta w.r.t right cauchy-green strains
+        virtual void CalculateThetaDerivC
+        (
+            LINALG::Matrix<3,3>& dThetadC,
+            const LINALG::Matrix<3,3>& C, ///< right cauchy-green strains
+            Teuchos::RCP<std::vector<double> > concentrations, ///< mean concentrations
+            const double J ///< det(F)
+        ) {dserror("In case of GrowthLawExp one doesn't have to compute this!"); };
 
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_exponential; };
@@ -359,7 +389,17 @@ class GrowthLawAC: public GrowthLaw
     /// Calculate Theta from the given mean concentrations
     virtual double CalculateTheta
     (
-        Teuchos::RCP<std::vector<double> > concentrations //pointer to a vector containing element wise mean concentrations
+        Teuchos::RCP<std::vector<double> > concentrations, //pointer to a vector containing element wise mean concentrations
+        const double J
+    );
+
+    /// Calculate derivative of Theta w.r.t right cauchy-green strain
+    virtual void CalculateThetaDerivC
+    (
+        LINALG::Matrix<3,3>& dThetadC,
+        const LINALG::Matrix<3,3>& C, ///< right cauchy-green strains
+        Teuchos::RCP<std::vector<double> > concentrations, ///< mean concentrations
+        const double J ///< det(F)
     );
 
     /// material type

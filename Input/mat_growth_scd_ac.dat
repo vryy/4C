@@ -102,7 +102,7 @@ MASSLIN                         Standard
 ITERNORM                        L2
 K_DAMP                          0.5
 LOADLIN                         no
-MAXITER                         50
+MAXITER                         100
 MAXTIME                         100.0
 MINITER                         0
 M_DAMP                          0.25
@@ -133,14 +133,17 @@ UZAWATOL                        1e-08
 THETA                           0.666666
 --------------------------------------------------------SSI CONTROL
 COUPALGO                        ssi_IterStagg
-ITEMAX                          20
+ITEMAX                          30
 MAXTIME                         100.0
-NUMSTEP                         20
+NUMSTEP                         3
 RESTARTEVRY                     1
 TIMESTEP                        0.05
 UPRES                           1
 --------------------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1e-08
+STARTOMEGA                      0.9
+MAXOMEGA                        1.2
+MINOMEGA                        0.7
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 AZBDIAG                         0
@@ -179,8 +182,13 @@ ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_GrowthVolumetricScd GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 100.0 TOL 1.0E-10
-MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.0001
-MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3
+
+MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0e-3
+MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0 //C1 2.2116e4 C2 0.0 C3 6.0901e5 my parameter fit...
+MAT 32 ELAST_VolOgden KAPPA 1.0 BETA 1.0 //KAPPA 2.2116e6 BETA -2.0
+
+//MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.0001
+//MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3
 MAT 4 MAT_GrowthAC SCALAR1 2 ALPHA 2.0
 MAT 5 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 51 52 NUMREAC 1 REACIDS 53 END
 MAT 51 MAT_scatra DIFFUSIVITY 0.0000001
@@ -189,14 +197,10 @@ MAT 53 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_m
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 ----------------------------------------------------------------------CURVE1
-CURVE 1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.1 FACTOR 0. 1.
-CURVE 1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.1 100.0 FACTOR 1. 1.
+CURVE 1 on EXPR FUNC ((1-cos(2*pi*t))*0.5) t1 0.00 t2 1.0
+CURVE 1 on EXPR FUNC (1.0) t1 1.00 t2 1000.0
 ----------------------------------------------------------------------CURVE2
-CURVE 2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0. 1.
-CURVE 2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.5 100.0 FACTOR 1. 1.
 ----------------------------------------------------------------------CURVE3
-// CURVE 3 on EXPR FUNC ((1-cos(2*pi*t))*0.5) t1 0.00 t2 1.0
-// CURVE 3 on EXPR FUNC (0.0) t1 1.00 t2 1000.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
 FUNCT 1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION    1.0 //(2*y) //y+0.2
@@ -205,15 +209,15 @@ FUNCT 1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION    0.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 2.00762421330760749e-01 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE 2.00762421330760193e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 2.19231063833799061e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 200 QUANTITY phi VALUE 2.19230544691078277e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE 3.62218614269337269e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 200 QUANTITY phi2 VALUE 3.62217644316147780e-01 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 7.47008264455260168e-02 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE 7.47008264455253784e-02 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 7.21178235223664643e-01 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 200 QUANTITY phi VALUE 7.21178556323417652e-01 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE 9.53521845006812391e-02 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 200 QUANTITY phi2 VALUE 9.53522297290898130e-02 TOLERANCE 1e-7
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
-NDLINE                          8
+NDLINE                          9
 NDSURF                          2
 NDVOL                           1
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
@@ -221,9 +225,9 @@ DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
-// right surface
-// E 2 - 1 0 1 0 0 0 0 0.0 0.05 0.0 0.0 0.0 0.0 0 1 0 0 0 0 Live Mid
+// DSURF                           0
+// // left surface curve  x y z 0 0 0 Val1 Val2 Val3 0 0 0 Live Mid/orthopreassure Mid
+// E 1 - 1 1 1 1 0 0 0 10.0 1.0 1.0 0 0 0 Live Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
@@ -250,30 +254,32 @@ E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
 // // back lower right
 // E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
-// -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DLINE                           8
-// // right upper
-// E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
-// // right lower
-// E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
-// // right back
-// E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
-// // right front
-// E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
-// // left upper
-// E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// // left lower
-// E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// // left back
-// E 7 - NUMDOF 3 ONOFF 1 1 00 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// // left front
-// E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE                           3
+// // // right upper
+// // E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // // right lower
+// // E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // // right back
+// // E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // // right front
+// // E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // // left upper
+// // E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// left lower
+E 6 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// left back
+E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// // // left front
+// // E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// left right
+E 9 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           0
-// left surface
-//E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-// // right surface
-// E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none none none FUNCT 0 0 0
+//DSURF                           1
+// // left surface
+// E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// right surface
+//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DVOL                            0
 // ------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
@@ -347,6 +353,12 @@ NODE 185 DLINE 8
 NODE 187 DLINE 8
 NODE 189 DLINE 8
 NODE 191 DLINE 8
+NODE 21 DLINE 9
+NODE 22 DLINE 9
+NODE 35 DLINE 9
+NODE 47 DLINE 9
+NODE 59 DLINE 9
+NODE 71 DLINE 9
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

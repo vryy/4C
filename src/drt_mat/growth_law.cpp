@@ -396,16 +396,41 @@ MAT::GrowthLawAC::GrowthLawAC(MAT::PAR::GrowthLawAC* params)
  *----------------------------------------------------------------------*/
 double MAT::GrowthLawAC::CalculateTheta
 (
-    Teuchos::RCP<std::vector<double> > concentrations //pointer to a vector containing element wise mean concentrations
+    Teuchos::RCP<std::vector<double> > concentrations, //pointer to a vector containing element wise mean concentrations
+    const double J
 )
 {
   int Sc1 = Parameter()->Sc1_;
   double alpha= Parameter()->alpha_;
-  int Sc2 = Parameter()->Sc2_; //if no second scalar is choosen to induce growth, this points out the first scalar field
-  double beta= Parameter()->beta_; //if no second scalar is choosen to induce growth, beta is zero and hence has no influence on growth
+  int Sc2 = Parameter()->Sc2_; //if no second scalar is chosen to induce growth, this points out the first scalar field
+  double beta= Parameter()->beta_; //if no second scalar is chosen to induce growth, beta is zero and hence has no influence on growth
 
-
-  double theta = pow(1+ alpha * concentrations->at(Sc1-1) + beta * concentrations->at(Sc2-1),0.33333333333333333);
+  double theta = pow(1+ alpha * concentrations->at(Sc1-1) * J + beta * concentrations->at(Sc2-1) * J ,0.33333333333333333);
 
   return theta;
 }
+
+/*----------------------------------------------------------------------*
+ | Calculate derivative of Theta w.r.t right cauchy-green strain   thon 01/15|
+ *----------------------------------------------------------------------*/
+void MAT::GrowthLawAC::CalculateThetaDerivC
+(
+    LINALG::Matrix<3,3>& dThetadC,
+    const LINALG::Matrix<3,3>& C, ///< cauchy-green strains
+    Teuchos::RCP<std::vector<double> > concentrations, ///< mean concentrations
+    const double J ///< det(F)
+)
+{
+  // dTheta/dC = 1/6 * \alpha*c(i)*J * (1+\alpha*c(i)*J)^(-2/3) * C^(-1)
+  int Sc1 = Parameter()->Sc1_;
+  double alpha= Parameter()->alpha_;
+  int Sc2 = Parameter()->Sc2_; //if no second scalar is chosen to induce growth, this points out the first scalar field
+  double beta= Parameter()->beta_; //if no second scalar is chosen to induce growth, beta is zero and hence has no influence on growth
+
+  double tmp1 = (alpha*concentrations->at(Sc1-1) + beta * concentrations->at(Sc2-1))*J;
+  double tmp2 = tmp1/6*pow(1+tmp1,-0.66666666666666666);
+
+  dThetadC.Invert(C);
+  dThetadC.Scale(tmp2);
+}
+

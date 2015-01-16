@@ -343,13 +343,16 @@ namespace MAT
     /// Return quick accessible material parameter data
     MAT::PAR::GrowthScd* Parameter() const { return paramsScdAC_; }
 
-    ///Return concentration
-    //double GetConcentration() const {return concentration_;}
-
   protected:
 
-    //Calculate the volumetric growth parameter
-    double CalculateTheta();
+    ///Calculate the volumetric growth parameter
+    double CalculateTheta( const double J );
+
+    ///Calculate the volumetric growth derived w.r.t. chauy-green strains
+    void CalculateThetaDerivC( LINALG::Matrix<3,3>& dThetadC ,
+                               const LINALG::Matrix<3,3>& C, ///< cauchy-green strain
+                               const double J ///< det(F)
+                               );
 
     /// pointer to mean concentrations at present timestep
     Teuchos::RCP<std::vector<double> > concentrations_;

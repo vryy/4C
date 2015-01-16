@@ -506,7 +506,7 @@ bool FS3I::ACFSI::ScatraConvergenceCheck(const int itnum)
     if (Comm().MyPID()==0)
     {
       printf("+---------------------------------------------------------------+\n");
-      printf("|    scalar-scalar field did not converged in itemax steps!     |\n");
+      printf("|    scalar-scalar field did not converge in itemax steps!     |\n");
       printf("+---------------------------------------------------------------+\n");
     }
     // yes, we stop!
@@ -594,7 +594,7 @@ bool FS3I::ACFSI::PartFs3iConvergenceCkeck( const int itnum)
                  "               OUTER ITERATION STEP NOT CONVERGED IN ITEMAX STEPS"
                  "\n***********************************************************************************\n"<<std::endl;
     }
-    dserror("The partitioned FS3I solver did not converged in ITEMAX steps!");
+    dserror("The partitioned FS3I solver did not converge in ITEMAX steps!");
   }
 
   return stopnonliniter;

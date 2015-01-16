@@ -381,11 +381,17 @@ namespace MAT
                           const int eleGID);
 
   protected:
-    //
-    virtual double CalculateTheta()
+    ///Calculate the volumetric growth parameter
+    virtual double CalculateTheta( const double J )
       {
       dserror("This function should be overloaded in class GrowthScdAC!");
       return -1.0;
+      };
+
+    ///Calculate the volumetric growth derived w.r.t. chauy-green strains
+    virtual void CalculateThetaDerivC( LINALG::Matrix<3,3>& dThetadC , const LINALG::Matrix<3,3>& C , const double J )
+      {
+      dserror("This function should be overloaded in class GrowthScdAC!");
       };
 
   private:

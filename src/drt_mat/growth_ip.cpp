@@ -943,15 +943,16 @@ MAT::GrowthBasic::GrowthBasic(MAT::PAR::Growth* params)
  |  Evaluate Material                                         Thon 11/14|
  *----------------------------------------------------------------------*
  The deformation gradient is decomposed into an elastic and growth part:
-     F = Felastic * F_g
+     F = F_elastic * F_g
  Only the elastic part contributes to the stresses, thus we have to
  compute the elastic Cauchy Green Tensor Cdach and elastic 2PK stress Sdach.
+ For more details see S. Tinkle's PDF "Theory of Growth"
  */
 void MAT::GrowthBasic::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
-                            const LINALG::Matrix<6, 1>* glstrain,
+                            const LINALG::Matrix<6, 1>* glstrain, ///<green lagrange strain
                             Teuchos::ParameterList& params,
-                            LINALG::Matrix<6, 1>* stress,
-                            LINALG::Matrix<6, 6>* cmat,
+                            LINALG::Matrix<6, 1>* stress, ///< 2nd PK-stress
+                            LINALG::Matrix<6, 6>* cmat, ///< material stiffness matrix dS/dE
                             const int eleGID)
 {
   // get gauss point number
@@ -977,12 +978,15 @@ void MAT::GrowthBasic::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
   if (output)
     time = endtime + dt;
 
-  if (time > starttime + eps && time <= endtime + eps)
+  if (time > starttime + eps && time <= endtime + eps) //iff growth is active
   {
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelastic(true);
     LINALG::Matrix<NUM_STRESS_3D, 1> Sdach(true);
 
-    double theta = CalculateTheta();
+    //J = det(F);
+    double J = defgrd->Determinant();
+    double theta = CalculateTheta( J );
+
     // store theta
     theta_->at(gp) = theta;
 
@@ -990,6 +994,8 @@ void MAT::GrowthBasic::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
     if (time < starttime + dt - eps)
       dt = time - starttime;
 
+    //--------------------------------------------------------------------------------------
+    // call material law with elastic part of defgr and elastic part of glstrain
     //--------------------------------------------------------------------------------------
     // build identity tensor I
     LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
@@ -1016,20 +1022,51 @@ void MAT::GrowthBasic::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
                           &glstraindach,
                           params,
                           &Sdach,
-                          &cmatelastic,
+                          &cmatelastic, //is actually cmat_elastic_dach
                           eleGID);
 
+    //--------------------------------------------------------------------------------------
+    // calculate stress
+    //--------------------------------------------------------------------------------------
     // 2PK stress S = F_g^-1 Sdach F_g^-T
-    //LINALG::Matrix<NUM_STRESS_3D, 1> S(Sdach);
-    Sdach.Scale(1.0 / theta / theta);
-    *stress = Sdach;
+    LINALG::Matrix<NUM_STRESS_3D, 1> S(Sdach);
+    S.Scale(1.0 / theta / theta);
+    *stress = S;
 
-    // constitutive matrix including growth
+    //--------------------------------------------------------------------------------------
+    // calculate material stiffness matrix = dS/dE
+    //--------------------------------------------------------------------------------------
+    // constitutive matrix including growth cmat_elastic = F_g^-1 F_g^-1 cmat_elastic_dach F_g^-T F_g^-T
     cmatelastic.Scale(1.0 / theta / theta / theta / theta);
-    *cmat=cmatelastic;
 
-    //std::cout.precision(10);
-    //std::cout << gp << ": theta " << theta << " thetaold " << thetaold << " residual " << residual << std::endl;
+    //we need the cauchy-green strain in matrix form, since we want to invert it later. So we calculate it again..
+    LINALG::Matrix<3, 3> C2(true);
+    C2.MultiplyTN(*defgrd,*defgrd);
+
+    // linearization of growth law
+    LINALG::Matrix<3, 3> dThetadC(true);
+    CalculateThetaDerivC( dThetadC, C2 , J );
+
+    //transform dThetadC into a vector
+    LINALG::Matrix<6, 1> dThetadCvec(true);
+    dThetadCvec(0)=dThetadC(0,0);
+    dThetadCvec(1)=dThetadC(1,1);
+    dThetadCvec(2)=dThetadC(2,2);
+    dThetadCvec(3)=2*dThetadC(0,1);
+    dThetadCvec(4)=2*dThetadC(1,2);
+    dThetadCvec(5)=2*dThetadC(0,2);
+
+    for (int i = 0; i < 6; i++)
+    {
+      double cmatelasCi =   cmatelastic(i, 0) * C(0) + cmatelastic(i, 1) * C(1)
+                          + cmatelastic(i, 2) * C(2) + cmatelastic(i, 3) * C(3)
+                          + cmatelastic(i, 4) * C(4) + cmatelastic(i, 5) * C(5);
+
+      for (int j = 0; j < 6; j++)
+      {
+        (*cmat)(i, j) =  cmatelastic(i, j) -2.0/theta *(2.0 * S(i) + cmatelasCi) * dThetadCvec(j);
+      }
+    }
 
   }
   else if (time > endtime + eps)
