@@ -2318,14 +2318,14 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, Teuc
       std::pair<double,double> closestpoints(std::make_pair(0.0,0.0));
       bool etaset=false;
       intersection = BEAMCONTACT::IntersectArbitraryCylinders(r1_a,r1_b,r2_a,r2_b,distancelimit,closestpoints,etaset);
-      if(intersection)
-        std::cout<<"===============WindSchief: gefunden!"<<std::endl;
+//      if(intersection)
+//        std::cout<<"===============WindSchief: gefunden!"<<std::endl;
     }
     else // parallel case
     {
       intersection = BEAMCONTACT::IntersectParallelCylinders(r1_a,r1_b,r2_a,r2_b,distancelimit);
-      if(intersection)
-        std::cout<<"===============Parallel: gefunden!"<<std::endl;
+//      if(intersection)
+//        std::cout<<"===============Parallel: gefunden!"<<std::endl;
     }
   }
   return intersection;
