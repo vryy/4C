@@ -138,13 +138,6 @@ void PARTICLE::TimInt::Init()
    // accelerations A_{n}
    acc_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
-   // displacements D_{n+1} at t_{n+1}
-   disn_ = LINALG::CreateVector(*DofRowMapView(), true);
-   // velocities V_{n+1} at t_{n+1}
-   veln_ = LINALG::CreateVector(*DofRowMapView(), true);
-   // accelerations A_{n+1} at t_{n+1}
-   accn_ = LINALG::CreateVector(*DofRowMapView(), true);
-
    // create empty interface force vector
    fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
    // radius of each particle
@@ -154,6 +147,13 @@ void PARTICLE::TimInt::Init()
 
    // set initial fields
    SetInitialFields();
+
+   // displacements D_{n+1} at t_{n+1}
+   disn_ = Teuchos::rcp(new Epetra_Vector(*(*dis_)(0)));
+   // velocities V_{n+1} at t_{n+1}
+   veln_ = Teuchos::rcp(new Epetra_Vector(*(*vel_)(0)));
+   // accelerations A_{n+1} at t_{n+1}
+   accn_ = Teuchos::rcp(new Epetra_Vector(*(*acc_)(0)));
 
   return;
 }
@@ -240,6 +240,15 @@ void PARTICLE::TimInt::SetInitialFields()
   localdofs.push_back(1);
   localdofs.push_back(2);
   discret_->EvaluateInitialField(field,(*vel_)(0),localdofs);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* prepare time step and apply dirichlet boundary conditions */
+void PARTICLE::TimInt::PrepareTimeStep()
+{
+  ApplyDirichletBC(timen_, disn_, veln_, accn_, true);
 
   return;
 }

@@ -120,6 +120,9 @@ namespace PARTICLE
       Teuchos::RCP<Epetra_Vector> ang_acc
       );
 
+    //! Prepare time step
+    virtual void PrepareTimeStep();
+
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;
 

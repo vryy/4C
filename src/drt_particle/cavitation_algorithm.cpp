@@ -385,8 +385,10 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   fluiddis_->SetState("veln",fluid_->Veln());
   fluiddis_->SetState("velnm",fluid_->Velnm());
 
-  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
-  Teuchos::RCP<const Epetra_Vector> bubblevel = particles_->Veln();
+  // state at n+1 contains already dbc values due to PrepareTimeStep(), otherwise n = n+1
+  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispnp();
+  Teuchos::RCP<const Epetra_Vector> bubblevel = particles_->Velnp();
+  Teuchos::RCP<const Epetra_Vector> bubbleacc = particles_->Accnp();
   Teuchos::RCP<const Epetra_Vector> bubbleradius = particles_->Radius();
 
   // vectors to be filled with forces,
@@ -422,6 +424,10 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 
   // bubble density
   double rho_b = particles_->ParticleDensity();
+
+  // check whether dbc are specified for particles at all
+  Teuchos::RCP<const Epetra_Map> dbcmap = particles_->GetDBCMapExtractor()->CondMap();
+  const bool haveparticledbc = dbcmap->NumGlobalElements();
 
   // define element matrices and vectors
   Epetra_SerialDenseMatrix elematrix1;
@@ -677,11 +683,40 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) +         coeff3          * Du/Dt }{          coeff4          }
     const double c_VM = 0.5;
     const double coeff3 = c_VM * rho_l * vol_b;
-    const double coeff4 = 1.0 + c_VM * rho_l / rho_b;
-    const double invcoeff4 = 1.0 / coeff4;
-
     static LINALG::Matrix<3,1> bubbleforce(false);
-    bubbleforce.Update(invcoeff4, sumforces, coeff3*invcoeff4, Du_Dt);
+    bool isdbc = false;
+    if(haveparticledbc)
+    {
+      isdbc = dbcmap->MyGID(lm_b[0]);
+      bool isdbc1 = dbcmap->MyGID(lm_b[1]);
+      bool isdbc2 = dbcmap->MyGID(lm_b[2]);
+      if(isdbc != isdbc1 || isdbc1 != isdbc2)
+        dserror("one particle can only constrain all or none of the dofs with dbc");
+    }
+
+    if(!isdbc) // free flying bubble
+    {
+      /*------------------------------------------------------------------*/
+      //// Note: implicit treatment of bubble acceleration in added mass, other forces explicit
+      //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) + c_VM * rho_l * volume_b * Du/Dt }{ 1 + c_VM * rho_l / rho_b }
+      //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) +         coeff3          * Du/Dt }{          coeff4          }
+      const double coeff4 = 1.0 + c_VM * rho_l / rho_b;
+      const double invcoeff4 = 1.0 / coeff4;
+
+      bubbleforce.Update(invcoeff4, sumforces, coeff3*invcoeff4, Du_Dt);
+      /*------------------------------------------------------------------*/
+    }
+    else // dbc controlled bubble
+    {
+      // extract dbc accelerations
+      static LINALG::Matrix<3,1> Dv_Dt(false);
+      for (int d=0; d<dim; ++d)
+        Dv_Dt(d) = (*bubbleacc)[posx+d];
+
+      // compute bubble force
+      const double m_b = vol_b * rho_b;
+      bubbleforce.Update(m_b, Dv_Dt);
+    }
     /*------------------------------------------------------------------*/
 
     //--------------------------------------------------------------------

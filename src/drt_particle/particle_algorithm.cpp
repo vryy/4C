@@ -240,6 +240,9 @@ void PARTICLE::Algorithm::PrepareTimeStep()
   IncrementTimeAndStep();
   PrintHeader();
 
+  // apply dirichlet boundary conditions
+  particles_->PrepareTimeStep();
+
   if(structure_ != Teuchos::null)
     structure_->PrepareTimeStep();
 

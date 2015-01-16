@@ -8,7 +8,10 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-single air bubble rising due to buoyancy in water
+one air bubble rising due to buoyancy in water
+second bubble is Dirichlet driven on a cosine curve
+detailed bubble force computation including the velocity gradient for
+calculating the stress term
 walls with slip condition and Krylov projection for pressure
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      500
@@ -143,8 +146,7 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 MAT 1 MAT_fluid DYNVISCOSITY 1.0e-3 DENSITY 1000.0 GAMMA 1.0
 MAT 2 MAT_Particle DENSITY 1.3 INITRADIUS 0.002 NUE 0.0 YOUNG 1.0
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (0.5*(1-cos(pi*t/0.1))) t1 0.0 t2 0.1
-CURVE1 on EXPR FUNC 1 t1 0.1 t2 1000.0
+CURVE1 on EXPR FUNC 0.05+0.05*(1.0-cos(t*pi/0.005))                              t1 0.0 t2 0.01
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
@@ -157,25 +159,35 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0-9810.0*x  // p_init = \rho_fl * g *
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 147 QUANTITY velx VALUE  1.04289047001238903e-05 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 147 QUANTITY vely VALUE -7.01353704419023087e-06 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 147 QUANTITY velz VALUE  7.01353694195870569e-06 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 147 QUANTITY pressure VALUE  5.88573602973523293e+02 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 202 QUANTITY velx VALUE  1.91756035436690215e-04 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 202 QUANTITY vely VALUE -1.32402070963096204e-06 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 202 QUANTITY velz VALUE  1.32402064578447933e-06 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 202 QUANTITY pressure VALUE  4.90459981746087578e+02 TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -4.90869167612107415e-02 TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-13
-PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE 5.63569499728925773e-11 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 1 QUANTITY velx VALUE  1.72910713652502684e-01 TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 1 QUANTITY vely VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-13
-PARTICLE DIS particle NODE 1 QUANTITY velz VALUE  1.69601560752903676e-08 TOLERANCE 1.000e-12
+FLUID DIS fluid NODE 147 QUANTITY velx VALUE  3.94988416264320261e-05 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 147 QUANTITY vely VALUE -8.37331612136762276e-06 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 147 QUANTITY velz VALUE  8.37331600934305840e-06 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 147 QUANTITY pressure VALUE  5.86294027370493723e+02 TOLERANCE 1.0e-7
+FLUID DIS fluid NODE 202 QUANTITY velx VALUE  2.34897709184778933e-04 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 202 QUANTITY vely VALUE -1.95338143534205374e-05 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 202 QUANTITY velz VALUE  1.95338149701919723e-05 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 202 QUANTITY pressure VALUE  4.88298140826030419e+02 TOLERANCE 1.0e-7
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -4.90856496992665911e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13
+PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE  1.75495014226131016e-11 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY velx VALUE  1.73064937065700780e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY vely VALUE 0.0 TOLERANCE 1.0e-13
+PARTICLE DIS particle NODE 1 QUANTITY velz VALUE  2.60438296548179862e-10 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY dispx VALUE  2.5e-03 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13
+PARTICLE DIS particle NODE 2 QUANTITY dispz VALUE  0.0 TOLERANCE 1.0e-13
+PARTICLE DIS particle NODE 2 QUANTITY velx VALUE 0.0 TOLERANCE 1.0e-13
+PARTICLE DIS particle NODE 2 QUANTITY vely VALUE 0.0 TOLERANCE 1.0e-13
+PARTICLE DIS particle NODE 2 QUANTITY velz VALUE  0.0 TOLERANCE 1.0e-13
 ----------------------------------------------------------DESIGN DESCRIPTION
+NDPARTICLE                      1
 NDPOINT                         8
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
+-------------------------------------------DESIGN PARTICLE DIRICH CONDITIONS
+DPARTICLE  1
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 5.0e-2 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 //                              point_left_top_front
@@ -242,6 +254,8 @@ E 1 - none 1 0 0 0 0 0 -9.81 0.0 0.0 0.0 0.0 0.0 Dead
 DVOL                            1
 //                              volume
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
+-----------------------------------------------------DPARTICLE-NODE TOPOLOGY
+NODE 2 DPARTICLE 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 62 DNODE 1
 NODE 1 DNODE 2
@@ -2476,6 +2490,7 @@ NODE 754 COORD 1.0000000000000001e-01 2.5000000000000001e-02 -4.9999999999999975
 NODE 755 COORD 1.0000000000000001e-01 2.5000000000000001e-02 -1.4999999999999999e-02
 NODE 756 COORD 1.0000000000000001e-01 2.5000000000000001e-02 -2.5000000000000001e-02
 PARTICLE 1 COORD -5.0000000000000000e-02 0.0000000000000000e+00 0.0000000000000000e+00
+PARTICLE 2 COORD 2.50000000000000000e-03 0.0000000000000000e+00 0.0000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
 --------------------------------------------------------------FLUID ELEMENTS
 1 FLUID3 HEX8 1 2 3 4 5 6 7 8 MAT 1 NA Euler GP 2 2 2

@@ -38,6 +38,11 @@ namespace DRT
   class ResultTest;
 }
 
+namespace LINALG
+{
+  class MapExtractor;
+}
+
 namespace IO
 {
   class DiscretizationWriter;
@@ -67,6 +72,9 @@ namespace ADAPTER
 
     //! Equilibrate the initial state by identifying the consistent initial accelerations
     virtual void DetermineMassDampConsistAccel() = 0;
+
+    /// start new time step
+    virtual void PrepareTimeStep() = 0;
 
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;
@@ -111,6 +119,9 @@ namespace ADAPTER
 
     //! Access output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
+
+    //! Return MapExtractor for Dirichlet boundary conditions
+    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
     //! Read restart values
     virtual void ReadRestart(const int step) = 0;
