@@ -60,7 +60,7 @@ void ADAPTER::XFluidFSI::Init()
   // cast fluid to fluidimplicit
   xfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid_);
   if (xfluid_ == Teuchos::null)
-    dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
+    dserror("Failed to cast ADAPTER::Fluid to FLD::XFluid.");
 
   structinterface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
   interface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
