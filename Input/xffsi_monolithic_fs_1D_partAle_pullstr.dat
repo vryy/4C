@@ -112,7 +112,7 @@ DSURF                           2
 E 1 - 1
 // str fsi
 E 4 - 1
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
+--------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF                           1
 //                              xfem
 E 2 - 1

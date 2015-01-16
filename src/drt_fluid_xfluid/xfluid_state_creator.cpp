@@ -209,13 +209,7 @@ void FLD::XFluidStateCreator::CreateNewCutState(
 
   //--------------------------------------------------------------------------------------
   // performs the "CUT"
-
-  // Has to be set to true in case of two-phase flow
-  //TODO: set this flag independent for level-set and mesh dependent on the application
-  // add this parameter to SetOptions
-  bool include_inner = false;
-
-  wizard->Cut(include_inner);
+  wizard->Cut(include_inner_);
   //--------------------------------------------------------------------------------------
 
 

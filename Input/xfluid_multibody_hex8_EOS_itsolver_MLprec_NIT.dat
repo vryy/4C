@@ -223,10 +223,7 @@ E 1 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 E 2 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 E 3 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 E 4 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-// DOBJECT FSI_ID FIELD MESH FLAG
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+-----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
 DSURF                           8
 E 22 - 1 structure conforming
@@ -237,9 +234,6 @@ E 28 - 1 structure conforming
 E 29 - 1 structure conforming
 E 30 - 1 structure conforming
 E 31 - 1 structure conforming
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-// DOBJECT COUPLING BCFLUID
-DLINE                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 5561 DNODE 1
 NODE 7217 DNODE 2

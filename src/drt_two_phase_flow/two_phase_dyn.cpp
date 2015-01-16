@@ -22,6 +22,7 @@ Maintainer: Magnus Winter
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
+#include "../drt_lib/drt_discret_xfem.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include <Epetra_Time.h>
@@ -200,10 +201,11 @@ void fluid_xfem_ls_drt()
    DRT::Problem* problem = DRT::Problem::Instance();
 
    // access fluid and (typically empty) scatra discretization
-   Teuchos::RCP<DRT::Discretization> fluiddis  = problem->GetDis("fluid");
-   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
-
+   Teuchos::RCP<DRT::DiscretizationXFEM> fluiddis =
+       Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("fluid"), true);
    fluiddis->FillComplete();
+
+   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
 
 //   access parameter for two phase flow
    const Teuchos::ParameterList& xdyn = problem->XFEMGeneralParams();
@@ -213,7 +215,7 @@ void fluid_xfem_ls_drt()
    int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
    fluiddis->ReplaceDofSet(maxdofset,true);
-   fluiddis->FillComplete();
+   fluiddis->InitialFillComplete();
 
    // access parameter for levelset (Not needed as of yet)
    //const Teuchos::ParameterList& levelsetcontrol = problem->LevelSetControl();

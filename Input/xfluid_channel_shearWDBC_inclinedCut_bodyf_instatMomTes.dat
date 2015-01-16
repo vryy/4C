@@ -260,7 +260,7 @@ DSURF                           0
 DVOL                            0
 ----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
 DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
+-----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF                           6
 E 7 - 1

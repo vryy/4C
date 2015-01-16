@@ -431,6 +431,20 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
   return Teuchos::rcp(nit);
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+Teuchos::RCP<HybridLMInterface<distype> > HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
+  bool  is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+)
+{
+  HybridLMInterface * hybridlm = NULL;
+  typedef HybridLMCoupling<distype,DRT::Element::dis_none,3> HybridLMCouplType;
+  hybridlm = new HybridLMCouplType(is_viscAdjointSymmetric);
+
+  return Teuchos::rcp(hybridlm);
+}
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>

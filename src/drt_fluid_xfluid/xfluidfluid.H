@@ -57,6 +57,7 @@ namespace IO
 
 namespace XFEM
 {
+  class ConditionManager;
   class XFEMDofSet;
   class XFluidFluidTimeIntegration;
   class XFEM_EdgeStab;
@@ -668,6 +669,16 @@ namespace FLD
     double  dtele_;
     double  dtfilter_;
     double  dtsolve_;
+
+    //--------------------------------------------------------------------
+
+    /// object to handle the different types of XFEM boundary and interface coupling conditions
+    Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
+
+    //--------------------------------------------------------------------
+
+    bool include_inner_;
+
 
     /// fluid state (cut-dependent) at time n+1
     Teuchos::RCP<FLD::XFluidFluidState> state_;

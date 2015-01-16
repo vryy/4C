@@ -17,6 +17,8 @@ Maintainer: Martin Kronbichler
 #include "drt_validconditions.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 #include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/inpar_xfem.H"
+
 
 
 /*----------------------------------------------------------------------*/
@@ -1930,6 +1932,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::XFEMCoupling,
                                          true,
                                          DRT::Condition::Surface));
+
   Teuchos::RCP<ConditionDefinition> movingfluid =
         Teuchos::rcp(new ConditionDefinition("DESIGN MOVING FLUID VOL CONDITIONS",
                                              "MovingFluid",
@@ -1966,6 +1969,253 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(fluidfluidcoupling);
   condlist.push_back(movingfluid);
   condlist.push_back(ALEfluidcoupling);
+
+
+  /*--------------------------------------------------------------------*/
+  // XFEM coupling conditions
+
+  //*----------------*/
+  // Levelset based Weak Dirichlet conditions
+
+  Teuchos::RCP<ConditionDefinition> xfem_levelset_wdbc =
+      Teuchos::rcp(new ConditionDefinition(
+          "DESIGN XFEM LEVELSET WEAK DIRICHLET VOL CONDITIONS",
+          "XFEMLevelsetWeakDirichlet",
+          "XFEM Levelset Weak Dirichlet",
+          DRT::Condition::XFEM_Levelset_Weak_Dirichlet,
+          true,
+          DRT::Condition::Volume));
+
+  xfem_levelset_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("LEVELSETFIELDNO")));
+  xfem_levelset_wdbc->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("levelsetfieldno", 1, false, false, false)));
+  xfem_levelset_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+  xfem_levelset_wdbc->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("val", 3)));
+  xfem_levelset_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("CURVE")));
+  xfem_levelset_wdbc->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve", 3, true, true, false)));
+  xfem_levelset_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+  xfem_levelset_wdbc->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 3, false, false, true)));
+
+  condlist.push_back(xfem_levelset_wdbc);
+
+  //*----------------*/
+  // Levelset based Neumann conditions
+
+  Teuchos::RCP<ConditionDefinition> xfem_levelset_neumann =
+      Teuchos::rcp(new ConditionDefinition(
+          "DESIGN XFEM LEVELSET NEUMANN VOL CONDITIONS",
+          "XFEMLevelsetNeumann",
+          "XFEM Levelset Neumann",
+          DRT::Condition::XFEM_Levelset_Neumann,
+          true,
+          DRT::Condition::Volume));
+
+  xfem_levelset_neumann->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("LEVELSETFIELDNO")));
+  xfem_levelset_neumann->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("levelsetfieldno", 1, false, false, false)));
+//  xfem_levelset_neumann->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+//  xfem_levelset_neumann->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("val", 3)));
+//  xfem_levelset_neumann->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("CURVE")));
+//  xfem_levelset_neumann->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve", 3, true, true, false)));
+//  xfem_levelset_neumann->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+//  xfem_levelset_neumann->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 3, false, false, true)));
+
+  condlist.push_back(xfem_levelset_neumann);
+
+  //*----------------*/
+  // Levelset based Twophase conditions
+
+  Teuchos::RCP<ConditionDefinition> xfem_levelset_twophase =
+      Teuchos::rcp(new ConditionDefinition(
+          "DESIGN XFEM LEVELSET TWOPHASE VOL CONDITIONS",
+          "XFEMLevelsetTwophase",
+          "XFEM Levelset Twophase",
+          DRT::Condition::XFEM_Levelset_Twophase,
+          true,
+          DRT::Condition::Volume));
+
+  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("LEVELSETFIELDNO")));
+  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("levelsetfieldno", 1, false, false, false)));
+//  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+//  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("val", 3)));
+//  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("CURVE")));
+//  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve", 3, true, true, false)));
+//  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+//  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 3, false, false, true)));
+
+  condlist.push_back(xfem_levelset_twophase);
+
+  //*----------------*/
+  // Levelset based Combustion conditions
+
+  Teuchos::RCP<ConditionDefinition> xfem_levelset_combustion =
+      Teuchos::rcp(new ConditionDefinition(
+          "DESIGN XFEM LEVELSET COMBUSTION VOL CONDITIONS",
+          "XFEMLevelsetCombustion",
+          "XFEM Levelset Combustion",
+          DRT::Condition::XFEM_Levelset_Combustion,
+          true,
+          DRT::Condition::Volume));
+
+  xfem_levelset_combustion->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("LEVELSETFIELDNO")));
+  xfem_levelset_combustion->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("levelsetfieldno", 1, false, false, false)));
+//  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+//  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("val", 3)));
+//  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("CURVE")));
+//  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve", 3, true, true, false)));
+//  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+//  xfem_levelset_twophase->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 3, false, false, true)));
+
+  condlist.push_back(xfem_levelset_combustion);
+
+  //*----------------*/
+  // Surface Fluid-Fluid coupling conditions
+
+
+  std::vector<Teuchos::RCP<ConditionComponent> > xfluidxfluidsurfcomponents;
+
+  xfluidxfluidsurfcomponents.push_back(Teuchos::rcp(new IntConditionComponent("label")));
+  xfluidxfluidsurfcomponents.push_back(
+      Teuchos::rcp(
+           new StringConditionComponent(
+             "COUPSTRATEGY",
+             "xfluid",
+             Teuchos::tuple<std::string>("xfluid","embedded","mean"),
+             Teuchos::tuple<int>(
+                 INPAR::XFEM::Xfluid_Sided_Coupling,
+                 INPAR::XFEM::Embedded_Sided_Coupling,
+                 INPAR::XFEM::Two_Sided_Coupling)
+             )));
+
+//
+//  s2icomponents.push_back(Teuchos::rcp(new CondCompBundleSelector(
+//      "kinetic models for scatra-scatra interface coupling",
+//      Teuchos::rcp(new StringConditionComponent(
+//         "kinetic model",
+//         "ConstantPermeability",
+//         Teuchos::tuple<std::string>("ConstantPermeability"),
+//         Teuchos::tuple<int>(INPAR::SCATRA::s2i_constperm))),
+//      kineticmodels)));
+//
+//
+//  tuple<int>(
+//                                     INPAR::XFEM::Hybrid_LM_L2_Proj_full,   // L2 stress projection on whole fluid element
+//                                     INPAR::XFEM::Hybrid_LM_L2_Proj_part    // L2 stress projection on partial fluid element volume
+//                                     ),
+//                                 &xfluid_stab
+//
+
+//  Teuchos::RCP<ConditionDefinition> fluctHydro_statisticsSurf =
+//    Teuchos::rcp(new ConditionDefinition("DESIGN FLUCTHYDRO STATISTICS SURF CONDITIONS",
+//                                         "FluctHydroStatisticsSurf",
+//                                         "FluctHydro_StatisticsSurf",
+//                                         DRT::Condition::FluctHydro_StatisticsSurf,
+//                                         true,
+//                                         DRT::Condition::Surface));
+//
+//  for (unsigned i=0; i<xfluidxfluidsurfcomponents.size(); ++i)
+//    xfem_surf_fluidfluid->AddComponent(xfluidxfluidsurfcomponents[i]);
+//
+
+
+  Teuchos::RCP<ConditionDefinition> xfem_surf_fluidfluid =
+      Teuchos::rcp(new ConditionDefinition(
+          "DESIGN XFEM FLUIDFLUID SURF CONDITIONS",
+          "XFEMSurfFluidFluid",
+          "XFEM Surf FluidFluid",
+          DRT::Condition::XFEM_Surf_FluidFluid,
+          true,
+          DRT::Condition::Surface));
+
+  for (unsigned i=0; i<xfluidxfluidsurfcomponents.size(); ++i)
+    xfem_surf_fluidfluid->AddComponent(xfluidxfluidsurfcomponents[i]);
+
+  condlist.push_back(xfem_surf_fluidfluid);
+
+  //*----------------*/
+  // Surface partitioned XFSI boundary conditions
+
+  Teuchos::RCP<ConditionDefinition> xfem_surf_fsi_part =
+      Teuchos::rcp(new ConditionDefinition(
+          "DESIGN XFEM FSI PARTITIONED SURF CONDITIONS",
+          "XFEMSurfFSIPart",
+          "XFEM Surf FSI Part",
+          DRT::Condition::XFEM_Surf_FSIPart,
+          true,
+          DRT::Condition::Surface));
+
+  condlist.push_back(xfem_surf_fsi_part);
+
+  //*----------------*/
+  // Surface monolithic XFSI coupling conditions
+
+  Teuchos::RCP<ConditionDefinition> xfem_surf_fsi_mono =
+      Teuchos::rcp(new ConditionDefinition(
+          "DESIGN XFEM FSI MONOLITHIC SURF CONDITIONS",
+          "XFEMSurfFSIMono",
+          "XFEM Surf FSI Mono",
+          DRT::Condition::XFEM_Surf_FSIMono,
+          true,
+          DRT::Condition::Surface));
+
+  condlist.push_back(xfem_surf_fsi_mono);
+
+
+  //*----------------*/
+  // Surface partitioned CRACK XFSI boundary conditions
+
+  Teuchos::RCP<ConditionDefinition> xfem_surf_crfsi_part =
+      Teuchos::rcp(new ConditionDefinition(
+          "DESIGN XFEM CRACK FSI PARTITIONED SURF CONDITIONS",
+          "XFEMSurfCrackFSIPart",
+          "XFEM Surf Crack FSI Part",
+          DRT::Condition::XFEM_Surf_CrackFSIPart,
+          true,
+          DRT::Condition::Surface));
+
+  condlist.push_back(xfem_surf_crfsi_part);
+
+
+  //*----------------*/
+  // Surface Weak Dirichlet conditions
+
+  Teuchos::RCP<ConditionDefinition> xfem_surf_wdbc =
+      Teuchos::rcp(new ConditionDefinition(
+          "DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS",
+          "XFEMSurfWeakDirichlet",
+          "XFEM Surf Weak Dirichlet",
+          DRT::Condition::XFEM_Surf_Weak_Dirichlet,
+          true,
+          DRT::Condition::Surface));
+
+//  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+//  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("val", 3)));
+//  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("CURVE")));
+//  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve", 3, true, true, false)));
+//  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+//  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 3, false, false, true)));
+
+  condlist.push_back(xfem_surf_wdbc);
+
+  //*----------------*/
+  // Surface Neumann conditions
+
+  Teuchos::RCP<ConditionDefinition> xfem_surf_neumann =
+      Teuchos::rcp(new ConditionDefinition(
+          "DESIGN XFEM NEUMANN SURF CONDITIONS",
+          "XFEMSurfNeumann",
+          "XFEM Surf Neumann",
+          DRT::Condition::XFEM_Surf_Neumann,
+          true,
+          DRT::Condition::Surface));
+
+//  xfem_surf_neumann->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+//  xfem_surf_neumann->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("val", 3)));
+//  xfem_surf_neumann->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("CURVE")));
+//  xfem_surf_neumann->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve", 3, true, true, false)));
+//  xfem_surf_neumann->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+//  xfem_surf_neumann->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 3, false, false, true)));
+
+  condlist.push_back(xfem_surf_neumann);
+
 
   /*--------------------------------------------------------------------*/
   // crack
@@ -3268,7 +3518,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(art_connection_bc);
 
   /*--------------------------------------------------------------------*/
-  // Export 1D-Arterial network in gnuplot format
+  // Export 1D-Arterial nefrk in gnuplot format
 
   Teuchos::RCP<ConditionDefinition> art_write_gnuplot_c =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE EXPORT 1D-ARTERIAL NETWORK GNUPLOT FORMAT",

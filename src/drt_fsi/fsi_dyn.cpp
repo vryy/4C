@@ -141,10 +141,9 @@ void fluid_xfem_drt()
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
   soliddis->FillComplete();
 
-  Teuchos::RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("fluid"));
+  Teuchos::RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("fluid"), true);
   actdis->FillComplete();
-  if (actdis == Teuchos::null)
-    dserror("fluid_xfem_drt(): Cast to DiscretisationXFEM failed!");
+
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 
@@ -1101,8 +1100,10 @@ void xfsi_drt()
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
   soliddis->FillComplete();
 
-  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+  Teuchos::RCP<DRT::DiscretizationXFEM> fluiddis =
+      Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("fluid"), true);
   fluiddis->FillComplete();
+
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 
@@ -1111,7 +1112,7 @@ void xfsi_drt()
   int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
     Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
   fluiddis->ReplaceDofSet(maxdofset,true);
-  fluiddis->FillComplete();
+  fluiddis->InitialFillComplete();
 
   // print all dofsets
   fluiddis->GetDofSetProxy()->PrintAllDofsets(fluiddis->Comm());

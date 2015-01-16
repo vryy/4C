@@ -68,7 +68,7 @@ public:
   explicit XFEM_EdgeStab(
       Teuchos::RCP<GEO::CutWizard>                 wizard,                ///< cut wizard
       Teuchos::RCP<DRT::Discretization>            discret,               ///< discretization
-      bool                                         include_inner = false  ///< stabilize also facets with inside position
+      bool                                         include_inner          ///< stabilize also facets with inside position
   );
 
   //! destructor

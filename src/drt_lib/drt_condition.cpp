@@ -122,6 +122,16 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==FSICoupling)                   os << "FSI Coupling condition: ";
   else if (Type()==FPSICoupling)                  os << "FPSI Coupling condition: ";
   else if (Type()==XFEMCoupling)                  os << "XFEM Coupling condition: ";
+  else if (Type()==XFEM_Levelset_Weak_Dirichlet)  os << "XFEM Levelset weak Dirichlet boundary condition: ";
+  else if (Type()==XFEM_Levelset_Neumann)         os << "XFEM Levelset Neumann boundary condition: ";
+  else if (Type()==XFEM_Levelset_Twophase)        os << "XFEM Levelset Thophase coupling condition: ";
+  else if (Type()==XFEM_Levelset_Combustion)      os << "XFEM Levelset Combustion coupling condition: ";
+  else if (Type()==XFEM_Surf_FSIPart)             os << "XFEM Surface partitioned XFSI boundary condition: ";
+  else if (Type()==XFEM_Surf_FSIMono)             os << "XFEM Surface monolithic XFSI coupling condition: ";
+  else if (Type()==XFEM_Surf_CrackFSIPart)        os << "XFEM Surface partitioned Crack XFSI boundary condition: ";
+  else if (Type()==XFEM_Surf_FluidFluid)          os << "XFEM Surface Fluid-Fluid coupling condition: ";
+  else if (Type()==XFEM_Surf_Weak_Dirichlet)      os << "XFEM Surface weak Dirichlet boundary condition: ";
+  else if (Type()==XFEM_Surf_Neumann)             os << "XFEM Surface Neumann boundary condition: ";
   else if (Type()==FluidFluidCoupling)            os << "Fluid Fluid Coupling condition: ";
   else if (Type()==ALEFluidCoupling)              os << "ALE Fluid Coupling condition: ";
   else if (Type()==MovingFluid)                   os << "Moving Fluid Vol condition: ";

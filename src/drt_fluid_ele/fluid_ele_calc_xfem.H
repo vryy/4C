@@ -184,10 +184,11 @@ public:
       DRT::ELEMENTS::Fluid *                                            ele,                      ///< fluid element
       DRT::Discretization &                                             dis,                      ///< background discretization
       const std::vector<int> &                                          lm,                       ///< element local map
+      const Teuchos::RCP<XFEM::ConditionManager> &                      cond_manager,             ///< XFEM condition manager
       const std::vector<DRT::UTILS::GaussIntegration> &                 intpoints,                ///< element gauss points
-      DRT::Discretization &                                             cutdis,                   ///< boundary discretization
       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> >&       bcells,                   ///< boundary cells
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,               ///< boundary integration points
+      const std::map<int, std::vector<int> > &                          patchcouplm,              ///< lm vectors for coupling elements, key= global coupling side-Id
       std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,            ///< side coupling matrices
       Teuchos::ParameterList&                                           params,                   ///< parameter list
       Teuchos::RCP<MAT::Material>&                                      mat,                      ///< material
@@ -203,17 +204,17 @@ public:
       DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
       DRT::Discretization &                                               dis,               ///< background discretization
       const std::vector<int> &                                            lm,                ///< element local map
-      const Teuchos::RCP<DRT::Discretization> &                           cutdis,            ///< cut discretization
+      const Teuchos::RCP<XFEM::ConditionManager> &                        cond_manager,      ///< XFEM condition manager
       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+      const std::map<int, std::vector<int> > &                            patchcouplm,
       Teuchos::ParameterList&                                             params,            ///< parameter list
       Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
       Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
       Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
       const GEO::CUT::plain_volumecell_set &                              vcSet,             ///< volumecell sets in this element
       std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
-      Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
-      const Teuchos::RCP<DRT::Discretization> &                           alediscret         ///< embedded fluid discretization
+      Epetra_SerialDenseMatrix&                                           Cuiui              ///< ui-ui coupling matrix
    );
 
   ///
@@ -272,6 +273,16 @@ private:
 
   //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
   void PatchLocationVector(
+      const Teuchos::RCP<XFEM::ConditionManager> &            cond_manager,            ///< XFEM condition manager
+      const int                                               back_eid,                ///< background element id
+      std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
+      std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
+      std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
+      std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling           ///< coupling matrices
+  );
+
+  //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
+  void PatchLocationVectorEmb(
       std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
       DRT::Discretization &                                   slavedis,                ///< coupling slave discretization
       std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
@@ -281,8 +292,8 @@ private:
 
   //! prepare coupling matrices, that include contributions from convective stabilization
   void HybridLM_CreateSpecialContributionMatrices(
+      const Teuchos::RCP<XFEM::ConditionManager> &            cond_manager,            ///< XFEM condition manager
       std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
-      DRT::Discretization &                                   cutdis,                  ///< cut discretization
       std::map<int, std::vector<Epetra_SerialDenseMatrix> > & conv_side_coupling       ///< contributions to coupling matrices from convective stabilizations
   );
 

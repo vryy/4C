@@ -147,7 +147,7 @@ DVOL                            2
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 //                              structure_volume
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+-----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 DSURF                           1
 //                              structure_shell
 E 5 - 1 structure conforming

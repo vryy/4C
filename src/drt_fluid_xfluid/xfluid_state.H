@@ -3,8 +3,8 @@
 \brief State class for (in)stationary XFEM fluid problems
 
 <pre>
-Maintainer:  Raffaela Kruse
-             kruse@lnm.mw.tum.de
+Maintainer:  Raffaela Kruse and Benedikt Schott
+             [kruse,schott]@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15240
 </pre>

@@ -1,0 +1,704 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file xfem_edgestab.H
+
+\brief provides the xfem fluid and ghost penalty stabilization based on EOS/CIP (edge-oriented, continuous interior penalty) scheme
+
+<pre>
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15241
+</pre>
+*------------------------------------------------------------------------------------------------*/
+
+
+#ifndef XFEM_CONDITION_MANAGER_H_
+#define XFEM_CONDITION_MANAGER_H_
+
+
+#include <vector>
+#include <Teuchos_RCP.hpp>
+
+#include "../drt_inpar/inpar_xfem.H"
+
+#include <Epetra_Vector.h>
+
+
+namespace DRT
+{
+  class AssembleStrategy;
+  class Discretization;
+  class DiscretizationXFEM;
+  class DiscretizationFaces;
+  class Element;
+
+  namespace ELEMENTS
+  {
+    class Fluid;
+    class FluidIntFace;
+  }
+}
+
+namespace GEO
+{
+  class CutWizard;
+
+  namespace CUT
+  {
+    class SideHandle;
+  }
+}
+
+namespace LINALG
+{
+  class SparseMatrix;
+}
+
+
+namespace XFEM
+{
+
+
+typedef std::pair<INPAR::XFEM::EleCouplingCondType, DRT::Condition*> EleCoupCond;
+
+
+static INPAR::XFEM::EleCouplingCondType CondType_stringToEnum(const std::string& condname)
+{
+  if     (condname == "XFEMSurfFSIPart")            return INPAR::XFEM::CouplingCond_SURF_FSI_PART;
+  else if(condname == "XFEMSurfFSIMono")            return INPAR::XFEM::CouplingCond_SURF_FSI_MONO;
+  else if(condname == "XFEMSurfCrackFSIPart")       return INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART;
+  else if(condname == "XFEMSurfFluidFluid")         return INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID;
+  else if(condname == "XFEMLevelsetWeakDirichlet")  return INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET;
+  else if(condname == "XFEMLevelsetNeumann")        return INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN;
+  else if(condname == "XFEMLevelsetTwophase")       return INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE;
+  else if(condname == "XFEMLevelsetCombustion")     return INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION;
+  else if(condname == "XFEMSurfWeakDirichlet")      return INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET;
+  else if(condname == "XFEMSurfNeumann")            return INPAR::XFEM::CouplingCond_SURF_NEUMANN;
+  //else dserror("condition type not supported: %s", condname.c_str());
+
+  return INPAR::XFEM::CouplingCond_NONE;
+}
+
+
+
+class CouplingBase
+{
+
+public:
+
+
+  //! constructor
+  explicit CouplingBase(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,    ///< background discretization
+      const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis   ///< full discretization from which the cutter discretization is derived
+  ) : bg_dis_(bg_dis), cond_name_(cond_name), cond_dis_(cond_dis), cutter_dis_(Teuchos::null), coupl_dis_(Teuchos::null), coupling_strategy_(INPAR::XFEM::invalid)
+  {
+  }
+
+  //! destructor
+  ~CouplingBase()
+  {
+    return;
+  }
+
+  const EleCoupCond & GetCouplingCondition(
+      const int gid ///< global element element id w.r.t cutter discretization (bgele->Id for LevelsetCoupling cut and side-Id for MeshCoupling)
+       )
+  {
+    int lid = cutter_dis_->ElementColMap()->LID(gid);
+    return cutterele_conds_[lid];
+  }
+
+  const std::string & GetName(){return cond_name_;}
+
+  Teuchos::RCP<DRT::Discretization> GetCutterDis(){return cutter_dis_;}
+  Teuchos::RCP<DRT::Discretization> GetCouplingDis(){return coupl_dis_;}
+  Teuchos::RCP<DRT::Discretization> GetCondDis(){return cond_dis_;}
+
+  const INPAR::XFEM::CouplingStrategy GetCouplingStrategy(){return coupling_strategy_;}
+
+protected:
+
+  void SetElementConditions();
+
+  void SetCouplingStrategy();
+
+  void SetCouplingDiscretization();
+
+  ///< background discretization
+  Teuchos::RCP<DRT::Discretization> bg_dis_;
+
+  ///------------------------
+  // CUTTER-DISCRETIZATION specific member
+  ///------------------------
+
+  ///< name of the condition, by which the derived cutter discretization is identified
+  const std::string cond_name_;
+
+  ///< discretization from which the cutter discretization is derived
+  Teuchos::RCP<DRT::Discretization> cond_dis_;
+
+  ///< discretization w.r.t which the interface is described and w.r.t which the state vectors describing the interface position are defined (bgdis for LevelSetCoupling and boundary dis for MeshCoupling)
+  Teuchos::RCP<DRT::Discretization> cutter_dis_;
+
+  ///< pairs of condition type and pointer to DRT::Condition for all column elements of the cutter discretization (bgdis for LevelSetCoupling and boundary dis for MeshCoupling)
+  std::vector<EleCoupCond> cutterele_conds_;
+
+  std::vector<std::string> conditions_to_copy_;   ///< list of conditions that will be copied to the new discretization and used to set for each cutter element
+
+
+  ///------------------------
+  // Coupling-DISCRETIZATION specific member
+  ///------------------------
+
+  ///< discretization with which the background discretization is coupled (structural dis, fluid dis, poro dis, scatra dis, boundary dis),
+  ///< Teuchos::null in case that no coupling terms but only boundary terms are evaluated
+  Teuchos::RCP<DRT::Discretization> coupl_dis_;
+
+  ///< coupling strategy, type of weighting
+  INPAR::XFEM::CouplingStrategy coupling_strategy_;
+
+};
+
+
+/*!
+\brief
+ */
+class MeshCoupling : public CouplingBase
+{
+public:
+
+  //! constructor
+  explicit MeshCoupling(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
+  );
+
+  //! destructor
+  virtual ~MeshCoupling()
+  {
+    return;
+  }
+
+  /// get the side element of the respective boundary discretization
+  DRT::Element* GetSide(
+      const int sid ///< global side element id w.r.t cutter discretization
+      )
+  {
+    return cutter_dis_->gElement(sid);
+  }
+
+private:
+
+
+  void SetConditionsToCopy();
+
+  /// return the name of the boundary element type to be created from the coupling discretization
+  std::string GetBELEName(Teuchos::RCP<DRT::Discretization> dis)
+  {
+    const int ndim = DRT::Problem::Instance()->NDim();
+
+    if(ndim != 3 ) dserror("only three-dimensional XFEM applications supported!");
+
+    if(dis->NumMyRowNodes() == 0) dserror("discretization does not have row nodes?!");
+    const int numdof = dis->NumDof(dis->lRowNode(0));
+
+    switch(numdof)
+    {
+    case 3: {return "BELE3_3"; break;}   // use always 3 dofs on the structural surface, in partitioned and monolithic algorithms as well
+    case 4: {return "BELE3_4"; break;}   // use always 4 dofs on the fluid surface
+    default: dserror("coupling dis currently has %i dofs", numdof); break;
+    }
+
+    return "";
+  }
+
+
+  void CreateCutterDisFromCondition();
+
+};
+
+
+/// class which allows to manipulate the boundary dis
+class MeshCouplingFSICrack : public MeshCoupling
+{
+public:
+
+  //! constructor
+  explicit MeshCouplingFSICrack(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
+  ) : MeshCoupling(bg_dis,cond_name,cond_dis)
+  {
+  }
+
+  //! destructor
+  ~MeshCouplingFSICrack()
+  {
+    return;
+  }
+
+  /// set new cutter discretization
+  void SetCutterDis(Teuchos::RCP<DRT::Discretization> cutter_dis_new)
+  {
+    cutter_dis_ = cutter_dis_new;
+
+    // update the Coupling object
+
+    // set unique element conditions
+    SetElementConditions();
+
+    // set the coupling strategy
+    SetCouplingStrategy();
+
+    // set coupling discretization
+    SetCouplingDiscretization();
+  }
+
+};
+
+
+
+/*!
+\brief
+ */
+class LevelSetCoupling : public CouplingBase
+{
+public:
+
+  //! constructor
+  explicit LevelSetCoupling(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name ///< name of the condition, by which the derived cutter discretization is identified
+  );
+
+
+  //! destructor
+  ~LevelSetCoupling()
+  {
+    return;
+  }
+
+
+  /// set levelset field by function
+  void SetLevelSetField(const double time);
+
+  /// set levelset field by given vector
+  void SetLevelSetField(
+     Teuchos::RCP<const Epetra_Vector> scalaraf,
+     Teuchos::RCP<DRT::Discretization> scatradis
+     );
+
+  Teuchos::RCP<Epetra_Vector> GetLevelSetField(){ return phinp_; }
+
+private:
+
+  void SetConditionsToCopy();
+
+  //! @name state vectors
+
+  //! scatra-dis (cutterdis) state vectors for levelset applications, prepares nonmatching discretizations between scatra and fluid
+  Teuchos::RCP<Epetra_Vector>    phinp_;
+  //@}
+
+};
+
+
+
+
+
+/*!
+\brief provides the xfem fluid and ghost penalty stabilization based on EOS/CIP (edge-oriented, continuous interior penalty) scheme
+ */
+class ConditionManager
+{
+public:
+
+  //! constructor
+  explicit ConditionManager(
+      Teuchos::RCP<DRT::Discretization> &               bg_dis,          ///< background discretization
+      std::vector<Teuchos::RCP<DRT::Discretization> > & meshcoupl_dis    ///< mesh coupling discretizations
+  );
+
+  //! destructor
+  ~ConditionManager()
+  {
+    return;
+  }
+
+  void CreateNewLevelSetCoupling(const std::string& cond_name);
+
+  void CreateNewMeshCoupling(
+      const std::string& cond_name,
+      Teuchos::RCP<DRT::Discretization> cond_dis         ///< discretization from which the cutter discretization can be derived
+  );
+
+  /// create a new mesh-coupling object based on the given coupling discretization
+  void AddMeshCoupling(
+      const std::string &                 cond_name,
+      Teuchos::RCP<DRT::Discretization>   cond_dis
+  )
+  {
+    if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSICrack(bg_dis_, cond_name, cond_dis)));
+    else
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(bg_dis_, cond_name, cond_dis)));
+  }
+
+  /// add a new level-set-coupling object based on the given coupling discretization
+  void AddLevelSetCoupling(
+      const std::string &                 cond_name
+  )
+  {
+    levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCoupling(bg_dis_, cond_name)));
+  }
+
+
+
+    // build the whole object which then can be used
+  void Create(const double time);
+
+  void Update(const double time); // update the meshcoupling objects (interface displ), update the level-set couplings
+
+
+  /// Getters
+
+  /// get cutter discretization the coupling side belongs to
+  Teuchos::RCP<DRT::Discretization> GetCutterDis(
+      const int coup_sid ///< the global id of the coupling side
+  )
+  {
+    if(IsLevelSetCoupling(coup_sid)) return Teuchos::null;
+
+    // get the mesh coupling object index
+    int mc_idx =  GetMeshCouplingIndex(coup_sid);
+
+    return mesh_coupl_[mc_idx]->GetCutterDis();
+  }
+
+  /// get cutter discretization the coupling side belongs to
+  Teuchos::RCP<DRT::Discretization> GetCouplingDis(
+      const int coup_sid ///< the global id of the coupling side
+  )
+  {
+    if(IsLevelSetCoupling(coup_sid)) return bg_dis_;
+
+    // get the mesh coupling object index
+    int mc_idx =  GetMeshCouplingIndex(coup_sid);
+
+    return mesh_coupl_[mc_idx]->GetCouplingDis();
+  }
+
+  Teuchos::RCP<MeshCoupling> GetMeshCoupling( const int mc_idx)
+  {
+    if(mc_idx < (int)mesh_coupl_.size() and mc_idx >= 0)
+      return mesh_coupl_[mc_idx];
+
+    return Teuchos::null;
+  }
+
+  Teuchos::RCP<LevelSetCoupling> GetLevelSetCoupling( const int ls_idx)
+  {
+    if(ls_idx < (int)levelset_coupl_.size() and ls_idx >= 0)
+      return levelset_coupl_[ls_idx];
+
+    return Teuchos::null;
+  }
+
+  Teuchos::RCP<CouplingBase> GetCoupling(const std::string & name)
+  {
+    Teuchos::RCP<CouplingBase> coupling = Teuchos::null;
+
+    coupling=GetMeshCoupling(name);
+
+    if(coupling!=Teuchos::null) return coupling;
+
+    coupling=GetLevelSetCoupling(name);
+
+    if(coupling!=Teuchos::null) return coupling;
+
+    return Teuchos::null;
+  }
+
+
+  Teuchos::RCP<MeshCoupling> GetMeshCoupling(const std::string & name)
+  {
+    for(int m=0; m<NumMeshCoupling(); m++)
+    {
+      if(mesh_coupl_[m]->GetName() == name)
+        return mesh_coupl_[m];
+    }
+    return Teuchos::null;
+  }
+
+  Teuchos::RCP<LevelSetCoupling> GetLevelSetCoupling(const std::string & name)
+  {
+    for(int l=0; l<NumLevelSetCoupling(); l++)
+    {
+      if(levelset_coupl_[l]->GetName() == name)
+        return levelset_coupl_[l];
+    }
+    return Teuchos::null;
+  }
+
+
+  const INPAR::XFEM::CouplingStrategy GetCouplingStrategy(
+      const int coup_sid, ///< the global id of the coupling side
+      const int back_eid  ///< the global element id of the background mesh
+  )
+  {
+    if(IsLevelSetCoupling(coup_sid))
+    {
+      //TODO: currently only one level-set field supported
+      // get the level-set coupling object index for given background element
+      const int lsc_idx = GetLevelSetCouplingIndex(back_eid);
+
+      return levelset_coupl_[lsc_idx]->GetCouplingStrategy();
+    }
+    else if(IsMeshCoupling(coup_sid))
+    {
+      // get the mesh coupling object index
+      const int mc_idx =  GetMeshCouplingIndex(coup_sid);
+
+      return mesh_coupl_[mc_idx]->GetCouplingStrategy();
+    }
+    else dserror("there is no valid mesh-/levelset-coupling condition object for side: %i", coup_sid);
+
+    return INPAR::XFEM::invalid;
+  }
+
+  /// ...
+  int GetMeshCouplingIndex(
+      const int coup_sid
+  )
+  {
+    // safety checks
+    if(coup_sid < 0)
+    {
+//      dserror("invalid negative coupling side id %i", coup_sid);
+      return -1;
+    }
+    if(levelset_gid_ >= 0 and coup_sid > levelset_gid_ )
+    {
+//      dserror("invalid coupling side id %i", coup_sid);
+      return -1;
+    }
+
+    if(IsLevelSetCoupling(coup_sid))
+    {
+//      dserror("level-set side does not have a cutter discretization. Why do you call this?");
+      return -1;
+    }
+
+
+    const int num_mesh_coupl = mesh_coupl_.size();
+    if(num_mesh_coupl == 0)
+    {
+//      dserror("no mesh coupling objects available?!");
+      return -1;
+    }
+
+
+
+    int mc_idx = 0; // mesh coupling index to be set, init to 0 as coup_sid >= 0
+
+    for(int idx=0; idx < (int)mesh_coupl_.size(); idx++)
+    {
+      if(coup_sid < mesh_coupl_start_gid_[idx]) // for the first run this is guaranteed to be false
+      {
+        mc_idx = idx-1;  // take the last mc-index
+      }
+    }
+
+    if(mc_idx == -1 or mc_idx >= num_mesh_coupl)
+    {
+      dserror("invalid mesh coupling index %i", mc_idx);
+      return -1;
+    }
+
+    return mc_idx;
+  }
+
+
+  /// ...
+  int GetLevelSetCouplingIndex(
+      const int back_eid
+  )
+  {
+    // TODO: find out which level-set index is the active one for the given background element
+    int lsc_idx = 0;
+
+    return lsc_idx;
+  }
+
+
+  /// check if the given coupling side corresponds the unique level-set side
+  bool IsLevelSetCoupling(const int coupl_sid){return coupl_sid == levelset_gid_;}
+
+  bool IsMeshCoupling(const int coup_sid){return GetMeshCouplingIndex(coup_sid)!=-1;}
+
+  bool HasLevelSetCoupling(){return levelset_coupl_.size() > 0;}
+
+  bool HasMeshCoupling(){return mesh_coupl_.size() > 0;}
+
+  int NumMeshCoupling(){return mesh_coupl_.size();}
+
+  int NumLevelSetCoupling(){return levelset_coupl_.size();}
+
+
+
+  /// get the side element of the respective boundary discretization
+  DRT::Element* GetSide(
+      const int coup_sid ///< the overall global coupling side id
+      )
+  {
+    // get the mesh coupling object index
+    const int mc_idx =  GetMeshCouplingIndex(coup_sid);
+
+    // compute the side id w.r.t the cutter discretization the side belongs to
+    const int cutterdis_sid = GetCutterDisEleId(coup_sid, mc_idx);
+
+    // get the boundary discretization, the side belongs to
+    return mesh_coupl_[mc_idx]->GetSide(cutterdis_sid);
+  }
+
+  // the cutwizard should add elements via the manager!!!
+
+  const int GetCutterDisEleId(const int coup_sid, const int mc_idx)
+  {
+    return coup_sid-mesh_coupl_start_gid_[mc_idx];
+  }
+
+  const EleCoupCond GetCouplingCondition(
+      const int coup_sid, ///< the global id of the coupling side
+      const int back_eid  ///< the global element id of the background mesh
+  )
+  {
+    if(IsLevelSetCoupling(coup_sid))
+    {
+      //TODO: currently only one level-set field supported
+      // get the level-set coupling object index for given background element
+      const int lsc_idx = GetLevelSetCouplingIndex(back_eid);
+
+      return levelset_coupl_[lsc_idx]->GetCouplingCondition(back_eid);
+    }
+    else if(IsMeshCoupling(coup_sid))
+    {
+      // get the mesh coupling object index
+      const int mc_idx =  GetMeshCouplingIndex(coup_sid);
+
+      // compute the side id w.r.t the cutter discretization the side belongs to
+      const int cutterdis_sid = GetCutterDisEleId(coup_sid, mc_idx);
+
+      return mesh_coupl_[mc_idx]->GetCouplingCondition(cutterdis_sid);
+    }
+    else dserror("there is no valid mesh-/levelset-coupling condition object for side: %i", coup_sid);
+
+    return EleCoupCond(INPAR::XFEM::CouplingCond_NONE,NULL);
+  }
+
+
+  bool IsCoupling(
+      const int coup_sid, ///< the global id of the coupling side
+      const int back_eid  ///< the global element id of the background mesh
+  )
+  {
+    const EleCoupCond & coup_cond = GetCouplingCondition(coup_sid, back_eid);
+
+    return IsCouplingCondition(coup_cond.first);
+  }
+
+  /// have coupling matrices to be evaluated or not?
+  bool IsCouplingCondition(
+      const std::string & cond_name)
+  {
+    return IsCouplingCondition(CondType_stringToEnum(cond_name));
+  }
+
+  /// have coupling matrices to be evaluated or not?
+  bool IsCouplingCondition(
+      const INPAR::XFEM::EleCouplingCondType& cond_type)
+  {
+    switch(cond_type)
+    {
+//    case INPAR::XFEM::CouplingCond_XFEMCOUPLING:
+//      return false;
+//      break;
+    case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
+    case INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID:
+    case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:
+    case INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION:
+    {
+      return true;
+      break;
+    }
+    case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
+    case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
+    case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
+    case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
+    case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
+    case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
+    {
+      return false;
+      break;
+    }
+    default: dserror("coupling condition type not known %i", cond_type); break;
+    }
+
+    return false;
+  }
+
+  void SetLevelSetField( const double time );
+
+  void SetLevelSetField(
+      Teuchos::RCP<const Epetra_Vector> scalaraf,
+      Teuchos::RCP<DRT::Discretization> scatradis
+  );
+
+  Teuchos::RCP<Epetra_Vector> GetLevelSetField()
+  {
+    if(!is_levelset_uptodate_) UpdateLevelSetField(); // update the unique level-set field based on the background discretization
+
+    return bg_phinp_;
+  }
+
+private:
+
+  void UpdateLevelSetField();
+
+  ///< background discretiaztion w.r.t for which the couling manager is constructed
+  Teuchos::RCP<DRT::Discretization> bg_dis_;
+
+  /// mesh coupling objects
+  std::vector<Teuchos::RCP<MeshCoupling> > mesh_coupl_;
+
+  /// level-set coupling objects
+  std::vector<Teuchos::RCP<LevelSetCoupling> > levelset_coupl_;
+
+  /// starting index for element side global id
+  std::vector<int> mesh_coupl_start_gid_;
+
+  /// index for the unique level-set-side global id
+  int levelset_gid_;
+
+  /// global number of mesh and level-set coupling sides over all processors
+  int numglobal_coupling_sides;
+
+  /// time
+  double time_;
+
+  //! @name state vectors based on background discretization
+
+  //! background-dis state vectors for levelset applications
+  bool is_levelset_uptodate_;
+  Teuchos::RCP<Epetra_Vector>    bg_phinp_;
+  //@}
+
+};
+
+} // namespace XFEM
+
+#endif /*XFEM_CONDITION_MANAGER_H_*/

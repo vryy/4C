@@ -1460,10 +1460,20 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
 #endif
 
     int sid = *sides;
+
+
     GEO::CUT::SideHandle* side_old = wizard_old_->GetMeshCuttingSide(sid, 0);
     GEO::CUT::SideHandle* side_new = wizard_new_->GetMeshCuttingSide(sid, 0);
 
-    if(side_old == NULL or side_new == NULL) dserror("no sidehandles available for side %d", sid);
+    if(side_old == NULL or side_new == NULL)
+    {
+      // HACK for time-integration with combination of level-set and and mesh
+      changed_side = false;
+      std::cout << "time-integration for level-sets not implemented yet!" << std::endl;
+      return true; // TODO: compare level-set values instead
+
+      dserror("no sidehandles available for side %d", sid);
+    }
 
 
     bool node_within_Space_Time_Side = false;

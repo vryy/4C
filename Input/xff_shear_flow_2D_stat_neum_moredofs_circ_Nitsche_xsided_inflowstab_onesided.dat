@@ -268,10 +268,10 @@ DSURF                           0
 DVOL                            0
 ----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
 DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
+--------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF                           1
 // xfem surfaces
-E 3 - 1
+E 3 - 1 xfluid
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
 DSURF                           0
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS

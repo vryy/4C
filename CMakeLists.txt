@@ -638,6 +638,7 @@ set(OBJS_INTERSECTION
   src/drt_xfem/timeInt_std_SemiLagrange.cpp
   src/drt_xfem/xdofmapcreation_combust.cpp
   src/drt_xfem/xdofmapcreation_parallel_utils.cpp
+  src/drt_xfem/xfem_condition_manager.cpp
   src/drt_xfem/xfem_edgestab.cpp
   src/drt_xfem/xfem_dofset.cpp
   src/drt_xfem/xfem_neumann.cpp

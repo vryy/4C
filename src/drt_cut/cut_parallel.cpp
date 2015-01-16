@@ -70,7 +70,11 @@ void GEO::CUT::Parallel::CommunicateNodePositions()
     counter += 1;
 
     // avoid infinite loops, after numproc rounds all procs should know their node positions
-    if(counter > numproc_+10) dserror("number of rounds for exchanging data in CommunicateNodePositions > numproc_+10");
+    if(counter > numproc_+10)
+    {
+      break;
+      dserror("number of rounds for exchanging data in CommunicateNodePositions > numproc_+10");
+    }
 
     // check if there are undecided node positions on this proc
     bool undecided_nodes = mesh_.CheckForUndecidedNodePositions(curr_undecidedNodePos_, curr_undecidedNodePos_shadow_);

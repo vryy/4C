@@ -71,7 +71,9 @@ namespace INPAR
       Xfluid_Sided_weak_DBC,     /// weak Dirichlet boundary conditions w.r.t fixed background mesh using XFEM
       Xfluid_Sided_Coupling,     /// monolithic coupling between fluid and (fluid/structure), average w.r.t xfluid side
       Embedded_Sided_Coupling,   /// monolithic coupling between fluid and (fluid/structure), average w.r.t embedded fluid/structure side
-      Two_Sided_Coupling         /// monolithic coupling between fluid and (fluid/structure), mean average between fluid and fluid/structure
+      Two_Sided_Coupling,        /// monolithic coupling between fluid and (fluid/structure), mean average between fluid and fluid/structure
+      Harmonic,                  /// monolithic coupling between fluid and fluid, harmonic mean average between fluid and fluid
+      invalid
     };
 
     /// L2 stress projection on whole fluid element or on partial fluid element
@@ -181,6 +183,23 @@ namespace INPAR
       face_type_boundary_ghost_penalty,
       face_type_double_plus, // combustion only
       face_type_double_minus // combustion only
+    };
+
+
+    enum EleCouplingCondType
+    {
+      CouplingCond_NONE,
+//      CouplingCond_XFEMCOUPLING,   ///HACK intermediate solution until other level-setbased conditions are implemented
+      CouplingCond_SURF_FSI_MONO,
+      CouplingCond_SURF_FLUIDFLUID,
+      CouplingCond_SURF_FSI_PART,
+      CouplingCond_SURF_CRACK_FSI_PART,
+      CouplingCond_SURF_WEAK_DIRICHLET,
+      CouplingCond_SURF_NEUMANN,
+      CouplingCond_LEVELSET_WEAK_DIRICHLET,
+      CouplingCond_LEVELSET_NEUMANN,
+      CouplingCond_LEVELSET_TWOPHASE,
+      CouplingCond_LEVELSET_COMBUSTION
     };
 
   }  // namespace XFEM

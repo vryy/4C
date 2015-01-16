@@ -236,6 +236,20 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate( L
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate2D(
+    LINALG::Matrix<2,1> & xi )
+{
+  // evaluate shape function at solution
+  DRT::UTILS::shape_function_2D( slave_funct_, xi( 0 ), xi( 1 ), slave_distype );
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
@@ -2915,6 +2929,13 @@ template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT:
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6, DRT::Element::quad4,3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6, DRT::Element::quad8,3>;
 template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6, DRT::Element::quad9,3>;
+
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex8,  DRT::Element::dis_none,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex20, DRT::Element::dis_none,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex27, DRT::Element::dis_none,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet4,  DRT::Element::dis_none,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::tet10, DRT::Element::dis_none,3>;
+template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::wedge6,DRT::Element::dis_none,3>;
 
 // pairs with numdof=4
 //template class DRT::ELEMENTS::XFLUID::HybridLMCoupling<DRT::Element::hex8,  DRT::Element::tri3,4>;

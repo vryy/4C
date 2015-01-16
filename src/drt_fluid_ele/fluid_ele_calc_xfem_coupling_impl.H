@@ -111,6 +111,9 @@ namespace DRT
         //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at gaussian point
         void Evaluate( LINALG::Matrix<nsd_,1> & xside );
 
+        //!  evaluate shape function w.r.t coupling slave element at gaussian point
+        void Evaluate2D( LINALG::Matrix<2,1> & xside );
+
         //! compute coupling slave element's characteristic element length (for 3D-elements)
         void ComputeCharElementLength( double & h_k );
 
@@ -587,6 +590,16 @@ namespace DRT
         static const unsigned slave_nen_ = SlaveElementRepresentation<distype,slave_distype,slave_numdof>::slave_nen_;
         /// number of independent stress-dof
         static const unsigned numstressdof_ = HybridLMInterface<distype>::numstressdof_;
+
+        //! ctor for one-sided (xfluid weak dirichlet) problems (interface defined by level-set field)
+        HybridLMCoupling(
+            bool isViscAdjointSymmetric = true
+        ) :
+          SlaveElementRepresentation<distype,slave_distype,slave_numdof>(),
+          applicationType_(SlaveElementInterface<distype>::XFluidWDBC),
+          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
+        {
+        }
 
         //! ctor for xfluid weak dirichlet problem
         HybridLMCoupling(

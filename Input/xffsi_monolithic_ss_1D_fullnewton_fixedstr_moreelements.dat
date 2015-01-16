@@ -109,10 +109,10 @@ DSURF                           2
 E 1 - 1
 // structure fsi
 E 5 - 1
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
+--------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF                           1
 //                              xfem
-E 2 - 1
+E 2 - 1 xfluid
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
 DSURF                           0
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS

@@ -168,10 +168,10 @@ E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 DVOL                            1
 // Fluid 2 volume
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
+--------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF                           1
 // Fluid 2 xfem
-E 3 - 1
+E 3 - 1 xfluid
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
 DVOL                            1
 // Fluid 2 volume

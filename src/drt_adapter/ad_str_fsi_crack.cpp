@@ -91,7 +91,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos:
   // We do not explicitly add new elements to the discretization
   // Instead, we add the new nodes to FSI condition in structual discretization
   // And we build a new discretization based on this new condition
-  DRT::Condition* cond_fsi = structdis_->GetCondition("FSICoupling");
+  DRT::Condition* cond_fsi  = structdis_->GetCondition("FSICoupling");
   DRT::Condition* cond_xfem = structdis_->GetCondition("XFEMCoupling");
 
   if( cond_fsi == NULL or cond_xfem == NULL )
@@ -121,10 +121,17 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos:
   structdis_->FillComplete();
 
   // build boundary discretization based on FSI condition
+  const std::string condname = "XFEMSurfCrackFSIPart";
+
   std::vector<std::string> conditions_to_copy;
+  conditions_to_copy.push_back(condname);
   conditions_to_copy.push_back("FSICoupling");
-  conditions_to_copy.push_back("XFEMCoupling");
-  boundary_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
+
+
+  std::string cutterdis_name ("boundary_of_");
+  cutterdis_name += structdis_->Name();
+
+  boundary_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, condname, cutterdis_name, "BELE3_3", conditions_to_copy);
 
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true,Teuchos::null));
   boundary_dis->ReplaceDofSet(newdofset);
@@ -316,11 +323,15 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
   if( tips.size() == 0 )
     dserror("atleast one new node should have been added during the crack propagation\n");
 
+
+  // build boundary discretization based on FSI condition
+  const std::string condname = "XFEMSurfCrackFSIPart";
+
   // We do not explicitly add new elements to the discretization
   // Instead, we add the new nodes to FSI condition in structual discretization
   // And we build a new discretization based on this new condition
   DRT::Condition* cond_fsi = structdis_->GetCondition("FSICoupling");
-  DRT::Condition* cond_xfem = structdis_->GetCondition("XFEMCoupling");
+  DRT::Condition* cond_xfem = structdis_->GetCondition(condname);
 
   if( cond_fsi == NULL or cond_xfem == NULL )
     dserror( "XFEM or FSI coupling conditions undefined in XFSI problem?\n" );
@@ -348,14 +359,18 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
 
   // build a temporary discretization based on FSI condition
   std::vector<std::string> conditions_to_copy;
+  conditions_to_copy.push_back(condname);
   conditions_to_copy.push_back("FSICoupling");
-  conditions_to_copy.push_back("XFEMCoupling");
+
+
+  std::string cutterdis_name ("boundary_of_");
+  cutterdis_name += structdis_->Name();
 
 #if 0
 
   //Teuchos::RCP<DRT::Discretization> boundary_dis = Teuchos::null;
 
-  boundary_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
+  boundary_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, condname, cutterdis_name, "BELE3_3", conditions_to_copy);
 
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true,Teuchos::null));
   boundary_dis->ReplaceDofSet(newdofset);
@@ -370,7 +385,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
 #else
   Teuchos::RCP<DRT::Discretization> temp_dis = Teuchos::null;
 
-  temp_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
+  temp_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, condname, cutterdis_name, "BELE3_3", conditions_to_copy);
 
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true,Teuchos::null));
   temp_dis->ReplaceDofSet(newdofset);
@@ -718,7 +733,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
   // STEP 4: Set XFEM and FSI conditions to new nodes
   //--------------------------------------------------------------------------------------------------
   DRT::Condition* cond_fsi_boun = boundary_dis->GetCondition("FSICoupling");
-  DRT::Condition* cond_xfem_boun = boundary_dis->GetCondition("XFEMCoupling");
+  DRT::Condition* cond_xfem_boun = boundary_dis->GetCondition(condname);
 
   if( cond_fsi_boun == NULL or cond_xfem_boun == NULL )
     dserror( "XFEM or FSI coupling conditions undefined in old boundary discretization?\n" );

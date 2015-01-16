@@ -165,6 +165,10 @@ namespace DRT
         virtual void Evaluate( LINALG::Matrix<nsd_,1> & xside )
         { dserror("There is no concrete slave element available."); }
 
+        //!  evaluate shape function w.r.t coupling slave element at gaussian point
+        virtual void Evaluate2D( LINALG::Matrix<2,1> & xside )
+        { dserror("There is no concrete slave element available."); }
+
         //! compute coupling slave element's characteristic element length (diameter for side element)
         virtual void ComputeCharElementLength( double & h_k )
         { dserror("There is no concrete slave element available."); }
@@ -314,6 +318,11 @@ namespace DRT
         static const unsigned master_numdof_ = nsd_ + 1;
         /// number of independent stress-dof
         static const unsigned numstressdof_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+
+        //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet problems
+        static Teuchos::RCP<HybridLMInterface<distype> > CreateHybridLMCoupling_XFluidWDBC(
+          bool  is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+        );
 
         //! create a coupling interface for mixed/hybrid LM approach for xfluid weak dirichlet problems
         static Teuchos::RCP<HybridLMInterface<distype> > CreateHybridLMCoupling_XFluidWDBC(

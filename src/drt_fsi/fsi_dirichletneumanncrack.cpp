@@ -77,6 +77,7 @@ void FSI::DirichletNeumann_Crack::AddNewCrackSurfaceToCutInterface()
 
   Teuchos::RCP<FLD::XFluid> xfluid =  Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(MBFluidField()->FluidField())->MyFluid();
 
+  const std::string condname = "XFEMSurfCrackFSIPart";
   Teuchos::RCP<DRT::Discretization> boundary_dis = xfluid->BoundaryDiscretization();
 
   std::map<int, LINALG::Matrix<3,1> > tip_nodes;
@@ -86,7 +87,7 @@ void FSI::DirichletNeumann_Crack::AddNewCrackSurfaceToCutInterface()
   structfield->addCrackSurfacesToCutSides( boundary_dis, tip_nodes );
   if(boundary_dis == Teuchos::null)
     dserror( "Boundary discretization can't be empty" );
-  xfluid->SetBoundaryDis( boundary_dis );
+  xfluid->SetBoundaryDis( condname, boundary_dis );
 
   xfluid->SetCrackTipNodes( tip_nodes );
 

@@ -85,7 +85,7 @@ ALPHA_M                         1
 ALPHA_F                         1
 GAMMA                           1
 THETA                           0.66
-CONVTOL                         1e-06
+CONVTOL                         1e-12
 STEADYTOL                       1e-06
 START_THETA                     1
 STRONG_REDD_3D_COUPLING_TYPE    no
@@ -139,16 +139,11 @@ MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
 XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
 XFLUID_TIMEINT                  STD=COPY/SL_and_GHOST=COPY/GP
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-//EMBEDDED_BOUNDARY             BoundaryTypeSigma
+COUPLING_METHOD                 Hybrid_LM_viscous_stress
 COUPLING_STRATEGY               xfluid_sided_weak_DBC
-//MSH_L2_PROJ                   part_ele_proj
-NIT_STAB_FAC                   30
-//VISC_STAB_SCALING             visc_div_by_hk
-VISC_STAB_HK                    vol_equivalent
-//CONV_STAB_FAC                 1
 CONV_STAB_SCALING               abs_inflow
-GHOST_PENALTY_STAB yes //yes
-GHOST_PENALTY_2nd_STAB          no
+GHOST_PENALTY_STAB              yes //yes
+GHOST_PENALTY_2nd_STAB          yes
 GHOST_PENALTY_FAC               0.05
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
@@ -168,16 +163,16 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPAN
 ----------------------------------------------------------RESULT DESCRIPTION
 // nodes 255, 256 : element containing edge in fluid
 // nodes 287, 288 : element containing edge in solid
-//This test case should give same result as xfluid_forward_facing_step_stationary_levelset_16x16.dat
-FLUID DIS fluid NODE 255 QUANTITY velx VALUE 1.98768134870047110e-02 TOLERANCE 1e-11
-FLUID DIS fluid NODE 255 QUANTITY vely VALUE 1.57303589959102621e-03 TOLERANCE 1e-11
+//This test case should give same result as xfluid_forward_facing_step_stationary_16x16_MHVS_levelset.dat
+FLUID DIS fluid NODE 255 QUANTITY velx VALUE 2.10362388781710589e-02 TOLERANCE 1e-11
+FLUID DIS fluid NODE 255 QUANTITY vely VALUE 1.10882564889596032e-03 TOLERANCE 1e-11
 FLUID DIS fluid NODE 255 QUANTITY velz VALUE 0.0 TOLERANCE 1e-11
-FLUID DIS fluid NODE 255 QUANTITY pressure VALUE 6.26320614967393752e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 255 QUANTITY pressure VALUE 6.16203852061428936e+00 TOLERANCE 1e-8
 
-FLUID DIS fluid NODE 287 QUANTITY velx VALUE -9.98950706017097054e-03 TOLERANCE 1e-11
-FLUID DIS fluid NODE 287 QUANTITY vely VALUE 1.99604641329298135e-04 TOLERANCE 1e-11
+FLUID DIS fluid NODE 287 QUANTITY velx VALUE -6.68408512275588031e-03 TOLERANCE 1e-11
+FLUID DIS fluid NODE 287 QUANTITY vely VALUE 1.42742528680794021e-03 TOLERANCE 1e-11
 FLUID DIS fluid NODE 287 QUANTITY velz VALUE 0.0 TOLERANCE 1e-11
-FLUID DIS fluid NODE 287 QUANTITY pressure VALUE 5.55896065146757845e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 287 QUANTITY pressure VALUE 5.62655726545785040e+00 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
@@ -251,7 +246,7 @@ E 5 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 // DOBJECT FSI_ID FIELD MESH
 DSURF                           1
 E 6 - 1 structure conforming
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
+-----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF                           1
 E 6 - 1

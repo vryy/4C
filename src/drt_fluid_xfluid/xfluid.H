@@ -60,6 +60,7 @@ namespace IO
 
 namespace XFEM
 {
+  class ConditionManager;
   class XFEMDofSet;
   class XFEM_EdgeStab;
   class XFluidTimeInt;
@@ -302,8 +303,11 @@ namespace FLD
 
     //! @name XFEM-Crack specific function
 
-    /// set the given discretization as the boundary discretization
-    void SetBoundaryDis( Teuchos::RCP<DRT::Discretization>& boun ){ boundarydis_ = boun; }
+    /// set the given discretization as the boundary discretization for crack application
+    void SetBoundaryDis(
+        const std::string & condname,
+        Teuchos::RCP<DRT::Discretization>& cutter_dis
+    );
 
     /// Get the nodes that defines crack tip
     void GetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes ){tip_nodes = tip_nodes_;}
@@ -344,6 +348,7 @@ namespace FLD
 
     Teuchos::RCP<FLD::XFluidState> GetNewState();
 
+//    void SetLevelSetField();
 
     void SetLevelSetField(
        Teuchos::RCP<const Epetra_Vector> scalaraf,
@@ -362,8 +367,6 @@ namespace FLD
 
     /// call the loop over elements to assemble volume and interface integrals
     void Evaluate(
-        DRT::Discretization & discret,      ///< background fluid discretization
-        Teuchos::RCP<DRT::Discretization> & cutdiscret,   ///< cutter surface discretization
         int itnum                           ///< iteration number
     );
 
@@ -405,8 +408,6 @@ namespace FLD
         DRT::Discretization & discret,    ///< background fluid discretization
         DRT::Discretization & cutdiscret, ///< cutter surface discretization
         std::ofstream & bound_f,          ///< output file stream for boundary mesh
-        DRT::Element * actele,            ///< element
-        GEO::CUT::ElementHandle * e,      ///< elementhandle
         GEO::CUT::VolumeCell * vc         ///< volumecell
     );
 
@@ -745,8 +746,6 @@ namespace FLD
     int itnum_out_;
     //--------------------------------------------------------------------
 
-    //! do we cut with a level set?
-    bool                          levelsetcut_;
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
     bool                          alefluid_;
     //! do we have a turblence model?
@@ -799,6 +798,14 @@ namespace FLD
     double  dtfilter_;
     double  dtsolve_;
 
+
+    //--------------------------------------------------------------------
+
+    /// object to handle the different types of XFEM boundary and interface coupling conditions
+    Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
+
+    bool include_inner_;
+
     //--------------------------------------------------------------------
 
     /// state object at current new time step
@@ -846,10 +853,6 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    soliddispnp_;
     //@}
 
-
-    //! @name scatra-dis state vectors for levelset applications
-    Teuchos::RCP<Epetra_Vector>    phinp_;
-    //@}
 
     //-----------------------------XFEM time-integration specific data ----------------
 

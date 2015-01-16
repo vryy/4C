@@ -79,12 +79,14 @@ public:
     INPAR::CUT::BCellGaussPts BoundCellGaussPointBy,
     bool gmsh_cut_out,
     int maxnumdofsets,
-    int minnumdofsets ) :
+    int minnumdofsets,
+    bool include_inner) :
       VolumeCellGaussPointBy_(VolumeCellGaussPointBy),
       BoundCellGaussPointBy_(BoundCellGaussPointBy),
       gmsh_cut_out_(gmsh_cut_out),
       maxnumdofsets_(maxnumdofsets),
-      minnumdofsets_(minnumdofsets)
+      minnumdofsets_(minnumdofsets),
+      include_inner_(include_inner)
   {
   }
 
@@ -167,6 +169,8 @@ private:
 
   /// state class
   Teuchos::RCP<FLD::XFluidState> state_;
+
+  bool include_inner_;
 
 };
 

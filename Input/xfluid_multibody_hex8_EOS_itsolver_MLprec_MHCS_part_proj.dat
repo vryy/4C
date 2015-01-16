@@ -240,7 +240,7 @@ E 31 - 2 structure conforming
 ----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
+-----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF                           8
 E 22 - 1

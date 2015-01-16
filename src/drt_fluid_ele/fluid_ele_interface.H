@@ -43,6 +43,11 @@ namespace GEO
   }
 }
 
+namespace XFEM
+{
+  class ConditionManager;
+}
+
 namespace DRT
 {
   class Discretization;
@@ -189,10 +194,11 @@ namespace ELEMENTS
         DRT::ELEMENTS::Fluid *                                            ele,                      ///< fluid element
         DRT::Discretization &                                             dis,                      ///< background discretization
         const std::vector<int> &                                          lm,                       ///< element local map
+        const Teuchos::RCP<XFEM::ConditionManager> &                      cond_manager,             ///< XFEM condition manager
         const std::vector<DRT::UTILS::GaussIntegration> &                 intpoints,                ///< element gauss points
-        DRT::Discretization &                                             cutdis,                   ///< boundary discretization
         const std::map<int, std::vector<GEO::CUT::BoundaryCell*> >&       bcells,                   ///< boundary cells
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,               ///< boundary integration points
+        const std::map<int, std::vector<int> > &                          patchcouplm,              ///< lm vectors for coupling elements, key= global coupling side-Id
         std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,            ///< side coupling matrices
         Teuchos::ParameterList&                                           params,                   ///< parameter list
         Teuchos::RCP<MAT::Material>&                                      mat,                      ///< material
@@ -203,38 +209,22 @@ namespace ELEMENTS
         bool                                                              fluidfluidcoupling = false///< indicates fluid-fluid coupling context
     ) = 0;
 
-    /// add interface condition at cut to element matrix and rhs (Nitsche coupling)
-//    virtual void ElementXfemInterfaceNIT(
-//        DRT::ELEMENTS::Fluid *                                            ele,
-//        DRT::Discretization &                                             dis,
-//        const std::vector<int> &                                          lm,
-//        const Teuchos::RCP<DRT::Discretization> &                         cutdis,
-//        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &      bcells,
-//        const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
-//        std::map<int, std::vector<Epetra_SerialDenseMatrix> > &           side_coupling,
-//        Teuchos::ParameterList&                                           params,
-//        Epetra_SerialDenseMatrix&                                         elemat1_epetra,
-//        Epetra_SerialDenseVector&                                         elevec1_epetra,
-//        Epetra_SerialDenseMatrix&                                         Cuiui,
-//        const GEO::CUT::plain_volumecell_set &                            cells,
-//        bool                                                              fluidfluidcoupling = false) = 0;
-
     /// add interface condition at cut to element matrix and rhs (two-sided Nitsche coupling)
     virtual void ElementXfemInterfaceNIT(
       DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
       DRT::Discretization &                                               dis,               ///< background discretization
       const std::vector<int> &                                            lm,                ///< element local map
-      const Teuchos::RCP<DRT::Discretization> &                           cutdis,            ///< cut discretization
+      const Teuchos::RCP<XFEM::ConditionManager> &                        cond_manager,      ///< XFEM condition manager
       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+      const std::map<int, std::vector<int> > &                            patchcouplm,
       Teuchos::ParameterList&                                             params,            ///< parameter list
       Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
       Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
       Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
       const GEO::CUT::plain_volumecell_set &                              vcSet,             ///< volumecell sets in this element
       std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
-      Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
-      const Teuchos::RCP<DRT::Discretization> &                           alediscret         ///< embedded fluid discretization
+      Epetra_SerialDenseMatrix&                                           Cuiui              ///< ui-ui coupling matrix
     ) = 0;
 
     virtual void CalculateContinuityXFEM(
