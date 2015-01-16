@@ -31,8 +31,13 @@
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 LINALG::SOLVER::DirectSolver::DirectSolver( std::string solvertype )
-  : solvertype_( solvertype ),
-    factored_( false ),
+  : solvertype_(solvertype),
+    factored_(false),
+    x_(Teuchos::null),
+    b_(Teuchos::null),
+    A_(Teuchos::null),
+    amesos_(Teuchos::null),
+    reindexer_(Teuchos::null),
     projector_(Teuchos::null)
 {
   lp_ = Teuchos::rcp( new Epetra_LinearProblem() );
