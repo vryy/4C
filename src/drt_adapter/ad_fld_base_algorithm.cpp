@@ -725,7 +725,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       else
         dserror("Unknown time integration for this fluid problem type\n");
     }
-      break;
+    break;
     case prb_two_phase_flow:
     {
       if(timeint == INPAR::FLUID::timeint_stationary)
@@ -738,14 +738,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       else
         dserror("Unknown time integration for this fluid problem type\n");
     }
-      break;
-    case prb_fluid_xfem_ls:
-    {
-      Teuchos::RCP<DRT::Discretization> soliddis = Teuchos::null;
-      fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
-    }
     break;
-      case prb_fluid_topopt:
+    case prb_fluid_topopt:
     {
       if(timeint == INPAR::FLUID::timeint_stationary)
         fluid_ = Teuchos::rcp(new FLD::TimIntTopOptStat(actdis, solver, fluidtimeparams, output, isale));
@@ -767,6 +761,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
       Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
       fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, solver, fluidtimeparams, output));
+    }
+    break;
+    case prb_fluid_xfem_ls:
+    {
+      Teuchos::RCP<DRT::Discretization> soliddis = Teuchos::null;
+      fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
     }
     break;
     case prb_combust:
