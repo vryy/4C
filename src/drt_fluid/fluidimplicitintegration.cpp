@@ -145,6 +145,9 @@ void FLD::FluidImplicitTimeInt::Init()
   // parameter theta for time-integration schemes (required for all schemes)
   theta_ = params_->get<double>("theta");
 
+  // cfl number for adaptive time step
+  cfl_ = params_->get<double>("CFL_NUMBER",-1.0);
+
   // number of steps for starting algorithm, only for GenAlpha so far
   numstasteps_ = params_->get<int> ("number of start steps");
 
@@ -3562,6 +3565,9 @@ void FLD::FluidImplicitTimeInt::Output()
     // step number and time
     output_->NewStep(step_,time_);
 
+    // time step, especially necessary for adaptive dt
+    output_->WriteDouble("timestep",dta_);
+
     // velocity/pressure vector
     output_->WriteVector("velnp",velnp_);
 
@@ -3781,8 +3787,13 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
-  dta_ = reader.ReadDouble("timestep");
-  dtp_ = dta_;
+
+  // recover time step if adaptive time stepping is used
+  if(cfl_>0.0)
+  {
+    dta_ = reader.ReadDouble("timestep");
+    dtp_ = dta_;
+  }
 
   reader.ReadVector(velnp_,"velnp");
   reader.ReadVector(veln_, "veln");
@@ -3804,7 +3815,6 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 
   if(xwall_ != Teuchos::null)
     xwall_->ReadRestart(reader);
-
 
   if (alefluid_)
   {
@@ -5046,11 +5056,11 @@ Teuchos::RCP<double> FLD::FluidImplicitTimeInt::EvaluateDivU()
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::EvaluateDtWithCFL()
 {
-  double CFL = params_->get<double>("CFL_NUMBER",-1.0);
+
   int stependadaptivedt =     params_->get<int>   ("FREEZE_ADAPTIVE_DT_AT",10000000);
   if(step_+1==stependadaptivedt&&myrank_==0)
     std::cout << "\n    !!time step is kept constant from now on for sampling of turbulence statistics!!\n" << std::endl;
-  if(CFL>0.0 && step_+1<stependadaptivedt)
+  if(cfl_>0.0 && step_+1<stependadaptivedt)
   {
     // create the parameters for the discretization
     Teuchos::ParameterList eleparams;
@@ -5084,9 +5094,9 @@ void FLD::FluidImplicitTimeInt::EvaluateDtWithCFL()
     if(min_h_u<1.0e3)
     {
       if(step_>0)
-        dta_+=inc*(CFL*min_h_u-dtp_);
+        dta_+=inc*(cfl_*min_h_u-dtp_);
       else //start of simulation
-        dta_=CFL*min_h_u;
+        dta_=cfl_*min_h_u;
     }
     else if(myrank_==0)
       std::cout << "Calculated time step is zero due to zero velocity field: use time step stated in input file for the first step!" << std::endl;

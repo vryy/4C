@@ -1025,6 +1025,10 @@ protected:
   int dumperiod_;
   //@}
 
+  //! @name cfl number for adaptive time step
+  double cfl_; ///< cfl number
+  //@}
+
   //! @name norms for convergence check
   double incvelnorm_L2_;
   double incprenorm_L2_;
