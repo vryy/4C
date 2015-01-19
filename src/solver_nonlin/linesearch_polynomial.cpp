@@ -24,6 +24,7 @@ Maintainer: Matthias Mayr
 // Teuchos
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 // baci
 #include "linesearch_polynomial.H"
@@ -47,7 +48,7 @@ void NLNSOL::LineSearchPolynomial::Setup()
   // make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  // max number of recursive polynomials
+  // fill member variables
   itermax_ = Params().sublist("Polynomial2").get<int>("max number of recursive polynomials");
 
   // SetupLineSearch() has been called
@@ -59,6 +60,11 @@ void NLNSOL::LineSearchPolynomial::Setup()
 /*----------------------------------------------------------------------------*/
 const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::LineSearchPolynomial::ComputeLSParam");
+  Teuchos::TimeMonitor monitor(*time);
+
   int err = 0;
 
   // make sure that Init() and Setup() has been called
@@ -80,7 +86,7 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
   ComputeF(*xnew, *residual);
 
   double fnorm2fullstep = 1.0e+12;
-  ConvergenceCheck(*residual, fnorm2fullstep);
+  bool converged = ConvergenceCheck(*residual, fnorm2fullstep);
 
   if (IsSufficientDecrease(fnorm2fullstep, lsparam))
     return lsparam;
@@ -96,9 +102,9 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
     ComputeF(*xnew, *residual);
 
     double fnorm2halfstep = 1.0e+12;
-    ConvergenceCheck(*residual, fnorm2halfstep);
+    converged = ConvergenceCheck(*residual, fnorm2halfstep);
 
-    if (IsSufficientDecrease(fnorm2halfstep, lsparam))
+    if (converged or IsSufficientDecrease(fnorm2halfstep, lsparam))
       return lsparam;
     else
     {
@@ -117,7 +123,8 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
       double a = 0.0;
       double b = 0.0;
 
-      while (not IsSufficientDecrease(fnorm2, lsparam) && iter < itermax_)
+      while (not converged and not IsSufficientDecrease(fnorm2, lsparam)
+          and iter < itermax_)
       {
         ++iter;
 
@@ -138,7 +145,7 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
         if (err != 0) { dserror("Failed."); }
         ComputeF(*xnew, *residual);
 
-        ConvergenceCheck(*residual, fnorm2);
+        converged = ConvergenceCheck(*residual, fnorm2);
 
         l1 = l2;
         l2 = l3;
@@ -149,9 +156,10 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
         y3 = fnorm2;
       }
 
-      if (not IsSufficientDecrease(fnorm2, lsparam) && iter > itermax_)
+      if (not converged
+          and (not IsSufficientDecrease(fnorm2, lsparam) or iter > itermax_))
         dserror("Polynomial line search cannot satisfy sufficient decrease "
-            "condition.");
+            "condition withing %d iterations.", itermax_);
 
       return lsparam;
     }

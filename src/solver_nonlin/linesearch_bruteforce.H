@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_backtracking.H
+\file linesearch_bruteforce.H
 
-\brief Line search based on a simple backtracking strategy
+\brief Line search based on a brute force backtracking strategy
 
 <pre>
 Maintainer: Matthias Mayr
@@ -13,8 +13,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef LINESEARCH_BACKTRACKING_H
-#define LINESEARCH_BACKTRACKING_H
+#ifndef LINESEARCH_BRUTEFORCE_H
+#define LINESEARCH_BRUTEFORCE_H
 
 /*----------------------------------------------------------------------------*/
 /* headers */
@@ -30,21 +30,18 @@ Maintainer: Matthias Mayr
 namespace NLNSOL
 {
   /*!
-   * \brief Line search based on a simple backtracking strategy
+   * \brief Line search based on a brute force backtracking strategy
    *
-   * We start with a trial step length of \f$alpha = 1.0\f$. if the sufficient
-   * decrease condition is not met, the trial step length is halved.
+   * The step length parameter is varied by constant increments in an interval
+   * \f$\alpha\in]0,1]\f$. Then, the \f$alpha\f$ that results in the minimal
+   * residual norm is chosen as the final step length.
    *
-   * <h3> References </h3>
-   * <ul>
-   * <li>[1] Kelley, C.T.: Iterative Methods for Linear and Nonlinear Equations,
-   *         SIAM, Philadelphia (1995)
-   * </ul>
+   * This algorithms seems to be quite accurate, though it is very expensive.
    *
    * \author mayr.mt
    * \date 01/2015
    */
-  class LineSearchBacktracking : public NLNSOL::LineSearchBase
+  class LineSearchBruteForce : public NLNSOL::LineSearchBase
   {
   public:
 
@@ -52,10 +49,10 @@ namespace NLNSOL
     //@{
 
     //! constructor (empty)
-    LineSearchBacktracking();
+    LineSearchBruteForce();
 
     //! Destructor
-    virtual ~LineSearchBacktracking(){};
+    virtual ~LineSearchBruteForce(){};
 
     //@}
 
@@ -72,16 +69,22 @@ namespace NLNSOL
 
     /*! \brief Compute the step length / line search parameter
      *
-     *  During backtracking, we start with a line search parameter
-     *  \f$\alpha = 1.0]\f$. It will be halved by \f$2\f$ until the sufficient
-     *  decrease condition is met.
+     *  During brute force backtracking, we simply try a lot of line search
+     *  parameters in the interval \f$]0.0, 1.0]\f$ and finally select the one
+     *  with the minimal residual norm. This seems to be quite accurate, though
+     *  very costly.
      *
      *  The sufficient decrease condition is checked.
+     *
+     *  \warning This algorithm is brute force and, thus, not very efficient,
+     *  but seems to be very stable and accurate.
+     *
+     *  \note Use this rather for testing than for real computations.
      *
      *  \sa NLNSOL::LineSearchBase::IsSufficientDecrease()
      *
      *  \author mayr.mt
-     *  \date 01/2015
+     *  \date 11/2013
      */
     virtual const double ComputeLSParam() const;
 
@@ -91,12 +94,12 @@ namespace NLNSOL
 
   private:
 
-    //! maximum number of backtracking steps
-    int itermax_;
+    //! increment for trial line search parameters
+    double trialstepsize_;
 
-  }; // class LineSearchBacktracking
+  }; // class LineSearchBruteForce
 } // namespace NLNSOL
 
 
 
-#endif /* LINESEARCH_BACKTRACKING_H */
+#endif /* LINESEARCH_BRUTEFORCE_H */

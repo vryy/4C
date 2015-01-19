@@ -20,6 +20,7 @@ Maintainer: Matthias Mayr
 
 // Teuchos
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 // baci
 #include "linesearch_linear.H"
@@ -50,6 +51,11 @@ void NLNSOL::LineSearchLinear::Setup()
 /*----------------------------------------------------------------------------*/
 const double NLNSOL::LineSearchLinear::ComputeLSParam() const
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::LineSearchLinear::ComputeLSParam");
+  Teuchos::TimeMonitor monitor(*time);
+
   // make sure that Init() and Setup() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }

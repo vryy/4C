@@ -33,7 +33,7 @@ Maintainer: Matthias Mayr
 #include <Teuchos_TimeMonitor.hpp>
 
 // baci
-#include "linesearch_backtracking.H"
+#include "linesearch_bruteforce.H"
 
 #include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_dserror.H"
@@ -41,20 +41,21 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
-NLNSOL::LineSearchBacktracking::LineSearchBacktracking()
- : NLNSOL::LineSearchBase()
+NLNSOL::LineSearchBruteForce::LineSearchBruteForce()
+ : NLNSOL::LineSearchBase(),
+   trialstepsize_(1.0)
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::LineSearchBacktracking::Setup()
+void NLNSOL::LineSearchBruteForce::Setup()
 {
   // make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  // fill member variables
-  itermax_ = Params().sublist("Backtracking").get<int>("max number of backtracking steps");
+  trialstepsize_ =
+      Params().sublist("Brute Force").get<double>("trial step size");
 
   // SetupLineSearch() has been called
   SetIsSetup();
@@ -63,11 +64,11 @@ void NLNSOL::LineSearchBacktracking::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-const double NLNSOL::LineSearchBacktracking::ComputeLSParam() const
+const double NLNSOL::LineSearchBruteForce::ComputeLSParam() const
 {
   // time measurements
   Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
-      "NLNSOL::LineSearchBacktracking::ComputeLSParam");
+      "NLNSOL::LineSearchBruteForce::ComputeLSParam");
   Teuchos::TimeMonitor monitor(*time);
 
   // create formatted output stream
@@ -92,17 +93,12 @@ const double NLNSOL::LineSearchBacktracking::ComputeLSParam() const
   ComputeF(*xnew, *fnew);
 
   double fnorm2 = 1.0e+12;
-  bool converged = ConvergenceCheck(*fnew, fnorm2);
+  ConvergenceCheck(*fnew, fnorm2);
 
-  int iter = 0; // iteration index for multiple backtracking steps
-
-  while (not converged and not IsSufficientDecrease(fnorm2, lsparam)
-      and iter < itermax_)
+  while (not IsSufficientDecrease(fnorm2, lsparam) && lsparam > 0.0)
   {
-    ++iter;
-
     // reduce trial line search parameter
-    lsparam /= 2.0;
+    lsparam -= trialstepsize_;
 
     *out << "lsparam = " << lsparam;// << std::endl;
 
@@ -111,19 +107,17 @@ const double NLNSOL::LineSearchBacktracking::ComputeLSParam() const
     ComputeF(*xnew, *fnew);
 
     // evaluate and compute L2-norm of residual
-    converged = ConvergenceCheck(*fnew, fnorm2);
+    ConvergenceCheck(*fnew, fnorm2);
 
     *out << "\tfnorm2 = " << fnorm2
          << "\tinitnorm = " << GetFNormOld()
          << std::endl;
   }
 
-  // check if the sufficient decrease condition could be satisfied at all
-  if (not converged
-      and (not IsSufficientDecrease(fnorm2, lsparam) or iter > itermax_))
+  // check for successful line search
+  if (not IsSufficientDecrease(fnorm2, lsparam))
   {
-    dserror("Sufficient decrease condition could not be satisfied withing %d "
-        "iterations.", itermax_);
+    dserror("Sufficient decrease condition could not be satisfied.");
 
     lsparam = 0.0;
   }

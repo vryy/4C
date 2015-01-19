@@ -1510,6 +1510,7 @@ set(OBJS_SOLVER_NONLIN
   src/solver_nonlin/fas_nlnlevel.cpp
   src/solver_nonlin/linesearch_backtracking.cpp
   src/solver_nonlin/linesearch_base.cpp
+  src/solver_nonlin/linesearch_bruteforce.cpp
   src/solver_nonlin/linesearch_factory.cpp
   src/solver_nonlin/linesearch_fullstep.cpp
   src/solver_nonlin/linesearch_linear.cpp

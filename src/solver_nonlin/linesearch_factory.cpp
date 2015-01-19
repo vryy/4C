@@ -21,6 +21,7 @@ Maintainer: Matthias Mayr
 // baci
 #include "linesearch_backtracking.H"
 #include "linesearch_base.H"
+#include "linesearch_bruteforce.H"
 #include "linesearch_factory.H"
 #include "linesearch_fullstep.H"
 #include "linesearch_linear.H"
@@ -41,7 +42,11 @@ Teuchos::RCP<NLNSOL::LineSearchBase>
 NLNSOL::LineSearchFactory::Create(const Teuchos::ParameterList& params)
 {
   const std::string lstype = params.get<std::string>("Line Search Type");
-  if (lstype == "backtracking")
+  if (lstype == "brute force")
+  {
+    return Teuchos::rcp(new NLNSOL::LineSearchBruteForce());
+  }
+  else if (lstype == "backtracking")
   {
     return Teuchos::rcp(new NLNSOL::LineSearchBacktracking());
   }
