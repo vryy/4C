@@ -24,6 +24,7 @@ Maintainer: Matthias Mayr
 // Teuchos
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 // baci
 #include "fas_hierarchy.H"
@@ -65,6 +66,11 @@ void NLNSOL::NlnProblemCoarseLevel::Setup()
 void NLNSOL::NlnProblemCoarseLevel::ComputeF(const Epetra_MultiVector& xc,
     Epetra_MultiVector& fc) const
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnProblemCoarseLevel::ComputeF");
+  Teuchos::TimeMonitor monitor(*time);
+
   int err = 0;
 
   // Make sure that Init() and Setup() have been called

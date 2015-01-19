@@ -31,6 +31,7 @@ Maintainer: Matthias Mayr
 // Teuchos
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 // baci
 #include "nln_problem.H"
@@ -104,6 +105,11 @@ void NLNSOL::NlnProblem::Setup()
 void NLNSOL::NlnProblem::ComputeF(const Epetra_MultiVector& x,
     Epetra_MultiVector& f) const
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnProblem::ComputeF");
+  Teuchos::TimeMonitor monitor(*time);
+
   // Make sure that Init() and Setup() have been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -146,6 +152,11 @@ void NLNSOL::NlnProblem::ComputeF(const Epetra_MultiVector& x,
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblem::ComputeJacobian() const
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnProblem::ComputeJacobian");
+  Teuchos::TimeMonitor monitor(*time);
+
   // Make sure that Init() and Setup() have been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }

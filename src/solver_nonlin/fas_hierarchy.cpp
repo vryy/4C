@@ -52,6 +52,7 @@ Maintainer: Matthias Mayr
 #include <Teuchos_Array.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 // baci
 #include "fas_hierarchy.H"
@@ -104,6 +105,11 @@ void NLNSOL::FAS::AMGHierarchy::Init(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------------*/
 void NLNSOL::FAS::AMGHierarchy::Setup()
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::FAS::AMGHierarchy::Setup");
+  Teuchos::TimeMonitor monitor(*time);
+
 #ifdef HAVE_MueLu
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
@@ -229,6 +235,11 @@ NLNSOL::FAS::AMGHierarchy::RestrictToCoarseLevel(const Epetra_MultiVector& vec,
     const int targetlevel
     ) const
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::FAS::AMGHierarchy::RestrictToCoarseLevel");
+  Teuchos::TimeMonitor monitor(*time);
+
   CheckLevelID(targetlevel);
 
   // copy input vector
@@ -252,6 +263,11 @@ NLNSOL::FAS::AMGHierarchy::ProlongateToFineLevel(
     const int sourcelevel
     ) const
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::FAS::AMGHierarchy::ProlongateToFineLevel");
+  Teuchos::TimeMonitor monitor(*time);
+
   CheckLevelID(sourcelevel);
 
   // copy input vector
