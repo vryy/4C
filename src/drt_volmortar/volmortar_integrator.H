@@ -206,7 +206,8 @@ public:
   void Interpolate(DRT::Node* node,
                    LINALG::SparseMatrix& pmatrix_,
                    Teuchos::RCP<const DRT::Discretization> nodediscret,
-                   Teuchos::RCP<const DRT::Discretization> elediscret);
+                   Teuchos::RCP<const DRT::Discretization> elediscret,
+                   std::vector<int>& foundeles);
 
 protected:
   /*!

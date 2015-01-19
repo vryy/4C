@@ -1265,7 +1265,8 @@ template<DRT::Element::DiscretizationType distype>
 void VOLMORTAR::ConsInterpolator<distype>::Interpolate(DRT::Node* node,
                  LINALG::SparseMatrix& pmatrix,
                  Teuchos::RCP<const DRT::Discretization> nodediscret,
-                 Teuchos::RCP<const DRT::Discretization> elediscret)
+                 Teuchos::RCP<const DRT::Discretization> elediscret,
+                 std::vector<int>& foundeles)
 {
   // check ownership
   if (node->Owner() != nodediscret->Comm().MyPID())
@@ -1278,18 +1279,18 @@ void VOLMORTAR::ConsInterpolator<distype>::Interpolate(DRT::Node* node,
   double AuxXi[3]   = {0.0, 0.0, 0.0};
 
   // element loop (brute force)
-  for (int j=0;j<elediscret->NumMyColElements();++j)
+  for(int j=0;j<(int)foundeles.size();++j)
   {
     double xi[3]   = {0.0, 0.0, 0.0};
     bool converged = true;
 
     //get master element
-    DRT::Element* ele = elediscret->lColElement(j);
+    DRT::Element* ele = elediscret->gElement(foundeles[j]);
 
     MORTAR::UTILS::GlobalToLocal<distype>(*ele,nodepos,xi,converged);
 
     // no convergence of local newton?
-    if(!converged and j!=((int)elediscret->NumMyColElements()-1))
+    if(!converged and j!=((int)foundeles.size()-1))
       continue;
 
     // save distance of gp
@@ -1297,26 +1298,26 @@ void VOLMORTAR::ConsInterpolator<distype>::Interpolate(DRT::Node* node,
     if(l<dist)
     {
       dist = l;
-      eleid= j;
-      AuxXi[0]  = xi[0];
-      AuxXi[1]  = xi[1];
-      AuxXi[2]  = xi[2];
+      eleid = foundeles[j];
+      AuxXi[0] = xi[0];
+      AuxXi[1] = xi[1];
+      AuxXi[2] = xi[2];
     }
 
     // Check parameter space mapping
     bool proj = CheckMapping(*ele,xi);
 
     // if node outside --> continue or eval nearest gp
-    if(!proj and j!=((int)elediscret->NumMyColElements()-1))
+    if(!proj and j!=((int)foundeles.size()-1))
     {
       continue;
     }
-    else if(!proj and j==((int)elediscret->NumMyColElements()-1))
+    else if(!proj and j==((int)foundeles.size()-1))
     {
       xi[0] = AuxXi[0];
       xi[1] = AuxXi[1];
       xi[2] = AuxXi[2];
-      ele = elediscret->lColElement(eleid);
+      ele = elediscret->gElement(eleid);
     }
 
     // get values

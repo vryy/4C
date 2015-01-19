@@ -350,14 +350,20 @@ void GlobalToLocal(
         distype == DRT::Element::hex8  or
         distype == DRT::Element::hex20 or
         distype == DRT::Element::hex27)
+     {
        xi[p] = 0.0;
-     else if(distype == DRT::Element::tet4 or
+     }
+     else if(distype == DRT::Element::tri3 or
+             distype == DRT::Element::tri6 or
+             distype == DRT::Element::tet4 or
              distype == DRT::Element::tet10)
      {
        xi[p] = 1.0/3.0;
      }
      else
+     {
        dserror("ERROR: Element type not supported for parameter space mapping!");
+     }
    }
 
    double rhs[ndim];
@@ -477,9 +483,29 @@ void GlobalToLocal(
        xref(j,k) = ele.Nodes()[k]->X()[j];
 
    // first estimation for parameter space coordinates
-   for(int p=0;p<3;++p)
-     xi[p] = 0.0;
-
+   for(int p=0;p<ndim;++p)
+   {
+     if(distype == DRT::Element::quad4 or
+        distype == DRT::Element::quad8 or
+        distype == DRT::Element::quad9 or
+        distype == DRT::Element::hex8  or
+        distype == DRT::Element::hex20 or
+        distype == DRT::Element::hex27)
+     {
+       xi[p] = 0.0;
+     }
+     else if(distype == DRT::Element::tri3 or
+             distype == DRT::Element::tri6 or
+             distype == DRT::Element::tet4 or
+             distype == DRT::Element::tet10)
+     {
+       xi[p] = 1.0/3.0;
+     }
+     else
+     {
+       dserror("ERROR: Element type not supported for parameter space mapping!");
+     }
+   }
    double rhs[ndim];
 
    int j = 0;

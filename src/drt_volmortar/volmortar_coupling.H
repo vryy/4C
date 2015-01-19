@@ -149,13 +149,15 @@ protected:
    \brief Assemble p matrix for cons. interpolation approach
 
    */
-  virtual void AssembleConsistentInterpolation_ADis(DRT::Node* node);
+  virtual void AssembleConsistentInterpolation_ADis(DRT::Node* node,
+          std::vector<int>& foundeles);
 
   /*!
    \brief Assemble p matrix for cons. interpolation approach
 
    */
-  virtual void AssembleConsistentInterpolation_BDis(DRT::Node* node);
+  virtual void AssembleConsistentInterpolation_BDis(DRT::Node* node,
+      std::vector<int>& foundeles);
 
   /*!
    \brief Get discretization of B-field
@@ -187,6 +189,15 @@ protected:
 
    */
   virtual LINALG::Matrix<9, 2> CalcDop(DRT::Element& ele);
+
+  /*!
+   \brief center triangulation (if delaunay fails)
+
+   */
+  virtual bool CenterTriangulation(
+      std::vector<Teuchos::RCP<MORTAR::IntCell> >& cells,
+      std::vector<MORTAR::Vertex> & clip,
+      double tol);
 
   /*!
    \brief check if we need cut (3D)

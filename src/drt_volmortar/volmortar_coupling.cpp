@@ -668,6 +668,16 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
       new LINALG::SparseMatrix(*BDiscret()->DofRowMap(1), 100));
 
   /***********************************************************
+   * create search tree and current dops                     *
+   ***********************************************************/
+  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(Adiscret_);
+  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(Bdiscret_);
+  std::map<int, LINALG::Matrix<9, 2> > CurrentDOPsA = CalcBackgroundDops(
+      Adiscret_);
+  std::map<int, LINALG::Matrix<9, 2> > CurrentDOPsB = CalcBackgroundDops(
+      Bdiscret_);
+
+  /***********************************************************
    * Create P operators                                      *
    ***********************************************************/
   for (int i = 0; i < Adiscret_->NumMyColNodes(); ++i)
@@ -676,7 +686,11 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
     int gid = Adiscret_->NodeColMap()->GID(i);
     DRT::Node* anode = Adiscret_->gNode(gid);
 
-    AssembleConsistentInterpolation_ADis(anode);
+    // get found elements from other discr.
+    std::vector<int> found =
+        Search(*anode->Elements()[0], SearchTreeB, CurrentDOPsB);
+
+    AssembleConsistentInterpolation_ADis(anode,found);
   } // end node loop
 
   //================================================
@@ -686,7 +700,11 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
     int gid = Bdiscret_->NodeColMap()->GID(i);
     DRT::Node* bnode = Bdiscret_->gNode(gid);
 
-    AssembleConsistentInterpolation_BDis(bnode);
+    // get found elements from other discr.
+    std::vector<int> found =
+        Search(*bnode->Elements()[0], SearchTreeA, CurrentDOPsA);
+
+    AssembleConsistentInterpolation_BDis(bnode,found);
   } // end node loop
 
   /***********************************************************
@@ -877,7 +895,14 @@ void VOLMORTAR::VolMortarCoupl::EvaluateSegments2D(DRT::Element& Aele,
     polygoncounter_ += 1;
 
   // triangulation
-  DelaunayTriangulation(cells, ClippedPolygon, tol);
+  bool success = DelaunayTriangulation(cells, ClippedPolygon, tol);
+  if(!success)
+  {
+    bool backup = CenterTriangulation(cells, ClippedPolygon, tol);
+    if(!backup)
+      dserror("ERROR: Triangulation failed!");
+  }
+
   cellcounter_ += (int) cells.size();
 
   //integrate cells
@@ -1666,7 +1691,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
       }
       case DRT::Element::tri3:
       {
-        static VolMortarIntegrator<DRT::Element::tri3, DRT::Element::quad4> integrator(
+        static VolMortarIntegrator<DRT::Element::tri3, DRT::Element::tri3> integrator(
             Params());
         integrator.IntegrateCells2D(sele, mele, cells[q], *dmatrixA_,
             *mmatrixA_, Adiscret_, Bdiscret_);
@@ -1723,7 +1748,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
     }
     case DRT::Element::tri3:
     {
-      switch (mele.Shape())
+      switch (sele.Shape())
       {
       // 2D surface elements
       case DRT::Element::quad4:
@@ -1736,7 +1761,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
       }
       case DRT::Element::tri3:
       {
-        static VolMortarIntegrator<DRT::Element::tri3, DRT::Element::quad4> integrator(
+        static VolMortarIntegrator<DRT::Element::tri3, DRT::Element::tri3> integrator(
             Params());
         integrator.IntegrateCells2D(mele, sele, cells[q], *dmatrixB_,
             *mmatrixB_, Bdiscret_, Adiscret_);
@@ -1752,7 +1777,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
     }
     default:
     {
-      dserror("unknown shape!");
+      dserror("ERROR: unknown shape!");
       break;
     }
     }
@@ -2474,7 +2499,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
  |  Assemble p matrix for cons. interpolation approach       farah 06/14|
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_ADis(
-    DRT::Node* node)
+    DRT::Node* node,
+    std::vector<int>& foundeles)
 {
   // assume that all BDis element types are equal
   DRT::Element::DiscretizationType btype = Bdiscret_->lColElement(0)->Shape();
@@ -2484,61 +2510,61 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_ADis(
   case DRT::Element::quad4:
   {
     static ConsInterpolator<DRT::Element::quad4> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
     break;
   }
   case DRT::Element::quad8:
   {
     static ConsInterpolator<DRT::Element::quad8> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
     break;
   }
   case DRT::Element::quad9:
   {
     static ConsInterpolator<DRT::Element::quad9> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
     break;
   }
   case DRT::Element::tri3:
   {
     static ConsInterpolator<DRT::Element::tri3> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
     break;
   }
   case DRT::Element::tri6:
   {
     static ConsInterpolator<DRT::Element::tri6> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
     break;
   }
   case DRT::Element::hex8:
   {
     static ConsInterpolator<DRT::Element::hex8> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
     break;
   }
   case DRT::Element::hex27:
   {
     static ConsInterpolator<DRT::Element::hex27> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
     break;
   }
   case DRT::Element::hex20:
   {
     static ConsInterpolator<DRT::Element::hex20> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
     break;
   }
   case DRT::Element::tet4:
   {
     static ConsInterpolator<DRT::Element::tet4> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
     break;
   }
   case DRT::Element::tet10:
   {
     static ConsInterpolator<DRT::Element::tet10> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_);
+    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
     break;
   }
   default:
@@ -2555,7 +2581,8 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_ADis(
  |  Assemble p matrix for cons. interpolation approach       farah 06/14|
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_BDis(
-    DRT::Node* node)
+    DRT::Node* node,
+    std::vector<int>& foundeles)
 {
   // assume that all BDis element types are equal
   DRT::Element::DiscretizationType atype = Adiscret_->lColElement(0)->Shape();
@@ -2565,61 +2592,61 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_BDis(
   case DRT::Element::quad4:
   {
     static ConsInterpolator<DRT::Element::quad4> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
     break;
   }
   case DRT::Element::quad8:
   {
     static ConsInterpolator<DRT::Element::quad8> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
     break;
   }
   case DRT::Element::quad9:
   {
     static ConsInterpolator<DRT::Element::quad9> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
     break;
   }
   case DRT::Element::tri3:
   {
     static ConsInterpolator<DRT::Element::tri3> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
     break;
   }
   case DRT::Element::tri6:
   {
     static ConsInterpolator<DRT::Element::tri6> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
     break;
   }
   case DRT::Element::hex8:
   {
     static ConsInterpolator<DRT::Element::hex8> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
     break;
   }
   case DRT::Element::hex27:
   {
     static ConsInterpolator<DRT::Element::hex27> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
     break;
   }
   case DRT::Element::hex20:
   {
     static ConsInterpolator<DRT::Element::hex20> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
     break;
   }
   case DRT::Element::tet4:
   {
     static ConsInterpolator<DRT::Element::tet4> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
     break;
   }
   case DRT::Element::tet10:
   {
     static ConsInterpolator<DRT::Element::tet10> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_);
+    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
     break;
   }
   default:
@@ -3841,12 +3868,198 @@ bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(
   return true;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Triangulation of clip polygon (3D) - CENTER               popp 08/11|
+ *----------------------------------------------------------------------*/
+bool VOLMORTAR::VolMortarCoupl::CenterTriangulation(
+    std::vector<Teuchos::RCP<MORTAR::IntCell> >& cells,
+    std::vector<MORTAR::Vertex> & clip,
+    double tol)
+{
+  // preparations
+  cells.resize(0);
+  int clipsize = (int) (clip.size());
+  std::vector<GEN::pairedvector<int, double> > lincenter(3, 100);
+
+  std::vector<GEN::pairedvector<int, double> > derivauxn;
+
+  std::vector<std::vector<GEN::pairedvector<int, double> > > linvertex(clipsize,
+      std::vector<GEN::pairedvector<int, double> >(3, 100));
+
+  //**********************************************************************
+  // (1) Trivial clipping polygon -> IntCells
+  //**********************************************************************
+  // clip polygon = triangle
+  // no triangulation necessary -> 1 IntCell
+  if (clipsize == 3)
+  {
+    // IntCell vertices = clip polygon vertices
+    LINALG::Matrix<3, 3> coords;
+    for (int i = 0; i < clipsize; ++i)
+      for (int k = 0; k < 3; ++k)
+        coords(k, i) = clip[i].Coord()[k];
+
+    // create IntCell object and push back
+    cells.push_back(
+        Teuchos::rcp(
+            new MORTAR::IntCell(0, 3, coords, Auxn(), DRT::Element::tri3, linvertex[0],
+                linvertex[1], linvertex[2], derivauxn)));
+
+    // get out of here
+    return true;
+  }
+
+  /*
+   // clip polygon = quadrilateral
+   // no triangulation necessary -> 2 IntCells
+   else if (clipsize==4)
+   {
+   // IntCell 1 vertices = clip polygon vertices 0,1,2
+   Epetra_SerialDenseMatrix coords(3,3);
+   for (int k=0;k<3;++k)
+   {
+   coords(k,0) = Clip()[0].Coord()[k];
+   coords(k,1) = Clip()[1].Coord()[k];
+   coords(k,2) = Clip()[2].Coord()[k];
+   }
+
+   // create 1st IntCell object and push back
+   Cells().push_back(Teuchos::rcp(new IntCell(0,3,coords,Auxn(),DRT::Element::tri3,
+   linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
+
+   // IntCell vertices = clip polygon vertices 2,3,0
+   for (int k=0;k<3;++k)
+   {
+   coords(k,0) = Clip()[2].Coord()[k];
+   coords(k,1) = Clip()[3].Coord()[k];
+   coords(k,2) = Clip()[0].Coord()[k];
+   }
+
+   // create 2nd IntCell object and push back
+   Cells().push_back(Teuchos::rcp(new IntCell(1,3,coords,Auxn(),DRT::Element::tri3,
+   linvertex[2],linvertex[3],linvertex[0],GetDerivAuxn())));
+
+   // get out of here
+   return true;
+   }
+   */
+
+  //**********************************************************************
+  // (2) Find center of clipping polygon (centroid formula)
+  //**********************************************************************
+  std::vector<double> clipcenter(3);
+  for (int k = 0; k < 3; ++k)
+    clipcenter[k] = 0.0;
+  double fac = 0.0;
+
+  // first we need node averaged center
+  double nac[3] =
+  { 0.0, 0.0, 0.0 };
+  for (int i = 0; i < clipsize; ++i)
+    for (int k = 0; k < 3; ++k)
+      nac[k] += (clip[i].Coord()[k] / clipsize);
+
+  // loop over all triangles of polygon
+  for (int i = 0; i < clipsize; ++i)
+  {
+    double xi_i[3] =
+    { 0.0, 0.0, 0.0 };
+    double xi_ip1[3] =
+    { 0.0, 0.0, 0.0 };
+
+    // standard case
+    if (i < clipsize - 1)
+    {
+      for (int k = 0; k < 3; ++k)
+        xi_i[k] = clip[i].Coord()[k];
+      for (int k = 0; k < 3; ++k)
+        xi_ip1[k] = clip[i + 1].Coord()[k];
+    }
+    // last vertex of clip polygon
+    else
+    {
+      for (int k = 0; k < 3; ++k)
+        xi_i[k] = clip[clipsize - 1].Coord()[k];
+      for (int k = 0; k < 3; ++k)
+        xi_ip1[k] = clip[0].Coord()[k];
+    }
+
+    // triangle area
+    double diff1[3] =
+    { 0.0, 0.0, 0.0 };
+    double diff2[3] =
+    { 0.0, 0.0, 0.0 };
+    for (int k = 0; k < 3; ++k)
+      diff1[k] = xi_ip1[k] - xi_i[k];
+    for (int k = 0; k < 3; ++k)
+      diff2[k] = xi_i[k] - nac[k];
+
+    double cross[3] =
+    { 0.0, 0.0, 0.0 };
+    cross[0] = diff1[1] * diff2[2] - diff1[2] * diff2[1];
+    cross[1] = diff1[2] * diff2[0] - diff1[0] * diff2[2];
+    cross[2] = diff1[0] * diff2[1] - diff1[1] * diff2[0];
+
+    double Atri = 0.5
+        * sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
+
+    // add contributions to clipcenter and fac
+    fac += Atri;
+    for (int k = 0; k < 3; ++k)
+      clipcenter[k] += 1.0 / 3.0 * (xi_i[k] + xi_ip1[k] + nac[k]) * Atri;
+  }
+
+  // final clipcenter
+  for (int k = 0; k < 3; ++k)
+    clipcenter[k] /= fac;
+
+  //**********************************************************************
+  // (4) General clipping polygon: Triangulation -> IntCells
+  //**********************************************************************
+  // center-based triangulation if clip polygon > quadrilateral
+  // No. of IntCells is equal to no. of clip polygon vertices
+  for (int num = 0; num < clipsize; ++num)
+  {
+    // the first vertex is always the clip center
+    // the second vertex is always the current clip vertex
+    LINALG::Matrix<3, 3> coords;
+    for (int k = 0; k < 3; ++k)
+    {
+      coords(k, 0) = clipcenter[k];
+      coords(k, 1) = clip[num].Coord()[k];
+    }
+
+    // the third vertex is the next vertex on clip polygon
+    int numplus1 = num + 1;
+    if (num == clipsize - 1)
+    {
+      for (int k = 0; k < 3; ++k)
+        coords(k, 2) = clip[0].Coord()[k];
+      numplus1 = 0;
+    }
+    else
+      for (int k = 0; k < 3; ++k)
+        coords(k, 2) = clip[num + 1].Coord()[k];
+
+    // create IntCell object and push back
+    cells.push_back(
+        Teuchos::rcp(
+            new MORTAR::IntCell(num, 3, coords, Auxn(), DRT::Element::tri3, lincenter,
+                linvertex[num], linvertex[numplus1], derivauxn)));
+  }
+
+  // triangulation successful
+  return true;
+}
+
 /*----------------------------------------------------------------------*
  |  Triangulation of clip polygon (3D) - DELAUNAY             popp 08/11|
  *----------------------------------------------------------------------*/
 bool VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
     std::vector<Teuchos::RCP<MORTAR::IntCell> >& cells,
-    std::vector<MORTAR::Vertex> & clip, double tol)
+    std::vector<MORTAR::Vertex> & clip,
+    double tol)
 {
   // preparations
   cells.resize(0);
