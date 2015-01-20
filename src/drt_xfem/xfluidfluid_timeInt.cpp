@@ -24,7 +24,6 @@ Maintainer:
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 
-#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
@@ -46,19 +45,13 @@ Maintainer:
 #include "../drt_inpar/inpar_cut.H"
 #include "../drt_lib/drt_discret.H"
 
-
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_interface.H"
 #include "../drt_fluid_ele/fluid_ele_factory.H"
 #include "../drt_fluid/fluid_utils.H"
-#include "../drt_fluid_ele/fluid_ele_calc_intfaces_stab.H"
-
 
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
-
-
-#include <iostream>
 
 // -------------------------------------------------------------------
 //  constructor
@@ -81,6 +74,7 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
   params_(params)
 
 {
+  // create node-to-dof-maps of the background fluid
   CreateBgNodeMaps(wizard);
 
   Teuchos::ParameterList& params_xfem  = params_.sublist("XFEM");
@@ -88,6 +82,13 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
 
   Teuchos::ParameterList& params_xf_gen = params_.sublist("XFLUID DYNAMIC/GENERAL");
   searchradius_fac_= params_xf_gen.get<double>("XFLUIDFLUID_SEARCHRADIUS");
+
+  // in case the embedded discretization is empty on this proc
+  if (!embdis_->NumMyRowElements())
+  {
+    minradius_ = 0.0;
+    return;
+  }
 
   // determine the radius of the search tree
   switch (embdis_->lRowElement(0)->Shape())
@@ -270,7 +271,7 @@ bool XFEM::XFluidFluidTimeIntegration::SaveBgNodeMapsAndCreateNew(Teuchos::RCP<G
 // -------------------------------------------------------------------
 void  XFEM::XFluidFluidTimeIntegration::CreateBgNodeMapsForRestart(Teuchos::RCP<GEO::CutWizard>  wizard)
 {
-  // Create new maps
+  // Create node-to-dof maps for the background fluid
   CreateBgNodeMaps(wizard);
   currentbgdofmap_ =  bgdis_->DofRowMap();
 }
@@ -305,7 +306,7 @@ void  XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectors(
   const SourceState emb_state(
       embstate_velnp,embstate_veln,embstate_velnm,embstate_accnp,embstate_accn
       );
-  // this method can write to the target Epetra_Vectors, but the pointers are const,
+  // REMARK: this method can write to the target Epetra_Vectors, but the pointers are const,
   // as the TargetState is const (const pointer to non-const pointee)
   SetNewBgStateVectors(
       bgfluid_state, bgfluid_staten, emb_state, aledispn);
@@ -316,7 +317,7 @@ void  XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectors(
 void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectors(const TargetState &                       bgfluid_state,
                                                             const SourceState &                       bgfluid_state_n,
                                                             const SourceState &                       embfluid_state,
-                                                            const Teuchos::RCP<const Epetra_Vector> & aledispn
+                                                            const Teuchos::RCP<const Epetra_Vector> & aledisp
 )
 {
   // do projection from embedded element to background fluid nodes
@@ -327,14 +328,14 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectors(const TargetState & 
     SetNewBgStateVectorFullProjection(bgfluid_state,
                                       bgfluid_state_n,
                                       embfluid_state,
-                                      aledispn);
-  } // use the ghost values
+                                      aledisp);
+  } // no projection, use the ghost values instead
   else if (timeintapproach_ == INPAR::XFEM::Xff_TimeInt_KeepGhostValues)
   {
     SetNewBgStateVectorKeepGhostValues(bgfluid_state,
                                        bgfluid_state_n,
                                        embfluid_state,
-                                       aledispn);
+                                       aledisp);
   }
   else
     dserror("Xfem time integration approach unknown!");
@@ -342,7 +343,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectors(const TargetState & 
 
 // -------------------------------------------------------------------
 // If enriched values are available, keep them (no projection from
-// embedded fluid)
+// embedded fluid in this case)
 // -------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorKeepGhostValues(
   const TargetState &                       bgfluid_state,
@@ -375,9 +376,6 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorKeepGhostValues(
       //int numsets = bgdis_->NumDof(bgnode)/4;
       std::vector<int> gdofsn = iterstn->second;
 
-      //TODO!! die richtige dofs von bgstatevec_n rauspicke, wenn mehrere
-      //dofsets vorhanden sind
-
 #ifdef DEBUG
       if (iterstn->second.size()>4)
         IO::cout << " INFO: more standard sets!!!! "<< "Node GID " << bgnode->Id() << IO::endl;
@@ -409,11 +407,8 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorKeepGhostValues(
       // the vector of interpolated values
       LINALG::Matrix<20,1>    interpolatedvec(true);
       interpolated_vecs.push_back(interpolatedvec);
-
-//      if( numsets > 1 )
-//        std::cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " << bgnode->Id() << END_COLOR << std::endl;
-
     }
+
     //keep the ghost dofs:
     //n: enriched -> n+1:enriched, n: enriched -> n+1: std
     else if ((iteren != nodeToDof_enriched_n_.end() and iterenp != nodeToDof_enriched_np_.end()) or
@@ -446,14 +441,17 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorKeepGhostValues(
       dserror("Background node %d has reached an invalid state. Check the query!", bgnode->Id());
   }
 
+  // build search tree for projection from embedded discretization
+  SetupSearchTree(aledispn);
+
   // call the Round Robin Communicator
   CommunicateNodes(bgnodes_xyz,interpolated_vecs,bgnodes_nohistory,
-                   aledispn,bgfluid_state,bgfluid_state_n,embfluid_state);
+                   aledispn,bgfluid_state,bgfluid_state_n,embfluid_state,bgdis_);
 
 }//XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorKeepGhostValues
 
 // -------------------------------------------------------------------
-// Project values from embedded discretization.
+// project values from embedded discretization
 // -------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorFullProjection(
   const TargetState &                       bgfluid_state,
@@ -538,38 +536,28 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorFullProjection(
       dserror("Unreasonable state change of background fluid node. Check the query.");
   }
 
+  // build search tree for projection from embedded discretization
+  SetupSearchTree(aledispn);
 
   // call the Round Robin Communicator
   CommunicateNodes(bgnodes_xyz,interpolated_vecs,
                    bgnodes_nohistory,aledispn,
-                   bgfluid_state,bgfluid_state_n,embfluid_state);
+                   bgfluid_state,bgfluid_state_n,
+                   embfluid_state,
+                   bgdis_);
 
 }//XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorFullProjection
 
 //-----------------------------------------------------------------------------
-// Transfer data in the round robin communication pattern:
-//
-// In this function the coordinates of the background-nodes without history
-// are send in a round robin pattern to all processors to find the embedded
-// -element where this nodes lay at the previous time step. Once this element
-// is found we do the projection.
-//
-// bgnodes_xyz(in):           coordinates of bg-nodes without history
-// interpolated_vecs(in/out):    interpolated vector
-// bgnodes_nohistory(in):        bg-node-ids with no history
-// embstatevn(in):               vector from which we want to interpolate values
-// aledispn(in):                 displacement vector of embedded-dis
-// bgstatevec_np(in/out):        epetra state vector which needs interpolation
-// bgstatevec_n(in):             epetra state vector needed to transfer
-//                               enriched values if no embedded element is found
 //------------------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(std::vector<LINALG::Matrix<3,1> >  &      bgnodes_xyz,
+void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(std::vector<LINALG::Matrix<3,1> >  &      nodes_xyz,
                                                         std::vector<LINALG::Matrix<20,1> > &      interpolated_vecs,
-                                                        std::vector<int>  &                       bgnodes_nohistory,
+                                                        std::vector<int>  &                       nodes_nohistory,
                                                         const Teuchos::RCP<const Epetra_Vector> & aledispn,
-                                                        const TargetState &                       bgfluid_state,
+                                                        const TargetState &                       target_state,
                                                         const SourceState &                       bgfluid_state_n,
-                                                        const SourceState &                       embfluid_state
+                                                        const SourceState &                       embfluid_state,
+                                                        const Teuchos::RCP<DRT::Discretization>&  discret
 )
 {
 
@@ -589,9 +577,8 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(std::vector<LINALG::Matr
   std::vector<char> sblock;
   std::vector<char> rblock;
 
-  // vector which identifies if a bg-node has already interpolated values (initialize to false)
-  std::vector<int> have_values(bgnodes_nohistory.size(),0);
-
+  // vector which identifies if a node has already interpolated values (initialize to false)
+  std::vector<int> have_values(nodes_nohistory.size(),0);
 
   //----------------------------------------------------------------------
   // communication is done in a round robin loop
@@ -599,26 +586,15 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(std::vector<LINALG::Matr
   for (int np=0; np<numproc+1; ++np)
   {
     // in the first step, we cannot receive anything
-    if (np >0)
+    if (np > 0)
     {
       ReceiveBlock(rblock,exporter,request);
 
-      // Unpack info from the receive block from the last proc
-      std::vector<LINALG::Matrix<3,1> > stuff_xyz;
-      // we have state vectors, each has 4 dofs (20 interpolated values)
-      std::vector<LINALG::Matrix<20,1> > stuff_interpolatedvecs;
-      std::vector<int>  stuff_bgnodes_nohistory;
-      std::vector<int>  stuff_have_values;
-
       std::vector<char>::size_type position = 0;
-      DRT::ParObject::ExtractfromPack(position,rblock,stuff_xyz);
-      DRT::ParObject::ExtractfromPack(position,rblock,stuff_interpolatedvecs);
-      DRT::ParObject::ExtractfromPack(position,rblock,stuff_bgnodes_nohistory);
-      DRT::ParObject::ExtractfromPack(position,rblock,stuff_have_values);
-      bgnodes_xyz = stuff_xyz;
-      interpolated_vecs = stuff_interpolatedvecs;
-      bgnodes_nohistory = stuff_bgnodes_nohistory;
-      have_values = stuff_have_values;
+      DRT::ParObject::ExtractfromPack(position,rblock,nodes_xyz);
+      DRT::ParObject::ExtractfromPack(position,rblock,interpolated_vecs);
+      DRT::ParObject::ExtractfromPack(position,rblock,nodes_nohistory);
+      DRT::ParObject::ExtractfromPack(position,rblock,have_values);
     }
 
     // in the last step, we keep everything on this proc
@@ -626,11 +602,11 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(std::vector<LINALG::Matr
     {
       // -----------------------
       // do what we wanted to do
-      FindEmbEleAndInterpolateValues(bgnodes_xyz,interpolated_vecs,have_values,
+      FindEmbEleAndInterpolateValues(nodes_xyz,interpolated_vecs,have_values,
                                      aledispn,embfluid_state);
 
-      // Pack info into block to sendit
-      PackValues(bgnodes_xyz,interpolated_vecs,bgnodes_nohistory,have_values,sblock);
+      // Pack info into block to send it
+      PackValues(nodes_xyz,interpolated_vecs,nodes_nohistory,have_values,sblock);
 
       // add size to sendblock
       SendBlock(sblock,exporter,request);
@@ -638,13 +614,13 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(std::vector<LINALG::Matr
   } // end of loop over processors
 
   //----------------------------------------------------------------------------------------------
-  //set the interpolated values to bgstatevec_np
+  //set the interpolated values to statevec_np
   //---------------------------------------------------------------------------------------------
-  for (size_t i=0; i<bgnodes_nohistory.size(); ++i)
+  for (size_t i=0; i<nodes_nohistory.size(); ++i)
   {
-    const DRT::Node* bgnode = bgdis_->gNode(bgnodes_nohistory.at(i));
+    const DRT::Node* node = discret->gNode(nodes_nohistory.at(i));
     // number of dof-sets
-    const unsigned int numsets = bgdis_->NumDof(bgnode)/4;
+    const unsigned int numsets = discret->NumDof(node)/4;
 
     // if interpolated values are available
     if (have_values.at(i) == 1)
@@ -656,43 +632,45 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(std::vector<LINALG::Matr
         for (unsigned int isd = 0; isd < 4; ++isd)
         {
           unsigned int countvecs = 0;
-          (*bgfluid_state.velnp_)[bgfluid_state.velnp_->Map().LID(bgdis_->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
+          (*target_state.velnp_)[target_state.velnp_->Map().LID(discret->Dof(node)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
           countvecs += 4;
-          (*bgfluid_state.veln_) [bgfluid_state.veln_->Map().LID(bgdis_->Dof(bgnode)[offset+isd])]  = interpolated_vecs.at(i)(isd+countvecs);
+          (*target_state.veln_) [target_state.veln_->Map().LID(discret->Dof(node)[offset+isd])]  = interpolated_vecs.at(i)(isd+countvecs);
           countvecs += 4;
-          (*bgfluid_state.velnm_)[bgfluid_state.velnm_->Map().LID(bgdis_->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
+          (*target_state.velnm_)[target_state.velnm_->Map().LID(discret->Dof(node)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
           countvecs += 4;
-          (*bgfluid_state.accnp_)[bgfluid_state.accnp_->Map().LID(bgdis_->Dof(bgnode)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
+          (*target_state.accnp_)[target_state.accnp_->Map().LID(discret->Dof(node)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
           countvecs += 4;
-          (*bgfluid_state.accn_) [bgfluid_state.accn_->Map().LID(bgdis_->Dof(bgnode)[offset+isd])]  = interpolated_vecs.at(i)(isd+countvecs);
+          (*target_state.accn_) [target_state.accn_->Map().LID(discret->Dof(node)[offset+isd])]  = interpolated_vecs.at(i)(isd+countvecs);
         }
         offset += 4;
       }
     }
-    // if no embedded element is found, try to find an enriched value
-    else
+    // if no embedded element is found, try to find an enriched value (only when interpolating for background fluid)
+    else if (discret->Name() == "xfluid")
     {
-      std::map<int, std::vector<int> >::const_iterator iterstn  = nodeToDof_std_n_.find(bgnode->Id());
-      std::map<int, std::vector<int> >::const_iterator iterstnp = nodeToDof_std_np_.find(bgnode->Id());
-      std::map<int, std::vector<int> >::const_iterator iteren   = nodeToDof_enriched_n_.find(bgnode->Id());
-      std::map<int, std::vector<int> >::const_iterator iterenp  = nodeToDof_enriched_np_.find(bgnode->Id());
+      std::map<int, std::vector<int> >::const_iterator iterstnp = nodeToDof_std_np_.find(node->Id());
+      std::map<int, std::vector<int> >::const_iterator iteren   = nodeToDof_enriched_n_.find(node->Id());
+      std::map<int, std::vector<int> >::const_iterator iterenp  = nodeToDof_enriched_np_.find(node->Id());
 
       if ((iteren != nodeToDof_enriched_n_.end() and iterenp != nodeToDof_enriched_np_.end())
           or ((iteren != nodeToDof_enriched_n_.end() and iterstnp != nodeToDof_std_np_.end())))
       {
-        IO::cout << "CHECK: Took enriched values !!" << " Node GID " << bgnode->Id() << IO::endl;
+        IO::cout << "CHECK: Took enriched values !!" << " Node GID " << node->Id() << IO::endl;
         IO::cout << " Warning: You may need to make your search radius bigger in the dat-file!" << IO::endl;
         std::vector<int> gdofsn = iteren->second;
 
-        WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.velnp_,bgfluid_state_n.velnp_);
-        WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.veln_, bgfluid_state_n.veln_);
-        WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.velnm_,bgfluid_state_n.velnm_);
-        WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.accnp_,bgfluid_state_n.accnp_);
-        WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.accn_, bgfluid_state_n.accn_);
+        WriteValuesToBgStateVector(node,gdofsn,target_state.velnp_,bgfluid_state_n.velnp_);
+        WriteValuesToBgStateVector(node,gdofsn,target_state.veln_, bgfluid_state_n.veln_);
+        WriteValuesToBgStateVector(node,gdofsn,target_state.velnm_,bgfluid_state_n.velnm_);
+        WriteValuesToBgStateVector(node,gdofsn,target_state.accnp_,bgfluid_state_n.accnp_);
+        WriteValuesToBgStateVector(node,gdofsn,target_state.accn_, bgfluid_state_n.accn_);
       }
       else
       {
-        IO::cout << " Warning: No patch element found for the node " << bgnode->Id();
+#ifdef DEBUG
+        std::map<int, std::vector<int> >::const_iterator iterstn  = nodeToDof_std_n_.find(node->Id());
+
+        IO::cout << " Warning: No patch element found for the node " << node->Id();
         if ((iterstn == nodeToDof_std_n_.end() and iteren == nodeToDof_enriched_n_.end()) and iterstnp != nodeToDof_std_np_.end())
           IO::cout << " n:void -> n+1:std  " << IO::endl;
         else if (iteren != nodeToDof_enriched_n_.end() and iterenp != nodeToDof_enriched_np_.end())
@@ -701,10 +679,12 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(std::vector<LINALG::Matr
           IO::cout << " n:enriched -> n+1: std " << IO::endl;
         else if ((iterstn == nodeToDof_std_n_.end() and iteren == nodeToDof_enriched_n_.end()) and iterenp != nodeToDof_enriched_np_.end())
           IO::cout << " n:void ->  n+1:enriched " << IO::endl;
-        IO::cout << " Warning: You may need to make your search radius bigger in the dat-file!" << IO::endl;
+#endif
+        if (embdis_->Comm().MyPID() == 0)
+          IO::cout << " Warning: You may need to make your search radius bigger in the dat-file!" << IO::endl;
       }
     }
-  }// end of loop over bgnodes without history
+  }// end of loop over nodes without history
 
  }//XFEM::XFluidFluidTimeIntegration::CommunicateNodes
 
@@ -777,23 +757,23 @@ void XFEM::XFluidFluidTimeIntegration::SendBlock(std::vector<char>  & sblock  ,
 //---------------------------------------------------------
 // pack values in the round robin communication pattern
 //---------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::PackValues(std::vector<LINALG::Matrix<3,1> >  & bgnodes_xyz,
+void XFEM::XFluidFluidTimeIntegration::PackValues(std::vector<LINALG::Matrix<3,1> >  & nodes_xyz,
                                                   std::vector<LINALG::Matrix<20,1> > & interpolatedvec,
-                                                  std::vector<int>                   & bgnodes_nohistory,
+                                                  std::vector<int>                   & nodes_nohistory,
                                                   std::vector<int>                   & have_values,
                                                   std::vector<char>                  & sblock)
 {
   // Pack info into block to send
   DRT::PackBuffer data;
-  DRT::ParObject::AddtoPack(data,bgnodes_xyz);
+  DRT::ParObject::AddtoPack(data,nodes_xyz);
   DRT::ParObject::AddtoPack(data,interpolatedvec);
-  DRT::ParObject::AddtoPack(data,bgnodes_nohistory);
+  DRT::ParObject::AddtoPack(data,nodes_nohistory);
   DRT::ParObject::AddtoPack(data,have_values);
   data.StartPacking();
 
-  DRT::ParObject::AddtoPack(data,bgnodes_xyz);
+  DRT::ParObject::AddtoPack(data,nodes_xyz);
   DRT::ParObject::AddtoPack(data,interpolatedvec);
-  DRT::ParObject::AddtoPack(data,bgnodes_nohistory);
+  DRT::ParObject::AddtoPack(data,nodes_nohistory);
   DRT::ParObject::AddtoPack(data,have_values);
   swap( sblock, data() );
 
@@ -802,54 +782,27 @@ void XFEM::XFluidFluidTimeIntegration::PackValues(std::vector<LINALG::Matrix<3,1
 //--------------------------------------------------------
 //
 //--------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::FindEmbEleAndInterpolateValues(std::vector<LINALG::Matrix<3,1> >        & bgnodes_xyz,
+void XFEM::XFluidFluidTimeIntegration::FindEmbEleAndInterpolateValues(std::vector<LINALG::Matrix<3,1> >        & nodes_xyz,
                                                                       std::vector<LINALG::Matrix<20,1> >       & interpolated_vecs,
                                                                       std::vector<int>                         & have_values,
                                                                       const Teuchos::RCP<const Epetra_Vector>  & aledispn,
                                                                       const SourceState &                        embfluid_state)
 
 {
-  // init of 3D search tree
-  Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(5));
-
-  // find current positions for emb fluid discretization
-  std::map<int,LINALG::Matrix<3,1> > currentpositions;
-  for (int lid = 0; lid < embdis_->NumMyColNodes(); ++lid)
-  {
-    const DRT::Node* node = embdis_->lColNode(lid);
-    LINALG::Matrix<3,1> currpos;
-    std::vector<int> src_dofs(4);
-    std::vector<double> mydisp(4);
-
-    // get the current displacement
-    embdis_->Dof(node,0,src_dofs);
-    DRT::UTILS::ExtractMyValues(*aledispn,mydisp,src_dofs);
-
-    currpos(0) = node->X()[0]+mydisp.at(0);
-    currpos(1) = node->X()[1]+mydisp.at(1);
-    currpos(2) = node->X()[2]+mydisp.at(2);
-
-    currentpositions[node->Id()] = currpos;
-  }
-
-  // find the bounding box of the elements and initialize the search tree
-  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*embdis_,currentpositions);
-  searchTree->initializeTree(rootBox,*embdis_,GEO::TreeType(GEO::OCTTREE));
-
-  // loop over the background nodes (coordinates)
-  for (size_t i=0; i<bgnodes_xyz.size(); ++i)
+  // loop over the nodes (coordinates)
+  for (size_t i=0; i<nodes_xyz.size(); ++i)
   {
     // indicates that we found the embedded element, the background node is covered by
     bool insideelement = false;
 
-    // bg-node coordinate
-    const LINALG::Matrix<3,1> & bgnode_xyz = bgnodes_xyz.at(i);
+    // node coordinate
+    const LINALG::Matrix<3,1> & node_xyz = nodes_xyz.at(i);
     // interpolated vector which is zero at the beginning
     LINALG::Matrix<20,1> interpolatedvec = interpolated_vecs.at(i);
 
-    //search for near elements to the background node's coord
+    //search for near elements
     std::map<int,std::set<int> > closeeles =
-        searchTree->searchElementsInRadius(*embdis_,currentpositions,bgnode_xyz,minradius_,0);
+        searchTree_->searchElementsInRadius(*embdis_,emb_nodepositions_n_,node_xyz,minradius_,0);
 
     // Remark: it could be that closeles is empty on one processor but still has elements on other processors.
 
@@ -873,15 +826,15 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbEleAndInterpolateValues(std::vecto
         {
         case DRT::Element::hex8:
           insideelement = ComputeSpatialToElementCoordAndProject<DRT::Element::hex8>(
-             pele,embfluid_state,aledispn,*embdis_,bgnode_xyz,interpolatedvec);
+             pele,embfluid_state,aledispn,*embdis_,node_xyz,interpolatedvec);
           break;
         case DRT::Element::hex20:
           insideelement = ComputeSpatialToElementCoordAndProject<DRT::Element::hex20>(
-             pele,embfluid_state,aledispn,*embdis_,bgnode_xyz,interpolatedvec);
+             pele,embfluid_state,aledispn,*embdis_,node_xyz,interpolatedvec);
           break;
         case DRT::Element::hex27:
           insideelement = ComputeSpatialToElementCoordAndProject<DRT::Element::hex27>(
-             pele,embfluid_state,aledispn,*embdis_,bgnode_xyz,interpolatedvec);
+             pele,embfluid_state,aledispn,*embdis_,node_xyz,interpolatedvec);
           break;
         default:
           dserror("Unsupported element shape %s!", DRT::DistypeToString(pele->Shape()).c_str()); break;
@@ -903,20 +856,49 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbEleAndInterpolateValues(std::vecto
 }
 
 //-------------------------------------------------------------------
+//
+//--------------------------------------------------------------------
+void XFEM::XFluidFluidTimeIntegration::SetupSearchTree(const Teuchos::RCP<const Epetra_Vector>  & aledispn)
+{
+  // init of 3D search tree
+  searchTree_ = Teuchos::rcp(new GEO::SearchTree(5));
+
+  // find previous node positions for embedded fluid discretization
+  for (int lid = 0; lid < embdis_->NumMyColNodes(); ++lid)
+  {
+    const DRT::Node* node = embdis_->lColNode(lid);
+    std::vector<int> src_dofs(4);
+    std::vector<double> mydisp(4);
+
+    // get the current displacement
+    embdis_->Dof(node,0,src_dofs);
+    DRT::UTILS::ExtractMyValues(*aledispn,mydisp,src_dofs);
+
+    emb_nodepositions_n_[node->Id()](0) = node->X()[0]+mydisp.at(0);
+    emb_nodepositions_n_[node->Id()](1) = node->X()[1]+mydisp.at(1);
+    emb_nodepositions_n_[node->Id()](2) = node->X()[2]+mydisp.at(2);
+  }
+
+  // find the bounding box of the elements and initialize the search tree
+  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*embdis_,emb_nodepositions_n_);
+  searchTree_->initializeTree(rootBox,*embdis_,GEO::TreeType(GEO::OCTTREE));
+}
+
+//-------------------------------------------------------------------
 // Write the values of node from bgstatevec_n to bgstatevec_np
 //--------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::WriteValuesToBgStateVector(
-  const DRT::Node*                           bgnode,
+  const DRT::Node*                           node,
   std::vector<int>                           gdofs_n,
-  const Teuchos::RCP<Epetra_Vector> &        bgstatevec_np,
-  const Teuchos::RCP<const Epetra_Vector> &  bgstatevec_n)
+  const Teuchos::RCP<Epetra_Vector> &        statevec,
+  const Teuchos::RCP<const Epetra_Vector> &  statevec_n)
 {
   const unsigned int dofset_size = 4;
-  const unsigned int numsets = bgdis_->NumDof(bgnode)/dofset_size;
+  const unsigned int numsets = bgdis_->NumDof(node)/dofset_size;
 
 #ifdef DEBUG
   if (numsets > 1)
-    IO::cout << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << IO::endl;
+    IO::cout << "Info: more dofsets in transfer.. " <<  "Node GID " << node->Id() << IO::endl;
 #endif
 
   unsigned int offset = 0;
@@ -924,8 +906,8 @@ void XFEM::XFluidFluidTimeIntegration::WriteValuesToBgStateVector(
   {
     for (unsigned int d=0; d<dofset_size; ++d)
     {
-      (*bgstatevec_np)[bgstatevec_np->Map().LID(bgdis_->Dof(bgnode)[offset+d])] =
-        (*bgstatevec_n)[bgstatevec_n->Map().LID(gdofs_n[d])];
+      (*statevec)[statevec->Map().LID(bgdis_->Dof(node)[offset+d])] =
+        (*statevec_n)[statevec_n->Map().LID(gdofs_n[d])];
     }
     offset += dofset_size;
   }
@@ -941,7 +923,7 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpatialToElementCoordAndProject(
   const SourceState &                       src_state,
   const Teuchos::RCP<const Epetra_Vector> & src_disp,
   const DRT::Discretization &               src_dis,
-  const LINALG::Matrix<3,1> &               bgnode_xyz,
+  const LINALG::Matrix<3,1> &               node_xyz,
   LINALG::Matrix<20,1> &                    interpolatedvec
 )
 {
@@ -964,11 +946,6 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpatialToElementCoordAndProject(
   std::vector<double> mydisp(dim);
   std::map<unsigned int, std::vector<int> > src_dofs;
 
-  if (src_dis.Name() != "fluid") // we only project from the embedded fluid discretization
-  {
-    dserror("Trying to project from discretization %s in XFluid-Fluid problem.",src_dis.Name().c_str());
-  }
-
   // loop over the nodes of the embedded element and save the node coordinates!
   // the nodal dof are saved afterwards, as we don't need them, unless the background fluid node was covered
   for (unsigned int inode = 0; inode < numnodes; ++inode)
@@ -985,8 +962,8 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpatialToElementCoordAndProject(
     }
   }
 
-  // check whether the xfem node (the node with no values) is located in the projection source element
-  GEO::CUT::Position<distype> pos(src_xyze,bgnode_xyz);
+  // check whether the node with missing values is located in the projection source element
+  GEO::CUT::Position<distype> pos(src_xyze,node_xyz);
   const double tol = 1e-10;
   inside = pos.ComputeTol(tol);
 
@@ -1066,207 +1043,103 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpatialToElementCoordAndProject(
 }//ComputeSpatialToElementCoordAndProject
 
 // -------------------------------------------------------------------
-// called during projection in the case of fluid-fluid-fsi with
-// fixed-ALE interpolation approach -
-// here we project TO embedded element's nodes
 // -------------------------------------------------------------------
-template<DRT::Element::DiscretizationType distype>
-bool XFEM::XFluidFluidTimeIntegration::ComputeSpatialToElementCoordAndProject(
-  const DRT::Element *                      src_ele,
-  const Teuchos::RCP<const Epetra_Vector> & srcstate_n,
-  const Teuchos::RCP<const Epetra_Vector> & src_disp,
-  const DRT::Discretization &               src_dis,
-  const LINALG::Matrix<3,1> &               node_xyz,
-  LINALG::Matrix<4,1> &                     interpolatedvec
-)
+void XFEM::XFluidFluidTimeIntegration::SetNewEmbStateVectors(
+  const Teuchos::RCP<Epetra_Vector>        embstate_velnp,
+  const Teuchos::RCP<Epetra_Vector>        embstate_veln,
+  const Teuchos::RCP<Epetra_Vector>        embstate_velnm,
+  const Teuchos::RCP<Epetra_Vector>        embstate_accnp,
+  const Teuchos::RCP<Epetra_Vector>        embstate_accn,
+  const Teuchos::RCP<const Epetra_Vector>  embstaten_velnp,
+  const Teuchos::RCP<const Epetra_Vector>  embstaten_veln,
+  const Teuchos::RCP<const Epetra_Vector>  embstaten_velnm,
+  const Teuchos::RCP<const Epetra_Vector>  embstaten_accnp,
+  const Teuchos::RCP<const Epetra_Vector>  embstaten_accn,
+  const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnp,
+  const Teuchos::RCP<const Epetra_Vector>  bgstaten_veln,
+  const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnm,
+  const Teuchos::RCP<const Epetra_Vector>  bgstaten_accnp,
+  const Teuchos::RCP<const Epetra_Vector>  bgstaten_accn,
+  const Teuchos::RCP<const Epetra_Vector>  aledispnp,
+  const Teuchos::RCP<const Epetra_Vector>  aledispn)
 {
-  // problem dimension
-  const unsigned int dim = DRT::UTILS::DisTypeToDim<distype>::dim;
-  // number of dof per node
-  const unsigned int numdofpernode = dim + 1;
-
-  // embedded element's nodes
-  const DRT::Node*const* src_elenodes = src_ele->Nodes();
-
-  // number of embedded element's nodes
-  const unsigned int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-  // embedded element's coordinates
-  LINALG::Matrix<dim,numnodes> src_xyze(true);
-  LINALG::Matrix<dim,1> xsi(true);
-
-  std::vector<double> myval(numdofpernode);
-  std::map<unsigned int, std::vector<int> > src_dofs;
-
-  bool inside = false;
-
-  for (unsigned int inode = 0; inode < numnodes; ++inode)
-  {
-    // the enriched nodes are also included
-    if (src_dis.NumDof(src_elenodes[inode]) > 0)
-    {
-      src_dofs[inode].resize(numdofpernode,0);
-      src_dis.Dof(src_elenodes[inode],0,src_dofs[inode]);
-
-      // get the coordinates of patch element
-      src_xyze = LINALG::Matrix<dim,numnodes>(src_elenodes[inode]->X());
-    }
-  }
-
-  // check whether the node is covered by the element
-  GEO::CUT::Position <distype> pos(src_xyze,node_xyz);
-  const double tol = 1e-10;
-  inside = pos.ComputeTol(tol);
-
-  if (inside)
-  {
-    // get the coordinates of x in element coordinates of patch element pele (xsi)
-    xsi = pos.LocalCoordinates();
-    // evaluate shape function
-    LINALG::SerialDenseVector shp(numnodes);
-    DRT::UTILS::shape_function_3D( shp, xsi(0,0), xsi(1,0), xsi(2,0), distype );
-    // Interpolate
-    for (unsigned int inode = 0; inode < numnodes; ++inode){
-      for (unsigned int isd = 0; isd < 4; ++isd)
-      {
-        DRT::UTILS::ExtractMyValues(*srcstate_n,myval,src_dofs[inode]);
-        interpolatedvec(isd) += myval[isd]*shp(inode);
-      }
-    }
-  }
-
-  return inside;
-}//ComputeSpatialToElementCoordAndProject
-
-// -------------------------------------------------------------------
-// Needed for interpolation-based fluid-fluid-fsi
-//
-// In this function:
-// loop over all embedded fluid nodes and find the embedded element
-// where this node was located before we solved the ale again (the
-// displacement is saved at aledispnpoldstate_).
-// If found interpolate the values on the new embedded fluid vector.
-// If not found we have to look for a matching element in the background
-// fluid. We just take the old values of the embedded mesh.
-//
-// bgfluid_staten  (in): source state vector from background fluid
-// embfluid_state  (in/out): source/target state vector from embedded fluid
-// aledispnp (in): displacement of ale at the current time (time of
-//                 interpolation)
-// -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::SetNewEmbStateVectors(const Teuchos::RCP<const Epetra_Vector> & bgfluid_staten,
-                                                             Teuchos::RCP<Epetra_Vector> &             embfluid_state,
-                                                             const Teuchos::RCP<const Epetra_Vector> & aledispnp,
-                                                             const Teuchos::RCP<const Epetra_Vector> & aledispnpoldstate)
-{
-  const unsigned int  dim = 3;
-  const unsigned int  numdofpernode = dim + 1;
-  std::vector<double> mydisp(dim);
-  std::vector<int>    src_dofs(numdofpernode);
-
   if (gmsh_debug_out_)
-    GmshOutputForInterpolateFSI(aledispnp,aledispnpoldstate);
+    GmshOutputForInterpolateFSI(aledispnp,aledispn);
 
   // our first option is to find another embedded element -
   // we then interpolate from it's values
-  SourceState emb_state(embfluid_state);
+  // form state containers
+  const TargetState embfluid_state(
+      embstate_velnp,embstate_veln,embstate_velnm,embstate_accnp,embstate_accn
+      );
+  const SourceState embfluid_staten(
+      embstaten_velnp,embstaten_veln,embstaten_velnm,embstaten_accnp,embstaten_accn
+      );
+  const SourceState bgfluid_staten(
+      bgstaten_velnp,bgstaten_veln,bgstaten_velnm,bgstaten_accnp,bgstaten_accn
+      );
 
+  // this method can write to the target Epetra_Vectors, but the pointers are const,
+  // as the TargetState is const (const pointer to non-const pointee)
+  SetNewEmbStateVectors(
+      embfluid_state, embfluid_staten, bgfluid_staten, aledispnp, aledispn);
+}//SetNewEmbStateVectors
+
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+void XFEM::XFluidFluidTimeIntegration::SetNewEmbStateVectors(
+  const TargetState &                       embfluid_state,
+  const SourceState &                       embfluid_state_n,
+  const SourceState &                       bgfluid_state_n,
+  const Teuchos::RCP<const Epetra_Vector> & aledispnp,
+  const Teuchos::RCP<const Epetra_Vector> & aledispn
+)
+{
+  // new position of embedded nodes
+  std::vector<LINALG::Matrix<3,1> > embnodes_xyz;
+  // the vector containing interpolated values for each state vector from embedded dis. For each node one interpolated value..
+  // Entries 0 to 3: velnp_, Entries 4 to 7: veln_,  Entries 8 to 11: velnm_, Entries 12 to 15: accn_, Entries 16 to 19: accnp_
+  std::vector<LINALG::Matrix<20,1> > interpolated_vecs;
+  LINALG::Matrix<20,1> interpolatedvec(true);
+
+  // ids of embedded nodes, that need a projection (currently, we take all)
+  std::vector<int> embnodes_nohistory;
+
+  // loop over row nodes of embedded discretization of each processor
   for (int lnid=0; lnid<embdis_->NumMyRowNodes(); lnid++)
   {
     DRT::Node* embnode = embdis_->lRowNode(lnid);
 
-    DRT::UTILS::ConditionSelector conds(*embdis_, "FSICoupling");
-    if (!conds.ContainsNode(embnode->Id())) //if no fsi node
-    {
-      embdis_->Dof(embnode,0,src_dofs);
+    // Project dofs from old ALE-mesh location to new node position
 
-      DRT::UTILS::ExtractMyValues(*aledispnp,mydisp,src_dofs);
+    LINALG::Matrix<3,1> pos;
+    std::vector<int> src_dofs(4);
+    std::vector<double> mydisp(4);
 
-      // the coordinates of the unknown node
-      LINALG::Matrix<3,1> embnode_xyz(embnode->X());
-      embnode_xyz(0,0) += mydisp[0];
-      embnode_xyz(1,0) += mydisp[1];
-      embnode_xyz(2,0) += mydisp[2];
+    // get the current displacement
+    embdis_->Dof(embnode,0,src_dofs);
+    DRT::UTILS::ExtractMyValues(*aledispnp,mydisp,src_dofs);
 
-      bool insideelement = false;
+    pos(0) = embnode->X()[0]+mydisp.at(0);
+    pos(1) = embnode->X()[1]+mydisp.at(1);
+    pos(2) = embnode->X()[2]+mydisp.at(2);
 
-      // check all embedded elements to find the right one
-      for ( int e=0; e < embdis_->NumMyColElements(); ++e )
-      {
-        DRT::Element* pele = embdis_->lColElement(e);
-        LINALG::Matrix<20,1> interpolatedvec(true);
+    embnodes_xyz.push_back(pos);
+    embnodes_nohistory.push_back(embnode->Id());
 
-        switch (pele->Shape())
-        {
-        case DRT::Element::hex8:
-          insideelement =
-              ComputeSpatialToElementCoordAndProject<DRT::Element::hex8>(
-              pele,emb_state,aledispnpoldstate,*embdis_,embnode_xyz,interpolatedvec);
-          break;
-        case DRT::Element::hex20:
-          insideelement =
-              ComputeSpatialToElementCoordAndProject<DRT::Element::hex20>(
-              pele,emb_state,aledispnpoldstate,*embdis_,embnode_xyz,interpolatedvec);
-          break;
-        case DRT::Element::hex27:
-          insideelement =
-              ComputeSpatialToElementCoordAndProject<DRT::Element::hex27>(
-              pele,emb_state,aledispnpoldstate,*embdis_,embnode_xyz,interpolatedvec);
-          break;
-        default: dserror("Unsupported shape %s.", DRT::DistypeToString(pele->Shape()).c_str()); break;
-        }
-
-        if (insideelement)
-        {
-          // here set state
-          for (unsigned int d=0; d<numdofpernode; ++d)
-            (*embfluid_state)[embfluid_state->Map().LID(embdis_->Dof(embnode)[d])] = interpolatedvec(d);
-
-          break;
-        }
-      }
-
-      if (! insideelement) //if no embedded elements are found, take a background element
-      {
-        IO::cout << "No embedded element found for: " <<  embnode->Id() << IO::endl;
-        // check all background elements to find the right one
-        for ( int e=0; e<bgdis_->NumMyColElements(); e++)
-        {
-          DRT::Element* bgele = bgdis_->lColElement(e);
-          LINALG::Matrix<numdofpernode,1> interpolatedvec(true);
-          switch (bgele->Shape())
-          {
-            case DRT::Element::hex8:
-              insideelement =
-                  ComputeSpatialToElementCoordAndProject<DRT::Element::hex8>(bgele,bgfluid_staten,aledispnpoldstate,*bgdis_,embnode_xyz,interpolatedvec);
-              break;
-            case DRT::Element::hex20:
-              insideelement =
-                  ComputeSpatialToElementCoordAndProject<DRT::Element::hex20>(bgele,bgfluid_staten,aledispnpoldstate,*bgdis_,embnode_xyz,interpolatedvec);
-              break;
-            case DRT::Element::hex27:
-              insideelement =
-                  ComputeSpatialToElementCoordAndProject<DRT::Element::hex27>(bgele,bgfluid_staten,aledispnpoldstate,*bgdis_,embnode_xyz,interpolatedvec);
-            break;
-            default:
-              dserror("Unsupported element shape."); break;
-          }
-          // this method is just called for time integration of interpolated-Ale approach which is just used for
-          // 1D-examples and for every other complicated fsi simulation the Ale-partitioned approach is used
-          if (insideelement)
-          {
-            // here set state
-            for (unsigned int d=0; d<numdofpernode; ++d)
-              (*embfluid_state)[embfluid_state->Map().LID(embdis_->Dof(embnode)[d])] = interpolatedvec(d);
-            break;
-          }
-        }
-
-        if (!insideelement)
-          IO::cout << "No background element found for: " << embnode->Id() << IO::endl;
-      }
-    }
+    // the vector of interpolated values of all state vector (max five state vectors) for every node
+    interpolated_vecs.push_back(interpolatedvec);
   }
-}//SetNewEmbStateVector
+
+  // build search tree for projection from embedded discretization
+  SetupSearchTree(aledispn);
+
+  // call the Round Robin Communicator
+  CommunicateNodes(embnodes_xyz,interpolated_vecs,
+                   embnodes_nohistory,aledispn,
+                   embfluid_state,bgfluid_state_n,
+                   embfluid_state_n,embdis_);
+}
 
 // ------------------------------------------------------------------------
 // Find an appropriate radius for the search tree. The minimum radius is the
@@ -1408,7 +1281,7 @@ void XFEM::XFluidFluidTimeIntegration::GmshOutput()
 // Gmsh Output for interpolated-Ale FSI-Approach
 // -------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::GmshOutputForInterpolateFSI( const Teuchos::RCP<const Epetra_Vector> & aledispnp,
-                                                                    const Teuchos::RCP<const Epetra_Vector> & aledispnpoldstate)
+                                                                    const Teuchos::RCP<const Epetra_Vector> & aledispn)
 {
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("emb_element_node_id", 0, 0, 0, bgdis_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
@@ -1428,7 +1301,7 @@ void XFEM::XFluidFluidTimeIntegration::GmshOutputForInterpolateFSI( const Teucho
         actele->LocationVector(*embdis_, lm, lmowner, lmstride);
 
         std::vector<double> myolddisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*aledispnpoldstate, myolddisp, lm);
+        DRT::UTILS::ExtractMyValues(*aledispn, myolddisp, lm);
 
         for (int inode = 0; inode < actele->NumNode(); ++inode)
         {
@@ -1666,22 +1539,6 @@ void XFEM::XFluidFluidTimeIntegration::BuildElementPatchForIncompOpt(
     if (iterpatchnodes == incompnodeids_set_.end())
       dserror("BUG!! Nodes found which were in projected set but not in incompressibility patch!",*iter);
   }
-
-
-//  debug output
-//     for(std::set<int>::iterator iter = incompelementids_set_.begin(); iter!= incompelementids_set_.end();
-//         iter++)
-//     {
-//       std::set<int>::const_iterator iterpatchele = incompelementids_set_.find(*iter);
-//       std::cout << "all eles" << *iter << std::endl;
-//       DRT::Node ** elenodes = bgdis_->gElement(*iter)->Nodes();
-//       for(int inode=0; inode<bgdis_->gElement(*iter)->NumNode(); ++inode)
-//       {
-//         std::cout <<  "bgnode id " <<elenodes[inode]->Id() ;
-//         std::cout << " dofs " << bgdis_->NumDof(elenodes[inode]) << std::endl;
-//       }
-//     }
-
 
   //---------------------------------
   // Gmsh debug output

@@ -33,6 +33,7 @@ class Epetra_Vector;
 namespace GEO
 {
   class CutWizard;
+  class SearchTree;
 }
 
 namespace DRT
@@ -125,11 +126,24 @@ public:
   /*!
    * \brief Determine embedded state vectors after ALE-relaxation in interpolation-based fluid-fluid FSI
    */
-  void SetNewEmbStateVectors(const Teuchos::RCP<const Epetra_Vector> & bgfluid_staten,
-                             Teuchos::RCP<Epetra_Vector> &             embfluid_state,
-                             const Teuchos::RCP<const Epetra_Vector> & aledispnp,
-                             const Teuchos::RCP<const Epetra_Vector> & aledispnpoldstate);
-
+  void SetNewEmbStateVectors(
+      const Teuchos::RCP<Epetra_Vector>        embstate_velnp,
+      const Teuchos::RCP<Epetra_Vector>        embstate_veln,
+      const Teuchos::RCP<Epetra_Vector>        embstate_velnm,
+      const Teuchos::RCP<Epetra_Vector>        embstate_accnp,
+      const Teuchos::RCP<Epetra_Vector>        embstate_accn,
+      const Teuchos::RCP<const Epetra_Vector>  embstaten_velnp,
+      const Teuchos::RCP<const Epetra_Vector>  embstaten_veln,
+      const Teuchos::RCP<const Epetra_Vector>  embstaten_velnm,
+      const Teuchos::RCP<const Epetra_Vector>  embstaten_accnp,
+      const Teuchos::RCP<const Epetra_Vector>  embstaten_accn,
+      const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnp,
+      const Teuchos::RCP<const Epetra_Vector>  bgstaten_veln,
+      const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnm,
+      const Teuchos::RCP<const Epetra_Vector>  bgstaten_accnp,
+      const Teuchos::RCP<const Epetra_Vector>  bgstaten_accn,
+      const Teuchos::RCP<const Epetra_Vector>  aledispnp,
+      const Teuchos::RCP<const Epetra_Vector>  aledispn);
 
   /*!
    * \brief Subsequent enforcement of incompressibility on background element patch after projection
@@ -149,7 +163,7 @@ public:
   void GmshOutput();
 
   void GmshOutputForInterpolateFSI(const Teuchos::RCP<const Epetra_Vector> & aledispnp,
-                                   const Teuchos::RCP<const Epetra_Vector> & aledispnpoldstate);
+                                   const Teuchos::RCP<const Epetra_Vector> & aledispn);
   //@}
 
 private:
@@ -251,6 +265,16 @@ private:
                                           const SourceState &                       embfluid_state,
                                           const Teuchos::RCP<const Epetra_Vector> & aledispn);
 
+  /*!
+   * \brief Determine state vectors for embedded fluid nodes (either by projection from emb.
+   * mesh at previous location or from background fluid nodes)
+   */
+  void SetNewEmbStateVectors( const TargetState &                       embfluid_state,
+                              const SourceState &                       embfluid_state_n,
+                              const SourceState &                       bgfluid_state_n,
+                              const Teuchos::RCP<const Epetra_Vector> & aledispnp,
+                              const Teuchos::RCP<const Epetra_Vector> & aledispn);
+
   /// Transfer data in the round robin communication pattern
   void CommunicateNodes(std::vector<LINALG::Matrix<3,1> >  &      bgnodes_xyz,
                         std::vector<LINALG::Matrix<20,1> > &      interpolated_vecs,
@@ -258,7 +282,8 @@ private:
                         const Teuchos::RCP<const Epetra_Vector> & aledispn,
                         const TargetState &                       bgfluid_state,
                         const SourceState &                       bgfluid_state_n,
-                        const SourceState &                       embfluid_state);
+                        const SourceState &                       embfluid_state,
+                        const Teuchos::RCP<DRT::Discretization>&  discret);
 
   /// receive a block in the round robin communication pattern
   void ReceiveBlock(std::vector<char>  & rblock,
@@ -277,14 +302,17 @@ private:
                   std::vector<int>                   & have_values,
                   std::vector<char>                  & sblock);
 
-  /// determine the embedded element, that previously covered the background nodes and
-  /// interpolate values
+  /// determine the embedded element, that previously covered the nodes and interpolate values
   void FindEmbEleAndInterpolateValues(
-    std::vector<LINALG::Matrix<3,1> >        & bgnodes_xyz,
+    std::vector<LINALG::Matrix<3,1> >        & nodes_xyz,
     std::vector<LINALG::Matrix<20,1> >       & interpolated_vecs,
     std::vector<int>                         & have_values,
     const Teuchos::RCP<const Epetra_Vector>  & aledispn,
     const SourceState                        & embfluid_state);
+
+
+  /// setup a search tree for the embedded (ALE-) discretization
+  void SetupSearchTree(const Teuchos::RCP<const Epetra_Vector>  & aledispn);
 
   /// determine the search radius for the search tree
   template<DRT::Element::DiscretizationType distype>
@@ -317,22 +345,6 @@ private:
     const LINALG::Matrix<3,1> &               bgnode_xyz,
     LINALG::Matrix<20,1> &                    interpolatedvec
   );
-
-  /*!
-   * \brief project values from embedded element or other background element
-   * to embedded elements nodes (just used in case of fixed-ALE interpolation approach
-   * in XFFSI)
-   */
-  template<DRT::Element::DiscretizationType distype>
-  bool ComputeSpatialToElementCoordAndProject(
-    const DRT::Element *                      src_ele,
-    const Teuchos::RCP<const Epetra_Vector> & srcstate_n,
-    const Teuchos::RCP<const Epetra_Vector> & src_disp,
-    const DRT::Discretization &               src_dis,
-    const LINALG::Matrix<3,1> &               node_xyz,
-    LINALG::Matrix<4,1>&                      interpolatedvec
-  );
-
 
   //! @name Methods for subsequent enforcement of incompressibility on background element patch after projection
   //@{
@@ -394,6 +406,12 @@ private:
 
   //! old xfluid dof-rowmap
   const Epetra_Map* oldbgdofmap_;
+
+  //! map of node Ids from embedded discretization to previous node positions
+  std::map<int,LINALG::Matrix<3,1> > emb_nodepositions_n_;
+
+  //! 3D seach tree for embedded discretization
+  Teuchos::RCP<GEO::SearchTree> searchTree_;
 
   //! if the status of nodes remains the same don't do any interpolation from the embedded fluid
   bool samemaps_;

@@ -3226,43 +3226,43 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector> disp)
 /*----------------------------------------------------------------------*/
 void FLD::XFluidFluid::SetEmbStateVectors(Teuchos::RCP<Epetra_Vector> disp)
 {
-  // adapt the embedded state vectors according to the new ale displacement
-  // before updating the vectors of the old time step
-  if (myrank_ == 0)
-  {
+  // get nodal velocities and pressure from previous intersection state
 
-    IO::cout << "Warning: interpolation-based XFFSI is just applicable for 1D test-cases!"
-        << "\n" << "Choose fixed-ALE-partitioned approach instead!" << IO::endl;
-    IO::cout << "Interpolate the embedded state vectors" << IO::endl;
-  }
+  // export the vectors to the column distribution map
+  Teuchos::RCP<Epetra_Vector> embvelnpcol  = LINALG::CreateVector(*embdis_->DofColMap());
+  Teuchos::RCP<Epetra_Vector> embvelncol   = LINALG::CreateVector(*embdis_->DofColMap());
+  Teuchos::RCP<Epetra_Vector> embvelnmcol  = LINALG::CreateVector(*embdis_->DofColMap());
+  Teuchos::RCP<Epetra_Vector> embaccncol   = LINALG::CreateVector(*embdis_->DofColMap());
+  Teuchos::RCP<Epetra_Vector> embaccnpcol  = LINALG::CreateVector(*embdis_->DofColMap());
+  Teuchos::RCP<Epetra_Vector> embdispcol   = LINALG::CreateVector(*embdis_->DofColMap());
+  Teuchos::RCP<Epetra_Vector> embdispnpcol = LINALG::CreateVector(*embdis_->DofColMap());
 
-  if (embdis_->Comm().NumProc() == 1)
-  {
-    xfluidfluid_timeint_->SetNewEmbStateVectors(staten_->velnp_, velnp_, dispnp_, disp);
-    xfluidfluid_timeint_->SetNewEmbStateVectors(staten_->veln_ , veln_ , dispnp_, disp);
-    xfluidfluid_timeint_->SetNewEmbStateVectors(staten_->accnp_, accnp_, dispnp_, disp);
-  }
-  else
-  {
-    // export the vectors to the column distribution map
-    Teuchos::RCP<Epetra_Vector> embvelnpcol  = LINALG::CreateVector(*embdis_->DofColMap(),true);
-    Teuchos::RCP<Epetra_Vector> embvelncol   = LINALG::CreateVector(*embdis_->DofColMap(),true);
-    Teuchos::RCP<Epetra_Vector> embvelnmcol  = LINALG::CreateVector(*embdis_->DofColMap(),true);
-    Teuchos::RCP<Epetra_Vector> embaccncol   = LINALG::CreateVector(*embdis_->DofColMap(),true);
-    Teuchos::RCP<Epetra_Vector> embaccnpcol  = LINALG::CreateVector(*embdis_->DofColMap(),true);
-    Teuchos::RCP<Epetra_Vector> embdispcol   = LINALG::CreateVector(*embdis_->DofColMap(),true);
-    Teuchos::RCP<Epetra_Vector> embdispnpcol = LINALG::CreateVector(*embdis_->DofColMap(),true);
+  LINALG::Export(*velnp_, *embvelnpcol);
+  LINALG::Export(*veln_,  *embvelncol);
+  LINALG::Export(*velnm_, *embvelnmcol);
+  LINALG::Export(*accnp_, *embaccnpcol);
+  LINALG::Export(*accn_,  *embaccncol);
+  LINALG::Export(*disp,   *embdispcol);
+  LINALG::Export(*dispnp_,*embdispnpcol);
 
-    LINALG::Export(*velnp_, *embvelnpcol);
-    LINALG::Export(*veln_,  *embvelncol);
-    LINALG::Export(*accnp_, *embaccnpcol);
-    LINALG::Export(*disp,   *embdispcol);
-    LINALG::Export(*dispnp_,*embdispnpcol);
-
-    xfluidfluid_timeint_->SetNewEmbStateVectors(staten_->velnp_, embvelnpcol, embdispnpcol, embdispcol);
-    xfluidfluid_timeint_->SetNewEmbStateVectors(staten_->veln_ , embvelncol , embdispnpcol, embdispcol);
-    xfluidfluid_timeint_->SetNewEmbStateVectors(staten_->accnp_, embaccnpcol, embdispnpcol, embdispcol);
-  }
+  xfluidfluid_timeint_->SetNewEmbStateVectors(
+      velnp_,
+      veln_,
+      velnm_,
+      accnp_,
+      accn_,
+      embvelnpcol,
+      embvelncol,
+      embvelnmcol,
+      embaccnpcol,
+      embaccncol,
+      staten_->velnp_,
+      staten_->veln_,
+      staten_->velnm_,
+      staten_->accnp_,
+      staten_->accn_,
+      embdispnpcol,
+      embdispcol);
 }// SetEmbStateVectors
 
 /*----------------------------------------------------------------------*/
