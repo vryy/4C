@@ -4413,9 +4413,9 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
     (*log) << "# (u_tau)^2 = tau_W/rho : ";
-    (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/(area*numsamp_);
-    (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/(area*numsamp_);
-    (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/(area*numsamp_);
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforceu_/(area*numsamp_)/dens_;
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcev_/(area*numsamp_)/dens_;
+    (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/(area*numsamp_)/dens_;
     (*log) << &std::endl;
 
     (*log) << "#     y            y+";
@@ -4687,8 +4687,8 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
   // rho_w and tau_w at bottom and top wall
   const double rhowb = (*sumrho_)[0]/aux;
   const double rhowt = (*sumrho_)[planecoordinates_->size()-1]/aux;
-  double tauwb = 0;
-  double tauwt = 0;
+  double tauwb = 0.0;
+  double tauwt = 0.0;
   if      (sumforcebu_>sumforcebv_ && sumforcebu_>sumforcebw_)
   {
     tauwb = sumforcebu_/areanumsamp;
@@ -5093,8 +5093,8 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
   // we expect nonzero forces (tractions) only in flow direction
 
   // tau_w at bottom and top wall
-  double tauwb = 0;
-  double tauwt = 0;
+  double tauwb = 0.0;
+  double tauwt = 0.0;
   if      (sumforcebu_>sumforcebv_ && sumforcebu_>sumforcebw_)
   {
     tauwb = sumforcebu_/areanumsamp;
@@ -5607,17 +5607,17 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
     for (unsigned rr=0;rr<sumN_stream_->size();++rr)
     {
       // reset value
-      (*sumN_stream_)         [rr]=0;
-      (*sumN_normal_)         [rr]=0;
-      (*sumN_span_)           [rr]=0;
-      (*sumB_stream_)         [rr]=0;
-      (*sumB_normal_)         [rr]=0;
-      (*sumB_span_)           [rr]=0;
-      (*sumCsgs_)             [rr]=0;
-      (*sumsgvisc_)           [rr]=0;
-      (*sumNphi_)         [rr]=0;
-      (*sumDphi_)         [rr]=0;
-      (*sumCsgs_phi_)             [rr]=0;
+      (*sumN_stream_)         [rr]=0.0;
+      (*sumN_normal_)         [rr]=0.0;
+      (*sumN_span_)           [rr]=0.0;
+      (*sumB_stream_)         [rr]=0.0;
+      (*sumB_normal_)         [rr]=0.0;
+      (*sumB_span_)           [rr]=0.0;
+      (*sumCsgs_)             [rr]=0.0;
+      (*sumsgvisc_)           [rr]=0.0;
+      (*sumNphi_)         [rr]=0.0;
+      (*sumDphi_)         [rr]=0.0;
+      (*sumCsgs_phi_)             [rr]=0.0;
     }
   } // end multifractal_
 
@@ -5742,7 +5742,8 @@ void FLD::TurbulenceStatisticsCha::StoreScatraDiscretAndParams(
        double diffus = MAT::PAR::ScatraMat(*actmat).GetParameter(actmat->diff,-1);// actmat->diffusivity_;
        // calculate Schmidt number
        // visc is the kinematic viscosity here
-       scnum_ = visc_ / (diffus * dens_);
+       scnum_ = visc_ / diffus;
+       if (dens_!=1.0) dserror("Kinematic quantities assumed!");
      }
   }
   return;

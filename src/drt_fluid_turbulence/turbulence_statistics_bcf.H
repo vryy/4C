@@ -276,6 +276,8 @@ private:
 
   //! the dim_-coordinates of the homogeneous planes containing nodes
   Teuchos::RCP<std::vector<double> >               nodeplanes_;
+  //! the dim_-coordinates of the homogeneous planes containing element centers
+  Teuchos::RCP<std::vector<double> >               eleplanes_;
 
   //! a bounding box for the channel
   Teuchos::RCP<Epetra_SerialDenseMatrix>      boundingbox_;
@@ -338,6 +340,20 @@ private:
   double                                     sumforcev_;
   //! sum over nodal forces on boundary in w direction
   double                                     sumforcew_;
+
+  //! sum over nodal forces on boundary in u direction
+  double                                     sumforcetu_;
+  //! sum over nodal forces on boundary in v direction
+  double                                     sumforcetv_;
+  //! sum over nodal forces on boundary in w direction
+  double                                     sumforcetw_;
+
+  //! sum over nodal forces on boundary in u direction
+  double                                     sumforcebu_;
+  //! sum over nodal forces on boundary in v direction
+  double                                     sumforcebv_;
+  //! sum over nodal forces on boundary in w direction
+  double                                     sumforcebw_;
 
 };
 

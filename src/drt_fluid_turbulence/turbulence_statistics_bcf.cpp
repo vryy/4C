@@ -103,6 +103,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
   // in that plane and the remaining nodes are greater than the
   // plane, it belongs to said plane.
   nodeplanes_ = Teuchos::rcp(new std::vector<double> );
+  eleplanes_ = Teuchos::rcp(new std::vector<double> );
 
   // allocate array for bounding box
   //
@@ -220,7 +221,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
        if(tag!=(myrank+numprocs-1)%numprocs)
        {
-	 dserror("received wrong message (ReceiveAny)");
+         dserror("received wrong message (ReceiveAny)");
        }
 
        exporter.Wait(request);
@@ -285,6 +286,11 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
   // left at 0.0
 
   int size = nodeplanes_->size();
+
+  // initialize also element layers
+  eleplanes_->resize(size-1,0.0);
+  for (std::size_t kk=0; kk<(size-1); kk++)
+    (*eleplanes_)[kk] = 0.5*((*nodeplanes_)[kk+1] - (*nodeplanes_)[kk])+(*nodeplanes_)[kk];
 
   // arrays for integration based averaging
   // --------------------------------------
@@ -368,13 +374,23 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
-
     {
+      std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s.append(".flow_statistics");
 
       log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
-      (*log) << "# Statistics for turbulent incompressible multi phase channel flow\n\n";
+      (*log) << "# Statistics for turbulent incompressible multiphase channel flow\n";
+      (*log) << "# Be careful with the void fraction data, since they are shifted to the nodes!\n\n";
+
+      log->flush();
+    }
+
+    {
+      std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      s.append(".void_fraction");
+
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
+      (*log) << "# Statistics for turbulent incompressible multiphase channel flow\n\n";
 
       log->flush();
     }
@@ -536,6 +552,148 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
          }
          discret_->Comm().SumAll(&local_inc,&inc,1);
          sumforcew_+=inc;
+      }
+    }
+  }
+
+  // but we distinguish top and bottom walls
+  for(std::vector<double>::iterator plane=nodeplanes_->begin();
+      plane!=nodeplanes_->end();
+      ++plane)
+  {
+    // only true for bottom plane
+    if (*plane-2e-9 < (*nodeplanes_)[0] and *plane+2e-9 > (*nodeplanes_)[0])
+    {
+      // toggle vectors are one in the position of a dof in this plane,
+      // else 0
+      toggleu_[0]->PutScalar(0.0);
+      togglev_[0]->PutScalar(0.0);
+      togglew_[0]->PutScalar(0.0);
+
+      // activate toggles for in plane dofs
+      for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+      {
+         DRT::Node* node = discret_->lRowNode(nn);
+
+         // this node belongs to the plane under consideration
+         if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+         {
+           std::vector<int> dof = stddofset_->Dof(node);
+           double      one = 1.0;
+
+           toggleu_[0]->ReplaceGlobalValues(1,&one,&(dof[0]));
+           togglev_[0]->ReplaceGlobalValues(1,&one,&(dof[1]));
+           togglew_[0]->ReplaceGlobalValues(1,&one,&(dof[2]));
+         }
+      }
+
+      // compute forces by dot product
+      double inc=0.0;
+      {
+         double local_inc=0.0;
+         for(int rr=0;rr<(*(toggleu_[0])).MyLength();++rr)
+         {
+           local_inc+=(*(toggleu_[0]))[rr]*(*(toggleu_[0]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+
+         if(abs(inc)<1e-9)
+         {
+           dserror("there are no forced nodes on the boundary\n");
+         }
+
+         local_inc=0.0;
+         for(int rr=0; rr<stdforce->MyLength(); ++rr)
+         {
+           local_inc+=(*stdforce)[rr] * (*(toggleu_[0]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         sumforcebu_+=inc;
+
+         local_inc=0.0;
+         for(int rr=0;rr<stdforce->MyLength();++rr)
+         {
+           local_inc+=(*stdforce)[rr] * (*(togglev_[0]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         sumforcebv_+=inc;
+
+
+         local_inc=0.0;
+         for(int rr=0;rr<stdforce->MyLength();++rr)
+         {
+           local_inc+=(*stdforce)[rr] * (*(togglew_[0]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         sumforcebw_+=inc;
+      }
+    }
+
+    // only true for top plane
+    if (*plane-2e-9 < (*nodeplanes_)[nodeplanes_->size()-1] and *plane+2e-9 > (*nodeplanes_)[nodeplanes_->size()-1])
+    {
+      // toggle vectors are one in the position of a dof in this plane,
+      // else 0
+      toggleu_[0]->PutScalar(0.0);
+      togglev_[0]->PutScalar(0.0);
+      togglew_[0]->PutScalar(0.0);
+
+      // activate toggles for in plane dofs
+      for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+      {
+         DRT::Node* node = discret_->lRowNode(nn);
+
+         // this node belongs to the plane under consideration
+         if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+         {
+           std::vector<int> dof = stddofset_->Dof(node);
+           double      one = 1.0;
+
+           toggleu_[0]->ReplaceGlobalValues(1,&one,&(dof[0]));
+           togglev_[0]->ReplaceGlobalValues(1,&one,&(dof[1]));
+           togglew_[0]->ReplaceGlobalValues(1,&one,&(dof[2]));
+         }
+      }
+
+      // compute forces by dot product
+      double inc=0.0;
+      {
+         double local_inc=0.0;
+         for(int rr=0;rr<(*(toggleu_[0])).MyLength();++rr)
+         {
+           local_inc+=(*(toggleu_[0]))[rr]*(*(toggleu_[0]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+
+         if(abs(inc)<1e-9)
+         {
+           dserror("there are no forced nodes on the boundary\n");
+         }
+
+         local_inc=0.0;
+         for(int rr=0; rr<stdforce->MyLength(); ++rr)
+         {
+           local_inc+=(*stdforce)[rr] * (*(toggleu_[0]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         sumforcetu_+=inc;
+
+         local_inc=0.0;
+         for(int rr=0;rr<stdforce->MyLength();++rr)
+         {
+           local_inc+=(*stdforce)[rr] * (*(togglev_[0]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         sumforcetv_+=inc;
+
+
+         local_inc=0.0;
+         for(int rr=0;rr<stdforce->MyLength();++rr)
+         {
+           local_inc+=(*stdforce)[rr] * (*(togglew_[0]))[rr];
+         }
+         discret_->Comm().SumAll(&local_inc,&inc,1);
+         sumforcetw_+=inc;
       }
     }
   }
@@ -863,7 +1021,7 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluatePointwiseMeanValuesInPlanes()
 /*----------------------------------------------------------------------*
 
        Compute a time average of the mean values over all steps
-	  since the last output. Dump the result to file.
+       since the last output. Dump the result to file.
 
   ----------------------------------------------------------------------*/
 void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int step)
@@ -911,6 +1069,14 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
   sumforceu_/=numsamp_;
   sumforcev_/=numsamp_;
   sumforcew_/=numsamp_;
+
+  sumforcetu_/=numsamp_;
+  sumforcetv_/=numsamp_;
+  sumforcetw_/=numsamp_;
+
+  sumforcebu_/=numsamp_;
+  sumforcebv_/=numsamp_;
+  sumforcebw_/=numsamp_;
 
   //----------------------------------------------------------------------
   // evaluate area to calculate u_tau, l_tau (and tau_W)
@@ -991,6 +1157,19 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
       (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/area/dens_[j];
       (*log) << &std::endl;
 
+      // 2.0, since area has been multiplied by 2.0 previously
+      (*log) << "# bottom (u_tau)^2 = tau_W/rho : ";
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << 2.0*sumforcebu_/area/dens_[j];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << 2.0*sumforcebv_/area/dens_[j];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << 2.0*sumforcebw_/area/dens_[j];
+      (*log) << &std::endl;
+
+      (*log) << "# top (u_tau)^2 = tau_W/rho : ";
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << 2.0*sumforcetu_/area/dens_[j];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << 2.0*sumforcetv_/area/dens_[j];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << 2.0*sumforcetw_/area/dens_[j];
+      (*log) << &std::endl;
+
 
       (*log) << "#|-------------------------------------|";
       (*log) << "-------------------------------------------------point";
@@ -1024,6 +1203,29 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
          (*log) << "   " << std::setw(11) << std::setprecision(4) << (*(pointsumnode_[j]))[i];
          (*log) << "   \n";
       }
+    }
+    log->flush();
+  } // end myrank 0
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    s.append(".void_fraction");
+
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
+    (*log) << "\n\n\n";
+    (*log) << "# Statistics record " << countrecord_;
+    (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+    (*log) << "#     y          voidfraction phase 1              voidfraction phase 2\n";
+    (*log) << std::scientific;
+    for(size_t i=0; i<eleplanes_->size(); ++i)
+    {
+      // y and volfraction
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*eleplanes_)[i];
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*(sumvol_[0]))[i];
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*(sumvol_[1]))[i];
+      (*log) << "   \n";
     }
     log->flush();
   } // end myrank 0
@@ -1125,6 +1327,18 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
       (*log) << "   " << std::setw(11) << std::setprecision(4) << sumforcew_/(area*numsamp_)/dens_[j];
       (*log) << &std::endl;
 
+      (*log) << "# bottom (u_tau)^2 = tau_W/rho : ";
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << 2.0*sumforcebu_/(area*numsamp_)/dens_[j];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << 2.0*sumforcebv_/(area*numsamp_)/dens_[j];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << 2.0*sumforcebw_/(area*numsamp_)/dens_[j];
+      (*log) << &std::endl;
+
+      (*log) << "# top (u_tau)^2 = tau_W/rho : ";
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << 2.0*sumforcetu_/(area*numsamp_)/dens_[j];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << 2.0*sumforcetv_/(area*numsamp_)/dens_[j];
+      (*log) << "   " << std::setw(11) << std::setprecision(4) << 2.0*sumforcetw_/(area*numsamp_)/dens_[j];
+      (*log) << &std::endl;
+
       (*log) << "#     y      y+   volfraction";
       (*log) << "    umean    vmean    wmean       pmean";
       (*log) << "    mean u^2      mean v^2      mean w^2    mean p^2";
@@ -1178,6 +1392,29 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
     log->flush();
   }
 
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    s.append(".void_fraction");
+
+    log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
+    (*log) << "\n\n\n";
+    (*log) << "# Statistics record " << countrecord_;
+    (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+    (*log) << "#     y          voidfraction phase 1              voidfraction phase 2\n";
+    (*log) << std::scientific;
+    for(size_t i=0; i<eleplanes_->size(); ++i)
+    {
+      // y and volfraction
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*eleplanes_)[i];
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*(sumvol_[0]))[i];
+      (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*(sumvol_[1]))[i];
+      (*log) << "   \n";
+    }
+    log->flush();
+  } // end myrank 0
+
   return;
 
 }// TurbulenceStatisticsBcf::DumpStatistics
@@ -1192,32 +1429,40 @@ void COMBUST::TurbulenceStatisticsBcf::ClearStatistics()
   numsamp_ =0;
 
   // reset forces (mean values and values at bottom and top wall)
-  sumforceu_=0;
-  sumforcev_=0;
-  sumforcew_=0;
+  sumforceu_=0.0;
+  sumforcev_=0.0;
+  sumforcew_=0.0;
+
+  sumforcetu_=0.0;
+  sumforcetv_=0.0;
+  sumforcetw_=0.0;
+
+  sumforcebu_=0.0;
+  sumforcebv_=0.0;
+  sumforcebw_=0.0;
 
   // reset integral and pointwise averages
   for (size_t j=0; j<numphase_; ++j)
   {
     for(size_t i=0; i<pointsumu_[0]->size(); ++i)
     {
-      (*(sumvol_[j]))[i]  =0;
+      (*(sumvol_[j]))[i]  =0.0;
 
-      (*(pointsumnode_[j]))[i]=0;
+      (*(pointsumnode_[j]))[i]=0.0;
 
-      (*(pointsumu_[j]))[i]  =0;
-      (*(pointsumv_[j]))[i]  =0;
-      (*(pointsumw_[j]))[i]  =0;
-      (*(pointsump_[j]))[i]  =0;
+      (*(pointsumu_[j]))[i]  =0.0;
+      (*(pointsumv_[j]))[i]  =0.0;
+      (*(pointsumw_[j]))[i]  =0.0;
+      (*(pointsump_[j]))[i]  =0.0;
 
-      (*(pointsumsqu_[j]))[i]=0;
-      (*(pointsumsqv_[j]))[i]=0;
-      (*(pointsumsqw_[j]))[i]=0;
-      (*(pointsumsqp_[j]))[i]=0;
+      (*(pointsumsqu_[j]))[i]=0.0;
+      (*(pointsumsqv_[j]))[i]=0.0;
+      (*(pointsumsqw_[j]))[i]=0.0;
+      (*(pointsumsqp_[j]))[i]=0.0;
 
-      (*(pointsumuv_[j]))[i] =0;
-      (*(pointsumuw_[j]))[i] =0;
-      (*(pointsumvw_[j]))[i] =0;
+      (*(pointsumuv_[j]))[i] =0.0;
+      (*(pointsumuw_[j]))[i] =0.0;
+      (*(pointsumvw_[j]))[i] =0.0;
     }
   }
 
