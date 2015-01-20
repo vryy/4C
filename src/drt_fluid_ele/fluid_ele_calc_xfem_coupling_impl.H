@@ -106,6 +106,18 @@ namespace DRT
           LINALG::Matrix<slave_nen_,1> & slave_funct ///< coupling slave shape functions
           ) const;
 
+        //! set state for interface velocity jump
+        void SetInterfaceJumpState(
+            const DRT::Discretization &  cutterdis,      ///< cutter discretization
+            const std::string            state,          ///< state
+            const std::vector<int>&      lm              ///< local map
+        );
+
+        //! get interface velocity jump at Gaussian point
+        void GetInterfaceJumpVel(
+            LINALG::Matrix<nsd_,1> & ivelint_jump ///< cutter element interface velocity jump or prescribed DBC at Gaussian point
+        ) const;
+
         //@}
 
         //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at gaussian point
@@ -165,14 +177,16 @@ namespace DRT
         LINALG::Matrix<slave_nen_,1>    slave_pres_;         ///< coupling slave element's pressure at current step
         LINALG::Matrix<nsd_,nsd_>       slave_vderxy_;       ///< coupling slave element's velocity derivatives at current step
         LINALG::Matrix<nsd_,slave_nen_> slave_disp_;         ///< coupling slave element's displacements at current step
-        LINALG::Matrix<nsd_,slave_nen_> slave_veln_;          ///< coupling slave element's velocity at previous step
-        LINALG::Matrix<slave_nen_,1>    slave_presn_;         ///< coupling slave element's pressure at previous step
-        LINALG::Matrix<nsd_,nsd_>       slave_vderxyn_;       ///< coupling slave element's velocity derivatives at previous step
+        LINALG::Matrix<nsd_,slave_nen_> slave_veln_;         ///< coupling slave element's velocity at previous step
+        LINALG::Matrix<slave_nen_,1>    slave_presn_;        ///< coupling slave element's pressure at previous step
+        LINALG::Matrix<nsd_,nsd_>       slave_vderxyn_;      ///< coupling slave element's velocity derivatives at previous step
 
         std::string disp_statename_; ///< name of current displacement state (for access from discretization)
         std::string vel_statename_;  ///< name of current velocity state (for access from discretization)
         std::string veln_statename_;   ///< name of previous velocity state (for access from discretization)
 
+        //TODO: shift this vector to the same class as ProjectOnSide which is based on the cutter discretization
+        LINALG::Matrix<nsd_, slave_nen_> interface_vel_jump_; ///< cutter element's prescribed velocity jump height or prescribed DBC values
       };
 
       /*!
@@ -244,8 +258,8 @@ namespace DRT
           SlaveElementRepresentation<distype,slave_distype,slave_numdof>(),
           C_umum_(C_umum.A(), true),
           rhC_um_(rhC_um.A(), true),
-          applicationType_(SlaveElementInterface<distype>::XFluidWDBC),
-          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
+          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0),
+          eval_coupling_(false)
         {
         }
 
@@ -259,9 +273,8 @@ namespace DRT
           SlaveElementRepresentation<distype,slave_distype,slave_numdof>(slave_xyze),
           C_umum_(C_umum.A(), true),
           rhC_um_(rhC_um.A(), true),
-          applicationType_(SlaveElementInterface<distype>::XFluidWDBC),
-          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
-
+          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0),
+          eval_coupling_(false)
         {
         }
 
@@ -274,7 +287,6 @@ namespace DRT
           Epetra_SerialDenseMatrix &  C_usus,          ///< C_usus coupling matrix
           Epetra_SerialDenseMatrix &  rhC_um,          ///< C_um coupling rhs
           Epetra_SerialDenseMatrix &  rhC_us,          ///< C_us coupling rhs
-          typename SlaveElementInterface<distype>::ApplicationType applicationType = SlaveElementInterface<distype>::XFluidFluid, ///< application type
           bool isViscAdjointSymmetric = true           ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
         ) :
           SlaveElementRepresentation<distype,slave_distype,slave_numdof>(slave_xyze),
@@ -284,8 +296,8 @@ namespace DRT
           C_usus_(C_usus.A(), true),
           rhC_um_(rhC_um.A(), true),
           rhC_us_(rhC_us.A(), true),
-          applicationType_(applicationType),
-          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
+          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0),
+          eval_coupling_(true)
         {
         }
 
@@ -300,6 +312,8 @@ namespace DRT
           const double &                                        density_m,              ///< fluid density (master)
           const double &                                        NIT_stab_fac_conv,      ///< full Nitsche's penalty term scaling (viscous+convective part)
           const double &                                        timefacfac,             ///< theta*dt
+          const LINALG::Matrix<nsd_,1> &                        ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+          const INPAR::XFEM::EleCouplingCondType &              cond_type,              ///< condition type
           INPAR::XFEM::XFF_ConvStabScaling                      xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none         ///< type of convective stabilization in XFF-problems
         );
 
@@ -318,6 +332,8 @@ namespace DRT
           const LINALG::Matrix<nsd_,nsd_> & vderxy_m,               ///< coupling master spatial velocity derivatives
           const double &                    pres_m,                 ///< coupling master pressure
           const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
+          const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+          const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
           INPAR::XFEM::XFF_ConvStabScaling  xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
         );
 
@@ -337,6 +353,13 @@ namespace DRT
         );
 
       private:
+
+        //! evaluate traction-consistency term for Nitsche's method
+        void NIT_Traction_Consistency_Term(
+          const LINALG::Matrix<nen_,1> &            funct_m_timefacfac_ks,        ///< funct * timefacfac *kappa_s
+          const LINALG::Matrix<slave_nen_,1> &      funct_s_timefacfac_km,        ///< funct_s * timefacfac *kappa_m
+          const LINALG::Matrix<nsd_,1> &            itraction_jump                ///< prescribed interface traction, jump height for coupled problems
+        );
 
         //! evaluate pressure-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_p_Consistency_MasterTerms(
@@ -566,10 +589,10 @@ namespace DRT
         LINALG::Matrix<master_numdof_*nen_,1>                           rhC_um_;          ///< coupling rhs rhC_um
         LINALG::Matrix<slave_numdof*slave_nen_,1>                       rhC_us_;          ///< coupling rhs rhC_us
 
-        typename SlaveElementInterface<distype>::ApplicationType        applicationType_; ///< application context
-
         /// scaling of Nitsche's adjoint viscous term
         const double adj_visc_scale_;
+
+        const bool eval_coupling_; ///< do we have to evaluate coupling terms?
 
       };
 
@@ -596,7 +619,6 @@ namespace DRT
             bool isViscAdjointSymmetric = true
         ) :
           SlaveElementRepresentation<distype,slave_distype,slave_numdof>(),
-          applicationType_(SlaveElementInterface<distype>::XFluidWDBC),
           adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
         {
         }
@@ -607,7 +629,6 @@ namespace DRT
           bool isViscAdjointSymmetric = true      ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
         ) :
           SlaveElementRepresentation<distype,slave_distype,slave_numdof>(slave_xyze),
-          applicationType_(SlaveElementInterface<distype>::XFluidWDBC),
           adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
         {
         }
@@ -620,7 +641,6 @@ namespace DRT
           Epetra_SerialDenseMatrix &  rhC_us,          ///< C_us coupling rhs
           Epetra_SerialDenseMatrix &  G_s_us,          ///< \f$G_{u^s \sigma}\f$ coupling matrix
           Epetra_SerialDenseMatrix &  G_us_s,          ///< \f$G_{\sigma u^s}\f$ coupling matrix
-          typename SlaveElementInterface<distype>::ApplicationType applicationType = SlaveElementInterface<distype>::XFluidFluid,
           bool isViscAdjointSymmetric = false          ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
         ) :
           SlaveElementRepresentation<distype,slave_distype,slave_numdof>(slave_xyz),
@@ -629,7 +649,6 @@ namespace DRT
           rhC_us_(rhC_us.A(), true),
           G_sus_(G_s_us.A(), true),
           G_uss_(G_us_s.A(), true),
-          applicationType_(applicationType),
           adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
         {
         }
@@ -639,7 +658,9 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &                                normal,     ///< normal vector
           const double &                                                fac,        ///< integration factor
           const LINALG::Matrix<nen_,1> &                                funct,      ///< shape function
-          LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> & rhs_s       ///< block rhs vector \f$ rhs_{\sigma} \f$
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> & rhs_s,      ///< block rhs vector \f$ rhs_{\sigma} \f$
+          const LINALG::Matrix<nsd_,1> &                                ivelint_jump,  ///< prescribed interface velocity or interface jump height
+          const LINALG::Matrix<nsd_,1> &                                itraction_jump ///< prescribed interface traction or interface jump height
         );
 
         //! evaluate interface matrices for mixed/hybrid viscous stress-based (MHVS) coupling
@@ -649,7 +670,15 @@ namespace DRT
           const LINALG::Matrix<nen_,1> &                                funct,      ///< background element shape functions
           LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> & rhs_s,      ///< block rhs vector \f$ rhs_{\sigma}\f$
           const double &                                                press,      ///< background element pressure
-          LINALG::Matrix<nen_,1> &                                      rhs_pmus    ///< part of block rhs vector \f$rhs_p\f$ including interface velocity terms
+          LINALG::Matrix<nen_,1> &                                      rhs_pmus,   ///< part of block rhs vector \f$rhs_p\f$ including interface velocity terms
+          const LINALG::Matrix<nsd_,1> &                                ivelint_jump,  ///< prescribed interface velocity or interface jump height
+          const LINALG::Matrix<nsd_,1> &                                itraction_jump ///< prescribed interface traction or interface jump height
+        );
+
+        //! apply the standard consistency traction interface jump term
+        void MH_Traction_Consistency_Term(
+            const LINALG::Matrix<slave_nen_,1> &      funct_s_timefacfac_km,        ///< funct_s * timefacfac *kappa_m
+            const LINALG::Matrix<nsd_,1> &            itraction_jump                ///< prescribed interface traction, jump height for coupled problems
         );
 
         //! build the final coupling matrices for mixed/hybrid Cauchy or viscous stress-based coupling (MHCS or MHVS)
@@ -708,8 +737,6 @@ namespace DRT
         LINALG::BlockMatrix<LINALG::Matrix<slave_nen_,nen_>,nsd_,numstressdof_>  BG_uss_;       ///< block G_uss coupling matrix
         LINALG::BlockMatrix<LINALG::Matrix<nen_,slave_nen_>,1,nsd_>              BG_pmus_;      ///< block G_pmus coupling matrix
         LINALG::BlockMatrix<LINALG::Matrix<slave_nen_,nen_>,nsd_,1>              BG_uspm_;      ///< block G_uspm coupling matrix
-
-        typename SlaveElementInterface<distype>::ApplicationType applicationType_;              ///< application context
 
         /// scaling of Nitsche's adjoint viscous term
         const double adj_visc_scale_;

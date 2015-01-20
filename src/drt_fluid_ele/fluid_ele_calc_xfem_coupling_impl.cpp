@@ -198,6 +198,47 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::GetSlaveFun
   slave_funct = slave_funct_;
 }
 
+  /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::SetInterfaceJumpState(
+  const DRT::Discretization &  cutterdis,      ///< cutter discretization
+  const std::string            state,          ///< state
+  const std::vector<int>&      lm              ///< local map
+)
+{
+  // get state of the global vector
+  Teuchos::RCP<const Epetra_Vector> matrix_state = cutterdis.GetState(state);
+  if (matrix_state == Teuchos::null)
+    dserror("Cannot get state vector %s", state.c_str());
+
+  // extract local values of the global vectors
+  std::vector<double> mymatrix(lm.size());
+  DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
+
+  for (unsigned inode=0; inode<slave_nen_; ++inode)  // number of nodes
+  {
+    for(unsigned idim=0; idim<nsd_; ++idim) // number of dimensions
+    {
+      (interface_vel_jump_)(idim,inode) = mymatrix[idim+(inode*slave_numdof)];  // state vector includes velocity and pressure
+      // no pressure jump required
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::GetInterfaceJumpVel(
+  LINALG::Matrix<nsd_,1> & ivelint_jump ///< cutter element interface velocity jump or prescribed DBC at Gaussian point
+  ) const
+{
+  ivelint_jump.Multiply(interface_vel_jump_, slave_funct_);
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
@@ -248,6 +289,7 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate2D(
 
   return;
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -619,10 +661,12 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
   const double &                                        density_m,              ///< fluid density (master)
   const double &                                        NIT_stab_fac_conv,      ///< full Nitsche's penalty term scaling (viscous+convective part)
   const double &                                        timefacfac,             ///< theta*dt
+  const LINALG::Matrix<nsd_,1> &                        ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+  const INPAR::XFEM::EleCouplingCondType &              cond_type,              ///< condition type
   INPAR::XFEM::XFF_ConvStabScaling                      xff_conv_stab           ///< type of convective stabilization in XFF-problems
 )
 {
-  if (applicationType_ == SlaveElementInterface<distype>::XFluidFluid &&
+  if (cond_type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID &&
       xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_none)
     dserror("Cannot apply convective stabilization terms for XFF_ConvStabScaling_none!");
 
@@ -635,8 +679,13 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
   funct_m_m_dyad_timefacfac.MultiplyNT(funct_m_timefacfac, funct_m);
 
   // velint_s
-  LINALG::Matrix<nsd_,1> velint_s;
-  slave_ele->GetInterfaceVelnp(velint_s);
+  LINALG::Matrix<nsd_,1> velint_s(true);
+
+  if(eval_coupling_)
+    slave_ele->GetInterfaceVelnp(velint_s);
+
+  // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
+  velint_s.Update(1.0, ivelint_jump, 1.0);
 
   // REMARK:
   // the (additional) convective stabilization is included in NIT_full_stab_fac
@@ -645,9 +694,13 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
   // with conv_stab_fac to the viscous counterpart;
   // this happens by calling NIT_Stab_Penalty
 
-  switch (applicationType_)
+
+  switch (cond_type)
   {
-    case SlaveElementInterface<distype>::XFluidWDBC:
+    case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
+    case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
+    case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
+    case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
     {
       NIT_Stab_Penalty_MasterTerms(
         velint_m,
@@ -658,7 +711,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
       );
       break;
     }
-    case SlaveElementInterface<distype>::XFluidFluid:
+    case INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID:
     {
       // funct_s
       Teuchos::RCP<SlaveElementRepresentation<distype,slave_distype,slave_numdof> > ser =
@@ -711,13 +764,13 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
       }
       break;
     }
-    case SlaveElementInterface<distype>::MonolithicXFSI:
+    case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
     {
       dserror("Convective stabilization in monolithic XFSI is not yet available!");
       break;
     }
     default:
-      dserror("Unsupported application type. Cannot apply convective stabilization terms."); break;
+      dserror("Unsupported coupling condition type. Cannot apply convective stabilization terms."); break;
   }
 }
 
@@ -738,6 +791,8 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   const LINALG::Matrix<nsd_,nsd_> & vderxy_m,               ///< coupling master spatial velocity derivatives
   const double &                    pres_m,                 ///< coupling master pressure
   const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
+  const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+  const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
   INPAR::XFEM::XFF_ConvStabScaling  xff_conv_stab           ///< type of convective stabilization in XFF-problems
 )
 {
@@ -776,8 +831,13 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   // get velocity at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
   // interface velocity vector in gausspoint
-  LINALG::Matrix<nsd_,1> velint_s;
-  this->GetInterfaceVelnp(velint_s);
+  LINALG::Matrix<nsd_,1> velint_s(true);
+
+  if(eval_coupling_)
+    this->GetInterfaceVelnp(velint_s);
+
+  // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
+  velint_s.Update(1.0, ivelint_jump, 1.0);
 
   // funct_m * timefac * fac
   LINALG::Matrix<nen_,1> funct_m_timefacfac(funct_m);
@@ -787,6 +847,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   LINALG::Matrix<slave_nen_,1> funct_s(true);
   if (slave_distype != DRT::Element::dis_none)
     this->GetSlaveFunct(funct_s);
+
   LINALG::Matrix<slave_nen_,1> funct_s_timefacfac(funct_s);
   funct_s_timefacfac.Scale(timefacfac);
 
@@ -809,13 +870,12 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   const double velint_normal_m = velint_m.Dot(normal);
   const double velint_normal_s = velint_s.Dot(normal);
 
-  // Todo: no convective stabilization terms for monolithic XFSI available yet
 
   //-----------------------------------------------------------------
   // viscous stability term
   // REMARK: this term includes also inflow coercivity in case of XFSI
   // with modified stabfac (see NIT_ComputeStabfac)
-  if ( applicationType_ == SlaveElementInterface<distype>::XFluidWDBC )
+  if ( !eval_coupling_ )
   {
     NIT_Stab_Penalty_MasterTerms(
       velint_m,
@@ -856,12 +916,31 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
     );
   }
 
+  // funct_s * timefac * fac * kappa_m
+  LINALG::Matrix<slave_nen_,1> funct_s_timefacfac_km(funct_s_timefacfac);
+  funct_s_timefacfac_km.Scale(kappa_m);
+
+  // funct_m * timefac * fac * kappa_s
+  LINALG::Matrix<nen_,1> funct_m_timefacfac_ks(funct_m_timefacfac);
+  funct_m_timefacfac_ks.Scale(kappa_s);
+
+   //-----------------------------------------------------------------
+   // standard consistency traction jump term
+   if( eval_coupling_ )
+   {
+     NIT_Traction_Consistency_Term(
+         funct_m_timefacfac_ks,
+         funct_s_timefacfac_km,
+         itraction_jump
+         );
+   }
+
   //-----------------------------------------------------------------
 
   // evaluate the terms, that contribute to the background fluid
   // system - standard Dirichlet case/pure xfluid-sided case
 
-  if (applicationType_ == SlaveElementInterface<distype>::XFluidWDBC || full_mastersided)
+  if (!eval_coupling_ || full_mastersided)
   {
     //-----------------------------------------------------------------
     // pressure consistency term
@@ -930,9 +1009,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   LINALG::Matrix<nen_,1> funct_m_timefacfac_km(funct_m_timefacfac);
   funct_m_timefacfac_km.Scale(kappa_m);
 
-  // funct_s * timefac * fac * kappa_m
-  LINALG::Matrix<slave_nen_,1> funct_s_timefacfac_km(funct_s_timefacfac);
-  funct_s_timefacfac_km.Scale(kappa_m);
+
 
   // funct_m * timefac * fac * funct_m  * kappa_m (dyadic product)
   LINALG::Matrix<nen_,nen_> funct_m_m_dyad_timefacfac_km(funct_m_m_dyad_timefacfac);
@@ -952,6 +1029,10 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   // funct_s * 2 * mu_m * kappa_m * timefac * fac
   LINALG::Matrix<slave_nen_,1> funct_s_viscm_timefacfac_km(funct_s);
   funct_s_viscm_timefacfac_km.Scale(km_viscm_fac);
+
+
+
+
 
   if (! full_slavesided)
   {
@@ -1009,10 +1090,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 
   // 2 * mu_s * kappa_s * timefac * fac
   const double ks_viscs_fac = 2.0 * kappa_s * visceff_s * timefacfac;
-
-  // funct_m * timefac * fac * kappa_s
-  LINALG::Matrix<nen_,1> funct_m_timefacfac_ks(funct_m_timefacfac);
-  funct_m_timefacfac_ks.Scale(kappa_s);
 
   // funct_s * timefac * fac * funct_m * kappa_s
   LINALG::Matrix<slave_nen_,nen_> funct_s_m_dyad_timefacfac_ks(funct_s_m_dyad_timefacfac);
@@ -1111,259 +1188,303 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   const LINALG::Matrix<nsd_,1> &    velintn_m                ///< coupling master interface velocity
 )
 {
-    //--------------------------------------------
+  //--------------------------------------------
 
-    // define the coupling between two not matching grids
-    // for fluidfluidcoupling
-    // domain Omega^m := Coupling master (XFluid)
-    // domain Omega^s := Alefluid( or monolithic: structure) ( not available for non-coupling (Dirichlet) )
+  // define the coupling between two not matching grids
+  // for fluidfluidcoupling
+  // domain Omega^m := Coupling master (XFluid)
+  // domain Omega^s := Alefluid( or monolithic: structure) ( not available for non-coupling (Dirichlet) )
 
-    // [| v |] := vm - vs
-    //  { v }  := kappa_m * vm + kappas * vs = kappam * vm (for Dirichlet coupling km=1.0, ks = 0.0)
-    //  < v >  := kappa_s * vm + kappam * vs = kappas * vm (for Dirichlet coupling km=1.0, ks = 0.0)
+  // [| v |] := vm - vs
+  //  { v }  := kappa_m * vm + kappas * vs = kappam * vm (for Dirichlet coupling km=1.0, ks = 0.0)
+  //  < v >  := kappa_s * vm + kappam * vs = kappas * vm (for Dirichlet coupling km=1.0, ks = 0.0)
 
-    //--------------------------------------------
+  //--------------------------------------------
 
-    //--------------------------------------------
+  //--------------------------------------------
 
-    // plausibility check
-    if (kappa_s * kappa_m < 0)
-      dserror("Please choose reasonable, non-negative weights");
+  // plausibility check
+  if (kappa_s * kappa_m < 0)
+    dserror("Please choose reasonable, non-negative weights");
 
-    // check if this is a one-sided background fluid-master approach
-    const bool full_mastersided(fabs(kappa_m-1.0) < 1.e-14);
-    // check if this is a slave-sided (embedded-sided approach=
-    const bool full_slavesided(fabs(kappa_s-1.0) < 1.e-14);
+  // check if this is a one-sided background fluid-master approach
+  const bool full_mastersided(fabs(kappa_m-1.0) < 1.e-14);
+  // check if this is a slave-sided (embedded-sided approach=
+  const bool full_slavesided(fabs(kappa_s-1.0) < 1.e-14);
 
-    // check the weights
-    if (fabs(kappa_m + kappa_s -1.0) > 1.e-14)
-      dserror("Invalid weights kappa_m=%d and kappa_s=%d. The have to sum up to 1.0!", kappa_m, kappa_s);
+  // check the weights
+  if (fabs(kappa_m + kappa_s -1.0) > 1.e-14)
+    dserror("Invalid weights kappa_m=%d and kappa_s=%d. The have to sum up to 1.0!", kappa_m, kappa_s);
 
-    //--------------------------------------------
+  //--------------------------------------------
 
-    // get velocity at integration point
-    // (values at n)
-    // interface velocity vector in gausspoint
-    LINALG::Matrix<nsd_,1> velintn_s;
-    this->GetInterfaceVeln(velintn_s);
+  // get velocity at integration point
+  // (values at n)
+  // interface velocity vector in gausspoint
+  LINALG::Matrix<nsd_,1> velintn_s;
+  this->GetInterfaceVeln(velintn_s);
 
-    // funct_m * timefac * fac
-    LINALG::Matrix<nen_,1> funct_m_timefacfacn(funct_m);
-    funct_m_timefacfacn.Scale(timefacfacn);
+  // funct_m * timefac * fac
+  LINALG::Matrix<nen_,1> funct_m_timefacfacn(funct_m);
+  funct_m_timefacfacn.Scale(timefacfacn);
 
-    // funct_s * timefac * fac
-    LINALG::Matrix<slave_nen_,1> funct_s(true);
-    if (slave_distype != DRT::Element::dis_none)
-      this->GetSlaveFunct(funct_s);
-    LINALG::Matrix<slave_nen_,1> funct_s_timefacfacn(funct_s);
-    funct_s_timefacfacn.Scale(timefacfacn);
+  // funct_s * timefac * fac
+  LINALG::Matrix<slave_nen_,1> funct_s(true);
+  if (slave_distype != DRT::Element::dis_none)
+    this->GetSlaveFunct(funct_s);
+  LINALG::Matrix<slave_nen_,1> funct_s_timefacfacn(funct_s);
+  funct_s_timefacfacn.Scale(timefacfacn);
 
-    // 2 * mu_m * timefacfacn
-    const double viscm_facn = 2.0 * timefacfacn * visceff_m;
+  // 2 * mu_m * timefacfacn
+  const double viscm_facn = 2.0 * timefacfacn * visceff_m;
 
-    // compute normal velocity components
-    const double velintn_normal_m = velintn_m.Dot(normal);
-    const double velintn_normal_s = velintn_s.Dot(normal);
+//  // compute normal velocity components
+//  const double velintn_normal_m = velintn_m.Dot(normal);
+//  const double velintn_normal_s = velintn_s.Dot(normal);
 
-    //-----------------------------------------------------------------
+  //-----------------------------------------------------------------
 
-    // evaluate the terms, that contribute to the background fluid
-    // system - standard Dirichlet case/pure xfluid-sided case
+  // evaluate the terms, that contribute to the background fluid
+  // system - standard Dirichlet case/pure xfluid-sided case
 
-    if (applicationType_ == SlaveElementInterface<distype>::XFluidWDBC || full_mastersided)
-    {
-      //-----------------------------------------------------------------
-      // pressure consistency term
-      NIT_p_Consistency_MasterRHS(
-          presn_m,
-          funct_m_timefacfacn,
-          funct_s_timefacfacn,
-          normal
-          );
-
-      //-----------------------------------------------------------------
-      // pressure adjoint consistency term
-
-      NIT_p_AdjointConsistency_MasterRHS(
-          velintn_normal_m,
-          velintn_normal_s,
-          funct_m_timefacfacn,
-          normal
-          );
-
-      //-----------------------------------------------------------------
-      // viscous consistency term
-
-      // funct_m * 2 * mu_m * kappa_m * timefac * fac
-      LINALG::Matrix<nen_,1> funct_m_viscm_timefacfacn(funct_m);
-      funct_m_viscm_timefacfacn.Scale(viscm_facn);
-
-      // funct_s * 2 * mu_m * kappa_m * timefac * fac
-      LINALG::Matrix<slave_nen_,1> funct_s_viscm_timefacfacn(funct_s);
-      funct_s_viscm_timefacfacn.Scale(viscm_facn);
-
-      NIT_visc_Consistency_MasterRHS(
-          vderxyn_m,
-          funct_m_viscm_timefacfacn,
-          funct_s_viscm_timefacfacn,
-          normal);
-
-      //-----------------------------------------------------------------
-      // viscous adjoint consistency term
-
-      LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfacn(derxy_m);
-      derxy_m_viscm_timefacfacn.Scale(adj_visc_scale_*viscm_facn);
-      NIT_visc_AdjointConsistency_MasterRHS(
-          velintn_m,
-          velintn_s,
-          derxy_m_viscm_timefacfacn,
-          normal );
-
-      // we are done here!
-      return;
-
-      std::cout << "done" << std::endl;
-    }
-
-    //-----------------------------------------------------------------
-
-    // evaluate the terms, that contribute to the background fluid
-    // system - two-sided or xfluid-sided:
-
-    // funct_m * timefac * fac * kappa_m
-    LINALG::Matrix<nen_,1> funct_m_timefacfacn_km(funct_m_timefacfacn);
-    funct_m_timefacfacn_km.Scale(kappa_m);
-
-    // funct_s * timefac * fac * kappa_m
-    LINALG::Matrix<slave_nen_,1> funct_s_timefacfacn_km(funct_s_timefacfacn);
-    funct_s_timefacfacn_km.Scale(kappa_m);
-
-    // 2 * mu_m * kappa_m * timefac * fac
-    const double km_viscm_facn = viscm_facn * kappa_m;
-
-    // funct_m * 2 * mu_m * kappa_m * timefac * fac
-    LINALG::Matrix<nen_,1> funct_m_viscm_timefacfacn_km(funct_m);
-    funct_m_viscm_timefacfacn_km.Scale(km_viscm_facn);
-
-    // funct_s * 2 * mu_m * kappa_m * timefac * fac
-    LINALG::Matrix<slave_nen_,1> funct_s_viscm_timefacfacn_km(funct_s);
-    funct_s_viscm_timefacfacn_km.Scale(km_viscm_facn);
-
-    if (! full_slavesided)
-    {
-      //-----------------------------------------------------------------
-      // pressure consistency term
-      NIT_p_Consistency_MasterRHS(
-          presn_m,
-          funct_m_timefacfacn_km,
-          funct_s_timefacfacn_km,
-          normal
-          );
-
-      //-----------------------------------------------------------------
-      // pressure adjoint consistency term
-      NIT_p_AdjointConsistency_MasterRHS(
-          velintn_normal_m,
-          velintn_normal_s,
-          funct_m_timefacfacn_km,
-          normal
-          );
-
-      //-----------------------------------------------------------------
-      // viscous consistency term
-      NIT_visc_Consistency_MasterRHS(
-          vderxyn_m,
-          funct_m_viscm_timefacfacn_km,
-          funct_s_viscm_timefacfacn_km,
-          normal);
-
-      //-----------------------------------------------------------------
-      // viscous adjoint consistency term
-
-      LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfacn_km(derxy_m);
-      derxy_m_viscm_timefacfacn_km.Scale(adj_visc_scale_*km_viscm_facn);
-      NIT_visc_AdjointConsistency_MasterRHS(
-          velintn_m,
-          velintn_s,
-          derxy_m_viscm_timefacfacn_km,
-          normal
-          );
-    }
-
-    //-----------------------------------------------------------------
-    // the following quantities are only required for two-sided coupling
-    // kappa_s > 0.0
-
-    // 2 * mu_s * kappa_s * timefac * fac
-    const double ks_viscs_facn = 2.0 * kappa_s * visceff_s * timefacfacn;
-
-    // funct_m * timefac * fac * kappa_s
-    LINALG::Matrix<nen_,1> funct_m_timefacfacn_ks(funct_m_timefacfacn);
-    funct_m_timefacfacn_ks.Scale(kappa_s);
-
-    // funct_s * timefac * fac * kappa_s
-    LINALG::Matrix<slave_nen_,1> funct_s_timefacfacn_ks(funct_s_timefacfacn);
-    funct_s_timefacfacn_ks.Scale(kappa_s);
-
-
-    // funct_m * 2* mu_s  timefac * fac * kappa_s
-    LINALG::Matrix<nen_,1> funct_m_viscs_timefacfacn_ks(funct_m);
-    funct_m_viscs_timefacfacn_ks.Scale(ks_viscs_facn);
-
-    // funct_s * 2* mu_s  timefac * fac * kappa_s
-    LINALG::Matrix<slave_nen_,1> funct_s_viscs_timefacfacn_ks(funct_s);
-    funct_s_viscs_timefacfacn_ks.Scale(ks_viscs_facn);
-
+  if (!eval_coupling_ || full_mastersided)
+  {
     //-----------------------------------------------------------------
     // pressure consistency term
+    NIT_p_Consistency_MasterRHS(
+        presn_m,
+        funct_m_timefacfacn,
+        funct_s_timefacfacn,
+        normal
+    );
 
-    double presn_s = 0.0;
-    // must use this-pointer because of two-stage lookup!
-    this->GetInterfacePresn(presn_s);
-
-    NIT_p_Consistency_SlaveRHS(
-        presn_s,
-        funct_m_timefacfacn_ks,
-        funct_s_timefacfacn_ks,
-        normal);
-
-    //-----------------------------------------------------------------
-    // pressure adjoint consistency term
-
-    NIT_p_AdjointConsistency_SlaveRHS(
-        velintn_normal_m,
-        velintn_normal_s,
-        funct_s_timefacfacn_ks);
+//    //-----------------------------------------------------------------
+//    // pressure adjoint consistency term
+//
+//    NIT_p_AdjointConsistency_MasterRHS(
+//        velintn_normal_m,
+//        velintn_normal_s,
+//        funct_m_timefacfacn,
+//        normal
+//    );
 
     //-----------------------------------------------------------------
     // viscous consistency term
 
-    // Spatial velocity gradient for slave side
-    LINALG::Matrix<nsd_,nsd_> vderxyn_s;
-    this->GetInterfaceVelGradn(vderxyn_s);
+    // funct_m * 2 * mu_m * kappa_m * timefac * fac
+    LINALG::Matrix<nen_,1> funct_m_viscm_timefacfacn(funct_m);
+    funct_m_viscm_timefacfacn.Scale(viscm_facn);
 
-    NIT_visc_Consistency_SlaveRHS(
-        vderxyn_s,
-        funct_m_viscs_timefacfacn_ks,
-        funct_s_viscs_timefacfacn_ks,
+    // funct_s * 2 * mu_m * kappa_m * timefac * fac
+    LINALG::Matrix<slave_nen_,1> funct_s_viscm_timefacfacn(funct_s);
+    funct_s_viscm_timefacfacn.Scale(viscm_facn);
+
+    NIT_visc_Consistency_MasterRHS(
+        vderxyn_m,
+        funct_m_viscm_timefacfacn,
+        funct_s_viscm_timefacfacn,
         normal);
 
+//    //-----------------------------------------------------------------
+//    // viscous adjoint consistency term
+//
+//    LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfacn(derxy_m);
+//    derxy_m_viscm_timefacfacn.Scale(adj_visc_scale_*viscm_facn);
+//    NIT_visc_AdjointConsistency_MasterRHS(
+//        velintn_m,
+//        velintn_s,
+//        derxy_m_viscm_timefacfacn,
+//        normal );
+
+    // we are done here!
+    return;
+  }
+
+  //-----------------------------------------------------------------
+
+  // evaluate the terms, that contribute to the background fluid
+  // system - two-sided or xfluid-sided:
+
+  // funct_m * timefac * fac * kappa_m
+  LINALG::Matrix<nen_,1> funct_m_timefacfacn_km(funct_m_timefacfacn);
+  funct_m_timefacfacn_km.Scale(kappa_m);
+
+  // funct_s * timefac * fac * kappa_m
+  LINALG::Matrix<slave_nen_,1> funct_s_timefacfacn_km(funct_s_timefacfacn);
+  funct_s_timefacfacn_km.Scale(kappa_m);
+
+  // 2 * mu_m * kappa_m * timefac * fac
+  const double km_viscm_facn = viscm_facn * kappa_m;
+
+  // funct_m * 2 * mu_m * kappa_m * timefac * fac
+  LINALG::Matrix<nen_,1> funct_m_viscm_timefacfacn_km(funct_m);
+  funct_m_viscm_timefacfacn_km.Scale(km_viscm_facn);
+
+  // funct_s * 2 * mu_m * kappa_m * timefac * fac
+  LINALG::Matrix<slave_nen_,1> funct_s_viscm_timefacfacn_km(funct_s);
+  funct_s_viscm_timefacfacn_km.Scale(km_viscm_facn);
+
+  if (! full_slavesided)
+  {
     //-----------------------------------------------------------------
-    // viscous adjoint consistency term
-    // Shape function derivatives for slave side
-    LINALG::Matrix<nsd_,slave_nen_> derxyn_s;
-    this->GetSlaveFunctDeriv(derxyn_s);
-
-    LINALG::Matrix<nsd_,slave_nen_> derxy_s_viscs_timefacfacn_ks(derxyn_s);
-    derxy_s_viscs_timefacfacn_ks.Scale(adj_visc_scale_*ks_viscs_facn);
-
-    NIT_visc_AdjointConsistency_SlaveRHS(
-        velintn_m,
-        velintn_s,
-        derxy_s_viscs_timefacfacn_ks,
+    // pressure consistency term
+    NIT_p_Consistency_MasterRHS(
+        presn_m,
+        funct_m_timefacfacn_km,
+        funct_s_timefacfacn_km,
         normal
     );
+
+//    //-----------------------------------------------------------------
+//    // pressure adjoint consistency term
+//    NIT_p_AdjointConsistency_MasterRHS(
+//        velintn_normal_m,
+//        velintn_normal_s,
+//        funct_m_timefacfacn_km,
+//        normal
+//    );
+
+    //-----------------------------------------------------------------
+    // viscous consistency term
+    NIT_visc_Consistency_MasterRHS(
+        vderxyn_m,
+        funct_m_viscm_timefacfacn_km,
+        funct_s_viscm_timefacfacn_km,
+        normal);
+
+//    //-----------------------------------------------------------------
+//    // viscous adjoint consistency term
+//
+//    LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfacn_km(derxy_m);
+//    derxy_m_viscm_timefacfacn_km.Scale(adj_visc_scale_*km_viscm_facn);
+//    NIT_visc_AdjointConsistency_MasterRHS(
+//        velintn_m,
+//        velintn_s,
+//        derxy_m_viscm_timefacfacn_km,
+//        normal
+//    );
+  }
+
+  //-----------------------------------------------------------------
+  // the following quantities are only required for two-sided coupling
+  // kappa_s > 0.0
+
+  // 2 * mu_s * kappa_s * timefac * fac
+  const double ks_viscs_facn = 2.0 * kappa_s * visceff_s * timefacfacn;
+
+  // funct_m * timefac * fac * kappa_s
+  LINALG::Matrix<nen_,1> funct_m_timefacfacn_ks(funct_m_timefacfacn);
+  funct_m_timefacfacn_ks.Scale(kappa_s);
+
+  // funct_s * timefac * fac * kappa_s
+  LINALG::Matrix<slave_nen_,1> funct_s_timefacfacn_ks(funct_s_timefacfacn);
+  funct_s_timefacfacn_ks.Scale(kappa_s);
+
+
+  // funct_m * 2* mu_s  timefac * fac * kappa_s
+  LINALG::Matrix<nen_,1> funct_m_viscs_timefacfacn_ks(funct_m);
+  funct_m_viscs_timefacfacn_ks.Scale(ks_viscs_facn);
+
+  // funct_s * 2* mu_s  timefac * fac * kappa_s
+  LINALG::Matrix<slave_nen_,1> funct_s_viscs_timefacfacn_ks(funct_s);
+  funct_s_viscs_timefacfacn_ks.Scale(ks_viscs_facn);
+
+  //-----------------------------------------------------------------
+  // pressure consistency term
+
+  double presn_s = 0.0;
+  // must use this-pointer because of two-stage lookup!
+  this->GetInterfacePresn(presn_s);
+
+  NIT_p_Consistency_SlaveRHS(
+      presn_s,
+      funct_m_timefacfacn_ks,
+      funct_s_timefacfacn_ks,
+      normal);
+
+//  //-----------------------------------------------------------------
+//  // pressure adjoint consistency term
+//
+//  NIT_p_AdjointConsistency_SlaveRHS(
+//      velintn_normal_m,
+//      velintn_normal_s,
+//      funct_s_timefacfacn_ks);
+
+  //-----------------------------------------------------------------
+  // viscous consistency term
+
+  // Spatial velocity gradient for slave side
+  LINALG::Matrix<nsd_,nsd_> vderxyn_s;
+  this->GetInterfaceVelGradn(vderxyn_s);
+
+  NIT_visc_Consistency_SlaveRHS(
+      vderxyn_s,
+      funct_m_viscs_timefacfacn_ks,
+      funct_s_viscs_timefacfacn_ks,
+      normal);
+
+//  //-----------------------------------------------------------------
+//  // viscous adjoint consistency term
+//  // Shape function derivatives for slave side
+//  LINALG::Matrix<nsd_,slave_nen_> derxyn_s;
+//  this->GetSlaveFunctDeriv(derxyn_s);
+//
+//  LINALG::Matrix<nsd_,slave_nen_> derxy_s_viscs_timefacfacn_ks(derxyn_s);
+//  derxy_s_viscs_timefacfacn_ks.Scale(adj_visc_scale_*ks_viscs_facn);
+//
+//  NIT_visc_AdjointConsistency_SlaveRHS(
+//      velintn_m,
+//      velintn_s,
+//      derxy_s_viscs_timefacfacn_ks,
+//      normal
+//  );
 }
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Traction_Consistency_Term(
+  const LINALG::Matrix<nen_,1> &            funct_m_timefacfac_ks,        ///< funct * timefacfac *kappa_s
+  const LINALG::Matrix<slave_nen_,1> &      funct_s_timefacfac_km,        ///< funct_s * timefacfac *kappa_m
+  const LINALG::Matrix<nsd_,1> &            itraction_jump                ///< prescribed interface traction, jump height for coupled problems
+)
+{
+        /*            \
+     - |  < v >,   t   |   with t = [sigma * n]
+        \             /     */
+
+  // loop over velocity components
+  for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+  {
+    //-----------------------------------------------
+    //    - (vm, ks * t)
+    //-----------------------------------------------
+    for (unsigned ir = 0; ir<nen_; ir++)
+    {
+      const double funct_m_ks_timefacfac_traction = funct_m_timefacfac_ks(ir)*itraction_jump(ivel);
+
+      const unsigned row = mIndex(ir,ivel);
+      rhC_um_(row,0) += funct_m_ks_timefacfac_traction;
+    }
+
+    if (!eval_coupling_ ) continue;
+
+    //-----------------------------------------------
+    //    + (vs, km * t)
+    //-----------------------------------------------
+    for(unsigned ir = 0; ir<slave_nen_; ir++)
+    {
+      const double funct_s_km_timefacfac_traction = funct_s_timefacfac_km(ir)*itraction_jump(ivel);
+
+      const unsigned row = sIndex(ir,ivel);
+      rhC_us_(row,0) += funct_s_km_timefacfac_traction;
+    }
+  } // end loop over velocity components
+}
+
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1401,7 +1522,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_Consistency_Mast
       rhC_um_(row,0) -= funct_m_km_timefacfac_press*normal(ivel);
     }
 
-    if (applicationType_ == SlaveElementInterface<distype>::XFluidWDBC) continue;
+    if (!eval_coupling_) continue;
 
     //-----------------------------------------------
     //    - (vs, km *(Dpm)*n)
@@ -1518,7 +1639,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_AdjointConsisten
     rhC_um_(mPres(ir),0) -= funct_m_timefacfac_km(ir)*velint_normal_s;
   }
 
-  if (applicationType_ == SlaveElementInterface<distype>::XFluidWDBC) return;
+  if (!eval_coupling_) return;
 
   //-----------------------------------------------
   //    + (qm*n, km *(Dus))
@@ -1646,7 +1767,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Consistency_M
         rhC_um_(row,0) += 0.5 * funct_m_viscm_timefacfac_km(ir) * ( vderxy_m(ivel,jvel) + vderxy_m(jvel,ivel) )*normal(jvel);
       }
 
-      if (applicationType_ == SlaveElementInterface<distype>::XFluidWDBC) continue;
+      if (!eval_coupling_) continue;
 
       //-----------------------------------------------
       //    + (vs, (2*km*mum) *eps(Dum)*n)
@@ -1803,7 +1924,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
         rhC_um_(mrow,0) -= tmp * (normal(jvel) * velint_s(ivel) + normal(ivel)*velint_s(jvel));
       }
 
-      if (applicationType_ == SlaveElementInterface<distype>::XFluidWDBC) continue;
+      if (!eval_coupling_) continue;
 
       //-----------------------------------------------
       //    + alpha * ((2*km*mum) *eps(vm)*n , us)
@@ -1934,7 +2055,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_p_Consistency_Mast
       rhC_um_(mIndex(ir,ivel),0) -= funct_m_timefacfac_km(ir)*pres_m*normal(ivel);
     }
 
-    if (applicationType_ == SlaveElementInterface<distype>::XFluidWDBC) continue;
+    if (!eval_coupling_) continue;
 
     //-----------------------------------------------
     //    - (vs, km *(Dpm)*n)
@@ -2085,7 +2206,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_Consistency_M
         rhC_um_(mIndex(ir,ivel),0) += 0.5 * funct_m_viscm_timefacfac_km(ir) * ( vderxy_m(ivel,jvel) + vderxy_m(jvel,ivel) )*normal(jvel);
       }
 
-      if (applicationType_ == SlaveElementInterface<distype>::XFluidWDBC) continue;
+      if (!eval_coupling_) continue;
 
       //-----------------------------------------------
       //    + (vs, (2*km*mum) *eps(Dum)*n)
@@ -2303,7 +2424,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty(
       rhC_um_(m,0) += tmp*velint_s(ivel);
     }
 
-    if (applicationType_ == SlaveElementInterface<distype>::XFluidWDBC) continue;
+    if (!eval_coupling_) continue;
 
     // - gamma*mu/h_K (vm, us))
     // - gamma*mu/h_K (vs, um))
@@ -2454,7 +2575,9 @@ void HybridLMCoupling<distype,slave_distype,slave_numdof>::MHCS_buildCouplingMat
   const LINALG::Matrix<nsd_,1> &                                normal,     ///< normal vector
   const double &                                                fac,        ///< integration factor
   const LINALG::Matrix<nen_,1> &                                funct,      ///< shape function
-  LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> & rhs_s       ///< block rhs vector \f$ rhs_{\sigma} \f$
+  LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> & rhs_s,      ///< block rhs vector \f$ rhs_{\sigma} \f$
+  const LINALG::Matrix<nsd_,1> &                                ivelint_jump,  ///< prescribed interface velocity or interface jump height
+  const LINALG::Matrix<nsd_,1> &                                itraction_jump ///< prescribed interface traction or interface jump height
 )
 {
   LINALG::Matrix<nen_,slave_nen_> bK_ms;
@@ -2463,6 +2586,9 @@ void HybridLMCoupling<distype,slave_distype,slave_numdof>::MHCS_buildCouplingMat
   // interface velocity at gauss-point (current gauss-point in calling method)
   LINALG::Matrix<nsd_,1> velint_s(true);
   this->GetInterfaceVelnp(velint_s);
+
+  // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
+  velint_s.Update(1.0, ivelint_jump, 1.0);
 
   // get nodal shape function vector
   LINALG::Matrix<slave_nen_,1> slave_funct(true);
@@ -2487,6 +2613,13 @@ void HybridLMCoupling<distype,slave_distype,slave_numdof>::MHCS_buildCouplingMat
     }
   }
 
+  const double km=1.0; // only master-sided weighting
+  LINALG::Matrix<slave_nen_,1> funct_s_timefacfac_km;        ///< funct_s * timefacfac *kappa_m
+  funct_s_timefacfac_km.Update(km, slave_funct, 0.0);
+
+  // Traction Standard Consistency term
+  MH_Traction_Consistency_Term( funct_s_timefacfac_km, itraction_jump );
+
 }
 
 /*----------------------------------------------------------------------*
@@ -2498,12 +2631,17 @@ void HybridLMCoupling<distype,slave_distype,slave_numdof>::MHVS_buildCouplingMat
   const LINALG::Matrix<nen_,1> &                                  funct,      ///< background element shape functions
   LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> &   rhs_s,      ///< block rhs vector \f$ rhs_{\sigma}\f$
   const double &                                                  press,      ///< background element pressure
-  LINALG::Matrix<nen_,1> &                                        rhs_pmus    ///< part of block rhs vector \f$rhs_p\f$ including interface velocity terms
+  LINALG::Matrix<nen_,1> &                                        rhs_pmus,   ///< part of block rhs vector \f$rhs_p\f$ including interface velocity terms
+  const LINALG::Matrix<nsd_,1> &                                  ivelint_jump,  ///< prescribed interface velocity or interface jump height
+  const LINALG::Matrix<nsd_,1> &                                  itraction_jump ///< prescribed interface traction or interface jump height
 )
 {
   // interface velocity at gauss-point (current gauss-point in calling method)
   LINALG::Matrix<nsd_,1> velint_s(true);
   this->GetInterfaceVelnp(velint_s);
+
+  // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump height for coupled problems
+  velint_s.Update(1.0, ivelint_jump, 1.0);
 
   // block submatrices for interface coupling; s: slave side, m: master side (always background here)
   LINALG::Matrix<nen_, slave_nen_> bG_ms(true);
@@ -2598,8 +2736,52 @@ void HybridLMCoupling<distype,slave_distype,slave_numdof>::MHVS_buildCouplingMat
     rhC_us_(sIndex(ir,Pres), 0) = 0.0;
   }
 
+  const double km=1.0; // only master-sided weighting
+  LINALG::Matrix<slave_nen_,1> funct_s_timefacfac_km;        ///< funct_s * timefacfac *kappa_m
+  funct_s_timefacfac_km.Update(km, slave_funct, 0.0);
+
+  // Traction Standard Consistency term
+  MH_Traction_Consistency_Term( funct_s_timefacfac_km, itraction_jump );
+
+
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void HybridLMCoupling<distype,slave_distype,slave_numdof>::MH_Traction_Consistency_Term(
+  const LINALG::Matrix<slave_nen_,1> &      funct_s_timefacfac_km,        ///< funct_s * timefacfac *kappa_m
+  const LINALG::Matrix<nsd_,1> &            itraction_jump                ///< prescribed interface traction, jump height for coupled problems
+)
+{
+        /*            \
+     - |  < v >,   t   |   with t = [sigma * n]
+        \             /     */
+
+  // loop over velocity components
+  for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+  {
+    /*
+    //-----------------------------------------------
+    //    - (vm, ks * t) = 0 as ks=0
+    //-----------------------------------------------
+    */
+
+    //-----------------------------------------------
+    //    + (vs, km * t)
+    //-----------------------------------------------
+    for(unsigned ir = 0; ir<slave_nen_; ir++)
+    {
+      const double funct_s_km_timefacfac_traction = funct_s_timefacfac_km(ir)*itraction_jump(ivel);
+
+      const unsigned row = sIndex(ir,ivel);
+      rhC_us_(row,0) += funct_s_km_timefacfac_traction;
+    }
+  } // end loop over velocity components
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

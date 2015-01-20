@@ -247,6 +247,15 @@ private:
       Teuchos::RCP<MAT::Material>             mat = Teuchos::null
   );
 
+  //! get the interface jump vectors for velocity and traction at the Gaussian point
+  void GetInterfaceJumpVectors(
+      const INPAR::XFEM::EleCouplingCondType & cond_type,                      ///< condition type for given interface side
+      LINALG::Matrix<my::nsd_,1>& ivelint_jump,                                ///< prescribed interface jump vector for velocity
+      LINALG::Matrix<my::nsd_,1>& itraction_jump,                              ///< prescribed interface jump vector for traction
+      const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
+      Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si  ///< side implementation for cutter element
+  );
+
   //! build the patch coupling matrix Cuiui containing Cuiui for all cutting sides
   void NIT_BuildPatchCuiui(
       Epetra_SerialDenseMatrix &                              Cuiui,            ///< ui-ui patch coupling matrix containing Cuiui for all cutting sides
@@ -382,8 +391,10 @@ private:
       LINALG::BlockMatrix<LINALG::Matrix<my::nen_,my::nen_>,1,my::nsd_> &                       G_pu,
       LINALG::BlockMatrix<LINALG::Matrix<my::nen_,1>,my::nsd_,1> &                              rhs_up,
       LINALG::Matrix<my::nen_,1> &                                                              rhs_pu,
-      const LINALG::Matrix<3,1> &                                                               normal,
+      const LINALG::Matrix<my::nsd_,1> &                                                        normal,
       const double &                                                                            timesurffac,
+      const LINALG::Matrix<my::nsd_,1> &                                                        ivelint_jump,
+      const LINALG::Matrix<my::nsd_,1> &                                                        itraction_jump,
       const bool                                                                                eval_side_coupling,
       const bool                                                                                is_MHVS
   );

@@ -275,36 +275,31 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
 //    case DRT::Element::tri3:
 //    {
 //      typedef NitscheCoupling<distype,DRT::Element::tri3,3> NitscheCouplType;
-//      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-//          SlaveElementInterface<distype>::MonolithicXFSI,is_viscAdjointSymmetric);
+//      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
 //      break;
 //    }
 //    case DRT::Element::tri6:
 //    {
 //      typedef NitscheCoupling<distype,DRT::Element::tri6,3> NitscheCouplType;
-//      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-//          SlaveElementInterface<distype>::MonolithicXFSI,is_viscAdjointSymmetric);
+//      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
 //      break;
 //    }
     case DRT::Element::quad4:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad4,3> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-          SlaveElementInterface<distype>::MonolithicXFSI,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
       break;
     }
     case DRT::Element::quad8:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad8,3> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-          SlaveElementInterface<distype>::MonolithicXFSI,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
       break;
     }
     case DRT::Element::quad9:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad9,3> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-          SlaveElementInterface<distype>::MonolithicXFSI,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
       break;
     }
     default:
@@ -318,36 +313,31 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
     //    case DRT::Element::tri3:
     //    {
     //      typedef NitscheCoupling<distype,DRT::Element::tri3,4> NitscheCouplType;
-    //      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-    //          SlaveElementInterface<distype>::MonolithicXFluidFluid,is_viscAdjointSymmetric);
+    //      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
     //      break;
     //    }
     //    case DRT::Element::tri6:
     //    {
     //      typedef NitscheCoupling<distype,DRT::Element::tri6,4> NitscheCouplType;
-    //      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-    //          SlaveElementInterface<distype>::MonolithicXFluidFluid,is_viscAdjointSymmetric);
+    //      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
     //      break;
     //    }
     case DRT::Element::quad4:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad4,4> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-          SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
       break;
     }
     case DRT::Element::quad8:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad8,4> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-          SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
       break;
     }
     case DRT::Element::quad9:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad9,4> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-          SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
       break;
     }
     default:
@@ -392,36 +382,31 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
 //    case DRT::Element::tet4:
 //    {
 //      typedef NitscheCoupling<distype,DRT::Element::tet4,4> NitscheCouplType;
-//      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-//          SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+//      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
 //      break;
 //    }
 //    case DRT::Element::tet10:
 //    {
 //      typedef NitscheCoupling<distype,DRT::Element::tet10,4> NitscheCouplType;
-//      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-//          SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+//      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
 //      break;
 //    }
     case DRT::Element::hex8:
     {
       typedef NitscheCoupling<distype,DRT::Element::hex8,4> NitscheCouplType;
-      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-          SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
       break;
     }
     case DRT::Element::hex20:
     {
       typedef NitscheCoupling<distype,DRT::Element::hex20,4> NitscheCouplType;
-      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-          SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
       break;
     }
     case DRT::Element::hex27:
     {
       typedef NitscheCoupling<distype,DRT::Element::hex27,4> NitscheCouplType;
-      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,
-          SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
       break;
     }
     default:
@@ -529,36 +514,31 @@ Teuchos::RCP<HybridLMInterface<distype> > HybridLMInterface<distype>::CreateHybr
 //    case DRT::Element::tri3:
 //    {
 //      typedef HybridLMCoupling<distype,DRT::Element::tri3,3> HybridLMCouplType;
-//      hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,
-//          SlaveElementInterface<distype>::MonolithicXFSI,is_viscAdjointSymmetric);
+//      hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
 //      break;
 //    }
 //    case DRT::Element::tri6:
 //    {
 //      typedef HybridLMCoupling<distype,DRT::Element::tri6,3> HybridLMCouplType;
-//      hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,
-//          SlaveElementInterface<distype>::MonolithicXFSI,is_viscAdjointSymmetric);
+//      hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
 //      break;
 //    }
     case DRT::Element::quad4:
     {
       typedef HybridLMCoupling<distype,DRT::Element::quad4,3> HybridLMCouplType;
-      hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,
-          SlaveElementInterface<distype>::MonolithicXFSI,is_viscAdjointSymmetric);
+      hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
       break;
     }
     case DRT::Element::quad8:
     {
       typedef HybridLMCoupling<distype,DRT::Element::quad8,3> HybridLMCouplType;
-      hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,
-          SlaveElementInterface<distype>::MonolithicXFSI,is_viscAdjointSymmetric);
+      hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
       break;
     }
     case DRT::Element::quad9:
     {
       typedef HybridLMCoupling<distype,DRT::Element::quad9,3> HybridLMCouplType;
-      hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,
-          SlaveElementInterface<distype>::MonolithicXFSI,is_viscAdjointSymmetric);
+      hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
       break;
     }
     default:
@@ -572,36 +552,31 @@ Teuchos::RCP<HybridLMInterface<distype> > HybridLMInterface<distype>::CreateHybr
 //      case DRT::Element::tri3:
 //      {
 //        typedef HybridLMCoupling<distype,DRT::Element::tri3,4> HybridLMCouplType;
-//        hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,
-//            SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+//        hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
 //        break;
 //      }
 //      case DRT::Element::tri6:
 //      {
 //        typedef HybridLMCoupling<distype,DRT::Element::tri6,4> HybridLMCouplType;
-//        hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,
-//            SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+//        hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
 //        break;
 //      }
       case DRT::Element::quad4:
       {
         typedef HybridLMCoupling<distype,DRT::Element::quad4,4> HybridLMCouplType;
-        hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,
-            SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+        hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
         break;
       }
       case DRT::Element::quad8:
       {
         typedef HybridLMCoupling<distype,DRT::Element::quad8,4> HybridLMCouplType;
-        hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,
-            SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+        hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
         break;
       }
       case DRT::Element::quad9:
       {
         typedef HybridLMCoupling<distype,DRT::Element::quad9,4> HybridLMCouplType;
-        hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,
-            SlaveElementInterface<distype>::XFluidFluid,is_viscAdjointSymmetric);
+        hlm = new HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
         break;
       }
       default:

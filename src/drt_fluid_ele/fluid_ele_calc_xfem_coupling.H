@@ -63,15 +63,6 @@ namespace DRT
         /// number of spatial dimensions
         static const unsigned nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-        /// application context (to enable specific features)
-        enum ApplicationType
-        {
-          MonolithicXFSI,
-          XFluidWDBC,
-          XFluidFluid,
-          TwoPhaseFlow
-        };
-
         //! set names of displacement and velocity states (differ dependent on the slave element)
         static void DefineStateNames(
             DRT::Element::DiscretizationType slave_distype,    ///< coupling slave discretization type
@@ -156,6 +147,20 @@ namespace DRT
         //! get interface velocity gradient
         virtual void GetInterfaceVelGradn(
           LINALG::Matrix<nsd_,nsd_>& velgradint       ///< interface velocity gradients at coupling slave side
+        ) const
+        { dserror("There is no concrete slave element available."); };
+
+        //! set state for interface velocity jump
+        virtual void SetInterfaceJumpState(
+            const DRT::Discretization &  cutterdis,      ///< cutter discretization
+            const std::string            state,          ///< state
+            const std::vector<int>&      lm              ///< local map
+        )
+        { dserror("There is no concrete slave element available."); };
+
+        //! get interface velocity jump at Gaussian point
+        virtual void GetInterfaceJumpVel(
+            LINALG::Matrix<nsd_,1> & ivelint_jump ///< cutter element interface velocity jump or prescribed DBC at Gaussian point
         ) const
         { dserror("There is no concrete slave element available."); };
 
@@ -265,6 +270,8 @@ namespace DRT
           const double &                                        density_m,              ///< fluid density (master)
           const double &                                        NIT_stab_fac_conv,      ///< full Nitsche's penalty term scaling (viscous+convective part)
           const double &                                        timefacfac,             ///< theta*dt
+          const LINALG::Matrix<nsd_,1> &                        ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+          const INPAR::XFEM::EleCouplingCondType &              cond_type,              ///< condition type
           INPAR::XFEM::XFF_ConvStabScaling                      xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
         ) = 0;
 
@@ -283,6 +290,8 @@ namespace DRT
           const LINALG::Matrix<nsd_,nsd_> & vderxy_m,               ///< coupling master spatial velocity derivatives
           const double &                    press_m,                ///< coupling master pressure
           const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
+          const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+          const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
           INPAR::XFEM::XFF_ConvStabScaling  xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
         ) = 0;
 
@@ -370,7 +379,9 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &                                normal,     ///< normal vector
           const double &                                                fac,        ///< integration factor
           const LINALG::Matrix<nen_,1> &                                funct,      ///< shape function
-          LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> & rhs_s       ///< block rhs vector \f$ rhs_{\sigma} \f$
+          LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> & rhs_s,      ///< block rhs vector \f$ rhs_{\sigma} \f$
+          const LINALG::Matrix<nsd_,1> &                                ivelint_jump,  ///< prescribed interface velocity or interface jump height
+          const LINALG::Matrix<nsd_,1> &                                itraction_jump ///< prescribed interface traction or interface jump height
         ) = 0;
 
         //! evaluate interface matrices for mixed/hybrid viscous stress-based (MHVS) coupling
@@ -380,7 +391,9 @@ namespace DRT
           const LINALG::Matrix<nen_,1> &                                  funct,      ///< background element shape functions
           LINALG::BlockMatrix<LINALG::Matrix<nen_,1>,numstressdof_,1> &   rhs_s,      ///< block rhs vector \f$ rhs_{\sigma}\f$
           const double &                                                  press,      ///< background element pressure
-          LINALG::Matrix<nen_,1> &                                        rhs_pmus    ///< contribution to block rhs vector \f$rhs_p\f$ (includes interface slave velocity terms)
+          LINALG::Matrix<nen_,1> &                                        rhs_pmus,   ///< contribution to block rhs vector \f$rhs_p\f$ (includes interface slave velocity terms)
+          const LINALG::Matrix<nsd_,1> &                                  ivelint_jump,  ///< prescribed interface velocity or interface jump height
+          const LINALG::Matrix<nsd_,1> &                                  itraction_jump ///< prescribed interface traction or interface jump height
         ) = 0;
 
         //! build the final coupling matrices for mixed/hybrid Cauchy or viscous stress-based coupling (MHCS or MHVS)
@@ -390,6 +403,7 @@ namespace DRT
           LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,numstressdof_,master_numdof_> &    BK_sum,      ///< block matrix \f$ K_{\sigma u} \f$
           LINALG::BlockMatrix<LINALG::Matrix<nen_,1>, numstressdof_,1>      &              rhs_s        ///< block rhs vector \f$ rhs_{\sigma}\f$
         ) = 0;
+
       };
     }// end namespace XFLUID
   }// end namespace ELEMENTS
