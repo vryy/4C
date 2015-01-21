@@ -591,13 +591,11 @@ bool COMBUST::Algorithm::NotConvergedFGI()
   if (fgitermax_ == 0)
     dserror("A maximum of 0 FGI is not sensible!!!");
 
-  // get state vectors; in case nothing is done here,
-  // they are used to initialize velnpi_ and phinpi_
-  const Teuchos::RCP<const Epetra_Vector> velnpip = FluidField()->StdVelnp();
-  const Teuchos::RCP<const Epetra_Vector> phinpip = ScaTraField()->Phinp();
-
-  if (fgiter_ > 0) // nothing to do for FGI = 0
+  if (fgiter_ > 0) // nothing to do for FGI = 0 (in particular, do not overwrite phinpi_, since it corresponds to the fluid solution of the previous time step)
   {
+    const Teuchos::RCP<const Epetra_Vector> velnpip = FluidField()->StdVelnp();
+    const Teuchos::RCP<const Epetra_Vector> phinpip = ScaTraField()->Phinp();
+
     double velnormL2 = 1.0;
     double gfuncnormL2 = 1.0;
 
@@ -648,12 +646,12 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 
     if (!notconverged)
       Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidField())->ClearTimeInt(); // clear XFEM time integration
-  }
 
-  // update fgi-vectors
-  // initialization in case of fgiter_ == 0
-  velnpi_->Update(1.0,*velnpip,0.0);
-  phinpi_->Update(1.0,*phinpip,0.0);
+    // update fgi-vectors
+    // phi vector used for final fluid solution
+    velnpi_->Update(1.0,*velnpip,0.0);
+    phinpi_->Update(1.0,*phinpip,0.0);
+  }
 
   return notconverged;
 }
@@ -1111,7 +1109,8 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
   //-------------------------------------------------------------
   // create (old) flamefront conforming to restart state of fluid
   //-------------------------------------------------------------
-  flamefront_->UpdateFlameFront(combustdyn_, ScaTraField()->Phin(), ScaTraField()->Phinp());
+  flamefront_->UpdateFlameFront(combustdyn_, ScaTraField()->Phin(), ScaTraField()->Phinp(),
+               Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidField())->ReadPhinp(step));
 
   // show flame front to fluid time integration scheme
   Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidField())->ImportFlameFront(flamefront_,true);
@@ -1151,7 +1150,8 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     //-------------------------------------------------------------
     // fill flamefront conforming to restart state
     //-------------------------------------------------------------
-    flamefront_->UpdateFlameFront(combustdyn_, ScaTraField()->Phin(), ScaTraField()->Phinp());
+    flamefront_->UpdateFlameFront(combustdyn_, ScaTraField()->Phin(), ScaTraField()->Phinp(),
+            Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidField())->ReadPhinp(step));
     flamefront_->UpdateOldInterfaceHandle();
 
     // show flame front to fluid time integration scheme
@@ -1200,7 +1200,7 @@ void COMBUST::Algorithm::Restart(int step, const bool restartscatrainput, const 
     }
   }
 
-  phinpi_->Update(1.0,*ScaTraField()->Phin(),0.0);
+  phinpi_->Update(1.0,*(Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidField())->ReadPhinp(step)),0.0);
 
   if (gmshoutput_)
   {

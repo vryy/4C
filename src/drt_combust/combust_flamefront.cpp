@@ -109,7 +109,8 @@ void COMBUST::FlameFront::UpdateOldInterfaceHandle()
 void COMBUST::FlameFront::UpdateFlameFront(
     const Teuchos::ParameterList& combustdyn,
     const Teuchos::RCP<const Epetra_Vector>& phin,
-    const Teuchos::RCP<const Epetra_Vector>& phinp
+    const Teuchos::RCP<const Epetra_Vector>& phinp,
+    const Teuchos::RCP<const Epetra_Vector> phifld
 )
 {
   // get
@@ -120,6 +121,8 @@ void COMBUST::FlameFront::UpdateFlameFront(
 
   // rearrange and store phi vectors
   StorePhiVectors(phin, phinp);
+  if (phifld!=Teuchos::null)
+    SetPhinp(phifld);
 
   // generate the interface geometry based on the G-function (level set field)
   // remark: must be called after StorePhiVectors, since it relies on phinp_

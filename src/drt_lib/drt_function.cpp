@@ -958,6 +958,12 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("COLLAPSINGWATERCOLUMNCOARSE")
     ;
 
+  DRT::INPUT::LineDefinition impactfunction;
+  impactfunction
+    .AddNamedInt("FUNCT")
+    .AddTag("IMPACTDROP")
+    ;
+
   DRT::INPUT::LineDefinition gerstenbergerforwardfacingstep;
   gerstenbergerforwardfacingstep
     .AddNamedInt("FUNCT")
@@ -1077,6 +1083,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(dambreakobstacle);
   lines->Add(collapsingwatercolumn);
   lines->Add(collapsingwatercolumncoarse);
+  lines->Add(impactfunction);
   lines->Add(gerstenbergerforwardfacingstep);
   lines->Add(bubbles);
   lines->Add(oraclesgfunc);
@@ -1399,6 +1406,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMNCOARSE"))
       {
         functions_.push_back(Teuchos::rcp(new CollapsingWaterColumnFunctionCoarse()));
+      }
+      else if (function->HaveNamed("IMPACTDROP"))
+      {
+        functions_.push_back(Teuchos::rcp(new ImpactFunction()));
       }
       else if (function->HaveNamed("FORWARDFACINGSTEP"))
       {

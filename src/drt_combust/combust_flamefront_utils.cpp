@@ -954,13 +954,23 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
 
   // create a solver
   // remark: we take a new here, which is assumed to have number 3
+  const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(3);
   Teuchos::RCP<LINALG::Solver>  solver =
 //      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->UMFPACKSolverParams(),
 //                                      gfuncdis_->Comm(),
 //                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
-    Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(3),
-                                    gfuncdis_->Comm(),
-                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::rcp(new LINALG::Solver(solverparams,
+                                  gfuncdis_->Comm(),
+                                  DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+  // use only UMFPACKSolver oder ILU PreCond!!!
+  // ML requires computation of nullspace
+  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams,"SOLVER");
+  const int prectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(solverparams,"AZPREC");
+  if (solvertype != INPAR::SOLVER::umfpack and solvertype != INPAR::SOLVER::aztec_msr)
+    dserror("You have to choose UMFPACK or AZPREC_MSR for gradient projection.");
+  if (solvertype != INPAR::SOLVER::umfpack and prectyp != INPAR::SOLVER::azprec_ILU)
+    dserror("You have to choose AZPREC_MSR with ILU preconditioner for gradient projection.");
 
   // always refactor and reset the matrix before a single new solver call
   bool refactor=true;
@@ -1200,13 +1210,22 @@ void COMBUST::FlameFront::ComputeL2ProjectedGradPhi(const double eta_smooth,
 
     // create a solver
     // remark: we take a new here, which is assumed to have number 3
+    const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(3);
     Teuchos::RCP<LINALG::Solver>  solver_ =
 //      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->UMFPACKSolverParams(),
 //                                      gfuncdis_->Comm(),
 //                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(3),
-                                      gfuncdis_->Comm(),
-                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
+    Teuchos::rcp(new LINALG::Solver(solverparams,
+                                    gfuncdis_->Comm(),
+                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
+    // use only UMFPACKSolver oder ILU PreCond!!!
+    // ML requires computation of nullspace
+    const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams,"SOLVER");
+    const int prectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(solverparams,"AZPREC");
+    if (solvertype != INPAR::SOLVER::umfpack and solvertype != INPAR::SOLVER::aztec_msr)
+      dserror("You have to choose UMFPACK or AZPREC_MSR for gradient projection.");
+    if (solvertype != INPAR::SOLVER::umfpack and prectyp != INPAR::SOLVER::azprec_ILU)
+      dserror("You have to choose AZPREC_MSR with ILU preconditioner for gradient projection.");
 
     // always refactor and reset the matrix before a single new solver call
     bool refactor=true;
@@ -1459,13 +1478,22 @@ void COMBUST::FlameFront::ComputeL2ProjectedGrad2Phi(const double eta_smooth)
 
     // create a solver
     // remark: we take a new here, which is assumed to have number 3
+    const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(3);
     Teuchos::RCP<LINALG::Solver>  solver_ =
 //      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->UMFPACKSolverParams(),
 //                                      gfuncdis_->Comm(),
 //                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(3),
-                                      gfuncdis_->Comm(),
-                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
+    Teuchos::rcp(new LINALG::Solver(solverparams,
+                                    gfuncdis_->Comm(),
+                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
+    // use only UMFPACKSolver oder ILU PreCond!!!
+    // ML requires computation of nullspace
+    const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams,"SOLVER");
+    const int prectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(solverparams,"AZPREC");
+    if (solvertype != INPAR::SOLVER::umfpack and solvertype != INPAR::SOLVER::aztec_msr)
+      dserror("You have to choose UMFPACK or AZPREC_MSR for gradient projection.");
+    if (solvertype != INPAR::SOLVER::umfpack and prectyp != INPAR::SOLVER::azprec_ILU)
+      dserror("You have to choose AZPREC_MSR with ILU preconditioner for gradient projection.");
 
     // always refactor and reset the matrix before a single new solver call
     bool refactor=true;
@@ -1705,13 +1733,22 @@ const Teuchos::RCP<Epetra_Vector>  COMBUST::FlameFront::ComputeL2ProjectedPhi(co
 
   // create a solver
   // remark: we take a new here, which is assumed to have number 3
+  const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(3);
   Teuchos::RCP<LINALG::Solver>  solver_ =
 //      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->UMFPACKSolverParams(),
 //                                      gfuncdis_->Comm(),
 //                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
-    Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(3),
-                                    gfuncdis_->Comm(),
-                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::rcp(new LINALG::Solver(solverparams,
+                                  gfuncdis_->Comm(),
+                                  DRT::Problem::Instance()->ErrorFile()->Handle()));
+  // use only UMFPACKSolver oder ILU PreCond!!!
+  // ML requires computation of nullspace
+  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams,"SOLVER");
+  const int prectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(solverparams,"AZPREC");
+  if (solvertype != INPAR::SOLVER::umfpack and solvertype != INPAR::SOLVER::aztec_msr)
+    dserror("You have to choose UMFPACK or AZPREC_MSR for gradient projection.");
+  if (solvertype != INPAR::SOLVER::umfpack and prectyp != INPAR::SOLVER::azprec_ILU)
+    dserror("You have to choose AZPREC_MSR with ILU preconditioner for gradient projection.");
 
   // always refactor and reset the matrix before a single new solver call
   bool refactor=true;

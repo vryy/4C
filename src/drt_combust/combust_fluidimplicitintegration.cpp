@@ -2807,6 +2807,9 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     output_->WriteVector("accnp", state_.accnp_);
     //IO::cout << state_.accn_->GlobalLength() << IO::endl;
     output_->WriteVector("accn" , state_.accn_);
+    const Teuchos::RCP<Epetra_Vector> phinprow = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap()));
+    LINALG::Export(*phinp_,*phinprow);
+    output_->WriteVector("phinp" , phinprow);
     if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
     {
       //IO::cout << state_.velaf_->GlobalLength() << IO::endl;
@@ -6201,3 +6204,12 @@ void FLD::CombustFluidImplicitTimeInt::ComputeExternalForces()
   }
   return;
 }
+
+Teuchos::RCP<const Epetra_Vector> FLD::CombustFluidImplicitTimeInt::ReadPhinp(int step)     {
+    IO::DiscretizationReader reader(discret_,step);
+    const Teuchos::RCP<Epetra_Vector> phinprow = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap()));
+    reader.ReadVector(phinprow,"phinp");
+    const Teuchos::RCP<Epetra_Vector> phinpcol = Teuchos::rcp(new Epetra_Vector(*discret_->NodeColMap()));
+    LINALG::Export(*phinprow,*phinpcol);
+    return phinpcol; }
+

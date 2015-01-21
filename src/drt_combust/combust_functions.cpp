@@ -642,3 +642,54 @@ double DRT::UTILS::LevelSetCutTestFunction::Evaluate(int index, const double* xp
    dserror("this node does not exist");
   return phi;
 }
+
+
+/*----------------------------------------------------------------------*
+ | constructor                                          rasthofer 08/14 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::ImpactFunction::ImpactFunction() :
+Function()
+{
+}
+
+
+/*-----------------------------------------------------------------------*
+ | initial level-set field for impact of drop on surface rasthofer 08/14 |
+ *-----------------------------------------------------------------------*/
+double DRT::UTILS::ImpactFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  //here calculation of distance (sign is already taken in consideration)
+  double distance = 0.0;
+
+  // compute phi-value with respect to the drop and water surface
+  const double rad = 1.0/6.0;
+  //double phi_drop = std::sqrt(xp[0]*xp[0] + (xp[1]-1.5)*(xp[1]-1.5) + xp[2]*xp[2])-rad;
+  double phi_drop = std::sqrt(xp[0]*xp[0] + (xp[1]-1.22)*(xp[1]-1.22) + xp[2]*xp[2])-rad;
+  //double phi_pool = xp[1]-1.0;
+  double phi_pool = xp[1]-1.0+0.01666667;
+
+  // select correct phi-value
+  if ( (phi_pool <= 0.0) and (phi_drop > 0.0) )
+  {
+    // current position inside water pool
+    distance = phi_pool;
+  }
+  else if ( (phi_drop <= 0.0) and (phi_pool > 0.0) )
+  {
+    // current position inside drop
+    distance = phi_drop;
+  }
+  else if ( (phi_pool > 0.0) and (phi_drop > 0.0) )
+  {
+    // current position is not inside the drop or the pool
+    // we take the smaller distance
+    if (phi_pool >= phi_drop)
+      distance = phi_drop;
+    else
+      distance = phi_pool;
+  }
+  else
+    dserror("Initial level-set field for merging bubbles could not be set correctly!");
+
+  return distance;
+}

@@ -76,6 +76,7 @@ namespace COMBUST
     const Teuchos::RCP<Epetra_Vector> Phin() const { return phin_; };
     /// remote access method to vector on fluid NodeColMap holding G-function values at n+1
     const Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; };
+    void SetPhinp(const Teuchos::RCP<const Epetra_Vector> phi){phinp_=Teuchos::rcp(new Epetra_Vector(*phi)); return;};
 
     /// remote access method to vector on fluid NodeRowMap holding smoothed gradient of G-function at n+1
     const Teuchos::RCP<Epetra_MultiVector> GradPhi() const { return gradphi_; };
@@ -97,7 +98,8 @@ namespace COMBUST
     void UpdateFlameFront(
         const Teuchos::ParameterList& combustdyn,
         const Teuchos::RCP<const Epetra_Vector>& phin,
-        const Teuchos::RCP<const Epetra_Vector>& phinp
+        const Teuchos::RCP<const Epetra_Vector>& phinp,
+        const Teuchos::RCP<const Epetra_Vector> phifld = Teuchos::null
     );
 
     /// generate the interface geometry based on the G-function (level set field)
@@ -153,11 +155,11 @@ namespace COMBUST
     void ComputeL2ProjectedGrad2Phi(const double eta_smooth);
     /// compute L2-projected phi: recommended for use after reinitialization via singed distance calculation
     const Teuchos::RCP<Epetra_Vector> ComputeL2ProjectedPhi(const double eta_smooth);
- 
+
      /// compute smoothed gradient field of G-function: mean value of least-squares
     template<const size_t nsd_real>
     void ComputeSmoothGradPhi(const Teuchos::ParameterList& combustdyn);
- 
+
     /// refine the region around flame front
     void RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell,
                           const Teuchos::RCP<const Epetra_Vector> phi);

@@ -167,6 +167,19 @@ namespace DRT
       double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
     };
 
+    /// initial level-set field for impact of drop
+    class ImpactFunction : public Function
+    {
+      public:
+
+      /// ctor
+      ImpactFunction();
+
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    };
+
+
   }
 }
 

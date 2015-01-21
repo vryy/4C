@@ -387,6 +387,7 @@ public:
   Teuchos::RCP<const Epetra_Vector> Velaf()         { return state_.velaf_; }
   Teuchos::RCP<const Epetra_Vector> Veln()          { return state_.veln_; }
   Teuchos::RCP<const Epetra_Vector> Accam()         { return state_.accam_; }
+  Teuchos::RCP<const Epetra_Vector> ReadPhinp(int step);
   Teuchos::RCP<const Epetra_Vector> FsVel() {
     // get fine-scale part of velocity at time n+alpha_F or n+1
     if (Sep_ != Teuchos::null)
