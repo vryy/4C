@@ -889,7 +889,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // TODO: dirichlet auch im Fall von genalpha phinp
   // neuman n + alfaf
   ApplyDirichletBC(time_,phinp_,Teuchos::null);
-  ApplyNeumannBC(time_,phinp_,neumann_loads_);
+  ApplyNeumannBC(neumann_loads_);
 
   // By definition: Applying DC on the slave side of an internal interface is not allowed
   //                since it leads to an over-constraint system
@@ -2354,35 +2354,37 @@ void SCATRA::ScaTraTimIntImpl::ScalingAndNeumann()
 
 
 /*----------------------------------------------------------------------*
- | evaluate Neumann boundary conditions at t_{n+1}             gjb 07/08|
+ | evaluate Neumann boundary conditions                      fang 01/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
 (
-  const double time,
-  const Teuchos::RCP<Epetra_Vector> phinp,
-  Teuchos::RCP<Epetra_Vector> neumann_loads
+    const Teuchos::RCP<Epetra_Vector>&   neumann_loads //!< Neumann loads
 )
 {
   // prepare load vector
   neumann_loads->PutScalar(0.0);
 
-  // set time for evaluation of Neumann boundary conditions as parameter
-  // depending on time-integration scheme
+  // create parameter list
   Teuchos::ParameterList condparams;
+
+  // action for elements
+  condparams.set<int>("action",SCATRA::bd_calc_Neumann);
+
+  // general parameters
   condparams.set<int>("scatratype",scatratype_);
   condparams.set("isale",isale_);
 
-  // parameters for Elch/DiffCond formulation
+  // specific parameters
   AddProblemSpecificParametersAndVectors(condparams);
 
-  // Set time for the evaluation of a Point-Neumann condition
-  // Line/Surface/Volume Neumann conditions use the time of the time-parameter class
+  // set time for evaluation of point Neumann conditions as parameter depending on time integration scheme
+  // line/surface/volume Neumann conditions use the time stored in the time parameter class
   SetTimeForNeumannEvaluation(condparams);
 
   // provide displacement field in case of ALE
   if (isale_) discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
-  // evaluate Neumann conditions at actual time t_{n+1} or t_{n+alpha_F}
+  // evaluate Neumann boundary conditions at time t_{n+alpha_F} (generalized alpha) or time t_{n+1} (otherwise)
   discret_->EvaluateNeumann(condparams,*neumann_loads);
   discret_->ClearState();
 

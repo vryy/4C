@@ -79,6 +79,7 @@ enum BoundaryAction {
   bd_integrate_shape_functions,     //integrate_shape_functions,
   bd_calc_normal_vectors,           //calc_normal_vectors,
   bd_calc_weak_Dirichlet,           //WeakDirichlet,
+  bd_calc_Neumann,                  //n/a
   bd_calc_Neumann_inflow,           //calc_Neumann_inflow,
   bd_add_convective_mass_flux,      //add_convective_mass_flux
   bd_calc_convective_heat_transfer, //calc_convective_heat_transfer,

@@ -197,34 +197,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
     }
   }
 
-  // get node coordinates (we have a my::nsd_+1 dimensional computational domain!)
-  GEO::fillInitialPositionArray<distype,my::nsd_+1,LINALG::Matrix<my::nsd_+1,my::nen_> >(ele,my::xyze_);
-
-  // get additional state vector for ALE case: grid displacement
-  my::isale_ = params.get<bool>("isale");
-  if (my::isale_)
-  {
-    const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
-    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,my::edispnp_,dispnp,my::nsd_+1);
-    // add nodal displacements to point coordinates
-    my::xyze_ += my::edispnp_;
-  }
-  else my::edispnp_.Clear();
-
-  // Now do the nurbs specific stuff (for isogeometric elements)
-  if(DRT::NURBS::IsNurbs(distype))
-  {
-    // for isogeometric elements --- get knotvectors for parent
-    // element and boundary element, get weights
-    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
-        ele, ele->FaceParentNumber(), ele->ParentElement()->Id(), discretization, my::mypknots_, my::myknots_, my::weights_, my::normalfac_);
-
-    // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size) return(0);
-  } // Nurbs specific stuff
-
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
@@ -754,7 +727,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
   //for pre-multiplication of i0 with 1/(F z_k)
   double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or muC / mumol
 
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // concentration values of reactive species at element nodes
@@ -1498,7 +1471,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
   double currderivDL       = params.get<double>("currentderivDL");
   double currentresidual   = params.get<double>("currentresidual");
 
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // concentration values of reactive species at element nodes

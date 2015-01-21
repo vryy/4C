@@ -1037,7 +1037,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     // parameters for Elch/DiffCond formulation
     eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
 
-    //provide displacement field in case of ALE
+    // provide displacement field in case of ALE
     eleparams.set("isale",isale_);
     if (isale_)
       discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);

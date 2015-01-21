@@ -126,7 +126,7 @@ const DRT::Element*        ele
   // ---------------------------------------------------------------------
   my::BodyForce(ele);
 
-  // integrations points and weights
+  // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop

@@ -434,7 +434,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
       DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
       vol = EvalShapeFuncAndDerivsAtIntPoint(intpoints,0);
 
-      // adopt integrations points and weights for gauss point evaluation of B
+      // adopt integration points and weights for gauss point evaluation of B
       if (scatrapara_->BD_Gp())
       {
         DRT::UTILS::IntPointsAndWeights<nsd_> gauss_intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -703,7 +703,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcGradientAtNodes(
   Epetra_SerialDenseVector&       elevec3
   )
 {
-  // Integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // Loop over integration points
@@ -756,7 +756,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcCurvatureAtNodes(
   const std::vector<LINALG::Matrix<nen_,nsd_> >&   egradphinp
   )
 {
-  // Integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // Loop over integration points
@@ -937,7 +937,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
     }
   }
 
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   /*----------------------------------------------------------------------*/
@@ -1063,7 +1063,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::IntegrateShapeFunctions(
   const Epetra_IntSerialDenseVector& dofids
   )
 {
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // safety check
@@ -1211,7 +1211,7 @@ Epetra_SerialDenseVector&       scalars,
 const bool                      inverting
   )
 {
-  // integrations points and weights
+  // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
@@ -1266,7 +1266,7 @@ const double                    interface_thickness
   )
 {
 
-  // integrations points and weights
+  // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
@@ -1336,7 +1336,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiffMatrix(
   /*----------------------------------------------------------------------*/
   // integration loop for one element
   /*----------------------------------------------------------------------*/
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop

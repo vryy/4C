@@ -49,14 +49,9 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
     // get the material of the first element
     // we assume here, that the material is equal for all elements in this discretization
     // get the parent element including its material
-    const DRT::ELEMENTS::TransportBoundary* transele = static_cast<const DRT::ELEMENTS::TransportBoundary*>(this);
-    Teuchos::RCP<MAT::Material> material = transele->ParentElement()->Material();
+    Teuchos::RCP<MAT::Material> material = this->ParentElement()->Material();
     if (material->MaterialType() == INPAR::MAT::m_elchmat)
-    {
-      const MAT::ElchMat* actmat = dynamic_cast<const MAT::ElchMat*>(material.get());
-
-      numscal = actmat->NumScal();
-    }
+      numscal = static_cast<const MAT::ElchMat*>(material.get())->NumScal();
   }
 
   // all physics-related stuff is included in the implementation class that can
@@ -80,7 +75,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Surface/Line Neumann boundary condition       gjb 01/09 |
+ | evaluate Neumann boundary condition on boundary element   fang 01/15 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
     Teuchos::ParameterList&   params,
@@ -90,45 +85,13 @@ int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
-  // the type of scalar transport problem has to be provided for all actions!
-  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
-  if (scatratype == INPAR::SCATRA::scatratype_undefined)
-    dserror("Element parameter SCATRATYPE has not been set!");
+  // add Neumann boundary condition to parameter list
+  params.set<DRT::Condition*>("condition",&condition);
 
-  // we assume here, that numdofpernode is equal for every node within
-  // the discretization and does not change during the computations
-  const int numdofpernode = this->NumDofPerNode(*(this->Nodes()[0]));
-  int numscal = numdofpernode;
-  if (scatratype == INPAR::SCATRA::scatratype_elch)
-  {
-    numscal -= 1;
-
-    // get the material of the first element
-    // we assume here, that the material is equal for all elements in this discretization
-    Teuchos::RCP<MAT::Material> material = this->Material();
-    if (material->MaterialType() == INPAR::MAT::m_elchmat)
-    {
-      const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
-
-      numscal = actmat->NumScal();
-    }
-  }
-
-  // all physics-related stuff is included in the implementation class that can
-  // be used in principle inside any element (at the moment: only Transport
-  // boundary element)
-  // If this element has special features/ methods that do not fit in the
-  // generalized implementation class, you have to do a switch here in order to
-  // call element-specific routines
-  return DRT::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(this,scatratype, numdofpernode, numscal)->EvaluateNeumann(
-      this,
-      params,
-      discretization,
-      condition,
-      lm,
-      elevec1
-      );
+  // evaluate boundary element
+  return Evaluate(params,discretization,lm,*elemat1,*elemat1,elevec1,elevec1,elevec1);
 }
+
 
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |

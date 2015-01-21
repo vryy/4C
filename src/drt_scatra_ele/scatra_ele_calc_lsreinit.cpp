@@ -231,7 +231,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
   //----------------------------------------------------------------------
   // integration loop for one element
   //----------------------------------------------------------------------
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -506,7 +506,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
   //----------------------------------------------------------------------
   // integration loop for one element
   //----------------------------------------------------------------------
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)

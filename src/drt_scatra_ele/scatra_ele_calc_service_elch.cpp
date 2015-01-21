@@ -168,7 +168,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
     //----------------------------------------------------------------------
     // integration loop for one element
     //----------------------------------------------------------------------
-    // integrations points and weights
+    // integration points and weights
     DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -382,7 +382,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
 //    valence_[1] = -2.0;
 //  }
 
-  // integrations points and weights
+  // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
   DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 

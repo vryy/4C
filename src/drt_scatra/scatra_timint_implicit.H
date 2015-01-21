@@ -646,9 +646,7 @@ protected:
 
   //! Apply Neumann boundary conditions
   void ApplyNeumannBC(
-    const double                      time,         //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> phinp,        //!< transported scalar(s) state
-    Teuchos::RCP<Epetra_Vector>       neumann_loads //!< Neumann loads
+    const Teuchos::RCP<Epetra_Vector>&   neumann_loads //!< Neumann loads
   );
 
   //! call elements to calculate system matrix and rhs and assemble

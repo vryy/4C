@@ -578,22 +578,11 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
   //ApplyDirichletBC(time_,phin_,phidtn_);
   ApplyDirichletBC(time_,phin_,Teuchos::null);
 
-  {
-    // evaluate Neumann boundary conditions at time t=0
-    neumann_loads_->PutScalar(0.0);
-    Teuchos::ParameterList p;
-    p.set<int>("scatratype",scatratype_);
-    p.set("isale",isale_);
-    // provide displacement field in case of ALE
-    if (isale_) discret_->AddMultiVectorToParameterList(p,"dispnp",dispnp_);
-    discret_->ClearState();
-    discret_->EvaluateNeumann(p,*neumann_loads_);
-    discret_->ClearState();
+  // evaluate Neumann boundary conditions at time t = 0
+  ApplyNeumannBC(neumann_loads_);
 
-    // add potential Neumann boundary condition at time t=0
-    // and zero out the residual_ vector!
-    residual_->Update(1.0,*neumann_loads_,0.0);
-  }
+  // zero out residual vector and add Neumann loads
+  residual_->Update(1.0,*neumann_loads_,0.0);
 
   // call elements to calculate matrix and right-hand-side
   {

@@ -167,6 +167,16 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
 
     break;
   }
+  case SCATRA::bd_calc_Neumann:
+  {
+    DRT::Condition* condition = params.get<DRT::Condition*>("condition");
+    if(condition == NULL)
+      dserror("Cannot access Neumann boundary condition!");
+
+    EvaluateNeumann(ele,params,discretization,*condition,lm,elevec1_epetra);
+
+    break;
+  }
   case SCATRA::bd_calc_Neumann_inflow:
   {
     // check for the scatratype
@@ -575,34 +585,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
   Teuchos::RCP<MAT::Material> mat = parentele->Material();
 
-  // get node coordinates (we have a nsd_+1 dimensional computational domain!)
-  GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
-
-  // get additional state vector for ALE case: grid displacement
-  isale_ = params.get<bool>("isale");
-  if (isale_)
-  {
-    const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
-    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_+1);
-    // add nodal displacements to point coordinates
-    xyze_ += edispnp_;
-  }
-  else edispnp_.Clear();
-
-  // Now do the nurbs specific stuff (for isogeometric elements)
-  if(DRT::NURBS::IsNurbs(distype))
-  {
-    // for isogeometric elements --- get knotvectors for parent
-    // element and boundary element, get weights
-    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
-        ele, ele->FaceParentNumber(), ele->ParentElement()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
-
-    // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size) return(0);
-  } // Nurbs specific stuff
-
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
@@ -812,7 +795,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
     Epetra_SerialDenseVector&           erhs,
     const double                        timefac)
 {
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for scalar values at nodes
@@ -989,7 +972,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcConvectiveFl
     Epetra_SerialDenseVector&           erhs
 )
 {
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for scalar values at nodes
@@ -1051,7 +1034,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfer(
     const double                        surtemp,
     const double                        timefac)
 {
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for scalar values at nodes
@@ -1370,7 +1353,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateSurfacePermeability(
     )
 {
 
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for scalar values at nodes
@@ -1467,7 +1450,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateKedemKatchalsky(
     )
 {
 
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for scalar values at nodes
@@ -1583,7 +1566,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
   if(params.isParameter("alldof"))
     outputall = true;
 
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -1633,7 +1616,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NormDiffFluxAndVelIntegral(
   double normdifffluxint = params.get<double>("normal diffusive flux integral");
   double normvelint      = params.get<double>("normal velocity integral");
 
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -1888,7 +1871,7 @@ template <DRT::Element::DiscretizationType bdistype,
   //------------------------------------------------------------------------
   // preliminary computations for integration loop
   //------------------------------------------------------------------------
-  // integrations points and weights for (boundary) element and parent element
+  // integration points and weights for (boundary) element and parent element
   const DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(SCATRA::DisTypeToOptGaussRule<bdistype>::rule);
 
   const DRT::UTILS::IntPointsAndWeights<pnsd> pintpoints(SCATRA::DisTypeToOptGaussRule<pdistype>::rule);
@@ -2531,7 +2514,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
   //------------------------------------------------------------------------
   // preliminary computations for integration loop
   //------------------------------------------------------------------------
-  // integrations points and weights for (boundary) element and parent element
+  // integration points and weights for (boundary) element and parent element
   const DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(SCATRA::DisTypeToOptGaussRule<bdistype>::rule);
 
   const DRT::UTILS::IntPointsAndWeights<pnsd> pintpoints(SCATRA::DisTypeToOptGaussRule<pdistype>::rule);

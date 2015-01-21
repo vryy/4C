@@ -26,7 +26,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepMatAndRhsInitialTimeDeriva
   Epetra_SerialDenseVector&  elevec1_epetra
 )
 {
-  // integrations points and weights
+  // integration points and weights
   DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   /*----------------------------------------------------------------------*/

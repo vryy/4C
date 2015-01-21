@@ -128,7 +128,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
   const double dim = double (my::nsd_);
   const double h = std::pow(vol,1.0/dim);
 
-  // integrations points and weights
+  // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
   DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
