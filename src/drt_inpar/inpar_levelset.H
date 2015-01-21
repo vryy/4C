@@ -28,7 +28,8 @@ namespace INPAR
     {
       reinitaction_none,
       reinitaction_signeddistancefunction,
-      reinitaction_sussman
+      reinitaction_sussman,
+      reinitaction_ellipticeq
     };
 
     /// type of signum function for reinitialization based on solving Sussman's equation
@@ -60,22 +61,13 @@ namespace INPAR
       vel_reinit_integration_point_based,
       vel_reinit_node_based
     };
-    
+
     /// form of artificial diffusion for reinitialization based on solving Sussman's equation
     enum ArtDiff
     {
       artdiff_none,
       artdiff_isotropic,
       artdiff_crosswind
-    };
-
-    //TODO: Ursula
-    /// type of signum function for reinitialization based on solving Sussman's equation
-    enum PenaltyMethod
-    {
-      penalty_method_none,
-      penalty_method_intersection_points,
-      penalty_method_akkerman
     };
 
     /// type of reinitialization convergence check
@@ -92,17 +84,42 @@ namespace INPAR
       calcerror_initial_field
     };
 
+    /// problem dimension in case of quasi 2D
+    enum LSDim
+    {
+      ls_3D,
+      ls_2Dx,
+      ls_2Dy,
+      ls_2Dz
+    };
+
+    /// diffusivity for elliptic reinitialization
+    enum DiffFunc
+    {
+      hyperbolic,
+      hyperbolic_smoothed_positive,
+      hyperbolic_clipped_05,
+      hyperbolic_clipped_1
+    };
+
   }  // namespace SCATRA
 
   namespace PARTICLE
   {
-    /// problem dimsion in case of quasi 2D
+    /// problem dimension in case of quasi 2D
     enum ParticleDim
     {
       particle_3D,
       particle_2Dx,
       particle_2Dy,
       particle_2Dz
+    };
+
+    /// escape criterion
+    enum Escaped
+    {
+      half,
+      full
     };
 
   }  // namespace PARTICLE

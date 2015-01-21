@@ -31,14 +31,15 @@ MAX_RADIUS                  0.5
 DIMENSION                   2Dz
 NUMPARTICLE                 4
 PARTICLEBANDWIDTH           3.0
+FAST_CHECK                  yes
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
-CUTOFF_RADIUS                   0.0196
+BIN_PER_DIR                     51 51 1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      RK2
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SCATRATYPE                      LevelSet
-SOLVERTYPE                      nonlinear
+SOLVERTYPE                      linear_full //nonlinear
 INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 MAXTIME                         40.0
@@ -71,15 +72,15 @@ SOLVER         UMFPACK
 MAT 1 MAT_scatra  DIFFUSIVITY 0.0
 MAT 2 MAT_Particle DENSITY 1.0 INITRADIUS 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 500 QUANTITY phi VALUE 3.01861881974376633e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 1000 QUANTITY phi VALUE 8.23789787801701701e-02 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 1500 QUANTITY phi VALUE 9.79958164958331761e-03 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 500 QUANTITY phi VALUE 3.01860412892442087e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 1000 QUANTITY phi VALUE 8.23721047852421506e-02 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 1500 QUANTITY phi VALUE 1.14742889442464475e-02 TOLERANCE 1e-9
 // circular interface after attraction: 1 procs
-PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -5.91482884143572779e-02 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE -8.11922796949362535e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -6.88155968895399761e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE -8.26092603428874445e-02 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 26 QUANTITY dispx VALUE -7.54437030235855233e-02 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 26 QUANTITY dispy VALUE -3.64625130307557471e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 26 QUANTITY dispx VALUE -5.39275564205330057e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 26 QUANTITY dispy VALUE -2.66016101187721947e-02 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 26 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2

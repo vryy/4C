@@ -4534,8 +4534,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
     // Otherwise BACI DEBUG version will crash during runtime!
-    Teuchos::Tuple<std::string,20> name;
-    Teuchos::Tuple<int,20> label;
+    Teuchos::Tuple<std::string,21> name;
+    Teuchos::Tuple<int,21> label;
     name[ 0] = "no";                                             label[ 0] = 0;
     name[ 1] = "time_averaging";                                 label[ 1] = 1;
     name[ 2] = "channel_flow_of_height_2";                       label[ 2] = 2;
@@ -4554,10 +4554,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name[15] = "decaying_homogeneous_isotropic_turbulence";      label[15] = 15;
     name[16] = "forced_homogeneous_isotropic_turbulence";        label[16] = 16;
     name[17] = "scatra_forced_homogeneous_isotropic_turbulence"; label[17] = 17;
-    name[18] = "periodic_hill";                                  label[18] = 18;
-    name[19] = "blood_fda_flow";                                 label[19] = 19;
+    name[18] = "taylor_green_vortex";                            label[18] = 18;
+    name[19] = "periodic_hill";                                  label[19] = 18;
+    name[20] = "blood_fda_flow";                                 label[20] = 20;
 
-    Teuchos::Tuple<std::string,20> description;
+    Teuchos::Tuple<std::string,21> description;
     description[0]="The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible";
     description[1]="The flow is not further specified, but time averaging of velocity and pressure field is performed";
     description[2]="For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.";
@@ -4576,8 +4577,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     description[15]="For this flow, all statistical data could be averaged in \nthe in all homogeneous directions  --- it is essentially a statistically zero dimensional flow.";
     description[16]="For this flow, all statistical data could be averaged in \nthe in all homogeneous directions  --- it is essentially a statistically zero dimensional flow.";
     description[17]="For this flow, all statistical data could be averaged in \nthe in all homogeneous directions  --- it is essentially a statistically zero dimensional flow.";
-    description[18]="For this flow, statistical data is evaluated on various lines, averaged over time and z.";
-    description[19]="For this flow, statistical data is evaluated on various planes.";
+    description[18]="For this flow, dissipation rate could be averaged in \nthe in all homogeneous directions  --- it is essentially a statistically zero dimensional flow.";
+    description[19]="For this flow, statistical data is evaluated on various lines, averaged over time and z.";
+    description[20]="For this flow, statistical data is evaluated on various planes.";
 
     setStringToIntegralParameter<int>(
         "CANONICAL_FLOW",
@@ -5841,7 +5843,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "compute error compared to analytical solution",
                                  tuple<std::string>(
                                    "No",
-                                   "ZalesaksDisk"
+                                   "InitialField"
                                    ),
                                  tuple<int>(
                                      INPAR::SCATRA::calcerror_no_ls,
@@ -5861,11 +5863,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  tuple<std::string>(
                                    "None",
                                    "Signed_Distance_Function",
-                                   "Sussman"),
+                                   "Sussman",
+                                   "EllipticEq"),
                                  tuple<int>(
                                    INPAR::SCATRA::reinitaction_none,
                                    INPAR::SCATRA::reinitaction_signeddistancefunction,
-                                   INPAR::SCATRA::reinitaction_sussman),
+                                   INPAR::SCATRA::reinitaction_sussman,
+                                   INPAR::SCATRA::reinitaction_ellipticeq),
                                  &ls_reinit);
 
     BoolParameter("REINIT_INITIAL","No","Has level set field to be reinitialized before first time step?",&ls_reinit);
@@ -6039,6 +6043,39 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
     BoolParameter("REINITVOLCORRECTION","No","volume correction after reinitialization",&ls_reinit);
 
+    DoubleParameter("PENALTY_PARA", -1.0, "penalty parameter for elliptic reinitialization", &ls_reinit);
+
+    setStringToIntegralParameter<int>("DIMENSION","3D",
+                                 "number of space dimensions for handling of quasi-2D problems with 3D elements",
+                                 tuple<std::string>(
+                                   "3D",
+                                   "2Dx",
+                                   "2Dy",
+                                   "2Dz"),
+                                 tuple<int>(
+                                   INPAR::SCATRA::ls_3D,
+                                   INPAR::SCATRA::ls_2Dx,
+                                   INPAR::SCATRA::ls_2Dy,
+                                   INPAR::SCATRA::ls_2Dz),
+                                 &ls_reinit);
+
+    BoolParameter("PROJECTION","yes","use L2-projection for grad phi and related quantities",&ls_reinit);
+    BoolParameter("LUMPING","no","use lumped mass matrix for L2-projection",&ls_reinit);
+
+    setStringToIntegralParameter<int>("DIFF_FUNC","hyperbolic",
+                                 "function for diffusivity",
+                                 tuple<std::string>(
+                                   "hyperbolic",
+                                   "hyperbolic_smoothed_positive",
+                                   "hyperbolic_clipped_05",
+                                   "hyperbolic_clipped_1"),
+                                 tuple<int>(
+                                   INPAR::SCATRA::hyperbolic,
+                                   INPAR::SCATRA::hyperbolic_smoothed_positive,
+                                   INPAR::SCATRA::hyperbolic_clipped_05,
+                                   INPAR::SCATRA::hyperbolic_clipped_1),
+                                 &ls_reinit);
+
     /*----------------------------------------------------------------------*/
     Teuchos::ParameterList& ls_particle = levelsetcontrol.sublist("PARTICLE",false,"");
 
@@ -6058,11 +6095,24 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::PARTICLE::particle_2Dz),
                                  &ls_particle);
 
+    setStringToIntegralParameter<int>("ESCAPED","half",
+                                 "criterion for escaped particles",
+                                 tuple<std::string>(
+                                   "half",
+                                   "full"),
+                                 tuple<int>(
+                                   INPAR::PARTICLE::half,
+                                   INPAR::PARTICLE::full),
+                                 &ls_particle);
+
     IntParameter("NUMPARTICLE",64,"number of particles in bins around interface (usually 3D: 64, 2D: 32)",&ls_particle);
     DoubleParameter("PARTICLEBANDWIDTH",3.0,"multiple of maximal element length defining band around interface filled with particles, i.e., alpha*max(dx,dy,dz): here we give alpha, max(dx,dy,dz) is defined by the cut_off radius for the bins!",&ls_particle);
     DoubleParameter("MIN_RADIUS",0.1,"minimal radius of particles, usually a multiple of min(dx,dy,dz)",&ls_particle);
     DoubleParameter("MAX_RADIUS",0.5,"maximal radius of particles, usually a multiple of min(dx,dy,dz)",&ls_particle);
     IntParameter("RESEEDING",10000,"reseeding interval",&ls_particle);
+    BoolParameter("FAST_CHECK","No","Fast check of interface distance based on first phi-value of first assiciated element",&ls_particle);
+    DoubleParameter("DELETE_CRITICAL_PARTICLES",0.0,"Allows for deleting also escaped particles that moved to far from the interface to be useful",&ls_particle);
+    BoolParameter("RESTARTDATA","No","Write only restart data",&ls_particle);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& biofilmcontrol = list->sublist(

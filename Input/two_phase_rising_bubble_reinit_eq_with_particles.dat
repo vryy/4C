@@ -1,3 +1,9 @@
+//
+// Maintainer: Ursula Rasthofer
+// rasthofer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15262
+//
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -130,9 +136,10 @@ DIMENSION                   2Dz
 NUMPARTICLE                 16
 PARTICLEBANDWIDTH           3.0
 RESEEDING                   40
+FAST_CHECK                  yes
+RESTARTDATA                 yes
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
-//CUTOFF_RADIUS                   0.05
 BIN_PER_DIR                     45 80 1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      RK2
@@ -27233,8 +27240,8 @@ FLUID DIS fluid NODE 3748 QUANTITY velx VALUE -9.73058913454321467e-03 TOLERANCE
 FLUID DIS fluid NODE 3748 QUANTITY vely VALUE 9.48995170844787739e-02 TOLERANCE 1e-10
 FLUID DIS fluid NODE 3748 QUANTITY velz VALUE 0.0 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 5547 QUANTITY phi VALUE 7.74020813051432555e-02 TOLERANCE 1e-10
-PARTICLE DIS particle NODE 5952 QUANTITY dispx VALUE -4.17885037290737726e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 5952 QUANTITY dispy VALUE 8.63153631252405185e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 5952 QUANTITY dispx VALUE -4.17885265788152604e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 5952 QUANTITY dispy VALUE 8.63153608183187981e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 5952 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
 //
 //FLUID DIS fluid NODE 3748 QUANTITY velx VALUE -1.74200430824056965e-02  TOLERANCE 1e-10

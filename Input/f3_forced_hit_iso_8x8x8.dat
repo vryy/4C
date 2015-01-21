@@ -154,7 +154,7 @@ ML_MAXCOARSESIZE  10000     // ML stop coarsening when coarse ndof smaller then 
 ML_MAXLEVEL       3         // ML max number of levels
 ML_COARSEN        UC        // UC MIS METIS VBMETIS
 ML_AGG_SIZE       27        // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO    1.33       // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_SMO    0.0       // damping factor for prolongator smoother (usually 0.0 or 1.33)
 ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
 ML_SMOOTHERFINE   SGS       // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED    SGS       // SGS Jacobi Chebychev MLS ILU KLU

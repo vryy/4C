@@ -12,15 +12,9 @@ Maintainer: Ursula Rasthofer
 </pre>
 *----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*
- | definitions                                              ghamm 11/12 |
- *----------------------------------------------------------------------*/
 #ifndef SCATRA_PARTICLE_COUPLING_H
 #define SCATRA_PARTICLE_COUPLING_H
 
-/*----------------------------------------------------------------------*
- | headers                                                  ghamm 11/12 |
- *----------------------------------------------------------------------*/
 #include "particle_algorithm.H"
 #include "../drt_inpar/inpar_levelset.H"
 #include "particle_timint_centrdiff.H"
@@ -31,9 +25,6 @@ Maintainer: Ursula Rasthofer
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 
-/*----------------------------------------------------------------------*
- | forward declarations                                     ghamm 11/12 |
- *----------------------------------------------------------------------*/
 namespace SCATRA
 {
   class ScaTraTimIntImpl;
@@ -42,11 +33,14 @@ namespace DRT
 {
   class Discretization;
   class Element;
+
+  namespace MESHFREE
+  {
+    class MeshfreeMultiBin;
+  }
 }
 
-/*----------------------------------------------------------------------*
- | scatra-particle algorithm                                ghamm 11/12 |
- *----------------------------------------------------------------------*/
+
 namespace PARTICLE
 {
   class ScatraParticleCoupling : public PARTICLE::Algorithm
@@ -96,10 +90,15 @@ namespace PARTICLE
     virtual void SetupGhosting(
       Teuchos::RCP<Epetra_Map> binrowmap,  ///< rowmap of bins
       std::map<int, std::set<int> >& fluideles   ///< map from bin id to scatra elements in this bin
-      );
+    );
 
     /// build connectivity from fluid elements to bins
     virtual void BuildElementToBinPointers();
+
+    /// bins are created based on XAABB and cutoff radius
+    virtual void CreateBins(
+      Teuchos::RCP<DRT::Discretization> dis   ///< underlying discret which can be used to compute bounding box
+    );
 
   private:
 
@@ -129,6 +128,13 @@ namespace PARTICLE
       LINALG::Matrix<3,1>& elecoord       ///< matrix to be filled with particle coordinates in element space
     );
 
+    /// get underlying element as well as position in element space
+    DRT::Element* GetEleCoordinatesFromPosition(
+      LINALG::Matrix<3,1>& myposition,          ///< position
+      DRT::MESHFREE::MeshfreeMultiBin* currbin, ///< corresponding bin
+      LINALG::Matrix<3,1>& elecoord             ///< matrix to be filled with particle coordinates in element space
+    );
+
     /// compute level-set value of particle
     void GetLSValParticle(
       double& phi_particle,               ///< phi value at particle position
@@ -148,6 +154,9 @@ namespace PARTICLE
       const Teuchos::RCP< Epetra_MultiVector> lsvel ///< vector containing level-set values (col map)
     );
 
+    /// delete particles outside of the physical domain
+    void DeleteParticlesOutOfPhysicalDomain();
+
     /// compares the second entry of a pair<int,double>. To be passed to the sorting algo (helper function for Reseeding())
     /// descending order
     static bool MyComparePairs (const std::pair<int,double>& first, const std::pair<int,double>& second)
@@ -166,19 +175,25 @@ namespace PARTICLE
 
     INPAR::PARTICLE::ParticleDim particle_dim_;         ///< dimension of problem
 
+    INPAR::PARTICLE::Escaped escaped_;                  ///< escaped criterion
+
     int reseeding_;                                     ///< reseeding frequency
 
     int num_particles_per_bin_;                         ///< number of particles per bin of each type
 
     double binlength_max_;                              ///< characteristic bin length: maximal edge length
 
-    double binlength_min_;                              ///< characteristic bin length: minmal edge length
+    double binlength_min_;                              ///< characteristic bin length: minimal edge length
 
     double b_max_;                                      ///< width of band with particles
 
     double r_min_;                                      ///< minimal radius of particles
 
     double r_max_;                                      ///< maximal radius of particles
+
+    bool fast_;                                         ///< use fast check based on nodal values of scatra elements to determin far-away bins
+
+    double delete_more_;                                ///< allows for deleting also escaped particles that moved to far from the interface to be useful
 
   }; // ScatraParticleCoupling
 

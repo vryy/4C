@@ -31,9 +31,10 @@ MAX_RADIUS                  0.5
 DIMENSION                   2Dz
 NUMPARTICLE                 4
 PARTICLEBANDWIDTH           3.0
+FAST_CHECK                  yes
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
-CUTOFF_RADIUS                   0.0196
+BIN_PER_DIR                     51 51 1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      RK2
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -75,11 +76,11 @@ SCATRA DIS scatra NODE 500 QUANTITY phi VALUE 3.69700335074019226e-01 TOLERANCE 
 SCATRA DIS scatra NODE 1000 QUANTITY phi VALUE 1.91029953689322046e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 1500 QUANTITY phi VALUE 9.21390032754491883e-02 TOLERANCE 1e-9
 // circular interface after attraction: 2 procs
-PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -3.25123996404479976e-02 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE -1.62177880505015193e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -3.19261302084513643e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE -1.59098176633081539e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 26 QUANTITY dispx VALUE 1.58519336275302868e-02 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 26 QUANTITY dispy VALUE -2.01693869735815073e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 26 QUANTITY dispx VALUE 1.56490404736645446e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 26 QUANTITY dispy VALUE -1.99363939209437235e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 26 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
 ------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=(sin(PI(t:C1-0.5))+1)*0.5 c1 1.0 c2 1.0  // sin curve with zero derivatives

@@ -28,9 +28,11 @@ MAX_RADIUS                  0.5
 DIMENSION                   2Dz
 NUMPARTICLE                 2
 PARTICLEBANDWIDTH           1.0
+FAST_CHECK                  yes
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
-CUTOFF_RADIUS                   0.4
+//CUTOFF_RADIUS                   0.4
+BIN_PER_DIR                     20 5 1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      RK2
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -70,11 +72,11 @@ MAT 1 MAT_scatra  DIFFUSIVITY 0.0
 SCATRA DIS scatra NODE 6 QUANTITY phi VALUE 1.28532118551964558e+00 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 20 QUANTITY phi VALUE 1.11190239114351486e+00 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 7.34040808625948227e-01 TOLERANCE 1e-9
-PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -2.93558297533087487e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE 1.98873943140660314e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -2.70855112273742016e+00 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE -8.00991532289483943e-02 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 26 QUANTITY dispx VALUE -2.34051828998622291e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 26 QUANTITY dispy VALUE -6.67694229437872044e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 26 QUANTITY dispx VALUE -2.35443495310726192e+00 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 26 QUANTITY dispy VALUE -5.47559800648390049e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 26 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2

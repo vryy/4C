@@ -23,7 +23,7 @@ CONVTOL                         1e-05
 ITEMAX                          1
 MAXTIME                         1
 NUMSTEP                         15
-RESTARTEVRY                     35
+RESTARTEVRY                     3
 RESTART_FROM_FLUID              No
 RESTART_SCATRA_INPUT            No
 TIMESTEP                        0.001
