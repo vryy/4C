@@ -96,19 +96,31 @@ void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(Teuchos::
     // action for elements
     params.set<bool>("solve reinit eq",true);
 
-    // set initial phi, i.e., solution of level-set equation
-    discret_->SetState("phizero", initialphireinit_);
-    // TODO: RM if not needed
-    discret_->SetState("phin", phin_);
+    if (reinitaction_ == INPAR::SCATRA::reinitaction_sussman)
+    {
+      // set initial phi, i.e., solution of level-set equation
+      discret_->SetState("phizero", initialphireinit_);
+      // TODO: RM if not needed
+      discret_->SetState("phin", phin_);
 
 #ifndef USE_PHIN_FOR_VEL
-  if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
-    CalcNodeBasedReinitVel();
+    if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
+      CalcNodeBasedReinitVel();
 #endif
 
-    // add nodal velocity field, if required
-    if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
-      discret_->AddMultiVectorToParameterList(params,"reinitialization velocity field",reinitvel_);
+      // add nodal velocity field, if required
+      if (useprojectedreinitvel_ == INPAR::SCATRA::vel_reinit_node_based)
+        discret_->AddMultiVectorToParameterList(params,"reinitialization velocity field",nb_grad_val_);
+    }
+    else if (reinitaction_ == INPAR::SCATRA::reinitaction_ellipticeq)
+    {
+      // add node-based gradient, if required
+      if (projection_ == true)
+        discret_->AddMultiVectorToParameterList(params,"gradphi",nb_grad_val_);
+
+      // add interface integration cells
+      params.set<Teuchos::RCP<std::map<int,GEO::BoundaryIntCells > > >("boundary cells",interface_eleq_);
+    }
   }
 
   return;
@@ -165,9 +177,9 @@ void SCATRA::LevelSetAlgorithm::MassConservationCheck(
 
       IO::cout << "---------------------------------------" << IO::endl;
       IO::cout << "           mass conservation"            << IO::endl;
-      IO::cout << " initial mass: " << initvolminus_ << IO::endl;
-      IO::cout << " final mass:   " << actvolminus   << IO::endl;
-      IO::cout << " mass loss:    " << massloss << "%" << IO::endl;
+      IO::cout << " initial mass: " << std::setprecision(5) << initvolminus_ << IO::endl;
+      IO::cout << " final mass:   " << std::setprecision(5) << actvolminus   << IO::endl;
+      IO::cout << " mass loss:    " << std::setprecision(5) << massloss << "%" << IO::endl;
       IO::cout << "---------------------------------------" << IO::endl;
 
       if (writetofile)
@@ -225,6 +237,22 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
     break;
   case INPAR::SCATRA::calcerror_initial_field:
   {
+    if (myrank_ == 0)
+    {
+      if (step_==0)
+      {
+        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string fname = simulation+"_shape.error";
+
+        std::ofstream f;
+        f.open(fname.c_str());
+        f << "#| Step | Time | L1-err        | Linf-err        |\n";
+
+        f.flush();
+        f.close();
+      }
+    }
+
     if (step_ == stepmax_) // do only at the end of the simulation
     {
       // create the parameters for the error calculation
@@ -272,28 +300,16 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
       discret_->EvaluateScalars(eleparams, errors);
       discret_->ClearState();
 
-      double errL1 = (*errors)[0]/(*errors)[1];
+      double errL1 = (*errors)[0]/(*errors)[1]; // division by thickness of element layer for 2D problems with domain size 1
       Teuchos::RCP<Epetra_Vector> phidiff = Teuchos::rcp(new Epetra_Vector(*phinp_));
       phidiff->Update(-1.0,*phiref,1.0);
       double errLinf = 0.0;
-      phiref->NormInf(&errLinf);
+      phidiff->NormInf(&errLinf);
 
       const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
       const std::string fname = simulation+"_shape.error";
 
-      if (step_==0)
-      {
-        std::ofstream f;
-        f.open(fname.c_str());
-        f << "#| Step | Time | L1-err        | L2-err        |\n";
-        f << "  "<< std::setw(2) << std::setprecision(10) << step_ << "    " << std::setw(3)<< std::setprecision(5)
-          << time_ << std::setw(8) << std::setprecision(10) << "    "
-          << errL1 << std::setw(8) << std::setprecision(10) << "    " << errLinf << " "<<"\n";
-
-        f.flush();
-        f.close();
-      }
-      else
+      if (myrank_ == 0)
       {
         std::ofstream f;
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);

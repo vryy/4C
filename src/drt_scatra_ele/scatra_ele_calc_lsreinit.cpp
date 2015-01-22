@@ -24,6 +24,10 @@ Maintainer: Ursula Rasthofer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
 
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_geometry/integrationcell_coordtrafo.H"
+
+
 #define USE_PHIN_FOR_VEL
 //#define MODIFIED_EQ
 
@@ -75,6 +79,8 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::ScaTraEleCalcLsReinit(const int n
   my::scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance();
   // set appropriate diffusion manager
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerLsReinit<my::nsd_>(my::numscal_));
+  // set appropriate internal variable manager
+  my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_>(my::numscal_));
 }
 
 
@@ -94,6 +100,10 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec3_epetra
   )
 {
+  // reset all managers to their default values (I feel better this way)
+  Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerLsReinit<my::nsd_> >(my::diffmanager_)->Reset();
+  Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->Reset();
+
   // get element coordinates
   GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
 
@@ -101,31 +111,17 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
   my::eid_ = ele->Id();
 
   // clear all unused variables
-//  my::ephin_.clear();
   my::edispnp_.Clear();
   my::weights_.Clear();
-  my::myknots_.clear();
   my::evelnp_.Clear();
   my::eaccnp_.Clear();
   my::eprenp_.Clear();
-  my::bodyforce_.clear();
 
-  // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
-  Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
-  if (hist==Teuchos::null || phinp==Teuchos::null || phin==Teuchos::null || phizero==Teuchos::null)
-    dserror("Cannot get state vector 'hist' and/or 'phinp'/'phin' and/or 'phizero'");
-  std::vector<double> myhist(lm.size());
+  if (phinp==Teuchos::null)
+      dserror("Cannot get state vector 'phinp'");
   std::vector<double> myphinp(lm.size());
-  std::vector<double> myphin(lm.size());
-  std::vector<double> myphizero(lm.size());
-  DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
   DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-  DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
-  DRT::UTILS::ExtractMyValues(*phizero,myphizero,lm);
-
   // fill all element arrays
   for (int i=0;i<my::nen_;++i)
   {
@@ -133,24 +129,83 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
     {
       // split for each transported scalar, insert into element arrays
       my::ephinp_[k](i,0) = myphinp[k+(i*my::numdofpernode_)];
-      my::ephin_[k](i,0) = myphin[k+(i*my::numdofpernode_)];
-      ephizero_[k](i,0) = myphizero[k+(i*my::numdofpernode_)];
-      // the history vector contains information of time step t_n
-      my::ehist_[k](i,0) = myhist[k+(i*my::numdofpernode_)];
     } // for k
   } // for i
 
-  if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->UseProjectedVel())
+  // distinguish reinitalization
+  switch (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ReinitType())
   {
-    // get velocity at nodes (pre-computed via L2 projection)
-    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("reinitialization velocity field");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,my::econvelnp_,velocity,my::nsd_);
-  }
+    case INPAR::SCATRA::reinitaction_sussman:
+    {
+      // extract local values from the global vectors
+      Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
+      Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
+      Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
+      if (hist==Teuchos::null || phinp==Teuchos::null || phin==Teuchos::null || phizero==Teuchos::null)
+        dserror("Cannot get state vector 'hist' and/or 'phin' and/or 'phizero'");
+      std::vector<double> myhist(lm.size());
+      std::vector<double> myphin(lm.size());
+      std::vector<double> myphizero(lm.size());
+      DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
+      DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
+      DRT::UTILS::ExtractMyValues(*phizero,myphizero,lm);
 
-  // calculate element coefficient matrix and rhs
-  Sysmat(
-    elemat1_epetra,
-    elevec1_epetra);
+      // fill all element arrays
+      for (int i=0;i<my::nen_;++i)
+      {
+        for (int k = 0; k< my::numscal_; ++k)
+        {
+          // split for each transported scalar, insert into element arrays
+          my::ephin_[k](i,0) = myphin[k+(i*my::numdofpernode_)];
+          ephizero_[k](i,0) = myphizero[k+(i*my::numdofpernode_)];
+          // the history vector contains information of time step t_n
+          my::ehist_[k](i,0) = myhist[k+(i*my::numdofpernode_)];
+        } // for k
+      } // for i
+
+      if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->UseProjectedVel())
+      {
+        // get velocity at nodes (pre-computed via L2 projection)
+        const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("reinitialization velocity field");
+        DRT::UTILS::ExtractMyNodeBasedValues(ele,my::econvelnp_,velocity,my::nsd_);
+      }
+
+      // calculate element coefficient matrix and rhs
+      SysmatHyperbolic(
+        elemat1_epetra,
+        elevec1_epetra);
+      break;
+    }
+    case INPAR::SCATRA::reinitaction_ellipticeq:
+    {
+      // extract boundary integration cells for elliptic reinitialization
+      // define empty list
+      GEO::BoundaryIntCells boundaryIntCells = GEO::BoundaryIntCells();
+
+      Teuchos::RCP<std::map<int,GEO::BoundaryIntCells > > allcells =
+              params.get<Teuchos::RCP<std::map<int,GEO::BoundaryIntCells > > >("boundary cells", Teuchos::null);
+
+      std::map<int,GEO::BoundaryIntCells>::const_iterator tmp = allcells->find(my::eid_);
+      if (tmp != allcells->end())
+        boundaryIntCells = tmp->second;
+
+      if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->Project())
+      {
+        const Teuchos::RCP<Epetra_MultiVector> gradphi = params.get< Teuchos::RCP<Epetra_MultiVector> >("gradphi");
+        DRT::UTILS::ExtractMyNodeBasedValues(ele,my::econvelnp_,gradphi,my::nsd_);
+      }
+
+      // calculate element coefficient matrix and rhs
+      SysmatElliptic(
+          elemat1_epetra,
+          elevec1_epetra,
+          boundaryIntCells);
+      break;
+    }
+    default:
+      dserror("Unknown reinitialization equation");
+      break;
+  }
 
   return 0;
 }
@@ -161,7 +216,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
 |  calculate system matrix and rhs (public)             rasthofer 12/13 |
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
   Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
   Epetra_SerialDenseVector&             erhs ///< element rhs to calculate
   )
@@ -403,7 +458,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
 |  calculate system matrix and rhs (public)             rasthofer 12/13 |
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
   Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
   Epetra_SerialDenseVector&             erhs ///< element rhs to calculate
   )
@@ -525,10 +580,11 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     // set all Gauss point quantities
     //--------------------------------------------------------------------
 
-    my::SetInternalVariablesForMatAndRHS();
-
     // gradient of current scalar value at integration point
-    const LINALG::Matrix<my::nsd_,1>& gradphinp = my::scatravarmanager_->GradPhi(0);
+    LINALG::Matrix<my::nsd_,1> gradphinp(true);
+    gradphinp.Multiply(my::derxy_,my::ephinp_[0]);
+    // scalar at integration point at time step n+1
+    const double phinp = my::funct_.Dot(my::ephinp_[0]);
 
     // initial phi at integration point
     double phizero = 0.0;
@@ -538,7 +594,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     gradphizero.Multiply(my::derxy_,ephizero_[0]);
 
     // scalar at integration point at time step n
-    const double& phin = my::scatravarmanager_->Phin(0);
+    const double phin = my::funct_.Dot(my::ephin_[0]);
+
+    // also store values in variable manager
+    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetPhinp(0,phinp);
+    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetPhin(0,phin);
+    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetGradPhi(0,gradphinp);
 
 #if 0 // OLD but running
     // gradient of current scalar value Gauss point
@@ -624,9 +685,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     conv_phi = convelint.Dot(gradphinp);
 
     //set changed values in variable manager
-    my::scatravarmanager_->SetConv(conv);
-    my::scatravarmanager_->SetConVel(convelint);
-    my::scatravarmanager_->SetConvPhi(0,conv_phi);
+    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetConv(conv);
+    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetConVel(convelint);
+    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetConvPhi(0,conv_phi);
 
     // diffusive part used in stabilization terms
     double diff_phi(0.0);
@@ -664,10 +725,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
     if (gradphin_norm>1e-8)
          convelintold.Update(oldsign/gradphin_norm,gradphin);
     hist = phin - my::scatraparatimint_->Dt() * (1.0 - my::scatraparatimint_->TimeFac()/my::scatraparatimint_->Dt()) * (convelintold.Dot(gradphin)-oldsign);
-
-    //set changed values in variable manager
-    my::scatravarmanager_->SetHist(hist);
 #endif
+    //set changed values in variable manager
+    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetHist(0,hist);
 
     //--------------------------------------------------------------------
     // calculation of stabilization parameter at integration point
@@ -823,6 +883,137 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Sysmat(
       my::CalcRHSTransConvDiffStab(erhs,0,rhstaufac,1.0,scatrares,my::scatravarmanager_,sgconv,diff);
 
   } // end: loop all Gauss points
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+|  calculate system matrix and rhs (public)             rasthofer 09/14 |
+*----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatElliptic(
+  Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
+  Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
+  const GEO::BoundaryIntCells&          boucell ///< interface for penalty term
+  )
+{
+  //----------------------------------------------------------------------
+  // integration loop for one element
+  //----------------------------------------------------------------------
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+    //--------------------------------------------------------------------
+    // set all Gauss point quantities
+    //--------------------------------------------------------------------
+
+    // gradient of current scalar value at integration point
+    LINALG::Matrix<my::nsd_,1> gradphinp(true);
+    if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->Project())
+      gradphinp.Multiply(my::econvelnp_,my::funct_);
+    else
+      gradphinp.Multiply(my::derxy_,my::ephinp_[0]);
+
+    // TODO: remove
+//    if (std::abs(gradphinp(2,0))>1.0e-8)
+//    {
+//        std::cout << gradphinp << std::setprecision(8) << my::ephinp_[0] << std::endl;
+//        dserror("ENDE");
+//    }
+
+    double normgradphi = gradphinp.Norm2();
+
+    //----------------------------------------------------------------------
+    // prepare diffusion manager
+    //----------------------------------------------------------------------
+
+    // calculate nonlinear diffusivity
+    double diff = 0.0;
+    switch (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->DiffFct())
+    {
+      case INPAR::SCATRA::hyperbolic:
+      {
+        // the basic form: goes to -infinity, if norm(grad)=1
+        // yields directly desired signed-distance field
+        if (normgradphi>1.0e-8)
+          diff = 1.0 - (1.0/normgradphi);
+        else
+          diff = 1.0 - (1.0/1.0e-8);
+
+        break;
+      }
+      case INPAR::SCATRA::hyperbolic_smoothed_positive:
+      {
+        // version as suggested by Basting and Kuzmin 2013
+        // returns to positive values for norm(grad)<0.5
+        if (normgradphi>1.0)
+          diff = 1.0 - (1.0/normgradphi);
+        else
+          diff = 2.0 * normgradphi * normgradphi - 3.0 * normgradphi + 1.0;
+
+        break;
+      }
+      case INPAR::SCATRA::hyperbolic_clipped_05:
+      {
+          if (normgradphi>(2.0/3.0))
+            diff = 1.0 - (1.0/normgradphi);
+          else
+            diff = -0.5;
+
+          break;
+      }
+      case INPAR::SCATRA::hyperbolic_clipped_1:
+      {
+        if (normgradphi>0.5)
+          diff = 1.0 - (1.0/normgradphi);
+        else
+          diff = -1.0;
+
+        break;
+      }
+      default:
+      {
+        dserror("Unknown diffusivity function!");
+        break;
+      }
+    }
+
+    // set diffusivity of scalar 0 to 1.0 for lhs term
+    my::diffmanager_->SetIsotropicDiff(1.0,0);
+
+    //----------------------------------------------------------------
+    // evaluation of matrix and rhs
+    //----------------------------------------------------------------
+
+    //----------------------------------------------------------------
+    // 1) element matrix: diffusion matrix
+    //----------------------------------------------------------------
+
+    my::CalcMatDiff(emat,0,fac,my::diffmanager_);
+
+    //----------------------------------------------------------------
+    // 2) element right hand side
+    //----------------------------------------------------------------
+
+    // set diffusivity for rhs term
+    my::diffmanager_->SetIsotropicDiff((-diff+1.0),0);
+    // set gradphi for rhs term
+    my::scatravarmanager_->SetGradPhi(0,gradphinp);
+
+    my::CalcRHSDiff(erhs,0,-fac,my::diffmanager_,my::scatravarmanager_);
+
+  } // end: loop all Gauss points
+
+  //----------------------------------------------------------------
+  // 3) evaluation of penalty term at initial interface
+  //----------------------------------------------------------------
+
+  EvaluateInterfaceTerm(emat,erhs,boucell);
 
   return;
 }
@@ -1051,6 +1242,168 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcRHSDiff(
 
     erhs[fvi] -= vrhs*laplawf;
   }
+
+  return;
+}
+
+
+/*-------------------------------------------------------------------- *
+ | calculation of interface penalty term for elliptic reinitialization |
+ |                                                     rasthofer 09/14 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::EvaluateInterfaceTerm(
+  Epetra_SerialDenseMatrix&             emat,     //!< element matrix to calculate
+  Epetra_SerialDenseVector&             erhs,     //!< element vector to calculate
+  const GEO::BoundaryIntCells&          boucell   //!< interface for penalty term
+)
+{
+  //------------------------------------------------------------------------------------------------
+  // loop over boundary integration cells
+  //------------------------------------------------------------------------------------------------
+  for (GEO::BoundaryIntCells::const_iterator cell = boucell.begin(); cell != boucell.end(); ++cell)
+  {
+    // get shape of boundary cell
+    DRT::Element::DiscretizationType celldistype = cell->Shape();
+
+    GEO::BoundaryIntCell actcell = *cell;
+
+    switch (celldistype)
+    {
+      case DRT::Element::tri3:
+      {
+        CalcPenaltyTerm<DRT::Element::tri3>(emat,erhs,actcell);
+        break;
+      }
+      case DRT::Element::quad4:
+      {
+        CalcPenaltyTerm<DRT::Element::quad4>(emat,erhs,actcell);
+        break;
+      }
+      default:
+        dserror("cell distype not implemented yet");
+        break;
+    }
+  }
+
+  return;
+}
+
+/*-------------------------------------------------------------------- *
+ | calculation of interface penalty term for elliptic reinitialization |
+ | gauss loop                                          rasthofer 09/14 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType celldistype>
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcPenaltyTerm(
+  Epetra_SerialDenseMatrix&             emat,     //!< element matrix to calculate
+  Epetra_SerialDenseVector&             erhs,     //!< element vector to calculate
+  const GEO::BoundaryIntCell            cell      //!< interface cell
+)
+{
+  // get number of vertices of cell
+  const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
+  const size_t nsd = 3;
+  if (my::nsd_!=3) dserror("Extend for other dimensions");
+  const size_t nsd_cell = 2; //my::nsd_-1;
+    // get coordinates of vertices of boundary integration cell in element coordinates \xi^domain
+    LINALG::SerialDenseMatrix cellXiDomaintmp = cell.CellNodalPosXiDomain();
+    //cellXiDomaintmp.Print(std::cout);
+    // transform to fixed size format
+    const LINALG::Matrix<nsd,numvertices> cellXiDomain(cellXiDomaintmp);
+
+    //----------------------------------------------------------------------------------------------
+    // integration loop over Gaussian points
+    //----------------------------------------------------------------------------------------------
+    // integrations points and weights
+    DRT::UTILS::IntegrationPoints2D intpoints(SCATRA::CellTypeToOptGaussRule<celldistype>::rule);
+
+    for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+    {
+      // new transformation for boundary integrals
+      // 1. define a coupled transformation x_3D(xi_3D(eta_2D)): transformation from 2D->3D
+      // 2. compute the corresponding Jacobian J_eta2D->x_3D and
+      // 3. the corresponding surface integral factor sqrt(det(J_eta2D->x_3D^T * J_eta2D->x_3D))
+      // 4. approximate integral with Gauss rule in eta coordinate system
+      // 5. evaluate the transformed integrand f(x(xi(eta)))
+
+      const LINALG::Matrix<nsd_cell,1> gpinEta2D(intpoints.qxg[iquad]);
+
+      // Jacobian for coupled transformation
+      // get derivatives dxi_3D/deta_2D
+      static LINALG::Matrix<nsd_cell,numvertices> deriv_eta2D;
+      DRT::UTILS::shape_function_2D_deriv1(deriv_eta2D,gpinEta2D(0,0),gpinEta2D(1,0),celldistype);
+
+      // calculate dxi3Ddeta2D
+      static LINALG::Matrix<nsd,nsd_cell> dXi3Ddeta2D;
+      dXi3Ddeta2D.Clear();
+
+      for (int i = 0; i < (int)nsd; i++)   // dimensions
+        for (int j = 0; j < (int)nsd_cell; j++) // derivatives
+          for (int k = 0; k < (int)numvertices; k++)
+          {
+            dXi3Ddeta2D(i,j) += cellXiDomain(i,k)*deriv_eta2D(j,k);
+          }
+
+      // transform Gauss point to xi3D space (element parameter space)
+      static LINALG::Matrix<nsd,1> gpinXi3D;
+      gpinXi3D.Clear();
+
+      // coordinates of this integration point in element coordinates \xi^domain
+      GEO::mapEtaBToXiD(cell, gpinEta2D, gpinXi3D);
+
+      static LINALG::Matrix<nsd,my::nen_> deriv_xi3D;
+      DRT::UTILS::shape_function_3D_deriv1(deriv_xi3D,gpinXi3D(0,0), gpinXi3D(1,0), gpinXi3D(2,0), distype);
+
+      // calculate dx3Ddxi3D
+      static LINALG::Matrix<nsd,nsd> dX3DdXi3D;
+      dX3DdXi3D.Clear();
+      for (int i = 0; i < (int)nsd; i++)   // dimensions
+        for (int j = 0; j < (int)nsd; j++) // derivatives
+          for (int k = 0; k < my::nen_; k++)
+            dX3DdXi3D(i,j) += my::xyze_(i,k)*deriv_xi3D(j,k);
+
+      // get the coupled Jacobian dx3Ddeta2D
+      static LINALG::Matrix<3,2> dx3Ddeta2D;
+      dx3Ddeta2D.Clear();
+      for (int i = 0; i < (int)nsd; i++)   // dimensions
+        for (int j = 0; j < (int)nsd_cell; j++) // derivatives
+          for (int k = 0; k < (int)nsd; k++)
+            dx3Ddeta2D(i,j) += dX3DdXi3D(i,k) * dXi3Ddeta2D(k,j);
+
+      // get deformation factor
+      static LINALG::Matrix<nsd_cell,nsd_cell> Jac_tmp; // J^T*J
+      Jac_tmp.Clear();
+      Jac_tmp.MultiplyTN(dx3Ddeta2D,dx3Ddeta2D);
+
+      if(Jac_tmp.Determinant() == 0.0) dserror("deformation factor for boundary integration is zero");
+      const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
+
+      const double fac = intpoints.qwgt[iquad]*deform_factor;
+
+      LINALG::Matrix<nsd_cell,1> posEtaBoundary;
+      posEtaBoundary.Clear();
+      for (int i= 0; i < (int)nsd_cell; i++)
+        posEtaBoundary(i,0) = gpinEta2D(i,0);
+
+      LINALG::Matrix<nsd,1> posXiDomain;
+      posXiDomain.Clear();
+      for (int i= 0; i< (int)nsd; i++)
+        posXiDomain(i,0) = gpinXi3D(i,0);
+
+      //--------------------------------------------------------------------------------------------
+      // evaluate shape functions and their first derivatives at this Gaussian point
+      //--------------------------------------------------------------------------------------------
+      my::funct_.Clear();
+      DRT::UTILS::shape_function_3D(my::funct_,posXiDomain(0),posXiDomain(1),posXiDomain(2),distype);
+
+      //--------------------------------------------------------------------------------------------
+      // evaluate mat and rhs
+      //--------------------------------------------------------------------------------------------
+      // caution density of original function is replaced by penalty parameter here
+      my::CalcMatMass(emat,0,fac,dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->PenaltyPara());
+
+      }// loop Gaussian points
 
   return;
 }

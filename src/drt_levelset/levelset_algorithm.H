@@ -26,7 +26,7 @@ Maintainer: Ursula Rasthofer
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
-#define USE_PHIN_FOR_VEL
+#define USE_PHIN_FOR_VEL // TODO
 
 
 namespace PARTICLE
@@ -163,6 +163,9 @@ namespace SCATRA
     /// pointer to particle algorithm
     Teuchos::RCP<PARTICLE::ScatraParticleCoupling> particle_;
 
+    /// options for reinitialization of G-function;
+    INPAR::SCATRA::ReInitialAction reinitaction_;
+
     /// convective velocity at time n
     Teuchos::RCP<Epetra_MultiVector> conveln_;
 
@@ -289,6 +292,10 @@ namespace SCATRA
     /// correct the volume of the minus domain after reinitialization
     void CorrectVolume();
 
+    /// elliptic reinitialization
+    void ReinitElliptic(
+        std::map<int,GEO::BoundaryIntCells >& interface);
+
     // -----------------------------------------------------------------
     // additional post-processing and evaluation methods
     // -----------------------------------------------------------------
@@ -314,14 +321,11 @@ namespace SCATRA
     /// initial volume of minus domain
     double initvolminus_;
 
-    /// options for reinitialization of G-function;
-    INPAR::SCATRA::ReInitialAction reinitaction_;
-
     /// phinp before reinitialization (ReinitEq() only)
     Teuchos::RCP<Epetra_Vector> initialphireinit_;
 
-    /// nodal velocity for reinitialization (ReinitEq() only)
-    Teuchos::RCP<Epetra_MultiVector> reinitvel_;
+    /// nodal gradient-based values for reinitialization (ReinitEq() only; Sussman and Elliptic)
+    Teuchos::RCP<Epetra_MultiVector> nb_grad_val_;
 
     /// interval for reinitialization (every 'reinitinterval_' time steps)
     int reinitinterval_;
@@ -338,6 +342,12 @@ namespace SCATRA
     /// evaluation of velocity field for reinitialization (ReinitEq() only)
     INPAR::SCATRA::VelReinit useprojectedreinitvel_;
 
+    /// 2D flag
+    INPAR::SCATRA::LSDim lsdim_;
+
+    /// use projection for grad phi and related quantities
+    bool projection_;
+
     //TODO:
 //    /// vector containing denominator of penalty parameter for each element (ReinitEq() only)
 //    Teuchos::RCP<Epetra_Vector> lambda_ele_denominator_;
@@ -350,6 +360,9 @@ namespace SCATRA
 
     /// flag to correct volume after reinitialization
     bool reinitvolcorrection_;
+
+    /// interface for elliptic reinitialization
+    Teuchos::RCP<std::map<int,GEO::BoundaryIntCells > > interface_eleq_;
 
     // --------------
     // members related to transport and velocity fields from Navier-Stokes

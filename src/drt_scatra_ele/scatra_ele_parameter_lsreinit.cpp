@@ -53,12 +53,17 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::Done()
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit()
   : DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter(),
+    reinittype_(INPAR::SCATRA::reinitaction_none),
     signtype_(INPAR::SCATRA::signtype_nonsmoothed),
     charelelengthreinit_(INPAR::SCATRA::root_of_volume_reinit),
     interfacethicknessfac_(1.0),
     useprojectedreinitvel_(false),
     linform_(INPAR::SCATRA::fixed_point),
-    artdiff_(INPAR::SCATRA::artdiff_none)
+    artdiff_(INPAR::SCATRA::artdiff_none),
+    alphapen_(0.0),
+    project_(true),
+    lumping_(false),
+    difffct_(INPAR::SCATRA::hyperbolic)
 {
 }
 
@@ -69,8 +74,10 @@ DRT::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit()
 void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetElementLsReinitScaTraParameter(
   Teuchos::ParameterList& params)
 {
-  // get reinitialization parametre list
+  // get reinitialization parameters list
   Teuchos::ParameterList& reinitlist = params.sublist("REINITIALIZATION");
+  // reinitalization strategy
+  reinittype_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReInitialAction>(reinitlist, "REINITIALIZATION");
   // get signum function
   signtype_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::SmoothedSignType>(reinitlist, "SMOOTHED_SIGN_TYPE");
   // characteristic element length for signum function
@@ -125,6 +132,16 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetElementLsReinitScaTraParamete
      dserror("Evaluation of material and stabilization parameters need to be done at the integration points for reinitialization");
     // due to artificial diff
   }
+
+  // set penalty parameter for elliptic reinitialization
+  alphapen_ = reinitlist.get<double>("PENALTY_PARA");
+  // get diffusivity function
+  difffct_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::DiffFunc>(reinitlist, "DIFF_FUNC");
+
+  // L2-projection
+  project_ = DRT::INPUT::IntegralValue<bool>(reinitlist,"PROJECTION");
+  // lumping for L2-projection
+  lumping_ = DRT::INPUT::IntegralValue<bool>(reinitlist,"LUMPING");
 
   return;
 }

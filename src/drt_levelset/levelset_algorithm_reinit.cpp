@@ -355,55 +355,72 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
     Teuchos::RCP<Epetra_Vector> velcomp = LINALG::CreateVector(*dofrowmap,true);
     velcomp->PutScalar(0.0);
 
-    // zero out matrix and rhs entries
-    sysmat_->Zero();
-    residual_->PutScalar(0.0);
+    if ( lsdim_ == INPAR::SCATRA::ls_3D or
+        (lsdim_ == INPAR::SCATRA::ls_2Dx and idim != 0) or
+        (lsdim_ == INPAR::SCATRA::ls_2Dy and idim != 1) or
+        (lsdim_ == INPAR::SCATRA::ls_2Dz and idim != 2))
+    {
+      // zero out matrix and rhs entries
+      sysmat_->Zero();
+      residual_->PutScalar(0.0);
 
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
+      // create the parameters for the discretization
+      Teuchos::ParameterList eleparams;
 
-    // parameters for the elements
-    // action
-    eleparams.set<int>("action",SCATRA::calc_node_based_reinit_velocity);
-    // set type of scalar transport problem
-    eleparams.set<int>("scatratype",scatratype_);
-    // set current spatial direction
-    // we have to loop the dimensions, since we merely have one dof per node here
-    eleparams.set<int>("direction", idim);
-    // activate reinitalization calculation routines
-    eleparams.set<bool>("solve reinit eq",true);
+      // parameters for the elements
+      // action
+      eleparams.set<int>("action",SCATRA::calc_node_based_reinit_velocity);
+      // set type of scalar transport problem
+      eleparams.set<int>("scatratype",scatratype_);
+      // set current spatial direction
+      // we have to loop the dimensions, since we merely have one dof per node here
+      eleparams.set<int>("direction", idim);
+      // activate reinitalization calculation routines
+      eleparams.set<bool>("solve reinit eq",true);
 
-    discret_->ClearState(); //TODO Caution if called from NonlinearSolve
-    // set initial phi, i.e., solution of level-set equation
-    discret_->SetState("phizero", initialphireinit_);
-    // set phin as phi used for velocity
-    // note:read as phinp in SysmatNodalVel()
+      discret_->ClearState(); //TODO Caution if called from NonlinearSolve
+      // set initial phi, i.e., solution of level-set equation
+      discret_->SetState("phizero", initialphireinit_);
+
+      if (reinitaction_ == INPAR::SCATRA::reinitaction_sussman)
+      {
+        // set phin as phi used for velocity
+        // note:read as phinp in SysmatNodalVel()
 #ifdef USE_PHIN_FOR_VEL
-    discret_->SetState("phinp", phin_);
+        discret_->SetState("phinp", phin_);
 #else
-    discret_->SetState("phinp", phinp_);
+        discret_->SetState("phinp", phinp_);
 #endif
+      }
+      else if (reinitaction_ == INPAR::SCATRA::reinitaction_ellipticeq)
+      {
+        discret_->SetState("phinp", phinp_);
+      }
+      else dserror("Unknown reinitialization method for projection!");
 
-    // call loop over elements
-    discret_->Evaluate(eleparams,sysmat_,residual_);
-    discret_->ClearState();
+      // call loop over elements
+      discret_->Evaluate(eleparams,sysmat_,residual_);
+      discret_->ClearState();
 
-    // finalize the complete matrix
-    sysmat_->Complete();
+      // finalize the complete matrix
+      sysmat_->Complete();
 
-    // solve for velocity component
-    solver_->Solve(sysmat_->EpetraOperator(),velcomp,residual_,true,true);
+      // solve for velocity component
+      solver_->Solve(sysmat_->EpetraOperator(),velcomp,residual_,true,true);
 
-    SystemMatrix()->Reset();
-    // reset the solver as well
-    solver_->Reset();
+      SystemMatrix()->Reset();
+      // reset the solver as well
+      solver_->Reset();
+
+      // TODO: add simple ILU/SGS/... for projection case, such that the standard system can be solved by efficient AMG methods
+    }
 
     // loop over all local nodes of scatra discretization
     for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
       // store velocity in reinitalization velocity
       const double val = (*velcomp)[lnodeid];
-      ((*reinitvel_)(idim))->ReplaceMyValues(1,&val,&lnodeid);
+      ((*nb_grad_val_)(idim))->ReplaceMyValues(1,&val,&lnodeid);
     }
   }
 #if 0
@@ -425,9 +442,9 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
 
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "Reinit Velocity \" {" << std::endl;
+    gmshfilecontent << "View \" " << "Projection \" {" << std::endl;
     // draw vector field 'Convective Velocity' for every element
-    IO::GMSH::VectorFieldNodeBasedToGmsh(discret_,reinitvel_,gmshfilecontent);
+    IO::GMSH::VectorFieldNodeBasedToGmsh(discret_,nb_grad_val_,gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
   gmshfilecontent.close();
@@ -1541,3 +1558,102 @@ void SCATRA::LevelSetAlgorithm::CorrectVolume()
 }
 
 
+/*----------------------------------------------------------------------*
+ | elliptic reinitialization                            rasthofer 09/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::ReinitElliptic(
+  std::map<int,GEO::BoundaryIntCells >& interface
+  )
+{
+  //-------------------------------------------------
+  // preparations
+  //-------------------------------------------------
+
+  // set switch flag to true to activate reinitialization specific parts
+  switchreinit_ = true;
+
+  // set element parameters for reinitialization equation
+  SetReinitializationElementParameters();
+
+  // store interface
+  interface_eleq_ = Teuchos::rcp(new std::map<int,GEO::BoundaryIntCells > (interface) );
+
+  // vector for initial phi (solution of level-set equation) of reinitialization process
+  // this vector is only initialized: currently function CalcNodeBasedReinitVel() is also
+  // used to compute nodal level-set gradients, and this function expects that initialphireinit_ has been
+  // set although it is not used for the present purposes
+  initialphireinit_  = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+
+  //-------------------------------------------------
+  // solve
+  //-------------------------------------------------
+
+  // we simply call the LinearSolve (since the elliptic reinitialization equation is
+  // indeed nonlinear), and all the rest concerning the correct action type and
+  // parameters is handled via the switchreinit_-flag in the concrete time-integration
+  // schemes for level-set problems
+
+  // some preparations
+  Teuchos::RCP<Epetra_Vector> phinmloc = Teuchos::rcp(new Epetra_Vector(*phinp_));
+  Teuchos::RCP<Epetra_Vector> inc = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
+  int step = 0;
+  bool not_conv = true;
+
+  while (not_conv)
+  {
+    step += 1;
+
+    //-----------------------------
+    // compute node-based gradient
+    //-----------------------------
+    if (projection_)
+      CalcNodeBasedReinitVel();
+
+    //-----------------------------
+    // setup and solve system
+    //-----------------------------
+    // caution: we can only use LinearSolve together with linear-full strategy here
+    LinearSolve();
+
+    //-----------------------------
+    // check convergence
+    //-----------------------------
+    inc->Update(1.0,*phinp_,-1.0,*phinmloc,0.0);
+    double norm = 0.0;
+    inc->Norm2(&norm);
+
+    if (myrank_==0)
+      std::cout << "STEP:  " << step << "/" << pseudostepmax_ << "  -- inc norm L2:  "<< std::setprecision(3) << std::scientific << norm << std::endl;
+
+    if (reinit_tol_>0.0)
+    {
+      if (norm < reinit_tol_ or step >= pseudostepmax_)
+        not_conv = false;
+    }
+    else
+    {
+      if (step >= pseudostepmax_)
+        not_conv = false;
+    }
+
+    phinmloc->Update(1.0,*phinp_,0.0);
+  }
+
+  //-------------------------------------------------
+  // finish
+  //-------------------------------------------------
+
+  // reset time-integration parameters for element evaluation
+  // SetElementTimeParameter(); -> have not been modified
+  // reset general parameters for element evaluation
+  SetElementGeneralScaTraParameters();
+  SetElementTurbulenceParameter();
+
+  // clear variables
+  interface_eleq_ = Teuchos::null;
+  initialphireinit_ = Teuchos::null;
+  if (projection_ == true)
+    nb_grad_val_->PutScalar(0.0);
+
+  return;
+}

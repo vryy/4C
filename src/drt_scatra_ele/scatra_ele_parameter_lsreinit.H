@@ -56,15 +56,22 @@ public:
   //! @name access-routines
   /*========================================================================*/
 
+  const INPAR::SCATRA::ReInitialAction ReinitType(){return reinittype_;};
   const INPAR::SCATRA::SmoothedSignType SignType(){return signtype_;};
   const INPAR::SCATRA::CharEleLengthReinit CharEleLengthReinit(){return charelelengthreinit_;};
   const double InterfaceThicknessFac(){return interfacethicknessfac_;};
   const bool UseProjectedVel(){return useprojectedreinitvel_;};
   const INPAR::SCATRA::LinReinit LinForm(){return linform_;};
   const INPAR::SCATRA::ArtDiff ArtDiff(){return artdiff_;};
+  const double PenaltyPara(){return alphapen_;};
+  const bool Project(){return project_;};
+  const bool Lumping(){return lumping_;};
+  const INPAR::SCATRA::DiffFunc DiffFct(){return difffct_;};
 
 private:
 
+  // reinit type
+  INPAR::SCATRA::ReInitialAction reinittype_;
   // sign function for phi
   INPAR::SCATRA::SmoothedSignType signtype_;
   // element length for smoothing of sign function
@@ -77,6 +84,14 @@ private:
   INPAR::SCATRA::LinReinit linform_;
   // form of artificial diffusion
   INPAR::SCATRA::ArtDiff artdiff_;
+  // penalty parameter of elliptic reinitialization
+  double alphapen_;
+  // use L2 projection
+  bool project_;
+  // mass lumping for L2 projection
+  bool lumping_;
+  // function for diffusivity
+  INPAR::SCATRA::DiffFunc difffct_;
 
 };
 

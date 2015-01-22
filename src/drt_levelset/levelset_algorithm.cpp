@@ -43,6 +43,7 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(
   : ScaTraTimIntImpl(dis,solver,sctratimintparams,extraparams,output),
   levelsetparams_(params),
   particle_(Teuchos::null),
+  reinitaction_(INPAR::SCATRA::reinitaction_none),
   conveln_(Teuchos::null),
   switchreinit_(false),
   pseudostepmax_(0),
@@ -50,19 +51,21 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(
   dtau_(0.0),
   thetareinit_(0.0),
   initvolminus_(0.0),
-  reinitaction_(INPAR::SCATRA::reinitaction_none),
   initialphireinit_(Teuchos::null),
-  reinitvel_(Teuchos::null),
+  nb_grad_val_(Teuchos::null),
   reinitinterval_(-1),
   reinitband_(false),
   reinitbandwidth_(-1.0),
   reinitcorrector_(true),
   useprojectedreinitvel_(INPAR::SCATRA::vel_reinit_integration_point_based),
+  lsdim_(INPAR::SCATRA::ls_3D),
+  projection_(true),
   //TODO:
 //  lambda_ele_denominator_(Teuchos::null),
 //  node_deriv_smoothfunct_(Teuchos::null),
   reinit_tol_(-1.0),
   reinitvolcorrection_(false),
+  interface_eleq_(Teuchos::null),
   extract_interface_vel_(false),
   convel_layers_(-1),
   cpbc_(false)
@@ -183,7 +186,33 @@ void SCATRA::LevelSetAlgorithm::Init()
         // velocities (always three velocity components per node)
         // (get noderowmap of discretization for creating this multivector)
         const Epetra_Map* noderowmap = discret_->NodeRowMap();
-        reinitvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+        nb_grad_val_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+      }
+
+      // get dimension
+      lsdim_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::LSDim>(levelsetparams_->sublist("REINITIALIZATION"),"DIMENSION");
+    }
+
+    if (reinitaction_ == INPAR::SCATRA::reinitaction_ellipticeq)
+    {
+      // number of iterations steps to solve nonlinear equation
+      pseudostepmax_ = levelsetparams_->sublist("REINITIALIZATION").get<int>("NUMSTEPSREINIT");
+
+      // tolerance for convergence of reinitialization equation
+      reinit_tol_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("CONVTOL_REINIT");
+
+      // get dimension
+      lsdim_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::LSDim>(levelsetparams_->sublist("REINITIALIZATION"),"DIMENSION");
+
+      // use L2-projection of grad phi and related quantities
+      projection_ = DRT::INPUT::IntegralValue<int>(levelsetparams_->sublist("REINITIALIZATION"),"PROJECTION");
+      if (projection_ == true)
+      {
+        // vector for nodal level-set gradient for reinitialization
+        // gradients (always three gradient components per node)
+        // (get noderowmap of discretization for creating this multivector)
+        const Epetra_Map* noderowmap = discret_->NodeRowMap();
+        nb_grad_val_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
       }
     }
 
@@ -372,6 +401,12 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
           ReinitEq();
           break;
         }
+        case INPAR::SCATRA::reinitaction_ellipticeq:
+        {
+          // reinitialization via elliptic equation
+          ReinitElliptic(zerolevelset);
+          break;
+        }
         default:
         {
           dserror("Unknown reinitialization method!");
@@ -436,7 +471,7 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
   // -----------------------------------------------------------------
   //      standard paraview and gmsh output for scalar field
   // -----------------------------------------------------------------
-  
+
   // solution output and potentially restart data and/or flux data
   if (DoOutput())
   {

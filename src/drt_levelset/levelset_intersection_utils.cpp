@@ -184,14 +184,32 @@ void SCATRA::CaptureZeroLevelSet(
                 IO::cout << "distype " << distype_bc << IO::endl;
                 dserror("unexpected type of boundary integration cell");
               }
+              int numnodebc = DRT::UTILS::getNumberOfElementNodes( distype_bc );
 
               // get physical coordinates of this cell
               LINALG::SerialDenseMatrix coord = bcell->Coordinates();
 
+              // transfer to element coordinates
+              LINALG::SerialDenseMatrix localcoord(3,numnodebc);
+
+              for (int ivert=0; ivert<numnodebc; ivert++)
+              {
+                LINALG::Matrix<3,1> lcoord;
+                LINALG::Matrix<3,1> pcoord;
+                for (int ll=0; ll<3; ll++)
+                   pcoord(ll,0) = coord(ll,ivert);
+
+                GEO::currentToVolumeElementCoordinates(distype, xyze, pcoord, lcoord);
+
+                // write as 'physCoord'
+                for (int ll=0; ll<3; ll++)
+                    localcoord(ll,ivert) = lcoord(ll,0);
+              }
+
               // store boundary element
               // and sum area into surface
               // be careful, we only set physical coordinates
-              listBoundaryIntCellsperEle.push_back(GEO::BoundaryIntCell(distype_bc, -1, Teuchos::null, Teuchos::null, coord, true));
+              listBoundaryIntCellsperEle.push_back(GEO::BoundaryIntCell(distype_bc, -1, localcoord, Teuchos::null, coord, true));
               surface += bcell->Area();
             }
           }

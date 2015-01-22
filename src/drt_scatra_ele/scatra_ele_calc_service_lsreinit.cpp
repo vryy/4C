@@ -42,6 +42,10 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::EvaluateService(
   Epetra_SerialDenseVector&  elevec3_epetra
   )
 {
+  // reset all managers to their default values (I feel better this way)
+  Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerLsReinit<my::nsd_> >(my::diffmanager_)->Reset();
+  Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->Reset();
+
   // get element coordinates
   GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
 
@@ -212,7 +216,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatCorrection(
     DerivSignFunction(deriv_sign,charelelength,phizero);
 
     // scalar at integration point at time step n+1
-    my::SetInternalVariablesForMatAndRHS();
+    const double phinp = my::funct_.Dot(my::ephinp_[0]);
+    Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetPhinp(0,phinp);
+    Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetHist(0,0.0);
 
     //------------------------------------------------
     // element matrix
@@ -417,28 +423,72 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
     // get norm
     const double gradphi_norm = gradphi.Norm2();
 
-    // get sign function
-    double signphi = 0.0;
-    SignFunction(signphi,charelelength,phizero,gradphizero,phinp,gradphi);
+    // TODO: remove
+//    if (std::abs(my::ephinp_[0](0,0)-my::ephinp_[0](1,0))>1.0e-10 or
+//        std::abs(my::ephinp_[0](2,0)-my::ephinp_[0](3,0))>1.0e-10 or
+//        std::abs(my::ephinp_[0](4,0)-my::ephinp_[0](5,0))>1.0e-10 or
+//        std::abs(my::ephinp_[0](6,0)-my::ephinp_[0](7,0))>1.0e-10)
+//    {
+//        std::cout << my::ephinp_[0] << std::endl;
+//        dserror("ENDE");
+//    }
 
     // get velocity at element center
     LINALG::Matrix<my::nsd_,1> convelint(true);
-    if (gradphi_norm>1e-8)
-      convelint.Update(signphi/gradphi_norm,gradphi);
+    if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ReinitType() == INPAR::SCATRA::reinitaction_sussman)
+    {
+      // get sign function
+      double signphi = 0.0;
+      SignFunction(signphi,charelelength,phizero,gradphizero,phinp,gradphi);
+
+      if (gradphi_norm>1e-8)
+        convelint.Update(signphi/gradphi_norm,gradphi);
+    }
 
     //------------------------------------------------
     // element matrix
     //------------------------------------------------
-
     my::CalcMatMass(emat,0,fac,1.0);
-    // TODO: use lumped mass matrix
 
     //------------------------------------------------
     // element rhs
     //------------------------------------------------
+    // distinguish reinitalization
+    switch (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ReinitType())
+    {
+      case INPAR::SCATRA::reinitaction_sussman:
+      {
+        my::CalcRHSHistAndSource(erhs,0,fac,convelint(dir,0));
+        break;
+      }
+      case INPAR::SCATRA::reinitaction_ellipticeq:
+      {
+        my::CalcRHSHistAndSource(erhs,0,fac,gradphi(dir,0));
+        break;
+      }
+      default: break;
+    }
+  } // loop Gauss points
 
-    my::CalcRHSHistAndSource(erhs,0,fac,convelint(dir,0));
+  // do lumping: row sum
+  if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->Lumping())
+  {
+    for (int vi=0; vi<my::nen_; ++vi)
+    {
+      const int fvi = vi*my::numdofpernode_;
 
+      double sum = 0.0;
+      // loop all columns
+      for (int ui=0; ui<my::nen_; ++ui)
+      {
+        const int fui = ui*my::numdofpernode_;
+        sum += emat(fvi,fui);
+        // reset
+        emat(fvi,fui) = 0.0;
+      }
+
+      emat(fvi,fvi) = sum;
+    }
   }
 
   return;
