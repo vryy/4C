@@ -1206,8 +1206,8 @@ namespace ELEMENTS
       convelint_(true),
       conv_(true),
       gradphi_(numscal),
-      conv_phi_(numscal),
-      hist_(numscal),
+      conv_phi_(numscal,0.0),
+      hist_(numscal,0.0),
       numscal_(numscal)
       {return;}
 

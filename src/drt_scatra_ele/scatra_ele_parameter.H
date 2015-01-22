@@ -123,7 +123,7 @@ public:
   const bool Nwl_ScaTra(){return nwl_scatra_;};
   const bool Beta(){return beta_;};
   const bool BD_Gp(){return BD_gp_;};
-  const double Csgs_SgPhi(){double tmp = 0.0; if(adapt_Csgs_phi_ and nwl_) tmp = Csgs_sgphi_*meanCai_; else tmp = Csgs_sgphi_; return tmp;};
+  const double Csgs_SgPhi(){double tmp = 0.0; if(adapt_Csgs_phi_ and nwl_) tmp = Csgs_sgvel_*meanCai_; else tmp = Csgs_sgphi_; return tmp;};
   const double C_Diff(){return c_diff_;};
   const bool MfsConservative(){return mfs_conservative_;};
   const void SetCsgsPhi(double meanCai){meanCai_ = meanCai; return;};
