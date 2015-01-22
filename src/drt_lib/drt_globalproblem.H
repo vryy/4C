@@ -341,6 +341,7 @@ public:
 
   const Teuchos::ParameterList& SolverParams(int solverNr) const;
   const Teuchos::ParameterList& RandomFieldParams(int randomfieldNr) const;
+  const Teuchos::ParameterList& RandomVariableParams(int randomvariableNr) const;
 
   const Teuchos::ParameterList& UMFPACKSolverParams();
 

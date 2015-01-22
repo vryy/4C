@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file mc_mat_par_manager.H
 \brief Class to handle calls to material parameters from a uq routine
@@ -10,14 +10,17 @@ Maintainer: Jonas Biehler
 </pre>
 */
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 #ifdef HAVE_FFTW
 #ifndef MC_MATPAR_MANAGER_H
 #define MC_MATPAR_MANAGER_H
 
+/*----------------------------------------------------------------------------*/
+/* header inclusions */
 #include "Epetra_MultiVector.h"
 #include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_dserror.H"
+
 // forward declarations
 namespace DRT
 {
@@ -32,48 +35,164 @@ namespace LINALG
 
 namespace UQ
 {
-
 class RandomField;
-/*----------------------------------------------------------------------*/
+class RandomVariable;
+/*----------------------------------------------------------------------------*/
 class MCMatParManager
 {
 public:
 
-  //! Constructor
+  /*!
+  \brief Standard Constructor
+
+  \param discret : discretization for which MatParManager will be used
+  */
   MCMatParManager(Teuchos::RCP<DRT::Discretization> discret);
 
-  //! Destructor
+  /*!
+  \brief Standard Destructor
+
+  */
   ~MCMatParManager(){};
 
-  //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
-  //void Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate=false);
 
-  //! brief setup all random field needed for MC
+  /*!
+  \brief setup all random quantities needed for MC
+
+  This funtion just calls SetupRandomFields and SetupRandomVariables
+
+  \param myseed : seed for random number generator
+
+  */
+  void SetupAllRandomQuantities(unsigned int myseed);
+
+  /*!
+  \brief setup all random fields needed for MC
+
+  \param myseed : seed for random number generator
+
+  */
   void SetupRandomFields(unsigned int myseed);
 
-  //brief create new realization of all random fields and push parameters down to material
-  void SetUpStochMats(unsigned int myseed, double para_cont_parameter, bool reuse_rf);
+  /*!
+  \brief setup all random variables needed for MC and store them in map
 
-  //brief write all random variables that are used for the simulation of stochastic processes to file
+  \param myseed (in): seed for random number generator
+
+  */
+  void SetupRandomVariables(unsigned int myseed);
+
+  /*!
+  \brief create new realization of all random fields
+
+  create new realization of all random fields and
+  push parameters down to material
+
+  \param myseed              (in): seed for random number generator
+
+  \param para_cont_parameter (in): value between 0 and 1 for parameter
+                                   continuation scheme
+
+  \param reuse_rf            (in): in case of parameter continuation we can
+                                   reuse the computed realization of the
+                                   random field. If we want that set to yes
+  */
+  void SetUpStochMats(unsigned int myseed,
+                      double para_cont_parameter,
+                      bool reuse_rf);
+
+  /*!
+  \brief write all random variables to file
+
+  write all random variables that are used for the simulation
+  of stochastic processes to file
+
+  \param filename (in): file to write data to
+
+  \param numrun   (in): which run in the MC analysis are we at
+
+  */
   void WriteRandomVariablesToFile(std::string filename, int numrun);
 
-  int NumPhysStochParams(){return numstochparams_;};
+  /*!
+  \brief return number of physical parameters which are uncertain
+
+  */
+  int NumPhysStochParams(){
+    return numstochparams_r_field_+numstochparams_r_var_;};
 
 
 private:
+  /*!
+  \brief initialze maps that contains <matid> <vector of stochastic params>
 
-  //! brief initialze map that contains <matid> <vector of stochastic params>
-  void InitStochParaMap();
+  */
+  void InitStochParaMaps();
 
+
+  /*!
+  \brief Compute params vector and set vectors of respective materials
+
+   \param para_cont_parameter (in): value between 0 and 1 for parameter
+                                    continuation scheme
+  */
   void SetParams(double para_cont_parameter);
 
-  //brief compute new set of random Phase angles/ new realizations of all random fields
-  void CreateNewRealizationOfRandomFields(unsigned int myseed);
+  /*!
+  \brief Compute a new realisation for all random fields
 
-  void ComputeMatParamsMultivectorFromRandomFields(Teuchos::RCP<Epetra_MultiVector> params, double para_cont_parameter);
+   \param myseed (in): seed for random number generator
 
-  //! brief create new random field based on input data
-  Teuchos::RCP<RandomField> CreateRandomField(int random_field_id, unsigned int myseed);
+  */
+  void CreateNewRealizationOfRandomQuantities(unsigned int myseed);
+
+  /*!
+  \brief Compute material parameter multivector
+
+  Compute multivector with ele col layout which contains the values
+  of the uncertain material parameters computed by random fields
+
+  /param para_cont_parameter (in):  parameter continuation parameter [0-1]
+  */
+  void ComputeMatParamsMultivectorFromRandomFields(
+      const double para_cont_parameter);
+
+  /*!
+  \brief Compute material parameter multivector
+
+  Compute multivector with which contains the values
+  of the uncertain material parameters computed by random variables
+
+  /param para_cont_parameter (in):  parameter continuation parameter [0-1]
+  */
+  void ComputeMatParamsMultivectorFromRandomVariables(
+      const double para_cont_parameter);
+
+  /*!
+  \brief create random field objects
+
+  create random field objects for MC based on input file specifications
+
+  \param random_field_id (in)    : Id of random variable which identifies the
+                                   respective section in the input file
+
+  \param myseed (in)             : seed for random number generator
+  */
+  Teuchos::RCP<RandomField> CreateRandomField(int random_field_id,
+                                              unsigned int myseed);
+
+  /*!
+  \brief create random variables objects
+
+  create random variables objects for MC based on input file specifications
+
+  \param random_variable_id (in) : Id of random variable which identifies the
+                                   respective section in the input file
+
+  \param myseed (in)             : seed for random number generator
+  */
+  Teuchos::RCP<UQ::RandomVariable> CreateRandomVariable(int random_variable_id,
+                                                        unsigned int myseed);
 
 public:
 
@@ -83,49 +202,65 @@ private:
   //! discretization for convenience
   Teuchos::RCP<DRT::Discretization> discret_;
 
-  // make those temporarily public only
-  //! map from stochparaid (int) to the random field which models this parameter (RCP<RandomField>)
+  //! map from stochparaid (int) to the random field which models
+  //! this parameter (RCP<RandomField>)
   std::map<int, Teuchos::RCP<RandomField> > randomfields_;
 
-  //! parametrization layout of the optimization parameters
-  //Teuchos::RCP<Epetra_Map> paramlayoutmap_;
+  //! map from stochparaid (int) to the random variable which models
+  //! this parameter (RCP<RandomVariable>)
+  std::map<int, Teuchos::RCP<RandomVariable> > randomvariables_;
 
-  //! a uniqueGIDS version to be used for e.g.: writing restart data
-  //Teuchos::RCP<Epetra_Map> paramlayoutmapunique_;
+  //! number of stochastic material parameters modelled as random field
+  int numstochparams_r_field_;
 
-  //! number of stochastic material parameters
-  int numstochparams_;
+  //! number of stochastic material parameters modelled as random variable
+  int numstochparams_r_var_;
 
   //! map of names for each material parameter
   //! key: matid, value: value-enum
-  //! value is of enum type and can be used to set the respective material parameter directly
+  //! value is of enum type and can be used to set the respective material
+  //! parameter directly
   //! e.g. < 1 ; ( youngs, beta)>
   //!      < 2 ; ( k1 , k2 )>
-  std::map<int, std::vector<int> > stochparamap_;
+  std::map<int, std::vector<int> > stochparamap_r_field_;
 
   //! map of matids to the id ofthe  stochastic parameter
   //! e.g.  < 1 ; (0 , 1)>
   //!       < 2 ; (2)>
-  //! thereby if say matid 1 represents AAAneohook with two stochasitc parameters therby the first is modelled by random field number
-  // 0 and the second by random field number 1
-  // the second material has only one stochastic parameter which is modelled by field number 2
-  std::map<int,std::vector<int> > stochparaid_;
+  //! thereby if say matid 1 represents AAAneohook with two stochastic
+  //! parameters thereby the first is modelled by random field number
+  //! 0 and the second by random field number 1
+  //! the second material has only one stochastic parameter which is modelled
+  //! by field number 2
+  std::map<int,std::vector<int> > stochparaid_r_field_;
 
-  //! actual set of material parameters in elementwise colmap layout
-  Teuchos::RCP<Epetra_MultiVector> params_;
+
+  //! map of names for each material parameter
+  //! key: matid, value: value-enum
+  //! value is of enum type and can be used to set the respective material
+  //! parameter directly
+  //! e.g. < 1 ; ( youngs, beta)>
+  //!      < 2 ; ( k1 , k2 )>
+  std::map<int, std::vector<int> > stochparamap_r_var_;
+
+  //! map of matids to the id ofthe  stochastic parameter
+  //! e.g.  < 1 ; (0 , 1)>
+  //!       < 2 ; (2)>
+  //! thereby if say matid 1 represents AAAneohook with two stochastic
+  //! parameters thereby the first is modelled by random field number
+  //! 0 and the second by random field number 1
+  //! the second material has only one stochastic parameter which is modelled
+  //! by field number 2
+  std::map<int,std::vector<int> > stochparaid_r_var_;
 
 
-  //! Map Extractor to extract Blocks of parameters of the parameter vector according to the value in paramap_
-  //Teuchos::RCP<LINALG::MultiMapExtractor> paramapextractor_;
+  //! actual set of material parameters in elementwise column map layout
+  //! for random fields
+  Teuchos::RCP<Epetra_MultiVector> params_r_field_;
 
-  //! the two following 'maps' are processor specific: each proc has its own
-  //! map keeping correspondence between params in the parameter vector (parameter LID in optparams_) and
-  //! eleids (i.e gids of the discretizations ele layout)
-  //std::vector<int> paramsLIDtoeleGID_;
-
-  //! map keeping correspondence between eleid (GID) + parameter block id and parameter LID
-  //std::map< int, std::vector<int> > eleGIDtoparamsLID_;
-
+  //! actual set of material parameters in
+  //! for random variables. thus each vector has only one entry
+  Teuchos::RCP<Epetra_MultiVector> params_r_var_;
 
 };
 } // namespace MLMC

@@ -206,8 +206,8 @@ void UQ::RandomFieldFourier::CreateNewPhaseAngles(unsigned int seed)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-double UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> location,
-    double paracont_parameter, bool writetofile, bool output)
+double UQ::RandomFieldFourier::EvalFieldAtLocation(const std::vector<double> location,
+    const double paracont_parameter,const bool writetofile,const bool output)
 {
   double tempgp = 0.0;
   double temp_rf_val = -1.0;
@@ -265,8 +265,8 @@ double UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> location,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-double UQ::RandomFieldFourier::EvalFieldAtLocation(std::vector<double> location,
-    double local_median, double paracont_parameter, bool writetofile, bool output)
+double UQ::RandomFieldFourier::EvalFieldAtLocation(const std::vector<double> location,
+    const double local_median, const double paracont_parameter, const bool writetofile, const bool output)
 {
   // safety check
   if(mean_!=0)

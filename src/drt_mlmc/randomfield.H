@@ -55,19 +55,19 @@ public:
 
   //! \brief get value of random field at a specific location
   virtual double EvalFieldAtLocation(
-      std::vector<double> location,
-      double paracont_parameter,
-      bool writetofile,
-      bool output
+      const std::vector<double> location,
+      const double paracont_parameter,
+      const bool writetofile,
+      const bool output
       )=0 ;
 
   //! \brief get value of random field at a specific location
   virtual double EvalFieldAtLocation(
-      std::vector<double> location,
-      double local_mean,
-      double paracont_parameter,
-      bool writetofile,
-      bool output
+      const std::vector<double> location,
+      const double local_mean,
+      const double paracont_parameter,
+      const bool writetofile,
+      const bool output
       )=0 ;
 
   //! \brief write random field To file

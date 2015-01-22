@@ -1577,10 +1577,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    // list of materials with stochastic constitutive parameters and
   // the stochastic parameters for the respective material
   StringParameter(
-      "PARAMLIST",
+      "PARAMLIST_R_FIELD",
       "none",
       "list of std::string of parameters that are to be modelled as random fields, 1 YOUNG BETA",
       &mlmcp);
+
+  // list of materials with stochastic constitutive parameters and
+ // the stochastic parameters for the respective material
+ StringParameter(
+     "PARAMLIST_R_VAR",
+     "none",
+     "list of std::string of parameters that are to be modelled as random fields, 1 YOUNG BETA",
+     &mlmcp);
+
+
   setNumericStringParameter("OUTPUT_ELEMENT_IDS", "-1",
       "Set ID's of Output Elements, default is -1 which is none", &mlmcp);
 
@@ -1643,6 +1653,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     ss_description << "random field parameters for uncertainty quantification " << i;
     Teuchos::ParameterList& randomfieldlist = list->sublist(ss.str(),false,ss_description.str());
     SetValidRandomFieldParameters(randomfieldlist);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // set valid parameters for random fields
+
+  // Note: the maximum number of random fields is hardwired here. If you change this,
+  // don't forget to edit the corresponding parts in globalproblems.cpp, too.
+  for (int i = 1; i<4; i++) {
+    std::stringstream ss;
+    ss << "RANDOM VARIABLE " << i;
+    std::stringstream ss_description;
+    ss_description << "random variable parameters for uncertainty quantification " << i;
+    Teuchos::ParameterList& randomvariablelist = list->sublist(ss.str(),false,ss_description.str());
+    SetValidRandomVariableParameters(randomvariablelist);
   }
 
 
@@ -8623,6 +8647,47 @@ void DRT::INPUT::SetValidRandomFieldParameters(Teuchos::ParameterList& list)
    DoubleParameter("LOWERBOUND",1.5,"Lower cutoff value",&list);
    DoubleParameter("UPPERBOUND",1.5,"Uower cutoff value",&list);
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::SetValidRandomVariableParameters(Teuchos::ParameterList& list)
+{
+  using Teuchos::tuple;
+  using Teuchos::setStringToIntegralParameter;
+
+  // define some tuples that are often used to account for different writing of certain key words
+  Teuchos::Array<std::string> yesnotuple = tuple<std::string>("Yes","No","yes","no","YES","NO");
+  Teuchos::Array<int> yesnovalue = tuple<int>(true,false,true,false,true,false);
+
+   // safety measure to prevent using random variables that were not properly
+  // setup or meant to be used at all
+  setStringToIntegralParameter<int>("ACTIVE","No",
+                                    "Do we want to use this variable ?  ",
+                                    yesnotuple,yesnovalue,&list);
+
+  // Parameters of random variable
+   DoubleParameter("PARAM_1",0.0,"First parameter of variable pdf (e.g. mean if gaussian )",&list);
+   DoubleParameter("PARAM_2",1.0,"Second parameter of variable pdf (e.g. sigma if gaussian )",&list);
+   setStringToIntegralParameter<int>("PDF","gaussian","Target probability distribution function",
+                                     tuple<std::string>("Gaussian","gaussian",
+                                                         "Beta", "beta",
+                                                         "lognormal", "Lognormal"),
+                                     tuple<int>(
+                                         INPAR::MLMC::pdf_gaussian,INPAR::MLMC::pdf_gaussian,
+                                         INPAR::MLMC::pdf_beta,INPAR::MLMC::pdf_beta,
+                                         INPAR::MLMC::pdf_lognormal,INPAR::MLMC::pdf_lognormal),
+                                  &list);
+   DoubleParameter("CONTBLENDVALUE",1.5,"Use this values for parameter continuation",&list);
+
+   // define cutoff values
+   setStringToIntegralParameter<int>("BOUNDED","No",
+                                    "Cutoff random variable to prevent unrealistically low or high values",
+                                    yesnotuple,yesnovalue,&list);
+   DoubleParameter("LOWERBOUND",1.5,"Lower cutoff value",&list);
+   DoubleParameter("UPPERBOUND",1.5,"Upper cutoff value",&list);
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

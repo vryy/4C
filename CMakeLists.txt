@@ -1297,6 +1297,7 @@ set(OBJS_MLMC
   src/drt_mlmc/randomfield.cpp
   src/drt_mlmc/randomfield_fourier.cpp
   src/drt_mlmc/randomfield_spectral.cpp
+  src/drt_mlmc/randomvariable.cpp
 )
 set(OBJS_DRT_MAT
   src/drt_mat/micromaterial_evaluate.cpp

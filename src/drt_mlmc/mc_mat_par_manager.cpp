@@ -1,8 +1,8 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file matpar_manager.H
-\brief manage material parameters during UQ at some point this should be merged with the
-mat par manager in stat inv ana
+\brief manages material parameters during UQ at some point this should
+be merged with the mat par manager in stat inv ana
 
 <pre>
 Maintainer: Jonas Biehler
@@ -11,22 +11,16 @@ Maintainer: Jonas Biehler
 </pre>
 
 !*/
-
-
-/*----------------------------------------------------------------------*/
-/* headers */
-
 #ifdef HAVE_FFTW
-
+/*----------------------------------------------------------------------------*/
+/* headers */
 #include "mc_mat_par_manager.H"
 #include "../drt_inpar/inpar_mlmc.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
-
 #include "../drt_lib/drt_element.H"
-
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -35,130 +29,92 @@ Maintainer: Jonas Biehler
 #include "randomfield.H"
 #include "randomfield_fourier.H"
 #include "randomfield_spectral.H"
+#include "randomvariable.H"
 
-/*----------------------------------------------------------------------*/
-/* constructor                                               jb 05/14   */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 UQ::MCMatParManager::MCMatParManager(Teuchos::RCP<DRT::Discretization> discret):
 discret_(discret),
-//paramlayoutmap_(Teuchos::null),
-//paramlayoutmapunique_(Teuchos::null),
-numstochparams_(0),
-params_(Teuchos::null)
+numstochparams_r_field_(0),
+numstochparams_r_var_(0),
+params_r_field_(Teuchos::null),
+params_r_var_(Teuchos::null)
 {
   if (not discret_->Filled() || not discret_->HaveDofs())
       dserror("Discretisation is not complete or has no dofs!");
 
-  // set up maps to link against materials, parameters and materials/parameters for UQ
-  InitStochParaMap();
+  // set up maps to link against materials, parameters and
+  // materials/parameters for UQ
+  InitStochParaMaps();
 
-  params_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()),numstochparams_,true));
+  if(numstochparams_r_field_)
+  params_r_field_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()),
+      numstochparams_r_field_,true));
 
+  // create map with one redundant entry on each proc
+  std::vector <int> MyIds(1,1);
+  Teuchos::RCP<const Epetra_Map> my_map = Teuchos::rcp(new Epetra_Map (1,1,&(MyIds[0]),0,discret_->Comm()));
+
+  if(numstochparams_r_var_)
+    params_r_var_ = Teuchos::rcp(new Epetra_MultiVector(*(my_map),
+         numstochparams_r_var_,true));
 
   // temp map to keep correspondence of parameter block position and eleids
-    // used to build the mapextractor and the various maps to keep track of parameters and elements
-     // to be filled with stochparaid to all GIDS of elementes having this parameter
-    std::map< int,std::vector<int> > elemap;
-    int nummyparams=0; // number of elememts with stochastic materials times numstochparameters of this material
+  // used to build the mapextractor and the various maps to keep track of
+  // parameters and elements to be filled with stochparaid to all GIDS of
+  // elements having this parameter
+  std::map< int,std::vector<int> > elemap;
 
-    // loop all my elements
-    for (int i=0; i<discret_->NumMyRowElements(); i++)
+  // number of elements with stochastic materials times
+  // numstoch parameters of this material
+  int nummyparams=0;
+
+  // loop all my elements
+  for (int i=0; i<discret_->NumMyRowElements(); i++)
+  {
+    DRT::Element* actele;
+    actele = discret_->lRowElement(i);
+    // get material ID
+    int elematid = actele->Material()->Parameter()->Id();
+
+    // if this material is not material stochastic skip rest of for loop ()
+    if (stochparamap_r_field_.find(elematid) == stochparamap_r_field_.end() )
+      continue;
+
+    // if this material is stochastic get vector of ids of these parameters
+    std::vector<int> actparapos = stochparaid_r_field_.at( elematid );
+    std::vector<int>::const_iterator it;
+    for ( it=actparapos.begin(); it!=actparapos.end(); it++)
     {
-      DRT::Element* actele;
-      actele = discret_->lRowElement(i);
-      // get material ID
-      int elematid = actele->Material()->Parameter()->Id();
-
-      // if this material is not material stochastic skip rest of for loop ()
-      if (stochparamap_.find(elematid) == stochparamap_.end() )
-        continue;
-
-      // if this material is stochastic get vector of ids of these parameters
-      std::vector<int> actparapos = stochparaid_.at( elematid );
-      std::vector<int>::const_iterator it;
-      for ( it=actparapos.begin(); it!=actparapos.end(); it++)
-      {
-        // add GID of element to map
-        elemap[*it].push_back(actele->Id());
-        nummyparams++;
-      }
+      // add GID of element to map
+      elemap[*it].push_back(actele->Id());
+      nummyparams++;
     }
-
-//    // generate global ids plus build map paramsLIDtoeleGID_
-//    // store <stochparameter id><some increasing integer which is unique across procs GID of elementwise parameter >
-//    std::map<int, std::vector<int> > gids;
-//    int count = 0;
-//    for (int i=0; i<discret_->Comm().NumProc(); i++)
-//    {
-//      if (discret_->Comm().MyPID() == i)
-//      {
-//        // loop over all stochastic material parameters
-//        for (int j=0; j<numstochparams_; j++)
-//        {
-//          // loop over all elements which have a material with this parameter
-//          for (int k=0; k<(int)elemap[j].size(); k++)
-//          {
-//            gids[j].push_back(count);
-//            // store element GIDs in a vector
-//            std::vector<int> elements_with_stochpara_j=elemap[j];
-//            // store all eleGID that have parameter j sequentially in this vector
-//            // final layout will be like this [1 2 3 4 ... 1 2 3 4 ...]
-//            // the length of this will be equal to the total number of elementwise constitutive parameters
-//            paramsLIDtoeleGID_.push_back(elements_with_stochpara_j.at(k));
-//            count++;
-//          }
-//        }
-//      }
-//      // broadcast count from proc i to all others
-//      discret_->Comm().Broadcast(&count,1,i);
-//    }
-//
-//    //build map eleGIDtoparamsLID_
-//    for (int i=0; i<(int)paramsLIDtoeleGID_.size(); i++)
-//    {
-//      // the blocks are ordered so this just
-//      int myElementGID=paramsLIDtoeleGID_[i];
-//      // will hold <eleGID, paramsLID>
-//      eleGIDtoparamsLID_[myElementGID].push_back(i);
-//    }
-//
-//    // the full map of the vector layout (nummyparams contains number of locally store elementwise quantities)
-//    paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(-1,nummyparams,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
-//    paramlayoutmapunique_ = Teuchos::rcp(new Epetra_Map(*paramlayoutmap_));
-//
-//    // the partial maps:
-//    std::vector< Teuchos::RCP<const Epetra_Map> > partials;
-//    for (int i=0; i<numstochparams_; i++)
-//    {
-//      partials.push_back(Teuchos::rcp(new Epetra_Map(-1,gids[i].size(),gids[i].data(),0,discret_->Comm())));
-//    }
-//
-//    // finally build the MapExtractor
-//    paramapextractor_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*paramlayoutmap_,partials));
-
-
+  }
 }
 
 
-/*----------------------------------------------------------------------*/
-/* Setup map of material parameters that are stochastic       jb 05/14  */
-/*----------------------------------------------------------------------*/
-void UQ::MCMatParManager::InitStochParaMap()
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::MCMatParManager::InitStochParaMaps()
 {
-  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+  const Teuchos::ParameterList& mlmcp =
+      DRT::Problem::Instance()->MultiLevelMonteCarloParams();
 
   // the materials of the problem
-  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  const std::map<int, Teuchos::RCP<MAT::PAR::Material> >& mats =
+      *DRT::Problem::Instance()->Materials()->Map();
 
   if (discret_->Comm().MyPID()==0)
   {
     IO::cout << "UQ::MatParManager ... SETUP" << IO::endl;
-    IO::cout <<  "Optimizing material with ids: ";
+    IO::cout <<  "UQ for material with ids: ";
   }
 
-  // parameters to be optimized
+  // uncertain parameters modeled as random field
   std::string word2;
-  std::istringstream pstream(Teuchos::getNumericStringParameter(mlmcp,"PARAMLIST"));
+  std::istringstream pstream(
+      Teuchos::getNumericStringParameter(mlmcp, "PARAMLIST_R_FIELD"));
   int matid;
   int actmatid=0;
   char* pEnd;
@@ -178,126 +134,288 @@ void UQ::MCMatParManager::InitStochParaMap()
       if ( mats.find(actmatid) == mats.end() )
         dserror("material %d not found in matset", actmatid);
 
-      //check if this material has parameters that are stochastic (This currently works only for AAAneohook material
-      // and can be checked using Optparams() )
+      //check if this material has parameters that are stochastic
+      // (This currently works only for AAAneohook material
+      //  and can be checked using Optparams() )
       std::map<std::string, int> optparams;
       mats.at(actmatid)->Parameter()->OptParams(&optparams);
       if ( optparams.find(word2) == optparams.end() )
-        dserror("parameter %s is not prepared to be optimized for mat %s", word2.c_str(), mats.at(actmatid)->Name().c_str());
+        dserror("parameter %s is not prepared to be optimized for mat %s",
+            word2.c_str(), mats.at(actmatid)->Name().c_str());
 
-      stochparamap_[actmatid].push_back(optparams.at(word2));
-      stochparaid_[actmatid].push_back(numstochparams_);
-      numstochparams_ += 1;
-      IO::cout << "numstochparams " << numstochparams_ << IO::endl;
+      stochparamap_r_field_[actmatid].push_back(optparams.at(word2));
+      stochparaid_r_field_[actmatid].push_back(numstochparams_r_field_);
+      numstochparams_r_field_ += 1;
     }
-    else
-      dserror("Give the parameters for the respective materials");
+    //else, it's ok maybe there are some stochastic parameters modeled as
+    // random variables
   }
+
+  // repeat the procedure for random variables
+        // uncertain parameters modeled as random variables
+  std::string word3;
+  std::istringstream pstream2(
+      Teuchos::getNumericStringParameter(mlmcp, "PARAMLIST_R_VAR"));
+  actmatid = 0;
+  while (pstream2 >> word3)
+  {
+    matid = std::strtol(&word3[0], &pEnd, 10);
+      if (*pEnd=='\0') //if (matid != 0)
+      {
+        if (discret_->Comm().MyPID()==0) std::cout << matid << " ";
+        actmatid = matid;
+        continue;
+      }
+
+      if (word3!="none" && actmatid!=0)
+      {
+        //check whether this material exists in the problem
+        if ( mats.find(actmatid) == mats.end() )
+          dserror("material %d not found in matset", actmatid);
+
+        //check if this material has parameters that are stochastic
+        // (This currently works only for AAAneohook material
+        //  and can be checked using Optparams() )
+        std::map<std::string, int> optparams;
+        mats.at(actmatid)->Parameter()->OptParams(&optparams);
+        if ( optparams.find(word3) == optparams.end() )
+        dserror("parameter %s is not prepared to be optimized for mat %s",
+            word3.c_str(), mats.at(actmatid)->Name().c_str());
+
+        stochparamap_r_var_[actmatid].push_back(optparams.at(word3));
+        stochparaid_r_var_[actmatid].push_back(numstochparams_r_var_);
+        numstochparams_r_var_ += 1;
+      }
+      //else, it's ok maybe there are some stochastic parameters modeled as
+      // random fields
+    }
+
 
   if (discret_->Comm().MyPID()==0)
   {
     IO::cout << "" << IO::endl;
-    IO::cout << "the number of stochastic material parameters is: " << numstochparams_ << IO::endl;
+    IO::cout
+        << "the number of stochastic material parameters modelled as random field is: "
+        << numstochparams_r_field_ << IO::endl;
+    IO::cout
+        << "the number of stochastic material parameters modelled as random variable is: "
+        << numstochparams_r_var_ << IO::endl;
   }
+    if(numstochparams_r_field_+numstochparams_r_var_==0)
+      dserror("No uncertain quantities defined, fix your input file!");
 
+  // safety check to prevent that the same material appears in both list
+  // in the future we might check if the same parameter is modeled however
+  // currently this is sufficient
+  std::map<int, std::vector<int> >::const_iterator curr_r_var;
+  std::map<int, std::vector<int> >::const_iterator curr_r_field;
+
+  for (curr_r_field = stochparamap_r_field_.begin();
+      curr_r_field != stochparamap_r_field_.end(); curr_r_field++)
+  {
+    if (stochparamap_r_var_.find(curr_r_field->first)
+        != stochparamap_r_var_.end())
+      dserror(
+          "MAT %d must not contain parameters modeled as random field and random variables at the same time",
+          curr_r_field->first);
+  }
 }
 
-void UQ::MCMatParManager::ComputeMatParamsMultivectorFromRandomFields(Teuchos::RCP<Epetra_MultiVector> params,double para_cont_parameter)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::MCMatParManager::ComputeMatParamsMultivectorFromRandomFields(
+    const double para_cont_parameter)
 {
+
+  Teuchos::RCP<Epetra_MultiVector> params = Teuchos::rcp(
+      new Epetra_MultiVector(*(discret_->ElementRowMap()),
+          numstochparams_r_field_, false));
+
   // must have EleRowMap layout
   params->PutScalar(0.0);
-    for (int i=0; i< (discret_->NumMyRowElements()); i++)
+  for (int i=0; i< (discret_->NumMyRowElements()); i++)
+  {
+    // check whether Element has this material
+    DRT::Element* actele;
+    actele = discret_->lRowElement(i);
+    int elematid = actele->Material()->Parameter()->Id();
+    // if this material is not material stochastic skip rest of for loop ()
+    if (stochparamap_r_field_.find(elematid) == stochparamap_r_field_.end() )
+      continue;
+
+    std::vector<double> ele_center;
+    ele_center = actele->ElementCenterRefeCoords();
+    std::vector<int> actparapos = stochparaid_r_field_.at( elematid );
+
+    std::vector<int>::const_iterator it;
+    for ( it=actparapos.begin(); it!=actparapos.end(); it++)
     {
-      // check whether Element has this material
-      DRT::Element* actele;
-      actele = discret_->lRowElement(i);
-      int elematid = actele->Material()->Parameter()->Id();
-      // if this material is not material stochastic skip rest of for loop ()
-      if (stochparamap_.find(elematid) == stochparamap_.end() )
-        continue;
-
-      std::vector<double> ele_center;
-      ele_center = actele->ElementCenterRefeCoords();
-      std::vector<int> actparapos = stochparaid_.at( elematid );
-
-      std::vector<int>::const_iterator it;
-      for ( it=actparapos.begin(); it!=actparapos.end(); it++)
+      std::vector<double> ele_center_temp;
+      // get dim of field
+      if(randomfields_[*it]->Dimension()==2)
       {
-        std::vector<double> ele_center_temp;
-        // get dim of field
-        if(randomfields_[*it]->Dimension()==2)
-        {
-          //special hack here assuming circular geometry with r=25 mm
-          double phi= acos(ele_center[0]/25);
-          //compute x coord
-          ele_center_temp.push_back(phi*25);
-          ele_center_temp.push_back(ele_center[2]);
-          ele_center_temp.push_back(ele_center[2]);
-          // compute random field values an store in params vector
-          (*params)[*it][i]=randomfields_[*it]->EvalFieldAtLocation(ele_center_temp,para_cont_parameter,false,false);
-        }
-        else
-        {
-          // compute random field values an store in params vector
-          (*params)[*it][i]=randomfields_[*it]->EvalFieldAtLocation(ele_center,para_cont_parameter,false,false);
-        }
-      }// eof loop over stoch material parameters
+        //special solution here assuming circular geometry with r=25 mm
+        double phi= acos(ele_center[0]/25);
+        //compute x coord
+        ele_center_temp.push_back(phi*25);
+        ele_center_temp.push_back(ele_center[2]);
+        ele_center_temp.push_back(ele_center[2]);
+        // compute random field values an store in params vector
+        (*params)[*it][i] = randomfields_[*it]->EvalFieldAtLocation(
+            ele_center_temp, para_cont_parameter, false, false);
+      }
+      else
+      {
+        // compute random field values an store in params vector
+        (*params)[*it][i] = randomfields_[*it]->EvalFieldAtLocation(ele_center,
+            para_cont_parameter, false, false);
+      }
+    }// eof loop over stoch material parameters
+  } // eof loop over RowElements
 
-    } // eof loop over RowElements
-}
-
-/*----------------------------------------------------------------------*/
-/* Compute params vector and set Vectors of respective materials jb 05/14  */
-/*----------------------------------------------------------------------*/
-void UQ::MCMatParManager::SetParams(double para_cont_parameter)
-{
-  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
-
-  // get the actual set of elementwise material parameters from the derived classes
-  Teuchos::RCP<Epetra_MultiVector> getparams = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),numstochparams_,false));
-  ComputeMatParamsMultivectorFromRandomFields(getparams, para_cont_parameter);
   discret_->Comm().Barrier();
   discret_->Comm().Barrier();
 
   // export to column layout to be able to run column elements
-  LINALG::Export(*getparams,*params_);
+  LINALG::Export(*params, *params_r_field_);
+}
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::MCMatParManager::ComputeMatParamsMultivectorFromRandomVariables(
+    const double para_cont_parameter)
+{
+  params_r_var_->PutScalar(0.0);
 
-  //loop materials to be optimized
-  std::map<int,std::vector<int> >::const_iterator curr;
-  for (curr=stochparamap_.begin(); curr != stochparamap_.end(); curr++ )
+  // loop all materials in problem
+  const std::map<int, Teuchos::RCP<MAT::PAR::Material> >& mats =
+      *DRT::Problem::Instance(0)->Materials()->Map();
+  std::map<int, Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
+  for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
-    Teuchos::RCP<MAT::PAR::Material> actmat = mats.at(curr->first);
+    int matid =   curr->second->Parameter()->Id();
+    // if this material is not material stochastic skip rest of for loop
+    if (stochparamap_r_var_.find(matid) == stochparamap_r_var_.end() )
+      continue;
 
-    // loop the parameters to be optimized
-    std::vector<int> actparams = stochparamap_.at(curr->first);
+    std::vector<int> actparapos = stochparaid_r_var_.at( matid );
+
     std::vector<int>::const_iterator it;
-    for ( it=actparams.begin(); it!=actparams.end(); it++)
+    for ( it=actparapos.begin(); it!=actparapos.end(); it++)
     {
-      actmat->Parameter()->SetParameter(*it,Teuchos::rcp((*params_)( stochparaid_.at(curr->first).at(it-actparams.begin()) ),false));
-    }
-  }//loop optimized materials
+      // compute random field values an store in params vector
+      (*params_r_var_)[*it][0] = randomvariables_[*it]->EvalVariable(
+          para_cont_parameter, false, false);
+    } // eof loop over stoch material parameters
+  }
+}
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::MCMatParManager::SetParams(double para_cont_parameter)
+{
+  const std::map<int, Teuchos::RCP<MAT::PAR::Material> >& mats =
+      *DRT::Problem::Instance()->Materials()->Map();
+
+  std::map<int, std::vector<int> >::const_iterator curr;
+
+  // ************************************************************
+  // deal with material parameters modelled as random field first
+  // ************************************************************
+  // do we have quantities modelled as random fields ?
+  if(numstochparams_r_field_)
+  {
+    // this call updates params_r_field_
+    ComputeMatParamsMultivectorFromRandomFields(para_cont_parameter);
+
+    for (curr = stochparamap_r_field_.begin();
+        curr != stochparamap_r_field_.end(); curr++)
+    {
+      Teuchos::RCP<MAT::PAR::Material> actmat = mats.at(curr->first);
+
+      // loop the parameters to be optimized
+      std::vector<int> actparams = stochparamap_r_field_.at(curr->first);
+      std::vector<int>::const_iterator it;
+      for (it = actparams.begin(); it != actparams.end(); it++)
+      {
+        actmat->Parameter()->SetParameter(
+            *it,
+            Teuchos::rcp(
+                (*params_r_field_)(
+                    stochparaid_r_field_.at(curr->first).at(
+                        it - actparams.begin())), false));
+      }
+    } //loop materials
+  }
+
+  // **************************************************************
+  // now deal with material parameters modelled as random variables
+  // **************************************************************
+  // do we have quantities modelled as random variables ?
+  if(numstochparams_r_var_)
+  {
+    ComputeMatParamsMultivectorFromRandomVariables(para_cont_parameter);
+    for (curr = stochparamap_r_var_.begin();
+        curr != stochparamap_r_var_.end();curr++)
+    {
+      Teuchos::RCP<MAT::PAR::Material> actmat = mats.at(curr->first);
+      // loop the parameters to be optimized
+      std::vector<int> actparams = stochparamap_r_var_.at(curr->first);
+      std::vector<int>::const_iterator it;
+      for (it = actparams.begin(); it != actparams.end(); it++)
+      {
+        actmat->Parameter()->SetParameter(
+            *it,
+            Teuchos::rcp(
+                (*params_r_var_)(
+                    stochparaid_r_var_.at(curr->first).at(
+                        it - actparams.begin())), false));
+      }
+    } //loop materials
+  }
+
+
+
+
+
 }
 
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::MCMatParManager::SetupAllRandomQuantities(unsigned int myseed)
+{
+  SetupRandomFields(myseed);
+  SetupRandomVariables(myseed);
+}
 
-/*----------------------------------------------------------------------*
- |  Setup Random fields and store them in map                  jb 05/14  |
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void UQ::MCMatParManager::SetupRandomFields(unsigned int myseed)
 {
   // loop over num stoch parameter
-  for(int i=0;i<numstochparams_; i++)
+  for(int i=0;i<numstochparams_r_field_; i++)
   {
     randomfields_[i]=CreateRandomField(i+1, myseed);
   }
 }
 
-/*----------------------------------------------------------------------*
- |  Write random variables to file                            jb 05/14  |
- *----------------------------------------------------------------------*/
-void UQ::MCMatParManager::WriteRandomVariablesToFile(std::string filename, int numrun)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::MCMatParManager::SetupRandomVariables(unsigned int myseed)
+{
+  // loop over num stoch variables
+  for(int i=0;i<numstochparams_r_var_; i++)
+  {
+    randomvariables_[i]=CreateRandomVariable(i+1, myseed);
+  }
+}
+
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::MCMatParManager::WriteRandomVariablesToFile(std::string filename,
+    int numrun)
 {
   // loop over num stoch parameter
-  for(int i=0;i<numstochparams_; i++)
+  for(int i=0;i<numstochparams_r_field_; i++)
   {
     std::stringstream ss; //create a stringstream
     ss << filename;
@@ -312,61 +430,95 @@ void UQ::MCMatParManager::WriteRandomVariablesToFile(std::string filename, int n
 }
 
 
-/*----------------------------------------------------------------------*
- |  Compute new realizations of random fields                 jb 05/14  |
- *----------------------------------------------------------------------*/
-void UQ::MCMatParManager::CreateNewRealizationOfRandomFields(unsigned int myseed)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::MCMatParManager::CreateNewRealizationOfRandomQuantities(unsigned int myseed)
 {
   // loop over num stoch parameter
-  for(int i=0;i<numstochparams_; i++)
+  for(int i=0;i<numstochparams_r_field_; i++)
   {
+    // assumes that we never run more than 51200 samples
     randomfields_[i]->CreateNewSample(myseed+(i*51200));
+  }
+
+  // loop over num stoch parameter
+  for(int i=0;i<numstochparams_r_var_; i++)
+  {
+    // assumes that we never run more than 51200 samples
+    randomvariables_[i]->CreateNewSample(myseed+(i*51200)+23213);
   }
 }
 
-/*----------------------------------------------------------------------*
- |  Compute new realizations of random fields                 jb 05/14  |
- *----------------------------------------------------------------------*/
-void UQ::MCMatParManager::SetUpStochMats(unsigned int myseed, double para_cont_parameter, bool reuse_rf)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::MCMatParManager::SetUpStochMats(unsigned int myseed,
+    double para_cont_parameter, bool reuse_rf)
 {
+  // setup random fields
   if(!reuse_rf)
-    CreateNewRealizationOfRandomFields(myseed);
+    CreateNewRealizationOfRandomQuantities(myseed);
+
   SetParams(para_cont_parameter);
 }
 
 
-/*----------------------------------------------------------------------*
- |  Create Random field based on input data                   jb 05/14  |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<UQ::RandomField> UQ::MCMatParManager::CreateRandomField(int random_field_id, unsigned int myseed)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<UQ::RandomField> UQ::MCMatParManager::CreateRandomField(
+    int random_field_id, unsigned int myseed)
 {
-  const Teuchos::ParameterList& rfp = DRT::Problem::Instance()->RandomFieldParams(random_field_id);
-  // before calling the construtor make a quick safety check whether this random field was activated in
-  // the input file or if the section contains only the default parameters
-  bool active = DRT::INPUT::IntegralValue<int>(rfp ,"ACTIVE");
+  const Teuchos::ParameterList& rfp =
+      DRT::Problem::Instance()->RandomFieldParams(random_field_id);
+  // before calling the constructor make a quick safety check whether this
+  // random field was activated in the input file or if the section contains
+  // only the default parameters
+  bool active = DRT::INPUT::IntegralValue<int>(rfp, "ACTIVE");
   if (!active)
     dserror("Trying to setup random field that is not active");
 
   // call constructor based on type of random field
-  INPAR::MLMC::CalcMethod calcm = DRT::INPUT::IntegralValue<INPAR::MLMC::CalcMethod>(rfp,"CALC_METHOD");
+  INPAR::MLMC::CalcMethod calcm = DRT::INPUT::IntegralValue<
+      INPAR::MLMC::CalcMethod>(rfp, "CALC_METHOD");
   Teuchos::RCP<RandomField> test = Teuchos::null;
 
-  switch(calcm)
+  switch (calcm)
   {
-    case INPAR::MLMC::calc_m_fft:
-      test = Teuchos::rcp(new RandomFieldSpectral(myseed,discret_,rfp ));
-      break;
-    case INPAR::MLMC::calc_m_cos:
-      test = Teuchos::rcp(new RandomFieldSpectral(myseed,discret_,rfp ));
-      break;
-    case INPAR::MLMC::calc_m_fourier:
-      test = Teuchos::rcp(new RandomFieldFourier(myseed,discret_,rfp));
-      break;
-    default:
-      dserror("Unknown simulation method for RF choose fft or cos or fourier");
-      break;
+  case INPAR::MLMC::calc_m_fft:
+    test = Teuchos::rcp(new RandomFieldSpectral(myseed, discret_, rfp));
+    break;
+  case INPAR::MLMC::calc_m_cos:
+    test = Teuchos::rcp(new RandomFieldSpectral(myseed, discret_, rfp));
+    break;
+  case INPAR::MLMC::calc_m_fourier:
+    test = Teuchos::rcp(new RandomFieldFourier(myseed, discret_, rfp));
+    break;
+  default:
+    dserror("Unknown simulation method for RF choose fft or cos or fourier");
+    break;
   }
   return test;
+}
+
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<UQ::RandomVariable> UQ::MCMatParManager::CreateRandomVariable(
+    int random_variable_id, unsigned int myseed)
+{
+  const Teuchos::ParameterList& rfp =
+      DRT::Problem::Instance()->RandomVariableParams(random_variable_id);
+  // before calling the constructor make a quick safety check whether this
+  // random variable was activated in the input file or if the section contains
+  // only the default parameters
+
+  bool active = DRT::INPUT::IntegralValue<int>(rfp, "ACTIVE");
+  if (!active)
+    dserror("Trying to setup random variable that is not active");
+
+  // call constructor
+  Teuchos::RCP<RandomVariable> temp = Teuchos::rcp(
+      new RandomVariable(rfp, random_variable_id, myseed));
+  return temp;
 }
 
 #endif /* #ifdef HAVE_FFTW */

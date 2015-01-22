@@ -792,7 +792,9 @@ double UQ::RandomFieldSpectral::SimGaussRandomFieldCOS3D(double x, double y, dou
 
 }*/
 
-double UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> location, double paracont_parameter, bool writetofile, bool output)
+double UQ::RandomFieldSpectral::EvalFieldAtLocation(
+    const std::vector<double> location, const double paracont_parameter,
+    const bool writetofile, const bool output)
 {
   // manage the two different variants for evalutation in here so that it cannot be seen from the outside
   // and so that we can call the same function with the same syntax
@@ -808,7 +810,7 @@ double UQ::RandomFieldSpectral::EvalFieldAtLocation(std::vector<double> location
     // Compute indices
     index_x=int(floor((location[0]-bb_min_[0])/dx_));
     index_y=int(floor((location[1]-bb_min_[1])/dx_));
-    // HACK for 2D art_aorta_case SET z to y
+    // special solution for 2D art_aorta_case SET z to y
      if (myrank_ == 0&& output && dim_==2 )
      {
        IO::cout<< "hack in use" << IO::endl;

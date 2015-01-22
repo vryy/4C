@@ -53,7 +53,10 @@ namespace IO
   class ErrorFileControl;
 }
 
-
+/// UQ: Uncertainty Quantification
+/*!
+  This is the place where we do random stuff.
+ */
 namespace UQ
 {
 class RandomField;
@@ -116,13 +119,13 @@ private:
   std::vector <int>  my_output_elements_;
 
   //! brief vector stores gids of elements in the AAA wall
-   std::vector <int> my_wall_elements_;
+  std::vector <int> my_wall_elements_;
 
-   //! brief vector store location of elements in the AAA wall
-   std::vector <int> my_wall_elements_ele_c_loc_;
+  //! brief vector store location of elements in the AAA wall
+  std::vector <int> my_wall_elements_ele_c_loc_;
 
   //! brief total number of elements in the AAA wall
-   int tot_num_wall_elements_;
+  int tot_num_wall_elements_;
 
   //! brief map for communicating the element data to proc 0
   Teuchos::RCP<const Epetra_Map> OutputMap_;
@@ -202,7 +205,6 @@ private:
   //! \brief Vector to store standard deviation of disp
   Teuchos::RCP<Epetra_MultiVector> var_disp_;
 
-
   // Vectors needed on the way to calculate std
   //! \brief some helper vector
   Teuchos::RCP<Epetra_MultiVector> delta_stress_;
@@ -235,8 +237,10 @@ private:
   // ##     variables regarding setup and management of stochastic mat params  ##
   // ###########################################################################
 
+  //! \brief object to manage uncertain material parameters
   Teuchos::RCP<MCMatParManager> my_matpar_manager_;
 
+  //! \brief object to manage uncertain wall thickness
   Teuchos::RCP<MCVarThicknessManager> my_thickness_manager_;
 
 public:
@@ -320,13 +324,19 @@ public:
    void SetupEvalPeakWallStress();
 
    //! brief compute peak wall stress
-   void EvalPeakWallStress(Teuchos::RCP<const Epetra_Vector> disp, INPAR::STR::StressType iostress,INPAR::STR::StrainType iostrain );
+  void EvalPeakWallStress(Teuchos::RCP<const Epetra_Vector> disp,
+      INPAR::STR::StressType iostress, INPAR::STR::StrainType iostrain);
 
-   //! brief compute von Mises stresses or strains
-   void CalcVonMises(Teuchos::RCP<std::vector <std::vector<double > > >  input_components, Teuchos::RCP< std::vector <double> > output_vM);
+  //! brief compute von Mises stresses or strains
+  void CalcVonMises(
+      Teuchos::RCP<std::vector<std::vector<double> > > input_components,
+      Teuchos::RCP<std::vector<double> > output_vM);
 
-   //! brief compute maximum value as well as some quantile of some quantity (over all procs)
-   void ComputePeakAndQuantile(Teuchos::RCP<std::vector <double > >  values , std::vector <int>* corresponding_ele_ids,Teuchos::RCP<std::pair<int, double> > peak,Teuchos::RCP<std::pair<int, double> > quantile99);
+  //! brief compute maximum value as well as some quantile of some quantity (over all procs)
+  void ComputePeakAndQuantile(Teuchos::RCP<std::vector<double> > values,
+      std::vector<int>* corresponding_ele_ids,
+      Teuchos::RCP<std::pair<int, double> > peak
+      ,Teuchos::RCP<std::pair<int, double> > quantile99);
 
 
   // #########################################################################
@@ -341,17 +351,20 @@ public:
       int* bg_ele_id, double* xsi);
 
   //! \brief check if a node lies within a specific element, returns double based on minimum value of local coordinates abscissa
-  double CheckIfNodeInElement(DRT::Node& node ,DRT::Element& ele, double* xsi);
+  double CheckIfNodeInElement(DRT::Node& node, DRT::Element& ele, double* xsi);
 
   //! \brief helper function
-  bool EvaluateF(double* f, DRT::Node& node, DRT::Element& ele,const double* xsi);
+  bool EvaluateF(double* f, DRT::Node& node, DRT::Element& ele,
+      const double* xsi);
 
   //! \brief helper function
-  bool EvaluateGradF(LINALG::Matrix<3,3>& fgrad,DRT::Node& node, DRT::Element& ele,const double* xsi);
+  bool EvaluateGradF(LINALG::Matrix<3, 3>& fgrad,DRT::Node& node
+      , DRT::Element& ele,const double* xsi);
 
   //! \brief calculate some statistics
   void CalcStatStressDisp(Teuchos::RCP<Epetra_MultiVector> curr_stress,
-      Teuchos::RCP<Epetra_MultiVector> curr_strain,Teuchos::RCP<Epetra_MultiVector> curr_disp);
+      Teuchos::RCP<Epetra_MultiVector> curr_strain,
+      Teuchos::RCP<Epetra_MultiVector> curr_disp);
 
   //! brief write calculated statistics to file
   void WriteStatOutput();

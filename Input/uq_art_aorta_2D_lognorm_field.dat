@@ -128,7 +128,7 @@ FWDPROBLEM                      structure
 NUMRUNS                         1
 REDUCED_OUTPUT                  no
 START_RUN                       0
-PARAMLIST                       1 BETA
+PARAMLIST_R_FIELD               1 BETA
 ------------------------------------------------------------RANDOM FIELD 1
 ACTIVE                          YES
 CORRLENGTH                      25

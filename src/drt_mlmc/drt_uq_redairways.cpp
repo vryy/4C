@@ -75,7 +75,7 @@ void UQ::UQ_REDAIRWAYS::Integrate()
   const Teuchos::ParameterList& rawdyn   = DRT::Problem::Instance()->ReducedDAirwayDynamicParams();
   //const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
 
-  // nested par hack
+  // nested par
   int numruns =numruns_pergroup_+start_run_;
 
   // get initial random seed from inputfile

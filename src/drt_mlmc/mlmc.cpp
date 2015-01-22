@@ -146,9 +146,7 @@ UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
   //set up managers to create stochasticity
   my_matpar_manager_ = Teuchos::rcp(new UQ::MCMatParManager(discret_));
   // init field with some seed
-  my_matpar_manager_->SetupRandomFields(2);
-
-  my_matpar_manager_->NumPhysStochParams();
+  my_matpar_manager_->SetupAllRandomQuantities(2);
 
   if(stoch_wall_thickness_)
   {
@@ -199,7 +197,7 @@ void UQ::MLMC::Integrate()
   //double t1 = timer.ElapsedTime();
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
   //int numruns = mlmcp.get<int>("NUMRUNS")+start_run_;
-  // nested par hack
+  // nested par
   int numruns =numruns_pergroup_+start_run_;
 
 
@@ -382,7 +380,7 @@ void UQ::MLMC::IntegrateNoReset()
   // vector to store parameter continuation info in
   Teuchos::RCP<std::vector <int> > paramcont_info  = Teuchos::rcp(new std::vector <int>(3,0));
 
-  // nested par hack
+  // nested par
   int numruns =numruns_pergroup_+start_run_;
 
   // get initial random seed from inputfile
@@ -558,7 +556,7 @@ void UQ::MLMC::IntegrateScaleByThickness()
   // vector to store parameter continuation info in
   Teuchos::RCP<std::vector <int> > paramcont_info  = Teuchos::rcp(new std::vector <int>(3,0));
 
-  // nested par hack
+  // nested par
   int numruns =numruns_pergroup_+start_run_;
 
   // get initial random seed from inputfile
@@ -687,7 +685,7 @@ void UQ::MLMC::IntegrateScaleByThickness()
             DispMag->push_back(sqrt( pow(my_output_elements_c_disp->at(i).at(0),2)+pow(my_output_elements_c_disp->at(i).at(1),2)+pow(my_output_elements_c_disp->at(i).at(2),2) ));
             // since my_output_elements_mat_params is the same size we use the same for loop here
             Beta->push_back(my_output_elements_mat_params->at(i).at(1));
-            // hack store von mises stress in Beta
+            // store von mises stress in Beta
             //Beta->push_back(vonMisesStress_scaled->at(i));
             Youngs->push_back(my_output_elements_mat_params->at(i).at(0));
           }

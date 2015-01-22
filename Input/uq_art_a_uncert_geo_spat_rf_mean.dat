@@ -171,27 +171,27 @@ THETA                           0.5
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 -----------------------------------------------------MULTI LEVEL MONTE CARLO
-UQSTRATEGY      mc_plain
+UQSTRATEGY                      mc_plain
 INITRANDOMSEED                  1000
 NUMRUNS                         1
 REDUCED_OUTPUT                  no
 START_RUN                       0
-PARAMLIST                       1 BETA
+PARAMLIST_R_FIELD               1 BETA
 WRITESTATS                      1000
 NUMCONTSTEPS                    2
-RANDOMGEOMETRY      yes
-MEAN_GEO_FROM_ALE_POINTDBC  yes
+RANDOMGEOMETRY                  yes
+MEAN_GEO_FROM_ALE_POINTDBC      yes
 WRITE_RV_TO_FILE                no
 OUTPUT_ELEMENT_IDS              104
-INITIALTHICKNESS    1.0
+INITIALTHICKNESS                1.0
 ------------------------------------------------------------RANDOM FIELD 1
 CONTBLENDVALUE                  1.5
 SPECTRAL_MATCHING               no
-FOURIER_TRUNCATION_THRESHOLD  100
-BOUNDED        YES
-LOWERBOUND      0.35
-UPPERBOUND      40.0
-PERIODICITY_FOURIER    221
+FOURIER_TRUNCATION_THRESHOLD    100
+BOUNDED                         YES
+LOWERBOUND                      0.35
+UPPERBOUND                      40.0
+PERIODICITY_FOURIER             221
 ACTIVE                          YES
 CORRLENGTH                      25
 CORRSTRUCT                      gaussian
@@ -209,10 +209,10 @@ NONGAUSSPARAM2                  0.920457
 CONTBLENDVALUE                  1.5
 SPECTRAL_MATCHING               no
 FOURIER_TRUNCATION_THRESHOLD    100
-BOUNDED              yes
-LOWERBOUND            0.5
-UPPERBOUND            600.0
-PERIODICITY_FOURIER    221
+BOUNDED                         yes
+LOWERBOUND                      0.5
+UPPERBOUND                      600.0
+PERIODICITY_FOURIER             221
 ACTIVE                          yes
 CORRLENGTH                      25
 CORRSTRUCT                      gaussian

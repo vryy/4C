@@ -49,19 +49,19 @@ class RandomFieldFourier : public RandomField
 
   //! \brief get value of random field at a specific location
   double EvalFieldAtLocation(
-      std::vector<double> location,
-      double paracont_parameter,
-      bool writetofile,
-      bool output
+      const std::vector<double> location,
+      const double paracont_parameter,
+      const bool writetofile,
+      const bool output
       );
 
   //! \brief get value of random field at a specific location
   double EvalFieldAtLocation(
-      std::vector<double> location,
-      double paracont_parameter,
-      double local_mean,
-      bool writetofile,
-      bool output);
+      const std::vector<double> location,
+      const double paracont_parameter,
+      const double local_mean,
+      const bool writetofile,
+      const bool output);
 
   //! \brief return dimension of random field (either 2 or 3)
   int Dimension() {return dim_;}
