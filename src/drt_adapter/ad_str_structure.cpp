@@ -17,7 +17,6 @@ Maintainer: Georg Hammerl
 #include "ad_str_timint_adaptive.H"
 #include "ad_str_fsi_timint_adaptive.H"
 #include "ad_str_constr_merged.H"
-#include "ad_str_windkessel_merged.H"
 #include "ad_str_wrapper.H"
 #include "ad_str_lung.H"
 #include "ad_str_redairway.H"

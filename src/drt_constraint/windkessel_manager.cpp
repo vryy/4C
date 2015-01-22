@@ -55,7 +55,6 @@ Maintainer: Marc Hirschvogel
 #include "../linalg/linalg_mapextractor.H"
 
 #include "../drt_adapter/ad_str_structure.H"
-#include "../drt_adapter/ad_str_windkessel_merged.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition.H"
@@ -96,7 +95,7 @@ UTILS::WindkesselManager::WindkesselManager
   }
 
   //----------------------------------------------------------------------------
-  //---------------------------------------------------------Windkessel Conditions!
+  //-----------------------------------Windkessel structure coupling conditions!
 
   // constructors of Windkessel increment number of Windkessels defined and the minimum
   // ConditionID read so far.
@@ -406,7 +405,6 @@ void UTILS::WindkesselManager::UpdateTimeStep()
   dq_->Update(1.0,*dqn_,0.0);
   ddq_->Update(1.0,*ddqn_,0.0);
 
-
   // reset arterial pressure to initial one after each step when we have quasi-static prestressing!
   if (pstype_ == INPAR::STR::prestress_mulf && totaltime_ <= pstime_)
   {
@@ -430,7 +428,11 @@ void UTILS::WindkesselManager::UpdateTimeStep()
 
   }
 
+  return;
+
 }
+
+
 
 
 
