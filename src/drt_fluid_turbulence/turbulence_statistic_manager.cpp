@@ -32,6 +32,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_fluid_turbulence/turbulence_statistics_oracles.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_sqc.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_hit.H"
+#include "../drt_fluid_turbulence/turbulence_statistics_tgv.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_ph.H"
 
 namespace FLD
@@ -79,9 +80,11 @@ namespace FLD
     statistics_ldc_(Teuchos::null          ),
     statistics_bfs_(Teuchos::null          ),
     statistics_ph_(Teuchos::null          ),
+    statistics_bfda_(Teuchos::null          ),
     statistics_oracles_(Teuchos::null      ),
     statistics_sqc_(Teuchos::null          ),
-    statistics_hit_(Teuchos::null          )
+    statistics_hit_(Teuchos::null          ),
+    statistics_tgv_(Teuchos::null          )
   {
     subgrid_dissipation_ = DRT::INPUT::IntegralValue<int>(params_->sublist("TURBULENCE MODEL"),"SUBGRID_DISSIPATION");
     // initialize
@@ -164,6 +167,17 @@ namespace FLD
         statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHit(discret_,*params_,true));
       else
         statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHit(discret_,*params_,false));
+    }
+    else if(fluid.special_flow_=="taylor_green_vortex")
+    {
+      flow_=taylor_green_vortex;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_tgv_    =Teuchos::rcp(new TurbulenceStatisticsTgv(discret_,*params_));
     }
     else if(fluid.special_flow_=="lid_driven_cavity")
     {
@@ -428,10 +442,12 @@ namespace FLD
     statistics_ccy_(Teuchos::null          ),
     statistics_ldc_(Teuchos::null          ),
     statistics_bfs_(Teuchos::null          ),
+    statistics_ph_(Teuchos::null          ),
     statistics_bfda_(Teuchos::null          ),
     statistics_oracles_(Teuchos::null      ),
     statistics_sqc_(Teuchos::null          ),
-    statistics_hit_(Teuchos::null          )
+    statistics_hit_(Teuchos::null          ),
+    statistics_tgv_(Teuchos::null          )
   {
 
     // subgrid dissipation
@@ -1006,12 +1022,10 @@ namespace FLD
         case channel_flow_of_height_2:
         case loma_channel_flow_of_height_2:
         case scatra_channel_flow_of_height_2:
+        case taylor_green_vortex:
         {
-          if(statistics_channel_==Teuchos::null)
-          {
-            dserror("need statistics_channel_ to do a time sample for a turbulent channel flow");
-          }
-          //dserror("no subgrid dissipation");
+          if(statistics_channel_==Teuchos::null and statistics_tgv_==Teuchos::null)
+            dserror("No dissipation rates for this flow type!");
 
           // set vector values needed by elements
           std::map<std::string,Teuchos::RCP<Epetra_Vector> > statevecs;
@@ -1089,9 +1103,33 @@ namespace FLD
             statetenss.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("filtered reystr",myfilteredreystr_));
           }
 
-          statistics_channel_->EvaluateResiduals(statevecs,statetenss,
+          switch(flow_)
+          {
+            case channel_flow_of_height_2:
+            case loma_channel_flow_of_height_2:
+            case scatra_channel_flow_of_height_2:
+            {
+              statistics_channel_->EvaluateResiduals(statevecs,statetenss,
+                                                     thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,
+                                                     scatrastatevecs,scatrafieldvecs);
+              break;
+            }
+            case taylor_green_vortex:
+            {
+              statistics_tgv_->EvaluateResiduals(statevecs,statetenss,
                                                  thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,
                                                  scatrastatevecs,scatrafieldvecs);
+              if (step==0) // sorry, this function is not called for step=0
+              {
+                statistics_tgv_->DumpStatistics(0);
+                statistics_tgv_->ClearStatistics();
+              }
+              break;
+            }
+            default:
+              dserror("Dissipation not supported for this flow type!");
+              break;
+          }
 
           break;
         }
@@ -1414,6 +1452,14 @@ namespace FLD
           statistics_hit_->DumpScatraStatistics(step,true);
           statistics_hit_->ClearScatraStatistics();
         }
+        break;
+      }
+      case taylor_green_vortex:
+      {
+        // write statistics for every time step,
+        // since there is not any statistical-stationary state
+        statistics_tgv_->DumpStatistics(step);
+        statistics_tgv_->ClearStatistics();
         break;
       }
       case lid_driven_cavity:

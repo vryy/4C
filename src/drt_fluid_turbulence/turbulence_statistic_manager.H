@@ -63,6 +63,7 @@ class TurbulenceStatisticsLdc;
 class TurbulenceStatisticsBfs;
 class TurbulenceStatisticsSqc;
 class TurbulenceStatisticsHit;
+class TurbulenceStatisticsTgv;
 class TurbulenceStatisticsGeneralMean;
 class TurbulenceStatisticsPh;
 class TurbulenceStatisticsBfda;
@@ -312,9 +313,10 @@ private:
     decaying_homogeneous_isotropic_turbulence,
     forced_homogeneous_isotropic_turbulence,
     scatra_forced_homogeneous_isotropic_turbulence,
-    time_averaging,
+    taylor_green_vortex,
     periodic_hill,
-    blood_fda_flow}    flow_;
+    blood_fda_flow,
+    time_averaging                          }    flow_;
 
   //! flag to include scatra field
   bool withscatra_;
@@ -365,6 +367,9 @@ private:
 
   //! turbulence statistics for homogeneous isotropic turbulence
   Teuchos::RCP<TurbulenceStatisticsHit>         statistics_hit_;
+
+  //! turbulence statistics for Taylor-Green Vortex
+  Teuchos::RCP<TurbulenceStatisticsTgv>         statistics_tgv_;
 
 }; // end class TurbulenceStatisticManager
 

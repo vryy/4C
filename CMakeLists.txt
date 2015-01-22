@@ -1135,6 +1135,7 @@ set(OBJS_DRT_FLUID_TURBULENCE
   src/drt_fluid_turbulence/turbulence_statistics_ccy.cpp
   src/drt_fluid_turbulence/turbulence_statistics_cha.cpp
   src/drt_fluid_turbulence/turbulence_statistics_hit.cpp
+  src/drt_fluid_turbulence/turbulence_statistics_tgv.cpp
   src/drt_fluid_turbulence/turbulence_statistics_ldc.cpp
   src/drt_fluid_turbulence/turbulence_statistics_mean_general.cpp
   src/drt_fluid_turbulence/turbulence_statistics_oracles.cpp
