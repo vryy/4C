@@ -40,7 +40,7 @@ namespace DRT
 
 namespace LINALG
 {
-	class SparseMatrix;
+  class SparseMatrix;
   class SparseOperator;
   class MapExtractor;
   class MultiMapExtractor;
@@ -53,13 +53,13 @@ namespace UTILS
   //forward declarations
   class Windkessel;
   class WindkesselDofSet;
-  
+
   class WindkesselManager
   {
   public:
 
     /*!
-      \brief Constructor of Windkessel manager, allocating the Windkessels
+      \brief Constructor of windkessel manager
     */
     WindkesselManager
     (
@@ -79,9 +79,7 @@ namespace UTILS
     };
 
     /*!
-      \brief Change stiffness matrix and force vector according to the Windkessel functions.
-      Values of pressure are taken from intern variable.
-      Difference between current and prescribed values is calculated and stored as well.
+      \brief Assemble windkessel stiffness and rhs contributions to full coupled problem
     */
     void StiffnessAndInternalForces
     (
@@ -92,7 +90,7 @@ namespace UTILS
     );
 
     /*!
-     \brief Return norm of difference between actual and Windkessel values
+     \brief Return windkessel rhs norm at generalized midpoint $t_{n+\theta}$
     */
     double GetWindkesselRHSNorm() const
     {
@@ -102,31 +100,11 @@ namespace UTILS
     };
 
     /*!
-         \brief Return number of Windkessel functions
-    */
-    int GetNumberOfWindkesselFunctions() const
-    {
-        return numWindkesselID_;
-    };
-
-    /*!
-     \brief Scale all pressures by a double d
-    */
-    void ScaleWkDof
-    (
-      double d   ///< scale factor
-    )
-    {
-        wkdofn_->Scale(d);
-        return;
-    };
-
-    /*!
-         \brief Update Windkessel variables
+         \brief Update windkessel dofs
     */
     void UpdateTimeStep();
 
-    /// Add a vector as residual increment to the vector of pressures
+    /// Add a vector as residual increment to the windkessel dof vector
     void UpdateWkDof
     (
       Teuchos::RCP<Epetra_Vector> wkdofincrement  ///< vector to add
@@ -138,23 +116,9 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector> actpres
     );
 
-    void SetPres
-    (
-      Teuchos::RCP<Epetra_Vector> actpres
-    );
-
     /*!
-         \brief Return differences between prescribed and actual value of Windkessel number i
+         \brief Return windkessel rhs at generalized midpoint $t_{n+\theta}$
     */
-    double GetWindkesselRHS
-    (
-      int i ///< ID of Windkessel of interest
-    ) const
-    {
-        return (*windkesselrhsm_)[i];
-    }
-
-    /// return vector of differences between prescribed and actual values
     Teuchos::RCP<Epetra_Vector> GetWindkesselRHS() const
     {
       return windkesselrhsm_;
@@ -187,17 +151,6 @@ namespace UTILS
     };
 
     /*!
-      \brief Return pressure for Windkessel i
-    */
-    double GetWkDof
-    (
-      int i ///< ID of Windkessel of interest
-    ) const
-    {
-      return (*wkdofn_)[i];
-    };
-
-    /*!
       \brief Return dof vector
     */
     Teuchos::RCP<Epetra_Vector> GetWkDofVector() const
@@ -222,22 +175,12 @@ namespace UTILS
     };
 
     /*!
-     \brief Return current value
-    */
-    double GetActVolValue
-    (
-      int i ///< ID of Windkessel of interest
-    ) const
-    {
-        return (*vn_)[i];
-    };
-
-    /*!
      \brief Read restart information
     */
     void ReadRestart(
-        IO::DiscretizationReader& reader,
-        const double& time);
+      IO::DiscretizationReader& reader,
+      const double& time);
+
     /*!
      \brief Return input parameter list
     */
@@ -268,7 +211,7 @@ namespace UTILS
     {
       return v_;
     }
-    
+
     //! switch Windkessel matrix to block matrix
     void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
                         Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
