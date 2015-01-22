@@ -799,9 +799,9 @@ void POROELAST::MonolithicSplitNoPenetration::PrintNewtonIterTextStream(std::ost
 /*----------------------------------------------------------------------*
  *                                                    vuong 11/14        |
  *----------------------------------------------------------------------*/
-void POROELAST::MonolithicSplitNoPenetration::BuildCovergenceNorms()
+void POROELAST::MonolithicSplitNoPenetration::BuildConvergenceNorms()
 {
-  Monolithic::BuildCovergenceNorms();
+  Monolithic::BuildConvergenceNorms();
 
   normrhs_nopenetration_ = UTILS::CalculateVectorNorm(vectornormfres_,nopenetration_rhs_);
 

@@ -246,7 +246,7 @@ namespace POROELAST
       //@}
 
       //! convergence check for Newton solver
-      virtual void BuildCovergenceNorms();
+      virtual void BuildConvergenceNorms();
 
       //! extract the field vectors from a given composed vector. Different for fluid and structure split
       /*!

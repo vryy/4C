@@ -254,13 +254,13 @@ void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
   if (evaluateinterface_)
   {
-    double scale     = FluidField()->ResidualScaling();
+    //double scale     = FluidField()->ResidualScaling();
     double timescale = FluidField()->TimeScaling();
 
     // get time integration parameters of structure an fluid time integrators
     // to enable consistent time integration among the fields
-    double stiparam = StructureField()->TimIntParam();
-    double ftiparam = FluidField()->TimIntParam();
+    //double stiparam = StructureField()->TimIntParam();
+    //double ftiparam = FluidField()->TimIntParam();
 
     (*figtransform_)(f->FullRowMap(),
                      f->FullColMap(),
@@ -272,20 +272,20 @@ void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                      true
                      );
 
-    (*fggtransform_)(f->Matrix(1,1),
-                     (1.0-stiparam)/(1.0-ftiparam)*scale*timescale,
-                     ADAPTER::CouplingSlaveConverter(*icoupfs_),
-                     ADAPTER::CouplingSlaveConverter(*icoupfs_),
-                     *s,
-                     true,
-                     true);
+//    (*fggtransform_)(f->Matrix(1,1),
+//                     (1.0-stiparam)/(1.0-ftiparam)*scale*timescale,
+//                     ADAPTER::CouplingSlaveConverter(*icoupfs_),
+//                     ADAPTER::CouplingSlaveConverter(*icoupfs_),
+//                     *s,
+//                     true,
+//                     true);
 
-    (*fgitransform_)(f->Matrix(1,0),
-                     (1.0-stiparam)/(1.0-ftiparam)*scale,
-                     ADAPTER::CouplingSlaveConverter(*icoupfs_),
-                     k_sf->Matrix(1,0),
-                     true
-                     );
+//    (*fgitransform_)(f->Matrix(1,0),
+//                     (1.0-stiparam)/(1.0-ftiparam)*scale,
+//                     ADAPTER::CouplingSlaveConverter(*icoupfs_),
+//                     k_sf->Matrix(1,0),
+//                     true
+//                     );
 
     (*csggtransform_)(f->FullRowMap(),
                      f->FullColMap(),
@@ -305,17 +305,17 @@ void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                      true,
                      true);
 
-    (*cfggtransform_)(k_fs->Matrix(1,1),
-                     (1.0-stiparam)/(1.0-ftiparam)*scale,
-                     ADAPTER::CouplingSlaveConverter(*icoupfs_),
-                     *s,
-                     true);
-
-    (*cfgitransform_)(k_fs->Matrix(1,0),
-                     (1.0-stiparam)/(1.0-ftiparam)*scale,
-                     ADAPTER::CouplingSlaveConverter(*icoupfs_),
-                     *s,
-                     true);
+//    (*cfggtransform_)(k_fs->Matrix(1,1),
+//                     (1.0-stiparam)/(1.0-ftiparam)*scale,
+//                     ADAPTER::CouplingSlaveConverter(*icoupfs_),
+//                     *s,
+//                     true);
+//
+//    (*cfgitransform_)(k_fs->Matrix(1,0),
+//                     (1.0-stiparam)/(1.0-ftiparam)*scale,
+//                     ADAPTER::CouplingSlaveConverter(*icoupfs_),
+//                     *s,
+//                     true);
   }
 
   /*----------------------------------------------------------------------*/
@@ -372,26 +372,26 @@ void POROELAST::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
   fov = FluidField()->Interface()->InsertOtherVector(fov);
 #endif
 
-  if (fluidscale!=0)
-  {
-    // get time integration parameters of structure an fluid time integrators
-    // to enable consistent time integration among the fields
-    double stiparam = StructureField()->TimIntParam();
-    double ftiparam = FluidField()->TimIntParam();
-
-    // add fluid interface values to structure vector
-    Teuchos::RCP<Epetra_Vector> fcv = FluidField()->Interface()->ExtractFSICondVector(fv);
-
-    Teuchos::RCP<Epetra_Vector> modsv = StructureField()->Interface()->InsertFSICondVector(FluidToStructureAtInterface(fcv));
-    modsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
-
-    // add contribution of Lagrange multiplier from previous time step
-    if (lambda_ != Teuchos::null)
-      modsv->Update(stiparam-(1.0-stiparam)*ftiparam/(1.0-ftiparam), *FluidToStructureAtInterface(lambda_), 1.0);
-
-    Extractor()->InsertVector(*modsv,0,f); // add structural contributions to 'f'
-  }
-  else
+//  if (fluidscale!=0)
+//  {
+//    // get time integration parameters of structure an fluid time integrators
+//    // to enable consistent time integration among the fields
+//    double stiparam = StructureField()->TimIntParam();
+//    double ftiparam = FluidField()->TimIntParam();
+//
+//    // add fluid interface values to structure vector
+//    Teuchos::RCP<Epetra_Vector> fcv = FluidField()->Interface()->ExtractFSICondVector(fv);
+//
+//    Teuchos::RCP<Epetra_Vector> modsv = StructureField()->Interface()->InsertFSICondVector(FluidToStructureAtInterface(fcv));
+//    modsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
+//
+//    // add contribution of Lagrange multiplier from previous time step
+//    if (lambda_ != Teuchos::null)
+//      modsv->Update(stiparam-(1.0-stiparam)*ftiparam/(1.0-ftiparam), *FluidToStructureAtInterface(lambda_), 1.0);
+//
+//    Extractor()->InsertVector(*modsv,0,f); // add structural contributions to 'f'
+//  }
+//  else
   {
     Extractor()->InsertVector(*sv,0,f);
   }

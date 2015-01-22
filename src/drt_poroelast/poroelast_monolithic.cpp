@@ -70,7 +70,37 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
     errfile_(DRT::Problem::Instance()->ErrorFile()->Handle()),
     zeros_(Teuchos::null),
     blockrowdofmap_(Teuchos::null),
+    normtypeinc_(INPAR::POROELAST::convnorm_undefined),
+    normtypefres_(INPAR::POROELAST::convnorm_undefined),
+    combincfres_(INPAR::POROELAST::bop_undefined),
+    vectornormfres_(INPAR::POROELAST::norm_undefined),
+    vectornorminc_(INPAR::POROELAST::norm_undefined),
+    tolinc_(0.0),
+    tolfres_(0.0),
+    tolinc_struct_(0.0),
+    tolfres_struct_(0.0),
+    tolinc_velocity_(0.0),
+    tolfres_velocity_(0.0),
+    tolinc_pressure_(0.0),
+    tolfres_pressure_(0.0),
+    tolinc_porosity_(0.0),
+    tolfres_porosity_(0.0),
+    itermax_(0),
+    itermin_(0),
+    normrhs_(0.0),
+    norminc_(0.0),
+    normrhsfluidvel_(0.0),
+    normincfluidvel_(0.0),
+    normrhsfluidpres_(0.0),
+    normincfluidpres_(0.0),
+    normrhsfluid_(0.0),
+    normincfluid_(0.0),
+    normrhsstruct_(0.0),
+    normincstruct_(0.0),
+    normrhsporo_(0.0),
+    normincporo_(0.0),
     timer_(comm),
+    iterinc_(Teuchos::null),
     directsolve_(true),
     del_(Teuchos::null),
     delhist_(Teuchos::null),
@@ -153,26 +183,28 @@ void POROELAST::Monolithic::Solve()
     // 2.) EvaluateForceStiffResidual(),
     // 3.) PrepareSystemForNewtonSolve()
     Evaluate(iterinc_,iter_==1);
-    //std::cout << "  time for Evaluate diagonal blocks: " << timer.ElapsedTime() << "\n";
+    //std::cout << "  time for Evaluate : " << timer.ElapsedTime() << "\n";
     //timer.ResetStartTime();
 
-
-    //std::cout << "  time for Evaluate SetupRHS: " << timer.ElapsedTime() << "\n";
-    //timer.ResetStartTime();
-
-   // if (iter_>1 and Step()>2 )
-   //PoroFDCheck();
-    // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
-    // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
-    LinearSolve();
-    //std::cout << "  time for Evaluate LinearSolve: " << timer.ElapsedTime() << "\n";
-    //timer.ResetStartTime();
-
-    // reset solver tolerance
-    solver_->ResetTolerance();
+    // if (iter_>1 and Step()>2 )
+    //PoroFDCheck();
 
     //build norms
-    BuildCovergenceNorms();
+    BuildConvergenceNorms();
+    if( (not Converged()) or combincfres_==INPAR::POROELAST::bop_or )
+    {
+      // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
+      // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
+      LinearSolve();
+      //std::cout << "  time for Evaluate LinearSolve: " << timer.ElapsedTime() << "\n";
+      //timer.ResetStartTime();
+
+      // reset solver tolerance
+      solver_->ResetTolerance();
+
+      //rebuild norms
+      BuildConvergenceNorms();
+    }
 
     // print stuff
     PrintNewtonIter();
@@ -894,7 +926,7 @@ void POROELAST::Monolithic::PrintNewtonIterHeaderStream(std::ostringstream& oss)
   //  case INPAR::POROELAST::convnorm_rel_singlefields:
       break;
     default:
-      dserror("You should not turn up here.");
+      dserror("Unknown or undefined convergence form for global residual.");
       break;
   }
 
@@ -910,7 +942,7 @@ void POROELAST::Monolithic::PrintNewtonIterHeaderStream(std::ostringstream& oss)
     //case INPAR::POROELAST::convnorm_rel_singlefields:
       break;
     default:
-      dserror("You should not turn up here.");
+      dserror("Unknown or undefined convergence form for global increment.");
     break;
   }
 
@@ -935,7 +967,7 @@ void POROELAST::Monolithic::PrintNewtonIterHeaderStream(std::ostringstream& oss)
 //      oss <<std::setw(18)<< "rel-fpres-res";
 //      break;
     default:
-      dserror("You should not turn up here.");
+      dserror("Unknown or undefined convergence form for single field residual.");
       break;
   }
 
@@ -959,7 +991,7 @@ void POROELAST::Monolithic::PrintNewtonIterHeaderStream(std::ostringstream& oss)
 //      oss <<std::setw(18)<< "rel-fpres-inc";
 //      break;
     default:
-      dserror("You should not turn up here.");
+      dserror("Unknown or undefined convergence form for single field increment.");
       break;
   }
 
@@ -1017,7 +1049,7 @@ void POROELAST::Monolithic::PrintNewtonIterTextStream(std::ostringstream& oss)
     case INPAR::POROELAST::convnorm_abs_singlefields:
       break;
     default:
-      dserror("You should not turn up here.");
+      dserror("Unknown or undefined convergence form for global residual.");
       break;
   }
   // increments
@@ -1028,7 +1060,8 @@ void POROELAST::Monolithic::PrintNewtonIterTextStream(std::ostringstream& oss)
       break;
     case INPAR::POROELAST::convnorm_abs_singlefields:
       break;
-    dserror("You should not turn up here.");
+    default:
+      dserror("Unknown or undefined convergence form for global increment.");
     break;
   }
 
@@ -1045,7 +1078,7 @@ void POROELAST::Monolithic::PrintNewtonIterTextStream(std::ostringstream& oss)
     case INPAR::POROELAST::convnorm_abs_global:
       break;
     default:
-    dserror("You should not turn up here.");
+      dserror("Unknown or undefined convergence form for single field residual.");
     break;
   }
 
@@ -1061,7 +1094,7 @@ void POROELAST::Monolithic::PrintNewtonIterTextStream(std::ostringstream& oss)
     case INPAR::POROELAST::convnorm_abs_global:
       break;
     default:
-    dserror("You should not turn up here.");
+      dserror("Unknown or undefined convergence form for single field increment.");
     break;
   }
 
@@ -1635,6 +1668,8 @@ void POROELAST::Monolithic::SetupNewton()
   normincfluid_ = 0.0;
   normrhsfluidvel_ = 0.0;
   normincfluidvel_ = 0.0;
+  normrhsfluidpres_ = 0.0;
+  normincfluidpres_ = 0.0;
   normrhsstruct_ = 0.0;
   normincstruct_ = 0.0;
   normrhsporo_ = 0.0;
@@ -1656,7 +1691,7 @@ void POROELAST::Monolithic::SetupNewton()
 /*----------------------------------------------------------------------*
  |   evaluate poroelasticity specific constraint            vuong 03/12 |
  *----------------------------------------------------------------------*/
-void POROELAST::Monolithic::BuildCovergenceNorms()
+void POROELAST::Monolithic::BuildConvergenceNorms()
 {
   //------------------------------------------------------------ build residual force norms
   normrhs_ = UTILS::CalculateVectorNorm(vectornormfres_,rhs_);

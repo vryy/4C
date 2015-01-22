@@ -223,7 +223,7 @@ void MAT::StructPoro::ComputePorosity( const double& refporosity,
   {
     //this is pure fluid. The porosity does not change
 
-    porosity = 1.0;
+    porosity = refporosity;
     if(dphi_dp)      *dphi_dp      = 0.0;
     if(dphi_dJ)      *dphi_dJ      = 0.0;
     if(dphi_dJdp)    *dphi_dJdp    = 0.0;

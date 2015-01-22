@@ -55,6 +55,7 @@ namespace POROELAST
   /// type of norm to check for convergence
   enum ConvNorm
   {
+    convnorm_undefined,
     convnorm_abs_global,       ///< absolute norm of global solution vectors
     convnorm_abs_singlefields ///< absolute norm of single field solution vectors
 //    convnorm_rel_global,       ///< absolute norm of global solution vectors
@@ -64,6 +65,7 @@ namespace POROELAST
   /// type of norm to be calculated
   enum VectorNorm
   {
+    norm_undefined,
     norm_l1,  //!< L1/linear norm
     norm_l1_scaled,  //!< L1/linear norm scaled by length of vector
     norm_l2,  //!< L2/Euclidean norm
@@ -74,6 +76,7 @@ namespace POROELAST
   /// type of norm to check for convergence
   enum BinaryOp
   {
+    bop_undefined,
     bop_and,  ///<  and
     bop_or    ///<  or
   };

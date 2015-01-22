@@ -247,17 +247,23 @@ void POROELAST::PORO_SCATRA_Mono::Solve()
 
     //FDCheck();
 
-    // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
-    // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
-    LinearSolve();
-    //cout << "  time for Evaluate LinearSolve: " << timer.ElapsedTime() << "\n";
-    //timer.ResetStartTime();
-
-    // reset solver tolerance
-    solver_->ResetTolerance();
-
     //build norms
-    BuildCovergenceNorms();
+    BuildConvergenceNorms();
+
+    if( (not Converged()) or combincfres_==INPAR::POROELAST::bop_or )
+    {
+      // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
+      // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
+      LinearSolve();
+      //cout << "  time for Evaluate LinearSolve: " << timer.ElapsedTime() << "\n";
+      //timer.ResetStartTime();
+
+      // reset solver tolerance
+      solver_->ResetTolerance();
+
+      //build norms
+      BuildConvergenceNorms();
+    }
 
     // print stuff
     PrintNewtonIter();
@@ -707,12 +713,18 @@ bool POROELAST::PORO_SCATRA_Mono::Converged()
 
   // combine increments and forces
   bool conv = false;
-  if (combincfres_==INPAR::POROELAST::bop_and)
-    conv = convinc and convfres;
-  else if (combincfres_==INPAR::POROELAST::bop_or)
-    conv = convinc or convfres;
-  else
-    dserror("Something went terribly wrong with binary operator!");
+  switch (combincfres_)
+  {
+    case INPAR::POROELAST::bop_and:
+      conv = convinc and convfres;
+      break;
+    case INPAR::POROELAST::bop_or:
+      conv = convinc or convfres;
+      break;
+    default:
+      dserror("Something went terribly wrong with binary operator!");
+      break;
+  }
 
   // return things
   return conv;
@@ -890,7 +902,8 @@ void POROELAST::PORO_SCATRA_Mono::PrintNewtonIterText(FILE* ofile)
       break;
     case INPAR::POROELAST::convnorm_abs_singlefields:
       break;
-    dserror("You should not turn up here.");
+    default:
+      dserror("You should not turn up here.");
     break;
   }
 
@@ -961,7 +974,7 @@ void POROELAST::PORO_SCATRA_Mono::PrintNewtonConv()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Mono::BuildCovergenceNorms()
+void POROELAST::PORO_SCATRA_Mono::BuildConvergenceNorms()
 {
   //------------------------------------------------------------ build residual force norms
 

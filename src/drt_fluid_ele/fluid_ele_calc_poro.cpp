@@ -461,8 +461,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
 
   LINALG::Matrix<my::nsd_, my::nen_> eveln(true);
   LINALG::Matrix<my::nen_, 1> epren(true);
-  if (my::fldparatimint_->IsGenalphaNP())
-    my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln,
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln,
         &epren, "veln");
 
   LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
@@ -5664,7 +5663,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSAndSubgridScaleVeloc
         my::momres_old_(rr) = ((my::densaf_*my::velint_(rr)/my::fldparatimint_->Dt()
                          +my::fldparatimint_->Theta()*(my::densaf_*my::conv_old_(rr)+my::gradp_(rr)
                          -2.0*my::visceff_*my::visc_old_(rr)+reaconvel_(rr)))/my::fldparatimint_->Theta())-my::rhsmom_(rr);
-     }
+      }
     }
     else
     {

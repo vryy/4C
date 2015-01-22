@@ -107,7 +107,7 @@ namespace POROELAST
     virtual void PrepareTimeStep();
 
     //! convergence check for Newton solver
-    virtual void BuildCovergenceNorms();
+    virtual void BuildConvergenceNorms();
 
     //@}
   private:

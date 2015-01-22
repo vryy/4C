@@ -177,7 +177,7 @@ namespace POROELAST
 
     //! @name helper methods for Newton loop
 
-    void BuildCovergenceNorms();
+    void BuildConvergenceNorms();
 
     //! solve linear system
     void LinearSolve();
