@@ -1505,35 +1505,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Sysmat(
 
     {
       int gp=31;
-      cgp_ = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(gp) );
-      // get the quad9 gaussrule for the in normal integration
-      DRT::UTILS::GaussIntegration intpointsnormal( DRT::Element::line3 ,2*gp-1);
-      if(dot1>dot2&&dot1>dot3)
-      {
-        // start loop over integration points in layer
-        for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
-        {
-          cgp_->Append(iquadnorm.Point()[0],0.0,0.0,iquadnorm.Weight());
-        }
-      }
-      else if(dot2>dot3)
-      {
-        // start loop over integration points in layer
-        for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
-        {
-          cgp_->Append(0.0,iquadnorm.Point()[0],0.0,iquadnorm.Weight());
-        }
-      }
-      else
-      {
-        // start loop over integration points in layer
-        for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
-        {
-          cgp_->Append(0.0,0.0,iquadnorm.Point()[0],iquadnorm.Weight());
-        }
-      }
-      DRT::UTILS::GaussIntegration grule(cgp_);
-      my::Sysmat(ebofoaf,
+
+      SysmatForErrorEstimation(ebofoaf,
              eprescpgaf,
              ebofon,
              eprescpgn,
@@ -1574,45 +1547,22 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Sysmat(
              saccn,
              sveln,
              svelnp,
-             grule);
+             intpoints,
+             dot1,
+             dot2,
+             dot3,
+             gp);
     }
 
     double err=10.0;
-    int gp=2;
+    int gp=7;
 
     while((err>quadraturetol_)&&gp<31)
     {
+
       gp++;
 
-      cgp_ = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(gp) );
-      // get the quad9 gaussrule for the in normal integration
-      DRT::UTILS::GaussIntegration intpointsnormal( DRT::Element::line3 ,2*gp-1);
-      if(dot1>dot2&&dot1>dot3)
-      {
-        // start loop over integration points in layer
-        for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
-        {
-          cgp_->Append(iquadnorm.Point()[0],0.0,0.0,iquadnorm.Weight());
-        }
-      }
-      else if(dot2>dot3)
-      {
-        // start loop over integration points in layer
-        for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
-        {
-          cgp_->Append(0.0,iquadnorm.Point()[0],0.0,iquadnorm.Weight());
-        }
-      }
-      else
-      {
-        // start loop over integration points in layer
-        for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
-        {
-          cgp_->Append(0.0,0.0,iquadnorm.Point()[0],iquadnorm.Weight());
-        }
-      }
-      DRT::UTILS::GaussIntegration grule(cgp_);
-      my::Sysmat(ebofoaf,
+      SysmatForErrorEstimation(ebofoaf,
              eprescpgaf,
              ebofon,
              eprescpgn,
@@ -1637,7 +1587,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Sysmat(
              egridv,
              estifdummy,
              emesh,  // -> emesh
-             newtestforce,
+             oldtestforce,
              eporo,
              egradphi,
              ecurvature,
@@ -1653,27 +1603,40 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Sysmat(
              saccn,
              sveln,
              svelnp,
-             grule);
+             intpoints,
+             dot1,
+             dot2,
+             dot3,
+             gp);
       err=0.0;
+      double count=0.0;
       for(int idof=0 ; (my::nsd_+1)*my::nen_!=idof; idof++)
         for(int jdof=0 ; (my::nsd_+1)*my::nen_!=jdof; jdof++)
         {
           if(abs(exactestifdummy(idof,jdof))>1.0e-12)
           {
-            double newerr=abs(estifdummy(idof,jdof)-exactestifdummy(idof,jdof))/abs(exactestifdummy(idof,jdof));
-            if(err<newerr)
-              err=newerr;
+            err+=abs(estifdummy(idof,jdof)-exactestifdummy(idof,jdof))/abs(exactestifdummy(idof,jdof));
+            count++;
+//               if(err<newerr)
+//                 err=newerr;
           }
           estifdummy(idof,jdof)=0.0;
         }
-      //std::cout << "order  " << gp << "  err  " << err << std::endl;
+      err/=count;
+
 
     }
     numgpnorm_=gp;
 
     //for the in-plane direction, use the direction of the flow
     my::EvalShapeFuncAndDerivsAtEleCenter();
-    normwall.Multiply(evelaf,my::funct_);
+    //normwall.Multiply(evelaf,my::funct_);
+    //use the direction of the highest gradient in tauw
+    //this gradient is wall-parallel because tauw is constant in wall-normal direction
+    normwall.Multiply(derxy_,etauw_);
+    //if there is no gradient, e.g. if aggregated, use streamwise direction
+    if(normwall.Norm2()<1.0e-8)
+      normwall.Multiply(evelaf,my::funct_);
     numgpplane_=15;
     if(normwall.Norm2()>1.0e-8)
     {
@@ -1688,35 +1651,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Sysmat(
 
       {
         int gp=31;
-        cgp_ = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(gp) );
-        // get the quad9 gaussrule for the in normal integration
-        DRT::UTILS::GaussIntegration intpointsnormal( DRT::Element::line3 ,2*gp-1);
-        if(dot1>dot2&&dot1>dot3)
-        {
-          // start loop over integration points in layer
-          for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
-          {
-            cgp_->Append(iquadnorm.Point()[0],0.0,0.0,iquadnorm.Weight());
-          }
-        }
-        else if(dot2>dot3)
-        {
-          // start loop over integration points in layer
-          for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
-          {
-            cgp_->Append(0.0,iquadnorm.Point()[0],0.0,iquadnorm.Weight());
-          }
-        }
-        else
-        {
-          // start loop over integration points in layer
-          for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
-          {
-            cgp_->Append(0.0,0.0,iquadnorm.Point()[0],iquadnorm.Weight());
-          }
-        }
-        DRT::UTILS::GaussIntegration grule(cgp_);
-        my::Sysmat(ebofoaf,
+
+        SysmatForErrorEstimation(ebofoaf,
                eprescpgaf,
                ebofon,
                eprescpgn,
@@ -1757,43 +1693,20 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Sysmat(
                saccn,
                sveln,
                svelnp,
-               grule);
+               intpoints,
+               dot1,
+               dot2,
+               dot3,
+               gp);
       }
 
       err=10.0;
-      gp=1;
+      gp=3;
       while((err>quadraturetol_)&&gp<31)
       {
         gp++;
-        cgp_ = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(gp) );
-        // get the quad9 gaussrule for the in normal integration
-        DRT::UTILS::GaussIntegration intpointsnormal( DRT::Element::line3 ,2*gp-1);
-        if(dot1>dot2&&dot1>dot3)
-        {
-          // start loop over integration points in layer
-          for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
-          {
-            cgp_->Append(iquadnorm.Point()[0],0.0,0.0,iquadnorm.Weight());
-          }
-        }
-        else if(dot2>dot3)
-        {
-          // start loop over integration points in layer
-          for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
-          {
-            cgp_->Append(0.0,iquadnorm.Point()[0],0.0,iquadnorm.Weight());
-          }
-        }
-        else
-        {
-          // start loop over integration points in layer
-          for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
-          {
-            cgp_->Append(0.0,0.0,iquadnorm.Point()[0],iquadnorm.Weight());
-          }
-        }
-        DRT::UTILS::GaussIntegration grule(cgp_);
-        my::Sysmat(ebofoaf,
+
+        SysmatForErrorEstimation(ebofoaf,
                eprescpgaf,
                ebofon,
                eprescpgn,
@@ -1818,7 +1731,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Sysmat(
                egridv,
                estifdummy,
                emesh,  // -> emesh
-               newtestforce,
+               oldtestforce,
                eporo,
                egradphi,
                ecurvature,
@@ -1834,25 +1747,37 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Sysmat(
                saccn,
                sveln,
                svelnp,
-               grule);
+               intpoints,
+               dot1,
+               dot2,
+               dot3,
+               gp);
         err=0.0;
+        double count=0.0;
         for(int idof=0 ; (my::nsd_+1)*my::nen_!=idof; idof++)
           for(int jdof=0 ; (my::nsd_+1)*my::nen_!=jdof; jdof++)
           {
             if(abs(exactestifdummy(idof,jdof))>1.0e-12)
             {
-              double newerr=abs(estifdummy(idof,jdof)-exactestifdummy(idof,jdof))/abs(exactestifdummy(idof,jdof));
-               if(err<newerr)
-                 err=newerr;
+              err+=abs(estifdummy(idof,jdof)-exactestifdummy(idof,jdof))/abs(exactestifdummy(idof,jdof));
+              count++;
+//               if(err<newerr)
+//                 err=newerr;
             }
             estifdummy(idof,jdof)=0.0;
           }
+        err/=count;
         //std::cout << "order  " << gp << "  err  " << err << std::endl;
       }
       numgpplane_=gp;
     }
-
-
+//int cost=0;
+//for (int i=3;i<=numgpnorm_; i++)
+//  cost+=i;
+//for (int i=2;i<=numgpplane_; i++)
+//  cost+=i;
+//cost+=62;
+//std::cout << "evaluation cost:  " << cost << "/" << numgpnorm_*numgpplane_*numgpplane_ << std::endl;
     cgp_ = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(numgpnorm_*numgpplane_*numgpplane_) );
     // get the quad9 gaussrule for the in plane integration
     DRT::UTILS::GaussIntegration intpointsplane( DRT::Element::quad8 ,2*numgpplane_-1);
@@ -1996,5 +1921,128 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Sysmat(
     return;
   }
 }
+
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::SysmatForErrorEstimation(
+    const LINALG::Matrix<my::nsd_,my::nen_>&              ebofoaf,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              eprescpgaf,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              ebofon,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              eprescpgn,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              evelaf,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              eveln,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              evelnp,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              fsevelaf,
+    const LINALG::Matrix<my::nen_,1>&                 fsescaaf,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              evel_hat,
+    const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&         ereynoldsstress_hat,
+    const LINALG::Matrix<my::nen_,1>&                 epreaf,
+    const LINALG::Matrix<my::nen_,1>&                 epren,
+    const LINALG::Matrix<my::nen_,1>&                 eprenp,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              eaccam,
+    const LINALG::Matrix<my::nen_,1>&                 escaaf,
+    const LINALG::Matrix<my::nen_,1>&                 escaam,
+    const LINALG::Matrix<my::nen_,1>&                 escadtam,
+    const LINALG::Matrix<my::nen_,1>&                 escabofoaf,
+    const LINALG::Matrix<my::nen_,1>&                 escabofon,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              emhist,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              edispnp,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              egridv,
+    LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_>&  estif,
+    LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_>&  emesh,
+    LINALG::Matrix<(my::nsd_+1)*my::nen_,1>&              eforce,
+    const LINALG::Matrix<my::nen_,1> &                eporo,
+    const LINALG::Matrix<my::nsd_,my::nen_> &             egradphi,
+    const LINALG::Matrix<my::nen_,1> &                ecurvature,
+    const double                                  thermpressaf,
+    const double                                  thermpressam,
+    const double                                  thermpressdtaf,
+    const double                                  thermpressdtam,
+    Teuchos::RCP<const MAT::Material>             material,
+    double&                                       Cs_delta_sq,
+    double&                                       Ci_delta_sq,
+    double&                                       Cv,
+    bool                                          isale,
+    double * saccn,
+    double * sveln,
+    double * svelnp,
+    const DRT::UTILS::GaussIntegration & intpoints,
+    double dot1,
+    double dot2,
+    double dot3,
+    int gp
+    )
+    {
+    cgp_ = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(gp) );
+    // get the quad9 gaussrule for the in normal integration
+    DRT::UTILS::GaussIntegration intpointsnormal( DRT::Element::line3 ,2*gp-1);
+    if(dot1>dot2&&dot1>dot3)
+    {
+      // start loop over integration points in layer
+      for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
+      {
+        cgp_->Append(iquadnorm.Point()[0],0.0,0.0,iquadnorm.Weight());
+      }
+    }
+    else if(dot2>dot3)
+    {
+      // start loop over integration points in layer
+      for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
+      {
+        cgp_->Append(0.0,iquadnorm.Point()[0],0.0,iquadnorm.Weight());
+      }
+    }
+    else
+    {
+      // start loop over integration points in layer
+      for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
+      {
+        cgp_->Append(0.0,0.0,iquadnorm.Point()[0],iquadnorm.Weight());
+      }
+    }
+    DRT::UTILS::GaussIntegration grule(cgp_);
+    my::Sysmat(ebofoaf,
+           eprescpgaf,
+           ebofon,
+           eprescpgn,
+           evelaf,
+           eveln,
+           evelnp,
+           fsevelaf,
+           fsescaaf,
+           evel_hat,
+           ereynoldsstress_hat,
+           epreaf,
+           epren,
+           eprenp,
+           eaccam,
+           escaaf,
+           escaam,
+           escadtam,
+           escabofoaf,
+           escabofon,
+           emhist,
+           edispnp,
+           egridv,
+           estif,
+           emesh,  // -> emesh
+           eforce,
+           eporo,
+           egradphi,
+           ecurvature,
+           thermpressaf,
+           thermpressam,
+           thermpressdtaf,
+           thermpressdtam,
+           material,
+           Cs_delta_sq,
+           Ci_delta_sq,
+           Cv,
+           isale,
+           saccn,
+           sveln,
+           svelnp,
+           grule);
+      return;
+    }
 
 template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8,DRT::ELEMENTS::Fluid::xwall>;

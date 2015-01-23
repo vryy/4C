@@ -976,6 +976,8 @@ void FLD::FluidImplicitTimeInt::Solve()
   {
     itnum++;
 
+    //necessary for adaptive quadrature
+    if(xwall_!=Teuchos::null) xwall_->SetIter(itnum);
     // -------------------------------------------------------------------
     // preparatives for solver
     // -------------------------------------------------------------------

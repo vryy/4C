@@ -123,15 +123,6 @@ public:
 
   virtual int UniqueParObjectId() const { return FluidXWallType::Instance().UniqueParObjectId(); }
 
-  virtual void Pack(DRT::PackBuffer& data) const;
-
-  /*!
-  \brief Unpack data from a char vector into this class
-
-  \ref Pack and \ref Unpack are used to communicate this element
-  */
-  virtual void Unpack(const std::vector<char>& data);
-
   /*!
   \brief Get vector of Teuchos::RCPs to the lines of this element
   */

@@ -84,7 +84,10 @@ public:
         return tauw;
       }
 
+  //read restart including wall stresses
   void ReadRestart(IO::DiscretizationReader& reader);
+  //set current non-linear iteration number
+  void SetIter(int iter){iter_=iter;return;}
 protected:
 
   // set element params for xwall EnrichmentType, distributed for xwall discretization
@@ -282,6 +285,8 @@ private:
 
   //! increment factor of tauw
   double quadraturetol_;
+
+  int iter_;
 
 }; // class XWall
 

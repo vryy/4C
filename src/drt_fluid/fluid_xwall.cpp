@@ -49,7 +49,8 @@ FLD::XWall::XWall(
     Teuchos::RCP<FLD::UTILS::StressManager> wssmanager):
     discret_(dis),
     params_(params),
-    mystressmanager_(wssmanager)
+    mystressmanager_(wssmanager),
+    iter_(0)
 {
 
   // get the processor ID from the communicator
@@ -207,8 +208,12 @@ void FLD::XWall::SetXWallParams(Teuchos::ParameterList& eleparams)
   eleparams.set("xwalltoggle",xwalltoggle_);
 
   eleparams.set("mk",mkstate_);
-
-  eleparams.set<double>("qtol",quadraturetol_);
+  double finaltol = quadraturetol_;
+  if(iter_>2)
+    finaltol = quadraturetol_/10.0;
+  else if(iter_>8)
+    finaltol = quadraturetol_/1000.0;
+  eleparams.set<double>("qtol",finaltol);
 
   eleparams.set("gpnorm",gpvecnorm_);
   eleparams.set("gppar",gpvecpar_);
@@ -857,6 +862,7 @@ void FLD::XWall::SetupL2Projection()
   void FLD::XWall::UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual, int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln)
 {
 
+  iter_=0;
   {//export Gauss points to xw discretization
     Teuchos::RCP<Epetra_Vector> gpvxw=Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->ElementRowMap()),true));
     Teuchos::RCP<Epetra_Vector> gpv=Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap()),true));
