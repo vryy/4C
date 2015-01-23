@@ -289,7 +289,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
   // initialize also element layers
   eleplanes_->resize(size-1,0.0);
-  for (std::size_t kk=0; kk<(size-1); kk++)
+  for (int kk=0; kk<(size-1); kk++)
     (*eleplanes_)[kk] = 0.5*((*nodeplanes_)[kk+1] - (*nodeplanes_)[kk])+(*nodeplanes_)[kk];
 
   // arrays for integration based averaging
