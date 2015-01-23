@@ -1350,9 +1350,6 @@ void STR::TimIntStatMech::PTC()
 
   //printf("fresnorm %10.5e disinorm %10.5e nc %10.5e\n",normfres_,normdisi_,nc);
 
-  // flag indicating whether or not the iterative loop was left because the residual norm was going to diverge anyway
-  bool fresnormdivergent = false;
-
   //parameters to make sure that in last iteration step botch PTC parameters have reached zero
   double ctransptcold = ctransptc;
   double crotptcold   = crotptc;

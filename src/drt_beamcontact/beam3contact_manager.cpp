@@ -1882,7 +1882,8 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   if(!newgapfunction)
   {
     double maxdeltadisscalefac=sbeamcontact_.get<double>("BEAMS_MAXDELTADISSCALEFAC",1.0);
-    if(maxdeltadisp_>maxdeltadisscalefac*mineleradius_)
+    //TODO: shall we allow for larger displacements in the first time step in general?
+    if(maxdeltadisp_>maxdeltadisscalefac*mineleradius_ and timestep!=1)
     {
       std::cout << "Minimal element radius: " << mineleradius_ << std::endl;
       std::cout << "Maximal displacement per time step: " << maxdeltadisp_ << std::endl;

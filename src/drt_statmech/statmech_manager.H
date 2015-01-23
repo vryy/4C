@@ -32,6 +32,11 @@ Maintainer: Kei Müller
 #include <cstdio>
 #include <sys/stat.h>
 #include <math.h>
+
+//With the flag CHOSENOUTPUTNODE we can use an alternative variant of the special output type statout_anisotropic
+//which allows to output the sum of squared nodal translational displacements of the node with ID CHOSENOUTPUTNODE.
+//#define CHOSENOUTPUTNODE 254
+
 /*!
 \brief management and auxiliary functions for statistical mechanics
 \author cyron (cyron@lnm.mw.tum.de)
@@ -1041,9 +1046,27 @@ protected:
   //! \brief position of last nodein last time step
   LINALG::Matrix<3,1> endold_;
 
+  //! \brief number of time steps where output has already been written
+  int numoutputstep_;
+
+  #ifdef CHOSENOUTPUTNODE
+    //! \brief displacement value of last time step for a chosen node
+    LINALG::Matrix<3,1> chosennodeold_;
+
+    //! \brief sum of squared displacements for a chosen node over all time steps
+    double sumsquarechosennode_;
+
+    //! \brief vector holding all translational displacements of last time step
+    Teuchos::RCP<Epetra_Vector > transdispold_;
+
+    //! \brief vector holding all translational displacements of last time step
+    double sumsquareallnodes_;
+  #endif
+
   //! \brief vector holding the dimensions of the periodic box
   Teuchos::RCP<std::vector<double> > periodlength_;
 
+  //! \brief sum of squared displacements over all nodes and all time steps
   Teuchos::RCP<std::vector<double> > riseperbspot_;
 
   //! \brief vector holding the spatial resolution of the search algorithm binding spots x crosslinkers

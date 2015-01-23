@@ -322,96 +322,180 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
     //simulating diffusion coefficient for anisotropic friction
     case INPAR::STATMECH::statout_anisotropic:
     {
-      //output is written on proc 0 only
-      if(!discret_->Comm().MyPID())
-      {
-
-        FILE* fp = NULL; //file pointer for statistical output file
-
-        //defining name of output file
-        std::ostringstream outputfilename;
-
-        outputfilenumber_ = 0;
-
-        //file pointer for operating with numbering file
-        FILE* fpnumbering = NULL;
-        std::ostringstream numberingfilename;
-
-        //look for a numbering file where number of already existing output files is stored:
-        numberingfilename.str("NumberOfRealizationsAniso");
-        fpnumbering = fopen(numberingfilename.str().c_str(), "r");
-
-        //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
-        if (fpnumbering == NULL)
+      #ifndef CHOSENOUTPUTNODE
+        //output is written on proc 0 only
+        if(!discret_->Comm().MyPID())
         {
-          do
+
+          FILE* fp = NULL; //file pointer for statistical output file
+
+          //defining name of output file
+          std::ostringstream outputfilename;
+
+          outputfilenumber_ = 0;
+
+          //file pointer for operating with numbering file
+          FILE* fpnumbering = NULL;
+          std::ostringstream numberingfilename;
+
+          //look for a numbering file where number of already existing output files is stored:
+          numberingfilename.str("NumberOfRealizationsAniso");
+          fpnumbering = fopen(numberingfilename.str().c_str(), "r");
+
+          //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
+          if (fpnumbering == NULL)
           {
-            outputfilenumber_++;
+            do
+            {
+              outputfilenumber_++;
+              outputfilename.str("");
+              outputfilename << outputrootpath_ << "/StatMechOutput/AnisotropicDiffusion" << outputfilenumber_ << ".dat";
+              fp = fopen(outputfilename.str().c_str(), "r");
+            }
+            while (fp != NULL);
+
+            //set up new file with name "outputfilename" without writing anything into this file
+            fp = fopen(outputfilename.str().c_str(), "w");
+            fclose(fp);
+          }
+          //if there already exists a numbering file
+          else
+          {
+            fclose(fpnumbering);
+
+            //read the number of the next realization out of the file into the variable testnumber
+            std::fstream f(numberingfilename.str().c_str());
+            while (f)
+            {
+              std::string tok;
+              f >> tok;
+              if (tok == "Next")
+              {
+                f >> tok;
+                if (tok == "Number:")
+                  f >> outputfilenumber_;
+              }
+            } //while(f)
+
+            //defining outputfilename by means of new testnumber
             outputfilename.str("");
             outputfilename << outputrootpath_ << "/StatMechOutput/AnisotropicDiffusion" << outputfilenumber_ << ".dat";
-            fp = fopen(outputfilename.str().c_str(), "r");
           }
-          while (fp != NULL);
 
           //set up new file with name "outputfilename" without writing anything into this file
           fp = fopen(outputfilename.str().c_str(), "w");
           fclose(fp);
-        }
-        //if there already exists a numbering file
-        else
-        {
+
+          //increasing the number in the numbering file by one
+          fpnumbering = fopen(numberingfilename.str().c_str(), "w");
+          std::stringstream filecontent;
+          filecontent << "Next Number: " << (outputfilenumber_ + 1);
+          //write fileconent into file!
+          fputs(filecontent.str().c_str(), fpnumbering);
+          //close file
           fclose(fpnumbering);
 
-          //read the number of the next realization out of the file into the variable testnumber
-          std::fstream f(numberingfilename.str().c_str());
-          while (f)
+          //initializing variables for positions of first and last node at the beginning
+          beginold_.PutScalar(0);
+          endold_.PutScalar(0);
+
+          for (int i=0; i<ndim; i++)
           {
-            std::string tok;
-            f >> tok;
-            if (tok == "Next")
-            {
-              f >> tok;
-              if (tok == "Number:")
-                f >> outputfilenumber_;
-            }
-          } //while(f)
+            beginold_(i) = (discret_->gNode(0))->X()[i];
+            endold_(i) = (discret_->gNode(discret_->NumMyRowNodes() - 1))->X()[i];
+          }
 
-          //defining outputfilename by means of new testnumber
-          outputfilename.str("");
-          outputfilename << outputrootpath_ << "/StatMechOutput/AnisotropicDiffusion" << outputfilenumber_ << ".dat";
+          for (int i=0; i<3; i++)
+            sumdispmiddle_(i, 0) = 0.0;
+
+          sumsquareincpar_ = 0.0;
+          sumsquareincort_ = 0.0;
+          sumrotmiddle_ = 0.0;
+          sumsquareincmid_ = 0.0;
+          sumsquareincrot_ = 0.0;
         }
-
-        //set up new file with name "outputfilename" without writing anything into this file
-        fp = fopen(outputfilename.str().c_str(), "w");
-        fclose(fp);
-
-        //increasing the number in the numbering file by one
-        fpnumbering = fopen(numberingfilename.str().c_str(), "w");
-        std::stringstream filecontent;
-        filecontent << "Next Number: " << (outputfilenumber_ + 1);
-        //write fileconent into file!
-        fputs(filecontent.str().c_str(), fpnumbering);
-        //close file
-        fclose(fpnumbering);
-
-        //initializing variables for positions of first and last node at the beginning
-        beginold_.PutScalar(0);
-        endold_.PutScalar(0);
-        for (int i=0; i<ndim; i++)
+      #else
+        //output is written on proc 0 only
+        if(!discret_->Comm().MyPID())
         {
-          beginold_(i) = (discret_->gNode(0))->X()[i];
-          endold_(i) = (discret_->gNode(discret_->NumMyRowNodes() - 1))->X()[i];
+
+          FILE* fp = NULL; //file pointer for statistical output file
+
+          //defining name of output file
+          std::ostringstream outputfilename;
+
+          outputfilenumber_ = 0;
+
+          //file pointer for operating with numbering file
+          FILE* fpnumbering = NULL;
+          std::ostringstream numberingfilename;
+
+          //look for a numbering file where number of already existing output files is stored:
+          numberingfilename.str("NumberOfRealizationsAniso");
+          fpnumbering = fopen(numberingfilename.str().c_str(), "r");
+
+          //if there is no such numbering file: look for a not yet existing output file name (numbering upwards)
+          if (fpnumbering == NULL)
+          {
+            do
+            {
+              outputfilenumber_++;
+              outputfilename.str("");
+              outputfilename << outputrootpath_ << "/StatMechOutput/NodalAverageDisp" << outputfilenumber_ << ".dat";
+              fp = fopen(outputfilename.str().c_str(), "r");
+            }
+            while (fp != NULL);
+
+            //set up new file with name "outputfilename" without writing anything into this file
+            fp = fopen(outputfilename.str().c_str(), "w");
+            fclose(fp);
+          }
+          //if there already exists a numbering file
+          else
+          {
+            fclose(fpnumbering);
+
+            //read the number of the next realization out of the file into the variable testnumber
+            std::fstream f(numberingfilename.str().c_str());
+            while (f)
+            {
+              std::string tok;
+              f >> tok;
+              if (tok == "Next")
+              {
+                f >> tok;
+                if (tok == "Number:")
+                  f >> outputfilenumber_;
+              }
+            } //while(f)
+
+            //defining outputfilename by means of new testnumber
+            outputfilename.str("");
+            outputfilename << outputrootpath_ << "/StatMechOutput/NodalAverageDisp" << outputfilenumber_ << ".dat";
+          }
+
+          //set up new file with name "outputfilename" without writing anything into this file
+          fp = fopen(outputfilename.str().c_str(), "w");
+          fclose(fp);
+
+          //increasing the number in the numbering file by one
+          fpnumbering = fopen(numberingfilename.str().c_str(), "w");
+          std::stringstream filecontent;
+          filecontent << "Next Number: " << (outputfilenumber_ + 1);
+          //write fileconent into file!
+          fputs(filecontent.str().c_str(), fpnumbering);
+          //close file
+          fclose(fpnumbering);
+
+          //initializing variables for positions of first and last node at the beginning
+          chosennodeold_.PutScalar(0);
+          sumsquarechosennode_=0.0;
+
+          transdispold_ = Teuchos::rcp( new Epetra_Vector(*(discret_->DofRowMap())) );
+          transdispold_->PutScalar(0.0);
+          sumsquareallnodes_=0.0;
         }
-
-        for (int i=0; i<3; i++)
-          sumdispmiddle_(i, 0) = 0.0;
-
-        sumsquareincpar_ = 0.0;
-        sumsquareincort_ = 0.0;
-        sumrotmiddle_ = 0.0;
-        sumsquareincmid_ = 0.0;
-        sumsquareincrot_ = 0.0;
-      }
+      #endif
     }
     break;
     case INPAR::STATMECH::statout_viscoelasticity:
@@ -699,148 +783,228 @@ void STATMECH::StatMechManager::Output(const int                            ndim
     //the following output allows for anisotropic diffusion simulation of a quasi stiff polymer
     case INPAR::STATMECH::statout_anisotropic:
     {
-      //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
-      if ((time > starttime && fabs(time-starttime)>dt/1e4) && (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0))
-      {
-
-
-        //positions of first and last node in current time step (note: always 3D variables used; in case of 2D third compoenent just constantly zero)
-        LINALG::Matrix<3, 1> beginnew;
-        LINALG::Matrix<3, 1> endnew;
-
-        beginnew.PutScalar(0);
-        endnew.PutScalar(0);
-        if(printscreen)
-          std::cout << "ndim: " << ndim << "\n";
-
-        for (int i = 0; i < ndim; i++)
+      #ifndef CHOSENOUTPUTNODE
+        //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
+        if ((time > starttime && fabs(time-starttime)>dt/1e4) && (istep % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0))
         {
-          beginnew(i) = (discret_->gNode(0))->X()[i] + dis[i];
-          endnew(i) = (discret_->gNode(discret_->NumMyRowNodes() - 1))->X()[i] + dis[num_dof - discret_->NumDof(discret_->gNode(discret_->NumMyRowNodes() - 1)) + i];
-        }
+          //positions of first and last node in current time step (note: always 3D variables used; in case of 2D third component just constantly zero)
+          LINALG::Matrix<3, 1> beginnew;
+          LINALG::Matrix<3, 1> endnew;
 
-        //unit direction vector for filament axis in last time step
-        LINALG::Matrix<3, 1> axisold;
-        axisold = endold_;
-        axisold -= beginold_;
-        axisold.Scale(1 / axisold.Norm2());
+          beginnew.PutScalar(0);
+          endnew.PutScalar(0);
 
-        //unit direction vector for filament axis in current time step
-        LINALG::Matrix<3, 1> axisnew;
-        axisnew = endnew;
-        axisnew -= beginnew;
-        axisnew.Scale(1 / axisnew.Norm2());
+          if(printscreen)
+            std::cout << "ndim: " << ndim << "\n";
 
-        //displacement of first and last node between last time step and current time step
-        LINALG::Matrix<3, 1> dispbegin;
-        LINALG::Matrix<3, 1> dispend;
-        dispbegin = beginnew;
-        dispbegin -= beginold_;
-        dispend = endnew;
-        dispend -= endold_;
-
-        //displacement of middle point
-        LINALG::Matrix<3, 1> dispmiddle;
-        dispmiddle = dispbegin;
-        dispmiddle += dispend;
-        dispmiddle.Scale(0.5);
-        sumdispmiddle_ += dispmiddle;
-
-        //update sum of square displacement increments of middle point
-        double incdispmiddle = dispmiddle.Norm2() * dispmiddle.Norm2();
-        sumsquareincmid_ += incdispmiddle;
-
-        //update sum of square displacement increments of middle point parallel to new filament axis (computed by scalar product)
-        double disppar_square = std::pow(axisnew(0) * dispmiddle(0) + axisnew(1) * dispmiddle(1) + axisnew(2) * dispmiddle(2), 2);
-        sumsquareincpar_ += disppar_square;
-
-        //update sum of square displacement increments of middle point orthogonal to new filament axis (via crossproduct)
-        LINALG::Matrix<3, 1> aux;
-        aux(0) = dispmiddle(1) * axisnew(2) - dispmiddle(2) * axisnew(1);
-        aux(1) = dispmiddle(2) * axisnew(0) - dispmiddle(0) * axisnew(2);
-        aux(2) = dispmiddle(0) * axisnew(1) - dispmiddle(1) * axisnew(0);
-        double disport_square = aux.Norm2() * aux.Norm2();
-        sumsquareincort_ += disport_square;
-
-        //total displacement of rotational angle (in 2D only)
-        double incangle = 0;
-        if (ndim == 2)
-        {
-          //angle of old axis relative to x-axis
-          double phiold = acos(axisold(0) / axisold.Norm2());
-          if (axisold(1) < 0)
-            phiold *= -1;
-
-          //angle of new axis relative to x-axis
-          double phinew = acos(axisnew(0) / axisnew.Norm2());
-          if (axisnew(1) < 0)
-            phinew *= -1;
-
-          //angle increment
-          incangle = phinew - phiold;
-          if (incangle > M_PI)
+          for (int i = 0; i < ndim; i++)
           {
-            incangle -= 2*M_PI;
-            incangle *= -1;
-          }
-          if (incangle < -M_PI)
-          {
-            incangle += 2*M_PI;
-            incangle *= -1;
+            beginnew(i) = (discret_->gNode(0))->X()[i] + dis[i];
+            endnew(i) = (discret_->gNode(discret_->NumMyRowNodes() - 1))->X()[i] + dis[num_dof - discret_->NumDof(discret_->gNode(discret_->NumMyRowNodes() - 1)) + i];
           }
 
-          //update absolute rotational displacement compared to reference configuration
-          sumsquareincrot_ += incangle * incangle;
-          sumrotmiddle_ += incangle;
-        }
+          //unit direction vector for filament axis in last time step
+          LINALG::Matrix<3, 1> axisold;
+          axisold = endold_;
+          axisold -= beginold_;
+          axisold.Scale(1 / axisold.Norm2());
 
-        //proc 0 write complete output into file, all other proc inactive
-        if(!discret_->Comm().MyPID())
+          //unit direction vector for filament axis in current time step
+          LINALG::Matrix<3, 1> axisnew;
+          axisnew = endnew;
+          axisnew -= beginnew;
+          axisnew.Scale(1 / axisnew.Norm2());
+
+          //displacement of first and last node between last time step and current time step
+          LINALG::Matrix<3, 1> dispbegin;
+          LINALG::Matrix<3, 1> dispend;
+          dispbegin = beginnew;
+          dispbegin -= beginold_;
+          dispend = endnew;
+          dispend -= endold_;
+
+          //displacement of middle point
+          LINALG::Matrix<3, 1> dispmiddle;
+          dispmiddle = dispbegin;
+          dispmiddle += dispend;
+          dispmiddle.Scale(0.5);
+          sumdispmiddle_ += dispmiddle;
+
+          //update sum of square displacement increments of middle point
+          double incdispmiddle = dispmiddle.Norm2() * dispmiddle.Norm2();
+          sumsquareincmid_ += incdispmiddle;
+
+          //update sum of square displacement increments of middle point parallel to new filament axis (computed by scalar product)
+          double disppar_square = std::pow(axisnew(0) * dispmiddle(0) + axisnew(1) * dispmiddle(1) + axisnew(2) * dispmiddle(2), 2);
+          sumsquareincpar_ += disppar_square;
+
+          //update sum of square displacement increments of middle point orthogonal to new filament axis (via crossproduct)
+          LINALG::Matrix<3, 1> aux;
+          aux(0) = dispmiddle(1) * axisnew(2) - dispmiddle(2) * axisnew(1);
+          aux(1) = dispmiddle(2) * axisnew(0) - dispmiddle(0) * axisnew(2);
+          aux(2) = dispmiddle(0) * axisnew(1) - dispmiddle(1) * axisnew(0);
+          double disport_square = aux.Norm2() * aux.Norm2();
+          sumsquareincort_ += disport_square;
+
+          //total displacement of rotational angle (in 2D only)
+          double incangle = 0;
+          if (ndim == 2)
+          {
+            //angle of old axis relative to x-axis
+            double phiold = acos(axisold(0) / axisold.Norm2());
+            if (axisold(1) < 0)
+              phiold *= -1;
+
+            //angle of new axis relative to x-axis
+            double phinew = acos(axisnew(0) / axisnew.Norm2());
+            if (axisnew(1) < 0)
+              phinew *= -1;
+
+            //angle increment
+            incangle = phinew - phiold;
+            if (incangle > M_PI)
+            {
+              incangle -= 2*M_PI;
+              incangle *= -1;
+            }
+            if (incangle < -M_PI)
+            {
+              incangle += 2*M_PI;
+              incangle *= -1;
+            }
+
+            //update absolute rotational displacement compared to reference configuration
+            sumsquareincrot_ += incangle * incangle;
+            sumrotmiddle_ += incangle;
+          }
+
+          //proc 0 write complete output into file, all other proc inactive
+          if(!discret_->Comm().MyPID())
+          {
+            FILE* fp = NULL; //file pointer for statistical output file
+
+            //name of output file
+            std::ostringstream outputfilename;
+            outputfilename << outputrootpath_ << "/StatMechOutput/AnisotropicDiffusion" << outputfilenumber_ << ".dat";
+
+            // open file and append new data line
+            fp = fopen(outputfilename.str().c_str(), "a");
+
+            //defining temporary std::stringstream variable
+            std::stringstream filecontent;
+            filecontent << std::scientific << std::setprecision(15) << dt << " "<< sumsquareincmid_ << " "<< sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2() <<std::endl;
+  //              << sumsquareincmid_ << " " << sumsquareincpar_ << " "
+  //              << sumsquareincort_ << " " << sumsquareincrot_ << " "
+  //              << sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2() << " "
+  //              << sumrotmiddle_ * sumrotmiddle_ << std::endl;
+
+            // move temporary std::stringstream to file and close it
+            fputs(filecontent.str().c_str(), fp);
+            fclose(fp);
+
+            //write position
+            LINALG::Matrix<3,1> midpoint(beginnew);
+            midpoint += endnew;
+            midpoint.Scale(0.5);
+            std::ostringstream outputfilename2;
+            outputfilename2 << outputrootpath_ << "/StatMechOutput/AnisotropicMidPosition" << outputfilenumber_ << ".dat";
+
+            // open file and append new data line
+            fp = fopen(outputfilename2.str().c_str(), "a");
+
+            //defining temporary std::stringstream variable
+            std::stringstream filecontent2;
+            filecontent2 << std::scientific << std::setprecision(15) <<midpoint(0)<<" "<<midpoint(1)<<" "<<midpoint(2)<< std::endl;
+
+            // move temporary std::stringstream to file and close it
+            fputs(filecontent2.str().c_str(), fp);
+            fclose(fp);
+          }
+
+          //new positions in this time step become old positions in last time step
+          beginold_ = beginnew;
+          endold_ = endnew;
+        }
+      #else
+        if(discret_->Comm().MyPID()!=0)
+          dserror("The special output type nodalaveragedisp is only implemented in serial so far!");
+
+        const double outputtimeinterval = 0.0005;
+        //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
+        if (time >= numoutputstep_*outputtimeinterval -1.0e-8)
         {
-          FILE* fp = NULL; //file pointer for statistical output file
+          numoutputstep_++;
+          std::cout << "Output of nodalaveragedisp written!" << std::endl;
+          LINALG::Matrix<3, 1> chosennodenew;
+          const int nodeid = CHOSENOUTPUTNODE;
 
-          //name of output file
-          std::ostringstream outputfilename;
-          outputfilename << outputrootpath_ << "/StatMechOutput/AnisotropicDiffusion" << outputfilenumber_ << ".dat";
+          Epetra_Vector trans_dis_new(dis);
 
-          // open file and append new data line
-          fp = fopen(outputfilename.str().c_str(), "a");
+          int numnode = discret_->NodeRowMap()->NumMyElements();
 
-          //defining temporary std::stringstream variable
-          std::stringstream filecontent;
-          filecontent << std::scientific << std::setprecision(15) << dt << " "<< sumsquareincmid_ << " "<< sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2() <<std::endl;
-//              << sumsquareincmid_ << " " << sumsquareincpar_ << " "
-//              << sumsquareincort_ << " " << sumsquareincrot_ << " "
-//              << sumdispmiddle_.Norm2() * sumdispmiddle_.Norm2() << " "
-//              << sumrotmiddle_ * sumrotmiddle_ << std::endl;
+          //Set rotational/tangential displacements to zero
+          for(int i=0;i<numnode;i++)
+          {
+            // get node pointer
+            DRT::Node* node = discret_->lRowNode(i);
 
-          // move temporary std::stringstream to file and close it
-          fputs(filecontent.str().c_str(), fp);
-          fclose(fp);
+            // get GIDs of this node's degrees of freedom
+            std::vector<int> dofnode = discret_->Dof(node);
 
-          //write position
-          LINALG::Matrix<3,1> midpoint(beginnew);
-          midpoint += endnew;
-          midpoint.Scale(0.5);
-          std::ostringstream outputfilename2;
-          outputfilename2 << outputrootpath_ << "/StatMechOutput/AnisotropicMidPosition" << outputfilenumber_ << ".dat";
+            if(dofnode.size()!=6)
+              dserror("This methode only works for beam elements with 6 DoFs per node so far!");
 
-          // open file and append new data line
-          fp = fopen(outputfilename2.str().c_str(), "a");
+            //Set displacements in rotational/tangential DoFs to zero
+            trans_dis_new[discret_->DofRowMap()->LID(dofnode[3])]=0.0;
+            trans_dis_new[discret_->DofRowMap()->LID(dofnode[4])]=0.0;
+            trans_dis_new[discret_->DofRowMap()->LID(dofnode[5])]=0.0;
+          }
 
-          //defining temporary std::stringstream variable
-          std::stringstream filecontent2;
-          filecontent2 << std::scientific << std::setprecision(15) <<midpoint(0)<<" "<<midpoint(1)<<" "<<midpoint(2)<< std::endl;
+          Epetra_Vector delta_dis(trans_dis_new);
+          delta_dis.Update(-1.0,*transdispold_,1.0);
 
-          // move temporary std::stringstream to file and close it
-          fputs(filecontent2.str().c_str(), fp);
-          fclose(fp);
+          double norm_delta_dis=0.0;
+          delta_dis.Norm2(&norm_delta_dis);
+
+          sumsquareallnodes_+=norm_delta_dis*norm_delta_dis;
+
+          chosennodenew.PutScalar(0);
+
+          for (int i = 0; i < ndim; i++)
+          {
+            chosennodenew(i) = dis[discret_->DofColMap()->LID((discret_->Dof(discret_->gNode(nodeid)))[i])];
+          }
+
+          LINALG::Matrix<3, 1> chosennodedisp(chosennodenew);
+          chosennodedisp-=chosennodeold_;
+          sumsquarechosennode_+=chosennodedisp.Norm2()*chosennodedisp.Norm2();
+
+          //proc 0 write complete output into file, all other proc inactive
+          if(!discret_->Comm().MyPID())
+          {
+            FILE* fp = NULL; //file pointer for statistical output file
+
+            std::ostringstream outputfilename;
+            outputfilename << outputrootpath_ << "/StatMechOutput/NodalAverageDisp" << outputfilenumber_ << ".dat";
+
+
+            // open file and append new data line
+            fp = fopen(outputfilename.str().c_str(), "a");
+
+            //defining temporary std::stringstream variable
+            std::stringstream filecontent;
+            filecontent << std::scientific << std::setprecision(15) << sumsquarechosennode_ << " " << sumsquareallnodes_ << std::endl;
+
+            // move temporary std::stringstream to file and close it
+            fputs(filecontent.str().c_str(), fp);
+            fclose(fp);
+          }
+
+          //new positions in this time step become old positions in last time step
+          chosennodeold_ = chosennodenew;
+          transdispold_->Update(1.0,trans_dis_new,0.0);
         }
-
-        //new positions in this time step become old positions in last time step
-        beginold_ = beginnew;
-        endold_ = endnew;
-      }
+      #endif
     }
     break;
     case INPAR::STATMECH::statout_viscoelasticity:

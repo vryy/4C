@@ -67,9 +67,7 @@ high precission calculation. The following facts have to be considered when doin
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-
-#include "Sacado.hpp"
-typedef Sacado::Fad::DFad<double> FAD;
+#include "../drt_lib/drt_node.H"
 
 //#define PRECISION ;           // Flag to switch on arbitrary precision calculation. To use this functionality two
                                 // slight modification in the do-configure file and in linalg_fixesizematrix.H are
@@ -82,11 +80,8 @@ typedef Sacado::Fad::DFad<double> FAD;
 using namespace cln;
 #endif
 
-//#define SIMPLECALC ;            // simplified residuum and stiffness calculation for the small tension case
+//#define SIMPLECALC ;          // simplified residuum and stiffness calculation for the small tension case
 //Default: Off
-#define ScaleFactorLine 1.0;    // Scale factor for each line of the equation system for better conditioning
-#define ScaleFactorColumn 1.0;  // Scale factor for each column of the stiffness matrix for better conditioning
-#define PreConditioning false;  // Flag to switch preconditioning of element stiffness matrix on or off
 #define NODALDOFS 2             // With this flag it can be switched between third order (2 nodal dofs) and fifth order
                                 // hermitian polynomials (3 nodal dofs). So the valid values of NODALDOFS are 2 and 3
 //Default: 2
@@ -99,12 +94,35 @@ using namespace cln;
 #define mygaussruleeb intrule_line_4point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented
 //Default: 4
 
+//#define BEAM3EBAUTOMATICDIFF      // is Sacado used or not?
+//Default: off
+
+//#define CONSISTENTANSBEAM3EB   //Decide wether the variational correct or the simplified ANS approach should be applied
+//Default: off
+
+//#define INEXTENSIBLE 1.0        //apply inextensibility constraint. only possible in combination with FAD and ANS_BEAM3EB
+                                  //and ANSVALUES=3 as well as NODALDOFS=2
+//Default: off
+
+//#define SWITCHINEXTENSIBLEON
+//Default: off
+
 //#define ORTHOPRESSURE 3.1415926535897938
+//Default: off
 
 //#define BEAM3EBROTPTC          //switch from standard PTC scheme to angular velocity based PTC for tangential DoFs
-
+//Default: off
 //#define CONSTSTOCHFORCE       //Flag in order to hold stochastic forces constant over the element length
                                 //(needed in order to compare with Reissner beams)
+//Default: off
+
+#if (defined(CONSISTENTANSBEAM3EB) or defined(INEXTENSIBLE) or defined(ORTHOPRESSURE)) and !defined(BEAM3EBAUTOMATICDIFF)
+  dserror("CONSISTENTANSBEAM3EB, INEXTENSIBLE and ORTHOPRESSURE only work in combination with BEAM3EBAUTOMATICDIFF!");
+#endif
+
+#if defined(INEXTENSIBLE) and !defined(ANS_BEAM3EB)
+  dserror(Flag INEXTENSIBLE only possible in combination with flag ANS_BEAM3EB!);
+#endif
 
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
@@ -263,7 +281,18 @@ public:
     /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
     *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
     *number of DOF to this node requested by any element connected to this node*/
+    #ifndef INEXTENSIBLE
       return 3*NODALDOFS;
+    #else
+      if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
+      {
+        return 7;
+      }
+      else
+      {
+        return 1;
+      }
+    #endif
   }
 
   /*!

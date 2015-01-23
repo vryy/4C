@@ -118,6 +118,10 @@ Maintainer: Christoph Meier
 #define INITSEG1 1                                 //minimal number of segments of element1 (necessary for debugging)
 #define INITSEG2 1                                 //minimal number of segments of element2 (necessary for debugging)
 
+//TODO: Change back to default
+#define MAXPENETRATIONSAFETYFAC 0.8                //maximal allowed penetration is MAXPENETRATIONSAFETYFAC*(R1_+R2_)
+//default: 0.4
+
 #if defined(ENDPOINTPENALTY) and defined(CONSISTENTTRANSITION)
   dserror("So far, CONSISTENTTRANSITION does not work in combination with ENDPOINTPENALTY!");
 #endif
@@ -141,11 +145,11 @@ Maintainer: Christoph Meier
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
-#define N_CIRCUMFERENTIAL 4      /* number of gmsh visualization devisions of beam element in circumferential direction*/
-#define N_Axial 5                /* number of gmsh visualization devisions of beam element in axial direction*/
+#define N_CIRCUMFERENTIAL 10      /* number of gmsh visualization devisions of beam element in circumferential direction*/
+#define N_Axial 10                /* number of gmsh visualization devisions of beam element in axial direction*/
 
 #define OUTPUTEVERY 1          //Write output only every OUTPUTEVERY^th step
-#define OUTPUTEVERYNEWTONSTEP  //Write output also after each Newton step
+//#define OUTPUTEVERYNEWTONSTEP  //Write output also after each Newton step
 //#define GMSHTIMESTEPS          /* write gmsh output in each time step */
 //#define GMSHNEWTONSTEPS      /* write gmsh and console output in each Newton step */
 //#define REACTIONFORCES          /* output of reaction forces and moments */

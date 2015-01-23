@@ -78,7 +78,6 @@ void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition( std::map<std::string,st
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
     .AddNamedDouble("MOMINPOL")
     ;
 
@@ -87,10 +86,24 @@ void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition( std::map<std::string,st
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
     .AddNamedDouble("MOMINPOL")
     ;
 
+  defs["LINE3"]
+    .AddIntVector("LINE3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
+
+  defs["LIN3"]
+    .AddIntVector("LIN3",3)
+    .AddNamedInt("MAT")
+    .AddNamedDouble("CROSS")
+    .AddNamedDouble("MOMIN")
+    .AddNamedDouble("MOMINPOL")
+    ;
 }
 
 
@@ -113,6 +126,11 @@ P_(LINALG::Matrix<3,1>(true)),
 t0_(LINALG::Matrix<3,2>(true)),
 t_(LINALG::Matrix<3,2>(true))
 {
+  #if defined(INEXTENSIBLE)
+    if(ANSVALUES!=3 or NODALDOFS!=2)
+      dserror("Flag INEXTENSIBLE only possible in combination with ANSVALUES=3 and NODALDOFS=2!");
+  #endif
+
   return;
 }
 /*----------------------------------------------------------------------*
@@ -173,7 +191,7 @@ void DRT::ELEMENTS::Beam3eb::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3eb::Shape() const
 {
-      return line2;
+  return line2;
 }
 
 

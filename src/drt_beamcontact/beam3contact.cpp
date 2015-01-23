@@ -4355,7 +4355,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeNormal(LINALG::TMat
 
   TYPE gap=norm_delta_r - R1_ - R2_;
 
-  if (BEAMCONTACT::CastToDouble(gap)<-0.4*(R1_+R2_) and numstep_>0)
+  if (BEAMCONTACT::CastToDouble(gap)<-MAXPENETRATIONSAFETYFAC*(R1_+R2_) and numstep_>0)
   {
     std::cout << "element1_->Id(): " << element1_->Id() << std::endl;
     std::cout << "element2_->Id(): " << element2_->Id() << std::endl;
