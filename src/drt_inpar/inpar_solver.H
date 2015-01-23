@@ -86,14 +86,13 @@ namespace INPAR
       azprec_TekoSIMPLE,         ///< SIMPLE preconditioner for 2x2 block system (Teko)
       azprec_BGSnxn,             ///< Block Gauss-Seidel for nxn system (Teko)
       azprec_CheapSIMPLE,        ///< CheapSIMPLE (BACI implementation for contact/meshtying/constraints)
-      azprec_MueLuAMG_sym,	     ///< MueLu AMG preconditioner (Smoothed aggregation for symmetric problems)
-      azprec_MueLuAMG_nonsym,	   ///< MueLu AMG preconditioner (PG-AMG for nonsymmetric problems ~ MLFLUID2)
+      azprec_MueLuAMG_sym,       ///< MueLu AMG preconditioner (Smoothed aggregation for symmetric problems)
+      azprec_MueLuAMG_nonsym,    ///< MueLu AMG preconditioner (PG-AMG for nonsymmetric problems ~ MLFLUID2)
       azprec_MueLuAMG_contact,   ///< MueLu AMG preconditioner (special handling for condensed contact formulation)
       azprec_MueLuAMG_contact2,  ///< MueLu AMG preconditioner (special enhanced handling for condensed contact formulation)
-      azprec_MueLuAMG_contact3,  ///< MueLu AMG preconditioner (special enhanced handling for condensed contact formulation)
       azprec_MueLuAMG_contactSP, ///< MueLu AMG preconditioner for saddlepoint formulation
       azprec_MueLuAMG_contactPen, ///< MueLu AMG preconditioner for penalty formulation
-      azprec_AMGnxn               ///< AMG preconditioner for a nxn block matrix 
+      azprec_AMGnxn               ///< AMG preconditioner for a nxn block matrix
     };
 
     /// permutation strategies for linear solvers
