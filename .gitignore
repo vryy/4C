@@ -63,6 +63,8 @@ guides/src/*/*/*.pdf
 
 # Doxygen
 doc/html/
+doc/Doxyfile.defs
+doc/Doxyfile
 
 # OS
 .directory
