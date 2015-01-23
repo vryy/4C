@@ -48,6 +48,12 @@ namespace FPSI
 
   void RedistributeInterface(Teuchos::RCP<DRT::Discretization> masterdis, const DRT::Discretization& slavedis, const std::string& condname, std::map<int,int>& interfacefacingelementmap);
 
+  void SetupInterfaceMap(const Epetra_Comm& comm,
+      Teuchos::RCP<DRT::Discretization> structdis,
+      Teuchos::RCP<DRT::Discretization> porofluiddis,
+      Teuchos::RCP<DRT::Discretization> fluiddis,
+      Teuchos::RCP<DRT::Discretization> aledis);
+
   //! Fills a map that matches the global id of an interface element on the slave side to the global id of the opposing bulk element.
   //! This is done processor locally. Works only for matching grids.
   /*!

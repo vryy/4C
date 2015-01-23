@@ -308,6 +308,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                                                  {
 
   /*
+   * Evaluate all Terms for the FPSI Boundary & Neumann Integration. The both conditions should be splited into to methods later to
+   * avoid ifs in case of Neumann Integration!
+   */
+
+  /*
    rauch 01/2013
 
           /                  \
@@ -471,15 +476,21 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   //  }
   if(discretization.Name() == "fluid")
   {
-    Teuchos::RCP<DRT::Discretization> porofluiddis = DRT::Problem::Instance()-> GetDis("porofluid");
-    it = InterfaceFacingElementMap->find(ele->Id());
-    DRT::Element* porofluidelement = porofluiddis -> gElement(it -> second);
+    if (block != "NeumannIntegration" && block != "NeumannIntegration_Ale")
+      //InterfaceFacingElementMap in general does not have elements on NeumannIntegration
+      //(just on the FPSI interface)
+    {
+      Teuchos::RCP<DRT::Discretization> porofluiddis = DRT::Problem::Instance()-> GetDis("porofluid");
+      it = InterfaceFacingElementMap->find(ele->Id());
+      DRT::Element* porofluidelement = porofluiddis -> gElement(it -> second);
 
-    generalmaterial        = porofluidelement -> Material();
-    porofluidmaterial      = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(generalmaterial);
+      generalmaterial        = porofluidelement -> Material();
+      porofluidmaterial      = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(generalmaterial);
+      permeability          = porofluidmaterial      -> Permeability();
+    }
+
     newtonianfluidmaterial = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(currentmaterial);
 
-    permeability          = porofluidmaterial      -> Permeability();
     fluiddensity          = newtonianfluidmaterial -> Density();
     fluiddynamicviscosity = newtonianfluidmaterial -> Viscosity();
   }
@@ -498,10 +509,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     fluiddynamicviscosity    = newtonianfluidmaterial -> Viscosity();
   }
 
-  beaversjosephcoefficient = fpsidynparams           . get<double>("ALPHABJ");
-
+  if (block != "NeumannIntegration" && block != "NeumannIntegration_Ale")
+  {
+    //InterfaceFacingElementMap in general does not have elements on NeumannIntegration
   // calculate factor for the tangential interface condition on the free fluid field
-  tangentialfac = (beaversjosephcoefficient*fluiddynamicviscosity)/(sqrt(permeability));
+   beaversjosephcoefficient = fpsidynparams           . get<double>("ALPHABJ");
+   tangentialfac = (beaversjosephcoefficient*fluiddynamicviscosity)/(sqrt(permeability));
+  }
 
   const double timescale = params.get<double>("timescale",-1.0);
   if(timescale == -1.0)
@@ -597,21 +611,26 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   {
     structele = structdis->gElement(currparenteleid);
   }
-  else if(discretization.Name()=="fluid")
+  else if(discretization.Name()=="fluid" && block != "NeumannIntegration" && block != "NeumannIntegration_Ale")
   {
     it = InterfaceFacingElementMap->find(ele->Id());
     structele = structdis -> gElement(it -> second);
   }
 
-  if (structele == NULL)
+  if (structele == NULL && block != "NeumannIntegration" && block != "NeumannIntegration_Ale")
   {
     dserror("Structure element %i not on local processor", currparenteleid);
   }
+
   // get porous material
-  const Teuchos::RCP<MAT::StructPoro>& structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(structele->Material());
-  if(structmat->MaterialType() != INPAR::MAT::m_structporo)
+  Teuchos::RCP<MAT::StructPoro> structmat;
+  if (block != "NeumannIntegration" && block != "NeumannIntegration_Ale")
   {
-    dserror("invalid structure material for poroelasticity");
+    structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(structele->Material());
+    if(structmat->MaterialType() != INPAR::MAT::m_structporo)
+    {
+      dserror("invalid structure material for poroelasticity");
+    }
   }
 
    //what's the current problem type?
@@ -895,7 +914,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
         {
           tangentialderiv1(idof,(node*my::nsd_)+idof2) -= (tangential1(idof,0)*tangential1(idof2,0)*pderiv(0,node))/(pow(normoftangential1,3.0));
 
-          tangentialderiv2(idof,(node*my::nsd_)+idof2) -= (tangential2(idof,0)*tangential2(idof2,0)*pderiv(1,node))/(pow(normoftangential2,3.0));//TODO: is that right??? should be two times tangential 2 !!! ChrAg ...check later
+          tangentialderiv2(idof,(node*my::nsd_)+idof2) -= (tangential2(idof,0)*tangential2(idof2,0)*pderiv(1,node))/(pow(normoftangential2,3.0));
         }
       }
     }
@@ -1426,37 +1445,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
             {
               elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::nsd_)+idof3)  -=
                   (
-                      // d (dd, mu*u_i,j o n ) / d d^L_l
-                      + fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
+                  // d (dd, mu*u_i,j o n ) / d d^L_l
+                  + fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
+                  + fluiddynamicviscosity*pfunct(inode)*graduonormalderiv(idof2,(nnod*my::nsd_)+idof3)*fac   // d n / d d^L_l
 
-                      // d (dd, mu*u_j,i o n ) / d d^L_l
-                      + fluiddynamicviscosity*pfunct(inode)*graduon(0,idof3)*derxy(idof2,nnod)*my::fac_          // d uj,i / d d^L,l
-                  )*abs(survivor(0,nnod)-1.0)*theta/fluiddensity;      // <- only inner dofs survive
+                  // d (dd, mu*u_j,i o n ) / d d^L_l
+                  + fluiddynamicviscosity*pfunct(inode)*graduon(0,idof3)*derxy(idof2,nnod)*my::fac_          // d uj,i / d d^L,l
+                  + fluiddynamicviscosity*pfunct(inode)*graduTonormalderiv(idof2,(nnod*my::nsd_)+idof3)*fac  // d n_j / d^L_l
+                  )*theta/fluiddensity;      // <- only inner dofs survive
             }
           }// block == "NeumannIntegration_Ale"
-
-          else if (block == "NeumannIntegration_Struct")
-          {
-
-            for (int idof3=0;idof3<my::nsd_;idof3++)
-            {
-              elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::numdofpernode_)+idof3)  -=
-                  (
-                      // d (dd , - pf o n) / d d^L_l
-                      - pfunct(inode)*pressint(0,0)*normalderiv(idof2,(nnod*my::nsd_)+idof3)*fac                 // d n_j / d d^L_l
-
-                      // d (dd, mu*u_i,j o n ) / d d^L_l
-                      + fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
-                      + fluiddynamicviscosity*pfunct(inode)*graduonormalderiv(idof2,(nnod*my::nsd_)+idof3)*fac   // d n / d d^L_l
-
-                      // d (dd, mu*u_j,i o n ) / d d^L_l
-                      + fluiddynamicviscosity*pfunct(inode)*graduon(0,idof3)*derxy(idof2,nnod)*my::fac_          // d uj,i / d d^L,l
-                      + fluiddynamicviscosity*pfunct(inode)*graduTonormalderiv(idof2,(nnod*my::nsd_)+idof3)*fac  // d n_j / d^L_l
-                  )*survivor(nnod)*theta/fluiddensity;      // <- only boundary dofs survive
-            }
-
-          }// block == "NeumannIntegration_Struct"
-
           else if(block == "Structure_Fluid" )
           {
             /*
@@ -1517,11 +1515,26 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
             }
           } //block structure_structure
 
-          else if (block == "Structure_Ale")
+          else if (block == "Structure_Ale_Fld")
           {
             for(int idof3=0;idof3<my::nsd_;idof3++)
             {
               elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::numdofpernode_)+idof3)  +=
+                  (
+                      // d (dd, mu*u_i,j o n ) / d d^L_l
+                      + fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
+
+                      // d (dd, mu*u_j,i o n ) / d d^L_l
+                      + fluiddynamicviscosity*pfunct(inode)*graduon(0,idof3)*derxy(idof2,nnod)*my::fac_          // d uj,i / d d^L,l
+
+                  )*abs(survivor(0,nnod)-1.0)*theta;      // <- only inner dofs survive
+            }
+          }// block structure_ale
+          else if (block == "Structure_Ale")
+          {
+            for(int idof3=0;idof3<my::nsd_;idof3++)
+            {
+              elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::nsd_)+idof3)  +=
                   (
                       // d (dd, mu*u_i,j o n ) / d d^L_l
                       + fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
@@ -1643,7 +1656,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
         {
           elevec1(inode*my::numdofpernode_+idof2)+= ((- pfunct(inode)*pressint(0,0)*my::unitnormal_(idof2)*rhsfac
               + pfunct(inode)*fluiddynamicviscosity*(graduon(idof2)+graduTon(idof2))*rhsfac)/fluiddensity
-          )*survivor(inode);
+          );//*survivor(inode); //will not change anything ...
         } // block NeumannIntegration
 
       } // NeumannIntegration

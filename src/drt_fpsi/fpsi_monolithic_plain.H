@@ -124,27 +124,23 @@ namespace FPSI
     void SetupRHSFirstIter(
         Epetra_Vector& f  ///< composed vector that contains all field vectors
     );
-    /// @name Matrix block transform objects
-    /// Handle row and column map exchange for matrix blocks
-
-
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>    aigtransform_ ;
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>    kpatransform_ ;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fggtransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fggtransform2_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     fgitransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     fgitransform2_;
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform2_;
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     aigtransform2_;
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     fmiitransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fmgitransform_;
+    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fggtransform_; //g_fsi/g_fsi || F->S/F->S transform (FSI/FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fggtransform2_; //g_fis/g_fpsi || F->S/F->S transform (FSI/FPSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fmgitransform_; //g_fsi/i transform || F->S/F->A transform (FSI/FluidVolume)
 
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     fgitransform_; //g_fsi || F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     Cfgtransform_; //full FluidField || F->S transform (FSI)
 
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform_; //for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     aigtransform_ ; //for Row/Col-Map for Full - AleField & F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     aigtransform2_; //for Row/Col-Map for Full - AleField & F->S transform (FPSI)
+
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     couplingcoltransform_; //for Row/Col-Map for Full - FluidField & F->A transform (FluidVolume)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     couplingcoltransformfs_; //for Row/Col-Map for Full - FluidField & F->S transform (FPSI)
     ///@}
 
 

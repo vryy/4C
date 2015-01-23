@@ -1864,6 +1864,7 @@ set(OBJS_DRT_FPSI
   src/drt_fpsi/fpsi_partitioned.cpp
   src/drt_fpsi/fpsi.cpp
   src/drt_fpsi/fpsi_robinneumann.cpp
+  src/drt_fpsi/fpsi_coupling.cpp
 )
 
 set(OBJS_DRT_SSI

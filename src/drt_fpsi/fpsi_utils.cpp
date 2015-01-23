@@ -199,11 +199,7 @@ them.
              );
   }
 
-  PoroFluid_Fluid_InterfaceMap = Teuchos::rcp(new std::map<int,int> );
-  Fluid_PoroFluid_InterfaceMap = Teuchos::rcp(new std::map<int,int> );
-
-  SetupLocalInterfaceFacingElementMap(*fluiddis,*porofluiddis,"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
-  SetupLocalInterfaceFacingElementMap(*porofluiddis,*fluiddis,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
+  SetupInterfaceMap(comm, structdis, porofluiddis, fluiddis, aledis);
 
   //4.- get coupling algorithm
     Teuchos::RCP<FPSI::FPSI_Base> fpsi_algo = Teuchos::null;
@@ -690,3 +686,17 @@ if(comm.MyPID()==0)
   return;
 }
 
+void FPSI::UTILS::SetupInterfaceMap(const Epetra_Comm& comm,
+    Teuchos::RCP<DRT::Discretization> structdis,
+    Teuchos::RCP<DRT::Discretization> porofluiddis,
+    Teuchos::RCP<DRT::Discretization> fluiddis,
+    Teuchos::RCP<DRT::Discretization> aledis)
+{
+  PoroFluid_Fluid_InterfaceMap = Teuchos::rcp(new std::map<int,int> );
+  Fluid_PoroFluid_InterfaceMap = Teuchos::rcp(new std::map<int,int> );
+
+  SetupLocalInterfaceFacingElementMap(*fluiddis,*porofluiddis,"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
+  SetupLocalInterfaceFacingElementMap(*porofluiddis,*fluiddis,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
+
+  return;
+}

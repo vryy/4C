@@ -17,6 +17,7 @@ Maintainer: Andreas Rauch
 
 // FPSI includes
 #include "fpsi.H"
+#include "fpsi_coupling.H"
 
 // FSI includes
 #include "../drt_fsi/fsi_matrixtransform.H"
@@ -107,9 +108,9 @@ class MonolithicBase : public FPSI_Base
     const Teuchos::RCP< ::ADAPTER::FluidFPSI>&  FluidField(){return fluid_subproblem_;}
     const Teuchos::RCP<ADAPTER::AleFpsiWrapper>& AleField()  {return ale_; }
 
-    Teuchos::RCP<DRT::DofSet> porostructdofset;
-    Teuchos::RCP<DRT::DofSet> porofluiddofset;
-    Teuchos::RCP<DRT::DofSet> fluiddofset;
+    //Teuchos::RCP<DRT::DofSet> porostructdofset; Remove me?
+    //Teuchos::RCP<DRT::DofSet> porofluiddofset;
+    //Teuchos::RCP<DRT::DofSet> fluiddofset;
     Teuchos::RCP<DRT::DofSet> aledofset;
 
     Teuchos::RCP<std::map<int,int> > Fluid_PoroFluid_InterfaceMap;
@@ -127,18 +128,8 @@ class MonolithicBase : public FPSI_Base
     //flag defines if FSI Interface exists for this problem
     bool FSI_Interface_exists_;
 
-    //Couplings for FPSI
-    ADAPTER::Coupling& PoroFluidFluidCoupling_FPSI()      { return *couple_porofluid_fluid_fpsi_; }
-    ADAPTER::Coupling& StructureFluidCoupling_FPSI()      { return *coupsf_fpsi_; }
-    ADAPTER::Coupling& SmallStructureFluidCoupling_FPSI() { return *smallcoupsf_fpsi_; }
-    ADAPTER::Coupling& InnerStructureFluidCoupling()      { return *innercoupsf_;}
-    ADAPTER::Coupling& StructureAleCoupling_FPSI()        { return *coupsa_fpsi_; }
-
-    const ADAPTER::Coupling& PoroFluidFluidCoupling_FPSI()      const { return *couple_porofluid_fluid_fpsi_; }
-    const ADAPTER::Coupling& StructureFluidCoupling_FPSI()      const { return *coupsf_fpsi_; }
-    const ADAPTER::Coupling& SmallStructureFluidCoupling_FPSI() const { return *smallcoupsf_fpsi_; }
-    const ADAPTER::Coupling& StructureAleCoupling_FPSI()        const { return *coupsa_fpsi_; }
-    const ADAPTER::Coupling& InnerStructureFluidCoupling()      const { return *innercoupsf_;}
+  public:
+    Teuchos::RCP<FPSI::FPSICoupling>& FPSICoupl() {return fpsicoupl_;}
 
     //General Couplings
     ADAPTER::Coupling& FluidAleCoupling()                 { return *coupfa_; }
@@ -154,16 +145,7 @@ class MonolithicBase : public FPSI_Base
     const ADAPTER::Coupling& StructureAleCoupling_FSI()         const    { return *coupsa_fsi_; }
     const ADAPTER::Coupling& InterfaceFluidAleCoupling_FSI()    const    { return *icoupfa_fsi_; }
 
-    virtual Teuchos::RCP<Epetra_Vector> StructToFluid_FPSI        (Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct_FPSI        (Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> SmallFluidToStruct_FPSI   (Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> SmallStructToFluid_FPSI   (Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle_FPSI          (Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToStruct_FPSI          (Teuchos::RCP<const Epetra_Vector> iv) const;
- public://this one is needed in case of FPS3I
-    virtual Teuchos::RCP<Epetra_Vector> FluidToPorofluid_FPSI     (Teuchos::RCP<const Epetra_Vector> iv) const;
  protected:
-    virtual Teuchos::RCP<Epetra_Vector> PorofluidToFluid_FPSI     (Teuchos::RCP<const Epetra_Vector> iv) const;
 
     virtual Teuchos::RCP<Epetra_Vector> FluidToAle                (Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> AleToFluid                (Teuchos::RCP<const Epetra_Vector> iv) const;
@@ -176,31 +158,10 @@ class MonolithicBase : public FPSI_Base
     virtual Teuchos::RCP<Epetra_Vector> AleToFluid_FSI            (Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> AleToFluidInterface_FSI   (Teuchos::RCP<const Epetra_Vector> iv) const;
 
-    Teuchos::RCP<ADAPTER::Coupling>                  couple_porofluid_fluid_matching_;
-    Teuchos::RCP<ADAPTER::Coupling>                  couple_porofluid_fluid_fpsi_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     couplingrowtransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     couplingrowtransform2_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     couplingrowtransform3_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     couplingrowtransform4_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     couplingrowtransform5_;
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     couplingcoltransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     couplingcoltransform2_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  couplingrowcoltransform_;
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  couplingrowcoltransform2_;
-
-
   private:
     //!FPSI - COUPLING
-    // coupling of structure and fluid at the interface
-    Teuchos::RCP<ADAPTER::Coupling>                coupsf_fpsi_;
-    // coupling of structure and fluid at the interface
-    Teuchos::RCP<ADAPTER::Coupling>                smallcoupsf_fpsi_;
-    // coupling of structure and ale at the interface
-    Teuchos::RCP<ADAPTER::Coupling>                coupsa_fpsi_;
     // coupling of fluid and ale in the entire fluid volume
     Teuchos::RCP<ADAPTER::Coupling>                coupfa_;
-    // coupling of all structure and fluid dofs
-    Teuchos::RCP<ADAPTER::Coupling>                innercoupsf_;
 
     //!FSI - COUPLING
     // coupling of structure and fluid at the interface
@@ -213,6 +174,9 @@ class MonolithicBase : public FPSI_Base
     Teuchos::RCP<ADAPTER::Coupling>               icoupfa_fsi_;
     // coupling of FPSI+FSI interface overlapping dofs of structure and freefluid
     Teuchos::RCP<ADAPTER::Coupling>               iffcoupsf_fsi_;
+
+    //FPSI Coupling Object
+    Teuchos::RCP<FPSI::FPSICoupling> fpsicoupl_;
 
   }; // MonolithicBase
 
@@ -245,36 +209,6 @@ public:
   virtual void TimeStep();
 
   void TestResults(const Epetra_Comm& comm);
-
-  Teuchos::RCP<LINALG::SparseMatrix> FluidPoroCouplingMatrix();
-
-  Teuchos::RCP<LINALG::SparseMatrix> PoroFluidCouplingMatrix();
-
-  // Evaluate mechanical-fluid system matrix
-  void ApplyCouplingTerms(  Teuchos::RCP<LINALG::SparseOperator>  k_pf,
-                            Teuchos::RCP<LINALG::SparseOperator>  k_fp,
-                            Teuchos::RCP<LINALG::SparseMatrix>    p,
-                            Teuchos::RCP<LINALG::SparseMatrix>    f,
-                            Teuchos::RCP<LINALG::SparseOperator>  a,
-                            Teuchos::RCP<LINALG::SparseOperator>  k_fa
-                          );
-
-  // Evaluate fluid-mechanical system matrix
-  void ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_fp);
-
-  //coupling matrices
-  Teuchos::RCP<LINALG::SparseOperator> k_pf_;
-  Teuchos::RCP<LINALG::SparseOperator> k_fp_;
-  //sub matrices
-  Teuchos::RCP<LINALG::SparseOperator> k_pf_struct_;
-  Teuchos::RCP<LINALG::SparseOperator> k_pf_porofluid_;
-  Teuchos::RCP<LINALG::SparseOperator> k_fp_porofluid_;
-  Teuchos::RCP<LINALG::SparseOperator> k_pfs_;
-  //ale matrices
-  Teuchos::RCP<LINALG::SparseOperator> k_pa_;
-  Teuchos::RCP<LINALG::SparseOperator> k_ap_;
-  Teuchos::RCP<LINALG::SparseOperator> k_aa_;
-  Teuchos::RCP<LINALG::SparseOperator> k_fa_;
 
   virtual void SetupRHS(bool firstcall=false) = 0;
 
@@ -327,6 +261,8 @@ public:
   // extractor to communicate between (fluid + fluid_fpsi) + fsi map and block mapss
   const LINALG::MultiMapExtractor& Extractor_FluidFPSI_FSI() const { return fluidfpsi_fsi_rowdofmap_; }
 
+  //external acces to rhs vector (used by xfpsi)
+  Teuchos::RCP<Epetra_Vector>& RHS() {return rhs_;} //TodoAge: will be removed again!
 
 protected:
 
