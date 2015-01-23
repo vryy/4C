@@ -97,6 +97,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
   {
   case SCATRA::bd_calc_fps3i_surface_permeability:
   case SCATRA::bd_calc_fs3i_surface_permeability:
+  case SCATRA::bd_calc_Neumann:
   {
     DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(ele,
                                                                params,
