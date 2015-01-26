@@ -62,6 +62,7 @@ DRT::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit()
     artdiff_(INPAR::SCATRA::artdiff_none),
     alphapen_(0.0),
     project_(true),
+    projectdiff_(0.0),
     lumping_(false),
     difffct_(INPAR::SCATRA::hyperbolic)
 {
@@ -140,8 +141,20 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetElementLsReinitScaTraParamete
 
   // L2-projection
   project_ = DRT::INPUT::IntegralValue<bool>(reinitlist,"PROJECTION");
+  // diffusion for L2-projection
+  projectdiff_ = reinitlist.get<double>("PROJECTION_DIFF");
+  if (projectdiff_ < 0.0)
+    dserror("Diffusivity has to be positive!");
   // lumping for L2-projection
   lumping_ = DRT::INPUT::IntegralValue<bool>(reinitlist,"LUMPING");
+  // check for illegal combination
+  if (projectdiff_ > 0.0 and lumping_ == true)
+    dserror("Illegal combination!");
+  if (projectdiff_ > 0.0 and reinittype_ == INPAR::SCATRA::reinitaction_sussman);
+    dserror("Illegal combination!");
+  // The second dserror is added here for safety reasons. I think that using a diffusive term for the reconstruction
+  // of the velocity for reinitialization is possible, but I have not yet further investigated this option. Therefore,
+  // you should test it first.
 
   return;
 }

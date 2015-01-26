@@ -6084,6 +6084,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  &ls_reinit);
 
     BoolParameter("PROJECTION","yes","use L2-projection for grad phi and related quantities",&ls_reinit);
+    DoubleParameter("PROJECTION_DIFF",0.0,"use diffusive term for L2-projection",&ls_reinit);
     BoolParameter("LUMPING","no","use lumped mass matrix for L2-projection",&ls_reinit);
 
     setStringToIntegralParameter<int>("DIFF_FUNC","hyperbolic",

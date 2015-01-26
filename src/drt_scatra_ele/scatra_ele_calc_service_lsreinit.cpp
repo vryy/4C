@@ -451,6 +451,20 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
     my::CalcMatMass(emat,0,fac,1.0);
 
     //------------------------------------------------
+    // add dissipation for smooth fields
+    //------------------------------------------------
+    // should not be used together with lumping
+    // prevented by dserror in lsreinit parameters
+    if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ProjectDiff()>0.0)
+    {
+      const double diff =
+        (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ProjectDiff())
+        *charelelength*charelelength;
+      my::diffmanager_->SetIsotropicDiff(diff,0);
+      my::CalcMatDiff(emat,0,fac,my::diffmanager_);
+    }
+
+    //------------------------------------------------
     // element rhs
     //------------------------------------------------
     // distinguish reinitalization

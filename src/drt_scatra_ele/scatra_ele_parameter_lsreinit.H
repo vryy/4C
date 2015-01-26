@@ -66,6 +66,7 @@ public:
   const double PenaltyPara(){return alphapen_;};
   const bool Project(){return project_;};
   const bool Lumping(){return lumping_;};
+  const double ProjectDiff(){return projectdiff_;};
   const INPAR::SCATRA::DiffFunc DiffFct(){return difffct_;};
 
 private:
@@ -88,6 +89,8 @@ private:
   double alphapen_;
   // use L2 projection
   bool project_;
+  // diffusion for L2 projection
+  double projectdiff_;
   // mass lumping for L2 projection
   bool lumping_;
   // function for diffusivity

@@ -1757,7 +1757,8 @@ void SCATRA::ScaTraTimIntImpl::SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> s
 // Reconstruct gradients
 /*==========================================================================*/
 //! Calculate the reconstructed nodal gradient of phi
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::GetGradientAtNodes(){
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::GetGradientAtNodes()
+{
   Teuchos::RCP<Epetra_MultiVector> gradPhi = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
 
   ReconstructGradientAtNodes(gradPhi);
@@ -1800,10 +1801,12 @@ void SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodes(
   for (int idim=0; idim<3 ; idim++)
     solver_->Solve(sysmat_->EpetraOperator(),Teuchos::rcp((*gradPhi)(idim),false),Teuchos::rcp((*rhs_vectors)(idim),false),true,true);
 
+  return;
 }
 
+
 /*--------------------------------------------------------------------------------------------------------------------*
- | convergence check (only for two-way coupled problems e.g. low-Mach-number flow, two phase flow)           vg 09/11 |
+ | convergence check (only for two-way coupled problems, e.g., low-Mach-number flow, two phase flow, ...)    vg 09/11 |
  *--------------------------------------------------------------------------------------------------------------------*/
 bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int          itnum,
                                                 int          itmax,
