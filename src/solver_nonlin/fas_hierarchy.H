@@ -51,6 +51,7 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
+  //! NLNSOL::FAS: A Full Approximation Scheme multigrid within the NLNSOL framework
   namespace FAS
   {
     /*! \brief Hierarchy of multigrid levels based on MueLu

@@ -66,6 +66,7 @@ class MapExtractor;
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
+//! ALE: Mesh moving algorithms for Arbitrary Lagrangian Eulerian observer
 namespace ALE
 {
 /*! \brief ALE time integration
