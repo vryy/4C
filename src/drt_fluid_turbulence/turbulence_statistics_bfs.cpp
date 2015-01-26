@@ -1555,7 +1555,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
     (*log) << "# Statistics for turbulent variable-density flow over a backward-facing step at low Mach number (first- and second-order moments)";
     (*log) << "\n\n";
 #ifdef COMBINE_SAMPLES
-    (*log) << "# Statistics are perpared for combinations after restart!!!";
+    (*log) << "# Statistics are prepared for combinations after restart!!!";
     (*log) << "\n\n";
 #endif
     (*log) << "# Caution: The following statistics have to be used carefully:\n";
