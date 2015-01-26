@@ -150,7 +150,7 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetElementLsReinitScaTraParamete
   // check for illegal combination
   if (projectdiff_ > 0.0 and lumping_ == true)
     dserror("Illegal combination!");
-  if (projectdiff_ > 0.0 and reinittype_ == INPAR::SCATRA::reinitaction_sussman);
+  if (projectdiff_ > 0.0 and reinittype_ == INPAR::SCATRA::reinitaction_sussman)
     dserror("Illegal combination!");
   // The second dserror is added here for safety reasons. I think that using a diffusive term for the reconstruction
   // of the velocity for reinitialization is possible, but I have not yet further investigated this option. Therefore,
