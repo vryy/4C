@@ -50,6 +50,7 @@ namespace IO
 
 namespace XFEM
 {
+  class ConditionManager;
   class XFEMDofSet;
 }
 
@@ -75,58 +76,41 @@ public:
 
   /// ctor
   XFluidStateCreator(
-    INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy,
-    INPAR::CUT::BCellGaussPts BoundCellGaussPointBy,
-    bool gmsh_cut_out,
-    int maxnumdofsets,
-    int minnumdofsets,
-    bool include_inner) :
-      VolumeCellGaussPointBy_(VolumeCellGaussPointBy),
-      BoundCellGaussPointBy_(BoundCellGaussPointBy),
-      gmsh_cut_out_(gmsh_cut_out),
-      maxnumdofsets_(maxnumdofsets),
-      minnumdofsets_(minnumdofsets),
-      include_inner_(include_inner)
+      Teuchos::RCP<XFEM::ConditionManager> condition_manager,
+      INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy,
+      INPAR::CUT::BCellGaussPts BoundCellGaussPointBy,
+      bool gmsh_cut_out,
+      int maxnumdofsets,
+      int minnumdofsets,
+      bool include_inner) :
+        condition_manager_(condition_manager),
+        VolumeCellGaussPointBy_(VolumeCellGaussPointBy),
+        BoundCellGaussPointBy_(BoundCellGaussPointBy),
+        gmsh_cut_out_(gmsh_cut_out),
+        maxnumdofsets_(maxnumdofsets),
+        minnumdofsets_(minnumdofsets),
+        include_inner_(include_inner)
   {
   }
 
   /// create a state-object after a cut (pure XFEM fluid)
   Teuchos::RCP<XFluidState> Create(
       const Teuchos::RCP<DRT::DiscretizationXFEM>&      xdiscret,           //!< xfluid background discretization
-      const Teuchos::RCP<DRT::Discretization> &         boundarydiscret,    //!< boundary discretization, a discretization whose surface elements cut the background mesh
       Teuchos::RCP<const Epetra_Vector>                 back_disp_col,      //!< col vector holding background ALE displacements for backdis
-      Teuchos::RCP<const Epetra_Vector>                 cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-      Teuchos::RCP<const Epetra_Vector>                 back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
-      std::map<int, LINALG::Matrix<3,1> > &             tip_nodes,          //!< tip nodes for crack application
-      Teuchos::ParameterList &                          solver_params,
-      const int                                         step,
-      const double &                                    time
-      );
+      Teuchos::ParameterList &                          solver_params,      //!< solver parameters
+      const int                                         step,               //!< current time step
+      const double &                                    time                //!< current time
+  );
 
   /// create a state-object after a cut (XFEM fluid with embedded fluid mesh)
-    Teuchos::RCP<XFluidFluidState> Create(
+  Teuchos::RCP<XFluidFluidState> Create(
       const Teuchos::RCP<DRT::DiscretizationXFEM>&      xdiscret,           //!< xfluid background discretization
-      const Teuchos::RCP<DRT::Discretization> &         boundarydiscret,    //!< boundary discretization, a discretization whose surface elements cut the background mesh
       const Teuchos::RCP<DRT::Discretization> &         embfluiddiscret,    //!< embedded fluid discretization
       Teuchos::RCP<const Epetra_Vector>                 back_disp_col,      //!< col vector holding background ALE displacements for backdis
-      Teuchos::RCP<const Epetra_Vector>                 cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-      Teuchos::RCP<const Epetra_Vector>                 back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
-      Teuchos::ParameterList &                          solver_params,
-      const int                                         step,
-      const double &                                    time
-      );
-
-  /*!
-   \brief initialize coupling matrices
-   @param slave discretization for matrices to couple with
-   */
-  void InitCouplingMatrices(const Teuchos::RCP<DRT::Discretization>&  slavediscret);
-
-  /*!
-   \brief initialize coupling rhs vectors
-   @param slave discretization for rhs-vector to couple with
-   */
-  void InitCouplingRhs(const Teuchos::RCP<DRT::Discretization>&  slavediscret);
+      Teuchos::ParameterList &                          solver_params,      //!< solver parameters
+      const int                                         step,               //!< current time step
+      const double &                                    time                //!< current time
+  );
 
   /*!
    \brief initialize ALE state vectors
@@ -145,15 +129,14 @@ private:
       Teuchos::RCP<XFEM::XFEMDofSet> &                  dofset,             //!< xfem dofset obtained from the new wizard
       Teuchos::RCP<GEO::CutWizard> &                    wizard,             //!< cut wizard associated with current intersection state
       const Teuchos::RCP<DRT::DiscretizationXFEM>&      xdiscret,           //!< xfluid background discretization
-      const Teuchos::RCP<DRT::Discretization> &         boundarydiscret,    //!< boundary discretization, a discretization whose surface elements cut the background mesh
       Teuchos::RCP<const Epetra_Vector>                 back_disp_col,      //!< col vector holding background ALE displacements for backdis
-      Teuchos::RCP<const Epetra_Vector>                 cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-      Teuchos::RCP<const Epetra_Vector>                 back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
-      Teuchos::ParameterList &                          solver_params,
-      const int                                         step,
-      std::map<int, LINALG::Matrix<3,1> >               tip_nodes = std::map<int, LINALG::Matrix<3,1> >()  //!< tip nodes for crack application
+      Teuchos::ParameterList &                          solver_params,      //!< solver parameters
+      const int                                         step                //!< current time step
   );
 
+
+  //! condition manager which handles all coupling objects and the coupling/boundary conditions
+  Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
 
   const INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy_;
   const INPAR::CUT::BCellGaussPts BoundCellGaussPointBy_;

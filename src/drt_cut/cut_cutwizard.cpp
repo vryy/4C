@@ -13,6 +13,7 @@ Maintainer: Benedikt Schott
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
+#include "cut_cutwizard.H"
 
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_control.H"
@@ -27,28 +28,24 @@ Maintainer: Benedikt Schott
 #include "../drt_cut/cut_parallel.H"
 #include "../drt_cut/cut_sidehandle.H"
 
-#include "cut_cutwizard.H"
-
 
 /*-------------------------------------------------------------*
  * constructor
 *--------------------------------------------------------------*/
-GEO::CutWizard::CutWizard( Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Discretization> cutterdis)
+GEO::CutWizard::CutWizard( Teuchos::RCP<DRT::Discretization> dis )
   : backdis_( dis ),
-    cutterdis_( cutterdis ),
     myrank_ ( backdis_->Comm().MyPID() ),
     intersection_(Teuchos::rcp( new GEO::CUT::CombIntersection( myrank_ ))),
     do_mesh_intersection_(false),
     do_levelset_intersection_(false),
+    back_disp_col_(Teuchos::null),
+    back_levelset_col_(Teuchos::null),
+    level_set_sid_(-1),
     lsv_only_plus_domain_(true),
-    is_crack_(false),
-    is_set_options_(false),
-    is_set_state_(false)
+    is_set_options_(false)
 {
   if(backdis_ == Teuchos::null) dserror("null pointer to background dis, invalid!");
 }
-
-
 
 
 /*========================================================================*/
@@ -84,41 +81,63 @@ void GEO::CutWizard::SetOptions(
 /*-------------------------------------------------------------*
  * set displacement and level-set vectors used during the cut
 *--------------------------------------------------------------*/
-void GEO::CutWizard::SetState(
+void GEO::CutWizard::SetBackgroundState(
     Teuchos::RCP<const Epetra_Vector> back_disp_col,      //!< col vector holding background ALE displacements for backdis
-    Teuchos::RCP<const Epetra_Vector> cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-    Teuchos::RCP<const Epetra_Vector> back_levelset_col   //!< col vector holding nodal level-set values based on backdis
+    Teuchos::RCP<const Epetra_Vector> back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
+    const int level_set_sid                               //!< global id for level-set side
 )
 {
   // set state vectors used in cut
   back_disp_col_     = back_disp_col;
-  cutter_disp_col_   = cutter_disp_col;
   back_levelset_col_ = back_levelset_col;
 
-  // check for reasonable combinations
-  if(cutterdis_ == Teuchos::null and cutter_disp_col_ != Teuchos::null) dserror("interface displacement vector available, but no cutter-discretization!");
+  level_set_sid_ = level_set_sid;
 
-  // set intersection flags
-
-  if(cutterdis_ != Teuchos::null)
-    do_mesh_intersection_ = true; // if no displacement vector available, we cut in reference configuration
 
   if(back_levelset_col_ != Teuchos::null)
     do_levelset_intersection_ = true;
 
-  if(!do_mesh_intersection_ and !do_levelset_intersection_) dserror(" no mesh intersection and no level-set intersection! Why do you call the CUT-library?");
-
-  is_set_state_ = true;
 }
 
 
-
-//! set the nodes representing crack tip in FSI with crack structure simulations
-void GEO::CutWizard::setCrackTipNodes( std::map<int, LINALG::Matrix<3,1> > & tip )
+/*-------------------------------------------------------------*
+ * set displacement and level-set vectors used during the cut
+*--------------------------------------------------------------*/
+void GEO::CutWizard::AddCutterState(
+    const int mc_idx,
+    Teuchos::RCP<DRT::Discretization> cutter_dis,
+    Teuchos::RCP<const Epetra_Vector> cutter_disp_col
+)
 {
-  tip_nodes_ = tip;
+  std::map<int, LINALG::Matrix<3,1> > tipnodes;
+  AddCutterState(0,cutter_dis, cutter_disp_col, 0, tipnodes);
+}
 
-  is_crack_ = (tip_nodes_.size() != 0);
+/*-------------------------------------------------------------*
+ * set displacement and level-set vectors used during the cut
+*--------------------------------------------------------------*/
+void GEO::CutWizard::AddCutterState(
+    const int mc_idx,
+    Teuchos::RCP<DRT::Discretization> cutter_dis,
+    Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
+    const int                         start_ele_gid,
+    std::map<int, LINALG::Matrix<3,1> > & tip_nodes
+)
+{
+  std::map<int, Teuchos::RCP<CutterMesh> >::iterator cm = cutter_meshes_.find(mc_idx);
+
+  if(cm!=cutter_meshes_.end()) dserror("cutter mesh with mesh coupling index %i already set", mc_idx);
+
+  cutter_meshes_[mc_idx] = Teuchos::rcp(
+      new CutterMesh(
+      cutter_dis,
+      cutter_disp_col,
+      tip_nodes,
+      start_ele_gid)
+  );
+
+  do_mesh_intersection_ = true;
+
 }
 
 
@@ -135,7 +154,8 @@ void GEO::CutWizard::Cut(
 {
   // safety checks if the cut is initialized correctly
   if(!is_set_options_) dserror("you have call SetOptions() before you can use the CutWizard");
-  if(!is_set_state_)   dserror("you have call SetState() before you can use the CutWizard");
+
+  if(!do_mesh_intersection_ and !do_levelset_intersection_) dserror(" no mesh intersection and no level-set intersection! Why do you call the CUT-library?");
 
 
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CutWizard::Cut" );
@@ -144,7 +164,6 @@ void GEO::CutWizard::Cut(
     IO::cout << "\nGEO::CutWizard::Cut:" << IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
-
 
   //--------------------------------------
   // prepare the cut, add background elements and cutting sides
@@ -229,11 +248,11 @@ void GEO::CutWizard::Prepare()
 *--------------------------------------------------------------*/
 void GEO::CutWizard::AddCuttingSides()
 {
-  // add a new level-set side
-  if(do_levelset_intersection_) AddLSCuttingSide();
-
   // add all mesh cutting sides
   if(do_mesh_intersection_) AddMeshCuttingSide();
+
+  // add a new level-set side
+  if(do_levelset_intersection_) AddLSCuttingSide();
 }
 
 /*-------------------------------------------------------------*
@@ -241,29 +260,57 @@ void GEO::CutWizard::AddCuttingSides()
 *--------------------------------------------------------------*/
 void GEO::CutWizard::AddLSCuttingSide()
 {
-  int level_set_sid = 0;
-
-  // use the next higher GID not used in the cut-discretization (cutter dis counts from 0 to NumGlobalElements-1
-  if(cutterdis_ != Teuchos::null) level_set_sid = cutterdis_->NumGlobalElements();
-
   // add a new level-set side
-  intersection_->AddLevelSetSide(level_set_sid);
+  intersection_->AddLevelSetSide(level_set_sid_);
 }
+
+
+/*-------------------------------------------------------------*
+* add all mesh-cutting sides of all cutting discretizations
+*--------------------------------------------------------------*/
+void GEO::CutWizard::AddMeshCuttingSide()
+{
+
+  // loop all mesh coupling objects
+  for(std::map<int, Teuchos::RCP<CutterMesh> >::iterator it=cutter_meshes_.begin();
+      it != cutter_meshes_.end();
+      it++)
+  {
+    Teuchos::RCP<CutterMesh> cutter_mesh= it->second;
+
+    AddMeshCuttingSide(
+        cutter_mesh->cutterdis_,
+        cutter_mesh->cutter_disp_col_,
+        cutter_mesh->is_crack_,
+        cutter_mesh->tip_nodes_,
+        cutter_mesh->start_ele_gid_);
+  }
+}
+
+
 
 /*-------------------------------------------------------------*
 * add all cutting sides from the cut-discretization
 *--------------------------------------------------------------*/
-void GEO::CutWizard::AddMeshCuttingSide()
+void GEO::CutWizard::AddMeshCuttingSide(
+    Teuchos::RCP<DRT::Discretization> cutterdis,
+    Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
+    bool is_crack,
+    std::map<int, LINALG::Matrix<3,1> > & tip_nodes,
+    const int start_ele_gid        ///< mesh coupling index
+    )
 {
+  if(cutterdis == Teuchos::null) dserror("cannot add mesh cutting sides for invalid cutter discretiaztion!");
+
   std::vector<int> lm;
   std::vector<double> mydisp;
 
-  int numcutelements = cutterdis_->NumMyColElements();
+  int numcutelements = cutterdis->NumMyColElements();
 
 
   for ( int lid = 0; lid < numcutelements; ++lid )
   {
-    DRT::Element * element = cutterdis_->lColElement(lid);
+    DRT::Element * element = cutterdis->lColElement(lid);
 
     const int numnode = element->NumNode();
     DRT::Node ** nodes = element->Nodes();
@@ -276,15 +323,15 @@ void GEO::CutWizard::AddMeshCuttingSide()
 
       lm.clear();
       mydisp.clear();
-      cutterdis_->Dof(&node, lm);
+      cutterdis->Dof(&node, lm);
 
       LINALG::Matrix<3, 1> x( node.X() );
 
-      if(cutter_disp_col_ != Teuchos::null)
+      if(cutter_disp_col != Teuchos::null)
       {
         if(lm.size() == 3) // case for BELE3 boundary elements
         {
-          DRT::UTILS::ExtractMyValues(*cutter_disp_col_,mydisp,lm);
+          DRT::UTILS::ExtractMyValues(*cutter_disp_col,mydisp,lm);
         }
         else if(lm.size() == 4) // case for BELE3_4 boundary elements
         {
@@ -293,7 +340,7 @@ void GEO::CutWizard::AddMeshCuttingSide()
           lm_red.clear();
           for(int k=0; k< 3; k++) lm_red.push_back(lm[k]);
 
-          DRT::UTILS::ExtractMyValues(*cutter_disp_col_,mydisp,lm_red);
+          DRT::UTILS::ExtractMyValues(*cutter_disp_col,mydisp,lm_red);
         }
         else dserror("wrong number of dofs for node %i", lm.size());
 
@@ -301,8 +348,6 @@ void GEO::CutWizard::AddMeshCuttingSide()
           dserror("we need 3 displacements here");
 
         LINALG::Matrix<3, 1> disp( &mydisp[0], true );
-
-
 
         // ------------------------------------------------------------------------------------------------
         // --- when simulating FSI with crack, nodes that represent crack are treated separately        ---
@@ -312,15 +357,14 @@ void GEO::CutWizard::AddMeshCuttingSide()
         // --- deal with them correctly. This becomes problematic when simulating extrinsic cohesive    ---
         // --- zone modeling                                                                            ---
         // ------------------------------------------------------------------------------------------------
-        if( is_crack_ )
+        if( is_crack )
         {
-          std::map<int, LINALG::Matrix<3,1> >::iterator itt = tip_nodes_.find( node.Id() );
-          if( itt != tip_nodes_.end() )
+          std::map<int, LINALG::Matrix<3,1> >::iterator itt = tip_nodes.find( node.Id() );
+          if( itt != tip_nodes.end() )
           {
             disp = itt->second;
           }
         }
-
         //update x-position of cutter node for current time step (update with displacement)
         x.Update( 1, disp, 1 );
       }
@@ -328,20 +372,24 @@ void GEO::CutWizard::AddMeshCuttingSide()
     }
 
     // add the side of the cutter-discretization
-    AddMeshCuttingSide( 0, element, xyze );
+    AddMeshCuttingSide( 0, element, xyze, start_ele_gid );
   }
 }
 
 /*-------------------------------------------------------------*
 * prepare the cut, add background elements and cutting sides
 *--------------------------------------------------------------*/
-void GEO::CutWizard::AddMeshCuttingSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze )
+void GEO::CutWizard::AddMeshCuttingSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze, const int start_ele_gid )
 {
   const int numnode = ele->NumNode();
   const int * nodeids = ele->NodeIds();
 
   std::vector<int> nids( nodeids, nodeids+numnode );
-  intersection_->AddMeshCuttingSide( ele->Id(), nids, xyze, ele->Shape(), mi );
+
+  const int eid = ele->Id();       // id of cutting side based on the cutter discretization
+  const int sid = eid + start_ele_gid; // id of cutting side within the cut library
+
+  intersection_->AddMeshCuttingSide( sid, nids, xyze, ele->Shape(), mi );
 }
 
 /*-------------------------------------------------------------*

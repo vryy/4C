@@ -137,7 +137,7 @@ public:
 
   //! Get one nodal coords
   std::vector<double> GetNode(const int NodeID) const;
-  
+
   //! Set one nodal coords
   void SetNode(const int NodeID, const std::vector<double> coord);
 

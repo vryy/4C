@@ -14,17 +14,15 @@ Maintainer: Shadan Shahmiri
 
 #include "drt_dofset_transparent_independent.H"
 #include "drt_dofset.H"
+
 #include "../linalg/linalg_utils.H"
-#include "../drt_cut/cut_node.H"
-#include "../drt_cut/cut_cutwizard.H"
+
 
 
 DRT::TransparentIndependentDofSet::TransparentIndependentDofSet(
   Teuchos::RCP<DRT::Discretization> sourcedis,
-  bool parallel,
-  Teuchos::RCP<GEO::CutWizard> wizard = Teuchos::null)
-  : DRT::TransparentDofSet(sourcedis, parallel),
-    wizard_(wizard)
+  bool parallel)
+  : TransparentDofSet(sourcedis, parallel)
 {
   return;
 }
@@ -52,15 +50,6 @@ int DRT::TransparentIndependentDofSet::AssignDegreesOfFreedom(const DRT::Discret
 
 int DRT::TransparentIndependentDofSet::NumDofPerNode( const DRT::Node & node ) const
 {
-  if (wizard_ != Teuchos::null)
-  {
-    GEO::CUT::Node *n = wizard_->GetNode( node.Id() );
-    if ( n!=NULL )
-    {
-      int numdofpernode = DRT::DofSet::NumDofPerNode( node );
-      return numdofpernode * n->NumDofSets();
-    }
-  }
   return DRT::DofSet::NumDofPerNode( node );
 }
 

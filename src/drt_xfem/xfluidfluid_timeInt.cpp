@@ -28,7 +28,6 @@ Maintainer:
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_dofset_transparent_independent.H"
 
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_pstream.H"
@@ -52,6 +51,8 @@ Maintainer:
 
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
+
+#include "../drt_xfem/xfem_dofset_transparent_independent.H"
 
 // -------------------------------------------------------------------
 //  constructor
@@ -1700,7 +1701,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompOptDiscret(Teuchos::RCP<GEO:
   // a XFEM dofset here - in case of multiple dofsets per node,
   // evaluation is going to crash
   incompdis_->Redistribute(*newrownodemap,*newcolnodemap,false,false,false);
-  Teuchos::RCP<DRT::DofSet> new_dofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(bgdis_,true,wizard_np));
+  Teuchos::RCP<DRT::DofSet> new_dofset = Teuchos::rcp(new XFEM::XFEMTransparentIndependentDofSet(bgdis_,true,wizard_np));
   incompdis_->ReplaceDofSet(new_dofset); // do not call this with true!!
   incompdis_->FillComplete();
 }

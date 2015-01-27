@@ -316,12 +316,21 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   // add the coupling block C_ss on the already existing diagonal block
   C_ss_block.Add(*C_ss, false, scaling_F*scaling_FSI, 1.0);
 
+#if(0) // use assign for off diagonal blocks
   // scale the off diagonal coupling blocks
   C_sf->Scale(scaling_F);              //<   1/(theta_f*dt)                    = 1/weight(t^f_np)
   C_fs->Scale(scaling_F*scaling_FSI);  //<   1/(theta_f*dt) * 1/(theta_FSI*dt) = 1/weight(t^f_np) * 1/weight(t^FSI_np)
 
   systemmatrix_->Assign(0,1,View,*C_sf);
   systemmatrix_->Assign(1,0,View,*C_fs);
+#else
+  LINALG::SparseMatrix& C_sf_block = (*systemmatrix_)(0,1);
+  LINALG::SparseMatrix& C_fs_block = (*systemmatrix_)(1,0);
+
+  C_sf_block.Add(*C_sf, false, scaling_F, 0.0);
+  C_fs_block.Add(*C_fs, false, scaling_F*scaling_FSI, 0.0);
+#endif
+
 
 
   /*----------------------------------------------------------------------*/

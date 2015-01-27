@@ -38,13 +38,11 @@ namespace DRT
 
     /*!
     \brief Standard Constructor
-
     */
     explicit TransparentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,bool parallel=false);
 
     /*!
     \brief Destructor
-
     */
     virtual ~TransparentDofSet() { return; }
 

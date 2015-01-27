@@ -61,18 +61,18 @@ GEO::CUT::ElementHandle * GEO::CUT::LevelSetIntersection::AddElement(
     throw std::runtime_error( "node coordiante number mismatch" );
   }
 
-  bool ltz = false;
-  bool gtz = false;
-
-  // make sure element has LSV +ve and -ve in one of its nodes
-  // ensures this is a cut element
-  for ( int i=0; i<numnode; ++i )
-  {
-    if ( lsv[i] <=   TOLERANCE )
-      ltz = true;
-    if ( lsv[i] >= - TOLERANCE )
-      gtz = true;
-  }
+//  bool ltz = false;
+//  bool gtz = false;
+//
+//  // make sure element has LSV +ve and -ve in one of its nodes
+//  // ensures this is a cut element
+//  for ( int i=0; i<numnode; ++i )
+//  {
+//    if ( lsv[i] <=   TOLERANCE )
+//      ltz = true;
+//    if ( lsv[i] >= - TOLERANCE )
+//      gtz = true;
+//  }
 
   // add all cut elements (different signs of levelset values) OR
   // if only plus domain is a physical field we have to add also elements with only negative values (as they are not allowed to carry DOFS at the end)

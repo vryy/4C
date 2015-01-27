@@ -100,8 +100,9 @@ void FLD::XFluid::Evaluate( int itnum )
   // add Neumann loads
   state_->residual_->Update(1.0,*state_->neumann_loads_,0.0);
 
-  // create a column residual vector for assembly over row elements that has to be communicated at the end
-  Teuchos::RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret_->DofColMap(),true);
+//  // create a column residual vector for assembly over row elements that has to be communicated at the end
+//  Teuchos::RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret_->DofColMap(),true);
+  state_->residual_col_->PutScalar(0.0);
 
   //----------------------------------------------------------------------
   // Todo: force vector is currently the only reason to pass this parameter list
@@ -134,7 +135,7 @@ void FLD::XFluid::Evaluate( int itnum )
   //----------------------------------------------------------------------
   // clear the coupling matrices and rhs vectors
   Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling("XFEMSurfFSIMono");
-
+//TODO: diese Abfrage kann jetzt weg und immer gemacht werden
   if(mc_coupl != Teuchos::null)
   {
     if(condition_manager_->IsCouplingCondition(mc_coupl->GetName()))
@@ -153,14 +154,19 @@ void FLD::XFluid::Evaluate( int itnum )
 
   if(include_inner_)
   {
+    Teuchos::RCP<const Epetra_Vector> dispnp_tmp = dispnp_;
+
+    state_->dispnp_ = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
+    xdiscret_->ExportInitialtoActiveVector(dispnp_tmp,state_->dispnp_);
+
     // HACK: we need this vector for twophase flow!!!
-     discret_->SetState("dispnp", dispnp_);
+     discret_->SetState("dispnp", state_->dispnp_);
   }
 
   if (alefluid_)
   {
-    discret_->SetState("dispnp", dispnp_);
-    discret_->SetState("gridv", gridvnp_);
+    discret_->SetState("dispnp", state_->dispnp_);
+    discret_->SetState("gridv", state_->gridvnp_);
   }
 
   // set scheme-specific element parameters and vector values
@@ -194,7 +200,7 @@ void FLD::XFluid::Evaluate( int itnum )
   {
     // call standard loop over elements
 
-    DRT::AssembleStrategy strategy(0, 0, state_->sysmat_,Teuchos::null,residual_col,Teuchos::null,Teuchos::null);
+    DRT::AssembleStrategy strategy(0, 0, state_->sysmat_,Teuchos::null,state_->residual_col_,Teuchos::null,Teuchos::null);
 
     DRT::Element::LocationArray la( 1 );
 
@@ -318,7 +324,10 @@ void FLD::XFluid::Evaluate( int itnum )
           // e.g. do not mix two-phase flow coupling matrices with XFSI coupling matrices
           std::map<int, std::vector<GEO::CUT::BoundaryCell*> > empty_map;
           empty_map.clear();
-          const int num_coupling = condition_manager_->NumMeshCoupling() + condition_manager_->HasLevelSetCoupling();
+
+          const int num_coupling = condition_manager_->NumCoupling();
+
+          // TODO: use a map instead of a vector, see handling of C_sx... matrices in state-class
           std::vector< std::map<int, std::vector<GEO::CUT::BoundaryCell*> > > coupling_bcells(num_coupling, empty_map);
 
           for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=element_bcells.begin();
@@ -326,13 +335,7 @@ void FLD::XFluid::Evaluate( int itnum )
           {
             int coup_sid = bc->first; // all boundary cells within the current iterator belong to the same side
 
-            int coup_idx = -1;
-
-            if(condition_manager_->IsLevelSetCoupling(coup_sid))
-              coup_idx = condition_manager_->NumMeshCoupling();
-            else
-              coup_idx = condition_manager_->GetMeshCouplingIndex(coup_sid);
-
+            const int coup_idx = condition_manager_->GetCouplingIndex(coup_sid, actele->Id());
 
             std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells = coupling_bcells[coup_idx];
 
@@ -490,6 +493,8 @@ void FLD::XFluid::Evaluate( int itnum )
               // Assemble bgele-side coupling matrices for monolithic fluid-structure interaction
               //------------------------------------------------------------------------------------------
 
+              Teuchos::RCP<XFluidState::CouplingState> & coup_state = state_->coup_state_[coupl_idx];
+
               for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
                   sc!=side_coupling.end(); ++sc )
               {
@@ -503,42 +508,26 @@ void FLD::XFluid::Evaluate( int itnum )
                 std::vector<int> mypatchlmowner(patchlm.size(), myrank_);
                 {
                   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 6) FEAssemble" );
-                  //TODO: adapt state_->C_sx in state class for level-set coupling
-                  if(coupl_idx==condition_manager_->NumMeshCoupling())
-                    state_->sysmat_->FEAssemble(-1, couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
-                  else
-                    state_->C_sx_->FEAssemble(-1, couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
+                  coup_state->C_sx_->FEAssemble(-1, couplingmatrices[0],patchlm,mypatchlmowner,la[0].lm_);
                 }
 
                 // assemble C_fs_ = Cuui
                 std::vector<int> mylmowner(la[0].lmowner_.size(), myrank_);
                 {
                   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 6) FEAssemble" );
-                  //TODO: adapt state_->C_xs in state class for level-set coupling
-                  if(coupl_idx==condition_manager_->NumMeshCoupling())
-                    state_->sysmat_->FEAssemble(-1, couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
-                  else
-                    state_->C_xs_->FEAssemble(-1, couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
+                  coup_state->C_xs_->FEAssemble(-1, couplingmatrices[1],la[0].lm_,mylmowner, patchlm);
                 }
 
                 // assemble rhC_s_col = rhC_ui_col
                 Epetra_SerialDenseVector rhC_s_eptvec(::View,couplingmatrices[2].A(),patchlm.size());
-                //TODO: adapt state_->rhC_s_col_ in state class for level-set coupling
-                if(coupl_idx==condition_manager_->NumMeshCoupling())
-                  LINALG::Assemble(*strategy.Systemvector1(), rhC_s_eptvec, patchlm, mypatchlmowner);
-                else
-                  LINALG::Assemble(*state_->rhC_s_col_, rhC_s_eptvec, patchlm, mypatchlmowner);
+                LINALG::Assemble(*(coup_state->rhC_s_col_), rhC_s_eptvec, patchlm, mypatchlmowner);
               }
 
               if(!side_coupling.empty()) // at least one side contributed to coupling for this element
               {
                 // assemble C_ss_ = Cuiui
                 std::vector<int> mypatchelementslmowner(patchelementslm.size(), myrank_);
-                //TODO: adapt state_->C_ss_ in state class for level-set coupling
-                if(coupl_idx==condition_manager_->NumMeshCoupling())
-                  state_->sysmat_->FEAssemble(-1,C_ss, patchelementslm, mypatchelementslmowner, patchelementslm );
-                else
-                  state_->C_ss_->FEAssemble(-1,C_ss, patchelementslm, mypatchelementslmowner, patchelementslm );
+                coup_state->C_ss_->FEAssemble(-1,C_ss, patchelementslm, mypatchelementslmowner, patchelementslm );
               }
 
             } // bcells.size() > 0
@@ -648,30 +637,11 @@ void FLD::XFluid::Evaluate( int itnum )
 
     discret_->ClearState();
 
-
     // finalize the coupling matrices
-    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling("XFEMSurfFSIMono");
+    state_->CompleteCouplingMatricesAndRhs();
 
-    if(mc_coupl != Teuchos::null)
-    {
-      if(condition_manager_->IsCouplingCondition(mc_coupl->GetName()))
-      {
-        // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
-        // (domain-map are the columns, range-map are the rows)
-        state_->C_xs_->Complete(*soliddis_->DofRowMap(),*discret_->DofRowMap());
-        state_->C_sx_->Complete(*discret_->DofRowMap(),*soliddis_->DofRowMap());
-        state_->C_ss_->Complete(*boundarydis_->DofRowMap(),*boundarydis_->DofRowMap());
 
-        //-------------------------------------------------------------------------------
-        // export the rhs coupling vector to a row vector
-        Epetra_Vector rhC_s_tmp(state_->rhC_s_->Map(),true);
-        Epetra_Export exporter_rhC_s_col(state_->rhC_s_col_->Map(),rhC_s_tmp.Map());
-        int err4 = rhC_s_tmp.Export(*state_->rhC_s_col_,exporter_rhC_s_col,Add);
-        if (err4) dserror("Export using exporter returned err=%d",err4);
-        state_->rhC_s_->Update(1.0,rhC_s_tmp,0.0);
-      }
-    }
-
+    //TODO do this only for FSI!
     if(boundarydis_ != Teuchos::null)
     {
       //-------------------------------------------------------------------------------
@@ -1719,6 +1689,7 @@ void FLD::XFluid::GradientPenalty(
 
   // create an column residual vector for assembly over row elements that has to be communicated at the end
   Teuchos::RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret.DofColMap(),true);
+  state_->residual_col_->PutScalar(0.0);
 
   //----------------------------------------------------------------------
   // set general vector values needed by elements
@@ -1748,7 +1719,7 @@ void FLD::XFluid::GradientPenalty(
   {
     // call standard loop over elements
 
-    DRT::AssembleStrategy strategy(0, 0, state_->sysmat_,Teuchos::null,residual_col,Teuchos::null,Teuchos::null);
+    DRT::AssembleStrategy strategy(0, 0, state_->sysmat_,Teuchos::null,state_->residual_col_,Teuchos::null,Teuchos::null);
 
     DRT::Element::LocationArray la( 1 );
 
@@ -1819,8 +1790,7 @@ FLD::XFluid::XFluid(
     xdiscret_(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(actdis, true)),
     soliddis_(soliddis),
     fluid_output_(output_),
-    alefluid_(alefluid),
-    setTipNodesInCut_(false)
+    alefluid_(alefluid)
 {
   //soliddis_ = Teuchos::null;
   return;
@@ -1905,9 +1875,21 @@ void FLD::XFluid::Init()
 
     boundarydis_ = condition_manager_->GetMeshCoupling(mc_idx)->GetCutterDis();
 
-    InitBoundaryDiscretization(); // TODO: currently without creating the discretization
+
+    // init the statevectors to keep the current framework alive
+    ivelnp_ = condition_manager_->GetMeshCoupling(mc_idx)->IVelnp();
+    iveln_  = condition_manager_->GetMeshCoupling(mc_idx)->IVeln();
+    ivelnm_ = condition_manager_->GetMeshCoupling(mc_idx)->IVelnm();
+
+    idispnp_ = condition_manager_->GetMeshCoupling(mc_idx)->IDispnp();
+    idispn_  = condition_manager_->GetMeshCoupling(mc_idx)->IDispn();
+
+    itrueresidual_ = condition_manager_->GetMeshCoupling(mc_idx)->ITrueResidual();
+
+    InitBoundaryDiscretization();
 
     std::cout << *boundarydis_ << std::endl;
+
   }
   if(condition_manager_->HasLevelSetCoupling())
   {
@@ -1934,13 +1916,18 @@ void FLD::XFluid::Init()
     include_inner_=false;
   }
 
-  //---------------------------------------------------------------------------------------------------------
-
-
-  //--------------------------------------------------------------------
-  // do crack initialization
-  //--------------------------------------------------------------------
-  InitCrackInitiationPoints();
+  // -------------------------------------------------------------------
+  // create the state creator
+  // -------------------------------------------------------------------
+  state_creator_ = Teuchos::rcp(
+      new FLD::XFluidStateCreator(
+        condition_manager_,
+        VolumeCellGaussPointBy_,
+        BoundCellGaussPointBy_,
+        gmsh_cut_out_,
+        maxnumdofsets_,
+        minnumdofsets_,
+        include_inner_));
 
 
   // -------------------------------------------------------------------
@@ -1968,9 +1955,6 @@ void FLD::XFluid::Init()
   // GMSH discretization output before CUT
   OutputDiscret();
 
-  // used for twophaseflow
-//  dispnp_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
-
   if (alefluid_)
   {
     dispnp_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
@@ -1994,49 +1978,6 @@ void FLD::XFluid::Init()
   // otherwise we create the state from the coupling algorithm using the levelset values from the scatra field
 }
 
-
-
-
-void FLD::XFluid::InitCrackInitiationPoints()
-{
-  /*----------- POSSIBILITY 1 --- adding zero displacement at crack tip nodes----------------------*/
-  if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-  {
-    DRT::Condition* crackpts = soliddis_->GetCondition( "CrackInitiationPoints" );
-
-    const std::vector<int>* tipnodes = const_cast<std::vector<int>* >(crackpts->Nodes());
-
-    for(std::vector<int>::const_iterator inod=tipnodes->begin(); inod!=tipnodes->end();inod++ )
-    {
-      const int nodid = *inod;
-      LINALG::Matrix<3, 1> xnod( true );
-
-      tip_nodes_[nodid] = xnod;
-    }
-
-    if( tipnodes->size() == 0 )
-      dserror("crack initiation points unspecified\n");
-
-  }
-
-  /*---------------------- POSSIBILITY 2 --- adding crack tip elements ----------------------------*/
-  /*if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-  {
-    DRT::Condition* crackpts = soliddis_->GetCondition( "CrackInitiationPoints" );
-
-    const std::vector<int>* tipnodes = const_cast<std::vector<int>* >(crackpts->Nodes());
-
-    if( tipnodes->size() == 0 )
-      dserror("crack initiation points unspecified\n");
-
-    addCrackTipElements( tipnodes );
-  }*/
-
-/*  Teuchos::RCP<DRT::DofSet> newdofset1 = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true,Teuchos::null));
-
-  boundarydis_->ReplaceDofSet(newdofset1);//do not call this with true!!
-  boundarydis_->FillComplete();*/
-}
 
 void FLD::XFluid::PrepareOutput()
 {
@@ -2080,21 +2021,8 @@ void FLD::XFluid::PrepareOutputBoundary()
 
 void FLD::XFluid::InitBoundaryDiscretization()
 {
-
-  // -------------------------------------------------------------------
-  // create boundary discretization from condition
-  // -------------------------------------------------------------------
-
-  // use always 3 dofs on the structural surface, in partitioned and monolithic algorithms as well (if you change this take care for numdof in boundary output!)
-//  string element_name = "BELE3_3";
-//
-//  CreateBoundaryDis(element_name);
-
   // prepare output for boundary discretization
   PrepareOutputBoundary();
-
-  // initialize boundary vectors
-  InitStateVectorsForInterface();
 
   // set initial interface fields
   SetInitialInterfaceFields();
@@ -5670,62 +5598,6 @@ void FLD::XFluid::ExtractNodeVectors(DRT::Discretization & dis,
     }
 }
 
-/*--------------------------------------------------------------------------*
- | Create the boundary discretization                                       |
- *--------------------------------------------------------------------------*/
-void FLD::XFluid::CreateBoundaryDis(string element_name)
-{
-  std::vector<std::string> conditions_to_copy;
-  conditions_to_copy.push_back("FSICoupling");
-  conditions_to_copy.push_back("XFEMCoupling");
-
-   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis_, "FSICoupling", "boundary", element_name, conditions_to_copy);
-   if (boundarydis_->NumGlobalNodes() == 0)
-   {
-     dserror("Empty boundary discretization detected. No FSI coupling will be performed...");
-   }
-
-   // for parallel jobs we have to call TransparentDofSet with additional flag true
-   bool parallel = discret_->Comm().NumProc() > 1;
-   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,parallel,Teuchos::null));
-   boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
-   boundarydis_->FillComplete();
-
-   // create node and element distribution with elements and nodes ghosted on all processors
-   const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
-   const Epetra_Map elemrowmap = *boundarydis_->ElementRowMap();
-
-   // put all boundary nodes and elements onto all processors
-   const Epetra_Map nodecolmap = *LINALG::AllreduceEMap(noderowmap);
-   const Epetra_Map elemcolmap = *LINALG::AllreduceEMap(elemrowmap);
-
-   // redistribute nodes and elements to column (ghost) map
-   boundarydis_->ExportColumnNodes(nodecolmap);
-   boundarydis_->ExportColumnElements(elemcolmap);
-
-   boundarydis_->FillComplete();
-}
-
-
-/*----------------------------------------------------------------------*
- |  ...                              schott 11/14 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::InitStateVectorsForInterface()
-{
-  //--------------------------------------------------------
-  // create interface fields
-  // -------------------------------------------------------
-  const Epetra_Map* boundarydofrowmap = boundarydis_->DofRowMap();
-  ivelnp_ = LINALG::CreateVector(*boundarydofrowmap,true);
-  iveln_  = LINALG::CreateVector(*boundarydofrowmap,true);
-  ivelnm_ = LINALG::CreateVector(*boundarydofrowmap,true);
-
-  idispnp_ = LINALG::CreateVector(*boundarydofrowmap,true);
-  idispn_ = LINALG::CreateVector(*boundarydofrowmap,true);
-
-  itrueresidual_ = LINALG::CreateVector(*boundarydofrowmap,true);
-}
-
 
 /*----------------------------------------------------------------------*
  |  set an initial flow field                              schott 03/12 |
@@ -6779,19 +6651,18 @@ void FLD::XFluid::ReadRestart(int step)
 
 }
 
-void FLD::XFluid::SetBoundaryDis(
-    const std::string & condname,
-    Teuchos::RCP<DRT::Discretization>& cutter_dis
-)
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+Teuchos::RCP<XFEM::MeshCouplingFSICrack> FLD::XFluid::GetMeshCouplingFSICrack(const std::string & condname)
 {
   Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(condname);
 
   if(mc_coupl == Teuchos::null) dserror("no Mesh coupling object with name %s available!", condname.c_str());
 
-  if(condname != "XFEMSurfCrackFSIPart") dserror("SetBoundaryDis only supported for mesh coupling objects based on XFEMSurfCrackFSIPart condition");
+  if(condname != "XFEMSurfCrackFSIPart")
+    dserror("Routine only supported for mesh coupling objects based on XFEMSurfCrackFSIPart condition. Actually it is not nice to return the Coupling object for manipulations");
 
-  Teuchos::RCP<XFEM::MeshCouplingFSICrack> crfsi_mc_coupl = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSICrack>(mc_coupl, true);
-  crfsi_mc_coupl->SetCutterDis(cutter_dis);
+  return Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSICrack>(mc_coupl, true);
 }
 
 
@@ -6800,28 +6671,32 @@ void FLD::XFluid::SetBoundaryDis(
  * in the updated boundary discretization. Properly set values of DOFS at
  * these new nodes
  *---------------------------------------------------------------------------------------------*/
-void FLD::XFluid::UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldnewIds )
+void FLD::XFluid::UpdateBoundaryValuesAfterCrack(
+    const std::string & condname,
+    const std::map<int,int>& oldnewIds
+)
 {
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, ivelnp_, oldnewIds );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, iveln_, oldnewIds );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, ivelnm_, oldnewIds );
+  //TODO: call this also directly from FSI::DirichletNeumann_Crack::AddNewCrackSurfaceToCutInterface() similar to SetCrackTipNodes
+  // when ivelnp_... pointers are not stored anymore in xfluid
 
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, idispnp_, oldnewIds );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, idispn_, oldnewIds );
+  Teuchos::RCP<XFEM::MeshCouplingFSICrack> crfsi_mc_coupl = GetMeshCouplingFSICrack(condname);
+  crfsi_mc_coupl->UpdateBoundaryValuesAfterCrack(oldnewIds);
 
-  //itrueresidual_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( boundarydis_, itrueresidual_, oldnewIds );
+  const int mc_idx = 0;
 
-  //TODO: I guess the following lines are unnecessary (Sudhakar)
-  {
-    //iforcenp_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
-    //LINALG::Export( *itrueresidual_, *iforcenp_ );
+  //TODO: set the pointer in xfluid also to the new vector which has been created in UpdateBoundaryValuesAfterCrack!
+  // This can be removed, when ivelnp_... are not used anymore
 
-  }
+  // init the statevectors to keep the current framework alive
+  ivelnp_ = condition_manager_->GetMeshCoupling(mc_idx)->IVelnp();
+  iveln_  = condition_manager_->GetMeshCoupling(mc_idx)->IVeln();
+  ivelnm_ = condition_manager_->GetMeshCoupling(mc_idx)->IVelnm();
 
-  //TODO: Check whether the output in case of crack-FSI work properly (Sudhakar)
-  //boundarydis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_)));
-  //boundary_output_ = boundarydis_->Writer();
+  idispnp_ = condition_manager_->GetMeshCoupling(mc_idx)->IDispnp();
+  idispn_  = condition_manager_->GetMeshCoupling(mc_idx)->IDispn();
+
+  itrueresidual_ = condition_manager_->GetMeshCoupling(mc_idx)->ITrueResidual();
+
 }
 
 
@@ -7283,14 +7158,14 @@ void FLD::XFluid::CreateState()
 
 Teuchos::RCP<FLD::XFluidState> FLD::XFluid::GetNewState()
 {
-  // init col vectors to Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::null;     //!< col vector holding background ALE displacements for backdis
-  Teuchos::RCP<Epetra_Vector> idispcol  = Teuchos::null;     //!< col vector holding interface displacements for cutterdis
-  Teuchos::RCP<Epetra_Vector> phinpcol  = Teuchos::null;     //!< col vector holding nodal level-set values based on backdis
 
   //-------------------------------------------------------------
   // export background mesh ale displacements
   //-------------------------------------------------------------
+
+  // init col vector holding background ALE displacements for backdis
+  Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::null;
+
   if (alefluid_)
   {
     dispnpcol = Teuchos::rcp(new Epetra_Vector(*xdiscret_->InitialDofColMap()));
@@ -7298,86 +7173,26 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluid::GetNewState()
   }
 
   //-------------------------------------------------------------
-  // export nodal level-set values
-  //-------------------------------------------------------------
-  if(condition_manager_->HasLevelSetCoupling())
-  {
-    phinpcol = Teuchos::rcp(new Epetra_Vector(*discret_->NodeColMap()));
-    LINALG::Export(*condition_manager_->GetLevelSetField(),*phinpcol);
-  }
-
-  //-------------------------------------------------------------
-  // export cut-discretization mesh displacements
-  //-------------------------------------------------------------
-  // TODO: loop all mesh coupling objects independent of coupling conditions are given or not
-  if(idispnp_ != Teuchos::null)
-  {
-    idispcol = LINALG::CreateVector(*boundarydis_->DofColMap(),true);
-
-    // create new XFluidState object
-    // REMARK: for a step 0 we perform the cut based on idispn, the initial interface position
-    //         for a restart (step n+1 has to be solved first) we perform the initial cut
-    //         based on idispn (step n) (=data written after updating the interface fields in last time step n)
-    LINALG::Export(*idispnp_,*idispcol);
-  }
-
-  //-------------------------------------------------------------
   // create a temporary state-creator object
   //-------------------------------------------------------------
-
-  Teuchos::RCP<FLD::XFluidStateCreator> state_creator = Teuchos::rcp(
-      new FLD::XFluidStateCreator(
-          VolumeCellGaussPointBy_,
-          BoundCellGaussPointBy_,
-          gmsh_cut_out_,
-          maxnumdofsets_,
-          minnumdofsets_,
-          include_inner_));
-
-
   // create the new state class (vectors, matrices...)
   state_it_++;
 
-  Teuchos::RCP<FLD::XFluidState> state = state_creator->Create(
+  Teuchos::RCP<FLD::XFluidState> state = state_creator_->Create(
       xdiscret_,
-      boundarydis_,
       dispnpcol,     //!< col vector holding background ALE displacements for backdis
-      idispcol,      //!< col vector holding interface displacements for cutterdis
-      phinpcol,      //!< col vector holding nodal level-set values based on backdis
-      tip_nodes_,     //!< tip nodes for crack application
       solver_->Params(),
       step_,
       time_
       );
 
-  // TODO: loop all mesh coupling objects with coupling conditions
-  // currently, get the specific xfsi_mono condition, it is the only one coupling condition handled in xfluid at the moment
-  Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling("XFEMSurfFSIMono");
-
-  if(mc_coupl != Teuchos::null)
-  {
-    if(condition_manager_->IsCouplingCondition(mc_coupl->GetName()))
-    {
-      Teuchos::RCP<DRT::Discretization> coupl_dis = mc_coupl->GetCouplingDis();
-      Teuchos::RCP<DRT::Discretization> cond_dis  = mc_coupl->GetCondDis();
-      if(coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_Coupling)
-      {
-        state_creator->InitCouplingMatrices(cond_dis);
-
-        // we just allow for xfluid-sided couplings
-        state_creator->InitCouplingRhs(coupl_dis);
-      }
-      else dserror("currently only xfluid-sided-coupling supported!");
-    }
-    // nothing to do for levelset-coupling as all couplings blocks are assembled into sysmat
-  }
-
   //--------------------------------------------------------------------------------------
   // initialize ALE state vectors
-  if(alefluid_) state_creator->InitALEStateVectors(xdiscret_, dispnp_, gridvnp_);
+  if(alefluid_) state_creator_->InitALEStateVectors(xdiscret_, dispnp_, gridvnp_);
 
   return state;
 }
+
 
 
 

@@ -147,7 +147,7 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // xFluid outflow
-E 5 - none 1 1 1 0 0 0 -9.0 1.0/0.8 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 5 - none 1 1 1 0 0 0 -9.0 1.25 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS

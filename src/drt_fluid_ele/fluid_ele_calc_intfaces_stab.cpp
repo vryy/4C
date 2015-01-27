@@ -1549,10 +1549,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
   }
 
 
-  if(nkinvisc == pkinvisc) kinvisc_ = pkinvisc;
+  if(fabs(nkinvisc - pkinvisc)<1e-14) kinvisc_ = pkinvisc;
   else dserror("parent and neighbor element do not have the same viscosity!");
 
-  if(ndens == pdens) density_ = pdens;
+  if(fabs(ndens - pdens)<1e-14) density_ = pdens;
   else dserror("parent and neighbor element do not have the same density!");
 
 

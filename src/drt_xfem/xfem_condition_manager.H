@@ -18,8 +18,12 @@ Maintainer: Benedikt Schott
 
 #include <vector>
 #include <Teuchos_RCP.hpp>
-
+//
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
+
 
 #include <Epetra_Vector.h>
 
@@ -27,6 +31,7 @@ Maintainer: Benedikt Schott
 namespace DRT
 {
   class AssembleStrategy;
+  class Condition;
   class Discretization;
   class DiscretizationXFEM;
   class DiscretizationFaces;
@@ -190,6 +195,18 @@ public:
     return cutter_dis_->gElement(sid);
   }
 
+  Teuchos::RCP<const Epetra_Vector> GetCutterDispCol();
+
+
+  Teuchos::RCP<Epetra_Vector> IVelnp(){ return ivelnp_; }
+  Teuchos::RCP<Epetra_Vector> IVeln() { return iveln_;  }
+  Teuchos::RCP<Epetra_Vector> IVelnm(){ return ivelnm_; }
+
+  Teuchos::RCP<Epetra_Vector> IDispnp(){ return idispnp_; }
+  Teuchos::RCP<Epetra_Vector> IDispn() { return idispn_;  }
+
+  Teuchos::RCP<Epetra_Vector> ITrueResidual(){ return itrueresidual_; }
+
 private:
 
 
@@ -218,10 +235,28 @@ private:
 
   void CreateCutterDisFromCondition();
 
+  void InitStateVectors();
+
+protected:
+
+  //------------------------------- vectors -----------------------------
+//TODO: these vectors are not required for Neumann and WDBC conditions, derive class
+  //! @name boundary-dis state vectors
+  Teuchos::RCP<Epetra_Vector>    ivelnp_;
+  Teuchos::RCP<Epetra_Vector>    iveln_;
+  Teuchos::RCP<Epetra_Vector>    ivelnm_;
+
+  Teuchos::RCP<Epetra_Vector>    idispnp_;
+  Teuchos::RCP<Epetra_Vector>    idispn_;
+  Teuchos::RCP<Epetra_Vector>    itrueresidual_; //! interface forces acting on the structural surface
+  Teuchos::RCP<Epetra_Vector>    iforcenp_;
+
+
+
 };
 
 
-/// class which allows to manipulate the boundary dis
+/// class which allows to manipulate the boundary dis and to deal with crack specific staff
 class MeshCouplingFSICrack : public MeshCoupling
 {
 public:
@@ -231,32 +266,36 @@ public:
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
       Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
-  ) : MeshCoupling(bg_dis,cond_name,cond_dis)
-  {
-  }
+  );
 
   //! destructor
-  ~MeshCouplingFSICrack()
+  virtual ~MeshCouplingFSICrack()
   {
     return;
   }
 
   /// set new cutter discretization
-  void SetCutterDis(Teuchos::RCP<DRT::Discretization> cutter_dis_new)
+  void SetCutterDis(Teuchos::RCP<DRT::Discretization> cutter_dis_new);
+
+  void InitCrackInitiationsPoints();
+
+  //! set the nodes representing crack tip in FSI with crack structure simulations
+  void SetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> > & tip_nodes )
   {
-    cutter_dis_ = cutter_dis_new;
-
-    // update the Coupling object
-
-    // set unique element conditions
-    SetElementConditions();
-
-    // set the coupling strategy
-    SetCouplingStrategy();
-
-    // set coupling discretization
-    SetCouplingDiscretization();
+    tip_nodes_.clear();
+    if( tip_nodes.size() > 0 )
+      tip_nodes_.insert( tip_nodes.begin(), tip_nodes.end() );
   }
+
+  //! get the nodes representing crack tip in FSI with crack structure simulations
+  std::map<int, LINALG::Matrix<3,1> > & GetCrackTipNodes(){ return tip_nodes_; };
+
+  void UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldnewIds );
+
+
+private:
+
+  std::map<int, LINALG::Matrix<3,1> > tip_nodes_;
 
 };
 
@@ -434,6 +473,16 @@ public:
     return Teuchos::null;
   }
 
+  int GetMeshCouplingIndex(const std::string & name)
+  {
+    for(int m=0; m<NumMeshCoupling(); m++)
+    {
+      if(mesh_coupl_[m]->GetName() == name)
+        return m;
+    }
+    return -1;
+  }
+
   Teuchos::RCP<LevelSetCoupling> GetLevelSetCoupling(const std::string & name)
   {
     for(int l=0; l<NumLevelSetCoupling(); l++)
@@ -534,6 +583,20 @@ public:
     return lsc_idx;
   }
 
+  int GetCouplingIndex(const int coup_sid, const int back_eid)
+  {
+    int coup_idx = -1;
+
+    if(IsLevelSetCoupling(coup_sid))
+      coup_idx = NumMeshCoupling() + GetLevelSetCouplingIndex(back_eid);
+    else
+      coup_idx = GetMeshCouplingIndex(coup_sid);
+
+    return coup_idx;
+  }
+
+
+  int GetLevelSetCouplingGid(){return levelset_gid_;}
 
   /// check if the given coupling side corresponds the unique level-set side
   bool IsLevelSetCoupling(const int coupl_sid){return coupl_sid == levelset_gid_;}
@@ -544,10 +607,40 @@ public:
 
   bool HasMeshCoupling(){return mesh_coupl_.size() > 0;}
 
+  int NumCoupling(){return (NumMeshCoupling() + NumLevelSetCoupling());}
+
+  Teuchos::RCP<CouplingBase> GetCouplingByIdx(const int coup_idx)
+  {
+    if(coup_idx >= NumMeshCoupling())
+      return GetLevelSetCoupling(coup_idx-NumMeshCoupling());
+    else if(coup_idx >= 0)
+      return GetMeshCoupling(coup_idx);
+    else return Teuchos::null;
+
+    return Teuchos::null;
+  }
+
+
+
   int NumMeshCoupling(){return mesh_coupl_.size();}
 
   int NumLevelSetCoupling(){return levelset_coupl_.size();}
 
+
+  bool IsLevelSetCondition(const int coup_idx)
+  {
+    if(coup_idx >= NumMeshCoupling()) return true;
+
+    return false;
+  }
+
+
+  bool IsMeshCondition(const int coup_idx)
+  {
+    if(coup_idx >= 0 and !IsLevelSetCondition(coup_idx)) return true;
+
+    return false;
+  }
 
 
   /// get the side element of the respective boundary discretization
@@ -567,9 +660,24 @@ public:
 
   // the cutwizard should add elements via the manager!!!
 
+  // TODO: TransformID routines (localToGlobal, GlobalToLocal
+
+  // get the side id w.r.t. the cutter discretization
   const int GetCutterDisEleId(const int coup_sid, const int mc_idx)
   {
     return coup_sid-mesh_coupl_start_gid_[mc_idx];
+  }
+
+  // get the global coupling side id for a given mesh coupling and local side-id w.r.t. cutter discretization
+  const int GetGlobalEleId(const int cutterdis_sid, const int mc_idx)
+  {
+    return cutterdis_sid+mesh_coupl_start_gid_[mc_idx];
+  }
+
+  // get the global coupling side id for a given mesh coupling and local side-id w.r.t. cutter discretization
+  const int GetMeshCouplingStartGID(const int mc_idx)
+  {
+    return mesh_coupl_start_gid_[mc_idx];
   }
 
   const EleCoupCond GetCouplingCondition(
@@ -664,6 +772,8 @@ public:
 
     return bg_phinp_;
   }
+
+  Teuchos::RCP<const Epetra_Vector> GetLevelSetFieldCol();
 
 private:
 

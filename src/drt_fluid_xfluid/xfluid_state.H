@@ -25,6 +25,7 @@ Maintainer:  Raffaela Kruse and Benedikt Schott
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
 
+
 namespace DRT
 {
   class Discretization;
@@ -50,6 +51,7 @@ namespace IO
 
 namespace XFEM
 {
+  class ConditionManager;
   class XFEMDofSet;
 }
 
@@ -71,10 +73,77 @@ class XFluidState
 public:
 
   /*!
+   * \brief Container class for coupling state matrices and vectors for a certain coupling object
+   */
+  class CouplingState
+  {
+
+  public:
+
+    //! ctor
+    CouplingState() :
+      C_sx_(Teuchos::null),
+      C_xs_(Teuchos::null),
+      C_ss_(Teuchos::null),
+      rhC_s_(Teuchos::null),
+      rhC_s_col_(Teuchos::null),
+      is_active_(false)
+    {
+    }
+
+    //! ctor  Initialize coupling matrices with fluid sysmat and fluid rhs vector
+    CouplingState(
+        Teuchos::RCP<LINALG::SparseMatrix> C_sx,
+        Teuchos::RCP<LINALG::SparseMatrix> C_xs,
+        Teuchos::RCP<LINALG::SparseMatrix> C_ss,
+        Teuchos::RCP<Epetra_Vector> rhC_s,
+        Teuchos::RCP<Epetra_Vector> rhC_s_col
+    ):
+      C_sx_(C_sx),
+      C_xs_(C_xs),
+      C_ss_(C_ss),
+      rhC_s_(rhC_s),
+      rhC_s_col_(rhC_s_col),
+      is_active_(true)
+    {
+    }
+
+    //! ctor  Initialize coupling matrices
+    CouplingState(Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap, const Teuchos::RCP<DRT::Discretization>&  slavediscret);
+
+    //! zero coupling matrices and rhs vectors
+    void ZeroCouplingMatricesAndRhs();
+
+    //! complete coupling matrices and rhs vectors
+    void CompleteCouplingMatricesAndRhs(
+        const Epetra_Map & xfluiddofrowmap,
+        const Epetra_Map & slavedofrowmap
+    );
+
+    //! @name coupling matrices x: xfluid, s: coupling slave (structure, ALE-fluid, xfluid-element with other active dofset, etc.)
+    //@{
+    Teuchos::RCP<LINALG::SparseMatrix> C_sx_;     ///< slave - xfluid coupling block
+    Teuchos::RCP<LINALG::SparseMatrix> C_xs_;     ///< xfluid - slave coupling block
+    Teuchos::RCP<LINALG::SparseMatrix> C_ss_;     ///< slave - slave coupling block
+    Teuchos::RCP<Epetra_Vector>        rhC_s_;    ///< slave rhs block
+    Teuchos::RCP<Epetra_Vector>        rhC_s_col_;///< slave rhs block
+    //@}
+
+    bool is_active_;
+
+  };
+
+  /*!
    ctor for one-sided problems
    @param xfluiddofrowmap dof-rowmap of intersected fluid
    */
-  explicit XFluidState(Teuchos::RCP<GEO::CutWizard>& wizard, Teuchos::RCP<XFEM::XFEMDofSet>& dofset, Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap);
+  explicit XFluidState(
+      Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
+      Teuchos::RCP<GEO::CutWizard>& wizard,
+      Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
+      Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap,
+      Teuchos::RCP<const Epetra_Map> & xfluiddofcolmap
+  );
 
   /// dtor
   virtual ~XFluidState(){}
@@ -85,8 +154,11 @@ public:
     const double & time
     );
 
-  /// zero all coupling matrices and rhs vectors
+  /// zero all coupling matrices and rhs vectors for all coupling objects
   void ZeroCouplingMatricesAndRhs();
+
+  /// Initialize state vectors
+  void CompleteCouplingMatricesAndRhs();
 
   /// access to the cut wizard
   Teuchos::RCP<GEO::CutWizard> Wizard()
@@ -107,6 +179,9 @@ public:
   /// dof-rowmap of intersected fluid
   Teuchos::RCP<const Epetra_Map>      xfluiddofrowmap_;
 
+  /// dof-colmap of intersected fluid
+  Teuchos::RCP<const Epetra_Map>      xfluiddofcolmap_;
+
   /// system matrix (internally EpetraFECrs)
   Teuchos::RCP<LINALG::SparseMatrix>  sysmat_;
 
@@ -119,11 +194,11 @@ public:
   /// (standard) residual vector (rhs for the incremental form),
   Teuchos::RCP<Epetra_Vector>         residual_;
 
+  /// (standard) residual vector (rhs for the incremental form) wrt col map,
+  Teuchos::RCP<Epetra_Vector>         residual_col_;
+
   /// true (rescaled) residual vector without zeros at dirichlet positions
   Teuchos::RCP<Epetra_Vector>         trueresidual_;
-
-  /// rhs: right hand side vector for linearized flow solution
-  Teuchos::RCP<Epetra_Vector>         rhs_;
 
   /// nonlinear iteration increment vector
   Teuchos::RCP<Epetra_Vector>         incvel_;
@@ -163,16 +238,6 @@ public:
   ///                or veln, accn (One-Step-Theta)
   Teuchos::RCP<Epetra_Vector>         hist_;
 
-  //! @name coupling matrices x: xfluid, s: coupling slave (structure, ALE-fluid, xfluid-element with other active dofset, etc.)
-  //@{
-  Teuchos::RCP<LINALG::SparseMatrix>  C_sx_;             ///< slave - xfluid coupling block
-  Teuchos::RCP<LINALG::SparseMatrix>  C_xs_;             ///< xfluid - slave coupling block
-  Teuchos::RCP<LINALG::SparseMatrix>  C_ss_;             ///< slave - slave coupling block
-
-  Teuchos::RCP<Epetra_Vector>         rhC_s_;            ///< slave rhs block
-  Teuchos::RCP<Epetra_Vector>         rhC_s_col_;        ///< slave rhs block based on col map
-  //@}
-
   //! @name map extractors
   //@{
   /// maps for extracting Dirichlet and free DOF sets
@@ -183,6 +248,12 @@ public:
 
   //@}
 
+
+  //! @name coupling matrices for each coupling object (=key); x: xfluid, s: coupling slave (structure, ALE-fluid, xfluid-element with other active dofset, etc.)
+  //@{
+  std::map<int, Teuchos::RCP<CouplingState> > coup_state_;
+  //@}
+
 protected:
 
   /// initialize all state members based on the xfluid dof-rowmap
@@ -191,11 +262,18 @@ protected:
   /// initialize the system matrix of the intersected fluid
   void InitSystemMatrix();
 
+  /// initialize coupling matrices and rhs vectors for all coupling objects
+  void InitCouplingMatricesAndRhs( Teuchos::RCP<XFEM::ConditionManager> & condition_manager );
+
   /// XFEM dofset
   Teuchos::RCP<XFEM::XFEMDofSet> dofset_;
 
   /// cut wizard
   Teuchos::RCP<GEO::CutWizard> wizard_;
+
+  /// condition manager
+  Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
+
 };
 
 }

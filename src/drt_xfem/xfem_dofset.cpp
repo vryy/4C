@@ -12,10 +12,11 @@ Maintainer: Benedikt Schott
 </pre>
 *------------------------------------------------------------------------------------------------*/
 
+#include "xfem_dofset.H"
+
 #include "../drt_cut/cut_node.H"
 #include "../drt_cut/cut_cutwizard.H"
 
-#include "xfem_dofset.H"
 
 
 /*----------------------------------------------------------------------*

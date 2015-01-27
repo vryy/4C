@@ -12,7 +12,17 @@ Maintainer: Benedikt Schott
 </pre>
 */
 
+
+
 #include <Teuchos_TimeMonitor.hpp>
+
+#include "xfem_condition_manager.H"
+
+#include "../drt_inpar/inpar_xfem.H"
+
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_discret_faces.H"
@@ -25,8 +35,7 @@ Maintainer: Benedikt Schott
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_fluid.H"
 
-#include "xfem_condition_manager.H"
-
+#include "../drt_crack/crackUtils.H"
 
 
 void XFEM::CouplingBase::SetElementConditions()
@@ -211,6 +220,10 @@ XFEM::MeshCoupling::MeshCoupling(
 
   // set coupling discretization
   SetCouplingDiscretization();
+
+  // initialize state vectors based on cutter discretization
+  InitStateVectors();
+
 }
 
 
@@ -254,7 +267,7 @@ void XFEM::MeshCoupling::CreateCutterDisFromCondition()
   // for parallel jobs we have to call TransparentDofSet with additional flag true
   bool parallel = cond_dis_->Comm().NumProc() > 1;
   Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new
-      DRT::TransparentIndependentDofSet(cond_dis_,parallel,Teuchos::null));
+      DRT::TransparentIndependentDofSet(cond_dis_,parallel));
 
   cutter_dis_->ReplaceDofSet(newdofset); //do not call this with true!!
   cutter_dis_->FillComplete();
@@ -272,6 +285,125 @@ void XFEM::MeshCoupling::CreateCutterDisFromCondition()
   cutter_dis_->ExportColumnElements(elemcolmap);
 
   cutter_dis_->FillComplete();
+}
+
+
+void XFEM::MeshCoupling::InitStateVectors()
+{
+  const Epetra_Map* cutterdofrowmap = cutter_dis_->DofRowMap();
+
+  ivelnp_  = LINALG::CreateVector(*cutterdofrowmap,true);
+  iveln_   = LINALG::CreateVector(*cutterdofrowmap,true);
+  ivelnm_  = LINALG::CreateVector(*cutterdofrowmap,true);
+
+  idispnp_ = LINALG::CreateVector(*cutterdofrowmap,true);
+  idispn_  = LINALG::CreateVector(*cutterdofrowmap,true);
+
+  itrueresidual_ = LINALG::CreateVector(*cutterdofrowmap,true);
+}
+
+Teuchos::RCP<const Epetra_Vector> XFEM::MeshCoupling::GetCutterDispCol()
+{
+  // export cut-discretization mesh displacements
+  Teuchos::RCP<Epetra_Vector> idispcol = LINALG::CreateVector(*cutter_dis_->DofColMap(),true);
+  LINALG::Export(*idispnp_,*idispcol);
+
+  return idispcol;
+}
+
+
+//! constructor
+XFEM::MeshCouplingFSICrack::MeshCouplingFSICrack(
+    Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+    const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+    Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
+) : MeshCoupling(bg_dis,cond_name,cond_dis)
+{
+  InitCrackInitiationsPoints();
+}
+
+
+void XFEM::MeshCouplingFSICrack::SetCutterDis(Teuchos::RCP<DRT::Discretization> cutter_dis_new)
+{
+  cutter_dis_ = cutter_dis_new;
+
+  // update the Coupling object
+
+  // set unique element conditions
+  SetElementConditions();
+
+  // set the coupling strategy
+  SetCouplingStrategy();
+
+  // set coupling discretization
+  SetCouplingDiscretization();
+}
+
+
+void XFEM::MeshCouplingFSICrack::InitCrackInitiationsPoints()
+{
+  tip_nodes_.clear();
+
+  DRT::Condition* crackpts = cond_dis_->GetCondition( "CrackInitiationPoints" );
+
+  const std::vector<int>* crackpt_nodes = const_cast<std::vector<int>* >(crackpts->Nodes());
+
+
+  for(std::vector<int>::const_iterator inod=crackpt_nodes->begin(); inod!=crackpt_nodes->end();inod++ )
+  {
+    const int nodid = *inod;
+    LINALG::Matrix<3, 1> xnod( true );
+
+    tip_nodes_[nodid] = xnod;
+  }
+
+  if( tip_nodes_.size() == 0 )
+    dserror("crack initiation points unspecified\n");
+
+/*---------------------- POSSIBILITY 2 --- adding crack tip elements ----------------------------*/
+/*
+{
+DRT::Condition* crackpts = soliddis_->GetCondition( "CrackInitiationPoints" );
+
+const std::vector<int>* tipnodes = const_cast<std::vector<int>* >(crackpts->Nodes());
+
+if( tipnodes->size() == 0 )
+  dserror("crack initiation points unspecified\n");
+
+addCrackTipElements( tipnodes );
+}*/
+
+/*  Teuchos::RCP<DRT::DofSet> newdofset1 = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true));
+
+boundarydis_->ReplaceDofSet(newdofset1);//do not call this with true!!
+boundarydis_->FillComplete();*/
+}
+
+
+void XFEM::MeshCouplingFSICrack::UpdateBoundaryValuesAfterCrack(
+    const std::map<int,int>& oldnewIds
+)
+{
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, ivelnp_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, iveln_,  oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, ivelnm_, oldnewIds );
+
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, idispnp_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, idispn_,  oldnewIds );
+
+  //itrueresidual_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, itrueresidual_, oldnewIds );
+
+  //TODO: I guess the following lines are unnecessary (Sudhakar)
+  {
+    //iforcenp_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
+    //LINALG::Export( *itrueresidual_, *iforcenp_ );
+
+  }
+
+  //TODO: Check whether the output in case of crack-FSI work properly (Sudhakar)
+  //boundarydis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_)));
+  //boundary_output_ = boundarydis_->Writer();
 }
 
 
@@ -536,8 +668,20 @@ void XFEM::ConditionManager::SetLevelSetField(
 }
 
 
+Teuchos::RCP<const Epetra_Vector> XFEM::ConditionManager::GetLevelSetFieldCol()
+{
+  if(levelset_coupl_.size()==0) return Teuchos::null;
+
+  // export nodal level-set values to node column map
+  Teuchos::RCP<Epetra_Vector> bg_phinp_col = Teuchos::rcp(new Epetra_Vector(*bg_dis_->NodeColMap()));
+  LINALG::Export(*GetLevelSetField(),*bg_phinp_col);
+
+  return bg_phinp_col;
+}
+
 void XFEM::ConditionManager::UpdateLevelSetField()
 {
+
   if(levelset_coupl_.size() != 1)
       dserror("level-set field is not unique, update of the global bg_phinp by more than one phinp not implemented yet");
 

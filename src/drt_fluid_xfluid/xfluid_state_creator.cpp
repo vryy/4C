@@ -25,6 +25,7 @@ Maintainer:  Raffaela Kruse and Benedikt Schott
 
 #include "../drt_cut/cut_cutwizard.H"
 
+#include "../drt_xfem/xfem_condition_manager.H"
 #include "../drt_xfem/xfem_dofset.H"
 #include "../drt_xfem/xfem_neumann.H"
 
@@ -35,41 +36,47 @@ Maintainer:  Raffaela Kruse and Benedikt Schott
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
+
+
 /*----------------------------------------------------------------------*
- |  Perform the cut and fill state container                kruse 08/14 |
+ |  Perform the cut and fill state container               schott 01/15 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
   const Teuchos::RCP<DRT::DiscretizationXFEM>&      xdiscret,           //!< xfluid background discretization
-  const Teuchos::RCP<DRT::Discretization> &         boundarydiscret,    //!< boundary discretization, a discretization whose surface elements cut the background mesh
   Teuchos::RCP<const Epetra_Vector>                 back_disp_col,      //!< col vector holding background ALE displacements for backdis
-  Teuchos::RCP<const Epetra_Vector>                 cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-  Teuchos::RCP<const Epetra_Vector>                 back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
-  std::map<int, LINALG::Matrix<3,1> > &             tip_nodes,          //!< tip nodes for crack application
-  Teuchos::ParameterList &                          solver_params,
-  const int                                         step,
-  const double &                                    time
+  Teuchos::ParameterList &                          solver_params,      //!< solver parameters
+  const int                                         step,               //!< current time step
+  const double &                                    time                //!< current time
 )
 {
+#ifdef DEBUG
+  if(condition_manager_ == Teuchos::null) dserror("no condition manager available!");
+#endif
+
   //--------------------------------------------------------------------------------------
- // create new cut wizard &dofset
+  // create new cut wizard &dofset
   Teuchos::RCP<GEO::CutWizard> wizard;
   Teuchos::RCP<XFEM::XFEMDofSet> dofset;
 
   CreateNewCutState(
-      dofset,wizard,
-      xdiscret,boundarydiscret,
-      back_disp_col,cutter_disp_col,back_levelset_col,
+      dofset,
+      wizard,
+      xdiscret,
+      back_disp_col,
       solver_params,
-      step,
-      tip_nodes);
+      step
+  );
 
   //--------------------------------------------------------------------------------------
   // Create the XFluidState object
 
   Teuchos::RCP<const Epetra_Map> xfluiddofrowmap = Teuchos::rcp(
-      new Epetra_Map(*xdiscret->DofRowMap()));
+        new Epetra_Map(*xdiscret->DofRowMap()));
 
-  state_ = Teuchos::rcp(new FLD::XFluidState(wizard, dofset, xfluiddofrowmap));
+  Teuchos::RCP<const Epetra_Map> xfluiddofcolmap = Teuchos::rcp(
+        new Epetra_Map(*xdiscret->DofColMap()));
+
+  state_ = Teuchos::rcp(new FLD::XFluidState(condition_manager_, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap));
 
   //--------------------------------------------------------------------------------------
   state_->SetupMapExtractors(xdiscret,time);
@@ -77,43 +84,51 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
   return state_;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Perform the cut and fill state container                kruse 08/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
   const Teuchos::RCP<DRT::DiscretizationXFEM>&      xdiscret,           //!< xfluid background discretization
-  const Teuchos::RCP<DRT::Discretization> &         boundarydiscret,    //!< boundary discretization, a discretization whose surface elements cut the background mesh
-  const Teuchos::RCP<DRT::Discretization> &         embfluiddiscret,       //!< embedded fluid discretization
+  const Teuchos::RCP<DRT::Discretization> &         embfluiddiscret,    //!< embedded fluid discretization
   Teuchos::RCP<const Epetra_Vector>                 back_disp_col,      //!< col vector holding background ALE displacements for backdis
-  Teuchos::RCP<const Epetra_Vector>                 cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-  Teuchos::RCP<const Epetra_Vector>                 back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
-  Teuchos::ParameterList &                          solver_params,
-  const int                                         step,
-  const double &                                    time
+  Teuchos::ParameterList &                          solver_params,      //!< solver parameters
+  const int                                         step,               //!< current time step
+  const double &                                    time                //!< current time
 )
 {
+#ifdef DEBUG
+  if(condition_manager_ == Teuchos::null) dserror("no condition manager available!");
+#endif
+
   //--------------------------------------------------------------------------------------
   // create new cut wizard & dofset
   Teuchos::RCP<GEO::CutWizard> wizard;
   Teuchos::RCP<XFEM::XFEMDofSet> dofset;
 
   CreateNewCutState(
-      dofset,wizard,
-      xdiscret,boundarydiscret,
-      back_disp_col,cutter_disp_col,back_levelset_col,
+      dofset,
+      wizard,
+      xdiscret,
+      back_disp_col,
       solver_params,
-      step);
+      step
+  );
+
   //--------------------------------------------------------------------------------------
   // Create the XFluidFluidState object
 
   Teuchos::RCP<const Epetra_Map> xfluiddofrowmap = Teuchos::rcp(
       new Epetra_Map(*xdiscret->DofRowMap()));
 
+  Teuchos::RCP<const Epetra_Map> xfluiddofcolmap = Teuchos::rcp(
+        new Epetra_Map(*xdiscret->DofColMap()));
+
   Teuchos::RCP<const Epetra_Map> embfluiddofrowmap = Teuchos::rcp(
       new Epetra_Map(*embfluiddiscret->DofRowMap()));
 
   Teuchos::RCP<FLD::XFluidFluidState> state = Teuchos::rcp(
-      new FLD::XFluidFluidState(wizard, dofset, xfluiddofrowmap, embfluiddofrowmap));
+      new FLD::XFluidFluidState(condition_manager_, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap, embfluiddofrowmap));
 
   //--------------------------------------------------------------------------------------
   state->SetupMapExtractors(xdiscret,embfluiddiscret,time);
@@ -123,50 +138,6 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
   return state;
 }
 
-/*----------------------------------------------------------------------*
- |  Initialize coupling matrices                           schott 12/14 |
- *----------------------------------------------------------------------*/
-void FLD::XFluidStateCreator::InitCouplingMatrices(const Teuchos::RCP<DRT::Discretization>&  slavediscret)
-{
-  if(slavediscret == Teuchos::null) dserror("invalid slave discretization for coupling application");
-
-  // savegraph flag set to true, as there is no change in the matrix graph expected for the lifetime
-  // of this state container
-  state_->C_xs_  = Teuchos::rcp(new LINALG::SparseMatrix(*state_->xfluiddofrowmap_,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
-  state_->C_sx_  = Teuchos::rcp(new LINALG::SparseMatrix(*slavediscret->DofRowMap(),0,true,true,LINALG::SparseMatrix::FE_MATRIX));
-  state_->C_ss_  = Teuchos::rcp(new LINALG::SparseMatrix(*slavediscret->DofRowMap(),0,true,true,LINALG::SparseMatrix::FE_MATRIX));
-}
-
-
-/*----------------------------------------------------------------------*
- |  Initialize coupling rhs vectors                        schott 12/14 |
- *----------------------------------------------------------------------*/
-void FLD::XFluidStateCreator::InitCouplingRhs(const Teuchos::RCP<DRT::Discretization>&  slavediscret)
-{
-  if(slavediscret == Teuchos::null) dserror("invalid slave discretization for coupling application");
-
-  state_->rhC_s_    = LINALG::CreateVector(*slavediscret->DofRowMap(),true);
-  state_->rhC_s_col_= LINALG::CreateVector(*slavediscret->DofColMap(),true);
-}
-
-/*----------------------------------------------------------------------*
- |  Initialize ALE state vectors                           schott 12/14 |
- *----------------------------------------------------------------------*/
-void FLD::XFluidStateCreator::InitALEStateVectors(
-    const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
-    Teuchos::RCP<const Epetra_Vector> dispnp_initmap,
-    Teuchos::RCP<const Epetra_Vector> gridvnp_initmap
-)
-{
-
-  //! @name Ale Displacement at time n+1
-  state_->dispnp_ = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
-  xdiscret->ExportInitialtoActiveVector(dispnp_initmap,state_->dispnp_);
-
-  //! @name Grid Velocity at time n+1
-  state_->gridvnp_ = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
-  xdiscret->ExportInitialtoActiveVector(gridvnp_initmap,state_->gridvnp_);
-}
 
 /*----------------------------------------------------------------------*
  |  Initialize ALE state vectors                           schott 12/14 |
@@ -175,17 +146,13 @@ void FLD::XFluidStateCreator::CreateNewCutState(
   Teuchos::RCP<XFEM::XFEMDofSet> &                  dofset,             //!< xfem dofset obtained from the new wizard
   Teuchos::RCP<GEO::CutWizard> &                    wizard,             //!< cut wizard associated with current intersection state
   const Teuchos::RCP<DRT::DiscretizationXFEM>&      xdiscret,           //!< xfluid background discretization
-  const Teuchos::RCP<DRT::Discretization> &         boundarydiscret,    //!< boundary discretization, a discretization whose surface elements cut the background mesh
   Teuchos::RCP<const Epetra_Vector>                 back_disp_col,      //!< col vector holding background ALE displacements for backdis
-  Teuchos::RCP<const Epetra_Vector>                 cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-  Teuchos::RCP<const Epetra_Vector>                 back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
-  Teuchos::ParameterList &                          solver_params,
-  const int                                         step,
-  std::map<int, LINALG::Matrix<3,1> >               tip_nodes           //!< tip nodes for crack application
+  Teuchos::ParameterList &                          solver_params,      //!< solver parameters
+  const int                                         step                //!< current time step
 )
 {
-  // new wizard
-  wizard = Teuchos::rcp( new GEO::CutWizard(xdiscret, boundarydiscret) );
+  // new wizard using information about cutting sides from the condition_manager
+  wizard = Teuchos::rcp( new GEO::CutWizard(xdiscret));
 
   // Set options for the cut wizard
   wizard->SetOptions(
@@ -197,15 +164,38 @@ void FLD::XFluidStateCreator::CreateNewCutState(
       true                           // print screen output
   );
 
-  // Set the state vectors used for the cut
-  wizard->SetState(
-      back_disp_col,      //!< col vector holding background ALE displacements for backdis
-      cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-      back_levelset_col   //!< col vector holding nodal level-set values based on backdis
-  );
+  //--------------------------------------------------------------------------------------
+  // set state for all mesh cutting
 
-  // Set crack tip nodes in case of crack application
-  wizard->setCrackTipNodes(tip_nodes);
+  // loop all mesh coupling objects
+  for(int mc_idx=0; mc_idx< condition_manager_->NumMeshCoupling(); mc_idx++)
+  {
+    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx);
+
+    std::map<int, LINALG::Matrix<3,1> > tip_nodes;        ///< nodes of the crack tip when simulating FSI with crack
+
+    Teuchos::RCP<XFEM::MeshCouplingFSICrack> crfsi_mc_coupl = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSICrack>(mc_coupl);
+
+    if(crfsi_mc_coupl!=Teuchos::null) tip_nodes = crfsi_mc_coupl->GetCrackTipNodes(); ///< copy routine which copies form crfsi to tipnodes
+
+    wizard->AddCutterState(
+        mc_idx,
+        mc_coupl->GetCutterDis(),
+        mc_coupl->GetCutterDispCol(),
+        condition_manager_->GetMeshCouplingStartGID(mc_idx),
+        tip_nodes
+        );
+  }
+
+  //--------------------------------------------------------------------------------------
+  // set background state (background mesh displacements and level-set values)
+
+  wizard->SetBackgroundState(
+      back_disp_col,                              //!< col vector holding background ALE displacements for backdis
+      condition_manager_->GetLevelSetFieldCol(),  //!< col vector holding nodal level-set values based on backdis
+      condition_manager_->GetLevelSetCouplingGid()//!< global side id for level-set coupling
+      );
+
 
   //--------------------------------------------------------------------------------------
   // performs the "CUT"
@@ -236,4 +226,25 @@ void FLD::XFluidStateCreator::CreateNewCutState(
   // recompute nullspace based on new number of dofs per node
   // REMARK: this has to be done after replacing the discret' dofset (via discret_->ReplaceDofSet)
   xdiscret->ComputeNullSpaceIfNecessary(solver_params,true);
+
 }
+
+
+/*----------------------------------------------------------------------*
+ |  Initialize ALE state vectors                           schott 12/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidStateCreator::InitALEStateVectors(
+    const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
+    Teuchos::RCP<const Epetra_Vector> dispnp_initmap,
+    Teuchos::RCP<const Epetra_Vector> gridvnp_initmap
+)
+{
+  //! @name Ale Displacement at time n+1
+  state_->dispnp_ = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
+  xdiscret->ExportInitialtoActiveVector(dispnp_initmap,state_->dispnp_);
+
+  //! @name Grid Velocity at time n+1
+  state_->gridvnp_ = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
+  xdiscret->ExportInitialtoActiveVector(gridvnp_initmap,state_->gridvnp_);
+}
+

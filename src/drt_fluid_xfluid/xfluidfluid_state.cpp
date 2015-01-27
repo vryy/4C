@@ -26,11 +26,13 @@ Maintainer:  Raffaela Kruse
  |  Constructor for XFluidFluidState                         kruse 01/15 |
  *----------------------------------------------------------------------*/
 FLD::XFluidFluidState::XFluidFluidState(
+  Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
   Teuchos::RCP<GEO::CutWizard>& wizard,
   Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
   Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap,
+  Teuchos::RCP<const Epetra_Map> & xfluiddofcolmap,
   Teuchos::RCP<const Epetra_Map> & embfluiddofrowmap) :
-  XFluidState(wizard,dofset,xfluiddofrowmap),
+  XFluidState(condition_manager,wizard,dofset,xfluiddofrowmap, xfluiddofcolmap),
   xffluiddofrowmap_(LINALG::MergeMap(xfluiddofrowmap,embfluiddofrowmap,false)),
   xffluidsplitter_(Teuchos::rcp(new FLD::UTILS::FluidXFluidMapExtractor())),
   xffluidvelpressplitter_(Teuchos::rcp(new LINALG::MapExtractor())),

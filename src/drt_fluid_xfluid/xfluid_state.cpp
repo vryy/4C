@@ -11,15 +11,15 @@ Maintainer:  Raffaela Kruse and Benedikt Schott
 
 *----------------------------------------------------------------------*/
 
-#include "xfluid_state.H"
-
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_cut/cut_cutwizard.H"
 
+#include "../drt_xfem/xfem_condition_manager.H"
 #include "../drt_xfem/xfem_dofset.H"
 
 #include "../drt_io/io.H"
@@ -27,19 +27,92 @@ Maintainer:  Raffaela Kruse and Benedikt Schott
 
 #include "../drt_fluid/fluid_utils.H"
 
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"
+
+#include "xfluid_state.H"
+
+
+/*----------------------------------------------------------------------*
+ |  ctor  Initialize coupling matrices                     schott 01/15 |
+ *----------------------------------------------------------------------*/
+FLD::XFluidState::CouplingState::CouplingState(
+    Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap, const Teuchos::RCP<DRT::Discretization>&  slavediscret):
+    is_active_(true)
+{
+  if(slavediscret == Teuchos::null) dserror("invalid slave discretization for coupling application");
+
+  // savegraph flag set to true, as there is no change in the matrix graph expected for the lifetime
+  // of this state container
+  C_xs_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluiddofrowmap,0,true,true,LINALG::SparseMatrix::FE_MATRIX));
+  C_sx_  = Teuchos::rcp(new LINALG::SparseMatrix(*slavediscret->DofRowMap(),0,true,true,LINALG::SparseMatrix::FE_MATRIX));
+  C_ss_  = Teuchos::rcp(new LINALG::SparseMatrix(*slavediscret->DofRowMap(),0,true,true,LINALG::SparseMatrix::FE_MATRIX));
+
+  rhC_s_    = LINALG::CreateVector(*slavediscret->DofRowMap(),true);
+  rhC_s_col_= LINALG::CreateVector(*slavediscret->DofColMap(),true);
+}
+
+/*----------------------------------------------------------------------*
+ |  zero coupling matrices and rhs vectors                 schott 01/15 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidState::CouplingState::ZeroCouplingMatricesAndRhs()
+{
+  if(!is_active_) return;
+
+  // zero all coupling matrices and rhs vectors
+  C_xs_->Zero();
+  C_sx_->Zero();
+  C_ss_->Zero();
+  rhC_s_->Scale(0.0);
+  rhC_s_col_->Scale(0.0);
+}
+
+/*----------------------------------------------------------------------*
+ |  complete coupling matrices and rhs vectors             schott 01/15 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidState::CouplingState::CompleteCouplingMatricesAndRhs(
+    const Epetra_Map & xfluiddofrowmap,
+    const Epetra_Map & slavedofrowmap
+)
+{
+  if(!is_active_) return;
+
+  // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
+  // (domain-map are the columns, range-map are the rows)
+  C_xs_->Complete(slavedofrowmap, xfluiddofrowmap);
+  C_sx_->Complete(xfluiddofrowmap,slavedofrowmap);
+  C_ss_->Complete(slavedofrowmap, slavedofrowmap);
+
+  //-------------------------------------------------------------------------------
+  // export the rhs coupling vector to a row vector
+  Epetra_Vector rhC_s_tmp(rhC_s_->Map(),true);
+  Epetra_Export exporter_rhC_s_col(rhC_s_col_->Map(),rhC_s_tmp.Map());
+  int err = rhC_s_tmp.Export(*rhC_s_col_,exporter_rhC_s_col,Add);
+  if (err) dserror("Export using exporter returned err=%d",err);
+
+  rhC_s_->Update(1.0,rhC_s_tmp,0.0);
+}
+
+
 /*----------------------------------------------------------------------*
  |  Constructor for XFluidState                             kruse 08/14 |
  *----------------------------------------------------------------------*/
 FLD::XFluidState::XFluidState(
+  Teuchos::RCP<XFEM::ConditionManager> & condition_manager,
   Teuchos::RCP<GEO::CutWizard> & wizard,
-  Teuchos::RCP<XFEM::XFEMDofSet> &  dofset,
-  Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap) :
+  Teuchos::RCP<XFEM::XFEMDofSet> & dofset,
+  Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap,
+  Teuchos::RCP<const Epetra_Map> & xfluiddofcolmap) :
   xfluiddofrowmap_(xfluiddofrowmap),
+  xfluiddofcolmap_(xfluiddofcolmap),
   dofset_(dofset),
-  wizard_(wizard)
+  wizard_(wizard),
+  condition_manager_(condition_manager)
 {
   InitSystemMatrix();
   InitStateVectors();
+
+  InitCouplingMatricesAndRhs(condition_manager);
 }
 
 /*----------------------------------------------------------------------*
@@ -66,19 +139,6 @@ void FLD::XFluidState::InitSystemMatrix()
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*xfluiddofrowmap_,162,true,true,LINALG::SparseMatrix::FE_MATRIX));
 }
 
-
-/*----------------------------------------------------------------------*
- |  Initialize state vectors                               schott 12/14 |
- *----------------------------------------------------------------------*/
-void FLD::XFluidState::ZeroCouplingMatricesAndRhs()
-{
-  // zero all coupling matrices and rhs vectors
-  C_xs_->Zero();
-  C_sx_->Zero();
-  C_ss_->Zero();
-  rhC_s_->Scale(0.0);
-  rhC_s_col_->Scale(0.0);
-}
 
 /*----------------------------------------------------------------------*
  |  Initialize state vectors                                kruse 08/14 |
@@ -117,10 +177,8 @@ void FLD::XFluidState::InitStateVectors()
 
   // rhs: standard (stabilized) residual vector (rhs for the incremental form)
   residual_     = LINALG::CreateVector(*xfluiddofrowmap_,true);
+  residual_col_ = LINALG::CreateVector(*xfluiddofcolmap_,true);
   trueresidual_ = LINALG::CreateVector(*xfluiddofrowmap_,true);
-
-  // right hand side vector for linearized solution;
-  rhs_ = LINALG::CreateVector(*xfluiddofrowmap_,true);
 
   // nonlinear iteration increment vector
   incvel_ = LINALG::CreateVector(*xfluiddofrowmap_,true);
@@ -130,12 +188,84 @@ void FLD::XFluidState::InitStateVectors()
 
 }
 
+/*----------------------------------------------------------------------*
+ |  Initialize coupling matrices                           schott 01/15 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidState::InitCouplingMatricesAndRhs(
+    Teuchos::RCP<XFEM::ConditionManager> & condition_manager
+)
+{
+  // loop all coupling objects
+  for(int coup_idx=0; coup_idx<condition_manager->NumCoupling(); coup_idx++)
+  {
+    Teuchos::RCP<XFEM::CouplingBase> coupling = condition_manager->GetCouplingByIdx(coup_idx);
+
+#ifdef DEBUG
+    if(coupling==Teuchos::null) dserror("invalid coupling object!");
+#endif
+
+    Teuchos::RCP<XFluidState::CouplingState> & coup_state = coup_state_[coup_idx];
+
+    if(!condition_manager->IsCouplingCondition(coupling->GetName())) // coupling or one-sided non-coupling object
+    {
+      // create coupling state object with coupling matrices initialized with Teuchos::null
+      coup_state = Teuchos::rcp(new XFluidState::CouplingState());
+    }
+    else
+    {
+      if(condition_manager->IsLevelSetCondition(coup_idx))
+      {
+        // coupling matrices can be assembled into the fluid sysmat
+        // coupling rhs terms can be assembled into the fluid residual
+        coup_state = Teuchos::rcp(new XFluidState::CouplingState(sysmat_,sysmat_,sysmat_,residual_,residual_col_));
+      }
+      else if(condition_manager->IsMeshCondition(coup_idx))
+      {
+        coup_state = Teuchos::rcp(new XFluidState::CouplingState(xfluiddofrowmap_, coupling->GetCouplingDis()));
+      }
+      else dserror("coupling object is neither a level-set coupling object nor a mesh-coupling object");
+    }
+  } // loop coupling objects
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Initialize state vectors                               schott 12/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidState::ZeroCouplingMatricesAndRhs()
+{
+  // loop all coupling objects
+  for(std::map<int, Teuchos::RCP<CouplingState> >::iterator cs = coup_state_.begin(); cs!=coup_state_.end(); cs++)
+    cs->second->ZeroCouplingMatricesAndRhs();
+}
+
+/*----------------------------------------------------------------------*
+ |  Initialize state vectors                               schott 12/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidState::CompleteCouplingMatricesAndRhs()
+{
+  // loop all coupling objects
+  for(std::map<int, Teuchos::RCP<CouplingState> >::iterator cs = coup_state_.begin(); cs!=coup_state_.end(); cs++)
+  {
+    int coupl_idx = cs->first;
+
+    // complete only the mesh coupling objects, levelset-coupligs are completed by the sysmat->Complete call
+    if(condition_manager_->IsMeshCondition(coupl_idx))
+    {
+      Teuchos::RCP<XFEM::CouplingBase> coupling = condition_manager_->GetCouplingByIdx(coupl_idx);
+      cs->second->CompleteCouplingMatricesAndRhs(*xfluiddofrowmap_, *coupling->GetCouplingDis()->DofRowMap());
+    }
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  |  Set dirichlet- and velocity/pressure-map extractor      kruse 08/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidState::SetupMapExtractors(const Teuchos::RCP<DRT::Discretization> & xfluiddiscret,
-                                          const double & time)
+void FLD::XFluidState::SetupMapExtractors(
+    const Teuchos::RCP<DRT::Discretization> & xfluiddiscret,
+    const double & time
+)
 {
   // create dirichlet map extractor
   Teuchos::ParameterList eleparams;

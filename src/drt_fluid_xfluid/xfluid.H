@@ -61,6 +61,7 @@ namespace IO
 namespace XFEM
 {
   class ConditionManager;
+  class MeshCouplingFSICrack;
   class XFEMDofSet;
   class XFEM_EdgeStab;
   class XFluidTimeInt;
@@ -258,11 +259,11 @@ namespace FLD
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(state_->sysmat_); }
 
     /// return coupling matrix between fluid and structure as sparse matrices
-    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix(){ return state_->C_sx_; }
-    Teuchos::RCP<LINALG::SparseMatrix> C_Fluid_Struct_Matrix(){ return state_->C_xs_; }
-    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Struct_Matrix(){ return state_->C_ss_;}
+    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix(){ return state_->coup_state_[0]->C_sx_; }
+    Teuchos::RCP<LINALG::SparseMatrix> C_Fluid_Struct_Matrix(){ return state_->coup_state_[0]->C_xs_; }
+    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Struct_Matrix(){ return state_->coup_state_[0]->C_ss_;}
 
-    Teuchos::RCP<Epetra_Vector> RHS_Struct_Vec(){ return state_->rhC_s_; }
+    Teuchos::RCP<Epetra_Vector> RHS_Struct_Vec(){ return state_->coup_state_[0]->rhC_s_; }
 
     /// Return MapExtractor for Dirichlet boundary conditions
     Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(){ return state_->dbcmaps_; }
@@ -303,27 +304,14 @@ namespace FLD
 
     //! @name XFEM-Crack specific function
 
-    /// set the given discretization as the boundary discretization for crack application
-    void SetBoundaryDis(
-        const std::string & condname,
-        Teuchos::RCP<DRT::Discretization>& cutter_dis
-    );
+    Teuchos::RCP<XFEM::MeshCouplingFSICrack> GetMeshCouplingFSICrack(const std::string & condname);
 
-    /// Get the nodes that defines crack tip
-    void GetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes ){tip_nodes = tip_nodes_;}
-
-    /// Set the crack tip nodes. The displacement at these nodes are pre-specified to control FSI-crack problem
-    void SetCrackTipNodes( std::map<int, LINALG::Matrix<3,1> >& tip_nodes )
-    {
-      tip_nodes_.clear();
-      if( tip_nodes.size() > 0 )
-        tip_nodes_.insert( tip_nodes.begin(), tip_nodes.end() );
-
-      setTipNodesInCut_ = true;
-    }
-
+    //TODO has to be removed when ivelnp vectors are not stored anymore
     /// Properly initialize the DOFs of new nodes introduced after the crack propagation
-    void UpdateBoundaryValuesAfterCrack( const std::map<int,int>& oldnewIds );
+    void UpdateBoundaryValuesAfterCrack(
+        const std::string & condname,
+        const std::map<int,int>& oldnewIds
+    );
 
     //@}
 
@@ -347,8 +335,6 @@ namespace FLD
     void CreateState();
 
     Teuchos::RCP<FLD::XFluidState> GetNewState();
-
-//    void SetLevelSetField();
 
     void SetLevelSetField(
        Teuchos::RCP<const Epetra_Vector> scalaraf,
@@ -605,12 +591,7 @@ namespace FLD
     /// initialize the boundary discretization, output, restart and statevectors
     void InitBoundaryDiscretization();
 
-    /// initialize the needed functionality for the boundary discretization.
-    void CreateBoundaryDis(std::string element_name);
-
     void PrepareOutputBoundary();
-
-    void InitCrackInitiationPoints();
 
     void PrepareOutput();
 
@@ -801,6 +782,9 @@ namespace FLD
 
     //--------------------------------------------------------------------
 
+    /// state creator object
+    Teuchos::RCP<FLD::XFluidStateCreator> state_creator_;
+
     /// object to handle the different types of XFEM boundary and interface coupling conditions
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
 
@@ -876,21 +860,6 @@ namespace FLD
 
     //! how did std/ghost dofs of nodes permute between the last two iterations
     Teuchos::RCP<std::map<int,int> > permutation_map_;
-    //@}
-
-    //-----------------------------FSI with cracking structure ------------------------
-    //! @name crack specific data
-
-    /// nodes of the crack tip when simulating FSI with crack
-    std::map<int, LINALG::Matrix<3,1> > tip_nodes_;
-
-    //! Whether tip nodes should be set in the cut discretization
-    bool setTipNodesInCut_;
-
-
-/*    /// crack tip elements in case of FSI with cracking structure
-    std::map<int, Teuchos::RCP<DRT::Element> > crackTip_;*/
-
     //@}
 
   };

@@ -22,6 +22,11 @@ namespace LINALG
   class SparseOperator;
 }
 
+namespace XFEM
+{
+  class ConditionManager;
+}
+
 /**
  * Container class for the merged state vectors and maps of the intersected background
  * fluid and the embedded (ALE-)fluid.
@@ -41,9 +46,11 @@ public:
 
   /// ctor
   explicit XFluidFluidState(
+    Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
     Teuchos::RCP<GEO::CutWizard>& wizard,
     Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
     Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap,
+    Teuchos::RCP<const Epetra_Map> & xfluiddofcolmap,
     Teuchos::RCP<const Epetra_Map> & embfluiddofrowmap);
 
   /// dtor

@@ -65,6 +65,7 @@ namespace XFEM
 
 namespace FLD
 {
+  class XFluidStateCreator;
   class XFluidFluid;
   class XFluidFluid : public TimInt
   {
@@ -452,9 +453,6 @@ namespace FLD
     /// (standard) residual vector (rhs for the incremental form),
     Teuchos::RCP<Epetra_Vector>    residual_;
 
-    /// rhs: right hand side vector for linearized flow solution
-    Teuchos::RCP<Epetra_Vector>    rhs_;
-
     /// true (rescaled) residual vector without zeros at dirichlet positions
     Teuchos::RCP<Epetra_Vector>    trueresidual_;
 
@@ -671,6 +669,9 @@ namespace FLD
     double  dtsolve_;
 
     //--------------------------------------------------------------------
+
+    /// state creator object
+    Teuchos::RCP<FLD::XFluidStateCreator> state_creator_;
 
     /// object to handle the different types of XFEM boundary and interface coupling conditions
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;

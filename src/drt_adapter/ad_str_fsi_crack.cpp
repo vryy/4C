@@ -133,7 +133,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos:
 
   boundary_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, condname, cutterdis_name, "BELE3_3", conditions_to_copy);
 
-  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true,Teuchos::null));
+  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true));
   boundary_dis->ReplaceDofSet(newdofset);
 
   #if 0 // try to add element
@@ -372,7 +372,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
 
   boundary_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, condname, cutterdis_name, "BELE3_3", conditions_to_copy);
 
-  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true,Teuchos::null));
+  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true));
   boundary_dis->ReplaceDofSet(newdofset);
 
   boundary_dis->FillComplete();
@@ -387,7 +387,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithoutConditionCheck( Teuch
 
   temp_dis = DRT::UTILS::CreateDiscretizationFromCondition(structdis_, condname, cutterdis_name, "BELE3_3", conditions_to_copy);
 
-  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true,Teuchos::null));
+  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(structdis_,true));
   temp_dis->ReplaceDofSet(newdofset);
 
   if( structdis_->Comm().MyPID() == 0 )

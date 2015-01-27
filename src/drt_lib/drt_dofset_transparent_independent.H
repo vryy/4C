@@ -18,8 +18,11 @@ Maintainer: Shadan Shahmiri
 #include "drt_exporter.H"
 #include "drt_dofset_independent.H"
 #include "drt_dofset_transparent.H"
-#include "../drt_lib/drt_discret.H"
 
+namespace DRT
+{
+  class Discretization;
+}
 
 namespace GEO
 {
@@ -37,26 +40,22 @@ namespace DRT
   As internal variable it holds a source discretization (Constructor). If such a nodeset is assigned to a
   sub-discretization, its dofs are assigned according to the dofs of the
   source.
-  The source discretization can be a xfem discretization. In this case this  should be called with a
-  Fluidwizard not equal to zero to determine the  number of xfem dofs.
 
   */
-  class TransparentIndependentDofSet : public virtual IndependentDofSet, public virtual TransparentDofSet
+  class TransparentIndependentDofSet : public IndependentDofSet, public TransparentDofSet
   {
   public:
 
     /*!
     \brief Standard Constructor
-
     */
-
-    explicit TransparentIndependentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,
-                                          bool parallel,
-                                          Teuchos::RCP<GEO::CutWizard> wizard);
+    explicit TransparentIndependentDofSet(
+        Teuchos::RCP<DRT::Discretization> sourcedis,
+        bool parallel
+    );
 
     /*!
     \brief Destructor
-
     */
     virtual ~TransparentIndependentDofSet() { return; }
 
@@ -72,10 +71,6 @@ namespace DRT
   protected:
     virtual int NumDofPerNode( const DRT::Node & node ) const;
 
-
-  private:
-
-    Teuchos::RCP<GEO::CutWizard> wizard_;
 
   }; // class TransparentDofSet
 } //namespace

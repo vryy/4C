@@ -18,13 +18,21 @@ Maintainer: Benedikt Schott
 
 #include "../drt_inpar/inpar_cut.H"
 
-class Epetra_Vector;
-class Epetra_SerialDenseMatrix;
+#include "Epetra_Vector.h"
+#include "Epetra_SerialDenseVector.h"
+#include "Epetra_SerialDenseMatrix.h"
+#include "../linalg/linalg_fixedsizematrix.H"
+
 
 namespace DRT
 {
   class Discretization;
   class Element;
+}
+
+namespace XFEM
+{
+  class ConditionManager;
 }
 
 namespace GEO
@@ -43,6 +51,59 @@ namespace GEO
   public:
 
 
+    /*!
+     * \brief Container class for a certain cutting mesh objects
+     */
+    class CutterMesh
+    {
+
+    public:
+
+      //! ctor
+      CutterMesh(
+          Teuchos::RCP<DRT::Discretization> cutterdis,
+          Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
+          std::map<int, LINALG::Matrix<3,1> > & tip_nodes,
+          const int start_ele_gid
+          ) :
+          cutterdis_(cutterdis),
+          cutter_disp_col_(cutter_disp_col),
+          tip_nodes_(tip_nodes),
+          is_crack_( (tip_nodes_.size() != 0) ),
+          start_ele_gid_(start_ele_gid)
+      {
+      }
+
+
+
+      //---------------------------------discretization-----------------------------
+
+      //! @name cutter discretization
+      Teuchos::RCP<DRT::Discretization> cutterdis_;            ///< cutter discretization
+      //@}
+
+      //---------------------------------state vectors ----------------------------
+
+      //! @name state vectors holding displacements
+      Teuchos::RCP<const Epetra_Vector> cutter_disp_col_;    ///< col vector holding interface displacements for cutterdis
+      //@}
+
+
+      //---------------------------------Crack specific stuff ----------------------------
+
+      //! @name Options
+      std::map<int, LINALG::Matrix<3,1> > tip_nodes_;        ///< nodes of the crack tip when simulating FSI with crack
+      bool is_crack_;                                        ///< are crack tipnodes involved?
+      //@}
+
+      //!
+      int start_ele_gid_;
+
+    };
+
+
+
+
     /*========================================================================*/
     //! @name Constructor and Destructor
     /*========================================================================*/
@@ -50,7 +111,17 @@ namespace GEO
     /*!
     \brief Constructor
     */
-    CutWizard( Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<DRT::Discretization> cutterdis );
+    CutWizard( Teuchos::RCP<DRT::Discretization> dis);
+
+//    /*!
+//    \brief Constructor when a condition manager is available
+//    */
+//    CutWizard(
+//        Teuchos::RCP<DRT::Discretization> dis,                  //!< background discretization
+//        Teuchos::RCP<const Epetra_Vector> back_disp_col
+////        ,        //!< col vector holding background ALE displacements for backdis
+////        Teuchos::RCP<XFEM::ConditionManager> condition_manager  //!< coupling condition manager holding data about coupling sides
+//    );
 
     /*!
     \brief Destructor
@@ -74,15 +145,25 @@ namespace GEO
         bool screenoutput                           //!< print screen output
     );
 
-    //! set displacement and level-set vectors used during the cut
-    void SetState(
+    void SetBackgroundState(
         Teuchos::RCP<const Epetra_Vector> back_disp_col,      //!< col vector holding background ALE displacements for backdis
-        Teuchos::RCP<const Epetra_Vector> cutter_disp_col,    //!< col vector holding interface displacements for cutterdis
-        Teuchos::RCP<const Epetra_Vector> back_levelset_col   //!< col vector holding nodal level-set values based on backdis
+        Teuchos::RCP<const Epetra_Vector> back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
+        const int level_set_sid                               //!< global id for level-set side
     );
 
-    //! set crack tip nodes for crack applications
-    void setCrackTipNodes( std::map<int, LINALG::Matrix<3,1> > & tip );
+    void AddCutterState(
+        const int mc_idx,
+        Teuchos::RCP<DRT::Discretization> cutter_dis,
+        Teuchos::RCP<const Epetra_Vector> cutter_disp_col
+    );
+
+    void AddCutterState(
+        const int mc_idx,
+        Teuchos::RCP<DRT::Discretization> cutter_dis,
+        Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
+        const int                         start_ele_gid,
+        std::map<int, LINALG::Matrix<3,1> > & tip_nodes
+    );
 
     //@}
 
@@ -139,8 +220,17 @@ namespace GEO
     //! add elements from the background discretization
     void AddBackgroundElements();
 
-    //! Add this cuttin side element with given global coordiantes to the intersection class
-    void AddMeshCuttingSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze );
+    //! Add all cutting side elements of given cutter discretization with given displacement field to the intersection class
+    void AddMeshCuttingSide(
+        Teuchos::RCP<DRT::Discretization> cutterdis,
+        Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
+        bool is_crack,
+        std::map<int, LINALG::Matrix<3,1> > & tip_nodes,
+        const int start_ele_gid = 0  ///< global start index for element id numbering
+        );
+
+    //! Add this cutting side element with given global coordiantes to the intersection class
+    void AddMeshCuttingSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze, const int start_ele_gid );
 
     //! Add this background mesh element to the intersection class
     void AddElement( DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze, double* myphinp = NULL, bool ls_only_plus_domain = false );
@@ -192,11 +282,8 @@ namespace GEO
 
     //! @name discretizations
     Teuchos::RCP<DRT::Discretization> backdis_;              ///< background discretization
-    Teuchos::RCP<DRT::Discretization> cutterdis_;            ///< cutter discretization
-
     int myrank_;                                             ///< my processor Id
     //@}
-
 
     //---------------------------------main intersection class----------------------------
     //! @name main intersection class and flags
@@ -210,9 +297,12 @@ namespace GEO
 
     //! @name state vectors holding displacements and level-set values
     Teuchos::RCP<const Epetra_Vector> back_disp_col_;      ///< col vector holding background ALE displacements for backdis
-    Teuchos::RCP<const Epetra_Vector> cutter_disp_col_;    ///< col vector holding interface displacements for cutterdis
     Teuchos::RCP<const Epetra_Vector> back_levelset_col_;  ///< col vector holding nodal level-set values based on backdis
+    int level_set_sid_;
     //@}
+
+
+    std::map<int, Teuchos::RCP<CutterMesh> > cutter_meshes_;
 
 
     //---------------------------------Options ----------------------------
@@ -226,19 +316,11 @@ namespace GEO
     bool lsv_only_plus_domain_;                            ///< consider only plus domain of level-set field as physical field
     //@}
 
-    //---------------------------------Crack specific stuff ----------------------------
-
-    //! @name Options
-    std::map<int, LINALG::Matrix<3,1> > tip_nodes_;        ///< nodes of the crack tip when simulating FSI with crack
-    bool is_crack_;                                        ///< are crack tipnodes involved?
-    //@}
-
 
     //--------------------------------- Initialization flags ----------------------------
 
     //! @name Flags whether wizard is initialized correctly
     bool is_set_options_;
-    bool is_set_state_;
     //@}
 
   };

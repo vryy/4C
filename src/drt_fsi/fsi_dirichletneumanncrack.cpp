@@ -17,6 +17,8 @@
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_fluid_xfluid/xfluid.H"
 
+#include "../drt_xfem/xfem_condition_manager.H"
+
 /*-------------------------------------------------------------------------------------*
  *        Constructor
  *-------------------------------------------------------------------------------------*/
@@ -80,16 +82,17 @@ void FSI::DirichletNeumann_Crack::AddNewCrackSurfaceToCutInterface()
   const std::string condname = "XFEMSurfCrackFSIPart";
   Teuchos::RCP<DRT::Discretization> boundary_dis = xfluid->BoundaryDiscretization();
 
-  std::map<int, LINALG::Matrix<3,1> > tip_nodes;
-  xfluid->GetCrackTipNodes( tip_nodes );
+  Teuchos::RCP<XFEM::MeshCouplingFSICrack> coupl = xfluid->GetMeshCouplingFSICrack(condname);
+
+  std::map<int, LINALG::Matrix<3,1> > & tip_nodes = coupl->GetCrackTipNodes();
 
   // create new boundary discretization if necessary
   structfield->addCrackSurfacesToCutSides( boundary_dis, tip_nodes );
   if(boundary_dis == Teuchos::null)
     dserror( "Boundary discretization can't be empty" );
-  xfluid->SetBoundaryDis( condname, boundary_dis );
 
-  xfluid->SetCrackTipNodes( tip_nodes );
+  coupl->SetCutterDis(boundary_dis);
+  coupl->SetCrackTipNodes( tip_nodes );
 
-  xfluid->UpdateBoundaryValuesAfterCrack( structfield->getOldNewCrackNodes() );
+  xfluid->UpdateBoundaryValuesAfterCrack( condname, structfield->getOldNewCrackNodes() );
 }

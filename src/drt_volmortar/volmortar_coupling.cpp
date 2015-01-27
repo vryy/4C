@@ -1230,7 +1230,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
    // Initialize the cut wizard
 
    // create new cut wizard
-   Teuchos::RCP<GEO::CutWizard> wizard = Teuchos::rcp( new GEO::CutWizard(mauxdis, sauxdis) );
+   Teuchos::RCP<GEO::CutWizard> wizard = Teuchos::rcp( new GEO::CutWizard(mauxdis) );
 
   // *************************************
   // TESSELATION *************************
@@ -1248,7 +1248,8 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
     );
 
     // cut in reference configuration
-    wizard->SetState(Teuchos::null, Teuchos::null, Teuchos::null);
+    wizard->SetBackgroundState(Teuchos::null,Teuchos::null,-1);
+    wizard->AddCutterState(0, sauxdis,Teuchos::null);
 
     wizard->Cut(true);  // include_inner
 
@@ -1304,7 +1305,9 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
     );
 
     // cut in reference configuration
-    wizard->SetState(Teuchos::null, Teuchos::null, Teuchos::null);
+    wizard->SetBackgroundState(Teuchos::null,Teuchos::null,-1);
+    wizard->AddCutterState(0, sauxdis,Teuchos::null);
+
 
     wizard->Cut(true);  // include_inner
 
