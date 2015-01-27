@@ -51,7 +51,6 @@ namespace FLD
   class Vreman;
   namespace UTILS
   {
-    class FluidXFluidMapExtractor;
     class KSPMapExtractor;
   }
 

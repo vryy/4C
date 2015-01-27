@@ -111,7 +111,7 @@ void FLD::UTILS::VelPressExtractor::Setup(const DRT::Discretization& dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::FluidXFluidMapExtractor::Setup(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> fluidmap, Teuchos::RCP<const Epetra_Map> xfluidmap)
+void FLD::UTILS::XFluidFluidMapExtractor::Setup(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> fluidmap, Teuchos::RCP<const Epetra_Map> xfluidmap)
 {
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   maps.push_back(fluidmap);

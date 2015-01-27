@@ -95,7 +95,7 @@ namespace UTILS
   };
 
   /// specific MultiMapExtractor to handle the fluid field
-  class FluidXFluidMapExtractor : public LINALG::MultiMapExtractor
+  class XFluidFluidMapExtractor : public LINALG::MultiMapExtractor
   {
   public:
 

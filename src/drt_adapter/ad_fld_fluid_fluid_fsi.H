@@ -46,7 +46,7 @@ namespace FLD
   namespace UTILS
   {
     class MapExtractor;
-    class FluidXFluidMapExtractor;
+    class XFluidFluidMapExtractor;
   }
 }
 
@@ -108,7 +108,7 @@ namespace ADAPTER {
     const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter();
 
     /// get map extractor for background/embedded fluid
-    virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor();
+    virtual Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor>const& XFluidFluidMapExtractor();
 
     //@}
 

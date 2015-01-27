@@ -348,11 +348,11 @@ namespace FLD
       return xdiscret_;
     }
 
-  private:
+  protected:
 
 
     /// call the loop over elements to assemble volume and interface integrals
-    void AssembleMatAndRHS(
+    virtual void AssembleMatAndRHS(
         int itnum                           ///< iteration number
     );
 

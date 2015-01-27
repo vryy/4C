@@ -36,7 +36,7 @@ namespace FLD
 
 namespace UTILS
 {
-  class FluidXFluidMapExtractor;
+  class XFluidFluidMapExtractor;
 }
 
 class XFluidFluidState : public XFluidState
@@ -75,7 +75,7 @@ public:
   //@name Map extractors of the merged system
   //@{
   /// extractor used for splitting fluid and embedded fluid
-  Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> xffluidsplitter_;
+  Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> xffluidsplitter_;
   /// extractor used for splitting between velocity and pressure dof from the combined background & embedded fluid dof-map
   Teuchos::RCP<LINALG::MapExtractor> xffluidvelpressplitter_;
   /// combined background and embedded fluid map extractor for dirichlet-constrained dof

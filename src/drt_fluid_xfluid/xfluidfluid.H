@@ -195,7 +195,7 @@ namespace FLD
     /// get the combined fluid-fluid system matrix
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
 
-    Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor(){ return state_->xffluidsplitter_; }
+    Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor>const& XFluidFluidMapExtractor(){ return state_->xffluidsplitter_; }
 
     //! get combined background and embedded fluid dirichlet map extractor
     Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return state_->xffluiddbcmaps_; }

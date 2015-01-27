@@ -132,7 +132,7 @@ void ADAPTER::FluidFluidFSI::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& ADAPTER::FluidFluidFSI::XFluidFluidMapExtractor()
+Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor>const& ADAPTER::FluidFluidFSI::XFluidFluidMapExtractor()
 {
   return xfluidfluid_->XFluidFluidMapExtractor();
 }
