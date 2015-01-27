@@ -352,9 +352,15 @@ namespace FLD
 
 
     /// call the loop over elements to assemble volume and interface integrals
-    void Evaluate(
+    void AssembleMatAndRHS(
         int itnum                           ///< iteration number
     );
+
+    /// evaluate and assemble volume integral based terms
+    void AssembleMatAndRHS_VolTerms();
+
+    /// evaluate and assemble face-oriented fluid and ghost penalty stabilizations
+    void AssembleMatAndRHS_FaceTerms();
 
     /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
     void IntegrateShapeFunction(
