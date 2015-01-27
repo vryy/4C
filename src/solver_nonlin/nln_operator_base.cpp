@@ -25,6 +25,7 @@ Maintainer: Matthias Mayr
 // Teuchos
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 // baci
 #include "nln_operator_base.H"
@@ -44,7 +45,8 @@ NLNSOL::NlnOperatorBase::NlnOperatorBase()
   issetup_(false),
   comm_(Teuchos::null),
   params_(Teuchos::null),
-  nlnproblem_(Teuchos::null)
+  nlnproblem_(Teuchos::null),
+  nested_(0)
 {
   return;
 }
@@ -53,7 +55,8 @@ NLNSOL::NlnOperatorBase::NlnOperatorBase()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& params,
-    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem
+    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
+    const int nested
     )
 {
   // We need to call Setup() after Init()
@@ -63,6 +66,7 @@ void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
   comm_ = Teuchos::rcp(&comm, false);
   params_ = Teuchos::rcp(&params, false);
   nlnproblem_ = nlnproblem;
+  nested_ = nested;
 
   // Init() has been called
   SetIsInit();
@@ -108,14 +112,16 @@ Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::NlnOperatorBase::NlnProblem() const
 void NLNSOL::NlnOperatorBase::PrintIterSummary(const int iter,
     const double fnorm2) const
 {
-  // print only on one processor
-  if (Comm().MyPID() == 0
-      and Params().get<bool>("Nonlinear Operator: Print Iterations"))
+  if (Params().get<bool>("Nonlinear Operator: Print Iterations"))
   {
-    IO::cout << std::setprecision(6)
-             << Label() << " iteration " << iter
-             << ": |f| = " << fnorm2
-             << IO::endl;
+    Teuchos::RCP<Teuchos::FancyOStream> out =
+        Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+    out->setOutputToRootOnly(0);
+    Teuchos::OSTab tab(out, Indentation());
+
+    *out << LabelShort() << " iteration " << iter
+         << ": |f| = " << fnorm2
+         << std::endl;
   }
 }
 

@@ -111,13 +111,19 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
       // build polynomial model
       int iter = 0;
 
+      // define three data points for a quadratic model
       double l1 = 0.0;
       double l2 = 1.0;
       double l3 = 0.5;
 
-      double y1 = GetFNormOld();
-      double y2 = fnorm2fullstep;
-      double y3 = fnorm2halfstep;
+      double y1 = GetFNormOld(); // value at l1
+      double y2 = fnorm2fullstep; // value at l2
+      double y3 = fnorm2halfstep; // value at l3
+
+//      std::cout << "x_i\ty_i" << std::endl
+//                << l1 << "\t" << y1 << std::endl
+//                << l2 << "\t" << y2 << std::endl
+//                << l3 << "\t" << y3 << std::endl;
 
       double fnorm2 = y3;
       double a = 0.0;
@@ -135,11 +141,28 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
 
         b = (y2-y1)/(l2-l1) - a*(l2*l2-l1*l1)/(l2-l1);
 
+//        const double c = y1 - a*l1*l1 - b*l1;
+//
+//        std::cout << "a = " << a
+//                  << "\tb = " << b
+//                  << "\tc = " << c
+//                  << std::endl;
+
         lsparamold = lsparam;
         lsparam = - b / (2*a);
 
+        if (a < 0.0) // cf. [Kelley1995a, p. 143]
+          lsparam = 0.5*lsparamold;
+
+        if (lsparam <= 0.0) // line search parameter has to be strictly positive
+          lsparam = 0.5*lsparamold;
+
+//        std::cout << "lsparam = " << lsparam << std::endl;
+
         // safeguard strategy
         Safeguard(lsparam, lsparamold);
+
+//        std::cout << "lsparam = " << lsparam << std::endl;
 
         err = xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
         if (err != 0) { dserror("Failed."); }
@@ -147,21 +170,22 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
 
         converged = ConvergenceCheck(*residual, fnorm2);
 
+        // update interpolation points
         l1 = l2;
         l2 = l3;
         l3 = lsparam;
-
         y1 = y2;
         y2 = y3;
         y3 = fnorm2;
       }
 
-      if (not converged
-          and (not IsSufficientDecrease(fnorm2, lsparam) or iter > itermax_))
-        dserror("Polynomial line search cannot satisfy sufficient decrease "
-            "condition withing %d iterations.", itermax_);
+//      if (not converged
+//          and (not IsSufficientDecrease(fnorm2, lsparam) or iter > itermax_))
+//        dserror("Polynomial line search cannot satisfy sufficient decrease "
+//            "condition within %d iterations.", itermax_);
 
-      return lsparam;
     }
   }
+
+  return lsparam;
 }

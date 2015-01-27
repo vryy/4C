@@ -27,6 +27,7 @@ Maintainer: Matthias Mayr
 // Teuchos
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 // baci
 #include "linesearch_base.H"
@@ -55,6 +56,11 @@ NLNSOL::NlnOperatorNewton::NlnOperatorNewton()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorNewton::Setup()
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnOperatorNewton::Setup");
+  Teuchos::TimeMonitor monitor(*time);
+
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
@@ -101,6 +107,11 @@ void NLNSOL::NlnOperatorNewton::SetupLineSearch()
 int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnOperatorNewton::ApplyInverse");
+  Teuchos::TimeMonitor monitor(*time);
+
   int err = 0;
 
   // Make sure that Init() and Setup() have been called
@@ -142,7 +153,7 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
     ComputeSearchDirection(rhs, inc, iter);
 
     // compute line search parameter
-    steplength = ComputeStepLength(x, *inc, fnorm2);
+    steplength = ComputeStepLength(x, *rhs, *inc, fnorm2);
 
     // Iterative update
     err = x.Update(steplength, *inc, 1.0);
@@ -154,7 +165,6 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
 
     PrintIterSummary(iter, fnorm2);
   }
-
 
   // return error code
   return (not CheckSuccessfulConvergence(iter, converged));
@@ -171,7 +181,8 @@ const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
   // compute search direction with either fixed or most recent, updated jacobian
   if (FixedJacobian())
   {
-    linsolve_error = linsolver_->Solve(jac_, inc, rhs, iter == 1, iter == 1,
+    // do not refactor or reset since we want to reuse the LU decomposition
+    linsolve_error = linsolver_->Solve(jac_, inc, rhs, false, false,
         Teuchos::null);
   }
   else
@@ -182,6 +193,13 @@ const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
 
   // test for failure of linear solver
   if (linsolve_error != 0) { dserror("Linear solver failed."); }
+
+  // Is 'inc' a descent direction?
+  double dotproduct = 0.0;
+  inc->Dot(*rhs, &dotproduct);
+  if (dotproduct <= 0.0) // ascent direction
+    dserror("Search direction in %s is not a descent direction anymore.",
+        Label());
 
   return linsolve_error;
 }
@@ -194,11 +212,11 @@ const bool NLNSOL::NlnOperatorNewton::FixedJacobian() const
 
 /*----------------------------------------------------------------------------*/
 const double NLNSOL::NlnOperatorNewton::ComputeStepLength(
-    const Epetra_MultiVector& x, const Epetra_MultiVector& inc,
-    double fnorm2) const
+    const Epetra_MultiVector& x, const Epetra_MultiVector& f,
+    const Epetra_MultiVector& inc, double fnorm2) const
 {
   linesearch_->Init(NlnProblem(),
-      Params().sublist("Nonlinear Operator: Line Search"), x, inc, fnorm2);
+      Params().sublist("Nonlinear Operator: Line Search"), x, f, inc, fnorm2);
   linesearch_->Setup();
   return linesearch_->ComputeLSParam();
 }

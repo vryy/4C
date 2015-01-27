@@ -31,6 +31,7 @@
 // Teuchos
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 // baci
 #include "linesearch_base.H"
@@ -64,6 +65,11 @@ NLNSOL::NlnOperatorLinPrec::NlnOperatorLinPrec() :
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorLinPrec::Setup()
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnOperatorLinPrec::Setup");
+  Teuchos::TimeMonitor monitor(*time);
+
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
@@ -120,6 +126,11 @@ void NLNSOL::NlnOperatorLinPrec::Setup()
 int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnOperatorLinPrec::ApplyInverse");
+  Teuchos::TimeMonitor monitor(*time);
+
   int err = 0;
 
   // Make sure that Init() and Setup() have been called
@@ -151,8 +162,8 @@ int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 const double NLNSOL::NlnOperatorLinPrec::ComputeStepLength(
-    const Epetra_MultiVector& x, const Epetra_MultiVector& inc,
-    double fnorm2) const
+    const Epetra_MultiVector& x, const Epetra_MultiVector& f,
+    const Epetra_MultiVector& inc, double fnorm2) const
 {
   dserror("There is no line search algorithm available for a linear "
       "preconditioner object.");

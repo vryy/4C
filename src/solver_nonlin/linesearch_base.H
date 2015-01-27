@@ -21,6 +21,7 @@ Maintainer: Matthias Mayr
 
 // Teuchos
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_VerboseObject.hpp>
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
@@ -48,7 +49,7 @@ namespace NLNSOL
    * \author mayr.mt
    * \date 05/2014
    */
-  class LineSearchBase
+  class LineSearchBase : public Teuchos::VerboseObject<LineSearchBase>
   {
   public:
 
@@ -70,6 +71,7 @@ namespace NLNSOL
     virtual void Init(Teuchos::RCP<const NLNSOL::NlnProblem> nlnproblem, ///< nonlinear problem to solve
         const Teuchos::ParameterList& params, ///< parameter list for configuration of line search algorithm
         const Epetra_MultiVector& xold, ///< last iterate
+        const Epetra_MultiVector& fold, ///< residual at last iterate
         const Epetra_MultiVector& inc, ///< the Newton direction (full step)
         const double resnormold ///< residual norm of last iterate
         );
@@ -159,6 +161,9 @@ namespace NLNSOL
     //! Access to last iterate
     virtual const Epetra_MultiVector& GetXOld() const { return *xold_; }
 
+    //! Access to residual at last iterate
+    virtual const Epetra_MultiVector& GetFOld() const { return *fold_; }
+
     //! Access to Newton direction
     virtual const Epetra_MultiVector& GetXInc() const { return *inc_; }
 
@@ -189,10 +194,13 @@ namespace NLNSOL
     //! parameter list
     Teuchos::RCP<const Teuchos::ParameterList> params_;
 
-    //!< the last iterate
+    //!< last iterate
     Teuchos::RCP<const Epetra_MultiVector> xold_;
 
-    //!< the Newton direction (full step)
+    //!< residual at the last iterate
+    Teuchos::RCP<const Epetra_MultiVector> fold_;
+
+    //!< search direction
     Teuchos::RCP<const Epetra_MultiVector> inc_;
 
     //!< residual norm of last iterate

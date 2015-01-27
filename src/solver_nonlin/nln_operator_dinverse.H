@@ -96,6 +96,9 @@ namespace NLNSOL
     //! Returns a character string describing the operator
     virtual const char* Label() const { return "NLNSOL::NlnOperatorDInverse"; }
 
+    //! Returns a character string describing the operator briefly
+    virtual const char* LabelShort() const { return "DInverse"; }
+
     //@}
 
   protected:
@@ -133,6 +136,7 @@ namespace NLNSOL
     //! Compute line search parameter (=step length)
     virtual const double ComputeStepLength(
         const Epetra_MultiVector& x, ///< current solution
+        const Epetra_MultiVector& f, ///< residual current solution
         const Epetra_MultiVector& inc, ///< search direction
         double fnorm2 ///< current L2-norm of residual
         ) const;

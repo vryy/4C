@@ -22,6 +22,7 @@ Maintainer: Matthias Mayr
 // Teuchos
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 // baci
 #include "fas_hierarchy.H"
@@ -47,6 +48,11 @@ NLNSOL::NlnOperatorFas::NlnOperatorFas()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorFas::Setup()
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnOperatorFas::Setup");
+  Teuchos::TimeMonitor monitor(*time);
+
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
@@ -65,6 +71,17 @@ void NLNSOL::NlnOperatorFas::Setup()
 int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnOperatorFas::ApplyInverse");
+  Teuchos::TimeMonitor monitor(*time);
+
+  // create formatted output stream
+  Teuchos::RCP<Teuchos::FancyOStream> out =
+      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  out->setOutputToRootOnly(0);
+  Teuchos::OSTab tab(out, Indentation());
+
   // Make sure that Init() and Setup() have been called
   if (not IsInit())  { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -81,8 +98,7 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
   {
     ++iter;
 
-    if (Comm().MyPID() == 0)
-      IO::cout << "Start V-cycle for the " << iter << ". time." << IO::endl;
+    *out << "Start V-cycle for the " << iter << ". time." << std::endl;
 
     //ToDo (mayr) switch between different cycles based on params_
     // choose type of multigrid cycle
@@ -105,14 +121,17 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     const int level
     ) const
 {
+  // create formatted output stream
+  Teuchos::RCP<Teuchos::FancyOStream> out =
+      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  out->setOutputToRootOnly(0);
+  Teuchos::OSTab tab(out, Indentation());
+
   int err = 0;
 
   Hierarchy()->CheckLevelID(level);
 
-  if (Comm().MyPID() == 0)
-    IO::cout << IO::endl << IO::endl
-             << "WELCOME to VCycle on level " << level
-             << IO::endl;
+  *out << "WELCOME to VCycle on level " << level << "." << std::endl;
 
   // we need at least zeroed vectors, especially on the fine level
   // restriction of fine-level residual
@@ -203,14 +222,11 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
   }
   else // coarse level solve
   {
-    if (Comm().MyPID() == 0)
-    {
-      IO::cout << IO::endl
-               << "**************************" << IO::endl
-               << "*** COARSE LEVEL SOLVE ***" << IO::endl
-               << "**************************" << IO::endl
-               << IO::endl;
-    }
+    *out << std::endl
+         << "**************************" << std::endl
+         << "*** COARSE LEVEL SOLVE ***" << std::endl
+         << "**************************" << std::endl
+         << std::endl;
 
     // evaluate current residual // ToDo Do we really need to ComputeF() here?
     Teuchos::RCP<Epetra_MultiVector> fsmoothed =
@@ -245,8 +261,7 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     dserror("Map failure during recursive calls of V-cycle!");
 #endif
 
-  if (Comm().MyPID() == 0)
-    IO::cout << "GOOD BYE from VCycle on level " << level << IO::endl;
+  *out << "GOOD BYE from VCycle on level " << level << "." <<  std::endl;
 
   return;
 }

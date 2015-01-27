@@ -28,6 +28,7 @@ Maintainer: Matthias Mayr
 #include <Teuchos_Array.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 // baci
 #include "nln_operator_base.H"
@@ -63,6 +64,11 @@ NLNSOL::NlnOperatorNGmres::NlnOperatorNGmres()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorNGmres::Setup()
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnOperatorNGmres::Setup");
+  Teuchos::TimeMonitor monitor(*time);
+
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
@@ -117,7 +123,7 @@ void NLNSOL::NlnOperatorNGmres::SetupPreconditioner()
 
   NlnOperatorFactory nlnopfactory;
   nlnprec_ = nlnopfactory.Create(precparams);
-  nlnprec_->Init(Comm(), precparams, NlnProblem());
+  nlnprec_->Init(Comm(), precparams, NlnProblem(), Nested()+1);
   nlnprec_->Setup();
 
   return;
@@ -128,6 +134,11 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x
     ) const
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnOperatorNGmres::ApplyInverse");
+  Teuchos::TimeMonitor monitor(*time);
+
   int err = 0;
 
   // Make sure that Init() and Setup() have been called
@@ -238,7 +249,7 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
       {
         // line search
         NlnProblem()->ConvergenceCheck(*fbar, resnormold);
-        steplength = ComputeStepLength(*xbar, *inc, resnormold);
+        steplength = ComputeStepLength(*xbar, *fbar, *inc, resnormold);
 
         /* update solution using the line search parameter
          * (called 'xstar' in [Sterck2012a]) */
@@ -436,11 +447,11 @@ const unsigned int NLNSOL::NlnOperatorNGmres::GetMaxWindowSize() const
 
 /*----------------------------------------------------------------------------*/
 const double NLNSOL::NlnOperatorNGmres::ComputeStepLength(
-    const Epetra_MultiVector& x, const Epetra_MultiVector& inc,
-    double fnorm2) const
+    const Epetra_MultiVector& x, const Epetra_MultiVector& f,
+    const Epetra_MultiVector& inc, double fnorm2) const
 {
   linesearch_->Init(NlnProblem(),
-      Params().sublist("Nonlinear Operator: Line Search"), x, inc, fnorm2);
+      Params().sublist("Nonlinear Operator: Line Search"), x, f, inc, fnorm2);
   linesearch_->Setup();
   return linesearch_->ComputeLSParam();
 }

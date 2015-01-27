@@ -34,6 +34,7 @@ NLNSOL::LineSearchBase::LineSearchBase()
  : nlnproblem_(Teuchos::null),
    params_(Teuchos::null),
    xold_(Teuchos::null),
+   fold_(Teuchos::null),
    inc_(Teuchos::null),
    resnormold_(0.0),
    isinit_(false),
@@ -47,6 +48,7 @@ void NLNSOL::LineSearchBase::Init(
     Teuchos::RCP<const NLNSOL::NlnProblem> nlnproblem,
     const Teuchos::ParameterList& params,
     const Epetra_MultiVector& xold,
+    const Epetra_MultiVector& fold,
     const Epetra_MultiVector& inc,
     const double resnormold)
 {
@@ -57,6 +59,7 @@ void NLNSOL::LineSearchBase::Init(
   nlnproblem_ = nlnproblem;
   params_ = Teuchos::rcp(&params, false);
   xold_ = Teuchos::rcp(&xold, false);
+  fold_ = Teuchos::rcp(&fold, false);
   inc_ = Teuchos::rcp(&inc, false);
   resnormold_ = resnormold;
 

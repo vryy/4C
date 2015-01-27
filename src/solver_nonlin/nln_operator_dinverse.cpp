@@ -28,6 +28,7 @@ Maintainer: Matthias Mayr
 // Teuchos
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 // baci
 #include "linesearch_base.H"
@@ -56,6 +57,11 @@ NLNSOL::NlnOperatorDInverse::NlnOperatorDInverse()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorDInverse::Setup()
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnOperatorDInverse::Setup");
+  Teuchos::TimeMonitor monitor(*time);
+
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
@@ -81,6 +87,11 @@ void NLNSOL::NlnOperatorDInverse::SetupLineSearch()
 int NLNSOL::NlnOperatorDInverse::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
 {
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnOperatorDInverse::ApplyInverse");
+  Teuchos::TimeMonitor monitor(*time);
+
   int err = 0;
 
   // Make sure that Init() and Setup() have been called
@@ -119,7 +130,7 @@ int NLNSOL::NlnOperatorDInverse::ApplyInverse(const Epetra_MultiVector& f,
     ComputeSearchDirection(*rhs, *inc);
 
     // line search
-    steplength = ComputeStepLength(x, *inc, fnorm2);
+    steplength = ComputeStepLength(x, *rhs, *inc, fnorm2);
 
     // Iterative update
     err = x.Update(steplength, *inc, 1.0);
@@ -162,11 +173,11 @@ const int NLNSOL::NlnOperatorDInverse::ComputeSearchDirection(
 
 /*----------------------------------------------------------------------------*/
 const double NLNSOL::NlnOperatorDInverse::ComputeStepLength(
-    const Epetra_MultiVector& x, const Epetra_MultiVector& inc,
-    double fnorm2) const
+    const Epetra_MultiVector& x, const Epetra_MultiVector& f,
+    const Epetra_MultiVector& inc, double fnorm2) const
 {
-  linesearch_->Init(NlnProblem(), Params().sublist("Nonlinear Operator: Line Search"), x, inc,
-      fnorm2);
+  linesearch_->Init(NlnProblem(),
+      Params().sublist("Nonlinear Operator: Line Search"), x, f, inc, fnorm2);
   linesearch_->Setup();
   return linesearch_->ComputeLSParam();
 }

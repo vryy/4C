@@ -114,6 +114,9 @@ public:
   //! Returns a character string describing the operator
   virtual const char* Label() const { return "NLNSOL::NlnOperatorLinPrec"; }
 
+  //! Returns a character string describing the operator briefly
+  virtual const char* LabelShort() const { return "LinPrec"; }
+
   //@}
 
 protected:
@@ -124,7 +127,9 @@ private:
   //@{
 
   //! Compute line search parameter (=step length)
-  virtual const double ComputeStepLength(const Epetra_MultiVector& x, ///< current solution
+  virtual const double ComputeStepLength(
+      const Epetra_MultiVector& x, ///< current solution
+      const Epetra_MultiVector& f, ///< residual at current solution
       const Epetra_MultiVector& inc, ///< search direction
       double fnorm2 ///< current L2-norm of residual
       ) const;

@@ -21,6 +21,7 @@ Maintainer: Matthias Mayr
 
 // Teuchos
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_VerboseObject.hpp>
 
 // baci
 #include "../drt_lib/drt_dserror.H"
@@ -72,7 +73,7 @@ namespace NLNSOL
    *
    *  \author mayr.mt \date 06/2014
    */
-  class NlnProblem
+  class NlnProblem : public Teuchos::VerboseObject<NlnProblem>
   {
   public:
 

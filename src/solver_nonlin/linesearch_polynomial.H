@@ -36,6 +36,14 @@ namespace NLNSOL
    *  as next line search parameter. Build polynomial models recursively until
    *  the sufficient decrease condition is fulfilled.
    *
+   *  <h3> References </h3>
+   *  <ul>
+   *  <li>[1] Kelley, C.T.: Iterative Methods for Linear and Nonlinear Equations,
+   *          SIAM, Philadelphia (1995)
+   *  <li>[2] Kelley, C.T.: Iterative Methods for Optimization, SIAM,
+   *          Philadelphia (1999)
+   *  </ul>
+   *
    *  \sa NLNSOL::LineSearchBase::IsSufficientDecrease()
    *
    *  \author mayr.mt \date 05/2014
@@ -74,8 +82,8 @@ namespace NLNSOL
      *  and the half step iterate. Then, recursively further polynomials are
      *  built, where we always drop the 'oldest' point.
      *
-     *  Line search is finished as soon as the sufficient descrease condition is
-     *  satisfied. We stop after #itermax_ polynomials.
+     *  Line search is finished as soon as the sufficient decrease condition is
+     *  satisfied. We stop after #itermax_ evaluations of the polynomial model.
      *
      *  \author mayr.mt \date 06/2014
      */

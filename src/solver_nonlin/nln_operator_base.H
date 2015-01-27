@@ -21,6 +21,7 @@ Maintainer: Matthias Mayr
 
 // Teuchos
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_VerboseObject.hpp>
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
@@ -62,7 +63,7 @@ namespace NLNSOL
    *
    *  \author mayr.mt \date 05/2014
    */
-  class NlnOperatorBase
+  class NlnOperatorBase : public Teuchos::VerboseObject<NlnOperatorBase>
   {
     public:
 
@@ -83,7 +84,8 @@ namespace NLNSOL
       //! Initialization: Fill base class member variables
       virtual void Init(const Epetra_Comm& comm, ///< communicator
           const Teuchos::ParameterList& params, ///< parameter list for configuration
-          Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem ///< nonlinear problem to solve
+          Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem, ///< nonlinear problem to solve
+          const int nested = 0 ///< How nested is this algorithm?
           );
 
       //! Setup the specific nonlinear operator
@@ -112,6 +114,9 @@ namespace NLNSOL
 
       //! Returns a character string describing the operator
       virtual const char* Label() const = 0;
+
+      //! Returns a character string describing the operator briefly
+      virtual const char* LabelShort() const = 0;
 
       //@}
 
@@ -157,6 +162,12 @@ namespace NLNSOL
 
       //! Get maximally allowed number of iterations
       virtual const int GetMaxIter() const;
+
+      //! Get nested level
+      const int Nested() const { return nested_; }
+
+      //! Get level of indentation for formatted screen output
+      const int Indentation() const { return 4*nested_; }
 
       //@}
 
@@ -214,16 +225,17 @@ namespace NLNSOL
           const double fnorm2 ///< L2-norm of residual
           ) const;
 
-      //! Compute step length, i.e. line search parameter
-      virtual const double ComputeStepLength(
-          const Epetra_MultiVector& x, ///< current solution
-          const Epetra_MultiVector& inc, ///< search direction
-          double fnorm2 ///< current L2-norm of residual
-          ) const = 0;
-
       //@}
 
     private:
+
+      //! Compute step length, i.e. line search parameter
+      virtual const double ComputeStepLength(
+          const Epetra_MultiVector& x, ///< current solution
+          const Epetra_MultiVector& f, ///< residual at current solution
+          const Epetra_MultiVector& inc, ///< search direction
+          double fnorm2 ///< current L2-norm of residual
+          ) const = 0;
 
       //! Init() has been called
       bool isinit_;
@@ -239,6 +251,9 @@ namespace NLNSOL
 
       //! Nonlinear problem to be evaluated and solved
       Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;
+
+      //! How nested is this algorithm? 0 = outer algorithm
+      int nested_;
 
   }; // class NlnOperatorBase
 } // namespace NLNSOL

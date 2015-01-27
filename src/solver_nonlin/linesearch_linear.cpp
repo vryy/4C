@@ -65,14 +65,11 @@ const double NLNSOL::LineSearchLinear::ComputeLSParam() const
 
   Teuchos::RCP<Epetra_MultiVector> xnew = // new trial solution
       Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
-  Teuchos::RCP<Epetra_MultiVector> fold = // residual at previous iteration
-      Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
   Teuchos::RCP<Epetra_MultiVector> fnew = // residual at trial solution
       Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
 
   // compute nominator
-  ComputeF(GetXOld(), *fold);
-  fold->Dot(GetXInc(), &nominator);
+  GetFOld().Dot(GetXInc(), &nominator);
 
   // compute denominator
   xnew->Update(1.0, GetXOld(), 1.0, GetXInc(), 0.0);
