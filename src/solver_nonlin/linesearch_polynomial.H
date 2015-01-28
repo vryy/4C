@@ -42,6 +42,8 @@ namespace NLNSOL
    *          SIAM, Philadelphia (1995)
    *  <li>[2] Kelley, C.T.: Iterative Methods for Optimization, SIAM,
    *          Philadelphia (1999)
+   *  <li>[3] Kelley, C.T.: Solving Nonlinear Equations with Newton's Method,
+   *          SIAM, Philadelphia (2003)
    *  </ul>
    *
    *  \sa NLNSOL::LineSearchBase::IsSufficientDecrease()
@@ -88,6 +90,17 @@ namespace NLNSOL
      *  \author mayr.mt \date 06/2014
      */
     virtual const double ComputeLSParam() const;
+
+    //@}
+
+    //! @name Description of this class
+    //@{
+
+    //! Returns a character string describing the operator
+    virtual const char* Label() const { return "NLNSOL::LineSearchPolynomial"; }
+
+    //! Returns a character string describing the operator briefly
+    virtual const char* LabelShort() const { return "LS_Polynomial"; }
 
     //@}
 

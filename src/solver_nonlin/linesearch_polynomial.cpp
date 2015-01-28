@@ -65,6 +65,12 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
       "NLNSOL::LineSearchPolynomial::ComputeLSParam");
   Teuchos::TimeMonitor monitor(*time);
 
+  // create formatted output stream
+  Teuchos::RCP<Teuchos::FancyOStream> out =
+      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  out->setOutputToRootOnly(0);
+  Teuchos::OSTab tab(out);
+
   int err = 0;
 
   // make sure that Init() and Setup() has been called
@@ -89,7 +95,11 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
   bool converged = ConvergenceCheck(*residual, fnorm2fullstep);
 
   if (IsSufficientDecrease(fnorm2fullstep, lsparam))
+  {
+    *out << LabelShort() << ": lsparam = " << lsparam << " after full step"
+         << std::endl;
     return lsparam;
+  }
   else
   {
     // try half step
@@ -105,7 +115,11 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
     converged = ConvergenceCheck(*residual, fnorm2halfstep);
 
     if (converged or IsSufficientDecrease(fnorm2halfstep, lsparam))
+    {
+      *out << LabelShort() << ": lsparam = " << lsparam << " after half step"
+           << std::endl;
       return lsparam;
+    }
     else
     {
       // build polynomial model
@@ -151,7 +165,7 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
         lsparamold = lsparam;
         lsparam = - b / (2*a);
 
-        if (a < 0.0) // cf. [Kelley1995a, p. 143]
+        if (a < 0.0) // cf. [Kelley (1995), p. 143]
           lsparam = 0.5*lsparamold;
 
         if (lsparam <= 0.0) // line search parameter has to be strictly positive
@@ -171,10 +185,12 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
         converged = ConvergenceCheck(*residual, fnorm2);
 
         // update interpolation points
-        l1 = l2;
+        /* Note: Following [Kelley (2003), p. 12], we keep the value at
+         * lsparam = 0.0 and just update those with lsparam > 0.0. */
+//        l1 = l2;
         l2 = l3;
         l3 = lsparam;
-        y1 = y2;
+//        y1 = y2;
         y2 = y3;
         y3 = fnorm2;
       }
@@ -184,6 +200,10 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
 //        dserror("Polynomial line search cannot satisfy sufficient decrease "
 //            "condition within %d iterations.", itermax_);
 
+      *out << LabelShort()
+           << ": lsparam = " << lsparam
+           << " after " << iter
+           << " iterations" << std::endl;
     }
   }
 

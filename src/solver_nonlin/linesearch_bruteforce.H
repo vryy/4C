@@ -90,6 +90,17 @@ namespace NLNSOL
 
     //@}
 
+    //! @name Description of this class
+    //@{
+
+    //! Returns a character string describing the operator
+    virtual const char* Label() const { return "NLNSOL::LineSearchBruteForce"; }
+
+    //! Returns a character string describing the operator briefly
+    virtual const char* LabelShort() const { return "LS_BruteForce"; }
+
+    //@}
+
   protected:
 
   private:

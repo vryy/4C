@@ -100,6 +100,17 @@ namespace NLNSOL
 
     //@}
 
+    //! @name Description of this class
+    //@{
+
+    //! Returns a character string describing the operator
+    virtual const char* Label() const = 0;
+
+    //! Returns a character string describing the operator briefly
+    virtual const char* LabelShort() const = 0;
+
+    //@}
+
   protected:
 
     /*! \brief Check sufficient decrease condition
