@@ -92,8 +92,9 @@ void STR::TimIntExpl::ApplyForceExternal
 
   // set vector values needed by elements
   discret_->ClearState();
-
   discret_->SetState(0,"displacement", dis);
+  discret_->SetState(0,"displacement new", dis);
+
   if (damping_ == INPAR::STR::damp_material)
     discret_->SetState(0,"velocity", vel);
   // get load vector
