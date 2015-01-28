@@ -155,28 +155,19 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
 
         b = (y2-y1)/(l2-l1) - a*(l2*l2-l1*l1)/(l2-l1);
 
-//        const double c = y1 - a*l1*l1 - b*l1;
-//
-//        std::cout << "a = " << a
-//                  << "\tb = " << b
-//                  << "\tc = " << c
-//                  << std::endl;
+        /* Coefficient c is not needed for calculation of the minimizer of the
+         * quadratic polynomial, but only for visualization of the polynomial.*/
+        // const double c = y1 - a*l1*l1 - b*l1;
 
+        // calculate new line search parameter as minimizer of polynomial model
         lsparamold = lsparam;
-        lsparam = - b / (2*a);
-
-        if (a < 0.0) // cf. [Kelley (1995), p. 143]
+        if (a > 0.0) // cf. [Kelley (1995), p. 143]
+          lsparam = - b / (2*a);
+        else
           lsparam = 0.5*lsparamold;
-
-        if (lsparam <= 0.0) // line search parameter has to be strictly positive
-          lsparam = 0.5*lsparamold;
-
-//        std::cout << "lsparam = " << lsparam << std::endl;
 
         // safeguard strategy
         Safeguard(lsparam, lsparamold);
-
-//        std::cout << "lsparam = " << lsparam << std::endl;
 
         err = xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
         if (err != 0) { dserror("Failed."); }
@@ -184,21 +175,22 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
 
         converged = ConvergenceCheck(*residual, fnorm2);
 
-        // update interpolation points
-        /* Note: Following [Kelley (2003), p. 12], we keep the value at
+        /* update interpolation points
+         *
+         * Note: Following [Kelley (2003), p. 12], we keep the value at
          * lsparam = 0.0 and just update those with lsparam > 0.0. */
-//        l1 = l2;
+        // l1 = l2;
         l2 = l3;
         l3 = lsparam;
-//        y1 = y2;
+        // y1 = y2;
         y2 = y3;
         y3 = fnorm2;
       }
 
-//      if (not converged
-//          and (not IsSufficientDecrease(fnorm2, lsparam) or iter > itermax_))
-//        dserror("Polynomial line search cannot satisfy sufficient decrease "
-//            "condition within %d iterations.", itermax_);
+      if (not converged
+          and (not IsSufficientDecrease(fnorm2, lsparam) or iter > itermax_))
+        dserror("Polynomial line search cannot satisfy sufficient decrease "
+            "condition within %d iterations.", itermax_);
 
       *out << LabelShort()
            << ": lsparam = " << lsparam
