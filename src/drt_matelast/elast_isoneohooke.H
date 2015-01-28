@@ -79,8 +79,7 @@ namespace ELASTIC
   ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = \frac \mu 2 (\overline{I}_{\boldsymbol{C}}-3).
-  //         = \frac{\mu}{2} (J^{-2/3}{I}_{\boldsymbol{C}} - 3)
+  ///   \Psi = \frac{\mu}{2} (\overline{I}_{\boldsymbol{C}}-3) = \frac{\mu}{2} (J^{-2/3}{I}_{\boldsymbol{C}}-3)
   ///\f]
   ///
   /// <h3>References</h3>
@@ -113,11 +112,18 @@ namespace ELASTIC
 
     //@}
 
-    /// Add modified coeffiencts.
-    virtual void AddCoefficientsModified(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<5,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
+    // add strain energy
+    virtual void AddStrainEnergy(
+        double& psi,                      ///< strain energy function
+        const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
+    );
+
+    // Add derivatives with respect to modified invariants.
+    virtual void AddDerivativesModified(
+        LINALG::Matrix<3,1>& dPmodI, ///< first derivative with respect to modified invariants
+        LINALG::Matrix<6,1>& ddmodPII, ///< second derivative with respect to modified invariants
+        const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
     );
 
 

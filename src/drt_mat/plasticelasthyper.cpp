@@ -37,10 +37,7 @@ Maintainer: Alexander Seitz
 MAT::PAR::PlasticElastHyper::PlasticElastHyper(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata),
-  nummat_(matdata->GetInt("NUMMAT")),
-  matids_(matdata->Get<std::vector<int> >("MATIDS")),
-  density_(matdata->GetDouble("DENS")),
+: MAT::PAR::ElastHyper(matdata),
   inityield_(matdata->GetDouble("INITYIELD")),
   isohard_(matdata->GetDouble("ISOHARD")),
   expisohard_(matdata->GetDouble("EXPISOHARD")),
@@ -111,8 +108,6 @@ const int MAT::PlasticElastHyper::VOIGT3X3NONSYM_[3][3] = {{0,3,5},{6,1,4},{8,7,
 /*----------------------------------------------------------------------*/
 MAT::PlasticElastHyper::PlasticElastHyper()
   : params_(NULL),
-    potsum_(0)
-    ,
     last_plastic_defgrd_inverse_(Teuchos::null),
     last_alpha_isotropic_(Teuchos::null),
     last_alpha_kinematic_(Teuchos::null),
@@ -125,7 +120,6 @@ MAT::PlasticElastHyper::PlasticElastHyper()
 /*----------------------------------------------------------------------*/
 MAT::PlasticElastHyper::PlasticElastHyper(MAT::PAR::PlasticElastHyper* params)
   : params_(params),
-    potsum_(0),
     HepDiss_(Teuchos::null),
     dHepDissdd_(Teuchos::null),
     dHepDissdT_(Teuchos::null),
@@ -298,47 +292,6 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 
     return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-int MAT::PlasticElastHyper::MatID(
-  const unsigned index
-) const
-{
-  if ((int)index < params_->nummat_)
-    return params_->matids_->at(index);
-  else
-  {
-    dserror("Index too large");
-    return -1;
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-double MAT::PlasticElastHyper::ShearMod() const
-{
-  // principal coefficients
-  bool haveshearmod = false;
-  double shearmod = 0.0;
-  {
-    // loop map of associated potential summands
-    for (unsigned int p=0; p<potsum_.size(); ++p)
-    {
-     potsum_[p]->AddShearMod(haveshearmod,shearmod);
-    }
-  }
-
-  if (haveshearmod)
-  {
-    return shearmod;
-  }
-  else
-  {
-    dserror("Cannot provide shear modulus equivalent");
-    return -1.0;
-  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -598,43 +551,6 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(DRT::INPUT::LineDefinition* lin
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::InvariantsPrincipal(
-    LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<6,1>& rcg)
-{
-  // 1st invariant, trace
-  prinv(0) = rcg(0) + rcg(1) + rcg(2);
-  // 2nd invariant
-  prinv(1) = 0.5*( prinv(0)*prinv(0)
-                   - rcg(0)*rcg(0) - rcg(1)*rcg(1) - rcg(2)*rcg(2)
-                   - .5*rcg(3)*rcg(3) - .5*rcg(4)*rcg(4) - .5*rcg(5)*rcg(5) );
-  // 3rd invariant, determinant
-  prinv(2) = rcg(0)*rcg(1)*rcg(2)
-    + 0.25 * rcg(3)*rcg(4)*rcg(5)
-    - 0.25 * rcg(1)*rcg(5)*rcg(5)
-    - 0.25 * rcg(2)*rcg(3)*rcg(3)
-    - 0.25 * rcg(0)*rcg(4)*rcg(4);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::InvariantsModified(
-    LINALG::Matrix<3,1>& modinv,  ///< modified invariants
-    const LINALG::Matrix<3,1>& prinv  ///< principal invariants
-    )
-{
-  // 1st invariant, trace
-  modinv(0) = prinv(0)*std::pow(prinv(2),-1./3.);
-  // 2nd invariant
-  modinv(1) = prinv(1)*std::pow(prinv(2),-2./3.);
-  // J
-  modinv(2) = std::pow(prinv(2),1./2.);
-
-  return;
-}
-
 /*----------------------------------------------------------------------*
  |  evaluate elastic stress and stiffness                   seitz 05/14 |
  *----------------------------------------------------------------------*/
@@ -649,12 +565,14 @@ void MAT::PlasticElastHyper::EvaluateElast(
   LINALG::Matrix<6,1> Cpi;
   LINALG::Matrix<6,1> CpiCCpi;
   LINALG::Matrix<6,1> ircg;
+
   LINALG::Matrix<3,1> prinv;
-  LINALG::Matrix<3,1> gamma(true);
-  LINALG::Matrix<8,1> delta(true);
+
+  LINALG::Matrix<3,1> dPI(true);
+  LINALG::Matrix<6,1> ddPII(true);
 
   EvaluateKinQuantElast(defgrd,deltaLp,gp,Cpi,CpiCCpi,ircg,prinv);
-  EvaluateGammaDelta(prinv,gamma,delta);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -665,7 +583,7 @@ void MAT::PlasticElastHyper::EvaluateElast(
   // isotropic elasticity in decoupled ("mod") format go here as well
   // as the modified gammas and deltas have been converted
   if (isoprinc_ || isomod_)
-    EvaluateIsotropicPrincElast(*pk2,*cmat,Cpi,CpiCCpi,ircg,gamma,delta);
+    EvaluateIsotropicPrincElast(*pk2,*cmat,Cpi,CpiCCpi,ircg,prinv,dPI,ddPII);
   else
     dserror("only isotropic hyperelastic materials");
 
@@ -698,15 +616,15 @@ void MAT::PlasticElastHyper::EvaluateThermalStress(
   // modinv_3 = J only.
   LINALG::Matrix<3,1> modinv(true);
   modinv(2) = defgrd->Determinant();
-  LINALG::Matrix<3,1> modgamma;
-  LINALG::Matrix<5,1> moddelta;
-  double cmatfac =0.;
+  LINALG::Matrix<3,1> dPmodI;
+  LINALG::Matrix<6,1> ddPmodII;
+  double dddPmodIII =0.;
 
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->AddCoefficientsModified(modgamma,moddelta,modinv);
-    potsum_[p]->Add3rdVolDeriv(modinv,cmatfac);
+    potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv);
+    potsum_[p]->Add3rdVolDeriv(modinv,dddPmodIII);
   }
 
   // inverse RCG
@@ -719,10 +637,10 @@ void MAT::PlasticElastHyper::EvaluateThermalStress(
   icg(4) = invRCG(1,2);
   icg(5) = invRCG(0,2);
 
-  pk2->Update(-3.*Cte()*deltaT*(moddelta(4)-modgamma(2)),icg,1.);
-  ElastSymTensorMultiply(*cmat,-3.*Cte()*deltaT*modinv(2)*modinv(2)*cmatfac,invRCG,invRCG,1.);
-  ElastSymTensorMultiply(*cmat,-3.*Cte()*deltaT*(moddelta(4)-modgamma(2)),invRCG,invRCG,1.);
-  ElastSymTensor_o_Multiply(*cmat,6.*Cte()*deltaT*(moddelta(4)-modgamma(2)),invRCG,invRCG,1.);
+  pk2->Update(-3.*Cte()*deltaT*modinv(2)*ddPmodII(2),icg,1.);
+  ElastSymTensorMultiply(*cmat,-3.*Cte()*deltaT*modinv(2)*modinv(2)*dddPmodIII,invRCG,invRCG,1.);
+  ElastSymTensorMultiply(*cmat,-3.*Cte()*deltaT*modinv(2)*ddPmodII(2),invRCG,invRCG,1.);
+  ElastSymTensor_o_Multiply(*cmat,+6.*Cte()*deltaT*modinv(2)*ddPmodII(2),invRCG,invRCG,1.);
 
   return;
 }
@@ -749,20 +667,21 @@ void MAT::PlasticElastHyper::EvaluateCTvol(
   // modinv_3 = J only.
   LINALG::Matrix<3,1> modinv(true);
   modinv(2) = defgrd->Determinant();
-  LINALG::Matrix<3,1> modgamma;
-  LINALG::Matrix<5,1> moddelta;
-  double cmatfac =0.;
+  LINALG::Matrix<3,1> dPmodI;
+  LINALG::Matrix<6,1> ddPmodII;
+  double dddPmodIII =0.;
+
+  // loop map of associated potential summands
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+    potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv);
+    potsum_[p]->Add3rdVolDeriv(modinv,dddPmodIII);
+  }
 
   // clear
   cTvol->Clear();
   dCTvoldE->Clear();
 
-  // loop map of associated potential summands
-  for (unsigned int p=0; p<potsum_.size(); ++p)
-  {
-    potsum_[p]->AddCoefficientsModified(modgamma,moddelta,modinv);
-    potsum_[p]->Add3rdVolDeriv(modinv,cmatfac);
-  }
   // inverse RCG
   LINALG::Matrix<3,3> invRCG;
   invRCG.MultiplyTN(*defgrd,*defgrd);
@@ -773,10 +692,10 @@ void MAT::PlasticElastHyper::EvaluateCTvol(
   icg(4) = invRCG(1,2);
   icg(5) = invRCG(0,2);
 
-  cTvol->Update(-3.*Cte()*(moddelta(4)-modgamma(2)),icg,0.);
-  ElastSymTensorMultiply(*dCTvoldE,-3.*Cte()*modinv(2)*modinv(2)*cmatfac,invRCG,invRCG,1.);
-  ElastSymTensorMultiply(*dCTvoldE,-3.*Cte()*(moddelta(4)-modgamma(2)),invRCG,invRCG,1.);
-  ElastSymTensor_o_Multiply(*dCTvoldE,6.*Cte()*(moddelta(4)-modgamma(2)),invRCG,invRCG,1.);
+  cTvol->Update(-3.*Cte()*modinv(2)*ddPmodII(2),icg,1.);
+  ElastSymTensorMultiply(*dCTvoldE,-3.*Cte()*modinv(2)*modinv(2)*dddPmodIII,invRCG,invRCG,1.);
+  ElastSymTensorMultiply(*dCTvoldE,-3.*Cte()*modinv(2)*ddPmodII(2),invRCG,invRCG,1.);
+  ElastSymTensor_o_Multiply(*dCTvoldE,+6.*Cte()*modinv(2)*ddPmodII(2),invRCG,invRCG,1.);
 
   return;
 }
@@ -820,13 +739,16 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   LINALG::Matrix<6,1> Ce2;
   LINALG::Matrix<3,3> invpldefgrd;
 
+  LINALG::Matrix<3,1> dPI;
+  LINALG::Matrix<6,1> ddPII;
   LINALG::Matrix<3,1> gamma(true);
   LINALG::Matrix<8,1> delta(true);
 
   if (EvaluateKinQuantPlast(defgrd,deltaDp,gp,params,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
                         id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv))
     return;
-  EvaluateGammaDelta(prinv,gamma,delta);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII);
+  CalculateGammaDelta(gamma,delta,prinv,dPI,ddPII);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -1304,7 +1226,6 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   LINALG::Matrix<6,1> Cpi;
   LINALG::Matrix<6,1> CpiCCpi;
   LINALG::Matrix<6,1> ircg;
-  LINALG::Matrix<3,1> prinv;
   LINALG::Matrix<6,1> id2V;
   LINALG::Matrix<3,3> id2;
   LINALG::Matrix<3,3> CpiC;
@@ -1319,13 +1240,17 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   LINALG::Matrix<6,1> Ce2;
   LINALG::Matrix<3,3> invpldefgrd;
 
+  LINALG::Matrix<3,1> prinv;
+  LINALG::Matrix<3,1> dPI(true);
+  LINALG::Matrix<6,1> ddPII(true);
   LINALG::Matrix<3,1> gamma(true);
   LINALG::Matrix<8,1> delta(true);
 
   if (EvaluateKinQuantPlast(defgrd,deltaLp,gp,params,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
                         id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv))
     return;
-  EvaluateGammaDelta(prinv,gamma,delta);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII);
+  CalculateGammaDelta(gamma,delta,prinv,dPI,ddPII);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -1963,85 +1888,6 @@ double MAT::PlasticElastHyper::NormStressLike(const LINALG::Matrix<6,1>& stress)
   return norm;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::EvaluateGammaDelta(
-    LINALG::Matrix<3,1> prinv,
-    LINALG::Matrix<3,1>& gamma,
-    LINALG::Matrix<8,1>& delta
-    )
-{
-  // temporary modified invariants
-  LINALG::Matrix<3,1> modgamma;
-  LINALG::Matrix<5,1> moddelta;
-  // principal coefficients
-  if (isoprinc_)
-    // loop map of associated potential summands
-    for (unsigned int p=0; p<potsum_.size(); ++p)
-      potsum_[p]->AddCoefficientsPrincipal(gamma,delta,prinv);
-
-  // modified coefficients
-  if (isomod_)
-  {
-    // calculate modified invariants
-    LINALG::Matrix<3,1> modinv;
-    InvariantsModified(modinv,prinv);
-
-    // loop map of associated potential summands
-    for (unsigned int p=0; p<potsum_.size(); ++p)
-      potsum_[p]->AddCoefficientsModified(modgamma,moddelta,modinv);
-
-    // convert modified gammas and deltas to usual ones
-    ConvertModToPrinc(prinv,modgamma,moddelta,gamma,delta);
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::ConvertModToPrinc(
-    const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modgamma,
-    const LINALG::Matrix<5,1>& moddelta,
-    LINALG::Matrix<3,1>& gamma,
-    LINALG::Matrix<8,1>& delta
-)
-{
-  const double fac = pow(prinv(2),-1./3.); // = I3 ^ (-1/3) = J ^ (-2/3)
-  const double tcsq = prinv(0)*prinv(0)-2.*prinv(1); // = tr ( C^2 )
-  gamma(0) += fac*modgamma(0);
-  gamma(1) += fac*fac*modgamma(1);
-  gamma(2) += sqrt(prinv(2))*modgamma(2)
-             -1./3.*prinv(0)*fac*modgamma(0)
-             -1./3.*fac*fac*tcsq*modgamma(1);
-
-  // P : Cbar : P^T
-  delta(0) += fac*fac*moddelta(0);
-  delta(1) += fac*fac*fac*moddelta(1);
-  delta(2) += -1./3.*(fac*fac*prinv(0)*moddelta(0)+fac*fac*fac*tcsq*moddelta(1));
-  delta(3) += fac*fac*fac*fac*moddelta(2);
-  delta(4) += -1./3.*fac*fac*(fac*prinv(0)*moddelta(1)+fac*fac*tcsq*moddelta(2)+moddelta(3));
-  delta(5) += 1./9.*(fac*fac*prinv(0)*prinv(0)*moddelta(0)+2.*fac*fac*fac*prinv(0)*tcsq*moddelta(1)
-                     +fac*fac*fac*fac*tcsq*tcsq*moddelta(2)+fac*fac*tcsq*moddelta(3));
-  delta(7) += fac*fac*moddelta(3);
-
-//  // P tilde
-  delta(6) +=         2./3.*(fac*prinv(0)*modgamma(0)+fac*fac*tcsq*modgamma(1));
-  delta(5) += -1./3.*(2./3.*(fac*prinv(0)*modgamma(0)+fac*fac*tcsq*modgamma(1)));
-
-  // C_inv S_iso
-  delta(2) += -2./3.*fac*modgamma(0);
-  delta(4) += -2./3.*fac*fac*modgamma(1);
-  delta(5) += -4./3.*fac*(-1./3.*prinv(0)*modgamma(0)-1./3.*fac*tcsq*modgamma(1));
-
-  // C_vol
-  delta(5) += sqrt(prinv(2))*moddelta(4);
-  delta(6) += -2.*sqrt(prinv(2))*modgamma(2);
-
-  return;
-}
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::PlasticElastHyper::EvaluateIsotropicPrincElast(
@@ -2050,29 +1896,49 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincElast(
     LINALG::Matrix<6,1> Cpi,
     LINALG::Matrix<6,1> CpiCCpi,
     LINALG::Matrix<6,1> ircg,
-    LINALG::Matrix<3,1> gamma,
-    LINALG::Matrix<8,1> delta
+    LINALG::Matrix<3,1> prinv,
+    LINALG::Matrix<3,1> dPI,
+    LINALG::Matrix<6,1> ddPII
     )
 {
+  // 2nd Piola Kirchhoff stress (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
+  // factors
+  LINALG::Matrix<3,1> gamma(true);
+  gamma(0) = 2.*(dPI(0)+prinv(0)*dPI(1));
+  gamma(1) = -2.*dPI(1);
+  gamma(2) = 2.*prinv(2)*dPI(2);
+
   //  // 2nd Piola Kirchhoff stresses
-    stressisoprinc.Update(gamma(0), Cpi, 1.0);
-    stressisoprinc.Update(gamma(1), CpiCCpi, 1.0);
-    stressisoprinc.Update(gamma(2), ircg, 1.0);
+  stressisoprinc.Update(gamma(0), Cpi, 1.0);
+  stressisoprinc.Update(gamma(1), CpiCCpi, 1.0);
+  stressisoprinc.Update(gamma(2), ircg, 1.0);
 
-    // constitutive tensor
-    cmatisoprinc.MultiplyNT(delta(0),Cpi,Cpi,1.);
-    cmatisoprinc.MultiplyNT(delta(1),CpiCCpi,ircg,1.);
-    cmatisoprinc.MultiplyNT(delta(1),ircg,CpiCCpi,1.);
-    cmatisoprinc.MultiplyNT(delta(2),Cpi,ircg,1.);
-    cmatisoprinc.MultiplyNT(delta(2),ircg,Cpi,1.);
-    cmatisoprinc.MultiplyNT(delta(3),CpiCCpi,CpiCCpi,1.);
-    cmatisoprinc.MultiplyNT(delta(4),CpiCCpi,ircg,1.);
-    cmatisoprinc.MultiplyNT(delta(4),ircg,CpiCCpi,1.);
-    cmatisoprinc.MultiplyNT(delta(5),ircg,ircg,1.);
-    AddtoCmatHolzapfelProduct(cmatisoprinc,ircg,delta(6));
-    AddtoCmatHolzapfelProduct(cmatisoprinc,Cpi,delta(7));
+  // constitutive tensor according to Holzapfel-Nonlinear Solid Mechanics p. 261)
+  // factors
+  LINALG::Matrix<8,1> delta(true);
+  delta(0) = 4.*(ddPII(0) +2.*prinv(0)*ddPII(5) +dPI(1) +prinv(0)*prinv(0)*ddPII(1));
+  delta(1) = -4.*(ddPII(5) +prinv(0)*ddPII(1));
+  delta(2) = 4.*(prinv(2)*ddPII(4) +prinv(0)*prinv(2)*ddPII(3));
+  delta(3) = 4.*ddPII(1);
+  delta(4) = -4.*prinv(2)*ddPII(3);
+  delta(5) = 4.*(prinv(2)*dPI(2) +prinv(2)*prinv(2)*ddPII(2));
+  delta(6) = -4.*prinv(2)*dPI(2);
+  delta(7) = -4.*dPI(1);
 
-    return;
+  // constitutive tensor
+  cmatisoprinc.MultiplyNT(delta(0),Cpi,Cpi,1.);
+  cmatisoprinc.MultiplyNT(delta(1),CpiCCpi,ircg,1.);
+  cmatisoprinc.MultiplyNT(delta(1),ircg,CpiCCpi,1.);
+  cmatisoprinc.MultiplyNT(delta(2),Cpi,ircg,1.);
+  cmatisoprinc.MultiplyNT(delta(2),ircg,Cpi,1.);
+  cmatisoprinc.MultiplyNT(delta(3),CpiCCpi,CpiCCpi,1.);
+  cmatisoprinc.MultiplyNT(delta(4),CpiCCpi,ircg,1.);
+  cmatisoprinc.MultiplyNT(delta(4),ircg,CpiCCpi,1.);
+  cmatisoprinc.MultiplyNT(delta(5),ircg,ircg,1.);
+  AddtoCmatHolzapfelProduct(cmatisoprinc,ircg,delta(6));
+  AddtoCmatHolzapfelProduct(cmatisoprinc,Cpi,delta(7));
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2082,24 +1948,24 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincPlast(
     LINALG::Matrix<3,3>& MandelStressIsoprinc,
     LINALG::Matrix<6,6>& dMdCisoprinc,
     LINALG::Matrix<6,9>& dMdFpinvIsoprinc,
-    LINALG::Matrix<6,1> Cpi,
-    LINALG::Matrix<6,1> CpiCCpi,
-    LINALG::Matrix<6,1> ircg,
-    LINALG::Matrix<6,1> Ce,
-    LINALG::Matrix<3,3> CeM,
-    LINALG::Matrix<6,1> Ce2,
-    LINALG::Matrix<6,1> id2V,
-    LINALG::Matrix<3,3> id2,
-    LINALG::Matrix<3,3> CpiC,
-    LINALG::Matrix<3,3> FpiCe,
-    LINALG::Matrix<3,3> Fpi,
-    LINALG::Matrix<9,1> CFpiCei,
-    LINALG::Matrix<9,1> CFpi,
-    LINALG::Matrix<3,3> FpiTC,
-    LINALG::Matrix<9,1> CFpiCe,
-    LINALG::Matrix<3,3> CeFpiTC,
-    LINALG::Matrix<3,1> gamma,
-    LINALG::Matrix<8,1> delta
+    const LINALG::Matrix<6,1>& Cpi,
+    const LINALG::Matrix<6,1>& CpiCCpi,
+    const LINALG::Matrix<6,1>& ircg,
+    const LINALG::Matrix<6,1>& Ce,
+    const LINALG::Matrix<3,3>& CeM,
+    const LINALG::Matrix<6,1>& Ce2,
+    const LINALG::Matrix<6,1>& id2V,
+    const LINALG::Matrix<3,3>& id2,
+    const LINALG::Matrix<3,3>& CpiC,
+    const LINALG::Matrix<3,3>& FpiCe,
+    const LINALG::Matrix<3,3>& Fpi,
+    const LINALG::Matrix<9,1>& CFpiCei,
+    const LINALG::Matrix<9,1>& CFpi,
+    const LINALG::Matrix<3,3>& FpiTC,
+    const LINALG::Matrix<9,1>& CFpiCe,
+    const LINALG::Matrix<3,3>& CeFpiTC,
+    const LINALG::Matrix<3,1>& gamma,
+    const LINALG::Matrix<8,1>& delta
     )
 {
     // derivative of PK2 w.r.t. inverse plastic deformation gradient

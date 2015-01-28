@@ -8,32 +8,12 @@ the input line should read
   MAT 1 ELAST_IsoAnisoExpoDispersion K1 10.0 K2 1.0 GAMMA 35.0  K1COMP 0.0 K2COMP 1.0 [INIT 1] [ADAPT_ANGLE No] KAPPA 0.0
 
 
-
-
-
 // This worked on the small example testcase_aspect10f_haskettD.dat, but then somehow didn't work on a bigger example.
 // I think it still lies with how the fibre-contribution is excluded.
 // If J4 < 1
 // -- switching k1, k2 to 0 is wrong - see Matlab figures (WhereAreYouGaussPoint.m)
 // -- and currently not sure about making J4 == 1, what should happen in R, and what happens with that other weird projection
 // term that also includes J4?
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 <pre>

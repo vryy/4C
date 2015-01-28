@@ -40,23 +40,39 @@ MAT::ELASTIC::VolSussmanBathe::VolSussmanBathe(MAT::ELASTIC::PAR::VolSussmanBath
 {
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::VolSussmanBathe::AddCoefficientsModified(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<5,1>& delta,
-  const LINALG::Matrix<3,1>& modinv
-  )
+void MAT::ELASTIC::VolSussmanBathe::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
 {
-
   const double kappa = params_ -> kappa_;
 
-  gamma(2) += kappa*(modinv(2)-1);
-  delta(4) += gamma(2) + modinv(2)*kappa;
+  // strain energy: Psi = \frac \kappa 2 (J-1)^2
+  // add to overall strain energy
+  psi += kappa*0.5 * (modinv(2)-1.)*(modinv(2)-1.);
+
+}
+
+/*----------------------------------------------------------------------
+ *                                                      birzle 11/2014  */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::VolSussmanBathe::AddDerivativesModified(
+    LINALG::Matrix<3,1>& dPmodI,
+    LINALG::Matrix<6,1>& ddPmodII,
+    const LINALG::Matrix<3,1>& modinv
+)
+{
+  const double kappa = params_ -> kappa_;
+
+  dPmodI(2) += kappa*(modinv(2)-1.);
+
+  ddPmodII(2) += kappa;
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

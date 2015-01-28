@@ -42,18 +42,33 @@ MAT::ELASTIC::IsoQuad::IsoQuad(MAT::ELASTIC::PAR::IsoQuad* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoQuad::AddCoefficientsModified(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<5,1>& delta,
-  const LINALG::Matrix<3,1>& modinv
-  )
+void MAT::ELASTIC::IsoQuad::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
 {
   const double c = params_ -> c_;
 
-  //
-  gamma(0) += 4*c*(modinv(0)-3);
+  // strain energy: Psi = C (\overline{I}_{\boldsymbol{C}}-3)^2.
+  // add to overall strain energy
+  psi += c*(modinv(0)-3.)*(modinv(0)-3.);
 
-  delta(0) += 8*c;
+}
+
+/*----------------------------------------------------------------------
+ *                                                      birzle 12/2014  */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::IsoQuad::AddDerivativesModified(
+    LINALG::Matrix<3,1>& dPmodI,
+    LINALG::Matrix<6,1>& ddPmodII,
+    const LINALG::Matrix<3,1>& modinv
+)
+{
+  const double c = params_ -> c_;
+
+  dPmodI(0) += 2.*c*(modinv(0)-3.);
+
+  ddPmodII(0) += 2.*c;
 
   return;
 }

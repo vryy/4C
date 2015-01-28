@@ -58,19 +58,36 @@ void MAT::ELASTIC::IsoNeoHooke::AddShearMod(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoNeoHooke::AddCoefficientsModified(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<5,1>& delta,
-  const LINALG::Matrix<3,1>& prinv
-  )
+void MAT::ELASTIC::IsoNeoHooke::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
 {
-
   const double mue = params_ -> mue_;
 
-  gamma(0) += mue;
+  // strain energy: Psi = frac{\mu}{2} (\overline{I}_{\boldsymbol{C}}-3) = \frac{\mu}{2} (J^{-2/3}{I}_{\boldsymbol{C}}-3)
+  // add to overall strain energy
+  psi += mue*0.5 * (modinv(0)-3.);
+
+}
+
+
+/*----------------------------------------------------------------------
+ *                                                      birzle 11/2014  */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::IsoNeoHooke::AddDerivativesModified(
+    LINALG::Matrix<3,1>& dPmodI,
+    LINALG::Matrix<6,1>& ddPmodII,
+    const LINALG::Matrix<3,1>& modinv
+)
+{
+  const double mue = params_ -> mue_;
+
+  dPmodI(0) += 0.5*mue;
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

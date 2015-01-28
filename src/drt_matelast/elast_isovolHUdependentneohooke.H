@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupHUdependentneohooke.H
+\file elast_isovolHUdependentneohooke.H
 \brief
 
 This file contains the routines required to calculate the isochoric and volumetric contribution
@@ -11,8 +11,8 @@ calcification in AAA simulations
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef ELAST_COUPHUDEPENDENTNEOHOOKE_H_
-#define ELAST_COUPHUDEPENDENTNEOHOOKE_H_
+#ifndef ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_
+#define ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_
 
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
@@ -25,39 +25,50 @@ namespace ELASTIC
   namespace PAR
   {
 
-    /*----------------------------------------------------------------------*/
-    /// This file contains the routines required to calculate the
-    /// isochoric and volumetric contribution of the HU dependent Neo
-    /// Hooke material. The Hounsfield Units (HU) of e.g. CT data are
-    /// used to determine the material stiffness for each finite
-    /// element. The input line for the consideration of
-    /// calcifications in AAA simulation reads:
-    ///
-    /// MAT 20 ELAST_CoupHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
-    ///
-    /// An Neo Hooke material is chosen for the isochoric contribution
-    /// with varying stiffness parameters according to the HU and the
-    /// underlaying function given in Marc Hirschvogels Semesterarbeit
-    /// (available in LNM library) The volumetric contribution is
-    /// modeled by an Ogden-Simo-Miehe type SEF  \f$\Psi=\frac
-    /// {\kappa}{\beta^2}(\beta lnJ + J^{-\beta}-1)\f$  (see: Doll and
-    /// Schweizerhof, On the Development of Volumetric Strain Energy
-    /// Functions, Journal of Applied Mechanics, 2000). The Poisson
-    /// ratio NUE has to be given in the material input line and the
-    /// bulk modulus for each element is then calculated according to
-    /// the isochoric stiffness.
+  /*----------------------------------------------------------------------*/
+  /// This file contains the routines required to calculate the
+  /// isochoric and volumetric contribution of the HU dependent Neo
+  /// Hooke material. The Hounsfield Units (HU) of e.g. CT data are
+  /// used to determine the material stiffness for each finite
+  /// element. The input line for the consideration of
+  /// calcifications in AAA simulation reads:
+  ///
+  /// MAT 20 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
+  ///
+  /// An Neo Hooke material is chosen for the isochoric contribution
+  /// with varying stiffness parameters according to the HU and the
+  /// underlaying function given in Marc Hirschvogels Semesterarbeit
+  /// (available in LNM library) The volumetric contribution is
+  /// modeled by an Ogden-Simo-Miehe type SEF  \f$\Psi=\frac
+  /// {\kappa}{\beta^2}(\beta lnJ + J^{-\beta}-1)\f$  (see: Doll and
+  /// Schweizerhof, On the Development of Volumetric Strain Energy
+  /// Functions, Journal of Applied Mechanics, 2000). The Poisson
+  /// ratio NUE has to be given in the material input line and the
+  /// bulk modulus for each element is then calculated according to
+  /// the isochoric stiffness.
+  ///
+  /// Strain energy function is given by
+  /// \f[
+  ///   \Psi = \alpha (\overline{I}_1 -3)
+  ///          + \frac{\kappa}{\beta^2} \big(\beta log(J) + J^{-\beta} -1 \big)
+  /// \f]
+  ///
+  /// with
+  /// \f[
+  ///   \kappa = \frac{2 \alpha}{1-2 \nu}
+  /// \f]
 
-    class CoupHUDependentNeoHooke : public MAT::PAR::Parameter
+    class IsoVolHUDependentNeoHooke : public MAT::PAR::Parameter
     {
     public:
 
       /// standard constructor
-      CoupHUDependentNeoHooke(
+      IsoVolHUDependentNeoHooke(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~CoupHUDependentNeoHooke() { ; }
+      virtual ~IsoVolHUDependentNeoHooke() { ; }
 
       /// @name material parameters
       //@{
@@ -84,18 +95,18 @@ namespace ELASTIC
       ///
       virtual Teuchos::RCP<MAT::Material> CreateMaterial(){ return Teuchos::null; };
 
-    };  // class CoupHUDependentNeoHooke
+    };  // class IsoVolHUDependentNeoHooke
 
   }  // namespace PAR
 
 
-  class CoupHUDependentNeoHooke : public Summand
+  class IsoVolHUDependentNeoHooke : public Summand
   {
 
   public:
 
     /// constructor with given material parameters
-    CoupHUDependentNeoHooke(MAT::ELASTIC::PAR::CoupHUDependentNeoHooke* params);
+    IsoVolHUDependentNeoHooke(MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -110,18 +121,18 @@ namespace ELASTIC
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupHUdependentneohooke; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isovolHUdependentneohooke; }
 
     //@}
 
     /// Setup of summand
     virtual void Setup(DRT::INPUT::LineDefinition* linedef);
 
-    /// Add principal calcified coefficients for CoupHUDependentNeoHooke material.
-    void AddCoefficientsPrincipal(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+    // Add derivatives with respect to modified invariants.
+    virtual void AddDerivativesModified(
+        LINALG::Matrix<3,1>& dPmodI, ///< first derivative with respect to modified invariants
+        LINALG::Matrix<6,1>& ddmodPII, ///< second derivative with respect to modified invariants
+        const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
     );
 
     /// @name Access methods
@@ -152,7 +163,7 @@ namespace ELASTIC
         bool& viscogenmax  ///< global indicator for viscous contribution according the SLS-Model
         )
     {
-      isoprinc = true;
+      isomod = true;
       return;
     };
 
@@ -160,7 +171,7 @@ namespace ELASTIC
   private:
 
     /// my material parameters
-    MAT::ELASTIC::PAR::CoupHUDependentNeoHooke* params_;
+    MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params_;
 
     /// factor for material parameter
     double alpha_;

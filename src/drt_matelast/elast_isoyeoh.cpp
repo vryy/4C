@@ -44,21 +44,37 @@ MAT::ELASTIC::IsoYeoh::IsoYeoh(MAT::ELASTIC::PAR::IsoYeoh* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoYeoh::AddCoefficientsModified(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<5,1>& delta,
-  const LINALG::Matrix<3,1>& modinv
-  )
+void MAT::ELASTIC::IsoYeoh::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
 {
-
   const double c1 = params_ -> c1_;
   const double c2 = params_ -> c2_;
   const double c3 = params_ -> c3_;
 
-  //
-  gamma(0) += 2*c1+4*c2*(modinv(0)-3)+6*c3*(modinv(0)-3)*(modinv(0)-3);
+  // strain energy: Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + C2 (\overline{I}_{\boldsymbol{C}}-3)^2 + C3 (\overline{I}_{\boldsymbol{C}}-3)^3.
+  // add to overall strain energy
+  psi += c1*(modinv(0)-3.) + c2*(modinv(0)-3.)*(modinv(0)-3.) + c3*(modinv(0)-3.)*(modinv(0)-3.)*(modinv(0)-3.);
 
-  delta(0) += 8*(c2+3*c3*(modinv(0)-3));
+}
+
+
+/*----------------------------------------------------------------------
+ *                                                      birzle 12/2014  */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::IsoYeoh::AddDerivativesModified(
+    LINALG::Matrix<3,1>& dPmodI,
+    LINALG::Matrix<6,1>& ddPmodII,
+    const LINALG::Matrix<3,1>& modinv
+)
+{
+  const double c1 = params_ -> c1_;
+  const double c2 = params_ -> c2_;
+  const double c3 = params_ -> c3_;
+
+  dPmodI(0) += c1+2.*c2*(modinv(0)-3.)+3.*c3*(modinv(0)-3.)*(modinv(0)-3.);
+  ddPmodII(0) += 2.*c2+6.*c3*(modinv(0)-3.);
 
   return;
 }

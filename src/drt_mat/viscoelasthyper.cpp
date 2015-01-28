@@ -373,10 +373,8 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   LINALG::Matrix<3,1> modinv(true);
   LINALG::Matrix<7,1> modrateinv (true);
 
-  LINALG::Matrix<3,1> gamma(true);
-  LINALG::Matrix<8,1> delta(true);
-  LINALG::Matrix<3,1> modgamma(true);
-  LINALG::Matrix<5,1> moddelta(true);
+  LINALG::Matrix<3,1> dPI(true);
+  LINALG::Matrix<6,1> ddPII(true);
 
   LINALG::Matrix<6,1> modrcgrate(true);
   // for extension: LINALG::Matrix<6,1> modicgrate(true);
@@ -386,10 +384,13 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   const double tau(true);
   const double beta(true);
 
-  EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv);
-  EvaluateGammaDelta(prinv,modinv,gamma,delta,modgamma,moddelta);
+  EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII);
+
   if (isomodvisco_)
   {
+    // calculate modified invariants
+    InvariantsModified(modinv,prinv);
     // calculate viscous quantities
     EvaluateKinQuantVis(rcg,modrcg,icg,params,prinv,modrcgrate,modrateinv);
     EvaluateMyXi(modinv,modmy,modxi,modrateinv,params);
@@ -401,31 +402,17 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   cmat->Clear();
 
   // build stress response and elasticity tensor
-  // for potentials based on principal invariants
-  // (exists not for viscous part)
-  if (isoprinc_)
-  {
-    LINALG::Matrix<NUM_STRESS_3D,1> stressisoprinc(true) ;
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisoprinc(true) ;
-    EvaluateIsotropicPrinc(stressisoprinc,cmatisoprinc,scg,id2,icg,id4sharp,gamma,delta);
-    stress->Update(1.0, stressisoprinc, 1.0);
-    cmat->Update(1.0,cmatisoprinc,1.0);
-  }
+  LINALG::Matrix<NUM_STRESS_3D,1> stressiso(true) ;
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatiso(true) ;
 
-  // for decoupled potentials
+  EvaluateIsotropicStressCmat(stressiso,cmatiso,scg,id2,icg,id4sharp,prinv,dPI,ddPII);
+
+  stress->Update(1.0, stressiso, 1.0);
+  cmat->Update(1.0,cmatiso,1.0);
+
+  // add viscous part (at the moment just exists for decoupled problems)
   if (isomod_)
   {
-    // hyperelastic part
-    LINALG::Matrix<NUM_STRESS_3D,1> stressisomodiso(true) ;
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodiso(true);
-    LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvol(true) ;
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvol(true) ;
-    EvaluateIsotropicMod(stressisomodiso,stressisomodvol,cmatisomodiso,cmatisomodvol,rcg,id2,icg,id4,id4sharp,modinv,prinv,modgamma,moddelta);
-    stress->Update(1.0, stressisomodiso, 1.0);
-    stress->Update(1.0, stressisomodvol, 1.0);
-    cmat->Update(1.0,cmatisomodiso,1.0);
-    cmat->Update(1.0,cmatisomodvol,1.0);
-
     if(isomodvisco_)
     {
       // add viscous part

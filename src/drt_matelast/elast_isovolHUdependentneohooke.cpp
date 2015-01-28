@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupHUdependentneohooke.cpp
+\file elast_isovolHUdependentneohooke.cpp
 \brief
 
 This file contains the routines required to calculate the isochoric and volumetric contribution
 of the cc neo hooke material
 
-MAT 20 ELAST_CoupHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
+MAT 20 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 8.929E6 CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
 
 <pre>
 maintainer: Andreas Maier
@@ -16,7 +16,7 @@ maintainer: Andreas Maier
 /* macros */
 
 /*----------------------------------------------------------------------*/
-#include "elast_coupHUdependentneohooke.H"
+#include "elast_isovolHUdependentneohooke.H"
 #include "../drt_mat/matpar_material.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -25,7 +25,7 @@ maintainer: Andreas Maier
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupHUDependentNeoHooke::CoupHUDependentNeoHooke(
+MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -41,7 +41,7 @@ MAT::ELASTIC::PAR::CoupHUDependentNeoHooke::CoupHUDependentNeoHooke(
 /*----------------------------------------------------------------------*
  |  Constructor                                 (public)   AMaier 06/11 |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::CoupHUDependentNeoHooke::CoupHUDependentNeoHooke(MAT::ELASTIC::PAR::CoupHUDependentNeoHooke* params)
+MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params)
   : params_(params)
 {
 
@@ -50,7 +50,7 @@ MAT::ELASTIC::CoupHUDependentNeoHooke::CoupHUDependentNeoHooke(MAT::ELASTIC::PAR
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupHUDependentNeoHooke::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::IsoVolHUDependentNeoHooke::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data,alpha_);
 }
@@ -58,7 +58,7 @@ void MAT::ELASTIC::CoupHUDependentNeoHooke::PackSummand(DRT::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupHUDependentNeoHooke::UnpackSummand(
+void MAT::ELASTIC::IsoVolHUDependentNeoHooke::UnpackSummand(
   const std::vector<char>& data,
   std::vector<char>::size_type& position
   )
@@ -69,7 +69,7 @@ void MAT::ELASTIC::CoupHUDependentNeoHooke::UnpackSummand(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupHUDependentNeoHooke::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::ELASTIC::IsoVolHUDependentNeoHooke::Setup(DRT::INPUT::LineDefinition* linedef)
 {
   double HU = 0.0;
   if (linedef->HaveNamed("HU"))
@@ -94,28 +94,20 @@ void MAT::ELASTIC::CoupHUDependentNeoHooke::Setup(DRT::INPUT::LineDefinition* li
     alpha_ = 0.5 * params_->alphamax_ * (sin(PI * (HU - params_->ctmin_)/(params_->ctmax_ - params_->ctmin_) -PI/2) + 1.0);
 }
 
+/*----------------------------------------------------------------------
+ *                                                      birzle 12/2014  */
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupHUDependentNeoHooke::AddCoefficientsPrincipal(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<8,1>& delta,
-  const LINALG::Matrix<3,1>& prinv
+void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddDerivativesModified(
+    LINALG::Matrix<3,1>& dPmodI,
+    LINALG::Matrix<6,1>& ddPmodII,
+    const LINALG::Matrix<3,1>& modinv
   )
 {
+  dPmodI(0) += alpha_;
+  dPmodI(2) += (2.*alpha_*(1. - std::pow(modinv(2),-params_->beta_))) / ( (1.-2.*params_->nue_)*params_->beta_*modinv(2));
 
-  // principal coefficients
-  gamma(0) += alpha_ * (2.*1.*pow(prinv(2),-1./3.));
-  gamma(1) += 0.;
-  gamma(2) += alpha_ * (-(2./3.)*1.*prinv(0)*pow(prinv(2),-1./3.) + (2./(1.-2.*params_->nue_))*1.*(1.-pow(prinv(2),-params_->beta_/2.))/params_->beta_);
 
-  delta(0) += 0.;
-  delta(1) += 0.;
-  delta(2) += alpha_ * (-(4./3.)*1.*pow(prinv(2),-1./3.));
-  delta(3) += 0.;
-  delta(4) += 0.;
-  delta(5) += alpha_ * ((4./9.)*1.*prinv(0)*pow(prinv(2),-1./3.) + (2./(1.-2.*params_->nue_))*1.*pow(prinv(2),-params_->beta_/2.));
-  delta(6) += alpha_ * ((4./3.)*1.*prinv(0)*pow(prinv(2),-1./3.) + (2./(1.-2.*params_->nue_))*1.*2.*(pow(prinv(2),-params_->beta_/2.)-1.)/params_->beta_);
-  delta(7) += 0.;
+  ddPmodII(2) += (2.*alpha_*(-1. + std::pow(modinv(2),-params_->beta_)*(1.+params_->beta_))) / ( (1.-2.*params_->nue_)*params_->beta_*modinv(2)*modinv(2));
 
   return;
 }

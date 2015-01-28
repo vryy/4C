@@ -41,23 +41,41 @@ MAT::ELASTIC::VolPenalty::VolPenalty(MAT::ELASTIC::PAR::VolPenalty* params)
 {
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::VolPenalty::AddCoefficientsModified(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<5,1>& delta,
-  const LINALG::Matrix<3,1>& modinv
-  )
+void MAT::ELASTIC::VolPenalty::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
 {
   const double eps = params_ -> eps_;
   const double gam = params_ -> gam_;
 
-  gamma(2) += eps*gam * (pow(modinv(2), gam)-pow(modinv(2), - gam)) / modinv(2);  ;
-  delta(4) +=  eps*gam*gam * (pow(modinv(2), gam)+pow(modinv(2), - gam)) / modinv(2);  ;
+  // strain energy: Psi=\epsilon \left( J^{\gamma} + \frac 1 {J^{\gamma}} -2 \right)
+  // add to overall strain energy
+  psi += eps*(pow(modinv(2),gam) + pow(modinv(2),-gam) - 2.);
+
+}
+
+/*----------------------------------------------------------------------
+ *                                                      birzle 11/2014  */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::VolPenalty::AddDerivativesModified(
+    LINALG::Matrix<3,1>& dPmodI,
+    LINALG::Matrix<6,1>& ddPmodII,
+    const LINALG::Matrix<3,1>& modinv
+)
+{
+  const double eps = params_ -> eps_;
+  const double gam = params_ -> gam_;
+
+  dPmodI(2) += eps*gam*(pow(modinv(2),gam-1.)-pow(modinv(2),-gam-1.));
+
+  ddPmodII(2) += eps*gam*((gam-1.)*pow(modinv(2),gam-2.)+(gam+1.)*pow(modinv(2),-gam-2.));
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

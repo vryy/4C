@@ -42,29 +42,52 @@ MAT::ELASTIC::IsoExpoPow::IsoExpoPow(MAT::ELASTIC::PAR::IsoExpoPow* params)
 {
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoExpoPow::AddCoefficientsModified(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<5,1>& delta,
-  const LINALG::Matrix<3,1>& modinv
-  )
+void MAT::ELASTIC::IsoExpoPow::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
 {
+  const double   k1 = params_ -> k1_;
+  const double   k2 = params_ -> k2_;
+  const int       d = params_->d_;
 
-  const double k1 = params_ -> k1_;
-  const double k2 = params_ -> k2_;
-  const int d = params_->d_;
-  if (d == 0) dserror("D=0 is not valid, choose a bigger D");
+  // strain energy: Psi = \frac{k_1}{2k_2} (e^{k_2 (\overline{I}_{\boldsymbol{C}}-3)^d}-1).
+  // add to overall strain energy
+  if (k2 != 0)
+    psi += k1/(2.*k2) * (exp(k2*pow(modinv(0)-3.,d))-1.);
+}
 
-  //gamma(0) += (2.*modinv(0)*k1-6.*k1)*exp(k2*(9.-6*modinv(0)+pow(modinv(0), 2)));
-  gamma(0) += k1*d* pow(modinv(0)-3.0,d-1)* exp(k2*pow(modinv(0)-3.,d));
 
-  //delta(0) += 4.*k1*(1.+18.*k2+2.*k2*pow(modinv(0), 2)-12.*k2*modinv(0))* exp(k2*(9.-6*modinv(0)+pow(modinv(0), 2)));
-  if (d >= 2)
-    delta(0) += 2.*k1*d*((d-1)*pow(modinv(0)-3.,d-2) + k2*d*pow(modinv(0)-3.0,2*d-2))* exp(k2*pow(modinv(0)-3.,d));
+/*----------------------------------------------------------------------
+ *                                                      birzle 11/2014  */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::IsoExpoPow::AddDerivativesModified(
+    LINALG::Matrix<3,1>& dPmodI,
+    LINALG::Matrix<6,1>& ddPmodII,
+    const LINALG::Matrix<3,1>& modinv
+)
+{
+  const double   k1 = params_ -> k1_;
+  const double   k2 = params_ -> k2_;
+  const int       d = params_->d_;
+  const double expf = std::exp(k2*std::pow(modinv(0)-3.,(double)d));
+
+  if (d < 1)
+    dserror("The Elast_IsoExpoPow - material only works for positive integer exponents (C) larger than one.");
+
+  if (d==1)
+    dPmodI(0) += k1*d*0.5*expf;
   else
-    delta(0) += 2.*k1*d*d*k2* exp(k2*pow(modinv(0)-3.,d));
+    dPmodI(0) += k1*d*0.5*expf*pow(modinv(0)-3.,d-1.);
+
+  if (d==1)
+    ddPmodII(0) += k1*d*d*k2*0.5*expf;
+  else if (d==2)
+    ddPmodII(0) += k1*d*d*k2*0.5*expf*pow((modinv(0)-3.),2.*(d-1.))  +  k1*d*0.5*expf*(d-1.);
+  else
+    ddPmodII(0) += k1*d*d*k2*0.5*expf*pow((modinv(0)-3.),2.*(d-1.))  +  k1*d*0.5*expf*(d-1.)*pow((modinv(0)-3.),(d-2.));
 
   return;
 }

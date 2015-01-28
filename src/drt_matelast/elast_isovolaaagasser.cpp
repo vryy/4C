@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupaaagasser.cpp
+\file elast_isovolaaagasser.cpp
 \brief
 
 This file contains the routines required to calculate the isochoric contribution
 of the aaagasser material and the corresponding volumetric contribution.
 
-MAT 20 ELAST_CoupAAAGasser CLUM 2.62E3 CMED 1.98E3 CABLUM 1.73E3 NUE 0.49 BETA -2.0
+MAT 20 ELAST_isovolaaagasser CLUM 2.62E3 CMED 1.98E3 CABLUM 1.73E3 NUE 0.49 BETA -2.0
 
 <pre>
 maintainer: Andreas Maier
@@ -18,14 +18,14 @@ maintainer: Andreas Maier
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "elast_coupaaagasser.H"
+#include "elast_isovolaaagasser.H"
 #include "../drt_mat/matpar_material.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |                                                         AMaier  06/11|
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupAAAGasser::CoupAAAGasser(
+MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
@@ -41,7 +41,7 @@ MAT::ELASTIC::PAR::CoupAAAGasser::CoupAAAGasser(
 /*----------------------------------------------------------------------*
  |  Constructor                                 (public)   AMaier 04/09 |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::CoupAAAGasser::CoupAAAGasser(MAT::ELASTIC::PAR::CoupAAAGasser* params)
+MAT::ELASTIC::IsoVolAAAGasser::IsoVolAAAGasser(MAT::ELASTIC::PAR::IsoVolAAAGasser* params)
   : params_(params)
 {
 }
@@ -49,7 +49,7 @@ MAT::ELASTIC::CoupAAAGasser::CoupAAAGasser(MAT::ELASTIC::PAR::CoupAAAGasser* par
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAAAGasser::PackSummand(DRT::PackBuffer& data) const
+void MAT::ELASTIC::IsoVolAAAGasser::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data,normdist_);
   AddtoPack(data,cele_);
@@ -58,7 +58,7 @@ void MAT::ELASTIC::CoupAAAGasser::PackSummand(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAAAGasser::UnpackSummand(
+void MAT::ELASTIC::IsoVolAAAGasser::UnpackSummand(
   const std::vector<char>& data,
   std::vector<char>::size_type& position
   )
@@ -70,7 +70,7 @@ void MAT::ELASTIC::CoupAAAGasser::UnpackSummand(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAAAGasser::SetupAAA(Teuchos::ParameterList& params)
+void MAT::ELASTIC::IsoVolAAAGasser::SetupAAA(Teuchos::ParameterList& params)
 {
   normdist_ = params.get("iltthick meanvalue",-999.0);
 
@@ -86,7 +86,7 @@ void MAT::ELASTIC::CoupAAAGasser::SetupAAA(Teuchos::ParameterList& params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAAAGasser::AddStrainEnergy(
+void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(
   double& psi,
   const LINALG::Matrix<3,1>& prinv,
   const LINALG::Matrix<3,1>& modinv)
@@ -107,28 +107,23 @@ void MAT::ELASTIC::CoupAAAGasser::AddStrainEnergy(
   psi+= (8*cele_)/(1.0-2.0*params_->nue_)*1.0/(pow(params_->beta_,2.0))*(params_->beta_*log(detF)+pow(detF,-params_->beta_)-1.0);
 
 }
+
+/*----------------------------------------------------------------------
+ *                                                      birzle 12/2014  */
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupAAAGasser::AddCoefficientsPrincipal(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<8,1>& delta,
-  const LINALG::Matrix<3,1>& prinv)
+void MAT::ELASTIC::IsoVolAAAGasser::AddDerivativesModified(
+    LINALG::Matrix<3,1>& dPmodI,
+    LINALG::Matrix<6,1>& ddPmodII,
+    const LINALG::Matrix<3,1>& modinv
+  )
 {
-  // principal coefficients
-  gamma(0) += 0.;
-  gamma(1) += cele_ * 4.*pow(prinv(2),-2./3.);
-  gamma(2) += cele_ * (-(4./3.)*pow(prinv(2),-2./3.)*(prinv(0)*prinv(0) - 2.*prinv(1)) + (2./(1.-2.*params_->nue_))*4.*(1.-pow(prinv(2),-params_->beta_/2.))/params_->beta_);
-  delta(0) += 0.0;
-  delta(1) += 0.0;
-  delta(2) += 0.0;
-  delta(3) += 0.0;
-  delta(4) += cele_ * (-16./3.)*pow(prinv(2),-2./3.);
-  delta(5) += cele_ * ((16./9.)*pow(prinv(2),-2./3.)*(prinv(0)*prinv(0) - 2.*prinv(1)) + (2./(1.-2.*params_->nue_))*4.*pow(prinv(2),-params_->beta_/2.));
-  delta(6) += cele_ * ((8./3.)*pow(prinv(2),-2./3.)*(prinv(0)*prinv(0) - 2.*prinv(1)) + (2./(1.-2.*params_->nue_))*4.*2.*(pow(prinv(2),-params_->beta_/2.)-1.)/params_->beta_);
-  delta(7) += cele_ * 8.*pow(prinv(2),-2./3.);
+  dPmodI(0) += 2.*cele_*modinv(0);
+  dPmodI(1) -= 2.*cele_;
+  dPmodI(2) += (8.*cele_*(1.-std::pow(modinv(2),-params_->beta_))) / ((1.-2.*params_->nue_)*params_->beta_*modinv(2));
+
+
+  ddPmodII(0) += 2.*cele_;
+  ddPmodII(2) += (8.*cele_*(-1.+std::pow(modinv(2),-params_->beta_)*(1.+params_->beta_))) / ((1.-2.*params_->nue_)*params_->beta_*modinv(2)*modinv(2));
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*/

@@ -1045,9 +1045,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // isochoric and volumetric contribution of HU dependent NeoHooke
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupHUDependentNeoHooke",
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoVolHUDependentNeoHooke",
                                             "isochoric and volumetric part of HU dependent neo-Hooke material",
-                                            INPAR::MAT::mes_coupHUdependentneohooke));
+                                            INPAR::MAT::mes_isovolHUdependentneohooke));
 
     AddNamedReal(m,"ALPHA_MAX","");
     AddNamedReal(m,"CT_MIN","");
@@ -1062,9 +1062,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // isochoric and volumetric contribution of AAAGasser
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAAAGasser",
+      = Teuchos::rcp(new MaterialDefinition("ELAST_IsoVolAAAGasser",
                                             "isochoric and volumetric part of AAAGasser material (thrombus)",
-                                            INPAR::MAT::mes_coupaaagasser));
+                                            INPAR::MAT::mes_isovolaaagasser));
 
     AddNamedReal(m,"CLUM","luminal stiffness parameter (2.62e3)");
     AddNamedReal(m,"CMED","medial stiffness parameter (2.62e3)");

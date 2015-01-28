@@ -37,7 +37,7 @@ MAT::ELASTIC::PAR::CoupSVK::CoupSVK(
   if (c2 <= 0.5 and c2 > -1.0)
   {
     lambda_ = (c2 == 0.5) ? 0.0 : c1*c2/((1.0+c2)*(1.0-2.0*c2));
-    mue_ = c1/(2.0*(1.0+c2));  // shear modulus
+       mue_ = c1/(2.0*(1.0+c2));  // shear modulus
   }
   else
     dserror("Poisson's ratio must be between -1.0 and 0.5!");
@@ -53,19 +53,37 @@ MAT::ELASTIC::CoupSVK::CoupSVK(MAT::ELASTIC::PAR::CoupSVK* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupSVK::AddCoefficientsPrincipal(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<8,1>& delta,
-  const LINALG::Matrix<3,1>& prinv
-  )
+void MAT::ELASTIC::CoupSVK::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
 {
-  // gammas
-  gamma(0) += .5*params_->lambda_*(prinv(0)-3.)-1.*params_->mue_;
-  gamma(1) += params_->mue_;
+  const double lambda  = params_->lambda_;
+  const double mue     = params_->mue_;
 
-  // deltas
-  delta(0) += params_->lambda_;
-  delta(7) += 2.*params_->mue_;
+  // strain energy: Psi = (1/4*mue+1/8*lambda)*I_1^2 - (0.75*lambda+0.5*mue)*I_1 - 0.5*mue*I_2 + 9/8*lambda + 0.75*mue
+  // add to overall strain energy
+  psi += (0.25*mue+0.125*lambda)*prinv(0)*prinv(0) - (0.75*lambda+0.5*mue)*prinv(0) - 0.5*mue*prinv(1) + 1.125*lambda + 0.75*mue;
+}
+
+
+/*----------------------------------------------------------------------
+ *                                                       birzle 12/2014 */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupSVK::AddDerivativesPrincipal(
+    LINALG::Matrix<3,1>& dPI,
+    LINALG::Matrix<6,1>& ddPII,
+    const LINALG::Matrix<3,1>& prinv
+)
+{
+  const double lambda  = params_->lambda_;
+  const double mue     = params_->mue_;
+
+  dPI(0) += (0.5*mue+0.25*lambda)*prinv(0)-0.75*lambda-0.5*mue;
+  dPI(1) -= 0.5*mue;
+
+  ddPII(0) += 0.5*mue+0.25*lambda;
+
 
   return;
 }

@@ -41,7 +41,7 @@ namespace MAT
     /// Collection of hyperelastic materials
     ///
     /// Storage map of hyperelastic summands.
-    class PlasticElastHyper : public Parameter
+    class PlasticElastHyper : public MAT::PAR::ElastHyper
     {
 
       friend class MAT::PlasticElastHyper;
@@ -67,12 +67,6 @@ namespace MAT
          const int id  ///< ID to look for in collection of summands
          ) const;
 
-      /// length of material list
-      const int nummat_;
-      /// the list of material IDs
-      const std::vector<int>* matids_;
-      /// material mass density
-      const double density_;
       /// initial yield stress
       const double inityield_;
       /// linear isotropic hardening parameter
@@ -142,7 +136,7 @@ private:
   /// Collection of hyperelastic materials
   class Material;
 
-  class PlasticElastHyper : public So3Material
+  class PlasticElastHyper : public MAT::ElastHyper
   {
   public:
 
@@ -196,14 +190,6 @@ private:
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new PlasticElastHyper( *this ) ); }
 
-    /// number of materials
-    virtual int NumMat() const { return params_->nummat_; }
-
-    /// deliver material ID of index i'th potential summand in collection
-    virtual int MatID(
-      const unsigned index  ///< index i
-      ) const;
-
     /// material mass density
     virtual double Density() const { return params_->density_; }
 
@@ -227,9 +213,6 @@ private:
 
     /// stabilization parameter
     virtual double s() const { return params_->stab_s_;}
-
-    /// a shear modulus equivalent
-    virtual double ShearMod() const;
 
     /// plastic spin unequal zero
     virtual bool HavePlasticSpin() const
@@ -360,18 +343,6 @@ private:
     /// update plastic history variables
     virtual void UpdateGP(const int gp, const LINALG::Matrix<3,3>* deltaDp);
 
-    /// return if isotropic not splitted formulation
-    virtual bool IsotropicPrincipal() const { return isoprinc_;}
-
-    /// return if isotropic and splitted formulation
-    virtual bool IsotropicModified() const { return isomod_;}
-
-    /// return if anisotropic not splitted formulation
-    virtual bool AnisotropicPrincipal() const { return anisoprinc_;}
-
-    /// return if anisotropic and splitted formulation
-    virtual bool AnisotropicModified() const { return anisomod_;}
-
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
@@ -447,23 +418,6 @@ private:
     /// convert non-symmetric 2-tensor to 9x1 vector
     void Matrix3x3to9x1(LINALG::Matrix<3,3> A, LINALG::Matrix<9,1>& Out);
 
-    /// calculates the factors associated to the hyperelastic laws
-    virtual void EvaluateGammaDelta(
-        LINALG::Matrix<3,1> prinv,
-        LINALG::Matrix<3,1>& gamma,
-        LINALG::Matrix<8,1>& delta
-        );
-
-    /// convert modified gammas and deltas to unmodified formulation
-    /// takes the modified gammas and deltas and ADDS them to gamma and delta
-    virtual void ConvertModToPrinc(
-        const LINALG::Matrix<3,1>& prinv,
-        const LINALG::Matrix<3,1>& modgamma,
-        const LINALG::Matrix<5,1>& moddelta,
-        LINALG::Matrix<3,1>& gamma,
-        LINALG::Matrix<8,1>& delta
-    );
-
     /// add a contribution to the derivative of the PK2 stress with respect to the plastic deformation gradient
     /// in index notation this method does:
     /// dPK2dFpinv_IJKL += fac*( A_IK * B_JL + A_JK * B_IL )
@@ -495,24 +449,24 @@ private:
         LINALG::Matrix<3,3>& MandelStressIsoprinc,
         LINALG::Matrix<6,6>& dMdCisoprinc,
         LINALG::Matrix<6,9>& dMdFpinvIsoprinc,
-        LINALG::Matrix<6,1> Cpi,
-        LINALG::Matrix<6,1> CpiCCpi,
-        LINALG::Matrix<6,1> ircg,
-        LINALG::Matrix<6,1> Ce,
-        LINALG::Matrix<3,3> CeM,
-        LINALG::Matrix<6,1> Ce2,
-        LINALG::Matrix<6,1> id2V,
-        LINALG::Matrix<3,3> id2,
-        LINALG::Matrix<3,3> CpiC,
-        LINALG::Matrix<3,3> FpiCe,
-        LINALG::Matrix<3,3> Fpi,
-        LINALG::Matrix<9,1> CFpiCei,
-        LINALG::Matrix<9,1> CFpi,
-        LINALG::Matrix<3,3> FpiTC,
-        LINALG::Matrix<9,1> CFpiCe,
-        LINALG::Matrix<3,3> CeFpiTC,
-        LINALG::Matrix<3,1> gamma,
-        LINALG::Matrix<8,1> delta
+        const LINALG::Matrix<6,1>& Cpi,
+        const LINALG::Matrix<6,1>& CpiCCpi,
+        const LINALG::Matrix<6,1>& ircg,
+        const LINALG::Matrix<6,1>& Ce,
+        const LINALG::Matrix<3,3>& CeM,
+        const LINALG::Matrix<6,1>& Ce2,
+        const LINALG::Matrix<6,1>& id2V,
+        const LINALG::Matrix<3,3>& id2,
+        const LINALG::Matrix<3,3>& CpiC,
+        const LINALG::Matrix<3,3>& FpiCe,
+        const LINALG::Matrix<3,3>& Fpi,
+        const LINALG::Matrix<9,1>& CFpiCei,
+        const LINALG::Matrix<9,1>& CFpi,
+        const LINALG::Matrix<3,3>& FpiTC,
+        const LINALG::Matrix<9,1>& CFpiCe,
+        const LINALG::Matrix<3,3>& CeFpiTC,
+        const LINALG::Matrix<3,1>& gamma,
+        const LINALG::Matrix<8,1>& delta
         );
 
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
@@ -522,8 +476,9 @@ private:
         LINALG::Matrix<6,1> Cpi,
         LINALG::Matrix<6,1> CpiCCpi,
         LINALG::Matrix<6,1> ircg,
-        LINALG::Matrix<3,1> gamma,
-        LINALG::Matrix<8,1> delta
+        LINALG::Matrix<3,1> prinv,
+        LINALG::Matrix<3,1> dPI,
+        LINALG::Matrix<6,1> ddPII
         );
 
     virtual void EvaluateNCP(const LINALG::Matrix<3,3>* mStr,
@@ -563,18 +518,6 @@ private:
                              const double dt
     );
 
-    /// calculate principal invariants
-    virtual void InvariantsPrincipal(
-      LINALG::Matrix<3,1>& prinv,  ///< principal invariants
-      const LINALG::Matrix<6,1>& rcg  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-      );
-
-    /// calculate modified invariants
-    virtual void InvariantsModified(
-      LINALG::Matrix<3,1>& modinv,  ///< modified invariants
-      const LINALG::Matrix<3,1>& prinv  ///< principal invariants
-      );
-
     //! calculate the exponential of a 3x3 matrix (symmetric or non-symmetric)
     virtual void MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut );
 
@@ -596,14 +539,6 @@ private:
     virtual void AddToMatrixExponentialDeriv(const double fac,
         const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<9,9>& Dexp);
 
-    /// Flags to specify the formulations
-    bool isoprinc_;
-    bool isomod_;
-    bool anisoprinc_ ;
-    bool anisomod_ ;
-    bool isomodvisco_ ;
-    bool viscogenmax_;
-
     /// @name Voigt index arrays
     //@{
     static const int VOIGT3X3_[3][3];
@@ -613,9 +548,6 @@ private:
 
     /// my material parameters
     MAT::PAR::PlasticElastHyper* params_;
-
-    /// map to materials/potential summands
-    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsum_;
 
     /// plastic anisotropy tensor for Hill-plasticity
     /// Von Mises plasticity is included for H = H^-1 = P_dev

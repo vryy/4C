@@ -121,6 +121,7 @@ namespace ELASTIC
       return true;
     }
 
+
     /// Add coefficients with respect to principal stretches (or zeros)
     virtual void AddCoefficientsStretchesPrincipal(
       LINALG::Matrix<3,1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]

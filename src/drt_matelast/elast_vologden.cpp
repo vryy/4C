@@ -41,21 +41,38 @@ MAT::ELASTIC::VolOgden::VolOgden(MAT::ELASTIC::PAR::VolOgden* params)
 {
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::VolOgden::AddCoefficientsModified(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<5,1>& delta,
-  const LINALG::Matrix<3,1>& modinv
-  )
+void MAT::ELASTIC::VolOgden::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
 {
-
   const double kappa = params_ -> kappa_;
   const double beta = params_ -> beta_;
 
-  gamma(2) += kappa*(1-pow(modinv(2), -beta))/(modinv(2)*beta);
-  delta(4) += kappa*pow(modinv(2), -beta-1);
+  // strain energy: Psi = \frac {\kappa}{\beta^2}(\beta lnJ + J^{-\beta}-1)
+  // add to overall strain energy
+  if (beta != 0)
+    psi += kappa/(beta*beta)*(beta*log(modinv(2))+pow(modinv(2),-beta)-1.);
+
+}
+
+/*----------------------------------------------------------------------
+ *                                                      birzle 11/2014  */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::VolOgden::AddDerivativesModified(
+    LINALG::Matrix<3,1>& dPmodI,
+    LINALG::Matrix<6,1>& ddPmodII,
+    const LINALG::Matrix<3,1>& modinv
+)
+{
+  const double kappa = params_ -> kappa_;
+  const double beta = params_ -> beta_;
+
+  dPmodI(2) += kappa/(beta*beta)*(beta/modinv(2)-beta*pow(modinv(2),-beta-1.));
+
+  ddPmodII(2) += kappa/(beta*beta)*(-beta/(modinv(2)*modinv(2))+beta*(beta+1.)*pow(modinv(2),-beta-2.));
 
   return;
 }

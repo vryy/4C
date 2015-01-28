@@ -87,6 +87,7 @@ namespace ELASTIC
   ///      + \frac{\lambda}{2} \big( \sqrt{I\!I\!I_{\boldsymbol{C}}} -1 \big)^2
   ///\f]
   ///
+
   class CoupLogMixNeoHooke : public Summand
   {
 
@@ -132,10 +133,18 @@ namespace ELASTIC
     /// \end{array}\right.
     ///\f]
     ///
-    virtual void AddCoefficientsPrincipal(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+
+    // add strain energy
+    virtual void AddStrainEnergy(
+        double& psi,                      ///< strain energy function
+        const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
+    );
+
+    virtual void AddDerivativesPrincipal(
+        LINALG::Matrix<3,1>& dPI, ///< first derivative with respect to invariants
+        LINALG::Matrix<6,1>& ddPII, ///< second derivative with respect to invariants
+        const LINALG::Matrix<3,1>& prinv ///< principal invariants of right Cauchy-Green tensor
     );
 
     /// @name Access methods

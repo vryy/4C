@@ -119,76 +119,47 @@ namespace MAT
       /// retrieve coefficients of first and second derivative
       /// of summand with respect to principal invariants
       ///
-      /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based
-      /// on the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol{C}},III_{\boldsymbol{C}})\f$
+      /// The derivatives of the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol{C}},III_{\boldsymbol{C}})\f$
       /// in which the principal invariants of the right Cauchy-Green tensor \f$\boldsymbol{C}\f$
-      /// are the arguments, cf. Holzapfel [1],
+      /// are the arguments are defined as following:
+      ///
+      /// First derivatives:
+      ///
       ///\f[
-      ///  I_{\boldsymbol{C}} = C_{AA},
-      ///  \quad
-      ///  II_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - \mathrm{trace}(\boldsymbol{C}^2) \big),
-      ///  \quad
-      ///  III_{\boldsymbol{C}} = \det(\boldsymbol{C})
+      /// dPI_0 = \frac{\partial \Psi}{\partial I_{\boldsymbol{C}}} ;
+      ///\f]
+      ///\f[
+      /// dPI_1 = \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}} ;
+      ///\f]
+      ///\f[
+      /// dPI_2 = \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}} ;
       ///\f]
       ///
-      /// cf. Holzapfel [1], p. 216 (6.32) and p. 248
+      /// Second derivatives:
       ///\f[
-      ///  \bold{S} = \gamma_1 \ \bold{Id} + \gamma_2 \ \bold{C} + \gamma_3 \ \bold{C}^{-1}
+      /// ddPII_0 = \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}}^2} ;
       ///\f]
       ///\f[
-      /// \gamma_1 = 2\left( \frac{\partial \Psi}{\partial I_{\boldsymbol{C}}}
-      ///          + I_{\boldsymbol{C}}\frac{\partial \Psi}{\partial II_{\boldsymbol{C}}} \right);
+      /// ddPII_1 = \frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} ;
       ///\f]
       ///\f[
-      /// \gamma_2 = -2\frac{\partial \Psi}{\partial II_{\boldsymbol{C}}};
+      /// ddPII_2 = \frac{\partial^2 \Psi}{\partial III_{\boldsymbol{C}}^2} ;
       ///\f]
       ///\f[
-      /// \gamma_3 = 2III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}};
-      ///\f]
-      ///
-      /// material constitutive tensor coefficients
-      /// cf. Holzapfel [1], p. 261
-      ///\f[
-      ///  \mathbb{C} = \delta_1 \left( \bold{Id} \otimes \bold{Id} \right) + \delta_2 \left( \bold{Id} \otimes \bold{C} + \bold{C} \otimes \bold{Id} \right)
-      ///  + \delta_3 \left( \bold{Id} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{Id} \right) + \delta_4 \left( \bold{C} \otimes \bold{C} \right)
-      ///  + \delta_5 \left( \bold{C} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{C} \right) + \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
-      ///  + \delta_7 \mathbb{P}
+      /// ddPII_3 = \frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}} ;
       ///\f]
       ///\f[
-      /// \delta_1 = 4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}}^2}
-      ///          + 2 Ic \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
-      ///          + \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
-      ///          + I_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} \right)
+      /// ddPII_4 = \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}} ;
       ///\f]
       ///\f[
-      /// \delta_2 = -4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
-      ///          + I_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} \right)
+      /// ddPII_5 = \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}} ;
       ///\f]
-      ///\f[
-      /// \delta_3 = 4\left( III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}}
-      ///          + I_{\boldsymbol{C}} III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial IIc \partial III_{\boldsymbol{C}}} \right)
-      ///\f]
-      ///\f[
-      /// \delta_4 = 4\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2}
-      ///\f]
-      ///\f[
-      /// \delta_5 = -4 III_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}}
-      ///\f]
-      ///\f[
-      /// \delta_6 = 4\left( III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}}
-      ///          + III_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial III_{\boldsymbol{C}}^2} \right)
-      ///\f]
-      ///\f[
-      /// \delta_7 = -4 III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}}
-      ///\f]
-      ///\f[
-      /// \delta_8 = -4 \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
-      ///\f]
-      virtual void AddCoefficientsPrincipal(
-        LINALG::Matrix<3,1>& gamma,  ///< see above
-        LINALG::Matrix<8,1>& delta,  ///< see above
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
-        )
+
+      virtual void AddDerivativesPrincipal(
+          LINALG::Matrix<3,1>& dPI, ///< first derivative with respect to invariants
+          LINALG::Matrix<6,1>& ddPII, ///< second derivative with respect to invariants
+          const LINALG::Matrix<3,1>& prinv ///< principal invariants of right Cauchy-Green tensor
+      )
       {
         return;  // do nothing
       };
@@ -196,71 +167,47 @@ namespace MAT
       /// retrieve coefficients of first and second derivative
       /// of summand (decoupled form) with respect to modified invariants
       ///
-      /// The coefficients \f$\bar\gamma_i\f$ and \f$\bar\delta_j\f$ are based
-      /// on the summand \f$\Psi(\overline{I}_{\boldsymbol{C}},\overline{II}_{\boldsymbol_{C}},J)=\Psi_{iso}(\overline{I}_{\boldsymbol{C}},\overline{II}_{\boldsymbol_{C}})+\Psi_{vol}(J)\f$
-      /// in which the principal invariants of the modified right Cauchy-Green tensor \f$\overline{\boldsymbol{C}}=(\det\boldsymbol{C})^{-1/3} \boldsymbol{C}\f$
-      /// are the arguments, cf. Holzapfel [1],
-      ///\f[
-      ///  \overline{I}_{\boldsymbol{C}} = J^{-2/3} \bold{C},
-      ///  \quad
-      ///  \overline{II}_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) -
-      ///         \mathrm{trace}(\boldsymbol{C}^2) \big),
-      ///  \quad
-      ///  J = \sqrt{\det(\boldsymbol{C})}
-      ///\f]
+      /// The derivatives of the summand \f$\Psi(\overline{I}_{\boldsymbol{C}},\overline{II}_{\boldsymbol_{C}},J)=\Psi_{iso}(\overline{I}_{\boldsymbol{C}},\overline{II}_{\boldsymbol_{C}})+\Psi_{vol}(J)\f$
+      /// in which the modified invariants of the modified right Cauchy-Green tensor \f$\overline{\boldsymbol{C}}=(\det\boldsymbol{C})^{-1/3} \boldsymbol{C}\f$
+      /// are the arguments, defined as following:
       ///
-      /// cf. Holzapfel [1], p. 234 and p. 262
+      /// First derivatives:
       ///
       ///\f[
-      /// \bold{S} = \bold{S}_{iso} + \bold{S}_{vol} = J^{-\frac{2}{3}} \left( \mathbb{P} : \bar{\bold{S}} \right) + J p \bold{C}^{-1}
+      /// dmodPI_0 = \frac{\partial \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}}} ;
       ///\f]
       ///\f[
-      ///  \bar{\bold{S}} = \bar{\gamma}_1 \ \bold{Id} + \bar{\gamma}_2 \ \bold{C}
+      /// dmodPI_1 = \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}} ;
       ///\f]
       ///\f[
-      /// \bar\gamma_1 = 2\left( \frac{\partial \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}}}
-      ///          + \overline{I}_{\boldsymbol{C}} \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}} \right);
-      ///\f]
-      ///\f[
-      /// \bar\gamma_2 = -2 \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}};
-      ///\f]
-      ///\f[
-      /// \bar\gamma_3 = p = \frac{\partial \Psi_{vol}}{\partial J};
+      /// dmodPI_2 = \frac{\partial \Psi_{vol}}{\partial J} ;
       ///\f]
       ///
-      /// material constitutive tensor coefficients
-      /// cf. Holzapfel [1], p. 261
+      /// Second derivatives:
       ///\f[
-      /// \mathbb{C} = \mathbb{C}_{iso} + \mathbb{C}_{vol} = \left[ \mathbb{P}: \bar{\mathbb{C}} : \mathbb{P}^T + \frac{2}{3} Tr(J^{-\frac{2}{3} } \bar{\bold{S}} ) \tilde{\mathbb{P}} - \frac{2}{3} \left( \bold{C}^{-1} \otimes J^{-\frac{2}{3}} \left( \mathbb{P} : \bar{\bold{S}} \right) + J^{-\frac{2}{3}} \left( \mathbb{P} : \bar{\bold{S}} \right) \otimes \bold{C}^{-1} \right) \right] + \left[ J \tilde{p} \bold{C}^{-1} \otimes \bold{C}^{-1} - 2 p J \bold{C}^{-1} \odot \bold{C}^{-1} \right]
+      /// ddmodPII_0 = \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}}^2} ;
       ///\f]
       ///\f[
-      ///  \bar{\mathbb{C}} = \bar\delta_1 \left( \bold{Id} \otimes \bold{Id} \right) + \bar\delta_2 \left( \bold{Id} \otimes \bold{C} + \bold{C} \otimes \bold{Id} \right)
-      ///  + \bar\delta_3 \left( \bold{C} \otimes \bold{C} \right) + \bar\delta_4 \mathbb{P}
+      /// ddmodPII_1 = \frac{\partial^2 \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}^2} ;
       ///\f]
       ///\f[
-      /// \bar\delta_1 = 4 \left( \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}}^2}
-      ///          + 2 \overline{I}_{\boldsymbol{C}} \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}} \partial \overline{II}_{\boldsymbol{C}}}
-      ///          + \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}}
-      ///          + \overline{I}_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi_{sio}}{\partial \overline{II}_{\boldsymbol{C}}^2} \right)
+      /// ddmodPII_2 = \frac{\partial^2 \Psi_{vol}}{\partial J^2} ;
       ///\f]
       ///\f[
-      /// \bar\delta_2 = -4 \left( \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}} \partial \overline{II}_{\boldsymbol{C}}}
-      ///          + \overline{I}_{\boldsymbol{C}} \frac{\partial^2 \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}^2} \right)
+      /// ddmodPII_3 = \frac{\partial^2 \Psi}{\partial \overline{II}_{\boldsymbol{C}} \partial J} = 0 ;
       ///\f]
       ///\f[
-      /// \bar\delta_3 = 4 \frac{\partial^2 \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}^2}
+      /// ddmodPII_4 = \frac{\partial^2 \Psi}{\partial \overline{I}_{\boldsymbol{C}} \partial J} = 0 ;
       ///\f]
       ///\f[
-      /// \bar\delta_4 = -4 \frac{\partial \Psi_{iso}}{\partial \overline{II}_{\boldsymbol{C}}}
+      /// ddmodPII_5 = \frac{\partial^2 \Psi_{iso}}{\partial \overline{I}_{\boldsymbol{C}} \partial \overline{II}_{\boldsymbol{C}}} ;
       ///\f]
-      ///\f[
-      /// \bar\delta_5 = \tilde{p} = J \frac{\partial^2 \Psi_{vol}}{\partial J^2} + p
-      ///\f]
-      virtual void AddCoefficientsModified(
-        LINALG::Matrix<3,1>& gamma,  ///< see above
-        LINALG::Matrix<5,1>& delta,  ///< see above
-        const LINALG::Matrix<3,1>& modinv  ///< modified invariants of right Cauchy-Green tensor
-        )
+
+      virtual void AddDerivativesModified(
+          LINALG::Matrix<3,1>& dPmodI, ///< first derivative with respect to modified invariants
+          LINALG::Matrix<6,1>& ddPmodII, ///< second derivative with respect to modified invariants
+          const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
+      )
       {
         return;  // do nothing
       };

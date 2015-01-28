@@ -42,19 +42,35 @@ MAT::ELASTIC::IsoCub::IsoCub(MAT::ELASTIC::PAR::IsoCub* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoCub::AddCoefficientsModified(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<5,1>& delta,
-  const LINALG::Matrix<3,1>& modinv
-  )
+void MAT::ELASTIC::IsoCub::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
+{
+  // material Constant c
+  const double c = params_->c_;
+
+  // strain energy: Psi = C (\overline{I}_{\boldsymbol{C}}-3)^3.
+  // add to overall strain energy
+  psi += c * (modinv(0)-3.)*(modinv(0)-3.)*(modinv(0)-3.);
+}
+
+
+/*----------------------------------------------------------------------
+ *                                                      birzle 11/2014  */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::IsoCub::AddDerivativesModified(
+    LINALG::Matrix<3,1>& dPmodI,
+    LINALG::Matrix<6,1>& ddPmodII,
+    const LINALG::Matrix<3,1>& modinv
+)
 {
 
   const double c = params_ -> c_;
 
-  //
-  gamma(0) += 6*c*(modinv(0)-3)*(modinv(0)-3);
+  dPmodI(0) += c*3.*(modinv(0)-3.)*(modinv(0)-3.);
 
-  delta(0) += 24*c*(modinv(0)-3);
+  ddPmodII(0) += c*6.*(modinv(0)-3.);
 
   return;
 }

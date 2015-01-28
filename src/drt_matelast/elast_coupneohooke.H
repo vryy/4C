@@ -76,8 +76,6 @@ namespace ELASTIC
       //@{
       void SetC(const double c) { c_ = c; }
       void SetBeta(const double beta) { beta_ = beta; }
-      void SetYoungs(const double c) { c_ = c; }        // ToDo Are we sure, that SetYoungs() has to set c_ instead of youngs_?
-      void SetNue(const double beta) { beta_ = beta; }  // ToDo Are we sure, that SetNue() has to set beta_ instead of nue_?
       //@}
 
     };  // class CoupNeoHooke
@@ -137,11 +135,10 @@ namespace ELASTIC
         const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
     );
 
-    /// Add principal coeffiencts.
-    virtual void AddCoefficientsPrincipal(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+    virtual void AddDerivativesPrincipal(
+        LINALG::Matrix<3,1>& dPI, ///< first derivative with respect to invariants
+        LINALG::Matrix<6,1>& ddPII, ///< second derivative with respect to invariants
+        const LINALG::Matrix<3,1>& prinv ///< principal invariants of right Cauchy-Green tensor
     );
 
     /// @name Access methods

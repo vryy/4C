@@ -45,37 +45,62 @@ MAT::ELASTIC::CoupBlatzKo::CoupBlatzKo(MAT::ELASTIC::PAR::CoupBlatzKo* params)
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupBlatzKo::AddCoefficientsPrincipal(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<8,1>& delta,
-  const LINALG::Matrix<3,1>& prinv
-  )
-{
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupBlatzKo::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
+{
   // material parameters for isochoric part
   const double mue  = params_->mue_;  // Shear modulus
   const double nue  = params_->nue_;  // Poisson's ratio
   const double f    = params_->f_;    // interpolation parameter
 
-  // introducing xeta for consitence with Holzapfel and simplification
+  // introducing beta for consistency with Holzapfel and simplification
   const double beta = nue/(1. - 2.*nue);
-  const double xeta = 2.*mue*(1.-f)/prinv(2);
 
-  // gammas
-  gamma(0) += mue*f+xeta*prinv(0)/2.;
-  gamma(1) += -xeta/2.;
-  gamma(2) += -mue*f*pow(prinv(2), -beta) - xeta*(prinv(1)-pow(prinv(2), beta+1))/2.;
+  // strain energy: Psi= f \frac {\mu} 2 \left[ (I_{\boldsymbol C}-3)+\frac 1
+  //         {\beta} ( III_{\boldsymbol C}^{-\beta} -1) \right]
+  //         +(1-f) \frac {\mu} 2 \left[\left( \frac {II_{\boldsymbol
+  //         C}}{III_{\boldsymbol C}}-3 \right) + \frac 1 {\beta}
+  //         (III_{\boldsymbol C}^{\beta}-1)\right]
+
+  double psiadd = f*mue*0.5*(prinv(0)-3.) + (1.-f)*mue*0.5*(prinv(1)/prinv(2)-3.);
+  if (beta != 0) // take care of possible division by zero in case of Poisson's ratio nu = 0.0
+
+  // add to overall strain energy
+  psi += psiadd;
+}
 
 
-  // deltas
-  delta(0) += xeta;
-  delta(2) += -xeta*prinv(0);
-  delta(4) += xeta;
-  delta(5) += 2*mue*f*beta*pow(prinv(2), -beta) + xeta*(prinv(1) + beta*pow(prinv(2), (beta+1)));
-  delta(6) += 2*mue*f*pow(prinv(2), -beta) + xeta*(prinv(1) - pow(prinv(2), (beta+1)));
-  delta(7) += -xeta;
+
+
+/*----------------------------------------------------------------------
+ *                                                       birzle 12/2014 */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupBlatzKo::AddDerivativesPrincipal(
+    LINALG::Matrix<3,1>& dPI,
+    LINALG::Matrix<6,1>& ddPII,
+    const LINALG::Matrix<3,1>& prinv
+)
+{
+  // material parameters for isochoric part
+  const double mue  = params_->mue_;  // Shear modulus
+  const double nue  = params_->nue_;  // Poisson's ratio
+  const double f    = params_->f_;    // interpolation parameter
+
+  // introducing beta for consistency with Holzapfel and simplification
+  const double beta = nue/(1. - 2.*nue);
+
+
+  dPI(0) += f*mue/2.;
+  dPI(1) += (1.-f)*mue/(2.*prinv(2));
+  dPI(2) += -(f*mue)/(2.*pow(prinv(2),beta+1.))-(mue*(pow(prinv(2), beta-1.)-prinv(1)/prinv(2)/prinv(2))*(f-1.))*0.5;
+
+  ddPII(2) +=(f*mue*(beta+1.))/(2.*pow(prinv(2), beta+2.))-(mue*(f-1.)*((2.*prinv(1))/prinv(2)/prinv(2)/prinv(2)+pow(prinv(2), beta-2.)*(beta-1.)))*0.5;
+  ddPII(3) -= (1.-f)*0.5*mue/prinv(2)/prinv(2);
 
   return;
 }

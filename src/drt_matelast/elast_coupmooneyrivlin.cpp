@@ -42,37 +42,45 @@ MAT::ELASTIC::CoupMooneyRivlin::CoupMooneyRivlin(MAT::ELASTIC::PAR::CoupMooneyRi
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupMooneyRivlin::AddCoefficientsPrincipal(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<8,1>& delta,
-  const LINALG::Matrix<3,1>& prinv
-  )
-{
 
-   // determinant of deformation gradient
-  const double detf = std::sqrt(prinv(2));
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupMooneyRivlin::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
+{
 
   const double c1 = params_ -> c1_;
   const double c2 = params_ -> c2_;
   const double c3 = params_ -> c3_;
 
+  // strain energy: Psi = c_1 (I1 - 3)  +  c_2 (I2 - 3)  -  (2 c_1 + 4 c_2) ln(J) + c_3 * (J - 1)^2
+  // add to overall strain energy
 
+  psi += c1*(prinv(0)-3.) + c2*(prinv(1)-3.) - (2.*c1+4.*c2)*log(sqrt(prinv(2))) + c3*pow((sqrt(prinv(2))-1.),2.);
 
+}
 
-  gamma(0) += 2.*(c1+c2*prinv(0));
-  gamma(1) -= 2.*c2;
-  gamma(2) += 2.*c3*detf*(detf-1.)-2.*(c1+2.*c2);
+/*----------------------------------------------------------------------
+ *                                                       birzle 12/2014 */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupMooneyRivlin::AddDerivativesPrincipal(
+    LINALG::Matrix<3,1>& dPI,
+    LINALG::Matrix<6,1>& ddPII,
+    const LINALG::Matrix<3,1>& prinv
+)
+{
+  const double c1 = params_ -> c1_;
+  const double c2 = params_ -> c2_;
+  const double c3 = params_ -> c3_;
 
-  delta(0) += 4.*c2;
-  delta(5) += 2.*c3*detf*(2.0*detf-1.);
-  delta(6) -= 2.*(2.*c3*detf*(detf-1.)-2.*(c1+2.*c2));
-  delta(7) -= 4.*c2;
+  dPI(0) += c1;
+  dPI(1) += c2;
+  dPI(2) += c3*(1-std::pow(prinv(2),-0.5)) - (c1+2.*c2)*std::pow(prinv(2),-1.);
+
+  ddPII(2) += (c1+2*c2)*std::pow(prinv(2),-2.) + 0.5*c3*std::pow(prinv(2),-1.5);
 
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*/

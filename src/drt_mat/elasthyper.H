@@ -281,78 +281,121 @@ private:
       LINALG::Matrix<6,1>& icg,
       LINALG::Matrix<6,6>& id4,
       LINALG::Matrix<6,6>& id4sharp,
-      LINALG::Matrix<3,1>& prinv,
-      LINALG::Matrix<3,1>& modinv);
+      LINALG::Matrix<3,1>& prinv);
 
-    /// calculates the factors associated to the hyperelastic laws
-    virtual void EvaluateGammaDelta(
-        LINALG::Matrix<3,1> prinv,
-        LINALG::Matrix<3,1> modinv,
-        LINALG::Matrix<3,1>& gamma,
-        LINALG::Matrix<8,1>& delta,
-        LINALG::Matrix<3,1>& modgamma,
-        LINALG::Matrix<5,1>& moddelta
+    /// calculates the derivatives of the hyperelastic laws with respect to the (modified) invariants
+    virtual void EvaluateInvariantDerivatives(
+        const LINALG::Matrix<3,1>& prinv,
+        LINALG::Matrix<3,1>& dPI,
+        LINALG::Matrix<6,1>& ddPII
         );
 
-//    /// calculates the derivations of the hyperelastic laws with respect to the (modified) invariants
-//    virtual void EvaluateInvariantDerivations(
-//        const LINALG::Matrix<3,1>& prinv,
-//        const LINALG::Matrix<3,1>& modinv,
-//        LINALG::Matrix<3,1>& dPI,
-//        LINALG::Matrix<6,1>& ddPII,
-//        LINALG::Matrix<3,1>& dPmodI,
-//        LINALG::Matrix<6,1>& ddPmodII
-//        );
+    /// converts the derivatives with respect to the modified invariants in derivatives with respect to principal invariants.
+    /// Uses the following conversions:
+    ///\f[
+    ///  \overline{I}_{\boldsymbol{C}} = J^{-2/3} I_{\boldsymbol{C}},
+    ///\f]
+    ///\f[
+    ///  \overline{II}_{\boldsymbol{C}} = J^{-4/3} II_{\boldsymbol{C}},
+    ///\f]
+    ///\f[
+    ///  J = \sqrt{III_{\boldsymbol{C}}}
+    ///\f]
 
-//    /// converts the derivations with respect to the modified invariants in derivations with respect to principal invariants
-//    virtual void ConvertModToPrinc(
-//        const LINALG::Matrix<3,1>& prinv,
-//        const LINALG::Matrix<3,1>& dPmodI,
-//        const LINALG::Matrix<6,1>& ddPmodII,
-//        LINALG::Matrix<3,1>& dPI,
-//        LINALG::Matrix<6,1>& ddPII
-//        );
+    virtual void ConvertModToPrinc(
+        const LINALG::Matrix<3,1>& prinv,
+        const LINALG::Matrix<3,1>& dPmodI,
+        const LINALG::Matrix<6,1>& ddPmodII,
+        LINALG::Matrix<3,1>& dPI,
+        LINALG::Matrix<6,1>& ddPII
+        );
 
-//    /// calculates the isotropic stress and elasticity tensor
-//    virtual void EvaluateIsotropicStressCmat(
-//        LINALG::Matrix<6,1>& stress,
-//        LINALG::Matrix<6,6>& cmat,
-//        LINALG::Matrix<6,1> scg,
-//        LINALG::Matrix<6,1> id2,
-//        LINALG::Matrix<6,1> icg,
-//        LINALG::Matrix<6,6> id4sharp,
-//        LINALG::Matrix<3,1> prinv,
-//        LINALG::Matrix<3,1> dPI,
-//        LINALG::Matrix<6,1> ddPII
-//        );
+    /// calculate coefficients gamma and delta from partial derivatives w.r.t. invariants.
+    /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based
+    /// on the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol{C}},III_{\boldsymbol{C}})\f$
+    /// in which the principal invariants of the right Cauchy-Green tensor \f$\boldsymbol{C}\f$
+    /// are the arguments, cf. Holzapfel [1],
+    ///\f[
+    ///  I_{\boldsymbol{C}} = C_{AA},
+    ///  \quad
+    ///  II_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - \mathrm{trace}(\boldsymbol{C}^2) \big),
+    ///  \quad
+    ///  III_{\boldsymbol{C}} = \det(\boldsymbol{C})
+    ///\f]
+    ///
+    /// cf. Holzapfel [1], p. 216 (6.32) and p. 248
+    ///\f[
+    ///  \bold{S} = \gamma_1 \ \bold{Id} + \gamma_2 \ \bold{C} + \gamma_3 \ \bold{C}^{-1}
+    ///\f]
+    ///\f[
+    /// \gamma_1 = 2\left( \frac{\partial \Psi}{\partial I_{\boldsymbol{C}}}
+    ///          + I_{\boldsymbol{C}}\frac{\partial \Psi}{\partial II_{\boldsymbol{C}}} \right);
+    ///\f]
+    ///\f[
+    /// \gamma_2 = -2\frac{\partial \Psi}{\partial II_{\boldsymbol{C}}};
+    ///\f]
+    ///\f[
+    /// \gamma_3 = 2III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}};
+    ///\f]
+    ///
+    /// material constitutive tensor coefficients
+    /// cf. Holzapfel [1], p. 261
+    ///\f[
+    ///  \mathbb{C} = \delta_1 \left( \bold{Id} \otimes \bold{Id} \right) + \delta_2 \left( \bold{Id} \otimes \bold{C} + \bold{C} \otimes \bold{Id} \right)
+    ///  + \delta_3 \left( \bold{Id} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{Id} \right) + \delta_4 \left( \bold{C} \otimes \bold{C} \right)
+    ///  + \delta_5 \left( \bold{C} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{C} \right) + \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
+    ///  + \delta_7 \mathbb{P}
+    ///\f]
+    ///\f[
+    /// \delta_1 = 4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}}^2}
+    ///          + 2 Ic \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
+    ///          + \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
+    ///          + I_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} \right)
+    ///\f]
+    ///\f[
+    /// \delta_2 = -4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
+    ///          + I_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} \right)
+    ///\f]
+    ///\f[
+    /// \delta_3 = 4\left( III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}}
+    ///          + I_{\boldsymbol{C}} III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial IIc \partial III_{\boldsymbol{C}}} \right)
+    ///\f]
+    ///\f[
+    /// \delta_4 = 4\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2}
+    ///\f]
+    ///\f[
+    /// \delta_5 = -4 III_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}}
+    ///\f]
+    ///\f[
+    /// \delta_6 = 4\left( III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}}
+    ///          + III_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial III_{\boldsymbol{C}}^2} \right)
+    ///\f]
+    ///\f[
+    /// \delta_7 = -4 III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}}
+    ///\f]
+    ///\f[
+    /// \delta_8 = -4 \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
+    ///\f]
 
-    /// calculates the isotropic stress and elasticity tensor for coupled configuration
-    virtual void EvaluateIsotropicPrinc(
-        LINALG::Matrix<6,1>& stressisoprinc,
-        LINALG::Matrix<6,6>& cmatisoprinc,
+    virtual void CalculateGammaDelta(
+        LINALG::Matrix<3,1>& gamma,
+        LINALG::Matrix<8,1>& delta,
+        const LINALG::Matrix<3,1>& prinv,
+        const LINALG::Matrix<3,1>& dPI,
+        const LINALG::Matrix<6,1>& ddPII
+        );
+
+    /// calculates the isotropic stress and elasticity tensor
+    virtual void EvaluateIsotropicStressCmat(
+        LINALG::Matrix<6,1>& stress,
+        LINALG::Matrix<6,6>& cmat,
         LINALG::Matrix<6,1> scg,
         LINALG::Matrix<6,1> id2,
         LINALG::Matrix<6,1> icg,
         LINALG::Matrix<6,6> id4sharp,
-        LINALG::Matrix<3,1> gamma,
-        LINALG::Matrix<8,1> delta
-        );
-
-    /// calculates the isotropic stress and elasticity tensor for decoupled configuration
-    virtual void EvaluateIsotropicMod(
-        LINALG::Matrix<6,1>& stressisomodiso,
-        LINALG::Matrix<6,1>& stressisomodvol,
-        LINALG::Matrix<6,6>& cmatisomodiso,
-        LINALG::Matrix<6,6>& cmatisomodvol,
-        LINALG::Matrix<6,1> rcg,
-        LINALG::Matrix<6,1> id2,
-        LINALG::Matrix<6,1> icg,
-        LINALG::Matrix<6,6> id4,
-        LINALG::Matrix<6,6> id4sharp,
-        LINALG::Matrix<3,1> modinv,
         LINALG::Matrix<3,1> prinv,
-        LINALG::Matrix<3,1> modgamma,
-        LINALG::Matrix<5,1> moddelta
+        LINALG::Matrix<3,1> dPI,
+        LINALG::Matrix<6,1> ddPII
         );
 
     /// calculates the anisotropic stress and elasticity tensor for coupled configuration

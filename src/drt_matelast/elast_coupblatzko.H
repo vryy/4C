@@ -91,7 +91,7 @@ namespace ELASTIC
   ///\f]
   ///
   /// \f[
-  ///    with \ \beta=\nu-0.5
+  ///    with \ \beta = \ nue/(1. - 2.*nue)
   /// \f]
   ///
   ///
@@ -113,11 +113,18 @@ namespace ELASTIC
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupblatzko; }
     //@}
 
-    /// Add principal coeffiencts.
-    virtual void AddCoefficientsPrincipal(
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+    // add strain energy
+    virtual void AddStrainEnergy(
+        double& psi,                      ///< strain energy function
+        const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
+    );
+
+
+    virtual void AddDerivativesPrincipal(
+        LINALG::Matrix<3,1>& dPI, ///< first derivative with respect to invariants
+        LINALG::Matrix<6,1>& ddPII, ///< second derivative with respect to invariants
+        const LINALG::Matrix<3,1>& prinv ///< principal invariants of right Cauchy-Green tensor
     );
 
     /// @name Access methods

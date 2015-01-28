@@ -45,29 +45,45 @@ MAT::ELASTIC::Coup2Pow::Coup2Pow(MAT::ELASTIC::PAR::Coup2Pow* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::Coup2Pow::AddCoefficientsPrincipal(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<8,1>& delta,
-  const LINALG::Matrix<3,1>& prinv
-  )
+void MAT::ELASTIC::Coup2Pow::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
 {
+  // material Constants c and beta
+  const double c = params_->c_;
+  const int d = params_->d_;
 
+  // strain energy: Psi = C (II_{\boldsymbol{C}}-3)^D
+  // add to overall strain energy
+  psi += c * pow((prinv(1) - 3.),d);
+
+}
+
+
+
+/*----------------------------------------------------------------------
+ *                                                       birzle 12/2014 */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::Coup2Pow::AddDerivativesPrincipal(
+    LINALG::Matrix<3,1>& dPI,
+    LINALG::Matrix<6,1>& ddPII,
+    const LINALG::Matrix<3,1>& prinv
+)
+{
   const double c = params_ -> c_;
-  const    int d = params_ -> d_;
-
+  const int    d = params_ -> d_;
 
   // If d<2 the material model is not stress free in the reference configuration
   if (d<2)
     dserror("The Elast_Coup2Pow - material only works for positive integer exponents, which are larger than two.");
 
+  dPI(1) += c*d*pow((prinv(1)-3.),d-1.);
 
-  gamma(0) += 2.*prinv(0)*c*d*pow((prinv(1)-3),d-1);
-  gamma(1) -= 2.*c*d*pow((prinv(1)-3),d-1);
-
-  delta(0) += 4*c*d*pow((prinv(1)-3),d-1)+4.*prinv(0)*prinv(0)*c*d*(d-1)*pow((prinv(1)-3),d-2);
-  delta(1) -= 4.*prinv(0)*c*d*(d-1)*pow((prinv(1)-3),d-2);
-  delta(3) += 4*c*d*(d-1)*pow((prinv(1)-3),d-2);
-  delta(7) -= 4*c*d*pow((prinv(1)-3),d-1);
+  if (d==2)
+    ddPII(1) += (c*d*d-c*d);
+  else
+    ddPII(1) += (c*d*d-c*d)*pow((prinv(1)-3.),d-2.);
 
 
   return;
@@ -75,3 +91,6 @@ void MAT::ELASTIC::Coup2Pow::AddCoefficientsPrincipal(
 
 
 /*----------------------------------------------------------------------*/
+
+
+

@@ -478,7 +478,8 @@ void MAT::ElastHyper::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
   LINALG::Matrix<3,1> modinv(true);
 
   // evaluate kinematic quantities
-  EvaluateKinQuant(glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv);
+  EvaluateKinQuant(glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv);
+  InvariantsModified(modinv,prinv);
 
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
@@ -627,7 +628,6 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                                LINALG::Matrix<6,6>* cmat,
                                const int eleGID)
 {
-
   LINALG::Matrix<6,1> id2(true) ;
   LINALG::Matrix<6,1> rcg(true) ;
   LINALG::Matrix<6,1> scg(true) ;
@@ -636,15 +636,11 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   LINALG::Matrix<6,6> id4sharp(true) ;
 
   LINALG::Matrix<3,1> prinv(true);
-  LINALG::Matrix<3,1> modinv(true);
+  LINALG::Matrix<3,1> dPI(true);
+  LINALG::Matrix<6,1> ddPII(true);
 
-  LINALG::Matrix<3,1> gamma(true);
-  LINALG::Matrix<8,1> delta(true);
-  LINALG::Matrix<3,1> modgamma(true);
-  LINALG::Matrix<5,1> moddelta(true);
-
-  EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv);
-  EvaluateGammaDelta(prinv,modinv,gamma,delta,modgamma,moddelta);
+  EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -652,28 +648,13 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   cmat->Clear();
 
   // build stress response and elasticity tensor
-  // for potentials based on principal invariants
-  if (isoprinc_)
-  {
-    LINALG::Matrix<NUM_STRESS_3D,1> stressisoprinc(true) ;
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisoprinc(true) ;
-    EvaluateIsotropicPrinc(stressisoprinc,cmatisoprinc,scg,id2,icg,id4sharp,gamma,delta);
-    stress->Update(1.0, stressisoprinc, 1.0);
-    cmat->Update(1.0,cmatisoprinc,1.0);
-  }
+  LINALG::Matrix<NUM_STRESS_3D,1> stressiso(true) ;
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatiso(true) ;
 
-  if (isomod_)
-  {
-    LINALG::Matrix<NUM_STRESS_3D,1> stressisomodiso(true) ;
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodiso(true);
-    LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvol(true) ;
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvol(true) ;
-    EvaluateIsotropicMod(stressisomodiso,stressisomodvol,cmatisomodiso,cmatisomodvol,rcg,id2,icg,id4,id4sharp,modinv,prinv,modgamma,moddelta);
-    stress->Update(1.0, stressisomodiso, 1.0);
-    stress->Update(1.0, stressisomodvol, 1.0);
-    cmat->Update(1.0,cmatisomodiso,1.0);
-    cmat->Update(1.0,cmatisomodvol,1.0);
-  }
+  EvaluateIsotropicStressCmat(stressiso,cmatiso,scg,id2,icg,id4sharp,prinv,dPI,ddPII);
+
+  stress->Update(1.0, stressiso, 1.0);
+  cmat->Update(1.0,cmatiso,1.0);
 
   /*----------------------------------------------------------------------*/
   // coefficients in principal stretches
@@ -716,8 +697,7 @@ void MAT::ElastHyper::EvaluateKinQuant(
     LINALG::Matrix<6,1>& icg,
     LINALG::Matrix<6,6>& id4,
     LINALG::Matrix<6,6>& id4sharp,
-    LINALG::Matrix<3,1>& prinv,
-    LINALG::Matrix<3,1>& modinv)
+    LINALG::Matrix<3,1>& prinv)
 
 {
   // build Cartesian identity 2-tensor I_{AB}
@@ -760,166 +740,164 @@ void MAT::ElastHyper::EvaluateKinQuant(
   //         columns are strain-like 6-Voigt
   for (int i=0; i<6; i++) id4(i,i) = 1.0;
 
-  // modified invariants of right Cauchy-Green strain
-  InvariantsModified(modinv,prinv);
 }
 
+/*----------------------------------------------------------------------/
+ * Reads derivatives with respect to invariants and modified invariants
+ * from all materials of the elasthyper-toolbox          birzle 11/2014 */
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateGammaDelta(
-    LINALG::Matrix<3,1> prinv,
-    LINALG::Matrix<3,1> modinv,
-    LINALG::Matrix<3,1>& gamma,
-    LINALG::Matrix<8,1>& delta,
-    LINALG::Matrix<3,1>& modgamma,
-    LINALG::Matrix<5,1>& moddelta
+void MAT::ElastHyper::EvaluateInvariantDerivatives(
+    const LINALG::Matrix<3,1>& prinv,
+    LINALG::Matrix<3,1>& dPI,
+    LINALG::Matrix<6,1>& ddPII
     )
 
 {
-  // principal coefficients
+  // derivatives of principal materials
   if (isoprinc_)
   {
     // loop map of associated potential summands
     for (unsigned int p=0; p<potsum_.size(); ++p)
     {
-      potsum_[p]->AddCoefficientsPrincipal(gamma,delta,prinv);
+      potsum_[p]->AddDerivativesPrincipal(dPI,ddPII,prinv);
     }
   }
 
-  // modified coefficients
+  // derivatives of decoupled (volumetric or isochoric) materials
   if (isomod_)
   {
-
+    LINALG::Matrix<3,1> modinv;
+    InvariantsModified(modinv,prinv);
+    LINALG::Matrix<3,1> dPmodI;
+    LINALG::Matrix<6,1> ddPmodII;
     // loop map of associated potential summands
     for (unsigned int p=0; p<potsum_.size(); ++p)
     {
-      potsum_[p]->AddCoefficientsModified(modgamma,moddelta,modinv);
+      potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv);
     }
+    // convert decoupled derivatives to principal derivatives
+    ConvertModToPrinc(prinv,dPmodI,ddPmodII,dPI,ddPII);
   }
 }
 
+
+/*----------------------------------------------------------------------/
+ * Converts derivatives with respect to modified invariants in derivatives
+ * with respect to principal invariants                 birzle 11/2014  */
 /*----------------------------------------------------------------------*/
+void MAT::ElastHyper::ConvertModToPrinc(
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& dPmodI,
+    const LINALG::Matrix<6,1>& ddPmodII,
+    LINALG::Matrix<3,1>& dPI,
+    LINALG::Matrix<6,1>& ddPII
+    )
+{
+
+  // Conversions to dPI
+  dPI(0) += std::pow(prinv(2),-1./3.)*dPmodI(0);
+  dPI(1) += std::pow(prinv(2),-2./3.)*dPmodI(1);
+  dPI(2) += 0.5*std::pow(prinv(2),-0.5)*dPmodI(2) - 1./3.*prinv(0)*std::pow(prinv(2),-4./3.)*dPmodI(0)
+      - 2./3.*prinv(1)*std::pow(prinv(2),-5./3.)*dPmodI(1);
+
+  // Conversions to ddPII
+  ddPII(0) += std::pow(prinv(2),-2./3.)*ddPmodII(0);
+  ddPII(1) += std::pow(prinv(2),-4./3.)*ddPmodII(1);
+  ddPII(2) += (1./9.)*std::pow(prinv(2),-8./3.)*prinv(0)*prinv(0)*ddPmodII(0)
+      + (4./9.)*prinv(0)*prinv(1)*std::pow(prinv(2),-3.)*ddPmodII(5) - (1./3.)*std::pow(prinv(2),-11./6.)*prinv(0)*ddPmodII(4)
+      + (4./9.)*std::pow(prinv(2),-7./3.)*prinv(0)*dPmodI(0) + (4./9.)*std::pow(prinv(2),-10./3.)*prinv(1)*prinv(1)*ddPmodII(1)
+      - (2./3.)*std::pow(prinv(2),-13./6.)*prinv(1)*ddPmodII(3) + (10./9.)*std::pow(prinv(2),-8./3.)*prinv(1)*dPmodI(1)
+      + 0.25*std::pow(prinv(2),-1.)*ddPmodII(2) - 0.25*std::pow(prinv(2),-1.5)*dPmodI(2);
+  ddPII(3) += -(1./3.)*std::pow(prinv(2),-2.)*prinv(0)*ddPmodII(5) - (2./3.)*std::pow(prinv(2),-7./3.)*prinv(1)*ddPmodII(1)
+          + 0.5*std::pow(prinv(2),-7./6.)*ddPmodII(3) - (2./3.)*std::pow(prinv(2),-5./3.)*dPmodI(1);
+  ddPII(4) += -(1./3.)*std::pow(prinv(2),-5./3.)*prinv(0)*ddPmodII(0) - (2./3.)*std::pow(prinv(2),-2.)*prinv(1)*ddPmodII(5)
+  + 0.5*std::pow(prinv(2),-5./6.)*ddPmodII(4) - (1./3.)*std::pow(prinv(2),-4./3.)*dPmodI(0);
+  ddPII(5) += std::pow(prinv(2),-1.)*ddPmodII(5);
+
+}
+
+/*----------------------------------------------------------------------*
+ * Calculate the coefficients gamma and delta from the partial          *
+ * derivatives w.r.t. invariants                           seitz 01/15  *
+ *----------------------------------------------------------------------*/
+void MAT::ElastHyper::CalculateGammaDelta(
+        LINALG::Matrix<3,1>& gamma,
+        LINALG::Matrix<8,1>& delta,
+        const LINALG::Matrix<3,1>& prinv,
+        const LINALG::Matrix<3,1>& dPI,
+        const LINALG::Matrix<6,1>& ddPII)
+{
+  // according to Holzapfel-Nonlinear Solid Mechanics p. 216
+  gamma(0) = 2.*(dPI(0)+prinv(0)*dPI(1));
+  gamma(1) = -2.*dPI(1);
+  gamma(2) = 2.*prinv(2)*dPI(2);
+
+  // according to Holzapfel-Nonlinear Solid Mechanics p. 261
+  delta(0) = 4.*(ddPII(0) +2.*prinv(0)*ddPII(5) +dPI(1) +prinv(0)*prinv(0)*ddPII(1));
+  delta(1) = -4.*(ddPII(5) +prinv(0)*ddPII(1));
+  delta(2) = 4.*(prinv(2)*ddPII(4) +prinv(0)*prinv(2)*ddPII(3));
+  delta(3) = 4.*ddPII(1);
+  delta(4) = -4.*prinv(2)*ddPII(3);
+  delta(5) = 4.*(prinv(2)*dPI(2) +prinv(2)*prinv(2)*ddPII(2));
+  delta(6) = -4.*prinv(2)*dPI(2);
+  delta(7) = -4.*dPI(1);
+
+  return;
+}
+
+/*----------------------------------------------------------------------
+ * Evaluates the 2nd Piola-Kirchhoff Stress and constitutive tensor
+ * with use of first and second derivatives according to invariants;
+ * use principal calculation for all materials, as modified material
+ * derivatives are converted before
+ *                                                       birzle 11/2014 */
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateIsotropicPrinc(
-    LINALG::Matrix<6,1>& stressisoprinc,
-    LINALG::Matrix<6,6>& cmatisoprinc,
+void MAT::ElastHyper::EvaluateIsotropicStressCmat(
+    LINALG::Matrix<6,1>& stress,
+    LINALG::Matrix<6,6>& cmat,
     LINALG::Matrix<6,1> scg,
     LINALG::Matrix<6,1> id2,
     LINALG::Matrix<6,1> icg,
     LINALG::Matrix<6,6> id4sharp,
-    LINALG::Matrix<3,1> gamma,
-    LINALG::Matrix<8,1> delta
-    )
-{
-
-  // 2nd Piola Kirchhoff stresses
-  stressisoprinc.Update(gamma(0), id2, 1.0);
-  stressisoprinc.Update(gamma(1), scg, 1.0);
-  stressisoprinc.Update(gamma(2), icg, 1.0);
-
-  // constitutive tensor
-  // contribution: Id \otimes Id
-  cmatisoprinc.MultiplyNT(delta(0), id2, id2, 1.0);
-  // contribution: Id \otimes C + C \otimes Id
-  cmatisoprinc.MultiplyNT(delta(1), id2, scg, 1.0);
-  cmatisoprinc.MultiplyNT(delta(1), scg, id2, 1.0);
-  // contribution: Id \otimes Cinv + Cinv \otimes Id
-  cmatisoprinc.MultiplyNT(delta(2), id2, icg, 1.0);
-  cmatisoprinc.MultiplyNT(delta(2), icg, id2, 1.0);
-  // contribution: C \otimes C
-  cmatisoprinc.MultiplyNT(delta(3), scg, scg, 1.0);
-  // contribution: C \otimes Cinv + Cinv \otimes C
-  cmatisoprinc.MultiplyNT(delta(4), scg, icg, 1.0);
-  cmatisoprinc.MultiplyNT(delta(4), icg, scg, 1.0);
-  // contribution: Cinv \otimes Cinv
-  cmatisoprinc.MultiplyNT(delta(5), icg, icg, 1.0);
-  // contribution: Cinv \odot Cinv
-  AddtoCmatHolzapfelProduct(cmatisoprinc, icg, delta(6));
-  // contribution: Id4^#
-  cmatisoprinc.Update(delta(7), id4sharp, 1.0);
-
-  return ;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateIsotropicMod(
-    LINALG::Matrix<6,1>& stressisomodiso,
-    LINALG::Matrix<6,1>& stressisomodvol,
-    LINALG::Matrix<6,6>& cmatisomodiso,
-    LINALG::Matrix<6,6>& cmatisomodvol,
-    LINALG::Matrix<6,1> rcg,
-    LINALG::Matrix<6,1> id2,
-    LINALG::Matrix<6,1> icg,
-    LINALG::Matrix<6,6> id4,
-    LINALG::Matrix<6,6> id4sharp,
-    LINALG::Matrix<3,1> modinv,
     LINALG::Matrix<3,1> prinv,
-    LINALG::Matrix<3,1> modgamma,
-    LINALG::Matrix<5,1> moddelta
+    LINALG::Matrix<3,1> dPI,
+    LINALG::Matrix<6,1> ddPII
     )
 {
-  // define necessary variables
-  const double modscale = std::pow(prinv(2),-1./3.);
-  // modified right Cauchy-Green
-  LINALG::Matrix<6,1> modrcg(true);
-  modrcg.Update(modscale,rcg);
-  LINALG::Matrix<6,1> modscg(modrcg);
-  for (int i=3; i<6; ++i) modscg(i) *=.5;
-  LINALG::Matrix<6,1> scg(rcg);
-  for (int i=3; i<6; ++i) scg(i)*=.5;
+  // 2nd Piola Kirchhoff stress factors (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
+  LINALG::Matrix<3,1> gamma(true);
+  // constitutive tensor factors (according to Holzapfel-Nonlinear Solid Mechanics p. 261)
+  LINALG::Matrix<8,1> delta(true);
 
-  // 2nd Piola Kirchhoff stresses
+  // compose coefficients
+  CalculateGammaDelta(gamma,delta,prinv,dPI,ddPII);
 
-  // isochoric contribution
-  LINALG::Matrix<6,1> modstress(true);
-  modstress.Update(modgamma(0), id2);
-  modstress.Update(modgamma(1), modscg, 1.0);
-  // build 4-tensor for projection as 6x6 tensor
-  LINALG::Matrix<6,6> Projection;
-  Projection.MultiplyNT(1./3., icg, rcg);
-  Projection.Update(1.0, id4, -1.0);
-  // isochoric stress
-  LINALG::Matrix<6,1> isostress(true);
-  stressisomodiso.MultiplyNN(modscale,Projection,modstress,1.0);
-
-  // volumetric contribution
-  stressisomodvol.Update(modgamma(2)*modinv(2), icg, 1.0);
+  // 2nd Piola Kirchhoff stress
+  stress.Update(gamma(0), id2, 1.0);
+  stress.Update(gamma(1), scg, 1.0);
+  stress.Update(gamma(2), icg, 1.0);
 
   // constitutive tensor
-
-  //isochoric contribution
-  // modified constitutive tensor
-  LINALG::Matrix<6,6> modcmat(true);
-  LINALG::Matrix<6,6> modcmat2(true);
   // contribution: Id \otimes Id
-  modcmat.MultiplyNT(moddelta(0), id2, id2);
+  cmat.MultiplyNT(delta(0), id2, id2, 1.0);
   // contribution: Id \otimes C + C \otimes Id
-  modcmat.MultiplyNT(moddelta(1), id2, modscg, 1.0);
-  modcmat.MultiplyNT(moddelta(1), modscg, id2, 1.0);
+  cmat.MultiplyNT(delta(1), id2, scg, 1.0);
+  cmat.MultiplyNT(delta(1), scg, id2, 1.0);
+  // contribution: Id \otimes Cinv + Cinv \otimes Id
+  cmat.MultiplyNT(delta(2), id2, icg, 1.0);
+  cmat.MultiplyNT(delta(2), icg, id2, 1.0);
   // contribution: C \otimes C
-  modcmat.MultiplyNT(moddelta(2), modscg, modscg, 1.0);
+  cmat.MultiplyNT(delta(3), scg, scg, 1.0);
+  // contribution: C \otimes Cinv + Cinv \otimes C
+  cmat.MultiplyNT(delta(4), scg, icg, 1.0);
+  cmat.MultiplyNT(delta(4), icg, scg, 1.0);
+  // contribution: Cinv \otimes Cinv
+  cmat.MultiplyNT(delta(5), icg, icg, 1.0);
+  // contribution: Cinv \odot Cinv
+  AddtoCmatHolzapfelProduct(cmat, icg, delta(6));
   // contribution: Id4^#
-  modcmat.Update(moddelta(3), id4sharp, 1.0);
-  //scaling
-  modcmat.Scale(std::pow(modinv(2),-4./3.));
-  //contribution: P:modC:P
-  modcmat2.MultiplyNN(Projection,modcmat);
-  cmatisomodiso.MultiplyNT(1.0,modcmat2,Projection,1.0);
-  // contribution: 2/3*Tr(J^(-2/3)modstress) (Cinv \odot Cinv - 1/3 Cinv \otimes Cinv)
-  modcmat.Clear();
-  modcmat.MultiplyNT(-1.0/3.0,icg,icg);
-  AddtoCmatHolzapfelProduct(modcmat, icg, 1.0);
-  cmatisomodiso.Update(2./3.*std::pow(modinv(2),-2./3.)*modstress.Dot(rcg),modcmat,1.0);
-  //contribution: -2/3 (Cinv \otimes S_iso + S_iso \otimes Cinv)
-  cmatisomodiso.MultiplyNT(-2./3.,icg,stressisomodiso,1.0);
-  cmatisomodiso.MultiplyNT(-2./3.,stressisomodiso,icg,1.0);
+  cmat.Update(delta(7), id4sharp, 1.0);
 
-  //volumetric contribution
-  //contribution: 2 \tilde p Cinv \otimes Cinv
-  cmatisomodvol.MultiplyNT(modinv(2)* moddelta(4),icg,icg,1.0);
-  //contribution: -2 J*p Cinv \odot Cinv
-  AddtoCmatHolzapfelProduct(cmatisomodvol, icg, -2*modinv(2)*modgamma(2));
 
   return ;
 }

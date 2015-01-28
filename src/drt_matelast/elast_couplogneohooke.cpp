@@ -80,24 +80,42 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddShearMod(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupLogNeoHooke::AddCoefficientsPrincipal(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<8,1>& delta,
-  const LINALG::Matrix<3,1>& prinv
-  )
+void MAT::ELASTIC::CoupLogNeoHooke::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
 {
 
-   // ln of determinant of deformation gradient
+  const double    mue=params_->mue_;
+  const double lambda=params_->lambda_;
+
+  // strain energy: Psi = \frac{\mu}{2} (I_{\boldsymbol{C}} - 3)
+  //                     - \mu \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})
+  //                     + \frac{\lambda}{2} \big( \log(\sqrt{I\!I\!I_{\boldsymbol{C}}}) \big)^2
+  // add to overall strain energy
+
+  psi += mue*0.5*(prinv(0)-3.) - mue*log(sqrt(prinv(2))) + lambda*0.5*pow(log(sqrt(prinv(2))),2.);
+}
+
+/*----------------------------------------------------------------------
+ *                                                       birzle 12/2014 */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupLogNeoHooke::AddDerivativesPrincipal(
+    LINALG::Matrix<3,1>& dPI,
+    LINALG::Matrix<6,1>& ddPII,
+    const LINALG::Matrix<3,1>& prinv
+)
+{
+
+  // ln of determinant of deformation gradient
   const double logdetf = std::log(std::sqrt(prinv(2)));
+  const double mue=params_->mue_;
+  const double lambda=params_->lambda_;
 
-  // gammas
-  gamma(0) += params_->mue_;
-  gamma(1) += 0.0;
-  gamma(2) += - params_->mue_ + params_->lambda_ * logdetf;
+  dPI(0) += mue*0.5;
+  dPI(2) += (lambda*logdetf)/(2.*prinv(2))-mue/(2.*prinv(2));
 
-  // deltas
-  delta(5) += params_->lambda_;
-  delta(6) += 2.0 * (params_->mue_ - params_->lambda_ * logdetf);
+  ddPII(2) += lambda/(4.*prinv(2)*prinv(2))+mue/(2.*prinv(2)*prinv(2))-(lambda*logdetf)/(2.*prinv(2)*prinv(2));
 
   return;
 }

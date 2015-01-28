@@ -42,31 +42,49 @@ MAT::ELASTIC::Coup1Pow::Coup1Pow(MAT::ELASTIC::PAR::Coup1Pow* params)
 {
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::Coup1Pow::AddCoefficientsPrincipal(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<8,1>& delta,
-  const LINALG::Matrix<3,1>& prinv
-  )
+void MAT::ELASTIC::Coup1Pow::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
 {
+  // material Constants c and beta
+  const double c = params_->c_;
+  const int d = params_->d_;
 
+  // strain energy: Psi = C (I_{\boldsymbol{C}}-3)^D
+  // add to overall strain energy
+  psi += c * pow((prinv(0) - 3.),d);
+
+}
+
+
+/*----------------------------------------------------------------------
+ *                                                       birzle 12/2014 */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(
+    LINALG::Matrix<3,1>& dPI,
+    LINALG::Matrix<6,1>& ddPII,
+    const LINALG::Matrix<3,1>& prinv
+)
+{
   const double c = params_ -> c_;
-  const    int d = params_ -> d_;
-
+  const int    d = params_ -> d_;
 
   // If d<2 the material model is not stress free in the reference configuration
   if (d<2)
     dserror("The Elast_Coup1Pow - material only works for positive integer exponents, which are larger than two.");
 
+  dPI(0) += c*d*pow((prinv(0)-3.),d-1.);
 
-  gamma(0) += 2.*c*d*pow((prinv(0)-3),d-1);
-
-  delta(0) += 4.*c*d*(d-1)*pow((prinv(0)-3),d-2);
-
+  if (d==2)
+    ddPII(0) += (c*d*d-c*d);
+  else
+    ddPII(0) += (c*d*d-c*d)*pow((prinv(0)-3.),d-2.);
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*/

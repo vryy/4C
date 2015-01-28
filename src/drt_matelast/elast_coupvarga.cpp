@@ -60,6 +60,7 @@ void MAT::ELASTIC::CoupVarga::AddShearMod(
   return;
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupVarga::AddCoefficientsStretchesPrincipal(

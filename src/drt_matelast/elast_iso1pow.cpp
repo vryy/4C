@@ -43,27 +43,49 @@ MAT::ELASTIC::Iso1Pow::Iso1Pow(MAT::ELASTIC::PAR::Iso1Pow* params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::Iso1Pow::AddCoefficientsModified(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<5,1>& delta,
-  const LINALG::Matrix<3,1>& modinv
-  )
+void MAT::ELASTIC::Iso1Pow::AddStrainEnergy(
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
+{
+  // material Constants c and d
+  const double c = params_->c_;
+  const int d = params_->d_;
+
+  // strain energy: Psi = C (\overline{I}_{\boldsymbol{C}}-3)^D
+  // add to overall strain energy
+  psi += c * pow((modinv(0)-3.),d);
+}
+
+
+
+/*----------------------------------------------------------------------
+ *                                                      birzle 11/2014  */
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::Iso1Pow::AddDerivativesModified(
+    LINALG::Matrix<3,1>& dPmodI,
+    LINALG::Matrix<6,1>& ddPmodII,
+    const LINALG::Matrix<3,1>& modinv
+)
 {
 
   const double c = params_ -> c_;
   const    int d = params_ -> d_;
 
-  if (d<=0)
+  if (d<1)
     dserror("The Elast_Iso1Pow - material only works for positive integer exponents larger than one.");
 
-
-  gamma(0) += 2.*c*d*pow((modinv(0)-3),d-1);
-
-  if (d>=2)
-    delta(0) += 4.*c*d*(d-1)*pow((modinv(0)-3),d-2);
+  if (d==1)
+    dPmodI(0) += c*d;
   else
-    delta(0) += 0;
+    dPmodI(0) += c*d*pow(modinv(0)-3.,d-1.);
 
+  if (d==1)
+    ddPmodII(0) += 0.;
+  else if (d==2)
+    ddPmodII(0) += c*d*(d-1.);
+  else
+    ddPmodII(0) += c*d*(d-1.)*pow(modinv(0)-3.,d-2.);
 
   return;
 }

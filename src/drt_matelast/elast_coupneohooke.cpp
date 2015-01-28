@@ -34,6 +34,7 @@ MAT::ELASTIC::PAR::CoupNeoHooke::CoupNeoHooke(
   // Material Constants c and beta
   c_ = youngs_/(4.0*(1.0+nue_));
   beta_ = nue_/(1.0-2.0*nue_);
+
 }
 
 
@@ -47,9 +48,9 @@ MAT::ELASTIC::CoupNeoHooke::CoupNeoHooke(MAT::ELASTIC::PAR::CoupNeoHooke* params
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupNeoHooke::AddStrainEnergy(
-  double& psi,
-  const LINALG::Matrix<3,1>& prinv,
-  const LINALG::Matrix<3,1>& modinv)
+    double& psi,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& modinv)
 {
   // material Constants c and beta
   const double c = params_->c_;
@@ -64,21 +65,23 @@ void MAT::ELASTIC::CoupNeoHooke::AddStrainEnergy(
   psi += psiadd;
 }
 
+
+/*----------------------------------------------------------------------
+ *                                                       birzle 12/2014 */
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupNeoHooke::AddCoefficientsPrincipal(
-  LINALG::Matrix<3,1>& gamma,
-  LINALG::Matrix<8,1>& delta,
-  const LINALG::Matrix<3,1>& prinv
-  )
+void MAT::ELASTIC::CoupNeoHooke::AddDerivativesPrincipal(
+    LINALG::Matrix<3,1>& dPI,
+    LINALG::Matrix<6,1>& ddPII,
+    const LINALG::Matrix<3,1>& prinv
+)
 {
+  const double beta  = params_->beta_;
+  const double c     = params_->c_;
 
-  gamma(0) += 2.*params_->c_;
-  gamma(2) -= 2.*params_->c_*pow(prinv(2),-params_->beta_);
+  dPI(0) += c;
+  dPI(2) -= c * std::pow(prinv(2),-beta -1.);
 
-  delta(5) += 4.*params_->beta_*params_->c_*pow(prinv(2),-params_->beta_);
-  delta(6) += 4.*params_->c_*pow(prinv(2),-params_->beta_);
-
+  ddPII(2) += c*(beta+1.)*std::pow(prinv(2),-beta-2.);
 
   return;
 }
