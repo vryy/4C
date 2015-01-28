@@ -106,6 +106,23 @@ STR::TimAda::TimAda
     AttachFileStepSize();
   }
 
+  // enable restart for adaptive timestepping - however initial timestep size is still read from datfile! (mhv 01/2015)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
+  {
+    // read restart of marching time-integrator and reset initial time and step for adaptive loop
+    tis->ReadRestart(restart);
+    timeinitial_ = tis->TimeOld();
+    timestepinitial_ = tis->StepOld();
+
+    // update variables which depend on initial time and step
+    timedirect_ = Sign(timefinal_-timeinitial_);
+    outsystime_ = timeinitial_+outsysperiod_;
+    outstrtime_ = timeinitial_+outstrperiod_;
+    outenetime_ = timeinitial_+outeneperiod_;
+    outresttime_ = timeinitial_+outrestperiod_;
+  }
+
   return;
 }
 
