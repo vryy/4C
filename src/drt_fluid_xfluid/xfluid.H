@@ -140,9 +140,6 @@ namespace FLD
     void UpdateKrylovSpaceProjection();
     void CheckMatrixNullspace();
 
-    /// update interface fields
-    void UpdateInterfaceFields();
-
     /// return Teuchos::rcp to linear solver
     Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 
@@ -210,9 +207,6 @@ namespace FLD
 
     /// compute interface velocities from function
     void ComputeInterfaceVelocities();
-
-    /// set interface fields from solid fields
-    void SetInterfaceFields();
 
     /// set Dirichlet and Neumann boundary conditions
     void SetDirichletNeumannBC();
@@ -613,15 +607,19 @@ namespace FLD
 
     //--------------- discretization and general algorithm parameters----------------
 
+    //! @name discretizations
+
     //! xfem fluid discretization
     Teuchos::RCP<DRT::DiscretizationXFEM> xdiscret_;
 
+    //! vector of all coupling discretizations, the fluid is coupled with
+    std::vector<Teuchos::RCP<DRT::Discretization> > meshcoupl_dis_;
+
     //! @name general algorithm parameters
-    Teuchos::RCP<DRT::Discretization>      soliddis_;     //! solid discretization
     Teuchos::RCP<DRT::Discretization>      boundarydis_;  //! boundary discretization
 
-    //! holds the initial boundary discretization for crack problems, as the boundary discretization will be replaced, needed for output
-    Teuchos::RCP<DRT::Discretization>      boundarydis_init_output;
+    //@}
+
 
     //---------------------------------input parameters------------------
 
@@ -705,12 +703,6 @@ namespace FLD
 
 
     //---------------------------------output----------------------------
-
-    //! @name output discretization writers
-    Teuchos::RCP<IO::DiscretizationWriter> solid_output_;
-    Teuchos::RCP<IO::DiscretizationWriter> fluid_output_;
-    Teuchos::RCP<IO::DiscretizationWriter> boundary_output_;
-    //@}
 
     // dofset for fluid output
     Teuchos::RCP<DRT::IndependentDofSet>    dofset_out_;
@@ -834,11 +826,6 @@ namespace FLD
     /// grid velocity at timestep n
     Teuchos::RCP<Epetra_Vector>    gridvn_;
 
-    //@}
-
-    //! @name solid-dis state vectors
-    Teuchos::RCP<Epetra_Vector>    solidvelnp_;
-    Teuchos::RCP<Epetra_Vector>    soliddispnp_;
     //@}
 
 

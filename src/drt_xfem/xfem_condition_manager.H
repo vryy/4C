@@ -9,7 +9,7 @@ Maintainer: Benedikt Schott
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
-*------------------------------------------------------------------------------------------------*/
+ *------------------------------------------------------------------------------------------------*/
 
 
 #ifndef XFEM_CONDITION_MANAGER_H_
@@ -30,33 +30,33 @@ Maintainer: Benedikt Schott
 
 namespace DRT
 {
-  class AssembleStrategy;
-  class Condition;
-  class Discretization;
-  class DiscretizationXFEM;
-  class DiscretizationFaces;
-  class Element;
+class AssembleStrategy;
+class Condition;
+class Discretization;
+class DiscretizationXFEM;
+class DiscretizationFaces;
+class Element;
 
-  namespace ELEMENTS
-  {
-    class Fluid;
-    class FluidIntFace;
-  }
+namespace ELEMENTS
+{
+class Fluid;
+class FluidIntFace;
+}
 }
 
 namespace GEO
 {
-  class CutWizard;
+class CutWizard;
 
-  namespace CUT
-  {
-    class SideHandle;
-  }
+namespace CUT
+{
+class SideHandle;
+}
 }
 
 namespace LINALG
 {
-  class SparseMatrix;
+class SparseMatrix;
 }
 
 
@@ -109,7 +109,7 @@ public:
 
   const EleCoupCond & GetCouplingCondition(
       const int gid ///< global element element id w.r.t cutter discretization (bgele->Id for LevelsetCoupling cut and side-Id for MeshCoupling)
-       )
+  )
   {
     int lid = cutter_dis_->ElementColMap()->LID(gid);
     return cutterele_conds_[lid];
@@ -190,7 +190,7 @@ public:
   /// get the side element of the respective boundary discretization
   DRT::Element* GetSide(
       const int sid ///< global side element id w.r.t cutter discretization
-      )
+  )
   {
     return cutter_dis_->gElement(sid);
   }
@@ -206,6 +206,10 @@ public:
 
   /// set state vectors for cutter discretization
   virtual void SetState();
+
+  /// update interface field state vectors
+  virtual void UpdateStateVectors();
+
 
   virtual void GmshOutput(
       const std::string & filename_base,
@@ -272,7 +276,7 @@ protected:
 
 
   //------------------------------- vectors -----------------------------
-//TODO: these vectors are not required for Neumann and WDBC conditions, derive class
+  //TODO: these vectors are not required for Neumann and WDBC conditions, derive class
   //! @name cutter-dis state vectors
   Teuchos::RCP<Epetra_Vector>    ivelnp_;
   Teuchos::RCP<Epetra_Vector>    iveln_;
@@ -447,9 +451,9 @@ public:
 
   /// set levelset field by given vector
   void SetLevelSetField(
-     Teuchos::RCP<const Epetra_Vector> scalaraf,
-     Teuchos::RCP<DRT::Discretization> scatradis
-     );
+      Teuchos::RCP<const Epetra_Vector> scalaraf,
+      Teuchos::RCP<DRT::Discretization> scatradis
+  );
 
   Teuchos::RCP<Epetra_Vector> GetLevelSetField(){ return phinp_; }
 
@@ -529,7 +533,7 @@ public:
 
 
 
-    // build the whole object which then can be used
+  // build the whole object which then can be used
   void Create(const double time);
 
   void Update(const double time); // update the meshcoupling objects (interface displ), update the level-set couplings
@@ -564,23 +568,23 @@ public:
   }
 
   Teuchos::RCP<MeshCoupling> GetMeshCoupling( const int mc_idx)
-  {
+      {
     if(mc_idx < (int)mesh_coupl_.size() and mc_idx >= 0)
       return mesh_coupl_[mc_idx];
 
     return Teuchos::null;
-  }
+      }
 
   Teuchos::RCP<LevelSetCoupling> GetLevelSetCoupling( const int ls_idx)
-  {
+      {
     if(ls_idx < (int)levelset_coupl_.size() and ls_idx >= 0)
       return levelset_coupl_[ls_idx];
 
     return Teuchos::null;
-  }
+      }
 
   Teuchos::RCP<CouplingBase> GetCoupling(const std::string & name)
-  {
+      {
     Teuchos::RCP<CouplingBase> coupling = Teuchos::null;
 
     coupling=GetMeshCoupling(name);
@@ -592,18 +596,18 @@ public:
     if(coupling!=Teuchos::null) return coupling;
 
     return Teuchos::null;
-  }
+      }
 
 
   Teuchos::RCP<MeshCoupling> GetMeshCoupling(const std::string & name)
-  {
+      {
     for(int m=0; m<NumMeshCoupling(); m++)
     {
       if(mesh_coupl_[m]->GetName() == name)
         return mesh_coupl_[m];
     }
     return Teuchos::null;
-  }
+      }
 
   int GetMeshCouplingIndex(const std::string & name)
   {
@@ -616,14 +620,14 @@ public:
   }
 
   Teuchos::RCP<LevelSetCoupling> GetLevelSetCoupling(const std::string & name)
-  {
+      {
     for(int l=0; l<NumLevelSetCoupling(); l++)
     {
       if(levelset_coupl_[l]->GetName() == name)
         return levelset_coupl_[l];
     }
     return Teuchos::null;
-  }
+      }
 
 
   const INPAR::XFEM::CouplingStrategy GetCouplingStrategy(
@@ -659,18 +663,18 @@ public:
     // safety checks
     if(coup_sid < 0)
     {
-//      dserror("invalid negative coupling side id %i", coup_sid);
+      //      dserror("invalid negative coupling side id %i", coup_sid);
       return -1;
     }
     if(levelset_gid_ >= 0 and coup_sid > levelset_gid_ )
     {
-//      dserror("invalid coupling side id %i", coup_sid);
+      //      dserror("invalid coupling side id %i", coup_sid);
       return -1;
     }
 
     if(IsLevelSetCoupling(coup_sid))
     {
-//      dserror("level-set side does not have a cutter discretization. Why do you call this?");
+      //      dserror("level-set side does not have a cutter discretization. Why do you call this?");
       return -1;
     }
 
@@ -678,7 +682,7 @@ public:
     const int num_mesh_coupl = mesh_coupl_.size();
     if(num_mesh_coupl == 0)
     {
-//      dserror("no mesh coupling objects available?!");
+      //      dserror("no mesh coupling objects available?!");
       return -1;
     }
 
@@ -742,7 +746,7 @@ public:
   int NumCoupling(){return (NumMeshCoupling() + NumLevelSetCoupling());}
 
   Teuchos::RCP<CouplingBase> GetCouplingByIdx(const int coup_idx)
-  {
+      {
     if(coup_idx >= NumMeshCoupling())
       return GetLevelSetCoupling(coup_idx-NumMeshCoupling());
     else if(coup_idx >= 0)
@@ -750,7 +754,7 @@ public:
     else return Teuchos::null;
 
     return Teuchos::null;
-  }
+      }
 
 
 
@@ -778,7 +782,7 @@ public:
   /// get the side element of the respective boundary discretization
   DRT::Element* GetSide(
       const int coup_sid ///< the overall global coupling side id
-      )
+  )
   {
     // get the mesh coupling object index
     const int mc_idx =  GetMeshCouplingIndex(coup_sid);
@@ -864,9 +868,9 @@ public:
   {
     switch(cond_type)
     {
-//    case INPAR::XFEM::CouplingCond_XFEMCOUPLING:
-//      return false;
-//      break;
+    //    case INPAR::XFEM::CouplingCond_XFEMCOUPLING:
+    //      return false;
+    //      break;
     case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
     case INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID:
     case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:
@@ -908,6 +912,9 @@ public:
   Teuchos::RCP<const Epetra_Vector> GetLevelSetFieldCol();
 
   void SetState();
+
+  /// update interface field state vectors
+  void UpdateStateVectors();
 
   void CompleteStateVectors();
 

@@ -169,6 +169,10 @@ private:
       int itnum                           ///< iteration number
   );
 
+
+  //TODO: remove it if it is not required anymore
+  Teuchos::RCP<DRT::Discretization> soliddis_;
+
   /// embedded fluid field
   Teuchos::RCP<FLD::FluidImplicitTimeInt> embedded_fluid_;
 

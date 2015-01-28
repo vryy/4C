@@ -69,6 +69,10 @@ void FLD::XFluidFluidNew::Init()
   // set parameters specific for fluid-fluid coupling
   SetXFluidFluidParams();
 
+  if(meshcoupl_dis_.size() != 1) dserror("we expect exact one mesh coupling discretization for Xfluidfluid at the moment!");
+
+  soliddis_ = meshcoupl_dis_[0];
+
   // make the dofset of boundarydis be a subset of the embedded dis
   Teuchos::RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(
       soliddis_,boundarydis_);

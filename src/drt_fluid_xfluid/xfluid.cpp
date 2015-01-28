@@ -1782,18 +1782,21 @@ void FLD::XFluid::GradientPenalty(
  *----------------------------------------------------------------------*/
 FLD::XFluid::XFluid(
     const Teuchos::RCP<DRT::Discretization>&      actdis,
-    const Teuchos::RCP<DRT::Discretization>&      soliddis,
+    const Teuchos::RCP<DRT::Discretization>&      coupdis,
     const Teuchos::RCP<LINALG::Solver>&           solver,
     const Teuchos::RCP<Teuchos::ParameterList>&   params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output,
     bool                                          alefluid /*= false*/)
   : TimInt(actdis, solver, params, output),
     xdiscret_(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(actdis, true)),
-    soliddis_(soliddis),
-    fluid_output_(output_),
     alefluid_(alefluid)
 {
-  //soliddis_ = Teuchos::null;
+  // all discretizations which potentially include mesh-based XFEM coupling/boundary conditions
+  meshcoupl_dis_.clear();
+  meshcoupl_dis_.push_back(coupdis);
+
+  mc_idx_ = 0; // using this constructor only one mesh coupling discretization is supported so far
+
   return;
 }
 
@@ -1850,29 +1853,17 @@ void FLD::XFluid::Init()
   idispnp_ = Teuchos::null;
   idispn_  = Teuchos::null;
 
-
-  //---------------------------------------------------------------------------------------------------------
-  // TODO: this can be already a argument of the constructor
-
-  // all discretizations which potentially include mesh-based XFEM coupling/boundary conditions
-  std::vector<Teuchos::RCP<DRT::Discretization> > meshcoupl_dis;
-  meshcoupl_dis.clear();
-  meshcoupl_dis.push_back(soliddis_);
-
-  mc_idx_ = 0;
-
   // -------------------------------------------------------------------
   // create a Condition/Coupling Manager
   // -------------------------------------------------------------------
-  condition_manager_ = Teuchos::rcp(new XFEM::ConditionManager(discret_, meshcoupl_dis));
+  condition_manager_ = Teuchos::rcp(new XFEM::ConditionManager(discret_, meshcoupl_dis_));
 
   // build the whole object which then can be used
   condition_manager_->Create(time_);
 
 
   if(condition_manager_->HasMeshCoupling())
-  { std::cout << "hasMeshCoupling" << std::endl;
-
+  {
     Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx_);
 
     boundarydis_ = mc_coupl->GetCutterDis();
@@ -1886,16 +1877,11 @@ void FLD::XFluid::Init()
     idispn_  = mc_coupl->IDispn();
 
     InitBoundaryDiscretization();
-
-    std::cout << *boundarydis_ << std::endl;
-
   }
   if(condition_manager_->HasLevelSetCoupling())
   {
-    std::cout << "hasLSCoupling" << std::endl;
     //TODO how to deal with level-set fields after restarts?
     condition_manager_->SetLevelSetField( time_ );
-
   }
 
   Teuchos::RCP<XFEM::LevelSetCoupling> two_phase_coupl = condition_manager_->GetLevelSetCoupling("XFEMLevelsetTwophase");
@@ -1941,14 +1927,6 @@ void FLD::XFluid::Init()
 
   // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
   restart_count_ = 0;
-
-
-  // -------------------------------------------------------------------
-  if(condition_manager_->HasMeshCoupling())
-  {
-    solidvelnp_  = LINALG::CreateVector(*soliddis_->DofRowMap(),true);
-    soliddispnp_ = LINALG::CreateVector(*soliddis_->DofRowMap(),true);
-  }
 
   // -------------------------------------------------------------------
   // GMSH discretization output before CUT
@@ -2006,30 +1984,6 @@ void FLD::XFluid::PrepareOutput()
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
 }
 
-//void FLD::XFluid::PrepareOutputBoundary()
-//{
-//  // -------------------------------------------------------------------
-//  // prepare output
-//  // -------------------------------------------------------------------
-//
-//  boundarydis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_)));
-//
-//  if(DRT::Problem::Instance()->ProblemType() == prb_fsi_crack)
-//  {
-//    // @ Sudhakar
-//    // keep a pointer to the original boundary discretization
-//    // note: for crack problems, the discretization is replaced by new ones during the simulation.
-//    // Paraview output based on changing discretizations is not possible so far.
-//    // To enable at least restarts, the IO::DiscretizationWriter(boundarydis_) has to be kept alive,
-//    // however, in case that the initial boundary dis, used for creating the Writer, is replaced, it will be deleted,
-//    // as now other RCP points to it anymore. Then the functionality of the Writer breaks down. Therefore, we artificially
-//    // hold second pointer to the original boundary dis for Crack-problems.
-//    boundarydis_init_output = boundarydis_;
-//  }
-//
-//  boundary_output_ = boundarydis_->Writer();
-//  boundary_output_->WriteMesh(0,0.0);
-//}
 
 
 void FLD::XFluid::InitBoundaryDiscretization()
@@ -3596,23 +3550,6 @@ void FLD::XFluid::CheckMatrixNullspace()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-
-
-void FLD::XFluid::UpdateInterfaceFields()
-{
-  if(boundarydis_ == Teuchos::null) return; // no interface vectors for levelset
-
-  // update velocity n-1
-  ivelnm_->Update(1.0,*iveln_,0.0);
-
-  // update velocity n
-  iveln_->Update(1.0,*ivelnp_,0.0);
-
-  // update displacement n
-  idispn_->Update(1.0,*idispnp_,0.0);
-}
-
 
 
 /*--------------------------------------------------------------------------*
@@ -3821,18 +3758,18 @@ void FLD::XFluid::TimeUpdate()
 
   if (alefluid_)
   {
-  // displacements of this step becomes most recent
-  // displacements of the last step
-  dispnm_->Update(1.0,*dispn_,0.0);
-  dispn_->Update(1.0,*dispnp_,0.0);
+    // displacements of this step becomes most recent
+    // displacements of the last step
+    dispnm_->Update(1.0,*dispn_,0.0);
+    dispn_->Update(1.0,*dispnp_,0.0);
 
-  // gridvelocities of this step become most recent
-  // gridvelocities of the last step
-  gridvn_->Update(1.0,*gridvnp_,0.0);
+    // gridvelocities of this step become most recent
+    // gridvelocities of the last step
+    gridvn_->Update(1.0,*gridvnp_,0.0);
   }
 
   // update of interface fields (interface velocity and interface displacements)
-  UpdateInterfaceFields();
+  condition_manager_->UpdateStateVectors();
 
 } //XFluid::TimeUpdate()
 
@@ -4987,18 +4924,27 @@ void FLD::XFluid::OutputDiscret()
 
     disToStream(discret_,     "fld",     true, false, true, false, xdis_faces,  false, gmshfilecontent);
 
+    //TODO: shift these routines to MeshCoupling object?
     if(condition_manager_->HasMeshCoupling())
     {
+      Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx_);
+
+      Teuchos::RCP<DRT::Discretization> boundarydis = mc_coupl->GetCutterDis();
+      Teuchos::RCP<DRT::Discretization> soliddis    = mc_coupl->GetCondDis();
+
+      // -------------------------------------------------------------------
+      Teuchos::RCP<Epetra_Vector> soliddispnp = LINALG::CreateVector(*soliddis->DofRowMap(),true);
+
       // compute the current solid and boundary position
       std::map<int,LINALG::Matrix<3,1> >      currsolidpositions;
       std::map<int,LINALG::Matrix<3,1> >      currinterfacepositions;
 
-      ExtractNodeVectors(*soliddis_, soliddispnp_, currsolidpositions);
-      ExtractNodeVectors(*boundarydis_, idispnp_, currinterfacepositions);
+      ExtractNodeVectors(*soliddis, soliddispnp, currsolidpositions);
+      ExtractNodeVectors(*boundarydis, mc_coupl->IDispnp(), currinterfacepositions);
       //TODO: fill the soliddispnp in the XFSI case!
 
-      disToStream(soliddis_,    "str",     true, false, true, false, false, false, gmshfilecontent, &currsolidpositions);
-      disToStream(boundarydis_, "cut",     true, true,  true, true,  false, false, gmshfilecontent, &currinterfacepositions);
+      disToStream(soliddis,    "str",     true, false, true, false, false, false, gmshfilecontent, &currsolidpositions);
+      disToStream(boundarydis, "cut",     true, true,  true, true,  false, false, gmshfilecontent, &currinterfacepositions);
     }
 
     gmshfilecontent.close();
@@ -5107,7 +5053,7 @@ void FLD::XFluid::Output()
   {
 
 
-    fluid_output_->NewStep(step_,time_);
+    output_->NewStep(step_,time_);
 
     const Epetra_Map* dofrowmap  = dofset_out_->DofRowMap(); // original fluid unknowns
     const Epetra_Map* xdofrowmap = discret_->DofRowMap();   // fluid unknown for current cut
@@ -5222,11 +5168,11 @@ void FLD::XFluid::Output()
     // output (hydrodynamic) pressure for visualization
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(outvec_fluid_);
 
-    fluid_output_->WriteVector("velnp", outvec_fluid_);
-    fluid_output_->WriteVector("pressure", pressure);
+    output_->WriteVector("velnp", outvec_fluid_);
+    output_->WriteVector("pressure", pressure);
 
     if (alefluid_)
-      {
+    {
       //write ale displacement for t^{n+1}
       Teuchos::RCP<Epetra_Vector> dispnprm = Teuchos::rcp(new Epetra_Vector(*dispnp_));
       dispnprm->ReplaceMap(outvec_fluid_->Map()); //to get dofs starting by 0 ...
@@ -5241,9 +5187,9 @@ void FLD::XFluid::Output()
       Teuchos::RCP<Epetra_Vector> convvel = Teuchos::rcp(new Epetra_Vector(outvec_fluid_->Map(),true));
       convvel->Update(1.0,*outvec_fluid_,-1.0,*gridvnprm,0.0);
       output_->WriteVector("convel", convvel);
-      }
+    }
 
-    fluid_output_->WriteElementData(firstoutputofrun_);
+    output_->WriteElementData(firstoutputofrun_);
     firstoutputofrun_ = false;
 
     // write restart
@@ -5254,13 +5200,13 @@ void FLD::XFluid::Output()
       restart_count_++;
 
       // velocity/pressure vector
-      fluid_output_->WriteVector("velnp_res",state_->velnp_);
+      output_->WriteVector("velnp_res",state_->velnp_);
 
       // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-      fluid_output_->WriteVector("accnp_res",state_->accnp_);
-      fluid_output_->WriteVector("accn_res",state_->accn_);
-      fluid_output_->WriteVector("veln_res",state_->veln_);
-      fluid_output_->WriteVector("velnm_res",state_->velnm_);
+      output_->WriteVector("accnp_res",state_->accnp_);
+      output_->WriteVector("accn_res",state_->accn_);
+      output_->WriteVector("veln_res",state_->veln_);
+      output_->WriteVector("velnm_res",state_->velnm_);
     }
 
     //-----------------------------------------------------------
@@ -5279,7 +5225,7 @@ void FLD::XFluid::Output()
     {
       if(myrank_ == 0) IO::cout << "\t... Clear MapCache after " << restart_count_ << " written restarts." << IO::endl;
 
-      fluid_output_->ClearMapCache(); // clear the output's map-cache
+      output_->ClearMapCache(); // clear the output's map-cache
       restart_count_ = 0;
     }
 
@@ -6005,20 +5951,6 @@ void FLD::XFluid::ComputeInterfaceVelocities()
   {
     dserror("ComputeInterfaceVelocities should not be called for stationary time integration");
   }
-
-}
-
-/*----------------------------------------------------------------------*
- |  extract interface fields from solid fields             schott 03/12 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::SetInterfaceFields()
-{
-
-    // extract ivelnp from solid velocity
-    LINALG::Export(*(solidvelnp_),*(ivelnp_));
-
-    // extract idispnp from solid displacement
-    LINALG::Export(*(soliddispnp_),*(idispnp_));
 
 }
 

@@ -306,8 +306,9 @@ void XFEM::MeshCoupling::InitStateVectors()
   idispn_  = LINALG::CreateVector(*cutterdofrowmap,true);
 }
 
+
 void XFEM::MeshCoupling::SetState()
-{ std::cout << "set state!" << std::endl;
+{
   // set general vector values of cutterdis needed by background element evaluate routine
   cutter_dis_->ClearState();
 
@@ -316,6 +317,18 @@ void XFEM::MeshCoupling::SetState()
   cutter_dis_->SetState("idispnp",idispnp_);
 }
 
+
+void XFEM::MeshCoupling::UpdateStateVectors()
+{
+  // update velocity n-1
+  ivelnm_->Update(1.0,*iveln_,0.0);
+
+  // update velocity n
+  iveln_->Update(1.0,*ivelnp_,0.0);
+
+  // update displacement n
+  idispn_->Update(1.0,*idispnp_,0.0);
+}
 
 Teuchos::RCP<const Epetra_Vector> XFEM::MeshCoupling::GetCutterDispCol()
 {
@@ -1023,6 +1036,15 @@ void XFEM::ConditionManager::SetState()
   for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
   {
     mesh_coupl_[mc]->SetState();
+  }
+}
+
+void XFEM::ConditionManager::UpdateStateVectors()
+{
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->UpdateStateVectors();
   }
 }
 

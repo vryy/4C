@@ -3043,13 +3043,14 @@ void FLD::XFluidFluid::Update()
 
   state_->xffluidveln_->Update(1.0,*state_->xffluidvelnp_,0.0);
 
-  iveln_->Update(1.0,*ivelnp_,0.0);
-
   if (alefluid_)
   {
     dispnm_->Update(1.0,*dispn_,0.0);
     dispn_->Update(1.0,*dispnp_,0.0);
   }
+
+  // update interface state vectors
+  condition_manager_->UpdateStateVectors();
 
 } //XFluidFluid::Update()
 
