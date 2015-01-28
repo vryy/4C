@@ -574,7 +574,7 @@ void ParticleDomainReader::Partition(int* nodeoffset)
   // safety checks
   for (int i=0; i<3; ++i)
   {
-    if (lower_bound_[i] >= upper_bound_[i])
+    if (lower_bound_[i] > upper_bound_[i])
       dserror("lower bound in domain reader must be smaller than upper bound");
 
     if (interval_[i] <= 0)
@@ -585,7 +585,7 @@ void ParticleDomainReader::Partition(int* nodeoffset)
   int numnewnodes = interval_[0]*interval_[1]*interval_[2];
   rownodes_ = Teuchos::rcp(new Epetra_Map(numnewnodes,*nodeoffset,*comm_));
 
-  // number of nodes per direction
+  // number of particles per direction
   const size_t nx = interval_[0];
   const size_t ny = interval_[1];
   int maxgid = -1;
@@ -604,9 +604,39 @@ void ParticleDomainReader::Partition(int* nodeoffset)
     size_t k = posid/(nx*ny);
 
     double coords[3];
-    coords[0] = static_cast<double>(i)/(interval_[0]-1)*(upper_bound_[0]-lower_bound_[0])+lower_bound_[0];
-    coords[1] = static_cast<double>(j)/(interval_[1]-1)*(upper_bound_[1]-lower_bound_[1])+lower_bound_[1];
-    coords[2] = static_cast<double>(k)/(interval_[2]-1)*(upper_bound_[2]-lower_bound_[2])+lower_bound_[2];
+    // x-direction
+    if(interval_[0] != 1)
+    {
+      coords[0] = static_cast<double>(i)/(interval_[0]-1)*(upper_bound_[0]-lower_bound_[0])+lower_bound_[0];
+    }
+    else
+    {
+      if(fabs(upper_bound_[0]-lower_bound_[0]) > 1.0e-14)
+        dserror("only one layer of particles in z-direction specified --> lower and upper bound must match");
+      coords[0] = lower_bound_[0];
+    }
+    // y-direction
+    if(interval_[1] != 1)
+    {
+      coords[1] = static_cast<double>(j)/(interval_[1]-1)*(upper_bound_[1]-lower_bound_[1])+lower_bound_[1];
+    }
+    else
+    {
+      if(fabs(upper_bound_[1]-lower_bound_[1]) > 1.0e-14)
+        dserror("only one layer of particles in z-direction specified --> lower and upper bound must match");
+      coords[1] = lower_bound_[1];
+    }
+    // z-direction
+    if(interval_[2] != 1)
+    {
+      coords[2] = static_cast<double>(k)/(interval_[2]-1)*(upper_bound_[2]-lower_bound_[2])+lower_bound_[2];
+    }
+    else
+    {
+      if(fabs(upper_bound_[2]-lower_bound_[2]) > 1.0e-14)
+        dserror("only one layer of particles in z-direction specified --> lower and upper bound must match");
+      coords[2] = lower_bound_[2];
+    }
 
     Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(gid,coords,myrank));
 
