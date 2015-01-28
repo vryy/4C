@@ -80,7 +80,9 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
     case INPAR::COMBUST::combusttype_twophaseflowjump:
       IO::cout << "COMBUST::Algorithm: this is a two-phase flow problem with jumps in vel and pres" << IO::endl;
       break;
-    default: dserror("unknown type of combustion problem");
+    default:
+      dserror("unknown type of combustion problem");
+      break;
     }
   }
 
@@ -232,7 +234,7 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   }
 
   // check if ScaTraField()->initialvelset == true
-  /* remark: initial velocity field has been transfered to scalar transport field in constructor of
+  /* remark: initial velocity field has been transferred to scalar transport field in constructor of
    * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
    */
@@ -674,7 +676,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
   fgiter_ = 0;
 
   // check if ScaTraField()->initialvelset == true
-  /* remark: initial velocity field has been transfered to scalar transport field in constructor of
+  /* remark: initial velocity field has been transferred to scalar transport field in constructor of
    * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
    */

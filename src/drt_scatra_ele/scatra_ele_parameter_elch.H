@@ -98,7 +98,7 @@ private:
   //! equation used for closing of the elch-system
   enum INPAR::ELCH::EquPot equpot_;
 
-  //! factor frt
+  //! factor F/RT
   double frt_;
 
   //! flag if current is used as a solution variable

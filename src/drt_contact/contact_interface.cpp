@@ -2360,7 +2360,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(bool& localisincontact,
       lmuzawan += cnode->MoData().lmuzawa()[k]*cnode->MoData().n()[k];
 
 #ifdef CONTACTFDPENALTYKC1
-    // set lagrangian multipliers explicitely to constant
+    // set lagrangian multipliers explicitly to constant
     // and corresponding derivatives to zero
 
     for( int j=0;j<dim;++j)

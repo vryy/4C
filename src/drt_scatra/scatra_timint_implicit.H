@@ -243,7 +243,7 @@ public:
   //! return type of physics we are solving for
   const INPAR::SCATRA::ScaTraType ScaTraType() const { return scatratype_; };
 
-  //! Print information about current time step to screen
+  //! print information about current time step to screen
   virtual void PrintTimeStepInfo();
 
   //! return system matrix as sparse operator
@@ -386,6 +386,9 @@ public:
 
   //! return number of transported scalars
   int NumScal() const { return numscal_; }
+
+  //! return number of dofs per node
+  int NumDofPerNode() const { return numdofpernode_; }
 
   // return scalar field phi at time n-1
   virtual Teuchos::RCP<Epetra_Vector> Phinm() = 0;
@@ -689,7 +692,8 @@ protected:
       double& incpotnorm_L2,
       double& potnorm_L2,
       double& potresnorm,
-      double& conresnorminf);
+      double& conresnorminf
+  );
 
   //! Calculate the reconstructed nodal gradient of phi
   void ReconstructGradientAtNodes(
@@ -735,6 +739,36 @@ protected:
   void OutputFlux(
     Teuchos::RCP<Epetra_MultiVector> flux //!< flux vector
   );
+
+  //! print header of convergence table to screen
+  virtual void PrintConvergenceHeader();
+
+  //! print first line of convergence table to screen
+  virtual void PrintConvergenceValuesFirstIter(
+      const int&              itnum,          //!< current Newton-Raphson iteration step
+      const int&              itemax,         //!< maximum number of Newton-Raphson iteration steps
+      const double&           ittol,          //!< relative tolerance for Newton-Raphson scheme
+      const double&           conresnorm,     //!< L2 norm of concentration residual
+      const double&           potresnorm,     //!< L2 norm of potential residual (only relevant for electrochemistry)
+      const double&           conresnorminf   //!< infinity norm of concentration residual
+  );
+
+  //! print current line of convergence table to screen
+  virtual void PrintConvergenceValues(
+      const int&              itnum,           //!< current Newton-Raphson iteration step
+      const int&              itemax,          //!< maximum number of Newton-Raphson iteration steps
+      const double&           ittol,           //!< relative tolerance for Newton-Raphson scheme
+      const double&           conresnorm,      //!< L2 norm of concentration residual
+      const double&           potresnorm,      //!< L2 norm of potential residual (only relevant for electrochemistry)
+      const double&           incconnorm_L2,   //!< L2 norm of concentration increment
+      const double&           connorm_L2,      //!< L2 norm of concentration state vector
+      const double&           incpotnorm_L2,   //!< L2 norm of potential increment
+      const double&           potnorm_L2,      //!< L2 norm of potential state vector
+      const double&           conresnorminf    //!< infinity norm of concentration residual
+  );
+
+  //! print finish line of convergence table to screen
+  virtual void PrintConvergenceFinishLine();
 
   /*========================================================================*/
   //! @name Time, time-step and related methods
@@ -876,7 +910,7 @@ protected:
   //! LOMA-specific parameter: turbulence model
   INPAR::FLUID::TurbModelAction turbmodel_;
 
-  //! flag indicating scatra-scatra coupling
+  //! flag for scatra-scatra interface coupling
   bool s2icoupling_;
 
   /*--- query and output ---------------------------------------------------*/
@@ -1049,13 +1083,13 @@ protected:
   //! unit outer normal vector field for flux output
   Teuchos::RCP<Epetra_MultiVector> normals_;
 
-  //! The residual vector
+  //! residual vector
   Teuchos::RCP<Epetra_Vector> residual_;
 
   //! true (rescaled) residual vector without zeros at Dirichlet conditions
   Teuchos::RCP<Epetra_Vector> trueresidual_;
 
-  //! Nonlinear iteration increment vector
+  //! nonlinear iteration increment vector
   Teuchos::RCP<Epetra_Vector> increment_;
 
   //! options for meshtying

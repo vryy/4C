@@ -27,9 +27,9 @@ Maintainer: Kei Müller
 #include "../drt_torsion3/torsion3.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-/*------------------------------------------------------------------------------*                                                 |
-| Viscoelasticity ouput                                  (public) mueller 11/12|
-*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*
+| Viscoelasticity output                                  (public) mueller 11/12|
+*-------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::ViscoelasticityOutput(const double&        time,
                                                       const Epetra_Vector& dis,
                                                       const Epetra_Vector& fint,

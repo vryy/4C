@@ -38,12 +38,13 @@ public:
   static ScaTraEleBoundaryCalcElch<distype> * Instance(const int numdofpernode, const int numscal, bool create=true );
 
   /// Empty destructor
-  virtual ~ScaTraEleBoundaryCalcElch() {};
+  virtual ~ScaTraEleBoundaryCalcElch(){return;};
 
   /// called upon destruction
   void Done();
 
 private:
+
   /// private constructor since we are singleton
   ScaTraEleBoundaryCalcElch(const int numdofpernode, const int numscal);
 
@@ -59,9 +60,6 @@ private:
       Epetra_SerialDenseVector&         elevec3_epetra
   );
 
-
-private:
-
   //! evaluate neumann condition
   int EvaluateNeumann(
       DRT::ELEMENTS::TransportBoundary*   ele,
@@ -69,23 +67,35 @@ private:
       DRT::Discretization&                discretization,
       DRT::Condition&                     condition,
       std::vector<int>&                   lm,
-      Epetra_SerialDenseVector&           elevec1);
+      Epetra_SerialDenseVector&           elevec1
+  );
 
   //! evaluate an electrode kinetics boundary condition
   void EvaluateElchBoundaryKinetics(
-     const DRT::Element*          ele,              ///< the actual boundary element
-     Epetra_SerialDenseMatrix&    emat,             ///< element-matrix
-     Epetra_SerialDenseVector&    erhs,             ///< element-rhs
-     const std::vector<double>&   ephinp,           ///< actual conc. and pot. values
-     const std::vector<double>&   ehist,            ///< element history vector
-     double                       timefac,          ///< time factor
-     Teuchos::RCP<const MAT::Material>  material,   ///< the material
-     Teuchos::RCP<DRT::Condition>       cond,       ///< the condition
-     const int                 nume,                ///< number of transfered electrons
-     const std::vector<int>  stoich,                ///< stoichometry of the reaction
-     const int             kinetics,                ///< desired electrode kinetics model
-     const double              pot0,                ///< actual electrode potential on metal side
-     const double               frt                 ///< factor F/RT
+     const DRT::Element*                 ele,        ///< the actual boundary element
+     Epetra_SerialDenseMatrix&           emat,       ///< element-matrix
+     Epetra_SerialDenseVector&           erhs,       ///< element-rhs
+     const std::vector<double>&          ephinp,     ///< actual conc. and pot. values
+     const std::vector<double>&          ehist,      ///< element history vector
+     double                              timefac,    ///< time factor
+     Teuchos::RCP<const MAT::Material>   material,   ///< the material
+     Teuchos::RCP<DRT::Condition>        cond,       ///< the condition
+     const int                           nume,       ///< number of transferred electrons
+     const std::vector<int>              stoich,     ///< stoichiometry of the reaction
+     const int                           kinetics,   ///< desired electrode kinetics model
+     const double                        pot0,       ///< actual electrode potential on metal side
+     const double                        frt         ///< factor F/RT
+  );
+
+  //! evaluate scatra-scatra interface coupling condition
+  void EvaluateS2ICoupling(
+      const DRT::Element*         ele,              ///< current boundary element
+      Teuchos::ParameterList&     params,           ///< parameter list
+      DRT::Discretization&        discretization,   ///< discretization
+      std::vector<int>&           lm,               ///< location vector
+      Epetra_SerialDenseMatrix&   eslavematrix,     ///< element matrix for slave side
+      Epetra_SerialDenseMatrix&   emastermatrix,    ///< element matrix for master side
+      Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
   );
 
   //! evaluate elch electrode kinetics
@@ -106,8 +116,8 @@ private:
       const std::vector<double>&    ephinp,   ///< current conc. and potential values
       const std::vector<double>&    ephidtnp, ///< time derivative vector evaluated at t_{n+1}
       const int                     kinetics, ///< desired electrode kinetics model
-      const std::vector<int>        stoich,   ///< stoichometry of the reaction
-      const int                     nume,     ///<  number of transfered electrons
+      const std::vector<int>        stoich,   ///< stoichiometry of the reaction
+      const int                     nume,     ///<  number of transferred electrons
       const double                  pot0,     ///< actual electrode potential on metal side at t_{n+1}
       const double                  frt,      ///< factor F/RT
       const double                  timefac   ///< factor due to time discretization
@@ -121,7 +131,21 @@ private:
       std::vector<int>&                 lm,
       Epetra_SerialDenseMatrix&         elemat1_epetra,
       Epetra_SerialDenseVector&         elevec1_epetra
-      );
+  );
+
+  //! extract valence of species k from element material
+  const double GetValence(
+      const Teuchos::RCP<const MAT::Material>&   material,   //! element material
+      const int                                  k           //! species number
+  ) const;
+
+  //! equilibrium electric potential difference at electrode-electrolyte interface
+  void EquilibriumPotentialDifference(
+      const Teuchos::RCP<DRT::Condition>&   condition,       //! boundary condition
+      const double&                         emasterphiint,   //! concentration of intercalated Lithium at electrode surface at current Gauss point
+      double&                               epd,             //! equilibrium electric potential difference to be computed at current Gauss point
+      double&                               epdderiv         //! derivative of equilibrium electric potential difference to be computed at current Gauss point
+  ) const;
 
   /*========================================================================*/
   //! @name flags and enums
@@ -139,11 +163,7 @@ private:
 
   //! manager for diffusion
   Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc_;
-
 }; // class ScaTraEleBoundaryCalcElch
-
 } //namsepace ELEMENTS
 } // namespace DRT
-
 #endif
-

@@ -23,7 +23,7 @@ namespace CONTACT
  also known as Penalty Method or regularization. An Augmented Lagrangian version
  based on the Uzawa algorithm is included, too.
 
- This is a specialization of the abstract meshyting algorithm as defined in MtAbstractStrategy.
+ This is a specialization of the abstract meshtying algorithm as defined in MtAbstractStrategy.
  For a more general documentation of the involved functions refer to MtAbstractStrategy.
 
  \author popp (popp@lnm.mw.tum.de)

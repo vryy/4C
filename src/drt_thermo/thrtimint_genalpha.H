@@ -51,7 +51,7 @@ namespace THR
    */
   class TimIntGenAlpha : public TimIntImpl
   {
-  
+
   public:
 
     //! verify if given coefficients are in admissable range
@@ -141,7 +141,7 @@ namespace THR
       Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
       );
 
-    //! Create force residual #fres_ and ist tangent #tang_
+    //! Create force residual #fres_ and its tangent #tang_
     void EvaluateRhsTangResidual();
 
     //! Determine characteristic norm for temperatures

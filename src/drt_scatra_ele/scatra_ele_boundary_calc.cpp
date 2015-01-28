@@ -1229,7 +1229,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
     dserror("Zero length for element normal");
 
   return;
-} // ScaTraBoundaryImpl<distype>::
+} // ScaTraBoundaryImpl<distype>::GetConstNormal
 
 
 /*----------------------------------------------------------------------*
@@ -1268,10 +1268,12 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
     }
   }
 
-  // get current scatra-scatra interface coupling condition and access associated kinetic model
+  // get current scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
   if(s2icondition == Teuchos::null)
     dserror("Cannot access scatra-scatra interface coupling condition!");
+
+  // access kinetic model associated with current condition
   const int kineticmodel = s2icondition->GetInt("kinetic model");
 
   // integration points and weights
@@ -1300,7 +1302,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
       switch(kineticmodel)
       {
         // constant permeability model
-        case INPAR::SCATRA::s2i_constperm:
+        case INPAR::SCATRA::s2i_kinetics_constperm:
         {
           // access real vector of constant permeabilities
           const std::vector<double>* permeabilities = s2icondition->GetMutable<std::vector<double> >("permeabilities");
@@ -1327,7 +1329,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
 
         default:
         {
-          dserror("Unknown kinetic model for scatra-scatra interface coupling!");
+          dserror("Kinetic model for scatra-scatra interface coupling not yet implemented!");
           break;
         }
       }

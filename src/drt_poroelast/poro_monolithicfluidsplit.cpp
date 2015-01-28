@@ -516,7 +516,7 @@ void POROELAST::MonolithicFluidSplit::RecoverLagrangeMultiplierAfterTimeStep()
     lambda_->Update(1.0, *fgcur_, -ftiparam);
     lambda_->Update(-1.0, *fgiddi,-1.0, *sggddg, 1.0);
     lambda_->Update(-1.0, *fgiddi,-1.0, *cggddg, 1.0);
-    lambda_->Scale(1/(1.0-ftiparam)); // entire Lagrange multiplier ist divided by (1.-ftiparam)
+    lambda_->Scale(1/(1.0-ftiparam)); // entire Lagrange multiplier is divided by (1.-ftiparam)
   }
   return;
 }

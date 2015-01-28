@@ -498,7 +498,7 @@ void POROELAST::MonolithicStructureSplit::RecoverLagrangeMultiplierAfterTimeStep
     lambda_->Update(1.0, *fgcur_, -stiparam);
     lambda_->Update(-1.0, *sgiddi, -1.0, *sggddg, 1.0);
     lambda_->Update(-1.0, *fgiddi,-1.0, *cggddg, 1.0);
-    lambda_->Scale(1/(1.0-stiparam)); // entire Lagrange multiplier ist divided by (1.-stiparam)
+    lambda_->Scale(1/(1.0-stiparam)); // entire Lagrange multiplier is divided by (1.-stiparam)
   }
   return;
 }

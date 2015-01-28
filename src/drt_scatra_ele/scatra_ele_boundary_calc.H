@@ -181,7 +181,7 @@ public:
   );
 
   //! evaluate scatra-scatra interface coupling condition
-  void EvaluateS2ICoupling(
+  virtual void EvaluateS2ICoupling(
       const DRT::Element*         ele,              ///< current boundary element
       Teuchos::ParameterList&     params,           ///< parameter list
       DRT::Discretization&        discretization,   ///< discretization
@@ -191,29 +191,29 @@ public:
       Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
   );
 
-    //! evaluate Kedem-Katchalsky interface condition
-    void EvaluateKedemKatchalsky(
-        const DRT::Element*        ele,         ///< the actual boundary element
-        const std::vector<double>& ephinp,      ///< scalar values at element nodes
-        const std::vector<double>& epressure,   ///< pressure values at element nodes
-        const std::vector<double>& ephibar,     ///< mean concentration values at element nodes
-        const std::vector<double>& f_wss,       ///< factor for WSS at element nodes
-        Epetra_SerialDenseMatrix&  emat,        ///< element-matrix
-        Epetra_SerialDenseVector&  erhs,        ///< element-rhs
-        const double               timefac,     ///< time factor
-        const std::vector<int>*    onoff,       ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
-        const double               perm,        ///< surface/interface permeability coefficient
-        const double               conductivity,///< hydraulic conductivity at interface
-        const double               sigma ///< Staverman filtration coefficient at interface
-    );
+  //! evaluate Kedem-Katchalsky interface condition
+  void EvaluateKedemKatchalsky(
+      const DRT::Element*        ele,         ///< the actual boundary element
+      const std::vector<double>& ephinp,      ///< scalar values at element nodes
+      const std::vector<double>& epressure,   ///< pressure values at element nodes
+      const std::vector<double>& ephibar,     ///< mean concentration values at element nodes
+      const std::vector<double>& f_wss,       ///< factor for WSS at element nodes
+      Epetra_SerialDenseMatrix&  emat,        ///< element-matrix
+      Epetra_SerialDenseVector&  erhs,        ///< element-rhs
+      const double               timefac,     ///< time factor
+      const std::vector<int>*    onoff,       ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
+      const double               perm,        ///< surface/interface permeability coefficient
+      const double               conductivity,///< hydraulic conductivity at interface
+      const double               sigma ///< Staverman filtration coefficient at interface
+  );
 
-     //! integral of shape functions over boundary surface
-     void IntegrateShapeFunctions(
-         const DRT::Element*       ele,    ///< the actual boundary element
-         Teuchos::ParameterList&   params, ///< the parameter list
-         Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
-         const bool                addarea ///< flag for area calculation
-     );
+  //! integral of shape functions over boundary surface
+  void IntegrateShapeFunctions(
+      const DRT::Element*       ele,    ///< the actual boundary element
+      Teuchos::ParameterList&   params, ///< the parameter list
+      Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
+      const bool                addarea ///< flag for area calculation
+  );
 
   //! evaluate surface/interface permeability
   void EvaluateSurfacePermeability(

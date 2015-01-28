@@ -163,7 +163,7 @@ namespace STR
     //! \author mayr.mt
     void PredictConstAcc();
 
-    //! Create force residual #fres_ and ist stiffness #stiff_
+    //! Create force residual #fres_ and its stiffness #stiff_
     void EvaluateForceStiffResidual(Teuchos::ParameterList& params);
 
     //! Evaluate/define the residual force vector #fres_ for

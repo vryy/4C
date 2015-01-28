@@ -862,7 +862,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
   if (scale_)
     scaling = true;
 
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
 
@@ -992,13 +992,13 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(
 
   // BOUNDARY NODE MODIFICATION **********************************
   // We have modified their neighbors' dual shape functions, so we
-  // now have a problem with off-diagonal entries occuring in D.
+  // now have a problem with off-diagonal entries occurring in D.
   // Of course we want to keep the diagonality property of the D
   // matrix, but still we may not modify the whole Mortar coupling
-  // setting! We achieve both by appling a quite simple but very
+  // setting! We achieve both by applying a quite simple but very
   // effective trick: The boundary nodes have already been defined
   // as being master nodes, so all we have to do here, is to shift
-  // the off-diagonal terms from D to the resepective place in M,
+  // the off-diagonal terms from D to the respective place in M,
   // which is not diagonal anyway! (Mind the MINUS sign!!!)
   // *************************************************************
 
@@ -1569,7 +1569,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
     MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
     bool *boundary_ele, const Epetra_Comm& comm)
 {
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
@@ -1703,7 +1703,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm)
 {
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
@@ -1842,7 +1842,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   // get LMtype
   INPAR::MORTAR::LagMultQuad lmtype = lmquadtype_;
 
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called without specific shape function defined!");
 

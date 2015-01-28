@@ -898,7 +898,7 @@ public:
   \note In order to receive a fully functional discretization, this method must be called
         with all parameters set to true (the default). The parameters though can be
         used to turn off specific tasks to allow for more flexibility in the
-        construction of a discretization, were it is known that this method will
+        construction of a discretization, where it is known that this method will
         be called more than once.
 
   \note Sets Filled()=true

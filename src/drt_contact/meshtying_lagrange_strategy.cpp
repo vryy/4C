@@ -733,7 +733,6 @@ void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
   // initialize merged system (matrix, rhs, sol)
   Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(),
       glmdofrowmap_, false);
-  Teuchos::RCP<LINALG::SparseMatrix> mergedmt = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> mergedrhs = LINALG::CreateVector(*mergedmap);
   Teuchos::RCP<Epetra_Vector> mergedsol = LINALG::CreateVector(*mergedmap);
   Teuchos::RCP<Epetra_Vector> mergedzeros = LINALG::CreateVector(*mergedmap);
@@ -771,11 +770,10 @@ void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
     constrmt->ApplyDirichlet(dirichtoggle, false);
 
     // row map (equals domain map) extractor
-    LINALG::MapExtractor rowmapext(*mergedmap, glmdofrowmap_, ProblemDofs());
-    LINALG::MapExtractor dommapext(*mergedmap, glmdofrowmap_, ProblemDofs());
+    LINALG::MapExtractor mapext(*mergedmap, glmdofrowmap_, ProblemDofs());
 
     // build block matrix for SIMPLER
-    blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
+    blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(mapext,mapext,81,false,false));
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >(blockMat);
 
     mat->Assign(0, 0, View, *stiffmt);

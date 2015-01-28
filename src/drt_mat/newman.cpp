@@ -63,7 +63,6 @@ void MAT::PAR::Newman::CheckProvidedParams(
   const unsigned int  numfunctparams
 )
 {
-  bool error = false;
   std::string functionname;
   // needed parameter or a the predefined function
   unsigned int paraforfunction = 0;
@@ -76,8 +75,6 @@ void MAT::PAR::Newman::CheckProvidedParams(
         //constant value: functval=(*functparams)[0];
         functionname = "'constant value'";
         paraforfunction=1;
-        if(numfunctparams != paraforfunction)
-          error=true;
         break;
       }
       case -2:
@@ -85,8 +82,6 @@ void MAT::PAR::Newman::CheckProvidedParams(
         // linear function: functval=(*functparams)[0]+(*functparams)[1]*cint;
         functionname = "'linear function'";
         paraforfunction=2;
-        if(numfunctparams != paraforfunction)
-          error=true;
         break;
       }
       case -3:
@@ -94,8 +89,6 @@ void MAT::PAR::Newman::CheckProvidedParams(
         // quadratic function: functval=(*functparams)[0]+(*functparams)[1]*cint+(*functparams)[2]*cint*cint;
         functionname = "'quadratic function'";
         paraforfunction=3;
-        if(numfunctparams != paraforfunction)
-          error=true;
         break;
       }
       case -4:
@@ -103,8 +96,6 @@ void MAT::PAR::Newman::CheckProvidedParams(
         // power function: functval=(*functparams)[0]*pow(cint,(*functparams)[1]);
         functionname = "'power function'";
         paraforfunction=2;
-        if(numfunctparams != paraforfunction)
-          error=true;
         break;
       }
       case -5:
@@ -114,8 +105,6 @@ void MAT::PAR::Newman::CheckProvidedParams(
         // functval=(*functparams)[0]*((*functparams)[1]*cint/nenner)+0.01;
         functionname = "'function 1 for conductivity'";
         paraforfunction=4;
-        if(numfunctparams != paraforfunction)
-          error=true;
         break;
       }
       case -6:
@@ -123,8 +112,6 @@ void MAT::PAR::Newman::CheckProvidedParams(
         // a0*c + a1*c^1.5 + a2*c^3
         functionname = "'a0*c + a1*c^1.5 + a2*c^3'";
         paraforfunction=3;
-        if(numfunctparams != paraforfunction)
-          error=true;
         break;
       }
       case -7:
@@ -132,8 +119,6 @@ void MAT::PAR::Newman::CheckProvidedParams(
         // a0 + a1*c + a2*c^2 + a3*c^3
         functionname = "'a0 + a1*c + a2*c^2 + a3*c^3'";
         paraforfunction=4;
-        if(numfunctparams != paraforfunction)
-          error=true;
         break;
       }
       case -8:
@@ -141,17 +126,13 @@ void MAT::PAR::Newman::CheckProvidedParams(
         // thermodynamic factor Nyman 2008
         functionname = "'function thermodynamic factor (Nyman 2008)'";
         paraforfunction=7;
-        if(numfunctparams != paraforfunction)
-          error=true;
         break;
       }
       case -9:
       {
         // linear thermodynamic factor including Debye-Hückel theory
-        functionname = "'function  linear thermodynamic factor (including Debye Hueckel theory)'";
+        functionname = "'function linear thermodynamic factor (including Debye Hueckel theory)'";
         paraforfunction=2;
-        if(numfunctparams != paraforfunction)
-          error=true;
         break;
       }
       case -10:
@@ -159,14 +140,20 @@ void MAT::PAR::Newman::CheckProvidedParams(
         // function 1 for conductivity
         functionname = "'function 1 for conductivity: own definition'";
         paraforfunction=6;
-        if(numfunctparams != paraforfunction)
-          error=true;
+        break;
+      }
+      case -11:
+      {
+        // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee (2012)
+        // kappa = a0*c*exp(a1*c^a2)
+        functionname = "'conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee (2012)'";
+        paraforfunction=3;
         break;
       }
       default: dserror("Curve number %i is not implemented",functnr); break;
     }
 
-    if(error==true)
+    if(numfunctparams != paraforfunction)
       dserror("number of %i provided parameter does not match the number of %i parameter "
               "which are needed for the predefined function with the number %i (%s)!!",numfunctparams,paraforfunction,functnr,functionname.c_str());
   }
@@ -394,12 +381,16 @@ double MAT::Newman::EvalFunctValue(
   {
     // a0
     case -1: functval=(*functparams)[0]; break;
+
     // a0 + a1*c
     case -2: functval=(*functparams)[0]+(*functparams)[1]*cint; break;
+
     // a0 + a1*c + a2*c^2
     case -3: functval=(*functparams)[0]+(*functparams)[1]*cint+(*functparams)[2]*cint*cint; break;
-    // a0 + c^a1
+
+    // a0*c^a1
     case -4: functval=(*functparams)[0]*pow(cint,(*functparams)[1]); break;
+
     // conductivity
     case -5:
     {
@@ -408,10 +399,13 @@ double MAT::Newman::EvalFunctValue(
       functval=(*functparams)[0]*((*functparams)[1]*cint/nenner);
       break;
     }
+
     // a0*c + a1*c^1.5 + a2*c^3
     case -6: functval=(*functparams)[0]*cint+(*functparams)[1]*pow(cint,1.5)+(*functparams)[2]*cint*cint*cint; break;
+
     // a0 + a1*c + a2*c^2 + a3*c^3
     case -7: functval=(*functparams)[0]+(*functparams)[1]*cint+(*functparams)[2]*cint*cint+(*functparams)[3]*cint*cint*cint; break;
+
     // thermodynamic factor Nyman 2008
     case -8:
     {
@@ -420,9 +414,11 @@ double MAT::Newman::EvalFunctValue(
       functval=num/denom;
       break;
     }
+
     // linear thermodynamic factor including Debye-Hückel theory
     // 1 + a1*0.5*c^0.5 + a2*c
     case -9: functval= 1.0 + (*functparams)[0]*0.5*pow(cint,0.5)+(*functparams)[1]*cint; break;
+
     // conductivity: own definition which also fulfills the Kohlrausches Square root law
     case -10:
     {
@@ -432,7 +428,19 @@ double MAT::Newman::EvalFunctValue(
       functval=num/denom;
       break;
     }
-    default: dserror("Curve number %i is not implemented",functnr); break;
+
+    // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee (2012)
+    // kappa = a0*c*exp(a1*c^a2)
+    case -11:
+    {
+      if(cint < 1.e-12)
+        dserror("Concentration value %lf is zero or negative!",cint);
+
+      functval = (*functparams)[0]*cint*exp((*functparams)[1]*pow(cint,(*functparams)[2]));
+      break;
+    }
+
+    default: dserror("Curve number %i is not implemented!",functnr); break;
   }
   return functval;
 }
@@ -451,12 +459,16 @@ double MAT::Newman::EvalFirstDerivFunctValue(
   {
     // d/dc: a0
     case -1: firstderivfunctval=0.0; break;
+
     // d/dc: a0 + a1*c
     case -2: firstderivfunctval=(*functparams)[1]; break;
+
     // d/dc: a0 + a1*c + a2*c^2
     case -3: firstderivfunctval=(*functparams)[1]+2*(*functparams)[2]*cint; break;
+
     // d/dc: a0 + c^a1
     case -4: firstderivfunctval=(*functparams)[0]*(*functparams)[1]*pow(cint,(*functparams)[1]-1.0); break;
+
     // d/dc: conductivity
     case -5:
     {
@@ -465,10 +477,13 @@ double MAT::Newman::EvalFirstDerivFunctValue(
       firstderivfunctval=(*functparams)[0]*(((*functparams)[1]*nenner-(*functparams)[1]*cint*(2*(*functparams)[2]*cint-4*(*functparams)[3]*cint*cint*cint))/nennernenner);
       break;
     }
+
     // d/dc: a0*c + a1*c^1.5 + a2*c^3
     case -6: firstderivfunctval=(*functparams)[0]+1.5*(*functparams)[1]*pow(cint,0.5)+3*(*functparams)[2]*cint*cint; break;
+
     // d/dc: a0 + a1*c + a2*c^2 + a3*c^3
     case -7: firstderivfunctval=(*functparams)[1]+2*(*functparams)[2]*cint+3*(*functparams)[3]*cint*cint; break;
+
     // d/dc: thermodynamic factor Nyman 2008
     case -8:
     {
@@ -480,9 +495,11 @@ double MAT::Newman::EvalFirstDerivFunctValue(
       firstderivfunctval=(derivnum*denom-num*derivdenom)/denomdenom;
       break;
     }
+
     // linear thermodynamic factor including Debye-Hückel theory
     // d/dc: 1 + a1*0.5*c^0.5 + a2*c
     case -9: firstderivfunctval= (*functparams)[0]*0.5*0.5*pow(cint,-0.5)+(*functparams)[1]; break;
+
     // d/dc: conductivity: own definition which also fulfills the Kohlrausches Square root law
     case -10:
     {
@@ -494,11 +511,20 @@ double MAT::Newman::EvalFirstDerivFunctValue(
       firstderivfunctval= ((derivnum*denom-num*derivdenom)/denomdenom);
       break;
     }
-    default: dserror("Curve number %i is not implemented",functnr); break;
+
+    // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee (2012)
+    // d/dc: kappa = a0*c*exp(a1*c^a2)
+    case -11:
+    {
+      if(cint < 1.e-12)
+        dserror("Concentration value %lf is zero or negative!",cint);
+
+      firstderivfunctval = (*functparams)[0]*exp((*functparams)[1]*pow(cint,(*functparams)[2]))*(1+(*functparams)[1]*(*functparams)[2]*pow(cint,(*functparams)[2]));
+      break;
+    }
+
+    default: dserror("Curve number %i is not implemented!",functnr); break;
   }
 
   return firstderivfunctval;
 }
-
-
-

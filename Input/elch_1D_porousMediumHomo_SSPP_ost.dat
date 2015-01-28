@@ -63,7 +63,7 @@ RESTARTEVRY                     50
 CONVTOL                         1e-09
 ABSTOLRES                       1e-16
 ITEMAX                          10
-EXPLPREDICT                     no // yes -> oszillations for neutral
+EXPLPREDICT                     no // yes -> oscillations for neutral
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.1
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -127,7 +127,7 @@ ML_DAMPCOARSE                   0.9                             // damping coars
 ------------------------------------------------------MATERIALS
 MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
 MAT 2 MAT_elchphase EPSILON 0.363380237 TORTUOSITY 5.4540e-01 NUMMAT 1 MATIDS 3 END
-MAT 3 MAT_newman VALENCE 1.0 DIFFCOEF 1 TRANSNR 2 THERMFAC 4 COND 3
+MAT 3 MAT_newman VALENCE 1.0 DIFFCOEF 1 TRANSNR 2 THERMFAC 4 COND 3 END
 -----------------------------------------------------------CURVE1
 // diffusion coefficient in [mm^2/s]
 CURVE1 on EXPR FUNC 1.48e-4*t^(-0.125) t1 0.0 t2 1000000 //diffusion coefficient species 1
@@ -141,7 +141,7 @@ CURVE3 on EXPR FUNC (545.0*(2.76*t/(1.0+2.15*t^2-0.0015*t^4))) t1 0.0 t2 1000000
 // thermodynamic factor in [-]
 CURVE4 on EXPR FUNC 1.4+0.5*t^2-0.4*t t1 0.0 t2 1000000 // transference number species 2
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0    //initial concentration field: mumol/mm³
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0    //initial concentration field: µmol/mm³
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0    //initial potential field:
 ------------------------------------------------------------FUNCT2
 ------------------------------------------------RESULT DESCRIPTION
@@ -162,11 +162,6 @@ NDPOINT 0
 NDLINE  4
 NDSURF  1
 NDVOL   0
-------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE 0
-------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE 0
-//E 2 - none 1 0 0 0 0 0 2.0e-07 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 -------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE  2
 // anode

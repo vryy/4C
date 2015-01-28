@@ -50,7 +50,7 @@ stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATE
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling2d::IntegrateOverlap()
 {
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror(
         "ERROR: IntegrateOverlap called without specific shape function defined!");

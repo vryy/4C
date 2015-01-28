@@ -2658,11 +2658,8 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
     RecomputeMeanCsgsB();
 
-  if (myrank_ == 0)
-  {
-    IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+\n"
-             << "|- step/max -|- tol      [norm] -|-- con-res ---|-- pot-res ---|-- con-inc ---|-- pot-inc ---|-- con-res-inf ---|" << IO::endl;
-  }
+  // print header of convergence table to screen
+  PrintConvergenceHeader();
 
   // ---------------------------------------------- nonlinear iteration
   //stop nonlinear iteration when both increment-norms are below this bound
@@ -2713,11 +2710,11 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     if (AbortNonlinIter(iternum_,itemax,ittol,abstolres,actresidual))
       break;
 
-    //--------- Apply Dirichlet boundary conditions to system of equations
-    // residual values are supposed to be zero at Dirichlet boundaries
+    // initialize increment vector
     increment_->PutScalar(0.0);
 
-    // Apply Dirichlet boundary conditions to system matrix
+    // Apply Dirichlet boundary conditions to system of equations
+    // residual values are supposed to be zero at Dirichlet boundaries
     {
       // time measurement: application of DBC to system
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
@@ -2767,6 +2764,7 @@ void SCATRA::ScaTraTimIntImpl::ManipulateScaTraType( INPAR::SCATRA::ScaTraType n
   scatratype_=new_ScaTraType;
 }
 
+
 /*----------------------------------------------------------------------*
  | check if to stop the nonlinear iteration                    gjb 09/08|
  *----------------------------------------------------------------------*/
@@ -2812,23 +2810,15 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       - do not perform a solver call when the initial residuals are < EPS14*/
   if (itnum == 1)
   {
-    if (myrank_ == 0)
-    {
-      IO::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
-               << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
-               << std::setw(10) << std::setprecision(3) << std::scientific << conresnorm << "   | "
-               << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   |      --      |      --      | "
-               << std::setw(10) << std::setprecision(3) << std::scientific << conresnorminf << "       | (      --     ,te="
-               << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << IO::endl;
-    }
+    // print first line of convergence table to screen
+    PrintConvergenceValuesFirstIter(itnum,itemax,ittol,conresnorm,potresnorm,conresnorminf);
+
     // abort iteration, when there's nothing more to do
     if ((conresnorm < abstolres) && (potresnorm < abstolres))
     {
-      // print 'finish line'
-      if (myrank_ == 0)
-      {
-        IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << IO::endl;
-      }
+      // print finish line of convergence table to screen
+      PrintConvergenceFinishLine();
+
       return true;
     }
   }
@@ -2837,19 +2827,8 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       - convergence check should be done*/
   else
   {
-    // print the screen info
-    if (myrank_ == 0)
-    {
-      IO::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
-               << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
-               << std::setw(10) << std::setprecision(3) << std::scientific << conresnorm << "   | "
-               << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   | "
-               << std::setw(10) << std::setprecision(3) << std::scientific << incconnorm_L2/connorm_L2 << "   | "
-               << std::setw(10) << std::setprecision(3) << std::scientific << incpotnorm_L2/potnorm_L2 << "   | "
-               << std::setw(10) << std::setprecision(3) << std::scientific << conresnorminf << "       | (ts="
-               << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_ << ",te="
-               << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << IO::endl;
-    }
+    // print current line of convergence table to screen
+    PrintConvergenceValues(itnum,itemax,ittol,conresnorm,potresnorm,incconnorm_L2,connorm_L2,incpotnorm_L2,potnorm_L2,conresnorminf);
 
     // this is the convergence check
     // We always require at least one solve. We test the L_2-norm of the
@@ -2857,30 +2836,25 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     if (conresnorm <= ittol and potresnorm <= ittol and
         incconnorm_L2/connorm_L2 <= ittol and incpotnorm_L2/potnorm_L2 <= ittol)
     {
+      // print finish line of convergence table to screen
+      PrintConvergenceFinishLine();
+
+      // write info to error file
       if (myrank_ == 0)
-      {
-        // print 'finish line'
-        IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << IO::endl;
-        // write info to error file
         if (errfile_!=NULL)
-        {
           fprintf(errfile_,"elch solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
               itnum,itemax,ittol,conresnorm,potresnorm,
               incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
-        }
-      }
-      // yes, we stop the iteration
+
       return true;
     }
 
     // abort iteration, when there's nothing more to do! -> more robustness
     if ((conresnorm < abstolres) && (potresnorm < abstolres))
     {
-      // print 'finish line'
-      if (myrank_ == 0)
-      {
-        IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << IO::endl;
-      }
+      // print finish line of convergence table to screen
+      PrintConvergenceFinishLine();
+
       return true;
     }
 
@@ -2956,6 +2930,83 @@ void SCATRA::ScaTraTimIntImpl::CalcProblemSpecificNorm(
 
 
 /*----------------------------------------------------------------------*
+ | print header of convergence table to screen               fang 11/14 |
+ *----------------------------------------------------------------------*/
+inline void SCATRA::ScaTraTimIntImpl::PrintConvergenceHeader()
+{
+  if (myrank_ == 0)
+    std::cout << "+------------+-------------------+--------------+--------------+------------------+\n"
+             << "|- step/max -|- tol      [norm] -|-- con-res ---|-- con-inc ---|-- con-res-inf ---|" << std::endl;
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::PrintConvergenceHeader
+
+
+/*----------------------------------------------------------------------*
+ | print first line of convergence table to screen           fang 11/14 |
+ *----------------------------------------------------------------------*/
+inline void SCATRA::ScaTraTimIntImpl::PrintConvergenceValuesFirstIter(
+    const int&              itnum,          //!< current Newton-Raphson iteration step
+    const int&              itemax,         //!< maximum number of Newton-Raphson iteration steps
+    const double&           ittol,          //!< relative tolerance for Newton-Raphson scheme
+    const double&           conresnorm,     //!< L2 norm of concentration residual
+    const double&           potresnorm,     //!< L2 norm of potential residual (only relevant for electrochemistry)
+    const double&           conresnorminf   //!< infinity norm of concentration residual
+)
+{
+  if (myrank_ == 0)
+    std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
+             << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
+             << std::setw(10) << std::setprecision(3) << std::scientific << conresnorm << "   |      --      | "
+             << std::setw(10) << std::setprecision(3) << std::scientific << conresnorminf << "       | (      --     ,te="
+             << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::PrintConvergenceValuesFirstIter
+
+
+/*----------------------------------------------------------------------*
+ | print current line of convergence table to screen         fang 11/14 |
+ *----------------------------------------------------------------------*/
+inline void SCATRA::ScaTraTimIntImpl::PrintConvergenceValues(
+    const int&              itnum,           //!< current Newton-Raphson iteration step
+    const int&              itemax,          //!< maximum number of Newton-Raphson iteration steps
+    const double&           ittol,           //!< relative tolerance for Newton-Raphson scheme
+    const double&           conresnorm,      //!< L2 norm of concentration residual
+    const double&           potresnorm,      //!< L2 norm of potential residual (only relevant for electrochemistry)
+    const double&           incconnorm_L2,   //!< L2 norm of concentration increment
+    const double&           connorm_L2,      //!< L2 norm of concentration state vector
+    const double&           incpotnorm_L2,   //!< L2 norm of potential increment
+    const double&           potnorm_L2,      //!< L2 norm of potential state vector
+    const double&           conresnorminf    //!< infinity norm of concentration residual
+)
+{
+  if (myrank_ == 0)
+    std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
+             << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
+             << std::setw(10) << std::setprecision(3) << std::scientific << conresnorm << "   | "
+             << std::setw(10) << std::setprecision(3) << std::scientific << incconnorm_L2/connorm_L2 << "   | "
+             << std::setw(10) << std::setprecision(3) << std::scientific << conresnorminf << "       | (ts="
+             << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_ << ",te="
+             << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::PrintConvergenceValues
+
+
+/*----------------------------------------------------------------------*
+ | print finish line of convergence table to screen          fang 11/14 |
+ *----------------------------------------------------------------------*/
+inline void SCATRA::ScaTraTimIntImpl::PrintConvergenceFinishLine()
+{
+  if (myrank_ == 0)
+    std::cout << "+------------+-------------------+--------------+--------------+------------------+" << std::endl;
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::PrintConvergenceFinishLine
+
+
+/*----------------------------------------------------------------------*
 | returns matching std::string for each time integration scheme   gjb 08/08 |
 *----------------------------------------------------------------------*/
 std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
@@ -2970,7 +3021,7 @@ std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
     return "One-Step-Theta";
     break;
   case INPAR::SCATRA::timeint_bdf2 :
-    return "    BDF2      ";
+    return "     BDF2     ";
     break;
   case INPAR::SCATRA::timeint_stationary :
     return "  Stationary  ";

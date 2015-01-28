@@ -43,34 +43,32 @@ class TransportBoundary;
   public:
 
     /// Empty constructor
-    ScaTraBoundaryInterface() {};
+    ScaTraBoundaryInterface(){return;};
 
     /// Empty destructor
-    virtual ~ScaTraBoundaryInterface() {};
+    virtual ~ScaTraBoundaryInterface(){return;};
 
     virtual int EvaluateAction(
-      DRT::ELEMENTS::TransportBoundary* ele1,
-      Teuchos::ParameterList&       params,
-      DRT::Discretization&          discretization,
-      std::vector<int>&             lm,
-      Epetra_SerialDenseMatrix&     elemat1,
-      Epetra_SerialDenseMatrix&     elemat2,
-      Epetra_SerialDenseVector&     elevec1,
-      Epetra_SerialDenseVector&     elevec2,
-      Epetra_SerialDenseVector&     elevec3) = 0;
-
-    virtual int EvaluateNeumann(
-      DRT::ELEMENTS::TransportBoundary* ele,
-      Teuchos::ParameterList&       params,
-      DRT::Discretization&          discretization,
-      DRT::Condition&               condition,
-      std::vector<int>&             lm,
-      Epetra_SerialDenseVector&     elevec1_epetra
+      DRT::ELEMENTS::TransportBoundary*   ele1,
+      Teuchos::ParameterList&             params,
+      DRT::Discretization&                discretization,
+      std::vector<int>&                   lm,
+      Epetra_SerialDenseMatrix&           elemat1,
+      Epetra_SerialDenseMatrix&           elemat2,
+      Epetra_SerialDenseVector&           elevec1,
+      Epetra_SerialDenseVector&           elevec2,
+      Epetra_SerialDenseVector&           elevec3
     ) = 0;
 
+    virtual int EvaluateNeumann(
+      DRT::ELEMENTS::TransportBoundary*   ele,
+      Teuchos::ParameterList&             params,
+      DRT::Discretization&                discretization,
+      DRT::Condition&                     condition,
+      std::vector<int>&                   lm,
+      Epetra_SerialDenseVector&           elevec1_epetra
+    ) = 0;
   };
-
-} //namespace Elements
-} //namespace DRT
-
+} // namespace Elements
+} // namespace DRT
 #endif

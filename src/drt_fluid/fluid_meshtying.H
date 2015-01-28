@@ -102,7 +102,7 @@ class Meshtying
         Teuchos::RCP<const Epetra_Map>  bmaps       ///> map of boundary condition
         );
 
-    //! Check weather Dirichlet BC are defined on the master
+    //! Check whether Dirichlet BC are defined on the master
     void DirichletOnMaster(
         Teuchos::RCP<const Epetra_Map>  bmaps   ///> map of boundary condition
         );

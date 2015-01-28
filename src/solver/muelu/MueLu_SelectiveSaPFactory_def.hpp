@@ -111,7 +111,7 @@ namespace MueLu {
       Teuchos::RCP<Matrix> A     = Get< Teuchos::RCP<Matrix> >(fineLevel, "A");
       if(restrictionMode_) {
         SubFactoryMonitor m2(*this, "Transpose A", coarseLevel);
-        //A = Utils2::Transpose(A, true); // build transpose of A explicitely
+        //A = Utils2::Transpose(A, true); // build transpose of A explicitly
         A = MyTranspose(A, true);
       }
 
@@ -358,7 +358,7 @@ namespace MueLu {
 
         for(size_t i=0; i<(size_t)indices.size(); i++) {
            if(gDinvAPColVecData[indices[i]] > 0.0) {
-             // skip this column, explicitely set the value to zero
+             // skip this column, explicitly set the value to zero
              indout[curNNz] = indices[i];
              valout[curNNz] = 0.0;
              curNNz++;

@@ -419,7 +419,7 @@ void DRT::Container::Delete(const std::string& name)
 namespace DRT
 {
 /*----------------------------------------------------------------------*
- |  Get a std::vector<int> specialization                           (public) |
+ |  Get a std::vector<int> specialization                      (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
   template<> const std::vector<int>* Container::Get(const std::string& name) const
@@ -430,7 +430,7 @@ namespace DRT
     else return NULL;
   }
 /*----------------------------------------------------------------------*
- |  Get a std::vector<double> specialization                        (public) |
+ |  Get a std::vector<double> specialization                   (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
   template<> const std::vector<double>* Container::Get(const std::string& name) const
@@ -493,7 +493,7 @@ namespace DRT
     else return NULL;
   }
 /*----------------------------------------------------------------------*
- |  Get a std::vector<int> specialization                           (public) |
+ |  Get a std::vector<int> specialization                      (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
   template<> std::vector<int>* Container::GetMutable(const std::string& name)
@@ -504,7 +504,7 @@ namespace DRT
     else return NULL;
   }
 /*----------------------------------------------------------------------*
- |  Get a std::vector<double> specialization                        (public) |
+ |  Get a std::vector<double> specialization                   (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
   template<> std::vector<double>* Container::GetMutable(const std::string& name)

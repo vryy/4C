@@ -28,12 +28,14 @@ Maintainer: Alexander Popp
 
 #define ALLDOF
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 ADAPTER::CouplingMortar::CouplingMortar()
 {
-
+  return;
 }
+
 
 /*----------------------------------------------------------------------*
  * Setup routine for mortar framework                 ehrl 08/13        *
@@ -84,8 +86,7 @@ void ADAPTER::CouplingMortar::Setup(
 
       if (*side == "Master")
         conds_master.push_back(conds[i]);
-
-      if(*side == "Slave")
+      else if(*side == "Slave")
         conds_slave.push_back(conds[i]);
     }
 
@@ -146,7 +147,7 @@ void ADAPTER::CouplingMortar::Setup(
   INPAR::MORTAR::RedundantStorage redundant =DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input,"REDUNDANT_STORAGE");
   //if (redundant != INPAR::MORTAR::redundant_all)
     //if(myrank== 0) dserror("Mortar coupling adapter only works for redundant slave and master storage");
-  Teuchos::RCP<MORTAR::MortarInterface> interface = Teuchos::rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
+  interface_ = Teuchos::rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
 
   // number of dofs per node based on the coupling vector coupleddof
   int dof = coupleddof.size();
@@ -198,7 +199,7 @@ void ADAPTER::CouplingMortar::Setup(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
                     numcoupleddof, dofids, false));
 
-    interface->AddMortarNode(mrtrnode);
+    interface_->AddMortarNode(mrtrnode);
   }
 
   // feeding slave nodes to the interface including ghosted nodes
@@ -223,7 +224,7 @@ void ADAPTER::CouplingMortar::Setup(
                 new MORTAR::MortarNode(node->Id()+nodeoffset, node->X(), node->Owner(),
                     numcoupleddof, dofids, true));
 
-    interface->AddMortarNode(mrtrnode);
+    interface_->AddMortarNode(mrtrnode);
   }
 
   // We need to determine an element offset to start the numbering of the slave
@@ -252,7 +253,7 @@ void ADAPTER::CouplingMortar::Setup(
                 new MORTAR::MortarElement(ele->Id(), ele->Owner(), ele->Shape(),
                     ele->NumNode(), ele->NodeIds(), false));
 
-    interface->AddMortarElement(mrtrele);
+    interface_->AddMortarElement(mrtrele);
   }
 
   // feeding slave elements to the interface
@@ -269,7 +270,7 @@ void ADAPTER::CouplingMortar::Setup(
                   new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
                       ele->NumNode(), ele->NodeIds(), true));
 
-      interface->AddMortarElement(mrtrele);
+      interface_->AddMortarElement(mrtrele);
     }
     else
     {
@@ -283,19 +284,19 @@ void ADAPTER::CouplingMortar::Setup(
                   new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
                       ele->NumNode(), &(nidsoff[0]), true));
 
-      interface->AddMortarElement(mrtrele);
+      interface_->AddMortarElement(mrtrele);
     }
   }
 
   // finalize the contact interface construction
-  interface->FillComplete();
+  interface_->FillComplete();
 
   // store old row maps (before parallel redistribution)
-  slavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
-  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
+  slavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface_->SlaveRowDofs()));
+  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface_->MasterRowDofs()));
 
   // print parallel distribution
-  interface->PrintParallelDistribution(1);
+  interface_->PrintParallelDistribution(1);
 
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
@@ -303,18 +304,18 @@ void ADAPTER::CouplingMortar::Setup(
   if (parredist && comm.NumProc()>1)
   {
     // redistribute optimally among all procs
-    interface->Redistribute();
+    interface_->Redistribute();
 
     // call fill complete again
-    interface->FillComplete();
+    interface_->FillComplete();
 
     // print parallel distribution again
-    interface->PrintParallelDistribution(1);
+    interface_->PrintParallelDistribution(1);
   }
   //**********************************************************************
 
   // create binary search tree
-  interface->CreateSearchTree();
+  interface_->CreateSearchTree();
 
   // all the following stuff has to be done once in setup
   // in order to get initial D_ and M_
@@ -324,7 +325,7 @@ void ADAPTER::CouplingMortar::Setup(
   Teuchos::RCP<Epetra_Vector> dispn = LINALG::CreateVector(*dofrowmap, true);
 
   // set displacement state in mortar interface
-  interface->SetState("displacement", dispn);
+  interface_->SetState("displacement", dispn);
 
   // print message
   if(myrank== 0)
@@ -333,9 +334,9 @@ void ADAPTER::CouplingMortar::Setup(
     fflush(stdout);
   }
 
-  //in the following two steps MORTAR does all the work
-  interface->Initialize();
-  interface->Evaluate();
+  // in the following two steps MORTAR does all the work
+  interface_->Initialize();
+  interface_->Evaluate();
 
   // print message
   if(myrank== 0) std::cout << "done!" << std::endl << std::endl;
@@ -344,11 +345,11 @@ void ADAPTER::CouplingMortar::Setup(
   // (Note that redistslave and redistmaster are the slave and master row maps
   // after parallel redistribution. If no redistribution was performed, they
   // are of course identical to slavedofrowmap_/masterdofrowmap_!)
-  Teuchos::RCP<Epetra_Map> redistslave  = interface->SlaveRowDofs();
-  Teuchos::RCP<Epetra_Map> redistmaster = interface->MasterRowDofs();
+  Teuchos::RCP<Epetra_Map> redistslave  = interface_->SlaveRowDofs();
+  Teuchos::RCP<Epetra_Map> redistmaster = interface_->MasterRowDofs();
   Teuchos::RCP<LINALG::SparseMatrix> dmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*redistslave, 10));
   Teuchos::RCP<LINALG::SparseMatrix> mmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*redistslave, 100));
-  interface->AssembleDM(*dmatrix, *mmatrix);
+  interface_->AssembleDM(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
   dmatrix->Complete();
@@ -372,9 +373,6 @@ void ADAPTER::CouplingMortar::Setup(
   Dinv_->ReplaceDiagonalValues(*diag);
   Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
   DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
-
-  // store interface
-  interface_ = interface;
 
   // initial mesh relocation:
   // For curved internal or fsi coupling interfaces, a mesh relocation is critical,
@@ -459,6 +457,7 @@ void ADAPTER::CouplingMortar::Setup(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  * Minimal setup routine of mortar framework so that it can be used to
  * calculate the surface normals of the slave surface
@@ -474,7 +473,7 @@ void ADAPTER::CouplingMortar::SetupForUQAbuseNormalCalculation( Teuchos::RCP<DRT
   // initialize maps for column nodes
   std::map<int, DRT::Node*> slavegnodes;
 
-  //initialize maps for elements
+  // initialize maps for elements
   std::map<int, Teuchos::RCP<DRT::Element> > slaveelements;
 
   // get the conditions for the current evaluation we use the UncertainSurface condition as a substitute for
@@ -587,7 +586,6 @@ void ADAPTER::CouplingMortar::SetupForUQAbuseNormalCalculation( Teuchos::RCP<DRT
   // anyway
   return;
 }
-
 
 
 /*----------------------------------------------------------------------*
@@ -1082,6 +1080,7 @@ void ADAPTER::CouplingMortar::MeshRelocation(
 
 }
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
@@ -1092,6 +1091,7 @@ void ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1120,6 +1120,7 @@ void ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idispma, Teuc
   return;
 
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1180,6 +1181,7 @@ void ADAPTER::CouplingMortar::Evaluate()
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1259,6 +1261,7 @@ void ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
@@ -1282,6 +1285,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
   return sv;
 }
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
@@ -1298,44 +1302,3 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
 
   return mv;
 }
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
-(
-  Teuchos::RCP<const Epetra_Vector> mv
-) const
-{
-  dsassert( masterdofrowmap_->SameAs( mv->Map() ),
-      "Vector with master dof map expected" );
-
-  Epetra_Vector tmp = Epetra_Vector(M_->RowMap());
-
-  if (M_->Multiply(false, *mv, tmp))
-    dserror( "M*mv multiplication failed" );
-
-  Teuchos::RCP<Epetra_Vector> sv = Teuchos::rcp( new Epetra_Vector( *slavedofrowmap_ ) );
-
-  if ( Dinv_->Multiply( false, tmp, *sv ) )
-    dserror( "D^{-1}*v multiplication failed" );
-
-  return sv;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
-(
-  Teuchos::RCP<const Epetra_Vector> sv
-) const
-{
-  Epetra_Vector tmp = Epetra_Vector(M_->RangeMap());
-  std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
-
-  Teuchos::RCP<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(*masterdofrowmap_));
-  if (M_->Multiply(true, tmp, *mv))
-    dserror( "M^{T}*sv multiplication failed" );
-
-  return mv;
-}
-

@@ -144,35 +144,35 @@ void EvaluateShape_Displ(const double* xi, V& val,
   // 2D linear case (2noded line element)
   case DRT::Element::line2:
   {
-    if (nnode!=2) dserror("ERROR: Inconsistency in EvluateShape");
+    if (nnode!=2) dserror("ERROR: Inconsistency in EvaluateShape");
     mortar_shape_function_1D(val,xi[0],MortarElement::lin1D);
   break;
   }
   // 2D quadratic case (3noded line element)
   case DRT::Element::line3:
   {
-    if (nnode!=3) dserror("ERROR: Inconsistency in EvluateShape");
+    if (nnode!=3) dserror("ERROR: Inconsistency in EvaluateShape");
     mortar_shape_function_1D(val,xi[0],MortarElement::quad1D);
     break;
   }
   // 3D linear case (3noded triangular element)
   case DRT::Element::tri3:
   {
-    if (nnode!=3) dserror("ERROR: Inconsistency in EvluateShape");
+    if (nnode!=3) dserror("ERROR: Inconsistency in EvaluateShape");
     mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::lin2D);
     break;
   }
   // 3D bilinear case (4noded quadrilateral element)
   case DRT::Element::quad4:
   {
-    if (nnode!=4) dserror("ERROR: Inconsistency in EvluateShape");
+    if (nnode!=4) dserror("ERROR: Inconsistency in EvaluateShape");
     mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::bilin2D);
     break;
   }
   // 3D quadratic case (6noded triangular element)
   case DRT::Element::tri6:
   {
-    if (nnode!=6) dserror("ERROR: Inconsistency in EvluateShape");
+    if (nnode!=6) dserror("ERROR: Inconsistency in EvaluateShape");
     if (dualquad3d && !bound)     mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::quad2D_modified);
     else if (dualquad3d && bound) mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::quad2D_hierarchical);
     else                          mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::quad2D);
@@ -181,7 +181,7 @@ void EvaluateShape_Displ(const double* xi, V& val,
   // 3D serendipity case (8noded quadrilateral element)
   case DRT::Element::quad8:
   {
-    if (nnode!=8) dserror("ERROR: Inconsistency in EvluateShape");
+    if (nnode!=8) dserror("ERROR: Inconsistency in EvaluateShape");
     if (dualquad3d && !bound)     mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::serendipity2D_modified);
     else if (dualquad3d && bound) mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::serendipity2D_hierarchical);
     else                          mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::serendipity2D);
@@ -190,7 +190,7 @@ void EvaluateShape_Displ(const double* xi, V& val,
   // 3D biquadratic case (9noded quadrilateral element)
   case DRT::Element::quad9:
   {
-    if (nnode!=9) dserror("ERROR: Inconsistency in EvluateShape");
+    if (nnode!=9) dserror("ERROR: Inconsistency in EvaluateShape");
     if (dualquad3d && !bound)     mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::biquad2D_modified);
     else if (dualquad3d && bound) mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::biquad2D_hierarchical);
     else                          mortar_shape_function_2D(val,xi[0],xi[1],MortarElement::biquad2D);
@@ -201,19 +201,22 @@ void EvaluateShape_Displ(const double* xi, V& val,
   //==================================================
   case DRT::Element::nurbs2:
   {
-    if (nnode!=2) dserror("ERROR: Inconsistency in EvluateShape");
+    if (nnode!=2) dserror("ERROR: Inconsistency in EvaluateShape");
     mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs2);
     break;
   }
   case DRT::Element::nurbs3:
   {
-    if (nnode!=3) dserror("ERROR: Inconsistency in EvluateShape");
+    if (nnode!=3) dserror("ERROR: Inconsistency in EvaluateShape");
     mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs3);
     break;
   }
   // unknown case
   default:
+  {
     dserror("ERROR: EvaluateShape called for unknown MortarElement type");
+    break;
+  }
   }
 
   return;
@@ -252,7 +255,7 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
   // 2D linear case (2noded line element)
   case DRT::Element::line2:
   {
-    if (valdim!=2) dserror("ERROR: Inconsistency in EvluateShape");
+    if (valdim!=2) dserror("ERROR: Inconsistency in EvaluateShape");
     // check for boundary nodes
     MortarNode* mymrtrnode0 = dynamic_cast<MortarNode*> (mynodes[0]);
     MortarNode* mymrtrnode1 = dynamic_cast<MortarNode*> (mynodes[1]);
@@ -292,7 +295,7 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
   // 2D quadratic case (3noded line element)
   case DRT::Element::line3:
   {
-    if (valdim!=3) dserror("ERROR: Inconsistency in EvluateShape");
+    if (valdim!=3) dserror("ERROR: Inconsistency in EvaluateShape");
     // check for boundary nodes
     MortarNode* mymrtrnode0 = dynamic_cast<MortarNode*> (mynodes[0]);
     MortarNode* mymrtrnode1 = dynamic_cast<MortarNode*> (mynodes[1]);
@@ -373,7 +376,7 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
   // 1D -- nurbs2
   case DRT::Element::nurbs2:
   {
-    if (valdim!=2) dserror("ERROR: Inconsistency in EvluateShape");
+    if (valdim!=2) dserror("ERROR: Inconsistency in EvaluateShape");
 
     if(dual) dserror("no dual shape functions provided for nurbs!");
     else     mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs2);
@@ -384,7 +387,7 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
   // 1D -- nurbs3
   case DRT::Element::nurbs3:
   {
-    if (valdim!=3) dserror("ERROR: Inconsistency in EvluateShape");
+    if (valdim!=3) dserror("ERROR: Inconsistency in EvaluateShape");
 
     if(dual) mortar_nurbs_dualshape_function_1D(val, ele, xi[0], DRT::Element::nurbs3);
     else     mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs3);
@@ -394,7 +397,10 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
 
   // unknown case
   default:
+  {
     dserror("ERROR: EvaluateShapeLagMult called for unknown element type");
+    break;
+  }
   }
 
   return;
@@ -495,7 +501,10 @@ void EvaluateShape_LM_Lin(const INPAR::MORTAR::ShapeFcn& lmtype,
 
     // unknown case
     default:
+    {
       dserror("ERROR: EvaluateShapeLagMult called for unknown element type");
+      break;
+    }
   }
 
   return;
@@ -588,7 +597,10 @@ void mortar_shape_function_1D(
     break;
   }
   default:
-      dserror("shape unknown\n");
+  {
+    dserror("shape unknown\n");
+    break;
+  }
   }
 
   return;
@@ -887,7 +899,10 @@ void mortar_dualshape_function_1D(
     break;
   }
   default:
-      dserror("shape unknown\n");
+  {
+    dserror("shape unknown\n");
+    break;
+  }
   }
 
   return;
@@ -1288,7 +1303,10 @@ void mortar_shape_function_2D(
     break;
   }
   default:
-      dserror("shape unknown\n");
+  {
+    dserror("shape unknown\n");
+    break;
+  }
   }
 
   return;
@@ -1792,7 +1810,10 @@ void mortar_dualshape_function_2D(
     break;
   }
   default:
-      dserror("shape unknown\n");
+  {
+    dserror("shape unknown\n");
+    break;
+  }
   }
 
   return;
@@ -1848,7 +1869,10 @@ void mortar_nurbs_shape_function_1D(
     break;
   }
   default:
-      dserror("shape unknown\n");
+  {
+    dserror("shape unknown\n");
+    break;
+  }
   }
 
   return;
@@ -1917,7 +1941,10 @@ void mortar_nurbs_dualshape_function_1D(
     break;
   }
   default:
-      dserror("shape unknown\n");
+  {
+    dserror("shape unknown\n");
+    break;
+  }
   }
 
   return;

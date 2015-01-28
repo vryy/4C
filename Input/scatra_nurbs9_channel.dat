@@ -112,10 +112,6 @@ DLINE                           3
 E 3 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none
 E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE 2
 E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE 2
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE                           0
-//E 4 - 1 1 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 live mid 3 3 0 0 0 0
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE                           2
 E 1 - OUTPUT standard // for flux calculation on these two boundaries

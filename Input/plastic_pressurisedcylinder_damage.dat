@@ -15,7 +15,7 @@ created by pre_exodus and jou2dat on Mi 20. Jul 11:02:00 CEST 2011
 
 Internally pressurised cylinder using a small strain elasto-plastic
 material taking into account damage in form of an additional evolution equation.
-In the present example the hardening ist neglected, so that we consider
+In the present example the hardening is neglected, so that we consider
 with perfect plasticity.
 
 Reference see EA de Souza Neto, D Peric, DRJ Owen:

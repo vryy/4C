@@ -91,9 +91,12 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
   // get myphi vector for potential and current
   const std::vector<double> myphinp = my::ExtractElementAndNodeValues(ele,params,discretization,lm);
 
-  // get additional values for el. potential at element nodes
+  // get electric potential at element nodes
   for (int ien=0;ien<my::nen_;++ien)
     epotnp_(ien) = myphinp[ien*my::numdofpernode_+my::numscal_];
+
+  // get current density at element nodes
+  GetCurrentDensity(myphinp);
 
   //--------------------------------------------------------------------------------
   // prepare turbulence models
@@ -116,30 +119,6 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
   // additional flux terms / currents across Dirichlet boundaries
   CorrectionForFluxAcrossDC(discretization,lm,elemat1_epetra,elevec1_epetra);
 
-#if 0
-  // for debugging of matrix entries
-  if((ele->Id()==2) and (time < 1.3 and time > 1.1))
-  {
-    FDcheck(
-      ele,
-      elemat1_epetra,
-      elevec1_epetra,
-      elevec2_epetra,
-      time,
-      dt,
-      timefac,
-      alphaF,
-      whichassgd,
-      whichfssgd,
-      assgd,
-      fssgd,
-      turbmodel_,
-      Cs,
-      tpn,
-      frt,
-      scatratype);
-  }
-#endif
   return 0;
 }
 

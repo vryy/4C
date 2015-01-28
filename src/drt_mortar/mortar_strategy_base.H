@@ -42,8 +42,6 @@ namespace IO
 namespace MORTAR
 {
 
-// forward declarations
-
 /*!
 \brief Abstract base class for mortar solution strategies
 

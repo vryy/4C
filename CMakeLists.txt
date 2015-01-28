@@ -880,6 +880,7 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_meshtying_strategy_fluid.cpp
   src/drt_scatra/scatra_timint_meshtying_strategy_fluid_elch.cpp
   src/drt_scatra/scatra_timint_meshtying_strategy_s2i.cpp
+  src/drt_scatra/scatra_timint_meshtying_strategy_s2i_elch.cpp
   src/drt_scatra/scatra_timint_meshtying_strategy_std.cpp
   src/drt_scatra/scatra_timint_meshtying_strategy_std_elch.cpp
   src/drt_scatra/scatra_timint_elch.cpp

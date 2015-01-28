@@ -92,13 +92,6 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE                           2
 E 1 - OUTPUT standard // for flux calculation on these two boundaries

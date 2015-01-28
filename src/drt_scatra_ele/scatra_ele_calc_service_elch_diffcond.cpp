@@ -233,6 +233,33 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetConductivity(
 
 
 /*----------------------------------------------------------------------*
+ | get nodal current density values                          fang 01/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetCurrentDensity(
+    const std::vector<double>&   myphinp   //!< myphi vector for electric potential and current density
+)
+{
+  if(cursolvar_)
+  {
+    // get values for current at element nodes
+    for (int ien=0;ien<my::nen_;++ien)
+    {
+      for(int idim=0; idim<my::nsd_; ++idim)
+      {
+        //current is stored after potential
+        ecurnp_(idim,ien) = myphinp[ien*my::numdofpernode_+(my::numscal_+1)+idim];
+      }
+    }
+  }
+  else
+    ecurnp_.Clear();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  * Calculate Mat and Rhs for electric potential field        ehrl 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

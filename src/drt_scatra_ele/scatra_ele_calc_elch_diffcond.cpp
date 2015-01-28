@@ -91,122 +91,6 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(con
 
 
 /*----------------------------------------------------------------------*
- | Action type: Evaluate                                     ehrl 01/14 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Evaluate(
-  DRT::ELEMENTS::Transport*  ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
-  )
-{
-  //--------------------------------------------------------------------------------
-  // preparations for element
-  //--------------------------------------------------------------------------------
-
-  //get element coordinates
-  GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
-
-  // Now do the nurbs specific stuff (for isogeometric elements)
-  if(DRT::NURBS::IsNurbs(distype))
-  {
-    // access knots and weights for this element
-    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
-
-    // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size)
-      return(0);
-  } // Nurbs specific stuff
-
-  //--------------------------------------------------------------------------------
-  // extract element based or nodal values
-  //--------------------------------------------------------------------------------
-
-  // get myphi vector for potential and current
-  const std::vector<double> myphinp = my::ExtractElementAndNodeValues(ele,params,discretization,lm);
-
-  // get additional values for el. potential at element nodes
-  for (int ien=0;ien<my::nen_;++ien)
-    myelch::epotnp_(ien) = myphinp[ien*my::numdofpernode_+my::numscal_];
-
-  if(cursolvar_)
-  {
-    // get values for current at element nodes
-    for (int ien=0;ien<my::nen_;++ien)
-    {
-      for(int idim=0; idim<my::nsd_; ++idim)
-      {
-        //current is stored after potential
-        ecurnp_(idim,ien) = myphinp[ien*my::numdofpernode_+(my::numscal_+1)+idim];
-      }
-    }
-  }
-  else
-    ecurnp_.Clear();
-
-  //--------------------------------------------------------------------------------
-  // prepare turbulence models
-  //--------------------------------------------------------------------------------
-
-  int nlayer = 0;
-  my::ExtractTurbulenceApproach(ele,params,discretization,lm,nlayer);
-
-  //--------------------------------------------------------------------------------
-  // calculate element coefficient matrix and rhs
-  //--------------------------------------------------------------------------------
-
-  myelch::Sysmat(
-    ele,
-    elemat1_epetra,
-    elevec1_epetra,
-    elevec2_epetra);
-
-//  if(my::eid_==10)
-//  {
-//  std::cout << "matrix: " << std::endl;
-//  std::cout <<  elemat1_epetra << std::endl;
-//  std::cout << "vector: " << std::endl;
-//  std::cout <<  elevec1_epetra << std::endl;
-//  }
-
-  // for certain ELCH problem formulations we have to provide
-  // additional flux terms / currents across Dirichlet boundaries
-  CorrectionForFluxAcrossDC(discretization,lm,elemat1_epetra,elevec1_epetra);
-
-#if 0
-  // for debugging of matrix entries
-  if((ele->Id()==2) and (time < 1.3 and time > 1.1))
-  {
-    FDcheck(
-      ele,
-      elemat1_epetra,
-      elevec1_epetra,
-      elevec2_epetra,
-      time,
-      dt,
-      timefac,
-      alphaF,
-      whichassgd,
-      whichfssgd,
-      assgd,
-      fssgd,
-      turbmodel_,
-      Cs,
-      tpn,
-      frt,
-      scatratype);
-  }
-#endif
-  return 0;
-}
-
-/*----------------------------------------------------------------------*
 |  calculate system matrix and rhs                           ehrl  02/14|
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -546,8 +430,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondOhm(
       //
       // (grad w, t_k kappa/(F z_k) D(grad phi))
       //
-      emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) +=
-        timefacfac*dmedc->GetPhasePoroTort(0)*dmedc->GetTransNum(k)*dmedc->GetCond()*invfval*laplawf;
+      emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_)
+         += timefacfac*dmedc->GetPhasePoroTort(0)*dmedc->GetTransNum(k)*dmedc->GetCond()*invfval*laplawf;
 
       double laplawfrhs_gradpot(0.0);
       my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot,gradpot,vi);

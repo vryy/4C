@@ -2025,20 +2025,23 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
   }
 
   // communicate tracking variables
-  discret_->Comm().SumAll(&counter,&counter,1);
-  discret_->Comm().MaxAll(&maxabserr,&maxabserr,1);
-  discret_->Comm().MaxAll(&maxrelerr,&maxrelerr,1);
+  int counterglobal(0);
+  discret_->Comm().SumAll(&counter,&counterglobal,1);
+  double maxabserrglobal(0.);
+  discret_->Comm().MaxAll(&maxabserr,&maxabserrglobal,1);
+  double maxrelerrglobal(0.);
+  discret_->Comm().MaxAll(&maxrelerr,&maxrelerrglobal,1);
 
   // final screen output
   if(myrank_ == 0)
   {
-    if(counter)
+    if(counterglobal)
     {
-      printf("--> FAILED AS LISTED ABOVE WITH %d CRITICAL MATRIX ENTRIES IN TOTAL\n\n",counter);
+      printf("--> FAILED AS LISTED ABOVE WITH %d CRITICAL MATRIX ENTRIES IN TOTAL\n\n",counterglobal);
       dserror("Finite difference check failed for scalar transport system matrix!");
     }
     else
-      printf("--> PASSED WITH MAXIMUM ABSOLUTE ERROR %+12.5e AND MAXIMUM RELATIVE ERROR %+12.5e\n\n",maxabserr,maxrelerr);
+      printf("--> PASSED WITH MAXIMUM ABSOLUTE ERROR %+12.5e AND MAXIMUM RELATIVE ERROR %+12.5e\n\n",maxabserrglobal,maxrelerrglobal);
   }
 
   // undo perturbations of state variables

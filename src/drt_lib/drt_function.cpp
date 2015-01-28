@@ -2780,7 +2780,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       // look through all Dirichlet BCs
       for(int i=0;i<(int)dirichlet.size();i++)
       {
-        // explicitely look for Line Dirichlet BCs
+        // explicitly look for Line Dirichlet BCs
         if(dirichlet.at(i)->Type() == DRT::Condition::LineDirichlet)
         {
           // check if current Line is part of inflow surface:

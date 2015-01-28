@@ -54,18 +54,6 @@ public:
   /// called upon destruction
   virtual void Done();
 
-  //! evaluate the element
-  int Evaluate(DRT::ELEMENTS::Transport*     ele,
-               Teuchos::ParameterList&       params,
-               DRT::Discretization &         discretization,
-               const std::vector<int> &      lm,
-               Epetra_SerialDenseMatrix&     elemat1_epetra,
-               Epetra_SerialDenseMatrix&     elemat2_epetra,
-               Epetra_SerialDenseVector&     elevec1_epetra,
-               Epetra_SerialDenseVector&     elevec2_epetra,
-               Epetra_SerialDenseVector&     elevec3_epetra);
-
-
 private:
 
   /*========================================================================*/
@@ -425,6 +413,11 @@ private:
     const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     double&                           sigma_all,  //!< conductivity of electrolyte solution
     Epetra_SerialDenseVector&         sigma       //!< conductivity or a single ion + overall electrolyte solution
+  );
+
+  // get nodal current density values
+  void GetCurrentDensity(
+      const std::vector<double>&   myphinp   //!< myphi vector for electric potential and current density
   );
 
   // Solving for electric potential field : Calculate Matrix and Rhs

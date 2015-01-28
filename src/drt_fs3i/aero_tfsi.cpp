@@ -309,7 +309,7 @@ void FS3I::AeroTFSI::TimeloopT(Teuchos::RCP<A> solver)
       lcomm_.SumAll(&flux_serial, &flux_global, 1);
       flux_in += flux_global;
 
-      // transfered flux is summed over all procs
+      // transferred flux is summed over all procs
       flux_serial = 0.0;
       flux_global = 0.0;
       if(aerocoupling_->ThermoCoupling())

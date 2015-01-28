@@ -268,6 +268,11 @@ protected:
     Epetra_SerialDenseVector&         sigma       //!< conductivity of all single ions + overall electrolyte solution
   ){return;};
 
+  // get nodal current density values
+  virtual void GetCurrentDensity(
+      const std::vector<double>&   myphinp   //!< myphi vector for electric potential and current density
+  ){return;};
+
   //! Solving for electric potential field : Calculate Matrix and Rhs
   virtual void CalcMatAndRhsElectricPotentialField(
     Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,

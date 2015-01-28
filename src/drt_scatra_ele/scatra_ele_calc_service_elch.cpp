@@ -309,11 +309,6 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
 
     break;
   }
-  case SCATRA::calc_elch_electrode_kinetics:
-  {
-    dserror(" ");
-    break;
-  }
   default:
   {
     my::EvaluateService(ele,

@@ -48,7 +48,7 @@ SCATRATYPE                      Elch
 CONVTOL                         1e-10
 ABSTOLRES                       1e-16
 ITEMAX                          2
-EXPLPREDICT                     no                              // yes -> oszillations for neutral
+EXPLPREDICT                     no                              // yes -> oscillations for neutral
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -91,9 +91,9 @@ CURVE1 on EXPR FUNC 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5 t1 0.0 t2 0.1
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1 //initial concentration field: mumol/mm³
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.15 //initial concentration field: mumol/mm³
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.2 //initial concentration field: mumol/mm³
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1 //initial concentration field: µmol/mm³
+FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.15 //initial concentration field: µmol/mm³
+FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.2 //initial concentration field: µmol/mm³
 FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 //initial potential field:
 ----------------------------------------------------------------------FUNCT2
 FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //initial x-vel. field

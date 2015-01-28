@@ -313,7 +313,7 @@ double THR::TimIntGenAlpha::CalcRefNormForce()
   // norm of the reaction forces
   double freactnorm = 0.0;
   freactnorm = THR::AUX::CalculateVectorNorm(iternorm_, freact_);
- 
+
   // determine worst value ==> charactersitic norm
   return std::max(fcapnorm, std::max(fintnorm, std::max(fextnorm, freactnorm)));
 

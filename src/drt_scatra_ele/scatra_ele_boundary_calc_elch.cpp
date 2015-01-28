@@ -83,17 +83,24 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
+ | constructor (private)                                     fang 01/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(const int numdofpernode, const int numscal)
-  : DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl(numdofpernode,numscal),
-    equpot_(INPAR::ELCH::equpot_undefined)
+  : // constructor of base class
+    DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl(numdofpernode,numscal),
+    // pointer to class ScaTraEleParameter
+    elchpara_(dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(DRT::ELEMENTS::ScaTraEleParameterElch::Instance())),
+    // type of closing equation for electric potential
+    equpot_(elchpara_->EquPot()),
+    // initialization of diffusion manager
+    dmedc_(Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_)))
 {
-  // pointer to class ScaTraEleParameter
-  elchpara_ = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(DRT::ELEMENTS::ScaTraEleParameterElch::Instance());
+  // safety check
+  if(equpot_ == INPAR::ELCH::equpot_undefined)
+    dserror("Type of closing equation for electric potential not correctly set!");
 
-  // initialization of diffusion manager
-  dmedc_ = Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_));
+  return;
 }
 
 
@@ -117,7 +124,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
 
   DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::SetupCalc(ele,params,discretization);
 
-  switch (action)
+  switch(action)
   {
   case SCATRA::bd_calc_elch_boundary_kinetics:
   {
@@ -129,6 +136,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
         elevec1_epetra);
     break;
   }
+
   case SCATRA::bd_calc_elch_linearize_nernst:
   {
     CalcNernstLinearization(ele,
@@ -139,23 +147,22 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
         elevec1_epetra);
     break;
   }
-   default:
-   {
-     DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(ele,
-                                                                params,
-                                                                discretization,
-                                                                action,
-                                                                lm,
-                                                                elemat1_epetra,
-                                                                elemat2_epetra,
-                                                                elevec1_epetra,
-                                                                elevec2_epetra,
-                                                                elevec3_epetra);
-     break;
-   }
-   break;
-   } // switch action
 
+  default:
+  {
+    DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(ele,
+                                                               params,
+                                                               discretization,
+                                                               action,
+                                                               lm,
+                                                               elemat1_epetra,
+                                                               elemat2_epetra,
+                                                               elevec1_epetra,
+                                                               elevec2_epetra,
+                                                               elevec3_epetra);
+   break;
+  }
+  } // switch action
 
   return 0;
 }
@@ -179,8 +186,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
 
   if (mat->MaterialType() == INPAR::MAT::m_elchmat)
   {
-    equpot_ = elchpara_->EquPot();
-
     const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
 
     for (int iphase=0; iphase < actmat->NumPhase();++iphase)
@@ -229,51 +234,44 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
 
     // factor given by spatial function
     double functfac = 1.0;
-    // determine global coordinates of current Gauss point
-    double coordgp[3]; // we always need three coordinates for function evaluation!
-    for (int i = 0; i< 3; i++)
-      coordgp[i] = 0.0;
 
-    for (int i = 0; i< my::nsd_; i++)
+    // determine global coordinates of current Gauss point
+    double coordgp[3];   // we always need three coordinates for function evaluation!
+    for(int i=0; i<3; ++i)
+      coordgp[i] = 0.;
+    for(int i=0; i<my::nsd_; ++i)
     {
-      coordgp[i] = 0.0;
-      for (int j = 0; j < my::nen_; j++)
-      {
-        coordgp[i] += my::xyze_(i,j) * my::funct_(j);
-      }
+      coordgp[i] = 0.;
+      for(int j=0; j<my::nen_; ++j)
+        coordgp[i] += my::xyze_(i,j)*my::funct_(j);
     }
 
-    int functnum = -1;
-    const double* coordgpref = &coordgp[0]; // needed for function evaluation
+    const double* coordgpref = &coordgp[0];   // needed for function evaluation
 
-
-    for(int dof=0;dof<my::numdofpernode_;dof++)
+    for(int dof=0; dof<my::numdofpernode_; ++dof)
     {
       if ((*onoff)[dof]) // is this dof activated?
       {
+        int functnum = -1;
+
         // factor given by spatial function
-        if (func) functnum = (*func)[dof];
-        {
-          if (functnum>0)
-          {
-            // evaluate function at current gauss point (provide always 3D coordinates!)
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
-          }
-          else
-            functfac = 1.0;
-        }
+        if(func)
+          functnum = (*func)[dof];
+
+        // evaluate function at current Gauss point (provide always 3D coordinates!)
+        if(functnum>0)
+          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
+        else
+          functfac = 1.;
 
         const double val_fac_functfac = (*val)[dof]*fac*functfac;
 
-        for (int node=0;node<my::nen_;++node)
-        {
+        for(int node=0; node<my::nen_; ++node)
           //TODO: with or without eps_
           elevec1[node*my::numdofpernode_+dof] += my::funct_(node)*val_fac_functfac*dmedc_->GetPhasePoro(0);
-        }
       } // if ((*onoff)[dof])
-    }
-  } //end of loop over integration points
-
+    } // loop over dofs
+  } // loop over integration points
 
   // **********************************************************************
   // add boundary flux contributions to the potential equation as well!
@@ -408,9 +406,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
     if (scatratype == INPAR::SCATRA::scatratype_undefined)
       dserror("Element parameter SCATRATYPE has not been set!");
 
-    // type of closing equation for electric potential
-    equpot_ = elchpara_->EquPot();
-
     // get actual values of transported scalars
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
@@ -441,7 +436,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
     const int                 zerocur = cond->GetInt("zero_cur");
     if(nume < 0)
       dserror("The convention for electrochemical reactions at the electrodes does not allow \n"
-          "a negative number of transfered electrones");
+          "a negative number of transferred electrons");
 
     const std::vector<int>*   stoich = cond->GetMutable<std::vector<int> >("stoich");
     if((unsigned int)my::numscal_ != (*stoich).size())
@@ -620,7 +615,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
 
     if(nume < 0)
       dserror("The convention for electrochemical reactions at the electrodes does not allow \n"
-          "a negative number of transfered electrones");
+          "a negative number of transferred electrons");
 
     const std::vector<int>*   stoich = cond->GetMutable<std::vector<int> >("stoich");
     if((unsigned int)my::numscal_ != (*stoich).size())
@@ -660,8 +655,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
 
     // concentration of active species at integration point
     std::vector<double> conint(my::numscal_,0.0);
-    // el. potential at integration point
-    double potint(0.0);
 
     // index of reactive species (starting from zero)
     // loop over all scalars
@@ -683,7 +676,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
         for(int kk=0;kk<my::numscal_;++kk)
           conint[kk] = my::funct_.Dot(conreact[kk]);
 
-        potint = my::funct_.Dot(pot);
+        // el. potential at integration point
+        const double potint = my::funct_.Dot(pot);
 
         if (c0 < EPS12) dserror("reference concentration is too small (c0 < 1.0E-12) : %f",c0);
 
@@ -725,7 +719,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
 )
 {
   //for pre-multiplication of i0 with 1/(F z_k)
-  double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or muC / mumol
+  const double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or µC/µmol
 
   // integration points and weights
   DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -750,13 +744,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
 
   // concentration of active species at integration point
   std::vector<double> conint(my::numscal_,0.0);
-  // el. potential at integration point
-  double potint(0.0);
-  // history of potential phi on electrode boundary at integration point
-  double phihistint(0.0);
 
   // index of reactive species (starting from zero)
-  // convention: n need to be positiv
+  // convention: n need to be positive
   //
   // Sum_i (s_i  M_i^(z_i)) -> n e-
 
@@ -768,7 +758,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
 
     //(- N^(d+m)*n) = j = s_k / (nume * faraday * z_e-) * i
     //                  = s_k / (nume * faraday * (-1)) * i
-    //                    |_______fns__________|
+    //                    |_______fns_________________|
     // see, e.g. in Ehrl et al., "A computational approach for the simulation of natural convection in
     // electrochemical cells", JCP, 2012
     double fns = -1.0/faraday/nume;
@@ -776,156 +766,218 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
     fns*=stoich[k];
 
     // get valence of the single reactant
-    double valence_k(0.0);
-    if (material->MaterialType() == INPAR::MAT::m_matlist)
+    const double valence_k = GetValence(material,k);
+
+   /*----------------------------------------------------------------------*
+    |               start loop over integration points                     |
+    *----------------------------------------------------------------------*/
+    for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
     {
-      const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+      const double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
-      const int matid = actmat->MatID(k);
-      Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
-      if (singlemat->MaterialType() == INPAR::MAT::m_ion)
+      // elch-specific values at integration point:
+      // concentration is evaluated at all GP since some reaction models depend on all concentrations
+      for(int kk=0;kk<my::numscal_;++kk)
+        conint[kk] = my::funct_.Dot(conreact[kk]);
+
+      // el. potential at integration point
+      const double potint = my::funct_.Dot(pot);
+
+      // history of potential phi on electrode boundary at integration point
+      const double phihistint = my::funct_.Dot(phihist);
+
+      // electrode potential difference (epd) at integration point
+      const double epd = (pot0 - potint);
+
+      // concentration-dependent Butler-Volmer law(s)
+      switch(kinetics)
       {
-        const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
-        valence_k = actsinglemat->Valence();
-        if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
-      }
-      else
-        dserror("single material type is not 'ion'");
-    }
-    else if (material->MaterialType() == INPAR::MAT::m_elchmat)
-    {
-      const Teuchos::RCP<const MAT::ElchMat>& actmat
-         = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(material);
-
-      // access ionic species
-      if (actmat->NumPhase() != 1) dserror("In the moment a single phase is only allowed.");
-
-      // 1) loop over single phases
-      for (int iphase=0; iphase < actmat->NumPhase();++iphase)
+      case INPAR::SCATRA::butler_volmer:
+      case INPAR::SCATRA::butler_volmer_yang1997:
       {
-        const int phaseid = actmat->PhaseID(iphase);
-        Teuchos::RCP<const MAT::Material> singlephase = actmat->PhaseById(phaseid);
+        // read model-specific parameter
+        const double alphaa = cond->GetDouble("alpha_a");
+        const double alphac = cond->GetDouble("alpha_c");
+        const double dlcap = cond->GetDouble("dl_spec_cap");
+        double pot0hist = 0.0;
+        if(dlcap!=0.0)
+          pot0hist = cond->GetDouble("pot0hist");
+        double       i0 = cond->GetDouble("i0");
+        if (i0 < -EPS14) dserror("i0 is negative, \n"
+                                 "a positive definition is necessary due to generalized reaction models: %f",i0);
+        // add time factor
+        i0*=timefac;
+        const double gamma = cond->GetDouble("gamma");
+        const double refcon = cond->GetDouble("refcon");
+        if (refcon < EPS12) dserror("reference concentration is too small: %f",refcon);
 
-        const Teuchos::RCP<const MAT::ElchPhase>& actphase
-                  = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(singlephase);
+        if(valence_k!=nume)
+          dserror("Kinetic model Butler-Volmer: The number of transferred electrons need to be  \n "
+              "the same as the charge number of the reacting species %i", k);
 
-        // 2) loop over materials of the single phase
-        for (int imat=0; imat < actphase->NumMat();++imat)
+        // open circuit potential is assumed to be zero
+        const double ocp = 0.0;
+
+        // overpotential based on opencircuit potential
+        const double eta = epd - ocp;
+
+#if 0
+        // print all parameters read from the current condition
+        std::cout<<"kinetic model  = "<<*kinetics<<std::endl;
+        std::cout<<"react. species = "<<speciesid<<std::endl;
+        std::cout<<"pot0(mod.)     = "<<pot0<<std::endl;
+        std::cout<<"curvenum       = "<<curvenum<<std::endl;
+        std::cout<<"alpha_a        = "<<alphaa<<std::endl;
+        std::cout<<"alpha_c        = "<<alphac<<std::endl;
+        std::cout<<"i0(mod.)       = "<<i0<<std::endl;
+        std::cout<<"gamma          = "<<gamma<<std::endl;
+        std::cout<<"refcon         = "<<refcon<<std::endl;
+        std::cout<<"F/RT           = "<<frt<<std::endl<<std::endl;
+        std::cout<<"time factor    = "<<timefac<<std::endl;
+        std::cout<<"alpha_F        = "<<alphaF<<std::endl;
+#endif
+
+#ifdef DEBUG
+        // some safety checks/ user warnings
+        if ((alphaa*frt*eta) > 100.0)
+          std::cout<<"WARNING: Exp(alpha_a...) in Butler-Volmer law is near overflow!"
+          <<exp(alphaa*frt*eta)<<std::endl;
+        if (((-alphac)*frt*eta) > 100.0)
+          std::cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
+          <<exp((-alphac)*frt*eta)<<std::endl;
+#endif
+        double pow_conint_gamma_k = 0.0;
+        if ((conint[k]/refcon) < EPS13)
         {
-          const int matid = actphase->MatID(imat);
-          Teuchos::RCP<const MAT::Material> singlemat = actphase->MatById(matid);
-
-          if  (singlemat->MaterialType() == INPAR::MAT::m_newman)
-          {
-            const MAT::Newman* actsinglemat = static_cast<const MAT::Newman*>(singlemat.get());
-            valence_k = actsinglemat->Valence();
-            if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
-          }
-          else if (singlemat->MaterialType() == INPAR::MAT::m_ion)
-          {
-            const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
-            valence_k = actsinglemat->Valence();
-            if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
-          }
-          else
-            dserror("");
+          pow_conint_gamma_k = std::pow(EPS13,gamma);
+#ifdef DEBUG
+          std::cout<<"WARNING: Rel. Conc. in Butler-Volmer formula is zero/negative: "<<(conint[k]/refcon)<<std::endl;
+          std::cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<std::endl;
+#endif
         }
+        else
+          pow_conint_gamma_k = std::pow(conint[k]/refcon,gamma);
+
+        if (kinetics==INPAR::SCATRA::butler_volmer)
+        {
+          // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
+          const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
+
+          double concterm = 0.0;
+          if (conint[k] > EPS13)
+            concterm = gamma*pow(conint[k],(gamma-1.0))/pow(refcon,gamma);
+          else
+            concterm = gamma*pow(EPS13,(gamma-1.0))/pow(refcon,gamma);
+
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            const double fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
+
+            // ------matrix: d(R_k)/dx = d(theta*dt*(-1)*(w_k,j_k))/dx
+            for (int ui=0; ui<my::nen_; ++ui)
+            {
+              emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k) += -fac_fns_i0_funct_vi*concterm*my::funct_(ui)*expterm;
+              emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) += -fac_fns_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*my::funct_(ui);
+            }
+
+            // -----right-hand-side: -R_k = -theta*dt*(-1)*(w_k,j_k)
+            erhs[vi*my::numdofpernode_+k] -= -fac_fns_i0_funct_vi*pow_conint_gamma_k*expterm;
+          }
+
+          if(dlcap!=0.0)
+          {
+            for (int vi=0; vi<my::nen_; ++vi)
+            {
+              //TODO: Do we need epsilon here
+              //add terms of double layer capacitance current density
+              for (int ui=0; ui<my::nen_; ++ui)
+                emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) += fac*my::funct_(vi)*my::funct_(ui)*dlcap/(nume*faraday);
+
+              // -----right-hand-side: -R_k = -(theta*dt*(-1)*(w_k,j_k)
+              erhs[vi*my::numdofpernode_+k] += fac*my::funct_(vi)*dlcap/(nume*faraday)*(phihistint-pot0hist-potint+pot0);
+            }
+          }
+        } // end if(kinetics=="Butler-Volmer")
+
+        else if (kinetics==INPAR::SCATRA::butler_volmer_yang1997)
+        {
+          if(dlcap!=0.0)
+            dserror("double layer charging is not implemented for Butler-Volmer-Yang electrode kinetics");
+
+          // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
+          double concterm = 0.0;
+          if ((conint[k]/refcon) > EPS13)
+            concterm = gamma*pow(conint[k],(gamma-1.0))/pow(refcon,gamma);
+          else
+            concterm = gamma*pow(EPS13,(gamma-1.0))/pow(refcon,gamma);
+
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            const double fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
+            // ------matrix: d(R_k)/dx = d(theta*dt*(-1)*(w_k,j_k))/dx
+            for (int ui=0; ui<my::nen_; ++ui)
+            {
+              emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k) += -fac_fns_i0_funct_vi*my::funct_(ui)*(-(concterm*exp((-alphac)*frt*eta)));
+              emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) += -fac_fns_i0_funct_vi*(((-alphaa)*frt*exp(alphaa*frt*eta))+(pow_conint_gamma_k*(-alphac)*frt*exp((-alphac)*frt*eta)))*my::funct_(ui);
+            }
+
+            // -----right-hand-side: -R_k = -theta*dt*(-1)*(w_k,j_k)
+            erhs[vi*my::numdofpernode_+k] -= -fac_fns_i0_funct_vi*(exp(alphaa*frt*eta)-(pow_conint_gamma_k*exp((-alphac)*frt*eta)));
+          }
+        } // if (kinetics=="Butler-Volmer-Yang1997")
+        else
+          dserror("You should not be here!! Two options: Butler-Volmer-Yang1997 and Butler-Volmer-Yang1997 ");
+        break;
       }
-    }
-    else
-      dserror("material type is not a 'matlist' material");
 
- /*----------------------------------------------------------------------*
-  |               start loop over integration points                     |
-  *----------------------------------------------------------------------*/
-  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
-  {
-    const double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+      // Tafel law (see phd-thesis Georg Bauer, pp.25):
+      // implementation of cathodic path: i_n = i_0 * (-exp(-alpha * frt* eta)
+      // -> cathodic reaction path: i_0 > 0 and alpha > 0
+      // -> anodic reacton path:    i_0 < 0 and alpha < 0
+      case INPAR::SCATRA::tafel:
+      {
+        // read model-specific parameter
+        const double alpha = cond->GetDouble("alpha");
+        double       i0 = cond->GetDouble("i0");
+        i0*=timefac;
+        const double gamma = cond->GetDouble("gamma");
+        const double refcon = cond->GetDouble("refcon");
+        if (refcon < EPS12) dserror("reference concentration is too small: %f",refcon);
+        const double dlcap = cond->GetDouble("dl_spec_cap");
+        if(dlcap!=0.0) dserror("double layer charging is not implemented for Tafel electrode kinetics");
 
-    // elch-specific values at integration point:
-    // concentration is evaluated at all GP since some reaction models depend on all concentrations
-    for(int kk=0;kk<my::numscal_;++kk)
-      conint[kk] = my::funct_.Dot(conreact[kk]);
-    potint = my::funct_.Dot(pot);
+        if(valence_k!=nume)
+          dserror("Kinetic model Butler-Volmer: The number of transferred electrons need to be  \n "
+              "the same as the charge number of the reacting species %i", k);
+        // opencircuit potential is assumed to be zero
+        const double ocp = 0.0;
+        // overpotential based on opencircuit potential
+        const double eta = epd - ocp;
 
-    phihistint = my::funct_.Dot(phihist);
-
-    // electrode potential difference (epd) at integration point
-    const double epd = (pot0 - potint);
-
-    // concentration-dependent Butler-Volmer law(s)
-    switch(kinetics)
-    {
-    case INPAR::SCATRA::butler_volmer:
-    case INPAR::SCATRA::butler_volmer_yang1997:
-    {
-      // read model-specific parameter
-      const double alphaa = cond->GetDouble("alpha_a");
-      const double alphac = cond->GetDouble("alpha_c");
-      const double dlcap = cond->GetDouble("dl_spec_cap");
-      double pot0hist = 0.0;
-      if(dlcap!=0.0)
-        pot0hist = cond->GetDouble("pot0hist");
-      double       i0 = cond->GetDouble("i0");
-      if (i0 < -EPS14) dserror("i0 is negative, \n"
-                               "a positive definition is necessary due to generalized reaction models: %f",i0);
-      // add time factor
-      i0*=timefac;
-      const double gamma = cond->GetDouble("gamma");
-      const double refcon = cond->GetDouble("refcon");
-      if (refcon < EPS12) dserror("reference concentration is too small: %f",refcon);
-
-      if(valence_k!=nume)
-        dserror("Kinetic model Butler-Volmer: The number of transfered electrodes need to be  \n "
-            "the same as the charge number of the reacting species %i", k);
-      // opencircuit potential is assumed to be zero
-      const double ocp = 0.0;
-      // overpotential based on opencircuit potential
-      const double eta = epd - ocp;
-
-# if 0
-      // print all parameters read from the current condition
-      std::cout<<"kinetic model  = "<<*kinetics<<std::endl;
-      std::cout<<"react. species = "<<speciesid<<std::endl;
-      std::cout<<"pot0(mod.)     = "<<pot0<<std::endl;
-      std::cout<<"curvenum       = "<<curvenum<<std::endl;
-      std::cout<<"alpha_a        = "<<alphaa<<std::endl;
-      std::cout<<"alpha_c        = "<<alphac<<std::endl;
-      std::cout<<"i0(mod.)       = "<<i0<<std::endl;
-      std::cout<<"gamma          = "<<gamma<<std::endl;
-      std::cout<<"refcon         = "<<refcon<<std::endl;
-      std::cout<<"F/RT           = "<<frt<<std::endl<<std::endl;
-      std::cout<<"time factor    = "<<timefac<<std::endl;
-      std::cout<<"alpha_F        = "<<alphaF<<std::endl;
-#endif
+        // concentration-dependent Tafel law
+        double pow_conint_gamma_k(0.0);
 
 #ifdef DEBUG
-      // some safety checks/ user warnings
-      if ((alphaa*frt*eta) > 100.0)
-        std::cout<<"WARNING: Exp(alpha_a...) in Butler-Volmer law is near overflow!"
-        <<exp(alphaa*frt*eta)<<std::endl;
-      if (((-alphac)*frt*eta) > 100.0)
-        std::cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
-        <<exp((-alphac)*frt*eta)<<std::endl;
+        // some safety checks/ user warnings
+        if (((-alpha)*frt*eta) > 100.0)
+          std::cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
+            <<exp((-alpha)*frt*eta)<<std::endl;
 #endif
-      double pow_conint_gamma_k = 0.0;
-      if ((conint[k]/refcon) < EPS13)
-      {
-        pow_conint_gamma_k = std::pow(EPS13,gamma);
+        if ((conint[k]/refcon) < EPS13)
+        {
+          pow_conint_gamma_k = std::pow(EPS13,gamma);
 #ifdef DEBUG
-        std::cout<<"WARNING: Rel. Conc. in Butler-Volmer formula is zero/negative: "<<(conint[k]/refcon)<<std::endl;
-        std::cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<std::endl;
+          std::cout<<"WARNING: Rel. Conc. in Tafel formula is zero/negative: "<<(conint[k]/refcon)<<std::endl;
+          std::cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<std::endl;
 #endif
-      }
-      else
-        pow_conint_gamma_k = std::pow(conint[k]/refcon,gamma);
+        }
+        else
+          pow_conint_gamma_k = std::pow(conint[k]/refcon,gamma);
 
-      if (kinetics==INPAR::SCATRA::butler_volmer)
-      {
-        // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
-        const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
+        const double expterm = -exp((-alpha)*frt*eta);
 
         double concterm = 0.0;
+        // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
         if (conint[k] > EPS13)
           concterm = gamma*pow(conint[k],(gamma-1.0))/pow(refcon,gamma);
         else
@@ -934,24 +986,83 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
         for (int vi=0; vi<my::nen_; ++vi)
         {
           const double fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
-
-          // ------matrix: d(R_k)/d(x) = (theta*dt*(-1)*(w_k,j_k)
+          // ---------------------matrix
           for (int ui=0; ui<my::nen_; ++ui)
           {
             emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k) += -fac_fns_i0_funct_vi*concterm*my::funct_(ui)*expterm;
-            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) += -fac_fns_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*my::funct_(ui);
+            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) += -fac_fns_i0_funct_vi*pow_conint_gamma_k*(-alpha)*frt*exp((-alpha)*frt*eta)*my::funct_(ui); // do not forget the (-1) from differentiation of eta!
           }
-
-          // -----right-hand-side: -R_k = -(theta*dt*(-1)*(w_k,j_k)
+          // ------------right-hand-side
           erhs[vi*my::numdofpernode_+k] -= -fac_fns_i0_funct_vi*pow_conint_gamma_k*expterm;
+        }
+        break;
+      }
+
+      // linear law:  i_n = frt*i_0*((alphaa+alpha_c)*(V_M - phi)) -> changed 10/13
+      // previously implemented: i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
+      //                         -> linearization in respect to anodic branch!!
+      //                         this is not the classical verion of a linear electrode kinetics law
+      case INPAR::SCATRA::linear:
+      {
+        // read model-specific parameter
+        const double alphaa = cond->GetDouble("alpha");
+        double       i0 = cond->GetDouble("i0");
+        const double dlcap = cond->GetDouble("dl_spec_cap");
+        double pot0hist = 0.0;
+        if(dlcap!=0.0)
+          pot0hist = cond->GetDouble("pot0hist");
+        i0*=timefac;
+        if (i0 < -EPS14) dserror("i0 is negative, \n"
+                                 "a positive definition is necessary due to generalized reaction models: %f",i0);
+        const double gamma = cond->GetDouble("gamma");
+        const double refcon = cond->GetDouble("refcon");
+        if (refcon < EPS12) dserror("reference concentration is too small: %f",refcon);
+
+        if(valence_k!=nume)
+          dserror("Kinetic model Butler-Volmer: The number of transferred electrons need to be  \n "
+              "the same as the charge number of the reacting species %i", k);
+        // opencircuit potential is assumed to be zero
+        const double ocp = 0.0;
+        // overpotential based on opencircuit potential
+        const double eta = epd - ocp;
+
+        double pow_conint_gamma_k = 0.0;
+        if ((conint[k]/refcon) < EPS13)
+        {
+          pow_conint_gamma_k = std::pow(EPS13,gamma);
+#ifdef DEBUG
+          std::cout<<"WARNING: Rel. Conc. in Tafel formula is zero/negative: "<<(conint[k]/refcon)<<std::endl;
+          std::cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<std::endl;
+#endif
+        }
+        else
+          pow_conint_gamma_k = std::pow(conint[k]/refcon,gamma);
+        const double linearfunct = (alphaa*frt*eta);
+        // note: gamma==0 deactivates concentration dependency
+        double concterm = 0.0;
+        if (conint[k] > EPS13)
+          concterm = gamma*pow(conint[k],(gamma-1.0))/pow(refcon,gamma);
+        else
+          dserror("Better stop here!");
+
+        for (int vi=0; vi<my::nen_; ++vi)
+        {
+          const double fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
+          const int fvi = vi*my::numdofpernode_+k;
+          // ---------------------matrix
+          for (int ui=0; ui<my::nen_; ++ui)
+          {
+            emat(fvi,ui*my::numdofpernode_+k) += -fac_fns_i0_funct_vi*concterm*my::funct_(ui)*linearfunct;
+            emat(fvi,ui*my::numdofpernode_+my::numscal_) += -fac_fns_i0_funct_vi*pow_conint_gamma_k*(-alphaa)*frt*my::funct_(ui);
+          }
+          // ------------right-hand-side
+          erhs[fvi] -= -fac_fns_i0_funct_vi*pow_conint_gamma_k*linearfunct;
         }
 
         if(dlcap!=0.0)
         {
           for (int vi=0; vi<my::nen_; ++vi)
-          {
-            //TODO: Do we need epsilon here
-            //add terms of double layer capacitance current density
+          {//add terms of double layer capacitance current density
             for (int ui=0; ui<my::nen_; ++ui)
               emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) += fac*my::funct_(vi)*my::funct_(ui)*dlcap/(nume*faraday);
 
@@ -959,468 +1070,509 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
             erhs[vi*my::numdofpernode_+k] += fac*my::funct_(vi)*dlcap/(nume*faraday)*(phihistint-pot0hist-potint+pot0);
           }
         }
-      } // end if(kinetics=="Butler-Volmer")
+        break;
+      }
 
-      else if (kinetics==INPAR::SCATRA::butler_volmer_yang1997)
+      case INPAR::SCATRA::butler_volmer_newman:
       {
-        if(dlcap!=0.0)
-          dserror("double layer charging is not implemented for Butler-Volmer-Yang electrode kinetics");
+        // "Electrochemical systems"
+        // Newman and Thomas-Alyea, 2004
+        // General stoichiometry: pp. 212-213, e.q. 8.26
+        // consideration of a elementary step of the form:
+        // Sum_i s_i M_i ->  ne-
+        // n is one if charge transfer is involved, multiple electron transfers "being unlikely in
+        // an elementary step
 
-        // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
-        double concterm = 0.0;
-        if ((conint[k]/refcon) > EPS13)
-          concterm = gamma*pow(conint[k],(gamma-1.0))/pow(refcon,gamma);
-        else
-          concterm = gamma*pow(EPS13,(gamma-1.0))/pow(refcon,gamma);
+        const double k_a = cond->GetDouble("k_a");
+        const double k_c = cond->GetDouble("k_c");
+        const double beta = cond->GetDouble("beta");
+        const double dlcap = cond->GetDouble("dl_spec_cap");
+        if(dlcap!=0.0) dserror("double layer charging is not implemented for Butler-Volmer-Newman electrode kinetics");
+
+        //reaction order of the cathodic and anodic reactants of ionic species k
+        std::vector<int> q(my::numscal_,0);
+        std::vector<int> p(my::numscal_,0);
+
+        for(int ii=0; ii<my::numscal_; ii++)
+        {
+          //according to the convention: anodic reactant is positiv
+          if(stoich[ii] > 0)
+          {
+            q[ii] = 0;
+            p[ii] = stoich[ii];
+          }
+          //according to the convention: cathodic reactant is negative
+          else
+          {
+            q[ii]= -stoich[ii];
+            p[ii] = 0;
+          }
+        }
+
+#ifdef DEBUG
+        // some safety checks/ user warnings
+        if (((1-beta)*frt*epd) > 100.0)
+          std::cout<<"WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
+          <<exp((1-beta)*frt*epd)<<std::endl;
+        if (((-beta)*frt*epd) > 100.0)
+          std::cout<<"WARNING: Exp(-beta...) in Butler-Volmer law is near overflow!"
+          <<exp((-beta)*frt*epd)<<std::endl;
+#endif
+
+        double pow_conint_p(1.0);      //product over i (c_i)^(p_i)
+        double pow_conint_q(1.0);      //product over i (c_i)^(q_i)
+        std::vector<double> pow_conint_p_derivative(my::numscal_,1.0);  //pow_conint_p derivated after conint[nspec]
+        std::vector<double> pow_conint_q_derivative(my::numscal_,1.0); //pow_conint_q derivated after conint[nspec]
+
+        //concentration term (product of cathodic and anodic species)
+        for(int kk=0; kk<my::numscal_; ++kk)
+        {
+          if ((conint[kk]) < EPS13) // 1.0E-16)
+          {
+            pow_conint_p *= std::pow(EPS13,p[kk]);
+            pow_conint_q *= std::pow(EPS13,q[kk]);
+#ifdef DEBUG
+            std::cout<<"WARNING: Rel. Conc. of species" <<k<<" in Butler-Volmer formula is zero/negative: "<<(conint[k])<<std::endl;
+            std::cout<<"-> Replacement value: pow(1.0E-16,p[ispec]) = "<< pow(EPS13,p[k]) << " pow(1.0E-13,q[k]) = "<< pow(EPS13,q[k]) <<std::endl;
+#endif
+          }
+          else
+          {
+            pow_conint_p *= std::pow((conint[kk]),p[kk]);
+            pow_conint_q *= std::pow((conint[kk]),q[kk]);
+          }
+        }
+
+        //derivation of concentration term  with respect to ionic species kk
+        for(int kk=0; kk<my::numscal_; ++kk)
+        {
+          pow_conint_p_derivative[kk] = pow_conint_p*p[kk]/conint[kk];
+          pow_conint_q_derivative[kk] = pow_conint_q*q[kk]/conint[kk];
+        }
+
+        // loop over reacting species; determines the line of the matrix
+        const double expterma = exp((1-beta)*nume*frt*epd);
+        const double exptermc = exp((-beta)*nume*frt*epd);
 
         for (int vi=0; vi<my::nen_; ++vi)
         {
-          const double fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
-          // ------matrix: d(R_k)/d(x) = (theta*dt*(-1)*(w_k,j_k)
+          // see Wittmann, Erweiterte Reaktionsmodelle für die numerische Simulation von
+          // elektrochemischen Systemen, p.20, equ. 3.4
+          const double fac_fns_funct_vi = faraday*nume*fac*fns*my::funct_(vi)*dmedc_->GetPhasePoro(0);
           for (int ui=0; ui<my::nen_; ++ui)
           {
-            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k) += -fac_fns_i0_funct_vi*my::funct_(ui)*(-(concterm*exp((-alphac)*frt*eta)));
-            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) += -fac_fns_i0_funct_vi*(((-alphaa)*frt*exp(alphaa*frt*eta))+(pow_conint_gamma_k*(-alphac)*frt*exp((-alphac)*frt*eta)))*my::funct_(ui);
+            //loop over the columns of the matrix, makes sure that the linearisation w.r.t the first concentration is added to the first column
+            for(int kk=0; kk<my::numscal_; ++kk)
+            {
+              emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+kk) += -fac_fns_funct_vi*((k_a*expterma*pow_conint_p_derivative[kk]) - (k_c*exptermc*pow_conint_q_derivative[kk]))*my::funct_(ui)*timefac;
+            }
+            //linearisation w.r.t the potential
+            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) += -fac_fns_funct_vi*((-k_a*(1-beta)*nume*frt*expterma*pow_conint_p) - (k_c*beta*nume*frt*exptermc*pow_conint_q))*my::funct_(ui)*timefac;
           }
-          // -----right-hand-side: -R_k = -(theta*dt*(-1)*(w_k,j_k)
-          erhs[vi*my::numdofpernode_+k] -= -fac_fns_i0_funct_vi*(exp(alphaa*frt*eta)-(pow_conint_gamma_k*exp((-alphac)*frt*eta)));
+          // ------------right-hand-side
+          erhs[vi*my::numdofpernode_+k] -= -(fac_fns_funct_vi*((k_a*expterma*pow_conint_p)-(k_c*exptermc*pow_conint_q)))*timefac;
         }
-      } // if (kinetics=="Butler-Volmer-Yang1997")
-      else
-        dserror("You should not be here!! Two options: Butler-Volmer-Yang1997 and Butler-Volmer-Yang1997 ");
-      break;
-    }
-
-    // Tafel law (see phd-thesis Georg Bauer, pp.25):
-    // implementation of cathodic path: i_n = i_0 * (-exp(-alpha * frt* eta)
-    // -> cathodic reaction path: i_0 > 0 and alpha > 0
-    // -> anodic reacton path:    i_0 < 0 and alpha < 0
-    case INPAR::SCATRA::tafel:
-    {
-      // read model-specific parameter
-      const double alpha = cond->GetDouble("alpha");
-      double       i0 = cond->GetDouble("i0");
-      i0*=timefac;
-      const double gamma = cond->GetDouble("gamma");
-      const double refcon = cond->GetDouble("refcon");
-      if (refcon < EPS12) dserror("reference concentration is too small: %f",refcon);
-      const double dlcap = cond->GetDouble("dl_spec_cap");
-      if(dlcap!=0.0) dserror("double layer charging is not implemented for Tafel electrode kinetics");
-
-      if(valence_k!=nume)
-        dserror("Kinetic model Butler-Volmer: The number of transfered electrodes need to be  \n "
-            "the same as the charge number of the reacting species %i", k);
-      // opencircuit potential is assumed to be zero
-      const double ocp = 0.0;
-      // overpotential based on opencircuit potential
-      const double eta = epd - ocp;
-
-      // concentration-dependent Tafel law
-      double pow_conint_gamma_k(0.0);
-
-#ifdef DEBUG
-      // some safety checks/ user warnings
-      if (((-alpha)*frt*eta) > 100.0)
-        std::cout<<"WARNING: Exp(alpha_c...) in Butler-Volmer law is near overflow!"
-          <<exp((-alpha)*frt*eta)<<std::endl;
-#endif
-      if ((conint[k]/refcon) < EPS13)
-      {
-        pow_conint_gamma_k = std::pow(EPS13,gamma);
-#ifdef DEBUG
-        std::cout<<"WARNING: Rel. Conc. in Tafel formula is zero/negative: "<<(conint[k]/refcon)<<std::endl;
-        std::cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<std::endl;
-#endif
+        break;
       }
-      else
-        pow_conint_gamma_k = std::pow(conint[k]/refcon,gamma);
-
-      const double expterm = -exp((-alpha)*frt*eta);
-
-      double concterm = 0.0;
-      // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
-      if (conint[k] > EPS13)
-        concterm = gamma*pow(conint[k],(gamma-1.0))/pow(refcon,gamma);
-      else
-        concterm = gamma*pow(EPS13,(gamma-1.0))/pow(refcon,gamma);
-
-      for (int vi=0; vi<my::nen_; ++vi)
+      case INPAR::SCATRA::butler_volmer_bard:
       {
-        const double fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
-        // ---------------------matrix
-        for (int ui=0; ui<my::nen_; ++ui)
+        // "Electrochemcial Methods Fundamentals and Applications"
+        // Bard and Faulkner, 2001, pp. 94 ff; pp. 99 eq. 3.4.10
+        // reaction model for a one-step, one-electron process (elementar step)
+        // O + e -> R
+        const double e0 = cond->GetDouble("e0");
+        const double k0 = cond->GetDouble("k0");
+        const double beta = cond->GetDouble("beta");
+        const double c_c0 = cond->GetDouble("c_c0");
+        const double c_a0 = cond->GetDouble("c_a0");
+        const double dlcap = cond->GetDouble("dl_spec_cap");
+        if(dlcap!=0.0) dserror("double layer charging is not implemented for Butler-Volmer-Bard electrode kinetics");
+
+        if(nume!=1)
+          dserror("electron != 1; \n "
+              "this Butler-Volmer-equation (Bard/Faulkner) works for elementary steps (one electron) only!");
+
+        // only one reactant and product are supported by the basic model
+        // only stoichiometry of 1
         {
-          emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k) += -fac_fns_i0_funct_vi*concterm*my::funct_(ui)*expterm;
-          emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) += -fac_fns_i0_funct_vi*pow_conint_gamma_k*(-alpha)*frt*exp((-alpha)*frt*eta)*my::funct_(ui); // do not forget the (-1) from differentiation of eta!
-        }
-        // ------------right-hand-side
-        erhs[vi*my::numdofpernode_+k] -= -fac_fns_i0_funct_vi*pow_conint_gamma_k*expterm;
-      }
-      break;
-    }
-
-    // linear law:  i_n = frt*i_0*((alphaa+alpha_c)*(V_M - phi)) -> changed 10/13
-    // previously implemented: i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
-    //                         -> linearization in respect to anodic branch!!
-    //                         this is not the classical verion of a linear electrode kinetics law
-    case INPAR::SCATRA::linear:
-    {
-      // read model-specific parameter
-      const double alphaa = cond->GetDouble("alpha");
-      double       i0 = cond->GetDouble("i0");
-      const double dlcap = cond->GetDouble("dl_spec_cap");
-      double pot0hist = 0.0;
-      if(dlcap!=0.0)
-        pot0hist = cond->GetDouble("pot0hist");
-      i0*=timefac;
-      if (i0 < -EPS14) dserror("i0 is negative, \n"
-                               "a positive definition is necessary due to generalized reaction models: %f",i0);
-      const double gamma = cond->GetDouble("gamma");
-      const double refcon = cond->GetDouble("refcon");
-      if (refcon < EPS12) dserror("reference concentration is too small: %f",refcon);
-
-      if(valence_k!=nume)
-        dserror("Kinetic model Butler-Volmer: The number of transfered electrodes need to be  \n "
-            "the same as the charge number of the reacting species %i", k);
-      // opencircuit potential is assumed to be zero
-      const double ocp = 0.0;
-      // overpotential based on opencircuit potential
-      const double eta = epd - ocp;
-
-      double pow_conint_gamma_k = 0.0;
-      if ((conint[k]/refcon) < EPS13)
-      {
-        pow_conint_gamma_k = std::pow(EPS13,gamma);
-#ifdef DEBUG
-        std::cout<<"WARNING: Rel. Conc. in Tafel formula is zero/negative: "<<(conint[k]/refcon)<<std::endl;
-        std::cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<std::endl;
-#endif
-      }
-      else
-        pow_conint_gamma_k = std::pow(conint[k]/refcon,gamma);
-      const double linearfunct = (alphaa*frt*eta);
-      // note: gamma==0 deactivates concentration dependency
-      double concterm = 0.0;
-      if (conint[k] > EPS13)
-        concterm = gamma*pow(conint[k],(gamma-1.0))/pow(refcon,gamma);
-      else
-        dserror("Better stop here!");
-
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        const double fac_fns_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
-        const int fvi = vi*my::numdofpernode_+k;
-        // ---------------------matrix
-        for (int ui=0; ui<my::nen_; ++ui)
-        {
-          emat(fvi,ui*my::numdofpernode_+k) += -fac_fns_i0_funct_vi*concterm*my::funct_(ui)*linearfunct;
-          emat(fvi,ui*my::numdofpernode_+my::numscal_) += -fac_fns_i0_funct_vi*pow_conint_gamma_k*(-alphaa)*frt*my::funct_(ui);
-        }
-        // ------------right-hand-side
-        erhs[fvi] -= -fac_fns_i0_funct_vi*pow_conint_gamma_k*linearfunct;
-      }
-
-      if(dlcap!=0.0)
-      {
-        for (int vi=0; vi<my::nen_; ++vi)
-        {//add terms of double layer capacitance current density
-          for (int ui=0; ui<my::nen_; ++ui)
-            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) += fac*my::funct_(vi)*my::funct_(ui)*dlcap/(nume*faraday);
-
-          // -----right-hand-side: -R_k = -(theta*dt*(-1)*(w_k,j_k)
-          erhs[vi*my::numdofpernode_+k] += fac*my::funct_(vi)*dlcap/(nume*faraday)*(phihistint-pot0hist-potint+pot0);
-        }
-      }
-      break;
-    }
-
-    case INPAR::SCATRA::butler_volmer_newman:
-    {
-      // "Electrochemical systems"
-      // Newman and Thomas-Alyea, 2004
-      // General stoichiometry: pp. 212-213, e.q. 8.26
-      // consideration of a elementary step of the form:
-      // Sum_i s_i M_i ->  ne-
-      // n is one if charge transfer is involved, multiple electron transfers "being unlikely in
-      // an elementary step
-
-      const double k_a = cond->GetDouble("k_a");
-      const double k_c = cond->GetDouble("k_c");
-      const double beta = cond->GetDouble("beta");
-      const double dlcap = cond->GetDouble("dl_spec_cap");
-      if(dlcap!=0.0) dserror("double layer charging is not implemented for Butler-Volmer-Newman electrode kinetics");
-
-      //reaction order of the cathodic and anodic reactants of ionic species k
-      std::vector<int> q(my::numscal_,0);
-      std::vector<int> p(my::numscal_,0);
-
-      for(int ii=0; ii<my::numscal_; ii++)
-      {
-        //according to the convention: anodic reactant is positiv
-        if(stoich[ii] > 0)
-        {
-          q[ii] = 0;
-          p[ii] = stoich[ii];
-        }
-        //according to the convention: cathodic reactant is negative
-        else
-        {
-          q[ii]= -stoich[ii];
-          p[ii] = 0;
-        }
-      }
-
-#ifdef DEBUG
-      // some safety checks/ user warnings
-      if (((1-beta)*frt*epd) > 100.0)
-        std::cout<<"WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
-        <<exp((1-beta)*frt*epd)<<std::endl;
-      if (((-beta)*frt*epd) > 100.0)
-        std::cout<<"WARNING: Exp(-beta...) in Butler-Volmer law is near overflow!"
-        <<exp((-beta)*frt*epd)<<std::endl;
-#endif
-
-      double pow_conint_p(1.0);      //product over i (c_i)^(p_i)
-      double pow_conint_q(1.0);      //product over i (c_i)^(q_i)
-      std::vector<double> pow_conint_p_derivative(my::numscal_,1.0);  //pow_conint_p derivated after conint[nspec]
-      std::vector<double> pow_conint_q_derivative(my::numscal_,1.0); //pow_conint_q derivated after conint[nspec]
-
-      //concentration term (product of cathodic and anodic species)
-      for(int kk=0; kk<my::numscal_; ++kk)
-      {
-        if ((conint[kk]) < EPS13) // 1.0E-16)
-        {
-          pow_conint_p *= std::pow(EPS13,p[kk]);
-          pow_conint_q *= std::pow(EPS13,q[kk]);
-#ifdef DEBUG
-          std::cout<<"WARNING: Rel. Conc. of species" <<k<<" in Butler-Volmer formula is zero/negative: "<<(conint[k])<<std::endl;
-          std::cout<<"-> Replacement value: pow(1.0E-16,p[ispec]) = "<< pow(EPS13,p[k]) << " pow(1.0E-13,q[k]) = "<< pow(EPS13,q[k]) <<std::endl;
-#endif
-        }
-        else
-        {
-          pow_conint_p *= std::pow((conint[kk]),p[kk]);
-          pow_conint_q *= std::pow((conint[kk]),q[kk]);
-        }
-      }
-
-      //derivation of concentration term  with respect to ionic species kk
-      for(int kk=0; kk<my::numscal_; ++kk)
-      {
-        pow_conint_p_derivative[kk] = pow_conint_p*p[kk]/conint[kk];
-        pow_conint_q_derivative[kk] = pow_conint_q*q[kk]/conint[kk];
-      }
-
-      // loop over reacting species; determines the line of the matrix
-      const double expterma = exp((1-beta)*nume*frt*epd);
-      const double exptermc = exp((-beta)*nume*frt*epd);
-
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        // see Wittmann, Erweiterte Reaktionsmodelle für die numerische Simulation von
-        // elektrochemischen Systemen, p.20, equ. 3.4
-        const double fac_fns_funct_vi = faraday*nume*fac*fns*my::funct_(vi)*dmedc_->GetPhasePoro(0);
-        for (int ui=0; ui<my::nen_; ++ui)
-        {
-          //loop over the columns of the matrix, makes sure that the linearisation w.r.t the first concentration is added to the first column
-          for(int kk=0; kk<my::numscal_; ++kk)
+          int check1 = 0;
+          int check2 = 0;
+          for(int kk=0; kk<my::numscal_;kk++)
           {
-            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+kk) += -fac_fns_funct_vi*((k_a*expterma*pow_conint_p_derivative[kk]) - (k_c*exptermc*pow_conint_q_derivative[kk]))*my::funct_(ui)*timefac;
+            if(abs(stoich[kk])>1)
+              dserror("Stoichiometry is larger than 1!! \n"
+                      "This is not supported by the reaction model based on Bard");
+
+            check1 += abs(stoich[kk]);
+            check2 += stoich[kk];
           }
-          //linearisation w.r.t the potential
-          emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) += -fac_fns_funct_vi*((-k_a*(1-beta)*nume*frt*expterma*pow_conint_p) - (k_c*beta*nume*frt*exptermc*pow_conint_q))*my::funct_(ui)*timefac;
-        }
-        // ------------right-hand-side
-        erhs[vi*my::numdofpernode_+k] -= -(fac_fns_funct_vi*((k_a*expterma*pow_conint_p)-(k_c*exptermc*pow_conint_q)))*timefac;
-      }
-      break;
-    }
-    case INPAR::SCATRA::butler_volmer_bard:
-    {
-      // "Electrochemcial Methods Fundamentals and Applications"
-      // Bard and Faulkner, 2001, pp. 94 ff; pp. 99 eq. 3.4.10
-      // reaction model for a one-step, one-electron process (elementar step)
-      // O + e -> R
-      const double e0 = cond->GetDouble("e0");
-      const double k0 = cond->GetDouble("k0");
-      const double beta = cond->GetDouble("beta");
-      const double c_c0 = cond->GetDouble("c_c0");
-      const double c_a0 = cond->GetDouble("c_a0");
-      const double dlcap = cond->GetDouble("dl_spec_cap");
-      if(dlcap!=0.0) dserror("double layer charging is not implemented for Butler-Volmer-Bard electrode kinetics");
-
-      if(nume!=1)
-        dserror("electron != 1; \n "
-            "this Butler-Volmer-equation (Bard/Faulkner) works for elementary steps (one electron) only!");
-
-      // only one reactant and product are supported by the basic model
-      // only stoichometry of 1
-      {
-        int check1 = 0;
-        int check2 = 0;
-        for(int kk=0; kk<my::numscal_;kk++)
-        {
-          if(abs(stoich[kk])>1)
-            dserror("Stoichometry is larger than 1!! \n"
+          if (check1>2 or check1==0)
+            dserror("More than one reactant or product defined!! \n"
                     "This is not supported by the reaction model based on Bard");
 
-          check1 += abs(stoich[kk]);
-          check2 += stoich[kk];
+          // At the moment it is not checked if two products or reactants are defined
         }
-        if (check1>2 or check1==0)
-          dserror("More than one reactant or product defined!! \n"
-                  "This is not supported by the reaction model based on Bard");
 
-        // At the moment it is not checked if two products or reactants are defined
-      }
+        // equilibrium potential (equilpot):
+        // defined in Bard, 2001, p.98, eq. 3.4.3
+        const double equilpot = e0 + (log(c_c0/c_a0))/(frt*nume);
+        // overpotential based on equilibrium potential
+        const double eta_equilpot = epd - equilpot;
 
-      // equilibrium potential (equilpot):
-      // defined in Bard, 2001, p.98, eq. 3.4.3
-      const double equilpot = e0 + (log(c_c0/c_a0))/(frt*nume);
-      // overpotential based on equilibrium potential
-      const double eta_equilpot = epd - equilpot;
+        // negative sign: we look at electon flow
+        const double i0 = k0*pow(c_c0,1-beta)*pow(c_a0,beta)*nume*faraday;
 
-      // negative sign: we look at electon flow
-      const double i0 = k0*pow(c_c0,1-beta)*pow(c_a0,beta)*nume*faraday;
+        // reactant or product not a species in the electrolyte
+        // -> concentration = 1.0
+        double conctermc = 1.0;
+        double concterma = 1.0;
+        double conctermc_der = 1.0;
+        double concterma_der = 1.0;
+        //species id of the anodic and cathodic reactant
+        int anodic = 0;
+        int cathodic = 0;
+        bool checkc = 0;
+        bool checka = 0;
 
-      // reactant or product not a species in the electrolyte
-      // -> concentration = 1.0
-      double conctermc = 1.0;
-      double concterma = 1.0;
-      double conctermc_der = 1.0;
-      double concterma_der = 1.0;
-      //species id of the anodic and cathodic reactant
-      int anodic = 0;
-      int cathodic = 0;
-      bool checkc = 0;
-      bool checka = 0;
-
-      // concentration terms for anodic and cathodic reaction
-      // only one reactant and product are supported by the basic model
-      // only stoichometry of 1
-      for(int kk=0; kk<my::numscal_;kk++)
-      {
-        if(stoich[kk]==1)
+        // concentration terms for anodic and cathodic reaction
+        // only one reactant and product are supported by the basic model
+        // only stoichiometry of 1
+        for(int kk=0; kk<my::numscal_;kk++)
         {
-          concterma = conint[kk]/c_a0;
-          concterma_der = 1.0/c_a0;
-          anodic = kk;
-          checka = true;
+          if(stoich[kk]==1)
+          {
+            concterma = conint[kk]/c_a0;
+            concterma_der = 1.0/c_a0;
+            anodic = kk;
+            checka = true;
+          }
+          else if(stoich[kk]==-1)
+          {
+            conctermc = conint[kk]/c_c0;
+            conctermc_der = 1.0/c_c0;
+            cathodic = kk;
+            checkc = true;
+          }
         }
-        else if(stoich[kk]==-1)
-        {
-          conctermc = conint[kk]/c_c0;
-          conctermc_der = 1.0/c_c0;
-          cathodic = kk;
-          checkc = true;
-        }
-      }
 
 #ifdef DEBUG
-      // some safety checks/ user warnings
-      if (((1-beta)*(frt*nume)*eta_equilpot) > 100.0)
-        std::cout<<"WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
-        <<exp((1-beta)*(frt*nume)*eta_equilpot)<<std::endl;
-      if (((-beta)*(frt*nume)*eta_equilpot) > 100.0)
-        std::cout<<"WARNING: Exp(-beta...) in Butler-Volmer law is near overflow!"
-        <<exp((-beta)*(frt*nume)*eta_equilpot)<<std::endl;
+        // some safety checks/ user warnings
+        if (((1-beta)*(frt*nume)*eta_equilpot) > 100.0)
+          std::cout<<"WARNING: Exp((1-beta)...) in Butler-Volmer law is near overflow!"
+          <<exp((1-beta)*(frt*nume)*eta_equilpot)<<std::endl;
+        if (((-beta)*(frt*nume)*eta_equilpot) > 100.0)
+          std::cout<<"WARNING: Exp(-beta...) in Butler-Volmer law is near overflow!"
+          <<exp((-beta)*(frt*nume)*eta_equilpot)<<std::endl;
 #endif
 
-      const double expterma = exp((1-beta) * (frt*nume) * eta_equilpot);
-      const double exptermc = exp((-beta) * (frt*nume) * eta_equilpot);
+        const double expterma = exp((1-beta) * (frt*nume) * eta_equilpot);
+        const double exptermc = exp((-beta) * (frt*nume) * eta_equilpot);
 
+        for (int vi=0; vi<my::nen_; ++vi)
+        {
+          const double fac_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
+          // ---------------------matrix
+          for (int ui=0; ui<my::nen_; ++ui)
+          {
+            //derivation wrt concentration
+            if(checkc == true)
+              emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+cathodic) += fac_i0_funct_vi*conctermc_der*exptermc*my::funct_(ui)*timefac;
+            if(checka == true)
+              emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+anodic)   += -fac_i0_funct_vi*concterma_der*expterma*my::funct_(ui)*timefac;
+            //derivation wrt potential
+            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_)
+              += -fac_i0_funct_vi*(-concterma*(1-beta)*frt*nume*expterma-conctermc*beta*nume*frt*exptermc)*my::funct_(ui)*timefac;
+          }
+          // ------------right-hand-side
+          erhs[vi*my::numdofpernode_+k] -= -fac_i0_funct_vi*(concterma*expterma - conctermc*exptermc)*timefac;
+        }
+        break;
+      }
+      case INPAR::SCATRA::nernst:
+        break;
+      default:
+        dserror("Kinetic model not implemented");
+        break;
+      }
+    } // end of loop over integration points gpid
+
+    // compute matrix and rhs contributions arising from closing equation for electric potential
+    switch(equpot_)
+    {
+    case INPAR::ELCH::equpot_enc:
+    {
+      // do nothing, since no boundary integral present
+      break;
+    }
+
+    case INPAR::ELCH::equpot_enc_pde:
+    case INPAR::ELCH::equpot_enc_pde_elim:
+    case INPAR::ELCH::equpot_divi:
+    {
       for (int vi=0; vi<my::nen_; ++vi)
       {
-        const double fac_i0_funct_vi = fac*fns*i0*my::funct_(vi)*dmedc_->GetPhasePoro(0);
         // ---------------------matrix
         for (int ui=0; ui<my::nen_; ++ui)
         {
-          //derivation wrt concentration
-          if(checkc == true)
-            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+cathodic) += fac_i0_funct_vi*conctermc_der*exptermc*my::funct_(ui)*timefac;
-          if(checka == true)
-            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+anodic)   += -fac_i0_funct_vi*concterma_der*expterma*my::funct_(ui)*timefac;
-          //derivation wrt potential
-          emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_)
-            += -fac_i0_funct_vi*(-concterma*(1-beta)*frt*nume*expterma-conctermc*beta*nume*frt*exptermc)*my::funct_(ui)*timefac;
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
         }
+
         // ------------right-hand-side
-        erhs[vi*my::numdofpernode_+k] -= -fac_i0_funct_vi*(concterma*expterma - conctermc*exptermc)*timefac;
+        erhs[vi*my::numdofpernode_+my::numscal_] += nume*erhs[vi*my::numdofpernode_+k];
       }
+
       break;
     }
-    case INPAR::SCATRA::nernst:
+
+    // need special treatment for Laplace equation due to missing scaling with inverse of Faraday constant
+    case INPAR::ELCH::equpot_laplace:
+    {
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        // ---------------------matrix
+        for (int ui=0; ui<my::nen_; ++ui)
+        {
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += faraday*nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += faraday*nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
+        }
+
+        // ------------right-hand-side
+        erhs[vi*my::numdofpernode_+my::numscal_] += faraday*nume*erhs[vi*my::numdofpernode_+k];
+      }
+
       break;
+    }
+
+    case INPAR::ELCH::equpot_poisson:
+    {
+      dserror("Poisson equation combined with electrode boundary conditions not implemented!");
+      break;
+    }
+
     default:
-      dserror("Kinetic model not implemented");
+    {
+      dserror("Unknown closing equation for electric potential!");
       break;
     }
-  } // end of loop over integration points gpid
-
-  // compute matrix and rhs contributions arising from closing equation for electric potential
-  switch(equpot_)
-  {
-  case INPAR::ELCH::equpot_enc:
-  {
-    // do nothing, since no boundary integral present
-    break;
-  }
-
-  case INPAR::ELCH::equpot_enc_pde:
-  case INPAR::ELCH::equpot_enc_pde_elim:
-  case INPAR::ELCH::equpot_divi:
-  {
-    for (int vi=0; vi<my::nen_; ++vi)
-    {
-      // ---------------------matrix
-      for (int ui=0; ui<my::nen_; ++ui)
-      {
-        emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
-        emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
-      }
-
-      // ------------right-hand-side
-      erhs[vi*my::numdofpernode_+my::numscal_] += nume*erhs[vi*my::numdofpernode_+k];
-    }
-
-    break;
-  }
-
-  // need special treatment for Laplace equation due to missing scaling with inverse of Faraday constant
-  case INPAR::ELCH::equpot_laplace:
-  {
-    for (int vi=0; vi<my::nen_; ++vi)
-    {
-      // ---------------------matrix
-      for (int ui=0; ui<my::nen_; ++ui)
-      {
-        emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += faraday*nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
-        emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += faraday*nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
-      }
-
-      // ------------right-hand-side
-      erhs[vi*my::numdofpernode_+my::numscal_] += faraday*nume*erhs[vi*my::numdofpernode_+k];
-    }
-
-    break;
-  }
-
-  case INPAR::ELCH::equpot_poisson:
-  {
-    dserror("Poisson equation combined with electrode boundary conditions not implemented!");
-    break;
-  }
-
-  default:
-  {
-    dserror("Unknown closing equation for electric potential!");
-    break;
-  }
-  } // end switch(equpot_)
+    } // end switch(equpot_)
   } // end loop over scalars
 
   return;
 } // ScaTraBoundaryImpl<distype>::EvaluateElchBoundaryKinetics()
+
+
+/*-------------------------------------------------------------------------------------*
+ | evaluate scatra-scatra interface coupling condition (electrochemistry)   fang 12/14 |
+ *-------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateS2ICoupling(
+    const DRT::Element*         ele,              ///< current boundary element
+    Teuchos::ParameterList&     params,           ///< parameter list
+    DRT::Discretization&        discretization,   ///< discretization
+    std::vector<int>&           lm,               ///< location vector
+    Epetra_SerialDenseMatrix&   eslavematrix,     ///< element matrix for slave side
+    Epetra_SerialDenseMatrix&   emastermatrix,    ///< element matrix for master side
+    Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
+    )
+{
+  // get material of parent element
+  Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
+
+  // get global and interface state vectors
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> imasterphinp = discretization.GetState("imasterphinp");
+  if (phinp == Teuchos::null or imasterphinp == Teuchos::null)
+    dserror("Cannot get state vector \"phinp\" or \"imasterphinp\"!");
+
+  // extract local nodal values on present and opposite side of scatra-scatra interface
+  std::vector<double> eslavephinpvec(lm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,eslavephinpvec,lm);
+  std::vector<LINALG::Matrix<my::nen_,1> > eslavephinp(my::numscal_);
+  LINALG::Matrix<my::nen_,1> eslavepotnp(true);
+  std::vector<double> emasterphinpvec(lm.size());
+  DRT::UTILS::ExtractMyValues(*imasterphinp,emasterphinpvec,lm);
+  std::vector<LINALG::Matrix<my::nen_,1> > emasterphinp(my::numscal_);
+  LINALG::Matrix<my::nen_,1> emasterpotnp(true);
+  for(int inode=0; inode<my::nen_; ++inode)
+  {
+    for(int k=0; k<my::numscal_; ++k)
+    {
+      eslavephinp[k](inode,0) = eslavephinpvec[inode*my::numdofpernode_+k];
+      emasterphinp[k](inode,0) = emasterphinpvec[inode*my::numdofpernode_+k];
+    }
+
+    eslavepotnp(inode,0) = eslavephinpvec[inode*my::numdofpernode_+my::numscal_];
+    emasterpotnp(inode,0) = emasterphinpvec[inode*my::numdofpernode_+my::numscal_];
+  }
+
+  // get current scatra-scatra interface coupling condition
+  Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+  if(s2icondition == Teuchos::null)
+    dserror("Cannot access scatra-scatra interface coupling condition!");
+
+  // access input parameters associated with current condition
+  const int kineticmodel = s2icondition->GetInt("kinetic model");
+  const int nume = s2icondition->GetInt("e-");
+  if(not nume > 0)
+    dserror("Charge transfer at electrode-electrolyte interface must involve a positive number of electrons!");
+  const std::vector<int>* stoichiometries = s2icondition->GetMutable<std::vector<int> >("stoichiometries");
+  if(stoichiometries == NULL)
+    dserror("Cannot access vector of stoichiometric coefficients for scatra-scatra interface coupling!");
+  if(stoichiometries->size() != (unsigned) my::numscal_)
+    dserror("Number of stoichiometric coefficients does not match number of scalars!");
+  int reactivespecies = 0;
+  for(int k=0; k<my::numscal_; ++k)
+    reactivespecies += abs((*stoichiometries)[k]);
+  if(reactivespecies > 1)
+    dserror("Charge transfer at electrode-electrolyte interface must not involve more than one reactive species!");
+  const double faraday = INPAR::ELCH::faraday_const;
+  const double frt = elchpara_->FRT();
+  if(frt <= 0.)
+    dserror("Factor F/RT is negative!");
+  const double alphaa = s2icondition->GetDouble("alpha_a");
+  const double alphac = s2icondition->GetDouble("alpha_c");
+  const double kr = s2icondition->GetDouble("k_r");
+  if(kr < 0.)
+    dserror("Charge transfer constant k_r is negative!");
+  const double cmax = s2icondition->GetDouble("c_max");
+  if(cmax < EPS12)
+    dserror("Saturation value c_max of intercalated Lithium concentration is too small!");
+
+  // integration points and weights
+  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over scalars
+  for(int k=0; k<my::numscal_; ++k)
+  {
+    if(!(*stoichiometries)[k])
+      continue;
+
+    const double fns = -1./faraday/nume*(*stoichiometries)[k];
+    const double valence_k = GetValence(material,k);
+    if(valence_k != nume)
+      dserror("Number of transferred electrons must equal charge number of reacting species!");
+
+    // loop over integration points
+    for (int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
+    {
+      // evaluate values of shape functions and domain integration factor at current integration point
+      const double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+
+      // evaluate overall integration factors
+      const double timefacfac = my::scatraparamstimint_->TimeFac()*fac;
+      const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs()*fac;
+      if (timefacfac < 0. or timefacrhsfac < 0.)
+        dserror("Integration factor is negative!");
+
+      // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
+      const double eslavephiint = my::funct_.Dot(eslavephinp[k]);
+      const double eslavepotint = my::funct_.Dot(eslavepotnp);
+      const double emasterphiint = my::funct_.Dot(emasterphinp[k]);
+      const double emasterpotint = my::funct_.Dot(emasterpotnp);
+
+      // equilibrium electric potential difference and its derivative w.r.t. concentration at electrode surface
+      double epd(0.);
+      double epdderiv(0.);
+      EquilibriumPotentialDifference(s2icondition,emasterphiint,epd,epdderiv);
+
+      // electrode-electrolyte overpotential at integration point
+      const double eta = emasterpotint-eslavepotint-epd;
+
+      // compute matrix and vector contributions according to kinetic model for current scatra-scatra interface coupling condition
+      switch(kineticmodel)
+      {
+        // Butler-Volmer kinetics
+        case INPAR::SCATRA::s2i_kinetics_butlervolmer:
+        {
+          const double i0 = kr*faraday*pow(eslavephiint,alphaa)*pow(cmax-emasterphiint,alphaa)*pow(emasterphiint,alphac);
+          const double expterm1 = exp(alphaa*frt*eta);
+          const double expterm2 = exp(-alphac*frt*eta);
+          const double expterm = expterm1-expterm2;
+
+          // safety check
+          if(abs(expterm)>1.e5)
+            dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",expterm);
+
+          for (int vi=0; vi<my::nen_; ++vi)
+          {
+            const double funct_vi_fns_timefacfac = my::funct_(vi)*fns*timefacfac;
+            const double funct_vi_fns_timefacfac_i0 = funct_vi_fns_timefacfac*i0;
+            const int fvi = vi*my::numdofpernode_+k;
+
+            for (int ui=0; ui<my::nen_; ++ui)
+            {
+              eslavematrix(fvi,ui*my::numdofpernode_+k) -= funct_vi_fns_timefacfac*kr*faraday*alphaa*pow(eslavephiint,alphaa-1.)*pow(cmax-emasterphiint,alphaa)*pow(emasterphiint,alphac)*expterm*my::funct_(ui);
+              eslavematrix(fvi,ui*my::numdofpernode_+my::numscal_) -= funct_vi_fns_timefacfac_i0*(-alphaa*frt*expterm1-alphac*frt*expterm2)*my::funct_(ui);
+              emastermatrix(fvi,ui*my::numdofpernode_+k) -= funct_vi_fns_timefacfac*(kr*faraday*pow(eslavephiint,alphaa)*pow(cmax-emasterphiint,alphaa-1.)*pow(emasterphiint,alphac-1.)*(-alphaa*emasterphiint+alphac*(cmax-emasterphiint))*expterm+i0*(-alphaa*frt*epdderiv*expterm1-alphac*frt*epdderiv*expterm2))*my::funct_(ui);
+              emastermatrix(fvi,ui*my::numdofpernode_+my::numscal_) -= funct_vi_fns_timefacfac_i0*(alphaa*frt*expterm1+alphac*frt*expterm2)*my::funct_(ui);
+            }
+
+            eslaveresidual[fvi] += my::funct_(vi)*fns*i0*expterm*timefacrhsfac;
+          }
+
+          break;
+        }
+
+        default:
+        {
+          dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
+          break;
+        }
+      } // switch(kineticmodel)
+    } // loop over integration points
+
+    // compute matrix and rhs contributions arising from closing equation for electric potential
+    switch(equpot_)
+    {
+    case INPAR::ELCH::equpot_enc:
+    {
+      // do nothing, since no boundary integral present
+      break;
+    }
+
+    case INPAR::ELCH::equpot_enc_pde:
+    case INPAR::ELCH::equpot_enc_pde_elim:
+    case INPAR::ELCH::equpot_divi:
+    {
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        for (int ui=0; ui<my::nen_; ++ui)
+        {
+          eslavematrix(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += nume*eslavematrix(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
+          eslavematrix(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += nume*eslavematrix(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
+          emastermatrix(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += nume*emastermatrix(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
+          emastermatrix(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += nume*emastermatrix(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
+        }
+
+        eslaveresidual[vi*my::numdofpernode_+my::numscal_] += nume*eslaveresidual[vi*my::numdofpernode_+k];
+      }
+
+      break;
+    }
+
+    case INPAR::ELCH::equpot_laplace:
+    {
+      dserror("Laplace equation combined with scatra-scatra interface coupling not implemented!");
+      break;
+    }
+
+    case INPAR::ELCH::equpot_poisson:
+    {
+      dserror("Poisson equation combined with scatra-scatra interface coupling not implemented!");
+      break;
+    }
+
+    default:
+    {
+      dserror("Unknown closing equation for electric potential!");
+      break;
+    }
+    } // switch(equpot_)
+  } // loop over scalars
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateS2ICoupling
 
 
 /*----------------------------------------------------------------------*
@@ -1450,7 +1602,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
   // necessary to perform galvanostatic simulations, for instance.
   // Think about: double layer effects for genalpha time-integration scheme
 
-  double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or muC / mumol
+  double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or µC/µmol
 
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman condition)
   // but the electrode status is evaluated
@@ -1491,10 +1643,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
 
   // concentration of active species at integration point
   std::vector<double> conint(my::numscal_,0.0);
-  // el. potential at integration point
-  double potint;
-  // history term of el. potential at integration point
-  double potdtnpint;
 
   bool statistics = false;
   // index of reactive species (starting from zero)
@@ -1517,8 +1665,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
       for (int kk=0; kk<my::numscal_; ++kk)
         conint[kk] = my::funct_.Dot(conreact[kk]);
 
-      potint = my::funct_.Dot(pot);
-      potdtnpint = my::funct_.Dot(potdtnp);
+      // el. potential at integration point
+      const double potint = my::funct_.Dot(pot);
+
+      // history term of el. potential at integration point
+      const double potdtnpint = my::funct_.Dot(potdtnp);
 
       // electrode potential difference epd at integration point
       double epd = (pot0 - potint);
@@ -1877,14 +2028,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
               "this Butler-Volmer-equation (Bard/Faulkner) works for elementary steps (one electron) only!");
 
         // only one reactant and product are supported by the basic model
-        // only stoichometry of 1
+        // only stoichiometry of 1
         {
           int check1 = 0;
           int check2 = 0;
           for(int kk=0; kk<my::numscal_;kk++)
           {
             if(abs(stoich[kk])>1)
-              dserror("Stoichometry is larger than 1!! \n"
+              dserror("Stoichiometry is larger than 1!! \n"
                       "This is not supported by the reaction model based on Bard");
 
             check1 += abs(stoich[kk]);
@@ -1904,7 +2055,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
 
         // concentration terms for anodic and cathodic reaction
         // only one reactant and product are supported by the basic model
-        // only stoichometry of 1
+        // only stoichiometry of 1
         for(int kk=0; kk<my::numscal_;kk++)
         {
           if(stoich[kk]==1)
@@ -1995,6 +2146,139 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
 
   return;
 } //ScaTraBoundaryImpl<distype>::ElectrodeStatus
+
+
+/*-------------------------------------------------------------------------------------*
+ | extract valence of species k from element material                       fang 12/14 |
+ *-------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::GetValence(
+    const Teuchos::RCP<const MAT::Material>&   material,   // element material
+    const int                                  k           // species number
+    ) const
+{
+  double valence(0.);
+
+  if(material->MaterialType() == INPAR::MAT::m_matlist)
+  {
+    const Teuchos::RCP<const MAT::MatList> matlist = Teuchos::rcp_static_cast<const MAT::MatList>(material);
+
+    const Teuchos::RCP<const MAT::Material> species = matlist->MaterialById(matlist->MatID(k));
+
+    if(species->MaterialType() == INPAR::MAT::m_ion)
+    {
+      valence = Teuchos::rcp_static_cast<const MAT::Ion>(species)->Valence();
+      if(abs(valence) < EPS14)
+        dserror("Received zero valence!");
+    }
+    else
+      dserror("Material species is not an ion!");
+  }
+
+  else if(material->MaterialType() == INPAR::MAT::m_elchmat)
+  {
+    const Teuchos::RCP<const MAT::ElchMat> elchmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(material);
+
+    // safety check
+    if(elchmat->NumPhase() != 1)
+      dserror("Only one material phase is allowed at the moment!");
+
+    // loop over phases
+    for(int iphase=0; iphase<elchmat->NumPhase(); ++iphase)
+    {
+      const Teuchos::RCP<const MAT::ElchPhase> phase = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(iphase)));
+
+      // loop over species within phase
+      for(int imat=0; imat<phase->NumMat(); ++imat)
+      {
+        const Teuchos::RCP<const MAT::Material> species = phase->MatById(phase->MatID(imat));
+
+        if(species->MaterialType() == INPAR::MAT::m_newman)
+        {
+          valence = Teuchos::rcp_static_cast<const MAT::Newman>(species)->Valence();
+          if(abs(valence) < EPS14)
+            dserror("Received zero valence!");
+        }
+        else if(species->MaterialType() == INPAR::MAT::m_ion)
+        {
+          valence = Teuchos::rcp_static_cast<const MAT::Ion>(species)->Valence();
+          if(abs(valence) < EPS14)
+            dserror ("Received zero valence!");
+        }
+        else
+          dserror("Unknown material species!");
+      }
+    }
+  }
+
+  else
+    dserror("Unknown material!");
+
+  return valence;
+}
+
+
+/*-------------------------------------------------------------------------------------------*
+ | equilibrium electric potential difference at electrode-electrolyte interface   fang 01/15 |
+ *-------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EquilibriumPotentialDifference(
+    const Teuchos::RCP<DRT::Condition>&   condition,       //! boundary condition
+    const double&                         emasterphiint,   //! concentration of intercalated Lithium at electrode surface at current Gauss point
+    double&                               epd,             //! equilibrium electric potential difference to be computed at current Gauss point
+    double&                               epdderiv         //! derivative of equilibrium electric potential difference to be computed at current Gauss point
+    ) const
+{
+  // access model for equilibrium electric potential difference
+  const int epdmodel = condition->GetInt("epd model");
+
+  // compute corresponding equilibrium electric potential difference
+  switch(epdmodel)
+  {
+    // Redlich-Kister expansion
+    case INPAR::SCATRA::s2i_epd_redlichkister:
+    {
+      // extract relevant parameters from boundary condition
+      const double DeltaG = condition->GetDouble("DeltaG");
+      const int numcoeff = condition->GetInt("numcoeff");
+      const std::vector<double>* coefficients = condition->GetMutable<std::vector<double> >("coefficients");
+      if((int) coefficients->size() != numcoeff)
+        dserror("Length of Redlich-Kister coefficient vector doesn't match prescribed number of coefficients!");
+      const double faraday = INPAR::ELCH::faraday_const;
+      const double frt = elchpara_->FRT();
+      const double cmax = condition->GetDouble("c_max");
+
+      // intercalation fraction at electrode surface
+      double X = emasterphiint/cmax;
+
+      // need to avoid intercalation fraction of exactly 0.5 due to singularity in Redlich-Kister expansion
+      if(X == 0.5)
+        X = 0.499999;
+
+      // equilibrium electric potential difference according to Redlich-Kister expansion
+      epd = DeltaG + faraday/frt*log((1.-X)/X);
+      for(int i=0; i<numcoeff; ++i)
+        epd += (*coefficients)[i]*(pow(2.*X-1.,i+1)-2.*i*X*(1.-X)*pow(2.*X-1.,i-1));
+      epd /= faraday;
+
+      // derivative of equilibrium electric potential difference w.r.t. concentration at electrode surface
+      epdderiv = faraday/(2.*frt*X*(X-1.));
+      for(int i=0; i<numcoeff; ++i)
+        epdderiv += (*coefficients)[i]*((2.*i+1.)*pow(2.*X-1.,i)+2.*X*i*(X-1.)*(i-1.)*pow(2.*X-1.,i-2));
+      epdderiv *= 2./(faraday*cmax);
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Unknown model for equilibrium electric potential difference!");
+      break;
+    }
+  }
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*

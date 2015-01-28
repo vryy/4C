@@ -70,7 +70,6 @@ public:
   \param dim (in): Global problem dimension
   \param imortar (in): Global contact parameter list
   \param redundant (in): type of redundancy in interface storage
-
   */
   MortarInterface(const int id, const Epetra_Comm& comm, const int dim,
                   const Teuchos::ParameterList& imortar,
@@ -78,44 +77,37 @@ public:
 
   /*!
   \brief Destructor
-
   */
   virtual ~MortarInterface() {}
 
   /*!
   \brief Print this Interface
-
   */
   virtual void Print(std::ostream& os) const;
 
   /*!
   \brief Check whether interface was called FillComplete
-
   */
   virtual bool Filled() const;
 
   /*!
   \brief Print parallel distribution of this Interface
-
   */
   virtual void PrintParallelDistribution(int index);
 
   /*!
   \brief Get communicator
-
   */
   virtual const Epetra_Comm& Comm() const { return comm_;}
 
   /*!
   \brief Get local interface communicator (Filled()==true is prerequisite)
          This Epetra_Comm only contains the participating processors of the interface
-
   */
   virtual const Epetra_Comm* lComm() const { return lcomm_.get();}
 
   /*!
   \brief Get global -> local processor map
-
   */
   virtual std::map<int,int>& Procmap(){ return procmap_;}
 
@@ -123,7 +115,6 @@ public:
 
   /*!
   \brief Get discretization of this interface
-
   */
   virtual DRT::Discretization& Discret() const { return *idiscret_; }
 
@@ -133,19 +124,16 @@ public:
   Note that only 2D and 3D are possible here as this refers to the global
   problem dimension. On interface level this corresponds to 1D interfaces
   (dim_==2) and 2D interfaces (dim_==3)!
-
   */
   virtual const int& Dim() {return dim_;};
 
   /*!
   \brief Get interface contact parameter list
-
   */
   virtual Teuchos::ParameterList& IParams() {return imortar_;};
 
   /*!
   \brief binning strategy for efficient ghosting
-
   */
   virtual void BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, double vel);
 
@@ -153,7 +141,6 @@ public:
   \brief Get quadratic 2d/3d slave element flag
 
   Returns TRUE if at least one higher-order 2d/3d slave element in interface.
-
   */
   virtual const bool& Quadslave() { return quadslave_; };
 
@@ -161,7 +148,6 @@ public:
   \brief Get flag indicating nodal scaling for lm
 
   If chosen a nodal scaling factor is calculated for each LM
-
   */
   virtual bool LMNodalScale() { return lmnodalscale_; } ;
 
@@ -169,31 +155,26 @@ public:
   \brief Get redundant storage flag
 
   Returns status of redundancy in interface storage (nodes, elements).
-
   */
   virtual const INPAR::MORTAR::RedundantStorage& Redundant() { return redundant_; };
 
   /*!
   \brief Get type of search algorithm
-
   */
   virtual const INPAR::MORTAR::SearchAlgorithm SearchAlg() { return searchalgo_; };
 
   /*!
   \brief Get search algorithm parameter
-
   */
   virtual const double SearchParam() { return searchparam_; };
 
   /*!
   \brief bool whether auxiliary position is used when computing dops
-
   */
   virtual const bool SearchUseAuxPos() { return searchuseauxpos_; };
 
   /*!
   \brief Get column map of all interface nodes (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> OldColNodes() const
   {
@@ -204,7 +185,6 @@ public:
 
   /*!
   \brief Get column map of all interface elements (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> OldColElements() const
   {
@@ -215,7 +195,6 @@ public:
 
   /*!
   \brief Get row map of slave nodes (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> SlaveRowNodes() const
   {
@@ -226,7 +205,6 @@ public:
 
   /*!
   \brief Get row map of master nodes (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> MasterRowNodes() const
   {
@@ -237,7 +215,6 @@ public:
 
   /*!
   \brief Get column map of slave nodes (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> SlaveColNodes() const
   {
@@ -248,7 +225,6 @@ public:
 
   /*!
   \brief Get column map of master nodes (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> MasterColNodes() const
   {
@@ -259,7 +235,6 @@ public:
 
   /*!
   \brief Get row map of slave nodes + boundary nodes (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> SlaveRowNodesBound() const
   {
@@ -270,7 +245,6 @@ public:
 
   /*!
   \brief Get column map of slave nodes + boundary nodes (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> SlaveColNodesBound() const
   {
@@ -281,7 +255,6 @@ public:
 
   /*!
   \brief Get row map of master nodes - boundary nodes (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> MasterRowNodesNoBound() const
   {
@@ -292,7 +265,6 @@ public:
 
   /*!
   \brief Get column map of master nodes - boundary nodes (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> MasterColNodesNoBound() const
   {
@@ -303,7 +275,6 @@ public:
 
   /*!
   \brief Get row map of slave elements (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> SlaveRowElements() const
   {
@@ -314,7 +285,6 @@ public:
 
   /*!
   \brief Get row map of master elements (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> MasterRowElements() const
   {
@@ -325,7 +295,6 @@ public:
 
   /*!
   \brief Get column map of slave elements (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> SlaveColElements() const
   {
@@ -336,7 +305,6 @@ public:
 
   /*!
   \brief Get column map of master elements (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> MasterColElements() const
   {
@@ -347,7 +315,6 @@ public:
 
   /*!
   \brief Get row map of slave dofs (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> SlaveRowDofs() const
   {
@@ -358,7 +325,6 @@ public:
 
   /*!
   \brief Get column map of slave dofs (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> SlaveColDofs() const
   {
@@ -369,7 +335,6 @@ public:
 
   /*!
   \brief Get row map of master dofs (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> MasterRowDofs() const
   {
@@ -380,7 +345,6 @@ public:
 
   /*!
   \brief Get column map of master dofs (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> MasterColDofs() const
   {
@@ -391,7 +355,6 @@ public:
 
   /*!
   \brief Get map of Lagrange multiplier dofs (Filled()==true is prerequisite)
-
   */
   virtual const Teuchos::RCP<Epetra_Map> LagMultDofs() const
   {
@@ -401,8 +364,7 @@ public:
   }
 
   /*!
-  \brief Get maxmimum dof ID in global discretization
-
+  \brief Get maximum dof ID in global discretization
   */
   virtual const int& MaxDofGlobal()
   {
@@ -420,7 +382,6 @@ public:
   \param mrtrnode (in): Teuchos::rcp to a mortar node
 
   \return Filled()==false
-
   */
   virtual void AddMortarNode(Teuchos::RCP<MORTAR::MortarNode> mrtrnode);
 
@@ -673,19 +634,16 @@ public:
 
   /*!
   \brief Detect actual meshtying zone (node by node)
-
   */
   virtual void DetectTiedSlaveNodes(int& founduntied);
 
   /*!
   \brief return integration time for current interface
-
   */
   virtual double Inttime(){return inttime_interface_;};
 
   /*!
   \brief return bool if interface is redistributed
-
   */
   virtual bool& IsRedistributed(){return redistributed_;};
   //@}
@@ -694,13 +652,11 @@ public:
 
   /*!
   \brief Visualize mortar stuff with gmsh (may be overloaded)
-
   */
   virtual void VisualizeGmsh(const int step, const int iter);
 
   /*!
   \brief Print shape function type (enum)
-
   */
   void PrintShapeFcn() { std::cout << shapefcn_ << std::endl; };
 

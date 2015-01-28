@@ -126,7 +126,7 @@ private:
   void TransferAndSaveTauw();
 
   // for inflowchannel
-  void OverwriteTransferedValues();
+  void OverwriteTransferredValues();
 
   //! discretisation
   Teuchos::RCP<DRT::Discretization> discret_;

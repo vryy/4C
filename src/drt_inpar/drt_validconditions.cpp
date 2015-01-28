@@ -887,39 +887,127 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     std::vector<Teuchos::RCP<ConditionComponent> > s2icomponents;
 
     {
-      // kinetic models for scatra-scatra interface
+      // type of mortar meshtying
+      s2icomponents.push_back(Teuchos::rcp(new StringConditionComponent("mortar type","Undefined",
+            Teuchos::tuple<std::string>("Undefined","NoMortar","StandardMortar","BlockMortar","CondensedMortar"),
+            Teuchos::tuple<int>(INPAR::SCATRA::s2i_mortar_undefined,
+                                INPAR::SCATRA::s2i_mortar_none,
+                                INPAR::SCATRA::s2i_mortar_standard,
+                                INPAR::SCATRA::s2i_mortar_block,
+                                INPAR::SCATRA::s2i_mortar_condensed))));
+
+      // kinetic models for scatra-scatra interface coupling
       std::vector<Teuchos::RCP<CondCompBundle> > kineticmodels;
-
       {
-        // constant permeability
-        std::vector<Teuchos::RCP<ConditionComponent> > constperm;
-        constperm.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));                // total number of existing scalars
-        std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp;                           // empty vector --> no separators for integer vectors needed
-        std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp;                          // empty vector --> no integer vectors needed
-        std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepcomp;
-        realsepcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("permeabilities")));       // string separator in front of real permeability vector in input file line
-        std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp;
-        realvectcomp.push_back(Teuchos::rcp(new RealVectorConditionComponent("permeabilities",0)));   // real vector of constant permeabilities
-        constperm.push_back(Teuchos::rcp(new IntRealBundle(
-            "permeabilities",
-            Teuchos::rcp(new IntConditionComponent("numscal")),
-            intsepcomp,
-            intvectcomp,
-            realsepcomp,
-            realvectcomp
-        )));
+        {
+          // constant permeability
+          std::vector<Teuchos::RCP<ConditionComponent> > constperm;
+          constperm.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));                // total number of existing scalars
+          std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp;                           // empty vector --> no separators for integer vectors needed
+          std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp;                          // empty vector --> no integer vectors needed
+          std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepcomp;
+          realsepcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("permeabilities")));       // string separator in front of real permeability vector in input file line
+          std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp;
+          realvectcomp.push_back(Teuchos::rcp(new RealVectorConditionComponent("permeabilities",0)));   // real vector of constant permeabilities
+          constperm.push_back(Teuchos::rcp(new IntRealBundle(
+              "permeabilities",
+              Teuchos::rcp(new IntConditionComponent("numscal")),
+              intsepcomp,
+              intvectcomp,
+              realsepcomp,
+              realvectcomp
+          )));
+          kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("ConstantPermeability",constperm,INPAR::SCATRA::s2i_kinetics_constperm)));
+        }
 
-        kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("ConstantPermeability",constperm,INPAR::SCATRA::s2i_constperm)));
-      }
+        {
+          // Butler-Volmer
+          std::vector<Teuchos::RCP<ConditionComponent> > butlervolmer;
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));            // total number of existing scalars
+          std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp;
+          intsepcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+          std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp;                         // string separator in front of integer stoichiometry vector in input file line
+          intvectcomp.push_back(Teuchos::rcp(new IntVectorConditionComponent("stoichiometries",0)));   // integer vector of stoichiometric coefficients
+          std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepcomp;                         // empty vector --> no separators for real vectors needed
+          std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp;                       // empty vector --> no real vectors needed
+          butlervolmer.push_back(Teuchos::rcp(new IntRealBundle(
+              "stoichiometries",
+              Teuchos::rcp(new IntConditionComponent("numscal")),
+              intsepcomp,
+              intvectcomp,
+              realsepcomp,
+              realvectcomp
+          )));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+          butlervolmer.push_back(Teuchos::rcp(new IntConditionComponent("e-")));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("k_r")));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("c_max")));
+          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("c_max")));
+
+          // models for equilibrium electric potential difference at electrode-electrolyte interface
+          std::vector<Teuchos::RCP<CondCompBundle> > epdmodels;
+          {
+            {
+              // constant equilibrium electric potential difference
+              std::vector<Teuchos::RCP<ConditionComponent> > constepd;
+              constepd.push_back(Teuchos::rcp(new SeparatorConditionComponent("epd")));
+              constepd.push_back(Teuchos::rcp(new RealConditionComponent("epd")));
+              epdmodels.push_back(Teuchos::rcp(new CondCompBundle("Constant",constepd,INPAR::SCATRA::s2i_epd_const)));
+            }
+
+            {
+              // Redlich-Kister expansion
+              std::vector<Teuchos::RCP<ConditionComponent> > redlichkister;
+              redlichkister.push_back(Teuchos::rcp(new SeparatorConditionComponent("DeltaG")));
+              redlichkister.push_back(Teuchos::rcp(new RealConditionComponent("DeltaG")));
+              redlichkister.push_back(Teuchos::rcp(new SeparatorConditionComponent("numcoeff")));           // total number of Redlich-Kister coefficients
+              std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp;                           // empty vector --> no separators for integer vectors needed
+              std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp;                          // empty vector --> no integer vectors needed
+              std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepcomp;
+              realsepcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("coefficients")));         // string separator in front of real Redlich-Kister coefficient vector in input file line
+              std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp;
+              realvectcomp.push_back(Teuchos::rcp(new RealVectorConditionComponent("coefficients",0)));     // real vector of Redlich-Kister coefficients
+              redlichkister.push_back(Teuchos::rcp(new IntRealBundle(
+                  "coefficients",
+                  Teuchos::rcp(new IntConditionComponent("numcoeff")),
+                  intsepcomp,
+                  intvectcomp,
+                  realsepcomp,
+                  realvectcomp
+              )));
+              epdmodels.push_back(Teuchos::rcp(new CondCompBundle("Redlich-Kister",redlichkister,INPAR::SCATRA::s2i_epd_redlichkister)));
+            }
+          }
+
+          // insert models for equilibrium electric potential difference into vector with Butler-Volmer condition components
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("EquilibriumPotentialDifference")));
+          butlervolmer.push_back(Teuchos::rcp(new CondCompBundleSelector(
+              "models for equilibrium electric potential difference",
+              Teuchos::rcp(new StringConditionComponent(
+                 "epd model",
+                 "Constant",
+                 Teuchos::tuple<std::string>("Constant","Redlich-Kister"),
+                 Teuchos::tuple<int>(INPAR::SCATRA::s2i_epd_const,INPAR::SCATRA::s2i_epd_redlichkister))),
+              epdmodels)));
+
+          kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer",butlervolmer,INPAR::SCATRA::s2i_kinetics_butlervolmer)));
+        }
+      } // kinetic models for scatra-scatra interface coupling
 
       // insert kinetic models into vector with input file line components
+      s2icomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("KineticModel")));
       s2icomponents.push_back(Teuchos::rcp(new CondCompBundleSelector(
           "kinetic models for scatra-scatra interface coupling",
           Teuchos::rcp(new StringConditionComponent(
              "kinetic model",
              "ConstantPermeability",
-             Teuchos::tuple<std::string>("ConstantPermeability"),
-             Teuchos::tuple<int>(INPAR::SCATRA::s2i_constperm))),
+             Teuchos::tuple<std::string>("ConstantPermeability","Butler-Volmer"),
+             Teuchos::tuple<int>(INPAR::SCATRA::s2i_kinetics_constperm,INPAR::SCATRA::s2i_kinetics_butlervolmer))),
           kineticmodels)));
     }
 

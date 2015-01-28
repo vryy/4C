@@ -297,7 +297,7 @@ namespace BEAMCONTACT
     //Size Check: If the size of the interval becomes smaller than RELSEGMENTTOL times the interval length we simply shift the point to the next higher/lower interval
     double segmenttol=RELSEGMENTTOL*numberofintervals/2.0;
 
-    //The necessary shifting procedure depends on the fact, weather we are searching for the left bound
+    //The necessary shifting procedure depends on the fact, whether we are searching for the left bound
     if(leftbound)
     {
       if(fabs(1+interval_id-unrounded_id)<segmenttol)

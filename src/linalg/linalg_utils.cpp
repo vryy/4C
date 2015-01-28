@@ -1001,7 +1001,7 @@ void LINALG::SVD(const Epetra_SerialDenseMatrix& A,
     LINALG::SerialDenseMatrix& Q, LINALG::SerialDenseMatrix& S,
     LINALG::SerialDenseMatrix& VT)
 {
-  Epetra_SerialDenseMatrix tmp(A); // copy, because content of A ist destroyed
+  Epetra_SerialDenseMatrix tmp(A); // copy, because content of A is destroyed
   Epetra_LAPACK lapack;
   const char jobu = 'A'; // compute and return all M columns of U
   const char jobvt = 'A'; // compute and return all N rows of V^T

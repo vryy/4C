@@ -106,31 +106,19 @@ namespace ADAPTER
     void EvaluateWithMeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,  ///> slave discretization
                                     Teuchos::RCP<DRT::Discretization> aledis,    ///> ale discretization
                                     Teuchos::RCP<Epetra_Vector>&      idisp, ///> ALE displacements
-                                    const Epetra_Comm&                comm,           ///> communicate
+                                    const Epetra_Comm&                comm,           ///> communicator
                                     bool                              slavewithale);   ///> flag defining if slave is ALE
 
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_Vector> MasterToSlave
     (
-        Teuchos::RCP<Epetra_Vector> mv ///< e.g. for FSI: structural interface displacements
-    ) const;
-
-    /// const version
-    Teuchos::RCP<Epetra_Vector> MasterToSlave
-    (
-        Teuchos::RCP<const Epetra_Vector> mv ///< e.g. for FSI: structural interface displacements
+        Teuchos::RCP<Epetra_Vector>   mv   ///< e.g. for FSI: structural interface displacements
     ) const;
 
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Epetra_Vector> SlaveToMaster
     (
         Teuchos::RCP<Epetra_Vector> sv   ///< e.g. for FSI: fluid interface loads
-    ) const;
-
-    /// const version
-    Teuchos::RCP<Epetra_Vector> SlaveToMaster
-    (
-        Teuchos::RCP<const Epetra_Vector> sv   ///< e.g. for FSI: fluid interface loads
     ) const;
 
     /// the mortar interface itself
@@ -157,13 +145,12 @@ namespace ADAPTER
 
   private:
 
-    ///filling matrices by using mortar interface
+    /// filling matrices by using mortar interface
     void Evaluate();
 
     Teuchos::RCP<MORTAR::MortarInterface> interface_;       ///< interface
     Teuchos::RCP<Epetra_Map>              masterdofrowmap_; ///< map of master row dofs
     Teuchos::RCP<Epetra_Map>              slavedofrowmap_;  ///< map of slave row dofs
-
 
     Teuchos::RCP<LINALG::SparseMatrix>    D_;               ///< mortar matrix
     Teuchos::RCP<LINALG::SparseMatrix>    Dinv_;            ///< inverse of mortar matrix D_

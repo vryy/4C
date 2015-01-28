@@ -83,8 +83,8 @@ CURVE1 on EXPR FUNC 0.0 t1 50.0 t2 1000.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1 //initial concentration field: mumol/mm³
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.1 //initial concentration field: mumol/mm³
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1 //initial concentration field: µmol/mm³
+FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.1 //initial concentration field: µmol/mm³
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 //initial concentration field:
 ----------------------------------------------------------------------FUNCT2
 // no velocity field

@@ -40,12 +40,12 @@ namespace CONTACT
 /*!
 \brief Main abstract class for meshtying solution strategies
 
-This is the templating abstract class for all meshyting solution algorithms.
-Every solution algorithm has to fit into the set of functions and calls definied herein
+This is the templating abstract class for all meshtying solution algorithms.
+Every solution algorithm has to fit into the set of functions and calls defined herein
 and has to be specified in a corresponding subclass defining the concrete algorithmic steps.
 
 This class it itself derived from the MORTAR::StrategyBase class, which is an even
-more abstract framework for any solution strategies involing mortar coupling.
+more abstract framework for any solution strategies involving mortar coupling.
 
 \author popp (popp@lnm.mw.tum.de)
 */

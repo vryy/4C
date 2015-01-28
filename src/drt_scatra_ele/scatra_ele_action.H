@@ -56,7 +56,6 @@ enum Action {
   calc_mean_Cai,                   // calc_mean_Cai (multifractal subgrid-scales)
   calc_dissipation,                // calculate dissipation introduced by stabilization and turbulence models
   calc_integr_reaction,            // calculate integral reaction
-  calc_elch_electrode_kinetics,    // calc_elch_electrode_kinetics,
   set_mean_Cai,                    // special action for mfs
   calc_mat_and_rhs_lsreinit_correction_step, // level-set action: setup of system for correction step
   calc_node_based_reinit_velocity, // level-set action: compute node-based velocity field for reinitialization equation

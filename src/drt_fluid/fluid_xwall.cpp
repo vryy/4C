@@ -1118,7 +1118,7 @@ void FLD::XWall::CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   trueresidual,T
 
   tauw_->Update(1.0,*inctauw_,1.0);
 
-  OverwriteTransferedValues();
+  OverwriteTransferredValues();
 
   LINALG::Export(*inctauw_,*newtauw2);
   LINALG::Export(*newtauw2,*inctauwxwdis_);
@@ -1397,7 +1397,7 @@ void   FLD::XWall::TransferAndSaveTauw()
 /*----------------------------------------------------------------------*
  |  transfer tauw for turbulent inflow channel                 bk 09/14 |
  *----------------------------------------------------------------------*/
-void   FLD::XWall::OverwriteTransferedValues()
+void   FLD::XWall::OverwriteTransferredValues()
 {
   if(turbulent_inflow_condition_->IsActive())
   {

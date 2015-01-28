@@ -2857,7 +2857,7 @@ void TSI::Monolithic::AssembleThermContCondition(
   LINALG::SparseMatrix& lindisglobal
   )
 {
-  // stactic cast of mortar strategy to contact strategy
+  // static cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
   CONTACT::CoAbstractStrategy& cstrategy
     = static_cast<CONTACT::CoAbstractStrategy&>(strategy);

@@ -481,7 +481,7 @@ public:
    *       this method must be called with all parameters set to true (the
    *       default). The parameters though can be used to turn off specific
    *       tasks to allow for more flexibility in the construction of a
-   *       meshfree discretization, were it is known that this method will be
+   *       meshfree discretization, where it is known that this method will be
    *       called more than once.
    *
    *///                                                   (public) nis Jan12

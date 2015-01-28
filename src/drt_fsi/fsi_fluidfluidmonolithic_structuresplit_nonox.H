@@ -185,7 +185,7 @@ namespace FSI
     /// @name Some quantities to recover the Langrange multiplier at the end of each time step
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the structure)
-    //! evalutated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     // lambda lives at the slave side (here at stucture)
     Teuchos::RCP<Epetra_Vector> lambda_;
 

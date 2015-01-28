@@ -14,6 +14,8 @@ Maintainer: Rui Fang
 #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
 #define SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
 
+#include "../drt_inpar/inpar_scatra.H"
+
 #include "scatra_timint_meshtying_strategy_base.H"
 
 // forward declarations
@@ -66,10 +68,10 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
         );
 
     //! destructor
-    virtual ~MeshtyingStrategyS2I() {};
+    virtual ~MeshtyingStrategyS2I(){return;};
 
     //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying() const;
+    virtual void EvaluateMeshtying() const;
 
     //! initialize meshtying objects
     void InitMeshtying();
@@ -88,10 +90,10 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
         const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //! Krylov projector
         ) const;
 
-  private:
+  protected:
 
-    //! copy constructor
-    MeshtyingStrategyS2I(const MeshtyingStrategyS2I& old);
+    //! flag for meshtying method
+    INPAR::SCATRA::S2IMortarType s2imortartype_;
 
     //! global map extractor (0: other, 1: slave, 2: master)
     Teuchos::RCP<LINALG::MultiMapExtractor> maps_;
@@ -113,6 +115,11 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! master dofs transformed to slave side of scatra-scatra interface
     Teuchos::RCP<Epetra_Vector> imasterphinp_;
+
+  private:
+
+    //! copy constructor
+    MeshtyingStrategyS2I(const MeshtyingStrategyS2I& old);
 }; // class MeshtyingStrategyS2I
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H

@@ -866,7 +866,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
   Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
   SFact->SetParameter("omega", Teuchos::ParameterEntry(1.0 /*omega*/)); // hard code Schur complement
   SFact->SetParameter("lumping", Teuchos::ParameterEntry(false /*bSimpleC*/)); // no lumping in Schur Complement approximation
-  SFact->SetFactory("A", MueLu::NoFactory::getRCP());  // explicitely set AFact as input factory for SchurComplement (must be the blocked 2x2 operator)
+  SFact->SetFactory("A", MueLu::NoFactory::getRCP());  // explicitly set AFact as input factory for SchurComplement (must be the blocked 2x2 operator)
 
   // define SchurComplement solver
   Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
@@ -973,7 +973,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
   Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
   SFact->SetParameter("omega", Teuchos::ParameterEntry(1.0 /*omega*/)); // hard code Schur complement
   SFact->SetParameter("lumping", Teuchos::ParameterEntry(false /*bSimpleC*/)); // no lumping in Schur Complement approximation
-  SFact->SetFactory("A", MueLu::NoFactory::getRCP());  // explicitely set AFact as input factory for SchurComplement (must be the blocked 2x2 operator)
+  SFact->SetFactory("A", MueLu::NoFactory::getRCP());  // explicitly set AFact as input factory for SchurComplement (must be the blocked 2x2 operator)
 
   // define SchurComplement solver
   Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
@@ -1083,7 +1083,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
   Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
   SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
   SFact->SetParameter("lumping", Teuchos::ParameterEntry(bSimpleC));
-  SFact->SetFactory("A", MueLu::NoFactory::getRCP());  // explicitely set AFact as input factory for SchurComplement (must be the blocked 2x2 operator)
+  SFact->SetFactory("A", MueLu::NoFactory::getRCP());  // explicitly set AFact as input factory for SchurComplement (must be the blocked 2x2 operator)
 
   // define SchurComplement solver
   Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;

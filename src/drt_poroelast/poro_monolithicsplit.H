@@ -101,7 +101,7 @@ namespace POROELAST
     /// @name Some quantities to recover the Langrange multiplier at the end of each time step
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the structure)
-    //! evalutated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
+    //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> lambda_;
 
     //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current iteration \f$i+1\f$

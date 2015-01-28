@@ -679,7 +679,7 @@ void CONTACT::AugmentedLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LIN
   LINALG::MapExtractor rowmapext(*mergedmap,glmdofrowmap_,ProblemDofs());
   LINALG::MapExtractor dommapext(*mergedmap,glmdofrowmap_,ProblemDofs());
 
-  // set a helper flag for the CheapSIMPLE preconditioner (used to detect, if Teuchos::nullspace has to be set explicitely)
+  // set a helper flag for the CheapSIMPLE preconditioner (used to detect, if Teuchos::nullspace has to be set explicitly)
   // do we need this? if we set the Teuchos::nullspace when the solver is constructed?
   //solver.Params().set<bool>("CONTACT",true); // for simpler precond
 

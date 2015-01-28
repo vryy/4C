@@ -24,7 +24,7 @@ small thermal residual due to unstressend intial configuration, i.e. small
 reference norm, next step: load is increased leading to thermal heating and
 therefore to a big thermal residual norm
 thermal residual can hardly be dropped due to a huge norm after 1st solve, i.e.
-ouput at numiter=2 --> criterion "Coupl_and_Singl" is no good choice here
+output at numiter=2 --> criterion "Coupl_and_Singl" is no good choice here
 
 due to extremely coarse mesh, thermal problem cannot be resolved properly
 > temperature is not constant in the body but varies at the 4th position

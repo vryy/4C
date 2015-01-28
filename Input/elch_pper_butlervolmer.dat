@@ -91,7 +91,7 @@ SCATRATYPE                      Elch
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09
 ITEMAX                          15
-EXPLPREDICT                     no                            // yes -> oszillations for neutral
+EXPLPREDICT                     no                            // yes -> oscillations for neutral
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ----------------------------------------------------------------ELCH CONTROL

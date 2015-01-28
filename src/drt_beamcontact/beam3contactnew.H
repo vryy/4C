@@ -389,7 +389,7 @@ private:
   //! flag indicating if contact was active in the last time step
   bool oldcontactflag_;
 
-  //! flag indicating weather an element has at least once been active during the current time step
+  //! flag indicating whether an element has at least once been active during the current time step
   bool currentlyincontact_;
 
   //! flag indicating if elements are collinear or not

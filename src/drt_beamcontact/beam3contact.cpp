@@ -289,7 +289,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
       //Evaluate contact contribution of small-angle-contact (residual and stiffness) for all closest points found before
       EvaluateActiveSmallAnglePairs(stiffmatrix,fint);
     #else
-      //In case of endpoint segmentation some additional quantities have to be transfered between the methods
+      //In case of endpoint segmentation some additional quantities have to be transferred between the methods
       //GetActiveSmallAnglePairs() and EvaluateActiveSmallAnglePairs().
       std::pair<int,int> iminmax = std::make_pair(0,0);
       std::pair<bool,bool> leftrightsolutionwithinsegment = std::make_pair(false,false);

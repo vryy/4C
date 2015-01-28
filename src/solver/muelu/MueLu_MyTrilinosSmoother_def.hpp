@@ -89,7 +89,7 @@ namespace MueLu {
   template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node>
   void MyTrilinosSmoother<Scalar, LocalOrdinal, GlobalOrdinal, Node>::DeclareInput(Level &currentLevel) const {
     currentLevel.DeclareInput(mapName_, mapFact_.get());
-    s_->DeclareInput(currentLevel); // call explicitely DeclareInput
+    s_->DeclareInput(currentLevel); // call explicitly DeclareInput
   }
 
   template <class Scalar,class LocalOrdinal, class GlobalOrdinal, class Node>

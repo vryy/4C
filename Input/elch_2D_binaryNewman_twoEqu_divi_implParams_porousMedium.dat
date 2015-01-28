@@ -61,7 +61,7 @@ RESTARTEVRY                     5
 CONVTOL                         1e-09
 ABSTOLRES                       1e-14
 ITEMAX                          2
-EXPLPREDICT                     no // yes -> oszillations for neutral
+EXPLPREDICT                     no // yes -> oscillations for neutral
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.1
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -139,7 +139,7 @@ CURVE3 on EXPR FUNC (545.0*(2.76*t/(1.0+2.15*t^2-0.0015*t^4)))+0.01 t1 0.0 t2 10
 // thermodynamic factor in [-]
 CURVE4 on EXPR FUNC 1.4+0.5*t^2-0.4*t t1 0.0 t2 1000000 // thermodynamic factor
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0    //initial concentration field: mumol/mm³
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0    //initial concentration field: µmol/mm³
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0    //initial potential field:
 ------------------------------------------------------------FUNCT2
 ------------------------------------------------RESULT DESCRIPTION
@@ -167,23 +167,12 @@ NDPOINT 0
 NDLINE  2
 NDSURF  1
 NDVOL   0
-------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE 0
-------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE 0
 -------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE  2
 // anode
 E 1 - pot -0.2 curve none numscal 1 stoich -1 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 0.66 refcon 1.0 dl_spec_cap 0.0 END
 // cathode
 E 2 - pot 0.00 curve none numscal 1 stoich -1 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 0.66 refcon 1.0 dl_spec_cap 0.0 END
--------------------------------ELECTRODE KINETICS SURF CONDITIONS
-DSURF 0
---------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
-DLINE 0
----------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
-DSURF 0
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    2333 DLINE 1
 NODE    2334 DLINE 1

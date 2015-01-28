@@ -554,7 +554,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
 
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
 
@@ -1292,7 +1292,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
      bool *boundary_ele, bool *proj_,
      const Epetra_Comm& comm)
 {
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
@@ -1605,7 +1605,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
      const Epetra_Comm& comm)
 {
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
@@ -2008,7 +2008,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   // get LMtype
   INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
 
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
@@ -2361,7 +2361,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
 
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
 
@@ -2612,7 +2612,7 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
 
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateD called without specific shape function defined!");
 
@@ -2793,7 +2793,7 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
                                                   double* sxia, double* sxib,
                                                   Teuchos::RCP<Epetra_SerialDenseVector> gseg)
 {
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateKappaPenalty called without specific shape function defined!");
 
@@ -2870,7 +2870,7 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
   // get LMtype
   INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
 
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() != INPAR::MORTAR::shape_standard)
     dserror("ERROR: IntegrateKappaPenalty -> you should not be here!");
 
@@ -3823,13 +3823,13 @@ void inline CONTACT::CoIntegrator::GP_DM(
 
   // BOUNDARY NODE MODIFICATION **********************************
   // We have modified their neighbors' dual shape functions, so we
-  // now have a problem with off-diagonal entries occuring in D.
+  // now have a problem with off-diagonal entries occurring in D.
   // Of course we want to keep the diagonality property of the D
   // matrix, but still we may not modify the whole Mortar coupling
-  // setting! We achieve both by appling a quite simple but very
+  // setting! We achieve both by applying a quite simple but very
   // effective trick: The boundary nodes have already been defined
   // as being master nodes, so all we have to do here, is to shift
-  // the off-diagonal terms from D to the resepective place in M,
+  // the off-diagonal terms from D to the respective place in M,
   // which is not diagonal anyway! (Mind the MINUS sign!!!)
   // *************************************************************
 
@@ -3900,7 +3900,7 @@ void inline CONTACT::CoIntegrator::GP_DM(
         // multiply the two shape functions
         double prod = lmval[j]*mval[k]*jac*wgt;
 
-        //loop over slave dofs
+        // loop over slave dofs
         for (int jdof=0;jdof<ndof;++jdof)
         {
           int col = mnode->Dofs()[jdof];

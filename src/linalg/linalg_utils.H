@@ -185,7 +185,7 @@ LINALG::Matrix<dim, dim>& V)
   const char jobz = 'V'; // Compute eigenvalues and eigenvectors.
   const char uplo = 'U'; // Upper triangle of A is stored;
   const int N = dim; // The order of the matrix A.  N >= 0.
-  Matrix<dim, dim> tmp(A.A(), false); // copy, because content of matrix ist destroyed
+  Matrix<dim, dim> tmp(A.A(), false); // copy, because content of matrix is destroyed
   const int lda = dim; // The leading dimension of the array A.  LDA >=max(1,N).
   std::vector<double> w(dim);
   const int lwork = 2 * dim * dim + 6 * dim + 1;
@@ -241,7 +241,7 @@ LINALG::Matrix<rows, rows>& Q,
 LINALG::Matrix<rows, cols>& S,
 LINALG::Matrix<cols, cols>& VT)
 {
-  Matrix<rows, cols> tmp(A.A(), false); // copy, because content of matrix ist destroyed
+  Matrix<rows, cols> tmp(A.A(), false); // copy, because content of matrix is destroyed
   Epetra_LAPACK lapack;
   const char jobu = 'A'; // compute and return all M columns of U
   const char jobvt = 'A'; // compute and return all N rows of V^T

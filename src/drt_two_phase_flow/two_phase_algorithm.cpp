@@ -48,7 +48,7 @@ TWOPHASEFLOW::Algorithm::Algorithm(
   const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
   //const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
-  //Values of velocity field are transfered to ScaTra field. This function overwrites the previous initialization in the constructor
+  //Values of velocity field are transferred to ScaTra field. This function overwrites the previous initialization in the constructor
   //of ScaTraFluidCouplingAlgorithm(). This is necessary to correctly initialize a particle algorithm.
   SetFluidValuesInScaTra(true);
 
@@ -108,7 +108,7 @@ void TWOPHASEFLOW::Algorithm::SolveStationaryProblem()
   }
 
   // check if ScaTraField()->initialvelset == true
-  /* remark: initial velocity field has been transfered to scalar transport field in constructor of
+  /* remark: initial velocity field has been transferred to scalar transport field in constructor of
    * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
    */

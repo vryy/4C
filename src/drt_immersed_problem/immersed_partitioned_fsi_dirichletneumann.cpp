@@ -371,7 +371,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
     if(StructureField()->Discretization()->Comm().MyPID() == 0)
     {
       std::cout<<"###   Norm of Dirichlet Values:   "<<std::setprecision(7)<<normofvelocities<<std::endl;
-      std::cout<<"###   Norm of transfered divergence of structural velocity:   "<<std::setprecision(10)<<normofdivergence<<std::endl;
+      std::cout<<"###   Norm of transferred divergence of structural velocity:   "<<std::setprecision(10)<<normofdivergence<<std::endl;
       std::cout<<"################################################################################################"<<std::endl;
     }
 

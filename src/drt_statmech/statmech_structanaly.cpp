@@ -2084,7 +2084,7 @@ void STATMECH::StatMechManager::OutputSlidingMotion(const Epetra_Vector& disrow,
 }
 
 /*------------------------------------------------------------------------------*
- | Structure COG & inertia tensor ouput                   (public) mueller 05/13|
+ | Structure COG & inertia tensor output                  (public) mueller 05/13|
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::StructureCOGInertiaTensorOutput(const int&           istep,
                                                                 const double&        time,

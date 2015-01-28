@@ -92,7 +92,7 @@ public:
 
 private:
 
-  /// Check weather number of provided parameter is valid for a the chosen predefined function
+  /// Check whether number of provided parameter is valid for a the chosen predefined function
   void CheckProvidedParams(
     const int          functnr,
     const unsigned int functparams);

@@ -120,7 +120,7 @@ protected:
 
   virtual double CalcReaCoeffFac(
       const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichometry coefficients
+      const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
       const int                                 k                       //!< id of current scalar
   );
 
@@ -134,7 +134,7 @@ protected:
 
   virtual double CalcReaCoeffDerivFac(
       const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling      couplingtype,            //!<type of coupling the stoichometry coefficients
+      const MAT::PAR::reaction_coupling      couplingtype,            //!<type of coupling the stoichiometry coefficients
       const int                               toderive,                //!<concentration to be derived to
       const int                               k                       //!< id of current scalar
   );
@@ -148,7 +148,7 @@ protected:
 
   virtual double CalcReaBodyForceTermFac(
       const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling           couplingtype            //!<type of coupling the stoichometry coefficients
+      const MAT::PAR::reaction_coupling           couplingtype            //!<type of coupling the stoichiometry coefficients
   );
 
 
@@ -161,7 +161,7 @@ protected:
 
   virtual double CalcReaBodyForceDerivFac(
       const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichometry coefficients
+      const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichiometry coefficients
       const int                                 toderive                 //!<concentration to be derived to
   );
 
@@ -182,7 +182,7 @@ protected:
     const double                            reacstart,      //!< value for reaction starting
     double&                                 value,          //!< current reaction value
     const std::vector<int>                  stoich,         //!<stoichometrie of current condition
-    const MAT::PAR::reaction_coupling  couplingtype    //!<type of coupling the stoichometry coefficients
+    const MAT::PAR::reaction_coupling  couplingtype    //!<type of coupling the stoichiometry coefficients
     );
 
 
@@ -202,7 +202,7 @@ protected:
     const double                            reacstart,      //!< value for reaction starting
     double&                                 value,          //!< current reaction value
     const std::vector<int>                  stoich,         //!< stoichometrie of current condition
-    const MAT::PAR::reaction_coupling  couplingtype    //!<type of coupling the stoichometry coefficients
+    const MAT::PAR::reaction_coupling  couplingtype    //!<type of coupling the stoichiometry coefficients
     );
 
   //! calculation of reactive element matrix

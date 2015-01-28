@@ -46,7 +46,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivCell3DAuxPlane(
   if (SolType()!=INPAR::CONTACT::solution_augmented)
     dserror("AugmentedIntegrator::IntegrateDerivCell3DAuxPlane: Method call for wrong SolType.");
 
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
@@ -263,7 +263,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle3D(
   if (SolType()!=INPAR::CONTACT::solution_augmented)
     dserror("AugmentedIntegrator::IntegrateDerivEle3D: Method call for wrong SolType.");
 
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
@@ -553,7 +553,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivSegment2D(
   if (SolType()!=INPAR::CONTACT::solution_augmented)
     dserror("AugmentedIntegrator::IntegrateDerivSegment2D: Method call for wrong SolType.");
 
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
 
@@ -785,7 +785,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle2D(
   if (SolType()!=INPAR::CONTACT::solution_augmented)
     dserror("AugmentedIntegrator::IntegrateDerivEle2D: Method call for wrong SolType.");
 
-  // explicitely defined shapefunction type needed
+  // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
 

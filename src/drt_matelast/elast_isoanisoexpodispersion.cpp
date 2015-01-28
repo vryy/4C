@@ -223,7 +223,7 @@ void MAT::ELASTIC::IsoAnisoExpoDispersion::AddStressAnisoModified(
 
   // The exponent term: Q = k2*(((kappa*I1 + (1. - 3.*kappa)*I4) - 1.)*((kappa*I1 + (1. - 3.*kappa)*I4) - 1.));
   double Q = exp(k2*R*R);
-  // Term reoccuring in Cbar coefficients
+  // Term reoccurring in Cbar coefficients
   double V = 2.*k2*R*R + 1.;
 
 

@@ -435,15 +435,15 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"THERMFAC","curve number for thermodynamic factor");
     AddNamedInt(m,"COND","curve number for conductivity");
     // optional parameter for implemented concentration depending function
-    AddNamedInt(m,"DIFF_PARA_NUM","number of parameter diffusion coefficient",0,true);
-    AddNamedRealVector(m,"DIFF_PARA","parameter for diffusion coefficient","DIFF_PARA_NUM",0.0,true);
-    AddNamedInt(m,"TRANS_PARA_NUM","number of parameter for the diffusion coefficient",0,true);
-    AddNamedRealVector(m,"TRANS_PARA","parameter transference number","TRANS_PARA_NUM",0.0,true);
-    AddNamedInt(m,"THERM_PARA_NUM","number of parameter thermodynamic factor",0,true);
-    AddNamedRealVector(m,"THERM_PARA","parameter for thermodynamic factor","THERM_PARA_NUM",0.0,true);
-    AddNamedInt(m,"COND_PARA_NUM","number of parameter conductivity",0,true);
-    AddNamedRealVector(m,"COND_PARA","parameter for conductivity","COND_PARA_NUM",0.0,true);
-    AddNamedSeparator(m,"END","indicating end of line",true);
+    AddNamedInt(m,"DIFF_PARA_NUM","number of parameters for diffusion coefficient",0,true);
+    AddNamedRealVector(m,"DIFF_PARA","parameters for diffusion coefficient","DIFF_PARA_NUM",0.0,true);
+    AddNamedInt(m,"TRANS_PARA_NUM","number of parameters for transference number",0,true);
+    AddNamedRealVector(m,"TRANS_PARA","parameters for transference number","TRANS_PARA_NUM",0.0,true);
+    AddNamedInt(m,"THERM_PARA_NUM","number of parameters for thermodynamic factor",0,true);
+    AddNamedRealVector(m,"THERM_PARA","parameters for thermodynamic factor","THERM_PARA_NUM",0.0,true);
+    AddNamedInt(m,"COND_PARA_NUM","number of parameters for conductivity",0,true);
+    AddNamedRealVector(m,"COND_PARA","parameters for conductivity","COND_PARA_NUM",0.0,true);
+    AddNamedSeparator(m,"END","indicating end of line");
 
     AppendMaterialDefinition(matlist,m);
   }

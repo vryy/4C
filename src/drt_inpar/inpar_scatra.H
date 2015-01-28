@@ -217,10 +217,28 @@ namespace INPAR
       zero
     };
 
-    /// type of scatra-scatra interface kinetics
-    enum S2IKinetics
+    /// type of mortar meshtying for scatra-scatra interface coupling
+    enum S2IMortarType
     {
-      s2i_constperm
+      s2i_mortar_undefined,
+      s2i_mortar_none,
+      s2i_mortar_standard,
+      s2i_mortar_block,
+      s2i_mortar_condensed
+    };
+
+    /// models for scatra-scatra interface kinetics
+    enum S2IKineticModels
+    {
+      s2i_kinetics_constperm,
+      s2i_kinetics_butlervolmer
+    };
+
+    /// models for equilibrium electric potential difference
+    enum S2IEpdModels
+    {
+      s2i_epd_const,
+      s2i_epd_redlichkister
     };
 
     /// type of method for improving consistency of stabilized methods

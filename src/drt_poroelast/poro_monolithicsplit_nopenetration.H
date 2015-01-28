@@ -145,7 +145,7 @@ namespace POROELAST
     Teuchos::RCP<FSI::UTILS::MatrixColTransform> k_DLin_transform_;
 
     //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto the structure)
-    //! evalutated at actual iteration step \f$t_{n+1}\f$ but needed for next iteration step
+    //! evaluated at actual iteration step \f$t_{n+1}\f$ but needed for next iteration step
     Teuchos::RCP<Epetra_Vector> lambdanp_;
 
     //@}

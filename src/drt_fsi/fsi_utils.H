@@ -109,7 +109,7 @@ namespace FSI
       /// use fluid-fluid mortar interface to interpolate between fluid quantities before and after sliding
       Teuchos::RCP<Epetra_Vector> InterpolateFluid
       (
-        Teuchos::RCP<const Epetra_Vector> uold   ///< fluid velocity in configuration before sliding
+        Teuchos::RCP<Epetra_Vector> uold   ///< fluid velocity in configuration before sliding
       );
 
       /// write history vectors for restart

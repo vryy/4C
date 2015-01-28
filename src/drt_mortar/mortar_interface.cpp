@@ -457,7 +457,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
     // property of the LM shape functions on the adjacent slave elements,
     // the LM shape functions of the adjacent nodes will be modified! This
     // way, the mortar operator entries of the crosspoints / edge nodes are
-    // transfered to the neighboring slave nodes!
+    // transferred to the neighboring slave nodes!
     // ---------------------------------------------------------------------
 
     for (int i = 0; i < (Discret().NodeRowMap())->NumMyElements(); ++i)
@@ -2878,6 +2878,7 @@ void MORTAR::MortarInterface::AssembleLM(Epetra_Vector& zglobal)
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Assemble Mortar matrices                                  popp 01/08|

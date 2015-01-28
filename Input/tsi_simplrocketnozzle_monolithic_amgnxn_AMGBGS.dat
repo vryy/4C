@@ -25,7 +25,7 @@ outer radius ra = 148.2 mm.
 
 The model is loaded by a mechanical and a thermal load which vary in time.
 The time-dependent loading represents a reduced load cycle possibly
-occuring in a realstic rocket nozzle. Moreover, no heat ﬂuxes are applied
+occurring in a realstic rocket nozzle. Moreover, no heat ﬂuxes are applied
 at the surrounding surface of the body, such that q = 0 W/m2.
 
 discretisation: circumferential x radial(Cu) x radial(Ni) x depth = 100x10x10x2

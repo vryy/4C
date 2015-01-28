@@ -163,7 +163,7 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStep()
   FluidField()->PrepareTimeStep();
 
   // prepare time step
-  /* remark: initial velocity field has been transfered to scalar transport field in constructor of
+  /* remark: initial velocity field has been transferred to scalar transport field in constructor of
    * ScaTraFluidCouplingAlgorithm (initialvelset_ == true). Time integration schemes, such as
    * the one-step-theta scheme, are thus initialized correctly.
    */

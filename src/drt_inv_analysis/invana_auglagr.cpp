@@ -164,7 +164,7 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
           {
             structadaptor->SetTimeStepStateOld(time_[i]-structadaptor->Dt(),i,
                 Teuchos::rcp((*dis_)(i),false),
-                Teuchos::rcp((*dis_)(i),false)); // veln ist not used so far so just put disn
+                Teuchos::rcp((*dis_)(i),false)); // veln is not used so far so just put disn
             structadaptor->Integrate();
           }
         }

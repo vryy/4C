@@ -145,7 +145,7 @@ class SparseMatrix : public SparseMatrixBase
       other. However, some methods like Zero() or Reset() can, depending on
       the SparseMatrix flags, cut the connection. Do not rely on the view if
       you change one of these matrices! The view assignment is meant to
-      provide a slim copy operation that transferes ownership from one matrix
+      provide a slim copy operation that transfers ownership from one matrix
       to the other before the original matrix is destroyed. Do a deep copy if
       both matrices are meant to live on.
 
@@ -173,7 +173,7 @@ class SparseMatrix : public SparseMatrixBase
       other. However, some methods like Zero() or Reset() can, depending on
       the SparseMatrix flags, cut the connection. Do not rely on the view if
       you change one of these matrices! The view assignment is meant to
-      provide a slim copy operation that transferes ownership from one matrix
+      provide a slim copy operation that transfers ownership from one matrix
       to the other before the original matrix is destroyed. Do a deep copy if
       both matrices are meant to live on.
 

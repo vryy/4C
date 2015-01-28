@@ -198,10 +198,9 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coup
     // | kmn' | kmm' |
     // ---------------
 
-    LINALG::MapExtractor rowmapext(*mergedmap_,gmdofrowmap_,gndofrowmap_);
-    LINALG::MapExtractor dommapext(*mergedmap_,gmdofrowmap_,gndofrowmap_);
+    LINALG::MapExtractor mapext(*mergedmap_,gmdofrowmap_,gndofrowmap_);
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > matsolve
-      = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> (dommapext,rowmapext,1,false,true));
+      = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> (mapext,mapext,1,false,true));
     sysmatsolve_ = matsolve;
 
     // fixing length of nullspace for block matrix (solver/preconditioner ML)

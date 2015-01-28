@@ -384,7 +384,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeff(
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffFac(
           const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-          const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichometry coefficients
+          const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
           const int                                 k                       //!< id of current scalar
 )
 {
@@ -456,7 +456,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivMatrix(
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
           const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
-          const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichometry coefficients
+          const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichiometry coefficients
           const int                               toderive,                //!<concentration to be derived to
           const int                               k                       //!< id of current scalar
 )
@@ -529,7 +529,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTerm(
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTermFac(
           const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
-          const MAT::PAR::reaction_coupling           couplingtype            //!<type of coupling the stoichometry coefficients
+          const MAT::PAR::reaction_coupling           couplingtype            //!<type of coupling the stoichiometry coefficients
 )
 {
   double bftfac=1;
@@ -598,7 +598,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivMatrix
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivFac(
         const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-        const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichometry coefficients
+        const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
         const int                                 toderive                 //!<concentration to be derived to
 )
 {
@@ -664,7 +664,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaCoeffDeriv(
         const double                            reacstart,      //!< value for reaction starting
         double&                                 value,          //!< current reaction value
         const std::vector<int>                  stoich,         //!<stoichometrie of current condition
-        const MAT::PAR::reaction_coupling       couplingtype    //!<type of coupling the stoichometry coefficients
+        const MAT::PAR::reaction_coupling       couplingtype    //!<type of coupling the stoichiometry coefficients
   )
 {
   double prod = CalcReaBodyForceTermFac(stoich,couplingtype);
@@ -709,7 +709,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaBFDeriv(
         const double                            reacstart,      //!< value for reaction starting
         double&                                 value,          //!< current reaction value
         const std::vector<int>                  stoich,         //!<stoichometrie of current condition
-        const MAT::PAR::reaction_coupling       couplingtype    //!<type of coupling the stoichometry coefficients
+        const MAT::PAR::reaction_coupling       couplingtype    //!<type of coupling the stoichiometry coefficients
   )
 {
   double prod = CalcReaBodyForceTermFac(stoich,couplingtype);

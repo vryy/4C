@@ -434,7 +434,7 @@ void FSI::UTILS::SlideAleUtils::EvaluateFluidMortar
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::UTILS::SlideAleUtils::InterpolateFluid
 (
-    Teuchos::RCP<const Epetra_Vector> uold
+    Teuchos::RCP<Epetra_Vector> uold
 )
 {
   Teuchos::RCP<Epetra_Vector> unew = coupff_->MasterToSlave(uold);

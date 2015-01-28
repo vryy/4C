@@ -358,7 +358,7 @@ maxdeltadisp_(0.0)
     std::cout<<"Elements in discret.   = "<<pdiscret_.NumGlobalElements()<<std::endl;
   }
 
-  //Set maximal and minimal beam/sphere radius occuring in discretization
+  //Set maximal and minimal beam/sphere radius occurring in discretization
   SetMinMaxEleRadius();
 
   //Get search box increment from input file
@@ -1264,7 +1264,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(const std::vector<std::vect
   if (oldpairs_.size()==0 and formattedelementpairs.size()>0)
     SetElementTypeAndDistype((formattedelementpairs[0])[0]);
 
-  //So far, all beam elements occuring in the pairs_ vector have to be of the same type.
+  //So far, all beam elements occurring in the pairs_ vector have to be of the same type.
   //This will be checked in the following lines.
   if ((int)formattedelementpairs.size()>0)
   {
@@ -1877,7 +1877,7 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   dis_old_->Update(1.0,*dis_,0.0);
 
   //If the original gap function definition is applied, the displacement per time is not allowed
-  //to be larger than the smalles beam cross section radius occuring in the discretization!
+  //to be larger than the smalles beam cross section radius occurring in the discretization!
   bool newgapfunction=DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_NEWGAP");
   if(!newgapfunction)
   {

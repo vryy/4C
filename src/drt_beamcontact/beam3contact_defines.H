@@ -75,11 +75,11 @@ Maintainer: Christoph Meier
 
 #define PARALLEL_ACTIVATION_VAL 0.6  //Value of above scalar product x1_xi*x2_xi, at which the beams are again considered as not parallel
 
-//#define AUTOMATICDIFF           //Decide weather automatic differentiation via Sacado is used or not
+//#define AUTOMATICDIFF           //Decide whether automatic differentiation via Sacado is used or not
 //default: Off
 #ifdef AUTOMATICDIFF
   typedef Sacado::Fad::DFad<double> TYPE;
-  //#define FADCHECKS //Decide weather FAD checks via Sacado are printed as output or not
+  //#define FADCHECKS //Decide whether FAD checks via Sacado are printed as output or not
 #else
   typedef double TYPE;
 #endif

@@ -85,30 +85,10 @@ NDPOINT                         0
 NDLINE                          6
 NDSURF                          1
 NDVOL                           0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT                          0
-------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 E 1 - NUMDOF 1 ONOFF 1 VAL 0.1 CURVE none FUNCT 0
 E 2 - NUMDOF 1 ONOFF 1 VAL 0.9 CURVE none FUNCT 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 // left internal boundary
