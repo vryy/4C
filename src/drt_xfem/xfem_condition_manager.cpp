@@ -29,6 +29,8 @@ Maintainer: Benedikt Schott
 #include "../drt_lib/drt_discret_xfem.H"
 #include "../drt_lib/drt_dofset_transparent_independent.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parallel.H"
+
 
 #include "../linalg/linalg_utils.H"
 
@@ -37,6 +39,10 @@ Maintainer: Benedikt Schott
 
 #include "../drt_crack/crackUtils.H"
 
+#include "../drt_io/io.H"
+#include "../drt_io/io_gmsh.H"
+#include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
 
 void XFEM::CouplingBase::SetElementConditions()
 {
@@ -298,9 +304,18 @@ void XFEM::MeshCoupling::InitStateVectors()
 
   idispnp_ = LINALG::CreateVector(*cutterdofrowmap,true);
   idispn_  = LINALG::CreateVector(*cutterdofrowmap,true);
-
-  itrueresidual_ = LINALG::CreateVector(*cutterdofrowmap,true);
 }
+
+void XFEM::MeshCoupling::SetState()
+{ std::cout << "set state!" << std::endl;
+  // set general vector values of cutterdis needed by background element evaluate routine
+  cutter_dis_->ClearState();
+
+  cutter_dis_->SetState("ivelnp", ivelnp_ );
+  cutter_dis_->SetState("iveln",  iveln_  );
+  cutter_dis_->SetState("idispnp",idispnp_);
+}
+
 
 Teuchos::RCP<const Epetra_Vector> XFEM::MeshCoupling::GetCutterDispCol()
 {
@@ -312,14 +327,309 @@ Teuchos::RCP<const Epetra_Vector> XFEM::MeshCoupling::GetCutterDispCol()
 }
 
 
+
+//! constructor
+XFEM::MeshCouplingFSI::MeshCouplingFSI(
+    Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+    const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+    Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
+) : MeshCoupling(bg_dis,cond_name,cond_dis), firstoutputofrun_(true)
+{
+  InitStateVectors_FSI();
+  PrepareCutterOutput();
+}
+
+
+
+void XFEM::MeshCouplingFSI::InitStateVectors_FSI()
+{
+  const Epetra_Map* cutterdofrowmap = cutter_dis_->DofRowMap();
+  const Epetra_Map* cutterdofcolmap = cutter_dis_->DofColMap();
+
+  itrueresidual_ = LINALG::CreateVector(*cutterdofrowmap,true);
+  iforcecol_     = LINALG::CreateVector(*cutterdofcolmap,true);
+}
+
+
+void XFEM::MeshCouplingFSI::CompleteStateVectors()
+{
+  //-------------------------------------------------------------------------------
+  // finalize itrueresidual vector
+
+  // need to export the interface forces
+  Epetra_Vector iforce_tmp(itrueresidual_->Map(),true);
+  Epetra_Export exporter_iforce(iforcecol_->Map(),iforce_tmp.Map());
+  int err1 = iforce_tmp.Export(*iforcecol_,exporter_iforce,Add);
+  if (err1) dserror("Export using exporter returned err=%d",err1);
+
+  // scale the interface trueresidual with -1.0 to get the forces acting on structural side (no residual-scaling!)
+  itrueresidual_->Update(-1.0,iforce_tmp,0.0);
+}
+
+
+void XFEM::MeshCouplingFSI::ZeroStateVectors_FSI()
+{
+  itrueresidual_->PutScalar(0.0);
+  iforcecol_->PutScalar(0.0);
+}
+
+// -------------------------------------------------------------------
+// Read Restart data for cutter discretization
+// -------------------------------------------------------------------
+void XFEM::MeshCouplingFSI::ReadRestart(
+    const int step
+)
+{
+  const int myrank = cutter_dis_->Comm().MyPID();
+
+  if(myrank) IO::cout << "ReadRestart for boundary discretization " << IO::endl;
+
+  //-------- boundary discretization
+  IO::DiscretizationReader boundaryreader(cutter_dis_, step);
+
+  const double time = boundaryreader.ReadDouble("time");
+//  const int    step = boundaryreader.ReadInt("step");
+
+  if(myrank == 0)
+  {
+    IO::cout << "time: " << time << IO::endl;
+    IO::cout << "step: " << step << IO::endl;
+  }
+
+  boundaryreader.ReadVector(iveln_,   "iveln_res");
+  boundaryreader.ReadVector(idispn_,  "idispn_res");
+
+  // REMARK: ivelnp_ and idispnp_ are set again for the new time step in PrepareSolve()
+  boundaryreader.ReadVector(ivelnp_,  "ivelnp_res");
+  boundaryreader.ReadVector(idispnp_, "idispnp_res");
+
+  if (not (cutter_dis_->DofRowMap())->SameAs(ivelnp_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (cutter_dis_->DofRowMap())->SameAs(iveln_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (cutter_dis_->DofRowMap())->SameAs(idispnp_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (cutter_dis_->DofRowMap())->SameAs(idispn_->Map()))
+    dserror("Global dof numbering in maps does not match");
+
+
+}
+
+
+void XFEM::MeshCouplingFSI::GmshOutput(
+    const std::string & filename_base,
+    const int step,
+    const int gmsh_step_diff,
+    const bool gmsh_debug_out_screen
+)
+{
+  std::ostringstream filename_base_fsi;
+  filename_base_fsi << filename_base << "_force";
+
+  // compute the current boundary position
+  std::map<int,LINALG::Matrix<3,1> > currinterfacepositions;
+  ExtractNodeVectors(cutter_dis_, idispnp_, currinterfacepositions);
+
+
+  const std::string filename =
+      IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+          filename_base_fsi.str(),
+          step,
+          gmsh_step_diff,
+          gmsh_debug_out_screen,
+          cutter_dis_->Comm().MyPID()
+      );
+
+  std::ofstream gmshfilecontent(filename.c_str());
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "iforce \" {" << std::endl;
+    // draw vector field 'force' for every node
+    IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(cutter_dis_,itrueresidual_,currinterfacepositions,gmshfilecontent,3,3);
+    gmshfilecontent << "};" << std::endl;
+  }
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "idispnp \" {" << std::endl;
+    // draw vector field 'idispnp' for every node
+    IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(cutter_dis_,idispnp_,currinterfacepositions,gmshfilecontent,3,3);
+    gmshfilecontent << "};" << std::endl;
+  }
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "ivelnp \" {" << std::endl;
+    // draw vector field 'ivelnp' for every node
+    IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(cutter_dis_,ivelnp_,currinterfacepositions,gmshfilecontent,3,3);
+    gmshfilecontent << "};" << std::endl;
+  }
+
+  gmshfilecontent.close();
+}
+
+void XFEM::MeshCouplingFSI::PrepareCutterOutput()
+{
+  // -------------------------------------------------------------------
+  // prepare output
+  // -------------------------------------------------------------------
+
+  cutter_dis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(cutter_dis_)));
+  cutter_output_ = cutter_dis_->Writer();
+  cutter_output_->WriteMesh(0,0.0);
+}
+
+void XFEM::MeshCouplingFSI::Output(
+    const int step,
+    const double time,
+    const bool write_restart_data
+)
+{
+  // output for interface
+  cutter_output_->NewStep(step,time);
+
+  cutter_output_->WriteVector("ivelnp", ivelnp_);
+  cutter_output_->WriteVector("idispnp", idispnp_);
+  cutter_output_->WriteVector("itrueresnp", itrueresidual_);
+
+  cutter_output_->WriteElementData(firstoutputofrun_);
+  firstoutputofrun_ = false;
+
+  // write restart
+  if (write_restart_data)
+  {
+    cutter_output_->WriteVector("iveln_res",   iveln_);
+    cutter_output_->WriteVector("idispn_res",  idispn_);
+    cutter_output_->WriteVector("ivelnp_res",  ivelnp_);
+    cutter_output_->WriteVector("idispnp_res", idispnp_);
+  }
+}
+
+
+/*--------------------------------------------------------------------------*
+ | extract the nodal vectors and store them in node-vector-map schott 01/13 |
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFSI::ExtractNodeVectors(
+    Teuchos::RCP<DRT::Discretization> dis,
+    Teuchos::RCP<Epetra_Vector> dofrowvec,
+    std::map<int, LINALG::Matrix<3,1> >& nodevecmap
+)
+{
+  Teuchos::RCP<const Epetra_Vector> dispcol = DRT::UTILS::GetColVersionOfRowVector(dis, dofrowvec);
+
+  nodevecmap.clear();
+
+  for (int lid = 0; lid < dis->NumMyColNodes(); ++lid)
+  {
+    const DRT::Node* node = dis->lColNode(lid);
+    std::vector<int> lm;
+    dis->Dof(node, lm);
+    std::vector<double> mydisp;
+    DRT::UTILS::ExtractMyValues(*dispcol,mydisp,lm);
+    if (mydisp.size() < 3)
+      dserror("we need at least 3 dofs here");
+
+    LINALG::Matrix<3,1> currpos;
+    currpos(0) = node->X()[0] + mydisp[0];
+    currpos(1) = node->X()[1] + mydisp[1];
+    currpos(2) = node->X()[2] + mydisp[2];
+    nodevecmap.insert(std::make_pair(node->Id(),currpos));
+  }
+}
+
+
+//----------------------------------------------------------------------
+// LiftDrag                                                  chfoe 11/07
+//----------------------------------------------------------------------
+//calculate lift&drag forces
+//
+//Lift and drag forces are based upon the right hand side true-residual entities
+//of the corresponding nodes. The contribution of the end node of a line is entirely
+//added to a present L&D force.
+/*----------------------------------------------------------------------*/
+void XFEM::MeshCouplingFSI::LiftDrag(
+    const int step,
+    const double time
+) const
+{
+  // get forces on all procs
+  // create interface DOF vectors using the fluid parallel distribution
+  Teuchos::RCP<const Epetra_Vector> iforcecol = DRT::UTILS::GetColVersionOfRowVector(cutter_dis_, itrueresidual_);
+
+  if (cutter_dis_->Comm().MyPID() == 0)
+  {
+    // compute force components
+    const int nsd = 3;
+    const Epetra_Map* dofcolmap = cutter_dis_->DofColMap();
+    LINALG::Matrix<3,1> c(true);
+    for (int inode = 0; inode < cutter_dis_->NumMyColNodes(); ++inode)
+    {
+      const DRT::Node* node = cutter_dis_->lColNode(inode);
+      const std::vector<int> dof = cutter_dis_->Dof(node);
+      for (int isd = 0; isd < nsd; ++isd)
+      {
+        // [// minus to get correct sign of lift and drag (force acting on the body) ]
+        c(isd) += (*iforcecol)[dofcolmap->LID(dof[isd])];
+      }
+    }
+
+    // print to file
+    std::ostringstream s;
+    std::ostringstream header;
+
+    header << std::left  << std::setw(10) << "Time"
+        << std::right << std::setw(16) << "F_x"
+        << std::right << std::setw(16) << "F_y"
+        << std::right << std::setw(16) << "F_z";
+    s << std::left  << std::setw(10) << std::scientific << time
+        << std::right << std::setw(16) << std::scientific << c(0)
+        << std::right << std::setw(16) << std::scientific << c(1)
+        << std::right << std::setw(16) << std::scientific << c(2);
+
+    std::ofstream f;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+                                        + ".liftdrag."
+                                        + cond_name_
+                                        + ".txt";
+    if (step <= 1)
+    {
+      f.open(fname.c_str(),std::fstream::trunc);
+      f << header.str() << std::endl;
+    }
+    else
+    {
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+    }
+    f << s.str() << "\n";
+    f.close();
+
+    std::cout << header.str() << std::endl << s.str() << std::endl;
+  }
+}
+
+
+
 //! constructor
 XFEM::MeshCouplingFSICrack::MeshCouplingFSICrack(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
     const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
     Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
-) : MeshCoupling(bg_dis,cond_name,cond_dis)
+) : MeshCouplingFSI(bg_dis,cond_name,cond_dis)
 {
   InitCrackInitiationsPoints();
+
+  {
+    // @ Sudhakar
+    // keep a pointer to the original boundary discretization
+    // note: for crack problems, the discretization is replaced by new ones during the simulation.
+    // Paraview output based on changing discretizations is not possible so far.
+    // To enable at least restarts, the IO::DiscretizationWriter(boundarydis_) has to be kept alive,
+    // however, in case that the initial boundary dis, used for creating the Writer, is replaced, it will be deleted,
+    // as now other RCP points to it anymore. Then the functionality of the Writer breaks down. Therefore, we artificially
+    // hold second pointer to the original boundary dis for Crack-problems.
+    cutterdis_init_output_ = cutter_dis_;
+  }
 }
 
 
@@ -405,6 +715,22 @@ void XFEM::MeshCouplingFSICrack::UpdateBoundaryValuesAfterCrack(
   //boundarydis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_)));
   //boundary_output_ = boundarydis_->Writer();
 }
+
+
+//void XFEM::MeshCouplingFSICrack::PrepareCutterOutputCrack()
+//{
+//  // -------------------------------------------------------------------
+//  // prepare output
+//  // -------------------------------------------------------------------
+//
+//  cutter_dis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(cutter_dis_)));
+//
+//
+//
+//  cutter_output_ = cutter_dis_->Writer();
+//  cutter_output_->WriteMesh(0,0.0);
+//}
+
 
 
 XFEM::LevelSetCoupling::LevelSetCoupling(
@@ -577,7 +903,7 @@ XFEM::ConditionManager::ConditionManager(
 }
 
 void XFEM::ConditionManager::CreateNewLevelSetCoupling(const std::string& cond_name)
-{ std::cout << "create new LevelSetCoupling: " << cond_name << std::endl;
+{
   AddLevelSetCoupling( cond_name );
 }
 
@@ -586,7 +912,7 @@ void XFEM::ConditionManager::CreateNewMeshCoupling(
     const std::string& cond_name,
     Teuchos::RCP<DRT::Discretization> cond_dis         ///< discretization from which the cutter discretization can be derived
 )
-{std::cout << "create new MeshCoupling: " << cond_name << std::endl;
+{
   AddMeshCoupling( cond_name, cond_dis );
 }
 
@@ -689,4 +1015,81 @@ void XFEM::ConditionManager::UpdateLevelSetField()
   bg_phinp_->Update(1.0, *(levelset_coupl_[0]->GetLevelSetField()), 0.0);
 
   is_levelset_uptodate_ = true;
+}
+
+void XFEM::ConditionManager::SetState()
+{
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->SetState();
+  }
+}
+
+void XFEM::ConditionManager::CompleteStateVectors()
+{
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->CompleteStateVectors();
+  }
+}
+
+void XFEM::ConditionManager::ZeroStateVectors_FSI()
+{
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->ZeroStateVectors_FSI();
+  }
+}
+
+void XFEM::ConditionManager::GmshOutput(
+    const std::string & filename_base,
+    const int step,
+    const int gmsh_step_diff,
+    const bool gmsh_debug_out_screen
+)
+{
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->GmshOutput(filename_base, step, gmsh_step_diff, gmsh_debug_out_screen);
+  }
+}
+
+void XFEM::ConditionManager::Output(
+    const int step,
+    const double time,
+    const bool write_restart_data
+)
+{
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->Output(step, time, write_restart_data);
+  }
+}
+
+void XFEM::ConditionManager::LiftDrag(
+    const int step,
+    const double time
+)
+{
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->LiftDrag(step, time);
+  }
+}
+
+void XFEM::ConditionManager::ReadRestart(
+    const int step
+)
+{
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->ReadRestart(step);
+  }
 }

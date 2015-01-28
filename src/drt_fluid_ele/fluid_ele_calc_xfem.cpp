@@ -1500,14 +1500,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   // ---------------------------------------------------------------------
   if (my::fldpara_->PhysicalType()==INPAR::FLUID::oseen) my::SetAdvectiveVelOseen(ele);
 
-
-
-
-  // reconstruct interface force vector
-  const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("iforcenp", Teuchos::null);
-  bool assemble_iforce = false;
-  if (iforcecol != Teuchos::null) assemble_iforce = true;
-
   // compute characteristic element length based on the background element
   const double h_k = ComputeCharEleLength(ele,ele_xyze,vcSet,bcells,bintpoints);
 
@@ -1720,12 +1712,20 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
     if(!is_ls_coupling_side and !is_mesh_coupling_side) dserror("side is neither a levelset-coupling side nor a mesh coupling side: side %i", coup_sid);
 #endif
 
+    //-----------------------------------------------------------------------------------
+    Teuchos::RCP<XFEM::MeshCouplingFSI> mc_fsi = Teuchos::null;
+    bool assemble_iforce = false;
+
     //---------------------------------------------------------------------------------
     // prepare the coupling objects
     //---------------------------------------------------------------------------------
     // prepare the coupling objects
     if(is_mesh_coupling_side)
     {
+      const int mc_idx = cond_manager->GetMeshCouplingIndex(coup_sid);
+      mc_fsi = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(cond_manager->GetMeshCoupling(mc_idx));
+      if(mc_fsi != Teuchos::null) assemble_iforce = true;
+
       // get the side element and its coordinates for projection of Gaussian points
       side = cond_manager->GetSide( coup_sid );
       GEO::InitialPositionArray(side_xyze,side);
@@ -2118,36 +2118,34 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
           );
         }
 
-        if (!assemble_iforce or is_ls_coupling_side)
+        if (!assemble_iforce)
           continue;
 
         //--------------------------------------------
         // calculate interface forces for XFSI
-        if (assemble_iforce)
-        {
-          // get velocity derivatives at integration point
-          // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-          my::vderxy_.MultiplyNT(evelaf,my::derxy_);
 
-          // get pressure at integration point
-          // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-          double press = my::funct_.Dot(epreaf);
+        // get velocity derivatives at integration point
+        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        my::vderxy_.MultiplyNT(evelaf,my::derxy_);
 
-          //-------------------------------
-          // traction vector w.r.t fluid domain, resulting stresses acting on the fluid surface
-          // t= (-p*I + 2mu*eps(u))*n^f
-          LINALG::Matrix<my::nsd_,1> traction(true);
+        // get pressure at integration point
+        // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        double press = my::funct_.Dot(epreaf);
 
-          BuildTractionVector( traction, press, normal );
+        //-------------------------------
+        // traction vector w.r.t fluid domain, resulting stresses acting on the fluid surface
+        // t= (-p*I + 2mu*eps(u))*n^f
+        LINALG::Matrix<my::nsd_,1> traction(true);
 
-          ci[coup_sid]->ComputeInterfaceForce(iforce, traction, surf_fac );
-        } // buildInterfaceForce
+        BuildTractionVector( traction, press, normal );
 
+        ci[coup_sid]->ComputeInterfaceForce(iforce, traction, surf_fac );
 
       } // end loop gauss points of boundary cell
     } // end loop boundary cells of side
 
-    if(assemble_iforce and is_mesh_coupling_side) AssembleInterfaceForce(iforcecol, *cutter_dis, cutla[0].lm_, iforce);
+    if(assemble_iforce)
+      AssembleInterfaceForce(mc_fsi->IForcecol(), *cutter_dis, cutla[0].lm_, iforce);
 
   } // end loop cut sides
 
@@ -3148,9 +3146,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   if(cond_manager == Teuchos::null) dserror("set the condition manager!");
 #endif
 
-  // get force vector (for partitioned XFSI)
-  const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("iforcenp", Teuchos::null);
-  const bool assemble_iforce = iforcecol != Teuchos::null;
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -3325,7 +3320,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     if ( bcs.size()!=cutintpoints.size() )
       dserror( "boundary cell integration rules mismatch" );
 
-
     //-----------------------------------------------------------------------------------
     // define average weights
 
@@ -3372,11 +3366,18 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     if(!is_ls_coupling_side and !is_mesh_coupling_side) dserror("side is neither a levelset-coupling side nor a mesh coupling side: side %i", coup_sid);
 #endif
 
+    //-----------------------------------------------------------------------------------
+    Teuchos::RCP<XFEM::MeshCouplingFSI> mc_fsi = Teuchos::null;
+    bool assemble_iforce = false;
 
     //---------------------------------------------------------------------------------
     // prepare the coupling objects
     if(is_mesh_coupling_side)
     {
+      const int mc_idx = cond_manager->GetMeshCouplingIndex(coup_sid);
+      mc_fsi = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(cond_manager->GetMeshCoupling(mc_idx));
+      if(mc_fsi != Teuchos::null) assemble_iforce = true;
+
       // get the side element and its coordinates for projection of Gaussian points
       side = cond_manager->GetSide( coup_sid );
       GEO::InitialPositionArray(side_xyze,side);
@@ -3687,7 +3688,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           );
         }
 
-        if (!assemble_iforce or is_ls_coupling_side)
+        if (!assemble_iforce)
           continue;
 
         //-----------------------------------------------------------------------------
@@ -3699,13 +3700,13 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         LINALG::Matrix<my::nsd_,1> traction(true);
 
         BuildTractionVector( traction, press, normal );
-
         ci->ComputeInterfaceForce(iforce, traction, surf_fac );
 
       } // end loop gauss points of boundary cell
     } // end loop boundary cells of side
 
-    if(assemble_iforce and is_mesh_coupling_side) AssembleInterfaceForce(iforcecol, *cutter_dis, cutla[0].lm_, iforce);
+    if(assemble_iforce)
+      AssembleInterfaceForce(mc_fsi->IForcecol(), *cutter_dis, cutla[0].lm_, iforce);
   } // end loop cut sides
 
 

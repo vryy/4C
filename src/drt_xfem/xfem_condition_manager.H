@@ -197,6 +197,39 @@ public:
 
   Teuchos::RCP<const Epetra_Vector> GetCutterDispCol();
 
+  // finalized interface state vectors
+  virtual void CompleteStateVectors(){};
+
+  // zero interface state vectors for FSI
+  virtual void ZeroStateVectors_FSI(){};
+
+
+  /// set state vectors for cutter discretization
+  virtual void SetState();
+
+  virtual void GmshOutput(
+      const std::string & filename_base,
+      const int step,
+      const int gmsh_step_diff,
+      const bool gmsh_debug_out_screen
+  ){};
+
+  virtual void Output(
+      const int step,
+      const double time,
+      const bool write_restart_data
+  ){};
+
+  virtual void LiftDrag(
+      const int step,
+      const double time
+  ) const {};
+
+
+  virtual void ReadRestart(
+      const int step
+  ){};
+
 
   Teuchos::RCP<Epetra_Vector> IVelnp(){ return ivelnp_; }
   Teuchos::RCP<Epetra_Vector> IVeln() { return iveln_;  }
@@ -204,8 +237,6 @@ public:
 
   Teuchos::RCP<Epetra_Vector> IDispnp(){ return idispnp_; }
   Teuchos::RCP<Epetra_Vector> IDispn() { return idispn_;  }
-
-  Teuchos::RCP<Epetra_Vector> ITrueResidual(){ return itrueresidual_; }
 
 private:
 
@@ -239,25 +270,112 @@ private:
 
 protected:
 
+
   //------------------------------- vectors -----------------------------
 //TODO: these vectors are not required for Neumann and WDBC conditions, derive class
-  //! @name boundary-dis state vectors
+  //! @name cutter-dis state vectors
   Teuchos::RCP<Epetra_Vector>    ivelnp_;
   Teuchos::RCP<Epetra_Vector>    iveln_;
   Teuchos::RCP<Epetra_Vector>    ivelnm_;
 
   Teuchos::RCP<Epetra_Vector>    idispnp_;
   Teuchos::RCP<Epetra_Vector>    idispn_;
-  Teuchos::RCP<Epetra_Vector>    itrueresidual_; //! interface forces acting on the structural surface
-  Teuchos::RCP<Epetra_Vector>    iforcenp_;
+  //@}
+};
 
 
+
+/*!
+\brief
+ */
+class MeshCouplingFSI : public MeshCoupling
+{
+public:
+
+  //! constructor
+  explicit MeshCouplingFSI(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
+  );
+
+  //! destructor
+  virtual ~MeshCouplingFSI()
+  {
+    return;
+  }
+
+  // finalize the interface true residual vector
+  virtual void CompleteStateVectors();
+
+  virtual void ZeroStateVectors_FSI();
+
+  virtual void GmshOutput(
+      const std::string & filename_base,
+      const int step,
+      const int gmsh_step_diff,
+      const bool gmsh_debug_out_screen
+  );
+
+  virtual void LiftDrag(
+      const int step,
+      const double time
+  ) const;
+
+  virtual void ReadRestart(
+      const int step
+  );
+
+  // interface foces
+  Teuchos::RCP<Epetra_Vector> ITrueResidual(){ return itrueresidual_; }
+
+  // for assembly of fluid interface forces
+  Teuchos::RCP<Epetra_Vector> IForcecol(){ return iforcecol_; }
+
+
+
+private:
+
+  void ExtractNodeVectors(
+      Teuchos::RCP<DRT::Discretization> dis,
+      Teuchos::RCP<Epetra_Vector> dofrowvec,
+      std::map<int, LINALG::Matrix<3,1> >& nodevecmap
+  );
+
+
+  void InitStateVectors_FSI();
+
+  void PrepareCutterOutput();
+
+  void Output(
+      const int step,
+      const double time,
+      const bool write_restart_data
+  );
+
+protected:
+
+  //------------------------------- vectors -----------------------------
+  //! @name cutter-dis state vectors
+  Teuchos::RCP<Epetra_Vector>    itrueresidual_; //! interface forces acting on the structural surface (= -iforcenp)
+  Teuchos::RCP<Epetra_Vector>    iforcecol_;     //! interface forces acting on the fluid surface (column vector assembly)
+  //@}
+
+
+  //---------------------------------output----------------------------
+
+  //! @name output discretization writers
+  Teuchos::RCP<IO::DiscretizationWriter> cutter_output_;
+
+  bool firstoutputofrun_;
+  //@}
 
 };
 
 
+
 /// class which allows to manipulate the boundary dis and to deal with crack specific staff
-class MeshCouplingFSICrack : public MeshCoupling
+class MeshCouplingFSICrack : public MeshCouplingFSI
 {
 public:
 
@@ -296,6 +414,8 @@ public:
 private:
 
   std::map<int, LINALG::Matrix<3,1> > tip_nodes_;
+
+  Teuchos::RCP<DRT::Discretization> cutterdis_init_output_;
 
 };
 
@@ -382,9 +502,21 @@ public:
   )
   {
     if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)
+    {
+      std::cout << " create new MeshCouplingFSICrack" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSICrack(bg_dis_, cond_name, cond_dis)));
+    }
+    else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
+        CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_MONO)
+    {
+      std::cout << " create new MeshCouplingFSI" << std::endl;
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSI(bg_dis_, cond_name, cond_dis)));
+    }
     else
+    {
+      std::cout << " create new MeshCoupling" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(bg_dis_, cond_name, cond_dis)));
+    }
   }
 
   /// add a new level-set-coupling object based on the given coupling discretization
@@ -774,6 +906,35 @@ public:
   }
 
   Teuchos::RCP<const Epetra_Vector> GetLevelSetFieldCol();
+
+  void SetState();
+
+  void CompleteStateVectors();
+
+  void ZeroStateVectors_FSI();
+
+  void GmshOutput(
+      const std::string & filename_base,
+      const int step,
+      const int gmsh_step_diff,
+      const bool gmsh_debug_out_screen
+  );
+
+  void Output(
+      const int step,
+      const double time,
+      const bool write_restart_data
+  );
+
+  /// compute lift and drag values by integrating the true residuals
+  void LiftDrag(
+      const int step,
+      const double time
+  );
+
+  void ReadRestart(
+      const int step
+  );
 
 private:
 

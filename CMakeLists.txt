@@ -622,7 +622,9 @@ set(OBJS_DRT_ARTNET
   src/drt_art_net/art_net_dyn_drt.cpp
   src/drt_art_net/artnetexplicitintegration.cpp
 )
-set(OBJS_INTERSECTION
+
+
+set(OBJS_DRT_XFEM_COMBUST
   src/drt_xfem/dof_distribution_switcher.cpp
   src/drt_xfem/dofkey.cpp
   src/drt_xfem/dof_management.cpp
@@ -637,7 +639,12 @@ set(OBJS_INTERSECTION
   src/drt_xfem/timeInt_std_SemiLagrange.cpp
   src/drt_xfem/xdofmapcreation_combust.cpp
   src/drt_xfem/xdofmapcreation_parallel_utils.cpp
-  src/drt_xfem/xfem_condition_manager.cpp
+  src/drt_combust/combust_interface.cpp
+  src/drt_combust/combust_flamefront.cpp
+  src/drt_combust/combust_flamefront_utils.cpp
+)
+
+set(OBJS_DRT_XFEM
   src/drt_xfem/xfem_edgestab.cpp
   src/drt_xfem/xfem_dofset_transparent_independent.cpp
   src/drt_xfem/xfem_dofset.cpp
@@ -646,10 +653,13 @@ set(OBJS_INTERSECTION
   src/drt_xfem/xfluid_timeInt_base.cpp
   src/drt_xfem/xfluid_timeInt_std_SemiLagrange.cpp
   src/drt_xfem/xfluid_timeInt.cpp
-  src/drt_combust/combust_interface.cpp
-  src/drt_combust/combust_flamefront.cpp
-  src/drt_combust/combust_flamefront_utils.cpp
 )
+
+
+set(OBJS_DRT_XFEM_MANAG_LIB
+  src/drt_xfem/xfem_condition_manager.cpp
+)
+
 set(OBJS_POST_DRT_MONITOR
   src/post_monitor/post_drt_monitor.cpp
 )
@@ -2119,7 +2129,8 @@ add_library(drt_lib ${OBJS_DRT_LIB})
 add_library(drt_lib_inpar ${OBJS_DRT_INPAR})
 add_library(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
 add_library(drt_lib_contact ${OBJS_DRT_CONTACT_LIB} ${OBJS_DRT_BEAMCONTACT_LIB})
-add_library(drt_lib_intersection ${OBJS_INTERSECTION})
+add_library(drt_lib_xfem ${OBJS_DRT_XFEM})
+add_library(drt_lib_xfem_combust ${OBJS_DRT_XFEM_COMBUST})
 add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
 #add_library(drt_lib_fluid ${OBJS_DRT_FLUID_LIB})
 add_library(drt_lib_mortar ${OBJS_DRT_MORTAR_LIB})
@@ -2134,8 +2145,11 @@ add_library(drt_lib_cut ${OBJS_DRT_CUT})
 add_library(drt_lib_crack ${OBJS_DRT_CRACK})
 add_library(drt_lib_statinv_anal ${OBJS_STATINV_ANALYSIS_LIB})
 add_library(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
+add_library(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
+
 
 set(SUPPORT_LIBRARIES
+  drt_lib_xfem_manag
   drt_lib
   drt_lib_artnet
   drt_lib_redairways
@@ -2145,7 +2159,8 @@ set(SUPPORT_LIBRARIES
   # Libraries needed by elements
   drt_lib_surfstress
   drt_lib_potential
-  drt_lib_intersection
+  drt_lib_xfem
+  drt_lib_xfem_combust
   drt_lib_cut
   drt_lib_crack
   drt_lib_inpar

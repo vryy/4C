@@ -186,8 +186,8 @@ namespace FLD
     void GmshOutput( const std::string & name,            ///< name for output file
                      const int step,                      ///< step number
                      const int count,                     ///< counter for iterations within a global time step
-                     Teuchos::RCP<Epetra_Vector> vel,     ///< vector holding velocity and pressure dofs
-                     Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
+                     Teuchos::RCP<const Epetra_Vector> vel,     ///< vector holding velocity and pressure dofs
+                     Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
                      );
 
     /// initialize the state vectors for the interface
@@ -236,7 +236,7 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> Dispn()  { return dispn_; }  //full Dispn(1st dofset)
 
     //! get the interface forces acting on the structural surface
-    Teuchos::RCP<const Epetra_Vector> ITrueResidual(){ return itrueresidual_; }
+    Teuchos::RCP<const Epetra_Vector> ITrueResidual();
 
     Teuchos::RCP<Epetra_Vector> IVelnp(){return ivelnp_; }
     Teuchos::RCP<Epetra_Vector> IVeln() {return iveln_; }
@@ -377,8 +377,8 @@ namespace FLD
         std::ofstream & acc_f,         ///< output file stream for acceleration
         DRT::Element * actele,         ///< element
         std::vector<int> & nds,        ///< vector holding the nodal dofsets
-        Teuchos::RCP<Epetra_Vector> vel, ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
+        Teuchos::RCP<const Epetra_Vector> vel, ///< vector holding velocity and pressure dofs
+        Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
     );
 
     /// Gmsh output function for volumecells
@@ -391,8 +391,8 @@ namespace FLD
         GEO::CUT::ElementHandle * e,      ///<elementhandle
         GEO::CUT::VolumeCell * vc,        ///< volumecell
         const std::vector<int> & nds,     ///< vector holding the nodal dofsets
-        Teuchos::RCP<Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding acceleration
+        Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
+        Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null ///< vector holding acceleration
     );
 
     /// Gmsh output function for boundarycells
@@ -597,8 +597,6 @@ namespace FLD
     /// initialize the boundary discretization, output, restart and statevectors
     void InitBoundaryDiscretization();
 
-    void PrepareOutputBoundary();
-
     void PrepareOutput();
 
     //@}
@@ -794,6 +792,8 @@ namespace FLD
     /// object to handle the different types of XFEM boundary and interface coupling conditions
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
 
+    int mc_idx_;
+
     bool include_inner_;
 
     //--------------------------------------------------------------------
@@ -822,8 +822,6 @@ namespace FLD
 
     Teuchos::RCP<Epetra_Vector>    idispnp_;
     Teuchos::RCP<Epetra_Vector>    idispn_;
-    Teuchos::RCP<Epetra_Vector>    itrueresidual_; //! interface forces acting on the structural surface
-    Teuchos::RCP<Epetra_Vector>    iforcenp_;
 
     //Dispnp of full fluidfield (also unphysical area - to avoid reconstruction for gridvelocity calculation!)
     Teuchos::RCP<Epetra_Vector>    dispnp_;

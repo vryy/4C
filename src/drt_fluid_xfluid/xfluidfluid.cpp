@@ -297,9 +297,9 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
   if (alefluid_)
     LINALG::Export(*(dispnp_),*(idispnp_));
 
-  boundarydis_->SetState("ivelnp",ivelnp_);
-  boundarydis_->SetState("iveln",iveln_);
-  boundarydis_->SetState("idispnp",idispnp_);
+  //----------------------------------------------------------------------
+  // set state vectors for cutter discretization
+  condition_manager_->SetState();
 
   // set scheme-specific element parameters and vector values
   if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
