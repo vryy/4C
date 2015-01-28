@@ -75,9 +75,9 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
   scatratimint_->Discretization()->ClearState();
   scatratimint_->AddTimeIntegrationSpecificVectors();
 
-  // set interface state vector imasterphinp_ with transformed master dof values and add to element parameter list
-  imasterphinp_->Update(1.,*(icoup_->MasterToSlave(maps_->ExtractVector(*(scatratimint_->Phiafnp()),2))),0.);
-  condparams.set<Teuchos::RCP<const Epetra_Vector> >("imasterphinp",imasterphinp_);
+  // fill interface state vector imasterphinp_ with transformed master dof values and add to discretization
+  maps_->InsertVector(icoup_->MasterToSlave(maps_->ExtractVector(*(scatratimint_->Phiafnp()),2)),1,imasterphinp_);
+  scatratimint_->Discretization()->SetState("imasterphinp",imasterphinp_);
 
   // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
   islavematrix_->Zero();
@@ -180,7 +180,9 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
   maps_->CheckForValidMapExtractor();
 
   // initialize interface vector
-  imasterphinp_ = LINALG::CreateVector(*(icoup_->SlaveDofMap()),false);
+  // Although the interface vector only contains the transformed master interface dofs, we still initialize it with
+  // the full DofRowMap of the discretization to make it work for parallel computations.
+  imasterphinp_ = LINALG::CreateVector(*(scatratimint_->Discretization()->DofRowMap()),false);
 
   // initialize auxiliary system matrices and associated transformation operators
   islavematrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_->SlaveDofMap()),81));

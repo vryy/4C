@@ -1248,10 +1248,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
 {
   // get global and interface state vectors
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  Teuchos::RCP<const Epetra_Vector> imasterphinp = params.get<Teuchos::RCP<const Epetra_Vector> >("imasterphinp");
-  if (phinp == Teuchos::null or imasterphinp == Teuchos::null) dserror("Cannot get state vector 'phinp' or 'imasterphinp'!");
+  Teuchos::RCP<const Epetra_Vector> imasterphinp = discretization.GetState("imasterphinp");
+  if (phinp == Teuchos::null or imasterphinp == Teuchos::null)
+    dserror("Cannot get state vector 'phinp' or 'imasterphinp'!");
 
-  // extract local nodal values on present and opposite side of scatra-scatra interface
+  // extract local nodal values on present and opposite sides of scatra-scatra interface
   std::vector<double> eslavephinpvec(lm.size());
   DRT::UTILS::ExtractMyValues(*phinp,eslavephinpvec,lm);
   std::vector<LINALG::Matrix<nen_,1> > eslavephinp(numscal_);
