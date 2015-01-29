@@ -415,8 +415,8 @@ public:
       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
       Teuchos::ParameterList&                                             params,            ///< parameter list
-      const GEO::CUT::plain_volumecell_set&                               vcSet,              ///< volumecell sets in this element
-      std::map<int,int> &                                                 boundary_emb_gid_map
+      const GEO::CUT::plain_volumecell_set&                               vcSet,             ///< volumecell sets in this element
+      const Teuchos::RCP<XFEM::MeshCouplingFluidFluid>&                   mc_ff              ///< specialized mesh coupling
   ){dserror("Implemented in derived xfem class!"); return 1;};
 
   /// Evaluate the XFEM cut element

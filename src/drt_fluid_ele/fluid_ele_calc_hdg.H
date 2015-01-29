@@ -190,7 +190,7 @@ namespace ELEMENTS
         const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
         Teuchos::ParameterList&                                             params,            ///< parameter list
         const GEO::CUT::plain_volumecell_set&                               vcSet,              ///< volumecell sets in this element
-        std::map<int,int> &                                                 boundary_emb_gid_map
+        const Teuchos::RCP<XFEM::MeshCouplingFluidFluid>&                   mc_ff              ///< specialized mesh coupling
     ){dserror("Not implemented!"); return 1;}
 
     /// Evaluate the XFEM cut element

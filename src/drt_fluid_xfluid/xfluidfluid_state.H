@@ -7,7 +7,7 @@ fluid meshes
 Maintainer:  Raffaela Kruse
              kruse@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15240
+             089 - 289-15249
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -66,6 +66,26 @@ public:
   /// build merged fluid dirichlet map extractor
   void CreateMergedDBCMapExtractor(Teuchos::RCP<const LINALG::MapExtractor> embfluiddbcmaps);
 
+  //! @name Accessors
+  //@{
+
+  Teuchos::RCP<LINALG::MapExtractor> DBCMapExtractor()
+  {
+    return xffluiddbcmaps_;
+  }
+
+  Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter()
+  {
+    return xffluidvelpressplitter_;
+  }
+
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+  Teuchos::RCP<Epetra_Vector>& Residual() { return xffluidresidual_; }
+  Teuchos::RCP<Epetra_Vector>& Zeros()    { return xffluidzeros_; }
+  Teuchos::RCP<Epetra_Vector>& IncVel()   { return xffluidincvel_; }
+  Teuchos::RCP<Epetra_Vector>& Velnp()    { return xffluidvelnp_; }
+  //@}
+
   //@name Map of the merged system
   //@{
   /// combined background and embedded fluid dof-map
@@ -77,9 +97,9 @@ public:
   /// extractor used for splitting fluid and embedded fluid
   Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> xffluidsplitter_;
   /// extractor used for splitting between velocity and pressure dof from the combined background & embedded fluid dof-map
-  Teuchos::RCP<LINALG::MapExtractor> xffluidvelpressplitter_;
+  Teuchos::RCP<LINALG::MapExtractor>       xffluidvelpressplitter_;
   /// combined background and embedded fluid map extractor for dirichlet-constrained dof
-  Teuchos::RCP<const LINALG::MapExtractor> xffluiddbcmaps_;
+  Teuchos::RCP<LINALG::MapExtractor>   xffluiddbcmaps_;
   //@}
 
   /// full system matrix for coupled background and embedded fluid

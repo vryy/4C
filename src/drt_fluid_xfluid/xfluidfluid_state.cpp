@@ -7,7 +7,7 @@ fluid meshes
 Maintainer:  Raffaela Kruse
              kruse@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15240
+             089 - 289-15249
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -65,6 +65,14 @@ void FLD::XFluidFluidState::InitStateVectors()
   xffluidvelnp_    = LINALG::CreateVector(*xffluiddofrowmap_,true);
   xffluidveln_     = LINALG::CreateVector(*xffluiddofrowmap_,true);
   xffluidzeros_    = LINALG::CreateVector(*xffluiddofrowmap_,true);
+}
+
+/*----------------------------------------------------------------------*
+ |  Access system matrix                                    kruse 01/15 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> FLD::XFluidFluidState::SystemMatrix()
+{
+  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(xffluidsysmat_);
 }
 
 /*----------------------------------------------------------------------*

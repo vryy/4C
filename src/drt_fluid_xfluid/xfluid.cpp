@@ -2989,7 +2989,6 @@ void FLD::XFluid::Solve()
       dtele_=Teuchos::Time::wallTime()-tcpu;
     }
 
-
     // blank residual DOFs which are on Dirichlet BC
     // We can do this because the values at the dirichlet positions
     // are not used anyway.
@@ -3001,166 +3000,45 @@ void FLD::XFluid::Solve()
       const Epetra_Map* colmap = discret_->DofColMap();
       Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
-      LINALG::Export(*state_->residual_,*output_col_residual);
+      LINALG::Export(*state_->Residual(),*output_col_residual);
       GmshOutput( "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
     }
 
     // apply Dirichlet conditions to the residual vector by setting zeros into the residual
-    state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->zeros_), state_->residual_);
+    state_->DBCMapExtractor()->InsertCondVector(
+        state_->DBCMapExtractor()->ExtractCondVector(state_->Zeros()),
+        state_->Residual());
 
     if(gmsh_debug_out_)
     {
       const Epetra_Map* colmap = discret_->DofColMap();
       Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
-      LINALG::Export(*state_->residual_,*output_col_residual);
+      LINALG::Export(*state_->Residual(),*output_col_residual);
       GmshOutput( "DEBUG_residual", step_, itnum, output_col_residual );
     }
-
 
     if (updateprojection_)
     {
       // even if not ALE, we always need to update projection vectors due to changed cuts
       UpdateKrylovSpaceProjection();
     }
+
     // remove contributions of pressure mode
     // that would not vanish due to the projection
     if (projector_ != Teuchos::null)
-      projector_->ApplyPT(*state_->residual_);
+      projector_->ApplyPT(*state_->Residual());
 
-    double incvelnorm_L2 = 0.0;
-    double incprenorm_L2 = 0.0;
-
-    double velnorm_L2 = 0.0;
-    double prenorm_L2 = 0.0;
-
-    double vresnorm = 0.0;
-    double presnorm = 0.0;
-
-
-
-    Teuchos::RCP<Epetra_Vector> onlyvel = state_->velpressplitter_->ExtractOtherVector(state_->residual_);
-    onlyvel->Norm2(&vresnorm);
-
-
-
-    state_->velpressplitter_->ExtractOtherVector(state_->incvel_,onlyvel);
-    onlyvel->Norm2(&incvelnorm_L2);
-
-    state_->velpressplitter_->ExtractOtherVector(state_->velnp_,onlyvel);
-    onlyvel->Norm2(&velnorm_L2);
-
-    Teuchos::RCP<Epetra_Vector> onlypre = state_->velpressplitter_->ExtractCondVector(state_->residual_);
-    onlypre->Norm2(&presnorm);
-
-    state_->velpressplitter_->ExtractCondVector(state_->incvel_,onlypre);
-    onlypre->Norm2(&incprenorm_L2);
-
-    state_->velpressplitter_->ExtractCondVector(state_->velnp_,onlypre);
-    onlypre->Norm2(&prenorm_L2);
-
-    // care for the case that nothing really happens in the velocity
-    // or pressure field
-    if (velnorm_L2 < 1e-5) velnorm_L2 = 1.0;
-    if (prenorm_L2 < 1e-5) prenorm_L2 = 1.0;
-
-    //-------------------------------------------------- output to screen
-    /* special case of very first iteration step:
-        - solution increment is not yet available
-        - convergence check is not required (we solve at least once!)    */
-    if (itnum == 1)
-    {
-      if (myrank_ == 0)
-      {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
-               itnum,itemax,ittol,vresnorm,presnorm);
-        printf(" (      --     ,te=%10.3E",dtele_);
-        if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
-        {
-          printf(",tf=%10.3E",dtfilter_);
-        }
-        printf(")\n");
-      }
-    }
-    /* ordinary case later iteration steps:
-        - solution increment can be printed
-        - convergence check should be done*/
-    else
-    {
-    // this is the convergence check
-    // We always require at least one solve. Otherwise the
-    // perturbation at the FSI interface might get by unnoticed.
-      if (vresnorm <= ittol and presnorm <= ittol and
-          incvelnorm_L2/velnorm_L2 <= ittol and incprenorm_L2/prenorm_L2 <= ittol)
-      {
-        stopnonliniter=true;
-        if (myrank_ == 0)
-        {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
-          {
-            printf(",tf=%10.3E",dtfilter_);
-          }
-          printf(")\n");
-          printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-
-          FILE* errfile = params_->get<FILE*>("err file",NULL);
-          if (errfile!=NULL)
-          {
-            fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                    itnum,itemax,ittol,vresnorm,presnorm,
-                    incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          }
-        }
-        break;
-      }
-      else // if not yet converged
-        if (myrank_ == 0)
-        {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
-          {
-            printf(",tf=%10.3E",dtfilter_);
-          }
-          printf(")\n");
-        }
-    }
-
-    // warn if itemax is reached without convergence, but proceed to
-    // next timestep...
-    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or
-                             incvelnorm_L2/velnorm_L2 > ittol or
-                             incprenorm_L2/prenorm_L2 > ittol))
-    {
-      stopnonliniter=true;
-      if (myrank_ == 0)
-      {
-        printf("+---------------------------------------------------------------+\n");
-        printf("|            >>>>>> not converged in itemax steps!              |\n");
-        printf("+---------------------------------------------------------------+\n");
-
-        FILE* errfile = params_->get<FILE*>("err file",NULL);
-        if (errfile!=NULL)
-        {
-          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                  itnum,itemax,ittol,vresnorm,presnorm,
-                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-        }
-      }
+    if (ConvergenceCheck(itnum,itemax,ittol))
       break;
-    }
 
     //--------- Apply Dirichlet boundary conditions to system of equations
     //          residual displacements are supposed to be zero at
     //          boundary conditions
-    state_->incvel_->PutScalar(0.0);
-    LINALG::ApplyDirichlettoSystem(state_->sysmat_,state_->incvel_,state_->residual_,state_->zeros_,*(state_->dbcmaps_->CondMap()));
+    state_->IncVel()->PutScalar(0.0);
+    LINALG::ApplyDirichlettoSystem(
+        state_->SystemMatrix(),state_->IncVel(),state_->Residual(),
+        state_->Zeros(),*(state_->DBCMapExtractor()->CondMap()));
 
 
 //#if 1
@@ -3181,9 +3059,9 @@ void FLD::XFluid::Solve()
       // do adaptive linear solver tolerance (not in first solve)
       if (isadapttol && itnum>1)
       {
-        double currresidual = std::max(vresnorm,presnorm);
-        currresidual = std::max(currresidual,incvelnorm_L2/velnorm_L2);
-        currresidual = std::max(currresidual,incprenorm_L2/prenorm_L2);
+        double currresidual = std::max(vresnorm_,presnorm_);
+        currresidual = std::max(currresidual,incvelnorm_L2_/velnorm_L2_);
+        currresidual = std::max(currresidual,incprenorm_L2_/prenorm_L2_);
         solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
@@ -3217,18 +3095,18 @@ void FLD::XFluid::Solve()
 
      // scale system prior to solver call
      if (fluid_infnormscaling_!= Teuchos::null)
-       fluid_infnormscaling_->ScaleSystem(state_->sysmat_, *(state_->residual_));
+       fluid_infnormscaling_->ScaleSystem(state_->SystemMatrix(), *(state_->Residual()));
 
       // if Krylov space projection is used, check whether constant pressure
       // is in nullspace of sysmat_
      CheckMatrixNullspace();
 
-     solver_->Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1, projector_);
+     solver_->Solve(state_->SystemMatrix()->EpetraOperator(),state_->IncVel(),state_->Residual(),true,itnum==1, projector_);
 
 
       // unscale solution
       if (fluid_infnormscaling_!= Teuchos::null)
-        fluid_infnormscaling_->UnscaleSolution(state_->sysmat_, *(state_->incvel_),*(state_->residual_));
+        fluid_infnormscaling_->UnscaleSolution(state_->SystemMatrix(), *(state_->IncVel()),*(state_->Residual()));
 
       solver_->ResetTolerance();
 
@@ -3250,11 +3128,7 @@ void FLD::XFluid::Solve()
     // -------------------------------------------------------------------
     // update velocity and pressure values by increments
     // -------------------------------------------------------------------
-    state_->velnp_->Update(1.0,*state_->incvel_,1.0);
-    double f_norm = 0;
-    state_->velnp_->Norm2(&f_norm);
-    //std::cout << std::setprecision(14) << f_norm << std::endl;
-
+    UpdateByIncrement();
 
     // -------------------------------------------------------------------
     // For af-generalized-alpha: update accelerations
@@ -3288,6 +3162,140 @@ void FLD::XFluid::Solve()
   }
 #endif
 
+}
+
+bool FLD::XFluid::ConvergenceCheck(
+  int          itnum,
+  int          itemax,
+  const double ittol)
+{
+  bool stopnonliniter = false;
+
+  incvelnorm_L2_ = 0.0;
+  incprenorm_L2_ = 0.0;
+
+  velnorm_L2_ = 0.0;
+  prenorm_L2_ = 0.0;
+
+  vresnorm_ = 0.0;
+  presnorm_ = 0.0;
+
+  Teuchos::RCP<Epetra_Vector> onlyvel = state_->VelPresSplitter()->ExtractOtherVector(
+    state_->Residual());
+  onlyvel->Norm2(&vresnorm_);
+
+  state_->VelPresSplitter()->ExtractOtherVector(state_->IncVel(),onlyvel);
+  onlyvel->Norm2(&incvelnorm_L2_);
+
+  state_->VelPresSplitter()->ExtractOtherVector(state_->Velnp(),onlyvel);
+  onlyvel->Norm2(&velnorm_L2_);
+
+  Teuchos::RCP<Epetra_Vector> onlypre = state_->VelPresSplitter()->ExtractCondVector(
+    state_->Residual());
+  onlypre->Norm2(&presnorm_);
+
+  state_->VelPresSplitter()->ExtractCondVector(state_->IncVel(),onlypre);
+  onlypre->Norm2(&incprenorm_L2_);
+
+  state_->VelPresSplitter()->ExtractCondVector(state_->Velnp(),onlypre);
+  onlypre->Norm2(&prenorm_L2_);
+
+  // care for the case that nothing really happens in the velocity
+  // or pressure field
+  if (velnorm_L2_ < 1e-5) velnorm_L2_ = 1.0;
+  if (prenorm_L2_ < 1e-5) prenorm_L2_ = 1.0;
+
+  //-------------------------------------------------- output to screen
+  /* special case of very first iteration step:
+      - solution increment is not yet available
+      - convergence check is not required (we solve at least once!)    */
+  if (itnum == 1)
+  {
+    if (myrank_ == 0)
+    {
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
+             itnum,itemax,ittol,vresnorm_,presnorm_);
+      printf(" (      --     ,te=%10.3E",dtele_);
+      if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
+      {
+        printf(",tf=%10.3E",dtfilter_);
+      }
+      printf(")\n");
+    }
+  }
+  /* ordinary case later iteration steps:
+      - solution increment can be printed
+      - convergence check should be done*/
+  else
+  {
+  // this is the convergence check
+  // We always require at least one solve. Otherwise the
+  // perturbation at the FSI interface might get by unnoticed.
+    if (vresnorm_ <= ittol and presnorm_ <= ittol and
+        incvelnorm_L2_/velnorm_L2_ <= ittol and incprenorm_L2_/prenorm_L2_ <= ittol)
+    {
+      stopnonliniter = true;
+      if (myrank_ == 0)
+      {
+        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+               itnum,itemax,ittol,vresnorm_,presnorm_,
+               incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
+        printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+        if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
+        {
+          printf(",tf=%10.3E",dtfilter_);
+        }
+        printf(")\n");
+        printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+
+        FILE* errfile = params_->get<FILE*>("err file",NULL);
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+                  itnum,itemax,ittol,vresnorm_,presnorm_,
+                  incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
+        }
+      }
+    }
+    else // if not yet converged
+      if (myrank_ == 0)
+      {
+        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+               itnum,itemax,ittol,vresnorm_,presnorm_,
+               incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
+        printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+        if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
+        {
+          printf(",tf=%10.3E",dtfilter_);
+        }
+        printf(")\n");
+      }
+  }
+
+  // warn if itemax is reached without convergence, but proceed to
+  // next timestep...
+  if ((itnum == itemax) and (vresnorm_ > ittol or presnorm_ > ittol or
+                           incvelnorm_L2_ /velnorm_L2_ > ittol or
+                           incprenorm_L2_/prenorm_L2_ > ittol))
+  {
+    stopnonliniter=true;
+    if (myrank_ == 0)
+    {
+      printf("+---------------------------------------------------------------+\n");
+      printf("|            >>>>>> not converged in itemax steps!              |\n");
+      printf("+---------------------------------------------------------------+\n");
+
+      FILE* errfile = params_->get<FILE*>("err file",NULL);
+      if (errfile!=NULL)
+      {
+        fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+                itnum,itemax,ittol,vresnorm_,presnorm_,
+                incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
+      }
+    }
+  }
+
+  return stopnonliniter;
 }
 
 void FLD::XFluid::LinearSolve()
@@ -6989,4 +6997,14 @@ void FLD::XFluid::UpdateGridv()
     break;
   }
 
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::UpdateByIncrement()
+{
+  state_->Velnp()->Update(1.0,*state_->IncVel(),1.0);
+  double f_norm = 0;
+  state_->Velnp()->Norm2(&f_norm);
+  //std::cout << std::setprecision(14) << f_norm << std::endl;
 }

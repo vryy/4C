@@ -6,7 +6,7 @@
 Maintainer:  Raffaela Kruse and Benedikt Schott
              [kruse,schott]@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15240
+             089 - 289-15249
 </pre>
 
 *----------------------------------------------------------------------*/

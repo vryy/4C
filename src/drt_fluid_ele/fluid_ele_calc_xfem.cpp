@@ -1041,8 +1041,8 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
     Teuchos::ParameterList&                                             params,            ///< parameter list
-    const GEO::CUT::plain_volumecell_set&                               vcSet,              ///< volumecell sets in this element,
-    std::map<int,int> &                                                 boundary_emb_gid_map
+    const GEO::CUT::plain_volumecell_set&                               vcSet,              ///< volumecell sets in this element
+    const Teuchos::RCP<XFEM::MeshCouplingFluidFluid>&                   mc_ff              ///< specialized mesh coupling
 )
 {
   const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
@@ -1188,7 +1188,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
     DRT::Element * side = cutdis.gElement( sid );
     side->LocationVector(cutdis,cutla,false);
     // the corresponding embedded element
-    DRT::Element * emb_ele = embdis.gElement( boundary_emb_gid_map.find(sid)->second );
+    DRT::Element * emb_ele = embdis.gElement( mc_ff->GetCouplingElementId(sid));
     emb_ele->LocationVector(embdis,alela,false);
 
     // embedded geometry
@@ -1501,7 +1501,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   if (my::fldpara_->PhysicalType()==INPAR::FLUID::oseen) my::SetAdvectiveVelOseen(ele);
 
   // compute characteristic element length based on the background element
-  const double h_k = ComputeCharEleLength(ele,ele_xyze,vcSet,bcells,bintpoints);
+  const double h_k = ComputeCharEleLength(ele,ele_xyze,cond_manager,vcSet,bcells,bintpoints);
 
   //--------------------------------------------------------
   // declaration of matrices & rhs
@@ -3257,7 +3257,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   if (coupling_strategy == INPAR::XFEM::Xfluid_Sided_Coupling ||
       coupling_strategy == INPAR::XFEM::Xfluid_Sided_weak_DBC)
   {
-    h_k = ComputeCharEleLength(ele, ele_xyze, vcSet, bcells, bintpoints);
+    h_k = ComputeCharEleLength(ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints);
     inv_hk = 1.0 / h_k;
   }
 
@@ -3410,7 +3410,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         if(coupcond.first == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)
           coupl_ele = ele;
         else if(coupcond.first == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
-          coupl_ele = coupl_dis_->gElement( fldparaxfem_->Get_embedded_ele_gid(coup_sid) );
+        {
+          Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_ff =
+              Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(cond_manager->GetMeshCoupling(0));
+          coupl_ele = coupl_dis_->gElement( mc_ff->GetCouplingElementId(coup_sid) );
+        }
       }
       else
       {
@@ -3501,7 +3505,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 #if(0)
         std::cout.precision(15);
         std::cout << "C_T/hk (formula): "
-            << NIT_getTraceEstimateConstant(ele_distype)/ComputeCharEleLength(coupl_ele, coupl_xyze, vcSet, bcells, bintpoints, emb, side);
+            << NIT_getTraceEstimateConstant(ele_distype)/ComputeCharEleLength(coupl_ele, coupl_xyze, cond_manager, vcSet, bcells, bintpoints, emb, side);
         << " max_eigenvalue ~ C_T/hk: "
             <<  my::fldpara_->Get_TraceEstimate_MaxEigenvalue(coup_sid)
             << " max_eigenvalue*h_k = C_T: "<< my::fldpara_->Get_TraceEstimate_MaxEigenvalue(coup_sid)*h_k << " vs: C_T (formula) " << NIT_getTraceEstimateConstant(ele_distype) << std::endl;
@@ -3511,7 +3515,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
       else // ... char. length defined otherwise
       {
         // compute characteristic element length based on the embedded element
-        h_k = ComputeCharEleLength(coupl_ele, coupl_xyze, vcSet, bcells, bintpoints, ci, side);
+        h_k = ComputeCharEleLength(coupl_ele, coupl_xyze, cond_manager, vcSet, bcells, bintpoints, ci, side);
         inv_hk = 1.0 / h_k;
       }
     }
@@ -4466,109 +4470,109 @@ void FluidEleCalcXFEM<distype>::HybridLM_CreateSpecialContributionMatrices(
 /*--------------------------------------------------------------------------------
  * create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
  *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void FluidEleCalcXFEM<distype>::PatchLocationVector(
-    const Teuchos::RCP<XFEM::ConditionManager> &            cond_manager,            ///< XFEM condition manager
-    const int                                               back_eid,                ///< background element id
-    std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
-    std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
-    std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
-    std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling           ///< coupling matrices
-)
-{
-  for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
-  {
-    const int coup_sid = *bgid;
-
-    if(!cond_manager->IsCoupling( coup_sid, back_eid )) continue; // no coupling with current side
-
-    if(cond_manager->IsLevelSetCoupling(coup_sid)) dserror("PatchLocationVector for level-set coupling not supported yet");
-
-    DRT::Element * side = cond_manager->GetSide(coup_sid); // for each boundary element there is one corresponding side
-
-    std::vector<int> patchlm;
-    std::vector<int> patchlmowner;
-    std::vector<int> patchlmstride;
-
-    side->LocationVector( *cond_manager->GetCutterDis(coup_sid), patchlm, patchlmowner, patchlmstride);
-
-    patchelementslmv.reserve( patchelementslmv.size() + patchlm.size());
-    patchelementslmv.insert(patchelementslmv.end(), patchlm.begin(), patchlm.end());
-
-    patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
-    patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
-
-    // get coupling matrices for the current side (boundary element)
-    std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = Cuiui_coupling[coup_sid];
-
-    INPAR::XFEM::CouplingMethod coupl_meth = fldparaxfem_->GetCouplingMethod();
-
-    if (coupl_meth == INPAR::XFEM::Hybrid_LM_viscous_stress ||
-        coupl_meth == INPAR::XFEM::Hybrid_LM_Cauchy_stress)
-    {
-      Cuiui_matrices.resize(2);
-      Cuiui_matrices[0].Shape(my::nen_*numstressdof_,patchlm.size()); //Gsui (coupling between background elements sigma and current side!)
-      Cuiui_matrices[1].Shape(patchlm.size(),my::nen_*numstressdof_); //Guis
-    }
-    else if (coupl_meth == INPAR::XFEM::Nitsche)
-    {
-      Cuiui_matrices.resize(1);
-      Cuiui_matrices[0].Shape(patchlm.size(),patchlm.size()); //Cuiui
-    }
-    else dserror("Type of coupling method unknown.");
-  }
-
-  return;
-}
-
-
-/*--------------------------------------------------------------------------------
- * create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
- *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void FluidEleCalcXFEM<distype>::PatchLocationVectorEmb(
-    std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
-    DRT::Discretization &                                   slavedis,                ///< coupling slave discretization
-    std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
-    std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
-    std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling           ///< coupling matrices
-)
-{
-
-  for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
-  {
-    DRT::Element * emb_ele = slavedis.gElement(fldparaxfem_->Get_embedded_ele_gid(*bgid));
-
-    std::vector<int> patchlm;
-    std::vector<int> patchlmowner;
-    std::vector<int> patchlmstride;
-
-    emb_ele->LocationVector(slavedis, patchlm, patchlmowner, patchlmstride);
-    patchelementslmv.reserve( patchelementslmv.size() + patchlm.size());
-    patchelementslmv.insert(patchelementslmv.end(), patchlm.begin(), patchlm.end());
-
-    patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
-    patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
-
-    // get coupling matrices for the current side (boundary element)
-    std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = Cuiui_coupling[*bgid];
-
-    INPAR::XFEM::CouplingMethod coupl_meth = fldparaxfem_->GetCouplingMethod();
-    if (coupl_meth == INPAR::XFEM::Nitsche)
-    {
-      Cuiui_matrices.resize(1);
-      Cuiui_matrices[0].Shape(patchlm.size(),patchlm.size()); //Cuiui
-    }
-    else if (coupl_meth == INPAR::XFEM::Hybrid_LM_viscous_stress ||
-        coupl_meth == INPAR::XFEM::Hybrid_LM_Cauchy_stress)
-    {
-      dserror("Embedded-sided coupling for stress-based hybrid LM approach is not yet available!");
-    }
-    else dserror("Not supported coupling method.");
-  }
-
-  return;
-}
+//template <DRT::Element::DiscretizationType distype>
+//void FluidEleCalcXFEM<distype>::PatchLocationVector(
+//    const Teuchos::RCP<XFEM::ConditionManager> &            cond_manager,            ///< XFEM condition manager
+//    const int                                               back_eid,                ///< background element id
+//    std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
+//    std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
+//    std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
+//    std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling           ///< coupling matrices
+//)
+//{
+//  for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
+//  {
+//    const int coup_sid = *bgid;
+//
+//    if(!cond_manager->IsCoupling( coup_sid, back_eid )) continue; // no coupling with current side
+//
+//    if(cond_manager->IsLevelSetCoupling(coup_sid)) dserror("PatchLocationVector for level-set coupling not supported yet");
+//
+//    DRT::Element * side = cond_manager->GetSide(coup_sid); // for each boundary element there is one corresponding side
+//
+//    std::vector<int> patchlm;
+//    std::vector<int> patchlmowner;
+//    std::vector<int> patchlmstride;
+//
+//    side->LocationVector( *cond_manager->GetCutterDis(coup_sid), patchlm, patchlmowner, patchlmstride);
+//
+//    patchelementslmv.reserve( patchelementslmv.size() + patchlm.size());
+//    patchelementslmv.insert(patchelementslmv.end(), patchlm.begin(), patchlm.end());
+//
+//    patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
+//    patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
+//
+//    // get coupling matrices for the current side (boundary element)
+//    std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = Cuiui_coupling[coup_sid];
+//
+//    INPAR::XFEM::CouplingMethod coupl_meth = fldparaxfem_->GetCouplingMethod();
+//
+//    if (coupl_meth == INPAR::XFEM::Hybrid_LM_viscous_stress ||
+//        coupl_meth == INPAR::XFEM::Hybrid_LM_Cauchy_stress)
+//    {
+//      Cuiui_matrices.resize(2);
+//      Cuiui_matrices[0].Shape(my::nen_*numstressdof_,patchlm.size()); //Gsui (coupling between background elements sigma and current side!)
+//      Cuiui_matrices[1].Shape(patchlm.size(),my::nen_*numstressdof_); //Guis
+//    }
+//    else if (coupl_meth == INPAR::XFEM::Nitsche)
+//    {
+//      Cuiui_matrices.resize(1);
+//      Cuiui_matrices[0].Shape(patchlm.size(),patchlm.size()); //Cuiui
+//    }
+//    else dserror("Type of coupling method unknown.");
+//  }
+//
+//  return;
+//}
+//
+//
+///*--------------------------------------------------------------------------------
+// * create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
+// *--------------------------------------------------------------------------------*/
+//template <DRT::Element::DiscretizationType distype>
+//void FluidEleCalcXFEM<distype>::PatchLocationVectorEmb(
+//    std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
+//    DRT::Discretization &                                   slavedis,                ///< coupling slave discretization
+//    std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
+//    std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
+//    std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling           ///< coupling matrices
+//)
+//{
+//
+//  for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
+//  {
+//    DRT::Element * emb_ele = slavedis.gElement(fldparaxfem_->Get_embedded_ele_gid(*bgid));
+//
+//    std::vector<int> patchlm;
+//    std::vector<int> patchlmowner;
+//    std::vector<int> patchlmstride;
+//
+//    emb_ele->LocationVector(slavedis, patchlm, patchlmowner, patchlmstride);
+//    patchelementslmv.reserve( patchelementslmv.size() + patchlm.size());
+//    patchelementslmv.insert(patchelementslmv.end(), patchlm.begin(), patchlm.end());
+//
+//    patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
+//    patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
+//
+//    // get coupling matrices for the current side (boundary element)
+//    std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = Cuiui_coupling[*bgid];
+//
+//    INPAR::XFEM::CouplingMethod coupl_meth = fldparaxfem_->GetCouplingMethod();
+//    if (coupl_meth == INPAR::XFEM::Nitsche)
+//    {
+//      Cuiui_matrices.resize(1);
+//      Cuiui_matrices[0].Shape(patchlm.size(),patchlm.size()); //Cuiui
+//    }
+//    else if (coupl_meth == INPAR::XFEM::Hybrid_LM_viscous_stress ||
+//        coupl_meth == INPAR::XFEM::Hybrid_LM_Cauchy_stress)
+//    {
+//      dserror("Embedded-sided coupling for stress-based hybrid LM approach is not yet available!");
+//    }
+//    else dserror("Not supported coupling method.");
+//  }
+//
+//  return;
+//}
 
 
 /*--------------------------------------------------------------------------------
@@ -4758,6 +4762,7 @@ template <DRT::Element::DiscretizationType distype>
 double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
     DRT::Element *                                                        ele,                   ///< fluid element
     Epetra_SerialDenseMatrix &                                            ele_xyze,              ///< element coordinates
+    const Teuchos::RCP<XFEM::ConditionManager> &                          cond_manager,          ///< XFEM condition manager
     const GEO::CUT::plain_volumecell_set &                                vcSet,                 ///< volumecell sets for volume integration
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &          bcells,                ///< bcells for boundary cell integration
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &     bintpoints,            ///< integration points for boundary cell integration
@@ -4767,8 +4772,8 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
 {
   const INPAR::XFEM::ViscStab_hk visc_stab_hk = fldparaxfem_->ViscStabHK();
 
+  //const INPAR::XFEM::CouplingStrategy coupling_strategy = cond_manager->GetCouplingStrategy(face->Id(),ele->Id());
   const INPAR::XFEM::CouplingStrategy coupling_strategy = fldparaxfem_->GetCouplingStrategy();
-
   if (emb == Teuchos::null and coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
     dserror("no EmbCoupling available, however Embedded_Sided_Coupling is activated!");
 
@@ -4862,7 +4867,9 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
     // REMARK: this is quite slow, however at the moment the easiest way to get the local id
     //         here is space for improvement
 
-    const int lid = fldparaxfem_->Get_face_lid_of_embedded_ele(face->Id());
+    Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_ff =
+        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(cond_manager->GetMeshCoupling(0));
+    const int lid = mc_ff->GetFaceLidOfCouplingElement(face->Id());
     //---------------------------------------------------
 
     // compute the uncut element's surface measure

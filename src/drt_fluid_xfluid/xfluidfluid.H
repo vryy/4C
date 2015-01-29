@@ -58,6 +58,7 @@ namespace IO
 namespace XFEM
 {
   class ConditionManager;
+  class MeshCouplingFluidFluid;
   class XFEMDofSet;
   class XFluidFluidTimeIntegration;
   class XFEM_EdgeStab;
@@ -335,17 +336,6 @@ namespace FLD
                                Teuchos::RCP<const Epetra_Vector> disp = Teuchos::null);
     //@}
 
-    ///  prepare embedded discretization for coupling type embedded-sided Nitsche
-    void PrepareEmbeddedDistribution();
-
-    ///  prepare mapping between boundary elements and outer embedded elements
-    /// (required for coupling type embedded-sided Nitsche)
-    void CreateBoundaryEmbeddedMap();
-
-    /// create new discretization from all embedded fluid elements,
-    /// that contribute to the fluid-fluid interface with at least one face
-    void CreateEmbeddedBoundaryDiscretization();
-
 
     //! @name Set general xfem specific element parameter in class FluidEleParameterXFEM
     /*!
@@ -556,11 +546,6 @@ namespace FLD
     Teuchos::RCP<DRT::DiscretizationXFEM>  xdiscret_;
     //! embedded fluid discretization
     Teuchos::RCP<DRT::Discretization>      embdis_;
-    //! fluid-fluid interface discretization
-    Teuchos::RCP<DRT::Discretization>      boundarydis_;
-    //! discretization of "outer" embedded fluid elements,
-    //! that contribute to the fluid-fluid interface with at least one face
-    Teuchos::RCP<DRT::Discretization>      embboundarydis_;
     //@}
 
     /// for coupling using stress-based LM: L2-projection between stress fields on whole cut element
@@ -675,6 +660,9 @@ namespace FLD
 
     /// object to handle the different types of XFEM boundary and interface coupling conditions
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
+
+    /// type-cast pointer to specialized mesh coupling object for fluid-fluid
+    Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_ff_;
 
     //--------------------------------------------------------------------
 

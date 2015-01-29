@@ -43,6 +43,7 @@ namespace UTILS
 */
 class XFluidFluidNew : public XFluid
 {
+  friend class XFluidFluidResultTest;
 public:
 
   //! ctor
@@ -74,6 +75,9 @@ public:
     embedded_fluid_->SetInitialFlowField(initfield,startfuncno);
   }
 
+  /// set Dirichlet and Neumann boundary conditions
+  virtual void SetDirichletNeumannBC();
+
   /// Update the solution after convergence of the nonlinear
   /// iteration. Current solution becomes old solution of next timestep.
   void TimeUpdate();
@@ -91,10 +95,7 @@ public:
    */
   void PrepareShapeDerivatives(
       const Teuchos::RCP<const LINALG::MultiMapExtractor> fsiextractor,
-      const Teuchos::RCP<std::set<int> > condelements)
-  {
-    dserror("Not implemented yet!");
-  }
+      const Teuchos::RCP<std::set<int> > condelements);
 
   /*!
    * \brief return fluid-fluid system matrix as block matrix
@@ -127,6 +128,11 @@ public:
     return state_->xffluiddofrowmap_;
   }
 
+  Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter()
+  {
+    return state_->xffluidvelpressplitter_;
+  }
+
   Teuchos::RCP<const Epetra_Map> PressureRowMap();
   Teuchos::RCP<const Epetra_Map> VelocityRowMap();
 
@@ -147,6 +153,9 @@ public:
 
   //! access to new merged fluid state container
   Teuchos::RCP<FLD::XFluidFluidState> GetNewState();
+
+  /// create a result test
+  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
 private:
 
@@ -172,6 +181,14 @@ private:
 
   //TODO: remove it if it is not required anymore
   Teuchos::RCP<DRT::Discretization> soliddis_;
+
+  bool ConvergenceCheck(
+    int          itnum,
+    int          itemax,
+    const double ittol);
+
+  /// Update velocity and pressure by increment
+  void UpdateByIncrement();
 
   /// embedded fluid field
   Teuchos::RCP<FLD::FluidImplicitTimeInt> embedded_fluid_;
@@ -214,7 +231,7 @@ private:
 
   /// for coupling using stress-based LM: L2-projection between stress fields on whole cut element
   /// or on physical volume
-  enum INPAR::XFEM::Hybrid_LM_L2_Proj hybrid_lm_l2_proj_;
+  enum INPAR::XFEM::Hybrid_LM_L2_Proj   hybrid_lm_l2_proj_;
 
   /// convective stabilization scaling for inflow terms
   enum INPAR::XFEM::XFF_ConvStabScaling xff_conv_stab_scaling_;

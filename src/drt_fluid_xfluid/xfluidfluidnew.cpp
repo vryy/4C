@@ -16,6 +16,8 @@ Maintainer:  Raffaela Kruse
 #include "xfluidfluidnew.H"
 #include "xfluid_state_creator.H"
 
+#include "xfluidfluidresulttest.H"
+
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H"
 
@@ -24,6 +26,8 @@ Maintainer:  Raffaela Kruse
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_dofset_transparent_independent.H"
 #include "../drt_lib/drt_utils_parallel.H"
+
+#include "../drt_io/io_pstream.H"
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
@@ -63,11 +67,15 @@ FLD::XFluidFluidNew::~XFluidFluidNew()
 
 void FLD::XFluidFluidNew::Init()
 {
-  // base class init
-  XFluid::Init();
-
   // set parameters specific for fluid-fluid coupling
   SetXFluidFluidParams();
+
+  //DRT::UTILS::PrintParallelDistribution(*boundarydis_);
+
+  embedded_fluid_->Init();
+
+  // base class init
+  XFluid::Init();
 
   if(meshcoupl_dis_.size() != 1) dserror("we expect exact one mesh coupling discretization for Xfluidfluid at the moment!");
 
@@ -82,16 +90,12 @@ void FLD::XFluidFluidNew::Init()
   boundarydis_->ReplaceDofSet(newdofset); // do not call this with true!!
   boundarydis_->FillComplete();
 
-  //DRT::UTILS::PrintParallelDistribution(*boundarydis_);
-
   INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
   if ((coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling) or (calcerr != INPAR::FLUID::no_error_calculation))
   {
     PrepareEmbeddedDistribution();
     CreateBoundaryEmbeddedMap();
   }
-
-  embedded_fluid_->Init();
 
   //-------------------------------------------------------------------
 
@@ -128,6 +132,22 @@ void FLD::XFluidFluidNew::Init()
         state_->Wizard(), step_,
         xfem_timeintapproach_,*params_));
 
+}
+
+void FLD::XFluidFluidNew::SetDirichletNeumannBC()
+{
+  XFluid::SetDirichletNeumannBC();
+//
+//  Teuchos::ParameterList eleparams;
+//  // other parameters needed by the elements
+//  eleparams.set("total time",time_);
+//
+//  soliddis_->ClearState();
+//  soliddis_->SetState("velaf",embedded_fluid_->Velnp());
+//  //don't call this with the mapextractor. Otherwise the Mapextractor will
+//  //be built again.
+//  soliddis_->EvaluateDirichlet(eleparams,embedded_fluid_->Velnp(),Teuchos::null,Teuchos::null,Teuchos::null);
+//  soliddis_->ClearState();
 }
 
 void FLD::XFluidFluidNew::SetXFluidFluidParams()
@@ -212,13 +232,9 @@ Teuchos::RCP<const Epetra_Map> FLD::XFluidFluidNew::VelocityRowMap()
   return state_->xffluidvelpressplitter_->OtherMap();
 }
 
-void FLD::XFluidFluidNew::CreateState()
+Teuchos::RCP<DRT::ResultTest> FLD::XFluidFluidNew::CreateFieldTest()
 {
-  // new cut for this time step
-  state_ = this->GetNewState();
-  // map of background-fluid's standard and enriched node-ids and
-  // their dof-gids for new cut
-  xfluidfluid_timeint_->SaveBgNodeMapsAndCreateNew(state_->Wizard());
+  return Teuchos::rcp(new FLD::XFluidFluidResultTest(*this));
 }
 
 Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidFluidNew::GetNewState()
@@ -251,282 +267,114 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidFluidNew::GetNewState()
   return state;
 }
 
-void FLD::XFluidFluidNew::PrepareEmbeddedDistribution()
+void FLD::XFluidFluidNew::CreateState()
 {
-  DRT::UTILS::ConditionSelector conds(*embedded_fluid_->Discretization(), "XFEMSurfFluidFluid");
-  std::vector<int> embnode_outer;
-  std::vector<int> embele_outer;
+  // new cut for this time step
+  state_ = this->GetNewState();
+  XFluid::state_ = state_;
 
-  // select all outer embedded nodes and elements
-  for (int  inode=0; inode<embedded_fluid_->Discretization()->NumMyRowNodes(); inode++)
-  {
-   DRT::Node* embnode = embedded_fluid_->Discretization()->lRowNode(inode);
-   if (conds.ContainsNode(embnode->Id()))
-   {
-     embnode_outer.push_back(embnode->Id());
-     const size_t numele = embnode->NumElement();
-     // get list of adjacent elements of this node
-     DRT::Element** adjeles = embnode->Elements();
-     int mypid =embedded_fluid_->Discretization()->Comm().MyPID();
+  if (!alefluid_)
+    return;
 
-     for (size_t j=0; j<numele; ++j)
-     {
-       DRT::Element* adjele = adjeles[j];
-
-       // if the element belongs to this processor insert it
-       if (adjele->Owner() == mypid)
-         embele_outer.push_back(adjele->Id());
-
-     }
-   }
-  }
-
-  // embnode_outer and embele_outer on all processors
-  std::vector<int> embnode_outer_all;
-  std::vector<int> embele_outer_all;
-
-  // information how many processors work at all
-  std::vector<int> allproc(embedded_fluid_->Discretization()->Comm().NumProc());
-
-  // in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-  for (int i=0; i<embedded_fluid_->Discretization()->Comm().NumProc(); ++i) allproc[i] = i;
-
-  // gathers information of all processors
-  LINALG::Gather<int>(embnode_outer,embnode_outer_all,(int)embedded_fluid_->Discretization()->Comm().NumProc(),&allproc[0],embedded_fluid_->Discretization()->Comm());
-  LINALG::Gather<int>(embele_outer,embele_outer_all,(int)embedded_fluid_->Discretization()->Comm().NumProc(),&allproc[0],embedded_fluid_->Discretization()->Comm());
-
-  // combine the colmap of every processor with the embedded outer map
-  for (int  cnode=0; cnode<embedded_fluid_->Discretization()->NumMyColNodes(); cnode++)
-  {
-   DRT::Node* embnode = embedded_fluid_->Discretization()->lColNode(cnode);
-   embnode_outer_all.push_back(embnode->Id());
-  }
-  for (int  cele=0; cele<embedded_fluid_->Discretization()->NumMyColElements(); cele++)
-  {
-   DRT::Element* ele = embedded_fluid_->Discretization()->lColElement(cele);
-   embele_outer_all.push_back(ele->Id());
-  }
-
-  // create node and element distribution of outer layer elements and nodes
-  // of the embedded discretization ghosted on all processors
-  Teuchos::RCP<const Epetra_Map> embnodeoutermap = Teuchos::rcp(new Epetra_Map(-1, embnode_outer_all.size(), &embnode_outer_all[0], 0, embedded_fluid_->Discretization()->Comm()));
-  Teuchos::RCP<const Epetra_Map> embeleoutermap = Teuchos::rcp(new Epetra_Map(-1, embele_outer_all.size(), &embele_outer_all[0], 0, embedded_fluid_->Discretization()->Comm()));
-
-  const Epetra_Map embnodeoutercolmap = *LINALG::AllreduceOverlappingEMap(*embnodeoutermap);
-  const Epetra_Map embelemoutercolmap = *LINALG::AllreduceOverlappingEMap(*embeleoutermap);
-
-  // redistribute nodes and elements to column (ghost) map
-  embedded_fluid_->Discretization()->ExportColumnNodes(embnodeoutercolmap);
-  embedded_fluid_->Discretization()->ExportColumnElements(embelemoutercolmap);
-
-  embedded_fluid_->Discretization()->FillComplete();
-}
-
-void FLD::XFluidFluidNew::CreateBoundaryEmbeddedMap()
-{
-  // Todo: Shift to XFEM::MeshCouplingFluidFluid and re-implement!
-
-  // map to store the local id (value) of the boundary element (key) w.r.t to the embedded element
-  std::map<int,int> boundary_emb_face_lid_map;
-  std::map<int,int> boundary_emb_gid_map;
-  // fill boundary_embedded_mapdmap between boundary element id and its corresponding embedded element id
-  for (int iele=0; iele< boundarydis_->NumMyColElements(); ++iele)
-  {
-    // boundary element and its nodes
-    DRT::Element* bele = boundarydis_->lColElement(iele);
-    const int * belenodeIds = bele->NodeIds();
-
-    bool bele_found = false;
-
-    // ask all conditioned embedded elements for this boundary element
-    for(int it=0; it< embedded_fluid_->Discretization()->NumMyColElements(); ++it)
-    {
-      DRT::Element* ele = embedded_fluid_->Discretization()->lColElement(it);
-      const int * elenodeIds = ele->NodeIds();
-
-      // get the surface-element map for the embedded element
-      std::vector<std::vector<int> > face_node_map = DRT::UTILS::getEleNodeNumberingFaces(ele->Shape());
-
-      // loop the faces of the element
-      for(int f=0; f< ele->NumFace(); f++)
-      {
-        // assume the element has been found
-        bele_found = true;
-
-        const int face_numnode = face_node_map[f].size();
-
-        if(bele->NumNode() != face_numnode) continue; // this face cannot be the right one
-
-        // check all nodes of the boundary element
-        for(int inode=0; inode<bele->NumNode();  ++inode)
-        {
-          // boundary node
-          const int belenodeId = belenodeIds[inode];
-
-          bool node_found = false;
-          for (int fnode=0; fnode<face_numnode; ++fnode)
-          {
-            const int facenodeId = elenodeIds[face_node_map[f][fnode]];
-
-            if(facenodeId == belenodeId)
-            {
-              // nodes are the same
-              node_found = true;
-              break;
-            }
-          } // loop nodes of element's face
-          if(node_found==false) // this node is not contained in this face
-          {
-            bele_found = false; // element not the right one, if at least one boundary node is not found
-            break; // node not found
-          }
-        } // loop nodes of boundary element
-
-        if(bele_found==true)
-        {
-          boundary_emb_gid_map.insert(std::pair<int,int>(bele->Id(),ele->Id()));
-          boundary_emb_face_lid_map.insert(std::pair<int,int>(bele->Id(),f));
-          break;
-        }
-      } // loop element faces
-      if(bele_found) break; // do not continue the search
-
-    }
-
-    if(bele_found == false) dserror("corresponding embele for boundary element with boundary id %i not found on proc %i ! Please ghost corresponding embedded elements on all procs!", bele->Id(), myrank_);
-  }
-
-  // update the estimate of the maximal eigenvalues in the parameter list to access on element level
-  DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->Set_boundary_emb_face_lid_map(boundary_emb_face_lid_map);
-  DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->Set_boundary_emb_gid_map(boundary_emb_gid_map);
-}
-
-void FLD::XFluidFluidNew::CreateEmbeddedBoundaryDiscretization()
-{
-  // Todo: Shift to XFEM::MeshCouplingFluidFluid and re-implement!
-
-  // generate an empty boundary discretization
-  embboundarydis_ = Teuchos::rcp(new DRT::Discretization(std::string("boundary discretization"),
-      Teuchos::rcp(embedded_fluid_->Discretization()->Comm().Clone())));
-
-  std::vector<DRT::Condition*> xfemcnd;
-  embedded_fluid_->Discretization()->GetCondition("XFEMSurfFluidFluid",xfemcnd);
-
-  // make the condition known to the boundary discretization
-  for (unsigned cond=0; cond<xfemcnd.size(); ++cond)
-  {
-   // We use the same nodal ids and therefore we can just copy the conditions.
-    embboundarydis_->SetCondition("XFEMSurfFluidFluid",Teuchos::rcp(new DRT::Condition(*xfemcnd[cond])));
-  }
-
-  // get the set of ids of all xfem nodes
-  std::set<int> xfemnodeset;//(xfemcnd.size()*(xfemcnd[0]->Nodes()->size()));
-  {
-    for (unsigned cond=0; cond<xfemcnd.size(); ++cond)
-    {
-      // conditioned node ids
-      const std::vector<int>* nodeids_cnd = xfemcnd[cond]->Nodes();
-      for (std::vector<int>::const_iterator c = nodeids_cnd->begin();
-           c != nodeids_cnd->end(); ++c)
-        xfemnodeset.insert(*c);
-    }
-  }
-
-  // determine sets of nodes next to xfem nodes
-  std::set<int> adjacent_row;
-  std::set<int> adjacent_col;
-
-  // loop all column elements and label all row nodes next to a xfem node
-  for (int i=0; i<embedded_fluid_->Discretization()->NumMyColElements(); ++i)
-  {
-    DRT::Element* actele = embedded_fluid_->Discretization()->lColElement(i);
-
-    // get the node ids of this element
-    const int  numnode = actele->NumNode();
-    const int* nodeids = actele->NodeIds();
-
-    bool found=false;
-
-    // loop the element's nodes, check if a xfem condition is active
-    for (int n=0; n<numnode; ++n)
-    {
-      const int node_gid(nodeids[n]);
-      std::set<int>::iterator curr = xfemnodeset.find(node_gid);
-      found = (curr!=xfemnodeset.end());
-      if (found) break;
-    }
-
-    if (!found) continue;
-
-    // if at least one of the element's nodes holds a xfem condition,
-    // add all node gids to the adjecent node sets
-    for (int n=0; n<numnode; ++n)
-    {
-      const int node_gid(nodeids[n]);
-      // yes, we have a xfem condition:
-      // node stored on this proc? add to the set of row nodes!
-      if (embedded_fluid_->Discretization()->NodeRowMap()->LID(node_gid) > -1)
-        adjacent_row.insert(node_gid);
-
-      // always add to set of col nodes
-      adjacent_col.insert(node_gid);
-    }
-
-    // add the element to the discretization
-    if (embedded_fluid_->Discretization()->ElementRowMap()->LID(actele->Id()) > -1)
-    {
-      Teuchos::RCP<DRT::Element> bndele =Teuchos::rcp(actele->Clone());
-      embboundarydis_->AddElement(bndele);
-    }
-  } // end loop over column elements
-
-  // all row nodes next to a xfem node are now added to the embedded boundary discretization
-  for (std::set<int>::iterator id=adjacent_row.begin();
-       id!=adjacent_row.end(); ++id)
-  {
-    DRT::Node* actnode=embedded_fluid_->Discretization()->gNode(*id);
-    Teuchos::RCP<DRT::Node> bndnode =Teuchos::rcp(actnode->Clone());
-    embboundarydis_->AddNode(bndnode);
-  }
-
-  // build nodal row & col maps to redistribute the discretization
-  Teuchos::RCP<Epetra_Map> newrownodemap;
-  Teuchos::RCP<Epetra_Map> newcolnodemap;
-
-  {
-    // copy row/col node gids to std::vector
-    // (expected by Epetra_Map ctor)
-    std::vector<int> rownodes(adjacent_row.begin(),adjacent_row.end());
-    // build noderowmap for new distribution of nodes
-    newrownodemap = Teuchos::rcp(new Epetra_Map(-1,
-                                                rownodes.size(),
-                                                &rownodes[0],
-                                                0,
-                                                embboundarydis_->Comm()));
-
-    std::vector<int> colnodes(adjacent_col.begin(),adjacent_col.end());
-
-    // build nodecolmap for new distribution of nodes
-    newcolnodemap = Teuchos::rcp(new Epetra_Map(-1,
-                                                colnodes.size(),
-                                                &colnodes[0],
-                                                0,
-                                                embboundarydis_->Comm()));
-
-    embboundarydis_->Redistribute(*newrownodemap,*newcolnodemap,false,false,false);
-
-    // make boundary discretization have the same dofs as the embedded fluid
-    Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true));
-    embboundarydis_->ReplaceDofSet(newdofset); // do not call this with true (no replacement in static dofsets intended)
-    embboundarydis_->FillComplete();
-  }
+  // map of background-fluid's standard and enriched node-ids and
+  // their dof-gids for new cut
+  xfluidfluid_timeint_->SaveBgNodeMapsAndCreateNew(state_->Wizard());
 }
 
 void FLD::XFluidFluidNew::AssembleMatAndRHS(
     int itnum                           ///< iteration number
 )
 {
-  // Todo: doesn't work yet...
+  // evaluate elements
+  soliddis_->SetState("velaf",embedded_fluid_->Velnp());
+  embedded_fluid_->PrepareSolve();
   XFluid::AssembleMatAndRHS(itnum);
-  //embedded_fluid_->AssembleMatAndRHS();
+
+  // merge the residuals and velnp each into one large Epetra_Vector for the composed system
+  state_->xffluidsplitter_->InsertXFluidVector(state_->velnp_, state_->xffluidvelnp_);
+  state_->xffluidsplitter_->InsertFluidVector(embedded_fluid_->Velnp(), state_->xffluidvelnp_);
+
+  state_->xffluidsplitter_->InsertXFluidVector(state_->residual_, state_->xffluidresidual_);
+  state_->xffluidsplitter_->InsertFluidVector(embedded_fluid_->Residual(), state_->xffluidresidual_);
+
+  // build a merged dbc map extractor from both discretizations
+  state_->CreateMergedDBCMapExtractor(embedded_fluid_->GetDBCMapExtractor());
+}
+
+void FLD::XFluidFluidNew::PrepareShapeDerivatives(
+  const Teuchos::RCP<const LINALG::MultiMapExtractor> fsiextractor,
+  const Teuchos::RCP<std::set<int> > condelements)
+{
+  if (! active_shapederivatives_)
+    return;
+
+  // here we initialize the shapederivates
+  // REMARK: the shape derivatives matrix results from linearization w.r.t. ALE-displacements
+  // and therefore solely knows ALE-dof - here we use "extended shapederivatives" including
+  // background fluid entries, that are set to zero
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(*fsiextractor,*fsiextractor,108,false,true));
+  mat->SetCondElements(condelements);
+  extended_shapederivatives_ = mat;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool FLD::XFluidFluidNew::ConvergenceCheck(
+  int          itnum,
+  int          itemax,
+  const double ittol)
+{
+
+  bool stopnonliniter = XFluid::ConvergenceCheck(itnum,itemax,ittol);
+
+  //--------- Apply Dirichlet boundary conditions to system of equations
+  //          residual displacements are supposed to be zero at
+  //          boundary conditions
+
+  const int mc_idx=0;
+  Teuchos::RCP<XFluidState::CouplingState> & coup_state = state_->coup_state_[mc_idx];
+
+  // adding rhC_s_ (coupling contribution) to residual of embedded fluid
+  for (int iter=0; iter<coup_state->rhC_s_->MyLength();++iter)
+  {
+    Teuchos::RCP<Epetra_Vector> emb_residual = embedded_fluid_->Residual();
+    const int rhsdgid = coup_state->rhC_s_->Map().GID(iter);
+    if (coup_state->rhC_s_->Map().MyGID(rhsdgid) == false) dserror("rhsd_ should be on all processors");
+    if (emb_residual->Map().MyGID(rhsdgid))
+      (*emb_residual)[emb_residual->Map().LID(rhsdgid)] =
+          (*emb_residual)[emb_residual->Map().LID(rhsdgid)] +
+          (*coup_state->rhC_s_)[coup_state->rhC_s_->Map().LID(rhsdgid)];
+    else dserror("Interface dof %d does not belong to embedded discretization!",rhsdgid);
+  }
+
+  // assemble subsequent system matrices into one
+  state_->xffluidsysmat_->Zero();
+  state_->xffluidsysmat_->Add(*state_->sysmat_,false,1.0,0.0);
+  state_->xffluidsysmat_->Add(*embedded_fluid_->SystemMatrix(),false,1.0,1.0);
+  state_->xffluidsysmat_->Add(*coup_state->C_xs_,false,1.0,1.0);
+  state_->xffluidsysmat_->Add(*coup_state->C_sx_,false,1.0,1.0);
+  state_->xffluidsysmat_->Add(*coup_state->C_ss_,false,1.0,1.0);
+  state_->xffluidsysmat_->Complete();
+
+  return stopnonliniter;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluidFluidNew::UpdateByIncrement()
+{
+  state_->xffluidvelnp_->Update(1.0,*state_->xffluidincvel_,1.0);
+
+  // extract velnp_
+  state_->velnp_ = state_->xffluidsplitter_->ExtractXFluidVector(state_->xffluidvelnp_);
+  embedded_fluid_->WriteAccessVelnp() = state_->xffluidsplitter_->ExtractFluidVector(state_->xffluidvelnp_);
+
+  // extract residual
+  state_->residual_ = state_->xffluidsplitter_->ExtractXFluidVector(state_->xffluidresidual_);
+  embedded_fluid_->Residual() = state_->xffluidsplitter_->ExtractFluidVector(state_->xffluidresidual_);
+
+  // Update the fluid material velocity along the interface (ivelnp_), source (in): state_.velnp_
+  LINALG::Export(*(embedded_fluid_->Velnp()),*(ivelnp_));
+  boundarydis_->SetState("ivelnp",ivelnp_);
 }

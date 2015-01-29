@@ -19,6 +19,7 @@ Maintainer: Shadan Shahmiri
 
 #include "xfluidfluidresulttest.H"
 #include "xfluidfluid.H"
+#include "xfluidfluidnew.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -31,6 +32,18 @@ FLD::XFluidFluidResultTest::XFluidFluidResultTest(XFluidFluid& fluid)
   embfluiddis_= fluid.embdis_;
   bgfluiddis_= fluid.bgdis_;
   embfluidsol_   = fluid.velnp_ ;
+  bgfluidsol_   = fluid.state_->velnp_ ;
+//  mytraction_ = fluid.calcStresses();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FLD::XFluidFluidResultTest::XFluidFluidResultTest(XFluidFluidNew& fluid)
+  : DRT::ResultTest("FLUID")
+{
+  embfluiddis_= fluid.soliddis_;
+  bgfluiddis_= fluid.discret_;
+  embfluidsol_   = fluid.embedded_fluid_->WriteAccessVelnp();
   bgfluidsol_   = fluid.state_->velnp_ ;
 //  mytraction_ = fluid.calcStresses();
 }

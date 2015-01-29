@@ -6,7 +6,7 @@
 Maintainer:  Raffaela Kruse and Benedikt Schott
              [kruse,schott]@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15240
+             089 - 289-15249
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -160,6 +160,9 @@ public:
   /// Initialize state vectors
   void CompleteCouplingMatricesAndRhs();
 
+  //! @name Accessors
+  //@{
+
   /// access to the cut wizard
   Teuchos::RCP<GEO::CutWizard> Wizard()
   {
@@ -175,6 +178,22 @@ public:
     return dofset_;
   }
 
+  virtual Teuchos::RCP<LINALG::MapExtractor> DBCMapExtractor()
+  {
+    return dbcmaps_;
+  }
+
+  virtual Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter()
+  {
+    return velpressplitter_;
+  }
+
+  virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix(){ return sysmat_; }
+  virtual Teuchos::RCP<Epetra_Vector>& Residual() { return residual_; }
+  virtual Teuchos::RCP<Epetra_Vector>& Zeros()    { return zeros_; }
+  virtual Teuchos::RCP<Epetra_Vector>& IncVel()   { return incvel_; }
+  virtual Teuchos::RCP<Epetra_Vector>& Velnp()    { return velnp_; }
+  //@}
 
   /// dof-rowmap of intersected fluid
   Teuchos::RCP<const Epetra_Map>      xfluiddofrowmap_;

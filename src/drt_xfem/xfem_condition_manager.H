@@ -267,7 +267,7 @@ private:
     return "";
   }
 
-
+  //! create cutting discretization from condition
   void CreateCutterDisFromCondition();
 
 
@@ -426,7 +426,76 @@ private:
 
 };
 
+/*!
+\brief specialized class for coupling with an embedded fluid discretization
+  \author kruse
+  \date 01/15
+ */
+class MeshCouplingFluidFluid : public MeshCoupling
+{
+public:
 
+  //! constructor
+  explicit MeshCouplingFluidFluid(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
+  );
+
+  //! estimate the penalty scaling in Nitsche's method from the trace inequality
+  //! via solving a local eigenvalue problem
+  void EstimateNitscheTraceMaxEigenvalue(const Teuchos::RCP<const Epetra_Vector> & dispnp) const;
+
+  //! get auxiliary coupling discretization (embedded elements with nodes in the cutting surface discretization)
+  Teuchos::RCP<DRT::Discretization> GetAuxiliaryCouplingDiscretization()
+  {
+    return aux_coup_dis_;
+  }
+
+  //! Access to map from cutting surface element id to coupling element id
+  int GetCouplingElementId(int cutting_id)
+  {
+    std::map<int,int>::iterator it = cutting_coupling_gid_map_.find(cutting_id);
+
+    if (it == cutting_coupling_gid_map_.end())
+      dserror("Could not find parent element ID for side %d.", cutting_id);
+
+    return it->second;
+  }
+
+  //! Access to map from cutting surface element id to coupling element's face lid
+  int GetFaceLidOfCouplingElement(int face_id)
+  {
+    std::map<int,int>::iterator it = cutting_coupling_face_lid_map_.find(face_id);
+
+    if (it == cutting_coupling_face_lid_map_.end())
+      dserror("No local id of the face-element % d w.r.t embedded element stored!", face_id);
+
+    return it->second;
+  }
+
+private:
+
+  //! ghost coupling elements, that contribute to the cutting interface discretization on all procs
+  void RedistributeCouplingDiscretization();
+
+  //! build an auxiliary discretization out of the elements, that contribute to the cutting discretization
+  void CreateAuxiliaryCouplingDiscretization();
+
+  //! create map from cutting surface element id to coupling element id
+  void CreateCuttingToCouplingElementMap();
+
+  //! auxiliary discretization, based on the elements of cond_dis, that contribute to
+  //! the elements of cutter_dis_ with at least one edge
+  Teuchos::RCP<DRT::Discretization> aux_coup_dis_;
+
+  //! map from cutting surface element id to coupling element id
+  std::map<int,int> cutting_coupling_gid_map_;
+
+  //! map from cutting surface element id to coupling element's face lid
+  std::map<int,int> cutting_coupling_face_lid_map_;
+
+};
 
 /*!
 \brief
@@ -518,6 +587,11 @@ public:
     {
       std::cout << " create new MeshCouplingFSI" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSI(bg_dis_, cond_name, cond_dis)));
+    }
+    else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
+    {
+      std::cout << " create new MeshCoupling" << std::endl;
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis)));
     }
     else
     {

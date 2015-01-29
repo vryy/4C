@@ -209,7 +209,7 @@ namespace FLD
     void ComputeInterfaceVelocities();
 
     /// set Dirichlet and Neumann boundary conditions
-    void SetDirichletNeumannBC();
+    virtual void SetDirichletNeumannBC();
 
 
     //! @name access methods for composite algorithms
@@ -245,8 +245,8 @@ namespace FLD
     Teuchos::RCP<const Epetra_Map> DofRowMap(){return state_->xfluiddofrowmap_;}
 
     Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter() { return state_->velpressplitter_; }
-    Teuchos::RCP<const Epetra_Map>     VelocityRowMap() { return state_->velpressplitter_->OtherMap(); }
-    Teuchos::RCP<const Epetra_Map>     PressureRowMap() { return state_->velpressplitter_->CondMap(); }
+    Teuchos::RCP<const Epetra_Map>     VelocityRowMap()  { return state_->velpressplitter_->OtherMap(); }
+    Teuchos::RCP<const Epetra_Map>     PressureRowMap()  { return state_->velpressplitter_->CondMap(); }
 
 
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->sysmat_); }
@@ -326,7 +326,7 @@ namespace FLD
 
     void CreateInitialState();
 
-    void CreateState();
+    virtual void CreateState();
 
     Teuchos::RCP<FLD::XFluidState> GetNewState();
 
@@ -362,6 +362,18 @@ namespace FLD
         DRT::Discretization & discret,       ///< background fluid discretization
         Teuchos::RCP<Epetra_Vector> vec     ///< vector into which we assemble
     );
+
+    /*!
+    \brief convergence check
+
+    */
+    virtual bool ConvergenceCheck(
+      int          itnum,
+      int          itemax,
+      const double ittol);
+
+    /// Update velocity and pressure by increment
+    virtual void UpdateByIncrement();
 
     /// Gmsh output function for elements without an GEO::CUT::ElementHandle
     void GmshOutputElement(
@@ -774,6 +786,15 @@ namespace FLD
     double  dtele_;
     double  dtfilter_;
     double  dtsolve_;
+
+    //! @name norms for convergence check
+    double incvelnorm_L2_;
+    double incprenorm_L2_;
+    double velnorm_L2_;
+    double prenorm_L2_;
+    double vresnorm_;
+    double presnorm_;
+    //@}
 
 
     //--------------------------------------------------------------------

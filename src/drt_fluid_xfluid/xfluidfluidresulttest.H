@@ -29,6 +29,7 @@ namespace FLD
 {
 // forward declarations
 class XFluidFluid;
+class XFluidFluidNew;
 
 
 class XFluidFluidResultTest : public DRT::ResultTest
@@ -36,9 +37,14 @@ class XFluidFluidResultTest : public DRT::ResultTest
 public:
 
     /*!
-    \brief not documented yet
+    \brief Result test for fluid-fluid problems
     */
     XFluidFluidResultTest(XFluidFluid& fluid);
+
+    /*!
+    \brief Result test for fluid-fluid problems
+    */
+    XFluidFluidResultTest(XFluidFluidNew& fluid);
 
     /// our version of nodal value tests
     /*!

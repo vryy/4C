@@ -68,6 +68,12 @@ class FluidEleCalcXFEM : public FluidEleCalc<distype>
   /// private Constructor since we are a Singleton.
   FluidEleCalcXFEM();
 
+  /// private copy Constructor since we are a Singleton.
+  FluidEleCalcXFEM(FluidEleCalcXFEM const& copy);
+
+  /// private assignment operator since we are a Singleton.
+  FluidEleCalcXFEM& operator=(FluidEleCalcXFEM const& copy);
+
   typedef FluidEleCalc<distype> my;
 
 private:
@@ -175,7 +181,7 @@ public:
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
       Teuchos::ParameterList&                                             params,            ///< parameter list
       const GEO::CUT::plain_volumecell_set&                               vcSet,             ///< volumecell sets in this element
-      std::map<int,int> &                                                 boundary_emb_gid_map
+      const Teuchos::RCP<XFEM::MeshCouplingFluidFluid>&                   mc_ff              ///< specialized mesh coupling
   );
 
 
@@ -404,6 +410,7 @@ private:
   double ComputeCharEleLength(
       DRT::Element *                                                        ele,                   ///< fluid element
       Epetra_SerialDenseMatrix &                                            ele_xyze,              ///< element coordinates
+      const Teuchos::RCP<XFEM::ConditionManager> &                          cond_manager,          ///< XFEM condition manager
       const GEO::CUT::plain_volumecell_set &                                vcSet,                 ///< volumecell sets for volume integration
       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &          bcells,                ///< bcells for boundary cell integration
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &     bintpoints,            ///< integration points for boundary cell integration
