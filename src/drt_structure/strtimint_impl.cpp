@@ -2902,6 +2902,9 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
   {
     if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_stop ) )
     {
+      // write restart output of last converged step before stopping
+      Output(true);
+
       dserror("Newton unconverged in %d iterations", iter_);
       return 1;
     }
@@ -2915,7 +2918,8 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
     }
     else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
     {
-      dserror("Fancy divcont actions not implemented forUzawaLinearNewtonFull ");
+      if (myrank_ == 0)
+        IO::cout<< "Newton unconverged in " << iter_ << " iterations " << IO::endl;
       return 1;
     }
   }
