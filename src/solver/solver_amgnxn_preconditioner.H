@@ -255,6 +255,8 @@ namespace SOLVER
   }; // class BlockSmoother_Operator
 
 
+  void PrintMap(const Epetra_Map& Map,std::string prefix);
+
 
   } //namespace LINALG
 } // namespace SOLVER

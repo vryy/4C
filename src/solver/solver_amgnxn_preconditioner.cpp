@@ -637,6 +637,14 @@ void  LINALG::SOLVER::BlockSmoother_Operator::Setup()
   if(S_ == Teuchos::null)
     dserror("Something wrong. Fix the xml file defining the smoother");
 
+  //// Print maps
+  //for(int i=0;i<NumBlocks;i++)
+  //{
+  //  std::stringstream sstr;
+  //  sstr << "Map_block" << i;
+  //  PrintMap(A_->Matrix(i,i).RowMap(),sstr.str());
+  //}
+
 
   if (verbosity=="on")
   {
@@ -649,7 +657,22 @@ void  LINALG::SOLVER::BlockSmoother_Operator::Setup()
   return;
 }
 
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
 
+void LINALG::SOLVER::PrintMap(const Epetra_Map& Map,std::string prefix)
+{
+  const int pid = Map.Comm().MyPID();
+  std::stringstream strr;
+  strr << prefix << "_pid" << pid << ".txt";
+  std::ofstream ofile(strr.str().c_str());
+  int NumLID = Map.NumMyElements();
+  int NumGID = Map.NumGlobalElements();
+  ofile << "NumLID " << NumLID << " NumGID " << NumGID << std::endl;
+  for (int LID=0;LID<NumLID;LID++)
+    ofile << LID << " " << Map.GID(LID) << std::endl;
+  return;
+}
 
 
 #endif // HAVE_MueLu

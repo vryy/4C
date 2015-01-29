@@ -350,6 +350,10 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
   MatrixList.set<int>("DOF offset",offsetFineLevel);
   MatrixList.set<int>("number of equations",numdf);
 
+
+  std::cout << "offsetFineLevel " << offsetFineLevel << std::endl;
+  std::cout << "offsets_str " << offsets_str << std::endl;
+
   // Build up hierarchy
   ParameterListInterpreter mueLuFactory(paramListFromXml);
   H = mueLuFactory.CreateHierarchy();

@@ -433,6 +433,7 @@ void LINALG::SOLVER::MueluAMGWrapper::Setup()
   Teuchos::ParameterList& MatrixList = muelu_list_.sublist("Matrix");
   MatrixList.set<int>("DOF offset",offsetFineLevel);
   MatrixList.set<int>("number of equations",num_pde_);
+  std::cout << "offsetFineLevel " << offsetFineLevel << std::endl;
 
 
 
@@ -2207,7 +2208,7 @@ LINALG::SOLVER::SIMPLE_BlockSmootherFactory::ComputeSchurComplement(
       Teuchos::RCP<SparseMatrix> Asp_sp = Teuchos::rcp_dynamic_cast<SparseMatrix>(Asp);
       Teuchos::RCP<SparseMatrix> Aps_sp = Teuchos::rcp_dynamic_cast<SparseMatrix>(Aps);
       Teuchos::RCP<SparseMatrix> temp = LINALG::MLMultiply(*Asp_sp,*invApp_sp, true);
-      Teuchos::RCP<SparseMatrix> S_sp = LINALG::MLMultiply(*temp,*Aps_sp, true);
+      Teuchos::RCP<SparseMatrix> S_sp = LINALG::MLMultiply(*temp,*Aps_sp, false);
       S_sp->Add(*Ass_sp,false,1.0,-1.0);
       S_sp->Complete();
       S = Teuchos::rcp_dynamic_cast<SparseOperator>(S_sp);
