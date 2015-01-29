@@ -179,6 +179,13 @@ fi
 Trilinos_DIR="$Trilinos_PREFIX/lib/cmake/Trilinos"
 echo $Trilinos_DIR
 ############################################################
+# prepare source for modules
+pushd modules/contact_module
+./generate_contact_module.py
+popd
+
+############################################################
+# run cmake
 
 $CMAKE_COMMAND \
     --no-warn-unused-cli \

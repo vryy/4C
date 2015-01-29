@@ -1,0 +1,290 @@
+From ac3507aee968bdb6505394c05d063d7e3c7e2f2c Mon Sep 17 00:00:00 2001
+From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
+Date: Mon, 24 Nov 2014 16:01:45 +0100
+Subject: [PATCH 02/16] drt_element:
+
+- remove linedefinition
+- remove material
+---
+ src/drt_lib/drt_element.H   |   70 -------------------------------
+ src/drt_lib/drt_element.cpp |   97 +++----------------------------------------
+ 2 files changed, 6 insertions(+), 161 deletions(-)
+
+diff --git a/src/drt_lib/drt_element.H b/src/drt_lib/drt_element.H
+index b01cd7c..04a071e 100644
+--- a/src/drt_lib/drt_element.H
++++ b/src/drt_lib/drt_element.H
+@@ -21,11 +21,6 @@ Maintainer: Michael Gee
+ #include "drt_condition.H"
+ 
+ // forward declarations
+-namespace MAT
+-{
+-  class Material;
+-}
+-
+ namespace DRT
+ {
+ 
+@@ -676,21 +671,6 @@ public:
+   virtual void Print(std::ostream& os) const;
+ 
+   /*!
+-  \brief Return the material of this element
+-
+-  Note: The input parameter nummat is not the material number from input file
+-        as in SetMaterial(int matnum), but the number of the material within
+-        the vector of materials the element holds
+-
+-  \param nummat (in): number of requested material
+-  */
+-  virtual Teuchos::RCP<MAT::Material> Material(int nummat=0) const
+-  {
+-    dsassert(nummat<(int)mat_.size(),"invalid material number");
+-    return mat_[nummat];
+-  }
+-
+-  /*!
+   \brief Check whether the element has only ghost nodes
+ 
+   Note: If the element has only ghost nodes, the element will not be allowed
+@@ -779,13 +759,6 @@ public:
+   void SetId(const int id) { id_ = id; }
+ 
+   /*!
+-  \brief Read input for this element
+-  */
+-  virtual bool ReadElement(const std::string& eletype,
+-                           const std::string& distype,
+-                           DRT::INPUT::LineDefinition* linedef);
+-
+-  /*!
+     \brief Set processor local col id
+ 
+     \param lid: processor local col id
+@@ -822,13 +795,6 @@ public:
+   void SetNodeIds(const int nnode, const int* nodes);
+ 
+   /*!
+-  \brief Set a list of node ids this element is connected to
+-
+-  Here the node ids are directly taken from an input line.
+-  */
+-  void SetNodeIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef);
+-
+-  /*!
+   \brief Set a the face with index faceindex this element is connected to
+ 
+   Sets the face pointer of the face adjacent to this element, using NumFace() as
+@@ -842,39 +808,6 @@ public:
+   void SetFace(const int     faceindex,
+                DRT::Element* faceelement);
+ 
+-  /// Set element material
+-  /*!
+-    Material numbers are read from the input file. The element stores
+-    a corresponding material object. These material objects can be
+-    anything from very simple (just a little calculation) to highly
+-    sophisticated with history data. The material is packed and
+-    unpacked along with its element.
+-
+-    \param matnum : material number from input file
+-   */
+-  virtual void SetMaterial(int matnum);
+-
+-  /// Add element material
+-  /*!
+-    In case of volume coupled problems the element needs information
+-    from the material of the other field. Therefore, it is possible to
+-    add pointers on other materials from other elements.
+-
+-    \param mat: material to be added
+-    \param nummat (out):  number of materials the element holds
+-   */
+-  int AddMaterial(Teuchos::RCP<MAT::Material> mat);
+-
+-  /// Number of materials of the element
+-  /*!
+-    In case of volume coupled problems the element needs information
+-    from the material of the other field. Therefore, it is possible to
+-    add pointers on other materials from other elements.
+-
+-    \param nummat (out):  number of materials the element holds
+-   */
+-  int NumMaterial() const {return mat_.size();};
+-
+   //@}
+ 
+   //! @name Conditions
+@@ -1313,9 +1246,6 @@ private:
+   //! \brief Some conditions e.g. BCs
+   std::multimap<std::string,Teuchos::RCP<Condition> > condition_;
+ 
+-  //! vector of material objects of element
+-  std::vector<Teuchos::RCP<MAT::Material> > mat_;
+-
+ }; // class Element
+ 
+ 
+diff --git a/src/drt_lib/drt_element.cpp b/src/drt_lib/drt_element.cpp
+index 65aa905..088898f 100644
+--- a/src/drt_lib/drt_element.cpp
++++ b/src/drt_lib/drt_element.cpp
+@@ -17,10 +17,6 @@ Maintainer: Michael Gee
+ #include "drt_dserror.H"
+ #include "drt_condition.H"
+ #include "../drt_lib/drt_utils_factory.H"
+-#include "drt_linedefinition.H"
+-
+-#include "../drt_mat/material.H"
+-
+ 
+ /*----------------------------------------------------------------------*/
+ /*----------------------------------------------------------------------*/
+@@ -74,8 +70,7 @@ owner_(owner),
+ parent_master_(NULL),
+ parent_slave_(NULL),
+ lface_master_(-1),
+-lface_slave_(-1),
+-mat_(1,Teuchos::null)
++lface_slave_(-1)
+ {}
+ 
+ /*----------------------------------------------------------------------*
+@@ -92,8 +87,7 @@ face_(old.face_),
+ parent_master_(old.parent_master_),
+ parent_slave_(old.parent_slave_),
+ lface_master_(old.lface_master_),
+-lface_slave_(old.lface_slave_),
+-mat_(1,Teuchos::null)
++lface_slave_(old.lface_slave_)
+ {
+   // we do NOT want a deep copy of the condition_ as the condition
+   // is only a reference in the elements anyway
+@@ -101,16 +95,6 @@ mat_(1,Teuchos::null)
+   for (fool=old.condition_.begin(); fool!=old.condition_.end(); ++fool)
+     SetCondition(fool->first,fool->second);
+ 
+-  if(old.mat_.size())
+-  {
+-    mat_.resize(old.mat_.size());
+-    for (unsigned iter=0; iter<old.mat_.size(); ++iter)
+-      if ( old.mat_[iter]!=Teuchos::null )
+-        mat_[iter]=(old.mat_[iter]->Clone());
+-  }
+-  else
+-    mat_[0] = Teuchos::null;
+-
+   return;
+ }
+ 
+@@ -163,17 +147,6 @@ void DRT::Element::Print(std::ostream& os) const
+   return;
+ }
+ 
+-/*----------------------------------------------------------------------*/
+-/*----------------------------------------------------------------------*/
+-bool DRT::Element::ReadElement(const std::string& eletype,
+-                               const std::string& distype,
+-                               DRT::INPUT::LineDefinition* linedef)
+-{
+-  dserror("subclass implementations missing");
+-  return false;
+-}
+-
+-
+ /*----------------------------------------------------------------------*
+  |  set node numbers to element (public)                     mwgee 11/06|
+  *----------------------------------------------------------------------*/
+@@ -185,43 +158,6 @@ void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
+   return;
+ }
+ 
+-
+-/*----------------------------------------------------------------------*/
+-/*----------------------------------------------------------------------*/
+-void DRT::Element::SetNodeIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+-{
+-  linedef->ExtractIntVector(distype,nodeid_);
+-  for (unsigned i=0; i<nodeid_.size(); ++i)
+-    nodeid_[i] -= 1;
+-  node_.resize(0);
+-}
+-
+-
+-/*----------------------------------------------------------------------*
+- |  create material class (public)                                 05/07|
+- *----------------------------------------------------------------------*/
+-void DRT::Element::SetMaterial(int matnum)
+-{
+-  Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matnum);
+-  if(mat == Teuchos::null)
+-    dserror("Invalid material given to the element. \n"
+-        "Invalid are Summands of the Elasthyper-Toolbox and single Growth-Materials. \n"
+-        "If you like to use a Summand of the Elasthyper-Material define it via MAT_ElastHyper. \n"
+-        "If you like to use a Growth-Material define it via the according base material.");
+-  mat_[0] = mat;
+-}
+-
+-/*----------------------------------------------------------------------*
+- |  add material to element (public)                          vuong 02/14|
+- *----------------------------------------------------------------------*/
+-int DRT::Element::AddMaterial(Teuchos::RCP<MAT::Material> mat)
+-{
+-  mat_.push_back(mat);
+-
+-  return mat_.size();
+-}
+-
+-
+ /*----------------------------------------------------------------------*
+  |  Pack data                                                  (public) |
+  |                                                            gee 02/07 |
+@@ -240,17 +176,9 @@ void DRT::Element::Pack(DRT::PackBuffer& data) const
+   AddtoPack(data,owner_);
+   // add vector nodeid_
+   AddtoPack(data,nodeid_);
+-  // add material
+-  if (mat_[0]!=Teuchos::null)
+-  {
+-    //pack only first material
+-    mat_[0]->Pack(data);
+-  }
+-  else
+-  {
+-    int size = 0;
+-    AddtoPack(data,size);
+-  }
++  // add material (none)
++  int size = 0;
++  AddtoPack(data,size);
+ 
+   return;
+ }
+@@ -273,22 +201,9 @@ void DRT::Element::Unpack(const std::vector<char>& data)
+   ExtractfromPack(position,data,owner_);
+   // nodeid_
+   ExtractfromPack(position,data,nodeid_);
+-  // mat_
++  // mat_ (no material)
+   std::vector<char> tmp;
+   ExtractfromPack(position,data,tmp);
+-  if (tmp.size()>0)
+-  {
+-    DRT::ParObject* o = DRT::UTILS::Factory(tmp);
+-    MAT::Material* mat = dynamic_cast<MAT::Material*>(o);
+-    if (mat==NULL)
+-      dserror("failed to unpack material");
+-    //unpack only first material
+-    mat_[0] = Teuchos::rcp(mat);
+-  }
+-  else
+-  {
+-    mat_[0] = Teuchos::null;
+-  }
+ 
+   // node_, face_, parent_master_, parent_slave_ are NOT communicated
+   node_.resize(0);
+-- 
+1.7.7.6
+

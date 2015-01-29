@@ -1,0 +1,94 @@
+From c95773e91c38611e18104bc00889a8b30c47e93f Mon Sep 17 00:00:00 2001
+From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
+Date: Wed, 26 Nov 2014 14:20:45 +0100
+Subject: [PATCH 13/16] Remove support for curves and functions in
+ discretization
+
+---
+ src/drt_lib/drt_discret_evaluate.cpp |   24 ++++++++++++++----------
+ 1 files changed, 14 insertions(+), 10 deletions(-)
+
+diff --git a/src/drt_lib/drt_discret_evaluate.cpp b/src/drt_lib/drt_discret_evaluate.cpp
+index 3ee3430..a79892d 100644
+--- a/src/drt_lib/drt_discret_evaluate.cpp
++++ b/src/drt_lib/drt_discret_evaluate.cpp
+@@ -11,11 +11,11 @@ Maintainer: Michael Gee
+ 
+ *----------------------------------------------------------------------*/
+ 
+-#include "drt_globalproblem.H"
++//#include "drt_globalproblem.H"
+ #include "drt_discret.H"
+ #include "drt_dserror.H"
+-#include "drt_timecurve.H"
+-#include "drt_function.H"
++//#include "drt_timecurve.H"
++//#include "drt_function.H"
+ #include "drt_parobjectfactory.H"
+ #include "../linalg/linalg_utils.H"
+ #include "../linalg/linalg_sparsematrix.H"
+@@ -224,7 +224,8 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
+     if (curve) curvenum = (*curve)[0];
+     double curvefac = 1.0;
+     if (curvenum>=0 && usetime)
+-      curvefac = Problem::Instance()->Curve(curvenum).f(time);
++      dserror("No support for curves in contact module.");
++      //curvefac = Problem::Instance()->Curve(curvenum).f(time);
+     for (int i=0; i<nnode; ++i)
+     {
+       // do only nodes in my row map
+@@ -643,7 +644,8 @@ void DRT::Discretization::DoDirichletCondition(
+       int curvenum = -1;
+       if (curve) curvenum = (*curve)[onesetj];
+       if (curvenum>=0 && usetime)
+-        curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
++        //curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
++        dserror("No support for curves in contact module.");
+       else
+         for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
+ 
+@@ -654,11 +656,12 @@ void DRT::Discretization::DoDirichletCondition(
+       {
+         funct_num = (*funct)[onesetj];
+         if (funct_num>0)
+-          functfac =
++          dserror("No support for functions in contact module.");
++          /*functfac =
+             DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(onesetj,
+                                                                   actnode->X(),
+                                                                   time,
+-                                                                  this);
++                                                                  this);*/
+       }
+ 
+       // apply factors to Dirichlet value
+@@ -792,7 +795,8 @@ void DRT::Discretization::EvaluateCondition
+         if (curve) curvenum = (*curve)[0];
+         double curvefac = 1.0;
+         if (curvenum>=0 && usetime)
+-          curvefac = Problem::Instance()->Curve(curvenum).f(time);
++          dserror("No support for curves in contact module.");
++          //curvefac = Problem::Instance()->Curve(curvenum).f(time);
+ 
+         // Get ConditionID of current condition if defined and write value in parameter list
+         const std::vector<int>*    CondIDVec  = cond.Get<std::vector<int> >("ConditionID");
+@@ -1111,14 +1115,14 @@ void  DRT::Discretization::DoInitialField(DRT::Condition& cond,
+       // evaluate function
+       if (dosomething)
+       {
+-        double time = 0.0; // dummy time here
+         double functfac = 0.0;
+         int funct_num = -1;
+         if (funct)
+         {
+           funct_num = (*funct)[0];
+           if (funct_num > 0)
+-            functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(localdof,actnode->X(),time,this);
++            dserror("No support for functions in contact module.");
++            //functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(localdof,actnode->X(),time,this);
+         }
+ 
+         // assign value
+-- 
+1.7.7.6
+

@@ -1,0 +1,122 @@
+From f860e7924ceb5bb919e6688d8562cfd68cdb5c03 Mon Sep 17 00:00:00 2001
+From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
+Date: Wed, 21 Jan 2015 11:45:15 +0100
+Subject: [PATCH 16/16] Remove WriteBoundarySurfacesVolumeCoupling
+
+---
+ src/drt_lib/drt_condition_utils.H      |    9 ------
+ src/drt_lib/drt_condition_utils.cpp    |   44 +------------------------------
+ src/drt_lib/drt_discret_conditions.cpp |    8 ------
+ 3 files changed, 2 insertions(+), 59 deletions(-)
+
+diff --git a/src/drt_lib/drt_condition_utils.H b/src/drt_lib/drt_condition_utils.H
+index 069efe5..3be1bf7 100644
+--- a/src/drt_lib/drt_condition_utils.H
++++ b/src/drt_lib/drt_condition_utils.H
+@@ -236,15 +236,6 @@ namespace DRT
+         std::map<int,std::set<int> >&        elementsByLabel,       ///< map from label to set of element GID
+         const std::string&                        name                   ///< name of the condition
+         );
+-
+-    /// Writes debug output for volumetric coupling
+-    void WriteBoundarySurfacesVolumeCoupling(
+-        std::map< std::vector<int>, Teuchos::RCP<DRT::Element> > surfmap, //map containing the surfaces of the boundary condition
+-        int condID,                                                       //condition ID
+-        int numproc,                                                      //number of procs
+-        int mypid                                                         //current proc
+-        );
+-
+   }
+ }
+ 
+diff --git a/src/drt_lib/drt_condition_utils.cpp b/src/drt_lib/drt_condition_utils.cpp
+index c9da64b..2dc0598 100644
+--- a/src/drt_lib/drt_condition_utils.cpp
++++ b/src/drt_lib/drt_condition_utils.cpp
+@@ -22,11 +22,11 @@ Maintainer: Martin Kronbichler
+ #include "drt_condition_utils.H"
+ #include "drt_condition_selector.H"
+ #include "drt_discret_iterator.H"
+-#include "drt_globalproblem.H"
++//#include "drt_globalproblem.H"
+ 
+ #include "../drt_lib/drt_utils_parallel.H"
+ #include "../linalg/linalg_utils.H"
+-#include "../drt_io/io_control.H"
++//#include "../drt_io/io_control.H"
+ 
+ /*----------------------------------------------------------------------*
+  *----------------------------------------------------------------------*/
+@@ -670,43 +670,3 @@ void DRT::UTILS::CollectElementsByConditionLabel(
+     dserror("not all elements collected.");
+ }
+ 
+-/*-----------------------------------------------------------------------*
+- * Writes boundary surfaces of a volumetrically coupled problem to file  *
+- * 'boundarysurfaces.log' storing the condition-Id as surface-Id. For    *
+- * visualisation in gmsh and checking for tetrahedra whose four surfaces *
+- * are wrongly contained in the boundary surface of the volumetric       *
+- * coupling this file can be used.                         (croth 01/15) *
+- *-----------------------------------------------------------------------*/
+-void DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(
+-    std::map< std::vector<int>, Teuchos::RCP<DRT::Element> > surfmap,
+-    int condID,
+-    int numproc,
+-    int mypid)
+-{
+-  if (numproc==1)
+-  {
+-    //Get output prefix
+-    std::string outputprefix = DRT::Problem::Instance()->OutputControlFile()->NewOutputFileName();
+-    //Create boundary surface file
+-    std::ostringstream sf;
+-    sf << outputprefix << "_boundarysurfaces.log";
+-    std::string boundarysurffilename;
+-    boundarysurffilename = sf.str();
+-
+-    std::ofstream myfile;
+-    myfile.open (boundarysurffilename.c_str(), std::ios_base::app);
+-    myfile << "Surfaces in Surfmap for Coupling Condition No. " << condID+1 << ":\n";
+-    myfile << "Format: [Node1, Node2, Node3, CondID] \n";
+-    for(std::map< std::vector<int>, Teuchos::RCP<DRT::Element> >::const_iterator iterat=surfmap.begin(); iterat!=surfmap.end(); ++iterat)
+-    {
+-      myfile << iterat->first[0] << " " << iterat->first[1] << " " << iterat->first[2] << " " << condID+1 <<"\n";
+-    }
+-    myfile << "End \n";
+-    myfile.close();
+-  }
+-  else if (mypid==0)
+-  {
+-    std::cout << " No 'boundarysurfaces.log' written as number of procs = "<< numproc <<" is bigger than 1." << std::endl;
+-  }
+-}
+-
+diff --git a/src/drt_lib/drt_discret_conditions.cpp b/src/drt_lib/drt_discret_conditions.cpp
+index 5df979b..755c08b 100644
+--- a/src/drt_lib/drt_discret_conditions.cpp
++++ b/src/drt_lib/drt_discret_conditions.cpp
+@@ -16,7 +16,6 @@ Maintainer: Michael Gee
+ #include "drt_dserror.H"
+ #include "drt_parobject.H"
+ 
+-//#include "drt_globalproblem.H"
+ #include "drt_condition_utils.H"
+ #include "../linalg/linalg_utils.H"
+ 
+@@ -595,13 +594,6 @@ bool DRT::Discretization::BuildSurfacesinCondition(
+       dserror("special surface condition: missing associated volume element");
+   }
+ 
+-  //Write output for Gmsh format for debugging of StructFluidSurfCoupling surface correction,
+-  //note that this can only be done on one proc
+-  if ((cond->Type() == DRT::Condition::StructFluidSurfCoupling) or (cond->Type() == DRT::Condition::RedAirwayTissue))
+-  {
+-    DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(surfmap,cond->Id(),cond->comm_->NumProc(),cond->comm_->MyPID());
+-  }
+-
+   // Surfaces be added to the condition: (line_id) -> (surface).
+   Teuchos::RCP<std::map< int, Teuchos::RCP<DRT::Element> > > finalsurfs = Teuchos::rcp(new std::map<int,Teuchos::RCP<DRT::Element> >() );
+ 
+-- 
+1.7.7.6
+

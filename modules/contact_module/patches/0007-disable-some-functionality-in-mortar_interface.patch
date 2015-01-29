@@ -1,0 +1,125 @@
+From 3472748c822676798b412531e9b0532e4ff3e7b2 Mon Sep 17 00:00:00 2001
+From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
+Date: Tue, 25 Nov 2014 22:52:48 +0100
+Subject: [PATCH 07/16] disable some functionality in mortar_interface:
+
+- binning strategy (could probably be added)
+- meshfree discretization???
+---
+ src/drt_mortar/mortar_interface.cpp |   49 +++++++++++-----------------------
+ 1 files changed, 16 insertions(+), 33 deletions(-)
+
+diff --git a/src/drt_mortar/mortar_interface.cpp b/src/drt_mortar/mortar_interface.cpp
+index adfdc73..13c30ae 100644
+--- a/src/drt_mortar/mortar_interface.cpp
++++ b/src/drt_mortar/mortar_interface.cpp
+@@ -29,20 +29,20 @@ Maintainer: Alexander Popp
+ #include "../linalg/linalg_utils.H"
+ #include "../linalg/linalg_sparsematrix.H"
+ 
+-#include "../drt_io/io_control.H"
+-#include "../drt_meshfree_discret/drt_meshfree_discret.H"
++//#include "../drt_io/io_control.H"
++//#include "../drt_meshfree_discret/drt_meshfree_discret.H"
+ 
+ #include "../drt_lib/drt_utils_parmetis.H"
+ #include "../drt_lib/drt_utils.H"
+-#include "../drt_lib/drt_globalproblem.H"
++//#include "../drt_lib/drt_globalproblem.H"
+ 
+ #include <Teuchos_Time.hpp>
+ #include <Epetra_Time.h>
+ #include <Epetra_SerialComm.h>
+ 
+-#include "../drt_particle/binning_strategy.H"
++//#include "../drt_particle/binning_strategy.H"
+ 
+-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
++//#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+ 
+ /*----------------------------------------------------------------------*
+  |  ctor (public)                                            mwgee 10/07|
+@@ -73,31 +73,8 @@ MORTAR::MortarInterface::MortarInterface(
+   procmap_.clear();
+ 
+   // build interface disretization
+-  if (!nurbs_)
+-  {
+-    if (!imortar_.get("GEO_DECOUPLED", false))
+-    {
+-      // standard case
+-      idiscret_ = Teuchos::rcp(
+-          new DRT::Discretization((std::string) "mortar interface", com));
+-    }
+-    else
+-    {
+-      // adapt flags in meshfree params
+-      Teuchos::RCP<Teuchos::ParameterList> meshfreeparams
+-        = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->MeshfreeParams()));
+-      meshfreeparams->set("TYPE", "GeoDecoupled");
+-
+-      idiscret_ = Teuchos::rcp(
+-          new DRT::MESHFREE::MeshfreeDiscretization((std::string) "mortar interface", com, *meshfreeparams));
+-    }
+-  }
+-  else
+-  {
+-    idiscret_ = Teuchos::rcp(
+-        new DRT::NURBS::NurbsDiscretization((std::string) "mortar interface",
+-            com));
+-  }
++  idiscret_ = Teuchos::rcp(
++    new DRT::Discretization((std::string) "mortar interface", com));
+ 
+   // overwrite shape function type
+   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<
+@@ -276,7 +253,7 @@ void MORTAR::MortarInterface::AddMortarNode(
+ void MORTAR::MortarInterface::AddMortarPoint(
+     Teuchos::RCP<MORTAR::MortarNode> mrtrnode)
+ {
+-  Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(idiscret_, true)->AddPoint(mrtrnode);
++  dserror("Needed for MeshfreeDiscretization. Blame on us!");
+   return;
+ }
+ 
+@@ -310,6 +287,9 @@ void MORTAR::MortarInterface::AddMortarElement(
+  *----------------------------------------------------------------------*/
+ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
+ {
++#if 1
++  dserror("MortarInterface::RemoveSingleInterfaceSide not included in contact module");
++#else
+   Teuchos::RCP<Epetra_Map> elecolmap;
+   Teuchos::RCP<Epetra_Map> nodecolmap;
+   Teuchos::RCP<Epetra_Map> pointcolmap;
+@@ -397,7 +377,7 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
+         idiscret_->DeleteNode(gid);
+     }
+   }
+-
++#endif
+   return;
+ }
+ 
+@@ -806,6 +786,9 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
+  *----------------------------------------------------------------------*/
+ void MORTAR::MortarInterface::BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, double vel)
+ {
++#if 1
++  dserror("Support for binning strategy in contact module only upon request. Please contact AdCo Engineering GW GmbH.");
++#else
+   // init XAABB
+   LINALG::Matrix<3,2> XAABB(false);
+   for(int dim=0; dim<3; ++dim)
+@@ -910,7 +893,7 @@ void MORTAR::MortarInterface::BinningStrategy(Teuchos::RCP<Epetra_Map> initial_e
+ 
+   // fillcomplete interface
+   FillComplete();
+-
++#endif
+   return;
+ }
+ 
+-- 
+1.7.7.6
+

@@ -2255,6 +2255,8 @@ ADD_CUSTOM_COMMAND(TARGET post_processor
                    POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -D CMAKE_PROJECT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/scripts/baci_create_post_scripts.cmake)
 
+add_subdirectory(modules/contact_module)                   
+                   
 ###------------------------------------------------------------------ Tests
 
 ENABLE_TESTING()

@@ -1,0 +1,557 @@
+From c4a9eb26a713a5770e52716df8c28f111f15cb6e Mon Sep 17 00:00:00 2001
+From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
+Date: Tue, 25 Nov 2014 22:15:13 +0100
+Subject: [PATCH 04/16] contact_abstract_strategy:
+
+remove dependency from IO
+remove DoReadRestart
+---
+ src/drt_contact/contact_abstract_strategy.H        |   11 --
+ src/drt_contact/contact_abstract_strategy.cpp      |  178 -------------------
+ src/drt_contact/contact_lagrange_strategy.cpp      |    1 -
+ src/drt_contact/contact_wear_lagrange_strategy.H   |   11 --
+ src/drt_contact/contact_wear_lagrange_strategy.cpp |  182 --------------------
+ src/drt_contact/meshtying_abstract_strategy.H      |   11 --
+ src/drt_contact/meshtying_abstract_strategy.cpp    |   32 ----
+ src/drt_mortar/mortar_strategy_base.H              |    1 -
+ 8 files changed, 0 insertions(+), 427 deletions(-)
+
+diff --git a/src/drt_contact/contact_abstract_strategy.H b/src/drt_contact/contact_abstract_strategy.H
+index 7fc3306..4be95d6 100644
+--- a/src/drt_contact/contact_abstract_strategy.H
++++ b/src/drt_contact/contact_abstract_strategy.H
+@@ -607,17 +607,6 @@ public:
+       Teuchos::RCP<Epetra_Vector>& weightedwear,
+       Teuchos::RCP<Epetra_Vector>& realwear, bool forcedrestart = false);
+ 
+-  /*!
+-   \brief Perform a write restart
+-
+-   A write restart is initiated by the contact manager. However, the manager has no
+-   direct access to the nodal quantities. Hence, all the restart action has to be
+-   performed on the level of the contact algorithm, for short: here's the right place.
+-
+-   */
+-  void DoReadRestart(IO::DiscretizationReader& reader,
+-      Teuchos::RCP<Epetra_Vector> dis);
+-
+     //@}
+ 
+     //! @name Empty functions if no augmented Lagrange formulation is used
+diff --git a/src/drt_contact/contact_abstract_strategy.cpp b/src/drt_contact/contact_abstract_strategy.cpp
+index 4dffeac..c273183 100644
+--- a/src/drt_contact/contact_abstract_strategy.cpp
++++ b/src/drt_contact/contact_abstract_strategy.cpp
+@@ -21,8 +21,6 @@ Maintainer: Alexander Popp
+ #include "../drt_inpar/inpar_wear.H"
+ #include "../drt_lib/drt_discret.H"
+ #include "../drt_lib/drt_colors.H"
+-#include "../drt_io/io.H"
+-#include "../drt_io/io_control.H"
+ #include "../linalg/linalg_utils.H"
+ #include "../linalg/linalg_multiply.H"
+ #include "../linalg/linalg_sparsematrix.H"
+@@ -2010,182 +2008,6 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(
+ }
+ 
+ /*----------------------------------------------------------------------*
+- |  read restart information for contact                      popp 03/08|
+- *----------------------------------------------------------------------*/
+-void CONTACT::CoAbstractStrategy::DoReadRestart(
+-    IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis)
+-{
+-  // check whether this is a restart with contact of a previously
+-  // non-contact simulation run (if yes, we have to be careful not
+-  // to try to read certain, in this case non-existing, vectors
+-  // such as the activetoggle or sliptoggle vectors, but rather
+-  // initialize the restart active and slip sets as being empty)
+-  bool restartwithcontact = DRT::INPUT::IntegralValue<int>(Params(),
+-      "RESTART_WITH_CONTACT");
+-
+-  // set restart displacement state
+-  SetState("displacement", dis);
+-  SetState("olddisplacement", dis);
+-
+-  // evaluate interface and restart mortar quantities
+-  // in the case of SELF CONTACT, also re-setup master/slave maps
+-  InitMortar();
+-  InitEvalInterface();
+-  AssembleMortar();
+-
+-  //----------------------------------------------------------------------
+-  // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+-  //----------------------------------------------------------------------
+-  // Concretely, we apply the following transformations:
+-  // D         ---->   D * T^(-1)
+-  //----------------------------------------------------------------------
+-  if (Dualquadslave3d())
+-  {
+-    // modify dmatrix_
+-    Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,
+-        false, *invtrafo_, false, false, false, true);
+-    dmatrix_ = temp;
+-  }
+-
+-  // read restart information on actice set and slip set (leave sets empty
+-  // if this is a restart with contact of a non-contact simulation run)
+-  Teuchos::RCP<Epetra_Vector> activetoggle = Teuchos::rcp(
+-      new Epetra_Vector(*gsnoderowmap_));
+-  if (!restartwithcontact)
+-    reader.ReadVector(activetoggle, "activetoggle");
+-
+-  // friction
+-  Teuchos::RCP<Epetra_Vector> sliptoggle;
+-  Teuchos::RCP<Epetra_Vector> weightedwear;
+-
+-  if (friction_)
+-  {
+-    sliptoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
+-    if (!restartwithcontact)
+-      reader.ReadVector(sliptoggle, "sliptoggle");
+-  }
+-
+-  // store restart information on active set and slip set
+-  // into nodes, therefore first loop over all interfaces
+-  for (int i = 0; i < (int) interface_.size(); ++i)
+-  {
+-    // currently this only works safely for 1 interface
+-    //if (i>0) dserror("ERROR: DoReadRestart: Double active node check needed for n interfaces!");
+-
+-    // loop over all slave nodes on the current interface
+-    for (int j = 0; j < (interface_[i]->SlaveRowNodes())->NumMyElements(); ++j)
+-    {
+-      int gid = (interface_[i]->SlaveRowNodes())->GID(j);
+-      int dof = (activetoggle->Map()).LID(gid);
+-
+-      if ((*activetoggle)[dof] == 1)
+-      {
+-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+-        if (!node)
+-          dserror("ERROR: Cannot find node with gid %", gid);
+-        CoNode* cnode = dynamic_cast<CoNode*>(node);
+-
+-        // set value active / inactive in cnode
+-        cnode->Active() = true;
+-
+-        if (friction_)
+-        {
+-          // set value stick / slip in cnode
+-          if ((*sliptoggle)[dof] == 1)
+-            dynamic_cast<CONTACT::FriNode*>(cnode)->FriData().Slip() = true;
+-        }
+-      }
+-    }
+-  }
+-
+-  // read restart information on Lagrange multipliers
+-  z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-  zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-  if (!restartwithcontact)
+-    reader.ReadVector(LagrMult(), "lagrmultold");
+-  if (!restartwithcontact)
+-    reader.ReadVector(LagrMultOld(), "lagrmultold");
+-
+-  // Lagrange multiplier increment is always zero (no restart value to be read)
+-  zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-
+-  // store restart information on Lagrange multipliers into nodes
+-  StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
+-  StoreNodalQuantities(MORTAR::StrategyBase::lmold);
+-
+-  // only for Uzawa augmented strategy
+-  // TODO: this should be moved to contact_penalty_strategy
+-  if (stype_ == INPAR::CONTACT::solution_uzawa)
+-  {
+-    zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-    if (!restartwithcontact)
+-      reader.ReadVector(LagrMultUzawa(), "lagrmultold");
+-    StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+-  }
+-
+-  // store restart Mortar quantities
+-  StoreDM("old");
+-
+-  if (friction_)
+-  {
+-    StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+-    StoreToOld(MORTAR::StrategyBase::dm);
+-  }
+-
+-  // (re)setup active global Epetra_Maps
+-  gactivenodes_ = Teuchos::null;
+-  gactivedofs_ = Teuchos::null;
+-  gactiven_ = Teuchos::null;
+-  gactivet_ = Teuchos::null;
+-  gslipnodes_ = Teuchos::null;
+-  gslipdofs_ = Teuchos::null;
+-  gslipt_ = Teuchos::null;
+-
+-  // update active sets of all interfaces
+-  // (these maps are NOT allowed to be overlapping !!!)
+-  for (int i = 0; i < (int) interface_.size(); ++i)
+-  {
+-    interface_[i]->BuildActiveSet();
+-    gactivenodes_ = LINALG::MergeMap(gactivenodes_,
+-        interface_[i]->ActiveNodes(), false);
+-    gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(),
+-        false);
+-    gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(),
+-        false);
+-    gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(),
+-        false);
+-    if (friction_)
+-    {
+-      gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(),
+-          false);
+-      gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(),
+-          false);
+-      gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
+-    }
+-  }
+-
+-  // update flags for global contact status
+-  if (gactivenodes_->NumGlobalElements())
+-  {
+-    isincontact_ = true;
+-    wasincontact_ = true;
+-    wasincontactlts_ = true;
+-  }
+-
+-  // evaluate relative movement (jump)
+-  // needed because it is not called in the predictor of the
+-  // lagrange multiplier strategy
+-  EvaluateRelMov();
+-
+-  // reset unbalance factors for redistribution
+-  // (during restart the interface has been evaluated once)
+-  tunbalance_.resize(0);
+-  eunbalance_.resize(0);
+-
+-  return;
+-}
+-
+-/*----------------------------------------------------------------------*
+  |  Compute interface forces (for debugging only)             popp 02/08|
+  *----------------------------------------------------------------------*/
+ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
+diff --git a/src/drt_contact/contact_lagrange_strategy.cpp b/src/drt_contact/contact_lagrange_strategy.cpp
+index bae684d..6df51e0 100644
+--- a/src/drt_contact/contact_lagrange_strategy.cpp
++++ b/src/drt_contact/contact_lagrange_strategy.cpp
+@@ -17,7 +17,6 @@ Maintainer: Alexander Popp
+ #include "friction_node.H"
+ #include "../drt_mortar/mortar_utils.H"
+ #include "../drt_inpar/inpar_contact.H"
+-#include "../drt_io/io.H"
+ #include "../linalg/linalg_multiply.H"
+ #include "../linalg/linalg_utils.H"
+ 
+diff --git a/src/drt_contact/contact_wear_lagrange_strategy.H b/src/drt_contact/contact_wear_lagrange_strategy.H
+index ae6a056..9e39860 100644
+--- a/src/drt_contact/contact_wear_lagrange_strategy.H
++++ b/src/drt_contact/contact_wear_lagrange_strategy.H
+@@ -196,17 +196,6 @@ public:
+                       bool forcedrestart = false);
+ 
+   /*!
+-  \brief Perform a write restart
+-
+-  A write restart is initiated by the contact manager. However, the manager has no
+-  direct access to the nodal quantities. Hence, all the restart action has to be
+-  performed on the level of the contact algorithm, for short: here's the right place.
+-
+-  */
+-  void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis);
+-
+-
+-  /*!
+   \brief Update active set and check for convergence
+ 
+   In this function we loop over all interfaces and then over all
+diff --git a/src/drt_contact/contact_wear_lagrange_strategy.cpp b/src/drt_contact/contact_wear_lagrange_strategy.cpp
+index a3dc03b..a2ffef7 100644
+--- a/src/drt_contact/contact_wear_lagrange_strategy.cpp
++++ b/src/drt_contact/contact_wear_lagrange_strategy.cpp
+@@ -30,7 +30,6 @@ Maintainer: Philipp Farah
+ #include "../drt_mortar/mortar_utils.H"
+ #include "../drt_inpar/inpar_contact.H"
+ #include "../drt_inpar/inpar_wear.H"
+-#include "../drt_io/io.H"
+ 
+ #include "../linalg/linalg_utils.H"
+ #include "../linalg/linalg_solver.H"
+@@ -4717,187 +4716,6 @@ void CONTACT::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<Epetra_Vect
+ }
+ 
+ /*----------------------------------------------------------------------*
+- |  read restart information for contact                      popp 03/08|
+- *----------------------------------------------------------------------*/
+-void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
+-                                                Teuchos::RCP<Epetra_Vector> dis)
+-{
+-  // check whether this is a restart with contact of a previously
+-  // non-contact simulation run (if yes, we have to be careful not
+-  // to try to read certain, in this case non-existing, vectors
+-  // such as the activetoggle or sliptoggle vectors, but rather
+-  // initialize the restart active and slip sets as being empty)
+-  bool restartwithcontact = DRT::INPUT::IntegralValue<int>(Params(),"RESTART_WITH_CONTACT");
+-
+-  // set restart displacement state
+-  SetState("displacement", dis);
+-  SetState("olddisplacement", dis);
+-
+-  // evaluate interface and restart mortar quantities
+-  // in the case of SELF CONTACT, also re-setup master/slave maps
+-  InitMortar();
+-  InitEvalInterface();
+-  AssembleMortar();
+-
+-  //----------------------------------------------------------------------
+-  // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
+-  //----------------------------------------------------------------------
+-  // Concretely, we apply the following transformations:
+-  // D         ---->   D * T^(-1)
+-  //----------------------------------------------------------------------
+-  if (Dualquadslave3d())
+-  {
+-    // modify dmatrix_
+-    Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
+-    dmatrix_ = temp;
+-  }
+-
+-  // read restart information on actice set and slip set (leave sets empty
+-  // if this is a restart with contact of a non-contact simulation run)
+-  Teuchos::RCP<Epetra_Vector> activetoggle =Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
+-  if (!restartwithcontact) reader.ReadVector(activetoggle,"activetoggle");
+-
+-  // friction
+-  Teuchos::RCP<Epetra_Vector> sliptoggle;
+-  Teuchos::RCP<Epetra_Vector> weightedwear;
+-  Teuchos::RCP<Epetra_Vector> realwear;
+-
+-  if (friction_)
+-  {
+-    sliptoggle =Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
+-    if (!restartwithcontact) reader.ReadVector(sliptoggle,"sliptoggle");
+-  }
+-
+-  // wear
+-  if (wear_)
+-  {
+-    weightedwear = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
+-    reader.ReadVector(weightedwear, "weightedwear");
+-
+-    realwear = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-    reader.ReadVector(realwear, "realwear");
+-  }
+-
+-  // store restart information on active set and slip set
+-  // into nodes, therefore first loop over all interfaces
+-  for (int i=0; i<(int)interface_.size(); ++i)
+-  {
+-    // currently this only works safely for 1 interface
+-    //if (i>0) dserror("ERROR: DoReadRestart: Double active node check needed for n interfaces!");
+-
+-    // loop over all slave nodes on the current interface
+-    for (int j=0; j<(interface_[i]->SlaveRowNodes())->NumMyElements(); ++j)
+-    {
+-      int gid = (interface_[i]->SlaveRowNodes())->GID(j);
+-      int dof = (activetoggle->Map()).LID(gid);
+-
+-      if ((*activetoggle)[dof]==1)
+-      {
+-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+-        CoNode* cnode = dynamic_cast<CoNode*>(node);
+-
+-        // set value active / inactive in cnode
+-        cnode->Active()=true;
+-
+-        if (friction_)
+-        {
+-          // set value stick / slip in cnode
+-          // set wear value
+-          if ((*sliptoggle)[dof]==1) dynamic_cast<CONTACT::FriNode*>(cnode)->FriData().Slip()=true;
+-          if (wear_)
+-            dynamic_cast<CONTACT::FriNode*>(cnode)->FriDataPlus().Wear() = (*weightedwear)[dof];
+-        }
+-      }
+-    }
+-  }
+-
+-  if (friction_ and wear_)
+-    wearoutput_=realwear;
+-
+-
+-  // read restart information on Lagrange multipliers
+-  z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-  zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-  if (!restartwithcontact) reader.ReadVector(LagrMult(),"lagrmultold");
+-  if (!restartwithcontact) reader.ReadVector(LagrMultOld(),"lagrmultold");
+-
+-  // Lagrange multiplier increment is always zero (no restart value to be read)
+-  zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-
+-  // store restart information on Lagrange multipliers into nodes
+-  StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
+-  StoreNodalQuantities(MORTAR::StrategyBase::lmold);
+-
+-  // TODO: same procedure for discrete wear...
+-
+-  // only for Uzawa Augmented strategy
+-  // TODO: this should be moved to contact_penalty_strategy
+-  INPAR::CONTACT::SolvingStrategy st = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+-  if (st == INPAR::CONTACT::solution_uzawa)
+-  {
+-    zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-    if (!restartwithcontact) reader.ReadVector(LagrMultUzawa(),"lagrmultold");
+-    StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+-  }
+-
+-  // store restart Mortar quantities
+-  StoreDM("old");
+-
+-  if (friction_)
+-  {
+-    StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+-    StoreToOld(MORTAR::StrategyBase::dm);
+-  }
+-
+-  // (re)setup active global Epetra_Maps
+-  gactivenodes_ = Teuchos::null;
+-  gactivedofs_ = Teuchos::null;
+-  gactiven_ = Teuchos::null;
+-  gactivet_ = Teuchos::null;
+-  gslipnodes_ = Teuchos::null;
+-  gslipdofs_ = Teuchos::null;
+-  gslipt_ = Teuchos::null;
+-
+-  // update active sets of all interfaces
+-  // (these maps are NOT allowed to be overlapping !!!)
+-  for (int i=0; i<(int)interface_.size(); ++i)
+-  {
+-    interface_[i]->BuildActiveSet();
+-    gactivenodes_ = LINALG::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
+-    gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
+-    gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(), false);
+-    gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(), false);
+-    if (friction_)
+-    {
+-      gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
+-      gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
+-      gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
+-    }
+-  }
+-
+-  // update flags for global contact status
+-  if (gactivenodes_->NumGlobalElements())
+-  {
+-    isincontact_=true;
+-    wasincontact_=true;
+-    wasincontactlts_=true;
+-  }
+-
+-  // evaluate relative movement (jump)
+-  // needed because it is not called in the predictor of the
+-  // lagrange multiplier strategy
+-  EvaluateRelMov();
+-
+-  // reset unbalance factors for redistribution
+-  // (during restart the interface has been evaluated once)
+-  tunbalance_.resize(0);
+-  eunbalance_.resize(0);
+-
+-  return;
+-}
+-
+-/*----------------------------------------------------------------------*
+  |  Update active set and check for convergence (public)      popp 06/08|
+  *----------------------------------------------------------------------*/
+ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
+diff --git a/src/drt_contact/meshtying_abstract_strategy.H b/src/drt_contact/meshtying_abstract_strategy.H
+index 6c37d9e..c5060be 100644
+--- a/src/drt_contact/meshtying_abstract_strategy.H
++++ b/src/drt_contact/meshtying_abstract_strategy.H
+@@ -323,17 +323,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
+     */
+     void Update(Teuchos::RCP<Epetra_Vector> dis);
+ 
+-    /*!
+-    \brief Perform a write restart
+-
+-    A write restart is initiated by the contact manager. However, the manager has no
+-    direct access to the nodal quantities. Different from writing a restart step, now
+-    all the restart action has to be performed on the level of the meshtying algorithm,
+-    for short: here's the right place.
+-
+-    */
+-    void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis);
+-
+     //@}
+ 
+     //! @name Debugging methods
+diff --git a/src/drt_contact/meshtying_abstract_strategy.cpp b/src/drt_contact/meshtying_abstract_strategy.cpp
+index 3189233..098eb9b 100644
+--- a/src/drt_contact/meshtying_abstract_strategy.cpp
++++ b/src/drt_contact/meshtying_abstract_strategy.cpp
+@@ -21,8 +21,6 @@ Maintainer: Alexander Popp
+ #include "../drt_inpar/inpar_contact.H"
+ #include "../drt_lib/drt_discret.H"
+ #include "../drt_lib/drt_parobjectfactory.H"
+-#include "../drt_io/io.H"
+-#include "../drt_io/io_control.H"
+ #include "../linalg/linalg_utils.H"
+ #include "../linalg/linalg_sparsematrix.H"
+ 
+@@ -784,36 +782,6 @@ void CONTACT::MtAbstractStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
+ }
+ 
+ /*----------------------------------------------------------------------*
+- |  read restart information for meshtying                    popp 03/08|
+- *----------------------------------------------------------------------*/
+-void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
+-                                                Teuchos::RCP<Epetra_Vector> dis)
+-{
+-  // set displacement state
+-  SetState("displacement",dis);
+-
+-  // read restart information on Lagrange multipliers
+-  z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-  zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-  reader.ReadVector(LagrMult(),"mt_lagrmultold");
+-  StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
+-  zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-  reader.ReadVector(LagrMultOld(),"mt_lagrmultold");
+-  StoreNodalQuantities(MORTAR::StrategyBase::lmold);
+-
+-  // only for Uzawa strategy
+-  INPAR::CONTACT::SolvingStrategy st = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(Params(),"STRATEGY");
+-  if (st == INPAR::CONTACT::solution_uzawa)
+-  {
+-    zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-    reader.ReadVector(LagrMultUzawa(),"mt_lagrmultold");
+-    StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
+-  }
+-
+-  return;
+-}
+-
+-/*----------------------------------------------------------------------*
+  |  Compute interface forces (for debugging only)             popp 02/08|
+  *----------------------------------------------------------------------*/
+ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
+diff --git a/src/drt_mortar/mortar_strategy_base.H b/src/drt_mortar/mortar_strategy_base.H
+index dff4b87..2628820 100644
+--- a/src/drt_mortar/mortar_strategy_base.H
++++ b/src/drt_mortar/mortar_strategy_base.H
+@@ -163,7 +163,6 @@ class StrategyBase
+     virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;
+     virtual Teuchos::RCP<Epetra_Vector> ContactWear() = 0;
+     virtual Teuchos::RCP<LINALG::SparseMatrix> DMatrix() = 0;
+-    virtual void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis) = 0;
+     virtual void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,Teuchos::RCP<Epetra_Vector>& sliptoggle,Teuchos::RCP<Epetra_Vector>& weightedwear,Teuchos::RCP<Epetra_Vector>& realwear, bool forcedrestart = false) = 0;
+     virtual void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
+     virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
+-- 
+1.7.7.6
+
