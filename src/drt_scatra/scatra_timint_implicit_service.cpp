@@ -1757,11 +1757,11 @@ void SCATRA::ScaTraTimIntImpl::SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> s
 // Reconstruct gradients
 /*==========================================================================*/
 //! Calculate the reconstructed nodal gradient of phi
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::GetGradientAtNodes()
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::GetGradientAtNodes(const Teuchos::RCP<const Epetra_Vector> phi)
 {
   Teuchos::RCP<Epetra_MultiVector> gradPhi = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
 
-  ReconstructGradientAtNodes(gradPhi);
+  ReconstructGradientAtNodes(gradPhi,phi);
   return gradPhi;
 }
 
@@ -1770,7 +1770,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::GetGradientAtNodes()
  | Calculate the reconstructed nodal gradient of phi        winter 04/14|
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodes(
-    Teuchos::RCP<Epetra_MultiVector> gradPhi)
+    Teuchos::RCP<Epetra_MultiVector> gradPhi,
+    const Teuchos::RCP<const Epetra_Vector> phi)
 {
   // zero out matrix entries
   sysmat_->Zero();
@@ -1786,7 +1787,7 @@ void SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodes(
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp",EvaluationPhi());
+  discret_->SetState("phinp",phi);
 
   Teuchos::RCP<Epetra_MultiVector> rhs_vectors = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
 

@@ -152,7 +152,13 @@ void TWOPHASEFLOW::Algorithm::PrepareTimeStep()
 
   // initially solve scalar transport equation
   // (values for intermediate time steps were calculated at the end of PerpareTimeStep)
-  if (Comm().MyPID()==0) std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
+  if (Comm().MyPID()==0)
+  {
+    std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
+    std::cout<<"\n ????????????????????????????????????????????????????????????????? \n";
+    std::cout<<"SOLVING FOR SCATRA AT THIS PALACE IS USELESS \n";
+    std::cout<<"????????????????????????????????????????????????????????????????? \n" << std::endl;
+  }
   ScaTraField()->Solve();
 
   // set scatra values required in fluid
@@ -226,13 +232,17 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
   // set level set in fluid field
   // derivatives and discretization based on time-integration scheme
 
+  // check assumption
+  if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_one_step_theta)
+    dserror("OST for level-set field assumed!");
+
   switch(FluidField()->TimIntScheme())
   {
   case INPAR::FLUID::timeint_stationary:
   {
     Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidField())->SetScalarFields(ScaTraField()->Phinp(),
-                                       Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(),
-                                       ScaTraField()->GetGradientAtNodes(),
+                                       Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(ScaTraField()->Phinp()),
+                                       ScaTraField()->GetGradientAtNodes(ScaTraField()->Phinp()),
                                        ScaTraField()->Residual(),
                                        ScaTraField()->Discretization(),
                                        -1);
@@ -251,18 +261,17 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
     //TimIntParam() provides 1 - alphaf
     const double alphaf = 1.0 - FluidField()->TimIntParam();
     const double alpham = Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhaseGenAlpha>(FluidField())->AlphaM();
-    //Necessary function for the structure of GetNodalCurvature() and GetGradientAtNodes()
-    Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->SetAlphaF(alphaf); //Set to -1.0 for Gradients and NodalCurv calculations at time (n+1)
-
+    // get phi at intermediate time level n+alpha_F
+    const Teuchos::RCP<const Epetra_Vector> phiaf = Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->Phinptheta(alphaf);
 
     // As The Levelset algorithm does not have support for gen-alpha timeintegration ->
     // OST values from the ScaTra field will have to be used in the fluid field.
-    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidField())->SetIterScalarFields(Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->PhiafOst(alphaf),
-                             Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->PhiamOst(alpham),
-                                               Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->PhidtamOst(alpham),
+    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidField())->SetIterScalarFields(phiaf,
+                             Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->Phinptheta(alpham),
+                             Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->Phidtnptheta(alpham),
                              Teuchos::null, //ScaTraField()->FsPhi()
-                             Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(),
-                             ScaTraField()->GetGradientAtNodes(),
+                             Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(phiaf),
+                             ScaTraField()->GetGradientAtNodes(phiaf),
                              ScaTraField()->Discretization());
 
 
@@ -285,8 +294,8 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
                                    ScaTraField()->Phin(),
                                    ScaTraField()->Phidtnp(),
                                    ScaTraField()->FsPhi(), //Teuchos::null
-                                   Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(),
-                                   ScaTraField()->GetGradientAtNodes(),
+                                   Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(ScaTraField()->Phinp()),
+                                   ScaTraField()->GetGradientAtNodes(ScaTraField()->Phinp()),
                                    ScaTraField()->Discretization());
   }
   break;
@@ -356,6 +365,10 @@ void TWOPHASEFLOW::Algorithm::Output()
 
   ScaTraField()->Output();
 
+  // TODO: This is not the best way to include additional scatra output
+  //       Moving this out entirely to the level-set algorithm and combining it with
+  //       the respective function for sharp interfaces, which should move from the old
+  //       combustion module to the new level-set algorithm, seem to be a smarter solution!
   if(write_center_of_mass_)
   {
     Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->MassCenterUsingSmoothing();

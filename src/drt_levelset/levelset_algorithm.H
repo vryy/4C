@@ -90,14 +90,10 @@ namespace SCATRA
       bool setpressure=false,
       bool init=false);
 
-    const Teuchos::RCP<const Epetra_Vector> GetNodalCurvature()
-    {
-      Teuchos::RCP<Epetra_Vector> nodalCurvature = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-      ReconstructedNodalCurvature(nodalCurvature);
+    /// access routine for nodal curvature
+    const Teuchos::RCP<const Epetra_Vector> GetNodalCurvature(const Teuchos::RCP<const Epetra_Vector> phi);
 
-      return nodalCurvature;
-    };
-
+    // output position of center of mass assuming a smoothed interfaces
     void MassCenterUsingSmoothing();
 
     /// redistribute the scatra discretization and vectors according to nodegraph
@@ -151,7 +147,8 @@ namespace SCATRA
     // Reconstructing nodal curvature
     // -----------------------------------------------------------------
     void ReconstructedNodalCurvature(
-      Teuchos::RCP<Epetra_Vector> curvature);
+      Teuchos::RCP<Epetra_Vector> curvature,
+      const Teuchos::RCP<const Epetra_Vector> phi);
 
     // -----------------------------------------------------------------
     // members

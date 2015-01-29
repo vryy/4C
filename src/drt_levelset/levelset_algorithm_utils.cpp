@@ -869,15 +869,16 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
   return;
 }
 
+
 /*----------------------------------------------------------------------------*
  | Reconstruct nodal curvature                                   winter 04/14 |
- |                                                                            |
  *----------------------------------------------------------------------------*/
- void SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature(Teuchos::RCP<Epetra_Vector> curvature)
- {
-
+void SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature(
+  Teuchos::RCP<Epetra_Vector> curvature,
+  const Teuchos::RCP<const Epetra_Vector> phi)
+{
    Teuchos::RCP<Epetra_MultiVector> gradPhi = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
-   ReconstructGradientAtNodes(gradPhi);
+   ReconstructGradientAtNodes(gradPhi,phi);
 
    // zero out matrix entries
    sysmat_->Zero();
@@ -896,7 +897,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
 
    // set vector values needed by elements
    discret_->ClearState();
-   discret_->SetState("phinp",EvaluationPhi());
+   discret_->SetState("phinp",phi);
    discret_->SetState("gradphinp_x",Teuchos::rcp((*gradPhi)(0),false));
    discret_->SetState("gradphinp_y",Teuchos::rcp((*gradPhi)(1),false));
    discret_->SetState("gradphinp_z",Teuchos::rcp((*gradPhi)(2),false));
@@ -914,14 +915,14 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
 
    return;
 
- } //SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature
+} //SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature
 
- /*----------------------------------------------------------------------------*
-  | Get Mass Center, using the smoothing function                 winter 06/14 |
-  |                                                                            |
-  *----------------------------------------------------------------------------*/
-  void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
-  {
+
+/*----------------------------------------------------------------------------*
+ | Get Mass Center, using the smoothing function                 winter 06/14 |
+ *----------------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
+{
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("phinp",phinp_);
@@ -983,12 +984,31 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
       }
     }
 
+  return;
 
-  } //SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing
+} //SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing
 
 
 /*----------------------------------------------------------------------------*
- | Redistribute the scatra discretization and vectors         rasthofer 07/11 |
+ | access routine for nodal curvature                         rasthofer 01/15 |
+ *----------------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> SCATRA::LevelSetAlgorithm::GetNodalCurvature(
+  const Teuchos::RCP<const Epetra_Vector> phi)
+{
+  // Currently, only a nodal curvature reconstruction based on an L_2-projection is supported.
+  // Other reconstruction types, for instance, a mean value computation using the values
+  // of the adjacent elements (applied, e.g., by Florian Henke and implemented in the old combustion module),
+  // should be added here as well.
+
+  Teuchos::RCP<Epetra_Vector> nodalCurvature = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
+  ReconstructedNodalCurvature(nodalCurvature,phi);
+
+  return nodalCurvature;
+};
+
+
+/*----------------------------------------------------------------------------*
+ | redistribute the scatra discretization and vectors         rasthofer 07/11 |
  | according to nodegraph according to nodegraph              DA wichmann     |
  *----------------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)

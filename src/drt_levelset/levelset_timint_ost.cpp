@@ -39,8 +39,7 @@ SCATRA::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
   Teuchos::RCP<IO::DiscretizationWriter> output)
 : ScaTraTimIntImpl(actdis,solver,sctratimintparams,extraparams,output),
   LevelSetAlgorithm(actdis,solver,params,sctratimintparams,extraparams,output),
-  TimIntOneStepTheta(actdis,solver,sctratimintparams,extraparams,output),
-  alphaF_(-1.0) //Member introduced to make OST calculations in level set in combination with gen-alpha in fluid.
+  TimIntOneStepTheta(actdis,solver,sctratimintparams,extraparams,output)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
@@ -352,36 +351,26 @@ void SCATRA::LevelSetTimIntOneStepTheta::ReadRestart(int start)
   return;
 }
 
-/*----------------------------------------------------------------------*
- | Create Phiaf from OST values                            winter 09/14 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::PhiafOst(const double alphaf)
-{
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    Teuchos::RCP< Epetra_Vector> phiaf = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
-    phiaf->Update((1.0-alphaf),*phin_,alphaf,*phinp_,0.0);
-    return phiaf;
-}
 
 /*----------------------------------------------------------------------*
- | Create Phiam from OST values                            winter 09/14 |
+ | interpolate phi to intermediate time level n+theta   rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::PhiamOst(const double alpham)
+Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::Phinptheta(const double theta_inter)
 {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    Teuchos::RCP< Epetra_Vector> phiam = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
-    phiam->Update((1.0-alpham),*phin_,alpham,*phinp_,0.0);
-    return phiam;
+    Teuchos::RCP< Epetra_Vector> phi_tmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
+    phi_tmp->Update((1.0-theta_inter),*phin_,theta_inter,*phinp_,0.0);
+    return phi_tmp;
 }
+
 
 /*----------------------------------------------------------------------*
- | Create Phidtam from OST values                            winter 09/14 |
+ | interpolate phidt to intermediate time level n+theta rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::PhidtamOst(const double alpham)
+Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::Phidtnptheta(const double theta_inter)
 {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    Teuchos::RCP< Epetra_Vector> phidtam = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
-    phidtam->Update((1.0-alpham),*phidtn_,alpham,*phidtnp_,0.0);
-    return phidtam;
+    Teuchos::RCP< Epetra_Vector> phidt_tmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
+    phidt_tmp->Update((1.0-theta_inter),*phidtn_,theta_inter,*phidtnp_,0.0);
+    return phidt_tmp;
 }
-

@@ -26,7 +26,7 @@ class LevelSetTimIntOneStepTheta : public LevelSetAlgorithm, public TimIntOneSte
 
 public:
 
-  /// Standard Constructor
+  /// standard Constructor
   LevelSetTimIntOneStepTheta(Teuchos::RCP<DRT::Discretization>       dis,
       Teuchos::RCP<LINALG::Solver>            solver,
       Teuchos::RCP<Teuchos::ParameterList>    params,
@@ -34,7 +34,7 @@ public:
       Teuchos::RCP<Teuchos::ParameterList>    extraparams,
       Teuchos::RCP<IO::DiscretizationWriter>  output);
 
-  /// Destructor
+  /// destructor
   virtual ~LevelSetTimIntOneStepTheta();
 
   /// initialize time-integration scheme
@@ -46,26 +46,11 @@ public:
   /// redistribute the scatra discretization and vectors according to nodegraph
   void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
 
-  /// Interpolate phi(alpha_F) values from OST calculations.
-  Teuchos::RCP<Epetra_Vector> PhiafOst(const double alpha_F);
+  /// interpolate phi to intermediate time n+theta with 0<theta<1
+  Teuchos::RCP<Epetra_Vector> Phinptheta(const double theta_inter);
 
-  /// Interpolate phi(alpha_F) values from OST calculations.
-  Teuchos::RCP<Epetra_Vector> PhiamOst(const double alpha_M);
-
-  /// Interpolate phi(alpha_F) values from OST calculations.
-  Teuchos::RCP<Epetra_Vector> PhidtamOst(const double alpha_M);
-
-  void SetAlphaF(const double alpha_F){alphaF_=alpha_F;};
-
-  /// return phi at evaluation time
-  virtual Teuchos::RCP<Epetra_Vector> EvaluationPhi(){
-    if(alphaF_>=0.0){
-      return PhiafOst(alphaF_);
-    }
-    else{
-      return phinp_;
-    }
-  };
+  /// interpolate phidt to intermediate time n+theta with 0<theta<1
+  Teuchos::RCP<Epetra_Vector> Phidtnptheta(const double theta_inter);
 
 protected:
 
@@ -93,9 +78,6 @@ protected:
   void UpdateReinit();
 
 private:
-
-  //Member introduced to make the OST level set algorithm compatible with fluid gen alpha algorithm.
-  double alphaF_;
 
 }; // class LevelSetTimIntOneStepTheta
 
