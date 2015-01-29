@@ -16,7 +16,7 @@ Maintainer:  Raffaela Kruse
 #include "xfluidfluidnew.H"
 #include "xfluid_state_creator.H"
 
-#include "xfluidfluidresulttest.H"
+#include "xfluidresulttest.H"
 
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H"
@@ -234,7 +234,7 @@ Teuchos::RCP<const Epetra_Map> FLD::XFluidFluidNew::VelocityRowMap()
 
 Teuchos::RCP<DRT::ResultTest> FLD::XFluidFluidNew::CreateFieldTest()
 {
-  return Teuchos::rcp(new FLD::XFluidFluidResultTest(*this));
+  return Teuchos::rcp(new FLD::XFluidResultTest(*this));
 }
 
 Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidFluidNew::GetNewState()

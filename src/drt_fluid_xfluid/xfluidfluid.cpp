@@ -13,7 +13,7 @@ Maintainer:  Shadan Shahmiri
 
 #include "xfluidfluid.H"
 #include "xfluid_state_creator.H"
-#include "xfluidfluidresulttest.H"
+#include "xfluidresulttest.H"
 
 #include "../drt_fluid/fluid_utils.H"
 
@@ -4643,7 +4643,7 @@ void FLD::XFluidFluid::PrepareShapeDerivatives(
  *------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> FLD::XFluidFluid::CreateFieldTest()
 {
-  return Teuchos::rcp(new FLD::XFluidFluidResultTest(*this));
+  return Teuchos::rcp(new FLD::XFluidResultTest(*this));
 }
 
 /*------------------------------------------------------------------------------------------------*

@@ -17,6 +17,8 @@ Maintainer: Benedikt Schott
 #include <string>
 
 #include "xfluid.H"
+#include "xfluidfluid.H"
+#include "xfluidfluidnew.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -24,11 +26,37 @@ Maintainer: Benedikt Schott
 #include "xfluidresulttest.H"
 
 
-FLD::XFluidResultTest::XFluidResultTest( XFluid * xfluid )
+FLD::XFluidResultTest::XFluidResultTest( const FLD::XFluid& xfluid )
   : DRT::ResultTest("FLUID"),
-    discret_( *xfluid->discret_ ),
-    velnp_( xfluid->state_->velnp_ )
+    discret_( xfluid.discret_ ),
+    velnp_( xfluid.state_->velnp_ ),
+    node_from_zero_(true)
 {
+}
+
+FLD::XFluidResultTest::XFluidResultTest( const FLD::XFluidFluid& xfluid )
+  : DRT::ResultTest("FLUID"),
+    discret_( xfluid.discret_ ),
+    velnp_( xfluid.state_->velnp_ ),
+    coupl_discret_(xfluid.embdis_),
+    coupl_velnp_( xfluid.velnp_ ),
+    node_from_zero_(false)
+{
+  // Todo: remove this constructor
+  // Todo: remove the "node_from_zero" flag for fluidfluid:
+  // adapt the test cases!
+}
+
+FLD::XFluidResultTest::XFluidResultTest( const FLD::XFluidFluidNew& xfluid )
+  : DRT::ResultTest("FLUID"),
+    discret_( xfluid.discret_ ),
+    velnp_( xfluid.state_->velnp_ ),
+    coupl_discret_(xfluid.embedded_fluid_->Discretization()),
+    coupl_velnp_( xfluid.embedded_fluid_->Velnp()),
+    node_from_zero_(false)
+{
+  // Todo: remove the "node_from_zero" flag for fluidfluid:
+  // adapt the test cases!
 }
 
 void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
@@ -36,51 +64,70 @@ void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.ExtractString("DIS",dis);
-  if (dis != discret_.Name())
-    return;
 
   int node;
   res.ExtractInt("NODE",node);
-  node -= 1;
 
-  int havenode(discret_.HaveGlobalNode(node));
+  // Todo: remove!
+  if (node_from_zero_)
+    node -= 1;
+
+  if (dis == discret_->Name())
+  {
+    TestNode(res,nerr,test_count,node,discret_,velnp_);
+  }
+  else if (dis == coupl_discret_->Name())
+  {
+    TestNode(res,nerr,test_count,node,coupl_discret_,coupl_velnp_);
+  }
+  else
+    return;
+}
+
+void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count,
+  int node,
+  const Teuchos::RCP<const DRT::Discretization>& discret,
+  const Teuchos::RCP<const Epetra_Vector>& velnp)
+{
+
+  int havenode(discret->HaveGlobalNode(node));
   int isnodeofanybody(0);
-  discret_.Comm().SumAll(&havenode,&isnodeofanybody,1);
+  discret->Comm().SumAll(&havenode,&isnodeofanybody,1);
 
   if (isnodeofanybody==0)
   {
-    dserror("Node %d does not belong to discretization %s",node+1,discret_.Name().c_str());
+    dserror("Node %d does not belong to discretization %s",node+1,discret->Name().c_str());
   }
   else
   {
-    if (discret_.HaveGlobalNode(node))
+    if (discret->HaveGlobalNode(node))
     {
-      DRT::Node* actnode = discret_.gNode(node);
+      DRT::Node* actnode = discret->gNode(node);
 
-      if (actnode->Owner() != discret_.Comm().MyPID())
+      if (actnode->Owner() != discret->Comm().MyPID())
         return;
 
       double result = 0.;
 
-      const Epetra_BlockMap& velnpmap = velnp_->Map();
+      const Epetra_BlockMap& velnpmap = velnp->Map();
 
       std::string position;
       res.ExtractString("QUANTITY",position);
       if (position=="velx")
       {
-        result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,0))];
+        result = (*velnp)[velnpmap.LID(discret->Dof(actnode,0))];
       }
       else if (position=="vely")
       {
-        result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,1))];
+        result = (*velnp)[velnpmap.LID(discret->Dof(actnode,1))];
       }
       else if (position=="velz")
       {
-        result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,2))];
+        result = (*velnp)[velnpmap.LID(discret->Dof(actnode,2))];
       }
       else if (position=="pressure")
       {
-        result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,3))];
+        result = (*velnp)[velnpmap.LID(discret->Dof(actnode,3))];
       }
       else
       {

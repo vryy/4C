@@ -6692,7 +6692,7 @@ void FLD::XFluid::UpdateBoundaryValuesAfterCrack(
  *------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> FLD::XFluid::CreateFieldTest()
 {
-  return Teuchos::rcp(new FLD::XFluidResultTest(this));
+  return Teuchos::rcp(new FLD::XFluidResultTest(*this));
 }
 
 

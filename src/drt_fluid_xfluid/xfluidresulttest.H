@@ -12,8 +12,8 @@ Maintainer: Benedikt Schott
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifndef XFLUIDFLUIDRESULTTEST_H_
-#define XFLUIDFLUIDRESULTTEST_H_
+#ifndef XFLUIDRESULTTEST_H_
+#define XFLUIDRESULTTEST_H_
 
 
 #include "../drt_lib/drt_resulttest.H"
@@ -28,6 +28,8 @@ namespace FLD
 {
 // forward declarations
 class XFluid;
+class XFluidFluid;
+class XFluidFluidNew;
 
 /*!
   ResultTest class for XFluid
@@ -36,19 +38,44 @@ class XFluidResultTest : public DRT::ResultTest
 {
 public:
 
-  XFluidResultTest( XFluid * xfluid );
+  //! ctor for standard XFEM problems
+  XFluidResultTest( const FLD::XFluid& xfluid );
+
+  //! ctor for XFF-problems (to be removed!)
+  XFluidResultTest( const FLD::XFluidFluid& xfluid );
+
+  //! ctor for XFF-problems
+  XFluidResultTest( const FLD::XFluidFluidNew& xfluid );
 
   /// our version of nodal value tests
   /*!
     Possible position flags are "velx", "vely", "velz" and
     "pressure". With the obvious meaning.
    */
-  virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+  void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
 private:
-  DRT::Discretization & discret_;
-  Teuchos::RCP<Epetra_Vector> velnp_;
 
+  /// nodal value test (one can specify discretization and corresponding solution here!)
+  void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count,
+      int node,
+      const Teuchos::RCP<const DRT::Discretization>& discret,
+      const Teuchos::RCP<const Epetra_Vector>& velnp);
+
+  /// XFEM discretization
+  Teuchos::RCP<const DRT::Discretization> discret_;
+
+  /// solution vector for XFEM discretization
+  Teuchos::RCP<const Epetra_Vector> velnp_;
+
+  /// optional additional discretization for the same field (fluid-fluid coupling)
+  Teuchos::RCP<const DRT::Discretization> coupl_discret_;
+
+  /// solution vector for additional coupling discretization
+  Teuchos::RCP<const Epetra_Vector> coupl_velnp_;
+
+  /// take care of node numbering off-by-one (will be removed soon)
+  const bool node_from_zero_;
 };
 
 }

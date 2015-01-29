@@ -70,7 +70,7 @@ namespace FLD
   class XFluidFluid;
   class XFluidFluid : public TimInt
   {
-    friend class XFluidFluidResultTest;
+    friend class XFluidResultTest;
 
   public:
 

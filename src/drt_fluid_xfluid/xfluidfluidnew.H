@@ -43,7 +43,7 @@ namespace UTILS
 */
 class XFluidFluidNew : public XFluid
 {
-  friend class XFluidFluidResultTest;
+  friend class XFluidResultTest;
 public:
 
   //! ctor
