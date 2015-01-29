@@ -26,6 +26,7 @@ Maintainer: Matthias Mayr
 
 // Teuchos
 #include <Teuchos_Array.hpp>
+#include <Teuchos_FancyOStream.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -40,7 +41,6 @@ Maintainer: Matthias Mayr
 #include "linesearch_factory.H"
 
 #include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -69,6 +69,12 @@ void NLNSOL::NlnOperatorNGmres::Setup()
       "NLNSOL::NlnOperatorNGmres::Setup");
   Teuchos::TimeMonitor monitor(*time);
 
+  // create formatted output stream
+  Teuchos::RCP<Teuchos::FancyOStream> out =
+      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  out->setOutputToRootOnly(0);
+  Teuchos::OSTab tab(out, Indentation());
+
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
@@ -77,9 +83,9 @@ void NLNSOL::NlnOperatorNGmres::Setup()
   SetupLineSearch();
   SetupPreconditioner();
 
-  if (Comm().MyPID() == 0)
-    IO::cout << "Max window size has been set to " << GetMaxWindowSize()
-             << "." << IO::endl;
+  *out << LabelShort()
+       << ": Max window size has been set to " << GetMaxWindowSize()
+       << "." << std::endl;
 
   // Setup() has been called
   SetIsSetup();
@@ -139,6 +145,12 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
       "NLNSOL::NlnOperatorNGmres::ApplyInverse");
   Teuchos::TimeMonitor monitor(*time);
 
+  // create formatted output stream
+  Teuchos::RCP<Teuchos::FancyOStream> out =
+      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  out->setOutputToRootOnly(0);
+  Teuchos::OSTab tab(out, Indentation());
+
   int err = 0;
 
   // Make sure that Init() and Setup() have been called
@@ -157,11 +169,8 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
   double dotproduct = 0.0; // dot product of residual with search direction
   double fnorm2 = 1.0e+12; // L2-norm of residual
 
-  if (Comm().MyPID() == 0)
-  {
-    IO::cout << "Begin with Krylov acceleration, now. "
-             << "Starting iteration count is " << iter << "." << IO::endl;
-  }
+  *out << "Begin with Krylov acceleration, now. "
+       << "Starting iteration count is " << iter << "." << std::endl;
 
   // get local copies of solution and residual
   Teuchos::RCP<Epetra_MultiVector> xbar =
@@ -241,9 +250,7 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
       if (dotproduct <= 0.0) // ascent direction --> restart required
       {
         restart = true;
-        if (Comm().MyPID() == 0)
-          IO::cout << "Perform restart in iteration " << iter << "."
-                   << IO::endl;
+        *out << "Perform restart in iteration " << iter << "." << std::endl;
       }
       else // descent direction
       {
@@ -274,8 +281,7 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
         res.clear();
       }
 
-      if (Comm().MyPID() == 0)
-        IO::cout << "Current window size:   " << sol.size() << IO::endl;
+      *out << "Current window size:   " << sol.size() << std::endl;
 
       converged = NlnProblem()->ConvergenceCheck(*fbar, fnorm2);
 

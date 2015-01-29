@@ -43,6 +43,7 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 NLNSOL::NlnOperatorNonlinCG::NlnOperatorNonlinCG()
 : linesearch_(Teuchos::null),
+  nlnprec_(Teuchos::null),
   betatype_(INPAR::NLNSOL::NONLINCG::beta_none),
   restartevery_(50)
 {

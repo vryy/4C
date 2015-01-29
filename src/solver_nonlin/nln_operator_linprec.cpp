@@ -55,8 +55,8 @@
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-NLNSOL::NlnOperatorLinPrec::NlnOperatorLinPrec() :
-    linprec_(Teuchos::null)
+NLNSOL::NlnOperatorLinPrec::NlnOperatorLinPrec()
+: linprec_(Teuchos::null)
 {
   return;
 }

@@ -48,7 +48,8 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 NLNSOL::NlnOperatorNewton::NlnOperatorNewton()
 : linsolver_(Teuchos::null),
-  linesearch_(Teuchos::null)
+  linesearch_(Teuchos::null),
+  jac_(Teuchos::null)
 {
   return;
 }
