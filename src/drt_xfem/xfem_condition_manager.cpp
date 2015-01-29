@@ -660,6 +660,12 @@ void XFEM::MeshCouplingFSICrack::SetCutterDis(Teuchos::RCP<DRT::Discretization> 
 
   // set coupling discretization
   SetCouplingDiscretization();
+
+  // NOTE: do not create new state vectors, this is done in UpdateBoundaryValuesAfterCrack
+  // NOTE: do not create new specific state vectors, this is done in UpdateBoundaryValuesAfterCrack
+
+  // create new iforcecol vector as it is not updated in UpdateBoundaryValuesAfterCrack
+  iforcecol_ = LINALG::CreateVector(*cutter_dis_->DofColMap(),true);
 }
 
 
@@ -707,6 +713,9 @@ void XFEM::MeshCouplingFSICrack::UpdateBoundaryValuesAfterCrack(
     const std::map<int,int>& oldnewIds
 )
 {
+  // NOTE: these routines create new vectors, transfer data from the original to the new one and set the pointers to
+  // the newly created vectors
+
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, ivelnp_, oldnewIds );
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, iveln_,  oldnewIds );
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, ivelnm_, oldnewIds );
@@ -714,8 +723,11 @@ void XFEM::MeshCouplingFSICrack::UpdateBoundaryValuesAfterCrack(
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, idispnp_, oldnewIds );
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, idispn_,  oldnewIds );
 
-  //itrueresidual_ = LINALG::CreateVector(*boundarydis_->DofRowMap(),true);
+  // update necessary for partitioned FSI, where structure is solved first and
+  // crack values have been updated at the end of the last time step,
+  // Then interface forces have to be transfered to the new vector based on the new boundary discretization
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, itrueresidual_, oldnewIds );
+
 
   //TODO: I guess the following lines are unnecessary (Sudhakar)
   {
@@ -728,21 +740,6 @@ void XFEM::MeshCouplingFSICrack::UpdateBoundaryValuesAfterCrack(
   //boundarydis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_)));
   //boundary_output_ = boundarydis_->Writer();
 }
-
-
-//void XFEM::MeshCouplingFSICrack::PrepareCutterOutputCrack()
-//{
-//  // -------------------------------------------------------------------
-//  // prepare output
-//  // -------------------------------------------------------------------
-//
-//  cutter_dis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(cutter_dis_)));
-//
-//
-//
-//  cutter_output_ = cutter_dis_->Writer();
-//  cutter_output_->WriteMesh(0,0.0);
-//}
 
 
 

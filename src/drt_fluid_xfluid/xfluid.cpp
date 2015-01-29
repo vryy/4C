@@ -148,22 +148,6 @@ void FLD::XFluid::AssembleMatAndRHS( int itnum )
     discret_->SetState("velaf",state_->velnp_);
 
 
-  // TODO: shift this to CouplingManager in crack specific MeshCoupling,
-  // vectors are automatically created when a new boundary dis is set
-  if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
-  {
-    Teuchos::RCP<DRT::Discretization> cutter_dis_ = boundarydis_;
-
-    const Epetra_Map * cutterdofrowmap = cutter_dis_->DofRowMap();
-    ivelnp_ = LINALG::CreateVector(*cutterdofrowmap,true);
-    iveln_  = LINALG::CreateVector(*cutterdofrowmap,true);
-    ivelnm_ = LINALG::CreateVector(*cutterdofrowmap,true);
-
-    idispnp_ = LINALG::CreateVector(*cutterdofrowmap,true);
-    idispn_  = LINALG::CreateVector(*cutterdofrowmap,true);
-
-  }
-
   //----------------------------------------------------------------------
   int itemax = params_->get<int>("max nonlin iter steps");
 

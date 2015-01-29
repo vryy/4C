@@ -270,10 +270,11 @@ private:
 
   void CreateCutterDisFromCondition();
 
-  void InitStateVectors();
+
 
 protected:
 
+  void InitStateVectors();
 
   //------------------------------- vectors -----------------------------
   //TODO: these vectors are not required for Neumann and WDBC conditions, derive class
@@ -347,7 +348,7 @@ private:
   );
 
 
-  void InitStateVectors_FSI();
+
 
   void PrepareCutterOutput();
 
@@ -358,6 +359,8 @@ private:
   );
 
 protected:
+
+  void InitStateVectors_FSI();
 
   //------------------------------- vectors -----------------------------
   //! @name cutter-dis state vectors
