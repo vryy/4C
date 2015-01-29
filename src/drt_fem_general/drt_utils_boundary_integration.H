@@ -397,7 +397,7 @@ void SurfaceGPToParentGP(
         pqxg(iquad,1)= intpoints.Point(iquad)[0];
         pqxg(iquad,2)= intpoints.Point(iquad)[1];
       }
-      derivtrafo(0,2)= -1.0;
+      derivtrafo(0,2)= 1.0;
       derivtrafo(1,0)= 1.0;
       derivtrafo(2,1)= 1.0;
       break;

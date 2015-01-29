@@ -674,7 +674,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     // evaluate derivatives of parent element shape functions at current integration point in parent coordinate system
     DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv_loc);
     // transformation from parent element coordinate system to interface element coordinate system
-    pderiv.Multiply(derivtrafo,pderiv_loc);
+    pderiv.MultiplyTN(derivtrafo,pderiv_loc);
 
     //    std::cout<<"pderiv : "<<pderiv<<endl;
     //    std::cout<<"pderiv_loc : "<<pderiv_loc<<endl;
@@ -1944,7 +1944,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   {
     // get shape functions and derivatives in the plane of the element
     LINALG::Matrix<nenparent,1> pfunct(true);
-    LINALG::Matrix<my::nsd_,nenparent> pderiv;
     LINALG::Matrix<my::nsd_,nenparent> pderiv_loc;
 
     // coordinates of the current integration point
@@ -1953,8 +1952,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
 
     DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
     DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv_loc);
-
-    pderiv.Multiply(derivtrafo,pderiv_loc);
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
@@ -2708,7 +2705,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
           pweights,
           pdistype);
     }
-    pderiv.Multiply(derivtrafo,pderiv_loc);
+    pderiv.MultiplyTN(derivtrafo,pderiv_loc);
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
@@ -3440,7 +3437,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
 
     // get shape functions and derivatives in the plane of the element
     LINALG::Matrix<nenparent,1> pfunct(true);
-    LINALG::Matrix<my::nsd_,nenparent> pderiv;
     LINALG::Matrix<my::nsd_,nenparent> pderiv_loc;
 
     // coordinates of the current integration point
@@ -3465,7 +3461,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
           pweights,
           pdistype);
     }
-    pderiv.Multiply(derivtrafo,pderiv_loc);
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
@@ -3908,7 +3903,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
    // get shape functions and derivatives in the plane of the element
    LINALG::Matrix<nenparent,1> pfunct(true);
-   LINALG::Matrix<my::nsd_,nenparent> pderiv;
    LINALG::Matrix<my::nsd_,nenparent> pderiv_loc;
 
    // coordinates of the current integration point
@@ -3933,7 +3927,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
          pweights,
          pdistype);
    }
-   pderiv.Multiply(derivtrafo,pderiv_loc);
 
    // get Jacobian matrix and determinant w.r.t. spatial configuration
    // transposed jacobian "dx/ds"
@@ -4540,7 +4533,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
 
    // get shape functions and derivatives in the plane of the element
    LINALG::Matrix<nenparent,1> pfunct(true);
-   LINALG::Matrix<my::nsd_,nenparent> pderiv;
    LINALG::Matrix<my::nsd_,nenparent> pderiv_loc;
 
    // coordinates of the current integration point
@@ -4565,7 +4557,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
          pweights,
          pdistype);
    }
-   pderiv.Multiply(derivtrafo,pderiv_loc);
 
    // get Jacobian matrix and determinant w.r.t. spatial configuration
    // transposed jacobian "dx/ds"
@@ -4960,7 +4951,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
 
    // get shape functions and derivatives in the plane of the element
    LINALG::Matrix<nenparent,1> pfunct(true);
-   LINALG::Matrix<my::nsd_,nenparent> pderiv;
    LINALG::Matrix<my::nsd_,nenparent> pderiv_loc;
 
    // coordinates of the current integration point
@@ -4985,7 +4975,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
          pweights,
          pdistype);
    }
-   pderiv.Multiply(derivtrafo,pderiv_loc);
 
    // get Jacobian matrix and determinant w.r.t. spatial configuration
    // transposed jacobian "dx/ds"
