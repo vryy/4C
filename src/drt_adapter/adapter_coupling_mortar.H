@@ -112,13 +112,25 @@ namespace ADAPTER
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_Vector> MasterToSlave
     (
-        Teuchos::RCP<Epetra_Vector>   mv   ///< e.g. for FSI: structural interface displacements
+        Teuchos::RCP<Epetra_Vector> mv ///< e.g. for FSI: structural interface displacements
+    ) const;
+
+    /// transfer a dof vector from master to slave (const version)
+    Teuchos::RCP<Epetra_Vector> MasterToSlave
+    (
+        Teuchos::RCP<const Epetra_Vector> mv ///< e.g. for FSI: structural interface displacements
     ) const;
 
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Epetra_Vector> SlaveToMaster
     (
-        Teuchos::RCP<Epetra_Vector> sv   ///< e.g. for FSI: fluid interface loads
+        Teuchos::RCP<Epetra_Vector> sv ///< e.g. for FSI: fluid interface loads
+    ) const;
+
+    /// transfer a dof vector from slave to master (const version)
+    Teuchos::RCP<Epetra_Vector> SlaveToMaster
+    (
+        Teuchos::RCP<const Epetra_Vector> sv ///< e.g. for FSI: fluid interface loads
     ) const;
 
     /// the mortar interface itself

@@ -1,5 +1,15 @@
+/*----------------------------------------------------------------------------*/
+/*!
+\file fsi_utils.cpp
 
+<pre>
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289-10362
+</pre>
+*/
 
+/*----------------------------------------------------------------------------*/
 
 #include <map>
 #include <set>
@@ -20,14 +30,6 @@
 #include <NOX.H>
 #include <NOX_Epetra.H>
 #include <Epetra_SerialDenseMatrix.h>
-
-//// we need to know all element types for the ale mesh creation
-//#include "../drt_fluid_ele/fluid_ele.H"
-//
-//#include "../drt_ale2/ale2.H"
-//#include "../drt_ale2/ale2_nurbs.H"
-//#include "../drt_ale3/ale3.H"
-//#include "../drt_ale3/ale3_nurbs.H"
 
 #include "../drt_so3/so_surface.H"
 #include "../drt_so3/so_line.H"
@@ -434,7 +436,7 @@ void FSI::UTILS::SlideAleUtils::EvaluateFluidMortar
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::UTILS::SlideAleUtils::InterpolateFluid
 (
-    Teuchos::RCP<Epetra_Vector> uold
+    Teuchos::RCP<const Epetra_Vector> uold
 )
 {
   Teuchos::RCP<Epetra_Vector> unew = coupff_->MasterToSlave(uold);

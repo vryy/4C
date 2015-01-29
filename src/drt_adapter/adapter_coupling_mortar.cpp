@@ -1285,12 +1285,51 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
   return sv;
 }
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
 (
   Teuchos::RCP<Epetra_Vector> sv
+) const
+{
+  Epetra_Vector tmp = Epetra_Vector(M_->RangeMap());
+  std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
+
+  Teuchos::RCP<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(*masterdofrowmap_));
+  if (M_->Multiply(true, tmp, *mv))
+    dserror( "M^{T}*sv multiplication failed" );
+
+  return mv;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
+(
+  Teuchos::RCP<const Epetra_Vector> mv
+) const
+{
+  dsassert( masterdofrowmap_->SameAs( mv->Map() ),
+      "Vector with master dof map expected" );
+
+  Epetra_Vector tmp = Epetra_Vector(M_->RowMap());
+
+  if (M_->Multiply(false, *mv, tmp))
+    dserror( "M*mv multiplication failed" );
+
+  Teuchos::RCP<Epetra_Vector> sv = Teuchos::rcp( new Epetra_Vector( *slavedofrowmap_ ) );
+
+  if ( Dinv_->Multiply( false, tmp, *sv ) )
+    dserror( "D^{-1}*v multiplication failed" );
+
+  return sv;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
+(
+  Teuchos::RCP<const Epetra_Vector> sv
 ) const
 {
   Epetra_Vector tmp = Epetra_Vector(M_->RangeMap());

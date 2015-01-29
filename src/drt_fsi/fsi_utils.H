@@ -1,5 +1,17 @@
+/*----------------------------------------------------------------------------*/
+/*!
+\file fsi_utils.H
 
+\brief Utilities for FSI problems
 
+<pre>
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289-10362
+</pre>
+*/
+
+/*----------------------------------------------------------------------------*/
 
 #ifndef FSI_UTILS_H
 #define FSI_UTILS_H
@@ -109,7 +121,7 @@ namespace FSI
       /// use fluid-fluid mortar interface to interpolate between fluid quantities before and after sliding
       Teuchos::RCP<Epetra_Vector> InterpolateFluid
       (
-        Teuchos::RCP<Epetra_Vector> uold   ///< fluid velocity in configuration before sliding
+        Teuchos::RCP<const Epetra_Vector> uold   ///< fluid velocity in configuration before sliding
       );
 
       /// write history vectors for restart
@@ -214,4 +226,4 @@ namespace FSI
   }
 }
 
-#endif
+#endif // FSI_UTILS_H
