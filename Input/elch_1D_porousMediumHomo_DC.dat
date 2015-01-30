@@ -41,7 +41,6 @@ TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
 UPRES                           1
-BLOCKPRECOND                    No
 MATID                           1
 WRITEFLUX                       totalflux_boundary
 WRITEFLUX_IDS                   1 2

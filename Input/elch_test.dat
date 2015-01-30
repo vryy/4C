@@ -52,7 +52,6 @@ WRITEFLUX                       totalflux_domain
 OUTMEAN                         Yes
 UPRES                           1
 MATID                           4
-BLOCKPRECOND                    No
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-15
 ITEMAX                          50

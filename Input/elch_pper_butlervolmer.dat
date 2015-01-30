@@ -85,7 +85,6 @@ VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
 OUTMEAN                         Yes
 UPRES                           1
-BLOCKPRECOND                    Yes
 MATID                           5
 SCATRATYPE                      Elch
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
@@ -98,6 +97,7 @@ ADAPTCONV_BETTER                0.1
 ELCHTYPE                        Nernst_Planck
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
 EQUPOT                          ENC
+BLOCKPRECOND                    Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

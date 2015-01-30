@@ -79,7 +79,6 @@ CONV_HEAT_TRANS                 no
 SKIPINITDER                     no
 INITPOTCALC                     no
 FSSUGRDIFF                      No
-BLOCKPRECOND                    NO
 SCATRATYPE                      Advanced_Reaction
 MESHTYING                       no
 LINEAR_SOLVER                   1

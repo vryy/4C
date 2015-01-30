@@ -147,7 +147,6 @@ CONV_HEAT_TRANS                 no
 SKIPINITDER                     no
 INITPOTCALC                     no
 FSSUGRDIFF                      No
-BLOCKPRECOND                    NO
 SCATRATYPE                      LevelSet
 MESHTYING                       no
 ONLYPOTENTIAL                   no

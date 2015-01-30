@@ -186,7 +186,6 @@ COUPLED_LINEAR_SOLVER           1
 LINEAR_SOLVER1                  4
 LINEAR_SOLVER2                  3
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-BLOCKPRECOND                    NO
 CALCERROR                       No
 CONVFORM                        conservative
 GAMMA                           0.5

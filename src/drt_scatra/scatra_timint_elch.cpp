@@ -23,7 +23,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 #include "../drt_scatra/scatra_timint_meshtying_strategy_fluid_elch.H"
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i_elch.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_std_elch.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
@@ -1041,7 +1041,7 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params_,"FSSUGRDIFF"))!= INPAR::SCATRA::fssugrdiff_no)
       dserror("Subgrid diffusivity is not supported by the ELCH diffusion-conduction framework!!");
 
-    if((DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))== true)
+    if((DRT::INPUT::IntegralValue<int>(*elchparams_,"BLOCKPRECOND"))== true)
           dserror("Block preconditioner is not supported so far!!");
 
     // Parameters defined in "SCALAR TRANSPORT DYNAMIC"
@@ -1148,7 +1148,7 @@ void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
 
   // scatra-scatra interface coupling
   else if(s2icoupling_)
-    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this));
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2IElch(this));
 
   // standard case without meshtying
   else

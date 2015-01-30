@@ -62,7 +62,6 @@ SCATRATYPE                      LevelSet
 LINEAR_SOLVER                   9
 ALPHA_F                         0.5
 ALPHA_M                         0.5
-BLOCKPRECOND                    NO
 CALCERROR                       No                              // No, Kwok_Wu, ConcentricCylinders
 CONVFORM                        convective                      // convective, conservative
 FSSUGRDIFF                      No                              // No, artificial, Smagorinsky_all, Smagorinsky_small

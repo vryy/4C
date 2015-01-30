@@ -60,7 +60,6 @@ WRITEFLUX                       No
 MATID                           1
 INITPOTCALC                     yes
 SKIPINITDER                     no
-BLOCKPRECOND                    No
 SCATRATYPE                      Elch
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 //

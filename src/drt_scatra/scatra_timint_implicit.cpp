@@ -297,10 +297,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // -------------------------------------------------------------------
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  // safety check
-  if (prbtype != prb_elch and DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
-    dserror("Block preconditioning is only for electrochemistry problems!");
-
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
     // do not save the graph if fine-scale subgrid diffusivity is used in non-incremental case (very special case)
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()),27));

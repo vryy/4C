@@ -47,7 +47,6 @@ TIMESTEP                        0.05
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
 UPRES                           1
-BLOCKPRECOND                    No
 MATID                           1
 WRITEFLUX                       No
 OUTMEAN                         Yes

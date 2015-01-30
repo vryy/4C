@@ -5394,9 +5394,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::SCATRA::fssugrdiff_smagorinsky_small),
                                &scatradyn);
 
-  BoolParameter("BLOCKPRECOND","NO",
-      "Switch to block-preconditioned family of solvers, only works with block preconditioners like CheapSIMPLE!",&scatradyn);
-
   setStringToIntegralParameter<int>("SCATRATYPE","Undefined",
                                "Type of scalar transport problem",
                                tuple<std::string>(
@@ -5827,6 +5824,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::ELCH::equpot_laplace,
                                    INPAR::ELCH::equpot_divi),
                                   &elchcontrol);
+  BoolParameter("BLOCKPRECOND","NO",
+      "Switch to block-preconditioned family of solvers, only works with block preconditioners like CheapSIMPLE!",&elchcontrol);
 
   /*----------------------------------------------------------------------*/
   // attention: this list is a sublist of elchcontrol

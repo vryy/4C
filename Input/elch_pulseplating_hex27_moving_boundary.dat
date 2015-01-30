@@ -69,7 +69,6 @@ VELFUNCNO                       1
 VELOCITYFIELD Navier_Stokes //function
 WRITEFLUX                       diffusiveflux_boundary        // do not use totalflux_boundary due to introduction of mesh convection!
 UPRES                           1
-BLOCKPRECOND                    Yes
 MATID                           2
 SOLVERTYPE                      nonlinear
 OUTMEAN                         Yes
@@ -95,6 +94,7 @@ MOVBOUNDARYTHETA                1.0                           // backward-Euler 
 MOLARVOLUME                     10.0                          // 7.11E-3 // molar volume of copper: V_m = M/rho [mm^3/\mu mol]
 //                                                             // Wikipedia: 7,11 x 10 a 6 m3/mol
 EQUPOT                          ENC
+BLOCKPRECOND                    Yes
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.0002
 NUMSTEP                         21

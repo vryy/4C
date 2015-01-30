@@ -168,7 +168,6 @@ OUTPUT_GMSH                     No
 NEUMANNINFLOW                   no
 CONV_HEAT_TRANS                 no
 INITPOTCALC                     no
-BLOCKPRECOND                    NO
 MESHTYING                       no
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          10

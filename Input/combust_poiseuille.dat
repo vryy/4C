@@ -114,7 +114,6 @@ VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
 OUTMEAN                         No
 UPRES                           1
-BLOCKPRECOND No //Yes
 MATID                           2
 ALPHA_F                         1.0
 ALPHA_M                         1.0

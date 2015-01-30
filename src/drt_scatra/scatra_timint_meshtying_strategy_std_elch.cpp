@@ -37,7 +37,7 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
 {
   Teuchos::RCP<LINALG::SparseOperator> systemmatrix;
 
-  if(DRT::INPUT::IntegralValue<int>(*(scatratimint_->ScatraParameterList()),"BLOCKPRECOND"))
+  if(DRT::INPUT::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()),"BLOCKPRECOND"))
   {
     // safety checks
     if(ElchTimInt()->EquPot() == INPAR::ELCH::equpot_undefined)

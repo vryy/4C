@@ -78,7 +78,6 @@ VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_boundary
 OUTMEAN                         Yes
 UPRES                           1
-BLOCKPRECOND                    No
 MATID                           2
 SCATRATYPE                      ConvectionDiffusion           // explicitly change to con-dif for one scalar!!!
 CONVFORM                        conservative                  // just to be tested

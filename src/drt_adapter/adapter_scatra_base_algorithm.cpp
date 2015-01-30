@@ -254,7 +254,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     Teuchos::RCP<Teuchos::ParameterList> elchparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
 
     // create a 2nd solver for block-preconditioning if chosen from input
-    if (DRT::INPUT::IntegralValue<int>(scatradyn,"BLOCKPRECOND"))
+    if (DRT::INPUT::IntegralValue<int>(*elchparams,"BLOCKPRECOND"))
     {
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
       INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");

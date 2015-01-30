@@ -51,7 +51,6 @@ EQUPOT                          ENC
 LINEAR_SOLVER                   1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
-BLOCKPRECOND                    No
 CALCERROR                       No
 CONVFORM                        convective
 FSSUGRDIFF                      No

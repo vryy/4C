@@ -33,7 +33,6 @@ TIMESTEP                        0.5
 VELFUNCNO                       0
 VELOCITYFIELD                   zero
 UPRES                           10
-BLOCKPRECOND                    No
 MATID                           1
 WRITEFLUX                       totalflux_boundary
 OUTMEAN                         Yes

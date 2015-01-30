@@ -48,7 +48,6 @@ MATID                           2
 SKIPINITDER                     No
 OUTPUT_GMSH                     No
 OUTMEAN                         Yes
-BLOCKPRECOND                    NO
 CALCERROR                       No
 CONVFORM                        conservative
 INITPOTCALC                     no

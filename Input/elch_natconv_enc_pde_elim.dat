@@ -89,7 +89,6 @@ VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
 OUTMEAN                         Yes
 UPRES                           1
-BLOCKPRECOND No //Yes
 MATID                           5
 SCATRATYPE                      Elch             // we eliminated the 2nd ion species!
 NATURAL_CONVECTION              Yes

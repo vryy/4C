@@ -68,7 +68,6 @@ PERIODSTOSTEADYSTATE            1
 //PERIODSTOFSIUPDATE              2
 //FSIUPDATETOL                    0.1
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-BLOCKPRECOND                    NO
 CALCERROR                       No
 CONVFORM                        conservative
 GAMMA                           0.5

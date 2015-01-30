@@ -37,7 +37,6 @@ INITIALFIELD                    field_by_condition
 WRITEFLUX                       totalflux_boundary
 CONVFORM                        convective
 SKIPINITDER                     no
-BLOCKPRECOND                    NO
 SCATRATYPE                      ConvectionDiffusion
 LINEAR_SOLVER                   1
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR

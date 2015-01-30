@@ -121,6 +121,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! return constant F/RT
   const double FRT() const {return frt_;}
 
+  //! return elch parameter list
+  Teuchos::RCP<Teuchos::ParameterList> ElchParameterList() { return elchparams_;}
+
   protected:
 
   /*========================================================================*/

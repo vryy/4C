@@ -38,7 +38,6 @@ VELOCITYFIELD                   function
 WRITEFLUX                       totalflux_domain
 UPRES                           1
 CALCERROR                       No
-BLOCKPRECOND                    No
 MATID                           3
 MESHTYING                       Condensed_Smat
 OUTMEAN                         yes
