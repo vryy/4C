@@ -3,8 +3,8 @@
 
 \brief wrapper for the combust3 element
 
-	This file contains the element specific service routines like
-	Pack, Unpack, NumDofPerNode etc.
+  This file contains the element specific service routines like
+  Pack, Unpack, NumDofPerNode etc.
 
 <pre>
 Maintainer: Ursula Rasthofer
@@ -58,7 +58,7 @@ public:
 
   std::string Name() const { return "Combust3Type"; }
 
-  static Combust3Type & Instance() { return instance_; };
+  static Combust3Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

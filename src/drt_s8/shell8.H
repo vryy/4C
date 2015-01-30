@@ -9,7 +9,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SHELL8
 #ifndef SHELL8_H
 #define SHELL8_H
 
@@ -47,7 +46,7 @@ public:
 
   std::string Name() const { return "Shell8Type"; }
 
-  static Shell8Type & Instance() { return instance_; };
+  static Shell8Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -825,4 +824,3 @@ private:
 
 
 #endif  // #ifndef SHELL8_H
-#endif  // #ifdef D_SHELL8

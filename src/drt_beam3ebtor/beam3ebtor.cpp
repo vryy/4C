@@ -26,6 +26,11 @@ Maintainer: Christoph Meier
 
 DRT::ELEMENTS::Beam3ebtorType DRT::ELEMENTS::Beam3ebtorType::instance_;
 
+DRT::ELEMENTS::Beam3ebtorType& DRT::ELEMENTS::Beam3ebtorType::Instance()
+{
+  return instance_;
+}
+
 
 DRT::ParObject* DRT::ELEMENTS::Beam3ebtorType::Create( const std::vector<char> & data )
 {
@@ -35,9 +40,9 @@ DRT::ParObject* DRT::ELEMENTS::Beam3ebtorType::Create( const std::vector<char> &
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebtorType::Create(const std::string eletype,
-																 															const std::string eledistype,
-																 															const int id,
-																 															const int owner )
+                                                               const std::string eledistype,
+                                                               const int id,
+                                                               const int owner )
 {
   if ( eletype=="BEAM3EBTOR" )
   {
@@ -155,7 +160,7 @@ void DRT::ELEMENTS::Beam3ebtor::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3ebtor::Shape() const
 {
-			return line2;
+      return line2;
 }
 
 
@@ -249,71 +254,71 @@ void DRT::ELEMENTS::Beam3ebtor::SetUpReferenceGeometry(const std::vector<double>
   //TODO: Tref_ and jacobi are constant over the whole element and must therefore not be calculate on each gauss point and each node!!!
   if(!isinit_ || secondinit)
   {
-	  isinit_ = true;
+    isinit_ = true;
 
-	  //Get DiscretizationType
-	  DRT::Element::DiscretizationType distype = Shape();
+    //Get DiscretizationType
+    DRT::Element::DiscretizationType distype = Shape();
 
-	  //Get integrationpoints for exact integration
-	  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebtor);
+    //Get integrationpoints for exact integration
+    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebtor);
 
-	  Tref_.resize(gausspoints.nquad);
+    Tref_.resize(gausspoints.nquad);
 
-	  //create Matrix for the derivates of the shapefunctions at the GP
-	  LINALG::Matrix<1,nnode> shapefuncderiv;
+    //create Matrix for the derivates of the shapefunctions at the GP
+    LINALG::Matrix<1,nnode> shapefuncderiv;
 
-	  //Loop through all GPs and compute jacobi at the GPs
-	  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-	  {
-			//Get position xi of GP
-			const double xi = gausspoints.qxg[numgp][0];
+    //Loop through all GPs and compute jacobi at the GPs
+    for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+    {
+      //Get position xi of GP
+      const double xi = gausspoints.qxg[numgp][0];
 
-			//Get derivatives of shapefunctions at GP --> for simplicity here are Lagrange polynomials instead of
-			//Hermite polynomials used to calculate the reference geometry. Since the reference geometry for this
-			//beam element must always be a straight line there is no difference between theses to types of interpolation functions.
-			DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
+      //Get derivatives of shapefunctions at GP --> for simplicity here are Lagrange polynomials instead of
+      //Hermite polynomials used to calculate the reference geometry. Since the reference geometry for this
+      //beam element must always be a straight line there is no difference between theses to types of interpolation functions.
+      DRT::UTILS::shape_function_1D_deriv1(shapefuncderiv,xi,distype);
 
-			Tref_[numgp].Clear();
+      Tref_[numgp].Clear();
 
-			//calculate vector dxdxi
-			for(int node=0; node<nnode; node++)
-			{
-				for(int dof=0; dof<3 ; dof++)
-				{
-					Tref_[numgp](dof) += shapefuncderiv(node) * xrefe[3*node+dof];
-				}//for(int dof=0; dof<3 ; dof++)
-			}//for(int node=0; node<nnode; node++)
+      //calculate vector dxdxi
+      for(int node=0; node<nnode; node++)
+      {
+        for(int dof=0; dof<3 ; dof++)
+        {
+          Tref_[numgp](dof) += shapefuncderiv(node) * xrefe[3*node+dof];
+        }//for(int dof=0; dof<3 ; dof++)
+      }//for(int node=0; node<nnode; node++)
 
-			//Store length factor for every GP
-			//note: the length factor jacobi replaces the determinant and refers to the reference configuration by definition
-			//for this element type considering initially straight beams the factor jacobi_ is constant over the whole elment
-			//with a value of l/2
-			jacobi_= Tref_[numgp].Norm2();
+      //Store length factor for every GP
+      //note: the length factor jacobi replaces the determinant and refers to the reference configuration by definition
+      //for this element type considering initially straight beams the factor jacobi_ is constant over the whole elment
+      //with a value of l/2
+      jacobi_= Tref_[numgp].Norm2();
 
-			Tref_[numgp].Scale(1/jacobi_);
+      Tref_[numgp].Scale(1/jacobi_);
 
-		}//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+    }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
 
-		//compute tangent at each node
-		double norm2 = 0.0;
+    //compute tangent at each node
+    double norm2 = 0.0;
 
-		Tref_.resize(nnode);
+    Tref_.resize(nnode);
 
-		for(int node = 0; node<nnode ; node++)
-		{
+    for(int node = 0; node<nnode ; node++)
+    {
 
-			Tref_[node].Clear();
-			for(int dof = 0; dof< 3 ; dof++ )
-			{
-				Tref_[node](dof) =  xrefe[3+dof] - xrefe[dof];
-			}
-			norm2 = Tref_[node].Norm2();
-			Tref_[node].Scale(1/norm2);
+      Tref_[node].Clear();
+      for(int dof = 0; dof< 3 ; dof++ )
+      {
+        Tref_[node](dof) =  xrefe[3+dof] - xrefe[dof];
+      }
+      norm2 = Tref_[node].Norm2();
+      Tref_[node].Scale(1/norm2);
 
-		}
+    }
 
-		return;
+    return;
 
   }//if(!isinit_)
 

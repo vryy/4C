@@ -10,8 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifdef D_SHELL8
-
 #include "shell8.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
@@ -21,6 +19,12 @@ Maintainer: Michael Gee
 
 
 DRT::ELEMENTS::Shell8Type DRT::ELEMENTS::Shell8Type::instance_;
+
+
+DRT::ELEMENTS::Shell8Type& DRT::ELEMENTS::Shell8Type::Instance()
+{
+  return instance_;
+}
 
 
 DRT::ParObject* DRT::ELEMENTS::Shell8Type::Create( const std::vector<char> & data )
@@ -352,5 +356,3 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Surfaces()
   surfaces[0]= Teuchos::rcp(this, false);
   return surfaces;
 }
-
-#endif  // #ifdef D_SHELL8

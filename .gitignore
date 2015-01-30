@@ -82,3 +82,6 @@ tags
 
 #vim
 *.swp
+
+# Modules
+modules/contact_module/src/

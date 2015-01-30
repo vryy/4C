@@ -24,6 +24,12 @@ Maintainer: Ursula Rasthofer
 DRT::ELEMENTS::Combust3Type DRT::ELEMENTS::Combust3Type::instance_;
 
 
+DRT::ELEMENTS::Combust3Type& DRT::ELEMENTS::Combust3Type::Instance()
+{
+  return instance_;
+}
+
+
 DRT::ParObject* DRT::ELEMENTS::Combust3Type::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::Combust3* object = new DRT::ELEMENTS::Combust3(-1,-1);
