@@ -26,6 +26,13 @@ DRT::ELEMENTS::AcouType DRT::ELEMENTS::AcouType::instance_;
 DRT::ELEMENTS::AcouBoundaryType DRT::ELEMENTS::AcouBoundaryType::instance_;
 DRT::ELEMENTS::AcouIntFaceType DRT::ELEMENTS::AcouIntFaceType::instance_;
 
+
+DRT::ELEMENTS::AcouIntFaceType& DRT::ELEMENTS::AcouIntFaceType::Instance()
+{
+  return instance_;
+}
+
+
 DRT::ParObject* DRT::ELEMENTS::AcouType::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::Acou* object = new DRT::ELEMENTS::Acou(-1,-1);

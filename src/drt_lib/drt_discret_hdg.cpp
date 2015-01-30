@@ -391,8 +391,8 @@ void DRT::DiscretizationHDG::AssignGlobalIDs(const Epetra_Comm& comm,
     {
       iter->second->SetId(gid);
       // TODO visc eles, fluid hdg eles
-      DRT::ELEMENTS::AcouIntFace* acouele = dynamic_cast<DRT::ELEMENTS::AcouIntFace*>(iter->second.get());
-      if(acouele!=NULL) acouele->SetDegree(degree);
+      Teuchos::RCP<DRT::ELEMENTS::AcouIntFace> acouele = Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::AcouIntFace>(iter->second);
+      if(acouele!=Teuchos::null) acouele->SetDegree(degree);
 
       finalelements[gid] = iter->second;
     }

@@ -711,7 +711,7 @@ public:
 
   std::string Name() const { return "AcouIntFaceType"; }
 
-  static AcouIntFaceType & Instance() { return instance_; };
+  static AcouIntFaceType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
