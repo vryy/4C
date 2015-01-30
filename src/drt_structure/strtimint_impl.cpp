@@ -3874,8 +3874,8 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
   // add Windkessel norm
   if (windkman_->HaveWindkessel())
   {
-    oss << std::setw(18)<< "abs-wkres-norm";
-    oss << std::setw(18)<< "abs-wkinc-norm";
+    oss << std::setw(16)<< "abs-wkres-norm";
+    oss << std::setw(16)<< "abs-wkinc-norm";
   }
 
   if (itertype_==INPAR::STR::soltech_ptc)
@@ -4040,8 +4040,8 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
   // add Windkessel norm
   if (windkman_->HaveWindkessel())
   {
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << normwindk_;
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << normwindkdofincr_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normwindk_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normwindkdofincr_;
   }
 
   if (itertype_==INPAR::STR::soltech_ptc)
