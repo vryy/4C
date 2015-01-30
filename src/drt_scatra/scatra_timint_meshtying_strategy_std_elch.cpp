@@ -40,6 +40,8 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
   if(DRT::INPUT::IntegralValue<int>(*(scatratimint_->ScatraParameterList()),"BLOCKPRECOND"))
   {
     // safety checks
+    if(ElchTimInt()->EquPot() == INPAR::ELCH::equpot_undefined)
+      dserror("Type of closing equation for electric potential not correctly set!");
     if(ElchTimInt()->EquPot() != INPAR::ELCH::equpot_enc)
       dserror("Special ELCH assemble strategy for block-matrix will not assemble A_11 block!");
     if(scatratimint_->NumScal() < 1)

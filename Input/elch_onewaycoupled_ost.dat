@@ -34,8 +34,6 @@ FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function
@@ -93,7 +91,7 @@ INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 MAXTIME                         1000
 NUMSTEP                         10
-RESTARTEVRY                     10
+RESTARTEVRY                     2
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1.0
@@ -107,21 +105,17 @@ MATID                           5
 ALPHA_F                         1.0
 ALPHA_M                         1.0
 GAMMA                           0.66
+SCATRATYPE                      Elch
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
-ITEMAX                          15
+ITEMAX                          10
 EXPLPREDICT                     no                            // yes -> oscillations for neutral
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ----------------------------------------------------------------ELCH CONTROL
-ITEMAX                          10
-MAXTIME                         1000
-NUMSTEP                         10
-RESTARTEVRY                     2
-TIMESTEP                        1.0
-UPRES                           1
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
-MAGNETICFIELD_FUNCNO            4                             // magnetic field
+EQUPOT                          ENC
+ELCHTYPE                        Nernst_Planck
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -261,8 +255,6 @@ CURVE2 on EXPR FUNC 0.5*cos(pi*t/6.0)+0.5 t1 0.0 t2 6.0
 ----------------------------------------------------------------------CURVE3
 CURVE3 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 10.0
 //time curve with horizontal slopes (from 0 to 1)
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0.0 0 FUNCTION 0.75*64*(0.125-y)*(0.125+y)
 //inflow velocity profile with U_max = 0.75
@@ -280,8 +272,6 @@ FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 //initial pot. field
 FUNCT4 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //magnetic field
 FUNCT4 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //magnetic field
 FUNCT4 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0 //magnetic field
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 // these results have to be the same for
 // Af_Gen_alpha or Gen_Alpha or OneStepTheta for the fluid !!!
@@ -312,18 +302,6 @@ NDPOINT                         1
 NDLINE                          0
 NDSURF                          13
 NDVOL                           0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           10
 //                              back
@@ -346,18 +324,6 @@ E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 3 none none none FUNCT 1 
 E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 //                              cathode
 E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE                           0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF                           0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE                           0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           2
 //                              inflow
@@ -366,75 +332,18 @@ E 8 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.5 1.0 0.0 CURVE none none none none FUNCT
 //E 9 - 6 1 1 0 0 0 0 1.0 1.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // cathode (for neutral species use a Dirichlet b.c.)
 E 10 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 1.0 0.0 CURVE none none 2 none FUNCT 0 0 0 0
-------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
-DLINE                           0
 ------------------------------------------ELECTRODE KINETICS SURF CONDITIONS
 DSURF                           2
 //                              anode
-E 9 - pot 1.0 curve 1 numscal 3 stoich -1 0 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.853399 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 //i0 = 0.01
+E 9 - pot 1.0 curve 1 numscal 3 stoich -1 0 0 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.853399 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 END//i0 = 0.01
 //                              cathode
-E 10 - pot 0.0 curve 1 numscal 3 stoich -1 0 0 e- 1 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.853399 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 //i0 = 0.01
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
-DLINE                           0
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
-DSURF                           0
-------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-DSURF                           0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF                           0
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF                           0
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-DSURF                           0
---------------------------------------------------SURFACE TENSION CONDITIONS
-DSURF                           0
--------------------------------------------------------SURFACTANT CONDITIONS
-DSURF                           0
------------------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
-DSURF                           0
--------------------------------------------------------MICROSCALE CONDITIONS
-DSURF                           0
-------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
-DLINE                           0
-------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
-DSURF                           0
--------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
-DLINE                           0
--------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
-DSURF                           0
------------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
-DSURF                           0
--------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
-DSURF                           0
---------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
-DSURF                           0
-----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
-DLINE                           0
--------------------------------------------------DESIGN LINE AREA MONITOR 2D
-DLINE                           0
----------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
-DSURF                           0
-------------------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
-DLINE                           0
---------------------------------------------DESIGN FLOW RATE LINE CONDITIONS
-DLINE                           0
+E 10 - pot 0.0 curve 1 numscal 3 stoich -1 0 0 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.853399 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 END//i0 = 0.01
 --------------------------------------------DESIGN FLOW RATE SURF CONDITIONS
 DSURF                           2
 E 8 - 1
 E 5 - 2
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 29 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 2 DSURFACE 1
 NODE 3 DSURFACE 1
@@ -2170,7 +2079,6 @@ NODE 1201 DSURFACE 10
 NODE 1202 DSURFACE 10
 NODE 1231 DSURFACE 10
 NODE 1232 DSURFACE 10
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 -1.25000000e-01 9.99999978e-03
 NODE 2 COORD 0.00000000e+00 -1.25000000e-01 -9.99999978e-03
@@ -3642,7 +3550,6 @@ NODE 1467 COORD 8.00000012e-01 1.16707295e-01 -9.99999978e-03
 NODE 1468 COORD 8.00000012e-01 1.16707295e-01 9.99999978e-03
 NODE 1469 COORD 8.00000012e-01 1.25000000e-01 -9.99999978e-03
 NODE 1470 COORD 8.00000012e-01 1.25000000e-01 9.99999978e-03
-----------------------------------------------------------STRUCTURE ELEMENTS
 --------------------------------------------------------------FLUID ELEMENTS
 1 FLUID3 HEX8 1 2 3 4 5 6 7 8 MAT 1 NA Euler GP 2 2 2
 2 FLUID3 HEX8 4 3 9 10 8 7 11 12 MAT 1 NA Euler GP 2 2 2
@@ -4316,7 +4223,4 @@ NODE 1470 COORD 8.00000012e-01 1.25000000e-01 9.99999978e-03
 670 FLUID3 HEX8 1434 1433 1435 1436 1464 1463 1465 1466 MAT 1 NA Euler GP 2 2 2
 671 FLUID3 HEX8 1436 1435 1437 1438 1466 1465 1467 1468 MAT 1 NA Euler GP 2 2 2
 672 FLUID3 HEX8 1438 1437 1439 1440 1468 1467 1469 1470 MAT 1 NA Euler GP 2 2 2
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------------END
-//                              END
