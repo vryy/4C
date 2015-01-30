@@ -233,6 +233,8 @@ namespace INPAR
       divcont_repeat_step,        ///< repeat time step
       divcont_halve_step,         ///< halve time step and carry on with simulation
       divcont_adapt_step,         ///< adapt (halve or double) time step and carry on with simulation
+      divcont_rand_adapt_step,    ///< adapt randomly time step and carry on with simulation
+      divcont_rand_adapt_step_ele_err,    ///< adapt randomly time step and carry on with simulation, including acceptance of element errors in form of negative Jacobian determinant
       divcont_repeat_simulation,  ///< repeat the whole simulation
     };
 
@@ -259,6 +261,12 @@ namespace INPAR
       case  divcont_adapt_step :
         return "adapt_step";
         break;
+      case  divcont_rand_adapt_step :
+        return "rand_adapt_step";
+        break;
+      case  divcont_rand_adapt_step_ele_err :
+        return "rand_adapt_step_ele_err";
+        break;
       case divcont_repeat_simulation :
          return "repeat_simulation";
          break;
@@ -273,7 +281,8 @@ namespace INPAR
     {
       conv_success = 0,        ///< converged successfully
       conv_nonlin_fail = 1,    ///< nonlinear solution procedure failed
-      conv_lin_fail = 2        ///< linear system failed
+      conv_lin_fail = 2,        ///< linear system failed
+      conv_ele_fail = 3        ///< failure in element in form of negative Jac. det.
     };
 
 

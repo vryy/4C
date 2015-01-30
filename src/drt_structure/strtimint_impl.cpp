@@ -1618,9 +1618,10 @@ int STR::TimIntImpl::NewtonFull()
   // normdisi_ was already set in predictor; this is strictly >0
   timer_->ResetStartTime();
 
+  int element_error= 0;
   int linsolve_error= 0;
   // equilibrium iteration loop
-  while ( ( (not Converged() and (not linsolve_error)) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+  while ( ( (not Converged() and (not linsolve_error) and (not element_error)) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
     // make negative residual
     fres_->Scale(-1.0);
@@ -1684,9 +1685,22 @@ int STR::TimIntImpl::NewtonFull()
     // create empty parameter list
     Teuchos::ParameterList params;
 
+    // set flag for element error in form of a negative Jacobian determinant
+    // in parameter list in case of potential continuation
+    if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+    {
+      params.set<bool>("tolerate_errors",true);
+      params.set<bool>("eval_error",false);
+    }
+
     // compute residual forces #fres_ and stiffness #stiff_
     // whose components are globally oriented
     EvaluateForceStiffResidual(params);
+
+    // check for element error in form of a negative Jacobian determinant
+    // in case of potential continuation
+    if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+      element_error = ElementErrorCheck(params.get<bool>("eval_error"));
 
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
@@ -1817,12 +1831,12 @@ int STR::TimIntImpl::NewtonFull()
   }
 
   //do nonlinear solver error check
-  return NewtonFullErrorCheck(linsolve_error);
+  return NewtonFullErrorCheck(linsolve_error,element_error);
 }
 
 /*----------------------------------------------------------------------*/
 /* error check for full Newton problems */
-int STR::TimIntImpl::NewtonFullErrorCheck(int linerror)
+int STR::TimIntImpl::NewtonFullErrorCheck(int linerror, int eleerror)
 {
   // if everything is fine print to screen and return
   if (Converged())
@@ -1831,10 +1845,15 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror)
       PrintNewtonConv();
     return 0;
   }
-  // now some error checks
+  // now some error checks: do we have an element problem
+  // only check if we continue in this case; other wise, we ignore the error
+  if (eleerror and divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+  {
+    return eleerror;
+  }
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
+  else if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
   {
     return linerror;
   }
@@ -1854,7 +1873,7 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror)
         IO::cout<<"Newton unconverged in " << iter_ << " iterations, continuing" <<IO::endl;
       return 0;
     }
-    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
+    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
     {
       if (myrank_ == 0)
         IO::cout<< "Newton unconverged in " << iter_ << " iterations " << IO::endl;
@@ -1870,11 +1889,30 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror)
 int STR::TimIntImpl::LinSolveErrorCheck(int linerror)
 {
   // we only care about problems in the linear solver if we have a fancy divcont action
-  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation) )
+  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation) )
   {
     if (myrank_ == 0)
     IO::cout<< "Linear solver is having trouble " << IO::endl;
     return 2;
+  }
+  else
+  {
+    return 0;
+  }
+
+}
+
+/*----------------------------------------------------------------------*/
+/* error check for element problems in form of a negative Jacobian determinant */
+int STR::TimIntImpl::ElementErrorCheck(bool evalerr)
+{
+  // merly care about element problems if there is a fancy divcont action
+  // and element errors are considered
+  if (evalerr and divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+  {
+    if (myrank_ == 0)
+    IO::cout<< "Element error in form of a negative Jacobian determinant " << IO::endl;
+    return 3;
   }
   else
   {
@@ -2112,7 +2150,7 @@ int STR::TimIntImpl::NewtonLS()
     conman_->ComputeMonitorValues(disn_);
 
   //do nonlinear solver error check
-  return NewtonFullErrorCheck(linsolve_error);
+  return NewtonFullErrorCheck(linsolve_error,0);
 }
 
 
@@ -2894,7 +2932,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
   // now some error checks
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation) )
+  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation) )
   {
     return linerror;
   }
@@ -2916,7 +2954,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
           conman_->ComputeMonitorValues(disn_);
       return 0;
     }
-    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
+    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
     {
       if (myrank_ == 0)
         IO::cout<< "Newton unconverged in " << iter_ << " iterations " << IO::endl;
@@ -3374,9 +3412,10 @@ int STR::TimIntImpl::PTC()
   double nc; fres_->NormInf(&nc);
   double dti = 1/ptcdt;
 
+  int element_error= 0;
   int linsolve_error= 0;
   // equilibrium iteration loop
-  while ( ( ( not Converged() and (not linsolve_error) ) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+  while ( ( (not Converged() and (not linsolve_error) and (not element_error)) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
     // make negative residual
     fres_->Scale(-1.0);
@@ -3447,9 +3486,22 @@ int STR::TimIntImpl::PTC()
     // create parameter list
     Teuchos::ParameterList params;
 
+    // set flag for element error in form of a negative Jacobian determinant
+    // in parameter list in case of potential continuation
+    if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+    {
+      params.set<bool>("tolerate_errors",true);
+      params.set<bool>("eval_error",false);
+    }
+
     // compute residual forces #fres_ and stiffness #stiff_
     // whose components are globally oriented
     EvaluateForceStiffResidual(params);
+
+    // check for element error in form of a negative Jacobian determinant
+    // in case of potential continuation
+    if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+      element_error = ElementErrorCheck(params.get<bool>("eval_error"));
 
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
@@ -3539,7 +3591,7 @@ int STR::TimIntImpl::PTC()
   }
 
   //do nonlinear solver error check
-  return NewtonFullErrorCheck(linsolve_error);
+  return NewtonFullErrorCheck(linsolve_error,element_error);
 
 }
 

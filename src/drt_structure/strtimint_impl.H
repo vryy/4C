@@ -387,11 +387,15 @@ namespace STR
     //void NewtonFull();
     int NewtonFull();
 
+    //! check for success of element evaluation in that no negative Jacobian
+    //! determinant occured, otherwise return error code
+    int ElementErrorCheck(bool evalerr);
+
     //! check for success of linear solve otherwise return error code
     int LinSolveErrorCheck(int linerror);
 
     //! check for success of nonlinear solve otherwise return error code
-    int NewtonFullErrorCheck(int linerror);
+    int NewtonFullErrorCheck(int linerror, int eleerror);
 
     //! Do (so-called) modified Newton-Raphson iteration in which
     //! the initial tangent is kept and not adapted to the current

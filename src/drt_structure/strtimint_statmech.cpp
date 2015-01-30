@@ -601,6 +601,25 @@ bool STR::TimIntStatMech::PerformErrorAction()
       return false;
     }
     break;
+    case INPAR::STR::divcont_rand_adapt_step:
+    {
+      // generate random number between 0.51 and 1.99, alternating values
+      // larger and smaller than 1.0
+      const double randnum = ((double) rand()/(double) RAND_MAX);
+      if (rand_tsfac_ > 1.0)      rand_tsfac_ = randnum*0.49+0.51;
+      else if (rand_tsfac_ < 1.0) rand_tsfac_ = randnum*0.49+1.0;
+      else                        rand_tsfac_ = randnum*1.48+0.51;
+      IO::cout << "Nonlinear solver failed to converge: modifying time-step size by random number between 0.51 and 1.99 -> here: " << rand_tsfac_ << " !"
+               << IO::endl;
+      // multiply time-step size by random number
+      (*dt_)[0]=(*dt_)[0]*rand_tsfac_;
+      // update maximum number of time steps
+      stepmax_= (1.0/rand_tsfac_)*stepmax_ + (1.0-(1.0/rand_tsfac_))*stepn_ + 1;
+      // reset timen_ because it is set in the constructor
+      timen_ = (*time_)[0] + (*dt_)[0];;
+      return INPAR::STR::conv_success;
+    }
+    break;
     case INPAR::STR::divcont_repeat_simulation:
     {
       dserror("DIVERCONT-Type divcont_repeat_simulation not supported by statmech so far! ");

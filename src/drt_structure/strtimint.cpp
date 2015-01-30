@@ -156,6 +156,7 @@ STR::TimInt::TimInt
   stepmax_(sdynparams.get<int>("NUMSTEP")),
   step_(0),
   stepn_(0),
+  rand_tsfac_(1.0),
   firstoutputofrun_(true),
   lumpmass_(DRT::INPUT::IntegralValue<int>(sdynparams,"LUMPMASS") == 1),
   young_temp_(DRT::INPUT::IntegralValue<int>(sdynparams,"YOUNG_IS_TEMP_DEPENDENT") == 1),
@@ -3188,6 +3189,26 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
       return INPAR::STR::conv_success;
     }
     break;
+    case INPAR::STR::divcont_rand_adapt_step:
+    case INPAR::STR::divcont_rand_adapt_step_ele_err:
+    {
+      // generate random number between 0.51 and 1.99, alternating values
+      // larger and smaller than 1.0
+      const double randnum = ((double) rand()/(double) RAND_MAX);
+      if (rand_tsfac_ > 1.0)      rand_tsfac_ = randnum*0.49+0.51;
+      else if (rand_tsfac_ < 1.0) rand_tsfac_ = randnum*0.49+1.0;
+      else                        rand_tsfac_ = randnum*1.48+0.51;
+      IO::cout << "Nonlinear solver failed to converge: modifying time-step size by random number between 0.51 and 1.99 -> here: " << rand_tsfac_ << " !"
+               << IO::endl;
+      // multiply time-step size by random number
+      (*dt_)[0]=(*dt_)[0]*rand_tsfac_;
+      // update maximum number of time steps
+      stepmax_= (1.0/rand_tsfac_)*stepmax_ + (1.0-(1.0/rand_tsfac_))*stepn_ + 1;
+      // reset timen_ because it is set in the constructor
+      timen_ = (*time_)[0] + (*dt_)[0];;
+      return INPAR::STR::conv_success;
+    }
+    break;
     case INPAR::STR::divcont_repeat_simulation:
     {
       if(nonlinsoldiv==INPAR::STR::conv_nonlin_fail)
@@ -3196,6 +3217,10 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
             << IO::endl;
       else if (nonlinsoldiv==INPAR::STR::conv_lin_fail)
         IO::cout << "Linear solver failed to converge and DIVERCONT = "
+            "repeat_simulation, hence leaving structural time integration "
+            << IO::endl;
+      else if (nonlinsoldiv==INPAR::STR::conv_ele_fail)
+        IO::cout << "Element failure in form of a negative Jacobian determinant and DIVERCONT = "
             "repeat_simulation, hence leaving structural time integration "
             << IO::endl;
       return nonlinsoldiv; // so that time loop will be aborted
