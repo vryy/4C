@@ -27,7 +27,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepMatAndRhsInitialTimeDeriva
 )
 {
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   /*----------------------------------------------------------------------*/
   // element integration loop

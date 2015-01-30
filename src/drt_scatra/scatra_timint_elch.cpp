@@ -54,7 +54,8 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     sigma_          (Teuchos::null),
     dlcapexists_    (false),
     ektoggle_       (Teuchos::null),
-    dctoggle_       (Teuchos::null)
+    dctoggle_       (Teuchos::null),
+    electrodesoc_   (Teuchos::null)
 {
   return;
 }
@@ -83,7 +84,7 @@ void SCATRA::ScaTraTimIntElch::Init()
   // Important: this adds the required ConditionID's to the single conditions.
   // It is necessary to do this BEFORE ReadRestart() is called!
   // Output to screen and file is suppressed
-  OutputElectrodeInfo(false,false);
+  OutputElectrodeInfoBoundary(false,false);
 
   // initialize dirichlet toggle:
   // for certain ELCH problem formulations we have to provide
@@ -138,6 +139,15 @@ void SCATRA::ScaTraTimIntElch::Init()
       std::cout<<"Electrolyte conductivity (species elim) = "<<(*sigma_)[numscal_]-diff<<std::endl;
     }
     std::cout<<"Electrolyte conductivity (all species)  = "<<(*sigma_)[numscal_]<<std::endl<<std::endl;
+  }
+
+  // initialize electrode state of charge vector
+  std::vector<DRT::Condition*> electrodesocconditions;
+  discret_->GetCondition("ElectrodeSOC",electrodesocconditions);
+  if(electrodesocconditions.size() > 0)
+  {
+    electrodesoc_ = Teuchos::rcp(new std::vector<double>);
+    electrodesoc_->resize(electrodesocconditions.size(),-1.);
   }
 
   return;
@@ -466,9 +476,27 @@ void SCATRA::ScaTraTimIntElch::Update(const int num)
 
 
 /*----------------------------------------------------------------------*
- |  output of electrode status information to screen         gjb  01/09 |
+ | problem-specific outputs                                  fang 01/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputElectrodeInfo(
+void SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
+{
+  // print electrode boundary status information to screen and/or file
+  OutputElectrodeInfoBoundary();
+
+  // print electrode interior status information to screen
+  OutputElectrodeInfoInterior();
+
+  // print cell voltage to screen
+  OutputCellVoltage();
+
+  return;
+} // SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
+
+
+/*-------------------------------------------------------------------------*
+ | output electrode boundary status information to screen       gjb  01/09 |
+ *-------------------------------------------------------------------------*/
+Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary(
     bool printtoscreen,
     bool printtofile)
 {
@@ -517,7 +545,7 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputElectrodeInf
     double electrodepot(0.0); // this value remains unused here!
     double meanoverpot(0.0); // this value remains unused here!
 
-    Teuchos::RCP< std::vector<double> > electkin = OutputSingleElectrodeInfo(
+    Teuchos::RCP< std::vector<double> > electkin = OutputSingleElectrodeInfoBoundary(
         cond[condid],
         condid,
         printtoscreen,
@@ -545,13 +573,13 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputElectrodeInf
   discret_->ClearState();
 
   return firstelectkin;
-} // ScaTraImplicitTimeInt::OutputElectrodeInfo
+} // SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary
 
 
 /*----------------------------------------------------------------------*
  |  get electrode status for single boundary condition       gjb  11/09 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfo(
+Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary(
     DRT::Condition* condition,
     const int condid,
     const bool printtoscreen,
@@ -602,7 +630,7 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   // different time (n+af) than our output routine (n+1), resulting in slightly different values at the electrode.
   // A different approach is not possible (without major hacks) since the time-integration scheme is
   // necessary to perform galvanostatic simulations, for instance.
-  // Think about: double layer effects for genalpha time-integratio scheme
+  // Think about: double layer effects for genalpha time-integration scheme
 
   // add element parameters according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
@@ -725,7 +753,183 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   (*singleelectkin)[2]=currentsum;
 
   return singleelectkin;
-} // SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo
+} // SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary
+
+
+/*----------------------------------------------------------------------*
+ | output electrode interior status information to screen    fang 01/15 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
+{
+  // extract conditions for electrode state of charge
+  std::vector<DRT::Condition*> conditions;
+  discret_->GetCondition("ElectrodeSOC",conditions);
+
+  // perform all following operations only if there is at least one condition for electrode state of charge
+  if(conditions.size() > 0)
+  {
+    // print header
+    if(myrank_ == 0)
+    {
+      std::cout << "Electrode state of charge and related:" << std::endl;
+      std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
+      std::cout << "| ID | state of charge |     C rate     | operation mode |" << std::endl;
+    }
+
+    // loop over conditions for electrode state of charge
+    for(unsigned condid=0; condid<conditions.size(); ++condid)
+    {
+      // add state vector to discretization
+      discret_->ClearState();
+      discret_->SetState("phinp",phinp_);
+
+      // create parameter list
+      Teuchos::ParameterList condparams;
+
+      // action for elements
+      condparams.set<int>("action",SCATRA::calc_elch_electrode_soc);
+
+      // further parameters
+      condparams.set<int>("scatratype",scatratype_);
+      condparams.set("isale",isale_);
+
+      // initialize concentration and domain integrals
+      condparams.set("intconcentration",0.);
+      condparams.set("intdomain",0.);
+
+      // evaluate current condition for electrode state of charge
+      discret_->EvaluateCondition(condparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,"ElectrodeSOC",condid);
+      discret_->ClearState();
+
+      // extract concentration and domain integrals
+      double myintconcentration = condparams.get<double>("intconcentration");
+      double myintdomain = condparams.get<double>("intdomain");
+
+      // communicate results
+      double intconcentration(0.);
+      discret_->Comm().SumAll(&myintconcentration,&intconcentration,1);
+      double intdomain(0.);
+      discret_->Comm().SumAll(&myintdomain,&intdomain,1);
+
+      // extract reference concentrations at 0% and 100% state of charge
+      const double c_0 = conditions[condid]->GetDouble("c_0%");
+      const double c_100 = conditions[condid]->GetDouble("c_100%");
+
+      // compute state of charge for current electrode
+      const double soc = (intconcentration/intdomain-c_0)/(c_100-c_0);
+
+      // compute C rate for current electrode
+      double c_rate(0.);
+      if((*electrodesoc_)[condid] != -1.)
+        c_rate = (soc-(*electrodesoc_)[condid])/dta_*3600.;
+
+      // determine operation mode
+      std::string mode;
+      if(c_rate < 0.)
+        mode.assign("discharge");
+      else if(c_rate == 0.)
+        mode.assign(" at rest ");
+      else
+        mode.assign(" charge  ");
+
+      // screen output
+      if(myrank_ == 0)
+        std::cout << "| " << std::setw(2) << condid << " |   " << std::setw(7) << std::setprecision(2) << std::fixed << soc*100. << " %     |     " << std::setw(5) << std::abs(c_rate) << "      |   " << mode.c_str() << "    |" << std::endl;
+
+      // update state of charge for current electrode
+      (*electrodesoc_)[condid] = soc;
+    } // loop over conditions
+
+    // print finish line
+    if(myrank_ == 0)
+      std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior
+
+
+/*----------------------------------------------------------------------*
+ | output cell voltage to screen                             fang 01/15 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
+{
+  // extract conditions for cell voltage
+  std::vector<DRT::Condition*> conditions;
+  discret_->GetCondition("CellVoltage",conditions);
+
+  // perform all following operations only if there is at least one condition for cell voltage
+  if(conditions.size() > 0)
+  {
+    // safety check
+    if(conditions.size() != 2)
+      dserror("Must have exactly two boundary conditions for cell voltage, one per electrode!");
+
+    // print header
+    if(myrank_ == 0)
+    {
+      std::cout << "Electrode potentials and cell voltage:" << std::endl;
+      std::cout << "+----+-------------------------+" << std::endl;
+      std::cout << "| ID | mean electric potential |" << std::endl;
+    }
+
+    // initialize vector for mean electric potentials of electrodes
+    std::vector<double> potentials(2,0.);
+
+    // loop over both conditions for cell voltage
+    for(unsigned condid=0; condid<conditions.size(); ++condid)
+    {
+      // add state vector to discretization
+      discret_->ClearState();
+      discret_->SetState("phinp",phinp_);
+
+      // create parameter list
+      Teuchos::ParameterList condparams;
+
+      // action for elements
+      condparams.set<int>("action",SCATRA::bd_calc_elch_cell_voltage);
+
+      // further parameters
+      condparams.set<int>("scatratype",scatratype_);
+      condparams.set("isale",isale_);
+
+      // initialize potential and domain integrals
+      condparams.set("intpotential",0.);
+      condparams.set("intdomain",0.);
+
+      // evaluate current condition for electrode state of charge
+      discret_->EvaluateCondition(condparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,"CellVoltage",condid);
+      discret_->ClearState();
+
+      // extract concentration and domain integrals
+      double myintpotential = condparams.get<double>("intpotential");
+      double myintdomain = condparams.get<double>("intdomain");
+
+      // communicate results
+      double intpotential(0.);
+      discret_->Comm().SumAll(&myintpotential,&intpotential,1);
+      double intdomain(0.);
+      discret_->Comm().SumAll(&myintdomain,&intdomain,1);
+
+      // compute mean electric potential of current electrode
+      potentials[condid] = intpotential/intdomain;
+
+      // print mean electric potential of current electrode to screen
+      if(myrank_ == 0)
+        std::cout << "| " << std::setw(2) << condid << " |         " << std::setw(6) << std::setprecision(3) << std::fixed << potentials[condid] << "          |" << std::endl;
+    } // loop over conditions
+
+    // print cell voltage to screen
+    if(myrank_ == 0)
+    {
+      std::cout << "+----+-------------------------+" << std::endl;
+      std::cout << "| cell voltage: " << std::setw(6) << std::abs(potentials[0]-potentials[1]) << "         |" << std::endl;
+      std::cout << "+----+-------------------------+" << std::endl;
+    }
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntElch::OutputCellVoltage
 
 
 /*----------------------------------------------------------------------*
@@ -1180,7 +1384,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
 
       // for all time integration schemes, compute the current value for phidtnp
       // this is needed for evaluating charging currents due to double-layer capacity
-      // This may only be called here and not inside OutputSingleElectrodeInfo!!!!
+      // This may only be called here and not inside OutputSingleElectrodeInfoBoundary!!!!
       // Otherwise you modify your output to file called during Output()
       ComputeTimeDerivative();
 
@@ -1202,7 +1406,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       for (unsigned int icond = 0; icond < cond.size(); icond++)
       {
         // note: only the potential at the boundary with id condid_cathode will be adjusted!
-        OutputSingleElectrodeInfo(
+        OutputSingleElectrodeInfoBoundary(
             cond[icond],
             icond,
             false,

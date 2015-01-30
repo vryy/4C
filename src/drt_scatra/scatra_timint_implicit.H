@@ -468,11 +468,8 @@ public:
     Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
   );
 
-  //! output of all electrode information to screen and/or file (default: 2x true)
-  virtual Teuchos::RCP< std::vector<double> > OutputElectrodeInfo(
-    bool printtoscreen = true,  //!< flag for printing information to screen
-    bool printtofile = true     //!< flag for printing information to file
-  ){return Teuchos::null;};
+  //! problem-specific outputs
+  virtual void OutputProblemSpecific(){return;};
 
   //! Add Linearization for Nernst-BC
   virtual void  LinearizationNernstCondition(){return;};

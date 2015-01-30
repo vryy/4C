@@ -133,6 +133,14 @@ private:
       Epetra_SerialDenseVector&         elevec1_epetra
   );
 
+  //! calculate cell voltage
+  void CalcCellVoltage(
+      const DRT::Element*               ele,              //!< the element we are dealing with
+      Teuchos::ParameterList&           params,           //!< parameter list
+      DRT::Discretization&              discretization,   //!< discretization
+      const std::vector<int>&           lm                //!< location vector
+  );
+
   //! extract valence of species k from element material
   const double GetValence(
       const Teuchos::RCP<const MAT::Material>&   material,   //! element material

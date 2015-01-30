@@ -30,7 +30,10 @@ SCATRA::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatra
   mysol_  = scatra->Phinp();
   myvan_  = scatra->Phiatmeshfreenodes();
   myflux_ = scatra->Flux();
-  myelectkin_ = scatra->OutputElectrodeInfo(false,false);
+  if(Teuchos::rcp_dynamic_cast<ScaTraTimIntElch>(scatra) == Teuchos::null)
+    myelectkin_ = Teuchos::null;
+  else
+    myelectkin_ = Teuchos::rcp_dynamic_cast<ScaTraTimIntElch>(scatra)->OutputElectrodeInfoBoundary(false,false);
   mystrgrowth_ = scatra->StrGrowth();
   myfldgrowth_ = scatra->FldGrowth();
   mynumiter_ =scatra->IterNum();

@@ -47,6 +47,7 @@ enum Action {
   calc_error,                      // calc_error,
   calc_elch_conductivity,          // calc_elch_conductivity,
   calc_elch_initial_potential,     // calc_initial_potential_field,
+  calc_elch_electrode_soc,         // calculate electrode state of charge
   calc_scatra_box_filter,          // calc_scatra_box_filter,
   calc_turbulent_prandtl_number,   // calc_turbulent_prandtl_number
   calc_vreman_scatra,              // calc_vreman_scatra,
@@ -85,6 +86,7 @@ enum BoundaryAction {
   bd_calc_s2icoupling,              //n/a
   bd_calc_elch_boundary_kinetics,   //calc_elch_electrode_kinetics,
   bd_calc_elch_linearize_nernst,    //calc_elch_electrode_kinetics,
+  bd_calc_elch_cell_voltage,        //n/a
   bd_calc_loma_therm_press,         //calc_therm_press,
   bd_calc_fs3i_surface_permeability,//calc_surface_permeability,
   bd_calc_fps3i_surface_permeability//Kedem-Katchalsky equations-->fps3i problem

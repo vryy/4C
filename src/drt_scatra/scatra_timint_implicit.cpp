@@ -1540,8 +1540,8 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     // write integral values of reaction(s)
     OutputIntegrReac(num);
 
-    // output of electrode status to screen and file (only if existing)
-    OutputElectrodeInfo();
+    // problem-specific outputs
+    OutputProblemSpecific();
 
     // biofilm growth
     if (scfldgrdisp_!=Teuchos::null)

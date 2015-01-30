@@ -875,7 +875,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CorrectionForFluxAcrossDC(
         } // if mydctoggle
       } // for k
     } // for vi
-  } // if scatratype
+  } // if EquPot()
 
   return;
 }

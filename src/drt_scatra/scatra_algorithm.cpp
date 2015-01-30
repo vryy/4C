@@ -378,7 +378,7 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
     {
     printf("\n");
     printf("Flux: Outer Iterations step: %3d \n", natconvitnum);
-    ScaTraField().OutputElectrodeInfo();
+    ScaTraField().OutputProblemSpecific();
     ScaTraField().OutputMeanScalars();
     printf("\n");
     }

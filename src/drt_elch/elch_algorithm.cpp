@@ -51,7 +51,7 @@ void ELCH::Algorithm::PrepareTimeLoop()
   // provide information about initial field (do not do for restarts!)
   if (Step()==0)
   {
-    Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->OutputElectrodeInfo();
+    ScaTraField()->OutputProblemSpecific();
     ScaTraField()->OutputMeanScalars();
 
     // compute error for problems with analytical solution (initial field!)

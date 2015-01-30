@@ -437,7 +437,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
       // adopt integration points and weights for gauss point evaluation of B
       if (scatrapara_->BD_Gp())
       {
-        DRT::UTILS::IntPointsAndWeights<nsd_> gauss_intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+        const DRT::UTILS::IntPointsAndWeights<nsd_> gauss_intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
         intpoints = gauss_intpoints;
       }
 
@@ -520,7 +520,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
     // compute mass matrix
     Epetra_SerialDenseMatrix massmat;
     massmat.Shape(nen_,nen_);
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+    const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
     double area = 0.0;
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
@@ -704,7 +704,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcGradientAtNodes(
   )
 {
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // Loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
@@ -757,7 +757,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcCurvatureAtNodes(
   )
 {
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // Loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
@@ -895,7 +895,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -938,7 +938,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
   }
 
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   /*----------------------------------------------------------------------*/
   // element integration loop
@@ -1064,7 +1064,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::IntegrateShapeFunctions(
   )
 {
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // safety check
   if (dofids.M() < numdofpernode_)
@@ -1132,7 +1132,7 @@ const int                       k
   if (not scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
 
   // integration rule
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad=0; iquad< intpoints.IP().nquad; ++iquad)
@@ -1337,7 +1337,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiffMatrix(
   // integration loop for one element
   /*----------------------------------------------------------------------*/
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)

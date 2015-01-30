@@ -88,7 +88,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(const int numdofpernode, const int numscal)
   : // constructor of base class
-    DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl(numdofpernode,numscal),
+    my::ScaTraBoundaryImpl(numdofpernode,numscal),
     // pointer to class ScaTraEleParameter
     elchpara_(dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(DRT::ELEMENTS::ScaTraEleParameterElch::Instance())),
     // type of closing equation for electric potential
@@ -122,7 +122,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
   // check for the action parameter
   const SCATRA::BoundaryAction action = DRT::INPUT::get<SCATRA::BoundaryAction>(params,"action");
 
-  DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::SetupCalc(ele,params,discretization);
+  my::SetupCalc(ele,params,discretization);
 
   switch(action)
   {
@@ -148,9 +148,15 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
     break;
   }
 
+  case SCATRA::bd_calc_elch_cell_voltage:
+  {
+    CalcCellVoltage(ele,params,discretization,lm);
+    break;
+  }
+
   default:
   {
-    DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(ele,
+    my::EvaluateAction(ele,
                                                                params,
                                                                discretization,
                                                                action,
@@ -203,7 +209,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
   }
 
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
   bool usetime = true;
@@ -227,7 +233,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateNeumann(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
+    double fac = my::EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
 
     // multiply integration factor with the timecurve factor
     fac *= curvefac;
@@ -666,10 +672,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
      /*----------------------------------------------------------------------*
       |               start loop over integration points                     |
       *----------------------------------------------------------------------*/
-      DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+      const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
       for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
       {
-        const double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+        const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
         // elch-specific values at integration point:
         // concentration is evaluated at all GP since some reaction models depend on all concentrations
@@ -699,6 +705,67 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
 
 
 /*----------------------------------------------------------------------*
+ | calculate cell voltage                                    fang 01/15 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcCellVoltage(
+    const DRT::Element*               ele,              //!< the element we are dealing with
+    Teuchos::ParameterList&           params,           //!< parameter list
+    DRT::Discretization&              discretization,   //!< discretization
+    const std::vector<int>&           lm                //!< location vector
+    )
+{
+  // consider only unghosted elements for integration
+  if(ele->Owner() == discretization.Comm().MyPID())
+  {
+    // get global state vector
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if(phinp == Teuchos::null)
+      dserror("Cannot get state vector \"phinp\"!");
+
+    // extract local nodal values of electric potential from global state vector
+    std::vector<double> ephinpvec(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,ephinpvec,lm);
+    LINALG::Matrix<my::nen_,1> epotnp(true);
+    for(int inode=0; inode<my::nen_; ++inode)
+      epotnp(inode,0) = ephinpvec[inode*my::numdofpernode_+my::numscal_];
+
+    // get current values of potential and domain integrals
+    double intpotential = params.get<double>("intpotential");
+    double intdomain = params.get<double>("intdomain");
+
+    // integration points and weights
+    const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+    // loop over integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      // evaluate values of shape functions and domain integration factor at current integration point
+      const double fac = my::EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
+
+      // calculate potential and domain integrals
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        const double funct_vi_fac = my::funct_(vi)*fac;
+
+        // potential integral
+        intpotential += funct_vi_fac*epotnp(vi,0);
+
+        // domain integral
+        intdomain += funct_vi_fac;
+      }
+    } // loop over integration points
+
+    // write updated values of potential and domain integrals back to parameter list
+    params.set<double>("intpotential",intpotential);
+    params.set<double>("intdomain",intdomain);
+  } // if(ele->Owner() == discretization.Comm().MyPID())
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | evaluate an electrode kinetics boundary condition (private) gjb 01/09|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -722,7 +789,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
   const double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or µC/µmol
 
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // concentration values of reactive species at element nodes
   std::vector<LINALG::Matrix<my::nen_,1> > conreact(my::numscal_);
@@ -773,7 +840,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
     *----------------------------------------------------------------------*/
     for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
     {
-      const double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+      const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
       // elch-specific values at integration point:
       // concentration is evaluated at all GP since some reaction models depend on all concentrations
@@ -1440,7 +1507,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateS2ICoupling(
     dserror("Saturation value c_max of intercalated Lithium concentration is too small!");
 
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over scalars
   for(int k=0; k<my::numscal_; ++k)
@@ -1457,7 +1524,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateS2ICoupling(
     for (int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
     {
       // evaluate values of shape functions and domain integration factor at current integration point
-      const double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+      const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
       // evaluate overall integration factors
       const double timefacfac = my::scatraparamstimint_->TimeFac()*fac;
@@ -1624,7 +1691,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
   double currentresidual   = params.get<double>("currentresidual");
 
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // concentration values of reactive species at element nodes
   std::vector<LINALG::Matrix<my::nen_,1> > conreact(my::numscal_);
@@ -1659,7 +1726,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
     // loop over integration points
     for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
     {
-      const double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+      const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
       // elch-specific values at integration point:
       for (int kk=0; kk<my::numscal_; ++kk)

@@ -169,7 +169,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
     // integration loop for one element
     //----------------------------------------------------------------------
     // integration points and weights
-    DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+    const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
@@ -309,6 +309,12 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
 
     break;
   }
+  case SCATRA::calc_elch_electrode_soc:
+  {
+    CalculateElectrodeSOC(ele,params,discretization,lm);
+
+    break;
+  }
   default:
   {
     my::EvaluateService(ele,
@@ -379,7 +385,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
   const INPAR::SCATRA::CalcError errortype = DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
   switch(errortype)
@@ -616,8 +622,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
 
 
 /*----------------------------------------------------------------------*
-  |  CalculateElectricPotentialField (ELCH) (private)          gjb 04/10 |
-  *----------------------------------------------------------------------*/
+ | CalculateElectricPotentialField (protected)                gjb 04/10 |
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
     const DRT::Element*               ele,
@@ -664,6 +670,70 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
   return;
 
 } //ScaTraImpl<distype>::CalculateElectricPotentialField
+
+
+/*----------------------------------------------------------------------*
+ | calculate electrode state of charge                       fang 01/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectrodeSOC(
+    const DRT::Element*               ele,              //!< the element we are dealing with
+    Teuchos::ParameterList&           params,           //!< parameter list
+    DRT::Discretization&              discretization,   //!< discretization
+    const std::vector<int>&           lm                //!< location vector
+  )
+{
+  // consider only unghosted elements for integration
+  if(ele->Owner() == discretization.Comm().MyPID())
+  {
+    // safety check
+    if(my::numscal_ != 1)
+      dserror("Electrode state of charge can only be computed for one transported scalar!");
+
+    // get global state vector
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if(phinp == Teuchos::null)
+      dserror("Cannot get state vector \"phinp\"!");
+
+    // extract local nodal values from global state vector
+    std::vector<double> ephinpvec(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,ephinpvec,lm);
+    for(int inode = 0; inode < my::nen_; ++inode)
+      my::ephinp_[0](inode,0) = ephinpvec[inode*my::numdofpernode_];
+
+    // get current values of concentration and domain integrals
+    double intconcentration = params.get<double>("intconcentration");
+    double intdomain = params.get<double>("intdomain");
+
+    // integration points and weights
+    const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+    // loop over integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      // evaluate values of shape functions and domain integration factor at current integration point
+      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+      // calculate concentration and domain integrals
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        const double funct_vi_fac = my::funct_(vi)*fac;
+
+        // concentration integral
+        intconcentration += funct_vi_fac*my::ephinp_[0](vi,0);
+
+        // domain integral
+        intdomain += funct_vi_fac;
+      }
+    } // loop over integration points
+
+    // write updated values of concentration and domain integrals back to parameter list
+    params.set<double>("intconcentration",intconcentration);
+    params.set<double>("intdomain",intdomain);
+  } // if(ele->Owner() == discretization.Comm().MyPID())
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectrodeSOC
 
 
 /*----------------------------------------------------------------------------------------*

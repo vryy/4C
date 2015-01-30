@@ -81,7 +81,7 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
     // write out initial state
     Output();
 
-    Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField())->OutputElectrodeInfo();
+    ScaTraField()->OutputProblemSpecific();
     ScaTraField()->OutputMeanScalars();
 
     // compute error for problems with analytical solution (initial field!)

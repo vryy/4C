@@ -217,6 +217,8 @@ public:
     VolumetricFlowBorderNodes,
     ThermoConvections,
     S2ICoupling,
+    ElectrodeSOC,
+    CellVoltage,
     ScaTraFluxCalc,
     ScaTraCoupling,
     SpringDashpot,

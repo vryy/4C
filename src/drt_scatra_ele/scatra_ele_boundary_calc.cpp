@@ -586,7 +586,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   Teuchos::RCP<MAT::Material> mat = parentele->Material();
 
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
   bool usetime = true;
@@ -796,7 +796,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
     const double                        timefac)
 {
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for scalar values at nodes
   LINALG::Matrix<nen_,1> phinod(true);
@@ -973,7 +973,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcConvectiveFl
 )
 {
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for scalar values at nodes
   LINALG::Matrix<nen_,1> phinod(true);
@@ -1035,7 +1035,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfer(
     const double                        timefac)
 {
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for scalar values at nodes
   LINALG::Matrix<nen_,1> phinod(true);
@@ -1211,7 +1211,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
     // Current handling of node-based normal vectors not applicable in NURBS case
 #if 0
     // use one integration point at element center
-    DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+    const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
     // hack: ele-id = -1
     // for nurbs elements the normal vector must be scaled with a special orientation factor!!
     // this is already part of this function call
@@ -1277,7 +1277,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
   const int kineticmodel = s2icondition->GetInt("kinetic model");
 
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
@@ -1357,7 +1357,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateSurfacePermeability(
 {
 
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for scalar values at nodes
   LINALG::Matrix<nen_,1> phinod(true);
@@ -1454,7 +1454,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateKedemKatchalsky(
 {
 
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for scalar values at nodes
   LINALG::Matrix<nen_,1> phinod(true);
@@ -1570,7 +1570,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
     outputall = true;
 
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
@@ -1620,7 +1620,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NormDiffFluxAndVelIntegral(
   double normvelint      = params.get<double>("normal velocity integral");
 
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
@@ -1850,7 +1850,7 @@ template <DRT::Element::DiscretizationType bdistype,
   else dserror("unknown definition for gamma parameter: %s",(*consistency).c_str());
 
   // use one-point Gauss rule to do calculations at element center
-  DRT::UTILS::IntPointsAndWeights<bnsd> intpoints_tau(SCATRA::DisTypeToStabGaussRule<bdistype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<bnsd> intpoints_tau(SCATRA::DisTypeToStabGaussRule<bdistype>::rule);
 
   // element surface area (1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -2501,7 +2501,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
 
 
   // use one-point Gauss rule to do calculations at element center
-  DRT::UTILS::IntPointsAndWeights<bnsd> intpoints_tau(SCATRA::DisTypeToStabGaussRule<bdistype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<bnsd> intpoints_tau(SCATRA::DisTypeToStabGaussRule<bdistype>::rule);
 
   // element surface area (1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)

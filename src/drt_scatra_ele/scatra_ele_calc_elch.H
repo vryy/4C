@@ -255,6 +255,14 @@ protected:
     Epetra_SerialDenseVector&         erhs        //!< element rhs
   );
 
+  //! calculate electrode state of charge
+  void CalculateElectrodeSOC(
+    const DRT::Element*               ele,              //!< the element we are dealing with
+    Teuchos::ParameterList&           params,           //!< parameter list
+    DRT::Discretization&              discretization,   //!< discretization
+    const std::vector<int>&           lm                //!< location vector
+  );
+
   //! Solving for intial time derivative: finish preparation of matrix and rhs
   virtual void PrepMatAndRhsInitialTimeDerivative(
     Epetra_SerialDenseMatrix&  elemat1_epetra,  //!< element matrix

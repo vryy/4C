@@ -96,14 +96,14 @@ void SCATRA::TimIntGenAlpha::Init()
 
   // for initializing phiaf_, phiam based on the initial field that was
   // set for phinp_, phin_ in the TimInt base class constructor
-  // this method has to be called before method OutputElectrodeInfo() is called
+  // this method has to be called before method OutputElectrodeInfoBoundary() is called
   // otherwise phi_af is initialized with zeros instead of the initial field
   ComputeIntermediateValues();
 
   // Important: this adds the required ConditionID's to the single conditions.
   // It is necessary to do this BEFORE ReadRestart() is called!
   // Output to screen and file is suppressed
-  //OutputElectrodeInfo(false,false);
+  //OutputElectrodeInfoBoundary(false,false);
 
   // setup krylov
   PrepareKrylovProjection();

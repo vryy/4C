@@ -1052,6 +1052,58 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
 
   /*--------------------------------------------------------------------*/
+  // electrode state of charge
+  {
+    // definition of electrode state of charge volume condition
+    Teuchos::RCP<ConditionDefinition> electrodesocvol =
+        Teuchos::rcp(new ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS",
+                                             "ElectrodeSOC",
+                                             "electrode state of charge volume condition",
+                                             DRT::Condition::ElectrodeSOC,
+                                             true,
+                                             DRT::Condition::Volume));
+
+    // equip condition definition with input file line components
+    std::vector<Teuchos::RCP<ConditionComponent> > electrodesoccomponents;
+
+    {
+      electrodesoccomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+      electrodesoccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("c_0%")));
+      electrodesoccomponents.push_back(Teuchos::rcp(new RealConditionComponent("c_0%")));
+      electrodesoccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("c_100%")));
+      electrodesoccomponents.push_back(Teuchos::rcp(new RealConditionComponent("c_100%")));
+    }
+
+    // insert input file line components into condition definition
+    for (unsigned i=0; i<electrodesoccomponents.size(); ++i)
+      electrodesocvol->AddComponent(electrodesoccomponents[i]);
+
+    // insert condition definition into global list of valid condition definitions
+    condlist.push_back(electrodesocvol);
+  }
+
+
+  /*--------------------------------------------------------------------*/
+  // cell voltage
+  {
+    // definition of cell voltage surface condition
+    Teuchos::RCP<ConditionDefinition> cellvoltagesurf =
+        Teuchos::rcp(new ConditionDefinition("DESIGN CELL VOLTAGE SURF CONDITIONS",
+                                             "CellVoltage",
+                                             "cell voltage surface condition",
+                                             DRT::Condition::CellVoltage,
+                                             true,
+                                             DRT::Condition::Surface));
+
+    // equip condition definition with input file line components
+    cellvoltagesurf->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+    // insert condition definition into global list of valid condition definitions
+    condlist.push_back(cellvoltagesurf);
+  }
+
+
+  /*--------------------------------------------------------------------*/
   // wear in ALE description
 
   Teuchos::RCP<ConditionDefinition> linealewear =

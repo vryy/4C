@@ -86,14 +86,17 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   /*--- query and output ---------------------------------------------------*/
 
-  //! output of all electrode information to screen and/or file (default: 2x true)
-  Teuchos::RCP< std::vector<double> > OutputElectrodeInfo(
+  //! problem-specific outputs
+  void OutputProblemSpecific();
+
+  //! output of all electrode boundary status information to screen and/or file (default: 2x true)
+  Teuchos::RCP< std::vector<double> > OutputElectrodeInfoBoundary(
     bool printtoscreen = true,  //!< flag for printing information to screen
     bool printtofile = true     //!< flag for printing information to file
   );
 
   //! output of electrode information for a single boundary condition
-  Teuchos::RCP< std::vector<double> > OutputSingleElectrodeInfo(
+  Teuchos::RCP< std::vector<double> > OutputSingleElectrodeInfoBoundary(
     DRT::Condition* condition, //!< pointer to the condition
     const int  condid,         //!< condition id
     const bool printtoscreen,  //!< flag for output to screen
@@ -105,6 +108,12 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
     double& electrodepot,      //!< electrode potential (metal side)
     double& meanoverpot        //!< mean surface overpotential
   );
+
+  //! output electrode interior status information to screen
+  void OutputElectrodeInfoInterior();
+
+  //! output cell voltage to screen
+  void OutputCellVoltage();
 
   //! output type of closing equation for electric potential
   const INPAR::ELCH::EquPot EquPot() const { return equpot_; }
@@ -259,6 +268,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! dirichlet toggle
   //! Toggle which defines dof's with a Dirichlet condition
   Teuchos::RCP<Epetra_Vector> dctoggle_;
+
+  //! electrode state of charge
+  Teuchos::RCP<std::vector<double> > electrodesoc_;
 };
 
 };

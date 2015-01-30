@@ -70,9 +70,9 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying() const
     scatratimint_->Discretization()->ClearState();
     scatratimint_->AddTimeIntegrationSpecificVectors();
 
-    // set interface state vector imasterphinp_ with transformed master dof values and add to element parameter list
+    // fill interface state vector imasterphinp_ with transformed master dof values and add to discretization
     imasterphinp_->Update(1.,*(icoup_->MasterToSlave(maps_->ExtractVector(*(scatratimint_->Phiafnp()),2))),0.);
-    condparams.set<Teuchos::RCP<const Epetra_Vector> >("imasterphinp",imasterphinp_);
+    scatratimint_->Discretization()->SetState("imasterphinp",imasterphinp_);
 
     // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
     islavematrix_->Zero();

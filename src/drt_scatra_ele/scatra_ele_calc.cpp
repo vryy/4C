@@ -444,7 +444,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
@@ -920,7 +920,7 @@ template <DRT::Element::DiscretizationType distype>
 const double DRT::ELEMENTS::ScaTraEleCalc<distype>::EvalShapeFuncAndDerivsAtEleCenter()
 {
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
