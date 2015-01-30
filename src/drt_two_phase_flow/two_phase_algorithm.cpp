@@ -233,7 +233,8 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
   // derivatives and discretization based on time-integration scheme
 
   // check assumption
-  if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_one_step_theta)
+  if (ScaTraField()->MethodName() != INPAR::SCATRA::timeint_one_step_theta
+      and ScaTraField()->MethodName() != INPAR::SCATRA::timeint_stationary)
     dserror("OST for level-set field assumed!");
 
   switch(FluidField()->TimIntScheme())
