@@ -1093,7 +1093,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "tolerance in the constr error norm for the newton iteration",
                   &sdyn);
   DoubleParameter("TOLWINDKESSEL",1.0E-08,
-                  "tolerance in the Windkessel error norm for the newton iteration",
+                  "tolerance in the windkessel error norm for the newton iteration",
+                  &sdyn);
+  DoubleParameter("TOLWINDKESSELDOFINCR",1.0E-08,
+                  "tolerance in the windkessel dof increment error norm for the newton iteration",
                   &sdyn);
   DoubleParameter("WINDKESSEL_TIMINT_THETA",0.5,
                   "theta for one-step-theta time-integration scheme of Windkessel",

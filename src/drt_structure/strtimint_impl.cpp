@@ -106,6 +106,7 @@ STR::TimIntImpl::TimIntImpl
   uzawaitermax_(sdynparams.get<int>("UZAWAMAXITER")),
   tolcon_(sdynparams.get<double>("TOLCONSTR")),
   tolwindk_(sdynparams.get<double>("TOLWINDKESSEL")),
+  tolwindkdofincr_(sdynparams.get<double>("TOLWINDKESSELDOFINCR")),
   iter_(-1),
   normcharforce_(0.0),
   normchardis_(0.0),
@@ -113,6 +114,7 @@ STR::TimIntImpl::TimIntImpl
   normdisi_(0.0),
   normcon_(0.0),
   normwindk_(0.0),
+  normwindkdofincr_(0.0),
   normpfres_(0.0),
   normpres_(0.0),
   normcontconstr_(0.0),  // < norm of contact constraints (saddlepoint formulation)
@@ -1330,9 +1332,11 @@ bool STR::TimIntImpl::Converged()
 
   // check Windkessel
   bool wk = true;
+  bool wkincr = true;
   if (windkman_->HaveWindkessel())
   {
     wk = normwindk_ < tolwindk_;
+    wkincr = normwindkdofincr_ < tolwindkdofincr_;
   }
 
   // check contact (active set)
@@ -1510,7 +1514,7 @@ bool STR::TimIntImpl::Converged()
 
 
   // return things
-  return (conv and cc and wk and ccontact and cplast);
+  return (conv and cc and wk and wkincr and ccontact and cplast);
 }
 
 /*----------------------------------------------------------------------*/
@@ -2621,6 +2625,7 @@ void STR::TimIntImpl::UpdateIterIncrWindkessel
  * originally by tk 11/07 */
 int STR::TimIntImpl::UzawaLinearNewtonFull()
 {
+  int linsolve_error = 0;
   if (conman_->HaveConstraint())
   {
     // allocate additional vectors and matrices
@@ -2644,7 +2649,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     timer_->ResetStartTime();
 
     // equilibrium iteration loop
-    while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+    while ( ( (not Converged() and (not linsolve_error) ) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
     {
       // make negative residual
       fres_->Scale(-1.0);
@@ -2738,12 +2743,13 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       if (locsysman_ != Teuchos::null)
         locsysman_->RotateLocalToGlobal(fres_);
 
-      // build residual force norm
-      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
-      // build residual displacement norm
-      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
-      // build residual Lagrange multiplier norm
-      normcon_ = conman_->GetErrorNorm();
+      // why was this here? part of else statement below!!! (mhv 01/2015)
+//      // build residual force norm
+//      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+//      // build residual displacement norm
+//      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+//      // build residual Lagrange multiplier norm
+//      normcon_ = conman_->GetErrorNorm();
 
       if (pressure_ != Teuchos::null)
       {
@@ -2763,6 +2769,8 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
         normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
         // build residual displacement norm
         normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+        // build residual Lagrange multiplier norm
+        normcon_ = conman_->GetErrorNorm();
       }
 
       // print stuff
@@ -2788,10 +2796,11 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     normfres_ = CalcRefNormForce();
     // normdisi_ was already set in predictor; this is strictly >0
     normwindk_ = windkman_->GetWindkesselRHSNorm();
+    normwindkdofincr_ = windkman_->GetWindkesselDofIncrNorm();
     timer_->ResetStartTime();
 
     // equilibrium iteration loop
-    while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+    while ( ( (not Converged() and (not linsolve_error) ) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
     {
       // make negative residual
       fres_->Scale(-1.0);
@@ -2821,8 +2830,12 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       else
       {
         // Call Windkessel solver to solve system
-        windkman_->Solve(SystemMatrix(),disi_,fres_);
+        linsolve_error = windkman_->Solve(SystemMatrix(),disi_,fres_);
       }
+
+      // check for problems in linear solver
+      // however we only care about this if we have a fancy divcont action  (meaning function will return 0)
+      linsolve_error=LinSolveErrorCheck(linsolve_error);
 
       // recover contact / meshtying Lagrange multipliers
       if(HaveContactMeshtying())
@@ -2865,13 +2878,6 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       if (locsysman_ != Teuchos::null)
         locsysman_->RotateLocalToGlobal(fres_);
 
-      // build residual force norm
-      normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
-      // build residual displacement norm
-      normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
-      // build residual pressure norm
-      normwindk_ = windkman_->GetWindkesselRHSNorm();
-
       if (pressure_ != Teuchos::null)
       {
         Teuchos::RCP<Epetra_Vector> pres = pressure_->ExtractCondVector(fres_);
@@ -2890,6 +2896,10 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
         normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
         // build residual displacement norm
         normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+        // build residual windkessel norm
+        normwindk_ = windkman_->GetWindkesselRHSNorm();
+        // build residual windkessel dof increment norm
+        normwindkdofincr_ = windkman_->GetWindkesselDofIncrNorm();
       }
 
       // print stuff
@@ -2903,8 +2913,8 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     iter_ -= 1;
   }
 
-  // no linear solver error check implemented here, always passing 0
-  return UzawaLinearNewtonFullErrorCheck(0);
+  //do nonlinear solver error check
+  return UzawaLinearNewtonFullErrorCheck(linsolve_error);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -3864,7 +3874,8 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
   // add Windkessel norm
   if (windkman_->HaveWindkessel())
   {
-    oss << std::setw(16)<< "abs-windk-norm";
+    oss << std::setw(18)<< "abs-wkres-norm";
+    oss << std::setw(18)<< "abs-wkinc-norm";
   }
 
   if (itertype_==INPAR::STR::soltech_ptc)
@@ -4029,7 +4040,8 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
   // add Windkessel norm
   if (windkman_->HaveWindkessel())
   {
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << normwindk_;
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << normwindk_;
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << normwindkdofincr_;
   }
 
   if (itertype_==INPAR::STR::soltech_ptc)

@@ -100,9 +100,24 @@ namespace UTILS
     };
 
     /*!
+     \brief Return windkessel rhs norm at generalized midpoint $t_{n+\theta}$
+    */
+    double GetWindkesselDofIncrNorm() const
+    {
+      double foo;
+      wkdofincrement_->Norm2(&foo);
+      return foo;
+    };
+
+    /*!
          \brief Update windkessel dofs
     */
     void UpdateTimeStep();
+
+    /*!
+         \brief Update windkessel dofs
+    */
+    void ResetStep();
 
     /// Add a vector as residual increment to the windkessel dof vector
     void UpdateWkDof
@@ -226,7 +241,7 @@ namespace UTILS
     );
 
 
-    void Solve
+    int Solve
     (
       Teuchos::RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
       Teuchos::RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
@@ -253,6 +268,7 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> dwkdof_; ///< wkdof rate vector at t_{n}
     Teuchos::RCP<Epetra_Vector> dwkdofn_; ///< wkdof rate vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> dwkdofm_; ///< wkdof rate vector at mid-point
+    Teuchos::RCP<Epetra_Vector> wkdofincrement_; ///< increment of wkdof
     Teuchos::RCP<Epetra_Vector> v_; ///< vol vector at t_{n}
     Teuchos::RCP<Epetra_Vector> vn_; ///< vol vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> vm_; ///< vol vector at mid-point

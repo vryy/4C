@@ -168,6 +168,7 @@ UTILS::WindkesselManager::WindkesselManager
     // Initialize vectors
     actdisc_->ClearState();
     wkdof_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
+    wkdofincrement_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     wkdofn_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     wkdofm_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
     dwkdof_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
@@ -194,6 +195,7 @@ UTILS::WindkesselManager::WindkesselManager
     windk_rhs_1_=Teuchos::rcp(new Epetra_Vector(*windkesselmap_));
 
     wkdof_->PutScalar(0.0);
+    wkdofincrement_->PutScalar(0.0);
     wkdofn_->PutScalar(0.0);
     wkdofm_->PutScalar(0.0);
     dwkdof_->PutScalar(0.0);
@@ -433,7 +435,18 @@ void UTILS::WindkesselManager::UpdateTimeStep()
 }
 
 
+void UTILS::WindkesselManager::ResetStep()
+{
 
+  wkdofn_->Update(1.0,*wkdof_,0.0);
+  dwkdofn_->Update(1.0,*dwkdof_,0.0);
+  vn_->Update(1.0,*v_,0.0);
+  qn_->Update(1.0,*q_,0.0);
+  dqn_->Update(1.0,*dq_,0.0);
+  ddqn_->Update(1.0,*ddq_,0.0);
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -612,7 +625,7 @@ void UTILS::WindkesselManager::SolverSetup
 
 
 
-void UTILS::WindkesselManager::Solve
+int UTILS::WindkesselManager::Solve
 (
     Teuchos::RCP<LINALG::SparseMatrix> mat_structstiff,
     Teuchos::RCP<Epetra_Vector> dispinc,
@@ -696,15 +709,18 @@ void UTILS::WindkesselManager::Solve
     std::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits<<std::endl;
 #endif
 
+  int linsolve_err = 0;
   // solve with merged matrix
   //solver_->Solve(mergedmatrix->EpetraMatrix(),mergedsol,mergedrhs,true,counter_==0);
   // solve with BlockMatrix
-  solver_->Solve(blockmat,mergedsol,mergedrhs,true,counter_==0);
+  linsolve_err = solver_->Solve(blockmat,mergedsol,mergedrhs,true,counter_==0);
   solver_->ResetTolerance();
 
   // store results in smaller vectors
   mapext.ExtractVector(mergedsol,0,dispinc);
   mapext.ExtractVector(mergedsol,1,wkdofincr);
+
+  wkdofincrement_->Update(1.,*wkdofincr,0.);
 
   //std::cout << "" << *dofincr << std::endl;
   counter_++;
@@ -712,5 +728,5 @@ void UTILS::WindkesselManager::Solve
   // update Windkessel dofs
   UpdateWkDof(wkdofincr);
 
-  return;
+  return linsolve_err;
 }

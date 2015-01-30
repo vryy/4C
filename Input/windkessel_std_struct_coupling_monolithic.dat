@@ -45,7 +45,7 @@ RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------SOLVER 1
-SOLVER                          Superlu
+SOLVER                          UMFPACK
 -----------------------------------------------------------SOLVER 2
 AZBDIAG                         0
 AZCONV                          AZ_r0
@@ -123,6 +123,7 @@ STC_LAYER                       1
 TIMESTEP                        0.1
 TOLCONSTR                       1e-08
 TOLWINDKESSEL                   1e-06
+TOLWINDKESSELDOFINCR            1e-08
 TOLDISP                         1e-07
 TOLINCO                         1e-08
 TOLPRE                          1e-08

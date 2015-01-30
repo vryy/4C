@@ -993,6 +993,7 @@ namespace STR
     int uzawaitermax_;  //!< maximally permitted Uzawa iterations
     double tolcon_;  //!< tolerance constraint
     double tolwindk_;  //!< tolerance Windkessel
+    double tolwindkdofincr_;  //!< tolerance windkessel dof increment
     int iter_;  //!< iteration step
     double normcharforce_;  //!< characteristic norm for residual force
     double normchardis_;  //!< characteristic norm for residual displacements
@@ -1000,6 +1001,7 @@ namespace STR
     double normdisi_;  //!< norm of residual displacements
     double normcon_;  //!< norm of constraint
     double normwindk_;  //!< norm of Windkessel
+    double normwindkdofincr_;  //!< norm of windkessel dof increment
     double normpfres_; //!< norm of residual pressure forces
     double normpres_; //!< norm of residual pressures
     double normcontconstr_;  //!< norm of contact/meshtying constraint rhs (contact/meshtying in saddlepoint formulation only)
