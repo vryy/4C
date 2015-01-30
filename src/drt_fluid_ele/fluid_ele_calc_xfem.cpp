@@ -1188,7 +1188,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
     DRT::Element * side = cutdis.gElement( sid );
     side->LocationVector(cutdis,cutla,false);
     // the corresponding embedded element
-    DRT::Element * emb_ele = embdis.gElement( mc_ff->GetCouplingElementId(sid));
+    DRT::Element * emb_ele = embdis.gElement( mc_ff->GetEmbeddedElementId(sid));
     emb_ele->LocationVector(embdis,alela,false);
 
     // embedded geometry
@@ -3413,7 +3413,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         {
           Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_ff =
               Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(cond_manager->GetMeshCoupling(0));
-          coupl_ele = coupl_dis_->gElement( mc_ff->GetCouplingElementId(coup_sid) );
+          coupl_ele = coupl_dis_->gElement( mc_ff->GetEmbeddedElementId(coup_sid) );
         }
       }
       else
@@ -4869,7 +4869,7 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
 
     Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_ff =
         Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(cond_manager->GetMeshCoupling(0));
-    const int lid = mc_ff->GetFaceLidOfCouplingElement(face->Id());
+    const int lid = mc_ff->GetFaceLidOfEmbeddedElement(face->Id());
     //---------------------------------------------------
 
     // compute the uncut element's surface measure

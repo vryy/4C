@@ -314,7 +314,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
               {
                 // get the corresponding embedded element for nitsche
                 // embedded and two-sided
-                int emb_eid = mc_ff_->GetCouplingElementId(coup_sid);
+                int emb_eid = mc_ff_->GetEmbeddedElementId(coup_sid);
                 coupl_ele = coupl_dis->gElement( emb_eid );
               }
               else
@@ -677,7 +677,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
       DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
       if ( ele==NULL ) dserror( "expect FluidIntFace element" );
       if (xff_eos_pres_emb_layer_)
-        edgestab_->EvaluateEdgeStabBoundaryGP(faceparams, embdis_,mc_ff_->GetAuxiliaryCouplingDiscretization(), ele, sysmat_linalg, residual_col);
+        edgestab_->EvaluateEdgeStabBoundaryGP(faceparams, embdis_,mc_ff_->GetAuxiliaryDiscretization(), ele, sysmat_linalg, residual_col);
       else
         edgestab_->EvaluateEdgeStabStd(faceparams, embdis_, ele, sysmat_linalg, residual_col);
     }
@@ -1414,6 +1414,8 @@ void FLD::XFluidFluid::Init()
   const std::string condname = "XFEMSurfFluidFluid";
   mc_ff_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(condition_manager_->GetMeshCoupling(condname));
 
+  if (DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") != INPAR::FLUID::no_error_calculation)
+    mc_ff_->RedistributeForErrorCalculation();
   //---------------------------------------------------------------------------------------------------------
 
 
@@ -3025,7 +3027,7 @@ void FLD::XFluidFluid::OutputDiscret()
 
     if (nitsche_evp_)
     {
-      Teuchos::RCP<DRT::Discretization> aux_dis = mc_ff_->GetAuxiliaryCouplingDiscretization();
+      Teuchos::RCP<DRT::Discretization> aux_dis = mc_ff_->GetAuxiliaryDiscretization();
       disToStream(aux_dis, aux_dis->Name(), true, true, true, true, false,  false, gmshfilecontent);
     }
 

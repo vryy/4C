@@ -447,53 +447,57 @@ public:
   void EstimateNitscheTraceMaxEigenvalue(const Teuchos::RCP<const Epetra_Vector> & dispnp) const;
 
   //! get auxiliary coupling discretization (embedded elements with nodes in the cutting surface discretization)
-  Teuchos::RCP<DRT::Discretization> GetAuxiliaryCouplingDiscretization()
+  Teuchos::RCP<DRT::Discretization> GetAuxiliaryDiscretization()
   {
     return aux_coup_dis_;
   }
 
-  //! Access to map from cutting surface element id to coupling element id
-  int GetCouplingElementId(int cutting_id)
+  //! Access to map from cutting surface element id to embedded element id
+  int GetEmbeddedElementId(int cutting_id)
   {
-    std::map<int,int>::iterator it = cutting_coupling_gid_map_.find(cutting_id);
+    std::map<int,int>::iterator it = cutting_emb_gid_map_.find(cutting_id);
 
-    if (it == cutting_coupling_gid_map_.end())
+    if (it == cutting_emb_gid_map_.end())
       dserror("Could not find parent element ID for side %d.", cutting_id);
 
     return it->second;
   }
 
   //! Access to map from cutting surface element id to coupling element's face lid
-  int GetFaceLidOfCouplingElement(int face_id)
+  int GetFaceLidOfEmbeddedElement(int face_id)
   {
-    std::map<int,int>::iterator it = cutting_coupling_face_lid_map_.find(face_id);
+    std::map<int,int>::iterator it = cutting_emb_face_lid_map_.find(face_id);
 
-    if (it == cutting_coupling_face_lid_map_.end())
+    if (it == cutting_emb_face_lid_map_.end())
       dserror("No local id of the face-element % d w.r.t embedded element stored!", face_id);
 
     return it->second;
   }
 
+  //! ghost interface-contributing embedded elements (required for error calculation in case
+  //! of xfluid-sided coupling)
+  void RedistributeForErrorCalculation();
+
 private:
 
-  //! ghost coupling elements, that contribute to the cutting interface discretization on all procs
-  void RedistributeCouplingDiscretization();
+  //! ghost embedded elements, that contribute to the cutting interface discretization on all procs
+  void RedistributeEmbeddedDiscretization();
 
   //! build an auxiliary discretization out of the elements, that contribute to the cutting discretization
-  void CreateAuxiliaryCouplingDiscretization();
+  void CreateAuxiliaryDiscretization();
 
-  //! create map from cutting surface element id to coupling element id
-  void CreateCuttingToCouplingElementMap();
+  //! create map from cutting surface element id to embedded element id
+  void CreateCuttingToEmbeddedElementMap();
 
   //! auxiliary discretization, based on the elements of cond_dis, that contribute to
   //! the elements of cutter_dis_ with at least one edge
   Teuchos::RCP<DRT::Discretization> aux_coup_dis_;
 
-  //! map from cutting surface element id to coupling element id
-  std::map<int,int> cutting_coupling_gid_map_;
+  //! map from cutting surface element id to embedded element id
+  std::map<int,int> cutting_emb_gid_map_;
 
-  //! map from cutting surface element id to coupling element's face lid
-  std::map<int,int> cutting_coupling_face_lid_map_;
+  //! map from cutting surface element id to embedded element's face lid
+  std::map<int,int> cutting_emb_face_lid_map_;
 
 };
 

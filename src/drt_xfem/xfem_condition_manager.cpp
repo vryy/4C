@@ -308,24 +308,37 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
       GetCouplingStrategy() == INPAR::XFEM::Two_Sided_Coupling)
   {
     // ghost coupling elements, that contribute to the cutting discretization
-    RedistributeCouplingDiscretization();
+    RedistributeEmbeddedDiscretization();
     // create map from side to embedded element ID
-    CreateCuttingToCouplingElementMap();
+    CreateCuttingToEmbeddedElementMap();
 
     // Todo: create only for Nitsche+EVP & EOS on outer embedded elements
-    CreateAuxiliaryCouplingDiscretization();
+    CreateAuxiliaryDiscretization();
   }
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFluidFluid::RedistributeCouplingDiscretization()
+void XFEM::MeshCouplingFluidFluid::RedistributeForErrorCalculation()
+{
+  if (GetCouplingStrategy() == INPAR::XFEM::Embedded_Sided_Coupling ||
+      GetCouplingStrategy() == INPAR::XFEM::Two_Sided_Coupling)
+    return;
+  // ghost coupling elements, that contribute to the cutting discretization
+  RedistributeEmbeddedDiscretization();
+  // create map from side to embedded element ID
+  CreateCuttingToEmbeddedElementMap();
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFluidFluid::RedistributeEmbeddedDiscretization()
 {
 //#ifdef DEBUG
 //  // collect conditioned nodes and compare to the overall number of nodes in
 //  // the surface discretization
 //  std::vector<DRT::Condition*> cnd;
-//  coupl_dis_->GetCondition(cond_name_,cnd);
+//  cond_dis_->GetCondition(cond_name_,cnd);
 //
 //  // get the set of ids of all xfem nodes
 //  std::set<int> cond_nodeset;
@@ -349,7 +362,7 @@ void XFEM::MeshCouplingFluidFluid::RedistributeCouplingDiscretization()
   std::set<int> adj_eles_row;
   std::set<int> adj_ele_nodes_row;
 
-  const int mypid = coupl_dis_->Comm().MyPID();
+  const int mypid = cond_dis_->Comm().MyPID();
 
   // STEP 1: Query
   // loop over nodes of cutter discretization (conditioned nodes)
@@ -360,7 +373,7 @@ void XFEM::MeshCouplingFluidFluid::RedistributeCouplingDiscretization()
 
     // node from coupling discretization (is on this proc, as cutter_dis nodes are
     // a subset!)
-    const DRT::Node* cond_node = coupl_dis_->gNode(cond_node_gid);
+    const DRT::Node* cond_node = cond_dis_->gNode(cond_node_gid);
 
     // get associated elements
     const DRT::Element*const* cond_eles = cond_node->Elements();
@@ -375,7 +388,7 @@ void XFEM::MeshCouplingFluidFluid::RedistributeCouplingDiscretization()
       const int * node_ids = cond_eles[ie]->NodeIds();
       for (int in = 0; in < cond_eles[ie]->NumNode(); ++ in)
       {
-        if (coupl_dis_->gNode(node_ids[in])->Owner() == mypid)
+        if (cond_dis_->gNode(node_ids[in])->Owner() == mypid)
           adj_ele_nodes_row.insert(node_ids[in]);
       }
     }
@@ -387,19 +400,19 @@ void XFEM::MeshCouplingFluidFluid::RedistributeCouplingDiscretization()
   // store in vector full_{nodes;eles}, which will be appended by the standard
   // column elements/nodes of the discretization we couple with
 
-  LINALG::GatherAll(adj_ele_nodes_row,coupl_dis_->Comm());
-  LINALG::GatherAll(adj_eles_row,coupl_dis_->Comm());
+  LINALG::GatherAll(adj_ele_nodes_row,cond_dis_->Comm());
+  LINALG::GatherAll(adj_eles_row,cond_dis_->Comm());
 
   std::set<int> full_ele_nodes_col(adj_ele_nodes_row);
   std::set<int> full_eles_col(adj_eles_row);
 
-  for (int in = 0; in < coupl_dis_->NumMyColNodes(); in++)
+  for (int in = 0; in < cond_dis_->NumMyColNodes(); in++)
   {
-    full_ele_nodes_col.insert(coupl_dis_->lColNode(in)->Id());
+    full_ele_nodes_col.insert(cond_dis_->lColNode(in)->Id());
   }
-  for (int ie=0; ie < coupl_dis_->NumMyColElements(); ie++)
+  for (int ie=0; ie < cond_dis_->NumMyColElements(); ie++)
   {
-    full_eles_col.insert(coupl_dis_->lColElement(ie)->Id());
+    full_eles_col.insert(cond_dis_->lColElement(ie)->Id());
   }
 
   // create the final column maps
@@ -407,31 +420,31 @@ void XFEM::MeshCouplingFluidFluid::RedistributeCouplingDiscretization()
     std::vector<int> full_nodes(full_ele_nodes_col.begin(),full_ele_nodes_col.end());
     std::vector<int> full_eles(full_eles_col.begin(),full_eles_col.end());
 
-    Teuchos::RCP<const Epetra_Map> full_nodecolmap = Teuchos::rcp(new Epetra_Map(-1, full_nodes.size(), &full_nodes[0], 0, coupl_dis_->Comm()));
-    Teuchos::RCP<const Epetra_Map> full_elecolmap  = Teuchos::rcp(new Epetra_Map(-1, full_eles.size(), &full_eles[0], 0, coupl_dis_->Comm()));
+    Teuchos::RCP<const Epetra_Map> full_nodecolmap = Teuchos::rcp(new Epetra_Map(-1, full_nodes.size(), &full_nodes[0], 0, cond_dis_->Comm()));
+    Teuchos::RCP<const Epetra_Map> full_elecolmap  = Teuchos::rcp(new Epetra_Map(-1, full_eles.size(), &full_eles[0], 0, cond_dis_->Comm()));
 
     // redistribute nodes and elements to column (ghost) map
-    coupl_dis_->ExportColumnNodes(*full_nodecolmap);
-    coupl_dis_->ExportColumnElements(*full_elecolmap);
+    cond_dis_->ExportColumnNodes(*full_nodecolmap);
+    cond_dis_->ExportColumnElements(*full_elecolmap);
 
-    coupl_dis_->FillComplete(true,true, true);
+    cond_dis_->FillComplete(true,true, true);
   }
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFluidFluid::CreateAuxiliaryCouplingDiscretization()
+void XFEM::MeshCouplingFluidFluid::CreateAuxiliaryDiscretization()
 {
   std::string aux_coup_disname("auxiliary_coupling_");
-  aux_coup_disname += coupl_dis_->Name();
+  aux_coup_disname += cond_dis_->Name();
   aux_coup_dis_ = Teuchos::rcp(new DRT::Discretization(aux_coup_disname,
-      Teuchos::rcp(coupl_dis_->Comm().Clone())));
+      Teuchos::rcp(cond_dis_->Comm().Clone())));
 
   // make the condition known to the auxiliary discretization
   // we use the same nodal ids and therefore we can just copy the conditions
   // get the set of ids of all xfem nodes
   std::vector<DRT::Condition*> xfemcnd;
-  coupl_dis_->GetCondition(cond_name_,xfemcnd);
+  cond_dis_->GetCondition(cond_name_,xfemcnd);
 
   std::set<int> xfemnodeset;
 
@@ -449,9 +462,9 @@ void XFEM::MeshCouplingFluidFluid::CreateAuxiliaryCouplingDiscretization()
   std::set<int> adjacent_col;
 
   // loop all column elements and label all row nodes next to a xfem node
-  for (int i=0; i<coupl_dis_->NumMyColElements(); ++i)
+  for (int i=0; i<cond_dis_->NumMyColElements(); ++i)
   {
-    DRT::Element* actele = coupl_dis_->lColElement(i);
+    DRT::Element* actele = cond_dis_->lColElement(i);
 
     // get the node ids of this element
     const int  numnode = actele->NumNode();
@@ -485,7 +498,7 @@ void XFEM::MeshCouplingFluidFluid::CreateAuxiliaryCouplingDiscretization()
     }
 
     // add the element to the discretization
-    if (coupl_dis_->ElementRowMap()->MyGID(actele->Id()))
+    if (cond_dis_->ElementRowMap()->MyGID(actele->Id()))
     {
       Teuchos::RCP<DRT::Element> bndele =Teuchos::rcp(actele->Clone());
       aux_coup_dis_->AddElement(bndele);
@@ -496,7 +509,7 @@ void XFEM::MeshCouplingFluidFluid::CreateAuxiliaryCouplingDiscretization()
   for (std::set<int>::iterator id=adjacent_row.begin();
        id!=adjacent_row.end(); ++id)
   {
-    DRT::Node* actnode=coupl_dis_->gNode(*id);
+    DRT::Node* actnode = cond_dis_->gNode(*id);
     Teuchos::RCP<DRT::Node> bndnode =Teuchos::rcp(actnode->Clone());
     aux_coup_dis_->AddNode(bndnode);
   }
@@ -528,7 +541,7 @@ void XFEM::MeshCouplingFluidFluid::CreateAuxiliaryCouplingDiscretization()
     aux_coup_dis_->Redistribute(*newnoderowmap,*newnodecolmap,false,false,false);
 
     // make auxiliary discretization have the same dofs as the coupling discretization
-    Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(coupl_dis_,true));
+    Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentIndependentDofSet(cond_dis_,true));
     aux_coup_dis_->ReplaceDofSet(newdofset,false); // do not call this with true (no replacement in static dofsets intended)
     aux_coup_dis_->FillComplete(true,true,true);
   }
@@ -536,7 +549,7 @@ void XFEM::MeshCouplingFluidFluid::CreateAuxiliaryCouplingDiscretization()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFluidFluid::CreateCuttingToCouplingElementMap()
+void XFEM::MeshCouplingFluidFluid::CreateCuttingToEmbeddedElementMap()
 {
   // fill map between boundary (cutting) element id and its corresponding embedded (coupling) element id
   for (int ibele=0; ibele< cutter_dis_->NumMyColElements(); ++ ibele)
@@ -548,9 +561,9 @@ void XFEM::MeshCouplingFluidFluid::CreateCuttingToCouplingElementMap()
     bool bele_found = false;
 
     // ask all conditioned embedded elements for this boundary element
-    for(int iele = 0; iele< coupl_dis_->NumMyColElements(); ++iele)
+    for(int iele = 0; iele< cond_dis_->NumMyColElements(); ++iele)
     {
-      DRT::Element* ele = coupl_dis_->lColElement(iele);
+      DRT::Element* ele = cond_dis_->lColElement(iele);
       const int * ele_node_ids = ele->NodeIds();
 
       // get nodes for every face of the embedded element
@@ -594,8 +607,8 @@ void XFEM::MeshCouplingFluidFluid::CreateCuttingToCouplingElementMap()
 
         if (bele_found)
         {
-          cutting_coupling_gid_map_.insert(std::pair<int,int>(bele->Id(),ele->Id()));
-          cutting_coupling_face_lid_map_.insert(std::pair<int,int>(bele->Id(),f));
+          cutting_emb_gid_map_.insert(std::pair<int,int>(bele->Id(),ele->Id()));
+          cutting_emb_face_lid_map_.insert(std::pair<int,int>(bele->Id(),f));
           break;
         }
       } // loop element faces
@@ -605,7 +618,7 @@ void XFEM::MeshCouplingFluidFluid::CreateCuttingToCouplingElementMap()
 
     if(bele_found == false)
       dserror("Corresponding embedded element for boundary element id %i not found on proc %i ! Please ghost corresponding embedded elements on all procs!",
-        bele->Id(), coupl_dis_->Comm().MyPID());
+        bele->Id(), cond_dis_->Comm().MyPID());
   }
 }
 
