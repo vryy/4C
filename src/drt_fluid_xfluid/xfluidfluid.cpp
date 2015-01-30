@@ -398,8 +398,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS()
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
                                               C_ss,
-                                              cells,
-                                              true);
+                                              cells);
           else if (coupling_approach_ == CouplingNitsche_XFluid)
             impl->ElementXfemInterfaceNIT(    ele,
                                               *discret_,

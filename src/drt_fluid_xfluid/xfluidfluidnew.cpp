@@ -36,6 +36,7 @@ Maintainer:  Raffaela Kruse
 
 #include "../drt_xfem/xfem_edgestab.H"
 #include "../drt_xfem/xfem_dofset.H"
+#include "../drt_xfem/xfem_condition_manager.H"
 #include "../drt_xfem/xfluidfluid_timeInt.H"
 
 
@@ -79,22 +80,16 @@ void FLD::XFluidFluidNew::Init()
 
   if(meshcoupl_dis_.size() != 1) dserror("we expect exact one mesh coupling discretization for Xfluidfluid at the moment!");
 
-  soliddis_ = meshcoupl_dis_[0];
-
-  // make the dofset of boundarydis be a subset of the embedded dis
-  Teuchos::RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(
-      soliddis_,boundarydis_);
-  soliddis_->Redistribute(*(embedded_fluid_->Discretization()->NodeRowMap()), *newcolnodemap);
-  Teuchos::RCP<DRT::DofSet> newdofset=Teuchos::rcp(new DRT::TransparentIndependentDofSet(
-      soliddis_,false));
-  boundarydis_->ReplaceDofSet(newdofset); // do not call this with true!!
-  boundarydis_->FillComplete();
-
-  INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
-  if ((coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling) or (calcerr != INPAR::FLUID::no_error_calculation))
+  if (DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") != INPAR::FLUID::no_error_calculation)
   {
-    PrepareEmbeddedDistribution();
-    CreateBoundaryEmbeddedMap();
+    const std::string cond_name("XFEMCouplingSurfFluidFluid");
+    Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_xff =
+        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(condition_manager_->GetMeshCoupling(cond_name));
+
+    if (mc_xff == Teuchos::null)
+      dserror("Failed to cast to MeshCouplingFluidFluid");
+
+    mc_xff->RedistributeForErrorCalculation();
   }
 
   //-------------------------------------------------------------------
@@ -114,40 +109,20 @@ void FLD::XFluidFluidNew::Init()
 
   state_ = this->GetNewState();
 
-  //----------------------------------------------------------------
-  // create auxiliary discretization of outer embedded fluid elements
-  // Nitsche-Eigenvalue-Problem and for application of EOS
-  // pressure term to outer embedded element
-  //----------------------------------------------------------------
-  // Todo: Shift to XFEM::MeshCouplingFluidFluid
-  if (nitsche_evp_ || xff_eos_pres_emb_layer_)
-    CreateEmbeddedBoundaryDiscretization();
-
   // non-stationary fluid-fluid interface requires
   // proper time integration approach
   if (alefluid_)
     xfluidfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidFluidTimeIntegration(
-        XFluid::discret_,
-        embedded_fluid_->Discretization(),
-        state_->Wizard(), step_,
-        xfem_timeintapproach_,*params_));
+      XFluid::discret_,
+      embedded_fluid_->Discretization(),
+      state_->Wizard(), step_,
+      xfem_timeintapproach_,*params_));
 
 }
 
 void FLD::XFluidFluidNew::SetDirichletNeumannBC()
 {
   XFluid::SetDirichletNeumannBC();
-//
-//  Teuchos::ParameterList eleparams;
-//  // other parameters needed by the elements
-//  eleparams.set("total time",time_);
-//
-//  soliddis_->ClearState();
-//  soliddis_->SetState("velaf",embedded_fluid_->Velnp());
-//  //don't call this with the mapextractor. Otherwise the Mapextractor will
-//  //be built again.
-//  soliddis_->EvaluateDirichlet(eleparams,embedded_fluid_->Velnp(),Teuchos::null,Teuchos::null,Teuchos::null);
-//  soliddis_->ClearState();
 }
 
 void FLD::XFluidFluidNew::SetXFluidFluidParams()
@@ -286,7 +261,8 @@ void FLD::XFluidFluidNew::AssembleMatAndRHS(
 )
 {
   // evaluate elements
-  soliddis_->SetState("velaf",embedded_fluid_->Velnp());
+  const std::string cond_name("XFEMSurfFluidFluid");
+  condition_manager_->GetMeshCoupling(cond_name)->GetCouplingDis()->SetState("velaf",embedded_fluid_->Velnp());
   embedded_fluid_->PrepareSolve();
   XFluid::AssembleMatAndRHS(itnum);
 
@@ -373,8 +349,4 @@ void FLD::XFluidFluidNew::UpdateByIncrement()
   // extract residual
   state_->residual_ = state_->xffluidsplitter_->ExtractXFluidVector(state_->xffluidresidual_);
   embedded_fluid_->Residual() = state_->xffluidsplitter_->ExtractFluidVector(state_->xffluidresidual_);
-
-  // Update the fluid material velocity along the interface (ivelnp_), source (in): state_.velnp_
-  LINALG::Export(*(embedded_fluid_->Velnp()),*(ivelnp_));
-  boundarydis_->SetState("ivelnp",ivelnp_);
 }

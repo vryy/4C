@@ -667,6 +667,9 @@ public:
   //! Return wss manager
   virtual Teuchos::RCP<FLD::UTILS::StressManager> StressManager() {return stressmanager_;}
 
+  //! Evaluate Dirichlet and Neumann boundary conditions
+  virtual void SetDirichletNeumannBC();
+
   //! Apply Dirichlet boundary conditions on provided state vectors
   virtual void ApplyDirichletBC
   (

@@ -201,8 +201,7 @@ public:
       Epetra_SerialDenseMatrix&                                         elemat1_epetra,           ///< local system matrix of intersected element
       Epetra_SerialDenseVector&                                         elevec1_epetra,           ///< local element vector of intersected element
       Epetra_SerialDenseMatrix&                                         Cuiui,                    ///< coupling matrix of a side with itself
-      const GEO::CUT::plain_volumecell_set &                            vcSet,                    ///< set of plain volume cells
-      bool                                                              fluidfluidcoupling = false///< indicates fluid-fluid coupling context
+      const GEO::CUT::plain_volumecell_set &                            vcSet                     ///< set of plain volume cells
   );
 
   /// add Nitsche (NIT) interface condition to element matrix and rhs
@@ -284,25 +283,6 @@ private:
           const double                       h_k,                           ///< characteristic element length
           const double                       NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
           bool                               error_calc = false             ///< when called in error calculation, don't add the inflow terms
-  );
-
-  //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
-  void PatchLocationVector(
-      const Teuchos::RCP<XFEM::ConditionManager> &            cond_manager,            ///< XFEM condition manager
-      const int                                               back_eid,                ///< background element id
-      std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
-      std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
-      std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
-      std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling           ///< coupling matrices
-  );
-
-  //! create location vector w.r.t patch of intersecting boundary elements and reshape coupling matrices
-  void PatchLocationVectorEmb(
-      std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
-      DRT::Discretization &                                   slavedis,                ///< coupling slave discretization
-      std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
-      std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
-      std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling           ///< coupling matrices
   );
 
   //! prepare coupling matrices, that include contributions from convective stabilization

@@ -838,52 +838,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   //  evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
-  {
-    Teuchos::ParameterList eleparams;
-
-    // total time required for Dirichlet conditions
-    eleparams.set("total time",time_);
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("velnp",velnp_);
-
-    // predicted dirichlet values
-    // velnp then also holds prescribed new dirichlet values
-    ApplyDirichletBC(eleparams,velnp_,Teuchos::null,Teuchos::null,false);
-
-    // additionally evaluate problem-specific boundary conditions
-    DoProblemSpecificBoundaryConditions();
-
-    // By definition: Applying DC on the slave side of an internal interface is not allowed
-    //                since it leads to an over-constraint system
-    // Therefore, nodes belonging to the slave side of an internal interface have to be excluded from the DC.
-    // However, a velocity value (projected from the Dirichlet condition on the master side)
-    // has to be assigned to the DOF's on the slave side in order to evaluate the system matrix completely
-
-    // Preparation for including DC on the master side in the condensation process
-    if(msht_ != INPAR::FLUID::no_meshtying)
-      meshtying_->IncludeDirichletInCondensation(velnp_, veln_);
-
-    discret_->ClearState();
-
-    // Transfer of boundary data if necessary
-    turbulent_inflow_condition_->Transfer(veln_,velnp_,time_);
-
-    // add problem-dependent parameters, e.g., thermodynamic pressure in case of loma
-    SetCustomEleParamsApplyNonlinearBoundaryConditions(eleparams);
-
-    if (alefluid_)
-    {
-      discret_->SetState("dispnp", dispnp_);
-    }
-
-    // evaluate Neumann conditions
-    neumann_loads_->PutScalar(0.0);
-    discret_->SetState("scaaf",scaaf_);
-    discret_->EvaluateNeumann(eleparams,*neumann_loads_);
-    discret_->ClearState();
-  }
+  SetDirichletNeumannBC();
 
 
   // --------------------------------------------------
@@ -6535,6 +6490,56 @@ void FLD::FluidImplicitTimeInt::SetTimeStep(const double time, const int step)
   time_ = time;
 
   return;
+}
+
+/*---------------------------------------------------------------*/
+/*---------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::SetDirichletNeumannBC()
+{
+  Teuchos::ParameterList eleparams;
+
+  // total time required for Dirichlet conditions
+  eleparams.set("total time",time_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("velnp",velnp_);
+
+  // predicted dirichlet values
+  // velnp then also holds prescribed new dirichlet values
+  ApplyDirichletBC(eleparams,velnp_,Teuchos::null,Teuchos::null,false);
+
+  // additionally evaluate problem-specific boundary conditions
+  DoProblemSpecificBoundaryConditions();
+
+  // By definition: Applying DC on the slave side of an internal interface is not allowed
+  //                since it leads to an over-constraint system
+  // Therefore, nodes belonging to the slave side of an internal interface have to be excluded from the DC.
+  // However, a velocity value (projected from the Dirichlet condition on the master side)
+  // has to be assigned to the DOF's on the slave side in order to evaluate the system matrix completely
+
+  // Preparation for including DC on the master side in the condensation process
+  if(msht_ != INPAR::FLUID::no_meshtying)
+    meshtying_->IncludeDirichletInCondensation(velnp_, veln_);
+
+  discret_->ClearState();
+
+  // Transfer of boundary data if necessary
+  turbulent_inflow_condition_->Transfer(veln_,velnp_,time_);
+
+  // add problem-dependent parameters, e.g., thermodynamic pressure in case of loma
+  SetCustomEleParamsApplyNonlinearBoundaryConditions(eleparams);
+
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+  }
+
+  // evaluate Neumann conditions
+  neumann_loads_->PutScalar(0.0);
+  discret_->SetState("scaaf",scaaf_);
+  discret_->EvaluateNeumann(eleparams,*neumann_loads_);
+  discret_->ClearState();
 }
 
 /*---------------------------------------------------------------*/

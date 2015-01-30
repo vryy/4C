@@ -225,8 +225,7 @@ namespace ELEMENTS
         Epetra_SerialDenseMatrix&                                         elemat1_epetra,           ///< local system matrix of intersected element
         Epetra_SerialDenseVector&                                         elevec1_epetra,           ///< local element vector of intersected element
         Epetra_SerialDenseMatrix&                                         Cuiui,                    ///< coupling matrix of a side with itself
-        const GEO::CUT::plain_volumecell_set &                            vcSet,                    ///< set of plain volume cells
-        bool                                                              fluidfluidcoupling = false///< indicates fluid-fluid coupling context
+        const GEO::CUT::plain_volumecell_set &                            vcSet                    ///< set of plain volume cells
       ) {dserror("Not implemented!"); return;}
 
     virtual void ElementXfemInterfaceNIT(

@@ -98,46 +98,6 @@ public:
   //! strong Dirichlet condition to fix u_z = 0
   const bool IsPseudo2D(){return is_pseudo_2D_;};
 
-  /*----------------------------------------------------*/
-  //! @name special routines for embedded sided fluidfluid formulation
-  /*----------------------------------------------------*/
-
-  //! set the map to store the local id (value) of the boundary element (key) w.r.t to the embedded element
-  void Set_boundary_emb_face_lid_map(const std::map<int,int > & boundary_emb_face_lid_map)
-  {
-    boundary_emb_face_lid_map_ = boundary_emb_face_lid_map;
-  }
-
-  //! set the map to store the local id (value) of the boundary element (key) w.r.t to the embedded element
-  void Set_boundary_emb_gid_map(const std::map<int,int > & boundary_emb_gid_map)
-  {
-    boundary_emb_gid_map_ = boundary_emb_gid_map;
-  }
-
-  //! get the local id of the face element(key) of the cut discretization w.r.t to the embedded element
-  int Get_face_lid_of_embedded_ele(
-      const int face_id   ///< id of face-element in the cut-discretization
-  )
-  {
-    std::map<int,int>::iterator it = boundary_emb_face_lid_map_.find(face_id);
-
-    if(it == boundary_emb_face_lid_map_.end()) dserror("no local id of the face-element w.r.t embedded element stored!");
-
-    return it->second;
-  }
-
-  //! get global ID of parent embedded element for a side ID in embedded-sided fluid-fluid coupling
-   int Get_embedded_ele_gid(
-       const int sid  ///< ID of associated boundary element
-   )
-   {
-     std::map<int,int>::iterator it = boundary_emb_gid_map_.find(sid);
-
-     if (it == boundary_emb_gid_map_.end()) dserror("Could not find parent element ID for side %d.", sid);
-
-     return it->second;
-   }
-
   //@}
 
 
@@ -236,20 +196,6 @@ private:
 
   //! pseudo 2D flag for 2D simulation with one element in z-direction
   double is_pseudo_2D_;
-
-  //@}
-
-  /*----------------------------------------------------*/
-  //! @name special parameters for embedded sided fluidfluid formulation
-  /*----------------------------------------------------*/
-  //@{
-
-  //! map to store the local id (value) of the boundary element (key) w.r.t to the embedded element
-  //! used to evaluate certain characteristic element length definitions for embedded sided formulations in xfluidfluid
-  std::map<int, int> boundary_emb_face_lid_map_;
-
-  //! map of boundary element to parent element IDs
-  std::map<int,int> boundary_emb_gid_map_;
 
   //@}
 

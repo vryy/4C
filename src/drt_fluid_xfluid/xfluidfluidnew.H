@@ -159,17 +159,6 @@ public:
 
 private:
 
-  ///  prepare embedded discretization for coupling type embedded-sided Nitsche
-  void PrepareEmbeddedDistribution();
-
-  ///  prepare mapping between boundary elements and outer embedded elements
-  /// (required for coupling type embedded-sided Nitsche)
-  void CreateBoundaryEmbeddedMap();
-
-  /// create new discretization from all embedded fluid elements,
-  /// that contribute to the fluid-fluid interface with at least one face
-  void CreateEmbeddedBoundaryDiscretization();
-
   //! create a new merged state container
   void CreateState();
 
@@ -177,10 +166,6 @@ private:
   void AssembleMatAndRHS(
       int itnum                           ///< iteration number
   );
-
-
-  //TODO: remove it if it is not required anymore
-  Teuchos::RCP<DRT::Discretization> soliddis_;
 
   bool ConvergenceCheck(
     int          itnum,
@@ -195,9 +180,6 @@ private:
 
   /// whether the embedded fluid is an ALE-fluid
   bool alefluid_;
-
-  /// auxiliary discretization of outer embedded elements
-  Teuchos::RCP<DRT::Discretization>       embboundarydis_;
 
   /// merged fluid state (cut-dependent) at time n+1
   Teuchos::RCP<FLD::XFluidFluidState> state_;

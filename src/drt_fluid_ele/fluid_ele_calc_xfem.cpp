@@ -1403,8 +1403,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
     Epetra_SerialDenseMatrix&                                         elemat1_epetra,           ///< local system matrix of intersected element
     Epetra_SerialDenseVector&                                         elevec1_epetra,           ///< local element vector of intersected element
     Epetra_SerialDenseMatrix&                                         Cuiui,                    ///< coupling matrix of a side with itself
-    const GEO::CUT::plain_volumecell_set &                            vcSet,                    ///< set of plain volume cells
-    bool                                                              fluidfluidcoupling        ///< indicates fluid-fluid coupling context
+    const GEO::CUT::plain_volumecell_set &                            vcSet                    ///< set of plain volume cells
 )
 {
 #ifdef DEBUG
@@ -1439,14 +1438,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   // 'boundary cell' = belongs to volume-cell
 
   // do we need convective stabilization?
-  bool add_conv_stab = false;
-
-  if (fluidfluidcoupling)
-  {
-    add_conv_stab = ( fldparaxfem_->XffConvStabScaling() != INPAR::XFEM::XFF_ConvStabScaling_none );
-  }
-  else
-    add_conv_stab = ( fldparaxfem_->ConvStabScaling() != INPAR::XFEM::ConvStabScaling_none );
+  bool add_conv_stab( fldparaxfem_->XffConvStabScaling() != INPAR::XFEM::XFF_ConvStabScaling_none ||
+      fldparaxfem_->ConvStabScaling() != INPAR::XFEM::ConvStabScaling_none);
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
