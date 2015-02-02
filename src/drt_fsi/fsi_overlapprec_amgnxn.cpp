@@ -482,7 +482,6 @@ void FSI::AMGnxnInterfaceLungFSI::Default_SCHUR_ILU_KLU(Teuchos::ParameterList& 
   file_contents += "      <Parameter name=\"schur smoother\"      type=\"string\"  value=\"DIRECT_SOLVER\"/>              ";
   file_contents += "      <Parameter name=\"correction\"          type=\"string\"  value=\"approximated inverse\"/>       ";
   file_contents += "      <Parameter name=\"sweeps\"              type=\"int\"     value=\"2\"/>                          ";
-  file_contents += "      <Parameter name=\"omega\"               type=\"double\"  value=\"1\"/>                          ";
   file_contents += "      <Parameter name=\"alpha\"               type=\"double\"  value=\"0.8\"/>                        ";
   file_contents += "    </ParameterList>                                                                                  ";
   file_contents += "  </ParameterList>                                                                                    ";
@@ -491,7 +490,7 @@ void FSI::AMGnxnInterfaceLungFSI::Default_SCHUR_ILU_KLU(Teuchos::ParameterList& 
   file_contents += "    <ParameterList name=\"parameters\">                                                               ";
   file_contents += "      <Parameter name=\"blocks\"      type=\"string\"  value=\"(0),(1),(2)\"/>                        ";
   file_contents += "      <Parameter name=\"smoothers\"   type=\"string\"  value=\"myILU,myILU,myILU\"/>                  ";
-  file_contents += "      <Parameter name=\"sweeps\"      type=\"int\"     value=\"1\"/>                                  ";
+  file_contents += "      <Parameter name=\"sweeps\"      type=\"int\"     value=\"2\"/>                                  ";
   file_contents += "      <Parameter name=\"omega\"       type=\"double\"  value=\"1.0\"/>                                ";
   file_contents += "    </ParameterList>                                                                                  ";
   file_contents += "  </ParameterList>                                                                                    ";

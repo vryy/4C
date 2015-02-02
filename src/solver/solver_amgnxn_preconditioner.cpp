@@ -582,7 +582,9 @@ int  LINALG::SOLVER::BlockSmoother_Operator::ApplyInverse(
   if(!is_setup_flag_)
     dserror("ApplyInverse cannot be called without a previous set up of the preconditioner");
   if(Sbase_==Teuchos::null) dserror("Something wrong");
-  Sbase_->Apply(X,Y);
+  Epetra_MultiVector Ytmp(Y.Map(),X.NumVectors(),true); // true is necessary! (initial guess has to be zero)
+  Sbase_->Apply(X,Ytmp);
+  Y=Ytmp;
   // TODO This does not work, Why??
   //if(S_==Teuchos::null) dserror("Something wrong");
   //S_->Apply(X,Y);

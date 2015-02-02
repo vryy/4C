@@ -191,7 +191,7 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::Richardson_Vcycle(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, int start_level) const
 {
   // Create auxiliary vectors
-  Epetra_MultiVector Ytmp(Y.Map(),X.NumVectors(),true); // true May be not necessary TODO
+  Epetra_MultiVector Ytmp(Y.Map(),X.NumVectors(),true); // true is necessary! (initial guess has to be zero)
   Epetra_MultiVector DX(X.Map(),X.NumVectors(),false);
   Epetra_MultiVector DY(Y.Map(),X.NumVectors(),false);
 
