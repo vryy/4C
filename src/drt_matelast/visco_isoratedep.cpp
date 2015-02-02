@@ -55,13 +55,13 @@ void MAT::ELASTIC::IsoRateDep::AddCoefficientsViscoModified(
   const double n = params_ -> n_;
 
   // get time algorithmic parameters.
-  double dt = params.get<double>("delta time"); // TIMESTEP in the .dat file
+  double dt = params.get<double>("delta time");
 
-  modmy(1) += 2* n * modrateinv(1) ;
-  modmy(2) += (2* n *(modinv(0)-3) ) / dt;
+  modmy(1) += 2.* n * modrateinv(1) ;
+  modmy(2) += (2.* n *(modinv(0)-3.) ) / dt;
 
-  modxi(1) += (4* n) / dt;
-  modxi(2) += (4* n *(modinv(0)-3) ) / (dt*dt);
+  modxi(1) += (4.* n) / dt;
+  modxi(2) += (4.* n *(modinv(0)-3.) ) / (dt*dt);
 
   return;
 }
