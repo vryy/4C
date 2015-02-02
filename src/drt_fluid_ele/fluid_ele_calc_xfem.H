@@ -160,13 +160,12 @@ public:
       DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
       DRT::Discretization &                                               dis,               ///< background discretization
       const std::vector<int> &                                            lm,                ///< element local map
+      const Teuchos::RCP<XFEM::ConditionManager> &                        cond_manager,      ///< XFEM condition manager
       Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
       Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
-      const Teuchos::RCP<DRT::Discretization> &                           cutdis,            ///< cut discretization
       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-      Teuchos::ParameterList&                                             params,            ///< parameter list
-      const GEO::CUT::plain_volumecell_set&                               vcSet              ///< volumecell sets in this element
+      Teuchos::ParameterList&                                             params             ///< parameter list
   );
 
   virtual int ComputeErrorInterfaceXFluidFluid(

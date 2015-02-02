@@ -81,6 +81,7 @@ void ADAPTER::XFluidFSI::Init()
 /*----------------------------------------------------------------------*/
 double ADAPTER::XFluidFSI::TimeScaling() const
 {
+  // second order (OST(0.5) except for the first starting step, otherwise 1st order BackwardEuler
   if (params_->get<bool>("interface second order"))
     return 2./xfluid_->Dt();
   else

@@ -302,10 +302,6 @@ DSURF                           0
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 DSURF                           0
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-DSURF                           0
 --------------------------------------------------SURFACE TENSION CONDITIONS
 DSURF                           0
 -------------------------------------------------------SURFACTANT CONDITIONS

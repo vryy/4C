@@ -216,7 +216,7 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidFluidNew::GetNewState()
 {
   if (alefluid_)
   {
-    LINALG::Export(*dispnp_,*idispnp_);
+    LINALG::Export(*dispnp_,*IDispnp());
   }
 
   Teuchos::RCP<FLD::XFluidFluidState> state = state_creator_->Create(
@@ -349,4 +349,5 @@ void FLD::XFluidFluidNew::UpdateByIncrement()
   // extract residual
   state_->residual_ = state_->xffluidsplitter_->ExtractXFluidVector(state_->xffluidresidual_);
   embedded_fluid_->Residual() = state_->xffluidsplitter_->ExtractFluidVector(state_->xffluidresidual_);
+
 }

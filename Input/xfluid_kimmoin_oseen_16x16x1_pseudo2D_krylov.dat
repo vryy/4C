@@ -86,11 +86,6 @@ VOLUME_GAUSS_POINTS_BY          DirectDivergence //Tessellation //Tessellation /
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY                 xfluid_stationary_boundary
-INTERFACE_VEL_INITIAL           interface_vel_init_by_funct
-VEL_INIT_FUNCT_NO               2
-INTERFACE_VEL                   interface_vel_by_funct
-VEL_FUNCT_NO                    2
-INTERFACE_DISP                  interface_disp_zero
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 NIT_STAB_FAC                   30.0
@@ -158,12 +153,20 @@ E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 CURVE none none non
 DVOL   1
 // fluid_volume
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
------------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
-DSURF  2
-// surface_inner_structure
-E 1 - 1 structure conforming
-// surface_outer_structure
-E 2 - 1 structure conforming
+----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
+// DOBJECT COUPLINGID EVALTYPE
+DSURF                           2
+//                              surface_inner_structure
+E 1 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
+//                              surface_outer_structure
+E 2 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
+------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
+// DOBJECT COUPLINGID EVALTYPE
+DSURF                           2
+//                              surface_inner_structure
+E 1 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//                              surface_outer_structure
+E 2 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1141 DNODE 1
 NODE 1142 DNODE 1

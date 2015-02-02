@@ -96,8 +96,20 @@ public:
   explicit CouplingBase(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,    ///< background discretization
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
-      Teuchos::RCP<DRT::Discretization>&  cond_dis   ///< full discretization from which the cutter discretization is derived
-  ) : bg_dis_(bg_dis), cond_name_(cond_name), cond_dis_(cond_dis), cutter_dis_(Teuchos::null), coupl_dis_(Teuchos::null), coupling_strategy_(INPAR::XFEM::invalid)
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< full discretization from which the cutter discretization is derived
+      const double                        time,      ///< time
+      const int                           step       ///< time step
+  ) :
+  bg_dis_(bg_dis),
+  cond_name_(cond_name),
+  cond_dis_(cond_dis),
+  cutter_dis_(Teuchos::null),
+  coupl_dis_(Teuchos::null),
+  coupling_strategy_(INPAR::XFEM::invalid),
+  myrank_(bg_dis_->Comm().MyPID()),
+  dt_(-1.0),
+  time_(time),
+  step_(step)
   {
   }
 
@@ -106,6 +118,26 @@ public:
   {
     return;
   }
+
+  void SetTimeAndStep(
+      const double time,
+      const int step
+  )
+  {
+    time_ = time;
+    step_ = step;
+  }
+
+  void IncrementTimeAndStep(
+      const double dt
+  )
+  {
+    dt_    = dt;
+    time_ += dt;
+    step_ += 1;
+  }
+
+
 
   const EleCoupCond & GetCouplingCondition(
       const int gid ///< global element element id w.r.t cutter discretization (bgele->Id for LevelsetCoupling cut and side-Id for MeshCoupling)
@@ -123,7 +155,11 @@ public:
 
   const INPAR::XFEM::CouplingStrategy GetCouplingStrategy(){return coupling_strategy_;}
 
+  virtual void PrepareSolve(){};
+
 protected:
+
+
 
   void SetElementConditions();
 
@@ -164,6 +200,16 @@ protected:
   ///< coupling strategy, type of weighting
   INPAR::XFEM::CouplingStrategy coupling_strategy_;
 
+
+
+  int myrank_;
+
+  double dt_; ///< current time step size
+
+  double time_;
+
+  int step_;
+
 };
 
 
@@ -178,7 +224,9 @@ public:
   explicit MeshCoupling(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
-      Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
+      Teuchos::RCP<DRT::Discretization>&  cond_dis, ///< discretization from which cutter discretization can be derived
+      const double                        time,      ///< time
+      const int                           step       ///< time step
   );
 
   //! destructor
@@ -203,9 +251,11 @@ public:
   // zero interface state vectors for FSI
   virtual void ZeroStateVectors_FSI(){};
 
-
   /// set state vectors for cutter discretization
   virtual void SetState();
+
+  /// set displacement state vectors for cutter discretization
+  virtual void SetStateDisplacement();
 
   /// update interface field state vectors
   virtual void UpdateStateVectors();
@@ -290,6 +340,91 @@ protected:
 
 
 
+
+/*!
+\brief
+ */
+class MeshCouplingBC : public MeshCoupling
+{
+public:
+
+  //! constructor
+  explicit MeshCouplingBC(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const double                        time,      ///< time
+      const int                           step       ///< time step
+  );
+
+  //! destructor
+  virtual ~MeshCouplingBC()
+  {
+    return;
+  }
+
+
+private:
+
+  void EvaluateInterfaceDisplacement(
+      std::vector<double>& final_values,
+      DRT::Node* node,
+      DRT::Condition* cond,
+      const double time
+  );
+
+  void EvaluateInterfaceVelocity(
+      std::vector<double>& final_values,
+      DRT::Node* node,
+      DRT::Condition* cond,
+      const double time,
+      const double dt
+  );
+
+  void ComputeInterfaceVelocityFromDisplacement(
+      std::vector<double>& final_values,
+      DRT::Node* node,
+      const double dt,
+      const std::string* evaltype
+  );
+
+  void EvaluateFunction(
+      std::vector<double>& final_values,
+      const double* x,
+      DRT::Condition* cond,
+      const double time
+  );
+
+  void EvaluateImplementation(
+      std::vector<double>& final_values,
+      const double* x,
+      DRT::Condition* cond,
+      const double time,
+      const std::string& function_name
+  );
+
+protected:
+
+  virtual void SetInterfaceDisplacement();
+
+  virtual void SetInterfaceVelocity();
+
+  virtual void EvaluateCondition(
+      Teuchos::RCP<Epetra_Vector> ivec,
+      const std::string& condname,
+      const double time,
+      const double dt = 0.0
+  );
+
+  virtual void PrepareSolve();
+
+};
+
+
+
+
+
+
 /*!
 \brief
  */
@@ -301,7 +436,9 @@ public:
   explicit MeshCouplingFSI(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
-      Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const double                        time,      ///< time
+      const int                           step       ///< time step
   );
 
   //! destructor
@@ -390,7 +527,9 @@ public:
   explicit MeshCouplingFSICrack(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
-      Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const double                        time,      ///< time
+      const int                           step       ///< time step
   );
 
   //! destructor
@@ -439,7 +578,9 @@ public:
   explicit MeshCouplingFluidFluid(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
-      Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const double                        time,      ///< time
+      const int                           step       ///< time step
   );
 
   //! estimate the penalty scaling in Nitsche's method from the trace inequality
@@ -478,6 +619,7 @@ public:
   //! of xfluid-sided coupling)
   void RedistributeForErrorCalculation();
 
+
 private:
 
   //! ghost embedded elements, that contribute to the cutting interface discretization on all procs
@@ -511,7 +653,9 @@ public:
   //! constructor
   explicit LevelSetCoupling(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
-      const std::string &                 cond_name ///< name of the condition, by which the derived cutter discretization is identified
+      const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      const double                        time,      ///< time
+      const int                           step       ///< time step
   );
 
 
@@ -559,7 +703,9 @@ public:
   //! constructor
   explicit ConditionManager(
       Teuchos::RCP<DRT::Discretization> &               bg_dis,          ///< background discretization
-      std::vector<Teuchos::RCP<DRT::Discretization> > & meshcoupl_dis    ///< mesh coupling discretizations
+      std::vector<Teuchos::RCP<DRT::Discretization> > & meshcoupl_dis,   ///< mesh coupling discretizations
+      const double                                      time,            ///< time
+      const int                                         step             ///< time step
   );
 
   //! destructor
@@ -567,6 +713,14 @@ public:
   {
     return;
   }
+
+  void SetTimeAndStep(
+      const double time,
+      const int step
+  );
+
+  void IncrementTimeAndStep(
+      const double dt);
 
   void CreateNewLevelSetCoupling(const std::string& cond_name);
 
@@ -584,23 +738,29 @@ public:
     if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)
     {
       std::cout << " create new MeshCouplingFSICrack" << std::endl;
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSICrack(bg_dis_, cond_name, cond_dis)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSICrack(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
         CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_MONO)
     {
       std::cout << " create new MeshCouplingFSI" << std::endl;
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSI(bg_dis_, cond_name, cond_dis)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSI(bg_dis_, cond_name, cond_dis, time_, step_)));
+    }
+    else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
+        CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NEUMANN)
+    {
+      std::cout << " create new MeshCouplingBC" << std::endl;
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingBC(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
     {
       std::cout << " create new MeshCoupling" << std::endl;
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else
     {
       std::cout << " create new MeshCoupling" << std::endl;
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(bg_dis_, cond_name, cond_dis)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
   }
 
@@ -609,15 +769,15 @@ public:
       const std::string &                 cond_name
   )
   {
-    levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCoupling(bg_dis_, cond_name)));
+    levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCoupling(bg_dis_, cond_name, time_, step_)));
   }
 
 
 
   // build the whole object which then can be used
-  void Create(const double time);
+  void Create();
 
-  void Update(const double time); // update the meshcoupling objects (interface displ), update the level-set couplings
+  //void Update(const double time); // update the meshcoupling objects (interface displ), update the level-set couplings
 
 
   /// Getters
@@ -994,6 +1154,8 @@ public:
 
   void SetState();
 
+  void SetStateDisplacement();
+
   /// update interface field state vectors
   void UpdateStateVectors();
 
@@ -1024,6 +1186,8 @@ public:
       const int step
   );
 
+  void PrepareSolve();
+
 private:
 
   void UpdateLevelSetField();
@@ -1048,6 +1212,9 @@ private:
 
   /// time
   double time_;
+
+  /// time step
+  int step_;
 
   //! @name state vectors based on background discretization
 

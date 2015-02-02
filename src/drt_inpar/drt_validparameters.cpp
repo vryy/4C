@@ -7312,49 +7312,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    ),
                                &xfluid_general);
 
-
-  setStringToIntegralParameter<int>("INTERFACE_VEL_INITIAL","interface_vel_init_zero","how to compute or define the initial interface velocity",
-                               tuple<std::string>("interface_vel_init_by_funct", "interface_vel_init_zero"),
-                               tuple<int>(
-                                   INPAR::XFEM::interface_vel_init_by_funct,   // define interface velocity by function
-                                   INPAR::XFEM::interface_vel_init_zero        // zero interface velocity function
-                                   ),
-                               &xfluid_general);
-
-
-  setStringToIntegralParameter<int>("INTERFACE_VEL","interface_vel_by_disp","how to compute or define the interface velocity",
-                               tuple<std::string>("interface_vel_by_disp", "interface_vel_by_funct", "interface_vel_by_curve", "interface_vel_zero"),
-                               tuple<int>(
-                                   INPAR::XFEM::interface_vel_by_disp,    // define interface velocity by displacement of solid
-                                   INPAR::XFEM::interface_vel_by_funct,   // define interface velocity by function
-                                   INPAR::XFEM::interface_vel_by_curve,   // define interface velocity by curve
-                                   INPAR::XFEM::interface_vel_zero        // zero interface velocity function
-                                   ),
-                               &xfluid_general);
-
-  setStringToIntegralParameter<int>("INTERFACE_DISP","interface_disp_zero","how to define the interface displacement",
-                               tuple<std::string>("interface_disp_by_fsi", "interface_disp_by_funct", "interface_disp_by_curve", "interface_disp_zero", "interface_disp_by_implementation"),
-                               tuple<int>(
-                                   INPAR::XFEM::interface_disp_by_fsi,     // define interface displacement by structure solution of fsi algo
-                                   INPAR::XFEM::interface_disp_by_funct,   // define interface displacement by function
-                                   INPAR::XFEM::interface_disp_by_curve,   // define interface displacement by curve
-                                   INPAR::XFEM::interface_disp_zero,       // zero interface displacement function
-                                   INPAR::XFEM::interface_disp_by_implementation // interface displacement by implementation
-                                   ),
-                               &xfluid_general);
-
-  IntParameter("DISP_FUNCT_NO",-1,"funct number for interface displacement",&xfluid_general);
-
-  setNumericStringParameter("DISP_CURVE_NO","-1 -1 -1",
-                              "Curve numbers for interface displacement in (x, y, z) direction",
-                              &xfluid_general);
-
-  IntParameter("VEL_FUNCT_NO",-1,"funct number for WDBC or Neumann Condition at embedded boundary/interface",&xfluid_general);
-  setNumericStringParameter("VEL_CURVE_NO","-1 -1 -1",
-                            "Curve numbers for interface velocity in (x, y, z) direction",
-                            &xfluid_general);
-  IntParameter("VEL_INIT_FUNCT_NO",-1,"funct number for initial interface velocity",&xfluid_general);
-
   // How many monolithic steps we keep the fluidfluid-boundary fixed
   IntParameter("RELAXING_ALE_EVERY",1,"Relaxing Ale after how many monolithic steps",&xfluid_general);
 

@@ -133,7 +133,7 @@ public:
     SurfaceTension,
     Surfactant,
     MicroBoundary,
-    XFEMCoupling,
+    XFEM_Surf_Displacement,
     XFEM_Levelset_Weak_Dirichlet,
     XFEM_Levelset_Neumann,
     XFEM_Levelset_Twophase,

@@ -176,10 +176,6 @@ DLINE                           0
 DSURF                           2
 E 5 - 1
 E 6 - 1
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-DSURF                           0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS

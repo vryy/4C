@@ -121,7 +121,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==VolumeLocsys)                  os << "Volume local coordinate system condition: ";
   else if (Type()==FSICoupling)                   os << "FSI Coupling condition: ";
   else if (Type()==FPSICoupling)                  os << "FPSI Coupling condition: ";
-  else if (Type()==XFEMCoupling)                  os << "XFEM Coupling condition: ";
+  else if (Type()==XFEM_Surf_Displacement)        os << "XFEM Surface Displacement condition: ";
   else if (Type()==XFEM_Levelset_Weak_Dirichlet)  os << "XFEM Levelset weak Dirichlet boundary condition: ";
   else if (Type()==XFEM_Levelset_Neumann)         os << "XFEM Levelset Neumann boundary condition: ";
   else if (Type()==XFEM_Levelset_Twophase)        os << "XFEM Levelset Thophase coupling condition: ";

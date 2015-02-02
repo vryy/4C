@@ -401,7 +401,7 @@ void DRT::CRACK::UTILS::AddConditions( Teuchos::RCP<DRT::Discretization>& discre
     // Appropriate nodes are added when building new interface after crack propagation
 
      /*DRT::Condition::ConditionType ct = cond->Type();
-     if( ct == DRT::Condition::FSICoupling or ct == DRT::Condition::XFEMCoupling )
+     if( ct == DRT::Condition::FSICoupling or ct == DRT::Condition::XFEM_Surf_CrackFSIPart )
       continue;*/
 
     for( std::map<int,int>::iterator it = oldnew.begin(); it != oldnew.end(); it++ )

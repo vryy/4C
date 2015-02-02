@@ -83,8 +83,6 @@ VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY                 xfluid_stationary_boundary    // moving_boundary
-INTERFACE_VEL_INITIAL           interface_vel_init_zero
-//VEL_INIT_FUNCT_NO             2
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_viscous_stress
 HYBRID_LM_L2_PROJ               part_ele_proj //full_ele_proj  // part_ele_proj
@@ -205,18 +203,6 @@ E 21 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none no
 E 26 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 27 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 32 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DVOL                            0
----------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC NSURF
-DPOINT                          0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
-DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
-DSURF                           0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
 DVOL 4 //bodyforce
@@ -224,34 +210,28 @@ E 1 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 E 2 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 E 3 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 E 4 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-// DOBJECT FSI_ID FIELD MESH FLAG
-DLINE                           0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-// DOBJECT FSI_ID FIELD MESH
+----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
+// DOBJECT COUPLINGID EVALTYPE
 DSURF                           8
-E 22 - 1 structure conforming
-E 23 - 1 structure conforming
-E 24 - 1 structure conforming
-E 25 - 1 structure conforming
-E 28 - 2 structure conforming
-E 29 - 2 structure conforming
-E 30 - 2 structure conforming
-E 31 - 2 structure conforming
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-// DOBJECT COUPLING BCFLUID
-DLINE                           0
------------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
-// DOBJECT COUPLING BCFLUID
+E 22 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 23 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 24 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 25 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 28 - COUPLINGID 2 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 29 - COUPLINGID 2 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 30 - COUPLINGID 2 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 31 - COUPLINGID 2 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
 DSURF                           8
-E 22 - 1
-E 23 - 1
-E 24 - 1
-E 25 - 1
-E 28 - 2
-E 29 - 2
-E 30 - 2
-E 31 - 2
+// DOBJECT COUPLINGID EVALTYPE
+E 22 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 23 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 24 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 25 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 28 - COUPLINGID 2 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 29 - COUPLINGID 2 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 30 - COUPLINGID 2 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 31 - COUPLINGID 2 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 5561 DNODE 1
 NODE 7217 DNODE 2

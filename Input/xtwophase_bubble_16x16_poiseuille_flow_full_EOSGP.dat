@@ -167,9 +167,6 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
 --------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY                 xfluid_stationary_boundary
-INTERFACE_VEL_INITIAL           interface_vel_init_zero
-INTERFACE_VEL                   interface_vel_zero
-INTERFACE_DISP                  interface_disp_zero
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 COUPLING_STRATEGY               two_sided_coupling
@@ -300,7 +297,7 @@ E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 --------------------------------DESIGN XFEM LEVELSET TWOPHASE VOL CONDITIONS
 DVOL                           1
 //                              fluid_volume
-E 1 - LEVELSETFIELDNO 1
+E 1 - LEVELSETFIELDNO 1 LEVELSETCURVE none
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 545 DNODE 1
 NODE 546 DNODE 2

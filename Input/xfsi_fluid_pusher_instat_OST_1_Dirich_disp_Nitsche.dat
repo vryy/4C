@@ -60,7 +60,7 @@ NUMSTEP                         130
 UPRES                           1
 RESTARTEVRY                     5
 COUPALGO                        iter_stagg_AITKEN_rel_param
-SECONDORDER Yes //No
+SECONDORDER                     No
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-8
 COUPMETHOD                      conforming
@@ -116,10 +116,6 @@ VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY                 xfsi_moving_boundary
-INTERFACE_VEL_INITIAL           interface_vel_init_by_funct
-VEL_INIT_FUNCT_NO               2
-INTERFACE_VEL                   interface_vel_by_disp
-INTERFACE_DISP                  interface_disp_by_fsi
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 NIT_STAB_FAC                   20.0
@@ -169,12 +165,6 @@ E 3 - none 1 1 1 0 0 0 -6.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 E 1 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT                          0
-------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          0
 // top inflow points
@@ -236,52 +226,6 @@ E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 DVOL                            1
 // pusher domain
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
-------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE                           0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF                           0
---------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL                            0
-------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT                          0
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE                           0
--------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF                           0
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
-DLINE                           0
------------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
-DSURF                           0
-----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-DPOINT                          0
------------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-DLINE                           0
------------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF                           0
-------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-DVOL                            0
-------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-DSURF                           0
----------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
-DLINE                           0
-------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
-DSURF                           0
------------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
-DSURF                           0
-----------------------------------------FLUID NEUMANN INFLOW LINE CONDITIONS
-DLINE                           0
-----------------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
-DSURF                           0
-------------------------------------TRANSPORT NEUMANN INFLOW LINE CONDITIONS
-DLINE                           0
-------------------------------------TRANSPORT NEUMANN INFLOW SURF CONDITIONS
-DSURF                           0
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
 DSURF                           6
@@ -291,18 +235,6 @@ E 9 - 1 structure conforming
 E 10 - 1 structure conforming
 E 11 - 1 structure conforming
 E 12 - 1 structure conforming
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF                           0
--------------------------------DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS
-DSURF                           0
-----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS
-DSURF                           0
------------------------DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS
-DVOL                            0
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE                           0
 ---------------------------------DESIGN XFEM FSI PARTITIONED SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF                           6

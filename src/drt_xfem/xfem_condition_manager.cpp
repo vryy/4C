@@ -209,8 +209,10 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
 XFEM::MeshCoupling::MeshCoupling(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
     const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
-    Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which the cutter discretization is derived
-) : CouplingBase(bg_dis, cond_name, cond_dis)
+    Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which the cutter discretization is derived
+    const double                        time,      ///< time
+    const int                           step       ///< time step
+) : CouplingBase(bg_dis, cond_name, cond_dis, time, step)
 {
 
   // set list of conditions that will be copied to the new cutter discretization
@@ -218,8 +220,6 @@ XFEM::MeshCoupling::MeshCoupling(
 
   // create a cutter discretization from conditioned nodes of the given coupling discretization
   CreateCutterDisFromCondition();
-
-  std::cout << *cutter_dis_ << std::endl;
 
   // set unique element conditions
   SetElementConditions();
@@ -243,6 +243,9 @@ void XFEM::MeshCoupling::SetConditionsToCopy()
 
   // additional conditions required for the new boundary conditions
   conditions_to_copy_.push_back("FSICoupling");  // for partitioned and monolithic XFSI
+
+  // additional conditions required for the displacements of the cutter mesh
+  conditions_to_copy_.push_back("XFEMSurfDisplacement");
 }
 
 
@@ -301,8 +304,10 @@ void XFEM::MeshCoupling::CreateCutterDisFromCondition()
 XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
     const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
-    Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
-) : MeshCoupling(bg_dis,cond_name,cond_dis)
+    Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+    const double                        time,      ///< time
+    const int                           step       ///< time step
+) : MeshCoupling(bg_dis,cond_name,cond_dis,time,step)
 {
   if (GetCouplingStrategy() == INPAR::XFEM::Embedded_Sided_Coupling ||
       GetCouplingStrategy() == INPAR::XFEM::Two_Sided_Coupling)
@@ -692,6 +697,16 @@ void XFEM::MeshCoupling::SetState()
   cutter_dis_->SetState("idispnp",idispnp_);
 }
 
+void XFEM::MeshCoupling::SetStateDisplacement()
+{
+  // set general vector values of cutterdis needed by background element evaluate routine
+  cutter_dis_->ClearState();
+
+  cutter_dis_->SetState("idispnp",idispnp_);
+  cutter_dis_->SetState("idispn",idispn_);
+
+}
+
 
 void XFEM::MeshCoupling::UpdateStateVectors()
 {
@@ -705,6 +720,8 @@ void XFEM::MeshCoupling::UpdateStateVectors()
   idispn_->Update(1.0,*idispnp_,0.0);
 }
 
+
+
 Teuchos::RCP<const Epetra_Vector> XFEM::MeshCoupling::GetCutterDispCol()
 {
   // export cut-discretization mesh displacements
@@ -715,13 +732,373 @@ Teuchos::RCP<const Epetra_Vector> XFEM::MeshCoupling::GetCutterDispCol()
 }
 
 
+//! constructor
+XFEM::MeshCouplingBC::MeshCouplingBC(
+    Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+    const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+    Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+    const double                        time,      ///< time
+    const int                           step       ///< time step
+) : MeshCoupling(bg_dis,cond_name,cond_dis, time, step)
+{
+  // set the initial interface displacements as they are used for initial cut position at the end of Xfluid::Init()
+  SetInterfaceDisplacement();
+
+  // set the interface displacements also to idispn
+  idispn_->Update(1.0,*idispnp_,0.0);
+
+  // set the initial interface velocity and possible initialization function
+  SetInterfaceVelocity();
+
+  // set the initial interface velocities also to iveln
+  iveln_->Update(1.0,*ivelnp_,0.0);
+}
+
+void XFEM::MeshCouplingBC::PrepareSolve()
+{
+  // set the new interface displacements where DBCs or Neumann BCs have to be evaluted
+  SetInterfaceDisplacement();
+
+  // set or compute the current prescribed interface velocities, just for XFEM WDBC
+  SetInterfaceVelocity();
+}
+
+void XFEM::MeshCouplingBC::EvaluateCondition(
+    Teuchos::RCP<Epetra_Vector> ivec,
+    const std::string& condname,
+    const double time,
+    const double dt)
+{
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<cutter_dis_->NumMyRowNodes();lnodeid++)
+  {
+    // get the processor local node
+    DRT::Node*  lnode      = cutter_dis_->lRowNode(lnodeid);
+    // the set of degrees of freedom associated with the node
+    const std::vector<int> nodedofset = cutter_dis_->Dof(lnode);
+
+    const int numdof = nodedofset.size();
+
+    if (numdof==0) dserror("node has no dofs");
+    std::vector<DRT::Condition*> mycond;
+    lnode->GetCondition(condname,mycond);
+
+    // safety check for unique condition
+    // TODO: check more if there is more than one condition with the same Couplinglabel
+    // check if the coupling label is equal to the coupling condition label
+    //      if (mycond.size()!=1)
+    //        dserror("Exact one condition is expected on node!");
+    //std::cout << "number of conditions " << mycond.size() << std::endl;
+
+    // initial value for all nodal dofs to zero
+    std::vector<double> final_values(numdof, 0.0);
+
+
+    DRT::Condition* cond = mycond[0];
+
+    if(condname == "XFEMSurfDisplacement")
+      EvaluateInterfaceDisplacement(final_values,lnode,cond,time);
+    else if(condname == "XFEMSurfWeakDirichlet")
+      EvaluateInterfaceVelocity(final_values,lnode,cond,time,dt);
+    else dserror("non supported condname for evaluation %s", condname.c_str());
+
+
+    // set final values to vector
+    for(int dof=0;dof<numdof;++dof)
+    {
+      int gid = nodedofset[dof];
+      ivec->ReplaceGlobalValues(1,&final_values[dof],&gid);
+    }
+
+  } // loop row nodes
+}
+
+
+void XFEM::MeshCouplingBC::EvaluateInterfaceVelocity(
+    std::vector<double>& final_values,
+    DRT::Node* node,
+    DRT::Condition* cond,
+    const double time,
+    const double dt
+)
+{
+  const std::string* evaltype = cond->Get<std::string>("evaltype");
+
+
+  if(*evaltype == "zero")
+  {
+    // take initialized vector with zero values
+  }
+  else if(*evaltype == "funct_interpolated")
+  {
+    // evaluate function at node at current time
+    EvaluateFunction(final_values,node->X(),cond,time);
+  }
+  else if(*evaltype == "funct_gausspoint")
+  {
+    //do nothing, the evaluate routine is called again directly from the Gaussian point
+  }
+  else if(*evaltype =="displacement_1storder_wo_initfunct" or
+          *evaltype =="displacement_2ndorder_wo_initfunct")
+  {
+    if(step_ == 0) return; // do not compute velocities from displacements at the beginning and do not set
+
+    ComputeInterfaceVelocityFromDisplacement(final_values, node, dt, evaltype);
+  }
+  else if(
+      *evaltype =="displacement_1storder_with_initfunct" or
+      *evaltype =="displacement_2ndorder_with_initfunct")
+  {
+    if(step_ == 0) // evaluate initialization function at node at current time
+    {
+      EvaluateFunction(final_values,node->X(),cond,time);
+    }
+    else
+      ComputeInterfaceVelocityFromDisplacement(final_values, node, dt, evaltype);
+  }
+  else dserror("evaltype not supported %s", evaltype->c_str());
+}
+
+
+void XFEM::MeshCouplingBC::EvaluateInterfaceDisplacement(
+    std::vector<double>& final_values,
+    DRT::Node* node,
+    DRT::Condition* cond,
+    const double time
+)
+{
+  const std::string* evaltype = cond->Get<std::string>("evaltype");
+
+  if(*evaltype == "zero")
+  {
+    // take initialized vector with zero values
+  }
+  else if(*evaltype == "funct")
+  {
+    // evaluate function at node at current time
+    EvaluateFunction(final_values,node->X(),cond,time);
+  }
+  else if(*evaltype == "implementation")
+  {
+    // evaluate implementation
+    //TODO: get the function name from the condition!!!
+    std::string function_name = "ROTATING_BEAM";
+    EvaluateImplementation(final_values,node->X(),cond,time,function_name);
+  }
+  else dserror("evaltype not supported %s", evaltype->c_str());
+}
+
+
+void XFEM::MeshCouplingBC::EvaluateFunction(
+    std::vector<double>& final_values,
+    const double* x,
+    DRT::Condition* cond,
+    const double time
+)
+{
+  const int numdof = cond->GetInt("numdof");
+
+  if(numdof != (int)final_values.size())
+    dserror("you specified NUMDOF %i in the input file, however, only %i dofs allowed!", numdof, (int)final_values.size());
+
+  // check for potential time curve
+  const std::vector<int>* curve  = cond->Get<std::vector<int> >("curve");
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0];
+
+  // initialization of time-curve factor
+  double curvefac = 0.0;
+
+  // compute potential time curve or set time-curve factor to one
+  if (curvenum >= 0)
+  {
+    // time factor (negative time indicating error)
+    if (time >= 0.0)
+      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    else dserror("Negative time in function evaluation: time = %f", time);
+  }
+  else curvefac = 1.0;
+
+  // get values and switches from the condition
+  const std::vector<int>*    onoff     = cond->Get<std::vector<int>    >("onoff");
+  const std::vector<double>* val       = cond->Get<std::vector<double> >("val"  );
+  const std::vector<int>*    functions = cond->Get<std::vector<int>    >("funct");
+
+  // factor given by spatial function
+  double functionfac = 0.0;
+  int functnum = -1;
+
+  // set this condition
+  for(int dof=0;dof<numdof;++dof)
+  {
+    // get factor given by spatial function
+    if (functions) functnum = (*functions)[dof];
+    else functnum = -1;
+
+    double num = (*onoff)[dof]*(*val)[dof]*curvefac;
+
+    if (functnum>0)
+      functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof%numdof,x,time,NULL);
+    else
+      functionfac = 1.0;
+
+    final_values[dof] = num*functionfac;
+  } // loop dofs
+}
+
+
+void XFEM::MeshCouplingBC::ComputeInterfaceVelocityFromDisplacement(
+    std::vector<double>& final_values,
+    DRT::Node* node,
+    const double dt,
+    const std::string* evaltype
+)
+{
+  if(dt < 1e-14) dserror("zero or negative time step size not allowed!!!");
+
+
+  double thetaiface = 0.0;
+
+  if( *evaltype == "displacement_1storder_wo_initfunct" or
+      *evaltype == "displacement_1storder_with_initfunct")
+    thetaiface = 1.0; // for backward Euler, OST(1.0)
+  else if( *evaltype == "displacement_2ndorder_wo_initfunct" or
+           *evaltype == "displacement_2ndorder_with_initfunct")
+    thetaiface = 0.5; // for Crank Nicholson, OST(0.5)
+  else dserror("not supported");
+
+
+  const std::vector<int> nodedofset = cutter_dis_->Dof(node);
+  const int numdof = nodedofset.size();
+
+  // loop dofs of node
+  for(int dof=0;dof<numdof;++dof)
+  {
+
+    int gid = nodedofset[dof];
+    int lid = idispnp_->Map().LID(gid);
+
+    const double dispnp = (*idispnp_)[lid];
+    const double dispn  = (*idispn_ )[lid];
+    const double veln   = (*iveln_  )[lid];
+
+    final_values[dof] = 1.0/(thetaiface*dt) * (dispnp-dispn) - (1.0-thetaiface)/thetaiface * veln;
+  } // loop dofs
+}
+
+void XFEM::MeshCouplingBC::EvaluateImplementation(
+    std::vector<double>& final_values,
+    const double* x,
+    DRT::Condition* cond,
+    const double time,
+    const std::string& function_name
+)
+{
+  const int numdof = final_values.size();
+
+  if(function_name != "ROTATING_BEAM") dserror("currently only the rotating beam function is available!");
+
+  double t_1 = 1.0;         // ramp the rotation
+  double t_2 = t_1+1.0;     // reached the constant angle velocity
+  double t_3 = t_2+12.0;    // decrease the velocity and turn around
+  double t_4 = t_3+2.0;     // constant negative angle velocity
+
+  double arg= 0.0; // prescribe a time-dependent angle
+
+  double T = 16.0;  // time period for 2*Pi
+  double angle_vel = 2.*M_PI/T;
+
+  if(time <= t_1)
+  {
+    arg = 0.0;
+  }
+  else if(time> t_1 and time<= t_2)
+  {
+    arg = angle_vel / 2.0 * (time-t_1) - angle_vel*(t_2-t_1)/(2.0*M_PI)*sin(M_PI * (time-t_1)/(t_2-t_1));
+  }
+  else if(time>t_2 and time<= t_3)
+  {
+    arg = angle_vel * (time-t_2) + M_PI/T*(t_2-t_1);
+  }
+  else if(time>t_3 and time<=t_4)
+  {
+    arg = angle_vel*(t_4-t_3)/(M_PI)*sin(M_PI*(time-t_3)/(t_4-t_3)) + 2.0*M_PI/T*(t_3-t_2)+ M_PI/T*(t_2-t_1);
+  }
+  else if(time>t_4)
+  {
+    arg = -angle_vel * (time-t_4) + M_PI/T*(t_2-t_1)+ 2.0*M_PI/T*(t_3-t_2);
+  }
+  else dserror("for that time we did not define an implemented rotation %d", time);
+
+
+  // rotation with constant angle velocity around point
+  LINALG::Matrix<3,1> center(true);
+
+  center(0) = 0.0;
+  center(1) = 0.0;
+  center(2) = 0.0;
+
+  LINALG::Matrix<3,1> diff(true);
+  diff(0) = x[0]-center(0);
+  diff(1) = x[1]-center(1);
+  diff(2) = x[2]-center(2);
+
+  // rotation matrix
+  LINALG::Matrix<3,3> rot(true);
+
+  rot(0,0) = cos(arg);            rot(0,1) = -sin(arg);          rot(0,2) = 0.0;
+  rot(1,0) = sin(arg);            rot(1,1) = cos(arg);           rot(1,2) = 0.0;
+  rot(2,0) = 0.0;                 rot(2,1) = 0.0;                rot(2,2) = 1.0;
+
+  //          double r= diff.Norm2();
+  //
+  //          rot.Scale(r);
+
+  LINALG::Matrix<3,1> x_new(true);
+  LINALG::Matrix<3,1> rotated(true);
+
+  rotated.Multiply(rot,diff);
+
+  x_new.Update(1.0,rotated,-1.0, diff);
+
+
+  for(int dof=0;dof<numdof;++dof)
+  {
+    final_values[dof] = x_new(dof);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  set interface displacement at current time             schott 03/12 |
+ *----------------------------------------------------------------------*/
+void XFEM::MeshCouplingBC::SetInterfaceDisplacement()
+{
+  if(myrank_ == 0) IO::cout << "\t set interface displacement, time " << time_ << IO::endl;
+
+  std::string condname = "XFEMSurfDisplacement";
+
+  EvaluateCondition( idispnp_, condname, time_);
+}
+
+/*----------------------------------------------------------------------*
+ |  set interface velocity at current time                 schott 03/12 |
+ *----------------------------------------------------------------------*/
+void XFEM::MeshCouplingBC::SetInterfaceVelocity()
+{
+  if(myrank_ == 0) IO::cout << "\t set interface velocity, time " << time << IO::endl;
+
+  EvaluateCondition( ivelnp_, cond_name_, time_, dt_);
+}
+
 
 //! constructor
 XFEM::MeshCouplingFSI::MeshCouplingFSI(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
     const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
-    Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
-) : MeshCoupling(bg_dis,cond_name,cond_dis), firstoutputofrun_(true)
+    Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+    const double                        time,      ///< time
+    const int                           step       ///< time step
+) : MeshCoupling(bg_dis,cond_name,cond_dis, time, step), firstoutputofrun_(true)
 {
   InitStateVectors_FSI();
   PrepareCutterOutput();
@@ -1002,8 +1379,10 @@ void XFEM::MeshCouplingFSI::LiftDrag(
 XFEM::MeshCouplingFSICrack::MeshCouplingFSICrack(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
     const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
-    Teuchos::RCP<DRT::Discretization>&  cond_dis  ///< discretization from which cutter discretization can be derived
-) : MeshCouplingFSI(bg_dis,cond_name,cond_dis)
+    Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+    const double                        time,      ///< time
+    const int                           step       ///< time step
+) : MeshCouplingFSI(bg_dis,cond_name,cond_dis,time,step)
 {
   InitCrackInitiationsPoints();
 
@@ -1120,8 +1499,10 @@ void XFEM::MeshCouplingFSICrack::UpdateBoundaryValuesAfterCrack(
 
 XFEM::LevelSetCoupling::LevelSetCoupling(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
-    const std::string &                 cond_name ///< name of the condition, by which the derived cutter discretization is identified
-) : CouplingBase(bg_dis, cond_name, bg_dis)
+    const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+    const double                        time,      ///< time
+    const int                           step       ///< time step
+) : CouplingBase(bg_dis, cond_name, bg_dis,time,step)
 {
   /// level-set field is given w.r.t background mesh
   /// NOTE: more generally it would be possible cutterdis != bg_dis for the single LevelSetCoupling,
@@ -1148,6 +1529,9 @@ void XFEM::LevelSetCoupling::SetConditionsToCopy()
 {
   // set only the unique given condition name
   conditions_to_copy_.push_back(cond_name_);
+
+  // additional conditions required for the levelset field based on the cutter (background) mesh
+  conditions_to_copy_.push_back("XFEMSurfDisplacement");
 }
 
 
@@ -1204,6 +1588,22 @@ void XFEM::LevelSetCoupling::SetLevelSetField(const double time)
   DRT::Condition* cond = cutterele_conds_[lid].second;
   const int func_no = cond->GetInt("levelsetfieldno");
 
+  // check for potential time curve
+  const int curvenum  = cond->GetInt("levelsetcurve");
+
+  // initialization of time-curve factor
+  double curvefac = 0.0;
+
+  // compute potential time curve or set time-curve factor to one
+  if (curvenum >= 0)
+  {
+    // time factor (negative time indicating error)
+    if (time >= 0.0)
+      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    else dserror("Negative time in function evaluation: time = %f", time);
+  }
+  else curvefac = 1.0;
+
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<cutter_dis_->NumMyRowNodes();lnodeid++)
   {
@@ -1213,8 +1613,10 @@ void XFEM::LevelSetCoupling::SetLevelSetField(const double time)
     // get value
     value=DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,lnode->X(),time,NULL);
 
+    double final_val = curvefac*value;
+
     // now copy the values
-    err = phinp_->ReplaceMyValue(lnodeid,0,value);
+    err = phinp_->ReplaceMyValue(lnodeid,0,final_val);
     if (err != 0) dserror("error while inserting value into phinp_");
   }
 
@@ -1226,11 +1628,14 @@ void XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 //constructor
 XFEM::ConditionManager::ConditionManager(
       Teuchos::RCP<DRT::Discretization> &               bg_dis,          ///< background discretization
-      std::vector<Teuchos::RCP<DRT::Discretization> > & meshcoupl_dis    ///< mesh coupling discretizations
+      std::vector<Teuchos::RCP<DRT::Discretization> > & meshcoupl_dis,   ///< mesh coupling discretizations
+      const double                                      time,            ///< time
+      const int                                         step             ///< time step
   ) :
   bg_dis_(bg_dis),
   levelset_gid_(-1),
-  time_(0.0),
+  time_(time),
+  step_(step),
   is_levelset_uptodate_(false),
   bg_phinp_(Teuchos::null)
 {
@@ -1287,6 +1692,50 @@ XFEM::ConditionManager::ConditionManager(
 
 }
 
+
+void XFEM::ConditionManager::IncrementTimeAndStep(
+    const double dt)
+{
+  step_ += 1;
+  time_ += dt;
+
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->IncrementTimeAndStep(dt);
+  }
+
+  // loop all levelset coupling objects
+  for(int lsc=0; lsc<(int)levelset_coupl_.size(); lsc++)
+  {
+    levelset_coupl_[lsc]->IncrementTimeAndStep(dt);
+  }
+
+}
+
+
+void XFEM::ConditionManager::SetTimeAndStep(
+    const double time,
+    const int step)
+{
+  time_ = time;
+  step_ = step;
+
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->SetTimeAndStep(time, step);
+  }
+
+  // loop all levelset coupling objects
+  for(int lsc=0; lsc<(int)levelset_coupl_.size(); lsc++)
+  {
+    levelset_coupl_[lsc]->SetTimeAndStep(time, step);
+  }
+}
+
+
+
 void XFEM::ConditionManager::CreateNewLevelSetCoupling(const std::string& cond_name)
 {
   AddLevelSetCoupling( cond_name );
@@ -1302,9 +1751,8 @@ void XFEM::ConditionManager::CreateNewMeshCoupling(
 }
 
 
-void XFEM::ConditionManager::Create(const double time)
+void XFEM::ConditionManager::Create()
 {
-  time_ = time;
   numglobal_coupling_sides = 0;
   mesh_coupl_start_gid_.reserve(mesh_coupl_.size());
   levelset_gid_ = -1;
@@ -1411,6 +1859,15 @@ void XFEM::ConditionManager::SetState()
   }
 }
 
+void XFEM::ConditionManager::SetStateDisplacement()
+{
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->SetStateDisplacement();
+  }
+}
+
 void XFEM::ConditionManager::UpdateStateVectors()
 {
   // loop all mesh coupling objects
@@ -1487,3 +1944,21 @@ void XFEM::ConditionManager::ReadRestart(
     mesh_coupl_[mc]->ReadRestart(step);
   }
 }
+
+
+void XFEM::ConditionManager::PrepareSolve()
+{
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->PrepareSolve();
+  }
+
+  // loop all levelset coupling objects
+  for(int lsc=0; lsc<(int)levelset_coupl_.size(); lsc++)
+  {
+    levelset_coupl_[lsc]->PrepareSolve();
+  }
+}
+
+

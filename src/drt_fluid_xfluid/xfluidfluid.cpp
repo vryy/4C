@@ -1377,10 +1377,10 @@ void FLD::XFluidFluid::Init()
   // -------------------------------------------------------------------
   // create a Condition/Coupling Manager
   // -------------------------------------------------------------------
-  condition_manager_ = Teuchos::rcp(new XFEM::ConditionManager(discret_, meshcoupl_dis));
+  condition_manager_ = Teuchos::rcp(new XFEM::ConditionManager(discret_, meshcoupl_dis, time_, step_));
 
   // build the whole object which then can be used
-  condition_manager_->Create(time_);
+  condition_manager_->Create();
 
 
   if(condition_manager_->HasMeshCoupling())
@@ -1927,8 +1927,10 @@ void FLD::XFluidFluid::PrepareTimeStep()
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
-  step_ += 1;
-  time_ += dta_;
+  IncrementTimeAndStep();
+
+
+  condition_manager_->IncrementTimeAndStep(dta_);
 
   gmsh_count_ = 0;
 

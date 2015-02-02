@@ -141,12 +141,6 @@ DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
 DSURF                           0
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-// DOBJECT COUPLING BCFLUID
-DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-// DOBJECT COUPLING BCFLUID
-DSURF                           0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 //                              DOBJECT
 DLINE                           0

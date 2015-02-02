@@ -84,9 +84,6 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation
 MAX_NUM_DOFSETS                 4
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY                 xfluid_stationary_boundary
-INTERFACE_VEL_INITIAL           interface_vel_init_zero
-INTERFACE_VEL                   interface_vel_zero
-INTERFACE_DISP                  interface_disp_zero
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 IS_PSEUDO_2D                    yes
@@ -156,9 +153,15 @@ E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 //                              structure_volume
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
+// DOBJECT COUPLINGID EVALTYPE
 DSURF                           1
 //                              structure_shell
-E 5 - 1
+E 5 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
+// DOBJECT COUPLINGID EVALTYPE
+DSURF                           1
+//                              structure_shell
+E 5 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 --------------------------DESIGN XFEM LEVELSET WEAK DIRICHLET VOL CONDITIONS
 DVOL                           1
 //                              fluid_volume

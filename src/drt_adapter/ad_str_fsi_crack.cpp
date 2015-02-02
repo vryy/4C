@@ -92,7 +92,7 @@ void ADAPTER::FSICrackingStructure::RebuildInterfaceWithConditionCheck( Teuchos:
   // Instead, we add the new nodes to FSI condition in structual discretization
   // And we build a new discretization based on this new condition
   DRT::Condition* cond_fsi  = structdis_->GetCondition("FSICoupling");
-  DRT::Condition* cond_xfem = structdis_->GetCondition("XFEMCoupling");
+  DRT::Condition* cond_xfem = structdis_->GetCondition("XFEMSurfCrackFSIPart");
 
   if( cond_fsi == NULL or cond_xfem == NULL )
     dserror( "XFEM or FSI coupling conditions undefined in XFSI problem?\n" );

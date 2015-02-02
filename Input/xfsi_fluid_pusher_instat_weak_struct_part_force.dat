@@ -126,9 +126,6 @@ VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY xfsi_moving_boundary //stationary_boundary
-INTERFACE_VEL_INITIAL           interface_vel_init_zero
-INTERFACE_VEL                   interface_vel_by_disp
-INTERFACE_DISP                  interface_disp_by_fsi
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 NIT_STAB_FAC                   21.97015825                   // 35/CT(3d)
@@ -292,18 +289,6 @@ E 9 - 1 structure conforming
 E 10 - 1 structure conforming
 E 11 - 1 structure conforming
 E 12 - 1 structure conforming
------------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
-DLINE                           0
------------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
-DSURF                           0
--------------------------------DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS
-DSURF                           0
-----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS
-DSURF                           0
------------------------DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS
-DVOL                            0
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE                           0
 ---------------------------------DESIGN XFEM FSI PARTITIONED SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF                           6

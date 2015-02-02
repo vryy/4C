@@ -173,9 +173,6 @@ VOLUME_GAUSS_POINTS_BY          DirectDivergence //Tessellation //DirectDivergen
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY                 xfsi_moving_boundary
-INTERFACE_VEL_INITIAL           interface_vel_init_zero
-INTERFACE_VEL                   interface_vel_by_disp
-INTERFACE_DISP                  interface_disp_by_fsi
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 COUPLING_STRATEGY               xfluid_sided_coupling

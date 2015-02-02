@@ -286,10 +286,6 @@ DSURF                           0
 DSURF                           0
 -----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS
 DVOL                            0
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-DSURF                           0
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
 DSURF                           0
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS

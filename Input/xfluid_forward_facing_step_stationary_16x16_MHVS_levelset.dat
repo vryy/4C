@@ -78,7 +78,7 @@ NUMSTEP                         2
 STEADYSTEP                      -1
 NUMSTASTEPS                     0
 STARTFUNCNO                     -1
-ITEMAX 10 //10
+ITEMAX                          6
 INITSTATITEMAX                  5
 TIMESTEP                        0.01
 MAXTIME                         1000
@@ -164,12 +164,6 @@ BOUNDARY_GAUSS_POINTS_BY Tessellation //Tessellation
 --------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY                 xfluid_stationary_boundary
-INTERFACE_VEL_INITIAL           interface_vel_init_zero
-INTERFACE_VEL                   interface_vel_by_disp
-INTERFACE_DISP                  interface_disp_zero
-DISP_FUNCT_NO                   -1
-VEL_FUNCT_NO                    -1
-VEL_INIT_FUNCT_NO               -1
 RELAXING_ALE_EVERY              1
 RELAXING_ALE                    yes
 XFLUIDFLUID_SEARCHRADIUS        1
@@ -288,7 +282,7 @@ E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 --------------------------DESIGN XFEM LEVELSET WEAK DIRICHLET VOL CONDITIONS
 DVOL                           1
 //                              fluid_volume
-E 1 - LEVELSETFIELDNO 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - LEVELSETFIELDNO 1 LEVELSETCURVE none NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 545 DNODE 1
 NODE 546 DNODE 2

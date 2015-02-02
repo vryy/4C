@@ -82,6 +82,471 @@ Maintainer:  Benedikt Schott
 
 
 /*----------------------------------------------------------------------*
+ |  Constructor for basic XFluid class                     schott 03/12 |
+ *----------------------------------------------------------------------*/
+FLD::XFluid::XFluid(
+    const Teuchos::RCP<DRT::Discretization>&      actdis,
+    const Teuchos::RCP<DRT::Discretization>&      coupdis,
+    const Teuchos::RCP<LINALG::Solver>&           solver,
+    const Teuchos::RCP<Teuchos::ParameterList>&   params,
+    const Teuchos::RCP<IO::DiscretizationWriter>& output,
+    bool                                          alefluid /*= false*/)
+  : TimInt(actdis, solver, params, output),
+    xdiscret_(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(actdis, true)),
+    alefluid_(alefluid)
+{
+  // all discretizations which potentially include mesh-based XFEM coupling/boundary conditions
+  meshcoupl_dis_.clear();
+  meshcoupl_dis_.push_back(coupdis);
+
+  mc_idx_ = 0; // using this constructor only one mesh coupling discretization is supported so far
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  initialize algorithm                                   schott 11/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::Init()
+{
+
+  // -------------------------------------------------------------------
+  // get input params and print Xfluid specific configurations
+  // -------------------------------------------------------------------
+
+  // read xfluid input parameters from list
+  SetXFluidParams();
+
+  // check xfluid input parameter combination for consistency & valid choices
+  CheckXFluidParams();
+
+  // output of stabilization details
+  PrintStabilizationParams();
+
+  //----------------------------------------------------------------------
+  turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
+  //----------------------------------------------------------------------
+
+  // compute or set 1.0 - theta for time-integration schemes
+  if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)
+    omtheta_ = 1.0 - theta_;
+  else
+    omtheta_ = 0.0;
+
+
+  // ensure that degrees of freedom in the discretization have been set
+  if ( not discret_->Filled() or not discret_->HaveDofs() )
+    discret_->FillComplete();
+
+
+  // create internal faces for edgebased fluid stabilization and ghost penalty stabilization
+  if(edge_based_ or ghost_penalty_ )
+  {
+    Teuchos::RCP<DRT::DiscretizationFaces> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+    actdis->CreateInternalFacesExtension();
+  }
+
+  // -------------------------------------------------------------------
+  // create a Condition/Coupling Manager
+  // -------------------------------------------------------------------
+  condition_manager_ = Teuchos::rcp(new XFEM::ConditionManager(discret_, meshcoupl_dis_, time_, step_));
+
+  // build the whole object which then can be used
+  condition_manager_->Create();
+
+
+  if(condition_manager_->HasMeshCoupling())
+  {
+  }
+  if(condition_manager_->HasLevelSetCoupling())
+  {
+    //TODO how to deal with level-set fields after restarts?
+    condition_manager_->SetLevelSetField( time_ );
+  }
+
+  // -------------------------------------------------------------------
+  // read restart for boundary discretization
+  // -------------------------------------------------------------------
+
+  // read the interface displacement and interface velocity for the old timestep which was written in Output
+  // we have to do this before ReadRestart() is called to get the right
+  // initial CUT corresponding to time t^n at which the last solution was written
+  //
+  // REMARK: ivelnp_ and idispnp_ will be set again for the new time step in PrepareSolve()
+
+  const int restart = DRT::Problem::Instance()->Restart();
+
+  if(restart) condition_manager_->ReadRestart(restart);
+
+
+
+  Teuchos::RCP<XFEM::LevelSetCoupling> two_phase_coupl = condition_manager_->GetLevelSetCoupling("XFEMLevelsetTwophase");
+  Teuchos::RCP<XFEM::LevelSetCoupling> combust_coupl   = condition_manager_->GetLevelSetCoupling("XFEMLevelsetCombustion");
+
+  if(two_phase_coupl != Teuchos::null or combust_coupl!= Teuchos::null)
+  {
+    include_inner_ = true;
+    dispnp_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+
+
+    if(condition_manager_->HasMeshCoupling())
+      dserror("two-phase flow coupling and mesh coupling at once is not supported by the cut at the moment, as Node-position and include inner are not handled properly then");
+  }
+  else
+  {
+    include_inner_=false;
+  }
+
+  // -------------------------------------------------------------------
+  // create the state creator
+  // -------------------------------------------------------------------
+  state_creator_ = Teuchos::rcp(
+      new FLD::XFluidStateCreator(
+        condition_manager_,
+        VolumeCellGaussPointBy_,
+        BoundCellGaussPointBy_,
+        gmsh_cut_out_,
+        maxnumdofsets_,
+        minnumdofsets_,
+        include_inner_));
+
+
+  // -------------------------------------------------------------------
+  // create output dofsets and prepare output for xfluid
+  // -------------------------------------------------------------------
+
+  PrepareOutput();
+
+  // used to write out owner of elements just once
+  firstoutputofrun_ = true;
+
+
+  // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
+  restart_count_ = 0;
+
+  // -------------------------------------------------------------------
+  // GMSH discretization output before CUT
+  OutputDiscret();
+
+  if (alefluid_)
+  {
+    dispnp_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+    dispn_   = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+    dispnm_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+    gridvnp_ = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+    gridvn_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+
+
+    //TODO:
+    if(restart) dserror("restart for alefluid not supported yet! Read the vectors before the initial state class is created!");
+  }
+
+
+
+  // -------------------------------------------------------------------
+  // create the initial state class
+  // note that all vectors w.r.t np have to be set properly
+  CreateInitialState();
+
+}// Init()
+
+
+
+/*----------------------------------------------------------------------*
+ |  set all xfluid parameters                              schott 02/15 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::SetXFluidParams()
+{
+
+  dtp_          = params_->get<double>("time step size");
+
+  theta_        = params_->get<double>("theta");
+  newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
+  predictor_    = params_->get<std::string>("predictor","steady_state_predictor");
+  convform_     = params_->get<string>("form of convective term","convective");
+
+  numdim_       = DRT::Problem::Instance()->NDim();
+
+  Teuchos::ParameterList&   params_xfem    = params_->sublist("XFEM");
+  Teuchos::ParameterList&   params_xf_gen  = params_->sublist("XFLUID DYNAMIC/GENERAL");
+  Teuchos::ParameterList&   params_xf_stab = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
+
+  // get the maximal number of dofsets that are possible to use
+  maxnumdofsets_ = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
+
+  // get input parameter about type of boundary movement
+  xfluid_mov_bound_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(params_xf_gen, "XFLUID_BOUNDARY");
+
+  xfluid_timintapproach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidTimeIntScheme>(params_xf_gen,"XFLUID_TIMEINT");
+
+  // get interface stabilization specific parameters
+  coupling_method_    = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab,"COUPLING_METHOD");
+  coupling_strategy_  = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(params_xf_stab,"COUPLING_STRATEGY");
+
+  hybrid_lm_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
+
+  conv_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
+
+  // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
+  edge_based_        = (   params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
+                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_PRES")        != "none"
+                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_STREAM") != "none"
+                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_CROSS")  != "none"
+                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_DIV")         != "none");
+
+  // set flag if a viscous or transient (1st or 2nd order) ghost-penalty stabiliation due to Nitsche's method has to be integrated
+  ghost_penalty_     = (    (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB")
+                        or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_TRANSIENT_STAB")
+                        or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_2nd_STAB") );
+
+
+  // get general XFEM specific parameters
+  VolumeCellGaussPointBy_ = DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY");
+  BoundCellGaussPointBy_  = DRT::INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
+
+  if(myrank_ == 0)
+  {
+    std::cout<<"\nVolume:   Gauss point generating method = "<< params_xfem.get<string>("VOLUME_GAUSS_POINTS_BY");
+    std::cout<<"\nBoundary: Gauss point generating method = "<< params_xfem.get<string>("BOUNDARY_GAUSS_POINTS_BY") << "\n\n";
+  }
+
+  // load GMSH output flags
+  bool gmsh = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH");
+
+  gmsh_sol_out_          = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_SOL_OUT");
+  gmsh_debug_out_        = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT");
+  gmsh_debug_out_screen_ = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT_SCREEN");
+  gmsh_EOS_out_          = gmsh && ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_));
+  gmsh_discret_out_      = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DISCRET_OUT");
+  gmsh_cut_out_          = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_CUT_OUT");
+  gmsh_step_diff_        = 500;
+
+
+  // set XFEM-related parameters on element level
+  SetElementGeneralFluidXFEMParameter();
+  SetFaceGeneralFluidXFEMParameter();
+}
+
+
+
+// -------------------------------------------------------------------
+// set general face fluid parameter (BS 06/2014)
+// -------------------------------------------------------------------
+void FLD::XFluid::SetElementGeneralFluidXFEMParameter()
+{
+
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action",FLD::set_general_fluid_xfem_parameter); // do not call another action as then another object of the std-class will be created
+
+  //------------------------------------------------------------------------------------------------------
+  // set general element parameters
+  eleparams.set("form of convective term",convform_);
+  eleparams.set<int>("Linearisation",newton_);
+  eleparams.set<int>("Physical Type", physicaltype_);
+
+  // parameter for stabilization
+  eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
+
+  // get function number of given Oseen advective field if necessary
+  if (physicaltype_==INPAR::FLUID::oseen)
+    eleparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
+
+  //set time integration scheme
+  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
+
+  //------------------------------------------------------------------------------------------------------
+  // set general parameters for turbulent flow
+  eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
+
+  // set model-dependent parameters
+  eleparams.sublist("SUBGRID VISCOSITY") = params_->sublist("SUBGRID VISCOSITY");
+  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
+
+
+  //------------------------------------------------------------------------------------------------------
+  // set general XFEM element parameters
+
+  eleparams.sublist("XFEM")                         = params_->sublist("XFEM");
+  eleparams.sublist("XFLUID DYNAMIC/GENERAL")       = params_->sublist("XFLUID DYNAMIC/GENERAL");
+  eleparams.sublist("XFLUID DYNAMIC/STABILIZATION") = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
+
+
+  //------------------------------------------------------------------------------------------------------
+  // set the params in the XFEM-parameter-list class
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
+}
+
+// -------------------------------------------------------------------
+// set general face fluid parameter (BS 06/2014)
+// -------------------------------------------------------------------
+void FLD::XFluid::SetFaceGeneralFluidXFEMParameter()
+{
+
+  //------------------------------------------------------------------------------------------------------
+  // set general fluid stabilization parameter for faces
+  {
+    Teuchos::ParameterList faceparams;
+
+    faceparams.set<int>("action",FLD::set_general_face_fluid_parameter);
+
+    faceparams.sublist("EDGE-BASED STABILIZATION")     = params_->sublist("EDGE-BASED STABILIZATION");
+
+    faceparams.set<int>("STABTYPE", DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>( params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
+
+    faceparams.set<int>("Physical Type", physicaltype_);
+
+    // get function number of given Oseen advective field if necessary
+    if (physicaltype_==INPAR::FLUID::oseen) faceparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
+
+    DRT::ELEMENTS::FluidIntFaceType::Instance().PreEvaluate(*discret_,faceparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  }
+
+  //------------------------------------------------------------------------------------------------------
+  // set XFEM specific parameter for faces
+  {
+    Teuchos::ParameterList faceparams;
+
+    faceparams.set<int>("action",FLD::set_general_face_xfem_parameter);
+
+    // set general fluid face parameters are contained in the following two sublists
+    faceparams.sublist("XFLUID DYNAMIC/STABILIZATION") = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
+
+    DRT::ELEMENTS::FluidIntFaceType::Instance().PreEvaluate(*discret_,faceparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  }
+
+  return;
+}
+
+
+// -------------------------------------------------------------------
+// set general time parameter (AE 01/2011)
+// -------------------------------------------------------------------
+void FLD::XFluid::SetElementTimeParameter()
+{
+
+  Teuchos::ParameterList eleparams;
+
+  // set action
+  eleparams.set<int>("action",FLD::set_time_parameter);
+  // set time integration scheme
+  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
+  // set general element parameters
+  eleparams.set("dt",dta_);
+  eleparams.set("theta",theta_);
+  eleparams.set("omtheta",omtheta_);
+
+  // set scheme-specific element parameters and vector values
+  if (timealgo_==INPAR::FLUID::timeint_stationary)
+  {
+    eleparams.set("total time",time_);
+  }
+  else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  {
+    eleparams.set("total time",time_-(1-alphaF_)*dta_);
+    eleparams.set("alphaF",alphaF_);
+    eleparams.set("alphaM",alphaM_);
+    eleparams.set("gamma",gamma_);
+  }
+  else
+  {
+    eleparams.set("total time",time_);
+    eleparams.set<int>("ost cont and press",params_->get<int>("ost cont and press"));
+    eleparams.set<bool>("ost new"          , params_->get<bool>("ost new"));
+  }
+
+  // call standard loop over elements
+  //discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::CreateInitialState()
+{
+  // initialize the state class iterator with -1
+  // the XFluidState class called from the constructor is then indexed with 0
+  // all further first cuts of a new time-step have then index 1 and have to be reset to 0 in PrepareTimeStep()
+  state_it_=-1;
+
+  // ---------------------------------------------------------------------
+  // create the initial state class
+  CreateState();
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::CreateState()
+{
+  // ---------------------------------------------------------------------
+  // create a new state class
+  state_ = GetNewState();
+
+  //--------------------------------------------------------------------------------------
+  // initialize the KrylovSpaceProjection
+  InitKrylovSpaceProjection();
+
+  //--------------------------------------------------------------------------------------
+  // create object for edgebased stabilization
+  if(edge_based_ or ghost_penalty_)
+    edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(state_->Wizard(), discret_, include_inner_));
+
+  //--------------------------------------------------------------------------------------
+  if (false/*xfluid_.params_->get<bool>("INFNORMSCALING")*/)
+  {
+    fluid_infnormscaling_ = Teuchos::rcp(new FLD::UTILS::FluidInfNormScaling(*state_->velpressplitter_));
+  }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<FLD::XFluidState> FLD::XFluid::GetNewState()
+{
+
+  //-------------------------------------------------------------
+  // export background mesh ale displacements
+  //-------------------------------------------------------------
+
+  // init col vector holding background ALE displacements for backdis
+  Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::null;
+
+  if (alefluid_)
+  {
+    dispnpcol = Teuchos::rcp(new Epetra_Vector(*xdiscret_->InitialDofColMap()));
+    LINALG::Export(*dispnp_,*dispnpcol);
+  }
+
+  //-------------------------------------------------------------
+  // create a temporary state-creator object
+  //-------------------------------------------------------------
+  // create the new state class (vectors, matrices...)
+  state_it_++;
+
+  Teuchos::RCP<FLD::XFluidState> state = state_creator_->Create(
+      xdiscret_,
+      dispnpcol,     //!< col vector holding background ALE displacements for backdis
+      solver_->Params(),
+      step_,
+      time_
+      );
+
+  //--------------------------------------------------------------------------------------
+  // initialize ALE state vectors
+  if(alefluid_) state_creator_->InitALEStateVectors(xdiscret_, dispnp_, gridvnp_);
+
+  return state;
+}
+
+
+/*----------------------------------------------------------------------*
  |  evaluate elements, volumecells and boundary cells      schott 03/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::AssembleMatAndRHS( int itnum )
@@ -629,7 +1094,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
 
 
-void FLD::XFluid::AssembleMatAndRHS_FaceTerms()
+void FLD::XFluid::AssembleMatAndRHS_FaceTerms(bool is_ghost_penalty_reconstruct)
 {
   // call edge stabilization
   if( edge_based_ or ghost_penalty_ )
@@ -639,7 +1104,7 @@ void FLD::XFluid::AssembleMatAndRHS_FaceTerms()
     Teuchos::ParameterList faceparams;
 
     // set additional faceparams according to ghost-penalty terms due to Nitsche's method
-    faceparams.set("ghost_penalty_reconstruct", false); // no XFEM timeintegration reconstruction call
+    faceparams.set("ghost_penalty_reconstruct", is_ghost_penalty_reconstruct); // no XFEM timeintegration reconstruction call
 
     //------------------------------------------------------------
     // loop over row faces
@@ -998,7 +1463,7 @@ void FLD::XFluid::GmshOutput(
             GmshOutputVolumeCell( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, nds, vel, acc );
             if ( vc->Position()==GEO::CUT::Point::outside )
             {
-              GmshOutputBoundaryCell( *discret_, *boundarydis_, gmshfilecontent_bound, vc );
+              GmshOutputBoundaryCell( *discret_, gmshfilecontent_bound, vc );
             }
           }
           else
@@ -1507,7 +1972,6 @@ void FLD::XFluid::GmshOutputVolumeCell( DRT::Discretization & discret,
  *----------------------------------------------------------------------*/
 void FLD::XFluid::GmshOutputBoundaryCell(
     DRT::Discretization & discret,
-    DRT::Discretization & cutdiscret,
     std::ofstream & bound_f,
     GEO::CUT::VolumeCell * vc
 )
@@ -1649,17 +2113,12 @@ void FLD::XFluid::GmshOutputBoundaryCell(
 /*----------------------------------------------------------------------*
  |  evaluate gradient penalty terms to reconstruct ghost values  schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::GradientPenalty(
-    Teuchos::ParameterList & eleparams,
-    DRT::Discretization & discret,
-    DRT::Discretization & cutdiscret,
+void FLD::XFluid::AssembleMatAndRHS_GradientPenalty(
     Teuchos::RCP<Epetra_Vector> vec,
     int itnum
 )
 {
-
-
-  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::GradientPenalty" );
+  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::AssembleMatAndRHS_GradientPenalty" );
 
   // create a new sysmat with reusing the old graph (without the DBC modification) when savegraph-flag is switched on
   // for the first iteration we need to create a new matrix without reusing the graph as the matrix could have been used
@@ -1671,29 +2130,25 @@ void FLD::XFluid::GradientPenalty(
 
   // add Neumann loads
   state_->residual_->PutScalar(0.0);
-
-  // create an column residual vector for assembly over row elements that has to be communicated at the end
-  Teuchos::RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*discret.DofColMap(),true);
   state_->residual_col_->PutScalar(0.0);
 
   //----------------------------------------------------------------------
   // set general vector values needed by elements
-  discret.ClearState();
-  discret.SetState("hist" ,state_->hist_ );
+  discret_->ClearState();
 
   if (alefluid_)
   {
     //dserror("which vectors have to be set for gradient penalty for timeintegration in alefluid?!");
     //In principle we would not need gridv, as tau is anyway set to 1.0 at the end ...
-    discret.SetState("dispnp", dispnp_);
-    discret.SetState("gridv", gridvnp_);
+    discret_->SetState("dispnp", dispnp_);
+    discret_->SetState("gridv", gridvnp_);
   }
 
   // set scheme-specific element parameters and vector values
   if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-    discret.SetState("velaf",vec);
+    discret_->SetState("velaf",vec);
   else
-    discret.SetState("velaf",vec);
+    discret_->SetState("velaf",vec);
 
 
 
@@ -1702,50 +2157,17 @@ void FLD::XFluid::GradientPenalty(
 
   if (itnum != itemax)
   {
-    // call standard loop over elements
+    // call loop over face-elements
+    AssembleMatAndRHS_FaceTerms(true);
 
-    DRT::AssembleStrategy strategy(0, 0, state_->sysmat_,Teuchos::null,state_->residual_col_,Teuchos::null,Teuchos::null);
-
-    DRT::Element::LocationArray la( 1 );
-
-    // call edge stabilization
-    if( edge_based_ or ghost_penalty_ )
-    {
-      TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
-
-      Teuchos::ParameterList faceparams;
-      faceparams.set("ghost_penalty_reconstruct",true);
-
-      //------------------------------------------------------------
-      // loop over row faces
-
-      Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
-
-      const int numrowintfaces = xdiscret->NumMyRowFaces();
-
-      // REMARK: in this XFEM framework the whole evaluate routine uses only row internal faces
-      // and assembles into EpetraFECrs matrix
-      // this is baci-unusual but more efficient in all XFEM applications
-      for (int i=0; i<numrowintfaces; ++i)
-      {
-        DRT::Element* actface = xdiscret->lRowFace(i);
-
-        DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
-        if ( ele==NULL ) dserror( "expect FluidIntFace element" );
-
-        edgestab_->EvaluateEdgeStabGhostPenalty( faceparams, discret_, ele, state_->sysmat_, strategy.Systemvector1(), gmsh_discret_out_);
-      }
-    }
-
-
-    discret.ClearState();
+    discret_->ClearState();
 
 
     //-------------------------------------------------------------------------------
     // need to export residual_col to systemvector1 (residual_)
     Epetra_Vector res_tmp(state_->residual_->Map(),false);
-    Epetra_Export exporter(strategy.Systemvector1()->Map(),res_tmp.Map());
-    int err2 = res_tmp.Export(*strategy.Systemvector1(),exporter,Add);
+    Epetra_Export exporter(state_->residual_col_->Map(),res_tmp.Map());
+    int err2 = res_tmp.Export(*state_->residual_col_,exporter,Add);
     if (err2) dserror("Export using exporter returned err=%d",err2);
     state_->residual_->Update(1.0,res_tmp,1.0);
 
@@ -1758,185 +2180,6 @@ void FLD::XFluid::GradientPenalty(
   }
 
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Constructor for basic XFluid class                     schott 03/12 |
- *----------------------------------------------------------------------*/
-FLD::XFluid::XFluid(
-    const Teuchos::RCP<DRT::Discretization>&      actdis,
-    const Teuchos::RCP<DRT::Discretization>&      coupdis,
-    const Teuchos::RCP<LINALG::Solver>&           solver,
-    const Teuchos::RCP<Teuchos::ParameterList>&   params,
-    const Teuchos::RCP<IO::DiscretizationWriter>& output,
-    bool                                          alefluid /*= false*/)
-  : TimInt(actdis, solver, params, output),
-    xdiscret_(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(actdis, true)),
-    alefluid_(alefluid)
-{
-  // all discretizations which potentially include mesh-based XFEM coupling/boundary conditions
-  meshcoupl_dis_.clear();
-  meshcoupl_dis_.push_back(coupdis);
-
-  mc_idx_ = 0; // using this constructor only one mesh coupling discretization is supported so far
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  initialize algorithm                                   schott 11/14 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::Init()
-{
-
-  // -------------------------------------------------------------------
-  // get input params and print Xfluid specific configurations
-  // -------------------------------------------------------------------
-
-  // read xfluid input parameters from list
-  SetXFluidParams();
-
-  // check xfluid input parameter combination for consistency & valid choices
-  CheckXFluidParams();
-
-  // output of stabilization details
-  PrintStabilizationParams();
-
-  //----------------------------------------------------------------------
-  turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
-  //----------------------------------------------------------------------
-
-  // compute or set 1.0 - theta for time-integration schemes
-  if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)  omtheta_ = 1.0 - theta_;
-  else                                      omtheta_ = 0.0;
-
-
-  // ensure that degrees of freedom in the discretization have been set
-  if ( not discret_->Filled() or not discret_->HaveDofs() )
-    discret_->FillComplete();
-
-
-  // create internal faces for edgebased fluid stabilization and ghost penalty stabilization
-  if(edge_based_ or ghost_penalty_ )
-  {
-    Teuchos::RCP<DRT::DiscretizationFaces> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
-    actdis->CreateInternalFacesExtension();
-  }
-
-  // -------------------------------------------------------------------
-  // initialize vectors used for cut to Teuchos::null
-  // -------------------------------------------------------------------
-
-  //TODO: shift these vectors to the ConditionManager (CouplingManager-class)
-
-  ivelnp_ = Teuchos::null;
-  iveln_  = Teuchos::null;
-  ivelnm_ = Teuchos::null;
-
-  idispnp_ = Teuchos::null;
-  idispn_  = Teuchos::null;
-
-  // -------------------------------------------------------------------
-  // create a Condition/Coupling Manager
-  // -------------------------------------------------------------------
-  condition_manager_ = Teuchos::rcp(new XFEM::ConditionManager(discret_, meshcoupl_dis_));
-
-  // build the whole object which then can be used
-  condition_manager_->Create(time_);
-
-
-  if(condition_manager_->HasMeshCoupling())
-  {
-    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx_);
-
-    boundarydis_ = mc_coupl->GetCutterDis();
-
-    // init the statevectors to keep the current framework alive
-    ivelnp_ = mc_coupl->IVelnp();
-    iveln_  = mc_coupl->IVeln();
-    ivelnm_ = mc_coupl->IVelnm();
-
-    idispnp_ = mc_coupl->IDispnp();
-    idispn_  = mc_coupl->IDispn();
-
-    InitBoundaryDiscretization();
-  }
-  if(condition_manager_->HasLevelSetCoupling())
-  {
-    //TODO how to deal with level-set fields after restarts?
-    condition_manager_->SetLevelSetField( time_ );
-  }
-
-  Teuchos::RCP<XFEM::LevelSetCoupling> two_phase_coupl = condition_manager_->GetLevelSetCoupling("XFEMLevelsetTwophase");
-  Teuchos::RCP<XFEM::LevelSetCoupling> combust_coupl   = condition_manager_->GetLevelSetCoupling("XFEMLevelsetCombustion");
-
-  if(two_phase_coupl != Teuchos::null or combust_coupl!= Teuchos::null)
-  {
-    include_inner_ = true;
-    dispnp_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
-
-
-    if(condition_manager_->HasMeshCoupling())
-      dserror("two-phase flow coupling and mesh coupling at once is not supported by the cut at the moment, as Node-position and include inner are not handled properly then");
-  }
-  else
-  {
-    include_inner_=false;
-  }
-
-  // -------------------------------------------------------------------
-  // create the state creator
-  // -------------------------------------------------------------------
-  state_creator_ = Teuchos::rcp(
-      new FLD::XFluidStateCreator(
-        condition_manager_,
-        VolumeCellGaussPointBy_,
-        BoundCellGaussPointBy_,
-        gmsh_cut_out_,
-        maxnumdofsets_,
-        minnumdofsets_,
-        include_inner_));
-
-
-  // -------------------------------------------------------------------
-  // create output dofsets and prepare output for xfluid
-  // -------------------------------------------------------------------
-
-  PrepareOutput();
-
-  // used to write out owner of elements just once
-  firstoutputofrun_ = true;
-
-
-  // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
-  restart_count_ = 0;
-
-  // -------------------------------------------------------------------
-  // GMSH discretization output before CUT
-  OutputDiscret();
-
-  if (alefluid_)
-  {
-    dispnp_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
-    dispn_   = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
-    dispnm_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
-    gridvnp_ = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
-    gridvn_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
-  }
-
-
-  // -------------------------------------------------------------------
-
-  //TODO: more: has twophase condition
-//  if(!levelsetcut_)
-  {
-    // set idispn to idispnp as the cut uses idispnp (important if idispn is set and for restarts)
-    if(condition_manager_-> HasMeshCoupling()) idispnp_->Update(1.0, *idispn_, 0.0);
-
-    CreateInitialState();
-  }
-  // otherwise we create the state from the coupling algorithm using the levelset values from the scatra field
 }
 
 
@@ -1953,6 +2196,36 @@ Teuchos::RCP<const Epetra_Vector> FLD::XFluid::ITrueResidual()
   return Teuchos::null;
 }
 
+const Teuchos::RCP<DRT::Discretization> FLD::XFluid::BoundaryDiscretization()
+{
+  return condition_manager_->GetMeshCoupling(mc_idx_)->GetCutterDis();
+}
+
+Teuchos::RCP<Epetra_Vector> FLD::XFluid::IVelnp()
+{
+  return condition_manager_->GetMeshCoupling(mc_idx_)->IVelnp();
+}
+
+Teuchos::RCP<Epetra_Vector> FLD::XFluid::IVeln()
+{
+  return condition_manager_->GetMeshCoupling(mc_idx_)->IVeln();
+}
+
+Teuchos::RCP<Epetra_Vector> FLD::XFluid::IVelnm()
+{
+  return condition_manager_->GetMeshCoupling(mc_idx_)->IVelnm();
+}
+
+Teuchos::RCP<Epetra_Vector> FLD::XFluid::IDispnp()
+{
+  return condition_manager_->GetMeshCoupling(mc_idx_)->IDispnp();
+}
+
+Teuchos::RCP<Epetra_Vector> FLD::XFluid::IDispn()
+{
+  return condition_manager_->GetMeshCoupling(mc_idx_)->IDispn();
+}
+
 
 void FLD::XFluid::PrepareOutput()
 {
@@ -1966,46 +2239,6 @@ void FLD::XFluid::PrepareOutput()
 
   // create vector according to the dofset_out row map holding all standard fluid unknowns
   outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
-}
-
-
-
-void FLD::XFluid::InitBoundaryDiscretization()
-{
-  // set initial interface fields
-  SetInitialInterfaceFields();
-
-
-  // -------------------------------------------------------------------
-  // read restart for boundary discretization
-  // -------------------------------------------------------------------
-
-  // read the interface displacement and interface velocity for the old timestep which was written in Output
-  // we have to do this before ReadRestart() is called to get the right
-  // initial CUT corresponding to time t^n at which the last solution was written
-  //
-  // REMARK: ivelnp_ and idispnp_ will be set again for the new time step in PrepareSolve()
-
-  const int restart = DRT::Problem::Instance()->Restart();
-
-  if(restart) condition_manager_->ReadRestart(restart);
-}
-
-
-/*----------------------------------------------------------------------*
- |  ... |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::SetInitialInterfaceFields()
-{
-  // set an initial interface velocity field
-  if(interface_vel_init_ == INPAR::XFEM::interface_vel_init_by_funct and step_ == 0)
-    SetInterfaceInitialVelocityField();
-
-  if(interface_disp_ == INPAR::XFEM::interface_disp_by_funct or
-     interface_disp_ == INPAR::XFEM::interface_disp_by_implementation)
-  {
-    SetInterfaceDisplacement(idispn_);
-  }
 }
 
 /*----------------------------------------------------------------------*
@@ -2193,13 +2426,13 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
                   ele,
                   *discret_,
                   la[0].lm_,
+                  condition_manager_,
                   mat,
                   ele_interf_norms,
-                  boundarydis_,
                   bcells,
                   bintpoints,
-                  *params_,
-                  cells);
+                  *params_
+              );
             }
           } // bcells
         } // end of loop over volume-cell sets
@@ -2413,33 +2646,7 @@ void FLD::XFluid::CheckXFluidParams() const
   // check XFLUID DYNAMIC/GENERAL parameter list
   // ----------------------------------------------------------------------
 
-  // output for used FUNCT
-  if(myrank_ == 0)
-  {
-    if (interface_vel_func_no_ != interface_vel_init_func_no_ and interface_vel_init_func_no_ == -1)
-      dserror("Are you sure that you want to choose two different functions for VEL_INIT_FUNCT_NO and VEL_FUNCT_NO");
-  }
-
   PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-
-  if( probtype == prb_fluid_xfem or
-      probtype == prb_fsi_xfem  or
-      probtype == prb_fpsi_xfem or
-      probtype == prb_fsi_crack )
-  {
-    // check some input configurations
-
-    if( (probtype == prb_fsi_xfem or probtype == prb_fpsi_xfem or probtype == prb_fsi_crack) and xfluid_mov_bound_ != INPAR::XFEM::XFSIMovingBoundary)
-      dserror("INPUT CHECK: choose xfsi_moving_boundary!!! for prb_fsi_xfem");
-    if( probtype == prb_fluid_xfem  and xfluid_mov_bound_ == INPAR::XFEM::XFSIMovingBoundary)
-      dserror("INPUT CHECK: do not choose xfsi_moving_boundary!!! for prb_fluid_xfem");
-    if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack or probtype == prb_fpsi_xfem) and interface_disp_  != INPAR::XFEM::interface_disp_by_fsi)
-      dserror("INPUT CHECK: choose interface_disp_by_fsi for prb_fsi_xfem");
-    if( probtype == prb_fluid_xfem  and interface_disp_  == INPAR::XFEM::interface_disp_by_fsi )
-      dserror("INPUT CHECK: do not choose interface_disp_by_fsi for prb_fluid_xfem");
-    if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack or probtype == prb_fpsi_xfem) and interface_vel_   != INPAR::XFEM::interface_vel_by_disp )
-      dserror("INPUT CHECK: do you want to use !interface_vel_by_disp for prb_fsi_xfem?");
-  }
 
   // just xfluid-sided coulings or weak DBCs possible
   //TODO: HACK for TWOPHASEFLOW
@@ -2764,8 +2971,7 @@ void FLD::XFluid::SolveStationaryProblem()
     // -------------------------------------------------------------------
     //              set (pseudo-)time dependent parameters
     // -------------------------------------------------------------------
-    step_ += 1;
-    time_ += dta_;
+    IncrementTimeAndStep();
 
     // -------------------------------------------------------------------
     //                         out to screen
@@ -2817,6 +3023,8 @@ void FLD::XFluid::PrepareTimeStep()
   //              set time dependent parameters
   // -------------------------------------------------------------------
   IncrementTimeAndStep();
+
+  condition_manager_->IncrementTimeAndStep(dta_);
 
   // reset the state-class iterator for the new time step
   state_it_ = 0;
@@ -2886,17 +3094,8 @@ void FLD::XFluid::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::PrepareSolve()
 {
-  // compute or set interface velocities just for XFluidMovingBoundary
-  // REMARK: for XFSI this is done by ApplyMeshDisplacement and ApplyInterfaceVelocities
-  if( xfluid_mov_bound_ == INPAR::XFEM::XFluidMovingBoundary)
-  {
-    SetInterfaceDisplacement(idispnp_);
-    ComputeInterfaceVelocities();
-  }
-  else if( xfluid_mov_bound_ == INPAR::XFEM::XFluidStationaryBoundary)
-  {
-    ComputeInterfaceVelocities();
-  }
+  // set new interface positions and possible values for XFEM Weak Dirichlet and Neumann BCs
+  condition_manager_->PrepareSolve();
 
   PrepareNonlinearSolve();
 }
@@ -4515,11 +4714,8 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
       // get cpu time
       const double tcpu=Teuchos::Time::wallTime();
 
-      // create the parameters for the discretization
-      Teuchos::ParameterList eleparams;
-
       // evaluate routine
-      GradientPenalty(eleparams, *discret_, *boundarydis_, vec, itnum);
+      AssembleMatAndRHS_GradientPenalty(vec, itnum);
 
       // end time measurement for element
       dtele_=Teuchos::Time::wallTime()-tcpu;
@@ -4533,6 +4729,9 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
     // to avoid that.
 
     ghost_penaly_dbcmaps->InsertCondVector(ghost_penaly_dbcmaps->ExtractCondVector(state_->zeros_), state_->residual_);
+
+
+    //TODO: use the convergence check
 
     double incvelnorm_L2;
     double incprenorm_L2;
@@ -4720,10 +4919,10 @@ void FLD::XFluid::XTimint_SemiLagrangean(
 
   if(myrank_==0 and screen_out) std::cout << "\t ...SemiLagrangean Reconstruction...";
 
-  boundarydis_->ClearState();
+  Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx_);
+  Teuchos::RCP<DRT::Discretization> bounddis = mc_coupl->GetCutterDis();
 
-  boundarydis_->SetState("idispnp",idispnp_);
-  boundarydis_->SetState("idispn",idispn_);
+  condition_manager_->SetStateDisplacement();
 
   //--------------------------------------------------------
   // export veln row vector from t^n to a col vector
@@ -4760,7 +4959,7 @@ void FLD::XFluid::XTimint_SemiLagrangean(
 
     timeIntData = Teuchos::rcp(new XFEM::XFLUID_TIMEINT_BASE(
         discret_,
-        boundarydis_,
+        bounddis,
         wizard_Intn_,
         state_->Wizard(),
         dofset_Intn_,
@@ -5199,6 +5398,13 @@ void FLD::XFluid::Output()
       output_->WriteVector("accn_res",state_->accn_);
       output_->WriteVector("veln_res",state_->veln_);
       output_->WriteVector("velnm_res",state_->velnm_);
+
+      //TODO:
+      if (alefluid_)
+      {
+        std::cout << " WARNING: implement the write restart for alefluid!!!" << std::endl;
+      }
+
     }
 
     //-----------------------------------------------------------
@@ -5532,7 +5738,6 @@ void FLD::XFluid::SetInitialFlowField(
 
     if (err!=0) dserror("dof not on proc");
   }
-
   else
   {
     dserror("Only initial fields auch as a zero field, initial fields by (un-)disturbed functions and  Beltrami flow!");
@@ -5561,392 +5766,6 @@ void FLD::XFluid::SetInitialFlowField(
 } // end SetInitialFlowField
 
 
-/*----------------------------------------------------------------------*
- |   set an initial interface field                        schott 03/12 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::SetInterfaceInitialVelocityField()
-{
-
-  if(interface_vel_init_func_no_ != -1)
-  {
-    if(myrank_ == 0) std::cout << "Set initial interface velocity field with function number " << interface_vel_init_func_no_ << std::endl;
-
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
-    {
-      // get the processor local node
-      DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
-      // the set of degrees of freedom associated with the node
-      const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
-
-      if (nodedofset.size()!=0)
-      {
-        for(int dof=0;dof<(int)nodedofset.size();++dof)
-        {
-          int gid = nodedofset[dof];
-
-          double initialval=DRT::Problem::Instance()->Funct(interface_vel_init_func_no_-1).Evaluate(dof%4,lnode->X(),time_,NULL);
-          ivelnp_->ReplaceGlobalValues(1,&initialval,&gid);
-        }
-      }
-
-    }
-
-    // initialize veln_ as well.
-    iveln_->Update(1.0,*ivelnp_ ,0.0);
-
-  }
-
-  return;
-} // end SetInterfaceInitialVelocityField
-
-
-/*----------------------------------------------------------------------*
- |  set interface displacement at current time             schott 03/12 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::SetInterfaceDisplacement(Teuchos::RCP<Epetra_Vector> idisp)
-{
-  if(myrank_ == 0) IO::cout << "\t set interface displacement, time " << time_ << IO::endl;
-
-  if( timealgo_ != INPAR::FLUID::timeint_stationary)
-  {
-    if( interface_disp_ == INPAR::XFEM::interface_disp_by_curve )
-    {
-      if(myrank_ == 0)
-      {
-        IO::cout << "\t\t ... interface displacement by CURVES " << interface_disp_curve_no_[0]<<" "
-                 << interface_disp_curve_no_[1]<<" "<< interface_disp_curve_no_[2]<< IO::endl;
-      }
-
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
-      {
-        // get the processor local node
-        DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
-        // the set of degrees of freedom associated with the node
-        const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
-
-        if( nodedofset.size() != 3 )
-          dserror( "Why nodes on boundary discretization has more than 3 dofs?" );
-
-        if (nodedofset.size()!=0)
-        {
-          for(int dof=0;dof<(int)nodedofset.size();++dof)
-          {
-            if( interface_disp_curve_no_[dof] == -1 )
-              continue;
-
-            int gid = nodedofset[dof];
-            double curveval = DRT::Problem::Instance()->Curve( interface_disp_curve_no_[dof]-1 ).f( time_ );
-
-            idisp->ReplaceGlobalValues(1,&curveval,&gid);
-          }
-        }
-      }
-    }
-
-    else if(interface_disp_ == INPAR::XFEM::interface_disp_by_funct)
-    {
-
-      if(interface_disp_func_no_ != -1)
-      {
-        if(myrank_ == 0)
-        {
-          IO::cout << "\t\t ... interface displacement by FUNCT " << interface_disp_func_no_ << IO::endl;
-        }
-
-        // loop all nodes on the processor
-        for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
-        {
-          // get the processor local node
-          DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
-          // the set of degrees of freedom associated with the node
-          const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
-
-          if (nodedofset.size()!=0)
-          {
-            for(int dof=0;dof<(int)nodedofset.size();++dof)
-            {
-              int gid = nodedofset[dof];
-
-              double initialval=DRT::Problem::Instance()->Funct( interface_disp_func_no_-1).Evaluate(dof%4,lnode->X(),time_,NULL);
-
-              idisp->ReplaceGlobalValues(1,&initialval,&gid);
-            }
-          }
-
-        }
-
-      }
-      else dserror("define DISP_FUNCT_NO > -1 for INTERFACE_DISPLACEMENT =  interface_disp_by_funct");
-    }
-    else if( interface_disp_ == INPAR::XFEM::interface_disp_zero)
-    {
-      idispnp_->PutScalar(0.0);
-    }
-    else if( interface_disp_ == INPAR::XFEM::interface_disp_by_fsi)
-    {
-      dserror("do not call SetInterfaceDisplacement for fsi application!");
-    }
-    else if( interface_disp_ == INPAR::XFEM::interface_disp_by_implementation)
-    {
-      if(myrank_ == 0) IO::cout << "\t\t ... interface displacement by IMPLEMENTATION " << IO::endl;
-
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
-      {
-        // get the processor local node
-        DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
-        // the set of degrees of freedom associated with the node
-        const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
-
-        if (nodedofset.size()!=0)
-        {
-
-          double t_1 = 1.0;         // ramp the rotation
-          double t_2 = t_1+1.0;     // reached the constant angle velocity
-          double t_3 = t_2+12.0;    // decrease the velocity and turn around
-          double t_4 = t_3+2.0;     // constant negative angle velocity
-
-          double arg= 0.0; // prescribe a time-dependent angle
-
-          double T = 16.0;  // time period for 2*Pi
-          double angle_vel = 2.*M_PI/T;
-
-          if(time_ <= t_1)
-          {
-            arg = 0.0;
-          }
-          else if(time_> t_1 and time_<= t_2)
-          {
-            arg = angle_vel / 2.0 * (time_-t_1) - angle_vel*(t_2-t_1)/(2.0*M_PI)*sin(M_PI * (time_-t_1)/(t_2-t_1));
-          }
-          else if(time_>t_2 and time_<= t_3)
-          {
-            arg = angle_vel * (time_-t_2) + M_PI/T*(t_2-t_1);
-          }
-          else if(time_>t_3 and time_<=t_4)
-          {
-            arg = angle_vel*(t_4-t_3)/(M_PI)*sin(M_PI*(time_-t_3)/(t_4-t_3)) + 2.0*M_PI/T*(t_3-t_2)+ M_PI/T*(t_2-t_1);
-          }
-          else if(time_>t_4)
-          {
-            arg = -angle_vel * (time_-t_4) + M_PI/T*(t_2-t_1)+ 2.0*M_PI/T*(t_3-t_2);
-          }
-          else dserror("for that time we did not define an implemented rotation %d", time_);
-
-          {
-            // rotation with constant angle velocity around point
-            LINALG::Matrix<3,1> center(true);
-
-            center(0) = 0.0;
-            center(1) = 0.0;
-            center(2) = 0.0;
-
-            const double* x_coord = lnode->X();
-
-            LINALG::Matrix<3,1> node_coord(true);
-            node_coord(0) = x_coord[0];
-            node_coord(1) = x_coord[1];
-            node_coord(2) = x_coord[2];
-
-            LINALG::Matrix<3,1> diff(true);
-            diff(0) = node_coord(0)-center(0);
-            diff(1) = node_coord(1)-center(1);
-            diff(2) = node_coord(2)-center(2);
-
-            // rotation matrix
-            LINALG::Matrix<3,3> rot(true);
-
-            rot(0,0) = cos(arg);            rot(0,1) = -sin(arg);          rot(0,2) = 0.0;
-            rot(1,0) = sin(arg);            rot(1,1) = cos(arg);           rot(1,2) = 0.0;
-            rot(2,0) = 0.0;                 rot(2,1) = 0.0;                rot(2,2) = 1.0;
-
-            //          double r= diff.Norm2();
-            //
-            //          rot.Scale(r);
-
-            LINALG::Matrix<3,1> x_new(true);
-            LINALG::Matrix<3,1> rotated(true);
-
-            rotated.Multiply(rot,diff);
-
-            x_new.Update(1.0,rotated,-1.0, diff);
-
-
-            for(int dof=0;dof<(int)nodedofset.size();++dof)
-            {
-              int gid = nodedofset[dof];
-
-              double initialval=0.0;
-              if(dof<3) initialval = x_new(dof);
-
-              idisp->ReplaceGlobalValues(1,&initialval,&gid);
-            }
-          }
-        }
-        else
-        {
-          for(int dof=0;dof<(int)nodedofset.size();++dof)
-          {
-            int gid = nodedofset[dof];
-
-            double initialval=0.0;
-
-            idisp->ReplaceGlobalValues(1,&initialval,&gid);
-          }
-        }
-
-      }
-    }
-    else dserror("unknown solid_disp type");
-
-
-  }
-  else
-  {
-//    dserror("SetInterfaceDisplacement should not be called for stationary time integration");
-  }
-
-}
-
-
-/*----------------------------------------------------------------------*
- |  compute and set the interface velocities               schott 03/12 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::ComputeInterfaceVelocities()
-{
-  // compute interface velocities for different moving boundary applications
-  // XFLUID:  use interface vel by displacement
-  //          use interface vel by external function
-  //          use zero interface vel
-  // XFSI:    use always interface vel by displacement (second order yes/no )
-  // (the right input parameter configuration is checked in adapter_fluid_base_algorithm)
-
-
-  if(ivelnp_ == Teuchos::null) return; // no interface vectors for levelset cut
-
-  if(myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
-
-  if( timealgo_ != INPAR::FLUID::timeint_stationary)
-  {
-
-    if(interface_vel_ == INPAR::XFEM::interface_vel_by_disp)
-    {
-      if(Step() == 0) dserror("for interface_vel_by_disp, set idispn!!!");
-      // compute the interface velocity using the new and old interface displacement vector
-
-      if(myrank_ == 0) IO::cout << "\t\t ... interface velocity by displacement ";
-
-      double thetaiface = 0.0;
-      if (params_->get<bool>("interface second order"))
-      {
-        if(myrank_ == 0) IO::cout << "(second order: YES) " << IO::endl;
-
-        thetaiface = 0.5;
-//        if(step_==1)
-//        {
-//          thetaiface = 1.0;
-//          cout << " changed theta_Interface to " << thetaiface << " in step " << step_ << endl;
-//        }
-      }
-      else
-      {
-        if(myrank_ == 0) IO::cout << "(second order: NO) " << IO::endl;
-        thetaiface = 1.0;
-      }
-
-
-      ivelnp_->Update(1.0/(thetaiface*Dt()),*idispnp_,-1.0/(thetaiface*Dt()),*idispn_,0.0);
-      ivelnp_->Update(-(1.0-thetaiface)/thetaiface,*iveln_,1.0);
-
-    }
-
-    else if(interface_vel_ == INPAR::XFEM::interface_vel_by_curve)
-    {
-      if(myrank_ == 0)
-      {
-        IO::cout << "\t\t ... interface velocity by CURVES " << interface_vel_curve_no_[0]<<" "
-                 << interface_vel_curve_no_[1]<<" "<< interface_vel_curve_no_[2]<< IO::endl;
-      }
-
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
-      {
-        // get the processor local node
-        DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
-        // the set of degrees of freedom associated with the node
-        const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
-
-        if( nodedofset.size() != 3 )
-          dserror( "Why nodes on boundary discretization has more than 3 dofs?" );
-
-        if (nodedofset.size()!=0)
-        {
-          for(int dof=0;dof<(int)nodedofset.size();++dof)
-          {
-            if( interface_vel_curve_no_[dof] == -1 )
-              continue;
-
-            int gid = nodedofset[dof];
-            double curveval = DRT::Problem::Instance()->Curve( interface_vel_curve_no_[dof]-1 ).f( time_ );
-            ivelnp_->ReplaceGlobalValues(1,&curveval,&gid);
-          }
-        } // end if
-      } // end for
-    }
-
-    else if(interface_vel_ == INPAR::XFEM::interface_vel_by_funct)
-    {
-
-      if(interface_vel_func_no_ != -1)
-      {
-        if(myrank_ == 0) IO::cout << "\t\t ... interface velocity by FUNCT " << interface_vel_func_no_ << IO::endl;
-
-        double curvefac = 1.0;
-
-
-        // loop all nodes on the processor
-        for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
-        {
-          // get the processor local node
-          DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
-          // the set of degrees of freedom associated with the node
-          const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
-
-          if (nodedofset.size()!=0)
-          {
-            for(int dof=0;dof<(int)nodedofset.size();++dof)
-            {
-              int gid = nodedofset[dof];
-
-              double initialval=DRT::Problem::Instance()->Funct(interface_vel_func_no_-1).Evaluate(dof%4,lnode->X(),time_,NULL);
-
-              initialval *= curvefac;
-              ivelnp_->ReplaceGlobalValues(1,&initialval,&gid);
-            }
-          } // end if
-        } // end for
-
-      }
-
-    }
-    else if(interface_vel_ == INPAR::XFEM::interface_vel_zero)
-    {
-      if(myrank_ == 0) IO::cout << "\t\t ... interface velocity: zero" << IO::endl;
-
-      ivelnp_->PutScalar(0.0);
-    }
-
-  }
-  else
-  {
-    dserror("ComputeInterfaceVelocities should not be called for stationary time integration");
-  }
-
-}
-
-
 void FLD::XFluid::SetLevelSetField(
    Teuchos::RCP<const Epetra_Vector> scalaraf,
    Teuchos::RCP<DRT::Discretization> scatradis
@@ -5963,170 +5782,38 @@ void FLD::XFluid::SetLevelSetField(
 void FLD::XFluid::SetDirichletNeumannBC()
 {
 
-    Teuchos::ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
-    // other parameters needed by the elements
-    eleparams.set("total time",time_);
+  // other parameters needed by the elements
+  eleparams.set("total time",time_);
 
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("velaf",state_->velnp_);
-    // predicted dirichlet values
-    // velnp then also holds prescribed new dirichlet values
-    discret_->EvaluateDirichlet(eleparams,state_->velnp_,Teuchos::null,Teuchos::null,Teuchos::null,state_->dbcmaps_);
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("velaf",state_->velnp_);
+  // predicted dirichlet values
+  // velnp then also holds prescribed new dirichlet values
+  discret_->EvaluateDirichlet(eleparams,state_->velnp_,Teuchos::null,Teuchos::null,Teuchos::null,state_->dbcmaps_);
 
-    discret_->ClearState();
+  discret_->ClearState();
 
-    if (alefluid_)
-    {
+  if (alefluid_)
+  {
     discret_->SetState("dispnp",state_->dispnp_);
-    }
+  }
 
-    // set thermodynamic pressure
-    eleparams.set("thermodynamic pressure",thermpressaf_);
+  // set thermodynamic pressure
+  eleparams.set("thermodynamic pressure",thermpressaf_);
 
-    state_->neumann_loads_->PutScalar(0.0);
-    discret_->SetState("scaaf",state_->scaaf_);
+  state_->neumann_loads_->PutScalar(0.0);
+  discret_->SetState("scaaf",state_->scaaf_);
 
-    XFEM::EvaluateNeumann(state_->Wizard(), eleparams, discret_, state_->neumann_loads_);
+  XFEM::EvaluateNeumann(state_->Wizard(), eleparams, discret_, state_->neumann_loads_);
 
-    discret_->ClearState();
+  discret_->ClearState();
 
 }
 
-// -------------------------------------------------------------------
-// set general face fluid parameter (BS 06/2014)
-// -------------------------------------------------------------------
-void FLD::XFluid::SetElementGeneralFluidXFEMParameter()
-{
 
-  Teuchos::ParameterList eleparams;
-
-  eleparams.set<int>("action",FLD::set_general_fluid_xfem_parameter); // do not call another action as then another object of the std-class will be created
-
-  //------------------------------------------------------------------------------------------------------
-  // set general element parameters
-  eleparams.set("form of convective term",convform_);
-  eleparams.set<int>("Linearisation",newton_);
-  eleparams.set<int>("Physical Type", physicaltype_);
-
-  // parameter for stabilization
-  eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
-
-  // get function number of given Oseen advective field if necessary
-  if (physicaltype_==INPAR::FLUID::oseen)
-    eleparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
-
-  //set time integration scheme
-  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
-
-  //------------------------------------------------------------------------------------------------------
-  // set general parameters for turbulent flow
-  eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
-
-  // set model-dependent parameters
-  eleparams.sublist("SUBGRID VISCOSITY") = params_->sublist("SUBGRID VISCOSITY");
-  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
-
-
-  //------------------------------------------------------------------------------------------------------
-  // set general XFEM element parameters
-
-  eleparams.sublist("XFEM")                         = params_->sublist("XFEM");
-  eleparams.sublist("XFLUID DYNAMIC/GENERAL")       = params_->sublist("XFLUID DYNAMIC/GENERAL");
-  eleparams.sublist("XFLUID DYNAMIC/STABILIZATION") = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
-
-
-  //------------------------------------------------------------------------------------------------------
-  // set the params in the XFEM-parameter-list class
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-  return;
-}
-
-// -------------------------------------------------------------------
-// set general face fluid parameter (BS 06/2014)
-// -------------------------------------------------------------------
-void FLD::XFluid::SetFaceGeneralFluidXFEMParameter()
-{
-
-  //------------------------------------------------------------------------------------------------------
-  // set general fluid stabilization parameter for faces
-  {
-    Teuchos::ParameterList faceparams;
-
-    faceparams.set<int>("action",FLD::set_general_face_fluid_parameter);
-
-    faceparams.sublist("EDGE-BASED STABILIZATION")     = params_->sublist("EDGE-BASED STABILIZATION");
-
-    faceparams.set<int>("STABTYPE", DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>( params_->sublist("RESIDUAL-BASED STABILIZATION"), "STABTYPE"));
-
-    faceparams.set<int>("Physical Type", physicaltype_);
-
-    // get function number of given Oseen advective field if necessary
-    if (physicaltype_==INPAR::FLUID::oseen) faceparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
-
-    DRT::ELEMENTS::FluidIntFaceType::Instance().PreEvaluate(*discret_,faceparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  }
-
-  //------------------------------------------------------------------------------------------------------
-  // set XFEM specific parameter for faces
-  {
-    Teuchos::ParameterList faceparams;
-
-    faceparams.set<int>("action",FLD::set_general_face_xfem_parameter);
-
-    // set general fluid face parameters are contained in the following two sublists
-    faceparams.sublist("XFLUID DYNAMIC/STABILIZATION") = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
-
-    DRT::ELEMENTS::FluidIntFaceType::Instance().PreEvaluate(*discret_,faceparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  }
-
-  return;
-}
-
-
-// -------------------------------------------------------------------
-// set general time parameter (AE 01/2011)
-// -------------------------------------------------------------------
-void FLD::XFluid::SetElementTimeParameter()
-{
-
-  Teuchos::ParameterList eleparams;
-
-  // set action
-  eleparams.set<int>("action",FLD::set_time_parameter);
-  // set time integration scheme
-  eleparams.set<int>("TimeIntegrationScheme", timealgo_);
-  // set general element parameters
-  eleparams.set("dt",dta_);
-  eleparams.set("theta",theta_);
-  eleparams.set("omtheta",omtheta_);
-
-  // set scheme-specific element parameters and vector values
-  if (timealgo_==INPAR::FLUID::timeint_stationary)
-  {
-    eleparams.set("total time",time_);
-  }
-  else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-  {
-    eleparams.set("total time",time_-(1-alphaF_)*dta_);
-    eleparams.set("alphaF",alphaF_);
-    eleparams.set("alphaM",alphaM_);
-    eleparams.set("gamma",gamma_);
-  }
-  else
-  {
-    eleparams.set("total time",time_);
-    eleparams.set<int>("ost cont and press",params_->get<int>("ost cont and press"));
-    eleparams.set<bool>("ost new"          , params_->get<bool>("ost new"));
-  }
-
-  // call standard loop over elements
-  //discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-}
 
 
 void FLD::XFluid::AssembleMatAndRHS()
@@ -6446,6 +6133,9 @@ void FLD::XFluid::ReadRestart(int step)
 
   }
 
+  // set the new time and step also to the coupling objects
+  condition_manager_->SetTimeAndStep(time_,step_);
+
 }
 
 // -------------------------------------------------------------------
@@ -6462,36 +6152,6 @@ Teuchos::RCP<XFEM::MeshCouplingFSICrack> FLD::XFluid::GetMeshCouplingFSICrack(co
   return Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSICrack>(mc_coupl, true);
 }
 
-
-/*---------------------------------------------------------------------------------------------*
- * When boundary values are updated after crack propagation, there are new nodes          sudhakar 03/14
- * in the updated boundary discretization. Properly set values of DOFS at
- * these new nodes
- *---------------------------------------------------------------------------------------------*/
-void FLD::XFluid::UpdateBoundaryValuesAfterCrack(
-    const std::string & condname,
-    const std::map<int,int>& oldnewIds
-)
-{
-  //TODO: call this also directly from FSI::DirichletNeumann_Crack::AddNewCrackSurfaceToCutInterface() similar to SetCrackTipNodes
-  // when ivelnp_... pointers are not stored anymore in xfluid
-
-  Teuchos::RCP<XFEM::MeshCouplingFSICrack> crfsi_mc_coupl = GetMeshCouplingFSICrack(condname);
-  crfsi_mc_coupl->UpdateBoundaryValuesAfterCrack(oldnewIds);
-
-
-  //TODO: set the pointer in xfluid also to the new vector which has been created in UpdateBoundaryValuesAfterCrack!
-  // This can be removed, when ivelnp_... are not used anymore
-
-  // init the statevectors to keep the current framework alive
-  ivelnp_ = crfsi_mc_coupl->IVelnp();
-  iveln_  = crfsi_mc_coupl->IVeln();
-  ivelnm_ = crfsi_mc_coupl->IVelnm();
-
-  idispnp_ = crfsi_mc_coupl->IDispnp();
-  idispn_  = crfsi_mc_coupl->IDispn();
-
-}
 
 
 /*---------------------------------------------------------------------------------------------*
@@ -6761,194 +6421,6 @@ void FLD::XFluid::GenAlphaUpdateAcceleration()
   // copy back into global vector
   LINALG::Export(*onlyaccnp,*state_->accnp_);
 }
-
-
-void FLD::XFluid::SetXFluidParams()
-{
-
-  dtp_          = params_->get<double>("time step size");
-
-  theta_        = params_->get<double>("theta");
-  newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
-  predictor_    = params_->get<std::string>("predictor","steady_state_predictor");
-  convform_     = params_->get<string>("form of convective term","convective");
-
-  numdim_       = DRT::Problem::Instance()->NDim();
-
-  Teuchos::ParameterList&   params_xfem    = params_->sublist("XFEM");
-  Teuchos::ParameterList&   params_xf_gen  = params_->sublist("XFLUID DYNAMIC/GENERAL");
-  Teuchos::ParameterList&   params_xf_stab = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
-
-  // get the maximal number of dofsets that are possible to use
-  maxnumdofsets_ = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
-
-  // get input parameter about type of boundary movement
-  xfluid_mov_bound_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(params_xf_gen, "XFLUID_BOUNDARY");
-
-  // get input parameter how to prescribe interface velocity
-  interface_vel_init_          = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceInitVel>(params_xf_gen,"INTERFACE_VEL_INITIAL");
-  interface_vel_init_func_no_  = params_xf_gen.get<int>("VEL_INIT_FUNCT_NO", -1);
-  interface_vel_               = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceVel>(params_xf_gen,"INTERFACE_VEL");
-  interface_vel_func_no_       = params_xf_gen.get<int>("VEL_FUNCT_NO", -1);
-  std::istringstream velstream(Teuchos::getNumericStringParameter(params_xf_gen,"VEL_CURVE_NO"));
-  for(int idim=0; idim<3; idim++)
-  {
-    int val = -1;
-    if (velstream >> val)
-      interface_vel_curve_no_[idim] = val;
-  }
-
-  // get input parameter how to prescribe solid displacement
-  interface_disp_           = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceDisplacement>(params_xf_gen,"INTERFACE_DISP");
-  interface_disp_func_no_   = params_xf_gen.get<int>("DISP_FUNCT_NO", -1);
-  std::istringstream dispstream(Teuchos::getNumericStringParameter(params_xf_gen,"DISP_CURVE_NO"));
-  for(int idim=0; idim<3; idim++)
-  {
-    int val = -1;
-    if (dispstream >> val)
-      interface_disp_curve_no_[idim] = val;
-  }
-
-  xfluid_timintapproach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidTimeIntScheme>(params_xf_gen,"XFLUID_TIMEINT");
-
-  if (myrank_ == 0)
-  {
-    IO::cout << "Set interface fields: \n"
-              << "\t\t initial interface velocity:     " << params_xf_gen.get<string>("INTERFACE_VEL_INITIAL")
-              << "\t funct: " <<  interface_vel_init_func_no_ << "\n"
-              << "\t\t interface velocity:             " << params_xf_gen.get<string>("INTERFACE_VEL")
-              << "\t\t funct: " <<  interface_vel_func_no_
-              << "\t\t curve: " <<  interface_vel_curve_no_ << "\n"
-              << "\t\t interface displacement:         " << params_xf_gen.get<string>("INTERFACE_DISP")
-              << "\t funct: " <<  interface_disp_func_no_
-              << "\t curve: " <<  interface_disp_curve_no_ << IO::endl;
-  }
-
-  // get interface stabilization specific parameters
-  coupling_method_    = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab,"COUPLING_METHOD");
-  coupling_strategy_  = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(params_xf_stab,"COUPLING_STRATEGY");
-
-  hybrid_lm_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
-
-  conv_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
-
-  // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
-  edge_based_        = (   params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
-                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_PRES")        != "none"
-                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_STREAM") != "none"
-                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_CROSS")  != "none"
-                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_DIV")         != "none");
-
-  // set flag if a viscous or transient (1st or 2nd order) ghost-penalty stabiliation due to Nitsche's method has to be integrated
-  ghost_penalty_     = (    (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB")
-                        or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_TRANSIENT_STAB")
-                        or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_2nd_STAB") );
-
-
-  // get general XFEM specific parameters
-  VolumeCellGaussPointBy_ = DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY");
-  BoundCellGaussPointBy_  = DRT::INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
-
-  if(myrank_ == 0)
-  {
-    std::cout<<"\nVolume:   Gauss point generating method = "<< params_xfem.get<string>("VOLUME_GAUSS_POINTS_BY");
-    std::cout<<"\nBoundary: Gauss point generating method = "<< params_xfem.get<string>("BOUNDARY_GAUSS_POINTS_BY") << "\n\n";
-  }
-
-  // load GMSH output flags
-  bool gmsh = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH");
-
-  gmsh_sol_out_          = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_SOL_OUT");
-  gmsh_debug_out_        = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT");
-  gmsh_debug_out_screen_ = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT_SCREEN");
-  gmsh_EOS_out_          = gmsh && ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_));
-  gmsh_discret_out_      = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DISCRET_OUT");
-  gmsh_cut_out_          = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_CUT_OUT");
-  gmsh_step_diff_        = 500;
-
-
-  // set XFEM-related parameters on element level
-  SetElementGeneralFluidXFEMParameter();
-  SetFaceGeneralFluidXFEMParameter();
-}
-
-
-void FLD::XFluid::CreateInitialState()
-{
-  // initialize the state class iterator with -1
-  // the XFluidState class called from the constructor is then indexed with 0
-  // all further first cuts of a new time-step have then index 1 and have to be reset to 0 in PrepareTimeStep()
-  state_it_=-1;
-
-  // ---------------------------------------------------------------------
-  // create the initial state class
-  CreateState();
-
-
-}
-
-
-void FLD::XFluid::CreateState()
-{
-  // ---------------------------------------------------------------------
-  // create a new state class
-  state_ = GetNewState();
-
-  //--------------------------------------------------------------------------------------
-  // initialize the KrylovSpaceProjection
-  InitKrylovSpaceProjection();
-
-  //--------------------------------------------------------------------------------------
-  // create object for edgebased stabilization
-  if(edge_based_ or ghost_penalty_)
-    edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(state_->Wizard(), discret_, include_inner_));
-
-  //--------------------------------------------------------------------------------------
-  if (false/*xfluid_.params_->get<bool>("INFNORMSCALING")*/)
-  {
-    fluid_infnormscaling_ = Teuchos::rcp(new FLD::UTILS::FluidInfNormScaling(*state_->velpressplitter_));
-  }
-}
-
-
-Teuchos::RCP<FLD::XFluidState> FLD::XFluid::GetNewState()
-{
-
-  //-------------------------------------------------------------
-  // export background mesh ale displacements
-  //-------------------------------------------------------------
-
-  // init col vector holding background ALE displacements for backdis
-  Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::null;
-
-  if (alefluid_)
-  {
-    dispnpcol = Teuchos::rcp(new Epetra_Vector(*xdiscret_->InitialDofColMap()));
-    LINALG::Export(*dispnp_,*dispnpcol);
-  }
-
-  //-------------------------------------------------------------
-  // create a temporary state-creator object
-  //-------------------------------------------------------------
-  // create the new state class (vectors, matrices...)
-  state_it_++;
-
-  Teuchos::RCP<FLD::XFluidState> state = state_creator_->Create(
-      xdiscret_,
-      dispnpcol,     //!< col vector holding background ALE displacements for backdis
-      solver_->Params(),
-      step_,
-      time_
-      );
-
-  //--------------------------------------------------------------------------------------
-  // initialize ALE state vectors
-  if(alefluid_) state_creator_->InitALEStateVectors(xdiscret_, dispnp_, gridvnp_);
-
-  return state;
-}
-
-
 
 
 /*----------------------------------------------------------------------*

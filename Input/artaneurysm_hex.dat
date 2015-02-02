@@ -154,10 +154,6 @@ DSURF                           0
 DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           0
-----------------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
-DSURF                           0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS

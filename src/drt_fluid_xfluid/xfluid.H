@@ -187,26 +187,14 @@ namespace FLD
                      Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
                      );
 
-    /// initialize the state vectors for the interface
-    void InitStateVectorsForInterface();
-
     /// set an initial flow field
     void SetInitialFlowField(
       const INPAR::FLUID::InitialField initfield,
       const int startfuncno
       );
 
-    /// set initial interface fields (velocity and displacements)
-    void SetInitialInterfaceFields();
-
-    /// set an initial solid field
-    void SetInterfaceInitialVelocityField();
-
-    /// set the interface displacement
-    void SetInterfaceDisplacement(Teuchos::RCP<Epetra_Vector> idisp);
-
-    /// compute interface velocities from function
-    void ComputeInterfaceVelocities();
+//    /// compute interface velocities from function
+//    void ComputeInterfaceVelocities();
 
     /// set Dirichlet and Neumann boundary conditions
     virtual void SetDirichletNeumannBC();
@@ -232,12 +220,12 @@ namespace FLD
     //! get the interface forces acting on the structural surface
     Teuchos::RCP<const Epetra_Vector> ITrueResidual();
 
-    Teuchos::RCP<Epetra_Vector> IVelnp(){return ivelnp_; }
-    Teuchos::RCP<Epetra_Vector> IVeln() {return iveln_; }
-    Teuchos::RCP<Epetra_Vector> IVelnm(){return ivelnm_; }
+    Teuchos::RCP<Epetra_Vector> IVelnp();
+    Teuchos::RCP<Epetra_Vector> IVeln();
+    Teuchos::RCP<Epetra_Vector> IVelnm();
 
-    Teuchos::RCP<Epetra_Vector> IDispnp() { return idispnp_; }
-    Teuchos::RCP<Epetra_Vector> IDispn()  { return idispn_; }
+    Teuchos::RCP<Epetra_Vector> IDispnp();
+    Teuchos::RCP<Epetra_Vector> IDispn();
 
     // @}
 
@@ -253,9 +241,9 @@ namespace FLD
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(state_->sysmat_); }
 
     /// return coupling matrix between fluid and structure as sparse matrices
-    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix(){ return state_->coup_state_[0]->C_sx_; }
-    Teuchos::RCP<LINALG::SparseMatrix> C_Fluid_Struct_Matrix(){ return state_->coup_state_[0]->C_xs_; }
-    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Struct_Matrix(){ return state_->coup_state_[0]->C_ss_;}
+    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix(){ return state_->coup_state_[mc_idx_]->C_sx_; }
+    Teuchos::RCP<LINALG::SparseMatrix> C_Fluid_Struct_Matrix(){ return state_->coup_state_[mc_idx_]->C_xs_; }
+    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Struct_Matrix(){ return state_->coup_state_[mc_idx_]->C_ss_;}
 
     Teuchos::RCP<Epetra_Vector> RHS_Struct_Vec(){ return state_->coup_state_[0]->rhC_s_; }
 
@@ -300,13 +288,6 @@ namespace FLD
 
     Teuchos::RCP<XFEM::MeshCouplingFSICrack> GetMeshCouplingFSICrack(const std::string & condname);
 
-    //TODO has to be removed when ivelnp vectors are not stored anymore
-    /// Properly initialize the DOFs of new nodes introduced after the crack propagation
-    void UpdateBoundaryValuesAfterCrack(
-        const std::string & condname,
-        const std::map<int,int>& oldnewIds
-    );
-
     //@}
 
 
@@ -315,7 +296,7 @@ namespace FLD
     //! @name Getter for Discretizations
 
     /// return boundary discretization
-    const Teuchos::RCP<DRT::Discretization>& BoundaryDiscretization() { return boundarydis_; }
+    const Teuchos::RCP<DRT::Discretization> BoundaryDiscretization();
 
     //@}
 
@@ -354,7 +335,15 @@ namespace FLD
     void AssembleMatAndRHS_VolTerms();
 
     /// evaluate and assemble face-oriented fluid and ghost penalty stabilizations
-    void AssembleMatAndRHS_FaceTerms();
+    void AssembleMatAndRHS_FaceTerms(
+        bool is_ghost_penalty_reconstruct = false
+    );
+
+    /// call the loop over elements to assemble volume and interface integrals
+    void AssembleMatAndRHS_GradientPenalty(
+        Teuchos::RCP<Epetra_Vector> vec,
+        int itnum                           ///< iteration number
+    );
 
     /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
     void IntegrateShapeFunction(
@@ -404,26 +393,9 @@ namespace FLD
     /// Gmsh output function for boundarycells
     void GmshOutputBoundaryCell(
         DRT::Discretization & discret,    ///< background fluid discretization
-        DRT::Discretization & cutdiscret, ///< cutter surface discretization
         std::ofstream & bound_f,          ///< output file stream for boundary mesh
         GEO::CUT::VolumeCell * vc         ///< volumecell
     );
-
-    /// call the loop over elements to assemble volume and interface integrals
-    void GradientPenalty( Teuchos::ParameterList & eleparams, ///< element parameters
-        DRT::Discretization & discret,      ///< background fluid discretization
-        DRT::Discretization & cutdiscret,   ///< cutter surface discretization
-        Teuchos::RCP<Epetra_Vector> vec,
-        int itnum                           ///< iteration number
-    );
-
-
-
-
-
-
-
-
 
 
 
@@ -600,9 +572,6 @@ namespace FLD
 
     //! @name specialized init routines
 
-    /// initialize the boundary discretization, output, restart and statevectors
-    void InitBoundaryDiscretization();
-
     void PrepareOutput();
 
     //@}
@@ -627,9 +596,6 @@ namespace FLD
     //! vector of all coupling discretizations, the fluid is coupled with
     std::vector<Teuchos::RCP<DRT::Discretization> > meshcoupl_dis_;
 
-    //! @name general algorithm parameters
-    Teuchos::RCP<DRT::Discretization>      boundarydis_;  //! boundary discretization
-
     //@}
 
 
@@ -646,23 +612,6 @@ namespace FLD
 
     /// do we have to evaluate coupling matrices?
     bool coupling_;
-
-//    /// monolithic fsi coupling or standard fluid routine with weak Dirichlet boundary conditions?
-//    bool monolithic_fsi_coupling_;
-
-    //! @name setting an (initial) interface velocity
-    enum INPAR::XFEM::InterfaceInitVel interface_vel_init_;
-    int interface_vel_init_func_no_;
-
-    enum INPAR::XFEM::InterfaceVel     interface_vel_;
-    int interface_vel_func_no_;
-    int interface_vel_curve_no_[3];
-    //@}
-
-    //! @name setting an initial interface displacement
-    enum INPAR::XFEM::InterfaceDisplacement interface_disp_;
-    int interface_disp_func_no_;
-    int interface_disp_curve_no_[3];
 
     //! @name xfluid time integration
     enum INPAR::XFEM::XFluidTimeIntScheme xfluid_timintapproach_;
@@ -828,13 +777,7 @@ namespace FLD
 
     //------------------------------- vectors -----------------------------
 
-    //! @name boundary-dis state vectors
-    Teuchos::RCP<Epetra_Vector>    ivelnp_;
-    Teuchos::RCP<Epetra_Vector>    iveln_;
-    Teuchos::RCP<Epetra_Vector>    ivelnm_;
-
-    Teuchos::RCP<Epetra_Vector>    idispnp_;
-    Teuchos::RCP<Epetra_Vector>    idispn_;
+    //! @name full fluid-field vectors
 
     //Dispnp of full fluidfield (also unphysical area - to avoid reconstruction for gridvelocity calculation!)
     Teuchos::RCP<Epetra_Vector>    dispnp_;

@@ -701,23 +701,21 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
     DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
     DRT::Discretization &                                               dis,               ///< background discretization
     const std::vector<int> &                                            lm,                ///< element local map
+    const Teuchos::RCP<XFEM::ConditionManager> &                        cond_manager,      ///< XFEM condition manager
     Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
     Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
-    const Teuchos::RCP<DRT::Discretization> &                           cutdis,            ///< cut discretization
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-    Teuchos::ParameterList&                                             params,            ///< parameter list
-    const GEO::CUT::plain_volumecell_set&                               vcSet              ///< volumecell sets in this element
+    Teuchos::ParameterList&                                             params             ///< parameter list
 )
 {
+#ifdef DEBUG
+  if(cond_manager == Teuchos::null) dserror("set the condition manager!");
+#endif
+
   const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
 
   const double t = my::fldparatimint_->Time();
-
-
-  // flag which indicates whether a level set cut is done or a mesh cut is done.
-  // This implies there is no cutdis and as such no cut sides.
-  const bool levelset_cut = (cutdis==Teuchos::null);
 
 
   //----------------------------------------------------------------------------
@@ -778,25 +776,6 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
   // set element area or volume
   const double vol = my::fac_;
 
-
-
-  //----------------------------------------------------------------------------
-  //      surface integral --- build Cuiui, Cuui, Cuiu and Cuu matrix and rhs
-  //----------------------------------------------------------------------------
-
-  DRT::Element::LocationArray cutla( 1 );
-
-  LINALG::Matrix<3,1> normal;
-  LINALG::Matrix<3,1> x_side;
-
-  // coupling implementation between background element and each cut side (std::map<sid, side_impl)
-  Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si;
-
-  // pointer to boundary element
-  DRT::Element * side = NULL;
-  // coordinates of boundary element
-  Epetra_SerialDenseMatrix side_xyze;
-
   //-----------------------------------------------------------------------------------
   //         evaluate element length, stabilization factors and average weights
   //-----------------------------------------------------------------------------------
@@ -835,14 +814,42 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
   //--------------------------------------------
   // map of side-element id and Gauss points
   for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
-        i!=bintpoints.end();
-        ++i )
+      i!=bintpoints.end();
+      ++i )
   {
-    int sid = i->first;
+    //-----------------------------------------------------------------------------------
+
+    // interface normal vector, pointing from background domain into the interface
+    LINALG::Matrix<3,1> normal(true);
+    // gauss-point coordinates
+    LINALG::Matrix<3,1> x_side(true);
+
+    // we need an interface to the boundary element (for projection)
+    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si;
+
+    // location array of boundary element
+    DRT::Element::LocationArray cutla( 1 );
+
+    // pointer to boundary element
+    DRT::Element * side = NULL;
+
+    // coordinates of boundary element
+    Epetra_SerialDenseMatrix side_xyze;
+
+
+
+    //-----------------------------------------------------------------------------------
+
+    int coup_sid = i->first; // global coupling side id
+
+    // get the coupling strategy for coupling of two fields
+    //const INPAR::XFEM::CouplingStrategy coup_strategy = cond_manager->GetCouplingStrategy(coup_sid, my::eid_);
+    const XFEM::EleCoupCond & coupcond = cond_manager->GetCouplingCondition(coup_sid, my::eid_);
+    const INPAR::XFEM::EleCouplingCondType & cond_type = coupcond.first;
+
     const std::vector<DRT::UTILS::GaussIntegration> & cutintpoints = i->second;
 
-    // get side's boundary cells
-    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator j = bcells.find( sid );
+    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator j = bcells.find( coup_sid );
     if ( j==bcells.end() )
       dserror( "missing boundary cell" );
 
@@ -851,35 +858,49 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
       dserror( "boundary cell integration rules mismatch" );
 
 
-    if(!levelset_cut)
+    //---------------------------------------------------------------------------------
+    // set flags used for coupling with given levelset/mesh coupling side
+    bool is_ls_coupling_side   = cond_manager->IsLevelSetCoupling(coup_sid);
+    bool is_mesh_coupling_side = cond_manager->IsMeshCoupling(coup_sid);
+
+    Teuchos::RCP<DRT::Discretization> cutter_dis = cond_manager->GetCutterDis(coup_sid);
+
+#ifdef DEBUG
+    if( is_ls_coupling_side and  is_mesh_coupling_side) dserror("side cannot be a levelset-coupling side and a mesh coupling side at once: side %i", coup_sid);
+    if(!is_ls_coupling_side and !is_mesh_coupling_side) dserror("side is neither a levelset-coupling side nor a mesh coupling side: side %i", coup_sid);
+#endif
+    //-----------------------------------------------------------------------------------
+
+    //---------------------------------------------------------------------------------
+    // prepare the coupling objects
+    if(is_mesh_coupling_side)
     {
-      // side and location vector
-      side = cutdis->gElement( sid );
-      side->LocationVector(*cutdis,cutla,false);
+      // get the side element and its coordinates for projection of Gaussian points
+      side = cond_manager->GetSide( coup_sid );
+      GEO::InitialPositionArray(side_xyze,side);
 
-      // side geometry
-      const int numnodes = side->NumNode();
-      DRT::Node ** nodes = side->Nodes();
-      side_xyze.Shape( 3, numnodes );
-      for ( int i=0; i<numnodes; ++i )
-      {
-        const double * x = nodes[i]->X();
-        std::copy( x, x+3, &side_xyze( 0, i ) );
-      }
-
-      si = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateSlaveElementRepresentation(side,side_xyze);
+      // create auxiliary coupling object for the boundary element, in order to perform projection
+      si = DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>::CreateSlaveElementRepresentation( side, side_xyze );
 
       // set displacement of side
-      si->AddSlaveEleDisp(*cutdis,cutla[0].lm_);
-    }
+      side->LocationVector(*cutter_dis,cutla,false);
+      si->AddSlaveEleDisp(*cutter_dis,cutla[0].lm_);
 
+      if(cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
+          cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
+          cond_type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)
+      {
+        si->SetInterfaceJumpState(*cutter_dis, "ivelnp", cutla[0].lm_);
+      }
+    }
+    else dserror("not supported so far");
 
     //--------------------------------------------
     // loop boundary cells w.r.t current cut side
     //--------------------------------------------
     for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
-          i!=cutintpoints.end();
-          ++i )
+        i!=cutintpoints.end();
+        ++i )
     {
       const DRT::UTILS::GaussIntegration & gi = *i;
       GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
@@ -918,15 +939,37 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         pos.Compute();
         rst = pos.LocalCoordinates();
 
-        if (!levelset_cut)
+        //        if (!levelset_cut)
+        //        {
+        //          // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
+        //          LINALG::Matrix<2,1> xi_side(true);
+        //
+        //          //          side_impl[sid]->ProjectOnSide(x_gp_lin, x_side, xi_side);
+        //          si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+        //        }
+        //        else x_side = x_gp_lin;
+
+
+        //TODO unify ProjectOnSide and Evaluate for different spatial dimensions of boundary slave element and volumetric slave element
+        if (is_mesh_coupling_side)
         {
           // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
           LINALG::Matrix<2,1> xi_side(true);
-
-          //          side_impl[sid]->ProjectOnSide(x_gp_lin, x_side, xi_side);
+          // project on boundary element
           si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+
+          // TODO: do we need this here?
+          //          if (non_xfluid_coupling)
+          //            ci->Evaluate( x_side ); // evaluate embedded element's shape functions at gauss-point coordinates
+          //          else
+          //            ci->Evaluate2D( xi_side ); // evaluate side's shape functions at gauss-point coordinates
         }
-        else x_side = x_gp_lin;
+        else if (is_ls_coupling_side)
+        {
+          // TODO: do we need this here?
+          //          if(cond_manager->IsCoupling( coup_sid, my::eid_ ))
+          //            ci->Evaluate( x_gp_lin ); // evaluate embedded element's shape functions at gauss-point coordinates
+        }
 
 
         const double surf_fac = drs*iquad.Weight();
@@ -968,14 +1011,14 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         p_analyt = 0.0;
 
         AnalyticalReference(
-                     calcerr,          ///< which reference solution
-                     u_analyt,         ///< exact velocity (onesided), exact jump vector (coupled)
-                     grad_u_analyt,    ///< exact velocity gradient
-                     p_analyt,         ///< exact pressure
-                     x_side,           ///< xyz position of gaussian point which lies on the real side, projected from linearized interface
-                     t,                ///< time t
-                     mat
-                     );
+            calcerr,          ///< which reference solution
+            u_analyt,         ///< exact velocity (onesided), exact jump vector (coupled)
+            grad_u_analyt,    ///< exact velocity gradient
+            p_analyt,         ///< exact pressure
+            x_side,           ///< xyz position of gaussian point which lies on the real side, projected from linearized interface
+            t,                ///< time t
+            mat
+        );
 
 
         u_err.Update(1.0, my::velint_, -1.0, u_analyt, 0.0);
@@ -1660,6 +1703,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
     // pointer to boundary element
     DRT::Element * side = NULL;
+
     // coordinates of boundary element
     Epetra_SerialDenseMatrix side_xyze;
 
@@ -3279,7 +3323,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     // pointer to boundary element
     DRT::Element * side = NULL;
 
-  //  // coordinates of boundary element
+    // coordinates of boundary element
     Epetra_SerialDenseMatrix side_xyze;
 
     //-----------------------------------------------------------------------------------

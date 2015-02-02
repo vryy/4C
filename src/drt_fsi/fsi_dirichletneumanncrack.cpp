@@ -91,8 +91,7 @@ void FSI::DirichletNeumann_Crack::AddNewCrackSurfaceToCutInterface()
   if(boundary_dis == Teuchos::null)
     dserror( "Boundary discretization can't be empty" );
 
-  coupl->SetCutterDis(boundary_dis);
+  coupl->SetCutterDis( boundary_dis );
   coupl->SetCrackTipNodes( tip_nodes );
-
-  xfluid->UpdateBoundaryValuesAfterCrack( condname, structfield->getOldNewCrackNodes() );
+  coupl->UpdateBoundaryValuesAfterCrack( structfield->getOldNewCrackNodes() );
 }
