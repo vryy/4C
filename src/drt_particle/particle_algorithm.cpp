@@ -973,6 +973,16 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
   const std::string discret_name = "particlewalls";
   Teuchos::RCP<DRT::Discretization> particlewalldis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
 
+  // number of dofs is important for transparent dof set
+  // only zeros are applied to the wall displacements when fluid domain is basediscret
+  // -> number of dofs is irrelevant when reading data for wall discret in this case
+  // future implementation using ALE needs to be handled like a structure
+  std::stringstream elename;
+  if(structure_ != Teuchos::null)
+    elename << "BELE3_" << 3;
+  else
+    elename << "BELE3_" << 4;
+
   std::vector<int> nodeids;
   std::vector<int> eleids;
   // loop over all particle wall nodes and elements and fill new discretization
@@ -999,7 +1009,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
       {
         eleids.push_back(currele->Id() );
         // structural surface elements cannot be distributed --> Bele3 element is used
-        Teuchos::RCP<DRT::Element> wallele = DRT::UTILS::Factory("BELE3_3","Polynomial", currele->Id(), currele->Owner());
+        Teuchos::RCP<DRT::Element> wallele = DRT::UTILS::Factory(elename.str(),"Polynomial", currele->Id(), currele->Owner());
         wallele->SetNodeIds(currele->NumNode(), currele->NodeIds());
         particlewalldis->AddElement( wallele );
       }
