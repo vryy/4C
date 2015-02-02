@@ -659,9 +659,7 @@ LINALG::SOLVER::SIMPLE_BlockSmoother:: SIMPLE_BlockSmoother(
     int p,
     int s,
     int iter,
-    double omega,
     double alpha,
-    std::string algorithm,
     std::string correction):
 App_           (App         ),
 Ass_           (Ass         ),
@@ -676,9 +674,7 @@ domain_ex_     (domain_ex   ),
 p_             (p           ),
 s_             (s           ),
 iter_          (iter        ),
-omega_         (omega       ),
 alpha_         (alpha       ),
-algorithm_     (algorithm   ),
 correction_    (correction  ),
 DXp_      (Teuchos::null),
 DXs_      (Teuchos::null),
@@ -734,77 +730,47 @@ void LINALG::SOLVER::SIMPLE_BlockSmoother::Apply (
     DYp_aux_  = Teuchos::rcp(new Epetra_MultiVector(*domain_p,NV));
   }
 
+  //  TODO erase omega
   // Run several sweeps
   for(int k=0;k<iter_;k++)
   {
 
-    if (algorithm_ == "simple")
+    // Predictor equation
+    DXp_->Update(1.0,*Xp,0.0);  // DXp = Xp;
+    Aps_->Apply(*Ys,*DXp_aux_);
+    DXp_->Update(-1.0,*DXp_aux_,1.0); // DXp = Xp -  Aps*Ys;
+    DYp_->Scale(0.0);
+    Smoother_App_->Apply(*DXp_,*DYp_); //DYp  = App^-1(Xp  - Aps*Ys)
+
+    // Compute Schur complement equation
+    DXs_->Update(1.0,*Xs,0.0); // DXs_ = Xs
+    Asp_->Apply(*DYp_,*DXs_aux_);
+    DXs_->Update(-1.0,*DXs_aux_,1.0); // DXs = Xs - Asp*DYp
+    Ass_->Apply(*Ys,*DXs_aux_);
+    DXs_->Update(-1.0,*DXs_aux_,1.0);// DXs = Xs - Asp*DYp - Ass*Ys
+    DYs_->Scale(0.0);
+    Smoother_S_->Apply(*DXs_,*DYs_); // DYs = S^-1(Xs - Asp*DYp - Ass*Ys)
+
+    // Schur update
+    Ys->Update(alpha_,*DYs_,1.0); // Ys = Ys + alpha*DYs
+
+    // Predictor update
+    Aps_->Apply(*DYs_,*DXp_aux_); //DXp_aux = A12*DYs
+    if (correction_ == "approximated inverse")
+      invApp_->Apply(*DXp_aux_,*DYp_aux_);// DYp_aux = App^-1*Aps*DYs
+    else if (correction_ == "smoother")
     {
-      // Compute tentative increment
-      DXp_->Update(1.0,*Xp,0.0);  // DXp = Xp;
-      App_->Apply(*Yp,*DXp_aux_);
-      DXp_->Update(-1.0,*DXp_aux_,1.0); // DXp = Xp - App*Yp;
-      Aps_->Apply(*Ys,*DXp_aux_);
-      DXp_->Update(-1.0,*DXp_aux_,1.0); // DXp = Xp - App*Yp - Aps*Ys;
-      DYp_->Scale(0.0);
-      Smoother_App_->Apply(*DXp_,*DYp_); //DYp  = App^-1(Xp - App*Yp - Aps*Ys)
-
-      // Compute Schur complement equation
-      DXs_->Update(1.0,*Xs,0.0); // DXs_ = Xs
-      Asp_->Apply(*Yp,*DXs_aux_);
-      DXs_->Update(-1.0,*DXs_aux_,1.0); // DXs = Xs - Asp*Yp
-      Ass_->Apply(*Ys,*DXs_aux_);
-      DXs_->Update(-1.0,*DXs_aux_,1.0);// DXs = Xs - Asp*Yp - Ass*Ys
-      Asp_->Apply(*DYp_,*DXs_aux_);
-      DXs_->Update(-1.0,*DXs_aux_,1.0); // DXs = Xs - Asp*Yp - Ass*Ys  - Asp*DYp
-      DYs_->Scale(0.0);
-      Smoother_S_->Apply(*DXs_,*DYs_); // DYs = S^-1(Xs - Asp*Yp - Ass*Ys  - Asp*DYp)
-      DYs_->Scale(alpha_);
-
-      // Correction
-      Aps_->Apply(*DYs_,*DXp_aux_); // DXp_aux = Aps*DYs
-      if (correction_ == "approximated inverse")
-        invApp_->Apply(*DXp_aux_,*DYp_aux_);// DYp_aux = App^-1*Aps*DYs
-      else if (correction_ == "smoother")
-      {
-        DYp_aux_->Scale(0.0);
-        Smoother_App_->Apply(*DXp_aux_,*DYp_aux_);// DYp_aux = App^-1*Aps*DYs
-      }
-      else dserror("Invalid strategy for computing the correction. Given correction = %s",
-          correction_.c_str());
-      DYp_->Update(-1.0,*DYp_aux_,1.0); // DYp = DYp - App^-1*Aps*DYs
-    }
-    else if (algorithm_ == "schur FSIAMG")
-    {
-      // Compute Schur complement equation
-      DXs_->Update(1.0,*Xs,0.0); // DXs = Xs
-      Asp_->Apply(*Yp,*DXs_aux_);
-      DXs_->Update(-1.0,*DXs_aux_,1.0); // DXs = Xs - Asp*Yp
-      Ass_->Apply(*Ys,*DXs_aux_);
-      DXs_->Update(-1.0,*DXs_aux_,1.0);// DXs_ = Xs - Asp*Yp - Ass*Ys
-      DYs_->Scale(0.0);
-      Smoother_S_->Apply(*DXs_,*DYs_); // DYs = S^-1(Xs - Asp*Yp - Ass*Ys)
-      DYs_->Scale(alpha_);
-
-      // Correction
-      DXp_->Update(1.0,*Xp,0.0); // DXp = Xp
-      App_->Apply(*Yp,*DXp_aux_);
-      DXp_->Update(-1.0,*DXp_aux_,1.0); // DXp = Xp - App*Yp
-      Aps_->Apply(*Ys,*DXp_aux_);
-      DXp_->Update(-1.0,*DXp_aux_,1.0);//DXp_ = Xp - App*Yp - Aps*Ys
-      Aps_->Apply(*DYs_,*DXp_aux_);
-      DXp_->Update(-1.0,*DXp_aux_,1.0); //DXp_ = Xp - App*Yp - Aps*Ys - Aps*DYs
-      DYp_->Scale(0.0);
-      Smoother_App_->Apply(*DXp_,*DYp_); // DYp = App^-1*(Xp - App*Yp - Aps*Ys - Aps*DYs)
+      DYp_aux_->Scale(0.0);
+      Smoother_App_->Apply(*DXp_aux_,*DYp_aux_);// DYp_aux = App^-1*Aps*DYs
     }
     else
-      dserror ("Invalid value for algorithm. Given value = %s",algorithm_.c_str());
+      dserror("Invalid strategy for computing the correction. Given correction = %s", correction_.c_str());
 
-    // Update
-    Yp->Update(omega_,*DYp_,1.0);
-    Ys->Update(omega_,*DYs_,1.0);
+    Yp->Update(1.0,*DYp_,0.0); // Yp = DYp
+    Yp->Update(-1.0*alpha_,*DYp_aux_,1.0); // Yp = DYp - alpha*App^-1*Aps*DYs
 
   }
+
 
   domain_ex_->InsertVector(*Yp,p_,Y);
   domain_ex_->InsertVector(*Ys,s_,Y);
@@ -1926,10 +1892,6 @@ LINALG::SOLVER::SIMPLE_BlockSmootherFactory::Create()
 
   // Expected parameters (example)
   // <ParameterList name="parameters">
-  //   <Parameter name="algorithm"           type="string"  value="simple"/>
-  //     <!-- Default: The standard simple algorithm  -->
-  //   <Parameter name="algorithm"           type="string"  value="schur FSIAMG"/>
-  //     <!-- The schur algorithm as it is implemented in the FSIAMG preconditioner  -->
   //   <Parameter name="predictor block"     type="string"  value="(1,2)"/>
   //   <Parameter name="predictor smoother"  type="string"  value="BGS"/>
   //   <Parameter name="predictor inverse"   type="string"  value="diagonal"/>
@@ -1940,8 +1902,6 @@ LINALG::SOLVER::SIMPLE_BlockSmootherFactory::Create()
   //   <Parameter name="correction"          type="string"  value="smoother"/>
   //   <Parameter name="correction"          type="string"  value="approximated inverse"/>
   //   <Parameter name="sweeps"              type="int"     value="3"/>
-  //   <Parameter name="omega"               type="double"  value="1.0"/>
-  //     <!-- Damping of the Richadson iteration -->
   //   <Parameter name="alpha"               type="double"  value="1.0"/>
   //     <!-- Damping of the "pressure" correction-->
   //   <Parameter name="beta"                type="double"  value="1.0"/>
@@ -1984,13 +1944,11 @@ LINALG::SOLVER::SIMPLE_BlockSmootherFactory::Create()
 
   //other params
   int iter = GetParams().get<int>("sweeps",3);
-  double omega = GetParams().get<double>("omega",1.0);
   double alpha = GetParams().get<double>("alpha",1.0);
   double beta = GetParams().get<double>("beta",1.0);
   std::string inverse_method = GetParams().get<std::string>
     ("predictor inverse","row sums diagonal blocks");
   std::string correction = GetParams().get<std::string>("correction","approximated inverse");
-  std::string algorithm = GetParams().get<std::string>("algorithm","simple");
 
   // =============================================================
   // Some output
@@ -2010,7 +1968,6 @@ LINALG::SOLVER::SIMPLE_BlockSmootherFactory::Create()
     }
     std::cout << " at level " << GetLevel() << std::endl;
     std::cout << "The chosen parameters are" << std::endl;
-    std::cout << "algorithm = " << algorithm << std::endl;
     std::cout << "predictor block = " ;
     std::cout << "(";
     for(size_t j=0;j<SuperBlocks2Blocks[pred].size();j++)
@@ -2033,11 +1990,8 @@ LINALG::SOLVER::SIMPLE_BlockSmootherFactory::Create()
     std::cout << ")" << std::endl;
     std::cout << "schur smoother = " << schur_smoother << std::endl;
     std::cout << "sweeps = " << iter << std::endl;
-    std::cout << "omega = " << omega << std::endl;
     std::cout << "alpha = " << alpha << std::endl;
     std::cout << "beta = " << beta << std::endl;
-    if (algorithm == "simple")
-      std::cout << "correction = " << correction << std::endl;
     //std::cout << std::endl;
   }
 
@@ -2171,9 +2125,7 @@ LINALG::SOLVER::SIMPLE_BlockSmootherFactory::Create()
          pred,
          schur,
          iter,
-         omega,
          alpha,
-         algorithm,
          correction));
 
   //Teuchos::RCP<MergeAndSolve> Skk = Teuchos::rcp(new MergeAndSolve());

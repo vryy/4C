@@ -93,6 +93,9 @@ void FSI::OverlappingBlockMatrixAMGnxn::SetupPreconditioner()
     myInterface =
       Teuchos::rcp(new AMGnxnInterfaceLungFSI(structuresolver_,fluidsolver_,alesolver_,xml_file_));
   }
+  myInterface->ParseXML();
+  myInterface->Check();
+
 
   // Create the Operator
   if (myInterface->GetPreconditionerType() == "AMG(BlockSmoother)")
@@ -209,14 +212,26 @@ void FSI::AMGnxnInterfaceFSI::Setup()
       mllist.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
   }
 
+
+  return;
+}
+
+void FSI::AMGnxnInterfaceFSI::ParseXML()
+{
+
   // Decide whether to choose a default type or parse a xml file
   if(amgnxn_xml_ == "AMG(BGS)")
-     Default_AMG_BGS(smoo_params_);
+    Default_AMG_BGS(smoo_params_);
   else
-  // Parse the whole file
+    // Parse the whole file
     Teuchos::updateParametersFromXmlFile(
         amgnxn_xml_,Teuchos::Ptr<Teuchos::ParameterList>(&smoo_params_));
 
+  return;
+}
+
+void FSI::AMGnxnInterfaceFSI::Check()
+{
 
   // Find preconditioner type and parameters
   std::string myprec =  smoo_params_.get<std::string>("Preconditioner","none");
@@ -230,9 +245,9 @@ void FSI::AMGnxnInterfaceFSI::Setup()
     dserror("Not found the parameters list for your preconditioner. Fix your xml file.");
   prec_params_ = myprec_list.sublist("parameters");
 
-
   return;
 }
+
 
 void FSI::AMGnxnInterfaceFSI::Default_AMG_BGS(Teuchos::ParameterList& params)
 {
@@ -380,8 +395,8 @@ void FSI::AMGnxnInterfaceFSI::Default_AMG_BGS(Teuchos::ParameterList& params)
   file_contents  += "      </ParameterList>                                                                                                            ";
   file_contents  += "    </ParameterList>                                                                                                              ";
   file_contents  += "    <ParameterList name=\"Hierarchy\">                                                                                            ";
-  file_contents  += "      <Parameter name=\"numDesiredLevel\"          type=\"int\"      value=\"3\"/>                                                ";
-  file_contents  += "      <Parameter name=\"maxCoarseSize\"            type=\"int\"      value=\"1000\"/>                                             ";
+  file_contents  += "      <Parameter name=\"max levels\"               type=\"int\"      value=\"3\"/>                                                ";
+  file_contents  += "      <Parameter name=\"coarse: max size\"         type=\"int\"      value=\"1000\"/>                                             ";
   file_contents  += "      <Parameter name=\"verbosity\"                type=\"string\"   value=\"High\"/>                                             ";
   file_contents  += "      <ParameterList name=\"All\">                                                                                                ";
   file_contents  += "        <Parameter name=\"startLevel\"             type=\"int\"      value=\"0\"/>                                                ";
@@ -429,5 +444,72 @@ FSI::AMGnxnInterfaceLungFSI::AMGnxnInterfaceLungFSI(
   if (prec_type_ == "AMG(BlockSmoother)")
     dserror("A AMG(BlockSmoother) preconditioner is not implemented yet for lung fsi simulations");
 }
+
+
+void FSI::AMGnxnInterfaceLungFSI::ParseXML()
+{
+
+  // Decide whether to choose a default type or parse a xml file
+  if(amgnxn_xml_ == "SIMPLE(ILU,KLU)")
+    Default_SCHUR_ILU_KLU(smoo_params_);
+  else
+    // Parse the whole file
+    Teuchos::updateParametersFromXmlFile(
+        amgnxn_xml_,Teuchos::Ptr<Teuchos::ParameterList>(&smoo_params_));
+
+  return;
+}
+
+void FSI::AMGnxnInterfaceLungFSI::Default_SCHUR_ILU_KLU(Teuchos::ParameterList& params)
+{
+  std::string file_contents = "";
+  file_contents += "<ParameterList name=\"dummy\">                                                                        ";
+  file_contents += "  <Parameter name=\"Preconditioner\" type=\"string\"  value=\"myBGS_SIMPLE\"/>                        ";
+  file_contents += "  <ParameterList name=\"myBGS_SIMPLE\">                                                               ";
+  file_contents += "  <Parameter name=\"type\" type=\"string\"  value=\"BlockSmoother(X)\"/>                              ";
+  file_contents += "    <ParameterList name=\"parameters\">                                                               ";
+  file_contents += "      <Parameter name=\"smoother\"         type=\"string\"  value=\"mySIMPLE\"/>                      ";
+  file_contents += "      <Parameter name=\"verbosity\"        type=\"string\"  value=\"on\"/>                            ";
+  file_contents += "    </ParameterList>                                                                                  ";
+  file_contents += "  </ParameterList>                                                                                    ";
+  file_contents += "  <ParameterList name=\"mySIMPLE\">                                                                   ";
+  file_contents += "    <Parameter name=\"type\"   type=\"string\"  value=\"SIMPLE\"/>                                    ";
+  file_contents += "    <ParameterList name=\"parameters\">                                                               ";
+  file_contents += "      <Parameter name=\"predictor block\"     type=\"string\"  value=\"(0,1,2)\"/>                    ";
+  file_contents += "      <Parameter name=\"predictor smoother\"  type=\"string\"  value=\"myBGS\"/>                      ";
+  file_contents += "      <Parameter name=\"predictor inverse\"   type=\"string\"  value=\"row sums diagonal blocks\"/>   ";
+  file_contents += "      <Parameter name=\"schur block\"         type=\"string\"  value=\"(3)\"/>                        ";
+  file_contents += "      <Parameter name=\"schur smoother\"      type=\"string\"  value=\"DIRECT_SOLVER\"/>              ";
+  file_contents += "      <Parameter name=\"correction\"          type=\"string\"  value=\"approximated inverse\"/>       ";
+  file_contents += "      <Parameter name=\"sweeps\"              type=\"int\"     value=\"2\"/>                          ";
+  file_contents += "      <Parameter name=\"omega\"               type=\"double\"  value=\"1\"/>                          ";
+  file_contents += "      <Parameter name=\"alpha\"               type=\"double\"  value=\"0.8\"/>                        ";
+  file_contents += "    </ParameterList>                                                                                  ";
+  file_contents += "  </ParameterList>                                                                                    ";
+  file_contents += "  <ParameterList name=\"myBGS\">                                                                      ";
+  file_contents += "    <Parameter name=\"type\"   type=\"string\"  value=\"BGS\"/>                                       ";
+  file_contents += "    <ParameterList name=\"parameters\">                                                               ";
+  file_contents += "      <Parameter name=\"blocks\"      type=\"string\"  value=\"(0),(1),(2)\"/>                        ";
+  file_contents += "      <Parameter name=\"smoothers\"   type=\"string\"  value=\"myILU,myILU,myILU\"/>                  ";
+  file_contents += "      <Parameter name=\"sweeps\"      type=\"int\"     value=\"1\"/>                                  ";
+  file_contents += "      <Parameter name=\"omega\"       type=\"double\"  value=\"1.0\"/>                                ";
+  file_contents += "    </ParameterList>                                                                                  ";
+  file_contents += "  </ParameterList>                                                                                    ";
+  file_contents += "  <ParameterList name=\"myILU\">                                                                      ";
+  file_contents += "    <Parameter name=\"type\"   type=\"string\"  value=\"IFPACK\"/>                                    ";
+  file_contents += "    <ParameterList name=\"parameters\">                                                               ";
+  file_contents += "      <Parameter name=\"type\"      type=\"string\"  value=\"ILU\"/>                                  ";
+  file_contents += "      <ParameterList name=\"ParameterList\">                                                          ";
+  file_contents += "        <Parameter name=\"fact: level-of-fill-in\"      type=\"int\"  value=\"0\"/>                   ";
+  file_contents += "      </ParameterList>                                                                                ";
+  file_contents += "    </ParameterList>                                                                                  ";
+  file_contents += "  </ParameterList>                                                                                    ";
+  file_contents += "</ParameterList>                                                                                      ";
+
+  Teuchos::updateParametersFromXmlString(
+      file_contents,Teuchos::Ptr<Teuchos::ParameterList>(&params));
+  return;
+}
+
 
 #endif // HAVE_MueLu

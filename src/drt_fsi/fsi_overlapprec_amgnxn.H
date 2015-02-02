@@ -77,6 +77,8 @@ namespace FSI
       Teuchos::ParameterList GetPreconditionerParams(){return prec_params_;}
       Teuchos::ParameterList GetSmoothersParams(){return smoo_params_;}
       std::string GetPreconditionerType(){return prec_type_;}
+      virtual void ParseXML();
+      void Check();
 
     protected:
       std::vector<int> num_pdes_;
@@ -103,6 +105,9 @@ namespace FSI
           Teuchos::RCP<LINALG::Preconditioner> fluidsolver,
           Teuchos::RCP<LINALG::Preconditioner> alesolver,
           std::string amgnxn_xml);
+      virtual void ParseXML();
+    private:
+      void Default_SCHUR_ILU_KLU(Teuchos::ParameterList& params);
   };
 
 
