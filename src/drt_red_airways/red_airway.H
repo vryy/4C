@@ -41,7 +41,7 @@ public:
 
   std::string Name() const { return "RedAirwayType"; }
 
-  static RedAirwayType & Instance() { return instance_; };
+  static RedAirwayType& Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -443,7 +443,7 @@ public:
 
   std::string Name() const { return "RedAcinusType"; }
 
-  static RedAcinusType & Instance() { return instance_; };
+  static RedAcinusType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

@@ -38,7 +38,7 @@ public:
 
   std::string Name() const { return "Bele3Type"; }
 
-  static Bele3Type & Instance() { return instance_; };
+  static Bele3Type& Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

@@ -23,6 +23,12 @@ Maintainer: Raffaela Kruse
 DRT::ELEMENTS::Bele3Type DRT::ELEMENTS::Bele3Type::instance_;
 
 
+DRT::ELEMENTS::Bele3Type& DRT::ELEMENTS::Bele3Type::Instance()
+{
+  return instance_;
+}
+
+
 DRT::ParObject* DRT::ELEMENTS::Bele3Type::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::Bele3* object = new DRT::ELEMENTS::Bele3(-1,-1);

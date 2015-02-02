@@ -26,6 +26,15 @@ DRT::ELEMENTS::So_hex8ThermoType DRT::ELEMENTS::So_hex8ThermoType::instance_;
 
 
 /*----------------------------------------------------------------------*
+ | access an instance of thermo type                                    |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::So_hex8ThermoType& DRT::ELEMENTS::So_hex8ThermoType::Instance()
+{
+  return instance_;
+}
+
+
+/*----------------------------------------------------------------------*
  | create the new element type (public)                      dano 08/12 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/

@@ -36,7 +36,7 @@ public:
 
   std::string Name() const { return "FluidPoroEleType"; }
 
-  static FluidPoroEleType & Instance() { return instance_; };
+  static FluidPoroEleType& Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

@@ -35,7 +35,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "So_hex8ThermoType"; }
 
-    static So_hex8ThermoType & Instance() { return instance_; };
+    static So_hex8ThermoType& Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 

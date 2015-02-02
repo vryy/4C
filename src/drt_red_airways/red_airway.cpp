@@ -23,6 +23,12 @@ using namespace DRT::UTILS;
 DRT::ELEMENTS::RedAirwayType DRT::ELEMENTS::RedAirwayType::instance_;
 
 
+DRT::ELEMENTS::RedAirwayType& DRT::ELEMENTS::RedAirwayType::Instance()
+{
+  return instance_;
+}
+
+
 DRT::ParObject* DRT::ELEMENTS::RedAirwayType::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::RedAirway* object = new DRT::ELEMENTS::RedAirway(-1,-1);

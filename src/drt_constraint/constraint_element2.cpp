@@ -17,6 +17,12 @@ Maintainer: Thomas Kloeppel
 DRT::ELEMENTS::ConstraintElement2Type DRT::ELEMENTS::ConstraintElement2Type::instance_;
 
 
+DRT::ELEMENTS::ConstraintElement2Type& DRT::ELEMENTS::ConstraintElement2Type::Instance()
+{
+  return instance_;
+}
+
+
 DRT::ParObject* DRT::ELEMENTS::ConstraintElement2Type::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::ConstraintElement2* object = new DRT::ELEMENTS::ConstraintElement2(-1,-1);

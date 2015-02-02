@@ -39,7 +39,7 @@ public:
 
   std::string Name() const { return "ConstraintElement3Type"; }
 
-  static ConstraintElement3Type & Instance() { return instance_; };
+  static ConstraintElement3Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

@@ -21,6 +21,10 @@ using namespace DRT::UTILS;
 
 DRT::ELEMENTS::RedAcinusType DRT::ELEMENTS::RedAcinusType::instance_;
 
+DRT::ELEMENTS::RedAcinusType& DRT::ELEMENTS::RedAcinusType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::RedAcinusType::Create( const std::vector<char> & data )
 {

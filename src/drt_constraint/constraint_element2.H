@@ -41,7 +41,7 @@ public:
 
   std::string Name() const { return "ConstraintElement2Type"; }
 
-  static ConstraintElement2Type & Instance() { return instance_; };
+  static ConstraintElement2Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

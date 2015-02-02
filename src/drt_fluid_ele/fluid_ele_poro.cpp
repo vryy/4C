@@ -23,6 +23,16 @@
 
 DRT::ELEMENTS::FluidPoroEleType DRT::ELEMENTS::FluidPoroEleType::instance_;
 
+
+/*----------------------------------------------------------------------*
+ *   return instance (public,static)                                    |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::FluidPoroEleType& DRT::ELEMENTS::FluidPoroEleType::Instance()
+{
+  return instance_;
+}
+
+
 /*----------------------------------------------------------------------*
  *   create element (public)                                 vuong 06/13|
  *----------------------------------------------------------------------*/
