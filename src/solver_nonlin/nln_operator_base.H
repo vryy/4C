@@ -43,7 +43,22 @@ namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
-//! NLNSOL: a nonlinear solver tool box
+/*! \brief NLNSOL: a nonlinear solver tool box
+ *
+ *  A collection of nonlinear solver routines and methods to build a
+ *  user-configured nonlinear solver. Configuration works via a xml-file.
+ *
+ *  <h3> Major contributors </h3>
+ *  <ul>
+ *  <li> Nonlinear solvers/operators inherit from NLNSOL::NlnOperatorBase. </li>
+ *  <li> Possible line search strategies are derived from
+ *       NLNSOL::LineSearchBase. </li>
+ *  <li> An interface to the nonlinear problem to be solved is provided by
+ *       NLNSOL::NlnProblem. </li>
+ *  </ul>
+ *
+ *  \author mayr.mt \date 05/2014
+ */
 namespace NLNSOL
 {
   /*! \brief General nonlinear operator base class
@@ -53,10 +68,12 @@ namespace NLNSOL
    *  the actual work is done.
    *
    *  The operator is fed with:
-   *  - an Epetra_Comm
-   *  - a Teuchos::ParameterList for configuration
-   *  - a Teuchos::RCP to the nonlinear problem interface class (connection to
-   *    time integration)
+   *  <ul>
+   *  <li> an Epetra_Comm </li>
+   *  <li> a Teuchos::ParameterList for configuration </li>
+   *  <li> a Teuchos::RCP to the nonlinear problem interface class (connection to
+   *    time integration) </li>
+   *  </ul>
    *
    *  Setup() constructs the actual algorithm and has to be implemented by every
    *  specific algorithm itself.

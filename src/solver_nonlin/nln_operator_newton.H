@@ -56,6 +56,11 @@ namespace NLNSOL
 {
   /*! \brief Newton-type algorithm as nonlinear preconditioner
    *
+   *  This Newton-type algorithm enables a version with a Jacobian, that is
+   *  updated at every iteration, such that one can expect quadratic
+   *  convergence, and a version with a fixed Jacobian, such that factorization
+   *  has to be performed only once.
+   *
    *  \sa NlnOperatorBase
    *
    *  \author mayr.mt \date 06/2014

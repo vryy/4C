@@ -46,6 +46,11 @@ namespace NLNSOL
   /*!
    * \brief Line search base class
    *
+   * This base class for different line search strategies provides some common
+   * routines, that are part of every line search strategy. The core routine
+   * ComputeLSParam() has to be implemented by derived classes since there are
+   * the main differences between all line search strategies.
+   *
    * \author mayr.mt
    * \date 05/2014
    */
