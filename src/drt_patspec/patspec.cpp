@@ -27,7 +27,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_matelast/elast_summand.H"
-#include "../drt_matelast/elast_coupaaagasser.H"
+#include "../drt_matelast/elast_isovolaaagasser.H"
 
 
 /*----------------------------------------------------------------------*
@@ -374,7 +374,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
     if(curr->second->Type()==INPAR::MAT::mes_isovolaaagasser)
     {
       // set thrombus thickness
-      MAT::ELASTIC::PAR::CoupAAAGasser *params = dynamic_cast<MAT::ELASTIC::PAR::CoupAAAGasser*>(curr->second->Parameter());
+      MAT::ELASTIC::PAR::IsoVolAAAGasser *params = dynamic_cast<MAT::ELASTIC::PAR::IsoVolAAAGasser*>(curr->second->Parameter());
       curr->second->Parameter()->SetParameter(params->normdist,iltele);
     }
   }
