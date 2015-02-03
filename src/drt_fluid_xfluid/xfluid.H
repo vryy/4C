@@ -581,10 +581,6 @@ namespace FLD
     /// return type of enforcing interface conditions
     const INPAR::XFEM::CouplingMethod CouplingMethod() const {return coupling_method_;}
 
-    //! @name specialized init routines
-
-    void PrepareOutput();
-
     //@}
 
     /// Takes DofRowMap with just one xfem-Dofset and duplicates the dof gids for export of gridvelocity!
@@ -663,15 +659,6 @@ namespace FLD
 
 
     //---------------------------------output----------------------------
-
-    // dofset for fluid output
-    Teuchos::RCP<DRT::IndependentDofSet>    dofset_out_;
-
-    // velocity pressure splitter for fluid output
-    LINALG::MapExtractor      velpressplitterForOutput_;
-
-    // output vector for fluid field (velocity and pressure)
-    Teuchos::RCP<Epetra_Vector> outvec_fluid_;
 
     // flag whether this output step is the first one (restarted or not)
     bool firstoutputofrun_;

@@ -161,6 +161,13 @@ public:
     dsassert(initialized_,"no initial dofs assigned");
     InitialDof((unsigned)0,node,lm); }
 
+
+  /// Access to initial dofset
+  const DofSet& InitialDofSet(unsigned int nds=0) const
+  {
+    Initialized();
+    return *initialdofsets_[nds];
+  }
   /*!
   \brief Get initial degree of freedom row map (Initialized()==true prerequisite)
 
