@@ -16,7 +16,7 @@ Maintainer: Ursula Rasthofer
 #define ENRICHMENT_H
 
 
-#include "xfem_utils.H"
+#include "xfem_utils_combust.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_combust/combust_defines.H"
 

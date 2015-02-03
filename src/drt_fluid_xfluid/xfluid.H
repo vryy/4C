@@ -77,7 +77,7 @@ namespace FLD
 
   class XFluidStateCreator;
   class XFluidState;
-  class XFluid;
+  class XFluidOutputService;
 
   /*!
     This class holds the Fluid implementation for XFEM
@@ -174,9 +174,6 @@ namespace FLD
     /// lift'n'drag forces, statistics time sample and output of solution and
     /// statistics
     void StatisticsAndOutput();
-
-    /// print discretization output
-    void OutputDiscret();
 
     /// update configuration and output to file/screen
     void Output();
@@ -584,22 +581,6 @@ namespace FLD
     /// return type of enforcing interface conditions
     const INPAR::XFEM::CouplingMethod CouplingMethod() const {return coupling_method_;}
 
-    /// print discretization to gmsh stream
-    void disToStream(Teuchos::RCP<DRT::Discretization> dis,
-                     const std::string& disname,
-                     const bool elements,
-                     const bool elecol,
-                     const bool nodes,
-                     const bool nodecol,
-                     const bool faces,
-                     const bool facecol,
-                     std::ostream& s,
-                     std::map<int, LINALG::Matrix<3,1> >* curr_pos = NULL);
-
-    /// extract the nodal vectors and store them in node-vector-map
-    void ExtractNodeVectors(DRT::Discretization & dis, Teuchos::RCP<Epetra_Vector> dofrowvec, std::map<int, LINALG::Matrix<3,1> >& nodevecmap);
-
-
     //! @name specialized init routines
 
     void PrepareOutput();
@@ -661,11 +642,8 @@ namespace FLD
     /// edge stabilization and ghost penalty object
     Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
 
-    /// edgebased stabilization
-    bool edge_based_;
-
-    /// ghost penalty stabilization (1st order, 2nd order derivatives, viscous, transient) due to Nitsche's method
-    bool ghost_penalty_;
+    /// edgebased stabilization or ghost penalty stabilization (1st order, 2nd order derivatives, viscous, transient) due to Nitsche's method
+    bool eval_eos_;
 
 
 
@@ -703,6 +681,9 @@ namespace FLD
 
     // counter for current Newton iteration (used for Debug output)
     int itnum_out_;
+
+    /// output service class
+    Teuchos::RCP<XFluidOutputService> output_service_;
     //--------------------------------------------------------------------
 
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?

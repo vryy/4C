@@ -17,7 +17,7 @@ Maintainer: Ursula Rasthofer
 
 
 #include <Teuchos_RCP.hpp>
-#include "xfem_utils.H"
+#include "xfem_utils_combust.H"
 
 
 class Epetra_Map;

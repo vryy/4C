@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file xfluid_outputservice.H
-\brief Service class for XFluid(Fluid)-related output, mostly GMSH.
+\brief Service class for XFluid-related output.
 
 <pre>
 Maintainer:  Raffaela Kruse
@@ -14,13 +14,10 @@ Maintainer:  Raffaela Kruse
 #define XFLUID_OUTPUTSERVICE_H_
 
 #include "../drt_inpar/inpar_xfem.H"
-#include "../drt_lib/drt_discret.H"
+#include "../drt_inpar/inpar_cut.H"
 
-namespace DRT
-{
-  class Discretization;
-  class DiscretizationXFEM;
-}
+#include "../drt_lib/drt_discret_xfem.H"
+
 namespace GEO
 {
   class CutWizard;
@@ -35,13 +32,16 @@ namespace GEO
 namespace XFEM
 {
   class ConditionManager;
+  class XFEM_EdgeStab;
 }
 
 namespace FLD
 {
 
+class XFluidState;
+
 /*!
- * \brief Class handles output of gmsh data
+ * \brief Class handles output of XFluid and derived classes
  */
 class XFluidOutputService
 {
@@ -49,89 +49,212 @@ class XFluidOutputService
 public:
 
   XFluidOutputService(
+    const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
+    const Teuchos::RCP<XFEM::ConditionManager>&  cond_manager
+  );
+
+  virtual ~XFluidOutputService(){};
+
+  /// Gmsh solution output
+  virtual void GmshSolutionOutput(
+    const std::string & filename_base,           ///< name for output file
+    int step,                                    ///< step number
+    const Teuchos::RCP<FLD::XFluidState>& state, ///< state
+    int count = -1
+  ){};
+
+  /// Gmsh solution output for previous time step
+  virtual void GmshSolutionOutputPrevious(
+    const std::string & filename_base,           ///< name for output file
+    int step,                                    ///< step number
+    const Teuchos::RCP<FLD::XFluidState>& state, ///< state
+    int count = -1
+  ){};
+
+  /// Gmsh output of solution (debug)
+  virtual void GmshSolutionOutputDebug(
+    const std::string & filename_base,          ///< name for output file
+    int step,                                   ///< step number
+    int count,                                  ///< counter for iterations within a global time step
+    const Teuchos::RCP<FLD::XFluidState>& state ///< state
+  ){};
+
+  /// Gmsh output of residual (debug)
+  virtual void GmshResidualOutputDebug(
+    const std::string & filename_base,          ///< name for output file
+    int step,                                   ///< step number
+    int count,                                  ///< counter for iterations within a global time step
+    const Teuchos::RCP<FLD::XFluidState>& state ///< state
+  ){};
+
+  /// Gmsh output of increment (debug)
+  virtual void GmshIncrementOutputDebug(
+    const std::string & filename_base,          ///< name for output file
+    int step,                                   ///< step number
+    int count,                                  ///< counter for iterations within a global time step
+    const Teuchos::RCP<FLD::XFluidState>& state ///< state
+  ){};
+
+  /// Gmsh output of discretization
+  virtual void GmshOutputDiscretization(
+    bool print_faces,
+    int step
+  ){};
+
+  /// Main output routine for gmsh output
+  virtual void GmshOutput(
+    const std::string & filename_base,          ///< name for output file
+    const std::string&  prefix,                 ///< data prefix
+    int step,                                   ///< step number
+    int count,                                  ///< counter for iterations within a global time step
+    const Teuchos::RCP<GEO::CutWizard>& wizard, ///< cut wizard
+    Teuchos::RCP<const Epetra_Vector> vel,      ///< vector holding velocity and pressure dofs
+    Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
+  ){};
+
+  /// Gmsh output for EOS
+  virtual void GmshOutputEOS(
+    int step,                                   ///< step number
+    Teuchos::RCP<XFEM::XFEM_EdgeStab> edge_stab ///< stabilization handler
+  ){};
+
+protected:
+
+  //! @name Managed discretization
+  //@{
+  const Teuchos::RCP<DRT::DiscretizationXFEM> discret_;
+  //@}
+
+  //! XFEM condition manager
+  const Teuchos::RCP<XFEM::ConditionManager> cond_manager_;
+
+};
+
+/*!
+ * \brief Child class of XFluidOutputService, capable of handling gmsh output
+ */
+class XFluidOutputServiceGmsh : public XFluidOutputService
+{
+
+public:
+
+  XFluidOutputServiceGmsh(
     Teuchos::ParameterList& params_xfem,
     const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
     const Teuchos::RCP<XFEM::ConditionManager>&  cond_manager
   );
 
-  /// Write gmsh output depending on the flags
-  void GmshOutput( const std::string & filename_base,               ///< name for output file
-                   const int step,                                  ///< step number
-                   const int count,                                 ///< counter for iterations within a global time step
-                   Teuchos::RCP<Epetra_Vector> vel,                 ///< vector holding velocity and pressure dofs
-                   Teuchos::RCP<Epetra_Vector> acc  = Teuchos::null,///< vector holding accelerations
-                   Teuchos::RCP<Epetra_Vector> disp = Teuchos::null ///< vector holding displacements
-                   );
+  /// Gmsh solution output
+  void GmshSolutionOutput(
+    const std::string & filename_base,           ///< name for output file
+    int step,                                    ///< step number
+    const Teuchos::RCP<FLD::XFluidState>& state, ///< state
+    int count = -1
+  );
+
+  /// Gmsh solution output for previous time step
+  void GmshSolutionOutputPrevious(
+    const std::string & filename_base,           ///< name for output file
+    int step,                                    ///< step number
+    const Teuchos::RCP<FLD::XFluidState>& state, ///< state
+    int count = -1
+  );
+
+  /// Gmsh output of solution (debug)
+  void GmshSolutionOutputDebug(
+    const std::string & filename_base,          ///< name for output file
+    int step,                                   ///< step number
+    int count,                                  ///< counter for iterations within a global time step
+    const Teuchos::RCP<FLD::XFluidState>& state ///< state
+  );
+
+  /// Gmsh output of residual (debug)
+  void GmshResidualOutputDebug(
+    const std::string & filename_base,          ///< name for output file
+    int step,                                   ///< step number
+    int count,                                  ///< counter for iterations within a global time step
+    const Teuchos::RCP<FLD::XFluidState>& state ///< state
+  );
+
+  /// Gmsh output of increment (debug)
+  void GmshIncrementOutputDebug(
+    const std::string & filename_base,          ///< name for output file
+    int step,                                   ///< step number
+    int count,                                  ///< counter for iterations within a global time step
+    const Teuchos::RCP<FLD::XFluidState>& state ///< state
+  );
+
+  /// Gmsh output of discretization
+  void GmshOutputDiscretization(
+    bool print_faces,
+    int step
+  );
+
+  /// Main output routine for gmsh output
+  void GmshOutput(
+    const std::string & filename_base,          ///< name for output file
+    const std::string & prefix,                 ///< data prefix (e.g. "SOL")
+    int step,                                   ///< step number
+    int count,                                  ///< counter for iterations within a global time step
+    const Teuchos::RCP<GEO::CutWizard>& wizard, ///< cut wizard
+    Teuchos::RCP<const Epetra_Vector> vel,      ///< vector holding velocity and pressure dofs
+    Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
+  );
+
+  /// Gmsh output for EOS
+  void GmshOutputEOS(
+    int step,                                   ///< step number
+    Teuchos::RCP<XFEM::XFEM_EdgeStab> edge_stab ///< stabilization handler
+  );
 
 private:
 
   /// Gmsh output function for elements without an GEO::CUT::ElementHandle
   void GmshOutputElement(
-      DRT::Discretization & discret, ///< background fluid discretization
-      std::ofstream & vel_f,         ///< output file stream for velocity
-      std::ofstream & press_f,       ///< output file stream for pressure
-      std::ofstream & acc_f,         ///< output file stream for acceleration
-      DRT::Element * actele,         ///< element
-      std::vector<int> & nds,        ///< vector holding the nodal dofsets
-      Teuchos::RCP<const Epetra_Vector> vel, ///< vector holding velocity and pressure dofs
-      Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
+    DRT::Discretization & discret, ///< background fluid discretization
+    std::ofstream & vel_f,         ///< output file stream for velocity
+    std::ofstream & press_f,       ///< output file stream for pressure
+    std::ofstream & acc_f,         ///< output file stream for acceleration
+    DRT::Element * actele,         ///< element
+    std::vector<int> & nds,        ///< vector holding the nodal dofsets
+    Teuchos::RCP<const Epetra_Vector> vel, ///< vector holding velocity and pressure dofs
+    Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
   );
 
   /// Gmsh output function for volumecells
   void GmshOutputVolumeCell(
-      DRT::Discretization & discret,    ///< background fluid discretization
-      std::ofstream & vel_f,            ///< output file stream for velocity
-      std::ofstream & press_f,          ///< output file stream for pressure
-      std::ofstream & acc_f,            ///< output file stream for acceleration
-      DRT::Element * actele,            ///< element
-      GEO::CUT::ElementHandle * e,      ///<elementhandle
-      GEO::CUT::VolumeCell * vc,        ///< volumecell
-      const std::vector<int> & nds,     ///< vector holding the nodal dofsets
-      Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
-      Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null ///< vector holding acceleration
+    DRT::Discretization & discret,    ///< background fluid discretization
+    std::ofstream & vel_f,            ///< output file stream for velocity
+    std::ofstream & press_f,          ///< output file stream for pressure
+    std::ofstream & acc_f,            ///< output file stream for acceleration
+    DRT::Element * actele,            ///< element
+    GEO::CUT::ElementHandle * e,      ///<elementhandle
+    GEO::CUT::VolumeCell * vc,        ///< volumecell
+    const std::vector<int> & nds,     ///< vector holding the nodal dofsets
+    Teuchos::RCP<const Epetra_Vector> velvec,  ///< vector holding velocity and pressure dofs
+    Teuchos::RCP<const Epetra_Vector> accvec = Teuchos::null ///< vector holding acceleration
   );
 
   /// Gmsh output function for boundarycells
   void GmshOutputBoundaryCell(
-      DRT::Discretization & discret,    ///< background fluid discretization
-      DRT::Discretization & cutdiscret, ///< cutter surface discretization
-      std::ofstream & bound_f,          ///< output file stream for boundary mesh
-      GEO::CUT::VolumeCell * vc         ///< volumecell
+    DRT::Discretization & discret,    ///< background fluid discretization
+    std::ofstream & bound_f,          ///< output file stream for boundary mesh
+    GEO::CUT::VolumeCell * vc,        ///< volumecell
+    const Teuchos::RCP<GEO::CutWizard>& wizard ///< cut wizard
   );
-
-  /// print discretization to gmsh stream
-  void PrintDiscretizationToStream(
-       Teuchos::RCP<DRT::Discretization> dis,
-       const std::string& disname,
-       const bool elements,
-       const bool elecol,
-       const bool nodes,
-       const bool nodecol,
-       const bool faces,
-       const bool facecol,
-       std::ostream& s,
-       std::map<int, LINALG::Matrix<3,1> >* curr_pos = NULL
-   );
-
-
-  /// global flag, that decides, whether gmsh output is globally activated
-  const bool gmsh_active_;
 
   //! @name flags for detailed gmsh output
   const bool gmsh_sol_out_;          ///< Gmsh solution output for each timestep
-  const bool gmsh_debug_out_;
+  const bool gmsh_ref_sol_out_;      ///< Gmsh reference solution output
+  const bool gmsh_debug_out_;        ///< Gmsh debug output (increment, residual, etc.)
   const bool gmsh_debug_out_screen_; ///< print information about output to screen
   const bool gmsh_EOS_out_;          ///< output for edge-oriented stabilization and ghost-penalty stabilization
-  const bool gmsh_discret_out_;
-  const bool gmsh_cut_out_;
+  const bool gmsh_discret_out_;      ///< output og XFEM discretization
   const int  gmsh_step_diff_;
   //@}
 
-  //! @name Managed discretizations
-  //@{
-  const Teuchos::RCP<DRT::DiscretizationXFEM> discret_;
-  //@}
-
+  //! integration approach
+  const INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy_;
 
 };
 

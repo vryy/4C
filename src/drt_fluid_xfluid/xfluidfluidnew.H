@@ -76,7 +76,10 @@ public:
   }
 
   /// set Dirichlet and Neumann boundary conditions
-  virtual void SetDirichletNeumannBC();
+  void SetDirichletNeumannBC();
+
+  /// setup the variables to do a new time step
+  void PrepareTimeStep();
 
   /// Update the solution after convergence of the nonlinear
   /// iteration. Current solution becomes old solution of next timestep.

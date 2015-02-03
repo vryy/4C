@@ -20,7 +20,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_xfem/physics.H"
-#include "../drt_xfem/xfem_utils.H"
+#include "../drt_xfem/xfem_utils_combust.H"
 
 #include <Teuchos_ParameterList.hpp>
 

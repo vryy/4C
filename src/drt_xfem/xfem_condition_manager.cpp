@@ -17,6 +17,7 @@ Maintainer: Benedikt Schott
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "xfem_condition_manager.H"
+#include "xfem_utils.H"
 
 #include "../drt_inpar/inpar_xfem.H"
 
@@ -297,6 +298,21 @@ void XFEM::MeshCoupling::CreateCutterDisFromCondition()
   cutter_dis_->ExportColumnElements(elemcolmap);
 
   cutter_dis_->FillComplete();
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCoupling::GmshOutputDiscretization(
+  std::ostream& gmshfilecontent
+)
+{
+  // compute the current boundary position
+  std::map<int,LINALG::Matrix<3,1> > currinterfacepositions;
+
+  // output of cutting discretization
+  XFEM::UTILS::ExtractNodeVectors(cutter_dis_, currinterfacepositions);
+  XFEM::UTILS::PrintDiscretizationToStream(cutter_dis_,
+     cutter_dis_->Name(), true, true,  true, true,  false, false, gmshfilecontent, &currinterfacepositions);
 }
 
 /*--------------------------------------------------------------------------*
@@ -1212,7 +1228,7 @@ void XFEM::MeshCouplingFSI::GmshOutput(
 
   // compute the current boundary position
   std::map<int,LINALG::Matrix<3,1> > currinterfacepositions;
-  ExtractNodeVectors(cutter_dis_, idispnp_, currinterfacepositions);
+  XFEM::UTILS::ExtractNodeVectors(cutter_dis_, currinterfacepositions);
 
 
   const std::string filename =
@@ -1253,6 +1269,24 @@ void XFEM::MeshCouplingFSI::GmshOutput(
   gmshfilecontent.close();
 }
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFSI::GmshOutputDiscretization(
+  std::ostream& gmshfilecontent
+)
+{
+  // print surface discretization
+  XFEM::MeshCoupling::GmshOutputDiscretization(gmshfilecontent);
+
+  // compute the current solid and boundary position
+  std::map<int,LINALG::Matrix<3,1> > currsolidpositions;
+
+  XFEM::UTILS::ExtractNodeVectors(cond_dis_, currsolidpositions);
+
+  XFEM::UTILS::PrintDiscretizationToStream(cond_dis_,
+      cond_dis_->Name(), true, false, true, false, false, false, gmshfilecontent, &currsolidpositions);
+}
+
 void XFEM::MeshCouplingFSI::PrepareCutterOutput()
 {
   // -------------------------------------------------------------------
@@ -1289,39 +1323,6 @@ void XFEM::MeshCouplingFSI::Output(
     cutter_output_->WriteVector("idispnp_res", idispnp_);
   }
 }
-
-
-/*--------------------------------------------------------------------------*
- | extract the nodal vectors and store them in node-vector-map schott 01/13 |
- *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFSI::ExtractNodeVectors(
-    Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<Epetra_Vector> dofrowvec,
-    std::map<int, LINALG::Matrix<3,1> >& nodevecmap
-)
-{
-  Teuchos::RCP<const Epetra_Vector> dispcol = DRT::UTILS::GetColVersionOfRowVector(dis, dofrowvec);
-
-  nodevecmap.clear();
-
-  for (int lid = 0; lid < dis->NumMyColNodes(); ++lid)
-  {
-    const DRT::Node* node = dis->lColNode(lid);
-    std::vector<int> lm;
-    dis->Dof(node, lm);
-    std::vector<double> mydisp;
-    DRT::UTILS::ExtractMyValues(*dispcol,mydisp,lm);
-    if (mydisp.size() < 3)
-      dserror("we need at least 3 dofs here");
-
-    LINALG::Matrix<3,1> currpos;
-    currpos(0) = node->X()[0] + mydisp[0];
-    currpos(1) = node->X()[1] + mydisp[1];
-    currpos(2) = node->X()[2] + mydisp[2];
-    nodevecmap.insert(std::make_pair(node->Id(),currpos));
-  }
-}
-
 
 //----------------------------------------------------------------------
 // LiftDrag                                                  chfoe 11/07
@@ -1799,7 +1800,8 @@ void XFEM::ConditionManager::Create()
     // set current number of global coupling sides as start index for global id this coupling object
     mesh_coupl_start_gid_[mc] = numglobal_coupling_sides;
 
-    std::cout << "mesh coupling object " << mc << " starts with global side index " << mesh_coupl_start_gid_[mc] << std::endl;
+    if (mc_cutdis->Comm().MyPID() == 0)
+      std::cout << "mesh coupling object " << mc << " starts with global side index " << mesh_coupl_start_gid_[mc] << std::endl;
 
     // increase total number of sides with number of global side elements of this mesh coupling object
     numglobal_coupling_sides += mc_cutdis->NumGlobalElements();
@@ -1937,6 +1939,17 @@ void XFEM::ConditionManager::GmshOutput(
   for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
   {
     mesh_coupl_[mc]->GmshOutput(filename_base, step, gmsh_step_diff, gmsh_debug_out_screen);
+  }
+}
+
+void XFEM::ConditionManager::GmshOutputDiscretization(
+  std::ostream& gmshfilecontent
+)
+{
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->GmshOutputDiscretization(gmshfilecontent);
   }
 }
 

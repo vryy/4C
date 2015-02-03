@@ -193,6 +193,9 @@ public:
   virtual Teuchos::RCP<Epetra_Vector>& Zeros()    { return zeros_; }
   virtual Teuchos::RCP<Epetra_Vector>& IncVel()   { return incvel_; }
   virtual Teuchos::RCP<Epetra_Vector>& Velnp()    { return velnp_; }
+  virtual Teuchos::RCP<Epetra_Vector>& Veln()     { return veln_;  }
+  virtual Teuchos::RCP<Epetra_Vector>& Accnp()    { return accnp_; }
+  virtual Teuchos::RCP<Epetra_Vector>& Accn()     { return accn_;  }
   //@}
 
   /// dof-rowmap of intersected fluid

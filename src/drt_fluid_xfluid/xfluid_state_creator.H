@@ -77,16 +77,14 @@ public:
   /// ctor
   XFluidStateCreator(
       Teuchos::RCP<XFEM::ConditionManager> condition_manager,
-      INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy,
-      INPAR::CUT::BCellGaussPts BoundCellGaussPointBy,
-      bool gmsh_cut_out,
+      Teuchos::ParameterList& params_xfem,
       int maxnumdofsets,
       int minnumdofsets,
       bool include_inner) :
         condition_manager_(condition_manager),
-        VolumeCellGaussPointBy_(VolumeCellGaussPointBy),
-        BoundCellGaussPointBy_(BoundCellGaussPointBy),
-        gmsh_cut_out_(gmsh_cut_out),
+        VolumeCellGaussPointBy_(DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY")),
+        BoundCellGaussPointBy_(DRT::INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(params_xfem,"BOUNDARY_GAUSS_POINTS_BY")),
+        gmsh_cut_out_(DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_CUT_OUT")),
         maxnumdofsets_(maxnumdofsets),
         minnumdofsets_(minnumdofsets),
         include_inner_(include_inner)

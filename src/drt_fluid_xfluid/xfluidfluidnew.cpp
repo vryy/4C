@@ -58,8 +58,6 @@ FLD::XFluidFluidNew::XFluidFluidNew(
   embedded_fluid_(embedded_fluid),
   alefluid_(ale_fluid)
 {
-  // Write background fluid mesh
- // output_->WriteMesh(0,0.0);
 }
 
 FLD::XFluidFluidNew::~XFluidFluidNew()
@@ -71,18 +69,17 @@ void FLD::XFluidFluidNew::Init()
   // set parameters specific for fluid-fluid coupling
   SetXFluidFluidParams();
 
-  //DRT::UTILS::PrintParallelDistribution(*boundarydis_);
-
   embedded_fluid_->Init();
 
   // base class init
   XFluid::Init();
 
-  if(meshcoupl_dis_.size() != 1) dserror("we expect exact one mesh coupling discretization for Xfluidfluid at the moment!");
+
+  if (meshcoupl_dis_.size() != 1) dserror("we expect exact one mesh coupling discretization for Xfluidfluid at the moment!");
 
   if (DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") != INPAR::FLUID::no_error_calculation)
   {
-    const std::string cond_name("XFEMCouplingSurfFluidFluid");
+    const std::string cond_name("XFEMSurfFluidFluid");
     Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_xff =
         Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(condition_manager_->GetMeshCoupling(cond_name));
 
@@ -107,8 +104,6 @@ void FLD::XFluidFluidNew::Init()
     embedded_fluid_->ReadRestart(restart);
   }
 
-  state_ = this->GetNewState();
-
   // non-stationary fluid-fluid interface requires
   // proper time integration approach
   if (alefluid_)
@@ -118,11 +113,13 @@ void FLD::XFluidFluidNew::Init()
       state_->Wizard(), step_,
       xfem_timeintapproach_,*params_));
 
-}
+  // Insert fluid and xfluid vectors to fluidxfluid
+  state_->xffluidsplitter_->InsertXFluidVector(state_->velnp_,
+      state_->xffluidvelnp_);
+  state_->xffluidsplitter_->InsertFluidVector(embedded_fluid_->Velnp(),
+      state_->xffluidvelnp_);
 
-void FLD::XFluidFluidNew::SetDirichletNeumannBC()
-{
-  XFluid::SetDirichletNeumannBC();
+  embedded_fluid_->SetOldPartOfRighthandside();
 }
 
 void FLD::XFluidFluidNew::SetXFluidFluidParams()
@@ -132,9 +129,6 @@ void FLD::XFluidFluidNew::SetXFluidFluidParams()
   hybrid_lm_l2_proj_     = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
 
   xff_conv_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFF_ConvStabScaling>(params_xf_stab,"XFF_CONV_STAB_SCALING");
-
-  // Flag, whether any face-based terms are active
-  eval_eos_ = edge_based_ || ghost_penalty_;
 
   // additional eos pressure stabilization on the elements of the embedded discretization,
   // that contribute to the interface
@@ -150,6 +144,29 @@ void FLD::XFluidFluidNew::SetXFluidFluidParams()
 
   // get information about active shape derivatives
   active_shapederivatives_ = alefluid_ && params_->get<bool>("shape derivatives");
+}
+
+void FLD::XFluidFluidNew::SetDirichletNeumannBC()
+{
+  XFluid::SetDirichletNeumannBC();
+  embedded_fluid_->SetDirichletNeumannBC();
+
+  if (timealgo_ == INPAR::FLUID::timeint_stationary)
+  {
+    embedded_fluid_->SetOldPartOfRighthandside();
+  }
+}
+
+void FLD::XFluidFluidNew::PrepareTimeStep()
+{
+  XFluid::PrepareTimeStep();
+  embedded_fluid_->PrepareTimeStep();
+
+  // Insert fluid and xfluid vectors to fluidxfluid
+  state_->xffluidsplitter_->InsertXFluidVector(state_->velnp_,
+      state_->xffluidvelnp_);
+  state_->xffluidsplitter_->InsertFluidVector(embedded_fluid_->Velnp(),
+      state_->xffluidvelnp_);
 }
 
 void FLD::XFluidFluidNew::TimeUpdate()
@@ -257,24 +274,15 @@ void FLD::XFluidFluidNew::CreateState()
 }
 
 void FLD::XFluidFluidNew::AssembleMatAndRHS(
-    int itnum                           ///< iteration number
+  int itnum                           ///< iteration number
 )
 {
   // evaluate elements
   const std::string cond_name("XFEMSurfFluidFluid");
   condition_manager_->GetMeshCoupling(cond_name)->GetCouplingDis()->SetState("velaf",embedded_fluid_->Velnp());
   embedded_fluid_->PrepareSolve();
+
   XFluid::AssembleMatAndRHS(itnum);
-
-  // merge the residuals and velnp each into one large Epetra_Vector for the composed system
-  state_->xffluidsplitter_->InsertXFluidVector(state_->velnp_, state_->xffluidvelnp_);
-  state_->xffluidsplitter_->InsertFluidVector(embedded_fluid_->Velnp(), state_->xffluidvelnp_);
-
-  state_->xffluidsplitter_->InsertXFluidVector(state_->residual_, state_->xffluidresidual_);
-  state_->xffluidsplitter_->InsertFluidVector(embedded_fluid_->Residual(), state_->xffluidresidual_);
-
-  // build a merged dbc map extractor from both discretizations
-  state_->CreateMergedDBCMapExtractor(embedded_fluid_->GetDBCMapExtractor());
 }
 
 void FLD::XFluidFluidNew::PrepareShapeDerivatives(
@@ -301,9 +309,6 @@ bool FLD::XFluidFluidNew::ConvergenceCheck(
   int          itemax,
   const double ittol)
 {
-
-  bool stopnonliniter = XFluid::ConvergenceCheck(itnum,itemax,ittol);
-
   //--------- Apply Dirichlet boundary conditions to system of equations
   //          residual displacements are supposed to be zero at
   //          boundary conditions
@@ -323,6 +328,17 @@ bool FLD::XFluidFluidNew::ConvergenceCheck(
           (*coup_state->rhC_s_)[coup_state->rhC_s_->Map().LID(rhsdgid)];
     else dserror("Interface dof %d does not belong to embedded discretization!",rhsdgid);
   }
+
+  // merge the residuals and velnp each into one large Epetra_Vector for the composed system
+  state_->xffluidsplitter_->InsertXFluidVector(state_->velnp_, state_->xffluidvelnp_);
+  state_->xffluidsplitter_->InsertFluidVector(embedded_fluid_->Velnp(), state_->xffluidvelnp_);
+
+  state_->xffluidsplitter_->InsertXFluidVector(state_->residual_,
+      state_->xffluidresidual_);
+  state_->xffluidsplitter_->InsertFluidVector(embedded_fluid_->Residual(),
+      state_->xffluidresidual_);
+
+  bool stopnonliniter = XFluid::ConvergenceCheck(itnum,itemax,ittol);
 
   // assemble subsequent system matrices into one
   state_->xffluidsysmat_->Zero();

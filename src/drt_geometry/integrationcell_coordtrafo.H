@@ -17,7 +17,7 @@ Maintainer: Ursula Mayer
 #define INTEGRATIONCELL_COORDTRAFO_H
 
 
-#include "../drt_xfem/xfem_utils.H"
+#include "../drt_xfem/xfem_utils_combust.H"
 #include "element_coordtrafo.H"
 #include "integrationcell.H"
 

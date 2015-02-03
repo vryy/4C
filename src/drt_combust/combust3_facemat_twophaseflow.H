@@ -24,7 +24,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_xfem/xfem_element_utils.H"
-#include "../drt_xfem/xfem_utils.H"
+#include "../drt_xfem/xfem_utils_combust.H"
 #include "../drt_inpar/inpar_xfem.H"
 
 namespace COMBUST

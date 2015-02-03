@@ -23,7 +23,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_io/io_pstream.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_scatra_ele/scatra_ele_calc_utils.H"
-#include "../drt_xfem/xfem_utils.H"
+#include "../drt_xfem/xfem_utils_combust.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 

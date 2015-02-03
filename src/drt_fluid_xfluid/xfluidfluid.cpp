@@ -1401,9 +1401,7 @@ void FLD::XFluidFluid::Init()
   state_creator_ = Teuchos::rcp(
       new FLD::XFluidStateCreator(
         condition_manager_,
-        VolumeCellGaussPointBy_,
-        BoundCellGaussPointBy_,
-        gmsh_cut_out_,
+        params_->sublist("XFEM"),
         maxnumdofsets_,
         minnumdofsets_,
         include_inner_));
@@ -1418,7 +1416,7 @@ void FLD::XFluidFluid::Init()
   //---------------------------------------------------------------------------------------------------------
 
 
-  DRT::UTILS::PrintParallelDistribution(*mc_ff_->GetCutterDis());
+  //DRT::UTILS::PrintParallelDistribution(*mc_ff_->GetCutterDis());
 
   // store a dofset with the complete fluid unknowns
   dofset_out_ = Teuchos::rcp(new DRT::IndependentDofSet());

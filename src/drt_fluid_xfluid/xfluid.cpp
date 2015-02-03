@@ -16,6 +16,7 @@ Maintainer:  Benedikt Schott
 #include "xfluid.H"
 #include "xfluid_state_creator.H"
 #include "xfluid_state.H"
+#include "xfluid_outputservice.H"
 #include "xfluidresulttest.H"
 
 
@@ -122,7 +123,7 @@ void FLD::XFluid::Init()
     discret_->FillComplete();
 
   // create internal faces for edgebased fluid stabilization and ghost penalty stabilization
-  if(edge_based_ or ghost_penalty_ )
+  if(eval_eos_ )
   {
     Teuchos::RCP<DRT::DiscretizationFaces> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
     actdis->CreateInternalFacesExtension();
@@ -180,9 +181,7 @@ void FLD::XFluid::Init()
   state_creator_ = Teuchos::rcp(
       new FLD::XFluidStateCreator(
         condition_manager_,
-        VolumeCellGaussPointBy_,
-        BoundCellGaussPointBy_,
-        gmsh_cut_out_,
+        params_->sublist("XFEM"),
         maxnumdofsets_,
         minnumdofsets_,
         include_inner_));
@@ -192,14 +191,24 @@ void FLD::XFluid::Init()
   // create output dofsets and prepare output for xfluid
   // -------------------------------------------------------------------
 
+  // load GMSH output flags
+  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH"))
+  {
+    output_service_ = Teuchos::rcp(new XFluidOutputServiceGmsh(params_->sublist("XFEM"),xdiscret_,condition_manager_));
+  }
+  else
+  {
+    output_service_ = Teuchos::rcp(new XFluidOutputService(xdiscret_,condition_manager_));
+  }
+
   PrepareOutput();
 
 
   // -------------------------------------------------------------------
   // GMSH discretization output before CUT
   // -------------------------------------------------------------------
+  output_service_->GmshOutputDiscretization(eval_eos_, step_);
 
-  OutputDiscret();
 
 
   // -------------------------------------------------------------------
@@ -265,39 +274,27 @@ void FLD::XFluid::SetXFluidParams()
   conv_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
 
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
-  edge_based_        = (   params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
-                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_PRES")        != "none"
-                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_STREAM") != "none"
-                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_CROSS")  != "none"
-                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_DIV")         != "none");
+  {
+    bool edge_based = (      params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
+                          or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_PRES")        != "none"
+                          or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_STREAM") != "none"
+                          or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_CROSS")  != "none"
+                          or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_DIV")         != "none");
 
-  // set flag if a viscous or transient (1st or 2nd order) ghost-penalty stabiliation due to Nitsche's method has to be integrated
-  ghost_penalty_     = (    (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB")
-                        or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_TRANSIENT_STAB")
-                        or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_2nd_STAB") );
+    // set flag if a viscous or transient (1st or 2nd order) ghost-penalty stabiliation due to Nitsche's method has to be integrated
+    bool ghost_penalty= (    (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB")
+                          or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_TRANSIENT_STAB")
+                          or (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_2nd_STAB") );
 
-
-  // get general XFEM specific parameters
-  VolumeCellGaussPointBy_ = DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY");
-  BoundCellGaussPointBy_  = DRT::INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
+    // determine, whether face-based stabilizing terms are active
+    eval_eos_ = edge_based || ghost_penalty;
+  }
 
   if(myrank_ == 0)
   {
     std::cout<<"\nVolume:   Gauss point generating method = "<< params_xfem.get<string>("VOLUME_GAUSS_POINTS_BY");
     std::cout<<"\nBoundary: Gauss point generating method = "<< params_xfem.get<string>("BOUNDARY_GAUSS_POINTS_BY") << "\n\n";
   }
-
-  // load GMSH output flags
-  bool gmsh = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH");
-
-  gmsh_sol_out_          = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_SOL_OUT");
-  gmsh_debug_out_        = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT");
-  gmsh_debug_out_screen_ = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DEBUG_OUT_SCREEN");
-  gmsh_EOS_out_          = gmsh && ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_));
-  gmsh_discret_out_      = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DISCRET_OUT");
-  gmsh_cut_out_          = gmsh && (bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_CUT_OUT");
-  gmsh_step_diff_        = 500;
-
 
   // set XFEM-related parameters on element level
   SetElementGeneralFluidXFEMParameter();
@@ -471,7 +468,7 @@ void FLD::XFluid::CreateState()
 
   //--------------------------------------------------------------------------------------
   // create object for edgebased stabilization
-  if(edge_based_ or ghost_penalty_)
+  if(eval_eos_)
     edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(state_->Wizard(), discret_, include_inner_));
 
   //--------------------------------------------------------------------------------------
@@ -1074,7 +1071,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 void FLD::XFluid::AssembleMatAndRHS_FaceTerms(bool is_ghost_penalty_reconstruct)
 {
   // call edge stabilization
-  if( edge_based_ or ghost_penalty_ )
+  if( eval_eos_)
   {
     TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
@@ -1100,7 +1097,9 @@ void FLD::XFluid::AssembleMatAndRHS_FaceTerms(bool is_ghost_penalty_reconstruct)
       DRT::ELEMENTS::FluidIntFace * face_ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
       if ( face_ele==NULL ) dserror( "expect FluidIntFace element" );
 
-      edgestab_->EvaluateEdgeStabGhostPenalty( faceparams, discret_, face_ele, state_->sysmat_, state_->residual_col_, gmsh_EOS_out_);
+      bool gmsh_EOS_out(DRT::INPUT::IntegralValue<int>(params_->sublist("XFEM"),"GMSH_EOS_OUT"));
+      edgestab_->EvaluateEdgeStabGhostPenalty(
+          faceparams, discret_, face_ele, state_->sysmat_, state_->residual_col_, gmsh_EOS_out);
     }
   }
 }
@@ -1115,8 +1114,6 @@ void FLD::XFluid::IntegrateShapeFunction(
   Teuchos::RCP<Epetra_Vector> vec
   )
 {
-
-
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::IntegrateShapeFunction" );
 
   // create an column vector for assembly over row elements that has to be communicated at the end
@@ -1301,793 +1298,6 @@ void FLD::XFluid::IntegrateShapeFunction(
 }
 
 /*----------------------------------------------------------------------*
- |  calls the Gmsh output for elements, volumecells...     schott 03/12 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::GmshOutput(
-    const std::string & filename_base,
-    const int step,
-    const int count,                           // counter for DEBUG
-    Teuchos::RCP<const Epetra_Vector> vel,
-    Teuchos::RCP<const Epetra_Vector> acc
-)
-{
-  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::GmshOutput" );
-
-  int myrank = discret_->Comm().MyPID();
-
-  if(myrank==0) std::cout << "\n\t ... writing Gmsh output...\n" << std::flush;
-
-  const int step_diff = 100;
-  bool screen_out = gmsh_debug_out_screen_;
-
-   // output for Element and Node IDs
-   std::ostringstream filename_base_vel;
-   if(count > -1) filename_base_vel << filename_base << "_" << count << "_vel";
-   else           filename_base_vel << filename_base << "_vel";
-   const std::string filename_vel = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_vel.str(), step, step_diff, screen_out, myrank);
-   if (gmsh_debug_out_screen_) std::cout << std::endl;
-   std::ofstream gmshfilecontent_vel(filename_vel.c_str());
-   gmshfilecontent_vel.setf(std::ios::scientific,std::ios::floatfield);
-   gmshfilecontent_vel.precision(16);
-
-   std::ostringstream filename_base_press;
-   if(count > -1) filename_base_press << filename_base << "_" << count << "_press";
-   else           filename_base_press << filename_base << "_press";
-   const std::string filename_press = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_press.str(), step, step_diff, screen_out, myrank);
-   if (gmsh_debug_out_screen_) std::cout << std::endl;
-   std::ofstream gmshfilecontent_press(filename_press.c_str());
-   gmshfilecontent_press.setf(std::ios::scientific,std::ios::floatfield);
-   gmshfilecontent_press.precision(16);
-
-   std::ostringstream filename_base_acc;
-   if(count > -1) filename_base_acc << filename_base << "_" << count << "_acc";
-   else           filename_base_acc << filename_base << "_acc";
-   const std::string filename_acc = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_acc.str(), step, step_diff, screen_out, myrank);
-   if (gmsh_debug_out_screen_) std::cout << std::endl;
-   std::ofstream gmshfilecontent_acc(filename_acc.c_str());
-   gmshfilecontent_acc.setf(std::ios::scientific,std::ios::floatfield);
-   gmshfilecontent_acc.precision(16);
-
-   std::ostringstream filename_base_bound;
-   if(count > -1) filename_base_bound << filename_base << "_" << count << "_bound";
-   else           filename_base_bound << filename_base << "_bound";
-   const std::string filename_bound = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_bound.str(), step, step_diff, screen_out, myrank);
-   if (gmsh_debug_out_screen_) std::cout << std::endl;
-   std::ofstream gmshfilecontent_bound(filename_bound.c_str());
-   gmshfilecontent_bound.setf(std::ios::scientific,std::ios::floatfield);
-   gmshfilecontent_bound.precision(16);
-
-
-   // output for Element and Node IDs
-   std::ostringstream filename_base_vel_ghost;
-   if(count > -1) filename_base_vel_ghost << filename_base << "_" << count << "_vel_ghost";
-   else           filename_base_vel_ghost << filename_base << "_vel_ghost";
-   const std::string filename_vel_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_vel_ghost.str(), step, step_diff, screen_out, myrank);
-   if (gmsh_debug_out_screen_) std::cout << std::endl;
-   std::ofstream gmshfilecontent_vel_ghost(filename_vel_ghost.c_str());
-   gmshfilecontent_vel_ghost.setf(std::ios::scientific,std::ios::floatfield);
-   gmshfilecontent_vel_ghost.precision(16);
-
-   std::ostringstream filename_base_press_ghost;
-   if(count > -1) filename_base_press_ghost << filename_base << "_" << count << "_press_ghost";
-   else           filename_base_press_ghost << filename_base << "_press_ghost";
-   const std::string filename_press_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_press_ghost.str(), step, step_diff, screen_out, myrank);
-   if (gmsh_debug_out_screen_) std::cout << std::endl;
-   std::ofstream gmshfilecontent_press_ghost(filename_press_ghost.c_str());
-   gmshfilecontent_press_ghost.setf(std::ios::scientific,std::ios::floatfield);
-   gmshfilecontent_press_ghost.precision(16);
-
-   std::ostringstream filename_base_acc_ghost;
-   if(count > -1) filename_base_acc_ghost << filename_base << "_" << count << "_acc_ghost";
-   else           filename_base_acc_ghost << filename_base << "_acc_ghost";
-   const std::string filename_acc_ghost = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_acc_ghost.str(), step, step_diff, screen_out, myrank);
-   if (gmsh_debug_out_screen_) std::cout << std::endl;
-   std::ofstream gmshfilecontent_acc_ghost(filename_acc_ghost.c_str());
-   gmshfilecontent_acc_ghost.setf(std::ios::scientific,std::ios::floatfield);
-   gmshfilecontent_acc_ghost.precision(16);
-
-
-   if(count > -1) // for residual output
-   {
-       gmshfilecontent_vel         << "View \"" << "SOL " << "vel "   << count << "\" {\n";
-       gmshfilecontent_press       << "View \"" << "SOL " << "press " << count << "\" {\n";
-       gmshfilecontent_bound       << "View \"" << "SOL " << "side-normal " << count << "\" {\n";
-       gmshfilecontent_vel_ghost   << "View \"" << "SOL " << "vel_ghost "   << count << "\" {\n";
-       gmshfilecontent_press_ghost << "View \"" << "SOL " << "press_ghost " << count << "\" {\n";
-   }
-   else
-   {
-       gmshfilecontent_vel         << "View \"" << "SOL " << "vel "   << "\" {\n";
-       gmshfilecontent_press       << "View \"" << "SOL " << "press " << "\" {\n";
-       gmshfilecontent_acc         << "View \"" << "SOL " << "acc   " << "\" {\n";
-       gmshfilecontent_bound       << "View \"" << "SOL " << "side-normal " << "\" {\n";
-       gmshfilecontent_vel_ghost   << "View \"" << "SOL " << "vel_ghost "   << "\" {\n";
-       gmshfilecontent_press_ghost << "View \"" << "SOL " << "press_ghost " << "\" {\n";
-       gmshfilecontent_acc_ghost   << "View \"" << "SOL " << "acc_ghost   " << "\" {\n";
-   }
-
-  const int numrowele = (discret_)->NumMyRowElements();
-  for (int i=0; i<numrowele; ++i)
-  {
-    DRT::Element* actele = (discret_)->lRowElement(i);
-    GEO::CUT::ElementHandle * e = state_->Wizard()()->GetElement( actele );
-
-    if ( e!=NULL )
-    {
-
-      std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
-      std::vector< std::vector<int> > nds_sets;
-
-      e->GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner_);
-
-      int set_counter = 0;
-
-      for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
-          s!=cell_sets.end();
-          s++)
-      {
-        GEO::CUT::plain_volumecell_set & cells = *s;
-
-        std::vector<int> & nds = nds_sets[set_counter];
-
-
-        for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
-        {
-          GEO::CUT::VolumeCell * vc = *i;
-
-          if ( e->IsCut() )
-          {
-            GmshOutputVolumeCell( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, nds, vel, acc );
-            if ( vc->Position()==GEO::CUT::Point::outside )
-            {
-              GmshOutputBoundaryCell( *discret_, gmshfilecontent_bound, vc );
-            }
-          }
-          else
-          {
-            GmshOutputElement( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
-          }
-          GmshOutputElement( *discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
-        }
-        set_counter += 1;
-      }
-    }
-    else
-    {
-      std::vector<int> nds; // empty vector
-      GmshOutputElement( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
-      GmshOutputElement( *discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
-
-    }
-  }
-
-  gmshfilecontent_vel   << "};\n";
-  gmshfilecontent_press << "};\n";
-  if(count == -1) gmshfilecontent_acc   << "};\n";
-  gmshfilecontent_vel_ghost   << "};\n";
-  gmshfilecontent_press_ghost << "};\n";
-  if(count == -1) gmshfilecontent_acc_ghost   << "};\n";
-  gmshfilecontent_bound << "};\n";
-
-
-  if(myrank==0) std::cout << " done\n" << std::flush;
-}
-
-/*----------------------------------------------------------------------*
- |  Gmsh output for elements                               schott 03/12 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::GmshOutputElement( DRT::Discretization & discret,
-                                                  std::ofstream & vel_f,
-                                                  std::ofstream & press_f,
-                                                  std::ofstream & acc_f,
-                                                  DRT::Element * actele,
-                                                  std::vector<int> & nds,
-                                                  Teuchos::RCP<const Epetra_Vector> vel,
-                                                  Teuchos::RCP<const Epetra_Vector> acc
-                                                  )
-{
-
-  vel_f.setf(std::ios::scientific,std::ios::floatfield);
-  vel_f.precision(16);
-
-  press_f.setf(std::ios::scientific,std::ios::floatfield);
-  press_f.precision(16);
-
-  acc_f.setf(std::ios::scientific,std::ios::floatfield);
-  acc_f.precision(16);
-
-  //output for accvec ?
-  bool acc_output = true;
-  if(acc == Teuchos::null) acc_output=false;
-
-
-  DRT::Element::LocationArray la( 1 );
-
-
-  if(nds.size()!=0) // for element output of ghost values
-  {
-    // get element location vector, dirichlet flags and ownerships
-    actele->LocationVector(discret,nds,la,false);
-  }
-  else
-  {
-    // get element location vector, dirichlet flags and ownerships
-    actele->LocationVector(discret,la,false);
-  }
-
-  std::vector<double> m(la[0].lm_.size());
-  DRT::UTILS::ExtractMyValues(*vel,m,la[0].lm_);
-
-  std::vector<double> m_acc(la[0].lm_.size());
-  if(acc_output)
-  {
-    DRT::UTILS::ExtractMyValues(*acc,m_acc,la[0].lm_);
-  }
-
-  int numnode = 0;
-
-  switch ( actele->Shape() )
-  {
-  case DRT::Element::hex8:
-  case DRT::Element::hex20:
-  case DRT::Element::hex27:
-    numnode=8;
-    vel_f << "VH(";
-    press_f << "SH(";
-    if(acc_output) acc_f << "VH(";
-    break;
-  case DRT::Element::wedge6:
-  case DRT::Element::wedge15:
-    numnode=6;
-    vel_f << "VI(";
-    press_f << "SI(";
-    if(acc_output) acc_f << "VI(";
-    break;
-  case DRT::Element::pyramid5:
-    numnode=5;
-    vel_f << "VY(";
-    press_f << "SY(";
-    if(acc_output) acc_f << "VY(";
-    break;
-  default:
-  {
-    dserror( "unsupported shape" );
-    break;
-  }
-  }
-
-  for ( int i=0; i<numnode; ++i )
-  {
-    if ( i > 0 )
-    {
-      vel_f << ",";
-      press_f << ",";
-      if(acc_output) acc_f << ",";
-    }
-    const double * x = actele->Nodes()[i]->X();
-    vel_f   << x[0] << "," << x[1] << "," << x[2];
-    press_f << x[0] << "," << x[1] << "," << x[2];
-    if(acc_output) acc_f << x[0] << "," << x[1] << "," << x[2];
-  }
-  vel_f << "){";
-  press_f << "){";
-  if(acc_output) acc_f << "){";
-
-  for ( int i=0; i<numnode; ++i )
-  {
-    if ( i > 0 )
-    {
-      vel_f << ",";
-      press_f << ",";
-      if(acc_output) acc_f << ",";
-    }
-    int j = 4*i;
-    vel_f   << m[j] << "," << m[j+1] << "," << m[j+2];
-    press_f << m[j+3];
-    if(acc_output) acc_f   << m_acc[j] << "," << m_acc[j+1] << "," << m_acc[j+2];
-  }
-
-  vel_f << "};\n";
-  press_f << "};\n";
-  if(acc_output) acc_f << "};\n";
-}
-
-/*----------------------------------------------------------------------*
- |  Gmsh output for volumecells                            schott 03/12 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::GmshOutputVolumeCell( DRT::Discretization & discret,
-                                                     std::ofstream & vel_f,
-                                                     std::ofstream & press_f,
-                                                     std::ofstream & acc_f,
-                                                     DRT::Element * actele,
-                                                     GEO::CUT::ElementHandle * e,
-                                                     GEO::CUT::VolumeCell * vc,
-                                                     const std::vector<int> & nds,
-                                                     Teuchos::RCP<const Epetra_Vector> velvec,
-                                                     Teuchos::RCP<const Epetra_Vector> accvec
-                                                     )
-{
-
-  vel_f.setf(std::ios::scientific,std::ios::floatfield);
-  vel_f.precision(16);
-
-  press_f.setf(std::ios::scientific,std::ios::floatfield);
-  press_f.precision(16);
-
-  acc_f.setf(std::ios::scientific,std::ios::floatfield);
-  acc_f.precision(16);
-
-
-
-  //output for accvec ?
-  bool acc_output = true;
-  if(accvec == Teuchos::null) acc_output=false;
-
-  DRT::Element::LocationArray la( 1 );
-
-  // get element location vector, dirichlet flags and ownerships
-  actele->LocationVector(discret,nds,la,false);
-
-  std::vector<double> m(la[0].lm_.size());
-  DRT::UTILS::ExtractMyValues(*velvec,m,la[0].lm_);
-
-  std::vector<double> m_acc(la[0].lm_.size());
-  if(acc_output)
-  {
-    DRT::UTILS::ExtractMyValues(*accvec,m_acc,la[0].lm_);
-  }
-
-  Epetra_SerialDenseMatrix vel( 3, actele->NumNode() );
-  Epetra_SerialDenseMatrix press( 1, actele->NumNode() );
-  Epetra_SerialDenseMatrix acc( 3, actele->NumNode() );
-
-  for ( int i=0; i<actele->NumNode(); ++i )
-  {
-    vel( 0, i ) = m[4*i+0];
-    vel( 1, i ) = m[4*i+1];
-    vel( 2, i ) = m[4*i+2];
-
-    press( 0, i ) = m[4*i+3];
-
-    if(acc_output)
-    {
-     acc( 0, i ) = m_acc[4*i+0];
-     acc( 1, i ) = m_acc[4*i+1];
-     acc( 2, i ) = m_acc[4*i+2];
-    }
-  }
-
-  // facet based output for cut volumes
-  // integrationcells are not available because tessellation is not used
-  if( VolumeCellGaussPointBy_!= INPAR::CUT::VCellGaussPts_Tessellation )
-  {
-    const GEO::CUT::plain_facet_set & facete = vc->Facets();
-    for(GEO::CUT::plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
-    {
-      // split facet into tri and quad cell
-      GEO::CUT::Facet *fe = *i;
-      std::vector<std::vector<GEO::CUT::Point*> > split;
-      std::vector<GEO::CUT::Point*> corners = fe->CornerPoints();
-
-      if( corners.size()==3 ) // only Tri can be used directly. Quad may be concave
-        split.push_back( corners );
-      else
-      {
-        if( !fe->IsFacetSplit() )
-          fe->SplitFacet( fe->CornerPoints() );
-         split = fe->GetSplitCells();
-      }
-
-      for( std::vector<std::vector<GEO::CUT::Point*> >::const_iterator j=split.begin();
-                                                                       j!=split.end();j++ )
-      {
-        std::vector<GEO::CUT::Point*> cell = *j;
-
-        switch ( cell.size() )
-        {
-        case 3:
-          vel_f << "VT(";
-          press_f << "ST(";
-          if(acc_output) acc_f << "VT(";
-          break;
-        case 4:
-          vel_f << "VQ(";
-          press_f << "SQ(";
-          if(acc_output) acc_f << "VQ(";
-          break;
-        default:
-        {
-          dserror( "splitting facets failed" );
-          break;
-        }
-        }
-
-        for ( unsigned k=0; k<cell.size(); ++k )
-        {
-          if ( k > 0 )
-          {
-            vel_f << ",";
-            press_f << ",";
-            if(acc_output) acc_f << ",";
-          }
-          const double * x = cell[k]->X();
-          vel_f   << x[0] << "," << x[1] << "," << x[2];
-          press_f << x[0] << "," << x[1] << "," << x[2];
-          if(acc_output) acc_f   << x[0] << "," << x[1] << "," << x[2];
-        }
-        vel_f << "){";
-        press_f << "){";
-        if(acc_output) acc_f << "){";
-
-        for ( unsigned k=0; k<cell.size(); ++k )
-        {
-          LINALG::Matrix<3,1> v( true );
-          LINALG::Matrix<1,1> p( true );
-          LINALG::Matrix<3,1> a( true );
-
-          GEO::CUT::Point * point = cell[k];
-          const LINALG::Matrix<3,1> & rst = e->LocalCoordinates( point );
-
-          switch ( actele->Shape() )
-          {
-          case DRT::Element::hex8:
-          {
-            const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-            LINALG::Matrix<numnodes,1> funct;
-            DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex8 );
-            LINALG::Matrix<3,numnodes> velocity( vel, true );
-            LINALG::Matrix<1,numnodes> pressure( press, true );
-            LINALG::Matrix<3,numnodes> acceleration( acc, true );
-
-            v.Multiply( 1, velocity, funct, 1 );
-            p.Multiply( 1, pressure, funct, 1 );
-            if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
-            break;
-          }
-          case DRT::Element::hex20:
-          {
-            // TODO: check the output for hex20
-            const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
-            LINALG::Matrix<numnodes,1> funct;
-            DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex20 );
-            LINALG::Matrix<3,numnodes> velocity( vel, true );
-            LINALG::Matrix<1,numnodes> pressure( press, true );
-            LINALG::Matrix<3,numnodes> acceleration( acc, true );
-
-            v.Multiply( 1, velocity, funct, 1 );
-            p.Multiply( 1, pressure, funct, 1 );
-            if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
-            break;
-          }
-          case DRT::Element::hex27:
-          {
-            // TODO: check the output for hex27
-            const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
-            LINALG::Matrix<numnodes,1> funct;
-            DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex27 );
-            LINALG::Matrix<3,numnodes> velocity( vel, true );
-            LINALG::Matrix<1,numnodes> pressure( press, true );
-            LINALG::Matrix<3,numnodes> acceleration( acc, true );
-
-            v.Multiply( 1, velocity, funct, 1 );
-            p.Multiply( 1, pressure, funct, 1 );
-            if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
-            break;
-          }
-          default:
-          {
-            dserror( "unsupported shape" );
-            break;
-          }
-          }
-
-          if ( k > 0 )
-          {
-            vel_f << ",";
-            press_f << ",";
-            if(acc_output) acc_f << ",";
-          }
-          vel_f   << v( 0 ) << "," << v( 1 ) << "," << v( 2 );
-          press_f << p( 0 );
-          if(acc_output) acc_f   << a( 0 ) << "," << a( 1 ) << "," << a( 2 );
-        }
-
-        vel_f << "};\n";
-        press_f << "};\n";
-        if(acc_output) acc_f << "};\n";
-      }
-    }
-  }
-
-  // integrationcells based output for tessellation
-  else
-  {
-    const GEO::CUT::plain_integrationcell_set & intcells = vc->IntegrationCells();
-    for ( GEO::CUT::plain_integrationcell_set::const_iterator i=intcells.begin();
-          i!=intcells.end();
-          ++i )
-    {
-      GEO::CUT::IntegrationCell * ic = *i;
-
-      const std::vector<GEO::CUT::Point*> & points = ic->Points();
-  //    Epetra_SerialDenseMatrix values( 4, points.size() );
-
-      switch ( ic->Shape() )
-      {
-      case DRT::Element::hex8:
-        vel_f << "VH(";
-        press_f << "SH(";
-        if(acc_output) acc_f << "VH(";
-        break;
-      case DRT::Element::tet4:
-        vel_f << "VS(";
-        press_f << "SS(";
-        if(acc_output) acc_f << "VS(";
-        break;
-      default:
-      {
-        dserror( "unsupported shape" );
-        break;
-      }
-      }
-
-      for ( unsigned i=0; i<points.size(); ++i )
-      {
-        if ( i > 0 )
-        {
-          vel_f << ",";
-          press_f << ",";
-          if(acc_output) acc_f << ",";
-        }
-        const double * x = points[i]->X();
-        vel_f   << x[0] << "," << x[1] << "," << x[2];
-        press_f << x[0] << "," << x[1] << "," << x[2];
-        if(acc_output) acc_f   << x[0] << "," << x[1] << "," << x[2];
-      }
-      vel_f << "){";
-      press_f << "){";
-      if(acc_output) acc_f << "){";
-
-      for ( unsigned i=0; i<points.size(); ++i )
-      {
-        LINALG::Matrix<3,1> v( true );
-        LINALG::Matrix<1,1> p( true );
-        LINALG::Matrix<3,1> a( true );
-
-        GEO::CUT::Point * point = points[i];
-        const LINALG::Matrix<3,1> & rst = e->LocalCoordinates( point );
-
-        switch ( actele->Shape() )
-        {
-        case DRT::Element::hex8:
-        {
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-          LINALG::Matrix<numnodes,1> funct;
-          DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex8 );
-          LINALG::Matrix<3,numnodes> velocity( vel, true );
-          LINALG::Matrix<1,numnodes> pressure( press, true );
-          LINALG::Matrix<3,numnodes> acceleration( acc, true );
-
-          v.Multiply( 1, velocity, funct, 1 );
-          p.Multiply( 1, pressure, funct, 1 );
-          if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
-          break;
-        }
-        case DRT::Element::hex20:
-        {
-          // TODO: check the output for hex20
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
-          LINALG::Matrix<numnodes,1> funct;
-          DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex20 );
-          LINALG::Matrix<3,numnodes> velocity( vel, true );
-          LINALG::Matrix<1,numnodes> pressure( press, true );
-          LINALG::Matrix<3,numnodes> acceleration( acc, true );
-
-          v.Multiply( 1, velocity, funct, 1 );
-          p.Multiply( 1, pressure, funct, 1 );
-          if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
-          break;
-        }
-        case DRT::Element::hex27:
-        {
-          // TODO: check the output for hex27
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement;
-          LINALG::Matrix<numnodes,1> funct;
-          DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex27 );
-          LINALG::Matrix<3,numnodes> velocity( vel, true );
-          LINALG::Matrix<1,numnodes> pressure( press, true );
-          LINALG::Matrix<3,numnodes> acceleration( acc, true );
-
-          v.Multiply( 1, velocity, funct, 1 );
-          p.Multiply( 1, pressure, funct, 1 );
-          if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
-          break;
-        }
-        case DRT::Element::wedge6:
-        {
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement;
-          LINALG::Matrix<numnodes,1> funct;
-          DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::wedge6 );
-          LINALG::Matrix<3,numnodes> velocity( vel, true );
-          LINALG::Matrix<1,numnodes> pressure( press, true );
-          LINALG::Matrix<3,numnodes> acceleration( acc, true );
-
-          v.Multiply( 1, velocity, funct, 1 );
-          p.Multiply( 1, pressure, funct, 1 );
-          if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
-          break;
-        }
-        default:
-        {
-          dserror( "unsupported shape" );
-          break;
-        }
-        }
-
-
-        if ( i > 0 )
-        {
-          vel_f << ",";
-          press_f << ",";
-          if(acc_output) acc_f << ",";
-        }
-        vel_f   << v( 0 ) << "," << v( 1 ) << "," << v( 2 );
-        press_f << p( 0 );
-        if(acc_output) acc_f   << a( 0 ) << "," << a( 1 ) << "," << a( 2 );
-      }
-
-      vel_f << "};\n";
-      press_f << "};\n";
-      if(acc_output) acc_f << "};\n";
-    }
-  }
-
-}
-
-/*----------------------------------------------------------------------*
- |  Gmsh output for boundary cells                         schott 03/12 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::GmshOutputBoundaryCell(
-    DRT::Discretization & discret,
-    std::ofstream & bound_f,
-    GEO::CUT::VolumeCell * vc
-)
-{
-
-  bound_f.setf(std::ios::scientific,std::ios::floatfield);
-  bound_f.precision(16);
-
-  LINALG::Matrix<3,1> normal;
-  LINALG::Matrix<2,2> metrictensor;
-  double drs;
-
-  std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
-  vc->GetBoundaryCells( bcells );
-  for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::iterator i=bcells.begin();
-        i!=bcells.end();
-        ++i )
-  {
-    int sid = i->first;
-    std::vector<GEO::CUT::BoundaryCell*> & bcs = i->second;
-
-    if(!condition_manager_->IsMeshCoupling(sid)) continue;
-
-    DRT::Element * side = condition_manager_->GetSide( sid );
-    GEO::CUT::SideHandle * s = state_->Wizard()->GetMeshCuttingSide( sid, 0 );
-
-    const int numnodes = side->NumNode();
-    DRT::Node ** nodes = side->Nodes();
-    Epetra_SerialDenseMatrix side_xyze( 3, numnodes );
-    for ( int i=0; i<numnodes; ++i )
-    {
-      const double * x = nodes[i]->X();
-      std::copy( x, x+3, &side_xyze( 0, i ) );
-    }
-
-    for ( std::vector<GEO::CUT::BoundaryCell*>::iterator i=bcs.begin();
-          i!=bcs.end();
-          ++i )
-    {
-      GEO::CUT::BoundaryCell * bc = *i;
-
-      switch ( bc->Shape() )
-      {
-      case DRT::Element::quad4:
-        bound_f << "VQ(";
-        break;
-      case DRT::Element::tri3:
-        bound_f << "VT(";
-        break;
-      default:
-//        dserror( "unsupported shape" );
-        break;
-      }
-
-      const std::vector<GEO::CUT::Point*> & points = bc->Points();
-      for ( std::vector<GEO::CUT::Point*>::const_iterator i=points.begin();
-            i!=points.end();
-            ++i )
-      {
-        GEO::CUT::Point * p = *i;
-
-        if ( i!=points.begin() )
-          bound_f << ",";
-
-        const double * x = p->X();
-        bound_f << x[0] << "," << x[1] << "," << x[2];
-      }
-
-      bound_f << "){";
-
-      for ( std::vector<GEO::CUT::Point*>::const_iterator i=points.begin();
-            i!=points.end();
-            ++i )
-      {
-        GEO::CUT::Point * p = *i;
-
-        // the bc corner points will always lie on the respective side
-        const LINALG::Matrix<2,1> & eta = s->LocalCoordinates( p );
-
-        switch ( side->Shape() )
-        {
-        case DRT::Element::quad4:
-        {
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
-          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
-          LINALG::Matrix<2,numnodes> deriv;
-          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>( xyze, deriv, metrictensor, drs, &normal );
-          break;
-        }
-        case DRT::Element::tri3:
-        {
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
-          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
-          LINALG::Matrix<2,numnodes> deriv;
-          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::tri3 );
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>( xyze, deriv, metrictensor, drs, &normal );
-          break;
-        }
-        case DRT::Element::quad8:
-        {
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement;
-          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
-          LINALG::Matrix<2,numnodes> deriv;
-          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad8 );
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad8>( xyze, deriv, metrictensor, drs, &normal );
-          break;
-        }
-        case DRT::Element::quad9:
-        {
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement;
-          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
-          LINALG::Matrix<2,numnodes> deriv;
-          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad9 );
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad9>( xyze, deriv, metrictensor, drs, &normal );
-          break;
-        }
-        default:
-        {
-          dserror( "unsupported side shape %d", side->Shape() );
-          break;
-        }
-        }
-
-        if ( i!=points.begin() )
-          bound_f << ",";
-
-        // side's outward point normal vector (not the bc's normal vector)
-        bound_f << normal( 0 ) << "," << normal( 1 ) << "," << normal( 2 );
-      }
-      bound_f << "};\n";
-    }
-  }
-
-}
-
-
-
-/*----------------------------------------------------------------------*
  |  evaluate gradient penalty terms to reconstruct ghost values  schott 03/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::AssembleMatAndRHS_GradientPenalty(
@@ -2122,10 +1332,7 @@ void FLD::XFluid::AssembleMatAndRHS_GradientPenalty(
   }
 
   // set scheme-specific element parameters and vector values
-  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-    discret_->SetState("velaf",vec);
-  else
-    discret_->SetState("velaf",vec);
+  discret_->SetState("velaf",vec);
 
 
 
@@ -3026,6 +2233,7 @@ void FLD::XFluid::PrepareSolve()
   // -------------------------------------------------------------------
   condition_manager_->PrepareSolve();
 
+  output_service_->GmshOutputDiscretization(eval_eos_, step_);
   // -------------------------------------------------------------------
   //  perform CUT, transform vectors from old dofset to new dofset and set state vectors
   // -------------------------------------------------------------------
@@ -3106,28 +2314,16 @@ void FLD::XFluid::Solve()
     // We could avoid this though, if velrowmap_ and prerowmap_ would
     // not include the dirichlet values as well. But it is expensive
     // to avoid that.
-    if(gmsh_debug_out_)
-    {
-      const Epetra_Map* colmap = discret_->DofColMap();
-      Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
 
-      LINALG::Export(*state_->Residual(),*output_col_residual);
-      GmshOutput( "DEBUG_residual_wo_DBC", step_, itnum, output_col_residual );
-    }
+    output_service_->GmshResidualOutputDebug( "DEBUG_residual_wo_DBC", step_, itnum, state_ );
+
 
     // apply Dirichlet conditions to the residual vector by setting zeros into the residual
     state_->DBCMapExtractor()->InsertCondVector(
         state_->DBCMapExtractor()->ExtractCondVector(state_->Zeros()),
         state_->Residual());
 
-    if(gmsh_debug_out_)
-    {
-      const Epetra_Map* colmap = discret_->DofColMap();
-      Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
-
-      LINALG::Export(*state_->Residual(),*output_col_residual);
-      GmshOutput( "DEBUG_residual", step_, itnum, output_col_residual );
-    }
+    output_service_->GmshResidualOutputDebug( "DEBUG_residual", step_, itnum, state_ );
 
     if (updateprojection_)
     {
@@ -3225,16 +2421,7 @@ void FLD::XFluid::Solve()
       dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
     }
 
-
-    if(gmsh_debug_out_)
-    {
-      const Epetra_Map* colmap = discret_->DofColMap();
-      Teuchos::RCP<Epetra_Vector> output_col_incvel = LINALG::CreateVector(*colmap,false);
-
-      LINALG::Export(*state_->incvel_,*output_col_incvel);
-
-      GmshOutput( "DEBUG_icnr", step_, itnum, output_col_incvel );
-    }
+    output_service_->GmshIncrementOutputDebug( "DEBUG_icnr", step_, itnum, state_ );
 
     // -------------------------------------------------------------------
     // update velocity and pressure values by increments
@@ -3266,7 +2453,8 @@ void FLD::XFluid::Solve()
 
     //--------------------------------------------------------------------
     Teuchos::RCP<const Epetra_Vector> output_col_velnp = DRT::UTILS::GetColVersionOfRowVector(discret_, state_->velnp_ );
-    GmshOutput(filename_base, step_, state_it_, output_col_velnp );
+    const std::string prefix("SOL");
+    output_service_->GmshOutput(filename_base, prefix, step_, state_it_, state_->Wizard(), output_col_velnp );
 
     //--------------------------------------------------------------------
     condition_manager_->GmshOutput(filename_base, step_, gmsh_step_diff_, gmsh_debug_out_screen_);
@@ -3750,22 +2938,8 @@ void FLD::XFluid::Evaluate(
   // -------------------------------------------------------------------
   // write gmsh debug output for fluid residual directly after the fluid is evaluated
   // -------------------------------------------------------------------
-  if(gmsh_debug_out_)
-  {
-    const Epetra_Map* colmap = discret_->DofColMap();
-    Teuchos::RCP<Epetra_Vector> output_col_residual = LINALG::CreateVector(*colmap,false);
-
-    LINALG::Export(*state_->residual_,*output_col_residual);
-    GmshOutput( "DEBUG_residual_wo_DBC", step_, itnum_out_, output_col_residual );
-
-
-    Teuchos::RCP<Epetra_Vector> output_col_vel = LINALG::CreateVector(*colmap,false);
-
-    LINALG::Export(*state_->velnp_,*output_col_vel);
-
-    GmshOutput( "DEBUG_sol", step_, itnum_out_, output_col_vel );
-
-  }
+  output_service_->GmshResidualOutputDebug( "DEBUG_residual_wo_DBC", step_, itnum_out_, state_ );
+  output_service_->GmshSolutionOutputDebug("DEBUG_sol", step_, itnum_out_, state_ );
 
   return;
 }
@@ -3915,7 +3089,6 @@ void FLD::XFluid::CutAndSetStateVectors()
 
 
   const bool screen_out = false;
-  const bool gmsh_ref_sol_out_ = false;
   //------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------
   //                             XFEM TIME-INTEGRATION
@@ -3995,29 +3168,14 @@ void FLD::XFluid::CutAndSetStateVectors()
 
   // write gmsh-output for reference solution fields
   // reference solution output
-  if(gmsh_ref_sol_out_)
-  {
-    const Epetra_Map* colmap = discret_->DofColMap();
 
-    //-------------
-    // output for the reference solution veln
-    Teuchos::RCP<Epetra_Vector> output_col_veln = LINALG::CreateVector(*colmap,false);
-    Teuchos::RCP<Epetra_Vector> output_col_accn = LINALG::CreateVector(*colmap,false);
+  //-------------
+  // output for the reference solution veln
+  output_service_->GmshSolutionOutputPrevious( "TIMINT_N_", step_, state_, state_it_ );
 
-    LINALG::Export(*state_->veln_,*output_col_veln);
-    LINALG::Export(*state_->accn_,*output_col_accn);
-
-    GmshOutput( "TIMINT_N_", step_, state_it_ , output_col_veln, output_col_accn );
-
-    //-------------
-    // output for the predicted iteration velnp
-    Teuchos::RCP<Epetra_Vector> output_col_velnp = LINALG::CreateVector(*colmap,false);
-
-    LINALG::Export(*state_->velnp_,*output_col_velnp);
-
-    GmshOutput( "TIMINT_NP_", step_, state_it_ , output_col_velnp );
-  }  // GMSH OUTPUT
-
+  //-------------
+  // output for the predicted iteration velnp
+  output_service_->GmshSolutionOutput( "TIMINT_NP_", step_, state_, state_it_ );
 
 
   if(myrank_==0 and screen_out) std::cout << "finished CutAndSetStateVectors()" << std::endl;
@@ -5018,62 +4176,6 @@ void FLD::XFluid::StatisticsAndOutput()
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  write discretization output                            schott 03/12 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::OutputDiscret()
-{
-
-
-  //---------------------------------- GMSH DISCRET OUTPUT (element and node ids for all discretizations) ------------------------
-  if(gmsh_discret_out_)
-  {
-
-    // cast to DiscretizationXFEM
-    Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
-    if (xdiscret == Teuchos::null)
-      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
-
-    // output for Element and Node IDs
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("DISCRET", step_, gmsh_step_diff_, gmsh_debug_out_screen_, discret_->Comm().MyPID());
-    std::ofstream gmshfilecontent(filename.c_str());
-    gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
-    gmshfilecontent.precision(16);
-
-    bool xdis_faces = (ghost_penalty_ or edge_based_);
-
-    disToStream(discret_,     "fld",     true, false, true, false, xdis_faces,  false, gmshfilecontent);
-
-    //TODO: shift these routines to MeshCoupling object?
-    if(condition_manager_->HasMeshCoupling())
-    {
-      Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx_);
-
-      Teuchos::RCP<DRT::Discretization> boundarydis = mc_coupl->GetCutterDis();
-      Teuchos::RCP<DRT::Discretization> soliddis    = mc_coupl->GetCondDis();
-
-      // -------------------------------------------------------------------
-      Teuchos::RCP<Epetra_Vector> soliddispnp = LINALG::CreateVector(*soliddis->DofRowMap(),true);
-
-      // compute the current solid and boundary position
-      std::map<int,LINALG::Matrix<3,1> >      currsolidpositions;
-      std::map<int,LINALG::Matrix<3,1> >      currinterfacepositions;
-
-      ExtractNodeVectors(*soliddis, soliddispnp, currsolidpositions);
-      ExtractNodeVectors(*boundarydis, mc_coupl->IDispnp(), currinterfacepositions);
-      //TODO: fill the soliddispnp in the XFSI case!
-
-      disToStream(soliddis,    "str",     true, false, true, false, false, false, gmshfilecontent, &currsolidpositions);
-      disToStream(boundarydis, "cut",     true, true,  true, true,  false, false, gmshfilecontent, &currinterfacepositions);
-    }
-
-    gmshfilecontent.close();
-
-  } // end if gmsh_discret_out_
-}
-
-
 /*----------------------------------------------------------------------*
  |  write solution output                                  schott 03/12 |
  *----------------------------------------------------------------------*/
@@ -5085,94 +4187,15 @@ void FLD::XFluid::Output()
 
   // write gmsh-output for solution fields
   // solution output
-  if(gmsh_sol_out_)
-  {
+  output_service_->GmshSolutionOutput("SOL", step_, state_);
 
-    int count = -1; // no counter for standard solution output
-
-    const Epetra_Map* colmap = discret_->DofColMap();
-    Teuchos::RCP<Epetra_Vector> output_col_vel = LINALG::CreateVector(*colmap,false);
-
-    LINALG::Export(*state_->velnp_,*output_col_vel);
-
-    Teuchos::RCP<Epetra_Vector> output_col_acc = LINALG::CreateVector(*colmap,false);
-    LINALG::Export(*state_->accnp_,*output_col_acc);
-
-    GmshOutput( "SOL", step_, count , output_col_vel, output_col_acc );
-
-
-    //--------------------------------------------------------------------
-    condition_manager_->GmshOutput("SOL", step_, gmsh_step_diff_, gmsh_debug_out_screen_);
-
-  }
-
-
-
-  //---------------------------------- GMSH DISCRET OUTPUT (element and node ids for all discretizations) ------------------------
-  if(gmsh_EOS_out_)
-  {
-    // cast to DiscretizationXFEM
-    Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
-    if (xdiscret == Teuchos::null)
-      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
-
-    // output for Element and Node IDs
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("EOS", step_, gmsh_step_diff_, gmsh_debug_out_screen_, discret_->Comm().MyPID());
-    std::ofstream gmshfilecontent(filename.c_str());
-    gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
-    gmshfilecontent.precision(16);
-
-    if( xdiscret->FilledExtension() == true && ghost_penalty_  ) // stabilization output
-    {
-      // draw internal faces elements with associated face's gid
-      gmshfilecontent << "View \" " << "ghost penalty stabilized \" {\n";
-
-      for (int i=0; i<xdiscret->NumMyRowFaces(); ++i)
-      {
-        const DRT::Element* actele = xdiscret->lRowFace(i);
-        std::map<int,int> & ghost_penalty_map = edgestab_->GetGhostPenaltyMap();
-
-        std::map<int,int>::iterator it = ghost_penalty_map.find(actele->Id());
-        if(it != ghost_penalty_map.end())
-        {
-          int ghost_penalty = it->second;
-
-          if(ghost_penalty) IO::GMSH::elementAtInitialPositionToStream(double(ghost_penalty),actele, gmshfilecontent);
-        }
-        else dserror("face %d in map not found", actele->Id());
-      }
-      gmshfilecontent << "};\n";
-    }
-    if(xdiscret->FilledExtension() == true && edge_based_)
-    {
-      // draw internal faces elements with associated face's gid
-      gmshfilecontent << "View \" " << "edgebased stabilized \" {\n";
-
-      for (int i=0; i<xdiscret->NumMyRowFaces(); ++i)
-      {
-        const DRT::Element* actele = xdiscret->lRowFace(i);
-        std::map<int,int> & edge_based_map = edgestab_->GetEdgeBasedMap();
-        std::map<int,int>::iterator it = edge_based_map.find(actele->Id());
-
-        if(it != edge_based_map.end())
-        {
-          int edge_stab =it->second;
-
-          if(edge_stab) IO::GMSH::elementAtInitialPositionToStream(double(edge_stab),actele, gmshfilecontent);
-        }
-      }
-      gmshfilecontent << "};\n";
-    } // end stabilization output
-
-    gmshfilecontent.close();
-
-  } // end if gmsh_EOS_out_
+  //---------------------------------- GMSH DISCRET OUTPUT (extended output for EOS) ------------------------
+  output_service_->GmshOutputEOS(step_,edgestab_);
 
   //---------------------------------- PARAVIEW SOLUTION OUTPUT (solution fields for pressure, velocity) ------------------------
 
   if (step_%upres_ == 0)
   {
-
 
     output_->NewStep(step_,time_);
 
@@ -5370,183 +4393,6 @@ void FLD::XFluid::Output()
 
 
 /*----------------------------------------------------------------------*
- | print discretization to gmsh stream                     schott 01/13 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::disToStream(Teuchos::RCP<DRT::Discretization> dis,
-                              const std::string& disname,
-                              const bool elements,
-                              const bool elecol,
-                              const bool nodes,
-                              const bool nodecol,
-                              const bool faces,
-                              const bool facecol,
-                              std::ostream& s,
-                              std::map<int, LINALG::Matrix<3,1> >* curr_pos)
-{
-  if(elements)
-  {
-    // draw bg elements with associated gid
-    s << "View \" " << disname;
-    if(elecol)
-    {
-      s << " col e->Id() \" {\n";
-      for (int i=0; i<dis->NumMyColElements(); ++i)
-      {
-        const DRT::Element* actele = dis->lColElement(i);
-        if(curr_pos == NULL)
-          IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
-        else
-          IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
-      };
-    }
-    else
-    {
-      s << " row e->Id() \" {\n";
-      for (int i=0; i<dis->NumMyRowElements(); ++i)
-      {
-        const DRT::Element* actele = dis->lRowElement(i);
-        if(curr_pos == NULL)
-          IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
-        else
-          IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
-      };
-    }
-    s << "};\n";
-  }
-
-  if(nodes)
-  {
-    s << "View \" " << disname;
-    if(nodecol)
-    {
-      s << " col n->Id() \" {\n";
-      for (int i=0; i<dis->NumMyColNodes(); ++i)
-      {
-        const DRT::Node* actnode = dis->lColNode(i);
-        LINALG::Matrix<3,1> pos(true);
-
-        if(curr_pos != NULL)
-        {
-          const LINALG::Matrix<3,1>& curr_x = curr_pos->find(actnode->Id())->second;
-          pos(0) = curr_x(0);
-          pos(1) = curr_x(1);
-          pos(2) = curr_x(2);
-        }
-        else
-        {
-          const LINALG::Matrix<3,1> x(actnode->X());
-          pos(0) = x(0);
-          pos(1) = x(1);
-          pos(2) = x(2);
-        }
-        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, s);
-      }
-    }
-    else
-    {
-      s << " row n->Id() \" {\n";
-      for (int i=0; i<dis->NumMyRowNodes(); ++i)
-      {
-        const DRT::Node* actnode = dis->lRowNode(i);
-        LINALG::Matrix<3,1> pos(true);
-
-        if(curr_pos != NULL)
-        {
-          const LINALG::Matrix<3,1>& curr_x = curr_pos->find(actnode->Id())->second;
-          pos(0) = curr_x(0);
-          pos(1) = curr_x(1);
-          pos(2) = curr_x(2);
-        }
-        else
-        {
-          const LINALG::Matrix<3,1> x(actnode->X());
-          pos(0) = x(0);
-          pos(1) = x(1);
-          pos(2) = x(2);
-        }
-        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, s);
-      }
-    }
-    s << "};\n";
-  }
-
-  if(faces)
-  {
-    // cast to DiscretizationXFEM
-    Teuchos::RCP<DRT::DiscretizationFaces> xdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(dis, true);
-    if (xdis == Teuchos::null)
-      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationFaces.");
-
-    s << "View \" " << disname;
-
-    if( xdis->FilledExtension() == true )     // faces output
-    {
-
-      if(facecol)
-      {
-        s << " col f->Id() \" {\n";
-        for (int i=0; i<xdis->NumMyColFaces(); ++i)
-        {
-          const DRT::Element* actele = xdis->lColFace(i);
-          if(curr_pos == NULL)
-            IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
-          else
-            IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
-        };
-      }
-      else
-      {
-        s << " row f->Id() \" {\n";
-        for (int i=0; i<xdis->NumMyRowFaces(); ++i)
-        {
-          const DRT::Element* actele = xdis->lRowFace(i);
-          if(curr_pos == NULL)
-            IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
-          else
-            IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
-        };
-      }
-      s << "};\n";
-    }
-  }
-}
-
-
-/*--------------------------------------------------------------------------*
- | extract the nodal vectors and store them in node-vector-map schott 01/13 |
- *--------------------------------------------------------------------------*/
-void FLD::XFluid::ExtractNodeVectors(DRT::Discretization & dis,
-    Teuchos::RCP<Epetra_Vector> dofrowvec,
-    std::map<int, LINALG::Matrix<3,1> >& nodevecmap)
-{
-
-  Epetra_Vector dispcol( *dis.DofColMap() );
-  dispcol.PutScalar( 0. );
-
-  LINALG::Export(*dofrowvec,dispcol);
-
-  nodevecmap.clear();
-
-  for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
-  {
-    const DRT::Node* node = dis.lColNode(lid);
-    std::vector<int> lm;
-    dis.Dof(node, lm);
-    std::vector<double> mydisp;
-    DRT::UTILS::ExtractMyValues(dispcol,mydisp,lm);
-    if (mydisp.size() < 3)
-      dserror("we need at least 3 dofs here");
-
-    LINALG::Matrix<3,1> currpos;
-    currpos(0) = node->X()[0] + mydisp[0];
-    currpos(1) = node->X()[1] + mydisp[1];
-    currpos(2) = node->X()[2] + mydisp[2];
-    nodevecmap.insert(std::make_pair(node->Id(),currpos));
-  }
-}
-
-
-/*----------------------------------------------------------------------*
  |  set an initial flow field                              schott 03/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::SetInitialFlowField(
@@ -5676,21 +4522,7 @@ void FLD::XFluid::SetInitialFlowField(
   //---------------------------------- GMSH START OUTPUT (reference solution fields for pressure, velocity) ------------------------
 
   // write gmsh-output for start fields
-  // reference solution output
-  if(gmsh_sol_out_)
-  {
-      int count = -1; // no counter for standard solution output
-
-      const Epetra_Map* colmap = discret_->DofColMap();
-      Teuchos::RCP<Epetra_Vector> output_col_vel = LINALG::CreateVector(*colmap,false);
-      Teuchos::RCP<Epetra_Vector> output_col_acc = LINALG::CreateVector(*colmap,false);
-
-      LINALG::Export(*state_->veln_,*output_col_vel);
-      LINALG::Export(*state_->accn_,*output_col_acc);
-
-      GmshOutput( "START", step_, count , output_col_vel, output_col_acc );
-
-  }
+  output_service_->GmshSolutionOutputPrevious( "START", step_, state_);
 
   return;
 } // end SetInitialFlowField
@@ -6048,20 +4880,7 @@ void FLD::XFluid::ReadRestart(int step)
 
   // write gmsh-output for start fields
   // reference solution output
-  if(gmsh_sol_out_)
-  {
-    int count = -1; // no counter for standard solution output
-
-    const Epetra_Map* colmap = discret_->DofColMap();
-    Teuchos::RCP<Epetra_Vector> output_col_vel = LINALG::CreateVector(*colmap,false);
-    Teuchos::RCP<Epetra_Vector> output_col_acc = LINALG::CreateVector(*colmap,false);
-
-    LINALG::Export(*state_->veln_,*output_col_vel);
-    LINALG::Export(*state_->accn_,*output_col_acc);
-
-    GmshOutput( "RESTART", step_, count , output_col_vel, output_col_acc );
-
-  }
+  output_service_->GmshSolutionOutputPrevious( "RESTART", step_, state_ );
 
   // set the new time and step also to the coupling objects
   condition_manager_->SetTimeAndStep(time_,step_);

@@ -262,13 +262,16 @@ public:
   /// update interface field state vectors
   virtual void UpdateStateVectors();
 
-
   virtual void GmshOutput(
       const std::string & filename_base,
       const int step,
       const int gmsh_step_diff,
       const bool gmsh_debug_out_screen
   ){};
+
+  virtual void GmshOutputDiscretization(
+    std::ostream& gmshfilecontent
+  );
 
   virtual void Output(
       const int step,
@@ -466,6 +469,10 @@ public:
       const bool gmsh_debug_out_screen
   );
 
+  virtual void GmshOutputDiscretization(
+    std::ostream& gmshfilecontent
+  );
+
   virtual void LiftDrag(
       const int step,
       const double time
@@ -483,15 +490,6 @@ public:
 
 
 private:
-
-  void ExtractNodeVectors(
-      Teuchos::RCP<DRT::Discretization> dis,
-      Teuchos::RCP<Epetra_Vector> dofrowvec,
-      std::map<int, LINALG::Matrix<3,1> >& nodevecmap
-  );
-
-
-
 
   void PrepareCutterOutput();
 
@@ -756,31 +754,32 @@ public:
       Teuchos::RCP<DRT::Discretization>   cond_dis
   )
   {
+    const int myrank = cond_dis->Comm().MyPID();
     if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)
     {
-      std::cout << " create new MeshCouplingFSICrack" << std::endl;
+      if (myrank == 0) std::cout << " create new MeshCouplingFSICrack" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSICrack(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
         CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_MONO)
     {
-      std::cout << " create new MeshCouplingFSI" << std::endl;
+      if (myrank == 0) std::cout << " create new MeshCouplingFSI" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSI(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
         CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NEUMANN)
     {
-      std::cout << " create new MeshCouplingBC" << std::endl;
+      if (myrank == 0) std::cout << " create new MeshCouplingBC" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingBC(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
     {
-      std::cout << " create new MeshCoupling" << std::endl;
+      if (myrank == 0) std::cout << " create new MeshCoupling" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else
     {
-      std::cout << " create new MeshCoupling" << std::endl;
+      if (myrank == 0) std::cout << " create new MeshCoupling" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
   }
@@ -1185,10 +1184,14 @@ public:
   void ZeroStateVectors_FSI();
 
   void GmshOutput(
-      const std::string & filename_base,
-      const int step,
-      const int gmsh_step_diff,
-      const bool gmsh_debug_out_screen
+    const std::string & filename_base,
+    const int step,
+    const int gmsh_step_diff,
+    const bool gmsh_debug_out_screen
+  );
+
+  void GmshOutputDiscretization(
+    std::ostream& gmshfilecontent
   );
 
   void Output(

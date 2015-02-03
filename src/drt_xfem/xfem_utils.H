@@ -1,44 +1,44 @@
-/*----------------------------------------------------------------------*/
-/*!
+/*!----------------------------------------------------------------------
 \file xfem_utils.H
-
-\brief basic enums used in xfem routines
+\brief Basic tools used in XFEM routines
 
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
+Maintainer:  Raffaela Kruse
+             kruse@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15249
 </pre>
-*/
-/*----------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 
+#ifndef XFEM_UTILS_H_
+#define XFEM_UTILS_H_
 
-#ifndef XFEM_UTILS_H
-#define XFEM_UTILS_H
-
+#include "../drt_lib/drt_discret.H"
 
 namespace XFEM
 {
-  //! global Position of degree of freedom in Epetra vector
-  typedef int DofGID;
-
-  //! Allows to distinguish between normal assembly and xfem assembly
-  enum AssemblyType
+  namespace UTILS
   {
-    standard_assembly,    ///< fixed layout of element matrices
-    xfem_assembly         ///< variable layout of element matrices - ask dofmanagers for layout information
-  };
+    void PrintDiscretizationToStream(
+      Teuchos::RCP<DRT::Discretization> dis,
+      const std::string& disname,
+      bool elements,
+      bool elecol,
+      bool nodes,
+      bool nodecol,
+      bool faces,
+      bool facecol,
+      std::ostream& s,
+      std::map<int, LINALG::Matrix<3,1> >* curr_pos = NULL
+    );
 
-  //! identify interface side due to phivalue value
-  inline bool plusDomain(double phiValue)
-  {
-    double TOL = 1.0e-14;
-    if (phiValue<-TOL)
-      return false;
-    else
-      return true;
-  };
+    //! extract the nodal vectors and store them in node-vector-map
+    //! \author schott \date 01/13
+    void ExtractNodeVectors(
+      Teuchos::RCP<DRT::Discretization>    dis,
+      std::map<int, LINALG::Matrix<3,1> >& nodevecmap);
+  }
 }
 
-#endif
+
+#endif /* XFEM_UTILS_H_ */

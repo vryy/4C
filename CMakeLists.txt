@@ -649,6 +649,7 @@ set(OBJS_DRT_XFEM
   src/drt_xfem/xfem_dofset_transparent_independent.cpp
   src/drt_xfem/xfem_dofset.cpp
   src/drt_xfem/xfem_neumann.cpp
+  src/drt_xfem/xfem_utils.cpp
   src/drt_xfem/xfluidfluid_timeInt.cpp
   src/drt_xfem/xfluid_timeInt_base.cpp
   src/drt_xfem/xfluid_timeInt_std_SemiLagrange.cpp
@@ -2255,8 +2256,8 @@ ADD_CUSTOM_COMMAND(TARGET post_processor
                    POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -D CMAKE_PROJECT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/scripts/baci_create_post_scripts.cmake)
 
-add_subdirectory(modules/contact_module)                   
-                   
+add_subdirectory(modules/contact_module)
+
 ###------------------------------------------------------------------ Tests
 
 ENABLE_TESTING()

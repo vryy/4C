@@ -221,5 +221,8 @@ void ADAPTER::XFluidFSI::GmshOutput(
     Teuchos::RCP<Epetra_Vector> acc      ///< vector holding accelerations
 )
 {
-  xfluid_->GmshOutput(name, step, count, vel, acc);
+  // Todo(kruse): find a substitute!
+  //xfluid_->GmshOutput(name, step, count, vel, acc);
+  dserror("Gmsh output for XFSI during Newton currently not available.");
+
 }
