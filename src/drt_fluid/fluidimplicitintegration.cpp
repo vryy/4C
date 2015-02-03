@@ -6501,10 +6501,6 @@ void FLD::FluidImplicitTimeInt::SetDirichletNeumannBC()
   // total time required for Dirichlet conditions
   eleparams.set("total time",time_);
 
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("velnp",velnp_);
-
   // predicted dirichlet values
   // velnp then also holds prescribed new dirichlet values
   ApplyDirichletBC(eleparams,velnp_,Teuchos::null,Teuchos::null,false);

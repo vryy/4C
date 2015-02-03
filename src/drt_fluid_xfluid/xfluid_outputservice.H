@@ -120,7 +120,7 @@ public:
 
 protected:
 
-  //! @name Managed discretization
+  //! @name XFEM discretization
   //@{
   const Teuchos::RCP<DRT::DiscretizationXFEM> discret_;
   //@}
@@ -131,7 +131,7 @@ protected:
 };
 
 /*!
- * \brief Child class of XFluidOutputService, capable of handling gmsh output
+ * \brief Class handles output of XFluid and derived classes, capable of handling gmsh output
  */
 class XFluidOutputServiceGmsh : public XFluidOutputService
 {
@@ -249,8 +249,8 @@ private:
   const bool gmsh_debug_out_;        ///< Gmsh debug output (increment, residual, etc.)
   const bool gmsh_debug_out_screen_; ///< print information about output to screen
   const bool gmsh_EOS_out_;          ///< output for edge-oriented stabilization and ghost-penalty stabilization
-  const bool gmsh_discret_out_;      ///< output og XFEM discretization
-  const int  gmsh_step_diff_;
+  const bool gmsh_discret_out_;      ///< output of XFEM discretization
+  const int  gmsh_step_diff_;        ///< no. of kept steps
   //@}
 
   //! integration approach

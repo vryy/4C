@@ -129,31 +129,7 @@ void FLD::TimIntStationary::SolveStationaryProblem()
     // -------------------------------------------------------------------
     //         evaluate Dirichlet and Neumann boundary conditions
     // -------------------------------------------------------------------
-    {
-      Teuchos::ParameterList eleparams;
-
-      // other parameters needed by the elements
-      eleparams.set("total time",time_);
-
-      // set vector values needed by elements
-      discret_->ClearState();
-      discret_->SetState("velaf",velnp_);
-      // predicted dirichlet values
-      // velnp then also holds prescribed new dirichlet values
-      ApplyDirichletBC(eleparams,velnp_,Teuchos::null,Teuchos::null,false);
-
-      // additionally evaluate problem-specific boundary conditions
-      DoProblemSpecificBoundaryConditions();
-
-      discret_->ClearState();
-      // evaluate Neumann b.c.
-      //eleparams.set("inc_density",density_);
-
-      neumann_loads_->PutScalar(0.0);
-      discret_->SetState("scaaf",scaaf_);
-      discret_->EvaluateNeumann(eleparams,*neumann_loads_);
-      discret_->ClearState();
-    }
+    SetDirichletNeumannBC();
 
     // -------------------------------------------------------------------
     //           preparation of AVM3-based scale separation
