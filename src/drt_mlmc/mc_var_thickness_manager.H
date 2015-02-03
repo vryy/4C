@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file mc_var_thickness_manager.H
-\brief class to modify wall thickness of cardiovascular structures on the fly
+\ brief class to modify wall thickness of cardiovascular structures on the fly
 
 <pre>
 Maintainer: Jonas Biehler
@@ -44,7 +44,7 @@ namespace UQ
 class RandomField;
 
 /*----------------------------------------------------------------------------*/
-/* definition of classes */
+/// Class to handle uncertain wall thickness in an uq routine
 class MCVarThicknessManager
 {
 public:

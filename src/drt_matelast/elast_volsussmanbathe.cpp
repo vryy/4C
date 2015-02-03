@@ -45,7 +45,8 @@ MAT::ELASTIC::VolSussmanBathe::VolSussmanBathe(MAT::ELASTIC::PAR::VolSussmanBath
 void MAT::ELASTIC::VolSussmanBathe::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modinv)
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID)
 {
   const double kappa = params_ -> kappa_;
 
@@ -61,7 +62,8 @@ void MAT::ELASTIC::VolSussmanBathe::AddStrainEnergy(
 void MAT::ELASTIC::VolSussmanBathe::AddDerivativesModified(
     LINALG::Matrix<3,1>& dPmodI,
     LINALG::Matrix<6,1>& ddPmodII,
-    const LINALG::Matrix<3,1>& modinv
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID
 )
 {
   const double kappa = params_ -> kappa_;

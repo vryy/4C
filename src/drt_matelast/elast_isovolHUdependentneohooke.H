@@ -132,9 +132,9 @@ namespace ELASTIC
     virtual void AddDerivativesModified(
         LINALG::Matrix<3,1>& dPmodI, ///< first derivative with respect to modified invariants
         LINALG::Matrix<6,1>& ddmodPII, ///< second derivative with respect to modified invariants
-        const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
-    );
-
+        const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const int eleGID                   ///< element GID
+        );
     /// @name Access methods
     //@{
     double ALPHA_MAX() const { return params_->alphamax_; }

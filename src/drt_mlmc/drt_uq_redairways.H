@@ -52,18 +52,13 @@ namespace IO
   class OutputControl;
   class ErrorFileControl;
 }
-//namespace  STR
-//{
+
 namespace UQ
 {
 class RandomField;
 class MCMatParManager;
 class MCVarThicknessManager;
-//}
-//}
 
-//namespace UQ/
-//{
 /// UQ with redairway models with
 /// some sort of stochastic property
 class UQ_REDAIRWAYS {

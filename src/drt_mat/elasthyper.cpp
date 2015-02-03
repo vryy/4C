@@ -263,12 +263,12 @@ double MAT::ElastHyper::ShearMod() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params)
+void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
 {
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->SetupAAA(params);
+    potsum_[p]->SetupAAA(params,eleGID);
   }
 
   return;
@@ -465,7 +465,7 @@ bool MAT::ElastHyper::HaveCoefficientsStretchesModified()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
-                                   double& psi)
+                                   double& psi,const int eleGID)
 {
   LINALG::Matrix<6,1> id2(true) ;
   LINALG::Matrix<6,1> rcg(true) ;
@@ -484,7 +484,7 @@ void MAT::ElastHyper::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->AddStrainEnergy(psi,prinv,modinv);
+    potsum_[p]->AddStrainEnergy(psi,prinv,modinv, eleGID);
   }
 
   return;
@@ -561,8 +561,8 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
   // strain energy function at t_{n+1} and t_{n}
   double psi = 0.0;
   double psio = 0.0;
-  StrainEnergy(*glstrain_new,psi);
-  StrainEnergy(*glstrain_old,psio);
+  StrainEnergy(*glstrain_new,psi,eleGID);
+  StrainEnergy(*glstrain_old,psio,eleGID);
 
   // derivative of strain energy function dpsi = 0.5*stress
   // double contraction dpsi : M
@@ -640,7 +640,7 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   LINALG::Matrix<6,1> ddPII(true);
 
   EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv);
-  EvaluateInvariantDerivatives(prinv,dPI,ddPII);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -661,7 +661,7 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   const bool havecoeffstrpr = HaveCoefficientsStretchesPrincipal();
   const bool havecoeffstrmod = HaveCoefficientsStretchesModified();
   if (havecoeffstrpr or havecoeffstrmod) {
-    ResponseStretches(*cmat,*stress,rcg,havecoeffstrpr,havecoeffstrmod);
+    ResponseStretches(*cmat,*stress,rcg,havecoeffstrpr,havecoeffstrmod,eleGID);
   }
 
   /*----------------------------------------------------------------------*/
@@ -670,7 +670,7 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   {
       LINALG::Matrix<NUM_STRESS_3D,1> stressanisoprinc(true) ;
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisoprinc(true) ;
-      EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,rcg,params);
+      EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,rcg,params,eleGID);
       stress->Update(1.0, stressanisoprinc, 1.0);
       cmat->Update(1.0, cmatanisoprinc, 1.0);
   }
@@ -679,7 +679,7 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   {
       LINALG::Matrix<NUM_STRESS_3D,1> stressanisomod(true) ;
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisomod(true) ;
-      EvaluateAnisotropicMod(stressanisomod,cmatanisomod,rcg,icg,prinv);
+      EvaluateAnisotropicMod(stressanisomod,cmatanisomod,rcg,icg,prinv,eleGID);
       stress->Update(1.0, stressanisomod, 1.0);
       cmat->Update(1.0, cmatanisomod, 1.0);
   }
@@ -749,7 +749,8 @@ void MAT::ElastHyper::EvaluateKinQuant(
 void MAT::ElastHyper::EvaluateInvariantDerivatives(
     const LINALG::Matrix<3,1>& prinv,
     LINALG::Matrix<3,1>& dPI,
-    LINALG::Matrix<6,1>& ddPII
+    LINALG::Matrix<6,1>& ddPII,
+    int eleGID
     )
 
 {
@@ -759,7 +760,7 @@ void MAT::ElastHyper::EvaluateInvariantDerivatives(
     // loop map of associated potential summands
     for (unsigned int p=0; p<potsum_.size(); ++p)
     {
-      potsum_[p]->AddDerivativesPrincipal(dPI,ddPII,prinv);
+      potsum_[p]->AddDerivativesPrincipal(dPI,ddPII,prinv,eleGID);
     }
   }
 
@@ -773,7 +774,7 @@ void MAT::ElastHyper::EvaluateInvariantDerivatives(
     // loop map of associated potential summands
     for (unsigned int p=0; p<potsum_.size(); ++p)
     {
-      potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv);
+      potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
     }
     // convert decoupled derivatives to principal derivatives
     ConvertModToPrinc(prinv,dPmodI,ddPmodII,dPI,ddPII);
@@ -908,13 +909,14 @@ void MAT::ElastHyper::EvaluateAnisotropicPrinc(
     LINALG::Matrix<6,1>& stressanisoprinc,
     LINALG::Matrix<6,6>& cmatanisoprinc,
     LINALG::Matrix<6,1> rcg,
-    Teuchos::ParameterList& params
+    Teuchos::ParameterList& params,
+    const int eleGID
     )
 {
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->AddStressAnisoPrincipal(rcg,cmatanisoprinc,stressanisoprinc,params);
+    potsum_[p]->AddStressAnisoPrincipal(rcg,cmatanisoprinc,stressanisoprinc,params,eleGID);
   }
 
   return ;
@@ -927,14 +929,15 @@ void MAT::ElastHyper::EvaluateAnisotropicMod(
     LINALG::Matrix<6,6>& cmatanisomod,
     LINALG::Matrix<6,1> rcg,
     LINALG::Matrix<6,1> icg,
-    LINALG::Matrix<3,1> prinv
+    LINALG::Matrix<3,1> prinv,
+    const int eleGID
     )
 {
 
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->AddStressAnisoModified(rcg,icg,cmatanisomod,stressanisomod,prinv(2));
+    potsum_[p]->AddStressAnisoModified(rcg,icg,cmatanisomod,stressanisomod,prinv(2),eleGID);
   }
 
   return ;
@@ -947,7 +950,8 @@ void MAT::ElastHyper::ResponseStretches(
   LINALG::Matrix<6,1>& stress,
   const LINALG::Matrix<6,1> rcg,
   const bool& havecoeffstrpr,
-  const bool& havecoeffstrmod
+  const bool& havecoeffstrmod,
+  const int eleGID
   )
 {
   // get principal stretches and directions
@@ -1114,12 +1118,20 @@ void MAT::ElastHyper::VisNames(std::map<std::string,int>& names)
       names[fiber] = 3; // 3-dim vector
     }
   }
+  // do visualization for isotropic materials as well
+  // loop map of associated potential summands
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+    potsum_[p]->VisNames(names);
+  }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool MAT::ElastHyper::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
+  //
+  int return_val= 0;
   if (AnisotropicPrincipal() or AnisotropicModified())
   {
     std::vector<LINALG::Matrix<3,1> > fibervecs;
@@ -1140,7 +1152,13 @@ bool MAT::ElastHyper::VisData(const std::string& name, std::vector<double>& data
         data[2] = fibervecs.at(i)(2);
       }
     }
-    return true;
+    //return true;
+    return_val=1;
   }
-  return false;
+  // loop map of associated potential summands
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+    return_val+=potsum_[p]->VisData(name,data,numgp,eleID);
+  }
+  return (bool)return_val;
 }

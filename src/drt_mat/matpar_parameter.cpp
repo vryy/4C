@@ -18,6 +18,8 @@ Maintainer: Burkhard Bornemann
 #include "Teuchos_RCP.hpp"
 #include "matpar_parameter.H"
 #include "matpar_material.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 
 #include "../drt_io/io_pstream.H"
 /*----------------------------------------------------------------------*/
@@ -69,6 +71,36 @@ void MAT::PAR::Parameter::SetParameter(int parametername,Teuchos::RCP<Epetra_Vec
 
 }
 
+void MAT::PAR::Parameter::SetParameter(int parametername,const double val, const int eleGID, const int eleLID)
+{
+  // check if we own this element
+  Teuchos::RCP<Epetra_Vector> fool = matparams_.at(parametername);
+  if(matparams_.at(parametername)->GlobalLength()==1)
+    dserror("spatially constant parameters! Cannot set elementwise parameter!");
+
+  if (!matparams_.at(parametername)->Map().MyGID(eleGID))
+    dserror("I do not have this element");
+
+  // otherwise set parameter for element
+  (*matparams_.at(parametername))[eleLID]=val;
+}
+
+void MAT::PAR::Parameter::ExpandParametersToEleColLayout()
+{
+  for(unsigned int i=0;i<matparams_.size();i++)
+  {
+    // only do this for vectors with one entry
+    if(matparams_.at(i)->GlobalLength()==1)
+    {
+      // get value of element
+      double temp = (*matparams_.at(i))[0];
+      // put new RCP<Epetra_Vector> in matparams struct
+      Teuchos::RCP<Epetra_Vector> temp2 = Teuchos::rcp(new Epetra_Vector(*(DRT::Problem::Instance()->GetDis("structure")->ElementColMap()),true));
+      temp2->PutScalar(temp);
+      matparams_.at(i)=temp2;
+    }
+  }
+}
 double MAT::PAR::Parameter::GetParameter(int parametername,const int EleId)
 {
   //check if we have an element based value via size

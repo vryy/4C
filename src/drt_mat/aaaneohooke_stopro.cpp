@@ -357,7 +357,7 @@ void MAT::AAAneohooke_stopro::Evaluate(
 /*----------------------------------------------------------------------*
  |  Calculate strain energy                                biehler 12/13|
  *----------------------------------------------------------------------*/
-void MAT::AAAneohooke_stopro::StrainEnergy(const LINALG::Matrix<6,1>& glstrain, double& psi)
+void MAT::AAAneohooke_stopro::StrainEnergy(const LINALG::Matrix<6,1>& glstrain, double& psi, const int eleGID)
 {
   /*
   plain strain energy function

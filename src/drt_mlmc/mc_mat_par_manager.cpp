@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file matpar_manager.H
+\file matpar_manager.cpp
 \brief manages material parameters during UQ at some point this should
-be merged with the mat par manager in stat inv ana
+       be merged with the mat par manager in stat inv ana
 
 <pre>
 Maintainer: Jonas Biehler
@@ -52,8 +52,8 @@ params_r_var_(Teuchos::null)
       numstochparams_r_field_,true));
 
   // create map with one redundant entry on each proc
-  std::vector <int> MyIds(1,1);
-  Teuchos::RCP<const Epetra_Map> my_map = Teuchos::rcp(new Epetra_Map (1,1,&(MyIds[0]),0,discret_->Comm()));
+    std::vector <int> MyIds(1,1);
+    Teuchos::RCP<const Epetra_Map> my_map = Teuchos::rcp(new Epetra_Map (1,1,&(MyIds[0]),0,discret_->Comm()));
 
   if(numstochparams_r_var_)
     params_r_var_ = Teuchos::rcp(new Epetra_MultiVector(*(my_map),

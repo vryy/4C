@@ -1427,8 +1427,8 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
     // material call *********************************************
     LINALG::Matrix<numstr_,1> pk2;
     LINALG::Matrix<numstr_,numstr_> cmat;
-    plmat->EvaluateElast(&defgrd_mod,&deltaLp,params,&pk2,&cmat,gp);
-    if (eval_tsi) plmat->EvaluateThermalStress(&defgrd_mod,gp_temp,params,&pk2,&cmat,gp);
+    plmat->EvaluateElast(&defgrd_mod,&deltaLp,params,&pk2,&cmat,gp,Id());
+    if (eval_tsi) plmat->EvaluateThermalStress(&defgrd_mod,gp_temp,params,&pk2,&cmat,gp,Id());
     // material call *********************************************
 
     // return gp stresses
@@ -1624,7 +1624,7 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
       // get the thermal material tangent
       LINALG::Matrix<numstr_,1> cTvol(true);
       LINALG::Matrix<numstr_,numstr_> dcTvoldE;
-      plmat->EvaluateCTvol(&defgrd_mod,params,&cTvol,&dcTvoldE,gp);
+      plmat->EvaluateCTvol(&defgrd_mod,params,&cTvol,&dcTvoldE,gp,Id());
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccc
 
       // KdT block ************************************************************

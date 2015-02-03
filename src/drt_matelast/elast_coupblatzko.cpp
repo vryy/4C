@@ -51,7 +51,8 @@ MAT::ELASTIC::CoupBlatzKo::CoupBlatzKo(MAT::ELASTIC::PAR::CoupBlatzKo* params)
 void MAT::ELASTIC::CoupBlatzKo::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modinv)
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID)
 {
   // material parameters for isochoric part
   const double mue  = params_->mue_;  // Shear modulus
@@ -83,7 +84,8 @@ void MAT::ELASTIC::CoupBlatzKo::AddStrainEnergy(
 void MAT::ELASTIC::CoupBlatzKo::AddDerivativesPrincipal(
     LINALG::Matrix<3,1>& dPI,
     LINALG::Matrix<6,1>& ddPII,
-    const LINALG::Matrix<3,1>& prinv
+    const LINALG::Matrix<3,1>& prinv,
+    const int eleGID
 )
 {
   // material parameters for isochoric part

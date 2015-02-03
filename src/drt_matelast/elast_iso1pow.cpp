@@ -46,7 +46,8 @@ MAT::ELASTIC::Iso1Pow::Iso1Pow(MAT::ELASTIC::PAR::Iso1Pow* params)
 void MAT::ELASTIC::Iso1Pow::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modinv)
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID)
 {
   // material Constants c and d
   const double c = params_->c_;
@@ -65,7 +66,8 @@ void MAT::ELASTIC::Iso1Pow::AddStrainEnergy(
 void MAT::ELASTIC::Iso1Pow::AddDerivativesModified(
     LINALG::Matrix<3,1>& dPmodI,
     LINALG::Matrix<6,1>& ddPmodII,
-    const LINALG::Matrix<3,1>& modinv
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID
 )
 {
 

@@ -182,7 +182,8 @@ namespace MAT
 
     /// evaluate strain energy function
     virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
-                              double& psi);
+                              double& psi,
+                              const int eleGID);
 
     /// Return names of visualization data
     virtual void VisNames(std::map<std::string,int>& names);

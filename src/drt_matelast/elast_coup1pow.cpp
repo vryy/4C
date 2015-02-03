@@ -48,7 +48,8 @@ MAT::ELASTIC::Coup1Pow::Coup1Pow(MAT::ELASTIC::PAR::Coup1Pow* params)
 void MAT::ELASTIC::Coup1Pow::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modinv)
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID)
 {
   // material Constants c and beta
   const double c = params_->c_;
@@ -67,8 +68,8 @@ void MAT::ELASTIC::Coup1Pow::AddStrainEnergy(
 void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(
     LINALG::Matrix<3,1>& dPI,
     LINALG::Matrix<6,1>& ddPII,
-    const LINALG::Matrix<3,1>& prinv
-)
+    const LINALG::Matrix<3,1>& prinv,
+    const int eleGID )
 {
   const double c = params_ -> c_;
   const int    d = params_ -> d_;

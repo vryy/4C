@@ -48,7 +48,8 @@ void MAT::ELASTIC::IsoRateDep::AddCoefficientsViscoModified(
   LINALG::Matrix<8,1>& modmy,
   LINALG::Matrix<33,1>& modxi,
   LINALG::Matrix<7,1>& modrateinv,
-  Teuchos::ParameterList& params
+  Teuchos::ParameterList& params,
+  const int eleGID
   )
 {
 

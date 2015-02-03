@@ -1206,8 +1206,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     LINALG::Matrix<numstr_,numstr_> cmat;
     if (plmat!=NULL)
     {
-      plmat->EvaluateElast(&defgrd_mod,&deltaLp,params,&pk2,&cmat,gp);
-      if (eval_tsi) plmat->EvaluateThermalStress(&defgrd_mod,gp_temp,params,&pk2,&cmat,gp);
+      plmat->EvaluateElast(&defgrd_mod,&deltaLp,params,&pk2,&cmat,gp,Id());
+      if (eval_tsi) plmat->EvaluateThermalStress(&defgrd_mod,gp_temp,params,&pk2,&cmat,gp,Id());
     }
     else
     {
@@ -1410,7 +1410,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       // get the thermal material tangent
       LINALG::Matrix<numstr_,1> cTvol(true);
       LINALG::Matrix<numstr_,numstr_> dcTvoldE;
-      plmat->EvaluateCTvol(&defgrd_mod,params,&cTvol,&dcTvoldE,gp);
+      plmat->EvaluateCTvol(&defgrd_mod,params,&cTvol,&dcTvoldE,gp,Id());
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccc
       if (fbar_)
         (*dFintdT_)[gp].MultiplyTN(detJ_w/(f_bar_factor),bop,cTvol,0.);
@@ -1742,10 +1742,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
   bool as_converged=true;
   if (!eval_tsi)
     plmat->EvaluatePlast(&defgrd,&deltaLp,0,params,&dpk2ddp,
-        &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,NULL,NULL,NULL,data_->dt_);
+        &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,NULL,NULL,NULL,data_->dt_,Id());
   else
     plmat->EvaluatePlast(&defgrd,&deltaLp,temp,params,&dpk2ddp,
-        &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,&dncpdT,&dHdC,&dHdLp,data_->dt_);
+        &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,&dncpdT,&dHdC,&dHdLp,data_->dt_,Id());
 
   if (MyPID==Owner()) lp_res+=pow(ncp.Norm2(),2.);
   if (active && Owner()==MyPID) ++num_active_gp;

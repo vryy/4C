@@ -385,7 +385,7 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   const double beta(true);
 
   EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv);
-  EvaluateInvariantDerivatives(prinv,dPI,ddPII);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID);
 
   if (isomodvisco_)
   {
@@ -393,7 +393,7 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     InvariantsModified(modinv,prinv);
     // calculate viscous quantities
     EvaluateKinQuantVis(rcg,modrcg,icg,params,prinv,modrcgrate,modrateinv);
-    EvaluateMyXi(modinv,modmy,modxi,modrateinv,params);
+    EvaluateMyXi(modinv,modmy,modxi,modrateinv,params,eleGID);
   }
 
   // blank resulting quantities
@@ -444,7 +444,7 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   const bool havecoeffstrpr = HaveCoefficientsStretchesPrincipal();
   const bool havecoeffstrmod = HaveCoefficientsStretchesModified();
   if (havecoeffstrpr or havecoeffstrmod) {
-    ResponseStretches(*cmat,*stress,rcg,havecoeffstrpr,havecoeffstrmod);
+    ResponseStretches(*cmat,*stress,rcg,havecoeffstrpr,havecoeffstrmod,eleGID);
   }
 
   /*----------------------------------------------------------------------*/
@@ -453,7 +453,7 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   {
       LINALG::Matrix<NUM_STRESS_3D,1> stressanisoprinc(true) ;
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisoprinc(true) ;
-      EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,rcg,params);
+      EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,rcg,params,eleGID);
       stress->Update(1.0, stressanisoprinc, 1.0);
       cmat->Update(1.0, cmatanisoprinc, 1.0);
   }
@@ -462,7 +462,7 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   {
       LINALG::Matrix<NUM_STRESS_3D,1> stressanisomod(true) ;
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisomod(true) ;
-      EvaluateAnisotropicMod(stressanisomod,cmatanisomod,rcg,icg,prinv);
+      EvaluateAnisotropicMod(stressanisomod,cmatanisomod,rcg,icg,prinv,eleGID);
       stress->Update(1.0, stressanisomod, 1.0);
       cmat->Update(1.0, cmatanisomod, 1.0);
   }
@@ -549,14 +549,15 @@ void MAT::ViscoElastHyper::EvaluateMyXi(
     LINALG::Matrix<8,1>& modmy,
     LINALG::Matrix<33,1>& modxi,
     LINALG::Matrix<7,1>& modrateinv,
-    Teuchos::ParameterList& params
+    Teuchos::ParameterList& params,
+    const int eleGID
     )
 {
   // modified coefficients
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->AddCoefficientsViscoModified(modinv,modmy,modxi,modrateinv,params);
+    potsum_[p]->AddCoefficientsViscoModified(modinv,modmy,modxi,modrateinv,params,eleGID);
   }
 }
 

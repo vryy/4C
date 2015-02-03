@@ -47,7 +47,8 @@ MAT::ELASTIC::IsoYeoh::IsoYeoh(MAT::ELASTIC::PAR::IsoYeoh* params)
 void MAT::ELASTIC::IsoYeoh::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modinv)
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID)
 {
   const double c1 = params_ -> c1_;
   const double c2 = params_ -> c2_;
@@ -66,7 +67,8 @@ void MAT::ELASTIC::IsoYeoh::AddStrainEnergy(
 void MAT::ELASTIC::IsoYeoh::AddDerivativesModified(
     LINALG::Matrix<3,1>& dPmodI,
     LINALG::Matrix<6,1>& ddPmodII,
-    const LINALG::Matrix<3,1>& modinv
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID
 )
 {
   const double c1 = params_ -> c1_;

@@ -613,7 +613,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(
 
       // call material for evaluation of strain energy function
       Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material(), true);
-      so3mat->StrainEnergy(glstrain, psi);
+      so3mat->StrainEnergy(glstrain, psi,Id());
 
       return psi;
     }

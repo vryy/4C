@@ -255,7 +255,7 @@ void MAT::StVenantKirchhoff::Evaluate(const LINALG::Matrix<3,3>* defgrd,
  |  Calculate strain energy                                    gee 10/09|
  *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
-                                          double& psi)
+                                          double& psi, const int eleGID)
 {
   LINALG::Matrix<6,6> cmat(true);
   SetupCmat(cmat);
@@ -300,8 +300,8 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* 
   LINALG::Matrix<3,3> defgrd(true);
   Evaluate(&defgrd,glstrain_m,params,stress,cmat,eleGID);
   *density = Density();
-  StrainEnergy(*glstrain_new,psi);
-  StrainEnergy(*glstrain_old,psio);
+  StrainEnergy(*glstrain_new,psi,eleGID);
+  StrainEnergy(*glstrain_old,psio,eleGID);
 
   //**********************************************************************
   // ALGORITHMIC STRESSES AND CMAT FOR GEMM

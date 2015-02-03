@@ -560,7 +560,8 @@ void MAT::PlasticElastHyper::EvaluateElast(
     Teuchos::ParameterList& params,
     LINALG::Matrix<6,1>* pk2,
     LINALG::Matrix<6,6>* cmat,
-    const int gp)
+    const int gp,
+    const int eleGID)
 {
   LINALG::Matrix<6,1> Cpi;
   LINALG::Matrix<6,1> CpiCCpi;
@@ -572,7 +573,7 @@ void MAT::PlasticElastHyper::EvaluateElast(
   LINALG::Matrix<6,1> ddPII(true);
 
   EvaluateKinQuantElast(defgrd,deltaLp,gp,Cpi,CpiCCpi,ircg,prinv);
-  EvaluateInvariantDerivatives(prinv,dPI,ddPII);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -599,7 +600,8 @@ void MAT::PlasticElastHyper::EvaluateThermalStress(
     Teuchos::ParameterList& params,
     LINALG::Matrix<6,1>* pk2,
     LINALG::Matrix<6,6>* cmat,
-    const int gp)
+    const int gp,
+    const int eleGID)
 {
   // do TSI only for decoupled isotropic materials. By doing so, the stresses
   // due to thermal expansion can be easily calculated by the volumetric
@@ -623,7 +625,7 @@ void MAT::PlasticElastHyper::EvaluateThermalStress(
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv);
+    potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv,dddPmodIII);
   }
 
@@ -653,7 +655,8 @@ void MAT::PlasticElastHyper::EvaluateCTvol(
     Teuchos::ParameterList& params,
     LINALG::Matrix<6,1>* cTvol,
     LINALG::Matrix<6,6>* dCTvoldE,
-    const int gp)
+    const int gp,
+    const int eleGID)
 {
   // do TSI only for decoupled isotropic materials. By doing so, the stresses
   // due to thermal expansion can be easily calculated by the volumetric
@@ -674,7 +677,7 @@ void MAT::PlasticElastHyper::EvaluateCTvol(
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv);
+    potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv,dddPmodIII);
   }
 
@@ -719,7 +722,8 @@ void MAT::PlasticElastHyper::EvaluatePlast(
     LINALG::Matrix<6,1>* dNCPdT,
     LINALG::Matrix<6,1>* dHdC,
     LINALG::Matrix<6,1>* dHdDp,
-    const double dt)
+    const double dt,
+    const int eleGID)
 {
   LINALG::Matrix<6,1> Cpi;
   LINALG::Matrix<6,1> CpiCCpi;
@@ -747,7 +751,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   if (EvaluateKinQuantPlast(defgrd,deltaDp,gp,params,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
                         id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv))
     return;
-  EvaluateInvariantDerivatives(prinv,dPI,ddPII);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID);
   CalculateGammaDelta(gamma,delta,prinv,dPI,ddPII);
 
   // blank resulting quantities
@@ -1220,7 +1224,8 @@ void MAT::PlasticElastHyper::EvaluatePlast(
     LINALG::Matrix<9,1>* dNCPdT,
     LINALG::Matrix<6,1>* dHdC,
     LINALG::Matrix<9,1>* dHdLp,
-    const double dt
+    const double dt,
+    const int eleGID
     )
 {
   LINALG::Matrix<6,1> Cpi;
@@ -1249,7 +1254,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   if (EvaluateKinQuantPlast(defgrd,deltaLp,gp,params,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
                         id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv))
     return;
-  EvaluateInvariantDerivatives(prinv,dPI,ddPII);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID);
   CalculateGammaDelta(gamma,delta,prinv,dPI,ddPII);
 
   // blank resulting quantities

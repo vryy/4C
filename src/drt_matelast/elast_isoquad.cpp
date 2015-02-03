@@ -45,7 +45,8 @@ MAT::ELASTIC::IsoQuad::IsoQuad(MAT::ELASTIC::PAR::IsoQuad* params)
 void MAT::ELASTIC::IsoQuad::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modinv)
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID)
 {
   const double c = params_ -> c_;
 
@@ -61,7 +62,8 @@ void MAT::ELASTIC::IsoQuad::AddStrainEnergy(
 void MAT::ELASTIC::IsoQuad::AddDerivativesModified(
     LINALG::Matrix<3,1>& dPmodI,
     LINALG::Matrix<6,1>& ddPmodII,
-    const LINALG::Matrix<3,1>& modinv
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID
 )
 {
   const double c = params_ -> c_;

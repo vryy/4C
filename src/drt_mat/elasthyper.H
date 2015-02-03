@@ -203,7 +203,9 @@ private:
 
     /// evaluate strain energy function
     virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain, ///< Green-Lagrange strain
-                              double& psi);                        ///< Strain energy function
+                              double& psi,                         ///< Strain energy function
+                              const int eleGID                   ///< Element GID
+                              );
 
     /// hyperelastic stress response plus elasticity tensor
     virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///< Deformation gradient
@@ -211,7 +213,8 @@ private:
                           Teuchos::ParameterList& params,     ///< Container for additional information
                           LINALG::Matrix<6,1>* stress,        ///< 2nd Piola-Kirchhoff stresses
                           LINALG::Matrix<6,6>* cmat,         ///< Constitutive matrix
-                          const int eleGID);                          ///< Element GID
+                          const int eleGID                    ///< Element GID
+                          );
 
     /// evaluate for GEMM
     virtual void EvaluateGEMM(LINALG::Matrix<6,1>* stress,          ///< 2nd Piola-Kirchhoff stresses
@@ -231,7 +234,7 @@ private:
     virtual void Update();
 
     /// setup patient-specific AAA stuff
-    virtual void SetupAAA(Teuchos::ParameterList& params);
+    virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID);
 
     /// return if isotropic not splitted formulation
     virtual bool IsotropicPrincipal() const { return isoprinc_;}
@@ -287,7 +290,8 @@ private:
     virtual void EvaluateInvariantDerivatives(
         const LINALG::Matrix<3,1>& prinv,
         LINALG::Matrix<3,1>& dPI,
-        LINALG::Matrix<6,1>& ddPII
+        LINALG::Matrix<6,1>& ddPII,
+        int eleGID
         );
 
     /// converts the derivatives with respect to the modified invariants in derivatives with respect to principal invariants.
@@ -403,7 +407,8 @@ private:
         LINALG::Matrix<6,1>& stressanisoprinc,
         LINALG::Matrix<6,6>& cmatanisoprinc,
         LINALG::Matrix<6,1> rcg,
-        Teuchos::ParameterList& params
+        Teuchos::ParameterList& params,
+        const int eleGID
         );
 
     /// calculates the anisotropic stress and elasticity tensor for decoupled configuration
@@ -412,7 +417,8 @@ private:
         LINALG::Matrix<6,6>& cmatanisoprinc,
         LINALG::Matrix<6,1> rcg,
         LINALG::Matrix<6,1> icg,
-        LINALG::Matrix<3,1> prinv
+        LINALG::Matrix<3,1> prinv,
+        const int eleGID
         );
 
     /// calculate principal invariants
@@ -512,11 +518,12 @@ private:
     /// \date 08/09
 
     virtual void ResponseStretches(
-    LINALG::Matrix<6,6>& cmat,  ///< material elasticity matrix
-    LINALG::Matrix<6,1>& stress,  ///< 2nd Piola-Kirchhoff stress vector
+    LINALG::Matrix<6,6>& cmat,      ///< material elasticity matrix
+    LINALG::Matrix<6,1>& stress,    ///< 2nd Piola-Kirchhoff stress vector
     const LINALG::Matrix<6,1> rcg,  ///< Right Cauchy-Green tensor
-    const bool& havecoeffstrpr,  ///< true, if at least one summand is based on pr.stretches
-    const bool& havecoeffstrmod  ///< true, if at least one summand is based on mod.pr.stretches
+    const bool& havecoeffstrpr,     ///< true, if at least one summand is based on pr.stretches
+    const bool& havecoeffstrmod,    ///< true, if at least one summand is based on mod.pr.stretches
+    const int eleGID                ///< element GID
     );
 
     /// @name Flags to specify the formulations

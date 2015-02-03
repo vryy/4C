@@ -166,7 +166,8 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::AddStressAnisoPrincipal(
     const LINALG::Matrix<6,1> rcg,
     LINALG::Matrix<6,6>& cmat,
     LINALG::Matrix<6,1>& stress,
-    Teuchos::ParameterList& params
+    Teuchos::ParameterList& params,
+    const int eleGID
 )
 {
    double dt = params.get("delta time",1.0);

@@ -129,7 +129,8 @@ void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(
     LINALG::Matrix<6,1> icg,
     LINALG::Matrix<6,6>& cmat,
     LINALG::Matrix<6,1>& stress,
-    double I3
+    double I3,
+    const int eleGID
 )
 {
   double incJ = std::pow(I3,-1.0/3.0);  // J^{-2/3}

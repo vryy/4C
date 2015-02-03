@@ -97,7 +97,7 @@ namespace MAT
       virtual void Setup(DRT::INPUT::LineDefinition* linedef) { return; };
 
       /// Dummy routine for setup of patient-specific materials
-      virtual void SetupAAA(Teuchos::ParameterList& params) { return; };
+      virtual void SetupAAA(Teuchos::ParameterList& params,  const int eleGID) { return; };
 
       /// Dummy routine for setup update of summand
       virtual void Update() { return; };
@@ -106,8 +106,9 @@ namespace MAT
       virtual void AddStrainEnergy(
         double& psi,                      ///< strain energy functions
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
-        const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
-      )
+        const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const int eleGID                   ///< element GID
+        )
       { dserror("Summand does not support calculation of strain energy"); };
 
       /// add shear modulus equivalent
@@ -158,7 +159,8 @@ namespace MAT
       virtual void AddDerivativesPrincipal(
           LINALG::Matrix<3,1>& dPI, ///< first derivative with respect to invariants
           LINALG::Matrix<6,1>& ddPII, ///< second derivative with respect to invariants
-          const LINALG::Matrix<3,1>& prinv ///< principal invariants of right Cauchy-Green tensor
+          const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
+          const int eleGID                  ///< element GID
       )
       {
         return;  // do nothing
@@ -204,9 +206,10 @@ namespace MAT
       ///\f]
 
       virtual void AddDerivativesModified(
-          LINALG::Matrix<3,1>& dPmodI, ///< first derivative with respect to modified invariants
-          LINALG::Matrix<6,1>& ddPmodII, ///< second derivative with respect to modified invariants
-          const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
+          LINALG::Matrix<3,1>& dPmodI,        ///< first derivative with respect to modified invariants
+          LINALG::Matrix<6,1>& ddPmodII,      ///< second derivative with respect to modified invariants
+          const LINALG::Matrix<3,1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
+          const int eleGID                    ///< global ID of element
       )
       {
         return;  // do nothing
@@ -341,7 +344,8 @@ namespace MAT
         const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green Tensor
         LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
         LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
-        Teuchos::ParameterList& params
+        Teuchos::ParameterList& params,
+        const int eleGID
         )
       {
         return;  // do nothing
@@ -352,7 +356,8 @@ namespace MAT
         LINALG::Matrix<8,1>& modmy,  ///< see above
         LINALG::Matrix<33,1>& modxi,  ///< see above
         LINALG::Matrix<7,1>& modrateinv,
-        Teuchos::ParameterList& params
+        Teuchos::ParameterList& params,
+        const int eleGID
         )
       {
         return;  // do nothing
@@ -373,8 +378,9 @@ namespace MAT
         const LINALG::Matrix<6,1> icg,  ///< inverse of right Cauchy Green Tensor
         LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
         LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
-        double I3   ///< third principal invariant
-        )
+        double I3,   ///< third principal invariant
+        const int eleGID ///<element GID
+      )
       {
         return;  // do nothing
       };
@@ -486,6 +492,22 @@ namespace MAT
           bool& isomodvisco_, ///< global indicator for isotropic, splitted and viscos formulation
           bool& viscogenmax_  ///< global indicator for viscous contribution according the SLS-Model
         ) = 0;
+
+      //@}
+
+      //! @name Visualization methods
+
+      /// Return names of visualization data
+      virtual void VisNames(std::map<std::string,int>& names)
+      { /* do nothing for simple material models */ };
+
+      /// Return visualization data
+      virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleId)
+      { /* do nothing for simple material models */ return false; };
+
+      //@}
+
+
 
     };  // class Summand
 

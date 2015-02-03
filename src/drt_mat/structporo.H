@@ -326,9 +326,10 @@ namespace MAT
 
       /// Evaluate strain energy function (for hyperelastic materials only)
       virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,  ///< (i) green lagrange strain
-                                double& psi                           ///< (o) strain energy
+                                double& psi,                           ///< (o) strain energy
+                                int EleID                            ///< (i) element GID
                                 )
-      {mat_->StrainEnergy(glstrain,psi);};
+      {mat_->StrainEnergy(glstrain,psi,EleID);};
 
       /// Evaluate material law for GEMM
       virtual void  EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,

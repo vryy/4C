@@ -123,7 +123,8 @@ void MAT::ELASTIC::CoupAnisoExpo::AddStressAnisoPrincipal(
     const LINALG::Matrix<6,1> rcg,
     LINALG::Matrix<6,6>& cmat,
     LINALG::Matrix<6,1>& stress,
-    Teuchos::ParameterList& params
+    Teuchos::ParameterList& params,
+    const int eleGID
 )
 {
   double I4 = 0.0;

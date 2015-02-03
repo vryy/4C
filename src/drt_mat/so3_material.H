@@ -55,7 +55,7 @@ namespace MAT
 
     /// Evaluate strain energy function (for hyperelastic materials only)
     virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
-                              double& psi)
+                              double& psi, const int eleGID)
     { dserror("Material does not support calculation of strain energy"); };
 
     /// Evaluate material law for GEMM

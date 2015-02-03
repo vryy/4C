@@ -142,9 +142,9 @@ namespace ELASTIC
         const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green Tensor
         LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
         LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
-        Teuchos::ParameterList& params /// additional parameters for computation of material properties
-    );
-
+        Teuchos::ParameterList& params, ///< additional parameters for computation of material properties
+        const int eleGID                ///< element GID
+        );
     /// @name Access methods
     //@{
     double A4() const { return params_->A4_; }

@@ -318,11 +318,11 @@ void MAT::AAAneohooke::Evaluate(
   // note that these deltas serve for the isochoric part only
   double delta1 = 8.0 * beta * pow(iiinv,-twthi);
   double delta3 = -4./3 * ( alpha*pow(iiinv,third) + 4.*beta*inv
-			    - 6*beta*pow(iiinv,third) ) * pow(iiinv,-twthi);
+                - 6*beta*pow(iiinv,third) ) * pow(iiinv,-twthi);
   double delta6 = 4./9 * inv *( alpha*pow(iiinv,third) + 4.*beta*inv
-			        - 6*beta*pow(iiinv,third)) * pow(iiinv,-twthi);
+                - 6*beta*pow(iiinv,third)) * pow(iiinv,-twthi);
   double delta7 = 4./3 * inv *( alpha*pow(iiinv,third) + 2.*beta*inv
-				- 6*beta*pow(iiinv,third)) * pow(iiinv,-twthi);
+      - 6*beta*pow(iiinv,third)) * pow(iiinv,-twthi);
 
   // contribution: I \obtimes I
   for (int i = 0; i < 3; i++)
@@ -365,6 +365,8 @@ void MAT::AAAneohooke::VisNames(std::map<std::string,int>& names)
   names[fiber] = 1; // scalar
   fiber = "youngs";
   names[fiber] = 1; // scalar
+  fiber = "BaciEleId";
+  names[fiber] = 1; // scalar
 }
 
 
@@ -382,6 +384,11 @@ bool MAT::AAAneohooke::VisData(const std::string& name, std::vector<double>& dat
   {
     if ((int)data.size()!=1) dserror("size mismatch");;
     data[0] = params_->GetParameter(params_->young,eleID);
+  }
+  else if (name=="BaciEleId")
+  {
+    if ((int)data.size()!=1) dserror("size mismatch");
+    data[0] = eleID;
   }
   else
   {

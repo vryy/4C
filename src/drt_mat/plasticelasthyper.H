@@ -256,7 +256,8 @@ private:
                                Teuchos::ParameterList& params,
                                LINALG::Matrix<6,1>* pk2,
                                LINALG::Matrix<6,6>* cmat,
-                               const int gp);
+                               const int gp,
+                               const int eleGID );                   ///< global ID of element
 
     /// evaluate stresses and stiffness contribution
     /// due to thermal expansion
@@ -265,7 +266,8 @@ private:
                                        Teuchos::ParameterList& params,
                                        LINALG::Matrix<6,1>* pk2,
                                        LINALG::Matrix<6,6>* cmat,
-                                       const int gp);
+                                       const int gp,
+                                       const int eleGID);       ///< global ID of element
 
     /// evaluate stresses and stiffness contribution
     /// due to thermal expansion
@@ -273,7 +275,8 @@ private:
                                Teuchos::ParameterList& params,
                                LINALG::Matrix<6,1>* cTvol,
                                LINALG::Matrix<6,6>* dCTvoldE,
-                               const int gp);
+                               const int gp,
+                               const int eleGID);       ///< global ID of element
 
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with zero plastic spin)
@@ -292,7 +295,8 @@ private:
         LINALG::Matrix<6,1>* dNCPdT,        ///< derivative of NCP function w.r.t. temperature (only in TSI case)
         LINALG::Matrix<6,1>* dHdC,          ///< derivative of Heating w.r.t. RCG (only in TSI case)
         LINALG::Matrix<6,1>* dHdDp,         ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
-        const double dt                     ///< time step size
+        const double dt,                     ///< time step size
+        const int eleGID                    ///< global ID of element
         );
 
     /// evaluate everything needed for the condensation of the plastic deformation
@@ -312,7 +316,8 @@ private:
         LINALG::Matrix<9,1>* dNCPdT,        ///< derivative of NCP function w.r.t. temperature (only in TSI case)
         LINALG::Matrix<6,1>* dHdC,          ///< derivative of Heating w.r.t. RCG (only in TSI case)
         LINALG::Matrix<9,1>* dHdLp,         ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
-        const double dt                     ///< time step size
+        const double dt,                     ///< time step size
+        const int eleGID                    ///< global ID of element
         );
 
     /// hyperelastic stress response plus elasticity tensor

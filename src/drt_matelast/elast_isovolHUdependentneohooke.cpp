@@ -100,7 +100,8 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::Setup(DRT::INPUT::LineDefinition* 
 void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddDerivativesModified(
     LINALG::Matrix<3,1>& dPmodI,
     LINALG::Matrix<6,1>& ddPmodII,
-    const LINALG::Matrix<3,1>& modinv
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID
   )
 {
   dPmodI(0) += alpha_;

@@ -83,7 +83,8 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddShearMod(
 void MAT::ELASTIC::CoupLogNeoHooke::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modinv)
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID)
 {
 
   const double    mue=params_->mue_;
@@ -103,7 +104,8 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddStrainEnergy(
 void MAT::ELASTIC::CoupLogNeoHooke::AddDerivativesPrincipal(
     LINALG::Matrix<3,1>& dPI,
     LINALG::Matrix<6,1>& ddPII,
-    const LINALG::Matrix<3,1>& prinv
+    const LINALG::Matrix<3,1>& prinv,
+    const int eleGID
 )
 {
 

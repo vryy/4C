@@ -23,6 +23,11 @@ Maintainer: Michael Gee
 #include "../drt_io/io.H"
 #include <Epetra_Time.h>
 
+//#include "../drt_mat/matpar_material.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/matpar_parameter.H"
+#include "../drt_matelast/elast_summand.H"
+#include "../drt_matelast/elast_coupaaagasser.H"
 
 
 /*----------------------------------------------------------------------*
@@ -360,7 +365,20 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
     new DRT::Condition(0,DRT::Condition::PatientSpecificData,false,DRT::Condition::Volume));
   cond->Add("normalized ilt thickness",*iltele);
 
-  // check whether discretization has been filled before putting ocndition to dis
+  // check materials if they need normalized ilt thickness
+
+  const std::map<int, Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  std::map<int, Teuchos::RCP<MAT::PAR::Material> >::const_iterator curr;
+  for (curr=mats.begin(); curr != mats.end(); ++curr)
+  {
+    if(curr->second->Type()==INPAR::MAT::mes_isovolaaagasser)
+    {
+      // set thrombus thickness
+      MAT::ELASTIC::PAR::CoupAAAGasser *params = dynamic_cast<MAT::ELASTIC::PAR::CoupAAAGasser*>(curr->second->Parameter());
+      curr->second->Parameter()->SetParameter(params->normdist,iltele);
+    }
+  }
+  // check whether discretization has been filled before putting condition to dis
   bool filled = dis->Filled();
   dis->SetCondition("PatientSpecificData",cond);
   if (filled && !dis->Filled()) dis->FillComplete();
@@ -816,7 +834,7 @@ void PATSPEC::GetILTDistance(const int eleid,
       if (actmat->MaterialType() == INPAR::MAT::m_elasthyper)
       {
         MAT::ElastHyper* hyper = static_cast<MAT::ElastHyper*>(actmat.get());
-        hyper->SetupAAA(params);
+        hyper->SetupAAA(params,eleid);
       }
 
       return;

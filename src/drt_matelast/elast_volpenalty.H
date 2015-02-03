@@ -108,16 +108,17 @@ namespace ELASTIC
     virtual void AddStrainEnergy(
         double& psi,                      ///< strain energy function
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
-        const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
-    );
+        const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const int eleGID                   ///< element GID
+        );
 
     // Add derivatives with respect to modified invariants.
     virtual void AddDerivativesModified(
         LINALG::Matrix<3,1>& dPmodI, ///< first derivative with respect to modified invariants
         LINALG::Matrix<6,1>& ddmodPII, ///< second derivative with respect to modified invariants
-        const LINALG::Matrix<3,1>& modinv ///< modified invariants of right Cauchy-Green tensor
-    );
-
+        const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const int eleGID                   ///< element GID
+        );
     /// Add third derivative w.r.t. J
     virtual void Add3rdVolDeriv(const LINALG::Matrix<3,1>& modinv, double& d3PsiVolDJ3);
 

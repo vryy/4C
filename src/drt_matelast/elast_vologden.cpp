@@ -46,7 +46,8 @@ MAT::ELASTIC::VolOgden::VolOgden(MAT::ELASTIC::PAR::VolOgden* params)
 void MAT::ELASTIC::VolOgden::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modinv)
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID)
 {
   const double kappa = params_ -> kappa_;
   const double beta = params_ -> beta_;
@@ -64,7 +65,8 @@ void MAT::ELASTIC::VolOgden::AddStrainEnergy(
 void MAT::ELASTIC::VolOgden::AddDerivativesModified(
     LINALG::Matrix<3,1>& dPmodI,
     LINALG::Matrix<6,1>& ddPmodII,
-    const LINALG::Matrix<3,1>& modinv
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID
 )
 {
   const double kappa = params_ -> kappa_;

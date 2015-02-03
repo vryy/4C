@@ -50,7 +50,8 @@ MAT::ELASTIC::CoupNeoHooke::CoupNeoHooke(MAT::ELASTIC::PAR::CoupNeoHooke* params
 void MAT::ELASTIC::CoupNeoHooke::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modinv)
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID)
 {
   // material Constants c and beta
   const double c = params_->c_;
@@ -72,7 +73,8 @@ void MAT::ELASTIC::CoupNeoHooke::AddStrainEnergy(
 void MAT::ELASTIC::CoupNeoHooke::AddDerivativesPrincipal(
     LINALG::Matrix<3,1>& dPI,
     LINALG::Matrix<6,1>& ddPII,
-    const LINALG::Matrix<3,1>& prinv
+    const LINALG::Matrix<3,1>& prinv,
+    const int eleGID
 )
 {
   const double beta  = params_->beta_;

@@ -137,9 +137,9 @@ namespace ELASTIC
         const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green Tensor
         LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
         LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
-        Teuchos::ParameterList& params /// additional parameters for computation of material properties
-    );
-
+        Teuchos::ParameterList& params, ///< additional parameters for computation of material properties
+        const int eleGID                ///< element GID
+        );
     /// @name Access methods
     //@{
     double C() const { return params_->c_; }
@@ -159,7 +159,7 @@ namespace ELASTIC
     );
 
     /// Setup of patient-specific materials
-    virtual void SetupAAA(Teuchos::ParameterList& params){return;}
+    virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID){return;}
 
     /// Indicator for formulation
     virtual void SpecifyFormulation(

@@ -155,8 +155,9 @@ namespace ELASTIC
         const LINALG::Matrix<6,1> icg,  ///< inverse of right Cauchy Green Tensor
         LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
         LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
-        double I3   ///< third principal invariant
-    );
+        double I3,   ///< third principal invariant
+        const int eleGID    ///< element GID
+        );
 
     /// @name Access methods
     //@{

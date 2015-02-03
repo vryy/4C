@@ -48,7 +48,8 @@ MAT::ELASTIC::CoupMooneyRivlin::CoupMooneyRivlin(MAT::ELASTIC::PAR::CoupMooneyRi
 void MAT::ELASTIC::CoupMooneyRivlin::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
-    const LINALG::Matrix<3,1>& modinv)
+    const LINALG::Matrix<3,1>& modinv,
+    const int eleGID)
 {
 
   const double c1 = params_ -> c1_;
@@ -68,7 +69,8 @@ void MAT::ELASTIC::CoupMooneyRivlin::AddStrainEnergy(
 void MAT::ELASTIC::CoupMooneyRivlin::AddDerivativesPrincipal(
     LINALG::Matrix<3,1>& dPI,
     LINALG::Matrix<6,1>& ddPII,
-    const LINALG::Matrix<3,1>& prinv
+    const LINALG::Matrix<3,1>& prinv,
+    const int eleGID
 )
 {
   const double c1 = params_ -> c1_;

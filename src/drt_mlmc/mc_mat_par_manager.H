@@ -38,19 +38,20 @@ namespace UQ
 class RandomField;
 class RandomVariable;
 /*----------------------------------------------------------------------------*/
+/// Class to handle calls to material parameters from an uq routine
 class MCMatParManager
 {
 public:
 
   /*!
-  \brief Standard Constructor
+  \brief standard constructor
 
   \param discret : discretization for which MatParManager will be used
   */
   MCMatParManager(Teuchos::RCP<DRT::Discretization> discret);
 
   /*!
-  \brief Standard Destructor
+  \brief standard destructor
 
   */
   ~MCMatParManager(){};
@@ -152,7 +153,7 @@ private:
   Compute multivector with ele col layout which contains the values
   of the uncertain material parameters computed by random fields
 
-  /param para_cont_parameter (in):  parameter continuation parameter [0-1]
+  \param para_cont_parameter (in):  parameter continuation parameter [0-1]
   */
   void ComputeMatParamsMultivectorFromRandomFields(
       const double para_cont_parameter);
@@ -163,7 +164,7 @@ private:
   Compute multivector with which contains the values
   of the uncertain material parameters computed by random variables
 
-  /param para_cont_parameter (in):  parameter continuation parameter [0-1]
+  \param para_cont_parameter (in):  parameter continuation parameter [0-1]
   */
   void ComputeMatParamsMultivectorFromRandomVariables(
       const double para_cont_parameter);
@@ -199,21 +200,19 @@ public:
 
 private:
 
-  //! discretization for convenience
+  //! \brief discretization for convenience
   Teuchos::RCP<DRT::Discretization> discret_;
 
-  //! map from stochparaid (int) to the random field which models
-  //! this parameter (RCP<RandomField>)
+  //! \brief  map from stochparaid (int) to the random field which models this parameter
   std::map<int, Teuchos::RCP<RandomField> > randomfields_;
 
-  //! map from stochparaid (int) to the random variable which models
-  //! this parameter (RCP<RandomVariable>)
+  //! \brief map from stochparaid (int) to the random variable which models this parameter
   std::map<int, Teuchos::RCP<RandomVariable> > randomvariables_;
 
-  //! number of stochastic material parameters modelled as random field
+  //! \brief number of stochastic material parameters modelled as random field
   int numstochparams_r_field_;
 
-  //! number of stochastic material parameters modelled as random variable
+  //! \brief number of stochastic material parameters modelled as random variable
   int numstochparams_r_var_;
 
   //! map of names for each material parameter
@@ -222,44 +221,58 @@ private:
   //! parameter directly
   //! e.g. < 1 ; ( youngs, beta)>
   //!      < 2 ; ( k1 , k2 )>
+
+  /*!
+  \brief map of names for each material parameter
+   key: matid, value: value-enum
+   value is of enum type and can be used to set the respective material
+   parameter directly
+   e.g. < 1 ; ( youngs, beta)>
+        < 2 ; ( k1 , k2 )>
+  */
   std::map<int, std::vector<int> > stochparamap_r_field_;
 
-  //! map of matids to the id ofthe  stochastic parameter
-  //! e.g.  < 1 ; (0 , 1)>
-  //!       < 2 ; (2)>
-  //! thereby if say matid 1 represents AAAneohook with two stochastic
-  //! parameters thereby the first is modelled by random field number
-  //! 0 and the second by random field number 1
-  //! the second material has only one stochastic parameter which is modelled
-  //! by field number 2
+  /*!
+  \brief map of matids to the id ofthe  stochastic parameter
+  e.g.  < 1 ; (0 , 1)>
+        < 2 ; (2)>
+  thereby if say matid 1 represents AAAneohook with two stochastic
+  parameters thereby the first is modelled by random field number
+  0 and the second by random field number 1
+  the second material has only one stochastic parameter which is modelled
+  by field number 2
+  */
   std::map<int,std::vector<int> > stochparaid_r_field_;
 
+  /*!
+  \brief map of names for each material parameter
+  key: matid, value: value-enum
+  value is of enum type and can be used to set the respective material
+  parameter directly
+   e.g. < 1 ; ( youngs, beta)>
+        < 2 ; ( k1 , k2 )>
 
-  //! map of names for each material parameter
-  //! key: matid, value: value-enum
-  //! value is of enum type and can be used to set the respective material
-  //! parameter directly
-  //! e.g. < 1 ; ( youngs, beta)>
-  //!      < 2 ; ( k1 , k2 )>
+   */
   std::map<int, std::vector<int> > stochparamap_r_var_;
 
-  //! map of matids to the id ofthe  stochastic parameter
-  //! e.g.  < 1 ; (0 , 1)>
-  //!       < 2 ; (2)>
-  //! thereby if say matid 1 represents AAAneohook with two stochastic
-  //! parameters thereby the first is modelled by random field number
-  //! 0 and the second by random field number 1
-  //! the second material has only one stochastic parameter which is modelled
-  //! by field number 2
+  /*!
+  \brief map of matids to the id ofthe  stochastic parameter
+   e.g.  < 1 ; (0 , 1)>
+         < 2 ; (2)>
+  thereby if say matid 1 represents AAAneohook with two stochastic
+  parameters thereby the first is modelled by random field number
+  0 and the second by random field number 1
+  the second material has only one stochastic parameter which is modelled
+  by field number 2
+
+   */
   std::map<int,std::vector<int> > stochparaid_r_var_;
 
 
-  //! actual set of material parameters in elementwise column map layout
-  //! for random fields
+  //! actual set of material parameters in elementwise column map layout for random fields
   Teuchos::RCP<Epetra_MultiVector> params_r_field_;
 
-  //! actual set of material parameters in
-  //! for random variables. thus each vector has only one entry
+  //! actual set of material parameters in for random variables. thus each vector has only one entry
   Teuchos::RCP<Epetra_MultiVector> params_r_var_;
 
 };

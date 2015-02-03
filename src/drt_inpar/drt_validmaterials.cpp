@@ -1071,6 +1071,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"CABLUM","abluminal stiffness parameter (2.62e3)");
     AddNamedReal(m,"NUE","");
     AddNamedReal(m,"BETA","");
+    // optional parameters for uncertainty quantification
+    AddNamedReal(m,"MULUM","mu for luminal pdf, irrelevant for deterministic analysis",0.0,true);
+    AddNamedReal(m,"MUMED","mu for medial pdf, irrelevant for deterministic analysis",0.0,true);
+    AddNamedReal(m,"MUABLUM","mu for abluminal pdf, irrelevant for deterministic analysis",0.0,true);
+    AddNamedReal(m,"SIGMALUM","std for luminal pdf, irrelevant for deterministic analysis",0.0,true);
+    AddNamedReal(m,"SIGMAMED","std for medial pdf, irrelevant for deterministic analysis",0.0,true);
+    AddNamedReal(m,"SIGMAABLUM","std for abluminal pdf, irrelevant for deterministic analysis",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }

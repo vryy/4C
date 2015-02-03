@@ -86,6 +86,12 @@ namespace MAT
       //! \brief set element specific or global material parameter using enum parametername which is defined in respective MAT::PAR classes
       void SetParameter(int parametername,Teuchos::RCP<Epetra_Vector> myparameter);
 
+      //! \brief set element specific or global material parameter using enum parametername which is defined in respective MAT::PAR classes
+      void SetParameter(int parametername,const double val, const int eleGID, const int eleLID);
+
+      //! brief extend all RCP<Epetra_Vectors> which have length one to element colmap layout
+      void ExpandParametersToEleColLayout();
+
       //! \brief return element specific or global material parameter using enum parametername which is defined in respective MAT::PAR classes
       double GetParameter(int parametername ,const int EleId);
 

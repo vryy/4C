@@ -438,7 +438,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       // call material for evaluation of strain energy function
       double psi = 0.0;
       Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->StrainEnergy(glstrain,psi);
+      so3mat->StrainEnergy(glstrain,psi,Id());
 
       // sum up GP contribution to internal energy
       intenergy += fac*psi;

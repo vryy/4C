@@ -475,7 +475,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(
       LINALG::Matrix<numstr_,1> pk2;
       LINALG::Matrix<numstr_,numstr_> cmat;
       if (plmat!=NULL)
-        plmat->EvaluateElast(&defgrd,&deltaLp,params,&pk2,&cmat,gp);
+        plmat->EvaluateElast(&defgrd,&deltaLp,params,&pk2,&cmat,gp,Id());
       else
       {
         params.set<int>("gp",gp);

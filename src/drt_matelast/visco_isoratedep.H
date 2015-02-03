@@ -108,7 +108,8 @@ namespace ELASTIC
         LINALG::Matrix<8,1>& modmy,  ///<necassary coefficients for piola-kirchhoff-stress
         LINALG::Matrix<33,1>& modxi,  ///<necassary coefficients for viscosity tensor
         LINALG::Matrix<7,1>& modrateinv,
-        Teuchos::ParameterList& params
+        Teuchos::ParameterList& params,
+        const int eleGID
     );
 
     /// @name Access methods
