@@ -603,14 +603,17 @@ bool STR::TimIntStatMech::PerformErrorAction()
     break;
     case INPAR::STR::divcont_rand_adapt_step:
     {
-      // generate random number between 0.51 and 1.99, alternating values
-      // larger and smaller than 1.0
-      const double randnum = ((double) rand()/(double) RAND_MAX);
+      // generate random number between 0.51 and 1.99 (as mean value of random
+      // numbers generated on all processors), alternating values larger
+      // and smaller than 1.0
+      double proc_randnum = ((double) rand()/(double) RAND_MAX);
+      double randnum = 1.0;
+      discret_->Comm().SumAll(&proc_randnum,&randnum,1);
+      randnum /= discret_->Comm().NumProc();
       if (rand_tsfac_ > 1.0)      rand_tsfac_ = randnum*0.49+0.51;
       else if (rand_tsfac_ < 1.0) rand_tsfac_ = randnum*0.49+1.0;
       else                        rand_tsfac_ = randnum*1.48+0.51;
-      IO::cout << "Nonlinear solver failed to converge: modifying time-step size by random number between 0.51 and 1.99 -> here: " << rand_tsfac_ << " !"
-               << IO::endl;
+      if (myrank_ == 0) IO::cout << "Nonlinear solver failed to converge: modifying time-step size by random number between 0.51 and 1.99 -> here: " << rand_tsfac_ << " !" << IO::endl;
       // multiply time-step size by random number
       (*dt_)[0]=(*dt_)[0]*rand_tsfac_;
       // update maximum number of time steps
