@@ -2069,6 +2069,18 @@ LINALG::SOLVER::SIMPLE_BlockSmootherFactory::Create()
   //}
 
   // =============================================================
+  // Some output
+  // =============================================================
+
+  if (GetVerbosity()=="on")
+  {
+
+    std::cout << "predictor size (level " << GetLevel() << " )= " << App->DomainMap().NumGlobalElements() << std::endl;
+    std::cout << "Schur size (level " << GetLevel() << " )= " << Ass->DomainMap().NumGlobalElements() << std::endl;
+
+  }
+
+  // =============================================================
   // Approximate the schur complement
   // =============================================================
 
