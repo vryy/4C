@@ -1381,55 +1381,55 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       }
       else if (function->HaveNamed("ZALESAKSDISK"))
       {
-        functions_.push_back(Teuchos::rcp(new ZalesaksDiskFunction()));
+        functions_.push_back(Teuchos::rcp(new COMBUST::ZalesaksDiskFunction()));
       }
       else if (function->HaveNamed("CIRCULARFLAME2"))
       {
-        functions_.push_back(Teuchos::rcp(new CircularFlame2Function()));
+        functions_.push_back(Teuchos::rcp(new COMBUST::CircularFlame2Function()));
       }
       else if (function->HaveNamed("CIRCULARFLAME3"))
       {
-        functions_.push_back(Teuchos::rcp(new CircularFlame3Function()));
+        functions_.push_back(Teuchos::rcp(new COMBUST::CircularFlame3Function()));
       }
       else if (function->HaveNamed("CIRCULARFLAME4"))
       {
-        functions_.push_back(Teuchos::rcp(new CircularFlame4Function()));
+        functions_.push_back(Teuchos::rcp(new COMBUST::CircularFlame4Function()));
       }
       else if (function->HaveNamed("DAMBREAKOBSTACLE"))
       {
-        functions_.push_back(Teuchos::rcp(new DamBreakObstacle()));
+        functions_.push_back(Teuchos::rcp(new COMBUST::DamBreakObstacle()));
       }
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
       {
-        functions_.push_back(Teuchos::rcp(new CollapsingWaterColumnFunction()));
+        functions_.push_back(Teuchos::rcp(new COMBUST::CollapsingWaterColumnFunction()));
       }
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMNCOARSE"))
       {
-        functions_.push_back(Teuchos::rcp(new CollapsingWaterColumnFunctionCoarse()));
+        functions_.push_back(Teuchos::rcp(new COMBUST::CollapsingWaterColumnFunctionCoarse()));
       }
       else if (function->HaveNamed("IMPACTDROP"))
       {
-        functions_.push_back(Teuchos::rcp(new ImpactFunction()));
+        functions_.push_back(Teuchos::rcp(new COMBUST::ImpactFunction()));
+      }
+      else if (function->HaveNamed("BUBBLES"))
+      {
+        functions_.push_back(Teuchos::rcp(new COMBUST::BubbleFunction()));
+      }
+      else if (function->HaveNamed("ORACLESGFUNC"))
+      {
+        functions_.push_back(Teuchos::rcp(new COMBUST::ORACLESGFunction()));
+      }
+      else if (function->HaveNamed("ROTATINGCONE"))
+      {
+        functions_.push_back(Teuchos::rcp(new COMBUST::RotatingConeFunction()));
+      }
+      else if (function->HaveNamed("LEVELSETCUTTEST"))
+      {
+        functions_.push_back(Teuchos::rcp(new COMBUST::LevelSetCutTestFunction()));
       }
       else if (function->HaveNamed("FORWARDFACINGSTEP"))
       {
         functions_.push_back(Teuchos::rcp(new GerstenbergerForwardfacingStep()));
-      }
-      else if (function->HaveNamed("BUBBLES"))
-      {
-        functions_.push_back(Teuchos::rcp(new BubbleFunction()));
-      }
-      else if (function->HaveNamed("ORACLESGFUNC"))
-      {
-        functions_.push_back(Teuchos::rcp(new ORACLESGFunction()));
-      }
-      else if (function->HaveNamed("ROTATINGCONE"))
-      {
-        functions_.push_back(Teuchos::rcp(new RotatingConeFunction()));
-      }
-      else if (function->HaveNamed("LEVELSETCUTTEST"))
-      {
-        functions_.push_back(Teuchos::rcp(new LevelSetCutTestFunction()));
       }
       else if (function->HaveNamed("CONTROLLEDROTATION"))
       {
