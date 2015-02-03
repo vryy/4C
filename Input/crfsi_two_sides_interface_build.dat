@@ -130,7 +130,6 @@ GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUID_BOUNDARY xfsi_moving_boundary //stationary_boundary
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche // Which Boundary method shall be used to enforce interface conditions?
 IS_PSEUDO_2D                    yes

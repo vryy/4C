@@ -82,7 +82,6 @@ GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          DirectDivergence //Tessellation //Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUID_BOUNDARY                 xfluid_stationary_boundary
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 NIT_STAB_FAC                   24.40282794                   // = 35.0/CT(2D) with former 35 in [10;100]

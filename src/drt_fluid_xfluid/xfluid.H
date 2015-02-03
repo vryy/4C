@@ -104,23 +104,25 @@ namespace FLD
     /// initialization
     virtual void Init();
 
-    /// print time integration output
-    void PrintTimeInt();
+    /// print information about current time step to screen
+    void PrintTimeStepInfo();
 
-    /// start time loop for startingalgo, normal problems and restarts
-    void Integrate();
+    /// (pseudo-)timeloop finished?
+    bool NotFinished();
+
+    void Integrate(){TimeLoop();}
 
     /// Do time integration (time loop)
     void TimeLoop();
 
-    /// Solve stationary problem
-    void SolveStationaryProblem();
-
     /// setup the variables to do a new time step
     void PrepareTimeStep();
 
-    /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
-    void PrepareNonlinearSolve();
+    /// set theta for specific time integration scheme
+    void SetTheta();
+
+    /// do explicit predictor step
+    void DoPredictor();
 
     /// Implement ADAPTER::Fluid
     void PrepareSolve();
@@ -364,6 +366,34 @@ namespace FLD
     /// Update velocity and pressure by increment
     virtual void UpdateByIncrement();
 
+    void SetOldPartOfRighthandside(
+        const Teuchos::RCP<Epetra_Vector>&   veln,
+        const Teuchos::RCP<Epetra_Vector>&   velnm,
+        const Teuchos::RCP<Epetra_Vector>&   accn,
+        const INPAR::FLUID::TimeIntegrationScheme timealgo,
+        const double                         dta,
+        const double                         theta,
+        Teuchos::RCP<Epetra_Vector>&         hist
+    );
+
+    /*!
+  \brief Calculate time derivatives for
+         stationary/one-step-theta/BDF2/af-generalized-alpha time integration
+         for incompressible and low-Mach-number flow
+     */
+    void CalculateAcceleration(
+        const Teuchos::RCP<const Epetra_Vector>    velnp,    ///< velocity at     n+1
+        const Teuchos::RCP<const Epetra_Vector>    veln,     ///< velocity at     n
+        const Teuchos::RCP<const Epetra_Vector>    velnm,    ///< velocity at     n-1
+        const Teuchos::RCP<const Epetra_Vector>    accn ,    ///< acceleration at n-1
+        const INPAR::FLUID::TimeIntegrationScheme  timealgo, ///< time integration id
+        const int                                  step,     ///< time step
+        const double                               theta,    ///< factor for OST method
+        const double                               dta,      ///< time step size (delta t) n
+        const double                               dtp,      ///< previous time step size (delta t) n-1
+        const Teuchos::RCP<Epetra_Vector>          accnp     ///< acceleration at n+1
+  );
+
     /// Gmsh output function for elements without an GEO::CUT::ElementHandle
     void GmshOutputElement(
         DRT::Discretization & discret, ///< background fluid discretization
@@ -601,17 +631,8 @@ namespace FLD
 
     //---------------------------------input parameters------------------
 
-    /// which type of boundary movement
-    enum INPAR::XFEM::MovingBoundary xfluid_mov_bound_;
-
     /// type of enforcing interface conditions in XFEM
     enum INPAR::XFEM::CouplingMethod coupling_method_;
-
-    /// coupling strategy (xfluid-sided, embedded-sided)
-    enum INPAR::XFEM::CouplingStrategy coupling_strategy_;
-
-    /// do we have to evaluate coupling matrices?
-    bool coupling_;
 
     //! @name xfluid time integration
     enum INPAR::XFEM::XFluidTimeIntScheme xfluid_timintapproach_;

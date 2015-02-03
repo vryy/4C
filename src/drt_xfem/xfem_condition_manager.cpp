@@ -763,6 +763,25 @@ void XFEM::MeshCouplingBC::PrepareSolve()
   SetInterfaceVelocity();
 }
 
+bool XFEM::MeshCouplingBC::HasMovingInterface()
+{
+  // get the first local col(!) node
+  if(cutter_dis_->NumMyColNodes() == 0) dserror("no col node on proc %i", myrank_);
+
+  DRT::Node* lnode = cutter_dis_->lColNode(0);
+
+  std::vector<DRT::Condition*> mycond;
+  lnode->GetCondition("XFEMSurfDisplacement",mycond);
+
+  DRT::Condition* cond = mycond[0];
+
+  const std::string* evaltype = cond->Get<std::string>("evaltype");
+
+  if(*evaltype == "zero") return false;
+
+  return true;
+}
+
 void XFEM::MeshCouplingBC::EvaluateCondition(
     Teuchos::RCP<Epetra_Vector> ivec,
     const std::string& condname,
@@ -1085,7 +1104,7 @@ void XFEM::MeshCouplingBC::SetInterfaceDisplacement()
  *----------------------------------------------------------------------*/
 void XFEM::MeshCouplingBC::SetInterfaceVelocity()
 {
-  if(myrank_ == 0) IO::cout << "\t set interface velocity, time " << time << IO::endl;
+  if(myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
 
   EvaluateCondition( ivelnp_, cond_name_, time_, dt_);
 }
@@ -1522,6 +1541,8 @@ XFEM::LevelSetCoupling::LevelSetCoupling(
   // create node-based vector with level-set values
   phinp_ = Teuchos::rcp(new Epetra_Vector(*cutter_dis_->NodeRowMap()));
 
+  // read initial level-set field
+  SetLevelSetField(time_);
 }
 
 
@@ -1623,6 +1644,16 @@ void XFEM::LevelSetCoupling::SetLevelSetField(const double time)
   return;
 }
 
+
+// -------------------------------------------------------------------
+// Read Restart data for cutter discretization
+// -------------------------------------------------------------------
+void XFEM::LevelSetCoupling::ReadRestart(
+    const int step
+)
+{
+  dserror("read restart for Level-set coupling objects not implemented yet");
+}
 
 
 //constructor
@@ -1943,6 +1974,12 @@ void XFEM::ConditionManager::ReadRestart(
   {
     mesh_coupl_[mc]->ReadRestart(step);
   }
+
+  // loop all levelset coupling objects
+  for(int lsc=0; lsc<(int)levelset_coupl_.size(); lsc++)
+  {
+    levelset_coupl_[lsc]->ReadRestart(step);
+  }
 }
 
 
@@ -1959,6 +1996,23 @@ void XFEM::ConditionManager::PrepareSolve()
   {
     levelset_coupl_[lsc]->PrepareSolve();
   }
+}
+
+bool XFEM::ConditionManager::HasMovingInterface()
+{
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    if(mesh_coupl_[mc]->HasMovingInterface()) return true;
+  }
+
+  // loop all levelset coupling objects
+  for(int lsc=0; lsc<(int)levelset_coupl_.size(); lsc++)
+  {
+    if(levelset_coupl_[lsc]->HasMovingInterface()) return true;
+  }
+
+  return false;
 }
 
 

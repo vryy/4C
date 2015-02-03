@@ -163,7 +163,6 @@ VOLUME_GAUSS_POINTS_BY Tessellation //Tessellation
 BOUNDARY_GAUSS_POINTS_BY Tessellation //Tessellation
 --------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUID_BOUNDARY                 xfluid_stationary_boundary
 RELAXING_ALE_EVERY              1
 RELAXING_ALE                    yes
 XFLUIDFLUID_SEARCHRADIUS        1

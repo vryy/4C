@@ -7303,15 +7303,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfluid_general = xfluid_dyn.sublist("GENERAL",false,"");
 
-  setStringToIntegralParameter<int>("XFLUID_BOUNDARY","xfluid_moving_boundary","moving boundary or stationary boundary or xfsi boundary",
-                               tuple<std::string>("xfluid_moving_boundary","xfluid_stationary_boundary", "xfsi_moving_boundary"),
-                               tuple<int>(
-                                   INPAR::XFEM::XFluidMovingBoundary,       // moving boundary
-                                   INPAR::XFEM::XFluidStationaryBoundary,    // stationary boundary
-                                   INPAR::XFEM::XFSIMovingBoundary
-                                   ),
-                               &xfluid_general);
-
   // How many monolithic steps we keep the fluidfluid-boundary fixed
   IntParameter("RELAXING_ALE_EVERY",1,"Relaxing Ale after how many monolithic steps",&xfluid_general);
 

@@ -31,40 +31,6 @@ namespace INPAR
       Nitsche
     };
 
-    /// which type of boundary movement
-    enum MovingBoundary
-    {
-      XFluidMovingBoundary,
-      XFluidStationaryBoundary,
-      XFSIMovingBoundary
-    };
-
-    /// how to define the interface (solid) velocity
-    enum InterfaceInitVel
-    {
-      interface_vel_init_by_funct,
-      interface_vel_init_zero
-    };
-
-    /// how to define the interface (solid) velocity
-    enum InterfaceVel
-    {
-      interface_vel_by_disp,
-      interface_vel_by_funct,
-      interface_vel_by_curve,
-      interface_vel_zero
-    };
-
-    /// how to prescribe the interface (solid) displacement
-    enum InterfaceDisplacement
-    {
-      interface_disp_by_fsi,
-      interface_disp_by_funct,
-      interface_disp_by_curve,
-      interface_disp_zero,
-      interface_disp_by_implementation
-    };
-
     /// enforce weak DBC or coupling conditions with average w.r.t which side?
     enum CouplingStrategy
     {
@@ -189,7 +155,6 @@ namespace INPAR
     enum EleCouplingCondType
     {
       CouplingCond_NONE,
-//      CouplingCond_XFEMCOUPLING,   ///HACK intermediate solution until other level-setbased conditions are implemented
       CouplingCond_SURF_FSI_MONO,
       CouplingCond_SURF_FLUIDFLUID,
       CouplingCond_SURF_FSI_PART,

@@ -71,7 +71,6 @@ COUPLING_METHOD                 Nitsche       // "BoundaryTypeTauPressure" "Boun
 COUPLING_STRATEGY               xfluid_sided_weak_DBC
 GHOST_PENALTY_STAB              yes
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUID_BOUNDARY                 xfluid_stationary_boundary    // moving_boundary
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.4 DENS 1.0 THEXPANS 0.0

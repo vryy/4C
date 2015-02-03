@@ -18,13 +18,9 @@ Maintainer:  Benedikt Schott
 #include "xfluid_state.H"
 #include "xfluidresulttest.H"
 
-#include "../drt_fluid/fluid_utils.H"
-
-#include "../drt_fluid_ele/fluid_ele_action.H"
 
 #include "../drt_lib/drt_discret_xfem.H"
 #include "../drt_lib/drt_dofset_transparent_independent.H"
-
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_parobjectfactory.H"
@@ -38,47 +34,37 @@ Maintainer:  Benedikt Schott
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_krylov_projector.H"
 
-#include "../drt_xfem/xfem_condition_manager.H"
-#include "../drt_xfem/xfem_neumann.H"
-#include "../drt_xfem/xfem_edgestab.H"
-
-#include "../drt_xfem/xfluid_timeInt.H"
-
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_sidehandle.H"
 #include "../drt_cut/cut_volumecell.H"
-#include "../drt_cut/cut_integrationcell.H"
-#include "../drt_cut/cut_point.H"
-#include "../drt_cut/cut_meshintersection.H"
-#include "../drt_cut/cut_levelsetintersection.H"
-#include "../drt_cut/cut_kernel.H"
 #include "../drt_cut/cut_cutwizard.H"
-#include "../drt_cut/cut_facet.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_control.H"
 
 #include "../drt_fluid_ele/fluid_ele.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_ele/fluid_ele_interface.H"
 #include "../drt_fluid_ele/fluid_ele_factory.H"
 
 #include "../drt_fluid/fluid_utils_infnormscaling.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_fluid/fluid_utils.H"
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
-#include "../drt_inpar/inpar_fsi.H"
 
-#include "../drt_combust/combust_utils_time_integration.H"
-
+#include "../drt_xfem/xfem_condition_manager.H"
 #include "../drt_xfem/xfem_dofset.H"
+#include "../drt_xfem/xfem_edgestab.H"
+#include "../drt_xfem/xfem_neumann.H"
+
 #include "../drt_xfem/xfluid_timeInt_std_SemiLagrange.H"
 #include "../drt_xfem/xfluid_timeInt_base.H"
+#include "../drt_xfem/xfluid_timeInt.H"
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
-
-#include "../drt_crack/crackUtils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -93,7 +79,10 @@ FLD::XFluid::XFluid(
     bool                                          alefluid /*= false*/)
   : TimInt(actdis, solver, params, output),
     xdiscret_(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(actdis, true)),
-    alefluid_(alefluid)
+    firstoutputofrun_(true),  // used to write out owner of elements just once
+    restart_count_(0),        // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
+    alefluid_(alefluid),
+    turbmodel_(INPAR::FLUID::dynamic_smagorinsky)
 {
   // all discretizations which potentially include mesh-based XFEM coupling/boundary conditions
   meshcoupl_dis_.clear();
@@ -123,21 +112,14 @@ void FLD::XFluid::Init()
   // output of stabilization details
   PrintStabilizationParams();
 
-  //----------------------------------------------------------------------
-  turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
-  //----------------------------------------------------------------------
 
-  // compute or set 1.0 - theta for time-integration schemes
-  if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)
-    omtheta_ = 1.0 - theta_;
-  else
-    omtheta_ = 0.0;
-
+  //----------------------------------------------------------------------
+  // create faces extension if necessary
+  //----------------------------------------------------------------------
 
   // ensure that degrees of freedom in the discretization have been set
   if ( not discret_->Filled() or not discret_->HaveDofs() )
     discret_->FillComplete();
-
 
   // create internal faces for edgebased fluid stabilization and ghost penalty stabilization
   if(edge_based_ or ghost_penalty_ )
@@ -155,17 +137,8 @@ void FLD::XFluid::Init()
   condition_manager_->Create();
 
 
-  if(condition_manager_->HasMeshCoupling())
-  {
-  }
-  if(condition_manager_->HasLevelSetCoupling())
-  {
-    //TODO how to deal with level-set fields after restarts?
-    condition_manager_->SetLevelSetField( time_ );
-  }
-
   // -------------------------------------------------------------------
-  // read restart for boundary discretization
+  // read restart for all cutter discretizations
   // -------------------------------------------------------------------
 
   // read the interface displacement and interface velocity for the old timestep which was written in Output
@@ -179,6 +152,10 @@ void FLD::XFluid::Init()
   if(restart) condition_manager_->ReadRestart(restart);
 
 
+  //TODO: this has to be removed when different includeinner flags for level-set and mesh cuts can be handled in the cut library
+  // -------------------------------------------------------------------
+  // set include inner flag
+  // -------------------------------------------------------------------
 
   Teuchos::RCP<XFEM::LevelSetCoupling> two_phase_coupl = condition_manager_->GetLevelSetCoupling("XFEMLevelsetTwophase");
   Teuchos::RCP<XFEM::LevelSetCoupling> combust_coupl   = condition_manager_->GetLevelSetCoupling("XFEMLevelsetCombustion");
@@ -188,7 +165,6 @@ void FLD::XFluid::Init()
     include_inner_ = true;
     dispnp_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
 
-
     if(condition_manager_->HasMeshCoupling())
       dserror("two-phase flow coupling and mesh coupling at once is not supported by the cut at the moment, as Node-position and include inner are not handled properly then");
   }
@@ -196,6 +172,7 @@ void FLD::XFluid::Init()
   {
     include_inner_=false;
   }
+
 
   // -------------------------------------------------------------------
   // create the state creator
@@ -217,16 +194,17 @@ void FLD::XFluid::Init()
 
   PrepareOutput();
 
-  // used to write out owner of elements just once
-  firstoutputofrun_ = true;
-
-
-  // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
-  restart_count_ = 0;
 
   // -------------------------------------------------------------------
   // GMSH discretization output before CUT
+  // -------------------------------------------------------------------
+
   OutputDiscret();
+
+
+  // -------------------------------------------------------------------
+  // initialize ALE-specific fluid vectors based on the intial dof row map
+  // -------------------------------------------------------------------
 
   if (alefluid_)
   {
@@ -242,12 +220,15 @@ void FLD::XFluid::Init()
   }
 
 
-
   // -------------------------------------------------------------------
   // create the initial state class
+  // -------------------------------------------------------------------
   // note that all vectors w.r.t np have to be set properly
+
   CreateInitialState();
 
+
+  return;
 }// Init()
 
 
@@ -274,14 +255,10 @@ void FLD::XFluid::SetXFluidParams()
   // get the maximal number of dofsets that are possible to use
   maxnumdofsets_ = params_->sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
 
-  // get input parameter about type of boundary movement
-  xfluid_mov_bound_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(params_xf_gen, "XFLUID_BOUNDARY");
-
   xfluid_timintapproach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::XFluidTimeIntScheme>(params_xf_gen,"XFLUID_TIMEINT");
 
   // get interface stabilization specific parameters
   coupling_method_    = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab,"COUPLING_METHOD");
-  coupling_strategy_  = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(params_xf_stab,"COUPLING_STRATEGY");
 
   hybrid_lm_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
 
@@ -2646,33 +2623,6 @@ void FLD::XFluid::CheckXFluidParams() const
   // check XFLUID DYNAMIC/GENERAL parameter list
   // ----------------------------------------------------------------------
 
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-
-  // just xfluid-sided coulings or weak DBCs possible
-  //TODO: HACK for TWOPHASEFLOW
-//  if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_weak_DBC and coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
-//    dserror("no non-xfluid sided COUPLING_STRATEGY possible");
-
-  if( (probtype == prb_fsi_xfem or probtype == prb_fsi_crack or probtype == prb_fpsi_xfem) and params_->get<int>("COUPALGO") == fsi_iter_xfem_monolithic )
-  {
-//    TODO: HACK for TWOPHASEFLOW
-//    if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Coupling)
-//      dserror("INPUT CHECK: please choose XFLUID_SIDED_COUPLING for monolithic XFSI problems!");
-  }
-  else
-  {
-    //TODO: HACK for TWOPHASEFLOW
-
-//    if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_weak_DBC)
-//      dserror("INPUT CHECK: please choose XFLUID_SIDED_weak_DBC as COUPLING_STRATEGY for any pure XFLUID or partitioned XFSI problem!");
-  }
-
-  Teuchos::ParameterList * xfluidparam = &(params_->sublist("XFLUID DYNAMIC/GENERAL"));
-  if (!alefluid_  && DRT::INPUT::IntegralValue<bool>(*xfluidparam,"ALE_XFluid"))
-    dserror("XFluid: xfluid not constructed as Ale Fluid, but set in *.dat file!");
-  else if (alefluid_  && !(DRT::INPUT::IntegralValue<bool>(*xfluidparam,"ALE_XFluid")))
-    dserror("XFluid: xfluid constructed as Ale Fluid, but !NOT! set in *.dat file!");
-
   return;
 }
 
@@ -2839,9 +2789,9 @@ void FLD::XFluid::PrintStabilizationParams() const
 
 
 /*----------------------------------------------------------------------*
- |  print time integration information                     schott 03/12 |
+ |  Print information about current time step to screen    schott 02/15 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::PrintTimeInt()
+void FLD::XFluid::PrintTimeStepInfo()
 {
 
   // -------------------------------------------------------------------
@@ -2877,21 +2827,18 @@ void FLD::XFluid::PrintTimeInt()
 
 
 /*----------------------------------------------------------------------*
- |  calls SolveStationaryProblem() of Timeloop()           schott 03/12 |
+ |  Timeloop()                                             schott 02/15 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::Integrate()
+bool FLD::XFluid::NotFinished()
 {
-  if(myrank_== 0) std::cout << YELLOW_LIGHT << "Integrate routine for STATIONARY INTERFACES" << END_COLOR << endl;
+  // -------------------------------------------------------------------
+  //                    stop criterium for timeloop
+  // -------------------------------------------------------------------
 
-
-  // distinguish stationary and instationary case
-  if (timealgo_==INPAR::FLUID::timeint_stationary)
-    SolveStationaryProblem();
+  if(timealgo_ == INPAR::FLUID::timeint_stationary)
+    return step_<stepmax_;
   else
-    TimeLoop();
-
-  // print the results of time measurements
-  Teuchos::TimeMonitor::summarize();
+    return step_<stepmax_ and time_<maxtime_;
 }
 
 
@@ -2900,8 +2847,9 @@ void FLD::XFluid::Integrate()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::TimeLoop()
 {
-  if(myrank_ == 0) printf("start TIMELOOP (FLD::XFluid::TimeLoop) -- MAXTIME = %11.4E -- STEPMAX %4d\n\n",maxtime_,stepmax_);
-  while (step_<stepmax_ and time_<maxtime_)
+  if(myrank_ == 0) printf("START TIMELOOP (FLD::XFluid::TimeLoop) -- MAXTIME = %11.4E -- STEPMAX %4d\n\n",maxtime_,stepmax_);
+
+  while (NotFinished())
   {
     // -----------------------------------------------------------------
     //                    prepare the timestep
@@ -2926,6 +2874,7 @@ void FLD::XFluid::TimeLoop()
     // -------------------------------------------------------------------
     TimeUpdate();
 
+
     // -------------------------------------------------------------------
     //  lift'n'drag forces, statistics time sample and output of solution
     //  and statistics
@@ -2944,71 +2893,12 @@ void FLD::XFluid::TimeLoop()
     // -------------------------------------------------------------------
     dtp_ = dta_;
 
-    // -------------------------------------------------------------------
-    //                    stop criterium for timeloop
-    // -------------------------------------------------------------------
   }
+
+  // print the results of time measurements
+  Teuchos::TimeMonitor::summarize();
 }
 
-/*----------------------------------------------------------------------*
- |  solve stationary problems                              schott 03/12 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::SolveStationaryProblem()
-{
-  // -------------------------------------------------------------------
-  // pseudo time loop (continuation loop)
-  // -------------------------------------------------------------------
-  // slightly increasing b.c. values by given (pseudo-)timecurves to reach
-  // convergence also for higher Reynolds number flows
-  // as a side effect, you can do parameter studies for different Reynolds
-  // numbers within only ONE simulation when you apply a proper
-  // (pseudo-)timecurve
-
-  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Solve Stationary problem" );
-
-  while (step_< stepmax_)
-  {
-    // -------------------------------------------------------------------
-    //              set (pseudo-)time dependent parameters
-    // -------------------------------------------------------------------
-    IncrementTimeAndStep();
-
-    // -------------------------------------------------------------------
-    //                         out to screen
-    // -------------------------------------------------------------------
-    PrintTimeInt();
-
-
-    SetElementTimeParameter();
-
-
-    // -------------------------------------------------------------------
-    //         evaluate Dirichlet and Neumann boundary conditions
-    // -------------------------------------------------------------------
-    SetDirichletNeumannBC();
-
-
-    // -------------------------------------------------------------------
-    //                     solve nonlinear equation system
-    // -------------------------------------------------------------------
-    Solve();
-
-
-    // -------------------------------------------------------------------
-    //  lift'n'drag forces, statistics time sample and output of solution
-    //  and statistics
-    // -------------------------------------------------------------------
-    StatisticsAndOutput();
-
-
-    // -------------------------------------------------------------------
-    // evaluate error for test flows with analytical solutions
-    // -------------------------------------------------------------------
-    EvaluateErrorComparedToAnalyticalSol();
-
-
-  }
-}
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -3020,29 +2910,61 @@ void FLD::XFluid::PrepareTimeStep()
   if(myrank_ == 0) IO::cout << "PrepareTimeStep (FLD::XFluid::PrepareTimeStep) " << IO::endl;
 
   // -------------------------------------------------------------------
+  //              reset counters used within timestep
+  // -------------------------------------------------------------------
+  // reset the state-class iterator for the new time step
+  state_it_ = 0;
+  itnum_out_= 0;
+
+
+  // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
   IncrementTimeAndStep();
 
   condition_manager_->IncrementTimeAndStep(dta_);
 
-  // reset the state-class iterator for the new time step
-  state_it_ = 0;
 
-  if(myrank_ == 0) printf("----------------------XFLUID-------  time step %2d ----------------------------------------\n", step_);
+
+  if(myrank_ == 0)
+    printf("----------------------XFLUID-------  time step %2d ----------------------------------------\n", step_);
 
   // -------------------------------------------------------------------
   //                       output to screen
   // -------------------------------------------------------------------
-  PrintTimeInt();
+  PrintTimeStepInfo();
 
-  itnum_out_=0;
+
   // -------------------------------------------------------------------
   // set time parameters dependent on time integration scheme and step
   // -------------------------------------------------------------------
+  SetTheta();
+
+
+  // -------------------------------------------------------------------
+  //                     do explicit predictor step
+  // -------------------------------------------------------------------
+  DoPredictor();
+
+
+  // -------------------------------------------------------------------
+  //               set time parameter for element call
+  // -------------------------------------------------------------------
+  SetElementTimeParameter();
+
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::SetTheta()
+{
+  // Sets theta_ to a specific value for bdf2 and calculates
+  // a pseudo-theta for genalpha (the latter in case of startalgo_)
   if (timealgo_ == INPAR::FLUID::timeint_stationary)
   {
-    theta_ = 1.0;
+    theta_   = 1.0;
+    omtheta_ = 0.0;
   }
   else
   {
@@ -3050,23 +2972,33 @@ void FLD::XFluid::PrepareTimeStep()
     if (step_==1)
     {
       theta_ = params_->get<double>("start theta");
+      omtheta_ = 1.0-theta_;
     }
     else if (step_ > 1)
     {
       // for OST
-      if(timealgo_ == INPAR::FLUID::timeint_one_step_theta) theta_ = params_->get<double>("theta");
+      if(timealgo_ == INPAR::FLUID::timeint_one_step_theta)
+      {
+        theta_ = params_->get<double>("theta");
+        omtheta_ = 1.0-theta_;
+      }
 
       // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
-      if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+      if (timealgo_==INPAR::FLUID::timeint_bdf2)
+      {
+        theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+        omtheta_ = 0.0;
+      }
     }
     else dserror("number of time step is wrong");
   }
+}
 
 
-  // -------------------------------------------------------------------
-  //                     do explicit predictor step
-  // -------------------------------------------------------------------
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::DoPredictor()
+{
   // no predictor in first time step
   if (step_>1)
   {
@@ -3079,60 +3011,40 @@ void FLD::XFluid::PrepareTimeStep()
       PredictTangVelConsistAcc();
     }
   }
-
-
-  // -------------------------------------------------------------------
-  //               set time parameter for element call
-  // -------------------------------------------------------------------
-  SetElementTimeParameter();
-
-}
-
-
-/*----------------------------------------------------------------------*
- |  Implement ADAPTER::Fluid
- *----------------------------------------------------------------------*/
-void FLD::XFluid::PrepareSolve()
-{
-  // set new interface positions and possible values for XFEM Weak Dirichlet and Neumann BCs
-  condition_manager_->PrepareSolve();
-
-  PrepareNonlinearSolve();
 }
 
 
 /*----------------------------------------------------------------------*
  |  prepare the nonlinear solver                           schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::PrepareNonlinearSolve()
+void FLD::XFluid::PrepareSolve()
 {
-
-  // print the gmsh discretization output before the cut is performed
-  OutputDiscret();
+  // TODO: do we need to call PrepareSolve for each Newton increment when solving a monolithic system
+  // can we shift this to PrepareTimeStep()?
+  // -------------------------------------------------------------------
+  // set new interface positions and possible values for XFEM Weak Dirichlet and Neumann BCs
+  // -------------------------------------------------------------------
+  condition_manager_->PrepareSolve();
 
   // -------------------------------------------------------------------
   //  perform CUT, transform vectors from old dofset to new dofset and set state vectors
   // -------------------------------------------------------------------
 
-  if(xfluid_mov_bound_ != INPAR::XFEM::XFluidStationaryBoundary)
-    CutAndSetStateVectors();
+  CutAndSetStateVectors();
+
 
   // -------------------------------------------------------------------
   //                 set old part of righthandside
   // -------------------------------------------------------------------
-  // set part(s) of the rhs vector(s) belonging to the old timestep
-  // (only meaningful for momentum part)
-  //
-  // stationary/af-generalized-alpha: hist_ = 0.0
-  //
-  // one-step-Theta:                  hist_ = veln_  + dt*(1-Theta)*accn_
-  //
-  // BDF2: for constant time step:    hist_ = 4/3 veln_  - 1/3 velnm_
-  //
-  // -------------------------------------------------------------------
+  SetOldPartOfRighthandside(
+      state_->veln_,
+      state_->velnm_,
+      state_->accn_,
+      timealgo_,
+      dta_,
+      theta_,
+      state_->hist_);
 
-  COMBUST::UTILS::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
-                                                timealgo_, dta_, theta_, state_->hist_);
 
   // -------------------------------------------------------------------
   //         evaluate Dirichlet and Neumann boundary conditions
@@ -3769,9 +3681,9 @@ void FLD::XFluid::Evaluate(
     // * the stepinc should contain the Dirichlet values, however, when using an iterative solver the Dirichlet values
     //   of Newton increment might just be approximately zero. In order to strictly set the Dirichlet values to zero
     //   we set them here again.
-    // * for each call of PrepareNonlinearSolve (see below) the velnp-vector obtains accurate Dirichlet values
+    // * for each call of PrepareSolve (see below) the velnp-vector obtains accurate Dirichlet values
     // * therefore we directly can copy the Dirichlet values from the last iteration
-    // * further, in the next PrepareNonlinearSolve()-call, after performing time-integration,
+    // * further, in the next PrepareSolve()-call, after performing time-integration,
     //   the DBCs are set again in velnp
 
     Teuchos::RCP<Epetra_Vector> velnp_tmp = LINALG::CreateVector(*discret_->DofRowMap(),true);
@@ -3789,7 +3701,7 @@ void FLD::XFluid::Evaluate(
   {
     // for the first call in a new time-step the initialization of velnp_ is not allowed as
     // velnp_ includes a predicted solution (set in PrepareTimeStep).
-    // This predicted solution does not include the DBCs yet, however, in the following PrepareNonlinearSolve()-call
+    // This predicted solution does not include the DBCs yet, however, in the following PrepareSolve()-call
     // veln_ and the predicted solution velnp_ will be mapped to the new interface position and afterwards
     // DBCs will be set in velnp_.
   }
@@ -3809,7 +3721,7 @@ void FLD::XFluid::Evaluate(
   // - apply Dirichlet and Neumann boundary conditions
   //--------------------------------------------------------------------------------------------
 
-  PrepareNonlinearSolve();
+  PrepareSolve();
 
 
   //--------------------------------------------------------------------------------------------
@@ -3865,6 +3777,9 @@ void FLD::XFluid::Evaluate(
  *----------------------------------------------------------------------*/
 void FLD::XFluid::TimeUpdate()
 {
+  if(timealgo_ == INPAR::FLUID::timeint_stationary) return;
+
+
   if(myrank_ == 0) IO::cout << "FLD::XFluid::TimeUpdate " << IO::endl;
 
   Teuchos::ParameterList *  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
@@ -3922,20 +3837,20 @@ void FLD::XFluid::TimeUpdate()
     Teuchos::RCP<Epetra_Vector> onlyveln  = state_->velpressplitter_->ExtractOtherVector(state_->veln_ );
     Teuchos::RCP<Epetra_Vector> onlyvelnp = state_->velpressplitter_->ExtractOtherVector(state_->velnp_);
 
-    COMBUST::UTILS::CalculateAcceleration(onlyvelnp,
-                                              onlyveln ,
-                                              onlyvelnm,
-                                              onlyaccn ,
-                                              timealgo_,
-                                              step_    ,
-                                              theta_   ,
-                                              dta_     ,
-                                              dtp_     ,
-                                              onlyaccnp);
+    CalculateAcceleration(
+        onlyvelnp,
+        onlyveln ,
+        onlyvelnm,
+        onlyaccn ,
+        timealgo_,
+        step_    ,
+        theta_   ,
+        dta_     ,
+        dtp_     ,
+        onlyaccnp);
 
     // copy back into global vector
     LINALG::Export(*onlyaccnp,*state_->accnp_);
-
   }
 
 
@@ -3971,6 +3886,21 @@ void FLD::XFluid::TimeUpdate()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::CutAndSetStateVectors()
 {
+  //------------------------------------------------------------------------------------
+  // not required for stationary time integration
+  if( timealgo_ == INPAR::FLUID::timeint_stationary ) return;
+
+  //------------------------------------------------------------------------------------
+  // not required if neither the background mesh nor the interfaces move
+
+  // TODO: get info from condition_manager_ if at least one coupling object has moving interfaces
+  const bool has_moving_interface = condition_manager_->HasMovingInterface();
+  const bool moving_meshes = ( has_moving_interface or alefluid_ );
+
+  if( !moving_meshes ) return;
+  //------------------------------------------------------------------------------------
+
+
   if(myrank_==0)
   {
     // counter will be increased when the new state class is created
@@ -6480,3 +6410,146 @@ void FLD::XFluid::UpdateByIncrement()
   state_->Velnp()->Norm2(&f_norm);
   //std::cout << std::setprecision(14) << f_norm << std::endl;
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::SetOldPartOfRighthandside(
+    const Teuchos::RCP<Epetra_Vector>&   veln,
+    const Teuchos::RCP<Epetra_Vector>&   velnm,
+    const Teuchos::RCP<Epetra_Vector>&   accn,
+    const INPAR::FLUID::TimeIntegrationScheme timealgo,
+    const double                         dta,
+    const double                         theta,
+    Teuchos::RCP<Epetra_Vector>&         hist
+    )
+{
+  /*!
+    \brief Set the part of the righthandside belonging to the last
+           timestep for incompressible or low-Mach-number flow
+
+       for low-Mach-number flow: distinguish momentum and continuity part
+       (continuity part only meaningful for low-Mach-number flow)
+
+       Stationary/af-generalized-alpha:
+
+                     mom: hist_ = 0.0
+                    (con: hist_ = 0.0)
+
+       One-step-Theta:
+
+                     mom: hist_ = veln_  + dt*(1-Theta)*accn_
+                    (con: hist_ = densn_ + dt*(1-Theta)*densdtn_)
+
+       BDF2: for constant time step:
+
+                     mom: hist_ = 4/3 veln_  - 1/3 velnm_
+                    (con: hist_ = 4/3 densn_ - 1/3 densnm_)
+
+
+   */
+  switch (timealgo)
+  {
+  case INPAR::FLUID::timeint_stationary: /* Stationary algorithm */
+  case INPAR::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
+  case INPAR::FLUID::timeint_npgenalpha:
+    hist->PutScalar(0.0);
+    break;
+
+  case INPAR::FLUID::timeint_one_step_theta: /* One step Theta time integration */
+    hist->Update(1.0, *veln, dta*(1.0-theta), *accn, 0.0);
+    break;
+
+  case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+    hist->Update(4./3., *veln, -1./3., *velnm, 0.0);
+    break;
+
+  default:
+  {
+    dserror("Time integration scheme unknown!");
+    break;
+  }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::CalculateAcceleration(
+    const Teuchos::RCP<const Epetra_Vector>    velnp,
+    const Teuchos::RCP<const Epetra_Vector>    veln,
+    const Teuchos::RCP<const Epetra_Vector>    velnm,
+    const Teuchos::RCP<const Epetra_Vector>    accn,
+    const INPAR::FLUID::TimeIntegrationScheme  timealgo,
+    const int                                  step,
+    const double                               theta,
+    const double                               dta,
+    const double                               dtp,
+    const Teuchos::RCP<Epetra_Vector>          accnp
+)
+{
+    /*
+
+    Following formulations are for n+1; acceleration values, however, are
+    directly stored in vectors at time n (velocity has not yet been updated).
+
+    One-step-Theta:
+
+     acc(n+1) = (vel(n+1)-vel(n)) / (Theta * dt(n)) - (1/Theta -1) * acc(n)
+
+
+    BDF2:
+
+                   2*dt(n)+dt(n-1)                  dt(n)+dt(n-1)
+     acc(n+1) = --------------------- vel(n+1) - --------------- vel(n)
+                 dt(n)*[dt(n)+dt(n-1)]              dt(n)*dt(n-1)
+
+                         dt(n)
+               + ----------------------- vel(n-1)
+                 dt(n-1)*[dt(n)+dt(n-1)]
+
+    */
+
+    switch (timealgo)
+    {
+      case INPAR::FLUID::timeint_stationary: /* no accelerations for stationary problems*/
+      {
+        accnp->PutScalar(0.0);
+        break;
+      }
+      case INPAR::FLUID::timeint_one_step_theta: /* One-step-theta time integration */
+      {
+        const double fact1 = 1.0/(theta*dta);
+        const double fact2 =-1.0/theta +1.0;   /* = -1/Theta + 1 */
+
+        accnp->Update( fact1,*velnp,0.0);
+        accnp->Update(-fact1,*veln ,1.0);
+        accnp->Update( fact2,*accn,1.0);
+        break;
+      }
+      case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+      {
+        if (dta*dtp < EPS15) dserror("Zero time step size!!!!!");
+        const double sum = dta + dtp;
+
+        accnp->Update((2.0*dta+dtp)/(dta*sum),*velnp, -sum/(dta*dtp),*veln ,0.0);
+        accnp->Update(dta/(dtp*sum),*velnm,1.0);
+        break;
+      }
+      case INPAR::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
+      case INPAR::FLUID::timeint_npgenalpha:
+      {
+        // do nothing: new acceleration is calculated at beginning of next time step
+        break;
+      }
+      default:
+      {
+        dserror("Time integration scheme unknown!");
+        break;
+      }
+    }
+
+  return;
+}
+
+

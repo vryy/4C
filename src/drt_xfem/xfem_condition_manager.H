@@ -157,6 +157,8 @@ public:
 
   virtual void PrepareSolve(){};
 
+  virtual bool HasMovingInterface() = 0;
+
 protected:
 
 
@@ -284,6 +286,8 @@ public:
       const int step
   ){};
 
+  virtual bool HasMovingInterface(){ return true; }
+
 
   Teuchos::RCP<Epetra_Vector> IVelnp(){ return ivelnp_; }
   Teuchos::RCP<Epetra_Vector> IVeln() { return iveln_;  }
@@ -304,8 +308,8 @@ private:
 
     if(ndim != 3 ) dserror("only three-dimensional XFEM applications supported!");
 
-    if(dis->NumMyRowNodes() == 0) dserror("discretization does not have row nodes?!");
-    const int numdof = dis->NumDof(dis->lRowNode(0));
+    if(dis->NumMyColNodes() == 0) dserror("discretization does not have col nodes?!");
+    const int numdof = dis->NumDof(dis->lColNode(0));
 
     switch(numdof)
     {
@@ -418,6 +422,9 @@ protected:
 
   virtual void PrepareSolve();
 
+  virtual bool HasMovingInterface();
+
+
 };
 
 
@@ -475,7 +482,6 @@ public:
   Teuchos::RCP<Epetra_Vector> IForcecol(){ return iforcecol_; }
 
 
-
 private:
 
   void ExtractNodeVectors(
@@ -498,6 +504,9 @@ private:
 protected:
 
   void InitStateVectors_FSI();
+
+  virtual bool HasMovingInterface(){ return true; }
+
 
   //------------------------------- vectors -----------------------------
   //! @name cutter-dis state vectors
@@ -619,8 +628,14 @@ public:
   //! of xfluid-sided coupling)
   void RedistributeForErrorCalculation();
 
-
 private:
+
+  //!
+  virtual bool HasMovingInterface()
+  {
+    std::cout << "WARNING: adapt HasMovingInterface in MeshCouplingFluidFluid!" << std::endl;
+    return true;
+  }
 
   //! ghost embedded elements, that contribute to the cutting interface discretization on all procs
   void RedistributeEmbeddedDiscretization();
@@ -660,7 +675,7 @@ public:
 
 
   //! destructor
-  ~LevelSetCoupling()
+  virtual ~LevelSetCoupling()
   {
     return;
   }
@@ -676,6 +691,12 @@ public:
   );
 
   Teuchos::RCP<Epetra_Vector> GetLevelSetField(){ return phinp_; }
+
+  virtual void ReadRestart(
+      const int step
+  );
+
+  virtual bool HasMovingInterface(){ return true; }
 
 private:
 
@@ -1187,6 +1208,8 @@ public:
   );
 
   void PrepareSolve();
+
+  bool HasMovingInterface();
 
 private:
 

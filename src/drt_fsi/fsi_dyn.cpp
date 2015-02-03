@@ -158,6 +158,7 @@ void fluid_xfem_drt()
 
   const Teuchos::ParameterList xfluid = problem->XFluidDynamicParams();
   bool alefluid = DRT::INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")),"ALE_XFluid");
+
   if (alefluid) //in ale case
   {
     Teuchos::RCP<DRT::Discretization> aledis   = problem->GetDis("ale");
@@ -181,28 +182,7 @@ void fluid_xfem_drt()
     }
   }
 
-
-  const Teuchos::ParameterList& xfdyn     = DRT::Problem::Instance()->XFluidDynamicParams();
-
-  INPAR::XFEM::MovingBoundary moving_boundary = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(xfdyn.sublist("GENERAL"),"XFLUID_BOUNDARY");
-
-  if(moving_boundary == INPAR::XFEM::XFluidStationaryBoundary)
-  {
-    if (alefluid) dserror("XFluid_Ale not for XFluidStationaryBoundary implemented yet!!!");
-    // no restart required, no moving interface
-
-    // create instance of fluid basis algorithm
-    const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
-    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,fdyn,"fluid",false));
-
-    // run the simulation, calls the xfluid-"integrate()" routine
-    fluidalgo->FluidField()->Integrate();
-
-    // perform result tests if required
-    problem->AddFieldTest(fluidalgo->FluidField()->CreateFieldTest());
-    problem->TestAll(comm);
-  }
-  else if(moving_boundary == INPAR::XFEM::XFluidMovingBoundary)
+  if(alefluid)
   {
     // create instance of fluid xfem algorithm, for moving interfaces
     Teuchos::RCP<FSI::FluidXFEMAlgorithm> fluidalgo = Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
@@ -221,11 +201,38 @@ void fluid_xfem_drt()
     problem->AddFieldTest(fluidalgo->MBFluidField()->CreateFieldTest());
     problem->TestAll(comm);
   }
-  else if(moving_boundary == INPAR::XFEM::XFSIMovingBoundary) dserror("do not use XFSIMovingBoundary with prb fluid_xfem2");
-  else dserror("not a valid XFLUID_BOUNDARY value");
+  else
+  {
+    //--------------------------------------------------------------
+    // create instance of fluid basis algorithm
+    const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
 
+    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo =
+        Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,fdyn,"fluid",false));
+
+    //--------------------------------------------------------------
+    // restart the simulation
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
+    {
+      // read the restart information, set vectors and variables
+      fluidalgo->FluidField()->ReadRestart(restart);
+    }
+
+    //--------------------------------------------------------------
+    // run the simulation
+    fluidalgo->FluidField()->Integrate();
+
+    //--------------------------------------------------------------
+    // perform result tests if required
+    problem->AddFieldTest(fluidalgo->FluidField()->CreateFieldTest());
+    problem->TestAll(comm);
+
+  }
 
 }
+
+
 
 /*----------------------------------------------------------------------*/
 // entry point for Fluid-Fluid based  on XFEM in DRT

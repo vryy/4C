@@ -75,7 +75,6 @@ GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          MomentFitting
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUID_BOUNDARY                 xfluid_stationary_boundary    // moving_boundary
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress //BoundaryTypeSigma //BoundaryTypeSigma //BoundaryTypeNeumann  // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 HYBRID_LM_L2_PROJ               part_ele_proj //full_ele_proj  // part_ele_proj

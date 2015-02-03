@@ -323,28 +323,36 @@ void runEnsightVtuFilter(PostProblem    &problem)
     {
       std::cout << "Output FSI-XFEM Problem" << std::endl;
 
-        std::string basename = problem.outname();
+      int numfield = problem.num_discr();
 
-        std::cout << "  Structural Field" << std::endl;
-        PostField* structfield = problem.get_discretization(0);
-        StructureFilter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
-        structwriter.WriteFiles();
+      std::string basename = problem.outname();
 
-        std::cout << "  Fluid Field" << std::endl;
-        PostField* fluidfield = problem.get_discretization(1);
-        FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+      std::cout << "  Structural Field" << std::endl;
+      PostField* structfield = problem.get_discretization(0);
+      StructureFilter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
 
+      std::cout << "  Fluid Field" << std::endl;
+      PostField* fluidfield = problem.get_discretization(1);
+      FluidFilter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
 
-        std::cout << "  Interface Field" << std::endl;
-        PostField* ifacefield = problem.get_discretization(2);
+      // all other fields are interface fields
+      for(int i=2; i<numfield;i++)
+      {
+        std::cout << "  Interface Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
+        PostField* ifacefield = problem.get_discretization(i);
         InterfaceFilter ifacewriter(ifacefield, basename);
         ifacewriter.WriteFiles();
+      }
 
-        break;
+
+      break;
     }
     case prb_fpsi_xfem:
     {
+      int numfield = problem.num_discr();
+
       std::string basename = problem.outname();
 
       std::cout << "  Structural Field ( "<< problem.get_discretization(0)->name() << " )" << std::endl;
@@ -367,32 +375,40 @@ void runEnsightVtuFilter(PostProblem    &problem)
       FluidFilter alewriter(alefield, basename);
       alewriter.WriteFiles();
 
-      std::cout << "  Interface Field ( "<< problem.get_discretization(4)->name() << " )" << std::endl;
-      PostField* ifacefield = problem.get_discretization(4);
-      InterfaceFilter ifacewriter(ifacefield, basename);
-      ifacewriter.WriteFiles();
+      // all other fields are interface fields
+      for(int i=4; i<numfield;i++)
+      {
+        std::cout << "  Interface Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
+        PostField* ifacefield = problem.get_discretization(i);
+        InterfaceFilter ifacewriter(ifacefield, basename);
+        ifacewriter.WriteFiles();
+      }
 
       break;
     }
     case prb_fluid_xfem:
     {
-        std::cout << "Output FLUID-XFEM Problem" << std::endl;
+      std::cout << "Output FLUID-XFEM Problem" << std::endl;
 
-        int numfield = problem.num_discr();
-        if (numfield == 1 || numfield > 3)
-          dserror("number of fields does not match: got %d",numfield);
-        std::string basename = problem.outname();
+      int numfield = problem.num_discr();
+      if (numfield == 0)
+        dserror("we expect at least a fluid field, numfield=%i",numfield);
+      std::string basename = problem.outname();
 
-        std::cout << "  Fluid Field" << std::endl;
-        PostField* fluidfield = problem.get_discretization(0);
-        FluidFilter fluidwriter(fluidfield, basename);
-        fluidwriter.WriteFiles();
+      std::cout << "  Fluid Field" << std::endl;
+      PostField* fluidfield = problem.get_discretization(0);
+      FluidFilter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
 
-          std::cout << "  Interface Field" << std::endl;
-          PostField* ifacefield = problem.get_discretization(numfield-1);
-          InterfaceFilter ifacewriter(ifacefield, basename);
-          ifacewriter.WriteFiles();
-        break;
+      // all other fields are interface fields
+      for(int i=1; i<numfield;i++)
+      {
+        std::cout << "  Interface Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
+        PostField* ifacefield = problem.get_discretization(i);
+        InterfaceFilter ifacewriter(ifacefield, basename);
+        ifacewriter.WriteFiles();
+      }
+      break;
     }
     case prb_loma:
     {
