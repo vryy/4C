@@ -491,3 +491,33 @@ Teuchos::RCP<const Epetra_CrsGraph> DRT::UTILS::BuildGraph(
 
   return graph;
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::WeightedRepartitioning(
+  Teuchos::RCP<DRT::Discretization> dis,
+  bool assigndegreesoffreedom,
+  bool initelements,
+  bool doboundaryconditions)
+{
+  // maps to be filled with final distributed node maps
+  Teuchos::RCP<Epetra_Map> rownodes;
+  Teuchos::RCP<Epetra_Map> colnodes;
+  // do weighted repartitioning
+  DRT::UTILS::PartUsingZoltanWithWeights(dis, rownodes, colnodes, true);
+
+  // rebuild of the system with new maps
+  Teuchos::RCP<Epetra_Map> roweles;
+  Teuchos::RCP<Epetra_Map> coleles;
+  dis->BuildElementRowColumn(*rownodes,*colnodes,roweles,coleles);
+  dis->ExportRowNodes(*rownodes);
+  dis->ExportRowElements(*roweles);
+  dis->ExportColumnNodes(*colnodes);
+  dis->ExportColumnElements(*coleles);
+
+  // do final fill complete
+  dis->FillComplete(assigndegreesoffreedom,initelements,doboundaryconditions);
+
+  return;
+}

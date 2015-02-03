@@ -1968,18 +1968,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   Teuchos::RCP<DRT::Discretization> macro_dis = macro_problem->GetDis("structure");
 
   // repartition macro problem for a good distribution of elements with micro material
-  Teuchos::RCP<Epetra_Map> rownodes;
-  Teuchos::RCP<Epetra_Map> colnodes;
-  DRT::UTILS::PartUsingZoltanWithWeights(macro_dis, rownodes, colnodes, true);
-  // rebuild of the system with new maps
-  Teuchos::RCP<Epetra_Map> roweles;
-  Teuchos::RCP<Epetra_Map> coleles;
-  macro_dis->BuildElementRowColumn(*rownodes,*colnodes,roweles,coleles);
-  macro_dis->ExportRowNodes(*rownodes);
-  macro_dis->ExportRowElements(*roweles);
-  macro_dis->ExportColumnNodes(*colnodes);
-  macro_dis->ExportColumnElements(*coleles);
-  macro_dis->FillComplete(true,true,true);
+  DRT::UTILS::WeightedRepartitioning(macro_dis, true, true, true);
 
   // make sure that we read the micro discretizations only on the processors on
   // which elements with the corresponding micro material are evaluated

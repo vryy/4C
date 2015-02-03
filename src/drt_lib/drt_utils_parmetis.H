@@ -51,6 +51,12 @@ namespace UTILS
       Teuchos::RCP<Epetra_Comm> comm,
       bool outflag);
 
+  void WeightedRepartitioning(
+      Teuchos::RCP<DRT::Discretization> dis,
+      bool assigndegreesoffreedom,
+      bool initelements,
+      bool doboundaryconditions);
+
 } // namespace UTILS
 } // namespace DRT
 
