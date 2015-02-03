@@ -447,7 +447,9 @@ int  LINALG::SOLVER::AMGnxn_Operator::ApplyInverse(
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_Operator::ApplyInverse");
   if(!is_setup_flag_)
     dserror("ApplyInverse cannot be called without a previous set up of the preconditioner");
-  V_->Apply(X,Y);
+  Epetra_MultiVector Ytmp(Y.Map(),X.NumVectors(),true); // true is necessary! (initial guess has to be zero)
+  V_->Apply(X,Ytmp);
+  Y = Ytmp;
   return 0;
 }
 

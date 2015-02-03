@@ -161,6 +161,8 @@ namespace SOLVER
 
       void Setup();
 
+      Teuchos::RCP<Richardson_Vcycle_Operator> GetVcycle(){return V_;}
+
     private:
       Teuchos::RCP<BlockSparseMatrixBase> A_;
       std::vector<Teuchos::ParameterList> muelu_lists_;

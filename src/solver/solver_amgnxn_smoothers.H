@@ -89,6 +89,13 @@ namespace LINALG
             const Epetra_MultiVector& X,
             Epetra_MultiVector& Y,
             bool InitialGuessIsZero=false) const=0;
+        void Richardson(
+            Teuchos::RCP<const AMGnxn_SmootherBase> Ainv,
+            Teuchos::RCP<const SparseOperator> A,
+            const Epetra_MultiVector& X,
+            Epetra_MultiVector& Y,
+            int iters,
+            double omega) const;
     };
 
 
@@ -273,14 +280,6 @@ namespace LINALG
         int iter_;
         double alpha_;
         std::string correction_;
-        // Working vectors
-        mutable Teuchos::RCP<Epetra_MultiVector> DXp_      ;
-        mutable Teuchos::RCP<Epetra_MultiVector> DXs_      ;
-        mutable Teuchos::RCP<Epetra_MultiVector> DYp_      ;
-        mutable Teuchos::RCP<Epetra_MultiVector> DYs_      ;
-        mutable Teuchos::RCP<Epetra_MultiVector> DXp_aux_  ;
-        mutable Teuchos::RCP<Epetra_MultiVector> DXs_aux_  ;
-        mutable Teuchos::RCP<Epetra_MultiVector> DYp_aux_  ;
     };
 
 
@@ -295,7 +294,9 @@ namespace LINALG
             Teuchos::RCP<MultiMapExtractor> domain_ex,
             int size,
             int iter,
-            double omega
+            double omega,
+            std::vector<int> iters,
+            std::vector<double> omegas
             );
         virtual void Apply(
             const Epetra_MultiVector& X,
@@ -310,6 +311,8 @@ namespace LINALG
         int size_;
         int iter_;
         double omega_;
+        std::vector<int> iters_;
+        std::vector<double> omegas_;
     };
 
     class AMGnxn_Operator; // Forward declaration

@@ -191,10 +191,10 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::Richardson_Vcycle(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, int start_level) const
 {
   // Create auxiliary vectors
-  Epetra_MultiVector Ytmp(Y.Map(),X.NumVectors(),true); // true is necessary! (initial guess has to be zero)
   Epetra_MultiVector DX(X.Map(),X.NumVectors(),false);
   Epetra_MultiVector DY(Y.Map(),X.NumVectors(),false);
 
+  if(&X == &Y) dserror("The two vectors X and Y cannot be physically the same object. Is aztec00 calling directly this routine?");
   for(int i=0;i<NumSweeps_;i++)
   {
 
@@ -202,7 +202,7 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::Richardson_Vcycle(
 
     // Compute residual
     if(i!=0)
-      Avec_[0]->Apply(Ytmp,DX);
+      Avec_[0]->Apply(Y,DX);
     DX.Update(1.0,X,-1.0*scal_aux);
 
     // Apply V-cycle as preconditioner
@@ -210,10 +210,9 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::Richardson_Vcycle(
     Vcycle(DX,DY,start_level,true);
 
     // Apply correction
-    Ytmp.Update(omega_,DY,scal_aux);
+    Y.Update(omega_,DY,scal_aux);
 
   }
-  Y=Ytmp;
   return;
 }
 

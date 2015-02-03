@@ -329,6 +329,31 @@ void LINALG::SOLVER::BlockAggrupator::Setup()
   return;
 }
 
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+void LINALG::SOLVER::AMGnxn_SmootherBase::Richardson(
+    Teuchos::RCP<const AMGnxn_SmootherBase> Ainv,
+    Teuchos::RCP<const SparseOperator> A,
+    const Epetra_MultiVector& X,
+    Epetra_MultiVector& Y,
+    int iters,
+    double omega) const
+{
+  Epetra_MultiVector DX = X;
+  Epetra_MultiVector DY = Y;
+  if(&X == &Y) dserror("The two vectors X and Y cannot be physically the same object. Is aztec00 calling directly this routine?");
+  for(int i=0; i<iters; i++)
+  {
+    A->Apply(Y,DX);
+    DX.Update(1.0,X,-1.0);
+    DY.Scale(0.0);
+    Ainv->Apply(DX,DY);
+    Y.Update(omega,DY,1.0);
+  }
+
+
+  return;
+}
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -675,14 +700,7 @@ p_             (p           ),
 s_             (s           ),
 iter_          (iter        ),
 alpha_         (alpha       ),
-correction_    (correction  ),
-DXp_      (Teuchos::null),
-DXs_      (Teuchos::null),
-DYp_      (Teuchos::null),
-DYs_      (Teuchos::null),
-DXp_aux_  (Teuchos::null),
-DXs_aux_  (Teuchos::null),
-DYp_aux_  (Teuchos::null)
+correction_    (correction  )
 {}
 
 
@@ -694,80 +712,57 @@ void LINALG::SOLVER::SIMPLE_BlockSmoother::Apply (
 
 
   //Extract blocks
-  Teuchos::RCP<Epetra_MultiVector> Xp  = range_ex_->ExtractVector(X,p_);
-  Teuchos::RCP<Epetra_MultiVector> Xs  = range_ex_->ExtractVector(X,s_);
   Teuchos::RCP<Epetra_MultiVector> Yp  = domain_ex_->ExtractVector(Y,p_);
   Teuchos::RCP<Epetra_MultiVector> Ys  = domain_ex_->ExtractVector(Y,s_);
 
-  // Allocate working vectors only if necessary
+  // Working vectors
   int NV = X.NumVectors();
-  if (DXp_ == Teuchos::null)
-  {
-    const Teuchos::RCP<const Epetra_Map>& range_p  = range_ex_->Map(p_);
-    const Teuchos::RCP<const Epetra_Map>& domain_p = domain_ex_->Map(p_);
-    const Teuchos::RCP<const Epetra_Map>& range_s  = range_ex_->Map(s_);
-    const Teuchos::RCP<const Epetra_Map>& domain_s = domain_ex_->Map(s_);
-    DXp_      = Teuchos::rcp(new Epetra_MultiVector( *range_p,NV));
-    DXs_      = Teuchos::rcp(new Epetra_MultiVector( *range_s,NV));
-    DYp_      = Teuchos::rcp(new Epetra_MultiVector(*domain_p,NV));
-    DYs_      = Teuchos::rcp(new Epetra_MultiVector(*domain_s,NV));
-    DXp_aux_  = Teuchos::rcp(new Epetra_MultiVector( *range_p,NV));
-    DXs_aux_  = Teuchos::rcp(new Epetra_MultiVector( *range_s,NV));
-    DYp_aux_  = Teuchos::rcp(new Epetra_MultiVector(*domain_p,NV));
-  }
-  else if (DXp_->NumVectors() != NV)
-  {
-    const Teuchos::RCP<const Epetra_Map>& range_p  = range_ex_->Map(p_);
-    const Teuchos::RCP<const Epetra_Map>& domain_p = domain_ex_->Map(p_);
-    const Teuchos::RCP<const Epetra_Map>& range_s  = range_ex_->Map(s_);
-    const Teuchos::RCP<const Epetra_Map>& domain_s = domain_ex_->Map(s_);
-    DXp_      = Teuchos::rcp(new Epetra_MultiVector( *range_p,NV));
-    DXs_      = Teuchos::rcp(new Epetra_MultiVector( *range_s,NV));
-    DYp_      = Teuchos::rcp(new Epetra_MultiVector(*domain_p,NV));
-    DYs_      = Teuchos::rcp(new Epetra_MultiVector(*domain_s,NV));
-    DXp_aux_  = Teuchos::rcp(new Epetra_MultiVector( *range_p,NV));
-    DXs_aux_  = Teuchos::rcp(new Epetra_MultiVector( *range_s,NV));
-    DYp_aux_  = Teuchos::rcp(new Epetra_MultiVector(*domain_p,NV));
-  }
+  const Teuchos::RCP<const Epetra_Map>& range_p  = range_ex_->Map(p_);
+  const Teuchos::RCP<const Epetra_Map>& domain_p = domain_ex_->Map(p_);
+  const Teuchos::RCP<const Epetra_Map>& range_s  = range_ex_->Map(s_);
+  const Teuchos::RCP<const Epetra_Map>& domain_s = domain_ex_->Map(s_);
+  Teuchos::RCP<Epetra_MultiVector> Xp_tmp = Teuchos::rcp(new Epetra_MultiVector( *range_p,NV));
+  Teuchos::RCP<Epetra_MultiVector> Xs_tmp = Teuchos::rcp(new Epetra_MultiVector( *range_s,NV));
+  Teuchos::RCP<Epetra_MultiVector> Yp_tmp = Teuchos::rcp(new Epetra_MultiVector(*domain_p,NV));
+  Teuchos::RCP<Epetra_MultiVector> DYs    = Teuchos::rcp(new Epetra_MultiVector(*domain_s,NV));
 
-  //  TODO erase omega
+
   // Run several sweeps
   for(int k=0;k<iter_;k++)
   {
+    //Extract blocks
+    Teuchos::RCP<Epetra_MultiVector> Xp  = range_ex_->ExtractVector(X,p_);
+    Teuchos::RCP<Epetra_MultiVector> Xs  = range_ex_->ExtractVector(X,s_);
 
     // Predictor equation
-    DXp_->Update(1.0,*Xp,0.0);  // DXp = Xp;
-    Aps_->Apply(*Ys,*DXp_aux_);
-    DXp_->Update(-1.0,*DXp_aux_,1.0); // DXp = Xp -  Aps*Ys;
-    DYp_->Scale(0.0);
-    Smoother_App_->Apply(*DXp_,*DYp_); //DYp  = App^-1(Xp  - Aps*Ys)
+    Aps_->Apply(*Ys,*Xp_tmp);
+    Xp->Update(-1.0,*Xp_tmp,1.0); // Xp = Xp -  Aps*Ys;
+    Smoother_App_->Apply(*Xp,*Yp); // Yp  = App^-1(Xp  - Aps*Ys)
 
     // Compute Schur complement equation
-    DXs_->Update(1.0,*Xs,0.0); // DXs_ = Xs
-    Asp_->Apply(*DYp_,*DXs_aux_);
-    DXs_->Update(-1.0,*DXs_aux_,1.0); // DXs = Xs - Asp*DYp
-    Ass_->Apply(*Ys,*DXs_aux_);
-    DXs_->Update(-1.0,*DXs_aux_,1.0);// DXs = Xs - Asp*DYp - Ass*Ys
-    DYs_->Scale(0.0);
-    Smoother_S_->Apply(*DXs_,*DYs_); // DYs = S^-1(Xs - Asp*DYp - Ass*Ys)
+    Asp_->Apply(*Yp,*Xs_tmp);
+    Xs->Update(-1.0,*Xs_tmp,1.0); // Xs = Xs - Asp*Yp
+    Ass_->Apply(*Ys,*Xs_tmp);
+    Xs->Update(-1.0,*Xs_tmp,1.0);// Xs = Xs - Asp*Yp - Ass*Ys
+    DYs->Scale(0.0);
+    Smoother_S_->Apply(*Xs,*DYs); // DYs = S^-1(Xs - Asp*Yp - Ass*Ys)
 
     // Schur update
-    Ys->Update(alpha_,*DYs_,1.0); // Ys = Ys + alpha*DYs
+    Ys->Update(alpha_,*DYs,1.0); // Ys = Ys + alpha*DYs
 
     // Predictor update
-    Aps_->Apply(*DYs_,*DXp_aux_); //DXp_aux = A12*DYs
+    Aps_->Apply(*DYs,*Xp_tmp); //Xp_tmp = A12*DYs
     if (correction_ == "approximated inverse")
-      invApp_->Apply(*DXp_aux_,*DYp_aux_);// DYp_aux = App^-1*Aps*DYs
+      invApp_->Apply(*Xp_tmp,*Yp_tmp);// Yp_tmp = App^-1*Aps*DYs
     else if (correction_ == "smoother")
     {
-      DYp_aux_->Scale(0.0);
-      Smoother_App_->Apply(*DXp_aux_,*DYp_aux_);// DYp_aux = App^-1*Aps*DYs
+      Yp_tmp->Scale(0.0);
+      Smoother_App_->Apply(*Xp_tmp,*Yp_tmp);//Yp_tmp = App^-1*Aps*DYs
     }
     else
       dserror("Invalid strategy for computing the correction. Given correction = %s", correction_.c_str());
 
-    Yp->Update(1.0,*DYp_,0.0); // Yp = DYp
-    Yp->Update(-1.0*alpha_,*DYp_aux_,1.0); // Yp = DYp - alpha*App^-1*Aps*DYs
+    Yp->Update(-1.0*alpha_,*Yp_tmp,1.0); // Yp = Yp - alpha*App^-1*Aps*DYs
 
   }
 
@@ -788,7 +783,9 @@ LINALG::SOLVER::BGS_BlockSmoother::BGS_BlockSmoother(
     Teuchos::RCP<MultiMapExtractor> domain_ex,
     int size,
     int iter,
-    double omega
+    double omega,
+    std::vector<int> iters,
+    std::vector<double> omegas
     ):
 blocks_     (blocks   ),
 smoothers_  (smoothers),
@@ -797,7 +794,9 @@ range_ex_   (range_ex ),
 domain_ex_  (domain_ex),
 size_       (size     ),
 iter_       (iter     ),
-omega_      (omega    )
+omega_      (omega    ),
+iters_      (iters),
+omegas_     (omegas)
 {}
 
 
@@ -837,8 +836,8 @@ void LINALG::SOLVER::BGS_BlockSmoother::Apply(
       Teuchos::RCP<Epetra_MultiVector> DYi =
         Teuchos::rcp(new Epetra_MultiVector(Y_blocks[i]->Map(),NV));
       DYi->PutScalar(0.0);
-      smoothers_[i]->Apply(*DXi,*DYi,true);
-
+      //smoothers_[i]->Apply(*DXi,*DYi,true);
+      Richardson(smoothers_[i],blocks_[i*size_+i],*DXi,*DYi,iters_[i],omegas_[i]);
       // Update
       Y_blocks[i]->Update(omega_,*DYi,1.0);
 
@@ -875,7 +874,7 @@ LINALG::SOLVER::AMG_BlockSmoother::AMG_BlockSmoother(
 void LINALG::SOLVER::AMG_BlockSmoother::Apply(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
 {
-  P_->ApplyInverse(X,Y);
+  P_->GetVcycle()->Apply(X,Y);
   return;
 }
 
@@ -1610,6 +1609,8 @@ LINALG::SOLVER::BGS_BlockSmootherFactory::Create()
   //   <Parameter name="smoothers"   type="string"  value="myBGS,mySIMPLE,IFPACK"/>
   //   <Parameter name="sweeps"      type="int"     value="3"/>
   //   <Parameter name="omega"       type="double"  value="1.0"/>
+  //   <Parameter name="local sweeps"  type="string"     value="3,2,4"/>
+  //   <Parameter name="local omegas"  type="string"  value="1.0,1.2,0.9"/>
   // </ParameterList>
 
   // TODO Check that all required data is set
@@ -1641,6 +1642,37 @@ LINALG::SOLVER::BGS_BlockSmootherFactory::Create()
   // sweeps and damping
   int iter = GetParams().get<int>("sweeps",3);
   double omega = GetParams().get<double>("omega",1.0);
+  std::string local_sweeps = GetParams().get<std::string>("local sweeps","none");
+  std::string local_omegas = GetParams().get<std::string>("local omegas","none");
+  int NumSuperBlocks = SuperBlocks2Blocks.size();
+  std::vector<double> omegas(NumSuperBlocks,1.0);
+  std::vector<int> iters(NumSuperBlocks,1);
+  if (local_sweeps != "none")
+  {
+    std::istringstream ss(local_sweeps);
+    std::string token;
+    int ib = 0;
+    while(std::getline(ss, token, ','))
+    {
+      if (ib >= NumSuperBlocks) dserror("too many comas in %s",local_sweeps.c_str());
+      iters[ib++]= atoi(token.c_str()) ;
+    }
+    if(ib < NumSuperBlocks) dserror("too less comas in %s",local_sweeps.c_str());
+  }
+  if (local_omegas != "none")
+  {
+    std::istringstream ss(local_omegas);
+    std::string token;
+    int ib = 0;
+    while(std::getline(ss, token, ','))
+    {
+      if (ib >= NumSuperBlocks) dserror("too many comas in %s",local_omegas.c_str());
+      omegas[ib++]= atof(token.c_str()) ;
+    }
+    if(ib < NumSuperBlocks) dserror("too less comas in %s",local_omegas.c_str());
+  }
+
+
 
   // =============================================================
   // Some output
@@ -1686,6 +1718,14 @@ LINALG::SOLVER::BGS_BlockSmootherFactory::Create()
     }
     std::cout << "sweeps = " << iter << std::endl;
     std::cout << "omega = " << omega << std::endl;
+    std::cout << "local sweeps = " ;
+    for(size_t k=0;k<iters.size();k++)
+      std::cout << iters[k] << ",";
+    std::cout << std::endl;
+    std::cout << "local omegas = " ;
+    for(size_t k=0;k<omegas.size();k++)
+      std::cout << omegas[k] << ",";
+    std::cout << std::endl;
     //std::cout << std::endl;
   }
 
@@ -1697,7 +1737,6 @@ LINALG::SOLVER::BGS_BlockSmootherFactory::Create()
   if (OpBlocked == Teuchos::null)
     dserror("I expect a block matrix here");
   BlockAggrupator myBlockAggrupator(OpBlocked,SuperBlocks2BlocksLocal);
-  int NumSuperBlocks = SuperBlocks2Blocks.size();
   std::vector<int> indices(NumSuperBlocks,0);
   for(int i=0;i<(int)indices.size();i++)
     indices[i]=i;
@@ -1743,7 +1782,9 @@ LINALG::SOLVER::BGS_BlockSmootherFactory::Create()
         myBlockAggrupator.GetDomainMapExtractor(),
         myBlockAggrupator.GetNumSuperBlocks(),
         iter,
-        omega));
+        omega,
+        iters,
+        omegas));
 
 }
 
