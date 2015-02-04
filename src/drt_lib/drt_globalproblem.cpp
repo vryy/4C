@@ -945,6 +945,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       fluiddis  = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid"    ,reader.Comm()));
       aledis    = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale"      ,reader.Comm()));
     }
+    else if(DRT::INPUT::IntegralValue<int>(FluidDynamicParams().sublist("WALL MODEL"),"X_WALL"))
+    {
+      structdis = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::DiscretizationXWall("fluid",reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::Discretization("ale",reader.Comm()));
+    }
     else
     {
       structdis = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
@@ -965,6 +971,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID");
     fluidelementtypes.insert("FLUID2");
     fluidelementtypes.insert("FLUID3");
+    fluidelementtypes.insert("FLUID3XW");
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
@@ -1308,6 +1315,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       fluiddis  = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid"    ,reader.Comm()));
       aledis    = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("ale"      ,reader.Comm()));
     }
+    else if(DRT::INPUT::IntegralValue<int>(FluidDynamicParams().sublist("WALL MODEL"),"X_WALL"))
+    {
+      fluiddis  = Teuchos::rcp(new DRT::DiscretizationXWall("fluid",reader.Comm()));
+      aledis    = Teuchos::rcp(new DRT::Discretization("ale"        ,reader.Comm()));
+    }
     else
     {
       fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid" ,reader.Comm()));
@@ -1331,6 +1343,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID");
     fluidelementtypes.insert("FLUID2");
     fluidelementtypes.insert("FLUID3");
+    fluidelementtypes.insert("FLUID3XW");
+
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));

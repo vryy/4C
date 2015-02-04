@@ -3484,11 +3484,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcChannelStatistics(
   // Do ALE specific updates if necessary
   if (ele->IsAle()&&enrtype != DRT::ELEMENTS::Fluid::xwall)
   {
+    LINALG::Matrix<nsd_,nen_> egridv(true);
     LINALG::Matrix<nsd_,nen_> edispnp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
-
     // get new node positions of ALE mesh
-     xyze_ += edispnp;
+    GetGridDispVelALE(discretization, lm, edispnp, egridv);
 
      for (int inode=0; inode<nen_; inode++)
      {
@@ -4059,8 +4058,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcTimeStep(
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
   // Do ALE specific updates if necessary
+  // ---------------------------------------------------------------------
+  // get additional state vectors for ALE case: grid displacement and vel.
+  // ---------------------------------------------------------------------
+  LINALG::Matrix<nsd_, nen_> edispnp(true);
+  LINALG::Matrix<nsd_, nen_> egridv(true);
   if (ele->IsAle())
-    dserror("The adaptive time step is not implemented for Ale flow up to now. How is the CFL number defined with Ale? Update and test yourself, it is easy.");
+    GetGridDispVelALE(discretization, lm, edispnp, egridv);
+
 
   // evaluate shape functions and derivatives element center
   EvalShapeFuncAndDerivsAtEleCenter();
@@ -4070,17 +4075,25 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcTimeStep(
 
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnp, NULL,"velnp");
 
-  LINALG::Matrix<nsd_,1> velint(true);
-  velint.Multiply(evelnp,funct_);
+  convvelint_.Multiply(evelnp,funct_);
 
   //calculate element length via the stream length definition, see corresponding implementation
   //in fluid_ele_calc for calculation of the stabilization parameter
   double h=0.0;
-  double vel_norm=velint.Norm2();
+  double vel_norm=0.0;
+
+  if(ele->IsAle())
+  {
+    gridvelint_.Multiply(egridv,funct_);
+    convvelint_.Update(-1.0,gridvelint_,1.0);
+  }
+
+  vel_norm = convvelint_.Norm2();
+
   if(vel_norm>1.0e-6)
   {
     LINALG::Matrix<nsd_,1> velino(true);
-    velino.Update(1.0/vel_norm,velint);
+    velino.Update(1.0/vel_norm,convvelint_);
 
     // get streamlength using the normed velocity at element centre
     LINALG::Matrix<nen_,1> tmp;

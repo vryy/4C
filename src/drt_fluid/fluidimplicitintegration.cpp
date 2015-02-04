@@ -259,7 +259,12 @@ void FLD::FluidImplicitTimeInt::Init()
   {
     //XWall: enrichment with spaldings law
     if(DRT::INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"),"X_WALL"))
-      xwall_= Teuchos::rcp(new XWall(discret_,numdim_,params_,dbcmaps_,stressmanager_));
+    {
+      if (DRT::Problem::Instance()->ProblemType() == prb_fsi || DRT::Problem::Instance()->ProblemType() == prb_fluid_ale)
+        xwall_= Teuchos::rcp(new XWallAleFSI(discret_,numdim_,params_,dbcmaps_,stressmanager_,dispnp_,gridv_));
+      else
+        xwall_= Teuchos::rcp(new XWall(discret_,numdim_,params_,dbcmaps_,stressmanager_));
+    }
   }
 
   if (not params_->get<int>("Simple Preconditioner",0) && not params_->get<int>("AMG BS Preconditioner",0)
@@ -720,6 +725,14 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
 
   while (step_<stepmax_ and time_<maxtime_)
   {
+    // -------------------------------------------------------------------
+    //                       evaluate time step size if applicable
+    // -------------------------------------------------------------------
+    SetDt(EvaluateDtViaCflIfApplicable());
+
+    // -------------------------------------------------------------------
+    //                       prepare time step
+    // -------------------------------------------------------------------
     PrepareTimeStep();
     // -------------------------------------------------------------------
     //                       output to screen
@@ -769,7 +782,6 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   //              set time-dependent parameters
   // -------------------------------------------------------------------
-  EvaluateDtWithCFL();
   IncrementTimeAndStep();
 
   // Sets theta_ to a specific value for bdf2 and calculates
@@ -830,10 +842,10 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // ----------------------------------------------------------------
   if(xwall_!=Teuchos::null)
   {
-    // Transfer of boundary data if necessary
-    turbulent_inflow_condition_->Transfer(trueresidual_,trueresidual_,time_);
-    xwall_->UpdateTauW(step_,trueresidual_,0,accn_,velnp_,veln_);
-  }
+     // Transfer of boundary data if necessary
+     turbulent_inflow_condition_->Transfer(trueresidual_,trueresidual_,time_);
+     xwall_->UpdateTauW(step_,trueresidual_,0,accn_,velnp_,veln_);
+   }
 
   // -------------------------------------------------------------------
   //  evaluate Dirichlet and Neumann boundary conditions
@@ -5011,7 +5023,7 @@ Teuchos::RCP<double> FLD::FluidImplicitTimeInt::EvaluateDivU()
 /*----------------------------------------------------------------------*
  | calculate adaptive time step with the CFL number             bk 08/14|
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::EvaluateDtWithCFL()
+double FLD::FluidImplicitTimeInt::EvaluateDtViaCflIfApplicable()
 {
 
   int stependadaptivedt =     params_->get<int>   ("FREEZE_ADAPTIVE_DT_AT",10000000);
@@ -5029,6 +5041,11 @@ void FLD::FluidImplicitTimeInt::EvaluateDtWithCFL()
       xwall_->SetXWallParams(eleparams);
 
     discret_->SetState("velnp", velnp_);
+    if(alefluid_)
+    {
+      discret_->SetState("dispnp", dispnp_);
+      discret_->SetState("gridv", gridv_);
+    }
 
     const Epetra_Map* elementrowmap = discret_->ElementRowMap();
     Teuchos::RCP<Epetra_MultiVector> h_u = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,1,true));
@@ -5051,15 +5068,16 @@ void FLD::FluidImplicitTimeInt::EvaluateDtWithCFL()
     if(min_h_u<1.0e3)
     {
       if(step_>0)
-        dta_+=inc*(cfl_*min_h_u-dtp_);
+        return dta_ + inc*(cfl_*min_h_u-dtp_);
       else //start of simulation
-        dta_=cfl_*min_h_u;
+        return cfl_*min_h_u;
+
     }
     else if(myrank_==0)
       std::cout << "Calculated time step is zero due to zero velocity field: use time step stated in input file for the first step!" << std::endl;
   }
 
-  return;
+  return dta_;
 } // end EvaluateDtWithCFL
 
 /*----------------------------------------------------------------------*
@@ -5295,6 +5313,9 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
 
     // set thermodynamic pressures
     SetCustomEleParamsLinearRelaxationSolve(eleparams);
+
+    if(xwall_!=Teuchos::null)
+      xwall_->SetXWallParams(eleparams);
 
     // set general vector values needed by elements
     discret_->ClearState();

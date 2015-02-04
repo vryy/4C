@@ -50,6 +50,7 @@ DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::FluidEleCalcXWall()
   epsi_(true),
   epsinew_(true),
   epsiold_(true),
+  eincwdist_(true),
   visc_(0.0),
   viscinv_(0.0),
   xyze_(true),
@@ -340,8 +341,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetEleProperties(DRT::EL
   if(my::rotsymmpbc_->HasRotSymmPBC())
     dserror("rotsymm pbc don't work with xwall");
 
-  if(ele->IsAle())
-    dserror("ale not supported with xwall");
+//  if(ele->IsAle())
+//    dserror("ale not supported with xwall");
 
   //get xwall toggle
   {
@@ -434,11 +435,25 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetEleProperties(DRT::EL
 
   if(calcoldandnewpsi_==true)
   {
+    //get old wall distance in case of ale
+    if(ele->IsAle())
+    {
+      const Teuchos::RCP<Epetra_Vector> incwdist = params.get< Teuchos::RCP<Epetra_Vector> >("incwalldist");
+
+      std::vector<double> mylocal(ele->NumNode());
+      DRT::UTILS::ExtractMyNodeBasedValues(ele,mylocal,*incwdist);
+
+      for (unsigned inode=0; inode< (unsigned)enren_; ++inode)  // number of nodes
+      {
+        eincwdist_(inode) = mylocal.at(inode);
+      }
+    }
+
     for (int inode=0;inode<enren_;inode++)
     {
       epsinew_(inode)=epsi_(inode);
       double utaunode=sqrt((etauw_(inode)-einctauw_(inode))*densinv_);
-      double psinode=SpaldingsLaw(ewdist_(inode), utaunode);
+      double psinode=SpaldingsLaw(ewdist_(inode)-eincwdist_(inode), utaunode);
 
       epsiold_(inode)=psinode;
     }
@@ -462,6 +477,9 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetEleProperties(DRT::EL
       numgpplane_=(int)(*gpvecpar_)[gpvecpar_->Map().LID(ele->Id())];
       // get node coordinates and number of elements per node
       GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
+      LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
+      LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+      if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp, egridv);
       PrepareGaussRule();
     }
   }
@@ -472,6 +490,9 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetEleProperties(DRT::EL
 
     // get node coordinates and number of elements per node
     GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
+    LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
+    LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+    if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp, egridv);
     PrepareGaussRule();
   }
 
@@ -488,6 +509,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::XWallTauWIncBack()
   {
     etauw_(inode) -= einctauw_(inode);
     epsi_(inode)   = epsiold_(inode);
+    ewdist_(inode) -= eincwdist_(inode);
   }
 
   return;
@@ -503,6 +525,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::XWallTauWIncForward()
   {
     etauw_(inode) += einctauw_(inode);
     epsi_(inode)   = epsinew_(inode);
+    ewdist_(inode) += eincwdist_(inode);
   }
 
   return;
@@ -962,27 +985,24 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::TauWViaGradient(
   GEO::fillInitialPositionArray<distype,my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
 
   if (ele->IsAle())
-    dserror("ale is not supported with xwall so far");
+  {
+    LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
+    LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+    GetGridDispVelALE(discretization, lm, edispnp, egridv);
+    evel-=egridv;
+  }
+
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
   //------------------------------------------------------------------
 
-  LINALG::Matrix<enren_,1> ewdist(true);
-  const Teuchos::RCP<Epetra_Vector> walldist = params.get< Teuchos::RCP<Epetra_Vector> >("walldist");
-  std::vector<double> mylocal(ele->NumNode());
-  DRT::UTILS::ExtractMyNodeBasedValues(ele,mylocal,*walldist);
-
-  for (unsigned inode=0; inode< (unsigned)ele->NumNode(); ++inode)  // number of nodes
-  {
-    ewdist(inode) = mylocal.at(inode);
-  }
 
   //number of nodes, the derivative should be calculated at the nodes
-  for (int inode=0;inode<ele->NumNode();++inode)
+  for (int inode=0;inode<enren_;++inode)
   {
     //calculate only for the wall nodes
-    if(ewdist(inode)<1e-4)
+    if(ewdist_(inode)<1e-4)
     {
       LINALG::Matrix<3,1> test=DRT::UTILS::getNodeCoordinates( inode, distype);
       const double gp[]={test(0,0),test(1,0),test(2,0)};
@@ -1173,8 +1193,9 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::CalcMK(
 
   GEO::fillInitialPositionArray<distype,my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
 
-  if (ele->IsAle())
-    dserror("ale is not supported with xwall so far");
+  LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
+  LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+  if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp, egridv);
 
   elevec1[0] = CalcMK();
   return 0;
@@ -1219,8 +1240,9 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::XWallProjection(
 
   GEO::fillInitialPositionArray<distype,my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
 
-  if (ele->IsAle())
-    dserror("ale is not supported with xwall so far");
+  LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
+  LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+  if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp, egridv);
 
 //  DRT::UTILS::GaussIntegration intpoints(DRT::Element::line6);
 
@@ -2044,5 +2066,40 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::SysmatForErrorEstimation
            grule);
       return;
     }
+
+/*---------------------------------------------------------------------------*
+ | get ALE grid displacements and grid velocity for element     schott 11/14 |
+ *---------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetGridDispVelALE(
+    DRT::Discretization &                   discretization,
+    const std::vector<int> &                lm,
+    LINALG::Matrix<my::nsd_,my::nen_>&              edispnp,
+    LINALG::Matrix<my::nsd_,my::nen_>&              egridv
+)
+{
+  switch (my::fldpara_->PhysicalType())
+  {
+  case INPAR::FLUID::oseen:
+  case INPAR::FLUID::stokes:
+  {
+    dserror("ALE with Oseen or Stokes seems to be a tricky combination. Think deep before removing dserror!");
+    break;
+  }
+  default:
+  {
+    ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, NULL,"dispnp");
+    ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &egridv, NULL,"gridv");
+    break;
+  }
+  }
+  // add displacement when fluid nodes move in the ALE case
+  // xyze_ does only know 8 nodes
+  // edispnp also knows the virtual ones but doens't do anything with them
+  for (unsigned inode=0; inode< (unsigned) enren_; ++inode)  // number of nodes
+    for(int sdm=0;sdm<my::nsd_;++sdm)
+      my::xyze_(sdm,inode) += edispnp(sdm,inode*2);
+
+}
 
 template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8,DRT::ELEMENTS::Fluid::xwall>;

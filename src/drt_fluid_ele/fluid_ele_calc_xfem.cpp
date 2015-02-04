@@ -729,6 +729,12 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
   //----------------------------------------------------------------------------
 
   // ---------------------------------------------------------------------
+  // get initial node coordinates for element
+  // ---------------------------------------------------------------------
+  // get node coordinates
+  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+
+  // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
 
@@ -737,14 +743,6 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
   if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
 
-  // ---------------------------------------------------------------------
-  // get initial node coordinates for element
-  // ---------------------------------------------------------------------
-  // get node coordinates
-  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
-
-  // add displacement when fluid nodes move in the ALE case
-  if (ele->IsAle()) my::xyze_ += edispnp;
 
 
   // ---------------------------------------------------------------------
@@ -1108,6 +1106,12 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
   //----------------------------------------------------------------------------
 
   // ---------------------------------------------------------------------
+  // get initial node coordinates for element
+  // ---------------------------------------------------------------------
+  // get node coordinates
+  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+
+  // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
 
@@ -1115,15 +1119,6 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
   LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
 
   if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
-
-  // ---------------------------------------------------------------------
-  // get initial node coordinates for element
-  // ---------------------------------------------------------------------
-  // get node coordinates
-  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
-
-  // add displacement when fluid nodes move in the ALE case
-  if (ele->IsAle()) my::xyze_ += edispnp;
 
 
   // ---------------------------------------------------------------------
@@ -1501,6 +1496,13 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------
+  // get initial node coordinates for element
+  // ---------------------------------------------------------------------
+  // get node coordinates
+  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
@@ -1509,15 +1511,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
 
   if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
-
-  // ---------------------------------------------------------------------
-  // get initial node coordinates for element
-  // ---------------------------------------------------------------------
-  // get node coordinates
-  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
-
-  // add displacement when fluid nodes move in the ALE case
-  if (ele->IsAle()) my::xyze_ += edispnp;
 
 
   // ---------------------------------------------------------------------
@@ -3235,6 +3228,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
 
   // ---------------------------------------------------------------------
+  // get initial node coordinates for element
+  // ---------------------------------------------------------------------
+  // get node coordinates
+  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+
+  // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
 
@@ -3242,15 +3241,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
 
   if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
-
-  // ---------------------------------------------------------------------
-  // get initial node coordinates for element
-  // ---------------------------------------------------------------------
-  // get node coordinates
-  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
-
-  // add displacement when fluid nodes move in the ALE case
-  if (ele->IsAle()) my::xyze_ += edispnp;
 
 
   // ---------------------------------------------------------------------

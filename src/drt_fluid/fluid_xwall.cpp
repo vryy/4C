@@ -697,11 +697,39 @@ void FLD::XWall::SetupL2Projection()
 
     std::vector<int> enrdf;          // enriched dofs
 
-    for (int i=0; i<xwdiscret_->DofRowMap()->NumMyElements(); ++i)
+    for (int i=0; i<xwdiscret_->NodeRowMap()->NumMyElements(); ++i)
     {
-      int gdfid=xwdiscret_->DofRowMap()->GID(i);
-      if(gdfid%8>3&&gdfid%8<7)
-        enrdf.push_back(gdfid);
+      int gid = xwdiscret_->NodeRowMap()->GID(i);
+       //continue only if on this proc
+       if (xwdiscret_->NodeRowMap()->MyGID(gid))
+       {
+         DRT::Node* node = xwdiscret_->gNode(gid);
+          if (!node) dserror("ERROR: Cannot find off wall node with gid %",gid);
+          //make sure that periodic nodes are not assembled twice
+          std::vector<DRT::Condition*> periodiccond;
+          node->GetCondition("SurfacePeriodic",periodiccond);
+          //make sure that slave periodic bc are not included
+          bool includedofs=true;
+          if (not periodiccond.empty())
+          {
+            for (unsigned numcondper=0;numcondper<periodiccond.size();++numcondper)
+            {
+              const std::string* mymasterslavetoggle
+                = periodiccond[numcondper]->Get<std::string>("Is slave periodic boundary condition");
+              if(*mymasterslavetoggle=="Slave")
+              {
+                includedofs=false;
+              }
+            }
+          }
+          if (includedofs)
+          {
+            int firstglobaldofid=xwdiscret_->Dof(0,node,0);
+            enrdf.push_back(firstglobaldofid+4);
+            enrdf.push_back(firstglobaldofid+5);
+            enrdf.push_back(firstglobaldofid+6);
+          }
+       }
     }
 
     enrdofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)enrdf.size(),&enrdf[0],0,xwdiscret_->Comm()));
@@ -1041,6 +1069,13 @@ void FLD::XWall::CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   trueresidual,T
     // get number of elements
     const int numele = xwdiscret_->NumMyColElements();
 
+    // set action in order to project element void fraction to nodal void fraction
+    Teuchos::ParameterList params;
+
+    SetXWallParamsXWDis(params);
+
+    params.set<int>("action",FLD::tauw_via_gradient);
+
     // loop column elements: vector
     for (int i=0; i<numele; ++i)
     {
@@ -1053,11 +1088,7 @@ void FLD::XWall::CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   trueresidual,T
 
       elevector1.Size(numnode);
       elevector2.Size(numnode);
-      // set action in order to project element void fraction to nodal void fraction
-      Teuchos::ParameterList params;
-      SetXWallParamsXWDis(params);
-      params.set<int>("action",FLD::tauw_via_gradient);
-      params.set("newtauw",newtauwxwdis);
+
       // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
       //elevector1 has to be NULL here, because I am assuming a dof-based vector otherwise
       actele->Evaluate(params,*xwdiscret_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
@@ -1499,5 +1530,139 @@ void FLD::XWall::ReadRestart(IO::DiscretizationReader& reader)
 
   restart_wss_=Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
   reader.ReadVector(restart_wss_,"wss");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Constructor (public)                                       bk 01/15 |
+ *----------------------------------------------------------------------*/
+FLD::XWallAleFSI::XWallAleFSI(Teuchos::RCP<DRT::Discretization>      dis,
+    int                           nsd,
+    Teuchos::RCP<Teuchos::ParameterList>& params,
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+    Teuchos::RCP<FLD::UTILS::StressManager> wssmanager,
+    Teuchos::RCP<Epetra_Vector>   dispnp,
+    Teuchos::RCP<Epetra_Vector>   gridv):
+    XWall(dis,nsd,params,dbcmaps,wssmanager),
+    mydispnp_(dispnp),
+    mygridv_(gridv)
+{
+  incwdistxwdis_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->NodeColMap()),true));
+  return;
+}
+
+void FLD::XWallAleFSI::UpdateWDistWALE()
+{
+  //save old one for projection
+  incwdistxwdis_->Update(1.0,*wdistxwdis_,0.0);
+
+  Teuchos::RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
+  Teuchos::RCP<Epetra_Vector> y = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
+  Teuchos::RCP<Epetra_Vector> z = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
+
+  //fill vectors with coords
+  for (int j=0; j<xwallrownodemap_->NumMyElements();++j)
+  {
+    int xwallgid = xwallrownodemap_->GID(j);
+
+    if (not discret_->NodeRowMap()->MyGID(xwallgid)) //just in case
+      dserror("not on proc");
+    DRT::Node* xwallnode = discret_->gNode(xwallgid);
+    if(!xwallnode) dserror("Cannot find node");
+
+    int firstglobaldofid=discret_->Dof(xwallnode,0);
+    int firstlocaldofid=discret_->DofRowMap()->LID(firstglobaldofid);
+
+    int err = x->ReplaceMyValue(j,0,(xwallnode->X())[0]+(*mydispnp_)[firstlocaldofid]);
+    err += y->ReplaceMyValue(j,0,(xwallnode->X())[1]+(*mydispnp_)[firstlocaldofid+1]);
+    err += z->ReplaceMyValue(j,0,(xwallnode->X())[2]+(*mydispnp_)[firstlocaldofid+2]);
+    if(err>0)
+      dserror("something wrong");
+  }
+
+  Teuchos::RCP<Epetra_Vector> wdistx = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
+  Teuchos::RCP<Epetra_Vector> wdisty = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
+  Teuchos::RCP<Epetra_Vector> wdistz = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
+
+  //project coordinates of the closest wall node to the node itself
+  tauwcouplingmattrans_->Multiply(true,*x,*wdistx);
+  tauwcouplingmattrans_->Multiply(true,*y,*wdisty);
+  tauwcouplingmattrans_->Multiply(true,*z,*wdistz);
+
+  //get delta
+  wdistx->Update(-1.0,*x,1.0);
+  wdisty->Update(-1.0,*y,1.0);
+  wdistz->Update(-1.0,*z,1.0);
+
+  //fill vectors with coords
+  for (int j=0; j<xwallrownodemap_->NumMyElements();++j)
+  {
+    int xwallgid = xwallrownodemap_->GID(j);
+
+    if (not discret_->NodeRowMap()->MyGID(xwallgid)) //just in case
+      dserror("not on proc");
+    DRT::Node* xwallnode = discret_->gNode(xwallgid);
+    if(!xwallnode) dserror("Cannot find node");
+    double x=(*wdistx)[j];
+    double y=(*wdisty)[j];
+    double z=(*wdistz)[j];
+    double newwdist=sqrt(x*x+y*y+z*z);
+    int err = walldist_->ReplaceMyValue(j,0,newwdist);
+    if(err>0)
+      dserror("something wrong");
+
+  }
+
+  LINALG::Export(*walldist_,*wdist_);
+  LINALG::Export(*walldist_,*wdistxwdis_);
+  //save old one for projection
+  incwdistxwdis_->Update(1.0,*wdistxwdis_,-1.0);
+
+  double mean=0.0;
+  walldist_->MeanValue(&mean);
+
+  if(myrank_==0)
+    std::cout << "the new mean distance from the wall of all XWall nodes is: "<< mean << std::endl;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Set params required to build the shape functions           bk 07/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XWallAleFSI::SetXWallParams(Teuchos::ParameterList& eleparams)
+{
+  XWall::SetXWallParams(eleparams);
+  discret_->SetState("gridv",mygridv_);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Set params required to build the shape functions           bk 08/14 |
+ |  Used for the xwdiscret_, which is redistributed                     |
+ *----------------------------------------------------------------------*/
+void FLD::XWallAleFSI::SetXWallParamsXWDis(Teuchos::ParameterList& eleparams)
+{
+  XWall::SetXWallParamsXWDis(eleparams);
+  //params required for the shape functions
+  eleparams.set("incwalldist",incwdistxwdis_);
+  Teuchos::RCP<Epetra_Vector> xwdisdispnp = LINALG::CreateVector(*(xwdiscret_->DofRowMap()),true);
+  LINALG::Export(*mydispnp_,*xwdisdispnp);
+  Teuchos::RCP<Epetra_Vector> xwdisgridv = LINALG::CreateVector(*(xwdiscret_->DofRowMap()),true);
+  LINALG::Export(*mygridv_,*xwdisgridv);
+
+  xwdiscret_->SetState("dispnp",xwdisdispnp);
+  xwdiscret_->SetState("gridv",xwdisgridv);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Routine to update Tauw                                     bk 07/14 |
+ *----------------------------------------------------------------------*/
+  void FLD::XWallAleFSI::UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual, int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln)
+{
+  UpdateWDistWALE();
+  FLD::XWall::UpdateTauW(step, trueresidual, itnum, accn, velnp, veln);
   return;
 }

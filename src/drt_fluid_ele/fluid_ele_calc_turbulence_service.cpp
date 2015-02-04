@@ -1433,23 +1433,23 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::MultfracSubGridScalesCross(
                \                                      /
       */
       velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
-                      * (velint_(0,0) * mffsvderxy_(0,0)
-                        +velint_(1,0) * mffsvderxy_(0,1)
-                        +velint_(2,0) * mffsvderxy_(0,2)
+                      * (convvelint_(0,0) * mffsvderxy_(0,0)
+                        +convvelint_(1,0) * mffsvderxy_(0,1)
+                        +convvelint_(2,0) * mffsvderxy_(0,2)
                         +mffsvelint_(0,0) * vderxy_(0,0)
                         +mffsvelint_(1,0) * vderxy_(0,1)
                         +mffsvelint_(2,0) * vderxy_(0,2));
       velforce(1,vi) -= rhsfac * densaf_ * funct_(vi,0)
-                      * (velint_(0,0) * mffsvderxy_(1,0)
-                        +velint_(1,0) * mffsvderxy_(1,1)
-                        +velint_(2,0) * mffsvderxy_(1,2)
+                      * (convvelint_(0,0) * mffsvderxy_(1,0)
+                        +convvelint_(1,0) * mffsvderxy_(1,1)
+                        +convvelint_(2,0) * mffsvderxy_(1,2)
                         +mffsvelint_(0,0) * vderxy_(1,0)
                         +mffsvelint_(1,0) * vderxy_(1,1)
                         +mffsvelint_(2,0) * vderxy_(1,2));
       velforce(2,vi) -= rhsfac * densaf_ * funct_(vi,0)
-                      * (velint_(0,0) * mffsvderxy_(2,0)
-                        +velint_(1,0) * mffsvderxy_(2,1)
-                        +velint_(2,0) * mffsvderxy_(2,2)
+                      * (convvelint_(0,0) * mffsvderxy_(2,0)
+                        +convvelint_(1,0) * mffsvderxy_(2,1)
+                        +convvelint_(2,0) * mffsvderxy_(2,2)
                         +mffsvelint_(0,0) * vderxy_(2,0)
                         +mffsvelint_(1,0) * vderxy_(2,1)
                         +mffsvelint_(2,0) * vderxy_(2,2));
@@ -1467,18 +1467,20 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::MultfracSubGridScalesCross(
       {
         velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(0,0) * vdiv_
-                          +velint_(0,0) * mffsvdiv_);
+                          +convvelint_(0,0) * mffsvdiv_);
         velforce(1,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(1,0) * vdiv_
-                          +velint_(1,0) * mffsvdiv_);
+                          +convvelint_(1,0) * mffsvdiv_);
         velforce(2,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(2,0) * vdiv_
-                          +velint_(2,0) * mffsvdiv_);
+                          +convvelint_(2,0) * mffsvdiv_);
 
         if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
         {
           dserror("Conservative formulation not supported for loma!");
         }
+        if(gridvelint_.Norm2()>1.0e-9)
+          dserror("Conservative formulation not supported with ale!");
       }
     }
   }
@@ -1490,13 +1492,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::MultfracSubGridScalesCross(
   //--------------------------------------------------------------------
   // linearized as far as possible due to the filter
 
-  LINALG::Matrix<nen_,1> mfconv_c(true);
-  mfconv_c.MultiplyTN(derxy_,mffsvelint_);
   // turn left-hand-side contribution on
   double beta = fldpara_->Beta();
 
   if (beta > 1.0e-9)
   {
+    if(gridvelint_.Norm2()>1.0e-9)
+      dserror("left hand side terms of MFS not supported with ale");
+    LINALG::Matrix<nen_,1> mfconv_c(true);
+    mfconv_c.MultiplyTN(derxy_,mffsvelint_);
     // convective part
     for (int ui=0; ui<nen_; ui++)
     {
@@ -1668,23 +1672,23 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::MultfracSubGridScalesConsiste
                \                                      /
       */
       velforce(0,0) += densaf_
-                      * (velint_(0,0) * mffsvderxy_(0,0)
-                        +velint_(1,0) * mffsvderxy_(0,1)
-                        +velint_(2,0) * mffsvderxy_(0,2)
+                      * (convvelint_(0,0) * mffsvderxy_(0,0)
+                        +convvelint_(1,0) * mffsvderxy_(0,1)
+                        +convvelint_(2,0) * mffsvderxy_(0,2)
                         +mffsvelint_(0,0) * vderxy_(0,0)
                         +mffsvelint_(1,0) * vderxy_(0,1)
                         +mffsvelint_(2,0) * vderxy_(0,2));
       velforce(1,0) += densaf_
-                      * (velint_(0,0) * mffsvderxy_(1,0)
-                        +velint_(1,0) * mffsvderxy_(1,1)
-                        +velint_(2,0) * mffsvderxy_(1,2)
+                      * (convvelint_(0,0) * mffsvderxy_(1,0)
+                        +convvelint_(1,0) * mffsvderxy_(1,1)
+                        +convvelint_(2,0) * mffsvderxy_(1,2)
                         +mffsvelint_(0,0) * vderxy_(1,0)
                         +mffsvelint_(1,0) * vderxy_(1,1)
                         +mffsvelint_(2,0) * vderxy_(1,2));
       velforce(2,0) += densaf_
-                      * (velint_(0,0) * mffsvderxy_(2,0)
-                        +velint_(1,0) * mffsvderxy_(2,1)
-                        +velint_(2,0) * mffsvderxy_(2,2)
+                      * (convvelint_(0,0) * mffsvderxy_(2,0)
+                        +convvelint_(1,0) * mffsvderxy_(2,1)
+                        +convvelint_(2,0) * mffsvderxy_(2,2)
                         +mffsvelint_(0,0) * vderxy_(2,0)
                         +mffsvelint_(1,0) * vderxy_(2,1)
                         +mffsvelint_(2,0) * vderxy_(2,2));

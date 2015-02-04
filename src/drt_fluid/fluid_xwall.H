@@ -61,7 +61,7 @@ public:
   virtual ~XWall(){return;};
 
   // set element params for xwall EnrichmentType
-  void SetXWallParams(Teuchos::ParameterList& eleparams);
+  virtual void SetXWallParams(Teuchos::ParameterList& eleparams);
 
   // adapt ml nullspace for aggregation for scale separation (mfs)
   void AdaptMLNullspace(const Teuchos::RCP<LINALG::Solver>&   solver);
@@ -70,7 +70,7 @@ public:
   Teuchos::RCP<Epetra_Vector> GetOutputVector(Teuchos::RCP<Epetra_Vector>   vel);
 
   // returns, if Properties for GenAlpha have to be updated
-  void UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual,int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln);
+  virtual void UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual,int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln);
 
   // returns tauw of discret_
   Teuchos::RCP<Epetra_Vector>   GetTauw();
@@ -88,10 +88,11 @@ public:
   void ReadRestart(IO::DiscretizationReader& reader);
   //set current non-linear iteration number
   void SetIter(int iter){iter_=iter;return;}
+
 protected:
 
   // set element params for xwall EnrichmentType, distributed for xwall discretization
-  void SetXWallParamsXWDis(Teuchos::ParameterList& eleparams);
+  virtual void SetXWallParamsXWDis(Teuchos::ParameterList& eleparams);
 
   // setup XWall
   void Setup();
@@ -119,8 +120,6 @@ protected:
 
   // calculate parameter for stabilization parameter mk
   void CalcMK();
-
-private:
 
   // for inflowchannel
   void TransferAndSaveTauw();
@@ -289,6 +288,39 @@ private:
   int iter_;
 
 }; // class XWall
+
+class XWallAleFSI: public XWall
+{
+public:
+  /// Standard Constructor
+  XWallAleFSI(Teuchos::RCP<DRT::Discretization>      dis,
+      int                           nsd,
+      Teuchos::RCP<Teuchos::ParameterList>& params,
+      Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+      Teuchos::RCP<FLD::UTILS::StressManager> wssmanager,
+      Teuchos::RCP<Epetra_Vector>   dispnp,
+      Teuchos::RCP<Epetra_Vector>   gridv);
+
+  /// Destructor
+  virtual ~XWallAleFSI(){return;};
+
+  void UpdateWDistWALE();
+
+  // set element params for xwall EnrichmentType
+  void SetXWallParams(Teuchos::ParameterList& eleparams);
+
+  // returns, if Properties for GenAlpha have to be updated
+  void UpdateTauW(int step,Teuchos::RCP<Epetra_Vector>   trueresidual,int itnum,Teuchos::RCP<Epetra_Vector>   accn,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   veln);
+
+private:
+  // set element params for xwall EnrichmentType, distributed for xwall discretization
+  void SetXWallParamsXWDis(Teuchos::ParameterList& eleparams);
+  Teuchos::RCP<Epetra_Vector>   mydispnp_;
+  Teuchos::RCP<Epetra_Vector>   mygridv_;
+
+  //! wall distance, row map of redistributed discretization
+  Teuchos::RCP<Epetra_Vector> incwdistxwdis_;
+};
 
 } // namespace FLD
 

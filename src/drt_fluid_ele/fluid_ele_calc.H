@@ -744,7 +744,7 @@ protected:
                                                 );
 
   //! get ALE grid displacements and grid velocity for element
-  void GetGridDispVelALE(
+  virtual void GetGridDispVelALE(
       DRT::Discretization &                   discretization,
       const std::vector<int> &                lm,
       LINALG::Matrix<nsd_,nen_>&              edispnp,

@@ -175,6 +175,14 @@ public:
                       double dot3,
                       int gp);
 
+  //! get ALE grid displacements and grid velocity for element
+  virtual void GetGridDispVelALE(
+      DRT::Discretization &                   discretization,
+      const std::vector<int> &                lm,
+      LINALG::Matrix<my::nsd_,my::nen_>&              edispnp,
+      LINALG::Matrix<my::nsd_,my::nen_>&              egridv
+  );
+
 private:
 
   const static int enren_=DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -294,6 +302,9 @@ private:
 
   //! nodal values of old psi
   LINALG::Matrix<enren_,1>    epsiold_;
+
+  //! nodal values of inctauw
+  LINALG::Matrix<enren_,1>    eincwdist_;
 
   //! kinematic viscosity
   double visc_;

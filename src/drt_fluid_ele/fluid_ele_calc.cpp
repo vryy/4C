@@ -348,21 +348,17 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
 
 
   // ---------------------------------------------------------------------
+  // get initial node coordinates for element
+  // ---------------------------------------------------------------------
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
   LINALG::Matrix<nsd_, nen_> edispnp(true);
   LINALG::Matrix<nsd_, nen_> egridv(true);
 
   if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp, egridv);
-
-  // ---------------------------------------------------------------------
-  // get initial node coordinates for element
-  // ---------------------------------------------------------------------
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
-  // add displacement when fluid nodes move in the ALE case
-  if (ele->IsAle()) xyze_ += edispnp;
-
 
 
   // ---------------------------------------------------------------------
@@ -1082,6 +1078,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
       // only required for variable-density flow at low Mach number
       if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
       {
+        if (isale) dserror("Multifractal subgrid-scales with ale and loma not supported");
         mfssgscaint_ = D_mfs * funct_.Dot(fsescaaf);
         grad_fsscaaf_.Multiply(derxy_,fsescaaf);
         for (int dim=0; dim<nsd_; dim++)
@@ -1093,7 +1090,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
         grad_fsscaaf_.Clear();
       }
 
-      if (isale) dserror("Multifractal subgrid-scales with ale not supported");
     }
     else
     {
@@ -1966,6 +1962,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetGridDispVelALE(
     break;
   }
   }
+  // add displacement when fluid nodes move in the ALE case
+  xyze_ += edispnp;
 }
 
 /*---------------------------------------------------------------------------*
@@ -5227,20 +5225,21 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::PSPG(
 
     if (is_higher_order_ele_ || fldpara_->IsNewton())
     {
-      for (int ui=0; ui<nen_; ++ui)
+      for (int vi=0; vi<nen_; ++vi)
       {
-        for (int vi=0; vi<nen_; ++vi)
+        for(int idim=0;idim<nsd_;++idim)
         {
-          for(int idim=0;idim<nsd_;++idim)
+          const double temp_vi_idim=derxy_(idim,vi)*scal_grad_q;
+          for (int ui=0; ui<nen_; ++ui)
           {
-            const double temp_vi_idim=derxy_(idim,vi)*scal_grad_q;
+              const int nsd_ui=nsd_*ui;
             for(int jdim=0;jdim<nsd_;++jdim)
             {
-              estif_q_u(vi,nsd_*ui+jdim) += lin_resM_Du(nsd_*idim+jdim,ui)*temp_vi_idim;
+              estif_q_u(vi,nsd_ui+jdim) += lin_resM_Du(nsd_*idim+jdim,ui)*temp_vi_idim;
             } // jdim
-          } // idim
-        } // vi
-      } // ui
+          } // ui
+        } // idim
+      } // vi
     } // end if (is_higher_order_ele_) or (newton_)
     else
     {
@@ -5483,11 +5482,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SUPG(
      {
        for (int vi=0; vi<nen_; ++vi)
        {
+         const int nsd_vi=nsd_*vi;
          for (int ui=0; ui<nen_; ++ui)
          {
+           const int nsd_ui=nsd_*ui;
            for(int idim=0;idim<nsd_;++idim)
            {
-             estif_u(nsd_*vi+idim,nsd_*ui+idim) += lin_resM_Du(nsd_*idim+idim,ui)*supg_test(vi);
+             estif_u(nsd_vi+idim,nsd_ui+idim) += lin_resM_Du(nsd_*idim+idim,ui)*supg_test(vi);
            } // ui
          } //idim
        } // vi

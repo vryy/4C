@@ -550,7 +550,7 @@ public:
   \brief calculate adaptive time step with the CFL number
 
   */
-  virtual void EvaluateDtWithCFL();
+  virtual double EvaluateDtViaCflIfApplicable();
 
   /*!
   \brief calculate subfilter stresses
