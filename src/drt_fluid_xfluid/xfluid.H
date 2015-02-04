@@ -685,6 +685,12 @@ namespace FLD
     // counter for current Newton iteration (used for Debug output)
     int itnum_out_;
 
+    /// output vector (mapped to initial fluid dofrowmap)
+    Teuchos::RCP<Epetra_Vector> outvec_fluid_;
+
+    /// vel-pres splitter for output purpose
+    Teuchos::RCP<LINALG::MapExtractor> velpressplitter_out_;
+
     /// output service class
     Teuchos::RCP<XFluidOutputService> output_service_;
     //--------------------------------------------------------------------

@@ -209,7 +209,14 @@ void FLD::XFluid::Init()
   // -------------------------------------------------------------------
   output_service_->GmshOutputDiscretization(eval_eos_, step_);
 
-
+  // -------------------------------------------------------------------
+  // Vector & map extractor for paraview output,
+  // mapped to initial fluid dofmap
+  // -------------------------------------------------------------------
+  // Todo: shift to XFluidOutputService
+  outvec_fluid_ = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+  velpressplitter_out_ = Teuchos::rcp(new LINALG::MapExtractor());
+  FLD::UTILS::SetupFluidSplit(*discret_,xdiscret_->InitialDofSet(),numdim_,*velpressplitter_out_);
 
   // -------------------------------------------------------------------
   // initialize ALE-specific fluid vectors based on the intial dof row map
@@ -251,6 +258,7 @@ void FLD::XFluid::SetXFluidParams()
   dtp_          = params_->get<double>("time step size");
 
   theta_        = params_->get<double>("theta");
+  omtheta_      = 1.0 - theta_;
   newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
   predictor_    = params_->get<std::string>("predictor","steady_state_predictor");
   convform_     = params_->get<string>("form of convective term","convective");
@@ -4207,7 +4215,7 @@ void FLD::XFluid::Output()
     output_->NewStep(step_,time_);
 
     // create vector according to the initial row map holding all standard fluid unknowns
-    Teuchos::RCP<Epetra_Vector> outvec_fluid = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
+    outvec_fluid_->PutScalar(0.0);
 
     const Epetra_Map* dofrowmap  = xdiscret_->InitialDofRowMap(); // original fluid unknowns
     const Epetra_Map* xdofrowmap = discret_->DofRowMap();   // fluid unknown for current cut
@@ -4247,7 +4255,7 @@ void FLD::XFluid::Output()
         for (std::size_t idof = 0; idof < numdof; ++idof)
         {
           //cout << dofrowmap->LID(gdofs[idof]) << endl;
-          (*outvec_fluid)[dofrowmap->LID(gdofs_original[idof])] = 0.0;
+          (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = 0.0;
         }
       }
       else if(gdofs_current.size() == gdofs_original.size())
@@ -4257,7 +4265,7 @@ void FLD::XFluid::Output()
         for (std::size_t idof = 0; idof < numdof; ++idof)
         {
           //cout << dofrowmap->LID(gdofs[idof]) << endl;
-          (*outvec_fluid)[dofrowmap->LID(gdofs_original[idof])] = (*state_->velnp_)[xdofrowmap->LID(gdofs_current[idof])];
+          (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = (*state_->velnp_)[xdofrowmap->LID(gdofs_current[idof])];
         }
       }
       else if(gdofs_current.size() % gdofs_original.size() == 0) //multiple dofsets
@@ -4309,7 +4317,7 @@ void FLD::XFluid::Output()
         // copy all values
         for (std::size_t idof = 0; idof < numdof; ++idof)
         {
-          (*outvec_fluid)[dofrowmap->LID(gdofs_original[idof])] = (*state_->velnp_)[xdofrowmap->LID(gdofs_current[offset+idof])];
+          (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = (*state_->velnp_)[xdofrowmap->LID(gdofs_current[offset+idof])];
         }
 
 
@@ -4319,33 +4327,26 @@ void FLD::XFluid::Output()
 
     };
 
-    Teuchos::RCP<Epetra_Vector> pressure;
-    {
-      // split based on complete fluid field (standard splitter that handles one dofset)
-      LINALG::MapExtractor velpressplitter_out;
-      FLD::UTILS::SetupFluidSplit(*discret_,xdiscret_->InitialDofSet(),numdim_,velpressplitter_out);
-      // output (hydrodynamic) pressure for visualization
-      pressure = velpressplitter_out.ExtractCondVector(outvec_fluid);
-    }
+    // output (hydrodynamic) pressure for visualization
 
-    output_->WriteVector("velnp", outvec_fluid);
+    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_out_->ExtractCondVector(outvec_fluid_);
+
+    output_->WriteVector("velnp", outvec_fluid_);
     output_->WriteVector("pressure", pressure);
 
     if (alefluid_)
     {
       //write ale displacement for t^{n+1}
       Teuchos::RCP<Epetra_Vector> dispnprm = Teuchos::rcp(new Epetra_Vector(*dispnp_));
-      dispnprm->ReplaceMap(outvec_fluid->Map()); //to get dofs starting by 0 ...
       output_->WriteVector("dispnp", dispnprm);
 
       //write grid velocity for t^{n+1}
       Teuchos::RCP<Epetra_Vector> gridvnprm = Teuchos::rcp(new Epetra_Vector(*gridvnp_));
-      gridvnprm->ReplaceMap(outvec_fluid->Map()); //to get dofs starting by 0 ...
       output_->WriteVector("gridv", gridvnprm);
 
       //write convective velocity for t^{n+1}
-      Teuchos::RCP<Epetra_Vector> convvel = Teuchos::rcp(new Epetra_Vector(outvec_fluid->Map(),true));
-      convvel->Update(1.0,*outvec_fluid,-1.0,*gridvnprm,0.0);
+      Teuchos::RCP<Epetra_Vector> convvel = Teuchos::rcp(new Epetra_Vector(outvec_fluid_->Map(),true));
+      convvel->Update(1.0,*outvec_fluid_,-1.0,*gridvnprm,0.0);
       output_->WriteVector("convel", convvel);
     }
 
