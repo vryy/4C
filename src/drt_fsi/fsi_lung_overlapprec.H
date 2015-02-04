@@ -98,6 +98,8 @@ namespace FSI
 
     Teuchos::RCP<LungSchurComplement> StructSchur_;
     Teuchos::RCP<LungSchurComplement> FluidSchur_;
+    Teuchos::RCP<LINALG::SparseMatrix> interconA_;
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> invDiag_;
 
     Teuchos::RCP<LINALG::Solver> constraintsolver_;
     Teuchos::RCP<Epetra_Map> overallfsimap_;

@@ -105,12 +105,89 @@ void FSI::LungOverlappingBlockMatrix::SetupPreconditioner()
 
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
   fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(),
-                      fsidofmapex,
-                      fluid_.Discretization(),
-                      irownodes,
-                      structuresplit_);
+      fsidofmapex,
+      fluid_.Discretization(),
+      irownodes,
+      structuresplit_);
   if (constalesolver_==Teuchos::null)
     alesolver_->Setup(aleInnerOp.EpetraMatrix());
+
+
+  // We can compute the schur complement only once
+  invDiag_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(fsiextractor_, fsiextractor_, 1, false, true));
+
+  const LINALG::SparseMatrix& StructInnerOp  = Matrix(0,0);
+  const LINALG::SparseMatrix& StructConOp    = Matrix(0,3);
+  const LINALG::SparseMatrix& FluidInnerOp   = Matrix(1,1);
+  const LINALG::SparseMatrix& AleInnerOp     = Matrix(2,2);
+  const LINALG::SparseMatrix& ConStructOp    = Matrix(3,0);
+
+  if (prec_ == INPAR::FSI::Simple)
+  {
+    // D^{-1} = diag(A(0,0))^{-1}
+
+    Epetra_Vector structDiagVec(StructInnerOp.RowMap(),false);
+    StructInnerOp.ExtractDiagonalCopy(structDiagVec);
+    int err = structDiagVec.Reciprocal(structDiagVec);
+    if (err) dserror("Epetra_MultiVector::Reciprocal (structure matrix) returned %d",err);
+    LINALG::SparseMatrix invstructDiag(structDiagVec);
+
+    Epetra_Vector fluidDiagVec(FluidInnerOp.RowMap(),false);
+    FluidInnerOp.ExtractDiagonalCopy(fluidDiagVec);
+    err = fluidDiagVec.Reciprocal(fluidDiagVec);
+    if (err) dserror("Epetra_MultiVector::Reciprocal (fluid matrix) returned %d",err);
+    LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
+
+    Epetra_Vector aleDiagVec(AleInnerOp.RowMap(),false);
+    AleInnerOp.ExtractDiagonalCopy(aleDiagVec);
+    err = aleDiagVec.Reciprocal(aleDiagVec);
+    if (err) dserror("Epetra_MultiVector::Reciprocal (ale matrix) returned %d",err);
+    LINALG::SparseMatrix invaleDiag(aleDiagVec);
+
+    invDiag_->Assign(0,0,View,invstructDiag);
+    invDiag_->Assign(1,1,View,invfluidDiag);
+    invDiag_->Assign(2,2,View,invaleDiag);
+  }
+  else if (prec_ == INPAR::FSI::Simplec)
+  {
+    // D^{-1} = sum(abs(A(0,0)))^{-1}
+
+    Epetra_Vector structDiagVec(StructInnerOp.RowMap(),false);
+    int err = StructInnerOp.EpetraMatrix()->InvRowSums(structDiagVec);
+    if (err) dserror("Epetra_CrsMatrix::InvRowSums (structure matrix) returned %d",err);
+    LINALG::SparseMatrix invstructDiag(structDiagVec);
+
+    Epetra_Vector fluidDiagVec(FluidInnerOp.RowMap(),false);
+    err = FluidInnerOp.EpetraMatrix()->InvRowSums(fluidDiagVec);
+    if (err) dserror("Epetra_CrsMatrix::InvRowSums (fluid matrix) returned %d",err);
+    LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
+
+    Epetra_Vector aleDiagVec(AleInnerOp.RowMap(),false);
+    err =  AleInnerOp.EpetraMatrix()->InvRowSums(aleDiagVec);
+    if (err) dserror("Epetra_CrsMatrix::InvRowSums (ale matrix) returned %d",err);
+    LINALG::SparseMatrix invaleDiag(aleDiagVec);
+
+    invDiag_->Assign(0,0,View,invstructDiag);
+    invDiag_->Assign(1,1,View,invfluidDiag);
+    invDiag_->Assign(2,2,View,invaleDiag);
+  }
+  else
+    dserror("Unknown type of preconditioner for constraint fsi system");
+
+  invDiag_->Complete();
+
+
+  // S = - B^ * D^{-1} * B^T
+
+  interconA_ = StructSchur_->CalculateSchur(Matrix(3,0),invDiag_->Matrix(0,0),Matrix(0,3));
+  Teuchos::RCP<LINALG::SparseMatrix> temp = FluidSchur_->CalculateSchur(Matrix(3,1),invDiag_->Matrix(1,1),Matrix(1,3));
+
+  interconA_->Add(*temp,false,1.0,1.0);
+
+  interconA_->Complete(StructConOp.DomainMap(),ConStructOp.RangeMap());
+  interconA_->Scale(-1.0);
+
+
 
 #endif
 }
@@ -295,76 +372,8 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
     ConFluidOp.Multiply(false,*fy, inter);
     cx->Update(-1.0, inter, 1.0);
 
-
-    LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> invDiag(fsiextractor_, fsiextractor_, 1, false, true);
-
-    if (prec_ == INPAR::FSI::Simple)
-    {
-      // D^{-1} = diag(A(0,0))^{-1}
-
-      Epetra_Vector structDiagVec(StructInnerOp.RowMap(),false);
-      StructInnerOp.ExtractDiagonalCopy(structDiagVec);
-      int err = structDiagVec.Reciprocal(structDiagVec);
-      if (err) dserror("Epetra_MultiVector::Reciprocal (structure matrix) returned %d",err);
-      LINALG::SparseMatrix invstructDiag(structDiagVec);
-
-      Epetra_Vector fluidDiagVec(FluidInnerOp.RowMap(),false);
-      FluidInnerOp.ExtractDiagonalCopy(fluidDiagVec);
-      err = fluidDiagVec.Reciprocal(fluidDiagVec);
-      if (err) dserror("Epetra_MultiVector::Reciprocal (fluid matrix) returned %d",err);
-      LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
-
-      Epetra_Vector aleDiagVec(AleInnerOp.RowMap(),false);
-      AleInnerOp.ExtractDiagonalCopy(aleDiagVec);
-      err = aleDiagVec.Reciprocal(aleDiagVec);
-      if (err) dserror("Epetra_MultiVector::Reciprocal (ale matrix) returned %d",err);
-      LINALG::SparseMatrix invaleDiag(aleDiagVec);
-
-      invDiag.Assign(0,0,View,invstructDiag);
-      invDiag.Assign(1,1,View,invfluidDiag);
-      invDiag.Assign(2,2,View,invaleDiag);
-    }
-    else if (prec_ == INPAR::FSI::Simplec)
-    {
-      // D^{-1} = sum(abs(A(0,0)))^{-1}
-
-      Epetra_Vector structDiagVec(StructInnerOp.RowMap(),false);
-      int err = StructInnerOp.EpetraMatrix()->InvRowSums(structDiagVec);
-      if (err) dserror("Epetra_CrsMatrix::InvRowSums (structure matrix) returned %d",err);
-      LINALG::SparseMatrix invstructDiag(structDiagVec);
-
-      Epetra_Vector fluidDiagVec(FluidInnerOp.RowMap(),false);
-      err = FluidInnerOp.EpetraMatrix()->InvRowSums(fluidDiagVec);
-      if (err) dserror("Epetra_CrsMatrix::InvRowSums (fluid matrix) returned %d",err);
-      LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
-
-      Epetra_Vector aleDiagVec(AleInnerOp.RowMap(),false);
-      err =  AleInnerOp.EpetraMatrix()->InvRowSums(aleDiagVec);
-      if (err) dserror("Epetra_CrsMatrix::InvRowSums (ale matrix) returned %d",err);
-      LINALG::SparseMatrix invaleDiag(aleDiagVec);
-
-      invDiag.Assign(0,0,View,invstructDiag);
-      invDiag.Assign(1,1,View,invfluidDiag);
-      invDiag.Assign(2,2,View,invaleDiag);
-    }
-    else
-      dserror("Unknown type of preconditioner for constraint fsi system");
-
-    invDiag.Complete();
-
-
-    // S = - B^ * D^{-1} * B^T
-
-    Teuchos::RCP<LINALG::SparseMatrix> interconA = StructSchur_->CalculateSchur(Matrix(3,0),invDiag.Matrix(0,0),Matrix(0,3));
-    Teuchos::RCP<LINALG::SparseMatrix> temp = FluidSchur_->CalculateSchur(Matrix(3,1),invDiag.Matrix(1,1),Matrix(1,3));
-
-    interconA->Add(*temp,false,1.0,1.0);
-
-    interconA->Complete(StructConOp.DomainMap(),ConStructOp.RangeMap());
-    interconA->Scale(-1.0);
-
     Teuchos::RCP<Epetra_Vector> interconsol = Teuchos::rcp(new Epetra_Vector(ConStructOp.RangeMap()));
-    constraintsolver_->Solve(interconA->EpetraOperator(),interconsol,cx,true,true);
+    constraintsolver_->Solve(interconA_->EpetraOperator(),interconsol,cx,true,true);
 
     // -------------------------------------------------------------------
     // update of all dofs
@@ -382,14 +391,14 @@ void FSI::LungOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_Mu
     temp2 = Teuchos::rcp(new Epetra_Vector(sy->Map()));
     StructConOp.Multiply(false,*interconsol, *temp1);
     temp1->Scale(alpha_);
-    invDiag.Matrix(0,0).Multiply(false,*temp1, *temp2);
+    invDiag_->Matrix(0,0).Multiply(false,*temp1, *temp2);
     sy->Update(-1.0, *temp2, 1.0);
 
     temp1 = Teuchos::rcp(new Epetra_Vector(fy->Map()));
     temp2 = Teuchos::rcp(new Epetra_Vector(fy->Map()));
     FluidConOp.Multiply(false,*interconsol, *temp1);
     temp1->Scale(alpha_);
-    invDiag.Matrix(1,1).Multiply(false,*temp1, *temp2);
+    invDiag_->Matrix(1,1).Multiply(false,*temp1, *temp2);
     fy->Update(-1.0, *temp2, 1.0);
   }
 
