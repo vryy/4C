@@ -1,15 +1,27 @@
 //
-// Maintainer: Magnus Winter
+// Maintainer: Magnus Winter & Benedikt Schott
 // winter@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 // 089 - 289-15236
 //
-
 ==================================================================
 General Data File BACI
 ==================================================================
------------------------------------------------------------------------TITLE
-created by pre_exodus
+-------------------------------------------------------------TITLE
+Freesurface between water and air. This should be solved exactly.
+A kink in pressure should be observed. Velocity field is constant 0.
+
+mesh: (16 x 16) [0.0 , 1.6] x [0.0 , 1.6]
+
+
+p_(y_max) = 0
+g         = 10.0 //-9.81
+        ___
+       |    rho_air*(y_gamma)*g                  + rho_water*(y_gamma-y)*g           y < y_gamma
+p =   -|
+       |___ rho_air*(y_gamma - (y - y_gamma))*g                                      y > y_gamma
+
+u =    [0 , 0]
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      800
 //NODES                         1722
@@ -27,6 +39,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1
 --------------------------------------------------------------------------IO
+OUTPUT_GMSH                     yes
 OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  No
@@ -74,11 +87,11 @@ GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No
 UPRES                           1
 RESTARTEVRY                     20
-NUMSTEP                         2
+NUMSTEP                         1 //2
 STEADYSTEP                      -1
 NUMSTASTEPS                     0
 STARTFUNCNO                     -1
-ITEMAX                          6
+ITEMAX                          10
 INITSTATITEMAX                  5
 TIMESTEP                        0.01
 MAXTIME                         1000
@@ -86,18 +99,18 @@ ALPHA_M                         1
 ALPHA_F                         1
 GAMMA                           1
 THETA                           0.66
-CONVTOL                         1e-12
-STEADYTOL                       1e-06
+CONVTOL                         1e-9
+STEADYTOL                       1e-09
 START_THETA                     1
 STRONG_REDD_3D_COUPLING_TYPE    no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based //residual_based //residual_based //residual_based, edge_based
+STABTYPE                        edge_based //residual_based //residual_based //residual_based, edge_based
 INCONSISTENT                    No
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            Yes //No //Yes
-SUPG                            Yes //No //Yes
-GRAD_DIV                        Yes //No //Yes
+PSPG                            No //No //Yes
+SUPG                            No //No //Yes
+GRAD_DIV                        No //No //Yes
 VSTAB                           no_vstab
 RSTAB                           no_rstab
 CROSS-STRESS                    no_cross
@@ -108,12 +121,12 @@ CHARELELENGTH_PC                volume_equivalent_diameter
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp //std_eos //xfem_gp
-EOS_CONV_STREAM                 none //xfem_gp //none
+EOS_PRES                        std_eos //xfem_gp //std_eos //xfem_gp
+EOS_CONV_STREAM                 std_eos //xfem_gp //xfem_gp //none
 EOS_CONV_CROSS                  none //xfem_gp, none
-EOS_DIV                         vel_jump_xfem_gp //none
-EOS_DEFINITION_TAU              Burman_Fernandez_Hansbo_wo_dt
-EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf
+EOS_DIV                         vel_jump_std_eos //vel_jump_xfem_gp //none
+EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt
+EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      linear_full
 TIMEINTEGR                      Stationary
@@ -152,30 +165,35 @@ MESHTYING                       no
 ONLYPOTENTIAL                   no
 LINEAR_SOLVER                   1
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  No
+GMSH_DEBUG_OUT                  no
 GMSH_DEBUG_OUT_SCREEN           No
-GMSH_SOL_OUT                    No
+GMSH_SOL_OUT                    Yes
 GMSH_EOS_OUT                    no
 GMSH_DISCRET_OUT                no
-GMSH_CUT_OUT                    No
+GMSH_CUT_OUT                    Yes
 MAX_NUM_DOFSETS                 3
-VOLUME_GAUSS_POINTS_BY Tessellation //Tessellation
-BOUNDARY_GAUSS_POINTS_BY Tessellation //Tessellation
+VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation
+BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
 --------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-RELAXING_ALE_EVERY              1
-RELAXING_ALE                    yes
-XFLUIDFLUID_SEARCHRADIUS        1
-MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
-XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
-XFLUID_TIMEINT                  STD=COPY/SL_and_GHOST=COPY/GP
+//XFLUID_BOUNDARY                 xfluid_stationary_boundary
+//INTERFACE_VEL_INITIAL           interface_vel_init_zero
+//INTERFACE_VEL                   interface_vel_zero
+//INTERFACE_DISP                  interface_disp_zero
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Hybrid_LM_viscous_stress
-COUPLING_STRATEGY               xfluid_sided_weak_DBC
-CONV_STAB_SCALING               abs_inflow
-GHOST_PENALTY_STAB              yes //yes
+COUPLING_METHOD                 Nitsche
+COUPLING_STRATEGY               two_sided_coupling
+VISC_ADJOINT_SYMMETRY           yes
+NIT_STAB_FAC                    75.0
+VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
+VISC_STAB_HK                    ele_vol_div_by_max_ele_surf
+IS_PSEUDO_2D                    yes
+CONV_STAB_SCALING               none //abs_inflow //abs_normal_vel   // inflow // const // none
+GHOST_PENALTY_STAB              yes
+GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
+GHOST_PENALTY_TRANSIENT_STAB    yes
+GHOST_PENALTY_TRANSIENT_FAC     0.005                         // in [0.001;0.005]
 GHOST_PENALTY_2nd_STAB          yes
-GHOST_PENALTY_FAC               0.05
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
@@ -183,8 +201,15 @@ SOLVER                          UMFPACK
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 10.0 DENSITY 1.0 GAMMA 1.0 // Re=6.62
-MAT 2 MAT_scatra DIFFUSIVITY 0.0
+MAT       1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4 END
+MAT       2 MAT_scatra  DIFFUSIVITY  0.0 // 1*10E-9
+MAT 3 MAT_fluid DYNVISCOSITY 0.00001 DENSITY 1.0 GAMMA 0.0 //Master  positive dom. (upper part of domain)
+MAT 4 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1000.0 GAMMA 0.0 //Slave   negative dom. (lower part of domain)
+//Alt.
+// MAT       3 MAT_fluid   DYNVISCOSITY 1.0 DENSITY 1.0  GAMMA 0.0  //Master  positive dom. (upper part of domain)
+// MAT       4 MAT_fluid   DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.0  //Slave   negative dom. (lower part of domain)
+// MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0 // Re=6.62
+// MAT 2 MAT_scatra DIFFUSIVITY 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
@@ -192,96 +217,110 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1                          FORWARDFACINGSTEP
+// Levelset cut
+FUNCT1 EXPR 0 0.0 0 FUNCTION y-0.8
 ----------------------------------------------------------------------FUNCT2
+FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-// nodes 255, 256 : element containing edge in fluid
-// nodes 287, 288 : element containing edge in solid
-//This test case should give same result as xfluid_forward_facing_step_stationary_16x16.dat
-FLUID DIS fluid NODE 255 QUANTITY velx VALUE 2.10362388781710589e-02 TOLERANCE 1e-11
-FLUID DIS fluid NODE 255 QUANTITY vely VALUE 1.10882564889596032e-03 TOLERANCE 1e-11
-FLUID DIS fluid NODE 255 QUANTITY velz VALUE 0.0 TOLERANCE 1e-11
-FLUID DIS fluid NODE 255 QUANTITY pressure VALUE 6.16203852061428936e+00 TOLERANCE 1e-8
+//In air
+FLUID DIS fluid NODE 87 QUANTITY velx VALUE 0.0 TOLERANCE 1e-9
+FLUID DIS fluid NODE 87 QUANTITY vely VALUE 0.0 TOLERANCE 1e-9
+//FLUID DIS fluid NODE 87 QUANTITY velz VALUE 0.0 TOLERANCE 1e-12
+FLUID DIS fluid NODE 87 QUANTITY pressure VALUE 7.0 TOLERANCE 1e-12
 
-FLUID DIS fluid NODE 287 QUANTITY velx VALUE -6.68408512275588031e-03 TOLERANCE 1e-11
-FLUID DIS fluid NODE 287 QUANTITY vely VALUE 1.42742528680794021e-03 TOLERANCE 1e-11
-FLUID DIS fluid NODE 287 QUANTITY velz VALUE 0.0 TOLERANCE 1e-11
-FLUID DIS fluid NODE 287 QUANTITY pressure VALUE 5.62655726545785040e+00 TOLERANCE 1e-8
+//On surface
+FLUID DIS fluid NODE 85 QUANTITY velx VALUE 0.0 TOLERANCE 1e-9
+FLUID DIS fluid NODE 85 QUANTITY vely VALUE 0.0 TOLERANCE 1e-9
+//FLUID DIS fluid NODE 85 QUANTITY velz VALUE 0.0 TOLERANCE 1e-12
+FLUID DIS fluid NODE 85 QUANTITY pressure VALUE 8.0 TOLERANCE 1e-12
+
+//In water
+FLUID DIS fluid NODE 217 QUANTITY velx VALUE 0.0 TOLERANCE 1e-9
+FLUID DIS fluid NODE 217 QUANTITY vely VALUE 0.0 TOLERANCE 1e-9
+//FLUID DIS fluid NODE 217 QUANTITY velz VALUE 0.0 TOLERANCE 1e-12
+FLUID DIS fluid NODE 217 QUANTITY pressure VALUE 2.00800000000000e+03 TOLERANCE 1e-9  //(tests 12 orders of magnitude)
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
+-----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL                            1
+//E 1 - none 1 1 1 0 0 0 0.0 -9.81 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 1 - none 1 1 1 0 0 0 0.0 -10.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 //                              bottom_south_east_point
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              bottom_east_north_point
-E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              bottom_north_west_point
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              bottom_west_south_point
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              top_south_east_point
-E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              top_east_north_point
-E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              top_north_west_point
-E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              top_west_south_point
-E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           12
 //                              bottom_east_line
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              bottom_north_line
-E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              bottom_west_line
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              bottom_south_line
-E 4 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 
-//                              south_east_line
-E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-//                              east_north_line
-E 6 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+//                              south_east_line (changed)
+E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+//                              east_north_line (changed)
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              north_west_line
-E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              west_south_line
-E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 
 //                              top_south_line
-E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              top_east_line
-E 10 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              top_north_line
-E 11 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 11 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              top_west_line
-E 12 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 12 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 //                              bottom
-E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              top
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              south
-E 3 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-//                              east
-E 4 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+//                              east (changed)
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              north
-E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 //                              west
-E 6 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 //                              volume
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
---------------------------DESIGN XFEM LEVELSET WEAK DIRICHLET VOL CONDITIONS
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+--------------------------------DESIGN XFEM LEVELSET TWOPHASE VOL CONDITIONS
 DVOL                           1
 //                              fluid_volume
-E 1 - LEVELSETFIELDNO 1 LEVELSETCURVE none NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - LEVELSETFIELDNO 1 LEVELSETCURVE none
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 545 DNODE 1
 NODE 546 DNODE 2
