@@ -283,6 +283,7 @@ std::string DRT::ParObjectList()
     << MAT::GrowthMandelType::Instance().Name() << " "
     << MAT::GrowthScdType::Instance().Name() << " "
     << MAT::GrowthScdACType::Instance().Name() << " "
+    << MAT::GrowthScdACRadialType::Instance().Name() << " "
     << MAT::ScatraGrowthScdType::Instance().Name() << " "
     << MAT::HerschelBulkleyType::Instance().Name() << " "
     << MAT::IonType::Instance().Name() << " "

@@ -116,7 +116,8 @@ namespace INPAR
       m_growth_volumetric,   ///< volumetric growth base material
       m_growth_linear,   ///< linear growth law
       m_growth_exponential,   ///< exponential growth law
-      m_growth_ac,   ///< simple scalar dependend growth law
+      m_growth_ac,   ///< simple scalar depended growth law
+      m_growth_ac_radial,   ///< scalar depended growth in radial direction
       m_constraintmixture,  ///< growth and remodeling of arteries
       m_biofilm,   ///< biofilm modeling (convection-diffusion-reaction)
       m_fluidporo,       ///< darcy fluid for poroelasticity problems

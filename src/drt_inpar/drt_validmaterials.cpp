@@ -1593,12 +1593,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  // simple atherosclerosis growth law
+  // simple atherosclerosis growth law, scalar depended volumetric growth
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAC",
-                                            "exponential growth law",
+                                            "scalar depended volumetric growth",
                                             INPAR::MAT::m_growth_ac));
+
+    AddNamedInt(m,"SCALAR1","number of first growth inducing scalar");
+    AddNamedReal(m,"ALPHA","volume per first scalar's mass density");
+    AddNamedInt(m,"SCALAR2","number of second growth inducing scalar",1,true);
+    AddNamedReal(m,"BETA","volume per second scalar's mass density",0.0,true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // atherosclerosis growth law, scalar depended growth in radial direction
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthACRadial",
+                                            "scalar depended growth in radial direction",
+                                            INPAR::MAT::m_growth_ac_radial));
 
     AddNamedInt(m,"SCALAR1","number of first growth inducing scalar");
     AddNamedReal(m,"ALPHA","volume per first scalar's mass density");

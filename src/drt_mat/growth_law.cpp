@@ -340,17 +340,6 @@ void MAT::GrowthLawExp::EvaluateGrowthFunctionDerivC
 
 /// This is a growth law directly calculating theta itself
 
-Teuchos::RCP<MAT::Material> MAT::PAR::GrowthLawAC::CreateMaterial()
-{
-  return Teuchos::null;
-}
-
-Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawAC::CreateGrowthLaw()
-{
-  return Teuchos::rcp(new MAT::GrowthLawAC(this));
-}
-
-
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -373,6 +362,16 @@ MAT::PAR::GrowthLawAC::GrowthLawAC(
     dserror("The influence of scalar field SCALAR2 to growth can't be negativ");
 }
 
+Teuchos::RCP<MAT::Material> MAT::PAR::GrowthLawAC::CreateMaterial()
+{
+  return Teuchos::null;
+}
+
+Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawAC::CreateGrowthLaw()
+{
+
+  return Teuchos::rcp(new MAT::GrowthLawAC(this));
+}
 
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         02/10|
@@ -405,7 +404,7 @@ double MAT::GrowthLawAC::CalculateTheta
   int Sc2 = Parameter()->Sc2_; //if no second scalar is chosen to induce growth, this points out the first scalar field
   double beta= Parameter()->beta_; //if no second scalar is chosen to induce growth, beta is zero and hence has no influence on growth
 
-  double theta = pow(1+ alpha * concentrations->at(Sc1-1) * J + beta * concentrations->at(Sc2-1) * J ,0.33333333333333333);
+  double theta = pow(1.0 + alpha * concentrations->at(Sc1-1) * J + beta * concentrations->at(Sc2-1) * J ,0.33333333333333333);
 
   return theta;
 }
@@ -428,9 +427,86 @@ void MAT::GrowthLawAC::CalculateThetaDerivC
   double beta= Parameter()->beta_; //if no second scalar is chosen to induce growth, beta is zero and hence has no influence on growth
 
   double tmp1 = (alpha*concentrations->at(Sc1-1) + beta * concentrations->at(Sc2-1))*J;
-  double tmp2 = tmp1/6*pow(1+tmp1,-0.66666666666666666);
+  double tmp2 = tmp1/6.0*pow(1+tmp1,-0.66666666666666666);
 
   dThetadC.Invert(C);
   dThetadC.Scale(tmp2);
 }
 
+
+/// This is a growth law directly calculating theta itself
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+MAT::PAR::GrowthLawACRadial::GrowthLawACRadial(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+  : GrowthLawAC(matdata)
+{
+}
+
+Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawACRadial::CreateGrowthLaw()
+{
+  return Teuchos::rcp(new MAT::GrowthLawACRadial(this));
+}
+
+/*----------------------------------------------------------------------*
+ |  Constructor                                   (public)         02/10|
+ *----------------------------------------------------------------------*/
+MAT::GrowthLawACRadial::GrowthLawACRadial()
+  : GrowthLaw(NULL)
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Copy-Constructor                             (public)          02/10|
+ *----------------------------------------------------------------------*/
+MAT::GrowthLawACRadial::GrowthLawACRadial(MAT::PAR::GrowthLawAC* params)
+  : GrowthLaw(params)
+{
+}
+
+/*----------------------------------------------------------------------*
+ |Calculate Theta from the given mean concentrations          thon 11/14|
+ *----------------------------------------------------------------------*/
+double MAT::GrowthLawACRadial::CalculateTheta
+(
+    Teuchos::RCP<std::vector<double> > concentrations, //pointer to a vector containing element wise mean concentrations
+    const double J
+)
+{
+  // Theta = 1 + \alpha*c(i)* J
+  int Sc1 = Parameter()->Sc1_;
+  double alpha= Parameter()->alpha_;
+  int Sc2 = Parameter()->Sc2_; //if no second scalar is chosen to induce growth, this points out the first scalar field
+  double beta= Parameter()->beta_; //if no second scalar is chosen to induce growth, beta is zero and hence has no influence on growth
+
+  double theta = 1.0 + alpha * concentrations->at(Sc1-1) * J + beta * concentrations->at(Sc2-1) * J;
+
+  return theta;
+}
+
+/*----------------------------------------------------------------------*
+ | Calculate derivative of Theta w.r.t right cauchy-green strain   thon 01/15|
+ *----------------------------------------------------------------------*/
+void MAT::GrowthLawACRadial::CalculateThetaDerivC
+(
+    LINALG::Matrix<3,3>& dThetadC,
+    const LINALG::Matrix<3,3>& C, ///< cauchy-green strain
+    Teuchos::RCP<std::vector<double> > concentrations, ///< mean concentrations
+    const double J ///< det(F)
+)
+{
+  // dTheta/dC = 1/2 * \alpha*c(i)*J * C^(-1)
+  int Sc1 = Parameter()->Sc1_;
+  double alpha= Parameter()->alpha_;
+  int Sc2 = Parameter()->Sc2_; //if no second scalar is chosen to induce growth, this points out the first scalar field
+  double beta= Parameter()->beta_; //if no second scalar is chosen to induce growth, beta is zero and hence has no influence on growth
+
+  double tmp1 = 0.5 * (alpha*concentrations->at(Sc1-1) + beta * concentrations->at(Sc2-1))*J;
+
+  dThetadC.Invert(C);
+  dThetadC.Scale(tmp1);
+}

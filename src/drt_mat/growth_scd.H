@@ -255,7 +255,7 @@ namespace MAT
   private:
 
     static GrowthScdACType instance_;
-  }; //class ScdGrowthType
+  }; //class ScdGrowthACType
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for growth material
@@ -277,11 +277,11 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const { return GrowthScdACType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const { return GrowthScdACType::Instance().UniqueParObjectId(); }
 
 
     /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
-    void ResetAll(int numgp);
+    virtual void ResetAll(int numgp);
 
     /*!
       \brief Pack this class so it can be communicated
@@ -294,7 +294,7 @@ namespace MAT
 
       \param data (in/out): char std::vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(DRT::PackBuffer& data) const;
     /*!
       \brief Unpack data from a char std::vector into this class
 
@@ -308,7 +308,7 @@ namespace MAT
       \param data (in) : std::vector storing all data to be unpacked into this
       instance.
     */
-    void Unpack(const std::vector<char>& data);
+    virtual void Unpack(const std::vector<char>& data);
 
     //@}
 
@@ -317,17 +317,17 @@ namespace MAT
 
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthScdAC( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthScdAC( *this ) ); }
 
     /// Setup
-    void Setup
+    virtual void Setup
     (
       int numgp,  ///< number of Gauss points
       DRT::INPUT::LineDefinition* linedef ///< definition of element line
     );
 
     /// Evaluate material
-    void Evaluate
+    virtual void Evaluate
     (
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<6,1>* glstrain,
@@ -337,11 +337,8 @@ namespace MAT
         const int eleGID
      );
 
-    /// Return elastic material
-    Teuchos::RCP<MAT::Material> Matelastic() const { return matelastic_; }
-
     /// Return quick accessible material parameter data
-    MAT::PAR::GrowthScd* Parameter() const { return paramsScdAC_; }
+    virtual MAT::PAR::GrowthScd* Parameter() const { return paramsScdAC_; }
 
   protected:
 
@@ -363,6 +360,171 @@ namespace MAT
     MAT::PAR::GrowthScd* paramsScdAC_;
 
   };//class GrowthScdAC
+
+  ///type of vector/tensor in voigt notation
+  enum VoigtType
+  {
+    voigt_strain, ///< strain vector/tensor in voigt notation
+    voigt_stress ///< stress vector/tensor in voigt notation
+  };
+
+  class GrowthScdACRadialType : public DRT::ParObjectType
+  {
+  public:
+
+    std::string Name() const { return "GrowthScdACRadialType"; }
+
+    static GrowthScdACRadialType & Instance() { return instance_; };
+
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+  private:
+
+    static GrowthScdACRadialType instance_;
+  }; //class ScdGrowthACRadialType
+
+  /*----------------------------------------------------------------------*/
+  /// Wrapper for growth material
+  class GrowthScdACRadial : public GrowthScdAC                                                    //
+  {
+  public:
+
+    /// construct empty material object
+    GrowthScdACRadial();                                                                      //
+
+    /// construct the material object given material parameters
+    explicit GrowthScdACRadial(MAT::PAR::GrowthScd* params);                                  //
+
+    /*!
+      \brief Return unique ParObject id
+
+      every class implementing ParObject needs a unique id defined at the
+      top of drt_parobject.H (this file) and should return it in this method.
+    */
+    int UniqueParObjectId() const { return GrowthScdACRadialType::Instance().UniqueParObjectId(); }
+
+    /*!
+      \brief Pack this class so it can be communicated
+
+      Resizes the std::vector data and stores all information of a class in it.
+      The first information to be stored in data has to be the
+      unique parobject id delivered by UniqueParObjectId() which will then
+      identify the exact class on the receiving processor.
+      This material contains history variables, which are packed for restart purposes.
+
+      \param data (in/out): char std::vector to store class information
+    */
+    virtual void Pack(DRT::PackBuffer& data) const;
+    /*!
+      \brief Unpack data from a char std::vector into this class
+
+      The std::vector data contains all information to rebuild the
+      exact copy of an instance of a class on a different processor.
+      The first entry in data has to be an integer which is the unique
+      parobject id defined at the top of this file and delivered by
+      UniqueParObjectId().
+      History data is unpacked in restart.
+
+      \param data (in) : std::vector storing all data to be unpacked into this
+      instance.
+    */
+    virtual void Unpack(const std::vector<char>& data);
+
+    /// material type
+    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_volumetric_scd; }
+
+
+    /// return copy of this material object
+    Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthScdACRadial( *this ) ); }
+
+    /// Setup
+    void Setup
+    (
+      int numgp,  ///< number of Gauss points
+      DRT::INPUT::LineDefinition* linedef ///< definition of element line
+    );
+
+    /// Evaluate material
+    void Evaluate
+    (
+        const LINALG::Matrix<3,3>* defgrd,
+        const LINALG::Matrix<6,1>* glstrain,
+        Teuchos::ParameterList& params,
+        LINALG::Matrix<6,1>* stress,
+        LINALG::Matrix<6,6>* cmat,
+        const int eleGID
+     );
+
+  protected:
+
+    ///Function which reads in the given fiber value due to the FIBER1 nomenclature
+    void ReadFiber(
+        DRT::INPUT::LineDefinition* linedef,
+        std::string specifier,
+        LINALG::Matrix<3,1> &fiber_vector
+    );
+
+//    LINALG::Matrix<3,3> CalcDerivMatrixInverse(const LINALG::Matrix<3,3>& Matrix,
+//                        const LINALG::Matrix<3,3>& );
+//
+//    double CalcDerivMatrixInverseij(const LINALG::Matrix<3,3>& Minv,
+//                        const LINALG::Matrix<3,3>& Mderiv,
+//                        const double i,
+//                        const double j);
+
+    ///transform vector in voigt notation into symmetric 2Tensor (in matrix notation)
+    void VectorToMatrix(
+        LINALG::Matrix<3,3>& Matrix,
+        const LINALG::Matrix<6,1>& Vector,
+        const MAT::VoigtType Type);
+
+    ///transform symmetric 2Tensor(in matrix notation) into voigt notation ( e.g. vector notation)
+    void MatrixToVector(
+        const LINALG::Matrix<3,3>& Matrix,
+        LINALG::Matrix<6,1>& Vector,
+        const MAT::VoigtType Type);
+
+    /// pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation)
+    /// via the 2th order deformation gradient (also in matrix notation)
+    LINALG::Matrix<6,6> PullBack4Tensor(const LINALG::Matrix<3,3>& defgr,
+                            const LINALG::Matrix<6,6>& Cmat);
+
+    /// pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt notation)
+    /// via the 2th order deformation gradient (also in matrix notation)
+    double PullBack4Tensorijkl(const LINALG::Matrix<3,3>& defgr,
+                          const double (&FourTensor)[3][3][3][3],
+                          const double& i,
+                          const double& j,
+                          const double& k,
+                          const double& l);
+
+    //Setup 4-Tensor from 6x6 Voigt notation
+    void Setup4Tensor(
+        double (&FourTensor)[3][3][3][3],
+        const LINALG::Matrix<6,6>& VoigtMatrix
+    );
+
+//    //Setup 6x6 matrix in Voigt notation from 4-Tensor
+//    void Setup6x6VoigtMatrix(
+//        LINALG::Matrix<6,6>& VoigtMatrix,
+//        const double(&FourTensor)[3][3][3][3]
+//    );
+
+    //Print Four Tensor
+   void PrintFourTensor( double (&FourTensor)[3][3][3][3] );
+
+  private:
+
+    ///Normal \otime Normal
+    LINALG::Matrix<3,3> NdN_; //would be fine if it was constant...
+
+    ///T_1 \otimes T_1 + T_2 \otimes T_2
+    LINALG::Matrix<3,3> TdT_; //would be fine if it was constant...
+
+//    /// my material parameters
+//    MAT::PAR::GrowthScd* paramsScdAC_;
+
+  };//class GrowthScdACRadial
 
 }  // namespace MAT
 

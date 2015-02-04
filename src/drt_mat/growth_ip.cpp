@@ -76,6 +76,14 @@ MAT::PAR::Growth::Growth(
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
+  case INPAR::MAT::m_growth_ac_radial:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::GrowthLawACRadial(curmat));
+      MAT::PAR::GrowthLawACRadial* params = static_cast<MAT::PAR::GrowthLawACRadial*>(curmat->Parameter());
+      growthlaw_ = params->CreateGrowthLaw();
+      break;
+    }
   default:
     dserror("unknown material type %d", curmat->Type());
     break;
@@ -989,10 +997,6 @@ void MAT::GrowthBasic::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
 
     // store theta
     theta_->at(gp) = theta;
-
-    // check wether starttime is divisible by dt, if not adapt dt in first growth step
-    if (time < starttime + dt - eps)
-      dt = time - starttime;
 
     //--------------------------------------------------------------------------------------
     // call material law with elastic part of defgr and elastic part of glstrain

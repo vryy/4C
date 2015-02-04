@@ -315,9 +315,12 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatGrowthScd(
     densnp     = 1.0;
     densam     = 1.0;
   }
-  else if (structmat->Parameter()->growthlaw_->MaterialType() == INPAR::MAT::m_growth_ac)
+  else if (structmat->Parameter()->growthlaw_->MaterialType() == INPAR::MAT::m_growth_ac or
+           structmat->Parameter()->growthlaw_->MaterialType() == INPAR::MAT::m_growth_ac_radial )
     {
-    dserror("In the case of MAT_GrowthAC one should not end up in here, since the growth does only change the scalars field size/volume. And this is already cared due to the conservative formulation you hopefully use!");
+    dserror("In the case of MAT_GrowthAC or MAT_GrowthACNormal one should not end up in here, "
+        "since the growth does only change the scalars field size/volume. And this is already"
+        " cared due to the conservative formulation you hopefully use!");
     }
   else
   {

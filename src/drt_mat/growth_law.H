@@ -412,6 +412,97 @@ class GrowthLawAC: public GrowthLaw
 
   };
 
+
+
+  namespace PAR
+  {
+    /*----------------------------------------------------------------------*/
+    /// material parameters
+    class GrowthLawACRadial : public GrowthLawAC
+    {
+    public:
+
+      /// standard constructor
+      GrowthLawACRadial(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~GrowthLawACRadial() { ; }
+
+      /// create growth law instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+
+    };  // class Growth
+
+  }  // namespace PAR
+
+  class GrowthLawACRadial: public GrowthLaw
+  {
+
+  public:
+
+    /// construct empty material object
+    GrowthLawACRadial();
+    explicit GrowthLawACRadial(MAT::PAR::GrowthLawAC* params);
+
+    /// destructor
+    virtual ~GrowthLawACRadial() { ; }
+
+    /// Evaluate growth function
+    virtual void EvaluateGrowthFunction
+    (
+        double & growthfunc,
+        double traceM,
+        double theta
+    ) {dserror("In case of GrowthLawACRadial one doesn't have to compute this!");};
+
+    /// Evaluate derivative of growth function w.r.t. growth factor
+    virtual void EvaluateGrowthFunctionDerivTheta
+    (
+        double & dgrowthfunctheta,
+        double traceM,
+        double theta,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdach,
+        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic
+    ) {dserror("In case of GrowthLawACRadial one doesn't have to compute this!");};
+
+    /// Evaluate derivative of growth function w.r.t. Green-Lagrange-Strain
+    virtual void EvaluateGrowthFunctionDerivC
+    (
+        LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdC,
+        double traceM,
+        double theta,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& C,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& S,
+        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat
+    ) {dserror("In case of GrowthLawACRadial one doesn't have to compute this!");};
+
+    /// Calculate Theta from the given mean concentrations
+    virtual double CalculateTheta
+    (
+        Teuchos::RCP<std::vector<double> > concentrations, //pointer to a vector containing element wise mean concentrations
+        const double J
+    );
+
+    /// Calculate derivative of Theta w.r.t right cauchy-green strain
+    virtual void CalculateThetaDerivC
+    (
+        LINALG::Matrix<3,3>& dThetadC,
+        const LINALG::Matrix<3,3>& C, ///< right cauchy-green strains
+        Teuchos::RCP<std::vector<double> > concentrations, ///< mean concentrations
+        const double J ///< det(F)
+    );
+
+    /// material type
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_ac_radial; };
+
+    MAT::PAR::GrowthLawACRadial* Parameter() {return dynamic_cast<MAT::PAR::GrowthLawACRadial*>(MAT::GrowthLaw::Parameter()); };
+
+  private:
+    //MAT::PAR::GrowthLawACRadial* params_;
+
+  };
 } // namespace MAT
 
 
