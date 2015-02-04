@@ -784,7 +784,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   const double &                    visceff_s,              ///< viscosity in coupling slave fluid
   const double &                    kappa_m,                ///< mortaring weight for coupling master
   const double &                    kappa_s,                ///< mortaring weight for coupling slave
-  const double &                    density_m,              ///< fluid density (master)
+  const double &                    density_m,              ///< fluid density (master) USED IN XFF
   const double &                    NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
   const LINALG::Matrix<nen_,1> &    funct_m,                ///< coupling master shape functions
   const LINALG::Matrix<nsd_,nen_> & derxy_m,                ///< spatial derivatives of coupling master shape functions

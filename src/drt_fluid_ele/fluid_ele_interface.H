@@ -218,7 +218,8 @@ namespace ELEMENTS
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
       const std::map<int, std::vector<int> > &                            patchcouplm,
       Teuchos::ParameterList&                                             params,            ///< parameter list
-      Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
+      Teuchos::RCP<MAT::Material>&                                        mat_master,        ///< material for the coupled side
+      Teuchos::RCP<MAT::Material>&                                        mat_slave,         ///< material for the coupled side
       Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
       Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
       const GEO::CUT::plain_volumecell_set &                              vcSet,             ///< volumecell sets in this element

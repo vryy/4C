@@ -78,6 +78,7 @@ namespace DRT
       */
       virtual int EvaluateEdgeBasedStabilization(
           DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
+          Teuchos::RCP<MAT::Material> &      material,                  ///< material associated with the faces
           DRT::ELEMENTS::FluidEleParameterTimInt&  fldparatimint,       ///< time-integration parameter
           DRT::ELEMENTS::FluidEleParameterIntFace& fldintfacepara,      ///< general parameter for internal face
           Teuchos::ParameterList&            params,                    ///< parameter list
@@ -183,6 +184,7 @@ namespace DRT
       */
       virtual int EvaluateEdgeBasedStabilization(
           DRT::ELEMENTS::FluidIntFace*             intface,              ///< internal face element
+          Teuchos::RCP<MAT::Material> &            material,             ///< material associated with the faces
           DRT::ELEMENTS::FluidEleParameterTimInt&  fldparatimint,        ///< time-integration parameter
           DRT::ELEMENTS::FluidEleParameterIntFace& fldintfacepara,       ///< general parameter for internal face
           Teuchos::ParameterList&                  params,               ///< parameter list
@@ -229,6 +231,7 @@ namespace DRT
           FluidIntFace*              surfele,          ///< surface FluidIntFace element
           Fluid*                     master_ele,       ///< master parent element
           Fluid*                     slave_ele,        ///< slave  parent element
+          Teuchos::RCP<MAT::Material> &  material,     ///< material associated with the faces
           std::vector<double>&       mypvelaf,         ///< master velaf
           std::vector<double>&       mypvelnp,         ///< master velnp
           std::vector<double>&       mypedispnp,       ///< master dispnp

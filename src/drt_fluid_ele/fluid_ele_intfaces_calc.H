@@ -60,6 +60,7 @@ public:
   //! Assemble internal faces integrals using data from both parent elements
   virtual void AssembleInternalFacesUsingNeighborData(
                        DRT::ELEMENTS::FluidIntFace*         intface,         ///< internal face element
+                       Teuchos::RCP<MAT::Material> &        material,        ///< material associated with the faces
                        std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
                        std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
                        const INPAR::XFEM::FaceType &        face_type,       ///< which type of face std, ghost, ghost-penalty
@@ -72,6 +73,7 @@ public:
   //! Evaluate internal faces
   virtual int EvaluateInternalFaces(
       DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
+      Teuchos::RCP<MAT::Material> &      material,                  ///< material associated with the faces
       Teuchos::ParameterList&            params,                    ///< parameter list
       DRT::Discretization&               discretization,            ///< discretization
       std::vector<int>&                  patchlm,                   ///< patch local map
@@ -131,6 +133,7 @@ public:
   //! Assemble internal faces integrals using data from both parent elements
   virtual void AssembleInternalFacesUsingNeighborData(
                               DRT::ELEMENTS::FluidIntFace*         intface,         ///< internal face element
+                              Teuchos::RCP<MAT::Material> &        material,        ///< material associated with the faces
                               std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
                               std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
                               const INPAR::XFEM::FaceType &        face_type,       ///< which type of face std, ghost, ghost-penalty
@@ -143,6 +146,7 @@ public:
   //! Evaluate internal faces
   virtual int EvaluateInternalFaces(
       DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
+      Teuchos::RCP<MAT::Material> &      material,                  ///< material associated with the faces
       Teuchos::ParameterList&            params,                    ///< parameter list
       DRT::Discretization&               discretization,            ///< discretization
       std::vector<int>&                  patchlm,                   ///< patch local map

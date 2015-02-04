@@ -30,6 +30,8 @@ Maintainer: Benedikt Schott, Martin Kronbichler
 #include "../drt_fluid_ele/fluid_ele_intfaces_calc.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
+#include "../drt_mat/material.H"
+
 #include "../drt_inpar/inpar_xfem.H"
 
 
@@ -166,8 +168,21 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
     // set action for elements
     edgebasedparams.set<int>("action",FLD::EOS_and_GhostPenalty_stabilization);
 
+    //Set master ele to the Material for evaluation.
+    Teuchos::RCP<MAT::Material> material = p_master->Material();
+
+#ifdef DEBUG
+    //Set master ele to the Material for slave.
+    Teuchos::RCP<MAT::Material> material_s = p_slave->Material();
+
+    //Test whether the materials for the parent and slave element are the same.
+    if(material->MaterialType() != material_s->MaterialType())
+      dserror(" not the same material for master and slave parent element");
+#endif
+
     // call the egde-based assemble and evaluate routine
     DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(ele)->AssembleInternalFacesUsingNeighborData(ele,
+                                                                                                material,
                                                                                                 nds_master,
                                                                                                 nds_slave,
                                                                                                 INPAR::XFEM::face_type_std,

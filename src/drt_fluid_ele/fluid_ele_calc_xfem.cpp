@@ -78,7 +78,13 @@ void DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
-  : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
+  : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(),
+    densaf_master_(0.0),
+    densaf_slave_(0.0),
+    viscaf_master_(0.0),
+    viscaf_slave_(0.0),
+    gamma_m_(0.0),
+    gamma_s_(0.0)
 {
   // we use the standard parameter list here, since there are not any additional
   // xfem-specific parameters required in this derived class
@@ -1057,7 +1063,12 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
         // interface errors
         double nit_stabfac = 0.0;
-        NIT_Compute_FullPenalty_Stabfac(nit_stabfac,normal,h_k,NIT_Compute_ViscPenalty_Stabfac(distype,1/h_k),true);
+        LINALG::Matrix<my::nsd_,1> velint_s;
+        si->GetInterfaceVelnp(velint_s);
+        //Needs coupling condition to get kappas!
+        const double kappa_m = 1.0;
+        const double kappa_s = 0.0;
+        NIT_Compute_FullPenalty_Stabfac(nit_stabfac,normal,h_k,kappa_m,kappa_s,velint_s,NIT_Compute_ViscPenalty_Stabfac(distype,1/h_k,1.0,0.0),true);
         ele_interf_norms[0] += nit_stabfac * u_err_squared;
         ele_interf_norms[1] += h_k     * my::visc_ * flux_u_err_squared;
         ele_interf_norms[2] += h_k     * flux_p_err_squared;
@@ -1416,7 +1427,10 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
 
         // interface errors
         double nit_stabfac = 0.0;
-        NIT_Compute_FullPenalty_Stabfac(nit_stabfac,normal,h_k,NIT_Compute_ViscPenalty_Stabfac(distype,1/h_k),true);
+        //Needs coupling condition to get kappas!
+        const double kappa_m = 1.0;
+        const double kappa_s = 0.0;
+        NIT_Compute_FullPenalty_Stabfac(nit_stabfac,normal,h_k,kappa_m,kappa_s,ivelint,NIT_Compute_ViscPenalty_Stabfac(distype,1/h_k,1.0,0.0),true);
         ele_interf_norms[0] += nit_stabfac * u_err_squared;
         ele_interf_norms[1] += h_k     * my::visc_ * flux_u_err_squared;
         ele_interf_norms[2] += h_k     * flux_p_err_squared;
@@ -2080,11 +2094,25 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
           if (cond_manager->IsCoupling( coup_sid, my::eid_ ))
           {
+            LINALG::Matrix<my::nsd_,1> velint_s;
+            ci[coup_sid]->GetInterfaceVelnp(velint_s);
+
+
+            //Get Material parameters for the master side!
+            GetMaterialParametersVolumeCell(mat,densaf_master_,viscaf_master_,gamma_m_);
+
+            bool non_xfluid_coupling;
+            double kappa_m;
+            double kappa_s;
+            GetAverageWeights(cond_manager->GetCouplingStrategy(coup_sid, my::eid_), kappa_m, kappa_s, non_xfluid_coupling);
 
             NIT_Compute_FullPenalty_Stabfac(
               NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
               normal,
               h_k,
+              kappa_m, //weights (only existing for Nitsche currently!!)
+              kappa_s, //weights (only existing for Nitsche currently!!)
+              velint_s,
               NIT_visc_stab_fac   ///< Nitsche's viscous scaling part of penalty term
             );
 
@@ -2093,7 +2121,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
               my::funct_,
               my::velint_,
               normal,
-              my::densaf_,
+              my::densaf_,  //Look into this term when changing HybridLM
               NIT_full_stab_fac,
               timefacfac,
               ivelint_jump,
@@ -2103,10 +2131,24 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
           }
           else
           {
+            LINALG::Matrix<my::nsd_,1> velint_s;
+            ci[coup_sid]->GetInterfaceVelnp(velint_s);
+
+            //Get Material parameters for the master side!
+            GetMaterialParametersVolumeCell(mat,densaf_master_,viscaf_master_,gamma_m_);
+
+            bool non_xfluid_coupling;
+            double kappa_m;
+            double kappa_s;
+            GetAverageWeights(cond_manager->GetCouplingStrategy(coup_sid, my::eid_), kappa_m, kappa_s, non_xfluid_coupling);
+
             NIT_Compute_FullPenalty_Stabfac(
               NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
               normal,
               h_k,
+              kappa_m, //weights (only existing for Nitsche currently!!)
+              kappa_s, //weights (only existing for Nitsche currently!!)
+              velint_s,
               NIT_visc_stab_fac   ///< Nitsche's viscous scaling part of penalty term
             );
 
@@ -2140,11 +2182,13 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
           // time step n
           const double kappa_m = 1.0;
           const double kappa_s = 0.0;
+          GetMaterialParametersVolumeCell(mat,densaf_master_,viscaf_master_,gamma_m_);
+
           si_nit.at(coup_sid)->NIT_evaluateCouplingOldState(
             normal,                      // normal vector
             surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac()), // scaling of rhs depending on time discretization scheme
-            my::visceff_,                // dynvisc viscosity in background fluid
-            my::visceff_,                // dynvisc viscosity in embedded fluid
+            viscaf_master_,              // dynvisc viscosity in background fluid
+            viscaf_slave_,               // dynvisc viscosity in embedded fluid
             kappa_m,                     // mortaring weighting
             kappa_s,                     // mortaring weighting
             my::funct_,                  // bg shape functions
@@ -3171,7 +3215,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,
     const std::map<int, std::vector<int> > &                            patchcouplm,       ///< lm vectors for coupling elements, key= global coupling side-Id
     Teuchos::ParameterList&                                             params,
-    Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
+    Teuchos::RCP<MAT::Material>&                                        mat_master,       ///< material for the background
+    Teuchos::RCP<MAT::Material>&                                        mat_slave,        ///< material for the coupled side
     Epetra_SerialDenseMatrix&                                           elemat1_epetra,
     Epetra_SerialDenseVector&                                           elevec1_epetra,
     const GEO::CUT::plain_volumecell_set &                              vcSet,
@@ -3298,6 +3343,14 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     inv_hk = 1.0 / h_k;
   }
 
+  //Get materials for both master and slave side
+  // If non-constant density or viscosity wants to be calculated on the different sides. A review over how the scalar variables
+  // are set at the surface should be made.
+  GetMaterialParametersVolumeCell(mat_master,densaf_master_,viscaf_master_,gamma_m_);
+  if(mat_slave != Teuchos::null)
+  {
+    GetMaterialParametersVolumeCell(mat_slave,densaf_slave_,viscaf_slave_,gamma_s_);
+  }
 
   //-----------------------------------------------------------------------------------
   //      surface integral --- loop sides
@@ -3360,36 +3413,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     //-----------------------------------------------------------------------------------
     // define average weights
 
-    bool non_xfluid_coupling = false;
+    bool non_xfluid_coupling;
+    double kappa1;
+    double kappa2;
 
-    double kappa1 = 0.0;
-
-    if (coup_strategy == INPAR::XFEM::Xfluid_Sided_Coupling ||
-        coup_strategy == INPAR::XFEM::Xfluid_Sided_weak_DBC)
-    {
-      kappa1 = 1.0;
-    }
-    else
-    {
-      non_xfluid_coupling = true;
-
-      if (coup_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
-        kappa1 = 0.0;
-      else if (coup_strategy == INPAR::XFEM::Two_Sided_Coupling)
-        kappa1 = 0.5;
-      else if (coup_strategy == INPAR::XFEM::Harmonic)
-      {
-        std::cout << "WARNING: harmonic coupling strategy not supported yet, switch to mean value, just implement!" << std::endl;
-        kappa1 = 0.5;
-      }
-      else
-        dserror("Coupling strategy unknown.");
-    }
-
-    if ( kappa1 > 1.0 || kappa1 < 0.0) dserror("Nitsche weights for inverse estimate kappa1 lies not in [0,1]: %d", kappa1);
-
-    const double kappa2 = 1.0-kappa1;
-
+    GetAverageWeights(coup_strategy, kappa1, kappa2, non_xfluid_coupling);
 
     //---------------------------------------------------------------------------------
     // set flags used for coupling with given levelset/mesh coupling side
@@ -3563,7 +3591,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     // based on the inverse characteristic element length
     //---------------------------------------------------------------------------------
 
-    double NIT_visc_stab_fac = NIT_Compute_ViscPenalty_Stabfac( ele->Shape(), inv_hk );
+    double NIT_visc_stab_fac = NIT_Compute_ViscPenalty_Stabfac( ele->Shape(), inv_hk, kappa1, kappa2);
 
     // define interface force vector w.r.t side (for XFSI)
     Epetra_SerialDenseVector iforce;
@@ -3661,10 +3689,17 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
         double NIT_full_stab_fac = 0.0;
 
+        //Extract slave velocity at Gausspoint
+        LINALG::Matrix<my::nsd_,1> velint_s;
+        ci->GetInterfaceVelnp(velint_s);
+
         NIT_Compute_FullPenalty_Stabfac(
             NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
             normal,
             h_k,
+            kappa1,
+            kappa2,
+            velint_s,
             NIT_visc_stab_fac             ///< Nitsche's viscous scaling part of penalty term
             );
 
@@ -3685,8 +3720,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         ci->NIT_evaluateCoupling(
           normal,                      // normal vector
           timefacfac,                  // theta*dt
-          my::visceff_,                // dynvisc viscosity in background fluid
-          my::visceff_,                // dynvisc viscosity in embedded fluid
+          viscaf_master_,              // dynvisc viscosity in background fluid
+          viscaf_slave_,               // dynvisc viscosity in embedded fluid
           kappa1,                      // mortaring weighting
           kappa2,                      // mortaring weighting
           my::densaf_,                 // fluid density
@@ -3717,8 +3752,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           ci->NIT_evaluateCouplingOldState(
             normal,                      // normal vector
             surf_fac*(my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac()), // scaling of rhs depending on time integration scheme
-            my::visceff_,                // dynvisc viscosity in background fluid
-            my::visceff_,                // dynvisc viscosity in embedded fluid
+            viscaf_master_,              // dynvisc viscosity in background fluid
+            viscaf_slave_,               // dynvisc viscosity in embedded fluid
             kappa1,                      // mortaring weighting
             kappa2,                      // mortaring weighting
             my::funct_,                  // bg shape functions
@@ -4100,7 +4135,9 @@ void FluidEleCalcXFEM<distype>::NIT_BuildPatchCuiui(
 template <DRT::Element::DiscretizationType distype>
 double FluidEleCalcXFEM<distype>::NIT_Compute_ViscPenalty_Stabfac(
     const DRT::Element::DiscretizationType ele_distype, ///< the discretization type of the element w.r.t which the stabilization factor is computed
-    const double inv_h_k                                ///< the inverse characteristic element length h_k
+    const double inv_h_k,                                ///< the inverse characteristic element length h_k
+    const double kappa1,                                ///< Weight parameter (parameter +/master side)
+    const double kappa2                                 ///< Weight parameter (parameter -/slave  side)
 )
 {
 
@@ -4176,7 +4213,7 @@ double FluidEleCalcXFEM<distype>::NIT_Compute_ViscPenalty_Stabfac(
 
   //--------------------------------------
   // scale the viscous part of the penalty scaling with the maximal viscosity of both sides
-  NIT_visc_stab_fac *= my::visceff_;
+  NIT_visc_stab_fac *=  (kappa1*viscaf_master_ + kappa2*viscaf_slave_); //std::max(viscaf_master_,viscaf_slave_); //my::visceff_;
 
   //--------------------------------------
   // scale the viscous part of the penalty scaling with the dimensionless user defined Nitsche-parameter gamma
@@ -4338,6 +4375,9 @@ void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
     double &                           NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
     const LINALG::Matrix<my::nsd_,1>&  normal,                        ///< interface-normal vector
     const double                       h_k,                           ///< characteristic element length
+    const double                       kappa1,                        ///< Weight parameter (parameter +/master side)
+    const double                       kappa2,                        ///< Weight parameter (parameter -/slave  side)
+    const LINALG::Matrix<my::nsd_,1>&  velint_s,                      ///< Slave side velocity at gauss-point
     const double                       NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
     bool                               error_calc                     ///< when called in error calculation, don't add the inflow terms
 )
@@ -4375,6 +4415,7 @@ void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
    *
    */
 
+
   // (1)
   NIT_full_stab_fac = NIT_visc_stab_fac;
 
@@ -4382,22 +4423,23 @@ void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
   {
     //TODO: Raffaela: which velocity has to be evaluated for these terms in ALE? the convective velocity or the velint?
     double velnorminf = my::convvelint_.NormInf(); // relative convective velocity
+    double velnorminf_s = velint_s.NormInf();
 
     // take the maximum of viscous & convective contribution or the sum?
     if (fldparaxfem_->MassConservationCombination() == INPAR::XFEM::MassConservationCombination_max)
     {
-      NIT_full_stab_fac = std::max(NIT_full_stab_fac,fldparaxfem_->NITStabScaling() * my::densaf_ * fabs(velnorminf) / 6.0);
+      NIT_full_stab_fac = std::max(NIT_full_stab_fac,fldparaxfem_->NITStabScaling() * (kappa1*densaf_master_*fabs(velnorminf)+kappa2*densaf_slave_*fabs(velnorminf_s)) / 6.0);
       if (! my::fldparatimint_->IsStationary())
-        NIT_full_stab_fac= std::max( fldparaxfem_->NITStabScaling() * h_k * my::densaf_ / (12.0 * my::fldparatimint_->TimeFac()),NIT_full_stab_fac);
+        NIT_full_stab_fac= std::max( fldparaxfem_->NITStabScaling() * h_k * ( kappa1*densaf_master_ + kappa2*densaf_slave_ ) / (12.0 * my::fldparatimint_->TimeFac()),NIT_full_stab_fac);
     }
     else // the sum
     {
       // (2)
-      NIT_full_stab_fac += fldparaxfem_->NITStabScaling() * my::densaf_ * fabs(velnorminf) / 6.0;
+      NIT_full_stab_fac += fldparaxfem_->NITStabScaling() * (kappa1*densaf_master_*fabs(velnorminf)+kappa2*densaf_slave_*fabs(velnorminf_s)) / 6.0; //THIS ONE NEEDS CHANGING!
 
       // (3)
       if (! my::fldparatimint_->IsStationary())
-        NIT_full_stab_fac += fldparaxfem_->NITStabScaling() * h_k * my::densaf_ / (12.0 * my::fldparatimint_->TimeFac());
+        NIT_full_stab_fac += fldparaxfem_->NITStabScaling() * h_k * ( kappa1*densaf_master_ + kappa2*densaf_slave_ ) / (12.0 * my::fldparatimint_->TimeFac());
     }
   }
   else if (fldparaxfem_->MassConservationScaling() != INPAR::XFEM::MassConservationScaling_only_visc)
@@ -4442,7 +4484,7 @@ void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
       dserror("No valid INPAR::XFEM::ConvStabScaling for xfluid/xfsi problems");
   }
 
-  NIT_inflow_stab *= my::densaf_;
+  NIT_inflow_stab *= densaf_master_; //my::densaf_;
 
   // Todo (kruse): it is planned to add the inflow contributions independent from the max. option!
   // This version is only kept to shift the adaption of test results to a single commit.
@@ -4696,7 +4738,9 @@ void FluidEleCalcXFEM<distype>::BuildTractionVector(
   traction.Multiply(eps, normal);
 
   // add the pressure part and scale the viscous part with the viscosity
-  traction.Update( -press, normal, 2.0*my::visceff_);
+   traction.Update( -press, normal, 2.0*viscaf_master_);
+  //traction.Update( -press, normal, 2.0*my::visceff_);
+
 
   return;
 }
@@ -5113,6 +5157,85 @@ double FluidEleCalcXFEM<distype>::ComputeMeasCutSurf(
 
   return surf;
 }
+
+template <DRT::Element::DiscretizationType distype>
+void FluidEleCalcXFEM<distype>::GetMaterialParametersVolumeCell( Teuchos::RCP<const MAT::Material>  material,
+    double &                           densaf, //done
+    double &                           viscaf,   //done
+    double &                           gamma   //done
+    )
+{
+
+  //Initiate dummy variables:
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  // get element-wise velocity/pressure field for current time step
+  LINALG::Matrix<my::nsd_,my::nen_>     evelaf(true);
+  //Scatra field
+  const LINALG::Matrix<my::nen_,1>      escabofoaf(true);
+  const LINALG::Matrix<my::nen_,1>      escaaf(true);
+  const LINALG::Matrix<my::nen_,1>      escaam(true);
+  // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
+  // its time derivative at n+alpha_M/n+1 (LOMA specific!!)
+  const double thermpressaf   = 1.0;
+  const double thermpressam   = 1.0;
+  const double thermpressdtaf = 0.0;
+  const double thermpressdtam = 0.0;
+  const double vol            = 0.0;
+  //Values of material parameters at not needed time steps.
+  double densn  = 0.0;
+  double densam = 0.0;
+  double viscn  = 0.0;
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  //Get material from FluidEleCalc routine.
+  // If non-constant density or viscosity wants to be calculated on the different sides. A review over how the scalar variables
+  // are set at the surface should be made.
+  my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol,densam,densaf,densn,viscaf,viscn,gamma);
+
+  return;
+
+}
+
+//Get the average weights kappa1 and kappa2 for the Nitsche calculations.
+template <DRT::Element::DiscretizationType distype>
+void FluidEleCalcXFEM<distype>::GetAverageWeights(const INPAR::XFEM::CouplingStrategy coup_strategy,
+                       double & kappa_m,
+                       double & kappa_s,
+                       bool   & non_xfluid_coupling)
+{
+  non_xfluid_coupling = false;
+
+  //Average weight for the master side
+  kappa_m = 0.0;
+
+  if (coup_strategy == INPAR::XFEM::Xfluid_Sided_Coupling ||
+      coup_strategy == INPAR::XFEM::Xfluid_Sided_weak_DBC)
+  {
+    kappa_m = 1.0;
+  }
+  else
+  {
+    non_xfluid_coupling = true;
+
+    if (coup_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
+      kappa_m = 0.0;
+    else if (coup_strategy == INPAR::XFEM::Two_Sided_Coupling)
+      kappa_m = 0.5;
+    else if (coup_strategy == INPAR::XFEM::Harmonic)
+    {
+      //kappa1=0.5; //For Two_Sided_coupling
+      kappa_m = viscaf_slave_/(viscaf_master_+viscaf_slave_);  //Positive side (kappa_+ = visc_n/(visc_p+visc_n))
+    }
+    else
+      dserror("Coupling strategy unknown.");
+  }
+
+  if ( kappa_m > 1.0 || kappa_m < 0.0) dserror("Nitsche weights for inverse estimate kappa1 lies not in [0,1]: %d", kappa_m);
+
+  kappa_s = 1.0-kappa_m;
+
+}
+
 
   } // end namespace ELEMENTS
 } // end namespace DRT

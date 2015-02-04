@@ -31,9 +31,10 @@ Maintainer: Benedikt Schott
 
 #include "../drt_fluid_xfluid/xfluid_defines.H"
 
-#include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_fluid.H"
 
+//Needed for material check.
+#include "../drt_fluid_xfluid/xfluid_utils.H"
 
 #include "xfem_edgestab.H"
 
@@ -42,7 +43,7 @@ Maintainer: Benedikt Schott
  |  Constructor for XFEM_EdgeStab                          schott 03/12 |
  *----------------------------------------------------------------------*/
 XFEM::XFEM_EdgeStab::XFEM_EdgeStab(
-  Teuchos::RCP<GEO::CutWizard>                 wizard,                ///< cu wizard
+  Teuchos::RCP<GEO::CutWizard>                 wizard,                ///< cut wizard
   Teuchos::RCP<DRT::Discretization>            discret,               ///< discretization
   bool                                         include_inner          ///< stabilize also facets with inside position
   ) :
@@ -132,9 +133,17 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   int num_edgestab = 0;      // how often to stabilize this face for edgebased stabilizations
   int num_ghostpenalty = 0;  // how often to stabilize this face for ghost penalty stabilizations
 
+
+  //Provide material at both sides:
+  Teuchos::RCP<MAT::Material> matptr_m;
+  Teuchos::RCP<MAT::Material> matptr_s;
+  matptr_m = p_master->Material();
+  matptr_s = p_slave->Material();
+
   //------------------------------------------------------------------------------
   // simplest case: no element handles for both parent elements
   // two uncut elements / standard fluid case
+  // problems cut with levelset will not enter here!
   //------------------------------------------------------------------------------
   if( p_master_handle == NULL and p_slave_handle == NULL)
   {
@@ -156,6 +165,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
     AssembleEdgeStabGhostPenalty( eleparams,
                                   face_type,
                                   faceele,
+                                  matptr_m,
+                                  matptr_s,
                                   nds_master,
                                   nds_slave,
                                   *xdiscret,
@@ -245,10 +256,13 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             else
               face_type = INPAR::XFEM::face_type_std;
 
+            XFLUID::UTILS::GetVolumeCellMaterial(p_master,matptr_m,(*f)->Position());
+            XFLUID::UTILS::GetVolumeCellMaterial(p_slave ,matptr_s,(*f)->Position());
+
             //--------------------------------------------------------------------------------------------
 
             // call evaluate and assemble routine
-            AssembleEdgeStabGhostPenalty(eleparams, face_type, faceele,
+            AssembleEdgeStabGhostPenalty(eleparams, face_type, faceele, matptr_m, matptr_s,
                 nds_master, nds_slave, *xdiscret, systemmatrix, systemvector);
 
             //--------------------------------------------------------------------------------------------
@@ -374,9 +388,13 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             }
             else
               face_type = INPAR::XFEM::face_type_std;
+
+            XFLUID::UTILS::GetVolumeCellMaterial(p_master,matptr_m,(*f)->Position());
+            XFLUID::UTILS::GetVolumeCellMaterial(p_slave ,matptr_s,(*f)->Position());
+
             //--------------------------------------------------------------------------------------------
             // call evaluate and assemble routine
-            AssembleEdgeStabGhostPenalty(eleparams, face_type, faceele,
+            AssembleEdgeStabGhostPenalty(eleparams, face_type, faceele, matptr_m, matptr_s,
                 nds_master, nds_slave, *xdiscret, systemmatrix, systemvector);
             //--------------------------------------------------------------------------------------------
           }
@@ -509,12 +527,19 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             }
             else face_type = INPAR::XFEM::face_type_std;
 
+
+            //Get materials:
+            XFLUID::UTILS::GetVolumeCellMaterial(p_master,matptr_m,f->Position());
+            XFLUID::UTILS::GetVolumeCellMaterial(p_slave ,matptr_s,f->Position());
+
             //--------------------------------------------------------------------------------------------
 
             // call evaluate and assemble routine
             AssembleEdgeStabGhostPenalty( eleparams,
                                           face_type,
                                           faceele,
+                                          matptr_m,
+                                          matptr_s,
                                           nds_master,
                                           nds_slave,
                                           *xdiscret,
@@ -550,6 +575,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
 void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &               eleparams,        ///< element parameter list
                                                         const INPAR::XFEM::FaceType &          face_type,        ///< which type of face std, ghost, ghost-penalty
                                                         DRT::ELEMENTS::FluidIntFace*           intface,          ///< internal face element
+                                                        Teuchos::RCP<MAT::Material> &          material_m,       ///< material of the master side
+                                                        Teuchos::RCP<MAT::Material> &          material_s,       ///< material of the slave side
                                                         std::vector<int> &                     nds_master,       ///< nodal dofset vector w.r.t. master element
                                                         std::vector<int> &                     nds_slave,        ///< nodal dofset vector w.r.t. slave element
                                                         DRT::DiscretizationFaces &             xdiscret,         ///< XFEM discretization
@@ -558,6 +585,9 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
                                                         )
 {
 
+
+  //If Saftey check is passed, both elements contain the same material and with the same settings
+  XFLUID::UTILS::SafetyCheckMaterials(material_m , material_s);
 
   //======================================================================================
   // call the internal faces stabilization routine for the current side/surface
@@ -568,8 +598,10 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
   //TODO: set here the right stab-type LPS or EOS
   eleparams.set<int>("action", FLD::EOS_and_GhostPenalty_stabilization);
 
+
   // call the egde-based assemble and evaluate routine
   DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(intface)->AssembleInternalFacesUsingNeighborData(     intface,
+                                                                                                       material_m,
                                                                                                        nds_master,
                                                                                                        nds_slave,
                                                                                                        face_type,
@@ -649,12 +681,21 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabStd(
     for(size_t i=0; i< p_slave_numnode; i++)   nds_slave.push_back(0);
   }
 
+
+  //Provide material at both sides:
+  Teuchos::RCP<MAT::Material> matptr_m;
+  Teuchos::RCP<MAT::Material> matptr_s;
+  matptr_m = p_master->Material();
+  matptr_s = p_slave->Material();
+
   //--------------------------------------------------------------------------------------------
 
   // call evaluate and assemble routine
    AssembleEdgeStabGhostPenalty( eleparams,
                                  INPAR::XFEM::face_type_std,
                                  faceele,
+                                 matptr_m,
+                                 matptr_s,
                                  nds_master,
                                  nds_slave,
                                  *xdiscret,
@@ -718,10 +759,19 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabBoundaryGP(
   if (!( boundarydiscret->HaveGlobalElement(p_master->Id()) || boundarydiscret->HaveGlobalElement(p_slave->Id())))
     return;
 
+  //Provide material at both sides:
+  Teuchos::RCP<MAT::Material> matptr_m;
+  Teuchos::RCP<MAT::Material> matptr_s;
+  matptr_m = p_master->Material();
+  matptr_s = p_slave->Material();
+
+
   // call evaluate and assemble routine
    AssembleEdgeStabGhostPenalty( eleparams,
                                  INPAR::XFEM::face_type_boundary_ghost_penalty,
                                  faceele,
+                                 matptr_m,
+                                 matptr_s,
                                  nds_master,
                                  nds_slave,
                                  *xdiscret,
@@ -732,3 +782,4 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabBoundaryGP(
 
   return;
 }
+

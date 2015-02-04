@@ -2268,75 +2268,15 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
   else if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
 
-    // get material list for this element
-    const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+    densaf_=1.0;
+    densfac_=1.0;
 
-    int numofmaterials = matlist->NumMat();
-
-    //Error messages
-    if(numofmaterials>2)
-    {
-      dserror("More than two materials is currently not supported.");
-    }
-
-    std::vector<double> density(numofmaterials); //Assume density[0] is on positive side, and density[1] is on negative side.
-
-    for(int nmaterial=0; nmaterial<numofmaterials; nmaterial++)
-    {
-      // set default id in list of materials
-      int matid = -1;
-      matid = matlist->MatID(nmaterial);
-
-      Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
-      INPAR::MAT::MaterialType mattype = matptr->MaterialType();
-
-      // choose from different materials
-      switch(mattype)
-      {
-      //--------------------------------------------------------
-      // Newtonian fluid for incompressible flow (standard case)
-      //--------------------------------------------------------
-      case INPAR::MAT::m_fluid:
-      {
-        const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
-        density[nmaterial]=mat->Density();
-        break;
-      }
-      //------------------------------------------------
-      // different types of materials (to be added here)
-      //------------------------------------------------
-      default:
-        dserror("Only Newtonian fluids supported as input.");
-        break;
-      }
-    }
-
-    double epsilon = fldpara_->GetInterfaceThickness();
-
-    const double gpscaaf = funct_.Dot(escaaf); //Scalar function at gausspoint evaluated
-
-    //Assign material parameter values to positive side by default.
-    double heavyside_epsilon=1.0;
-    densaf_=density[0];
-
-    //Calculate material parameters with phiaf
-    if(abs(gpscaaf) <= epsilon)
-    {
-      heavyside_epsilon = 0.5 * (1.0 + gpscaaf/epsilon + 1.0 / PI * sin(PI*gpscaaf/epsilon));
-
-      densaf_ = heavyside_epsilon*density[0]+(1.0-heavyside_epsilon)*density[1];
-    }
-    else if (gpscaaf < epsilon)
-    {
-      heavyside_epsilon = 0.0;
-
-      densaf_=density[1];
-    }
+    //This is only necessary if the BC is dependant on the density!
 
   }// end else if m_matlist
   else dserror("Material type is not supported for density evaluation for boundary element!");
 
-  // check whether there is zero or negative density
+//  // check whether there is zero or negative density
   if (densaf_ < EPS15) dserror("zero or negative density!");
 
 

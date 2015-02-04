@@ -121,6 +121,7 @@ DRT::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighborData(
     DRT::ELEMENTS::FluidIntFace*         intface,         ///< internal face element
+    Teuchos::RCP<MAT::Material> &        material,        ///< material for face stabilization
     std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
     std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
     const INPAR::XFEM::FaceType &        face_type,       ///< which type of face std, ghost, ghost-penalty
@@ -270,7 +271,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   //---------------------------------------------------------------------
   // call the element specific evaluate method
 
-  int err = EvaluateInternalFaces( intface, params, discretization,
+  int err = EvaluateInternalFaces( intface, material, params, discretization,
                                    lm_patch,
                                    lm_masterToPatch,lm_slaveToPatch,lm_faceToPatch,
                                    lm_masterNodeToPatch, lm_slaveNodeToPatch,
@@ -352,6 +353,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(   DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
+                                                                       Teuchos::RCP<MAT::Material> &      material,           ///< material associated with the faces
                                                                        Teuchos::ParameterList&            params,               ///< parameter list
                                                                        DRT::Discretization&               discretization,       ///< discretization
                                                                        std::vector<int>&                  patchlm,              ///< patch local map
@@ -373,6 +375,7 @@ int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(   DRT::ELEM
   {
     return DRT::ELEMENTS::FluidIntFaceStab::Impl(intface)->EvaluateEdgeBasedStabilization(
       intface,
+      material,
       *fldparatimint_,
       *fldpara_intface_,
       params,

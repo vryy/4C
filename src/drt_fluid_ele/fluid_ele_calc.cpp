@@ -1805,6 +1805,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::AddSurfaceTensionForce(
 
   double                 gaussescaaf;
   gaussescaaf=funct_.Dot(escaaf);
+
+  //TODO @Magnus Review gradient usage for TPF again.
+
   // For surface tension only the values at alpha_f are needed/used.
   //  double                 gaussescaam;
   //  gaussescaam=funct_.Dot(escaam);
@@ -2032,9 +2035,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SetAdvectiveVelOseen(DRT::ELE
 }
 
 
-/*----------------------------------------------------------------------*
- |  compute material parameters                                vg 09/09 |
- *----------------------------------------------------------------------*/
+///*----------------------------------------------------------------------*
+// |  compute material parameters                                vg 09/09 |
+// *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
   Teuchos::RCP<const MAT::Material>  material,
@@ -2049,528 +2052,561 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
   const double                       vol
 )
 {
-// initially set density values and values with respect to continuity rhs
-densam_        = 1.0;
-densaf_        = 1.0;
-densn_         = 1.0;
-scadtfac_      = 0.0;
-scaconvfacaf_  = 0.0;
-scaconvfacn_   = 0.0;
-thermpressadd_ = 0.0;
 
-if (material->MaterialType() == INPAR::MAT::m_fluid)
-{
-  const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+  GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol,densam_,densaf_,densn_,visc_,viscn_,gamma_);
 
-  // get constant dynamic viscosity
-  visc_ = actmat->Viscosity();
-  viscn_ =visc_;
-
-  // artificial compressibility
-  if (fldpara_->PhysicalType() == INPAR::FLUID::artcomp)
-  {
-    // get norm of convective velocity
-    const double vel_norm = convvelint_.Norm2();
-
-    // calculate characteristic element length
-    double h_u = 0.0;
-    double h_p = 0.0;
-    CalcCharEleLength(vol,vel_norm,h_u,h_p);
-
-    // get constant density
-    densaf_ = actmat->Density();
-    densam_ = densaf_;
-    densn_  = densaf_;
-
-    // compute compressibility parameter c as squared value of
-    // maximum of convective velocity, viscous velocity and constant
-    // value 1/2, as proposed in Nithiarasu (2003)
-    double maxvel = std::max(vel_norm,(visc_/(h_p*densaf_)));
-    maxvel = std::max(maxvel,0.5);
-    scadtfac_ = 1.0/std::pow(maxvel,2);
-  }
-  // varying Density
-  else if (fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
-  {
-    const double density_0 = actmat->Density();
-
-    densaf_ = funct_.Dot(escaaf)*density_0;
-    densam_ = densaf_;
-    densn_  = funct_.Dot(escaam)*density_0;
-  }
-  // Boussinesq approximation: Calculation of delta rho
-  else if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
-  {
-    const double density_0 = actmat->Density();
-
-    if(escaaf(0) < EPS12)
-      dserror("Boussinesq approximation: density in escaaf is zero");
-    densaf_ = density_0;
-    densam_ = densaf_;
-    densn_  = densaf_;
-
-    deltadens_ =  (funct_.Dot(escaaf)- 1.0)*density_0;
-    // division by density_0 was removed here since we keep the density in all
-    // terms of the momentum equation (no division by rho -> using dynamic viscosity)
-  }
-  // incompressible flow (standard case)
-  else
-  {
-    densaf_ = actmat->Density();
-    densam_ = densaf_;
-    densn_  = densaf_;
-  }
 }
-else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
+
+
+/*----------------------------------------------------------------------*
+ |  compute material parameters                                vg 09/09 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
+  Teuchos::RCP<const MAT::Material>  material,
+  const LINALG::Matrix<nsd_,nen_>&   evelaf,
+  const LINALG::Matrix<nen_,1>&      escaaf,
+  const LINALG::Matrix<nen_,1>&      escaam,
+  const LINALG::Matrix<nen_,1>&      escabofoaf,
+  const double                       thermpressaf,
+  const double                       thermpressam,
+  const double                       thermpressdtaf,
+  const double                       thermpressdtam,
+  const double                       vol,
+  double &                           densam,
+  double &                           densaf,
+  double &                           densn,
+  double &                           visc,
+  double &                           viscn,
+  double &                           gamma
+)
 {
-  const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
 
-  densaf_ = actmat->Density();
-  densam_ = densaf_;
-  densn_  = densaf_;
-
-  double nu_0   = actmat->Nu0();    // parameter for zero-shear viscosity
-  double nu_inf = actmat->NuInf();  // parameter for infinite-shear viscosity
-  double lambda = actmat->Lambda();  // parameter for characteristic time
-  double a      = actmat->AParam(); // constant parameter
-  double b      = actmat->BParam(); // constant parameter
-
-  // compute rate of strain at n+alpha_F or n+1
-  double rateofstrain   = -1.0e30;
-  rateofstrain = GetStrainRate(evelaf);
-
-  // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
-  // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
-  const double tmp = std::pow(lambda*rateofstrain,b);
-  // kinematic viscosity
-  visc_ = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
-  // dynamic viscosity
-  visc_ *= densaf_;
-}
-else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
-{
-  const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
-
-  densaf_ = actmat->Density();
-  densam_ = densaf_;
-  densn_  = densaf_;
-
-  // get material parameters
-  double m     = actmat->MCons();     // consistency constant
-  double delta = actmat->Delta();      // safety factor
-  double a     = actmat->AExp();      // exponent
-
-  // compute rate of strain at n+alpha_F or n+1
-  double rateofstrain   = -1.0e30;
-  rateofstrain = GetStrainRate(evelaf);
-
-  // compute viscosity according to a modified power law model for shear-thinning fluids
-  // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
-  // kinematic viscosity
-  visc_ = m * pow((delta + rateofstrain), (-1)*a);
-  // dynamic viscosity
-  visc_ *= densaf_;
-}
-else if (material->MaterialType() == INPAR::MAT::m_herschelbulkley)
-{
-  const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(material.get());
-
-  densaf_ = actmat->Density();
-  densam_ = densaf_;
-  densn_  = densaf_;
-
-  double tau0           = actmat->Tau0();            // yield stress
-  double kfac           = actmat->KFac();            // constant factor
-  double nexp           = actmat->NExp();            // exponent
-  double mexp           = actmat->MExp();            // exponent
-  double uplimshearrate = actmat->UpLimShearRate();  // upper limit of shear rate
-  double lolimshearrate = actmat->LoLimShearRate();  // lower limit of shear rate
-
-  // compute rate of strain at n+alpha_F or n+1
-  double rateofstrain   = -1.0e30;
-  rateofstrain = GetStrainRate(evelaf);
-
-  // calculate dynamic viscosity according to Herschel-Bulkley model
-  // (within lower and upper limit of shear rate)
-  if (rateofstrain < lolimshearrate)
-    visc_ = tau0*((1.0-exp(-mexp*lolimshearrate))/lolimshearrate) + kfac*pow(lolimshearrate,(nexp-1.0));
-  else if (rateofstrain > uplimshearrate)
-    visc_ = tau0*((1.0-exp(-mexp*uplimshearrate))/uplimshearrate) + kfac*pow(uplimshearrate,(nexp-1.0));
-  else
-    visc_ = tau0*((1.0-exp(-mexp*rateofstrain))/rateofstrain) + kfac*pow(rateofstrain,(nexp-1.0));
-}
-else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
-{
-  const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
-
-  // get constant density
-  densaf_ = actmat->Density();
-  densam_ = densaf_;
-  densn_  = densaf_;
-
-  // compute temperature at n+alpha_F or n+1
-  const double tempaf = funct_.Dot(escaaf);
-
-  // compute rate of strain at n+alpha_F or n+1
-  double rateofstrain = -1.0e30;
-  rateofstrain = GetStrainRate(evelaf);
-
-  // compute viscosity for Yoghurt-like flows according to Afonso et al. (2003)
-  visc_ = actmat->ComputeViscosity(rateofstrain,tempaf);
-
-  // compute diffusivity
-  diffus_ = actmat->ComputeDiffusivity();
-}
-else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
-{
-  const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
-
-  // compute mixture fraction at n+alpha_F or n+1
-  const double mixfracaf = funct_.Dot(escaaf);
-
-  // compute dynamic viscosity at n+alpha_F or n+1 based on mixture fraction
-  visc_ = actmat->ComputeViscosity(mixfracaf);
-
-  // compute dynamic diffusivity at n+alpha_F or n+1 based on mixture fraction
-  diffus_ = actmat->ComputeDiffusivity(mixfracaf);
-
-  // compute density at n+alpha_F or n+1 based on mixture fraction
-  densaf_ = actmat->ComputeDensity(mixfracaf);
-
-  // factor for convective scalar term at n+alpha_F or n+1
-  scaconvfacaf_ = actmat->EosFacA()*densaf_;
-
-  if (fldparatimint_->IsGenalpha())
-  {
-    // compute density at n+alpha_M based on mixture fraction
-    const double mixfracam = funct_.Dot(escaam);
-    densam_ = actmat->ComputeDensity(mixfracam);
-
-    // factor for scalar time derivative at n+alpha_M
-    scadtfac_ = actmat->EosFacA()*densam_;
-  }
-  else
-  {
-    // set density at n+1 at location n+alpha_M as well
-    densam_ = densaf_;
-
-    if (not fldparatimint_->IsStationary())
-    {
-      // compute density at n based on mixture fraction
-      const double mixfracn = funct_.Dot(escaam);
-      densn_ = actmat->ComputeDensity(mixfracn);
-
-      // factor for convective scalar term at n
-      scaconvfacn_ = actmat->EosFacA()*densn_;
-
-      // factor for scalar time derivative
-      scadtfac_ = scaconvfacaf_;
-    }
-  }
-}
-else if (material->MaterialType() == INPAR::MAT::m_sutherland)
-{
-  const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
-
-  // compute temperature at n+alpha_F or n+1
-  const double tempaf = funct_.Dot(escaaf);
-
-  // compute viscosity according to Sutherland law
-  visc_ = actmat->ComputeViscosity(tempaf);
-
-  // compute diffusivity according to Sutherland law
-  diffus_ = actmat->ComputeDiffusivity(tempaf);
-
-  // compute density at n+alpha_F or n+1 based on temperature
-  // and thermodynamic pressure
-  densaf_ = actmat->ComputeDensity(tempaf,thermpressaf);
-
-  // factor for convective scalar term at n+alpha_F or n+1
-  scaconvfacaf_ = 1.0/tempaf;
-
-  if (fldparatimint_->IsGenalpha())
-  {
-    // compute temperature at n+alpha_M
-    const double tempam = funct_.Dot(escaam);
-
-    // factor for scalar time derivative at n+alpha_M
-    scadtfac_ = 1.0/tempam;
-
-    // compute density at n+alpha_M based on temperature
-    densam_ = actmat->ComputeDensity(tempam,thermpressam);
-
-    // addition due to thermodynamic pressure at n+alpha_M
-    thermpressadd_ = -thermpressdtam/thermpressam;
-
-    // first part of right-hand side for scalar equation:
-    // time derivative of thermodynamic pressure at n+alpha_F
-    scarhs_ = thermpressdtaf/actmat->Shc();
-  }
-  else
-  {
-    // set density at n+1 at location n+alpha_M as well
-    densam_ = densaf_;
-
-    if (not fldparatimint_->IsStationary())
-    {
-      // compute temperature at n
-      const double tempn = funct_.Dot(escaam);
-
-      // compute density at n based on temperature at n and
-      // (approximately) thermodynamic pressure at n+1
-      densn_ = actmat->ComputeDensity(tempn,thermpressaf);
-
-      // factor for convective scalar term at n
-      scaconvfacn_ = 1.0/tempn;
-
-      // factor for scalar time derivative
-      scadtfac_ = scaconvfacaf_;
-
-      // addition due to thermodynamic pressure
-      thermpressadd_ = -(thermpressaf-thermpressam)/(fldparatimint_->Dt()*thermpressaf);
-
-      // first part of right-hand side for scalar equation:
-      // time derivative of thermodynamic pressure
-      scarhs_ = (thermpressaf-thermpressam)/fldparatimint_->Dt()/actmat->Shc();
-    }
-  }
-
-  // second part of right-hand side for scalar equation: body force
-  // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  const double scatrabodyforce = funct_.Dot(escabofoaf);
-  scarhs_ += scatrabodyforce/actmat->Shc();
-}
-else if (material->MaterialType() == INPAR::MAT::m_cavitation)
-{
-  const MAT::CavitationFluid* actmat = static_cast<const MAT::CavitationFluid*>(material.get());
-
-  // get constant dynamic viscosity
-  visc_ = actmat->Viscosity();
-
-  // get constant base density
-  const double density_0 = actmat->Density();
-
-  // get fluid fraction at at n+alpha_F
-  const double fluidfracaf = funct_.Dot(escaaf);
-
-  // compute density at at n+alpha_F; no density scaling necessary here due
-  // to the special choice of forces applied to the fluid
-//  densaf_ = fluidfracaf*density_0;
-  densaf_ = density_0;
-
-  // do not need diffusivity
-  diffus_ = 0.0;
-
-  // nothing to add add due to thermodynamic pressure at n+alpha_M
+  // initially set density values and values with respect to continuity rhs
+  densam         = 1.0;
+  densaf         = 1.0;
+  densn          = 1.0;
+  scadtfac_      = 0.0;
+  scaconvfacaf_  = 0.0;
+  scaconvfacn_   = 0.0;
   thermpressadd_ = 0.0;
 
-  // no time derivative of thermodynamic pressure at n+alpha_F
-  scarhs_ = 0.0;
-
-  // factor for convective scalar term at n+alpha_F or n+1
-  scaconvfacaf_ = -1.0/fluidfracaf;
-
-  if (fldparatimint_->IsGenalpha())
+  if (material->MaterialType() == INPAR::MAT::m_fluid)
   {
-    // compute fluid fraction at n+alpha_M
-    const double fluidfracam = funct_.Dot(escaam);
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
 
-    // factor for scalar time derivative at n+alpha_M
-    scadtfac_ = -1.0/fluidfracam;
+    // get constant dynamic viscosity
+    visc = actmat->Viscosity();
+    viscn =visc;
 
-    // compute density at n+alpha_M based; no density scaling necessary here due
-    // to the special choice of forces applied to the fluid
-//    densam_ = fluidfracam*density_0;
-    densam_ = density_0;
-  }
-  else
-  {
-    // set density at n+1 at location n+alpha_M as well
-    densam_ = densaf_;
-
-    // compute fluid fraction at n
-    const double fluidfracn = funct_.Dot(escaam);
-
-    // compute density at n based; no density scaling necessary here due
-    // to the special choice of forces applied to the fluid
-//    densn_ = fluidfracn*density_0;
-    densn_ = density_0;
-
-    // factor for convective scalar term at n
-    scaconvfacn_ = -1.0/fluidfracn;
-
-    // factor for scalar time derivative
-    scadtfac_ = scaconvfacaf_;
-  }
-}
-else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
-{
-  const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
-
-  // get progress variable at n+alpha_F or n+1
-  const double provaraf = funct_.Dot(escaaf);
-
-  // compute temperature based on progress variable at n+alpha_F or n+1
-  const double tempaf = actmat->ComputeTemperature(provaraf);
-
-  // compute viscosity according to Sutherland law
-  visc_ = actmat->ComputeViscosity(tempaf);
-
-  // compute diffusivity according to Sutherland law
-  diffus_ = actmat->ComputeDiffusivity(tempaf);
-
-  // compute density at n+alpha_F or n+1 based on progress variable
-  densaf_ = actmat->ComputeDensity(provaraf);
-
-  // factor for convective scalar term at n+alpha_F or n+1
-  scaconvfacaf_ = actmat->ComputeFactor(provaraf);
-
-  if (fldparatimint_->IsGenalpha())
-  {
-    // compute density at n+alpha_M based on progress variable
-    const double provaram = funct_.Dot(escaam);
-    densam_ = actmat->ComputeDensity(provaram);
-
-    // factor for scalar time derivative at n+alpha_M
-    scadtfac_ = actmat->ComputeFactor(provaram);
-
-    // right-hand side for scalar equation (including reactive term)
-    scarhs_ = densaf_*actmat->ComputeReactionCoeff(tempaf)*(1.0-provaraf);
-  }
-  else
-  {
-    // set density at n+1 at location n+alpha_M as well
-    densam_ = densaf_;
-
-    if (not fldparatimint_->IsStationary())
+    // artificial compressibility
+    if (fldpara_->PhysicalType() == INPAR::FLUID::artcomp)
     {
-      // compute density at n based on progress variable
-      const double provarn = funct_.Dot(escaam);
-      densn_ = actmat->ComputeDensity(provarn);
+      // get norm of convective velocity
+      const double vel_norm = convvelint_.Norm2();
+
+      // calculate characteristic element length
+      double h_u = 0.0;
+      double h_p = 0.0;
+      CalcCharEleLength(vol,vel_norm,h_u,h_p);
+
+      // get constant density
+      densaf = actmat->Density();
+      densam = densaf;
+      densn  = densaf;
+
+      // compute compressibility parameter c as squared value of
+      // maximum of convective velocity, viscous velocity and constant
+      // value 1/2, as proposed in Nithiarasu (2003)
+      double maxvel = std::max(vel_norm,(visc/(h_p*densaf)));
+      maxvel = std::max(maxvel,0.5);
+      scadtfac_ = 1.0/std::pow(maxvel,2);
+    }
+    // varying Density
+    else if (fldpara_->PhysicalType() == INPAR::FLUID::varying_density)
+    {
+      const double density_0 = actmat->Density();
+
+      densaf = funct_.Dot(escaaf)*density_0;
+      densam = densaf;
+      densn  = funct_.Dot(escaam)*density_0;
+    }
+    // Boussinesq approximation: Calculation of delta rho
+    else if (fldpara_->PhysicalType() == INPAR::FLUID::boussinesq)
+    {
+      const double density_0 = actmat->Density();
+
+      if(escaaf(0) < EPS12)
+        dserror("Boussinesq approximation: density in escaaf is zero");
+      densaf = density_0;
+      densam = densaf;
+      densn  = densaf;
+
+      deltadens_ =  (funct_.Dot(escaaf)- 1.0)*density_0;
+      // division by density_0 was removed here since we keep the density in all
+      // terms of the momentum equation (no division by rho -> using dynamic viscosity)
+    }
+    // incompressible flow (standard case)
+    else
+    {
+      densaf = actmat->Density();
+      densam = densaf;
+      densn  = densaf;
+    }
+
+    gamma=actmat->Gamma();
+
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
+  {
+    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
+
+    densaf = actmat->Density();
+    densam = densaf;
+    densn  = densaf;
+
+    double nu_0   = actmat->Nu0();    // parameter for zero-shear viscosity
+    double nu_inf = actmat->NuInf();  // parameter for infinite-shear viscosity
+    double lambda = actmat->Lambda();  // parameter for characteristic time
+    double a      = actmat->AParam(); // constant parameter
+    double b      = actmat->BParam(); // constant parameter
+
+    // compute rate of strain at n+alpha_F or n+1
+    double rateofstrain   = -1.0e30;
+    rateofstrain = GetStrainRate(evelaf);
+
+    // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
+    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+    const double tmp = std::pow(lambda*rateofstrain,b);
+    // kinematic viscosity
+    visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
+    // dynamic viscosity
+    visc *= densaf;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
+  {
+    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
+
+    densaf = actmat->Density();
+    densam = densaf;
+    densn  = densaf;
+
+    // get material parameters
+    double m     = actmat->MCons();     // consistency constant
+    double delta = actmat->Delta();      // safety factor
+    double a     = actmat->AExp();      // exponent
+
+    // compute rate of strain at n+alpha_F or n+1
+    double rateofstrain   = -1.0e30;
+    rateofstrain = GetStrainRate(evelaf);
+
+    // compute viscosity according to a modified power law model for shear-thinning fluids
+    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+    // kinematic viscosity
+    visc = m * pow((delta + rateofstrain), (-1)*a);
+    // dynamic viscosity
+    visc *= densaf;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_herschelbulkley)
+  {
+    const MAT::HerschelBulkley* actmat = static_cast<const MAT::HerschelBulkley*>(material.get());
+
+    densaf = actmat->Density();
+    densam = densaf;
+    densn  = densaf;
+
+    double tau0           = actmat->Tau0();            // yield stress
+    double kfac           = actmat->KFac();            // constant factor
+    double nexp           = actmat->NExp();            // exponent
+    double mexp           = actmat->MExp();            // exponent
+    double uplimshearrate = actmat->UpLimShearRate();  // upper limit of shear rate
+    double lolimshearrate = actmat->LoLimShearRate();  // lower limit of shear rate
+
+    // compute rate of strain at n+alpha_F or n+1
+    double rateofstrain   = -1.0e30;
+    rateofstrain = GetStrainRate(evelaf);
+
+    // calculate dynamic viscosity according to Herschel-Bulkley model
+    // (within lower and upper limit of shear rate)
+    if (rateofstrain < lolimshearrate)
+      visc = tau0*((1.0-exp(-mexp*lolimshearrate))/lolimshearrate) + kfac*pow(lolimshearrate,(nexp-1.0));
+    else if (rateofstrain > uplimshearrate)
+      visc = tau0*((1.0-exp(-mexp*uplimshearrate))/uplimshearrate) + kfac*pow(uplimshearrate,(nexp-1.0));
+    else
+      visc = tau0*((1.0-exp(-mexp*rateofstrain))/rateofstrain) + kfac*pow(rateofstrain,(nexp-1.0));
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
+  {
+    const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
+
+    // get constant density
+    densaf = actmat->Density();
+    densam = densaf;
+    densn  = densaf;
+
+    // compute temperature at n+alpha_F or n+1
+    const double tempaf = funct_.Dot(escaaf);
+
+    // compute rate of strain at n+alpha_F or n+1
+    double rateofstrain = -1.0e30;
+    rateofstrain = GetStrainRate(evelaf);
+
+    // compute viscosity for Yoghurt-like flows according to Afonso et al. (2003)
+    visc = actmat->ComputeViscosity(rateofstrain,tempaf);
+
+    // compute diffusivity
+    diffus_ = actmat->ComputeDiffusivity();
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
+  {
+    const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
+
+    // compute mixture fraction at n+alpha_F or n+1
+    const double mixfracaf = funct_.Dot(escaaf);
+
+    // compute dynamic viscosity at n+alpha_F or n+1 based on mixture fraction
+    visc = actmat->ComputeViscosity(mixfracaf);
+
+    // compute dynamic diffusivity at n+alpha_F or n+1 based on mixture fraction
+    diffus_ = actmat->ComputeDiffusivity(mixfracaf);
+
+    // compute density at n+alpha_F or n+1 based on mixture fraction
+    densaf = actmat->ComputeDensity(mixfracaf);
+
+    // factor for convective scalar term at n+alpha_F or n+1
+    scaconvfacaf_ = actmat->EosFacA()*densaf;
+
+    if (fldparatimint_->IsGenalpha())
+    {
+      // compute density at n+alpha_M based on mixture fraction
+      const double mixfracam = funct_.Dot(escaam);
+      densam = actmat->ComputeDensity(mixfracam);
+
+      // factor for scalar time derivative at n+alpha_M
+      scadtfac_ = actmat->EosFacA()*densam;
+    }
+    else
+    {
+      // set density at n+1 at location n+alpha_M as well
+      densam = densaf;
+
+      if (not fldparatimint_->IsStationary())
+      {
+        // compute density at n based on mixture fraction
+        const double mixfracn = funct_.Dot(escaam);
+        densn = actmat->ComputeDensity(mixfracn);
+
+        // factor for convective scalar term at n
+        scaconvfacn_ = actmat->EosFacA()*densn;
+
+        // factor for scalar time derivative
+        scadtfac_ = scaconvfacaf_;
+      }
+    }
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_sutherland)
+  {
+    const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
+
+    // compute temperature at n+alpha_F or n+1
+    const double tempaf = funct_.Dot(escaaf);
+
+    // compute viscosity according to Sutherland law
+    visc = actmat->ComputeViscosity(tempaf);
+
+    // compute diffusivity according to Sutherland law
+    diffus_ = actmat->ComputeDiffusivity(tempaf);
+
+    // compute density at n+alpha_F or n+1 based on temperature
+    // and thermodynamic pressure
+    densaf = actmat->ComputeDensity(tempaf,thermpressaf);
+
+    // factor for convective scalar term at n+alpha_F or n+1
+    scaconvfacaf_ = 1.0/tempaf;
+
+    if (fldparatimint_->IsGenalpha())
+    {
+      // compute temperature at n+alpha_M
+      const double tempam = funct_.Dot(escaam);
+
+      // factor for scalar time derivative at n+alpha_M
+      scadtfac_ = 1.0/tempam;
+
+      // compute density at n+alpha_M based on temperature
+      densam = actmat->ComputeDensity(tempam,thermpressam);
+
+      // addition due to thermodynamic pressure at n+alpha_M
+      thermpressadd_ = -thermpressdtam/thermpressam;
+
+      // first part of right-hand side for scalar equation:
+      // time derivative of thermodynamic pressure at n+alpha_F
+      scarhs_ = thermpressdtaf/actmat->Shc();
+    }
+    else
+    {
+      // set density at n+1 at location n+alpha_M as well
+      densam = densaf;
+
+      if (not fldparatimint_->IsStationary())
+      {
+        // compute temperature at n
+        const double tempn = funct_.Dot(escaam);
+
+        // compute density at n based on temperature at n and
+        // (approximately) thermodynamic pressure at n+1
+        densn = actmat->ComputeDensity(tempn,thermpressaf);
+
+        // factor for convective scalar term at n
+        scaconvfacn_ = 1.0/tempn;
+
+        // factor for scalar time derivative
+        scadtfac_ = scaconvfacaf_;
+
+        // addition due to thermodynamic pressure
+        thermpressadd_ = -(thermpressaf-thermpressam)/(fldparatimint_->Dt()*thermpressaf);
+
+        // first part of right-hand side for scalar equation:
+        // time derivative of thermodynamic pressure
+        scarhs_ = (thermpressaf-thermpressam)/fldparatimint_->Dt()/actmat->Shc();
+      }
+    }
+
+    // second part of right-hand side for scalar equation: body force
+    // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    const double scatrabodyforce = funct_.Dot(escabofoaf);
+    scarhs_ += scatrabodyforce/actmat->Shc();
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_cavitation)
+  {
+    const MAT::CavitationFluid* actmat = static_cast<const MAT::CavitationFluid*>(material.get());
+
+    // get constant dynamic viscosity
+    visc = actmat->Viscosity();
+
+    // get constant base density
+    const double density_0 = actmat->Density();
+
+    // get fluid fraction at at n+alpha_F
+    const double fluidfracaf = funct_.Dot(escaaf);
+
+    // compute density at at n+alpha_F; no density scaling necessary here due
+    // to the special choice of forces applied to the fluid
+    //  densaf = fluidfracaf*density_0;
+    densaf = density_0;
+
+    // do not need diffusivity
+    diffus_ = 0.0;
+
+    // nothing to add add due to thermodynamic pressure at n+alpha_M
+    thermpressadd_ = 0.0;
+
+    // no time derivative of thermodynamic pressure at n+alpha_F
+    scarhs_ = 0.0;
+
+    // factor for convective scalar term at n+alpha_F or n+1
+    scaconvfacaf_ = -1.0/fluidfracaf;
+
+    if (fldparatimint_->IsGenalpha())
+    {
+      // compute fluid fraction at n+alpha_M
+      const double fluidfracam = funct_.Dot(escaam);
+
+      // factor for scalar time derivative at n+alpha_M
+      scadtfac_ = -1.0/fluidfracam;
+
+      // compute density at n+alpha_M based; no density scaling necessary here due
+      // to the special choice of forces applied to the fluid
+      //    densam = fluidfracam*density_0;
+      densam = density_0;
+    }
+    else
+    {
+      // set density at n+1 at location n+alpha_M as well
+      densam = densaf;
+
+      // compute fluid fraction at n
+      const double fluidfracn = funct_.Dot(escaam);
+
+      // compute density at n based; no density scaling necessary here due
+      // to the special choice of forces applied to the fluid
+      //    densn = fluidfracn*density_0;
+      densn = density_0;
 
       // factor for convective scalar term at n
-      scaconvfacn_ = actmat->ComputeFactor(provarn);
+      scaconvfacn_ = -1.0/fluidfracn;
 
       // factor for scalar time derivative
       scadtfac_ = scaconvfacaf_;
-
-      // right-hand side for scalar equation (including reactive term)
-      const double tempn = actmat->ComputeTemperature(provarn);
-      scarhs_ = fldparatimint_->Theta()*
-                (densaf_*actmat->ComputeReactionCoeff(tempaf)*(1.0-provaraf))
-               +fldparatimint_->OmTheta()*
-                (densn_*actmat->ComputeReactionCoeff(tempn)*(1.0-provarn));
     }
   }
-}
-else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
-{
-  const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
-
-  // get progress variable at n+alpha_F or n+1
-  const double provaraf = funct_.Dot(escaaf);
-
-  // compute temperature based on progress variable at n+alpha_F or n+1
-  const double tempaf = actmat->ComputeTemperature(provaraf);
-
-  // compute viscosity according to Sutherland law
-  visc_ = actmat->ComputeViscosity(tempaf);
-
-  // compute diffusivity according to Sutherland law
-  diffus_ = actmat->ComputeDiffusivity(tempaf);
-
-  // compute density at n+alpha_F or n+1 based on progress variable
-  densaf_ = actmat->ComputeDensity(provaraf);
-
-  // factor for convective scalar term at n+alpha_F or n+1
-  scaconvfacaf_ = actmat->ComputeFactor(provaraf);
-
-  if (fldparatimint_->IsGenalpha())
+  else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   {
-    // compute density at n+alpha_M based on progress variable
-    const double provaram = funct_.Dot(escaam);
-    densam_ = actmat->ComputeDensity(provaram);
+    const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
-    // factor for scalar time derivative at n+alpha_M
-    scadtfac_ = actmat->ComputeFactor(provaram);
+    // get progress variable at n+alpha_F or n+1
+    const double provaraf = funct_.Dot(escaaf);
 
-    // right-hand side for scalar equation (including reactive term)
-    scarhs_ = densaf_*actmat->ComputeReactionCoeff(tempaf)*(1.0-provaraf);
-  }
-  else
-  {
-    // set density at n+1 at location n+alpha_M as well
-    densam_ = densaf_;
+    // compute temperature based on progress variable at n+alpha_F or n+1
+    const double tempaf = actmat->ComputeTemperature(provaraf);
 
-    if (not fldparatimint_->IsStationary())
+    // compute viscosity according to Sutherland law
+    visc = actmat->ComputeViscosity(tempaf);
+
+    // compute diffusivity according to Sutherland law
+    diffus_ = actmat->ComputeDiffusivity(tempaf);
+
+    // compute density at n+alpha_F or n+1 based on progress variable
+    densaf = actmat->ComputeDensity(provaraf);
+
+    // factor for convective scalar term at n+alpha_F or n+1
+    scaconvfacaf_ = actmat->ComputeFactor(provaraf);
+
+    if (fldparatimint_->IsGenalpha())
     {
-      // compute density at n based on progress variable
-      const double provarn = funct_.Dot(escaam);
-      densn_ = actmat->ComputeDensity(provarn);
+      // compute density at n+alpha_M based on progress variable
+      const double provaram = funct_.Dot(escaam);
+      densam = actmat->ComputeDensity(provaram);
 
-      // factor for convective scalar term at n
-      scaconvfacn_ = actmat->ComputeFactor(provarn);
-
-      // factor for scalar time derivative
-      scadtfac_ = scaconvfacaf_;
+      // factor for scalar time derivative at n+alpha_M
+      scadtfac_ = actmat->ComputeFactor(provaram);
 
       // right-hand side for scalar equation (including reactive term)
-      const double tempn = actmat->ComputeTemperature(provarn);
-      scarhs_ = fldparatimint_->Theta()*
-                (densaf_*actmat->ComputeReactionCoeff(tempaf)*(1.0-provaraf))
-               +fldparatimint_->OmTheta()*
-                (densn_*actmat->ComputeReactionCoeff(tempn)*(1.0-provarn));
+      scarhs_ = densaf*actmat->ComputeReactionCoeff(tempaf)*(1.0-provaraf);
+    }
+    else
+    {
+      // set density at n+1 at location n+alpha_M as well
+      densam = densaf;
+
+      if (not fldparatimint_->IsStationary())
+      {
+        // compute density at n based on progress variable
+        const double provarn = funct_.Dot(escaam);
+        densn = actmat->ComputeDensity(provarn);
+
+        // factor for convective scalar term at n
+        scaconvfacn_ = actmat->ComputeFactor(provarn);
+
+        // factor for scalar time derivative
+        scadtfac_ = scaconvfacaf_;
+
+        // right-hand side for scalar equation (including reactive term)
+        const double tempn = actmat->ComputeTemperature(provarn);
+        scarhs_ = fldparatimint_->Theta()*
+            (densaf*actmat->ComputeReactionCoeff(tempaf)*(1.0-provaraf))
+            +fldparatimint_->OmTheta()*
+            (densn*actmat->ComputeReactionCoeff(tempn)*(1.0-provarn));
+      }
     }
   }
-}
-else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
-{
-  const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
-
-  densaf_ = actmat->Density();
-  densam_ = densaf_;
-  densn_  = densaf_;
-
-  // calculate reaction coefficient
-  reacoeff_ = actmat->ComputeReactionCoeff();
-
-  // get constant viscosity (zero for Darcy and greater than zero for Darcy-Stokes)
-  visc_ = actmat->SetViscosity();
-
-  // set darcy flag to true
-  //f3Parameter_->darcy_ = true;
-  // set reaction flag to true
-  //f3Parameter_->reaction_ = true;
-
-  // check stabilization parameter definition for permeable fluid
-  if (not (fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-           fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
-    dserror("incorrect definition of stabilization parameter for Darcy or Darcy-Stokes problem");
-}
-else if (material->MaterialType() == INPAR::MAT::m_matlist)
-{
-  // get material list for this element
-  const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
-
-  int numofmaterials = matlist->NumMat();
-
-  //Error messages
-  if(numofmaterials>2)
+  else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   {
-    dserror("More than two materials is currently not supported.");
+    const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
+
+    // get progress variable at n+alpha_F or n+1
+    const double provaraf = funct_.Dot(escaaf);
+
+    // compute temperature based on progress variable at n+alpha_F or n+1
+    const double tempaf = actmat->ComputeTemperature(provaraf);
+
+    // compute viscosity according to Sutherland law
+    visc = actmat->ComputeViscosity(tempaf);
+
+    // compute diffusivity according to Sutherland law
+    diffus_ = actmat->ComputeDiffusivity(tempaf);
+
+    // compute density at n+alpha_F or n+1 based on progress variable
+    densaf = actmat->ComputeDensity(provaraf);
+
+    // factor for convective scalar term at n+alpha_F or n+1
+    scaconvfacaf_ = actmat->ComputeFactor(provaraf);
+
+    if (fldparatimint_->IsGenalpha())
+    {
+      // compute density at n+alpha_M based on progress variable
+      const double provaram = funct_.Dot(escaam);
+      densam = actmat->ComputeDensity(provaram);
+
+      // factor for scalar time derivative at n+alpha_M
+      scadtfac_ = actmat->ComputeFactor(provaram);
+
+      // right-hand side for scalar equation (including reactive term)
+      scarhs_ = densaf*actmat->ComputeReactionCoeff(tempaf)*(1.0-provaraf);
+    }
+    else
+    {
+      // set density at n+1 at location n+alpha_M as well
+      densam = densaf;
+
+      if (not fldparatimint_->IsStationary())
+      {
+        // compute density at n based on progress variable
+        const double provarn = funct_.Dot(escaam);
+        densn = actmat->ComputeDensity(provarn);
+
+        // factor for convective scalar term at n
+        scaconvfacn_ = actmat->ComputeFactor(provarn);
+
+        // factor for scalar time derivative
+        scadtfac_ = scaconvfacaf_;
+
+        // right-hand side for scalar equation (including reactive term)
+        const double tempn = actmat->ComputeTemperature(provarn);
+        scarhs_ = fldparatimint_->Theta()*
+            (densaf*actmat->ComputeReactionCoeff(tempaf)*(1.0-provaraf))
+            +fldparatimint_->OmTheta()*
+            (densn*actmat->ComputeReactionCoeff(tempn)*(1.0-provarn));
+      }
+    }
   }
-  if(not fldpara_->MatGp())
+  else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
   {
-    dserror("For Two Phase Flow, the material should be evaluated at the Gauss-points. Switch EVALUATION_MAT to integration_point.");
+    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
+
+    densaf = actmat->Density();
+    densam = densaf;
+    densn  = densaf;
+
+    // calculate reaction coefficient
+    reacoeff_ = actmat->ComputeReactionCoeff();
+
+    // get constant viscosity (zero for Darcy and greater than zero for Darcy-Stokes)
+    visc = actmat->SetViscosity();
+
+    // set darcy flag to true
+    //f3Parameter_->darcy_ = true;
+    // set reaction flag to true
+    //f3Parameter_->reaction_ = true;
+
+    // check stabilization parameter definition for permeable fluid
+    if (not (fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+        fldpara_->WhichTau() == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+      dserror("incorrect definition of stabilization parameter for Darcy or Darcy-Stokes problem");
   }
-
-  std::vector<double> density(numofmaterials); //Assume density[0] is on positive side, and density[1] is on negative side.
-  std::vector<double> viscosity(numofmaterials);
-  std::vector<double> gamma(numofmaterials);
-
-  for(int nmaterial=0; nmaterial<numofmaterials; nmaterial++)
+  else if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
-    // set default id in list of materials
+    // get material list for this element
+    const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+
+    int numofmaterials = matlist->NumMat();
+
+    //Error messages
+    if(numofmaterials>2)
+    {
+      dserror("More than two materials is currently not supported.");
+    }
+    if(not fldpara_->MatGp())
+    {
+      dserror("For Two Phase Flow, the material should be evaluated at the Gauss-points. Switch EVALUATION_MAT to integration_point.");
+    }
+
+    std::vector<double> density(numofmaterials); //Assume density[0] is on positive side, and density[1] is on negative side.
+    std::vector<double> viscosity(numofmaterials);
+    std::vector<double> gamma_vector(numofmaterials);
+
+    for(int nmaterial=0; nmaterial<numofmaterials; nmaterial++)
+    {
+      // set default id in list of materials
       int matid = -1;
       matid = matlist->MatID(nmaterial);
 
@@ -2588,7 +2624,7 @@ else if (material->MaterialType() == INPAR::MAT::m_matlist)
         const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
         density[nmaterial]=mat->Density();
         viscosity[nmaterial]=mat->Viscosity();
-        gamma[nmaterial]=mat->Gamma();
+        gamma_vector[nmaterial]=mat->Gamma();
         break;
       }
       //------------------------------------------------
@@ -2598,76 +2634,75 @@ else if (material->MaterialType() == INPAR::MAT::m_matlist)
         dserror("Only Newtonian fluids supported as input.");
         break;
       }
-  }
+    }
 
-  double epsilon = fldpara_->GetInterfaceThickness();
+    double epsilon = fldpara_->GetInterfaceThickness();
 
-  const double gpscaaf = funct_.Dot(escaaf); //Scalar function at gausspoint evaluated
-  const double gpscaam = funct_.Dot(escaam); //Scalar function at gausspoint evaluated
+    const double gpscaaf = funct_.Dot(escaaf); //Scalar function at gausspoint evaluated
+    const double gpscaam = funct_.Dot(escaam); //Scalar function at gausspoint evaluated
 
-  //Assign material parameter values to positive side by default.
-  double heavyside_epsilon=1.0;
-  densaf_=density[0];
-  visc_=viscosity[0];
-  viscn_=visc_;
-  densam_=densaf_;
-  densn_=densam_;
-
-
-  //Calculate material parameters with phiaf
-  if(abs(gpscaaf) <= epsilon)
-  {
-    heavyside_epsilon = 0.5 * (1.0 + gpscaaf/epsilon + 1.0 / PI * sin(PI*gpscaaf/epsilon));
-
-    densaf_ = heavyside_epsilon*density[0]+(1.0-heavyside_epsilon)*density[1];
-    visc_ = heavyside_epsilon*viscosity[0]+(1.0-heavyside_epsilon)*viscosity[1];
-  }
-  else if (gpscaaf < epsilon)
-  {
-    heavyside_epsilon = 0.0;
-
-    densaf_=density[1];
-    visc_=viscosity[1];
-  }
-
-//  //Calculate material parameters with phiam
-  if(abs(gpscaam) <= epsilon)
-  {
-    heavyside_epsilon = 0.5 * (1.0 + gpscaam/epsilon + 1.0 / PI * sin(PI*gpscaam/epsilon));
-
-    densam_ = heavyside_epsilon*density[0]+(1.0-heavyside_epsilon)*density[1];
-    densn_ = densam_;
-
-    viscn_ = heavyside_epsilon*viscosity[0]+(1.0-heavyside_epsilon)*viscosity[1];
-  }
-  else if (gpscaam < epsilon)
-  {
-    heavyside_epsilon = 0.0;
-
-    densam_=density[1];
-    densn_=densam_;
-
-    viscn_=viscosity[1];
-  }
+    //Assign material parameter values to positive side by default.
+    double heavyside_epsilon=1.0;
+    densaf=density[0];
+    visc=viscosity[0];
+    viscn=visc;
+    densam=densaf;
+    densn=densam;
 
 
-  if(gamma[0]!=gamma[1])
-    dserror("Surface tensions have to be equal");
+    //Calculate material parameters with phiaf
+    if(abs(gpscaaf) <= epsilon)
+    {
+      heavyside_epsilon = 0.5 * (1.0 + gpscaaf/epsilon + 1.0 / PI * sin(PI*gpscaaf/epsilon));
 
-  //Surface tension coefficient assigned.
-  gamma_=gamma[0];
+      densaf = heavyside_epsilon*density[0]+(1.0-heavyside_epsilon)*density[1];
+      visc = heavyside_epsilon*viscosity[0]+(1.0-heavyside_epsilon)*viscosity[1];
+    }
+    else if (gpscaaf < epsilon)
+    {
+      heavyside_epsilon = 0.0;
 
-}// end else if m_matlist
-else dserror("Material type is not supported");
+      densaf=density[1];
+      visc=viscosity[1];
+    }
 
-// check whether there is zero or negative (physical) viscosity
-// (expect for permeable fluid)
-if (visc_ < EPS15 and not (material->MaterialType() == INPAR::MAT::m_permeable_fluid))
-  dserror("zero or negative (physical) diffusivity");
+    //  //Calculate material parameters with phiam
+    if(abs(gpscaam) <= epsilon)
+    {
+      heavyside_epsilon = 0.5 * (1.0 + gpscaam/epsilon + 1.0 / PI * sin(PI*gpscaam/epsilon));
 
-return;
+      densam = heavyside_epsilon*density[0]+(1.0-heavyside_epsilon)*density[1];
+      densn = densam;
+
+      viscn = heavyside_epsilon*viscosity[0]+(1.0-heavyside_epsilon)*viscosity[1];
+    }
+    else if (gpscaam < epsilon)
+    {
+      heavyside_epsilon = 0.0;
+
+      densam=density[1];
+      densn=densam;
+
+      viscn=viscosity[1];
+    }
+
+
+    if(gamma_vector[0]!=gamma_vector[1])
+      dserror("Surface tensions have to be equal");
+
+    //Surface tension coefficient assigned.
+    gamma=gamma_vector[0];
+
+  }// end else if m_matlist
+  else dserror("Material type is not supported");
+
+  // check whether there is zero or negative (physical) viscosity
+  // (expect for permeable fluid)
+  if (visc < EPS15 and not (material->MaterialType() == INPAR::MAT::m_permeable_fluid))
+    dserror("zero or negative (physical) diffusivity");
+
+  return;
 } // FluidEleCalc::GetMaterialParams
-
 
 /*----------------------------------------------------------------------*
  |  Get mk                                                     bk 09/14 |

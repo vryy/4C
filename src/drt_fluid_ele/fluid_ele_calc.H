@@ -500,7 +500,8 @@ public:
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
       const std::map<int, std::vector<int> > &                            patchcouplm,
       Teuchos::ParameterList&                                             params,            ///< parameter list
-      Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
+      Teuchos::RCP<MAT::Material>&                                        mat_master,        ///< material for the coupled side
+      Teuchos::RCP<MAT::Material>&                                        mat_slave,         ///< material for the coupled side
       Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
       Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
       const GEO::CUT::plain_volumecell_set &                              vcSet,             ///< volumecell sets in this element
@@ -768,6 +769,25 @@ protected:
                          const double                       thermpressdtam,  ///< time derivative of thermodynamic pressure at time n+alpha_m / n+1
                          const double                       vol              ///< element volume
                          );
+
+  //! get material parameters
+  void GetMaterialParams(Teuchos::RCP<const MAT::Material>  material,
+                        const LINALG::Matrix<nsd_,nen_>&   evelaf,
+                        const LINALG::Matrix<nen_,1>&      escaaf,
+                        const LINALG::Matrix<nen_,1>&      escaam,
+                        const LINALG::Matrix<nen_,1>&      escabofoaf,
+                        const double                       thermpressaf,
+                        const double                       thermpressam,
+                        const double                       thermpressdtaf,
+                        const double                       thermpressdtam,
+                        const double                       vol,
+                        double &                           densam,
+                        double &                           densaf,
+                        double &                           densan,
+                        double &                           visc,
+                        double &                           viscn,
+                        double &                           gamma
+                        );
 
   //! return constant mk for stabilization parameters
   virtual double GetMK();

@@ -91,6 +91,8 @@ public:
   void AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &               eleparams,        ///< element parameter list
                                      const INPAR::XFEM::FaceType &          face_type,        ///< which type of face std, ghost, ghost-penalty
                                      DRT::ELEMENTS::FluidIntFace*           intface,          ///< internal face element
+                                     Teuchos::RCP<MAT::Material> &          material_m,       ///< material of the master side
+                                     Teuchos::RCP<MAT::Material> &          material_s,       ///< material of the slave side
                                      std::vector<int> &                     nds_master,       ///< nodal dofset vector w.r.t. master element
                                      std::vector<int> &                     nds_slave,        ///< nodal dofset vector w.r.t. slave element
                                      DRT::DiscretizationFaces &             xdiscret,         ///< discretization with faces

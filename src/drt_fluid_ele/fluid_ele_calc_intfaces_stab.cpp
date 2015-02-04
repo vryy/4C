@@ -332,6 +332,7 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType ndistype>
 int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::EvaluateEdgeBasedStabilization(
     DRT::ELEMENTS::FluidIntFace*             intface,              ///< internal face element
+    Teuchos::RCP<MAT::Material> &            material,             ///< material associated with the faces
     DRT::ELEMENTS::FluidEleParameterTimInt&  fldparatimint,        ///< time-integration parameter
     DRT::ELEMENTS::FluidEleParameterIntFace& fldintfacepara,       ///< general parameter for internal face
     Teuchos::ParameterList&                  params,               ///< parameter list
@@ -632,6 +633,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   GetElementData( intface,
                   pele,
                   nele,
+                  material,
                   mypvelaf,
                   mypvelnp,
                   mypedispnp,
@@ -1371,6 +1373,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
     FluidIntFace*              surfele,          ///< surface FluidIntFace element
     Fluid*                     master_ele,       ///< master parent element
     Fluid*                     slave_ele,        ///< slave  parent element
+    Teuchos::RCP<MAT::Material> &      material, ///< material associated with the faces
     std::vector<double>&       mypvelaf,         ///< master velaf
     std::vector<double>&       mypvelnp,         ///< master velnp
     std::vector<double>&       mypedispnp,       ///< master dispnp
@@ -1506,57 +1509,22 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
 
 
 
-  //------------------------------ see whether materials in patch are equal
-
   //--------------------------------------------------
-  // get material of volume element this surface belongs to
-  Teuchos::RCP<MAT::Material> pmat = master_ele->Material();
-  Teuchos::RCP<MAT::Material> nmat = slave_ele->Material();
-
-  if(pmat->MaterialType() != nmat->MaterialType()) dserror(" not the same material for master and slave parent element");
-
-  if( pmat->MaterialType() != INPAR::MAT::m_carreauyasuda
-   && pmat->MaterialType() != INPAR::MAT::m_modpowerlaw
-   && pmat->MaterialType() != INPAR::MAT::m_herschelbulkley
-   && pmat->MaterialType() != INPAR::MAT::m_fluid)
-    dserror("Material law for parent element is not a fluid");
-
-  // get parent viscosity
-  double pkinvisc = 0.0;
-  double nkinvisc = 0.0;
-  double pdens = 0.0;
-  double ndens = 0.0;
-
-  if(pmat->MaterialType() == INPAR::MAT::m_fluid)
+  //          GET MATERIAL DATA
+  //--------------------------------------------------
+  if(material->MaterialType() == INPAR::MAT::m_fluid)
   {
-    {
-      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(pmat.get());
-      // we need the kinematic viscosity (nu ~ m^2/s) here
-      pkinvisc = actmat->Viscosity()/actmat->Density();
-      pdens = actmat->Density();
-    }
 
-    {
-      const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(nmat.get());
-      // we need the kinematic viscosity here
-      nkinvisc = actmat->Viscosity()/actmat->Density();
-      ndens = actmat->Density();
-    }
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+    // we need the kinematic viscosity (nu ~ m^2/s) here
+    kinvisc_ = actmat->Viscosity()/actmat->Density();
+    density_ = actmat->Density();
+
   }
   else
   {
-    dserror("up to now I expect a constant viscosity for edge stabilization\n");
+    dserror("A Newtonian Fluid is expected. For XFEM this should be checked in XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty(..)!\n");
   }
-
-
-  if(fabs(nkinvisc - pkinvisc)<1e-14) kinvisc_ = pkinvisc;
-  else dserror("parent and neighbor element do not have the same viscosity!");
-
-  if(fabs(ndens - pdens)<1e-14) density_ = pdens;
-  else dserror("parent and neighbor element do not have the same density!");
-
-
-
 
   //--------------------------------------------------
   //          GET BOUNDARY ELEMENT DATA

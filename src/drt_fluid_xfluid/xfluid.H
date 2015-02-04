@@ -50,6 +50,7 @@ namespace GEO
   {
     class ElementHandle;
     class VolumeCell;
+
   }
 }
 
@@ -552,6 +553,7 @@ namespace FLD
     */
     void SetFaceGeneralFluidXFEMParameter();
 
+
     void ExplicitPredictor();
 
     void PredictTangVelConsistAcc();
@@ -588,6 +590,20 @@ namespace FLD
 
     ///Export XFluid Vector to State Vector
     void GetStateVectorXFluid(Teuchos::RCP<Epetra_Vector>& xfluidvec, Teuchos::RCP<Epetra_Vector>& statevec);
+
+
+//    //! @name Get material properties for the Volume Cell
+//    /*!
+//
+//    \brief Element material for the volume cell, depending on element and position.
+//           If an element which is not a material list is given, the provided material is chosen.
+//           If however a material list is given the material chosen for the volume cell is depending on the point position.
+//
+//    */
+//    void GetVolumeCellMaterial(DRT::Element* actele,
+//                               Teuchos::RCP<MAT::Material> & mat,
+//                               const GEO::CUT::Point::PointPosition position = GEO::CUT::Point::outside);
+
 
     //-------------------------------------------------------------------------------
     //! possible inf-norm scaling of linear system / fluid matrix

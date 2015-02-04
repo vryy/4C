@@ -213,7 +213,8 @@ public:
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
       const std::map<int, std::vector<int> > &                            patchcouplm,
       Teuchos::ParameterList&                                             params,            ///< parameter list
-      Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
+      Teuchos::RCP<MAT::Material>&                                        mat_master,        ///< material for the coupled side
+      Teuchos::RCP<MAT::Material>&                                        mat_slave,         ///< material for the coupled side
       Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
       Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
       const GEO::CUT::plain_volumecell_set &                              vcSet,             ///< volumecell sets in this element
@@ -269,7 +270,9 @@ private:
   //! compute viscous part of Nitsche's penalty term scaling for Nitsche's method
   double NIT_Compute_ViscPenalty_Stabfac(
       const DRT::Element::DiscretizationType ele_distype, ///< the discretization type of the element w.r.t which the stabilization factor is computed
-      const double inv_hk                                ///< the inverse characteristic element length
+      const double inv_hk,                                ///< the inverse characteristic element length
+      const double kappa1,                                ///< Weight parameter (parameter +/master side)
+      const double kappa2                                 ///< Weight parameter (parameter -/slave  side)
       );
 
   //! get the constant which satisfies the trace inequality depending on the spatial dimension and polynomial order of the element
@@ -280,6 +283,9 @@ private:
           double &                           NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
           const LINALG::Matrix<my::nsd_,1>&  normal,                        ///< interface-normal vector
           const double                       h_k,                           ///< characteristic element length
+          const double                       kappa1,                        ///< Weight parameter (parameter +/master side)
+          const double                       kappa2,                        ///< Weight parameter (parameter -/slave  side)
+          const LINALG::Matrix<my::nsd_,1>&  velint_s,                      ///< Slave side velocity at gauss-point
           const double                       NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
           bool                               error_calc = false             ///< when called in error calculation, don't add the inflow terms
   );
@@ -418,6 +424,29 @@ private:
 
     return hk;
   }
+
+  //Get the average weights kappa1 and kappa2 for the Nitsche calculations.
+  void GetAverageWeights(const INPAR::XFEM::CouplingStrategy coup_strategy,
+                         double & kappa_m,
+                         double & kappa_s,
+                         bool   & non_xfluid_coupling);
+
+  //! Initiates dummy variables and calls FLuidEleCalc GetMaterialParams routine.
+  void GetMaterialParametersVolumeCell( Teuchos::RCP<const MAT::Material>  material,
+      double &                           densaf,  //done
+      double &                           viscaf,  //done
+      double &                           gamma    //done
+      );
+
+  //Density on each side of interface
+  double        densaf_master_;
+  double        densaf_slave_;
+  //Viscosity on each side of interface
+  double        viscaf_master_;
+  double        viscaf_slave_;
+  //Surface tension on each side (If it is not the same, error should be thrown.)
+  double        gamma_m_;
+  double        gamma_s_;
 
 };
 

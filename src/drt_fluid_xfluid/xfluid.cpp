@@ -64,7 +64,10 @@ Maintainer:  Benedikt Schott
 #include "../drt_xfem/xfluid_timeInt_base.H"
 #include "../drt_xfem/xfluid_timeInt.H"
 
+#include "../drt_fluid_xfluid/xfluid_utils.H"
+
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/matlist.H"
 #include "../drt_mat/matpar_bundle.H"
 
 
@@ -607,7 +610,6 @@ void FLD::XFluid::AssembleMatAndRHS( int itnum )
     //-------------------------------------------------------------------------------
     discret_->ClearState();
 
-
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
     // Finalize Matrices and rhs vectors
@@ -649,7 +651,6 @@ void FLD::XFluid::AssembleMatAndRHS( int itnum )
   }
 }
 
-
 void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 {
   //----------------------------------------------------------------------
@@ -673,7 +674,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
   for (int i=0; i<numrowele; ++i)
   {
     DRT::Element* actele = discret_->lRowElement(i);
-    Teuchos::RCP<MAT::Material> mat = actele->Material();
+    //Teuchos::RCP<MAT::Material> mat = actele->Material();
 
     DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
     if ( ele==NULL )
@@ -708,6 +709,11 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
         GEO::CUT::plain_volumecell_set & cells = *s;
         const std::vector<int> & nds = nds_sets[set_counter];
+
+        //Pointer to material of current volume cell
+        //Assumes the plain_volumecell_set are all on the same side of the interface.
+        Teuchos::RCP<MAT::Material> mat;
+        XFLUID::UTILS::GetVolumeCellMaterial(actele,mat,cells[0]->Position());
 
         // we have to assemble all volume cells of this set
         // for linear elements, there should be only one volume-cell for each set
@@ -776,6 +782,13 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
             vc->GetBoundaryCells( element_bcells );
           }
         }
+
+        //Set material at interface (Master and Slave side)
+        Teuchos::RCP<MAT::Material> matptr_m;
+        Teuchos::RCP<MAT::Material> matptr_s; //If not instantiated, it is left as null pointer.
+
+        //Get material pointer for master side (LevelSet: positive side)
+        XFLUID::UTILS::GetVolumeCellMaterial(actele,matptr_m,GEO::CUT::Point::outside);
 
         // split the boundary cells by the different mesh couplings / levelset couplings
         // coupling matrices have to be evaluated for each coupling time separtely and cannot be mixed up
@@ -874,6 +887,9 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
                   }
                 }
 
+                //Get material pointer for slave side (LevelSet: negative side)
+                XFLUID::UTILS::GetVolumeCellMaterial(actele,matptr_s,GEO::CUT::Point::inside);
+
                 // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
                 actele->LocationVector(*coupl_dis,nds_other,la_other,false);
                 std::copy( la_other[0].lm_.begin(), la_other[0].lm_.end(), std::inserter(patchlm,patchlm.end()));
@@ -937,7 +953,8 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
                     bintpoints,
                     patchcouplm,
                     eleparams,
-                    mat,
+                    matptr_m,
+                    matptr_s,
                     strategy.Elematrix1(),
                     strategy.Elevector1(),
                     cells,
@@ -1016,6 +1033,13 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
     } // end of if(e!=NULL) // assembly for cut elements
     else
     {
+
+      Teuchos::RCP<MAT::Material> mat = actele->Material(); //NOT COMPLIANT WITH XTPF!!!!
+
+      //XTPF_MAGNUS
+      if(mat->MaterialType()==INPAR::MAT::m_matlist)
+        dserror("No matlists allowed here!!");
+
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(*discret_,la,false);
 
@@ -1395,6 +1419,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluid::IVeln()
 Teuchos::RCP<Epetra_Vector> FLD::XFluid::IVelnm()
 {
   return condition_manager_->GetMeshCoupling(mc_idx_)->IVelnm();
+//>>>>>>> .r20649
 }
 
 Teuchos::RCP<Epetra_Vector> FLD::XFluid::IDispnp()
@@ -4565,8 +4590,6 @@ void FLD::XFluid::SetDirichletNeumannBC()
   discret_->ClearState();
 
 }
-
-
 
 
 void FLD::XFluid::AssembleMatAndRHS()
