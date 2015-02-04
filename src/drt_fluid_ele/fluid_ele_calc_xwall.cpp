@@ -2088,8 +2088,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetGridDispVelALE(
   }
   default:
   {
-    ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, NULL,"dispnp");
-    ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &egridv, NULL,"gridv");
+    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, NULL,"dispnp");
+    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &egridv, NULL,"gridv");
     break;
   }
   }
