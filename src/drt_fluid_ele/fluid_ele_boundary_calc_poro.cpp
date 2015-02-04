@@ -380,7 +380,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   std::map<int,int>::iterator it;
 
   // initialization of plenty of variables
-  double fluiddensity               = 0.0;
   double fluiddynamicviscosity      = 0.0;
   double permeability               = 0.0;
   double beaversjosephcoefficient   = 0.0;
@@ -491,7 +490,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
     newtonianfluidmaterial = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(currentmaterial);
 
-    fluiddensity          = newtonianfluidmaterial -> Density();
     fluiddynamicviscosity = newtonianfluidmaterial -> Viscosity();
   }
   else if (discretization.Name() == "porofluid")
@@ -505,7 +503,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     porofluidmaterial        = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(currentmaterial);
 
     permeability             = porofluidmaterial      -> Permeability();
-    fluiddensity             = newtonianfluidmaterial -> Density();
     fluiddynamicviscosity    = newtonianfluidmaterial -> Viscosity();
   }
 
@@ -676,9 +673,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     // transformation from parent element coordinate system to interface element coordinate system
     pderiv.MultiplyTN(derivtrafo,pderiv_loc);
 
-    //    std::cout<<"pderiv : "<<pderiv<<endl;
-    //    std::cout<<"pderiv_loc : "<<pderiv_loc<<endl;
-
     double dphi_dp=0.0;
     double dphi_dJ=0.0;
     double dphi_dJdp=0.0;
@@ -737,6 +731,11 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 #endif
 
     // evaluate my::unitnormal_ , my::deriv_, ...
+    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(my::funct_,my::deriv_,my::fac_,my::unitnormal_n_,my::drs_,my::xsi_,my::xyze_n_,
+                                                    intpoints,gpid,NULL,NULL,
+                                                    IsNurbs<distype>::isnurbs);
+
+    // evaluate my::unitnormal_ , my::deriv_, ...
     DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(my::funct_,my::deriv_,my::fac_,my::unitnormal_,my::drs_,my::xsi_,my::xyze_,
                                                     intpoints,gpid,NULL,NULL,
                                                     IsNurbs<distype>::isnurbs);
@@ -765,8 +764,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     // dudxi = u_i,alhpa = N_A,alpha u^A_i =  | u2,1 u2,2 u2,3 |
     //                                        |_u3,1 u3,2 u3,3_|
     //
-    dudxi  .MultiplyNT(pevelnp,pderiv);    // corrected: switched pevelnp and pderiv
-    dudxi_n.MultiplyNT(peveln,pderiv);
+    dudxi  .MultiplyNT(pevelnp,pderiv_loc);    // corrected: switched pevelnp and pderiv
+    dudxi_n.MultiplyNT(peveln,pderiv_loc);
 
     //                                            l=_  1     2     3  _
     //         -1                               i=1| u1,x1 u1,x2 u1,x3 |
@@ -912,9 +911,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       {
         for (int idof2=0;idof2<my::nsd_;idof2++)
         {
-          tangentialderiv1(idof,(node*my::nsd_)+idof2) -= (tangential1(idof,0)*tangential1(idof2,0)*pderiv(0,node))/(pow(normoftangential1,3.0));
+          tangentialderiv1(idof,(node*my::nsd_)+idof2) -= (tangential1(idof,0)*tangential1(idof2,0)*pderiv(0,node))/normoftangential1;
 
-          tangentialderiv2(idof,(node*my::nsd_)+idof2) -= (tangential2(idof,0)*tangential2(idof2,0)*pderiv(1,node))/(pow(normoftangential2,3.0));
+          tangentialderiv2(idof,(node*my::nsd_)+idof2) -= (tangential2(idof,0)*tangential2(idof2,0)*pderiv(1,node))/normoftangential2;
         }
       }
     }
@@ -1027,23 +1026,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
     for (int node=0;node<nenparent;++node)
     {
-      linearizationofscalarintegraltransformfac(0,node) =
-          (
-              normal(1,0)*(dxyzdrs(0,2)*pderiv(1,node) - dxyzdrs(1,2)*pderiv(0,node))+
-              normal(2,0)*(dxyzdrs(1,1)*pderiv(0,node) - dxyzdrs(0,1)*pderiv(1,node))
-          )/scalarintegraltransformfac;
-
-      linearizationofscalarintegraltransformfac(1,node) =
-          (
-              normal(0,0)*(dxyzdrs(1,2)*pderiv(0,node) - dxyzdrs(0,2)*pderiv(1,node))+
-              normal(2,0)*(dxyzdrs(0,0)*pderiv(1,node) - dxyzdrs(1,0)*pderiv(0,node))
-          )/scalarintegraltransformfac;
-
-      linearizationofscalarintegraltransformfac(2,node) =
-          (
-              normal(0,0)*(dxyzdrs(0,1)*pderiv(1,node) - dxyzdrs(1,1)*pderiv(0,node))+
-              normal(1,0)*(dxyzdrs(1,0)*pderiv(0,node) - dxyzdrs(0,0)*pderiv(1,node))
-          )/scalarintegraltransformfac;
+      for (int ldof = 0; ldof < my::nsd_; ++ldof)
+      {
+        for (int idof = 0; idof < my::nsd_; ++idof)
+        {
+        linearizationofscalarintegraltransformfac(ldof,node) += 1/scalarintegraltransformfac * normal(idof,0) * normalderiv(idof,node*my::nsd_+ldof);
+        }
+      }
     }
 
 
@@ -1059,7 +1048,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     //  derxy  = ----------  ----------- =   |  N1,2 N2,2 N3,2 N4,2 ...   |
     //            d xi_alpha  d   x_j        |_ N1,3 N2,3 N3,3 N4,3 ...  _|
     //
-    derxy.Multiply(xji,pderiv);
+    derxy.Multiply(xji,pderiv_loc);
 
     for (int i=0; i<nenparent; i++)
       for (int j=0; j<my::nsd_; j++)
@@ -1102,12 +1091,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       {
         for (int idof2=0;idof2<my::nsd_;idof2++)  // alpha Loop
         {
-          //gradNon(0,(inode*my::nsd_)+idof) = pderiv(idof2,inode)*(xji(idof,idof2))*my::unitnormal_(idof);
-          gradN(0,(inode*my::nsd_)+idof)   += pderiv(idof2,inode)*(xji(idof,idof2));
-          //std::cout<<pderiv<<endl;
-          //std::cout<<xjm<<endl;
-          //std::cout<<xji<<endl;
-          //dserror("");
+          gradN(0,(inode*my::nsd_)+idof)   += pderiv_loc(idof2,inode)*(xji(idof,idof2));
         }
         gradNon(0,inode)+= gradN(0,inode*my::nsd_+idof)*my::unitnormal_(idof);
       }
@@ -1261,7 +1245,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                       tangential2(idof2,0)*tangential2(idof3,0)
 
                   )*pfunct(inode)*pfunct(nnod)*porosityint*tangentialfac*my::fac_*timefac;
-
             }
           }
 
@@ -1278,9 +1261,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
               {
                 elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::nsd_)+idof3) -=
                     (
-                        pfunct(inode) * normalderiv(idof2,(nnod*my::nsd_)+idof3)* my::drs_ +
-                        pfunct(inode) * my::unitnormal_(idof2) * (linearizationofscalarintegraltransformfac(idof3,nnod))    // d ||n|| / d d^l_L
-                    )*pressint(0,0)/fluiddensity * fac * timefac * survivor(nnod) ; // *my::fac_ since normalderiv is referring to the test function
+                        pfunct(inode) * normalderiv(idof2,(nnod*my::nsd_)+idof3)
+                    )*pressint(0,0) * fac * timefac * survivor(nnod) ; // *my::fac_ since normalderiv is referring to the test function
               }// idof3
 
               /*                              _                      _
@@ -1304,7 +1286,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                         tangentialderiv1(idof2,(nnod*my::nsd_)+idof3)*(porosityint*(tangentialvf1(0,0) - tangentialvs1(0,0)))+      // d t^i/d d^L_l
                         tangentialderiv2(idof2,(nnod*my::nsd_)+idof3)*(porosityint*(tangentialvf2(0,0) - tangentialvs2(0,0)))
 
-                    )*porosityint*survivor(nnod)
+                    )*survivor(nnod)
                 +(
                     tangential1(idof2,0)*(vfotangentialderiv1((nnod*my::nsd_)+idof3) - vsotangentialderiv1((nnod*my::nsd_)+idof3)) + // d t^j/d d^L_l
                     tangential2(idof2,0)*(vfotangentialderiv2((nnod*my::nsd_)+idof3) - vsotangentialderiv2((nnod*my::nsd_)+idof3))
@@ -1419,14 +1401,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                   (
                       // d (mu*(u_i,j+u_j,i)) / d u^L_l
                       pfunct(inode)*gradNon(0,nnod)        // d u_i,j / d u^L_l
-                  )*fluiddynamicviscosity*my::fac_*timefac/fluiddensity;
+                  )*fluiddynamicviscosity*my::fac_*timefac;
 
               elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::numdofpernode_)+my::nsd_)  +=
                   (
                       // d (dd , pf o n) / d pf_B
                       // flip sign
                       pfunct(inode)*pfunct(nnod)*my::unitnormal_(idof2)
-                  )*my::fac_*timefac/fluiddensity;
+                  )*my::fac_*timefac;
 
               for (int idof3=0;idof3<my::nsd_;idof3++)
               {
@@ -1434,7 +1416,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                     (
                         // d (2*mu*0.5*(u_i,j+u_j,i)) / d u^L_l
                         pfunct(inode)*gradN(0,(nnod*my::nsd_)+idof2)*my::unitnormal_(idof3)*fluiddynamicviscosity    // d u_j,i / d u^L_l
-                    )*my::fac_*timefac/fluiddensity;
+                    )*my::fac_*timefac;
               }
             } // if dis=fluid
           } // block NeumannIntegration
@@ -1445,14 +1427,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
             {
               elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::nsd_)+idof3)  -=
                   (
+                  // d (dd , - pf o n) / d d^L_l
+                  - pfunct(inode)*pressint(0,0)*normalderiv(idof2,(nnod*my::nsd_)+idof3)*fac                 // d n_j / d d^L_l
+
                   // d (dd, mu*u_i,j o n ) / d d^L_l
-                  + fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
+                  - fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
                   + fluiddynamicviscosity*pfunct(inode)*graduonormalderiv(idof2,(nnod*my::nsd_)+idof3)*fac   // d n / d d^L_l
 
                   // d (dd, mu*u_j,i o n ) / d d^L_l
-                  + fluiddynamicviscosity*pfunct(inode)*graduon(0,idof3)*derxy(idof2,nnod)*my::fac_          // d uj,i / d d^L,l
+                  - fluiddynamicviscosity*pfunct(inode)*graduTon(0,idof3)*derxy(idof2,nnod)*my::fac_          // d uj,i / d d^L,l
                   + fluiddynamicviscosity*pfunct(inode)*graduTonormalderiv(idof2,(nnod*my::nsd_)+idof3)*fac  // d n_j / d^L_l
-                  )*theta/fluiddensity;      // <- only inner dofs survive
+                  )*timefac;      // split afterwards, as this is assembled into a blockmatrix
             }
           }// block == "NeumannIntegration_Ale"
           else if(block == "Structure_Fluid" )
@@ -1505,31 +1490,19 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                       - pfunct(inode)*pressint(0,0)*normalderiv(idof2,(nnod*my::nsd_)+idof3)*fac                 // d n_j / d d^L_l
 
                       // d (dd, mu*u_i,j o n ) / d d^L_l
-                      + fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
+                      - fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
                       + fluiddynamicviscosity*pfunct(inode)*graduonormalderiv(idof2,(nnod*my::nsd_)+idof3)*fac   // d n / d d^L_l
 
                       // d (dd, mu*u_j,i o n ) / d d^L_l
-                      + fluiddynamicviscosity*pfunct(inode)*graduon(0,idof3)*derxy(idof2,nnod)*my::fac_          // d uj,i / d d^L,l
+                      - fluiddynamicviscosity*pfunct(inode)*graduTon(0,idof3)*derxy(idof2,nnod)*my::fac_          // d uj,i / d d^L,l
                       + fluiddynamicviscosity*pfunct(inode)*graduTonormalderiv(idof2,(nnod*my::nsd_)+idof3)*fac  // d n_j / d^L_l
-                  )*survivor(nnod)*theta ;      // <- only boundary dofs survive
+                  )*survivor(nnod)*theta
+                  //linearisation of the old timestep --> change of my::fac_
+                  +(linearizationofscalarintegraltransformfac(idof3,nnod)*fac*
+                      (pfunct(inode)*(fluiddynamicviscosity*(graduon_n(idof2)+graduTon_n(idof2)) - pressint_n(0,0) * my::unitnormal_n_(idof2)))//d (...)^n/d^L_l
+                    )*survivor(nnod)*(1-theta);      // <- only boundary dofs survive
             }
           } //block structure_structure
-
-          else if (block == "Structure_Ale_Fld")
-          {
-            for(int idof3=0;idof3<my::nsd_;idof3++)
-            {
-              elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::numdofpernode_)+idof3)  +=
-                  (
-                      // d (dd, mu*u_i,j o n ) / d d^L_l
-                      + fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
-
-                      // d (dd, mu*u_j,i o n ) / d d^L_l
-                      + fluiddynamicviscosity*pfunct(inode)*graduon(0,idof3)*derxy(idof2,nnod)*my::fac_          // d uj,i / d d^L,l
-
-                  )*abs(survivor(0,nnod)-1.0)*theta;      // <- only inner dofs survive
-            }
-          }// block structure_ale
           else if (block == "Structure_Ale")
           {
             for(int idof3=0;idof3<my::nsd_;idof3++)
@@ -1537,10 +1510,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
               elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::nsd_)+idof3)  +=
                   (
                       // d (dd, mu*u_i,j o n ) / d d^L_l
-                      + fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
+                      - fluiddynamicviscosity*pfunct(inode)*dudxioJinv(idof2,idof3)*dNdxon(nnod)*my::fac_        // d ui,j / d d^L_l
 
                       // d (dd, mu*u_j,i o n ) / d d^L_l
-                      + fluiddynamicviscosity*pfunct(inode)*graduon(0,idof3)*derxy(idof2,nnod)*my::fac_          // d uj,i / d d^L,l
+                      - fluiddynamicviscosity*pfunct(inode)*graduTon(0,idof3)*derxy(idof2,nnod)*my::fac_          // d uj,i / d d^L,l
 
                   )*abs(survivor(0,nnod)-1.0)*theta;      // <- only inner dofs survive
             }
@@ -1600,13 +1573,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
          */
         for(int idof2=0;idof2<my::nsd_;idof2++)
         {
-          elevec1(inode*my::numdofpernode_+idof2) -=     (  theta *pfunct(inode)*(fluiddynamicviscosity*(graduon(idof2)+graduTon(idof2))     - pressint(0,0)   * my::unitnormal_(idof2))
+          elevec1(inode*my::numdofpernode_+idof2) -=     (  theta *pfunct(inode)*(fluiddynamicviscosity*(graduon(idof2)+graduTon(idof2))     -pressint(0,0)   * my::unitnormal_(idof2))
               +  (1.0-theta)*pfunct(inode)*(fluiddynamicviscosity*(graduon_n(idof2)+graduTon_n(idof2)) - pressint_n(0,0) * my::unitnormal_n_(idof2))
           )*survivor(inode)*my::fac_;
         }
       } // block structure
 
-      else if(block == "fluid")
+      else if(block == "fluid") //rhs of fluid evaluated on porofluidfield
       {
         /*
                   evaluated on PoroFluidField()
@@ -1617,20 +1590,21 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
         {
           elevec1(inode*my::numdofpernode_+idof2) +=(+(pfunct(inode)*my::unitnormal_(idof2)*pressint(0,0)) // pressure part // pressure part
               +((pfunct(inode)*tangential1(idof2)*(tangentialgridvelocity1(0,0)+porosityint*(tangentialvelocity1(0,0)-tangentialgridvelocity1(0,0)))) // Beavers-Joseph
-                  + (pfunct(inode)*tangential2(idof2)*(tangentialgridvelocity2(0,0)+porosityint*(tangentialvelocity2(0,0)-tangentialgridvelocity2(0,0))))
-              )*tangentialfac)*rhsfac*survivor(inode);
+              + (pfunct(inode)*tangential2(idof2)*(tangentialgridvelocity2(0,0)+porosityint*(tangentialvelocity2(0,0)-tangentialgridvelocity2(0,0))))
+              )*tangentialfac
+              )*rhsfac*survivor(inode);
         }
       } // block fluid
 
-      else if (block == "fluidfluid")
+      else if (block == "fluidfluid") //rhs of fluid evaluated on fluidfield
       {
         /*
                     (4)  N*t*tangentialfac*[u]ot  << from last iteration at time n+1
          */
         for (int idof2=0;idof2<my::nsd_;idof2++)
         {
-          elevec1(inode*my::numdofpernode_+idof2)-= ( pfunct(inode)*tangential1(idof2)*tangentialvelocity1(0,0)
-              + pfunct(inode)*tangential2(idof2)*tangentialvelocity2(0,0)
+          elevec1(inode*my::numdofpernode_+idof2)-= (pfunct(inode)*tangential1(idof2)*tangentialvelocity1(0,0)
+                                                    + pfunct(inode)*tangential2(idof2)*tangentialvelocity2(0,0)
           )*tangentialfac*rhsfac*survivor(inode);
 
           // in case of FPS3I we have to add the first Kedem-Katchalsky equation to prescribe the volume flux
@@ -1654,9 +1628,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
         for (int idof2=0;idof2<my::nsd_;idof2++)
         {
-          elevec1(inode*my::numdofpernode_+idof2)+= ((- pfunct(inode)*pressint(0,0)*my::unitnormal_(idof2)*rhsfac
-              + pfunct(inode)*fluiddynamicviscosity*(graduon(idof2)+graduTon(idof2))*rhsfac)/fluiddensity
-          );//*survivor(inode); //will not change anything ...
+          elevec1(inode*my::numdofpernode_+idof2)+= ((- pfunct(inode)*pressint(0,0)*my::unitnormal_(idof2)*rhsfac)
+              + pfunct(inode)*fluiddynamicviscosity*(graduon(idof2)+graduTon(idof2))*rhsfac);
         } // block NeumannIntegration
 
       } // NeumannIntegration

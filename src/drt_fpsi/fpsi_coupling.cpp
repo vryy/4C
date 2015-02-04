@@ -285,7 +285,7 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
         false); // bool exactmatch = true (default)
     }
     temp51  -> Complete(*PoroField()->DofRowMap(),*PoroField()->DofRowMap());
-    c_pp_->Add(*temp51,false,1.0,1.0);
+    c_pp_->Add(*temp51,false,1.0,0.0);
 
     fparams.set<std::string>("fillblock","Fluid_Porofluid");
     fparams.set("InterfaceFacingElementMap", PoroFluid_Fluid_InterfaceMap_);
@@ -377,8 +377,8 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
 
   {
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::transform");
-  (*couplingcoltransform_)( *FluidField()->DofRowMap(),
-                            *FluidField()->DofRowMap(),
+  (*couplingcoltransform_)(  FluidField()->BlockSystemMatrix()->FullRowMap(),
+                             FluidField()->BlockSystemMatrix()->FullColMap(),
                             *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_pf_porofluid),
                              1.0,
                              ADAPTER::CouplingSlaveConverter(coupsf_fpsi), // row converter: important to use slave converter
@@ -664,10 +664,10 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
               Teuchos::null,
               Teuchos::null
           );
-          temprhs->PutScalar(0.0);
           FluidField()->Discretization()->EvaluateCondition( fparams, rhsfluidfluidstrategy2, "NeumannIntegration" );
 
           c_rhs_f_->Update(1.0,*temprhs,1.0);
+          temprhs->PutScalar(0.0);
 
           tmp_c_ff->Complete();
 

@@ -524,7 +524,7 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
       AleField()  -> ApplyFSIInterfaceDisplacements(porointerfacedisplacements_FSI);
   }
 
-  AleField()->WriteAccessDispnp()->Update(1.0, *ax, 1.0);
+  AleField()->WriteAccessDispnp()->Update(1.0, *ax, 1.0); //displacement increments on the interfaces are zero!!!
   AleField()->Evaluate(Teuchos::null);
 
   Teuchos::RCP<const Epetra_Vector> aledisplacements = AleToFluid(AleField()->Dispnp());
@@ -1333,6 +1333,8 @@ void FPSI::Monolithic::SetupNewton()
 
 void FPSI::Monolithic::FPSIFDCheck()
 {
+  //FD check is nice to check your linearisations, but be aware that we did not linearize following terms:
+  // gridvelocity in convective term, dispnp for the stabilization
   active_FD_check_ = true;
   // Set states
   PoroField()->FluidField()->Discretization()->ClearState();

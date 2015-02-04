@@ -132,10 +132,15 @@ namespace FPSI
     Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fggtransform2_; //g_fis/g_fpsi || F->S/F->S transform (FSI/FPSI)
     Teuchos::RCP<FSI::UTILS::MatrixRowColTransform>  fmgitransform_; //g_fsi/i transform || F->S/F->A transform (FSI/FluidVolume)
 
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     fgitransform_; //g_fsi || F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     fgitransform1_; //g_fsi || F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     fgitransform2_; //g_fsi || F->S transform (FSI)
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     Cfgtransform_; //full FluidField || F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     Cfptransform_; //full FluidField || F->S transform (FSI)
 
-    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform_; //for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform1_; //for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform2_; //for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform3_; //for Row/Col-Map for Full - FluidField & F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform4_; //for Row/Col-Map for Full - FluidField & F->S transform (FSI)
     Teuchos::RCP<FSI::UTILS::MatrixColTransform>     aigtransform_ ; //for Row/Col-Map for Full - AleField & F->S transform (FSI)
     Teuchos::RCP<FSI::UTILS::MatrixColTransform>     aigtransform2_; //for Row/Col-Map for Full - AleField & F->S transform (FPSI)
 
