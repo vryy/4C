@@ -111,14 +111,30 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet( bool include_inner, const 
             }
 #endif
 
+
             // finds also the connections of volumecell sets between adjacent elements
             // finally, each found DOFSet around a 1-ring of the node maintains its own set of DOFs
             if(include_inner)
             {
+              //WARNING:
+              //This is necessary to have to set the "standard values" at the first DOF-set, and the
+              //ghost values on the following DOFS.
+              // It is important for result check AND later for time-integration!
+              if(n->Position()==Point::outside)
+              {
+                n->FindDOFSetsNEW( nodal_cell_sets_outside, cell_sets_outside);
                 n->FindDOFSetsNEW( nodal_cell_sets_inside, cell_sets_inside);
+              }
+              else
+              {
+                n->FindDOFSetsNEW( nodal_cell_sets_inside, cell_sets_inside);
+                n->FindDOFSetsNEW( nodal_cell_sets_outside, cell_sets_outside);
+              }
             }
-
-            n->FindDOFSetsNEW( nodal_cell_sets_outside, cell_sets_outside);
+            else
+            {
+              n->FindDOFSetsNEW( nodal_cell_sets_outside, cell_sets_outside);
+            }
 
             // sort the dofsets for this node after FindDOFSetsNEW
             n->SortDOFCellSets();
