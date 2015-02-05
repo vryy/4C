@@ -247,7 +247,7 @@ void fluid_fluid_ale_drt()
   Teuchos::RCP<DRT::Discretization> embfluiddis = problem->GetDis("fluid");
   embfluiddis->FillComplete();
 
-  Teuchos::RCP<DRT::Discretization> bgfluiddis = problem->GetDis("xfluid");
+  Teuchos::RCP<DRT::DiscretizationXFEM> bgfluiddis =  Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("xfluid"));
   bgfluiddis->FillComplete();
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
@@ -413,7 +413,9 @@ void fluid_fluid_ale_drt()
   bgfluiddis->ExportColumnNodes(*bgcolnodes);
   bgfluiddis->ExportColumnElements(*bgnewcoleles);
 
-  bgfluiddis->FillComplete();
+  bgfluiddis->InitialFillComplete();
+
+  bgfluiddis->GetDofSetProxy()->PrintAllDofsets(bgfluiddis->Comm());
 
   //------------------------------------------------------------------------------
 
@@ -465,7 +467,7 @@ void fluid_fluid_fsi_drt()
   Teuchos::RCP<DRT::Discretization> embfluiddis = problem->GetDis("fluid");
   embfluiddis->FillComplete();
 
-  Teuchos::RCP<DRT::Discretization> bgfluiddis = problem->GetDis("xfluid");
+  Teuchos::RCP<DRT::DiscretizationXFEM> bgfluiddis =  Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("xfluid"));
   bgfluiddis->FillComplete();
 
   // reserve max size of dofs for the background fluid
@@ -629,7 +631,9 @@ void fluid_fluid_fsi_drt()
   bgfluiddis->ExportColumnNodes(*bgcolnodes);
   bgfluiddis->ExportColumnElements(*bgnewcoleles);
 
-  bgfluiddis->FillComplete();
+  bgfluiddis->InitialFillComplete();
+
+  bgfluiddis->GetDofSetProxy()->PrintAllDofsets(bgfluiddis->Comm());
 
   //-------------------------------------------------------------------------
 

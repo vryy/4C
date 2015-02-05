@@ -35,6 +35,7 @@ Maintainer: Ursula Rasthofer
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_dofset_fixed_size.H"
 #include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_discret_xfem.H"
 
 /*----------------------------------------------------------------------*
  * Main control routine for fluid including various solvers:
@@ -123,7 +124,7 @@ void fluid_fluid_drt(const int restart)
   // create a communicator
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(DRT::Problem::Instance()->GetDis("xfluid")->Comm().Clone());
 
-  Teuchos::RCP<DRT::Discretization> bgfluiddis = problem->GetDis("xfluid");
+  Teuchos::RCP<DRT::DiscretizationXFEM> bgfluiddis =  Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("xfluid"));
   bgfluiddis->FillComplete();
 
   const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
@@ -293,7 +294,7 @@ void fluid_fluid_drt(const int restart)
   bgfluiddis->ExportColumnNodes(*bgcolnodes);
   bgfluiddis->ExportColumnElements(*bgnewcoleles);
 
-  bgfluiddis->FillComplete();
+  bgfluiddis->InitialFillComplete();
 
   //------------------------------------------------------------------------------
 

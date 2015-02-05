@@ -117,7 +117,7 @@ namespace FLD
     void TimeLoop();
 
     /// setup the variables to do a new time step
-    void PrepareTimeStep();
+    virtual void PrepareTimeStep();
 
     /// set theta for specific time integration scheme
     void SetTheta();
@@ -157,14 +157,14 @@ namespace FLD
 
     /// Update the solution after convergence of the nonlinear
     /// iteration. Current solution becomes old solution of next timestep.
-    void TimeUpdate();
+    virtual void TimeUpdate();
 
     /// Implement ADAPTER::Fluid
     void Update() { TimeUpdate(); }
 
     /// CUT at new interface position, transform vectors,
     /// perform time integration and set new Vectors
-    void CutAndSetStateVectors();
+    virtual void CutAndSetStateVectors();
 
     /// is a restart of the monolithic Newton necessary caused by changing dofsets?
     bool NewtonRestartMonolithic(){ return newton_restart_monolithic_; }
@@ -177,18 +177,10 @@ namespace FLD
     void StatisticsAndOutput();
 
     /// update configuration and output to file/screen
-    void Output();
-
-    /// GmshOutput for background mesh and cut mesh
-    void GmshOutput( const std::string & name,            ///< name for output file
-                     const int step,                      ///< step number
-                     const int count,                     ///< counter for iterations within a global time step
-                     Teuchos::RCP<const Epetra_Vector> vel,     ///< vector holding velocity and pressure dofs
-                     Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
-                     );
+    virtual void Output();
 
     /// set an initial flow field
-    void SetInitialFlowField(
+    virtual void SetInitialFlowField(
       const INPAR::FLUID::InitialField initfield,
       const int startfuncno
       );
@@ -307,10 +299,6 @@ namespace FLD
 
     void CreateInitialState();
 
-    virtual void CreateState();
-
-    Teuchos::RCP<FLD::XFluidState> GetNewState();
-
     void SetLevelSetField(
        Teuchos::RCP<const Epetra_Vector> scalaraf,
        Teuchos::RCP<DRT::Discretization> scatradis
@@ -324,6 +312,10 @@ namespace FLD
     }
 
   protected:
+
+    virtual void CreateState();
+
+    Teuchos::RCP<FLD::XFluidState> GetNewState();
 
 
     /// call the loop over elements to assemble volume and interface integrals
@@ -391,41 +383,6 @@ namespace FLD
         const double                               dtp,      ///< previous time step size (delta t) n-1
         const Teuchos::RCP<Epetra_Vector>          accnp     ///< acceleration at n+1
   );
-
-    /// Gmsh output function for elements without an GEO::CUT::ElementHandle
-    void GmshOutputElement(
-        DRT::Discretization & discret, ///< background fluid discretization
-        std::ofstream & vel_f,         ///< output file stream for velocity
-        std::ofstream & press_f,       ///< output file stream for pressure
-        std::ofstream & acc_f,         ///< output file stream for acceleration
-        DRT::Element * actele,         ///< element
-        std::vector<int> & nds,        ///< vector holding the nodal dofsets
-        Teuchos::RCP<const Epetra_Vector> vel, ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null  ///< vector holding acceleration
-    );
-
-    /// Gmsh output function for volumecells
-    void GmshOutputVolumeCell(
-        DRT::Discretization & discret,    ///< background fluid discretization
-        std::ofstream & vel_f,            ///< output file stream for velocity
-        std::ofstream & press_f,          ///< output file stream for pressure
-        std::ofstream & acc_f,            ///< output file stream for acceleration
-        DRT::Element * actele,            ///< element
-        GEO::CUT::ElementHandle * e,      ///<elementhandle
-        GEO::CUT::VolumeCell * vc,        ///< volumecell
-        const std::vector<int> & nds,     ///< vector holding the nodal dofsets
-        Teuchos::RCP<const Epetra_Vector> vel,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Epetra_Vector> acc = Teuchos::null ///< vector holding acceleration
-    );
-
-    /// Gmsh output function for boundarycells
-    void GmshOutputBoundaryCell(
-        DRT::Discretization & discret,    ///< background fluid discretization
-        std::ofstream & bound_f,          ///< output file stream for boundary mesh
-        GEO::CUT::VolumeCell * vc         ///< volumecell
-    );
-
-
 
     //-----------------------------XFEM time-integration specific function------------------
 
@@ -648,26 +605,12 @@ namespace FLD
     //@}
 
     //! @name
-    INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy_;
-    INPAR::CUT::BCellGaussPts BoundCellGaussPointBy_;
 
     /// edge stabilization and ghost penalty object
     Teuchos::RCP<XFEM::XFEM_EdgeStab> edgestab_;
 
     /// edgebased stabilization or ghost penalty stabilization (1st order, 2nd order derivatives, viscous, transient) due to Nitsche's method
     bool eval_eos_;
-
-
-
-    //! @name flags for gmsh output
-    bool gmsh_debug_out_;
-    bool gmsh_debug_out_screen_;
-    bool gmsh_sol_out_;
-    bool gmsh_EOS_out_;                 //! output for edge-oriented stabilization and ghost-penalty stabilization
-    bool gmsh_discret_out_;
-    bool gmsh_cut_out_;
-    int  gmsh_step_diff_;
-    //@}
 
     //-----------------------------time integration----------------------
 

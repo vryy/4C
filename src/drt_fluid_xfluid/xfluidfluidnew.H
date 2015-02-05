@@ -170,6 +170,7 @@ private:
       int itnum                           ///< iteration number
   );
 
+  //! determine convergence status
   bool ConvergenceCheck(
     int          itnum,
     int          itemax,
