@@ -66,7 +66,7 @@ void XFLUIDLEVELSET::Algorithm::SolveStationaryProblem()
     dserror("Scatra time integration scheme is not stationary");
 
   // write Scatra output (fluid output has been already called in FluidField()->Integrate();
-  ScaTraField()->Output();
+  //ScaTraField()->Output();
 
   // run the simulation, calls the xfluid-"integrate()" routine
   FluidField()->Integrate();

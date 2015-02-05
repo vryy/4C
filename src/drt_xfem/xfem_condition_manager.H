@@ -114,7 +114,7 @@ public:
   }
 
   //! destructor
-  ~CouplingBase()
+  virtual ~CouplingBase()
   {
     return;
   }
@@ -159,6 +159,13 @@ public:
 
   virtual bool HasMovingInterface() = 0;
 
+  virtual void EvaluateCouplingConditions(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  ){dserror("EvaluateCouplingConditions should be implemented by derived class");};
+
 protected:
 
 
@@ -168,6 +175,39 @@ protected:
   void SetCouplingStrategy();
 
   void SetCouplingDiscretization();
+
+  void EvaluateDirichletFunction(
+      LINALG::Matrix<3,1>& ivel,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
+  void EvaluateNeumannFunction(
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
+  void EvaluateDirichletFunction(
+      std::vector<double>& final_values,
+      const double* x,
+      const DRT::Condition* cond,
+      const double time
+  );
+
+  void EvaluateNeumannFunction(
+      std::vector<double>& final_values,
+      const double* x,
+      const DRT::Condition* cond,
+      const double time
+  );
+
+
+
+
+
+
+
 
   ///< background discretization
   Teuchos::RCP<DRT::Discretization> bg_dis_;
@@ -395,13 +435,6 @@ private:
       const std::string* evaltype
   );
 
-  void EvaluateFunction(
-      std::vector<double>& final_values,
-      const double* x,
-      DRT::Condition* cond,
-      const double time
-  );
-
   void EvaluateImplementation(
       std::vector<double>& final_values,
       const double* x,
@@ -430,8 +463,73 @@ protected:
 
 };
 
+/*!
+\brief
+ */
+class MeshCouplingWeakDirichlet : public MeshCouplingBC
+{
+public:
 
+  //! constructor
+  explicit MeshCouplingWeakDirichlet(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const double                        time,      ///< time
+      const int                           step       ///< time step
+  ) : MeshCouplingBC(bg_dis,cond_name,cond_dis, time, step)
+  {}
 
+  //! destructor
+  virtual ~MeshCouplingWeakDirichlet()
+  {
+    return;
+  }
+
+public:
+
+  void EvaluateCouplingConditions(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
+};
+
+/*!
+\brief
+ */
+class MeshCouplingNeumann : public MeshCouplingBC
+{
+public:
+
+  //! constructor
+  explicit MeshCouplingNeumann(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const double                        time,      ///< time
+      const int                           step       ///< time step
+  ) : MeshCouplingBC(bg_dis,cond_name,cond_dis, time, step)
+  {}
+
+  //! destructor
+  virtual ~MeshCouplingNeumann()
+  {
+    return;
+  }
+
+public:
+
+  void EvaluateCouplingConditions(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
+};
 
 
 
@@ -708,6 +806,76 @@ private:
 
 };
 
+/*!
+\brief
+ */
+class LevelSetCouplingWeakDirichlet : public LevelSetCoupling
+{
+public:
+
+  //! constructor
+  explicit LevelSetCouplingWeakDirichlet(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      const double                        time,      ///< time
+      const int                           step       ///< time step
+  ) : LevelSetCoupling(bg_dis, cond_name, time, step)
+  {}
+
+
+  //! destructor
+  virtual ~LevelSetCouplingWeakDirichlet()
+  {
+    return;
+  }
+
+public:
+
+  void EvaluateCouplingConditions(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
+};
+
+
+/*!
+\brief
+ */
+class LevelSetCouplingNeumann : public LevelSetCoupling
+{
+public:
+
+  //! constructor
+  explicit LevelSetCouplingNeumann(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      const double                        time,      ///< time
+      const int                           step       ///< time step
+  ) : LevelSetCoupling(bg_dis, cond_name, time, step)
+  {}
+
+
+  //! destructor
+  virtual ~LevelSetCouplingNeumann()
+  {
+    return;
+  }
+
+public:
+
+  void EvaluateCouplingConditions(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
+};
+
+
 
 
 
@@ -766,15 +934,19 @@ public:
       if (myrank == 0) std::cout << " create new MeshCouplingFSI" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSI(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
-    else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
-        CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NEUMANN)
+    else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)
     {
-      if (myrank == 0) std::cout << " create new MeshCouplingBC" << std::endl;
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingBC(bg_dis_, cond_name, cond_dis, time_, step_)));
+      if (myrank == 0) std::cout << " create new MeshCouplingWeakDirichlet" << std::endl;
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingWeakDirichlet(bg_dis_, cond_name, cond_dis, time_, step_)));
+    }
+    else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NEUMANN)
+    {
+      if (myrank == 0) std::cout << " create new MeshCouplingNeumann" << std::endl;
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNeumann(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
     {
-      if (myrank == 0) std::cout << " create new MeshCoupling" << std::endl;
+      if (myrank == 0) std::cout << " create new MeshCouplingFluidFluid" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else
@@ -789,7 +961,22 @@ public:
       const std::string &                 cond_name
   )
   {
-    levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCoupling(bg_dis_, cond_name, time_, step_)));
+    const int myrank = bg_dis_->Comm().MyPID();
+    if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)
+    {
+      if (myrank == 0) std::cout << " create new LevelSetCouplingWeakDirichlet" << std::endl;
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingWeakDirichlet(bg_dis_, cond_name, time_, step_)));
+    }
+    else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN)
+    {
+      if (myrank == 0) std::cout << " create new LevelSetCouplingNeumann" << std::endl;
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNeumann(bg_dis_, cond_name, time_, step_)));
+    }
+    else
+    {
+      if (myrank == 0) std::cout << " create new LevelSetCoupling" << std::endl;
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCoupling(bg_dis_, cond_name, time_, step_)));
+    }
   }
 
 

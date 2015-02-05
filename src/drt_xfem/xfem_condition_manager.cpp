@@ -205,6 +205,168 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
   }
 }
 
+void XFEM::CouplingBase::EvaluateDirichletFunction(
+    LINALG::Matrix<3,1>& ivel,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  std::vector<double> final_values(3,0.0);
+
+  EvaluateDirichletFunction(final_values, x.A(), cond, time_);
+
+  ivel(0,0) = final_values[0];
+  ivel(1,0) = final_values[1];
+  ivel(2,0) = final_values[2];
+
+}
+
+void XFEM::CouplingBase::EvaluateDirichletFunction(
+    std::vector<double>& final_values,
+    const double* x,
+    const DRT::Condition* cond,
+    const double time
+)
+{
+  if(cond == NULL) dserror("invalid condition");
+
+  const int numdof = cond->GetInt("numdof");
+
+  if(numdof != (int)final_values.size())
+    dserror("you specified NUMDOF %i in the input file, however, only %i dofs allowed!", numdof, (int)final_values.size());
+
+  //---------------------------------------
+  // get values and switches from the condition
+  const std::vector<int>*    curve     = cond->Get<std::vector<int>    >("curve");
+  const std::vector<int>*    onoff     = cond->Get<std::vector<int>    >("onoff");
+  const std::vector<double>* val       = cond->Get<std::vector<double> >("val"  );
+  const std::vector<int>*    functions = cond->Get<std::vector<int>    >("funct");
+
+  if(time < -1e-14) dserror("Negative time in curve/function evaluation: time = %f", time);
+
+  //---------------------------------------
+  // set this condition
+  //---------------------------------------
+  for(int dof=0;dof<numdof;++dof)
+  {
+    // get factor given by spatial function
+    int functnum = -1;
+    if (functions) functnum = (*functions)[dof];
+
+    // check for potential time curve
+    int curvenum = -1;
+    if (curve) curvenum = (*curve)[dof];
+
+    // initialization of time-curve factor and function factor
+    double functionfac = 1.0;
+    double curvefac = 1.0;
+
+        // compute potential time curve or set time-curve factor to one
+    if (curvenum >= 0)
+    {
+      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    }
+
+    double num = (*onoff)[dof]*(*val)[dof]*curvefac;
+
+    if (functnum>0)
+    {
+      functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof%numdof,x,time,NULL);
+    }
+
+    final_values[dof] = num*functionfac;
+  } // loop dofs
+}
+
+void XFEM::CouplingBase::EvaluateNeumannFunction(
+    LINALG::Matrix<3,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  std::vector<double> final_values(3,0.0);
+
+  EvaluateNeumannFunction(final_values, x.A(), cond, time_);
+
+  itraction(0,0) = final_values[0];
+  itraction(1,0) = final_values[1];
+  itraction(2,0) = final_values[2];
+
+}
+
+void XFEM::CouplingBase::EvaluateNeumannFunction(
+    std::vector<double>& final_values,
+    const double* x,
+    const DRT::Condition* cond,
+    const double time
+)
+{
+
+  if(cond == NULL) dserror("invalid condition");
+
+  const int numdof = 3;
+
+  if((int)final_values.size() != numdof)
+    dserror("you have to specify %i dofs, however you got a vector with %i dofs", numdof, (int)final_values.size());
+
+  //---------------------------------------
+  // get values and switches from the condition
+  const std::vector<int>*    curve     = cond->Get<std::vector<int>    >("curve");
+  const std::vector<int>*    onoff     = cond->Get<std::vector<int>    >("onoff");
+  const std::vector<double>* val       = cond->Get<std::vector<double> >("val"  );
+  const std::vector<int>*    functions = cond->Get<std::vector<int>    >("funct");
+
+  if(time < -1e-14) dserror("Negative time in curve/function evaluation: time = %f", time);
+
+  //---------------------------------------
+  // safety check, as only one curve for all components of the Neumann load allowed at the moment
+  if(curve)
+  {
+    if(curve->size()!=1) dserror("there is more than one curve component specified! Not supported so far! Implement as for Dirichlet BCs");
+  }
+
+  // check for potential time curve
+  int curvenum = -1;
+  if (curve) curvenum = (*curve)[0];
+
+  // initialization of time-curve factor
+  double curvefac = 1.0;
+
+  // compute potential time curve or set time-curve factor to one
+  if (curvenum >= 0)
+  {
+    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  }
+
+  //---------------------------------------
+  const std::string* condtype = cond->Get<std::string>("type");
+
+  // get usual body force
+  if (!(*condtype == "neum_dead" or *condtype == "neum_live"))
+    dserror("Unknown Neumann condition");
+
+  //---------------------------------------
+  // set this condition
+  //---------------------------------------
+  for(int dof=0;dof<numdof;++dof)
+  {
+    // get factor given by spatial function
+    int functnum = -1;
+    if (functions) functnum = (*functions)[dof];
+
+    // initialization of function factor
+    double functionfac = 1.0;
+
+    if (functnum>0)
+      functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof%numdof,x,time,NULL);
+
+    double num = (*onoff)[dof]*(*val)[dof]*curvefac;
+
+    final_values[dof] = num*functionfac;
+  } // loop dofs
+
+}
+
 
 
 XFEM::MeshCoupling::MeshCoupling(
@@ -867,7 +1029,7 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceVelocity(
   else if(*evaltype == "funct_interpolated")
   {
     // evaluate function at node at current time
-    EvaluateFunction(final_values,node->X(),cond,time);
+    EvaluateDirichletFunction(final_values,node->X(),cond,time);
   }
   else if(*evaltype == "funct_gausspoint")
   {
@@ -886,7 +1048,7 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceVelocity(
   {
     if(step_ == 0) // evaluate initialization function at node at current time
     {
-      EvaluateFunction(final_values,node->X(),cond,time);
+      EvaluateDirichletFunction(final_values,node->X(),cond,time);
     }
     else
       ComputeInterfaceVelocityFromDisplacement(final_values, node, dt, evaltype);
@@ -911,7 +1073,7 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceDisplacement(
   else if(*evaltype == "funct")
   {
     // evaluate function at node at current time
-    EvaluateFunction(final_values,node->X(),cond,time);
+    EvaluateDirichletFunction(final_values,node->X(),cond,time);
   }
   else if(*evaltype == "implementation")
   {
@@ -924,62 +1086,7 @@ void XFEM::MeshCouplingBC::EvaluateInterfaceDisplacement(
 }
 
 
-void XFEM::MeshCouplingBC::EvaluateFunction(
-    std::vector<double>& final_values,
-    const double* x,
-    DRT::Condition* cond,
-    const double time
-)
-{
-  const int numdof = cond->GetInt("numdof");
 
-  if(numdof != (int)final_values.size())
-    dserror("you specified NUMDOF %i in the input file, however, only %i dofs allowed!", numdof, (int)final_values.size());
-
-  // check for potential time curve
-  const std::vector<int>* curve  = cond->Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-
-  // initialization of time-curve factor
-  double curvefac = 0.0;
-
-  // compute potential time curve or set time-curve factor to one
-  if (curvenum >= 0)
-  {
-    // time factor (negative time indicating error)
-    if (time >= 0.0)
-      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-    else dserror("Negative time in function evaluation: time = %f", time);
-  }
-  else curvefac = 1.0;
-
-  // get values and switches from the condition
-  const std::vector<int>*    onoff     = cond->Get<std::vector<int>    >("onoff");
-  const std::vector<double>* val       = cond->Get<std::vector<double> >("val"  );
-  const std::vector<int>*    functions = cond->Get<std::vector<int>    >("funct");
-
-  // factor given by spatial function
-  double functionfac = 0.0;
-  int functnum = -1;
-
-  // set this condition
-  for(int dof=0;dof<numdof;++dof)
-  {
-    // get factor given by spatial function
-    if (functions) functnum = (*functions)[dof];
-    else functnum = -1;
-
-    double num = (*onoff)[dof]*(*val)[dof]*curvefac;
-
-    if (functnum>0)
-      functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof%numdof,x,time,NULL);
-    else
-      functionfac = 1.0;
-
-    final_values[dof] = num*functionfac;
-  } // loop dofs
-}
 
 
 void XFEM::MeshCouplingBC::ComputeInterfaceVelocityFromDisplacement(
@@ -1123,6 +1230,36 @@ void XFEM::MeshCouplingBC::SetInterfaceVelocity()
   if(myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
 
   EvaluateCondition( ivelnp_, cond_name_, time_, dt_);
+}
+
+
+
+void XFEM::MeshCouplingWeakDirichlet::EvaluateCouplingConditions(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<3,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  // evaluate interface velocity (given by weak Dirichlet condition)
+  EvaluateDirichletFunction(ivel, x, cond);
+
+  // no interface traction to be evaluated
+  itraction.Clear();
+}
+
+void XFEM::MeshCouplingNeumann::EvaluateCouplingConditions(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<3,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  // no interface velocity to be evaluated
+  ivel.Clear();
+
+  // evaluate interface traction (given by Neumann condition)
+  EvaluateNeumannFunction(itraction, x, cond);
 }
 
 
@@ -1654,6 +1791,34 @@ void XFEM::LevelSetCoupling::ReadRestart(
 )
 {
   dserror("read restart for Level-set coupling objects not implemented yet");
+}
+
+void XFEM::LevelSetCouplingWeakDirichlet::EvaluateCouplingConditions(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<3,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  // evaluate interface velocity (given by weak Dirichlet condition)
+  EvaluateDirichletFunction(ivel, x, cond);
+
+  // no interface traction to be evaluated
+  itraction.Clear();
+}
+
+void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<3,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  // no interface velocity to be evaluated
+  ivel.Clear();
+
+  // evaluate interface traction (given by Neumann condition)
+  EvaluateNeumannFunction(itraction, x, cond);
 }
 
 

@@ -21,6 +21,12 @@ Maintainer: Raffaela Kruse /Benedikt Schott
 
 #include "fluid_ele_calc.H"
 #include "fluid_ele_calc_xfem_coupling.H"
+#include "../drt_xfem/xfem_condition_manager.H"
+
+namespace XFEM
+{
+  class CouplingBase;
+}
 
 namespace DRT
 {
@@ -254,9 +260,11 @@ private:
 
   //! get the interface jump vectors for velocity and traction at the Gaussian point
   void GetInterfaceJumpVectors(
-      const INPAR::XFEM::EleCouplingCondType & cond_type,                      ///< condition type for given interface side
+      const XFEM::EleCoupCond & coupcond,                                      ///< coupling condition for given interface side
+      Teuchos::RCP<XFEM::CouplingBase> coupling,                               ///< coupling object
       LINALG::Matrix<my::nsd_,1>& ivelint_jump,                                ///< prescribed interface jump vector for velocity
       LINALG::Matrix<my::nsd_,1>& itraction_jump,                              ///< prescribed interface jump vector for traction
+      const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
       const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
       Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si  ///< side implementation for cutter element
   );
@@ -295,6 +303,14 @@ private:
       const Teuchos::RCP<XFEM::ConditionManager> &            cond_manager,            ///< XFEM condition manager
       std::set<int> &                                         begids,                  ///< ids of intersecting boundary elements
       std::map<int, std::vector<Epetra_SerialDenseMatrix> > & conv_side_coupling       ///< contributions to coupling matrices from convective stabilizations
+  );
+
+  //! evaluate Neumann boundary condition
+  void EvaluateNeumann(
+      const double &                        timefacfac,             ///< theta*dt
+      const LINALG::Matrix<my::nen_,1> &    funct_m,                ///< coupling master shape functions
+      const LINALG::Matrix<my::nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
+      Epetra_SerialDenseMatrix&             elevec1_epetra          ///< element vector
   );
 
   //! build traction vector w.r.t fluid domain
