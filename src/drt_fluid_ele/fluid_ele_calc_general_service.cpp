@@ -3482,12 +3482,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcChannelStatistics(
   GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // Do ALE specific updates if necessary
-  if (ele->IsAle()&&enrtype != DRT::ELEMENTS::Fluid::xwall)
+  if (ele->IsAle())
   {
-    LINALG::Matrix<nsd_,nen_> egridv(true);
     LINALG::Matrix<nsd_,nen_> edispnp(true);
     // get new node positions of ALE mesh
-    GetGridDispVelALE(discretization, lm, edispnp, egridv);
+    GetGridDispALE(discretization, lm, edispnp);
 
      for (int inode=0; inode<nen_; inode++)
      {
@@ -3497,8 +3496,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcChannelStatistics(
        }
      }
   }
-  else if(ele->IsAle()&&enrtype == DRT::ELEMENTS::Fluid::xwall)
-    dserror("HEX8 with xwall is not implemented for ale flow");
 
   //we have to fill the virtual nodes of the xyze_ matrix, since we only get
   //coordinates of the real nodes

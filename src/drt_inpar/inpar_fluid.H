@@ -357,6 +357,12 @@ namespace INPAR
       ramp_function
     };
 
+    enum AdaptiveTimeStepEstimator
+    {
+      const_dt,
+      cfl_number
+    };
+
   }  // namespace FLUID
 
 }  // namespace INPAR

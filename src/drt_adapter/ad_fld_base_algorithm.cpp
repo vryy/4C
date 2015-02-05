@@ -1175,12 +1175,8 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<double> ("total time"          ,prbdyn.get<double>("MAXTIME"));
   // maximum number of timesteps
   fluidtimeparams->set<int>    ("max number timesteps",prbdyn.get<int>("NUMSTEP"));
-  // CFL number for adaptive calculation of time step
-  fluidtimeparams->set<double> ("CFL_NUMBER"          ,fdyn.get<double>("CFL_NUMBER"));
-  // keep adaptive time step constant after this step for sampling of turbulence statistics
-  fluidtimeparams->set<int>    ("FREEZE_ADAPTIVE_DT_AT",fdyn.get<int>("FREEZE_ADAPTIVE_DT_AT"));
-  // CFL number for adaptive calculation of time step
-  fluidtimeparams->set<double> ("ADAPTIVE_DT_INC"          ,fdyn.get<double>("ADAPTIVE_DT_INC"));
+  //sublist for adaptive time stepping
+  fluidtimeparams->sublist("TIMEADAPTIVITY")=fdyn.sublist("TIMEADAPTIVITY");
 
   // -------- additional parameters in list for generalized-alpha scheme
 #if 1

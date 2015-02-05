@@ -146,7 +146,10 @@ void FLD::FluidImplicitTimeInt::Init()
   theta_ = params_->get<double>("theta");
 
   // cfl number for adaptive time step
-  cfl_ = params_->get<double>("CFL_NUMBER",-1.0);
+  cfl_ = params_->sublist("TIMEADAPTIVITY").get<double>("CFL_NUMBER",-1.0);
+  if(DRT::INPUT::IntegralValue<INPAR::FLUID::AdaptiveTimeStepEstimator>
+  ((params_->sublist("TIMEADAPTIVITY")),"ADAPTIVE_TIME_STEP_ESTIMATOR") == INPAR::FLUID::cfl_number && cfl_<0.0)
+    dserror("specify cfl number for adaptive time step via cfl");
 
   // number of steps for starting algorithm, only for GenAlpha so far
   numstasteps_ = params_->get<int> ("number of start steps");
@@ -5026,7 +5029,7 @@ Teuchos::RCP<double> FLD::FluidImplicitTimeInt::EvaluateDivU()
 double FLD::FluidImplicitTimeInt::EvaluateDtViaCflIfApplicable()
 {
 
-  int stependadaptivedt =     params_->get<int>   ("FREEZE_ADAPTIVE_DT_AT",10000000);
+  int stependadaptivedt =     params_->sublist("TIMEADAPTIVITY").get<int>   ("FREEZE_ADAPTIVE_DT_AT",10000000);
   if(step_+1==stependadaptivedt&&myrank_==0)
     std::cout << "\n    !!time step is kept constant from now on for sampling of turbulence statistics!!\n" << std::endl;
   if(cfl_>0.0 && step_+1<stependadaptivedt)
@@ -5063,7 +5066,7 @@ double FLD::FluidImplicitTimeInt::EvaluateDtViaCflIfApplicable()
     //min_h_u is zero. In this case, we use the time step stated in the input file
     //and write this to the screen
 
-    double inc = params_->get<double>("ADAPTIVE_DT_INC",0.8);
+    double inc = params_->sublist("TIMEADAPTIVITY").get<double>("ADAPTIVE_DT_INC",0.8);
 
     if(min_h_u<1.0e3)
     {

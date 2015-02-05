@@ -1957,11 +1957,26 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetGridDispVelALE(
   }
   default:
   {
-    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+    GetGridDispALE(discretization, lm, edispnp);
     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &egridv, NULL,"gridv");
     break;
   }
   }
+}
+
+/*---------------------------------------------------------------------------*
+ | get ALE grid displacements only for element                      bk 02/15 |
+ *---------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetGridDispALE(
+    DRT::Discretization &                   discretization,
+    const std::vector<int> &                lm,
+    LINALG::Matrix<nsd_,nen_>&              edispnp
+)
+{
+
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+
   // add displacement when fluid nodes move in the ALE case
   xyze_ += edispnp;
 }

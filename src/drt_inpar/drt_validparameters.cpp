@@ -3730,10 +3730,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("STEADYTOL",1e-6,"Tolerance for steady state check",&fdyn);
   DoubleParameter("START_THETA",1.0,"Time integration factor for starting scheme",&fdyn);
 
-  DoubleParameter("CFL_NUMBER",-1.0,"CFL number for adaptive time step",&fdyn);
-  IntParameter("FREEZE_ADAPTIVE_DT_AT",1000000,"keep time step constant after this step, otherwise turbulence statistics sampling is not consistent",&fdyn);
-  DoubleParameter("ADAPTIVE_DT_INC",0.8,"Increment of whole step for adaptive dt via CFL",&fdyn);
-
   setStringToIntegralParameter<int>("STRONG_REDD_3D_COUPLING_TYPE",
                                "no",
                                "Flag to (de)activate potential Strong 3D redD coupling",
@@ -5054,6 +5050,31 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    IntParameter("INFLOW_SAMPLING_START",10000000,"Time step after when sampling shall be started",&fdyn_turbinf);
    IntParameter("INFLOW_SAMPLING_STOP",1,"Time step when sampling shall be stopped",&fdyn_turbinf);
    IntParameter("INFLOW_DUMPING_PERIOD",1,"Period of time steps after which statistical data shall be dumped",&fdyn_turbinf);
+
+   /*----------------------------------------------------------------------*/
+   // sublist with additional input parameters for time adaptivity in fluid/ coupled problems
+   Teuchos::ParameterList& fdyn_timintada = fdyn.sublist("TIMEADAPTIVITY",false,"");
+   setStringToIntegralParameter<int>("ADAPTIVE_TIME_STEP_ESTIMATOR",
+                                "none",
+                                "Method used to determine adaptive time step size.",
+                                tuple<std::string>(
+                                  "none",
+                                  "cfl_number"
+                                  ),
+                                tuple<std::string>(
+                                  "constant time step",
+                                  "evaluated via CFL number"
+                                  //""
+                                  ),
+                                tuple<int>(
+                                    INPAR::FLUID::const_dt,
+                                    INPAR::FLUID::cfl_number
+                                 ),
+                                &fdyn_timintada);
+
+   DoubleParameter("CFL_NUMBER",-1.0,"CFL number for adaptive time step",&fdyn_timintada);
+   IntParameter("FREEZE_ADAPTIVE_DT_AT",1000000,"keep time step constant after this step, otherwise turbulence statistics sampling is not consistent",&fdyn_timintada);
+   DoubleParameter("ADAPTIVE_DT_INC",0.8,"Increment of whole step for adaptive dt via CFL",&fdyn_timintada);
 
    /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& twophasedyn = list->sublist("TWO PHASE FLOW",false,"");

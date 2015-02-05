@@ -478,8 +478,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetEleProperties(DRT::EL
       // get node coordinates and number of elements per node
       GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
       LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
-      LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
-      if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp, egridv);
+      if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
       PrepareGaussRule();
     }
   }
@@ -491,8 +490,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetEleProperties(DRT::EL
     // get node coordinates and number of elements per node
     GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
     LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
-    LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
-    if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp, egridv);
+    if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
     PrepareGaussRule();
   }
 
@@ -988,7 +986,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::TauWViaGradient(
   {
     LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
     LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
-    GetGridDispVelALE(discretization, lm, edispnp, egridv);
+    my::GetGridDispVelALE(discretization, lm, edispnp, egridv);
     evel-=egridv;
   }
 
@@ -1194,8 +1192,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::CalcMK(
   GEO::fillInitialPositionArray<distype,my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
 
   LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
-  LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
-  if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp, egridv);
+  if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
 
   elevec1[0] = CalcMK();
   return 0;
@@ -1241,8 +1238,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::XWallProjection(
   GEO::fillInitialPositionArray<distype,my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
 
   LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
-  LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
-  if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp, egridv);
+  if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
 
 //  DRT::UTILS::GaussIntegration intpoints(DRT::Element::line6);
 
@@ -2068,31 +2064,17 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::SysmatForErrorEstimation
     }
 
 /*---------------------------------------------------------------------------*
- | get ALE grid displacements and grid velocity for element     schott 11/14 |
+ | get ALE grid displacements only for element                      bk 02/15 |
  *---------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
-void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetGridDispVelALE(
+void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetGridDispALE(
     DRT::Discretization &                   discretization,
     const std::vector<int> &                lm,
-    LINALG::Matrix<my::nsd_,my::nen_>&              edispnp,
-    LINALG::Matrix<my::nsd_,my::nen_>&              egridv
+    LINALG::Matrix<my::nsd_,my::nen_>&              edispnp
 )
 {
-  switch (my::fldpara_->PhysicalType())
-  {
-  case INPAR::FLUID::oseen:
-  case INPAR::FLUID::stokes:
-  {
-    dserror("ALE with Oseen or Stokes seems to be a tricky combination. Think deep before removing dserror!");
-    break;
-  }
-  default:
-  {
-    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, NULL,"dispnp");
-    my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &egridv, NULL,"gridv");
-    break;
-  }
-  }
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, NULL,"dispnp");
+
   // add displacement when fluid nodes move in the ALE case
   // xyze_ does only know 8 nodes
   // edispnp also knows the virtual ones but doens't do anything with them

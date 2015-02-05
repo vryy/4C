@@ -1633,7 +1633,6 @@ void FLD::XWallAleFSI::UpdateWDistWALE()
 void FLD::XWallAleFSI::SetXWallParams(Teuchos::ParameterList& eleparams)
 {
   XWall::SetXWallParams(eleparams);
-  discret_->SetState("gridv",mygridv_);
   return;
 }
 
@@ -1664,5 +1663,24 @@ void FLD::XWallAleFSI::SetXWallParamsXWDis(Teuchos::ParameterList& eleparams)
 {
   UpdateWDistWALE();
   FLD::XWall::UpdateTauW(step, trueresidual, itnum, accn, velnp, veln);
+  if (tauwtype_ == INPAR::FLUID::constant)
+  {
+    if(proj_)
+    {
+      if(myrank_==0)
+        std::cout << "  L2-project... ";
+
+      L2ProjectVector(veln,Teuchos::null,accn);
+
+      //at the beginning of this time step they are equal -> calculate only one of them
+      velnp->Update(1.0,*veln,0.0);
+
+      if(myrank_==0)
+        std::cout << "done!" << std::endl;
+    }
+    else
+      dserror("projection required for ale case even with constant tauw, since wdist is updating");
+  }
+
   return;
 }

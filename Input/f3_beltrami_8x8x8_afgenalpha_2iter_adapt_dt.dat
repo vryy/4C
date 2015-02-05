@@ -55,8 +55,6 @@ TIMEINTEGR                      Af_Gen_Alpha
 TIMESTEP                        0.05
 UPRES                           8
 MESHTYING                       no
-CFL_NUMBER                      0.5
-FREEZE_ADAPTIVE_DT_AT           5
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross                        // Cross stress term not available in combust fluid
 GRAD_DIV                        yes
@@ -69,6 +67,9 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab                        // no viscous stabilization
 EVALUATION_TAU                  integration_point               // only evaluation at integration point available in combust fluid
+----------------------------------FLUID DYNAMIC/TIMEADAPTIVITY
+CFL_NUMBER                      0.5
+FREEZE_ADAPTIVE_DT_AT           5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK

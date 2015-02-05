@@ -744,11 +744,18 @@ protected:
                                                 );
 
   //! get ALE grid displacements and grid velocity for element
-  virtual void GetGridDispVelALE(
+  void GetGridDispVelALE(
       DRT::Discretization &                   discretization,
       const std::vector<int> &                lm,
       LINALG::Matrix<nsd_,nen_>&              edispnp,
       LINALG::Matrix<nsd_,nen_>&              egridv
+  );
+
+  //! get ALE grid displacements for element
+  virtual void GetGridDispALE(
+      DRT::Discretization &                   discretization,
+      const std::vector<int> &                lm,
+      LINALG::Matrix<nsd_,nen_>&              edispnp
   );
 
   //! set the (relative) convective velocity at integration point for various physical types
