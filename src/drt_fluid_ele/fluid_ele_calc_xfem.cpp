@@ -897,7 +897,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         si->SetInterfaceJumpState(*cutter_dis, "ivelnp", cutla[0].lm_);
       }
     }
-    else dserror("not supported so far");
+
 
     //--------------------------------------------
     // loop boundary cells w.r.t current cut side
@@ -1062,7 +1062,10 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         // interface errors
         double nit_stabfac = 0.0;
         LINALG::Matrix<my::nsd_,1> velint_s;
-        si->GetInterfaceVelnp(velint_s);
+        if (is_mesh_coupling_side)
+        {
+          si->GetInterfaceVelnp(velint_s);
+        }
         //Needs coupling condition to get kappas!
         const double kappa_m = 1.0;
         const double kappa_s = 0.0;
