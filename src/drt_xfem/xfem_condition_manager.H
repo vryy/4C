@@ -321,7 +321,6 @@ public:
     return;
   }
 
-
   /// get the side element of the respective boundary discretization
   DRT::Element* GetSide(
       const int sid ///< global side element id w.r.t cutter discretization
@@ -331,6 +330,11 @@ public:
   }
 
   Teuchos::RCP<const Epetra_Vector> GetCutterDispCol();
+
+  /// fill lm vector for coupling element
+  virtual void GetCouplingEleLocationVector(
+      const int sid,
+      std::vector<int> & patchlm);
 
   // finalized interface state vectors
   virtual void CompleteStateVectors(){};
@@ -732,6 +736,10 @@ public:
       const double                        time,      ///< time
       const int                           step       ///< time step
   );
+
+  void GetCouplingEleLocationVector(
+    const int sid,
+    std::vector<int> & patchlm);
 
   //! estimate the penalty scaling in Nitsche's method from the trace inequality
   //! via solving a local eigenvalue problem

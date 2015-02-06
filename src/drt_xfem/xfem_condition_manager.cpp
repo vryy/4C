@@ -527,6 +527,19 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFluidFluid::GetCouplingEleLocationVector(
+  const int sid,
+  std::vector<int> & patchlm)
+{
+  std::vector<int> patchlmstride, patchlmowner; // dummy
+  int ele_gid = sid;
+  if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
+    ele_gid = GetEmbeddedElementId(sid);
+  return coupl_dis_->gElement(ele_gid)->LocationVector(*coupl_dis_, patchlm, patchlmowner, patchlmstride);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFluidFluid::RedistributeForErrorCalculation()
 {
   if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided ||
@@ -934,6 +947,13 @@ Teuchos::RCP<const Epetra_Vector> XFEM::MeshCoupling::GetCutterDispCol()
   return idispcol;
 }
 
+void XFEM::MeshCoupling::GetCouplingEleLocationVector(
+    const int sid,
+    std::vector<int> & patchlm)
+{
+  std::vector<int> patchlmstride, patchlmowner; // dummy
+  return coupl_dis_->gElement(sid)->LocationVector(*coupl_dis_, patchlm, patchlmowner, patchlmstride);
+}
 
 //! constructor
 XFEM::MeshCouplingBC::MeshCouplingBC(

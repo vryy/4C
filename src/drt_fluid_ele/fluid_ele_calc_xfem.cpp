@@ -3491,9 +3491,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     {
       if (non_xfluid_coupling)
       {
-        // TODO store embedded_eld_gid map in condition manager and not in parameter list
-        // TODO: method: get couling element
-
         if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)
           coupl_ele = ele;
         else if(cond_type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)

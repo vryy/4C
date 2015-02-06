@@ -81,6 +81,8 @@ public:
   /// setup the variables to do a new time step
   void PrepareTimeStep();
 
+  void PrepareSolve();
+
   /// Update the solution after convergence of the nonlinear
   /// iteration. Current solution becomes old solution of next timestep.
   void TimeUpdate();
@@ -111,12 +113,12 @@ public:
       Teuchos::RCP<Epetra_Map> innermap,
       Teuchos::RCP<Epetra_Map> condmap);
 
-  Teuchos::RCP<const Epetra_Vector> InitialGuess()  { return state_->xffluidincvel_; }
-  Teuchos::RCP<const Epetra_Vector> RHS()           { return state_->xffluidresidual_; }
+  Teuchos::RCP<const Epetra_Vector> InitialGuess()  { return xff_state_->xffluidincvel_; }
+  Teuchos::RCP<const Epetra_Vector> RHS()           { return xff_state_->xffluidresidual_; }
 
-  Teuchos::RCP<const Epetra_Vector> Velnp()             { return state_->xffluidvelnp_; }
-  Teuchos::RCP<      Epetra_Vector> WriteAccessVelnp()  { return state_->xffluidvelnp_; }
-  Teuchos::RCP<const Epetra_Vector> Veln()              { return state_->xffluidveln_; }
+  Teuchos::RCP<const Epetra_Vector> Velnp()             { return xff_state_->xffluidvelnp_; }
+  Teuchos::RCP<      Epetra_Vector> WriteAccessVelnp()  { return xff_state_->xffluidvelnp_; }
+  Teuchos::RCP<const Epetra_Vector> Veln()              { return xff_state_->xffluidveln_; }
   Teuchos::RCP<const Epetra_Vector> GridVel()           { return embedded_fluid_->GridVel(); }
   Teuchos::RCP<      Epetra_Vector> WriteAccessGridVel(){ return embedded_fluid_->WriteAccessGridVel(); }
   Teuchos::RCP<const Epetra_Vector> Stepinc()           { return stepinc_; }
@@ -128,12 +130,12 @@ public:
 
   Teuchos::RCP<const Epetra_Map> DofRowMap()
   {
-    return state_->xffluiddofrowmap_;
+    return xff_state_->xffluiddofrowmap_;
   }
 
   Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter()
   {
-    return state_->xffluidvelpressplitter_;
+    return xff_state_->xffluidvelpressplitter_;
   }
 
   Teuchos::RCP<const Epetra_Map> PressureRowMap();
@@ -144,18 +146,18 @@ public:
   /// get the combined fluid-fluid system matrix
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
   {
-    return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->xffluidsysmat_);
+    return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(xff_state_->xffluidsysmat_);
   }
 
   /// get map extractor for background/embedded fluid
 
-  Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor>const& XFluidFluidMapExtractor(){ return state_->xffluidsplitter_; }
+  Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor>const& XFluidFluidMapExtractor(){ return xff_state_->xffluidsplitter_; }
 
   //! get combined background and embedded fluid dirichlet map extractor
-  Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return state_->xffluiddbcmaps_; }
+  Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return xff_state_->xffluiddbcmaps_; }
 
   //! access to new merged fluid state container
-  Teuchos::RCP<FLD::XFluidFluidState> GetNewState();
+  Teuchos::RCP<FLD::XFluidState> GetNewState();
 
   /// create a result test
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
@@ -170,12 +172,6 @@ private:
       int itnum                           ///< iteration number
   );
 
-  //! determine convergence status
-  bool ConvergenceCheck(
-    int          itnum,
-    int          itemax,
-    const double ittol);
-
   /// Update velocity and pressure by increment
   void UpdateByIncrement();
 
@@ -186,9 +182,9 @@ private:
   bool alefluid_;
 
   /// merged fluid state (cut-dependent) at time n+1
-  Teuchos::RCP<FLD::XFluidFluidState> state_;
+  Teuchos::RCP<FLD::XFluidFluidState> xff_state_;
   /// merged fluid state (cut-dependent) at time n
-  Teuchos::RCP<FLD::XFluidFluidState> staten_;
+  Teuchos::RCP<FLD::XFluidFluidState> xff_staten_;
 
   /// vector with Newton increments (used for monolithic fully newton fsi approach)
   Teuchos::RCP<Epetra_Vector>         stepinc_;

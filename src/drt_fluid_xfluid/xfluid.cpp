@@ -849,9 +849,6 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
             {
               int coup_sid = bc->first; // all boundary cells within the current iterator belong to the same side
 
-              // the coupling element (side for mesh coupling, bg element for level-set coupling)
-              DRT::Element * coupl_ele = NULL;
-
               // boundary discretization for mesh coupling and background discretization for level-set coupling
               Teuchos::RCP<DRT::Discretization> coupl_dis = condition_manager_->GetCouplingDis( coup_sid );
 
@@ -861,13 +858,9 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
               // get dofs for coupling side or coupling element
               if(condition_manager_->IsMeshCoupling(coup_sid))
               {
-                // the side element
-                coupl_ele = condition_manager_->GetSide(coup_sid);
-
-                // coupling just between background element and sides of the structure (side-coupling)
-                std::vector<int> patchlmstride, patchlmowner; // dummy
-
-                coupl_ele->LocationVector(*coupl_dis, patchlm, patchlmowner, patchlmstride);
+                // fill patchlm for the element we couple with
+                const int mc_idx = condition_manager_->GetMeshCouplingIndex(coup_sid);
+                condition_manager_->GetMeshCoupling(mc_idx)->GetCouplingEleLocationVector(coup_sid,patchlm);
               }
               else if(condition_manager_->IsLevelSetCoupling(coup_sid))
               {
@@ -931,7 +924,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
             {
               TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 2) interface (only evaluate)" );
 
-              if(CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
+              if( CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
                   CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress)
                 impl->ElementXfemInterfaceHybridLM(
                     ele,
@@ -1427,7 +1420,6 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluid::IVeln()
 Teuchos::RCP<Epetra_Vector> FLD::XFluid::IVelnm()
 {
   return condition_manager_->GetMeshCoupling(mc_idx_)->IVelnm();
-//>>>>>>> .r20649
 }
 
 Teuchos::RCP<Epetra_Vector> FLD::XFluid::IDispnp()
@@ -2589,8 +2581,8 @@ bool FLD::XFluid::ConvergenceCheck(
   // warn if itemax is reached without convergence, but proceed to
   // next timestep...
   if ((itnum == itemax) and (vresnorm_ > ittol or presnorm_ > ittol or
-                           incvelnorm_L2_ /velnorm_L2_ > ittol or
-                           incprenorm_L2_/prenorm_L2_ > ittol))
+                             incvelnorm_L2_ /velnorm_L2_ > ittol or
+                             incprenorm_L2_/prenorm_L2_ > ittol))
   {
     stopnonliniter=true;
     if (myrank_ == 0)
@@ -5242,7 +5234,7 @@ void FLD::XFluid::UpdateByIncrement()
   state_->Velnp()->Update(1.0,*state_->IncVel(),1.0);
   double f_norm = 0;
   state_->Velnp()->Norm2(&f_norm);
-  //std::cout << std::setprecision(14) << f_norm << std::endl;
+//  std::cout << std::setprecision(14) << f_norm << std::endl;
 }
 
 

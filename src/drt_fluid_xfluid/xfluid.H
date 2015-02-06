@@ -126,7 +126,7 @@ namespace FLD
     void DoPredictor();
 
     /// Implement ADAPTER::Fluid
-    void PrepareSolve();
+    virtual void PrepareSolve();
 
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
     void Solve();
@@ -183,7 +183,7 @@ namespace FLD
     virtual void SetInitialFlowField(
       const INPAR::FLUID::InitialField initfield,
       const int startfuncno
-      );
+    );
 
 //    /// compute interface velocities from function
 //    void ComputeInterfaceVelocities();
@@ -265,7 +265,7 @@ namespace FLD
        return Teuchos::null;}
 
     /// create field test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
     /// read restart data for fluid discretization
     void ReadRestart(int step);
@@ -315,7 +315,7 @@ namespace FLD
 
     virtual void CreateState();
 
-    Teuchos::RCP<FLD::XFluidState> GetNewState();
+    virtual Teuchos::RCP<FLD::XFluidState> GetNewState();
 
 
     /// call the loop over elements to assemble volume and interface integrals
@@ -348,7 +348,7 @@ namespace FLD
     \brief convergence check
 
     */
-    virtual bool ConvergenceCheck(
+    bool ConvergenceCheck(
       int          itnum,
       int          itemax,
       const double ittol);
