@@ -43,6 +43,10 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(const int numdofpernode, const int numscal)
   : numdofpernode_(numdofpernode),
     numscal_(numscal),
+    scatrapara_(DRT::ELEMENTS::ScaTraEleParameterStd::Instance()),            // standard parameter list
+    scatraparatimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance()),   // time integration parameter list
+    diffmanager_(Teuchos::rcp(new ScaTraEleDiffManager(numscal_))),           // diffusion manager for diffusivity / diffusivities (in case of systems) or thermal conductivity/specific heat (in case of loma)
+    reamanager_(Teuchos::rcp(new ScaTraEleReaManager(numscal_))),             // reaction manager
     ephin_(numscal_),   // size of vector
     ephinp_(numscal_),  // size of vector
     ehist_(numscal_),   // size of vector
@@ -67,21 +71,40 @@ DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(const int numdofpernode, co
     bodyforce_(numdofpernode_), // size of vector
     weights_(true),      // initialized to zero
     myknots_(nsd_),      // size of vector
-    eid_(0)
+    eid_(0),
+    scatravarmanager_(Teuchos::rcp(new ScaTraEleInternalVariableManager<nsd_,nen_>(numscal_)))   // internal variable manager
 {
-  // get parameter lists
-  scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
-  scatraparatimint_ = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance();
-
-  // get diffusion manager for diffusivity / diffusivities (in case of systems)
-  //                           or (thermal conductivity/specific heat) in case of loma
-  diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManager(numscal_));
-  // get diffusion manager
-  reamanager_ = Teuchos::rcp(new ScaTraEleReaManager(numscal_));
-
-  // initialize internal variable manager
-  scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManager<nsd_, nen_>(numscal_));
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | setup element evaluation                                  fang 02/15 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::ScaTraEleCalc<distype>::SetupCalc(
+    DRT::ELEMENTS::Transport*   ele,
+    DRT::Discretization&        discretization
+    )
+{
+  // get element coordinates
+  ReadElementCoordinatesAndProject(ele);
+
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  if(DRT::NURBS::IsNurbs(distype))
+  {
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,myknots_,weights_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+      return -1;
+  } // Nurbs specific stuff
+
+  // set element id
+  eid_ = ele->Id();
+
+  return 0;
 }
 
 
@@ -105,19 +128,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::Evaluate(
   // preparations for element
   //--------------------------------------------------------------------------------
 
-  //get element coordinates
-  ReadElementCoordinatesAndProject(ele);
-
-  // Now do the nurbs specific stuff (for isogeometric elements)
-  if(DRT::NURBS::IsNurbs(distype))
-  {
-    // access knots and weights for this element
-    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,myknots_,weights_);
-
-    // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size)
-      return(0);
-  } // Nurbs specific stuff
+  if(SetupCalc(ele,discretization) == -1)
+    return 0;
 
   //--------------------------------------------------------------------------------
   // extract element based or nodal values
@@ -167,13 +179,11 @@ std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractElementAndNod
   const std::vector<int>&    lm
 )
 {
-  // set element id
-  eid_ = ele->Id();
-
   // get convective (velocity - mesh displacement) velocity at nodes
   const Teuchos::RCP<Epetra_MultiVector> convelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field");
   DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
+  // get additional state vector for ALE case: grid displacement
   if (scatrapara_->IsAle())
   {
     // get velocity at nodes
@@ -376,7 +386,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
   if (not scatrapara_->MatGP())
-    GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+    GetMaterialParams(ele,densn,densnp,densam,visc);
 
   //----------------------------------------------------------------------
   // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -402,7 +412,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
           or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
           or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_vreman)
       {
-        CalcSubgrDiff(diffmanager_,visc,vol,k,densnp);
+        CalcSubgrDiff(visc,vol,k,densnp);
       }
 
       // calculation of fine-scale artificial subgrid diffusivity at element center
@@ -426,7 +436,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
     {
       // make sure to get material parameters at element center
       // hence, determine them if not yet available
-      if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+      if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,visc);
       // provide necessary velocities and gradients at element center
       // get velocity at element center
       LINALG::Matrix<nsd_,1> convelint(true);
@@ -454,7 +464,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (scatrapara_->MatGP())
-      GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc,iquad);
+      GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
     //set gauss point variables needed for evaluation of mat and rhs
     SetInternalVariablesForMatAndRHS();
@@ -524,13 +534,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
 
           // compute residual of scalar transport equation
           // (subgrid-scale part of scalar, which is also computed, not required)
-          CalcResidualAndSubgrScalar(k,scatrares,sgphi,densam,densnp,scatravarmanager_,diff_phi,rea_phi,rhsint,tau[k]);
+          CalcResidualAndSubgrScalar(k,scatrares,sgphi,densam,densnp,diff_phi,rea_phi,rhsint,tau[k]);
 
           // pre-calculation of stabilization parameter at integration point need for some forms of artificial diffusion
           CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol);
 
           // compute artificial diffusion
-          CalcArtificialDiff(vol,k,diffmanager_,densnp,scatravarmanager_->ConVel(),scatravarmanager_->GradPhi(k),scatravarmanager_->ConvPhi(k),scatrares,tau[k]);
+          CalcArtificialDiff(vol,k,densnp,scatravarmanager_->ConVel(),scatravarmanager_->GradPhi(k),scatravarmanager_->ConvPhi(k),scatrares,tau[k]);
 
           // adapt diffusive term using current scalar value for higher-order elements,
           // since diffus -> diffus + sgdiff
@@ -550,7 +560,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
           or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
           or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_vreman)
       {
-        CalcSubgrDiff(diffmanager_,visc,vol,k,densnp);
+        CalcSubgrDiff(visc,vol,k,densnp);
 
         // adapt diffusive term using current scalar value for higher-order elements,
         // since diffus -> diffus + sgdiff
@@ -591,7 +601,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
 
       // compute residual of scalar transport equation and
       // subgrid-scale part of scalar
-      CalcResidualAndSubgrScalar(k,scatrares,sgphi,densam,densnp,scatravarmanager_,diff_phi,rea_phi,rhsint,tau[k]);
+      CalcResidualAndSubgrScalar(k,scatrares,sgphi,densam,densnp,diff_phi,rea_phi,rhsint,tau[k]);
 
       // prepare multifractal subgrid-scale modeling
       // calculation of model coefficients B (velocity) and D (scalar)
@@ -640,14 +650,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
       //----------------------------------------------------------------
 
       // calculation of convective element matrix in convective form
-      CalcMatConv(emat,k,timefacfac,densnp,scatravarmanager_,sgconv);
+      CalcMatConv(emat,k,timefacfac,densnp,sgconv);
 
       // add conservative contributions
       if (scatrapara_->IsConservative())
         CalcMatConvAddCons(emat,k,timefacfac,vdiv,densnp);
 
       // calculation of diffusive element matrix
-      CalcMatDiff(emat,k,timefacfac,diffmanager_);
+      CalcMatDiff(emat,k,timefacfac);
 
       //----------------------------------------------------------------
       // convective stabilization term
@@ -656,7 +666,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
       // convective stabilization of convective term (in convective form)
       // transient stabilization of convective term (in convective form)
       if(scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-        CalcMatTransConvDiffStab(emat,k,timetaufac,densnp,scatravarmanager_,sgconv,diff);
+        CalcMatTransConvDiffStab(emat,k,timetaufac,densnp,sgconv,diff);
 
       //----------------------------------------------------------------
       // 2) element matrix: instationary terms
@@ -667,7 +677,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
         CalcMatMass(emat,k,fac,densam);
 
         if(scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-          CalcMatMassStab(emat,k,taufac,densam,densnp,scatravarmanager_,sgconv,diff);
+          CalcMatMassStab(emat,k,taufac,densam,densnp,sgconv,diff);
       }
 
       //----------------------------------------------------------------
@@ -676,7 +686,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
 
       // including stabilization
       if (reamanager_->Active())
-        CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,scatravarmanager_,reamanager_,sgconv,diff);
+        CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,sgconv,diff);
 
       //----------------------------------------------------------------
       // 4) element right hand side
@@ -691,15 +701,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
       double rhstaufac = scatraparatimint_->TimeFacRhsTau() * taufac;
 
       if (scatraparatimint_->IsIncremental() and not scatraparatimint_->IsStationary())
-        CalcRHSLinMass(erhs,k,rhsfac,fac,densam,densnp,scatravarmanager_);
+        CalcRHSLinMass(erhs,k,rhsfac,fac,densam,densnp);
 
       // the order of the following three functions is important
       // and must not be changed
       ComputeRhsInt(rhsint,densam,densnp,hist);
 
-      RecomputeScatraResForRhs(scatrares,k,diff,densn,densnp,rea_phi,scatravarmanager_,reamanager_,rhsint);
+      RecomputeScatraResForRhs(scatrares,k,diff,densn,densnp,rea_phi,rhsint);
 
-      RecomputeConvPhiForRhs(k,scatravarmanager_,sgvelint,densnp,densn,vdiv);
+      RecomputeConvPhiForRhs(k,sgvelint,densnp,densn,vdiv);
 
       //----------------------------------------------------------------
       // standard Galerkin transient, old part of rhs and bodyforce term
@@ -711,23 +721,23 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
       //----------------------------------------------------------------
 
       // convective term
-      CalcRHSConv(erhs,k,rhsfac,scatravarmanager_);
+      CalcRHSConv(erhs,k,rhsfac);
 
       // diffusive term
-      CalcRHSDiff(erhs,k,rhsfac,diffmanager_,scatravarmanager_);
+      CalcRHSDiff(erhs,k,rhsfac);
 
       //----------------------------------------------------------------
       // stabilization terms
       //----------------------------------------------------------------
       if (scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-        CalcRHSTransConvDiffStab(erhs,k,rhstaufac,densnp,scatrares,scatravarmanager_,sgconv,diff);
+        CalcRHSTransConvDiffStab(erhs,k,rhstaufac,densnp,scatrares,sgconv,diff);
 
       //----------------------------------------------------------------
       // reactive terms (standard Galerkin and stabilization) on rhs
       //----------------------------------------------------------------
 
       if (reamanager_->Active())
-        CalcRHSReact(erhs,k,rhsfac,rhstaufac,rea_phi,densnp,scatrares,reamanager_);
+        CalcRHSReact(erhs,k,rhsfac,rhstaufac,rea_phi,densnp,scatrares);
 
       //----------------------------------------------------------------
       // 5) advanced turbulence models
@@ -743,7 +753,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
       // multifractal subgrid-scale modeling on right hand side only
       //---------------------------------------------------------------
       if (scatraparatimint_->IsIncremental() and scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
-        CalcRHSMFS(erhs,k,rhsfac,densnp,scatravarmanager_,mfsggradphi,mfsgvelint,mfssgphi,mfsvdiv);
+        CalcRHSMFS(erhs,k,rhsfac,densnp,mfsggradphi,mfsgvelint,mfssgphi,mfsvdiv);
 
     }// end loop all scalars
 
@@ -889,7 +899,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::ReadElementCoordinatesAndProject(
     const DRT::ELEMENTS::Transport*  ele
     )
 {
-  if(nsd_ == 1){
+  // projection only works for line2 elements at the moment
+  if(nsd_ == 1 and nen_ == 2){
     double lengthLine3D;
     LINALG::Matrix<3,nen_> xyze3D;
     GEO::fillInitialPositionArray<distype,3,LINALG::Matrix<3,nen_> >(ele,xyze3D);
@@ -1035,8 +1046,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetMaterialParams(
   double&             densn,     //!< density at t_(n)
   double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
   double&             densam,    //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
   double&             visc,      //!< fluid viscosity
   const int           iquad      //!< id of current gauss point
   )
@@ -1056,11 +1065,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      Materials(singlemat,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+      Materials(singlemat,k,densn,densnp,densam,visc,iquad);
     }
   }
   else
-    Materials(material,0,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    Materials(material,0,densn,densnp,densam,visc,iquad);
 
   return;
 } //ScaTraEleCalc::GetMaterialParams
@@ -1076,15 +1085,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Materials(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,         //!< fluid viscosity
   const int                               iquad         //!< id of current gauss point
 
   )
 {
   if (material->MaterialType() == INPAR::MAT::m_scatra)
-    MatScaTra(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    MatScaTra(material,k,densn,densnp,densam,visc,iquad);
   else dserror("Material type is not supported");
 
   return;
@@ -1101,8 +1108,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatScaTra(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,     //!< fluid viscosity
   const int                               iquad   //!< id of current gauss point (default = -1)
   )
@@ -1115,10 +1120,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatScaTra(
     = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
 
   // get constant diffusivity
-  diffmanager->SetIsotropicDiff(actmat->Diffusivity(leleid),k);
+  diffmanager_->SetIsotropicDiff(actmat->Diffusivity(leleid),k);
 
   // get reaction coefficient
-  reamanager->SetReaCoeff(actmat->ReaCoeff(leleid),k);
+  reamanager_->SetReaCoeff(actmat->ReaCoeff(leleid),k);
 
   // in case of multifractal subgrid-scales, read Schmidt number
   if (scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales or scatrapara_->RBSubGrVel()
@@ -1227,11 +1232,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatConv(
   const int                     k,
   const double                  timefacfac,
   const double                  densnp,
-  Teuchos::RCP< varmanager >    varmanager,
   const LINALG::Matrix<nen_,1>& sgconv
   )
 {
-  const LINALG::Matrix<nen_,1>& conv = varmanager->Conv();
+  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv();
 
   // convective term in convective form
   const double densfac = timefacfac*densnp;
@@ -1288,12 +1292,11 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatDiff(
   Epetra_SerialDenseMatrix&     emat,
   const int                     k,
-  const double                  timefacfac,
-  Teuchos::RCP<ScaTraEleDiffManager>  diffmanager
+  const double                  timefacfac
   )
 {
   // diffusive term
-  const double fac_diffus = timefacfac * diffmanager->GetIsotropicDiff(k);
+  const double fac_diffus = timefacfac * diffmanager_->GetIsotropicDiff(k);
   for (int vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
@@ -1319,12 +1322,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatTransConvDiffStab(
   const int                     k,
   const double                  timetaufac,
   const double                  densnp,
-  Teuchos::RCP< varmanager >    varmanager,
   const LINALG::Matrix<nen_,1>& sgconv,
   const LINALG::Matrix<nen_,1>& diff
   )
 {
-  const LINALG::Matrix<nen_,1>& conv = varmanager->Conv();
+  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv();
 
   const double dens2taufac = timetaufac*densnp*densnp;
   for (int vi=0; vi<nen_; ++vi)
@@ -1436,12 +1438,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatMassStab(
   const double                  taufac,
   const double                  densam,
   const double                  densnp,
-  Teuchos::RCP< varmanager >    varmanager,
   const LINALG::Matrix<nen_,1>& sgconv,
   const LINALG::Matrix<nen_,1>& diff
   )
 {
-  const LINALG::Matrix<nen_,1>& conv = varmanager->Conv();
+  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv();
   const double densamnptaufac = taufac*densam*densnp;
   //----------------------------------------------------------------
   // stabilization of transient term
@@ -1492,16 +1493,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatReact(
   const double                       timetaufac,
   const double                       taufac,
   const double                       densnp,
-  Teuchos::RCP< varmanager >         varmanager,
-  Teuchos::RCP<ScaTraEleReaManager>  reamanager,
   const LINALG::Matrix<nen_,1>&      sgconv,
   const LINALG::Matrix<nen_,1>&      diff
   )
 {
-  const LINALG::Matrix<nen_,1>&      conv = varmanager->Conv();
+  const LINALG::Matrix<nen_,1>&      conv = scatravarmanager_->Conv();
 
-  const double fac_reac        = timefacfac*densnp*reamanager->GetReaCoeff(k);
-  const double timetaufac_reac = timetaufac*densnp*reamanager->GetReaCoeff(k);
+  const double fac_reac        = timefacfac*densnp*reamanager_->GetReaCoeff(k);
+  const double timetaufac_reac = timetaufac*densnp*reamanager_->GetReaCoeff(k);
 
   //----------------------------------------------------------------
   // standard Galerkin reactive term
@@ -1598,7 +1597,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatReact(
       // reactive stabilization of transient term
       for (int vi=0; vi<nen_; ++vi)
       {
-        const double v = scatrapara_->USFEMGLSFac()*taufac*densnp*reamanager->GetReaCoeff(k)*densnp*funct_(vi);
+        const double v = scatrapara_->USFEMGLSFac()*taufac*densnp*reamanager_->GetReaCoeff(k)*densnp*funct_(vi);
         const int fvi = vi*numdofpernode_+k;
 
         for (int ui=0; ui<nen_; ++ui)
@@ -1609,7 +1608,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatReact(
         }
       }
 
-      if (use2ndderiv_ and reamanager->GetReaCoeff(k)!=0.0)
+      if (use2ndderiv_ and reamanager_->GetReaCoeff(k)!=0.0)
         dserror("Second order reactive stabilization is not fully implemented!! ");
     }
   }
@@ -1629,12 +1628,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSLinMass(
   const double                  rhsfac,
   const double                  fac,
   const double                  densam,
-  const double                  densnp,
-  Teuchos::RCP< varmanager >    varmanager
+  const double                  densnp
   )
 {
-  const double&   phinp = varmanager->Phinp(k);
-  const double&    hist = varmanager->Hist(k);
+  const double&   phinp = scatravarmanager_->Phinp(k);
+  const double&    hist = scatravarmanager_->Hist(k);
 
   double vtrans = 0.0;
 
@@ -1699,13 +1697,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::RecomputeScatraResForRhs(
   const double                  densn,
   const double                  densnp,
   double&                       rea_phi,
-  Teuchos::RCP< varmanager >    varmanager,
-  Teuchos::RCP<ScaTraEleReaManager> reamanager,
   const double                  rhsint
   )
 {
-  const LINALG::Matrix<nsd_,1>& convelint = varmanager->ConVel();
-  const double&                 phin = varmanager->Phin(k);
+  const LINALG::Matrix<nsd_,1>& convelint = scatravarmanager_->ConVel();
+  const double&                 phin = scatravarmanager_->Phin(k);
 
   if (scatraparatimint_->IsGenAlpha())
   {
@@ -1728,14 +1724,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::RecomputeScatraResForRhs(
 
       // reactive term using scalar value at n
       // if no reaction is chosen, GetReaCoeff(k) returns 0.0
-      rea_phi = densnp*reamanager->GetReaCoeff(k)*phin;
+      rea_phi = densnp*reamanager_->GetReaCoeff(k)*phin;
       // reacterm_[k] must be evaluated at t^n to be used in the line above!
 
       scatrares = (1.0-scatraparatimint_->AlphaF()) * (densn*conv_phi
                     - diff_phin + rea_phi) - rhsint*scatraparatimint_->AlphaF()/scatraparatimint_->TimeFac();
 
-      varmanager->SetGradPhi(k,gradphi);
-      varmanager->SetConvPhi(k,conv_phi);
+      scatravarmanager_->SetGradPhi(k,gradphi);
+      scatravarmanager_->SetConvPhi(k,conv_phi);
     }
   }
   else if (scatraparatimint_->IsIncremental() and not scatraparatimint_->IsGenAlpha())
@@ -1756,7 +1752,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::RecomputeScatraResForRhs(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::RecomputeConvPhiForRhs(
   const int                     k,
-  Teuchos::RCP< varmanager >    varmanager,
   const LINALG::Matrix<nsd_,1>& sgvelint,
   const double                  densnp,
   const double                  densn,
@@ -1764,9 +1759,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::RecomputeConvPhiForRhs(
   )
 {
   double conv_phi = 0.0;
-  const double&                  phinp = varmanager->Phinp(k);
-  const double&                  phin = varmanager->Phin(k);
-  const LINALG::Matrix<nsd_,1>& gradphi = varmanager->GradPhi(k);
+  const double&                  phinp = scatravarmanager_->Phinp(k);
+  const double&                  phin = scatravarmanager_->Phin(k);
+  const LINALG::Matrix<nsd_,1>& gradphi = scatravarmanager_->GradPhi(k);
 
 
   if (scatraparatimint_->IsIncremental())
@@ -1788,9 +1783,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::RecomputeConvPhiForRhs(
     conv_phi *= densnp;
 
     // multiply convective term by density
-    varmanager->ScaleConvPhi(k,densnp);
+    scatravarmanager_->ScaleConvPhi(k,densnp);
     // addition to convective term due to subgrid-scale velocity
-    varmanager->AddToConvPhi(k,conv_phi);
+    scatravarmanager_->AddToConvPhi(k,conv_phi);
   }
   else if (not scatraparatimint_->IsIncremental() and scatraparatimint_->IsGenAlpha())
   {
@@ -1813,9 +1808,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::RecomputeConvPhiForRhs(
     conv_phi *= densn;
 
     // multiply convective term by density
-    varmanager->ScaleConvPhi(k,densn);
+    scatravarmanager_->ScaleConvPhi(k,densn);
     // addition to convective term due to subgrid-scale velocity
-    varmanager->AddToConvPhi(k,conv_phi);
+    scatravarmanager_->AddToConvPhi(k,conv_phi);
   }
 
   return;
@@ -1852,11 +1847,10 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSConv(
   Epetra_SerialDenseVector&     erhs,
   const int                     k,
-  const double                  rhsfac,
-  Teuchos::RCP< varmanager >    varmanager   //!< variable manager
+  const double                  rhsfac
   )
 {
-  const double& conv_phi = varmanager->ConvPhi(k);
+  const double& conv_phi = scatravarmanager_->ConvPhi(k);
 
   double vrhs = rhsfac*conv_phi;
   for (int vi=0; vi<nen_; ++vi)
@@ -1877,14 +1871,12 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSDiff(
   Epetra_SerialDenseVector&     erhs,
   const int                     k,
-  const double                  rhsfac,
-  Teuchos::RCP<ScaTraEleDiffManager>  diffmanager,
-  Teuchos::RCP< varmanager >    varmanager
+  const double                  rhsfac
   )
 {
-  const LINALG::Matrix<nsd_,1>& gradphi = varmanager->GradPhi(k);
+  const LINALG::Matrix<nsd_,1>& gradphi = scatravarmanager_->GradPhi(k);
 
-  double vrhs = rhsfac*diffmanager->GetIsotropicDiff(k);
+  double vrhs = rhsfac*diffmanager_->GetIsotropicDiff(k);
 
   for (int vi=0; vi<nen_; ++vi)
   {
@@ -1909,13 +1901,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSTransConvDiffStab(
   const double                  rhstaufac,
   const double                  densnp,
   const double                  scatrares,
-  Teuchos::RCP< varmanager >    varmanager,
   const LINALG::Matrix<nen_,1>& sgconv,
   const LINALG::Matrix<nen_,1>& diff
   )
 {
 
-  const LINALG::Matrix<nen_,1>& conv = varmanager->Conv();
+  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv();
 
   // convective rhs stabilization (in convective form)
   double vrhs = rhstaufac*scatrares*densnp;
@@ -1954,8 +1945,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSReact(
   const double                  rhstaufac,
   const double                  rea_phi,
   const double                  densnp,
-  const double                  scatrares,
-  Teuchos::RCP<ScaTraEleReaManager>  reamanager
+  const double                  scatrares
   )
 {
 
@@ -2020,16 +2010,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSMFS(
   const int                     k,
   const double                  rhsfac,
   const double                  densnp,
-  Teuchos::RCP< varmanager >    varmanager,
   const LINALG::Matrix<nsd_,1>  mfsggradphi,
   const LINALG::Matrix<nsd_,1>  mfsgvelint,
   const double                  mfssgphi,
   const double                  mfsvdiv
   )
 {
-  const double&                  phinp = varmanager->Phinp(k);
-  const LINALG::Matrix<nsd_,1>&  gradphi = varmanager->GradPhi(k);
-  const LINALG::Matrix<nsd_,1>&  convelint = varmanager->ConVel();
+  const double&                  phinp = scatravarmanager_->Phinp(k);
+  const LINALG::Matrix<nsd_,1>&  gradphi = scatravarmanager_->GradPhi(k);
+  const LINALG::Matrix<nsd_,1>&  convelint = scatravarmanager_->ConVel();
 
   if (nsd_<3) dserror("Turbulence is 3D!");
   // fixed-point iteration only (i.e. beta=0.0 assumed), cf

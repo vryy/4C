@@ -12,16 +12,15 @@ Maintainer: Andreas Ehrl
 </pre>
 */
 /*--------------------------------------------------------------------------*/
-
-#include "scatra_ele.H"
-
 #include "../drt_geometry/position_array.H"
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
 #include "../drt_mat/ion.H"
 
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+
 #include "../headers/definitions.h"
 
+#include "scatra_ele.H"
 #include "scatra_ele_calc_elch.H"
 
 /*----------------------------------------------------------------------*
@@ -29,20 +28,18 @@ Maintainer: Andreas Ehrl
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofpernode,const int numscal)
   : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
-    migrationstab_(true),
     epotnp_(my::numscal_)
 {
-  // initialization of diffusion manager
+  // replace standard scatra diffusion manager by elch diffusion manager
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElch(my::numscal_));
 
-  // set appropriate parameter list
+  // replace standard scatra parameter list by elch parameter list
   my::scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
-  elchpara_ = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(my::scatrapara_);
 
-  // initialize internal variable manager
-  varmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElch<my::nsd_, my::nen_>(my::numscal_,elchpara_));
-  my::scatravarmanager_ = varmanager_;
+  // replace standard scatra internal variable manager by elch internal variable manager
+  my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElch<my::nsd_, my::nen_>(my::numscal_,ElchPara()));
 
+  // safety check
   if(not my::scatraparatimint_->IsIncremental())
     dserror("Since the ion-transport equations are non-linear, it can be solved only incrementally!!");
 
@@ -66,28 +63,37 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec3_epetra
   )
 {
-  //--------------------------------------------------------------------------------
-  // preparations for element
-  //--------------------------------------------------------------------------------
+  // call base class routine
+  my::Evaluate(
+      ele,
+      params,
+      discretization,
+      lm,
+      elemat1_epetra,
+      elemat2_epetra,
+      elevec1_epetra,
+      elevec2_epetra,
+      elevec3_epetra);
 
-  //get element coordinates
-  GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
+  // for certain ELCH problem formulations we have to provide
+  // additional flux terms / currents across Dirichlet boundaries
+  CorrectionForFluxAcrossDC(discretization,lm,elemat1_epetra,elevec1_epetra);
 
-  // Now do the nurbs specific stuff (for isogeometric elements)
-  if(DRT::NURBS::IsNurbs(distype))
-  {
-    // access knots and weights for this element
-    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
+  return 0;
+}
 
-    // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size)
-      return(0);
-  } // Nurbs specific stuff
 
-  //--------------------------------------------------------------------------------
-  // extract element based or nodal values
-  //--------------------------------------------------------------------------------
-
+/*-----------------------------------------------------------------------------------------*
+ | extract element based or nodal values and return extracted values of phinp   fang 02/15 |
+ *-----------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ExtractElementAndNodeValues(
+  DRT::ELEMENTS::Transport*  ele,
+  Teuchos::ParameterList&    params,
+  DRT::Discretization&       discretization,
+  const std::vector<int>&    lm
+)
+{
   // get myphi vector for potential and current
   const std::vector<double> myphinp = my::ExtractElementAndNodeValues(ele,params,discretization,lm);
 
@@ -98,28 +104,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
   // get current density at element nodes
   GetCurrentDensity(myphinp);
 
-  //--------------------------------------------------------------------------------
-  // prepare turbulence models
-  //--------------------------------------------------------------------------------
-
-  int nlayer = 0;
-  my::ExtractTurbulenceApproach(ele,params,discretization,lm,nlayer);
-
-  //--------------------------------------------------------------------------------
-  // calculate element coefficient matrix and rhs
-  //--------------------------------------------------------------------------------
-
-  Sysmat(ele,elemat1_epetra,elevec1_epetra,elevec2_epetra);
-
-  // perform finite difference check on element level
-  if(my::scatrapara_->FDCheck() == INPAR::SCATRA::fdcheck_local and ele->Owner() == discretization.Comm().MyPID())
-    FDCheck(ele,elemat1_epetra,elevec1_epetra,elevec2_epetra);
-
-  // for certain ELCH problem formulations we have to provide
-  // additional flux terms / currents across Dirichlet boundaries
-  CorrectionForFluxAcrossDC(discretization,lm,elemat1_epetra,elevec1_epetra);
-
-  return 0;
+  // return extracted values of phinp
+  return myphinp;
 }
 
 
@@ -134,9 +120,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
   Epetra_SerialDenseVector&             subgrdiff   ///< subgrid-diff.-scaling vector
   )
 {
-  // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
-
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
@@ -157,7 +140,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
 
   // material parameter at element center
   if ((not my::scatrapara_->MatGP()) or (not my::scatrapara_->TauGP()))
-    this->GetMaterialParams(ele,densn,densnp,densam,dme,my::reamanager_,visc);
+    this->GetMaterialParams(ele,densn,densnp,densam,visc);
 
   //----------------------------------------------------------------------------------
   // calculate stabilization parameters (one per transported scalar) at element center
@@ -168,9 +151,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
   if (not my::scatrapara_->TauGP())
   {
     // set internal variables at element center
-    varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,my::ephin_,epotnp_,my::econvelnp_,my::ehist_);
+    SetInternalVariablesForMatAndRHS();
 
-    PrepareStabilization(tau,tauderpot,varmanager_,dme,densnp,vol);
+    PrepareStabilization(tau,tauderpot,densnp,vol);
   }
 
   //----------------------------------------------------------------------
@@ -187,7 +170,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (my::scatrapara_->MatGP())
-      this->GetMaterialParams(ele,densn,densnp,densam,dme,my::reamanager_,visc,iquad);
+      this->GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
     SetInternalVariablesForMatAndRHS();
 
@@ -195,7 +178,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
     // calculate stabilization parameters (one per transported scalar) at integration point
     //-------------------------------------------------------------------------------------
     if (my::scatrapara_->TauGP())
-      PrepareStabilization(tau,tauderpot,varmanager_,dme,densnp,vol);
+      PrepareStabilization(tau,tauderpot,densnp,vol);
 
     //-----------------------------------------------------------------------------------
     // calculate contributions to element matrix and right-hand side at integration point
@@ -222,11 +205,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
       my::GetRhsInt(rhsint,densnp,k);
 
       // Compute element matrix and rhs
-      CalcMatAndRhs(varmanager_,emat,erhs,k,fac,timefacfac,rhsfac,taufac,timetaufac,rhstaufac,tauderpot[k],dme,rhsint,hist);
+      CalcMatAndRhs(emat,erhs,k,fac,timefacfac,rhsfac,taufac,timetaufac,rhstaufac,tauderpot[k],rhsint,hist);
     }  // end loop over scalar
 
     // Compute element matrix and rhs
-    CalcMatAndRhsOutsideScalarLoop(varmanager_,emat,erhs,fac,timefacfac,rhsfac,dme);
+    CalcMatAndRhsOutsideScalarLoop(emat,erhs,fac,timefacfac,rhsfac);
   }
 
   return;
@@ -242,8 +225,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::MatIon(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManagerElch>  diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,     //!< fluid viscosity
   const int                               iquad     //!< id of current gauss point
   )
@@ -251,124 +232,41 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::MatIon(
   const MAT::Ion* actmat = static_cast<const MAT::Ion*>(material.get());
 
   // valence of ionic species
-  diffmanager->SetValence(actmat->Valence(),k);
+  DiffManager()->SetValence(actmat->Valence(),k);
 
   // concentration depending diffusion coefficient
-  diffmanager->SetIsotropicDiff(actmat->Diffusivity(),k);
+  DiffManager()->SetIsotropicDiff(actmat->Diffusivity(),k);
 
   // Loop over materials is finished - now all material parameter are set
   if(k==(my::numscal_-1))
   {
     // Material data of eliminated ion species is read from the LAST ion material
     // in the matlist!
-    if(elchpara_->EquPot()==INPAR::ELCH::equpot_enc_pde_elim)
+    if(ElchPara()->EquPot()==INPAR::ELCH::equpot_enc_pde_elim)
     {
-      diffmanager->IncreaseLengthVector(k, my::numscal_);
+      DiffManager()->IncreaseLengthVector(k, my::numscal_);
 
       // valence of ionic species
-      diffmanager->SetValence(actmat->ElimValence(),my::numscal_);
+      DiffManager()->SetValence(actmat->ElimValence(),my::numscal_);
 
       // concentration depending diffusion coefficient
-      diffmanager->SetIsotropicDiff(actmat->ElimDiffusivity(),my::numscal_);
+      DiffManager()->SetIsotropicDiff(actmat->ElimDiffusivity(),my::numscal_);
     }
   }
 
   return;
 }
 
-/*--------------------------------------------------------------------------*
- | Calculate quantities used for stabilization (protected)       fang 06/14 |
- *--------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::PrepareStabilization(
-  std::vector<double>&                                                       tau,         //!< stabilization parameters (one per transported scalar)
-  std::vector<LINALG::Matrix<my::nen_,1> >&                                  tauderpot,   //!< derivatives of stabilization parameters w.r.t. electric potential
-  Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >&   vm,          //!< internal variable manager
-  Teuchos::RCP<ScaTraEleDiffManagerElch>&                                    dme,         //!< diffusion manager
-  const double                                                               densnp,      //!< density at t_(n+1) or t_(n+alpha_f)
-  const double                                                               vol          //!< element volume
-  )
-{
-  // special stabilization parameters in case of binary electrolyte
-  if (SCATRA::IsBinaryElectrolyte(dme->GetValence()))
-  {
-    // do not include migration operator in stabilization terms
-    migrationstab_ = false;
-
-    // use effective diffusion coefficient for binary electrolyte solutions
-    double resdiffus = SCATRA::CalResDiffCoeff(dme->GetValence(),dme->GetIsotropicDiff(),SCATRA::GetIndicesBinaryElectrolyte(dme->GetValence()));
-
-    // loop over transported scalars
-    for (int k=0; k<my::numscal_; ++k)
-    {
-      // calculate stabilization parameter tau for charged species
-      if (abs(dme->GetValence(k)) > EPS10)
-        my::CalcTau(tau[k],resdiffus,my::reamanager_->GetReaCoeff(k),densnp,vm->ConVelInt(),vol);
-      else
-        // calculate stabilization parameter tau for uncharged species
-        my::CalcTau(tau[k],dme->GetIsotropicDiff(k),my::reamanager_->GetReaCoeff(k),densnp,vm->ConVelInt(),vol);
-    }
-  }
-
-  else
-  {
-    // only include migration operator in stabilization terms in case tau is computed according to Taylor, Hughes, and Zarins
-    switch (my::scatrapara_->TauDef())
-    {
-      case INPAR::SCATRA::tau_taylor_hughes_zarins:
-      case INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt:
-      {
-        migrationstab_ = true;
-        break;
-      }
-      default:
-      {
-        migrationstab_ = false;
-        break;
-      }
-    }
-
-    // loop over transported scalars
-    for (int k=0; k<my::numscal_; ++k)
-    {
-      // Compute effective velocity as sum of convective and migration velocities
-      LINALG::Matrix<my::nsd_,1> veleff(vm->ConVelInt());
-      veleff.Update(dme->GetValence(k)*dme->GetIsotropicDiff(k),vm->MigVelInt(),1.);
-
-      // calculate stabilization parameter tau
-      my::CalcTau(tau[k],dme->GetIsotropicDiff(k),my::reamanager_->GetReaCoeff(k),densnp,veleff,vol);
-
-      switch (my::scatrapara_->TauDef())
-      {
-        case INPAR::SCATRA::tau_taylor_hughes_zarins:
-        case INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt:
-        {
-          // Calculate derivative of tau w.r.t. electric potential
-          CalcTauDerPotTaylorHughesZarins(tauderpot[k],tau[k],densnp,vm->FRT(),dme->GetIsotropicDiff(k)*dme->GetValence(k),veleff);
-          break;
-        }
-        default:
-        {
-          break;
-        }
-      }
-    }
-  }
-
-  return;
-} // ScaTraEleCalcElch<distype>::PrepareStabilization
 
 /*----------------------------------------------------------------------------------*
 |  CalcMat: Potential equation ENC                                       ehrl  02/14|
 *-----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcMatPotEquENC(
-  Epetra_SerialDenseMatrix&                 emat,     //!< element matrix to be filled
-  const int                                 k,        //!< index of current scalar
-  const double                              fac,      //!< domain-integration factor
-  const double                              alphaf,   //!< time factor for ENC
-  Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme       //!< diffusion manager
-
+    Epetra_SerialDenseMatrix&   emat,     //!< element matrix to be filled
+    const int                   k,        //!< index of current scalar
+    const double                fac,      //!< domain-integration factor
+    const double                alphaf    //!< time factor for ENC
 )
 {
   for (int vi=0; vi<my::nen_; ++vi)
@@ -380,49 +278,35 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcMatPotEquENC(
       // (w, sum(z_k c_k))
       //
       // electroneutrality condition (only derivative w.r.t. concentration c_k)
-      emat(vi*my::numdofpernode_+my::numscal_, ui*my::numdofpernode_+k) += alphaf*dme->GetValence(k)*fac*my::funct_(vi)*my::funct_(ui);
+      emat(vi*my::numdofpernode_+my::numscal_, ui*my::numdofpernode_+k) += alphaf*DiffManager()->GetValence(k)*fac*my::funct_(vi)*my::funct_(ui);
     }
   }
 
   return;
 }
 
+
 /*-------------------------------------------------------------------------------------*
  |  CalcRhs: Potential equation ENC                                         ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcRhsPotEquENC(
-  Epetra_SerialDenseVector&                 erhs,    //!< element vector to be filled
-  const int                                 k,       //!< index of current scalar
-  const double                              fac,     //!< time-integration factor for rhs times domain-integration factor
-  Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme,     //!< diffusion manager
-  const double                              conint   //!< concentration at GP
+    Epetra_SerialDenseVector&   erhs,     //!< element vector to be filled
+    const int                   k,        //!< index of current scalar
+    const double                fac,      //!< domain-integration factor
+    const double                conint    //!< concentration at GP
   )
 {
   for (int vi=0; vi<my::nen_; ++vi)
     // electroneutrality condition
     // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
-    erhs[vi*my::numdofpernode_+my::numscal_] -= dme->GetValence(k)*fac*my::funct_(vi)*conint;
+    erhs[vi*my::numdofpernode_+my::numscal_] -= DiffManager()->GetValence(k)*fac*my::funct_(vi)*conint;
 
   return;
 }
 
-/*------------------------------------------------------------------------------*
- | set internal variables                                          vuong 11/14  |
- *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::SetInternalVariablesForMatAndRHS()
-{
-  // set internal variables at Gauss point
-  varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,my::ephin_,epotnp_,my::econvelnp_,my::ehist_);
-
-  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
-  SetFormulationSpecificInternalVariables(dme,varmanager_);
-  return;
-}
 
 // template classes
-
 // 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line3>;
@@ -444,6 +328,3 @@ template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::pyramid5>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs27>;
-
-
-

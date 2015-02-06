@@ -44,9 +44,10 @@ public:
     /// called upon destruction
     virtual void Done();
 
-    virtual int EvaluateService(DRT::ELEMENTS::Transport*     ele,
+    int EvaluateAction(DRT::ELEMENTS::Transport*     ele,
                          Teuchos::ParameterList&       params,
                          DRT::Discretization &         discretization,
+                         const SCATRA::Action&         action,
                          const std::vector<int> &      lm,
                          Epetra_SerialDenseMatrix&     elemat1_epetra,
                          Epetra_SerialDenseMatrix&     elemat2_epetra,

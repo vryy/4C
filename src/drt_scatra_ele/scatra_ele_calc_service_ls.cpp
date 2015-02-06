@@ -30,29 +30,23 @@ Maintainer: Ursula Rasthofer
 
 
 /*----------------------------------------------------------------------*
- * Action type: EvaluateService
+ | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateService(
-  DRT::ELEMENTS::Transport*  ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
-  )
+int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(
+    DRT::ELEMENTS::Transport*   ele,
+    Teuchos::ParameterList&     params,
+    DRT::Discretization&        discretization,
+    const SCATRA::Action&       action,
+    const std::vector<int> &    lm,
+    Epetra_SerialDenseMatrix&   elemat1_epetra,
+    Epetra_SerialDenseMatrix&   elemat2_epetra,
+    Epetra_SerialDenseVector&   elevec1_epetra,
+    Epetra_SerialDenseVector&   elevec2_epetra,
+    Epetra_SerialDenseVector&   elevec3_epetra
+    )
 {
-  // get element coordinates
-  GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
-
-  // set element id
-  my::eid_ = ele->Id();
-
-  // check for the action parameter
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
+  // determine and evaluate action
   switch (action)
   {
   case SCATRA::calc_error:
@@ -92,15 +86,16 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateService(
   }
   default:
   {
-    my::EvaluateService(ele,
-                        params,
-                        discretization,
-                        lm,
-                        elemat1_epetra,
-                        elemat2_epetra,
-                        elevec1_epetra,
-                        elevec2_epetra,
-                        elevec3_epetra);
+    my::EvaluateAction(ele,
+                       params,
+                       discretization,
+                       action,
+                       lm,
+                       elemat1_epetra,
+                       elemat2_epetra,
+                       elevec1_epetra,
+                       elevec2_epetra,
+                       elevec3_epetra);
     break;
   }
   } // switch(action)

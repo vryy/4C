@@ -98,14 +98,12 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype>::Materials(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,         //!< fluid viscosity
   const int                               iquad         //!< id of current gauss point
   )
 {
   if (material->MaterialType() == INPAR::MAT::m_scatra_aniso)
-    MatScaTraAniso(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    MatScaTraAniso(material,k,densn,densnp,densam,visc,iquad);
   else dserror("Material type is not supported");
 
   return;
@@ -122,15 +120,10 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype>::MatScaTraAniso(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,     //!< fluid viscosity
   const int                               iquad   //!< id of current gauss point (default = -1)
   )
 {
-  // dynamic cast to anisotropic diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerAniso<my::nsd_> > diffmanageraniso = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerAniso<my::nsd_> >(diffmanager);
-
   int leleid = -1;
   if(DRT::Problem::Instance()->ProblemType()==prb_acou) leleid = DRT::Problem::Instance()->GetDis("scatra")->ElementColMap()->LID(my::eid_);
 
@@ -144,10 +137,10 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype>::MatScaTraAniso(
   for (int i=0; i<my::nsd_; i++)
     difftensor(i,i) = diff(i);
 
-  diffmanageraniso->SetAnisotropicDiff(difftensor,k);
+  DiffManager()->SetAnisotropicDiff(difftensor,k);
 
   // get reaction coefficient
-  reamanager->SetReaCoeff(actmat->ReaCoeff(leleid),k);
+  my::reamanager_->SetReaCoeff(actmat->ReaCoeff(leleid),k);
 
   return;
 } // ScaTraEleCalcAniso<distype>::MatScaTra
@@ -160,22 +153,17 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype>::CalcRHSDiff(
   Epetra_SerialDenseVector&                erhs,
   const int                                k,
-  const double                             rhsfac,
-  Teuchos::RCP<ScaTraEleDiffManager>       diffmanager,
-  Teuchos::RCP< varmanager >               varmanager
+  const double                             rhsfac
   )
 {
-  const LINALG::Matrix<my::nsd_,1>&        gradphi = varmanager->GradPhi(k);
-
-  // dynamic cast to anisotropic diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerAniso<my::nsd_> > diffmanageraniso = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerAniso<my::nsd_> >(diffmanager);
+  const LINALG::Matrix<my::nsd_,1>&        gradphi = my::scatravarmanager_->GradPhi(k);
 
   for (int vi=0; vi<my::nen_; ++vi)
   {
     const int fvi = vi*my::numdofpernode_+k;
 
     double laplawf(0.0);
-    GetLaplacianWeakFormRHS(laplawf,diffmanageraniso->GetAnisotropicDiff(k), gradphi,vi);
+    GetLaplacianWeakFormRHS(laplawf,DiffManager()->GetAnisotropicDiff(k), gradphi,vi);
     erhs[fvi] -= rhsfac*laplawf;
   }
 
@@ -189,13 +177,9 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype>::CalcMatDiff(
   Epetra_SerialDenseMatrix&                emat,
   const int                                k,
-  const double                             timefacfac,
-  Teuchos::RCP<ScaTraEleDiffManager>       diffmanager
+  const double                             timefacfac
   )
 {
-  // dynamic cast to anisotropic diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerAniso<my::nsd_> > diffmanageraniso = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerAniso<my::nsd_> >(diffmanager);
-
   for (int vi=0; vi<my::nen_; ++vi)
   {
     const int fvi = vi*my::numdofpernode_+k;
@@ -204,7 +188,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype>::CalcMatDiff(
     {
       const int fui = ui*my::numdofpernode_+k;
       double laplawf(0.0);
-      GetLaplacianWeakForm(laplawf,diffmanageraniso->GetAnisotropicDiff(k),ui,vi);
+      GetLaplacianWeakForm(laplawf,DiffManager()->GetAnisotropicDiff(k),ui,vi);
       emat(fvi,fui) += timefacfac*laplawf;
     }
   }

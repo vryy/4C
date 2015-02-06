@@ -33,15 +33,20 @@ namespace ELEMENTS
   /// Interface base class for ScaTraEleCalc
   /*!
     This class exists to provide a common interface for all template
-    versions of FluidEleCalc. The only function this class actually defines
-    is Ele, which returns a pointer to the appropriate version of FluidEleCalc.
+    versions of ScaTraEleCalc.
    */
   class ScaTraEleInterface : public DRT::SingletonDestruction
   {
   public:
 
     /// Empty constructor
-    ScaTraEleInterface() {}
+    ScaTraEleInterface(){return;};
+
+    /// Setup element evaluation
+    virtual int SetupCalc(
+        DRT::ELEMENTS::Transport*   ele,
+        DRT::Discretization&        discretization
+        ) = 0;
 
     /// Evaluate the element
     /*!
@@ -50,7 +55,7 @@ namespace ELEMENTS
      */
     virtual int Evaluate(DRT::ELEMENTS::Transport*     ele,
                          Teuchos::ParameterList&       params,
-                         DRT::Discretization &         discretization,
+                         DRT::Discretization&          discretization,
                          const std::vector<int> &      lm,
                          Epetra_SerialDenseMatrix&     elemat1_epetra,
                          Epetra_SerialDenseMatrix&     elemat2_epetra,
@@ -60,7 +65,7 @@ namespace ELEMENTS
 
     virtual int EvaluateService(DRT::ELEMENTS::Transport*     ele,
                                 Teuchos::ParameterList&       params,
-                                DRT::Discretization &         discretization,
+                                DRT::Discretization&          discretization,
                                 const std::vector<int> &      lm,
                                 Epetra_SerialDenseMatrix&     elemat1_epetra,
                                 Epetra_SerialDenseMatrix&     elemat2_epetra,
@@ -70,18 +75,14 @@ namespace ELEMENTS
 
     virtual int EvaluateOD(DRT::ELEMENTS::Transport*     ele,
                            Teuchos::ParameterList&       params,
-                           DRT::Discretization &         discretization,
+                           DRT::Discretization&          discretization,
                            const std::vector<int> &      lm,
                            Epetra_SerialDenseMatrix&     elemat1_epetra,
                            Epetra_SerialDenseMatrix&     elemat2_epetra,
                            Epetra_SerialDenseVector&     elevec1_epetra,
                            Epetra_SerialDenseVector&     elevec2_epetra,
-                           Epetra_SerialDenseVector&     elevec3_epetra)=0;
-
+                           Epetra_SerialDenseVector&     elevec3_epetra) = 0;
   };
-
-} //namespace Elements
-} //namespace DRT
-
+} // namespace Elements
+} // namespace DRT
 #endif
-

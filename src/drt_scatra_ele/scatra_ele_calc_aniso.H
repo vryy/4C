@@ -38,7 +38,7 @@ namespace DRT
     private:
 
       typedef ScaTraEleCalc<distype> my;
-      typedef ScaTraEleInternalVariableManager <my::nsd_,my::nen_>  varmanager;
+      typedef ScaTraEleInternalVariableManager<my::nsd_,my::nen_> varmanager;
 
     public:
 
@@ -67,8 +67,6 @@ namespace DRT
         double&                                 densn,    //!< density at t_(n)
         double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
         double&                                 densam,   //!< density at t_(n+alpha_M)
-        Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-        Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
         double&                                 visc,      //!< fluid viscosity
         const int                               iquad=-1   //!< id of current gauss point (default = -1)
       );
@@ -80,11 +78,12 @@ namespace DRT
         double&                                 densn,    //!< density at t_(n)
         double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
         double&                                 densam,   //!< density at t_(n+alpha_M)
-        Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-        Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
         double&                                 visc,      //!< fluid viscosity
         const int                               iquad=-1   //!< id of current gauss point (default = -1)
       );
+
+      //! get diffusion manager for anisotropic diffusivity
+      Teuchos::RCP<ScaTraEleDiffManagerAniso<my::nsd_> > DiffManager(){return Teuchos::rcp_static_cast<ScaTraEleDiffManagerAniso<my::nsd_> >(my::diffmanager_);};
 
       /*========================================================================*/
       //! @name methods for evaluation of individual terms
@@ -137,17 +136,14 @@ namespace DRT
     virtual void CalcMatDiff(
       Epetra_SerialDenseMatrix&             emat,        //!< element matrix to be filled
       const int                             k,           //!< index of current scalar
-      const double                          timefacfac,  //!< domain-integration factor times time-integration factor
-      Teuchos::RCP<ScaTraEleDiffManager>    diffmanager  //!< diffusion manager
+      const double                          timefacfac   //!< domain-integration factor times time-integration factor
     );
 
     //! standard Galerkin diffusive term on right hand side
     virtual void CalcRHSDiff(
         Epetra_SerialDenseVector&           erhs,        //!< element vector to be filled
         const int                           k,           //!< index of current scalar
-        const double                        rhsfac,      //!< time-integration factor for rhs times domain-integration factor
-        Teuchos::RCP<ScaTraEleDiffManager>  diffmanager, //!< diffusion manager
-        Teuchos::RCP< varmanager >          varmanager   //!< variable manager
+        const double                        rhsfac       //!< time-integration factor for rhs times domain-integration factor
     );
 
     };

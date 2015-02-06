@@ -27,33 +27,23 @@ Maintainer: Ursula Rasthofer
 
 
 /*----------------------------------------------------------------------*
- * Action type: EvaluateService
+ | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::EvaluateService(
-  DRT::ELEMENTS::Transport*  ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
-  )
+int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::EvaluateAction(
+    DRT::ELEMENTS::Transport*   ele,
+    Teuchos::ParameterList&     params,
+    DRT::Discretization&        discretization,
+    const SCATRA::Action&       action,
+    const std::vector<int> &    lm,
+    Epetra_SerialDenseMatrix&   elemat1_epetra,
+    Epetra_SerialDenseMatrix&   elemat2_epetra,
+    Epetra_SerialDenseVector&   elevec1_epetra,
+    Epetra_SerialDenseVector&   elevec2_epetra,
+    Epetra_SerialDenseVector&   elevec3_epetra
+    )
 {
-  // reset all managers to their default values (I feel better this way)
-  Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerLsReinit<my::nsd_> >(my::diffmanager_)->Reset();
-  Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->Reset();
-
-  // get element coordinates
-  GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
-
-  // set element id
-  my::eid_ = ele->Id();
-
-  // check for the action parameter
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
+  // determine and evaluate action
   switch (action)
   {
   case SCATRA::calc_mat_and_rhs_lsreinit_correction_step:
@@ -145,20 +135,46 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::EvaluateService(
   }
   default:
   {
-    my::EvaluateService(ele,
-                        params,
-                        discretization,
-                        lm,
-                        elemat1_epetra,
-                        elemat2_epetra,
-                        elevec1_epetra,
-                        elevec2_epetra,
-                        elevec3_epetra);
+    my::EvaluateAction(ele,
+                       params,
+                       discretization,
+                       action,
+                       lm,
+                       elemat1_epetra,
+                       elemat2_epetra,
+                       elevec1_epetra,
+                       elevec2_epetra,
+                       elevec3_epetra);
     break;
   }
   } // switch(action)
 
   return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ | setup element evaluation                                  fang 02/15 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SetupCalc(
+    DRT::ELEMENTS::Transport*   ele,
+    DRT::Discretization&        discretization
+    )
+{
+  // reset all managers to their default values (I feel better this way)
+  DiffManager()->Reset();
+  VarManager()->Reset();
+
+  // clear all unused variables
+  my::edispnp_.Clear();
+  my::weights_.Clear();
+  my::evelnp_.Clear();
+  my::eaccnp_.Clear();
+  my::eprenp_.Clear();
+
+  // call base class routine
+  return my::SetupCalc(ele,discretization);
 }
 
 
@@ -235,7 +251,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatCorrection(
     if (my::scatraparatimint_->IsGenAlpha())
      dserror("Not supported by this implementation!");
     // note: this function computes phinp at integration point
-    my::CalcRHSLinMass(erhs,0,0.0,-fac,1.0,1.0,my::scatravarmanager_); //sign has to be changed!!!!
+    my::CalcRHSLinMass(erhs,0,0.0,-fac,1.0,1.0); //sign has to be changed!!!!
 
     // penalty term
     CalcRHSPenalty(erhs,fac,penalty,deriv_sign,norm_gradphizero);
@@ -461,13 +477,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
         (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ProjectDiff())
         *charelelength*charelelength;
       my::diffmanager_->SetIsotropicDiff(diff,0);
-      my::CalcMatDiff(emat,0,fac,my::diffmanager_);
+      my::CalcMatDiff(emat,0,fac);
     }
 
     //------------------------------------------------
     // element rhs
     //------------------------------------------------
-    // distinguish reinitalization
+    // distinguish reinitialization
     switch (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ReinitType())
     {
       case INPAR::SCATRA::reinitaction_sussman:

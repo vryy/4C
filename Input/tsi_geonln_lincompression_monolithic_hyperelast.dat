@@ -20,7 +20,7 @@ dynamic, geometrically linear analysis with THETA=1.0 (implicit Euler)
 material parameters of steel
 
 new framework of convergence test:
-small thermal residual due to unstressend intial configuration, i.e. small
+small thermal residual due to unstressend initial configuration, i.e. small
 reference norm, next step: load is increased leading to thermal heating and
 therefore to a big thermal residual norm
 thermal residual can hardly be dropped due to a huge norm after 1st solve, i.e.

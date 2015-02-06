@@ -6081,7 +6081,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           &ls_reinit);
     setStringToIntegralParameter<int>("LINEARIZATIONREINIT",
                                               "newton",
-                                              "linearization scheme for nonlinear convective term of reinitalization equation",
+                                              "linearization scheme for nonlinear convective term of reinitialization equation",
                                               tuple<std::string>(
                                               "newton",
                                               "fixed_point"),

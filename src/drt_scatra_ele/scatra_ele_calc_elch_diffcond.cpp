@@ -59,6 +59,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Done()
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
   Instance( 0, 0, false );
+
+  return;
 }
 
 
@@ -66,26 +68,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(numdofpernode,numscal),
+  : DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(numdofpernode,numscal),
     diffcondmat_(INPAR::ELCH::diffcondmat_undefined),
-    cursolvar_(false),
-    equpot_(INPAR::ELCH::equpot_undefined)
+    cursolvar_(myelch::ElchPara()->CurSolVar()),   // flag: current solution variable
+    equpot_(myelch::ElchPara()->EquPot())   // flag if elch system is closed by ENC or div i
 {
-  // initialization of diffusion manager
+  // replace diffusion manager for electrodes by diffusion manager for diffusion-conduction formulation
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_));
 
-  // set appropriate parameter list
-  myelch::elchpara_ = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(my::scatrapara_);
+  // replace internal variable manager for electrodes by internal variable manager for diffusion-conduction formulation
+  my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>(my::numscal_,myelch::ElchPara()));
 
-  // flag: current solution variable
-  cursolvar_ = myelch::elchpara_->CurSolVar();
-
-  // flag if elch system is closed by ENC or div i
-  equpot_= myelch::elchpara_->EquPot();
-
-  // initialize internal variable manager
-  myelch::varmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>(my::numscal_,myelch::elchpara_));
-  my::scatravarmanager_ = myelch::varmanager_;
   return;
 }
 
@@ -95,51 +88,42 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(con
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
-    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
-    Epetra_SerialDenseMatrix&                 emat,         //!< element matrix to calculate
-    Epetra_SerialDenseVector&                 erhs,         //!< element rhs to calculate+
-    const int                                 k,            //!< index of current scalar
-    const double                              fac,          //!< domain-integration factor
-    const double                              timefacfac,   //!< domain-integration factor times time-integration factor
-    const double                              rhsfac,       //!< time-integration factor for rhs times domain-integration factor
-    const double                              taufac,       //!< tau times domain-integration factor
-    const double                              timetaufac,   //!< domain-integration factor times tau times time-integration factor
-    const double                              rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
-    LINALG::Matrix<my::nen_,1>&               tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
-    Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme,          //!< diffusion manager
-    double&                                   rhsint,       //!< rhs at Gauss point
-    const double                              hist          //!< history
+    Epetra_SerialDenseMatrix&     emat,         //!< element matrix to calculate
+    Epetra_SerialDenseVector&     erhs,         //!< element rhs to calculate+
+    const int                     k,            //!< index of current scalar
+    const double                  fac,          //!< domain-integration factor
+    const double                  timefacfac,   //!< domain-integration factor times time-integration factor
+    const double                  rhsfac,       //!< time-integration factor for rhs times domain-integration factor
+    const double                  taufac,       //!< tau times domain-integration factor
+    const double                  timetaufac,   //!< domain-integration factor times tau times time-integration factor
+    const double                  rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
+    LINALG::Matrix<my::nen_,1>&   tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
+    double&                       rhsint,       //!< rhs at Gauss point
+    const double                  hist          //!< history
   )
 {
-  // dynamic cast to diffusion-conduction-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
-
-  // dynamic cast to diffusion-conduction-specific internal variable manager
-  Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> > vmdc
-    = Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
-
   //----------------------------------------------------------------
   // 1) element matrix: instationary terms
   //----------------------------------------------------------------
 
   if (not my::scatraparatimint_->IsStationary())
-    my::CalcMatMass(emat,k,fac,dmedc->GetPhasePoro(0));
+    my::CalcMatMass(emat,k,fac,DiffManager()->GetPhasePoro(0));
 
   //----------------------------------------------------------------
   // 2) element matrix: stationary terms of ion-transport equation
   //----------------------------------------------------------------
 
   // 2a)  element matrix: convective term
-  my::CalcMatConv(emat,k,timefacfac,dmedc->GetPhasePoro(0),vmdc,vmdc->SGConv());
+  my::CalcMatConv(emat,k,timefacfac,DiffManager()->GetPhasePoro(0),VarManager()->SGConv());
 
   // 2b)  element matrix: diffusion term
   //      i)  constant diffusion coefficient
-  my::CalcMatDiff(emat,k,timefacfac*dmedc->GetPhasePoroTort(0),dmedc);
+  my::CalcMatDiff(emat,k,timefacfac*DiffManager()->GetPhasePoroTort(0));
 
   //      ii) concentration depending diffusion coefficient
   //          (additional term for Newman material)
   if(diffcondmat_==INPAR::ELCH::diffcondmat_newman)
-    CalcMatDiffCoeffLin(emat,k,timefacfac,dmedc,vmdc->GradPhi(k));
+    myelectrode::CalcMatDiffCoeffLin(emat,k,timefacfac,VarManager()->GradPhi(k),DiffManager()->GetPhasePoroTort(0));
 
   // 2c) electrical conduction term (transport equation)
   //
@@ -160,22 +144,22 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   {
     //    i)  conduction term + ohmic overpotential
     //        (w_k, - t_k kappa nabla phi /(z_k F))
-    CalcMatCondOhm(emat,k,timefacfac,vmdc->InvFVal(k),dmedc,vmdc->GradPot());
+    CalcMatCondOhm(emat,k,timefacfac,VarManager()->InvFVal(k),VarManager()->GradPot());
 
     //    ii) conduction term + concentration overpotential
     //        (w_k, - t_k RT/F kappa (thermfactor) f(t_k) nabla ln c_k /(z_k F))
     if(diffcondmat_==INPAR::ELCH::diffcondmat_newman)
-      CalcMatCondConc(emat,k,timefacfac,vmdc->RTFFCVal(k),myelch::elchpara_->NewmanConstA(),myelch::elchpara_->NewmanConstB(),dmedc,vmdc->GradPhi(k),vmdc->ConIntInv());
+      CalcMatCondConc(emat,k,timefacfac,VarManager()->RTFFCVal(k),myelch::ElchPara()->NewmanConstA(),myelch::ElchPara()->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv());
   }
   // equation for current is solved independently
   else
   {
     // current term (with current as a solution variable)
-    CalcMatCond(emat,k,timefacfac,vmdc->InvFVal(k),dmedc,vmdc->CurInt());
+    CalcMatCond(emat,k,timefacfac,VarManager()->InvFVal(k),VarManager()->CurInt());
 
     // this coupling term cancels out for a 2 equation system
     if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
-      CalcMatCondDiff(emat,k,timefacfac,vmdc->InvFVal(k),dmedc,vmdc->GradPhi());
+      CalcMatCondDiff(emat,k,timefacfac,VarManager()->InvFVal(k),VarManager()->GradPhi());
   } // end if(not cursolvar_)
 
   //---------------------------------------------------------------------
@@ -188,19 +172,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   //-----------------------------------------------------------------------
 
   if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
-    this->CalcRHSLinMass(erhs,k,rhsfac,fac,dmedc->GetPhasePoro(0),dmedc->GetPhasePoro(0),vmdc);
+    this->CalcRHSLinMass(erhs,k,rhsfac,fac,DiffManager()->GetPhasePoro(0),DiffManager()->GetPhasePoro(0));
 
   // adaption of rhs with respect to time integration
-  my::ComputeRhsInt(rhsint,dmedc->GetPhasePoro(0),dmedc->GetPhasePoro(0),hist);
+  my::ComputeRhsInt(rhsint,DiffManager()->GetPhasePoro(0),DiffManager()->GetPhasePoro(0),hist);
 
   // add RHS and history contribution
   my::CalcRHSHistAndSource(erhs,k,fac,rhsint);
 
   // 3a) element rhs: convective term
-  my::CalcRHSConv(erhs,k,rhsfac*dmedc->GetPhasePoro(0),vmdc);
+  my::CalcRHSConv(erhs,k,rhsfac*DiffManager()->GetPhasePoro(0));
 
   // 3b) element rhs: diffusion term
-  my::CalcRHSDiff(erhs,k,rhsfac*dmedc->GetPhasePoroTort(0),dmedc,vmdc);
+  my::CalcRHSDiff(erhs,k,rhsfac*DiffManager()->GetPhasePoroTort(0));
 
   // 3c) element rhs: electrical conduction term (transport equation)
   //     equation for current is inserted in the mass transport equation
@@ -219,19 +203,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
 
   if(not cursolvar_)
   {
-    CalcRhsCondOhm(erhs,k,rhsfac,vmdc->InvFVal(k),dmedc,vmdc->GradPot());
+    CalcRhsCondOhm(erhs,k,rhsfac,VarManager()->InvFVal(k),VarManager()->GradPot());
 
     // if(diffcondmat_==INPAR::ELCH::diffcondmat_ion): all terms cancel out
     if(diffcondmat_==INPAR::ELCH::diffcondmat_newman)
-      CalcRhsCondConc(erhs,k,rhsfac,vmdc->RTFFCVal(k),myelch::elchpara_->NewmanConstA(),myelch::elchpara_->NewmanConstB(),dmedc,vmdc->GradPhi(k),vmdc->ConIntInv());
+      CalcRhsCondConc(erhs,k,rhsfac,VarManager()->RTFFCVal(k),myelch::ElchPara()->NewmanConstA(),myelch::ElchPara()->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv());
   }
   // equation for current is solved independently
   else
   {
-    CalcRhsCond(erhs,k,rhsfac,vmdc->InvFVal(k),dmedc,vmdc->CurInt());
+    CalcRhsCond(erhs,k,rhsfac,VarManager()->InvFVal(k),VarManager()->CurInt());
 
     if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
-      CalcRhsCondDiff(erhs,k,rhsfac,dmedc,vmdc->GradPhi());
+      CalcRhsCondDiff(erhs,k,rhsfac,VarManager()->GradPhi());
   }
 
   return;
@@ -243,22 +227,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScalarLoop(
-    Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >& vm,
-    Epetra_SerialDenseMatrix&                 emat,         //!< element matrix to calculate
-    Epetra_SerialDenseVector&                 erhs,         //!< element rhs to calculate
-    const double                             fac,          //!< domain-integration factor
-    const double                             timefacfac,   //!< domain-integration factor times time-integration factor
-    const double                             rhsfac,       //!< time-integration factor for rhs times domain-integration factor
-    Teuchos::RCP<ScaTraEleDiffManagerElch>&   dme           //!< diffusion manager
+    Epetra_SerialDenseMatrix&   emat,         //!< element matrix to calculate
+    Epetra_SerialDenseVector&   erhs,         //!< element rhs to calculate
+    const double                fac,          //!< domain-integration factor
+    const double                timefacfac,   //!< domain-integration factor times time-integration factor
+    const double                rhsfac        //!< time-integration factor for rhs times domain-integration factor
   )
 {
-  // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
-
-  // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> > vmdc
-    = Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
-
   //----------------------------------------------------------------
   // 3)   governing equation for the electric potential field
   //----------------------------------------------------------------
@@ -285,20 +260,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
     {
       //  i)  ohmic overpotential (implemented after the scalar loop)
       //      (w_k, - kappa nabla phi)
-      CalcMatPotEquDiviOhm(emat,timefacfac,vmdc->InvF(),dmedc,vmdc->GradPot());
+      myelectrode::CalcMatPotEquDiviOhm(emat,timefacfac,VarManager()->InvF(),VarManager()->GradPot(),DiffManager()->GetPhasePoroTort(0));
 
       //
-      CalcRhsPotEquDiviOhm(erhs,rhsfac,vmdc->InvF(),dmedc,vmdc->GradPot());
+      myelectrode::CalcRhsPotEquDiviOhm(erhs,rhsfac,VarManager()->InvF(),VarManager()->GradPot(),DiffManager()->GetPhasePoroTort(0));
 
       //  i)  concentration  overpotential
       //      (w_k, RT/F kappa (thermfactor) f(t_k) nabla ln c_k)
       for (int k=0;k<my::numscal_;++k)
       {
         //
-        CalcMatPotEquDiviConc(emat,k,timefacfac,vmdc->RTFFC(),vmdc->RTF(),vmdc->InvF(),myelch::elchpara_->NewmanConstA(),myelch::elchpara_->NewmanConstB(),dmedc,vmdc->GradPhi(k),vmdc->ConIntInv(k));
+        CalcMatPotEquDiviConc(emat,k,timefacfac,VarManager()->RTFFC(),VarManager()->RTF(),VarManager()->InvF(),myelch::ElchPara()->NewmanConstA(),myelch::ElchPara()->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv(k));
 
         //
-        CalcRhsPotEquDiviConc(erhs,k,rhsfac,vmdc->RTF(),vmdc->InvFVal(),vmdc->RTFFC(),myelch::elchpara_->NewmanConstA(),myelch::elchpara_->NewmanConstB(),dmedc,vmdc->GradPhi(k),vmdc->ConIntInv(k));
+        CalcRhsPotEquDiviConc(erhs,k,rhsfac,VarManager()->RTF(),VarManager()->InvFVal(),VarManager()->RTFFC(),myelch::ElchPara()->NewmanConstA(),myelch::ElchPara()->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv(k));
       }
     }
     // 3b)  ENC
@@ -307,10 +282,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
       for (int k=0;k<my::numscal_;++k)
       {
         //
-        myelch::CalcMatPotEquENC(emat,k,fac,my::scatraparatimint_->AlphaF(),dme);
+        myelch::CalcMatPotEquENC(emat,k,fac,my::scatraparatimint_->AlphaF());
 
         //
-        myelch::CalcRhsPotEquENC(erhs,k,fac,dme,vmdc->ConInt(k));
+        myelch::CalcRhsPotEquENC(erhs,k,fac,VarManager()->ConInt(k));
       }
     }
     else
@@ -329,22 +304,22 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
 
     // matrix terms
     // (xsi_i,Di)
-    CalcMatCurEquCur(emat, timefacfac,vmdc->InvF());
+    CalcMatCurEquCur(emat, timefacfac,VarManager()->InvF());
 
     // (xsi, -D(kappa phi))
-    CalcMatCurEquOhm(emat,timefacfac,vmdc->InvF(),dmedc,vmdc->GradPot());
+    CalcMatCurEquOhm(emat,timefacfac,VarManager()->InvF(),VarManager()->GradPot());
 
     // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
-    CalcMatCurEquConc(emat,timefacfac,vmdc->RTF(),vmdc->RTFFC(),vmdc->InvFVal(),myelch::elchpara_->NewmanConstA(),myelch::elchpara_->NewmanConstB(),dmedc,vmdc->GradPhi(),vmdc->ConIntInv());
+    CalcMatCurEquConc(emat,timefacfac,VarManager()->RTF(),VarManager()->RTFFC(),VarManager()->InvFVal(),myelch::ElchPara()->NewmanConstA(),myelch::ElchPara()->NewmanConstB(),VarManager()->GradPhi(),VarManager()->ConIntInv());
 
     // (xsi_i,Di)
-    CalcRhsCurEquCur(erhs,rhsfac,vmdc->InvF(),dmedc,vmdc->CurInt());
+    CalcRhsCurEquCur(erhs,rhsfac,VarManager()->InvF(),VarManager()->CurInt());
 
     // (xsi, -D(kappa phi))
-    CalcRhsCurEquOhm(erhs,rhsfac,vmdc->InvF(),dmedc,vmdc->GradPot());
+    CalcRhsCurEquOhm(erhs,rhsfac,VarManager()->InvF(),VarManager()->GradPot());
 
     // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
-    CalcRhsCurEquConc(erhs,rhsfac,vmdc->RTF(),vmdc->InvFVal(),vmdc->RTFFC(),myelch::elchpara_->NewmanConstA(),myelch::elchpara_->NewmanConstB(),dmedc,vmdc->GradPhi(),vmdc->ConIntInv());
+    CalcRhsCurEquConc(erhs,rhsfac,VarManager()->RTF(),VarManager()->InvFVal(),VarManager()->RTFFC(),myelch::ElchPara()->NewmanConstA(),myelch::ElchPara()->NewmanConstB(),VarManager()->GradPhi(),VarManager()->ConIntInv());
 
   //------------------------------------------------------------------------------------------
   // 3)   governing equation for the electric potential field and current (incl. rhs-terms)
@@ -352,54 +327,23 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
 
     if(equpot_==INPAR::ELCH::equpot_divi)
     {
-      CalcMatPotEquDivi(emat,timefacfac,vmdc->InvF());
+      CalcMatPotEquDivi(emat,timefacfac,VarManager()->InvF());
 
-      CalcRhsPotEquDivi(erhs,rhsfac,vmdc->InvF(),vmdc->CurInt());
+      CalcRhsPotEquDivi(erhs,rhsfac,VarManager()->InvF(),VarManager()->CurInt());
     }
     else if(equpot_==INPAR::ELCH::equpot_enc)
     {
       for (int k=0; k < my::numscal_; ++k)
       {
         //
-        myelch::CalcMatPotEquENC(emat,k,fac,my::scatraparatimint_->AlphaF(),dme);
+        myelch::CalcMatPotEquENC(emat,k,fac,my::scatraparatimint_->AlphaF());
 
         //
-        myelch::CalcRhsPotEquENC(erhs,k,fac,dme,vmdc->ConInt(k));
+        myelch::CalcRhsPotEquENC(erhs,k,fac,VarManager()->ConInt(k));
       }
     }
     else
       dserror("(div i, ENC) are the options available in the Diffusion-Conduction framework");
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------------------*
-|  CalcMat: Linearization of diffusion coefficient in diffusion term     ehrl  02/14|
-*-----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatDiffCoeffLin(
-  Epetra_SerialDenseMatrix&                       emat,         //!< element matrix to be filled
-  const int                                       k,            //!< index of current scalar
-  const double                                    timefacfac,   //!< domain-integration factor times time-integration factor
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& dmedc,          //!< diffusion manager
-  const LINALG::Matrix<my::nsd_,1>&               gradphi       //!< gradient of concentration at GP
-)
-{
-  //linearization of diffusion coefficient in the ionic diffusion term (transport equation)
-  //
-  // (nabla w, D(D(c)) nabla c)
-  //
-  for (int vi=0; vi<my::nen_; ++vi)
-  {
-    for (int ui=0; ui<my::nen_; ++ui)
-    {
-      double laplawfrhs_gradphi=0.0;
-      my::GetLaplacianWeakFormRHS(laplawfrhs_gradphi,gradphi,vi);
-
-      emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
-        += timefacfac*dmedc->GetPhasePoroTort(0)*dmedc->GetDerivIsoDiffCoef(k,k)*laplawfrhs_gradphi*my::funct_(ui);
-    }
   }
 
   return;
@@ -415,8 +359,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondOhm(
   const int                               k,            //!< index of current scalar
   const double                            timefacfac,   //!< domain-integration factor times time-integration factor
   const double                            invfval,      //!< 1/(F z_k)
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,          //!< diffusion manager
-  const LINALG::Matrix<my::nsd_,1>&        gradpot       //!< gradient of potential at GP
+  const LINALG::Matrix<my::nsd_,1>&       gradpot       //!< gradient of potential at GP
 )
 {
   for (int vi=0; vi<my::nen_; ++vi)
@@ -431,7 +374,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondOhm(
       // (grad w, t_k kappa/(F z_k) D(grad phi))
       //
       emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_)
-         += timefacfac*dmedc->GetPhasePoroTort(0)*dmedc->GetTransNum(k)*dmedc->GetCond()*invfval*laplawf;
+         += timefacfac*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetTransNum(k)*DiffManager()->GetCond()*invfval*laplawf;
 
       double laplawfrhs_gradpot(0.0);
       my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot,gradpot,vi);
@@ -443,14 +386,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondOhm(
         // (grad w, t_k D(kappa(c))/(F z_k) grad phi)
         //
         emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
-           += timefacfac*dmedc->GetPhasePoroTort(0)*dmedc->GetTransNum(k)*invfval*dmedc->GetDerivCond(iscal)*my::funct_(ui)*laplawfrhs_gradpot;
+           += timefacfac*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetTransNum(k)*invfval*DiffManager()->GetDerivCond(iscal)*my::funct_(ui)*laplawfrhs_gradpot;
 
         //linearization of the transference number in the conduction term depending on the potential
         //
         // (grad w, D(t_k(c)) kappa/(F z_k) grad phi)
         //
         emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
-           += timefacfac*dmedc->GetPhasePoroTort(0)*(dmedc->GetDerivTransNum(k,iscal))*my::funct_(ui)*invfval*dmedc->GetCond()*laplawfrhs_gradpot;
+           += timefacfac*DiffManager()->GetPhasePoroTort(0)*(DiffManager()->GetDerivTransNum(k,iscal))*my::funct_(ui)*invfval*DiffManager()->GetCond()*laplawfrhs_gradpot;
       }
     }
   }
@@ -470,9 +413,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondConc(
   const double                            rtffcval,       //!< RT/F^2/Newman_const_c/z_k
   const double                            newman_const_a, //!< Newman constant a
   const double                            newman_const_b, //!< Newman constant b
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,            //!< diffusion manager
-  const LINALG::Matrix<my::nsd_,1>&        gradphi,        //!< gradient of concentration at GP
-  const std::vector<double>&               conintinv       //!< inverted concentration at GP
+  const LINALG::Matrix<my::nsd_,1>&       gradphi,        //!< gradient of concentration at GP
+  const std::vector<double>&              conintinv       //!< inverted concentration at GP
 )
 {
   // additional safety check in the beginning for Newman materials
@@ -499,7 +441,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondConc(
       // (grad w, RT/(z_k F^2) kappa thermfac f(t_+) D(grad ln c_k))
       //
       emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
-        += timefacfac*dmedc->GetPhasePoroTort(0)*rtffcval*dmedc->GetTransNum(k)*dmedc->GetCond()*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv[k]*laplawf;
+        += timefacfac*DiffManager()->GetPhasePoroTort(0)*rtffcval*DiffManager()->GetTransNum(k)*DiffManager()->GetCond()*DiffManager()->GetThermFac()*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(k)))*conintinv[k]*laplawf;
 
       // linearization of conduction term depending on the concentration is implemented
       // only for one species
@@ -509,23 +451,23 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondConc(
 
       // Linearization wrt ln c
       emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
-        += -timefacfac*dmedc->GetPhasePoroTort(0)*rtffcval*dmedc->GetTransNum(k)*dmedc->GetCond()*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv[k]*conintinv[k]*laplawfrhs_gradc*my::funct_(ui);
+        += -timefacfac*DiffManager()->GetPhasePoroTort(0)*rtffcval*DiffManager()->GetTransNum(k)*DiffManager()->GetCond()*DiffManager()->GetThermFac()*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(k)))*conintinv[k]*conintinv[k]*laplawfrhs_gradc*my::funct_(ui);
 
       // Linearization wrt kappa
       emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
-        += timefacfac*dmedc->GetPhasePoroTort(0)*rtffcval*dmedc->GetTransNum(k)*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv[k]*laplawfrhs_gradc*dmedc->GetDerivCond(k)*my::funct_(ui);
+        += timefacfac*DiffManager()->GetPhasePoroTort(0)*rtffcval*DiffManager()->GetTransNum(k)*DiffManager()->GetThermFac()*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(k)))*conintinv[k]*laplawfrhs_gradc*DiffManager()->GetDerivCond(k)*my::funct_(ui);
 
       // Linearization wrt transference number 1
       emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
-        += timefacfac*dmedc->GetPhasePoroTort(0)*rtffcval*dmedc->GetCond()*conintinv[k]*laplawfrhs_gradc*dmedc->GetThermFac()*(newman_const_a+newman_const_b*dmedc->GetTransNum(k))*dmedc->GetDerivTransNum(k,k)*my::funct_(ui);
+        += timefacfac*DiffManager()->GetPhasePoroTort(0)*rtffcval*DiffManager()->GetCond()*conintinv[k]*laplawfrhs_gradc*DiffManager()->GetThermFac()*(newman_const_a+newman_const_b*DiffManager()->GetTransNum(k))*DiffManager()->GetDerivTransNum(k,k)*my::funct_(ui);
 
       // Linearization wrt transference number 2
       emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
-        += timefacfac*dmedc->GetPhasePoroTort(0)*rtffcval*dmedc->GetCond()*dmedc->GetThermFac()*conintinv[k]*laplawfrhs_gradc*dmedc->GetTransNum(k)*newman_const_b*dmedc->GetDerivTransNum(k,k)*my::funct_(ui);
+        += timefacfac*DiffManager()->GetPhasePoroTort(0)*rtffcval*DiffManager()->GetCond()*DiffManager()->GetThermFac()*conintinv[k]*laplawfrhs_gradc*DiffManager()->GetTransNum(k)*newman_const_b*DiffManager()->GetDerivTransNum(k,k)*my::funct_(ui);
 
       // Linearization wrt thermodynamic factor
       emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k)
-        += timefacfac*dmedc->GetPhasePoroTort(0)*rtffcval*dmedc->GetTransNum(k)*dmedc->GetCond()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv[k]*laplawfrhs_gradc*dmedc->GetDerivThermFac(k)*my::funct_(ui);
+        += timefacfac*DiffManager()->GetPhasePoroTort(0)*rtffcval*DiffManager()->GetTransNum(k)*DiffManager()->GetCond()*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(k)))*conintinv[k]*laplawfrhs_gradc*DiffManager()->GetDerivThermFac(k)*my::funct_(ui);
     } // for ui
   } // for vi
 
@@ -542,8 +484,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCond(
   const int                               k,            //!< index of current scalar
   const double                            timefacfac,   //!< domain-integration factor times time-integration factor
   const double                            invfval,      //!< 1/(F z_k)
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,          //!< diffusion manager
-  const LINALG::Matrix<my::nsd_,1>&        curint        //!< current at GP
+  const LINALG::Matrix<my::nsd_,1>&       curint        //!< current at GP
 )
 {
   for (int vi=0; vi<my::nen_; ++vi)
@@ -560,7 +501,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCond(
         //
         // (grad w, t_k/(F z_k) Di)
         //
-        emat(fvi,fui) += -timefacfac*my::derxy_(idim,vi)*dmedc->GetTransNum(k)*invfval*my::funct_(ui);
+        emat(fvi,fui) += -timefacfac*my::derxy_(idim,vi)*DiffManager()->GetTransNum(k)*invfval*my::funct_(ui);
 
         //linearization of transference number in conduction term depending on current flow
         //
@@ -568,7 +509,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCond(
         //
         for (int iscal=0; iscal<my::numscal_; ++iscal)
           emat(fvi,ui*my::numdofpernode_+iscal)
-            += -timefacfac*my::derxy_(idim,vi)*(dmedc->GetDerivTransNum(k,iscal))*my::funct_(ui)*invfval*curint(idim);
+            += -timefacfac*my::derxy_(idim,vi)*(DiffManager()->GetDerivTransNum(k,iscal))*my::funct_(ui)*invfval*curint(idim);
       }
     }
   }
@@ -586,7 +527,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondDiff(
   const int                               k,            //!< index of current scalar
   const double                            timefacfac,   //!< domain-integration factor times time-integration factor
   const double                            invfval,      //!< 1/(F z_k)
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,          //!< diffusion manager
   const std::vector<LINALG::Matrix<my::nsd_,1> >&   gradphi       //!< gradient of concentration at GP
 )
 {
@@ -605,7 +545,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondDiff(
         // (grad w, t_k/z_k*sum_i(D_i grad Dc))
         //
         emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
-          += -timefacfac*dmedc->GetPhasePoroTort(0)*dmedc->GetTransNum(k)/dmedc->GetValence(k)*dmedc->GetValence(iscal)*dmedc->GetIsotropicDiff(iscal)*laplawf;
+          += -timefacfac*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetTransNum(k)/DiffManager()->GetValence(k)*DiffManager()->GetValence(iscal)*DiffManager()->GetIsotropicDiff(iscal)*laplawf;
       }
 
       //linearization of transference number in the coupling term (transport equation)
@@ -620,11 +560,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondDiff(
           double laplawfrhs_gradphi=0.0;
           my::GetLaplacianWeakFormRHS(laplawfrhs_gradphi,gradphi[iscal2],vi);
 
-          term_vi += dmedc->GetValence(iscal2)*dmedc->GetIsotropicDiff(iscal2)*laplawfrhs_gradphi;
+          term_vi += DiffManager()->GetValence(iscal2)*DiffManager()->GetIsotropicDiff(iscal2)*laplawfrhs_gradphi;
         }
 
         emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
-          += -timefacfac*dmedc->GetPhasePoroTort(0)*(dmedc->GetDerivTransNum(k,iscal))*my::funct_(ui)/dmedc->GetValence(k)*term_vi;
+          += -timefacfac*DiffManager()->GetPhasePoroTort(0)*(DiffManager()->GetDerivTransNum(k,iscal))*my::funct_(ui)/DiffManager()->GetValence(k)*term_vi;
       } // for(iscal)
 
       // formulation b):  plain ionic diffusion coefficients: one species eleminated by ENC
@@ -634,52 +574,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondDiff(
       //                  -> not activated
       //                  -> linearization is missing
       // emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
-      //    += timefacfac*dmedc->GetPhasePoroTort(0)/frt/faraday/dmedc->GetValence(k)*dmedc->GetTransNum(k)*dmedc->GetCond()*dmedc->GetTransNum(iscal)/dmedc->GetValence(iscal]/conint[iscal]*laplawf;
+      //    += timefacfac*DiffManager()->GetPhasePoroTort(0)/frt/faraday/DiffManager()->GetValence(k)*DiffManager()->GetTransNum(k)*DiffManager()->GetCond()*DiffManager()->GetTransNum(iscal)/DiffManager()->GetValence(iscal]/conint[iscal]*laplawf;
     } // end for ui
   } // end for vi
-
-  return;
-}
-
-/*--------------------------------------------------------------------------------------*
-|  CalcMat: Potential equation div i inserted current - ohmic overpotential  ehrl  02/14|
-*---------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDiviOhm(
-  Epetra_SerialDenseMatrix&               emat,         //!< element matrix to be filled
-  const double                            timefacfac,   //!< domain-integration factor times time-integration factor
-  const double                            invf,         //!< 1/F
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,          //!< diffusion manager
-  const LINALG::Matrix<my::nsd_,1>&        gradpot       //!< gradient of potenial at GP
-)
-{
-  for (int vi=0; vi<my::nen_; ++vi)
-  {
-    for (int ui=0; ui<my::nen_; ++ui)
-    {
-      double laplawf(0.0);
-      my::GetLaplacianWeakForm(laplawf,ui,vi);
-
-      // linearization of the ohmic term
-      //
-      // (grad w, 1/F kappa D(grad pot))
-      //
-      emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += timefacfac*dmedc->GetPhasePoroTort(0)*invf*dmedc->GetCond()*laplawf;
-
-      for(int iscal=0;iscal<my::numscal_;++iscal)
-      {
-        double laplawfrhs_gradpot(0.0);
-        my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot,gradpot,vi);
-
-        // linearization of the ohmic term wrt conductivity
-        //
-        // (grad w, 1/F kappa D(grad pot))
-        //
-        emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+iscal)
-          += timefacfac*dmedc->GetPhasePoroTort(0)*invf*dmedc->GetDerivCond(iscal)*my::funct_(ui)*laplawfrhs_gradpot;
-      }
-    }
-  }
 
   return;
 }
@@ -698,7 +595,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDiviConc(
   const double                                    invf,           //!< 1/F
   const double                                    newman_const_a, //!< Newman constant a
   const double                                    newman_const_b, //!< Newman constant b
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>& dmedc,          //!< diffusion manager
   const LINALG::Matrix<my::nsd_,1>&               gradphi,        //!< gradient of concentration at GP
   const double                                    conintinv       //!< inverted concentration at GP
 )
@@ -717,7 +613,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDiviConc(
          // (grad w, RT/F^2 kappa (thermfactor) f(t_k) 1/c_k D nabla c_k)
          //
         emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)
-          += timefacfac*dmedc->GetPhasePoroTort(0)*rtffc*dmedc->GetCond()*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv*laplawf;
+          += timefacfac*DiffManager()->GetPhasePoroTort(0)*rtffc*DiffManager()->GetCond()*DiffManager()->GetThermFac()*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(k)))*conintinv*laplawf;
 
         // linearization of conduction term depending on the concentration is implemented
         // only for one species
@@ -727,31 +623,31 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDiviConc(
 
         // Linearization wrt ln c
         emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)
-          += -timefacfac*dmedc->GetPhasePoroTort(0)*rtffc*dmedc->GetCond()*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv*conintinv*laplawfrhs_gradphi*my::funct_(ui);
+          += -timefacfac*DiffManager()->GetPhasePoroTort(0)*rtffc*DiffManager()->GetCond()*DiffManager()->GetThermFac()*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(k)))*conintinv*conintinv*laplawfrhs_gradphi*my::funct_(ui);
 
         // Linearization wrt kappa
         emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)
-          += timefacfac*dmedc->GetPhasePoroTort(0)*rtffc*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv*laplawfrhs_gradphi*dmedc->GetDerivCond(k)*my::funct_(ui);
+          += timefacfac*DiffManager()->GetPhasePoroTort(0)*rtffc*DiffManager()->GetThermFac()*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(k)))*conintinv*laplawfrhs_gradphi*DiffManager()->GetDerivCond(k)*my::funct_(ui);
 
         // Linearization wrt transference number
         emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)
-          += timefacfac*dmedc->GetPhasePoroTort(0)*rtffc*dmedc->GetCond()*dmedc->GetThermFac()*conintinv*laplawfrhs_gradphi*newman_const_b*dmedc->GetDerivTransNum(k,k)*my::funct_(ui);
+          += timefacfac*DiffManager()->GetPhasePoroTort(0)*rtffc*DiffManager()->GetCond()*DiffManager()->GetThermFac()*conintinv*laplawfrhs_gradphi*newman_const_b*DiffManager()->GetDerivTransNum(k,k)*my::funct_(ui);
 
         // Linearization wrt thermodynamic factor
         emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)
-          += timefacfac*dmedc->GetPhasePoroTort(0)*rtffc*dmedc->GetCond()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv*laplawfrhs_gradphi*dmedc->GetDerivThermFac(k)*my::funct_(ui);
+          += timefacfac*DiffManager()->GetPhasePoroTort(0)*rtffc*DiffManager()->GetCond()*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(k)))*conintinv*laplawfrhs_gradphi*DiffManager()->GetDerivThermFac(k)*my::funct_(ui);
       }
       else if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
       {
-        if(myelch::elchpara_->DiffusionCoeffBased()==true)
+        if(myelch::ElchPara()->DiffusionCoeffBased()==true)
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)
-            += timefacfac*dmedc->GetPhasePoroTort(0)*dmedc->GetValence(k)*dmedc->GetIsotropicDiff(k)*laplawf;
+            += timefacfac*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetValence(k)*DiffManager()->GetIsotropicDiff(k)*laplawf;
         else
         {
           // Attention:
           // Full linearization of transference number, conductivity, ... is still missing
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)
-            += timefacfac*dmedc->GetPhasePoroTort(0)*rtf*invf/dmedc->GetValence(k)*dmedc->GetCond()*dmedc->GetTransNum(k)*conintinv*laplawf;
+            += timefacfac*DiffManager()->GetPhasePoroTort(0)*rtf*invf/DiffManager()->GetValence(k)*DiffManager()->GetCond()*DiffManager()->GetTransNum(k)*conintinv*laplawf;
         }
       }
       else
@@ -848,7 +744,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquOhm(
   Epetra_SerialDenseMatrix&               emat,       //!< element matrix to be filled
   const double                            timefacfac, //!< domain-integration factor times time-integration factor
   const double                           invf,       //!< 1/F
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,        //!< diffusion manager
   const LINALG::Matrix<my::nsd_,1>&        gradpot     //!< gradient of potenial at GP
 )
 {
@@ -862,14 +757,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquOhm(
         const int fvi = vi*my::numdofpernode_+(my::numscal_+1)+idim;
         const int fui = ui*my::numdofpernode_+my::numscal_;
 
-        emat(fvi,fui) += timefacfac*invf*dmedc->GetPhasePoroTort(0)*my::funct_(vi)*dmedc->GetCond()*my::derxy_(idim,ui);
+        emat(fvi,fui) += timefacfac*invf*DiffManager()->GetPhasePoroTort(0)*my::funct_(vi)*DiffManager()->GetCond()*my::derxy_(idim,ui);
 
         //linearization of conductivity in the ohmic resistance term (current equation)
         //
         // (w, D(kappa(c)) grad phi)
         //
         for(int k=0;k<my::numscal_;++k)
-          emat(fvi,ui*my::numdofpernode_+k) += timefacfac*invf*dmedc->GetPhasePoroTort(0)*my::funct_(vi)*dmedc->GetDerivCond(k)*my::funct_(ui)*gradpot(idim);
+          emat(fvi,ui*my::numdofpernode_+k) += timefacfac*invf*DiffManager()->GetPhasePoroTort(0)*my::funct_(vi)*DiffManager()->GetDerivCond(k)*my::funct_(ui)*gradpot(idim);
       }
     }
   }
@@ -890,7 +785,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquConc(
   const std::vector <double>&              invfval,        //!< 1/(F z_k)
   const double                           newman_const_a, //!< Newman constant a
   const double                          newman_const_b, //!< Newman constant b
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,            //!< diffusion manager
   const std::vector< LINALG::Matrix<my::nsd_,1> >& gradphi, //!< gradient of concentration at GP
   const std::vector<double>&               conintinv       //!< inverted concentration at GP
 )
@@ -908,55 +802,55 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquConc(
           if(diffcondmat_==INPAR::ELCH::diffcondmat_newman)
           {
             emat(vi*my::numdofpernode_+(my::numscal_+1)+idim,ui*my::numdofpernode_+k)
-              += timefacfac*rtffc*dmedc->GetPhasePoroTort(0)*my::funct_(vi)*dmedc->GetCond()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv[k]*my::derxy_(idim,ui);
+              += timefacfac*rtffc*DiffManager()->GetPhasePoroTort(0)*my::funct_(vi)*DiffManager()->GetCond()*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(k)))*conintinv[k]*my::derxy_(idim,ui);
 
             // Attention: Newman with current as solution variable
             // full linearization of transference number, conductivity, ... is still missing
 
             //  //linearization of coupling term in the current equation is still missing
             //  emat(vi*numdofpernode_+(numscal_+1)+idim,ui*numdofpernode_+k)
-            //    += timefacfac*my::funct_(vi)/frt_*dmedc->GetCond()*dmedc->GetTransNum(k)/dmedc->GetValence(k]/((-1)*conint_[k]*conint_[k])*my::funct_(ui)*gradphicoupling_[k](idim);
+            //    += timefacfac*my::funct_(vi)/frt_*DiffManager()->GetCond()*DiffManager()->GetTransNum(k)/DiffManager()->GetValence(k]/((-1)*conint_[k]*conint_[k])*my::funct_(ui)*gradphicoupling_[k](idim);
             //
             //  for(int k2=0; k2<numscal_;++k2)
             //  {
             //    //Check if necessary??
             //    emat(vi*numdofpernode_+(numscal_+1)+idim,ui*numdofpernode_+k)
-            //       += timefacfac*my::funct_(vi)/frt_*dmedc->GetDerivCond(k)*my::funct_(ui)*trans_[k2]*my::funct_(ui)/dmedc->GetValence(k2]/conint_[k2]*gradphicoupling_[k2](idim);
+            //       += timefacfac*my::funct_(vi)/frt_*DiffManager()->GetDerivCond(k)*my::funct_(ui)*trans_[k2]*my::funct_(ui)/DiffManager()->GetValence(k2]/conint_[k2]*gradphicoupling_[k2](idim);
             //
             //
             //    emat(vi*numdofpernode_+(numscal_+1)+idim,ui*numdofpernode_+k)
-            //      += timefacfac*my::funct_(vi)/frt_*dmedc->GetCond()*(transderiv_[k2])[k]*my::funct_(ui)/dmedc->GetValence(k2]/conint_[k2]*gradphicoupling_[k2](idim);
+            //      += timefacfac*my::funct_(vi)/frt_*DiffManager()->GetCond()*(transderiv_[k2])[k]*my::funct_(ui)/DiffManager()->GetValence(k2]/conint_[k2]*gradphicoupling_[k2](idim);
             //  }
           }
           else if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
           {
-            if(myelch::elchpara_->DiffusionCoeffBased()==true)
+            if(myelch::ElchPara()->DiffusionCoeffBased()==true)
               emat(vi*my::numdofpernode_+(my::numscal_+1)+idim,ui*my::numdofpernode_+k)
-                += timefacfac*dmedc->GetPhasePoroTort(0)*my::funct_(vi)*dmedc->GetValence(k)*dmedc->GetIsotropicDiff(k)*my::derxy_(idim,ui);
+                += timefacfac*DiffManager()->GetPhasePoroTort(0)*my::funct_(vi)*DiffManager()->GetValence(k)*DiffManager()->GetIsotropicDiff(k)*my::derxy_(idim,ui);
             else
             {
               // linarization wrt nabla c_k
               emat(vi*my::numdofpernode_+(my::numscal_+1)+idim,ui*my::numdofpernode_+k)
-                += timefacfac*dmedc->GetPhasePoroTort(0)*invfval[k]*rtf*my::funct_(vi)*dmedc->GetCond()*dmedc->GetTransNum(k)*conintinv[k]*my::derxy_(idim,ui);
+                += timefacfac*DiffManager()->GetPhasePoroTort(0)*invfval[k]*rtf*my::funct_(vi)*DiffManager()->GetCond()*DiffManager()->GetTransNum(k)*conintinv[k]*my::derxy_(idim,ui);
 
               // linearization wrt 1/c_k
               emat(vi*my::numdofpernode_+(my::numscal_+1)+idim,ui*my::numdofpernode_+k)
-                 += -timefacfac*dmedc->GetPhasePoroTort(0)*rtf*invfval[k]*dmedc->GetCond()*dmedc->GetTransNum(k)*conintinv[k]*conintinv[k]*my::funct_(vi)*(gradphi[k])(idim)*my::funct_(ui);
+                 += -timefacfac*DiffManager()->GetPhasePoroTort(0)*rtf*invfval[k]*DiffManager()->GetCond()*DiffManager()->GetTransNum(k)*conintinv[k]*conintinv[k]*my::funct_(vi)*(gradphi[k])(idim)*my::funct_(ui);
 
               // linearization wrt kappa
               double term_vi = 0.0;
               for (int iscal=0; iscal < my::numscal_; ++iscal)
               {
-                term_vi += invfval[iscal]*dmedc->GetTransNum(iscal)*conintinv[iscal]*my::funct_(vi)*(gradphi[iscal])(idim)*my::funct_(ui);
+                term_vi += invfval[iscal]*DiffManager()->GetTransNum(iscal)*conintinv[iscal]*my::funct_(vi)*(gradphi[iscal])(idim)*my::funct_(ui);
               }
               emat(vi*my::numdofpernode_+(my::numscal_+1)+idim,ui*my::numdofpernode_+k)
-                += timefacfac*dmedc->GetPhasePoroTort(0)*dmedc->GetDerivCond(k)*rtf*term_vi;
+                += timefacfac*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetDerivCond(k)*rtf*term_vi;
 
               // linearization wrt transference number
               for (int iscal=0; iscal < my::numscal_; ++iscal)
               {
                 emat(vi*my::numdofpernode_+(my::numscal_+1)+idim,ui*my::numdofpernode_+iscal)
-                  += timefacfac*dmedc->GetPhasePoroTort(0)*rtf*invfval[k]*dmedc->GetCond()*(dmedc->GetDerivTransNum(k,iscal))*conintinv[k]*my::funct_(vi)*(gradphi[k])(idim)*my::funct_(ui);
+                  += timefacfac*DiffManager()->GetPhasePoroTort(0)*rtf*invfval[k]*DiffManager()->GetCond()*(DiffManager()->GetDerivTransNum(k,iscal))*conintinv[k]*my::funct_(vi)*(gradphi[k])(idim)*my::funct_(ui);
               }
             }
           }
@@ -980,8 +874,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondOhm(
   const int                               k,        //!< index of current scalar
   const double                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
   const double                            invfval,  //!< 1/(F z_k)
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> & dmedc,      //!< diffusion manager
-  const LINALG::Matrix<my::nsd_,1>&        gradpot   //!< gradient of potenial at GP
+  const LINALG::Matrix<my::nsd_,1>&       gradpot   //!< gradient of potenial at GP
   )
 {
   for (int vi=0; vi<my::nen_; ++vi)
@@ -989,7 +882,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondOhm(
     // diffusive term
     double laplawfrhs_gradpot=0.0;
     my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot,gradpot,vi);
-    erhs[vi*my::numdofpernode_+k]-= rhsfac*dmedc->GetPhasePoroTort(0)*dmedc->GetTransNum(k)*dmedc->GetCond()*invfval*laplawfrhs_gradpot;
+    erhs[vi*my::numdofpernode_+k]-= rhsfac*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetTransNum(k)*DiffManager()->GetCond()*invfval*laplawfrhs_gradpot;
   }
 
   return;
@@ -1007,9 +900,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondConc(
   const double                            rtffcval, //!< RT/(F^2 Newman_const_c z_k)
   const double                            newman_const_a, //!< Newman constant a
   const double                            newman_const_b, //!< Newman constant b
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,      //!< diffusion manager
-  const LINALG::Matrix<my::nsd_,1>&        gradphi,  //!< gradient of concentration at GP
-  const std::vector<double>&               conintinv //!< inverted concentration at GP
+  const LINALG::Matrix<my::nsd_,1>&       gradphi,  //!< gradient of concentration at GP
+  const std::vector<double>&              conintinv //!< inverted concentration at GP
   )
 {
   for (int vi=0; vi<my::nen_; ++vi)
@@ -1024,7 +916,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondConc(
       //
       // (grad w, sum(D_i grad Dc))
       erhs[vi*my::numdofpernode_+k]
-        -= rhsfac*dmedc->GetPhasePoroTort(0)*rtffcval*dmedc->GetTransNum(k)*dmedc->GetCond()*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(iscal)))*conintinv[iscal]*laplawfrhs_gradphi;
+        -= rhsfac*DiffManager()->GetPhasePoroTort(0)*rtffcval*DiffManager()->GetTransNum(k)*DiffManager()->GetCond()*DiffManager()->GetThermFac()*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(iscal)))*conintinv[iscal]*laplawfrhs_gradphi;
 
       // formulation b):  plain ionic diffusion coefficients: one species eleminated by ENC
       //                  -> not implemented yet
@@ -1043,8 +935,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCond(
   const int                               k,        //!< index of current scalar
   const double                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
   const double                            invfval,  //!< 1/(F z_k)
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,      //!< diffusion manager
-  const LINALG::Matrix<my::nsd_,1>&        curint    //!< current at GP
+  const LINALG::Matrix<my::nsd_,1>&       curint    //!< current at GP
   )
 {
   for (int vi=0; vi<my::nen_; ++vi)
@@ -1052,7 +943,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCond(
     double laplawfrhs_cur=0.0;
     my::GetLaplacianWeakFormRHS(laplawfrhs_cur,curint,vi);
 
-    erhs[vi*my::numdofpernode_+k]-= -rhsfac*dmedc->GetTransNum(k)*invfval*laplawfrhs_cur;
+    erhs[vi*my::numdofpernode_+k]-= -rhsfac*DiffManager()->GetTransNum(k)*invfval*laplawfrhs_cur;
   }
 
   return;
@@ -1067,7 +958,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondDiff(
   Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
   const int                               k,        //!< index of current scalar
   const double                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,      //!< diffusion manager
   const std::vector< LINALG::Matrix<my::nsd_,1> >&  gradphi   //!< gradient of concentration at GP
   )
 {
@@ -1080,39 +970,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondDiff(
       my::GetLaplacianWeakFormRHS(laplawfrhs_gradphi,gradphi[iscal],vi); // compute once, reuse below!
 
       // formulation a:  plain ionic diffusion coefficients: sum (z_i D_i nabla c_i)
-      erhs[vi*my::numdofpernode_+k] -= - rhsfac*dmedc->GetPhasePoroTort(0)*dmedc->GetTransNum(k)*dmedc->GetValence(iscal)/dmedc->GetValence(k)*dmedc->GetIsotropicDiff(iscal)*laplawfrhs_gradphi;
+      erhs[vi*my::numdofpernode_+k] -= - rhsfac*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetTransNum(k)*DiffManager()->GetValence(iscal)/DiffManager()->GetValence(k)*DiffManager()->GetIsotropicDiff(iscal)*laplawfrhs_gradphi;
 
       // formulation b):  plain ionic diffusion coefficients: one species eleminated by ENC
       //                  -> not implemented yet
       // formulation c:  plain ionic diffusion coefficients: sum (z_i D_i nabla c_i) replaced by sum (t_i/c_i nabla c_i)
       //                  -> not activated
       // erhs[fvi]
-      //   -= rhsfac*dmedc->GetPhasePoroTort(0)/frt/faraday/dmedc->GetValence(k)*dmedc->GetTransNum(k)*dmedc->GetCond()*dmedc->GetTransNum(iscal)/dmedc->GetValence(iscal]/conint[iscal]*laplawf2;
+      //   -= rhsfac*DiffManager()->GetPhasePoroTort(0)/frt/faraday/DiffManager()->GetValence(k)*DiffManager()->GetTransNum(k)*DiffManager()->GetCond()*DiffManager()->GetTransNum(iscal)/DiffManager()->GetValence(iscal]/conint[iscal]*laplawf2;
     }
-  }
-
-  return;
-}
-
-
-/*-------------------------------------------------------------------------------------*
- | CalcRhs: Potential equation div i inserted current - ohmic overpotential  ehrl 11/13 |
- *-------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDiviOhm(
-  Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
-  const double                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
-  const double                            invf,     //!< 1/F
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> & dmedc,      //!< diffusion manager
-  const LINALG::Matrix<my::nsd_,1>&        gradpot   //!< gradient of potenial at GP
-  )
-{
-  for (int vi=0; vi<my::nen_; ++vi)
-  {
-    double laplawfrhs_gradpot(0.0);
-    my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot,gradpot,vi);
-
-    erhs[vi*my::numdofpernode_+my::numscal_] -= rhsfac*dmedc->GetPhasePoroTort(0)*invf*dmedc->GetCond()*laplawfrhs_gradpot;
   }
 
   return;
@@ -1128,12 +994,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDiviConc(
   const int                               k,        //!< index of current scalar
   const double                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
   const double                            rtf,      //!< RT/F
-  const std::vector<double>&               invfval,  //!< 1/(F z_k)
+  const std::vector<double>&              invfval,  //!< 1/(F z_k)
   const double                            rtffc, //!< RT/(F^2 Newman_const_c)
   const double                            newman_const_a, //!< Newman constant a
   const double                            newman_const_b, //!< Newman constant b
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,      //!< diffusion manager
-  const LINALG::Matrix<my::nsd_,1>&        gradphi,  //!< gradient of concentration at GP
+  const LINALG::Matrix<my::nsd_,1>&       gradphi,  //!< gradient of concentration at GP
   const double                            conintinv //!< inverted concentration at GP
   )
 {
@@ -1145,10 +1010,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDiviConc(
       double laplawf2(0.0);
       my::GetLaplacianWeakFormRHS(laplawf2,gradphi,vi); // compute once, reuse below!
 
-      if(myelch::elchpara_->DiffusionCoeffBased()==true)
-        erhs[vi*my::numdofpernode_+my::numscal_] -= rhsfac*dmedc->GetPhasePoroTort(0)*dmedc->GetValence(k)*dmedc->GetIsotropicDiff(k)*laplawf2;
+      if(myelch::ElchPara()->DiffusionCoeffBased()==true)
+        erhs[vi*my::numdofpernode_+my::numscal_] -= rhsfac*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetValence(k)*DiffManager()->GetIsotropicDiff(k)*laplawf2;
       else
-        erhs[vi*my::numdofpernode_+my::numscal_] -= rhsfac*dmedc->GetPhasePoroTort(0)*rtf*invfval[k]*dmedc->GetCond()*dmedc->GetTransNum(k)*conintinv*laplawf2;
+        erhs[vi*my::numdofpernode_+my::numscal_] -= rhsfac*DiffManager()->GetPhasePoroTort(0)*rtf*invfval[k]*DiffManager()->GetCond()*DiffManager()->GetTransNum(k)*conintinv*laplawf2;
     }
     // thermodynamic factor only implemented for Newman
     else if(diffcondmat_==INPAR::ELCH::diffcondmat_newman)
@@ -1158,7 +1023,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDiviConc(
       my::GetLaplacianWeakFormRHS(laplawf2,gradphi,vi); // compute once, reuse below!
 
       erhs[vi*my::numdofpernode_+my::numscal_]
-        -= rhsfac*dmedc->GetPhasePoroTort(0)*rtffc*dmedc->GetCond()*dmedc->GetThermFac()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv*laplawf2;
+        -= rhsfac*DiffManager()->GetPhasePoroTort(0)*rtffc*DiffManager()->GetCond()*DiffManager()->GetThermFac()*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(k)))*conintinv*laplawf2;
     }
     else
       dserror("Diffusion-Conduction material is not specified");
@@ -1201,8 +1066,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquCur(
     Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
     const double                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
     const double                            invf,     //!< 1/F
-    Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,      //!< diffusion manager
-    const LINALG::Matrix<my::nsd_,1> &       curint    //!< current at GP
+    const LINALG::Matrix<my::nsd_,1> &      curint    //!< current at GP
   )
 {
   for (int vi=0; vi<my::nen_; ++vi)
@@ -1225,8 +1089,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquOhm(
   Epetra_SerialDenseVector&               erhs,     //!< element vector to be filled
   const double                            rhsfac,   //!< time-integration factor for rhs times domain-integration factor
   const double                            invf,     //!< 1/F
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&  dmedc,      //!< diffusion manager
-  const LINALG::Matrix<my::nsd_,1>&        gradpot   //!< gradient of potenial at GP
+  const LINALG::Matrix<my::nsd_,1>&       gradpot   //!< gradient of potenial at GP
   )
 {
   for (int vi=0; vi<my::nen_; ++vi)
@@ -1234,7 +1097,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquOhm(
     for (int idim = 0; idim <my::nsd_; ++idim)
     {
       // (v, kappa grad phi)
-      erhs[vi*my::numdofpernode_+(my::numscal_+1)+idim]-=rhsfac*invf*dmedc->GetPhasePoroTort(0)*my::funct_(vi)*dmedc->GetCond()*gradpot(idim);
+      erhs[vi*my::numdofpernode_+(my::numscal_+1)+idim]-=rhsfac*invf*DiffManager()->GetPhasePoroTort(0)*my::funct_(vi)*DiffManager()->GetCond()*gradpot(idim);
     }
   }
 
@@ -1254,7 +1117,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquConc(
   const double                              rtffc,    //!< RT/(F^2 Newman_const_c)
   const double                              newman_const_a, //!< Newman constant a
   const double                              newman_const_b, //!< Newman constant b
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&    dmedc,      //!< diffusion manager
   const std::vector<LINALG::Matrix<my::nsd_,1> >&  gradphi,  //!< vector of gradient of concentration at GP
   const std::vector<double>&                       conintinv //!< inverted concentration at GP
   )
@@ -1268,16 +1130,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquConc(
         if(diffcondmat_==INPAR::ELCH::diffcondmat_newman)
         {
           erhs[vi*my::numdofpernode_+(my::numscal_+1)+idim]
-            -= rhsfac*dmedc->GetPhasePoroTort(0)*my::funct_(vi)*rtffc*dmedc->GetCond()*(newman_const_a+(newman_const_b*dmedc->GetTransNum(k)))*conintinv[k]*gradphi[k](idim);
+            -= rhsfac*DiffManager()->GetPhasePoroTort(0)*my::funct_(vi)*rtffc*DiffManager()->GetCond()*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(k)))*conintinv[k]*gradphi[k](idim);
         }
         else if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
         {
-          if(myelch::elchpara_->DiffusionCoeffBased()==true)
-            erhs[vi*my::numdofpernode_+(my::numscal_+1)+idim] -= rhsfac*dmedc->GetPhasePoroTort(0)*my::funct_(vi)*dmedc->GetValence(k)*dmedc->GetIsotropicDiff(k)*gradphi[k](idim);
+          if(myelch::ElchPara()->DiffusionCoeffBased()==true)
+            erhs[vi*my::numdofpernode_+(my::numscal_+1)+idim] -= rhsfac*DiffManager()->GetPhasePoroTort(0)*my::funct_(vi)*DiffManager()->GetValence(k)*DiffManager()->GetIsotropicDiff(k)*gradphi[k](idim);
           else
           {
             erhs[vi*my::numdofpernode_+(my::numscal_+1)+idim]
-                 -= rhsfac*dmedc->GetPhasePoroTort(0)*my::funct_(vi)*rtf*dmedc->GetCond()*invfval[k]*dmedc->GetTransNum(k)*conintinv[k]*gradphi[k](idim);
+                 -= rhsfac*DiffManager()->GetPhasePoroTort(0)*my::funct_(vi)*rtf*DiffManager()->GetCond()*invfval[k]*DiffManager()->GetTransNum(k)*conintinv[k]*gradphi[k](idim);
           }
         }
         else
@@ -1307,9 +1169,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
   std::vector<double> mydctoggle(lm.size());
   DRT::UTILS::ExtractMyValues(*dctoggle,mydctoggle,lm);
 
-  // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);
-
   double val=0.0;
   for (int vi=0; vi<my::nen_; ++vi)
   {
@@ -1325,14 +1184,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
 
         // scaling of div i results in a matrix with better condition number
         val = erhs[fvi];
-        erhs[vi*my::numdofpernode_+my::numscal_] += dmedc->GetValence(k)*(-val);
+        erhs[vi*my::numdofpernode_+my::numscal_] += DiffManager()->GetValence(k)*(-val);
         // corresponding linearization
         for (int ui=0; ui<my::nen_; ++ui)
         {
           val = emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
-          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)+=dmedc->GetValence(k)*(-val);
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)+=DiffManager()->GetValence(k)*(-val);
           val = emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
-          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_)+=dmedc->GetValence(k)*(-val);
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_)+=DiffManager()->GetValence(k)*(-val);
         }
       }
 
@@ -1356,41 +1215,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
 
           // scaling of div i results in a matrix with better condition number
           val = erhs[fvi];
-          erhs[vi*my::numdofpernode_+k] += 1.0/dmedc->GetValence(k)*(-val);
+          erhs[vi*my::numdofpernode_+k] += 1.0/DiffManager()->GetValence(k)*(-val);
           // corresponding linearization
           for (int ui=0; ui<my::nen_; ++ui)
           {
             val = emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k);
-            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k) += 1.0/dmedc->GetValence(k)*(-val);
+            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k) += 1.0/DiffManager()->GetValence(k)*(-val);
             val = emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_);
-            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) +=1.0/dmedc->GetValence(k)*(-val);
+            emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_) +=1.0/DiffManager()->GetValence(k)*(-val);
           }
         }
       }
     }  // for k
   }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  set formulation-specific variables                        ehrl 01/14|
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::SetFormulationSpecificInternalVariables(
-  Teuchos::RCP<ScaTraEleDiffManagerElch>&                                   dme,
-  Teuchos::RCP<ScaTraEleInternalVariableManagerElch <my::nsd_,my::nen_> >&  vm
-)
-{
-  // dynamic cast to elch diffusion-conduction-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(dme);
-
-  // dynamic cast to elch diffusion conduction-specific internal variable manager
-  Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> > vmdc =
-      Teuchos::rcp_dynamic_cast< ScaTraEleInternalVariableManagerElchDiffCond <my::nsd_,my::nen_> >(vm);
-
-  vmdc->SetInternalVariablesElchDiffCond(dmedc,my::funct_,my::derxy_,ecurnp_);
 
   return;
 }
@@ -1405,8 +1242,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
   double&             densn,     //!< density at t_(n)
   double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
   double&             densam,    //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
   double&             visc,      //!< fluid viscosity
   const int           iquad      //!< id of current gauss point
   )
@@ -1426,7 +1261,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
       const int phaseid = actmat->PhaseID(iphase);
       Teuchos::RCP<const MAT::Material> singlephase = actmat->PhaseById(phaseid);
       // get parameters (porosity and tortuosity) from mat_phase
-      Materials(singlephase,iphase,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+      Materials(singlephase,iphase,densn,densnp,densam,visc,iquad);
 
       // dynamic cast: get access to mat_phase
       const Teuchos::RCP<const MAT::ElchPhase>& actphase
@@ -1438,7 +1273,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
         const int matid = actphase->MatID(imat);
         Teuchos::RCP<const MAT::Material> singlemat = actphase->MatById(matid);
 
-        Materials(singlemat,imat,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+        Materials(singlemat,imat,densn,densnp,densam,visc,iquad);
       }
     }
   }
@@ -1459,24 +1294,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Materials(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,         //!< fluid viscosity
   const int                               iquad         //!< id of current gauss point
   )
 {
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElchDiffCond>(diffmanager);
-
   if(material->MaterialType() == INPAR::MAT::m_elchphase)
-    MatPhase(material,k,densn,densnp,densam,dmedc,reamanager,visc,iquad);
+    MatPhase(material,k,densn,densnp,densam,visc,iquad);
   else if(material->MaterialType() == INPAR::MAT::m_newman)
   {
-    MatNewman(material,k,densn,densnp,densam,dmedc,reamanager,visc,iquad);
+    MatNewman(material,k,densn,densnp,densam,visc,iquad);
     diffcondmat_ = INPAR::ELCH::diffcondmat_newman;
   }
   else if(material->MaterialType() == INPAR::MAT::m_ion)
   {
-    myelch::MatIon(material,k,densn,densnp,densam,dmedc,reamanager,visc,iquad);
+    myelch::MatIon(material,k,densn,densnp,densam,visc,iquad);
 
     // set flag for material type
     diffcondmat_ = INPAR::ELCH::diffcondmat_ion;
@@ -1490,8 +1321,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Materials(
       for (int k = 0;k<my::numscal_;++k)
         conint[k] = my::funct_.Dot(my::ephinp_[k]);
 
-      dmedc->CalcConductivity(my::numscal_,INPAR::ELCH::faraday_const*myelch::elchpara_->FRT(),conint);
-      dmedc->CalcTransNum(my::numscal_,conint);
+      DiffManager()->CalcConductivity(my::numscal_,INPAR::ELCH::faraday_const*myelch::ElchPara()->FRT(),conint);
+      DiffManager()->CalcTransNum(my::numscal_,conint);
     }
   }
   else dserror("Material type is not supported");
@@ -1510,8 +1341,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::MatPhase(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>  dmedc,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,     //!< fluid viscosity
   const int                               iquad     //!< id of current gauss point
   )
@@ -1519,10 +1348,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::MatPhase(
   const MAT::ElchPhase* actsinglemat = static_cast<const MAT::ElchPhase*>(material.get());
 
   // set porosity
-  dmedc->SetPhasePoro(actsinglemat->Epsilon(),iphase);
+  DiffManager()->SetPhasePoro(actsinglemat->Epsilon(),iphase);
 
   // set tortuosity
-  dmedc->SetPhaseTort(actsinglemat->Tortuosity(),iphase);
+  DiffManager()->SetPhaseTort(actsinglemat->Tortuosity(),iphase);
 
   return;
 }
@@ -1538,8 +1367,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::MatNewman(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>  dmedc,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,     //!< fluid viscosity
   const int                               iquad     //!< id of current gauss point
   )
@@ -1551,29 +1378,29 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::MatNewman(
   const double conint = my::funct_.Dot(my::ephinp_[k]);
 
   // valence of ionic species
-  dmedc->SetValence(actmat->Valence(),k);
+  DiffManager()->SetValence(actmat->Valence(),k);
 
   // concentration depending diffusion coefficient
-  dmedc->SetIsotropicDiff(actmat->ComputeDiffusionCoefficient(conint),k);
+  DiffManager()->SetIsotropicDiff(actmat->ComputeDiffusionCoefficient(conint),k);
   // derivation of concentration depending diffusion coefficient wrt all ionic species
-  dmedc->SetDerivIsoDiffCoef(actmat->ComputeFirstDerivDiffCoeff(conint),k,k);
+  DiffManager()->SetDerivIsoDiffCoef(actmat->ComputeFirstDerivDiffCoeff(conint),k,k);
 
   // concentration depending transference number
-  dmedc->SetTransNum(actmat->ComputeTransferenceNumber(conint),k);
+  DiffManager()->SetTransNum(actmat->ComputeTransferenceNumber(conint),k);
   // derivation of concentration depending transference number wrt all ionic species
-  dmedc->SetDerivTransNum(actmat->ComputeFirstDerivTrans(conint),k,k);
+  DiffManager()->SetDerivTransNum(actmat->ComputeFirstDerivTrans(conint),k,k);
 
   // thermodynamic factor of electrolyte solution
-  dmedc->SetThermFac(actmat->ComputeThermFac(conint));
+  DiffManager()->SetThermFac(actmat->ComputeThermFac(conint));
   // derivative of conductivity with respect to concentrations
-  dmedc->SetDerivThermFac(actmat->ComputeFirstDerivThermFac(conint),0);
+  DiffManager()->SetDerivThermFac(actmat->ComputeFirstDerivThermFac(conint),0);
 
   // conductivity and first derivative can maximally depend on one concentration
   // since time curve is used as input routine
   // conductivity of electrolyte solution
-  dmedc->SetCond(actmat->ComputeConductivity(conint));
+  DiffManager()->SetCond(actmat->ComputeConductivity(conint));
   // derivative of conductivity with respect to concentrations
-  dmedc->SetDerivCond(actmat->ComputeFirstDerivCond(conint),0);
+  DiffManager()->SetDerivCond(actmat->ComputeFirstDerivCond(conint),0);
 
   return;
 }

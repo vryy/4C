@@ -2,17 +2,16 @@
 /*!
 \file scatra_ele_calc_std.H
 
-\brief Factory of scatra elements
+\brief evaluation of scalar transport elements for standard scalar transport problems
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15252
+Maintainer: Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*--------------------------------------------------------------------------*/
-
 #ifndef SCATRA_ELE_CALC_STD_H
 #define SCATRA_ELE_CALC_STD_H
 
@@ -20,35 +19,34 @@ Maintainer: Andreas Ehrl
 
 namespace DRT
 {
-namespace ELEMENTS
-{
+  namespace ELEMENTS
+  {
+    // class implementation
+    template<DRT::Element::DiscretizationType distype> class ScaTraEleCalcStd : public ScaTraEleCalc<distype>
+    {
+      public:
 
-template<DRT::Element::DiscretizationType distype>
-class ScaTraEleCalcStd : public ScaTraEleCalc<distype>
-{
-private:
-    /// private constructor, since we are a Singleton.
-    ScaTraEleCalcStd(const int numdofpernode,const int numscal);
+        //! abbreviation
+        typedef ScaTraEleCalc<distype> my;
 
-    typedef ScaTraEleCalc<distype> my;
+        //! destructor
+        virtual ~ScaTraEleCalcStd(){return;};
 
-public:
-    virtual ~ScaTraEleCalcStd() {}
+        //! singleton access method
+        static ScaTraEleCalcStd<distype> * Instance(
+            const int numdofpernode,
+            const int numscal,
+            bool create=true
+            );
 
-    /// Singleton access method
-    static ScaTraEleCalcStd<distype> * Instance(
-      const int numdofpernode,
-      const int numscal,
-      bool create=true );
+        //! called upon destruction
+        virtual void Done();
 
-    /// called upon destruction
-    virtual void Done();
+      protected:
 
-private:
-
-};
+        //! protected constructor for singletons
+        ScaTraEleCalcStd(const int numdofpernode,const int numscal);
+    };
+  }
 }
-}
-
 #endif
-

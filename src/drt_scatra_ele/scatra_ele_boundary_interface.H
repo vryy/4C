@@ -34,9 +34,8 @@ class TransportBoundary;
   /// Interface base class for ScaTraEleBoundaryCalc
   /*!
     This class exists to provide a common interface for all template
-    versions of FluidBoundaryCalc.
+    versions of ScaTraEleBoundaryCalc.
    */
-  //  class FluidBoundaryImplInterface : DRT::SingletonDestruction
   class ScaTraBoundaryInterface : DRT::SingletonDestruction
   {
 

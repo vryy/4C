@@ -25,9 +25,9 @@ namespace ELEMENTS
 {
 
 template<DRT::Element::DiscretizationType distype>
-class ScaTraEleBoundaryCalcStd : public ScaTraBoundaryImpl<distype>
+class ScaTraEleBoundaryCalcStd : public ScaTraEleBoundaryCalc<distype>
 {
-  typedef DRT::ELEMENTS::ScaTraBoundaryImpl<distype> my;
+  typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
 
 public:
 
@@ -35,7 +35,7 @@ public:
   static ScaTraEleBoundaryCalcStd<distype> * Instance(const int numdofpernode, const int numscal, bool create=true );
 
   /// Empty destructor
-  virtual ~ScaTraEleBoundaryCalcStd() {};
+  virtual ~ScaTraEleBoundaryCalcStd(){return;};
 
   /// called upon destruction
   void Done();

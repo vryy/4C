@@ -184,6 +184,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     return DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(numdofpernode,numscal);
   else if (problem == INPAR::SCATRA::impltype_elch_NP)
     return DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Instance(numdofpernode,numscal);
+  else if (problem == INPAR::SCATRA::impltype_elch_electrode)
+    return DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::Instance(numdofpernode,numscal);
   else if (problem == INPAR::SCATRA::impltype_elch_diffcond)
     return DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Instance(numdofpernode,numscal);
   else if (problem == INPAR::SCATRA::impltype_poro)

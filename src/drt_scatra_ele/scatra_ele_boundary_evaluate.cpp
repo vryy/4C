@@ -39,7 +39,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
 
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
-  const int numdofpernode = this->NumDofPerNode(*(this->Nodes()[0]));
+  const int numdofpernode = NumDofPerNode(*(Nodes()[0]));
   int numscal = numdofpernode;
 
   if (scatratype==INPAR::SCATRA::scatratype_elch)
@@ -49,7 +49,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
     // get the material of the first element
     // we assume here, that the material is equal for all elements in this discretization
     // get the parent element including its material
-    Teuchos::RCP<MAT::Material> material = this->ParentElement()->Material();
+    Teuchos::RCP<MAT::Material> material = ParentElement()->Material();
     if (material->MaterialType() == INPAR::MAT::m_elchmat)
       numscal = static_cast<const MAT::ElchMat*>(material.get())->NumScal();
   }

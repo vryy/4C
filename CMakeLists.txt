@@ -430,6 +430,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/elchmat.cpp
   src/drt_mat/elchphase.cpp
   src/drt_mat/newman.cpp
+  src/drt_mat/electrode.cpp
   src/drt_mat/material.cpp
   src/drt_mat/material_service.cpp
   src/drt_mat/matlist.cpp
@@ -1019,6 +1020,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_std.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch_NP.cpp
+  src/drt_scatra_ele/scatra_ele_calc_elch_electrode.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_calc_loma.cpp
   src/drt_scatra_ele/scatra_ele_calc_ls.cpp
@@ -1039,6 +1041,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_service_lsreinit.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_loma.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_elch_NP.cpp
+  src/drt_scatra_ele/scatra_ele_calc_service_elch_electrode.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_elch.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_cardiac_monodomain.cpp

@@ -82,6 +82,8 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(const int numdofper
 {
   // initialization of diffusion manager (override initialization in base class)
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerPoro(my::numscal_));
+
+  return;
 }
 
 // /*----------------------------------------------------------------------*
@@ -206,14 +208,12 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetMaterialParams(
   double&             densn,     //!< density at t_(n)
   double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
   double&             densam,    //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager
-  Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
   double&             visc,      //!< fluid viscosity
   const int           iquad      //!< id of current gauss point
   )
 {
   //calculate gauss point porosity from fluid and solid and (potentially) scatra solution
-  ComputePorosity(ele,diffmanager);
+  ComputePorosity(ele);
 
   // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
@@ -230,11 +230,11 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      my::Materials(singlemat,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+      my::Materials(singlemat,k,densn,densnp,densam,visc,iquad);
     }
   }
   else
-    my::Materials(material,0,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    my::Materials(material,0,densn,densnp,densam,visc,iquad);
 
   return;
 } //ScaTraEleCalcPoro::GetMaterialParams
@@ -249,8 +249,6 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,     //!< fluid viscosity
   const int                               iquad     //!< id of current gauss point
   )
@@ -258,20 +256,17 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
   if(iquad==-1)
     dserror("no gauss point given for evaluation of scatra material. Check your input file.");
 
-  Teuchos::RCP<ScaTraEleDiffManagerPoro> porodiffmanager
-   = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerPoro>(diffmanager);
-
   //read the porosity from the diffusion manager
-  const double porosity = porodiffmanager->GetPorosity();
+  const double porosity = DiffManager()->GetPorosity();
 
   const Teuchos::RCP<const MAT::ScatraMat>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
 
   // set diffusivity (scaled with porosity)
-  SetDiffusivity(actmat,k,diffmanager,porosity);
+  SetDiffusivity(actmat,k,porosity);
 
   // set reaction coefficient
-  SetReaCoefficient(actmat,k,reamanager,porosity);
+  SetReaCoefficient(actmat,k,porosity);
 
   // set densities (scaled with porosity)
   SetDensities(porosity,densn,densnp,densam);
@@ -286,10 +281,9 @@ template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDiffusivity(
     const Teuchos::RCP<const MAT::ScatraMat>& material,
     const int                                 k,
-    Teuchos::RCP<ScaTraEleDiffManager>        diffmanager,
     const double                              scale)
 {
-  diffmanager->SetIsotropicDiff(material->Diffusivity()*scale,k);
+  my::diffmanager_->SetIsotropicDiff(material->Diffusivity()*scale,k);
 
   return;
 }
@@ -301,11 +295,10 @@ template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetReaCoefficient(
     const Teuchos::RCP<const MAT::ScatraMat>& material,
     const int                                k,
-    Teuchos::RCP<ScaTraEleReaManager>        reamanager,
     const double                             scale)
 {
   //set reaction coefficient (no scaling with porosity)
-  reamanager->SetReaCoeff(material->ReaCoeff()*scale,k);
+  my::reamanager_->SetReaCoeff(material->ReaCoeff()*scale,k);
 
   return;
 }
@@ -334,16 +327,9 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDensities(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
-    const DRT::Element* ele,       //!< the element we are dealing with
-    Teuchos::RCP<ScaTraEleDiffManager> diffmanager  //!< diffusion manager handling diffusivity / diffusivities
+    const DRT::Element* ele       //!< the element we are dealing with
   )
 {
-  Teuchos::RCP<ScaTraEleDiffManagerPoro> porodiffmanager
-   = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerPoro>(diffmanager);
-
-  if(porodiffmanager==Teuchos::null)
-    dserror("cast to ScaTraEleDiffManagerPoro failed!");
-
   //gauss point displacements
   LINALG::Matrix<my::nsd_,1> dispint(false);
   dispint.Multiply(my::edispnp_,my::funct_);
@@ -397,7 +383,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
                               false);
 
   //save porosity in diffusion manager for later access
-  porodiffmanager->SetPorosity(porosity);
+  DiffManager()->SetPorosity(porosity);
 
   return;
 }

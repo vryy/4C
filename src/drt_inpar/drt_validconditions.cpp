@@ -4096,7 +4096,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(raw_in_scatra_bc);
 
   /*--------------------------------------------------------------------*/
-  // Prescribed BC for intial values of the scalar transport in reduced dimensional airways
+  // Prescribed BC for initial values of the scalar transport in reduced dimensional airways
 
   Teuchos::RCP<ConditionDefinition> raw_int_scatra_bc =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE Reduced D AIRWAYS INITIAL SCATRA CONDITIONS",

@@ -66,7 +66,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ScaTraEleBoundaryCalcPoro(const int numdofpernode, const int numscal)
-  : DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl(numdofpernode,numscal)
+  : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(numdofpernode,numscal)
 {
   // pointer to class ScaTraEleParameter
   my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
@@ -91,7 +91,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
   // check for the action parameter
   const SCATRA::BoundaryAction action = DRT::INPUT::get<SCATRA::BoundaryAction>(params,"action");
 
-  DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::SetupCalc(ele,params,discretization);
+  DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::SetupCalc(ele,params,discretization);
 
   switch (action)
   {
@@ -99,7 +99,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
   case SCATRA::bd_calc_fs3i_surface_permeability:
   case SCATRA::bd_calc_Neumann:
   {
-    DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(ele,
+    DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(ele,
                                                                params,
                                                                discretization,
                                                                action,

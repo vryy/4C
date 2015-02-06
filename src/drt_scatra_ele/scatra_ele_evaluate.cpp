@@ -125,7 +125,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
 
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
-  const int numdofpernode = this->NumDofPerNode(*(this->Nodes()[0]));
+  const int numdofpernode = NumDofPerNode(*(Nodes()[0]));
   int numscal = numdofpernode;
   if (scatratype == INPAR::SCATRA::scatratype_elch)
   {
@@ -133,7 +133,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
 
     // get the material of the first element
     // we assume here, that the material is equal for all elements in this discretization
-    Teuchos::RCP<MAT::Material> material = this->Material();
+    Teuchos::RCP<MAT::Material> material = Material();
     if (material->MaterialType() == INPAR::MAT::m_elchmat)
     {
       const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
@@ -155,10 +155,12 @@ int DRT::ELEMENTS::Transport::Evaluate(
   case INPAR::SCATRA::scatratype_cardiac_monodomain: impltype = INPAR::SCATRA::impltype_cardiac_monodomain;    break;
   case INPAR::SCATRA::scatratype_elch:
   {
-    // At this point, we know that we have a parameter class from type ScaTraEleParameterElch
+    // At this point, an instance of the singleton parameter class ScaTraEleParameterElch already exists
     DRT::ELEMENTS::ScaTraEleParameterElch* elchpara = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
 
-    if(elchpara->ElchType()==INPAR::ELCH::elchtype_diffcond)
+    if(Material()->MaterialType() == INPAR::MAT::m_electrode)
+      impltype = INPAR::SCATRA::impltype_elch_electrode;
+    else if(elchpara->ElchType()==INPAR::ELCH::elchtype_diffcond)
       impltype = INPAR::SCATRA::impltype_elch_diffcond;
     else impltype = INPAR::SCATRA::impltype_elch_NP;
     break;

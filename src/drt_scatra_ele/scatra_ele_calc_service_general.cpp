@@ -30,52 +30,24 @@ Maintainer: Andreas Ehrl
 
 
 /*----------------------------------------------------------------------*
- * Action type: EvaluateService
+ | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
-  DRT::ELEMENTS::Transport*  ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
-  )
+int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateAction(
+    DRT::ELEMENTS::Transport*   ele,
+    Teuchos::ParameterList&     params,
+    DRT::Discretization&        discretization,
+    const SCATRA::Action&       action,
+    const std::vector<int> &    lm,
+    Epetra_SerialDenseMatrix&   elemat1_epetra,
+    Epetra_SerialDenseMatrix&   elemat2_epetra,
+    Epetra_SerialDenseVector&   elevec1_epetra,
+    Epetra_SerialDenseVector&   elevec2_epetra,
+    Epetra_SerialDenseVector&   elevec3_epetra
+    )
 {
-
-  //get element coordinates
-  ReadElementCoordinatesAndProject(ele);
-
-  if (scatrapara_->IsAle())
-  {
-    const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp");
-    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
-    // add nodal displacements to point coordinates
-    xyze_ += edispnp_;
-  }
-  else edispnp_.Clear();
-
-  // Now do the nurbs specific stuff (for isogeometric elements)
-  if(DRT::NURBS::IsNurbs(distype))
-  {
-    // access knots and weights for this element
-    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,myknots_,weights_);
-
-    // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size)
-      return(0);
-  } // Nurbs specific stuff
-
-  // set element id
-  eid_ = ele->Id();
-
-  // check for the action parameter
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
-  switch (action)
+  // determine and evaluate action
+  switch(action)
   {
   // calculate time derivative for time value t_0
   case SCATRA::calc_initial_time_deriv:
@@ -460,7 +432,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
         double visc(0.0);
 
         // get material
-        GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+        GetMaterialParams(ele,densn,densnp,densam,visc);
 
         // get velocity at integration point
         LINALG::Matrix<nsd_,1> convelint(true);
@@ -691,6 +663,58 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
   return 0;
 }
 
+
+/*----------------------------------------------------------------------*
+ | evaluate service routine                                  fang 02/15 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
+    DRT::ELEMENTS::Transport*   ele,
+    Teuchos::ParameterList&     params,
+    DRT::Discretization&        discretization,
+    const std::vector<int>&     lm,
+    Epetra_SerialDenseMatrix&   elemat1_epetra,
+    Epetra_SerialDenseMatrix&   elemat2_epetra,
+    Epetra_SerialDenseVector&   elevec1_epetra,
+    Epetra_SerialDenseVector&   elevec2_epetra,
+    Epetra_SerialDenseVector&   elevec3_epetra
+    )
+{
+  // setup
+  if(SetupCalc(ele,discretization) == -1)
+    return 0;
+
+  if(scatrapara_->IsAle())
+  {
+    const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp");
+    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
+    // add nodal displacements to point coordinates
+    xyze_ += edispnp_;
+  }
+  else edispnp_.Clear();
+
+  // check for the action parameter
+  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
+
+  // evaluate action
+  EvaluateAction(
+      ele,
+      params,
+      discretization,
+      action,
+      lm,
+      elemat1_epetra,
+      elemat2_epetra,
+      elevec1_epetra,
+      elevec2_epetra,
+      elevec3_epetra
+      );
+
+  return 0;
+}
+
+
 /*-------------------------------------------------------------------------*
  | Element reconstruct grad phi, one deg of freedom (for now) winter 04/14 |
  *-------------------------------------------------------------------------*/
@@ -726,7 +750,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcGradientAtNodes(
     //diffmanager_->SetIsotropicDiff(eta_smooth,k);
 
     // Compute element matrix. For L2-projection
-    CalcMatDiff(elemat1,k,fac,diffmanager_);
+    CalcMatDiff(elemat1,k,fac);
     CalcMatMass(elemat1,k,fac,1.0);
 
     // Compute element vectors. For L2-Projection
@@ -744,6 +768,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcGradientAtNodes(
   return;
 
 } //ScaTraEleCalc::CalcGradientAtNodes
+
 
 /*-------------------------------------------------------------------------*
  | Element reconstructed curvature                            winter 04/14 |
@@ -837,7 +862,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcCurvatureAtNodes(
 //      diffmanager_->SetIsotropicDiff(eta_smooth,k);
 
       // Compute element matrix.
-      CalcMatDiff(elemat1,k,fac,diffmanager_);
+      CalcMatDiff(elemat1,k,fac);
       CalcMatMass(elemat1,k,fac,1.0);
 
       // Compute rhs vector.
@@ -855,7 +880,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcCurvatureAtNodes(
   return;
 
 } //ScaTraEleCalc::CalcCurvatureAtNodes
-
 
 
 /*----------------------------------------------------------------------------*
@@ -919,7 +943,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
 
   if (not scatrapara_->MatGP() or not scatrapara_->TauGP())
   {
-    GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+    GetMaterialParams(ele,densn,densnp,densam,visc);
 
     if (not scatrapara_->TauGP())
     {
@@ -950,7 +974,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+    if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,visc);
 
     //------------ get values of variables at integration point
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
@@ -1006,7 +1030,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
       {
         // subgrid-scale velocity (dummy)
         LINALG::Matrix<nen_,1> sgconv(true);
-        CalcMatMassStab(emat,k,fac_tau,densam,densnp,scatravarmanager_,sgconv,diff);
+        CalcMatMassStab(emat,k,fac_tau,densam,densnp,sgconv,diff);
 
         // remove convective stabilization of inertia term
         for (int vi=0; vi<nen_; ++vi)
@@ -1045,7 +1069,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CorrectRHSFromCalcRHSLinMass(
 {
   // fac->-fac to change sign of rhs
   if (scatraparatimint_->IsIncremental())
-     CalcRHSLinMass(erhs,k,0.0,-fac,0.0,densnp,scatravarmanager_);
+     CalcRHSLinMass(erhs,k,0.0,-fac,0.0,densnp);
   else
     dserror("Must be incremental!");
 
@@ -1129,7 +1153,7 @@ const int                       k
   double visc(0.0);
 
   // get material parameters (evaluation at element center)
-  if (not scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+  if (not scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,visc);
 
   // integration rule
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -1141,7 +1165,7 @@ const int                       k
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
     // get material parameters (evaluation at integration point)
-    if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+    if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,visc);
 
     // get velocity at integration point
     LINALG::Matrix<nsd_,1> velint(true);
@@ -1323,7 +1347,6 @@ return;
 } // ScaTraEleCalc::CalculateMomentumAndVolume
 
 
-
 /*----------------------------------------------------------------------*
  | calculate normalized subgrid-diffusivity matrix              vg 10/08|
  *----------------------------------------------------------------------*/
@@ -1351,7 +1374,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiffMatrix(
 
       // calculation of diffusive element matrix
       double timefacfac = scatraparatimint_->TimeFac() * fac;
-      CalcMatDiff(emat,k,timefacfac,diffmanager_);
+      CalcMatDiff(emat,k,timefacfac);
 
       /*subtract SUPG term */
       //emat(fvi,fui) -= taufac*conv(vi)*conv(ui);
@@ -1548,7 +1571,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::FDCheck(
 
 
 // template classes
-
 // 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3>;

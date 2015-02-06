@@ -46,19 +46,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateOD(
   // preparations for element
   //--------------------------------------------------------------------------------
 
-  //get element coordinates
-  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-
-  // Now do the nurbs specific stuff (for isogeometric elements)
-  if(DRT::NURBS::IsNurbs(distype))
-  {
-    // access knots and weights for this element
-    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,myknots_,weights_);
-
-    // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size)
-      return(0);
-  } // Nurbs specific stuff
+  if(SetupCalc(ele,discretization) == -1)
+    return 0;
 
   //--------------------------------------------------------------------------------
   // extract element based or nodal values
@@ -135,7 +124,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
   if (not scatrapara_->MatGP())
-    GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+    GetMaterialParams(ele,densn,densnp,densam,visc);
 
   //----------------------------------------------------------------------
   // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -159,7 +148,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (scatrapara_->MatGP())
-      GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc,iquad);
+      GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
     SetInternalVariablesForMatAndRHS();
 
@@ -224,7 +213,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
                                   sgphi,
                                   densam,
                                   densnp,
-                                  scatravarmanager_,
                                   diff_phi,
                                   rea_phi,
                                   rhsint,
@@ -259,13 +247,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
                                 densn,
                                 densnp,
                                 rea_phi,
-                                scatravarmanager_,
-                                reamanager_,
                                 rhsint);
 
       RecomputeConvPhiForRhs(
                               k,
-                              scatravarmanager_,
                               sgvelint,
                               densnp,
                               densn,
@@ -284,12 +269,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
       //----------------------------------------------------------------
       // standard Galerkin terms  --  diffusive term
       //----------------------------------------------------------------
-      CalcDiffODMesh(emat,k,ndofpernodemesh,fac,rhsfac,J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel(),dJ_dmesh,diffmanager_);
+      CalcDiffODMesh(emat,k,ndofpernodemesh,fac,rhsfac,J,scatravarmanager_->GradPhi(k),scatravarmanager_->ConVel(),dJ_dmesh);
 
       //----------------------------------------------------------------
       // standard Galerkin terms  -- "shapederivatives" reactive term
       //----------------------------------------------------------------
-      CalcReactODMesh(emat,k,ndofpernodemesh,rhsfac,rea_phi,J,dJ_dmesh,reamanager_);
+      CalcReactODMesh(emat,k,ndofpernodemesh,rhsfac,rea_phi,J,dJ_dmesh);
 
     }// end loop all scalars
 
@@ -330,7 +315,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODFluid(
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
   if (not scatrapara_->MatGP())
-    GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+    GetMaterialParams(ele,densn,densnp,densam,visc);
 
   //----------------------------------------------------------------------
   // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -354,7 +339,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODFluid(
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (scatrapara_->MatGP())
-      GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc,iquad);
+      GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
     // get velocity at integration point
     //LINALG::Matrix<nsd_,1> velint(true);
@@ -716,11 +701,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDiffODMesh(
     const double                        J,
     const LINALG::Matrix<nsd_,1>&       gradphi,
     const LINALG::Matrix<nsd_,1>&       convelint,
-    const LINALG::Matrix<1,nsd_*nen_>&  dJ_dmesh,
-    Teuchos::RCP<ScaTraEleDiffManager>  diffmanager
+    const LINALG::Matrix<1,nsd_*nen_>&  dJ_dmesh
   )
 {
-  const double vrhs = -rhsfac/J*diffmanager->GetIsotropicDiff(k);
+  const double vrhs = -rhsfac/J*diffmanager_->GetIsotropicDiff(k);
 
   for (int vi=0; vi<nen_; ++vi)
   {
@@ -755,7 +739,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDiffODMesh(
       const double xjm_2_1   = xjm_(2, 1);
       const double xjm_2_2   = xjm_(2, 2);
     {
-      const double v = diffmanager->GetIsotropicDiff(k)*rhsfac/J;
+      const double v = diffmanager_->GetIsotropicDiff(k)*rhsfac/J;
 
       const double gradphi_0   = gradphi(0);
       const double gradphi_1   = gradphi(1);
@@ -809,7 +793,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDiffODMesh(
       }
     }
 
-    const double v = diffmanager->GetIsotropicDiff(k)*rhsfac/J;
+    const double v = diffmanager_->GetIsotropicDiff(k)*rhsfac/J;
 
     //gradient of scalar w.r.t. reference coordinates
     static LINALG::Matrix<nsd_,1> refgradphi;
@@ -869,7 +853,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDiffODMesh(
   else if(nsd_==2)
   {
     {
-      const double v = diffmanager->GetIsotropicDiff(k)*rhsfac/J;
+      const double v = diffmanager_->GetIsotropicDiff(k)*rhsfac/J;
 
       const double gradphi_0   = gradphi(0);
       const double gradphi_1   = gradphi(1);
@@ -898,7 +882,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDiffODMesh(
       }
     }
 
-    const double v = diffmanager->GetIsotropicDiff(k)*rhsfac/J;
+    const double v = diffmanager_->GetIsotropicDiff(k)*rhsfac/J;
 
     //gradient of scalar w.r.t. reference coordinates
     static LINALG::Matrix<nsd_,1> refgradphi;
@@ -945,8 +929,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcReactODMesh(
     const double                        rhsfac,
     const double                        rea_phi,
     const double                        J,
-    const LINALG::Matrix<1,nsd_*nen_>&  dJ_dmesh,
-    Teuchos::RCP<ScaTraEleReaManager>   reamanager
+    const LINALG::Matrix<1,nsd_*nen_>&  dJ_dmesh
   )
 {
   if (reamanager_->Active())

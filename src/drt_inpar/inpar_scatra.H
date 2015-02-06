@@ -186,6 +186,7 @@ namespace INPAR
       impltype_std,
       impltype_loma,
       impltype_elch_NP,
+      impltype_elch_electrode,
       impltype_elch_diffcond,
       impltype_lsreinit,
       impltype_levelset,

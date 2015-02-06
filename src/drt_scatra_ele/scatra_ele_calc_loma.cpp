@@ -88,105 +88,6 @@ DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(const int numdofper
 
 
 /*----------------------------------------------------------------------*
- | Action type: Evaluate                                rasthofer 12/13 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Evaluate(
-  DRT::ELEMENTS::Transport*  ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
-  )
-{
-  //--------------------------------------------------------------------------------
-  // preparations for element
-  //--------------------------------------------------------------------------------
-
-  //get element coordinates
-  GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
-
-  // Now do the nurbs specific stuff (for isogeometric elements)
-  if(DRT::NURBS::IsNurbs(distype))
-  {
-    // access knots and weights for this element
-    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
-
-    // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size)
-      return(0);
-  } // Nurbs specific stuff
-
-  //--------------------------------------------------------------------------------
-  // extract element based or nodal values
-  //--------------------------------------------------------------------------------
-
-  // extract standard quantities first
-  my::ExtractElementAndNodeValues(ele,params,discretization,lm);
-
-  // add further loma-specific values
-  if (my::scatraparatimint_->IsGenAlpha())
-  {
-    // extract additional local values from global vector
-    Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
-    if (phiam==Teuchos::null) dserror("Cannot get state vector 'phiam'");
-    std::vector<double> myphiam(lm.size());
-    DRT::UTILS::ExtractMyValues(*phiam,myphiam,lm);
-
-    // fill element array
-    for (int i=0;i<my::nen_;++i)
-    {
-      for (int k = 0; k< my::numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephiam_[k](i,0) = myphiam[k+(i*my::numdofpernode_)];
-      }
-    } // for i
-  }
-
-  // get thermodynamic pressure
-  thermpressnp_ = params.get<double>("thermodynamic pressure");
-  thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
-  if (my::scatraparatimint_->IsGenAlpha())
-    thermpressam_ = params.get<double>("thermodynamic pressure at n+alpha_M");
-
-  //--------------------------------------------------------------------------------
-  // prepare turbulence models
-  //--------------------------------------------------------------------------------
-
-  int nlayer = 0;
-  my::ExtractTurbulenceApproach(ele,params,discretization,lm,nlayer);
-
-  //--------------------------------------------------------------------------------
-  // calculate element coefficient matrix and rhs
-  //--------------------------------------------------------------------------------
-
-  // calculate element coefficient matrix and rhs
-  my::Sysmat(
-    ele,
-    elemat1_epetra,
-    elevec1_epetra,
-    elevec2_epetra);
-
-  // ---------------------------------------------------------------------
-  // output values of Prt, diffeff and Cs_delta_sq_Prt (channel flow only)
-  // ---------------------------------------------------------------------
-
-  if (my::scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky and my::scatrapara_->CsAv())
-  {
-    Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
-    my::StoreModelParametersForOutput(ele,ele->Owner() == discretization.Comm().MyPID(),turbulencelist,nlayer);
-  }
-
-  return 0;
-}
-
-
-/*----------------------------------------------------------------------*
  |  evaluate single loma material  (protected)                vg 12/13  |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -196,26 +97,24 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Materials(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,          //!< fluid viscosity
   const int                               iquad         //!< id of current gauss point
   )
 {
   if (material->MaterialType() == INPAR::MAT::m_mixfrac)
-    MatMixFrac(material,k,densn,densnp,densam,diffmanager,reamanager,visc);
+    MatMixFrac(material,k,densn,densnp,densam,visc);
   else if (material->MaterialType() == INPAR::MAT::m_sutherland)
-   MatSutherland(material,k,densn,densnp,densam,diffmanager,reamanager,visc);
+   MatSutherland(material,k,densn,densnp,densam,visc);
   else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
-    MatArrheniusPV(material,k,densn,densnp,densam,diffmanager,reamanager,visc);
+    MatArrheniusPV(material,k,densn,densnp,densam,visc);
   else if (material->MaterialType() == INPAR::MAT::m_arrhenius_spec)
-    MatArrheniusSpec(material,k,densn,densnp,densam,diffmanager,reamanager,visc);
+    MatArrheniusSpec(material,k,densn,densnp,densam,visc);
   else if (material->MaterialType() == INPAR::MAT::m_arrhenius_temp)
-    MatArrheniusTemp(material,k,densn,densnp,densam,diffmanager,reamanager,visc);
+    MatArrheniusTemp(material,k,densn,densnp,densam,visc);
   else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
-    MatArrheniusPV(material,k,densn,densnp,densam,diffmanager,reamanager,visc);
+    MatArrheniusPV(material,k,densn,densnp,densam,visc);
   else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
-    MatYoghurt(material,k,densn,densnp,densam,diffmanager,reamanager,visc);
+    MatYoghurt(material,k,densn,densnp,densam,visc);
   else dserror("Material type is not supported");
 
   return;
@@ -232,8 +131,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatMixFrac(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc      //!< fluid viscosity
   )
 {
@@ -247,7 +144,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatMixFrac(
   const double mixfracnp = my::funct_.Dot(my::ephinp_[0]);
 
   // compute dynamic diffusivity at n+1 or n+alpha_F based on mixture fraction
-  diffmanager->SetIsotropicDiff(actmat->ComputeDiffusivity(mixfracnp),k);
+  my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(mixfracnp),k);
 
   // compute density at n+1 or n+alpha_F based on mixture fraction
   densnp = actmat->ComputeDensity(mixfracnp);
@@ -293,8 +190,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc      //!< fluid viscosity
   )
 {
@@ -313,7 +208,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
     dserror("Negative temperature occurred! Sutherland's law is defined for positive temperatures, only!");
 
   // compute diffusivity according to material sutherland
-  diffmanager->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
+  my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
 
   // compute density at n+1 or n+alpha_F based on temperature
   // and thermodynamic pressure
@@ -357,8 +252,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc      //!< fluid viscosity
   )
 {
@@ -401,13 +294,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
   densgradfac_[0] = -densnp*actmat->ComputeFactor(provarnp);
 
   // compute diffusivity according to
-  diffmanager->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),0);
+  my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),0);
 
   // compute reaction coefficient for progress variable
   const double reacoef = actmat->ComputeReactionCoeff(tempnp);
 
   // set different reaction terms in the reaction manager
-  reamanager->SetReaCoeff(reacoef,0);
+  my::reamanager_->SetReaCoeff(reacoef,0);
 
   // compute right-hand side contribution for progress variable
   // -> equal to reaction coefficient
@@ -432,8 +325,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc      //!< fluid viscosity
   )
 {
@@ -447,13 +338,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
   const double tempnp = my::funct_.Dot(my::ephinp_[my::numscal_-1]);
 
   // compute diffusivity according to
-  diffmanager->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
+  my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
 
   // compute reaction coefficient for species equation
   const double reacoef = actmat->ComputeReactionCoeff(tempnp);
 
   // set different reaction terms in the reaction manager
-  reamanager->SetReaCoeff(reacoef,0);
+  my::reamanager_->SetReaCoeff(reacoef,0);
 
   return;
 }
@@ -468,8 +359,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc      //!< fluid viscosity
   )
 {
@@ -487,7 +376,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
   const double tempnp = my::funct_.Dot(my::ephinp_[k]);
 
   // compute diffusivity according to
-  diffmanager->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
+  my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
   //diffus_[k] = actsinglemat->ComputeDiffusivity(tempnp);
 
   // compute density based on temperature and thermodynamic pressure
@@ -532,8 +421,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc      //!< fluid viscosity
   )
 {
@@ -576,13 +463,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
   densgradfac_[0] = -densnp*actmat->ComputeFactor(provarnp);
 
   // compute diffusivity according to Ferech law
-  diffmanager->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),0);
+  my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),0);
 
   // compute reaction coefficient for progress variable
   const double reacoef = actmat->ComputeReactionCoeff(provarnp);
 
   // set different reaction terms in the reaction manager
-  reamanager->SetReaCoeff(reacoef,0);
+  my::reamanager_->SetReaCoeff(reacoef,0);
 
   // compute right-hand side contribution for progress variable
   // -> equal to reaction coefficient
@@ -607,8 +494,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc      //!< fluid viscosity
   )
 {
@@ -622,7 +507,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
   shc_ = actmat->Shc();
 
   // compute diffusivity
-  diffmanager->SetIsotropicDiff(actmat->ComputeDiffusivity(),0);
+  my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(),0);
   //diffus_[0] = actmat->ComputeDiffusivity();
 
   // get constant density

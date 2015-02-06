@@ -547,7 +547,7 @@ public:
   //! Return a pointer to the parent element of this boundary element
   virtual DRT::ELEMENTS::Transport* ParentElement() const
   {
-    DRT::Element* parent = this->DRT::Element::ParentElement();
+    DRT::Element* parent = DRT::Element::ParentElement();
     // make sure the static cast below is really valid
     dsassert(dynamic_cast<DRT::ELEMENTS::Transport*>(parent) != NULL, "Master element is no fluid element");
     return static_cast<DRT::ELEMENTS::Transport*>(parent);

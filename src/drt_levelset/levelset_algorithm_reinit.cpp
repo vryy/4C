@@ -342,7 +342,7 @@ void SCATRA::LevelSetAlgorithm::PrepareTimeStepReinit()
 
 /*----------------------------------------------------------------------*
  | calculate node-based velocity field via L2-projection                |
- |  for reinitalization                                 rasthofer 09/13 |
+ |  for reinitialization                                rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
 {
@@ -375,7 +375,7 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
       // set current spatial direction
       // we have to loop the dimensions, since we merely have one dof per node here
       eleparams.set<int>("direction", idim);
-      // activate reinitalization calculation routines
+      // activate reinitialization calculation routines
       eleparams.set<bool>("solve reinit eq",true);
 
       discret_->ClearState(); //TODO Caution if called from NonlinearSolve
@@ -418,7 +418,7 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
     // loop over all local nodes of scatra discretization
     for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
     {
-      // store velocity in reinitalization velocity
+      // store velocity in reinitialization velocity
       const double val = (*velcomp)[lnodeid];
       ((*nb_grad_val_)(idim))->ReplaceMyValues(1,&val,&lnodeid);
     }

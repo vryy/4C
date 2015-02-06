@@ -11,30 +11,30 @@ Maintainer: Andreas Ehrl
 </pre>
 
 *----------------------------------------------------------------------*/
-
 #ifndef SCATRA_ELE_CALC_H
 #define SCATRA_ELE_CALC_H
 
-#include "scatra_ele_interface.H"
-
-#include "scatra_ele_calc_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
 #include <Epetra_IntSerialDenseVector.h>
 
-// forward declarations
+#include "scatra_ele_action.H"
+#include "scatra_ele_calc_utils.H"
+#include "scatra_ele_interface.H"
+
 
 namespace DRT
 {
 namespace ELEMENTS
 {
+  // forward declarations
   class ScaTraEleParameter;
   class ScaTraEleParameterTimInt;
 
   class ScaTraEleDiffManager;
   class ScaTraEleReaManager;
 
-  template<int NSD, int NEN>
-  class ScaTraEleInternalVariableManager;
+  template<int NSD,int NEN> class ScaTraEleInternalVariableManager;
 
   /// Scatra element implementation
   /*!
@@ -88,6 +88,12 @@ namespace ELEMENTS
     /// In this class we do not define a static ScaTraEle...* Instance
     /// since only derived child classes are free to be allocated!!
 
+    /// Setup element evaluation
+    virtual int SetupCalc(
+        DRT::ELEMENTS::Transport*   ele,
+        DRT::Discretization&        discretization
+        );
+
     /// Evaluate the element
      /*!
        Generic virtual interface function. Called via base pointer.
@@ -102,15 +108,32 @@ namespace ELEMENTS
                           Epetra_SerialDenseVector&     elevec2_epetra,
                           Epetra_SerialDenseVector&     elevec3_epetra);
 
-     virtual int EvaluateService(DRT::ELEMENTS::Transport*     ele,
-                          Teuchos::ParameterList&       params,
-                          DRT::Discretization &         discretization,
-                          const std::vector<int> &      lm,
-                          Epetra_SerialDenseMatrix&     elemat1_epetra,
-                          Epetra_SerialDenseMatrix&     elemat2_epetra,
-                          Epetra_SerialDenseVector&     elevec1_epetra,
-                          Epetra_SerialDenseVector&     elevec2_epetra,
-                          Epetra_SerialDenseVector&     elevec3_epetra);
+     //! evaluate action
+     virtual int EvaluateAction(
+         DRT::ELEMENTS::Transport*   ele,
+         Teuchos::ParameterList&     params,
+         DRT::Discretization&        discretization,
+         const SCATRA::Action&       action,
+         const std::vector<int> &    lm,
+         Epetra_SerialDenseMatrix&   elemat1_epetra,
+         Epetra_SerialDenseMatrix&   elemat2_epetra,
+         Epetra_SerialDenseVector&   elevec1_epetra,
+         Epetra_SerialDenseVector&   elevec2_epetra,
+         Epetra_SerialDenseVector&   elevec3_epetra
+         );
+
+     //! evaluate service routine
+     int EvaluateService(
+         DRT::ELEMENTS::Transport*   ele,
+         Teuchos::ParameterList&     params,
+         DRT::Discretization &       discretization,
+         const std::vector<int> &    lm,
+         Epetra_SerialDenseMatrix&   elemat1_epetra,
+         Epetra_SerialDenseMatrix&   elemat2_epetra,
+         Epetra_SerialDenseVector&   elevec1_epetra,
+         Epetra_SerialDenseVector&   elevec2_epetra,
+         Epetra_SerialDenseVector&   elevec3_epetra
+         );
 
      virtual int EvaluateOD(DRT::ELEMENTS::Transport*     ele,
                           Teuchos::ParameterList&       params,
@@ -141,7 +164,7 @@ namespace ELEMENTS
      // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
      static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
-     typedef ScaTraEleInternalVariableManager <nsd_,nen_>  varmanager;
+     typedef ScaTraEleInternalVariableManager<nsd_,nen_> varmanager;
 
   protected:
 
@@ -227,7 +250,7 @@ namespace ELEMENTS
     );
 
     /*========================================================================*/
-    //! @name routines for additional element evaluations (called from EvaluateService)
+    //! @name routines for additional element evaluations (called from EvaluateAction)
     /*========================================================================*/
 
     //! calculate mass matrix and rhs for determining initial time derivative
@@ -304,8 +327,6 @@ namespace ELEMENTS
       double&             densn,     //!< density at t_(n)
       double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
       double&             densam,    //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
       double&             visc,       //!< fluid viscosity
       const int           iquad=-1    //!< id of current gauss point (default = -1)
     );
@@ -317,8 +338,6 @@ namespace ELEMENTS
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc,      //!< fluid viscosity
       const int                               iquad=-1   //!< id of current gauss point (default = -1)
     );
@@ -330,8 +349,6 @@ namespace ELEMENTS
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc,      //!< fluid viscosity
       const int                               iquad=-1   //!< id of current gauss point (default = -1)
     );
@@ -422,7 +439,6 @@ namespace ELEMENTS
       double&                     sgphi,      //!< residual-based subgrid-scale scalar
       const double                densam,     //!< density at t_(n+am)
       const double                densnp,     //!< density at t_(n+1)
-      Teuchos::RCP< varmanager >  varmanager, //! variable manager
       const double                diff_phi,   //!< diffusive contribution
       const double                rea_phi,    //!< reactive contribution
       const double                rhsint,     //!< rhs at integration point
@@ -433,7 +449,6 @@ namespace ELEMENTS
     void CalcArtificialDiff(
       const double                        vol,        //!< element volume
       const int                           k,          //!< id of current scalar
-      Teuchos::RCP<ScaTraEleDiffManager>  diffmanager,  //!< diffusion manager
       const double                        densnp,     //!< density at t_(n+1)
       const LINALG::Matrix<nsd_,1>&       convelint,  //!< convective velocity at integration point
       const LINALG::Matrix<nsd_,1>&       gradphi,    //!< scalar gradient
@@ -473,7 +488,6 @@ namespace ELEMENTS
 
     //! calculate all-scale art. subgrid diffusivity
     void CalcSubgrDiff(
-      Teuchos::RCP<ScaTraEleDiffManager>    diffmanager,  //!< diffusion manager
       double&                               visc,      //!< fluid viscosity
       const double                          vol,       //!< element volume
       const int                             k,         //!< index of current scalar
@@ -699,7 +713,6 @@ namespace ELEMENTS
       const int                     k,           //!< index of current scalar
       const double                  timefacfac,  //!< domain-integration factor times time-integration factor
       const double                  densnp,      //!< density at time_(n+1)
-      Teuchos::RCP< varmanager >    varmanager,  //!< variable manager
       const LINALG::Matrix<nen_,1>& sgconv       //!< subgrid-scale convective operator
     );
 
@@ -716,8 +729,7 @@ namespace ELEMENTS
     virtual void CalcMatDiff(
       Epetra_SerialDenseMatrix&     emat,        //!< element matrix to be filled
       const int                     k,           //!< index of current scalar
-      const double                  timefacfac,  //!< domain-integration factor times time-integration factor
-      Teuchos::RCP<ScaTraEleDiffManager>  diffmanager  //!< diffusion manager
+      const double                  timefacfac   //!< domain-integration factor times time-integration factor
     );
 
     //!calculation of stabilization element matrix
@@ -726,7 +738,6 @@ namespace ELEMENTS
       const int                     k,           //!< index of current scalar
       const double                  timetaufac,  //!< domain-integration factor times time-integration factor times tau
       const double                  densnp,      //!< density  at time_(n+1)
-      Teuchos::RCP< varmanager >    varmanager,  //!< variable manager
       const LINALG::Matrix<nen_,1>& sgconv,      //!< subgrid-scale convective operator
       const LINALG::Matrix<nen_,1>& diff         //!< laplace term
     );
@@ -746,7 +757,6 @@ namespace ELEMENTS
       const double                  taufac,      //!< domain-integration factor times tau
       const double                  densam,      //!< density at time_(n+am)
       const double                  densnp,      //!< density at time_(n+1)
-      Teuchos::RCP< varmanager >    varmanager,  //!< variable manager
       const LINALG::Matrix<nen_,1>& sgconv,      //!< subgrid-scale convective operator
       const LINALG::Matrix<nen_,1>& diff         //!< laplace term
     );
@@ -759,8 +769,6 @@ namespace ELEMENTS
       const double                       timetaufac,  //!< domain-integration factor times time-integration factor times tau
       const double                       taufac,      //!< domain-integration factor times tau
       const double                       densnp,      //!< density at time_(n+1)
-      Teuchos::RCP< varmanager >         varmanager,  //!< variable manager
-      Teuchos::RCP<ScaTraEleReaManager>  reamanager,  //!< reaction manager
       const LINALG::Matrix<nen_,1>&      sgconv,      //!< subgrid-scale convective operator
       const LINALG::Matrix<nen_,1>&      diff         //!< laplace term
     );
@@ -772,8 +780,7 @@ namespace ELEMENTS
       const double                  rhsfac,      //!< time-integration factor for rhs times domain-integration factor
       const double                  fac,         //!< domain-integration factor
       const double                  densam,      //!< density at time_(n+am)
-      const double                  densnp,      //!< density at time_(n+1)
-      Teuchos::RCP< varmanager >    varmanager   //!< variable manager
+      const double                  densnp       //!< density at time_(n+1)
     );
 
     //! adaption of rhs with respect to time integration
@@ -792,15 +799,12 @@ namespace ELEMENTS
       const double                  densn,      //!< density at time_(n)
       const double                  densnp,     //!< density at time_(n+1)
       double&                       rea_phi,    //!< reactive contribution
-      Teuchos::RCP< varmanager >    varmanager,   //!< variable manager
-      Teuchos::RCP<ScaTraEleReaManager> reamanager,  //!< reaction manager
       const double                  rhsint      //!< rhs at Gauss point
     );
 
     //! adaption of convective term for rhs
     virtual void RecomputeConvPhiForRhs(
       const int                     k,          //!< index of current scalar
-      Teuchos::RCP< varmanager >    varmanager,   //!< variable manager
       const LINALG::Matrix<nsd_,1>&  sgvelint,  //!< subgrid-scale velocity at Gauss point
       const double                  densnp,     //!< density at time_(n+1)
       const double                  densn,      //!< density at time_(n)
@@ -819,17 +823,14 @@ namespace ELEMENTS
     void CalcRHSConv(
       Epetra_SerialDenseVector&     erhs,        //!< element vector to be filled
       const int                     k,           //!< index of current scalar
-      const double                  rhsfac,      //!< time-integration factor for rhs times domain-integration factor
-      Teuchos::RCP< varmanager >    varmanager   //!< variable manager
+      const double                  rhsfac       //!< time-integration factor for rhs times domain-integration factor
     );
 
     //! standard Galerkin diffusive term on right hand side
     virtual void CalcRHSDiff(
       Epetra_SerialDenseVector&     erhs,        //!< element vector to be filled
       const int                     k,           //!< index of current scalar
-      const double                  rhsfac,      //!< time-integration factor for rhs times domain-integration factor
-      Teuchos::RCP<ScaTraEleDiffManager>  diffmanager,  //!< diffusion manager
-      Teuchos::RCP< varmanager >    varmanager   //!< variable manager
+      const double                  rhsfac       //!< time-integration factor for rhs times domain-integration factor
     );
 
     //! transient, convective and diffusive stabilization terms on right hand side
@@ -839,7 +840,6 @@ namespace ELEMENTS
       const double                  rhstaufac,   //!< time-integration factor for rhs times domain-integration factor times tau
       const double                  densnp,     //!< density at time_(n+1)
       const double                  scatrares,   //!< residual of convection-diffusion-reaction eq
-      Teuchos::RCP< varmanager >    varmanager,  //!< variable manager
       const LINALG::Matrix<nen_,1>& sgconv,      //!< subgrid-scale convective operator
       const LINALG::Matrix<nen_,1>& diff         //!< laplace term
     );
@@ -852,8 +852,7 @@ namespace ELEMENTS
       const double                  rhstaufac,   //!< time-integration factor for rhs times domain-integration factor times tau
       const double                  rea_phi,     //!< reactive term
       const double                  densnp,      //!< density at time_(n+1)
-      const double                  scatrares,   //!< residual of convection-diffusion-reaction eq
-      Teuchos::RCP<ScaTraEleReaManager>  reamanager //!< reaction manager
+      const double                  scatrares    //!< residual of convection-diffusion-reaction eq
     );
 
     //! fine-scale subgrid-diffusivity term on right hand side
@@ -871,7 +870,6 @@ namespace ELEMENTS
       const int                     k,           //!< index of current scalar
       const double                  rhsfac,      //!< time-integration factor for rhs times domain-integration factor
       const double                  densnp,      //!< density at time_(n+1)
-      Teuchos::RCP< varmanager >    varmanager,  //!< variable manager
       const LINALG::Matrix<nsd_,1>  mfsggradphi, //!< gradient of multifractal fine-scale scalar
       const LINALG::Matrix<nsd_,1>  mfsgvelint,  //!< multifractal fine-scale velocity
       const double                  mfssgphi,    //!< multifractal fine-scale scalar
@@ -947,8 +945,7 @@ namespace ELEMENTS
         const double                        J,                //!< determinant of Jacobian det(dx/ds)
         const LINALG::Matrix<nsd_,1>&       gradphi,          //!< scalar gradient at Gauss point
         const LINALG::Matrix<nsd_,1>&       convelint,        //!< convective velocity
-        const LINALG::Matrix<1,nsd_*nen_>&  dJ_dmesh,         //!< derivative of det(dx/ds) w.r.t. mesh displacement
-        Teuchos::RCP<ScaTraEleDiffManager>    diffmanager     //!< diffusion manager
+        const LINALG::Matrix<1,nsd_*nen_>&  dJ_dmesh          //!< derivative of det(dx/ds) w.r.t. mesh displacement
     );
 
     //! reactive terms (standard Galerkin) (off diagonal/shapederivative term mesh)
@@ -959,8 +956,7 @@ namespace ELEMENTS
         const double                        rhsfac,           //!< time-integration factor for rhs times domain-integration factor
         const double                        rea_phi,          //!< reactive term
         const double                        J,                //!< determinant of Jacobian det(dx/ds)
-        const LINALG::Matrix<1,nsd_*nen_>&  dJ_dmesh,         //!< derivative of det(dx/ds) w.r.t. mesh displacement
-        Teuchos::RCP<ScaTraEleReaManager>   reamanager        //!< reaction manager
+        const LINALG::Matrix<1,nsd_*nen_>&  dJ_dmesh          //!< derivative of det(dx/ds) w.r.t. mesh displacement
     );
 
     /*========================================================================*/
@@ -1069,9 +1065,8 @@ namespace ELEMENTS
 
     int eid_;
 
-    //! variable manager for gauss point values
-    Teuchos::RCP<ScaTraEleInternalVariableManager <nsd_,nen_> > scatravarmanager_;
-
+    //! variable manager for Gauss point values
+    Teuchos::RCP<ScaTraEleInternalVariableManager<nsd_,nen_> > scatravarmanager_;
   };
 
 

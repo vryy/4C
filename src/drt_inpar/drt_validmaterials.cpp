@@ -449,6 +449,26 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // electrode material (fang 02/15)
+  {
+    Teuchos::RCP<MaterialDefinition> matelectrode = Teuchos::rcp(new MaterialDefinition("MAT_electrode","electrode material",INPAR::MAT::m_electrode));
+
+    // mandatory parameters
+    AddNamedInt(matelectrode,"DIFFCOEF","curve number for diffusion coefficient");
+    AddNamedInt(matelectrode,"COND","curve number for electronic conductivity");
+
+    // optional parameters for concentration dependency
+    AddNamedInt(matelectrode,"DIFF_PARA_NUM","number of parameters for diffusion coefficient",0,true);
+    AddNamedRealVector(matelectrode,"DIFF_PARA","parameters for diffusion coefficient","DIFF_PARA_NUM",0.0,true);
+    AddNamedInt(matelectrode,"COND_PARA_NUM","number of parameters for electronic conductivity",0,true);
+    AddNamedRealVector(matelectrode,"COND_PARA","parameters for electronic conductivity","COND_PARA_NUM",0.0,true);
+    AddNamedSeparator(matelectrode,"END","indicating end of line");
+
+    // add electrode material to global list of valid materials
+    AppendMaterialDefinition(matlist,matelectrode);
+  }
+
+  /*----------------------------------------------------------------------*/
   // material collection (gjb 07/08)
   {
     Teuchos::RCP<MaterialDefinition> m

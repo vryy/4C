@@ -58,7 +58,7 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl(const int numdofpernode, const int numscal)
+DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(const int numdofpernode, const int numscal)
  : numdofpernode_(numdofpernode),
    numscal_(numscal),
    isale_(false),
@@ -93,7 +93,7 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl(const int numdofp
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::SetupCalc(DRT::ELEMENTS::TransportBoundary* ele,
+int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::SetupCalc(DRT::ELEMENTS::TransportBoundary* ele,
                                                           Teuchos::ParameterList&           params,
                                                           DRT::Discretization&              discretization)
 {
@@ -121,17 +121,17 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::SetupCalc(DRT::ELEMENTS::Transpo
         ele, ele->FaceParentNumber(), ele->ParentElement()->Id(), discretization, mypknots_, myknots_, weights_, normalfac_);
 
     // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size) return(0);
+    if(zero_size) return -1;
   } // Nurbs specific stuff
 
-  return 1;
+  return 0;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
+int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     DRT::ELEMENTS::TransportBoundary* ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
@@ -573,7 +573,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(
  |  Integrate a Surface/Line Neumann boundary condition       gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
+int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
     DRT::ELEMENTS::TransportBoundary*   ele,
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
@@ -669,7 +669,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
  | calculate normals vectors                                   vg 03/09 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcNormalVectors(Teuchos::ParameterList&           params,
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcNormalVectors(Teuchos::ParameterList&           params,
                                                                    DRT::ELEMENTS::TransportBoundary* ele
                                                                   )
 {
@@ -706,7 +706,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcNormalVectors(Teuchos::Para
  | calculate loma therm pressure                              vg 03/09  |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcLomaThermPress(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcLomaThermPress(
     DRT::ELEMENTS::TransportBoundary* ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
@@ -786,7 +786,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcLomaThermPress(
  | calculate Neumann inflow boundary conditions                vg 03/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
     const DRT::Element*                 ele,
     Teuchos::RCP<const MAT::Material>   material,
     const std::vector<double>&          ephinp,
@@ -958,14 +958,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
   }
 
   return;
-} //ScaTraBoundaryImpl<distype>::NeumannInflow
+} //ScaTraEleBoundaryCalc<distype>::NeumannInflow
 
 
 /*----------------------------------------------------------------------*
  | calculate integral of convective flux across boundary      gjb 11/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-std::vector<double> DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcConvectiveFlux(
+std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcConvectiveFlux(
     const DRT::Element*                 ele,
     const std::vector<double>&          ephinp,
     const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
@@ -1018,13 +1018,13 @@ std::vector<double> DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcConvectiveFl
 
   return integralflux;
 
-} //ScaTraBoundaryImpl<distype>::ConvectiveFlux
+} //ScaTraEleBoundaryCalc<distype>::ConvectiveFlux
 
 /*----------------------------------------------------------------------*
  | calculate boundary cond. due to convective heat transfer    vg 10/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfer(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
     const DRT::Element*                 ele,
     Teuchos::RCP<const MAT::Material>   material,
     const std::vector<double>&           ephinp,
@@ -1112,14 +1112,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfer(
   }
 
   return;
-} //ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfercteswt
+} //ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfercteswt
 
 
 /*----------------------------------------------------------------------*
  | evaluate shape functions and int. factor at int. point     gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
     const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
     const int                                    iquad,      ///< id of current Gauss point
     const int                                    eleid,      ///< the element id
@@ -1170,7 +1170,7 @@ double DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
  | get constant normal                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetConstNormal(
     LINALG::Matrix<nsd_+1,1>&          normal,
     const LINALG::Matrix<nsd_+1,nen_>&  xyze
     )
@@ -1229,14 +1229,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
     dserror("Zero length for element normal");
 
   return;
-} // ScaTraBoundaryImpl<distype>::GetConstNormal
+} // ScaTraEleBoundaryCalc<distype>::GetConstNormal
 
 
 /*----------------------------------------------------------------------*
  | evaluate scatra-scatra interface coupling condition       fang 10/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
     const DRT::Element*         ele,              ///< current boundary element
     Teuchos::ParameterList&     params,           ///< parameter list
     DRT::Discretization&        discretization,   ///< discretization
@@ -1283,7 +1283,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
   for (int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
-    const double fac = DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+    const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
 
     // evaluate overall integration factors
     const double timefacfac = scatraparamstimint_->TimeFac()*fac;
@@ -1344,7 +1344,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateS2ICoupling(
  |  Evaluate surface/interface permeability                  Thon 11/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateSurfacePermeability(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
         const DRT::Element*        ele,    ///< current boundary element
         const std::vector<double>& ephinp, ///< scalar values at element nodes
         const std::vector<double>& f_wss,  ///< factor for WSS at element nodes
@@ -1437,7 +1437,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateSurfacePermeability(
  |  Evaluate Kedem-Katchalsky interface                   Thon 11/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateKedemKatchalsky(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
     const DRT::Element*        ele,         ///< the actual boundary element
     const std::vector<double>& ephinp,      ///< scalar values at element nodes
     const std::vector<double>& epressure,   ///< pressure values at element nodes
@@ -1555,7 +1555,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateKedemKatchalsky(
  |  Integrate shapefunctions over surface (private)           gjb 02/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions(
     const DRT::Element*        ele,
     Teuchos::ParameterList&    params,
     Epetra_SerialDenseVector&  elevec1,
@@ -1601,14 +1601,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
 
   return;
 
-} //ScaTraBoundaryImpl<distype>::IntegrateShapeFunction
+} //ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunction
 
 
 /*----------------------------------------------------------------------*
  | calculate integral of normal diffusive flux and velocity     vg 09/08|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NormDiffFluxAndVelIntegral(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NormDiffFluxAndVelIntegral(
     const DRT::Element*             ele,
     Teuchos::ParameterList&         params,
     const std::vector<double>&       enormdiffflux,
@@ -1641,7 +1641,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NormDiffFluxAndVelIntegral(
 
   return;
 
-} //ScaTraBoundaryImpl<distype>::NormDiffFluxAndVelIntegral
+} //ScaTraEleBoundaryCalc<distype>::NormDiffFluxAndVelIntegral
 
 
 /*----------------------------------------------------------------------*
@@ -1649,7 +1649,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NormDiffFluxAndVelIntegral(
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType bdistype,
           DRT::Element::DiscretizationType pdistype>
-   void  DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::WeakDirichlet(
+   void  DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(
      DRT::ELEMENTS::TransportBoundary*  ele,
      Teuchos::ParameterList&            params,
      DRT::Discretization&               discretization,
@@ -2386,7 +2386,7 @@ template <DRT::Element::DiscretizationType bdistype,
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType bdistype,
           DRT::Element::DiscretizationType pdistype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBoundary(
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ReinitCharacteristicGalerkinBoundary(
     DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
     Teuchos::ParameterList&            params,               //!< parameter list
     DRT::Discretization&               discretization,       //!< discretization
@@ -2686,7 +2686,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
  *----------------------------------------------------------------------*/
 
 template <DRT::Element::DiscretizationType distype>
-std::vector<double> DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::WSSinfluence(std::vector<double>  ewss, const bool wssonoff, const std::vector<double>* coeffs)
+std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WSSinfluence(std::vector<double>  ewss, const bool wssonoff, const std::vector<double>* coeffs)
 {
   std::vector<double> f_wss(ewss.size());
 
@@ -2707,13 +2707,13 @@ std::vector<double> DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::WSSinfluence(std
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::quad4>;
-template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::line3>;
-template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::ScaTraBoundaryImpl<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad8>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad9>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri6>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::nurbs3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::nurbs9>;
 

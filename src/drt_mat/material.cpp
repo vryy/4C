@@ -57,6 +57,7 @@ Maintainer: Lena Wiechert
 #include "elchphase.H"
 #include "ion.H"
 #include "newman.H"
+#include "electrode.H"
 #include "compogden.H"
 #include "elasthyper.H"
 #include "viscoelasthyper.H"
@@ -389,13 +390,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::Ion* params = static_cast<MAT::PAR::Ion*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-//  case INPAR::MAT::m_diffcond:
-//  {
-//    if (curmat->Parameter() == NULL)
-//      curmat->SetParameter(new MAT::PAR::DiffCond(curmat));
-//    MAT::PAR::DiffCond* params = static_cast<MAT::PAR::DiffCond*>(curmat->Parameter());
-//    return params->CreateMaterial();
-//  }
+  case INPAR::MAT::m_electrode:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Electrode(curmat));
+    MAT::PAR::Electrode* params = static_cast<MAT::PAR::Electrode*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
   case INPAR::MAT::m_newman:
   {
     if (curmat->Parameter() == NULL)

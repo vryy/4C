@@ -28,9 +28,9 @@ class ScaTraEleParameterElch;
 class ScaTraEleDiffManagerElchDiffCond;
 
 template<DRT::Element::DiscretizationType distype>
-class ScaTraEleBoundaryCalcElch : public ScaTraBoundaryImpl<distype>
+class ScaTraEleBoundaryCalcElch : public ScaTraEleBoundaryCalc<distype>
 {
-  typedef DRT::ELEMENTS::ScaTraBoundaryImpl<distype> my;
+  typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
 
 public:
 

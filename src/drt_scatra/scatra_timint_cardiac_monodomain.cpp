@@ -158,12 +158,13 @@ void SCATRA::TimIntCardiacMonodomain::ElementMaterialTimeUpdate()
   p.set<int>("action", SCATRA::time_update_material);
   // further required parameters
   p.set<int>("scatratype",scatratype_);
-  //
   p.set<int>("time-step length",dta_);
 
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
+  if(isale_)
+    discret_->AddMultiVectorToParameterList(p,"dispnp",dispnp_);
 
   // go to elements
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,

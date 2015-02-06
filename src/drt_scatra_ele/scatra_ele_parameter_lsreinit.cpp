@@ -77,7 +77,7 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetElementLsReinitScaTraParamete
 {
   // get reinitialization parameters list
   Teuchos::ParameterList& reinitlist = params.sublist("REINITIALIZATION");
-  // reinitalization strategy
+  // reinitialization strategy
   reinittype_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReInitialAction>(reinitlist, "REINITIALIZATION");
   // get signum function
   signtype_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::SmoothedSignType>(reinitlist, "SMOOTHED_SIGN_TYPE");

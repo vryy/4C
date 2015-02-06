@@ -64,7 +64,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::ScaTraEleBoundaryCalcStd(const int numdofpernode, const int numscal)
-  : DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl(numdofpernode,numscal)
+  : my::ScaTraEleBoundaryCalc(numdofpernode,numscal)
 {
   // pointer to class ScaTraEleParameter
   my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
@@ -89,19 +89,19 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::EvaluateAction(
   // check for the action parameter
   const SCATRA::BoundaryAction action = DRT::INPUT::get<SCATRA::BoundaryAction>(params,"action");
 
-  DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::SetupCalc(ele,params,discretization);
+  if(my::SetupCalc(ele,params,discretization) == -1)
+    return 0;
 
-  DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateAction(ele,
-                                                             params,
-                                                             discretization,
-                                                             action,
-                                                             lm,
-                                                             elemat1_epetra,
-                                                             elemat2_epetra,
-                                                             elevec1_epetra,
-                                                             elevec2_epetra,
-                                                             elevec3_epetra);
-
+  my::EvaluateAction(ele,
+                     params,
+                     discretization,
+                     action,
+                     lm,
+                     elemat1_epetra,
+                     elemat2_epetra,
+                     elevec1_epetra,
+                     elevec2_epetra,
+                     elevec3_epetra);
 
   return 0;
 }

@@ -612,7 +612,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetMeanPrtOfHomogenousDirection(
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiff(
-  Teuchos::RCP<ScaTraEleDiffManager>    diffmanager,  //!< diffusion manager
   double&                               visc,
   const double                          vol,
   const int                             k,
@@ -749,7 +748,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiff(
   }
 
   // update diffusivity
-  diffmanager->SetIsotropicSubGridDiff(sgdiff,k);
+  diffmanager_->SetIsotropicSubGridDiff(sgdiff,k);
 
   return;
 } //ScaTraEleCalc::CalcSubgrDiff
@@ -1383,9 +1382,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::StoreModelParametersForOutput(
           // fluid viscosity
           double visc(0.0);
 
-          GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+          GetMaterialParams(ele,densn,densnp,densam,visc);
 
-          CalcSubgrDiff(diffmanager_,visc,vol,0,densnp);
+          CalcSubgrDiff(visc,vol,0,densnp);
 
           (*(turbulencelist.get<Teuchos::RCP<std::vector<double> > >("local_diffeff_sum")))    [nlayer]+=diffmanager_->GetIsotropicDiff(0);
         }
@@ -1591,7 +1590,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
   if (not scatrapara_->MatGP() or scatrapara_->TauGP())
-    GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+    GetMaterialParams(ele,densn,densnp,densam,visc);
 
   //----------------------------------------------------------------------
   // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -1615,7 +1614,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
         or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
          or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_vreman)
     {
-      CalcSubgrDiff(diffmanager_,visc,vol,0,densnp);
+      CalcSubgrDiff(visc,vol,0,densnp);
     }
 
     // calculation of fine-scale artificial subgrid diffusivity at element center
@@ -1643,7 +1642,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
     {
       // make sure to get material parameters at element center
       // hence, determine them if not yet available
-      if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+      if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,visc);
       // provide necessary velocities and gradients at element center
       // get velocity at element center
       LINALG::Matrix<nsd_,1> convelint(true);
@@ -1678,7 +1677,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
     //----------------------------------------------------------------------
 
     if (scatrapara_->MatGP())
-      GetMaterialParams(ele,densn,densnp,densam,diffmanager_,reamanager_,visc);
+      GetMaterialParams(ele,densn,densnp,densam,visc);
 
     SetInternalVariablesForMatAndRHS();
 
@@ -1742,7 +1741,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
           or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
           or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_vreman)
       {
-        CalcSubgrDiff(diffmanager_,visc,vol,0,densnp);
+        CalcSubgrDiff(visc,vol,0,densnp);
 
         // adapt diffusive term using current scalar value for higher-order elements,
         // since diffus -> diffus + sgdiff
@@ -1820,7 +1819,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
 
     // compute residual of scalar transport equation and
     // subgrid-scale part of scalar
-    CalcResidualAndSubgrScalar(0,scatrares,sgphi,densam,densnp,scatravarmanager_,diff_phi,rea_phi,rhsint,tau[0]);
+    CalcResidualAndSubgrScalar(0,scatrares,sgphi,densam,densnp,diff_phi,rea_phi,rhsint,tau[0]);
 
     // not supported anymore
     // update material parameters based on inclusion of subgrid-scale

@@ -124,16 +124,13 @@ protected:
     double&             densn,     //!< density at t_(n)
     double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
     double&             densam,    //!< density at t_(n+alpha_M)
-    Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-    Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
     double&             visc,       //!< fluid viscosity
     const int           iquad=-1    //!< id of current gauss point (default = -1)
   );
 
   //! compute porosity based on solid, fluid and (potentially) scatra solution
   virtual void ComputePorosity(
-      const DRT::Element* ele,       //!< the element we are dealing with
-      Teuchos::RCP<ScaTraEleDiffManager> diffmanager  //!< diffusion manager handling diffusivity / diffusivities
+      const DRT::Element* ele       //!< the element we are dealing with
     );
 
   //! material ScaTra
@@ -143,8 +140,6 @@ protected:
     double&                                 densn,    //!< density at t_(n)
     double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
     double&                                 densam,   //!< density at t_(n+alpha_M)
-    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-    Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
     double&                                 visc,      //!< fluid viscosity
     const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
@@ -153,13 +148,11 @@ protected:
   //! set diffusivity for poro scatra problem (i.e. scale by porosity)
   void SetDiffusivity(const Teuchos::RCP<const MAT::ScatraMat>& material,
                      const int                                 k,
-                     Teuchos::RCP<ScaTraEleDiffManager>        diffmanager,
                      const double                              scale);
 
   //! set reaction coefficient for poro scatra problem (i.e. scale by porosity)
   void SetReaCoefficient(const Teuchos::RCP<const MAT::ScatraMat>& material,
                         const int                                 k,
-                        Teuchos::RCP<ScaTraEleReaManager>         reamanager,
                         const double                              scale);
 
   //! set densisties for poro scatra problem (i.e. scale by porosity)
@@ -168,6 +161,9 @@ protected:
                    double& densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
                    double& densam   //!< density at t_(n+alpha_M));
                    );
+
+  //! get poro diffusion manager
+  Teuchos::RCP<ScaTraEleDiffManagerPoro> DiffManager(){return Teuchos::rcp_static_cast<ScaTraEleDiffManagerPoro>(my::diffmanager_);};
 
   /*========================================================================*/
   //! @name Galerkin approximation and related

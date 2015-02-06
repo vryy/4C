@@ -58,26 +58,16 @@ public:
     /// called upon destruction
     virtual void Done();
 
-    //! evaluate the element
-    int Evaluate(DRT::ELEMENTS::Transport*     ele,
-                 Teuchos::ParameterList&       params,
-                 DRT::Discretization &         discretization,
-                 const std::vector<int> &      lm,
-                 Epetra_SerialDenseMatrix&     elemat1_epetra,
-                 Epetra_SerialDenseMatrix&     elemat2_epetra,
-                 Epetra_SerialDenseVector&     elevec1_epetra,
-                 Epetra_SerialDenseVector&     elevec2_epetra,
-                 Epetra_SerialDenseVector&     elevec3_epetra);
-
-    int EvaluateService(DRT::ELEMENTS::Transport*     ele,
-                        Teuchos::ParameterList&       params,
-                        DRT::Discretization &         discretization,
-                        const std::vector<int> &      lm,
-                        Epetra_SerialDenseMatrix&     elemat1_epetra,
-                        Epetra_SerialDenseMatrix&     elemat2_epetra,
-                        Epetra_SerialDenseVector&     elevec1_epetra,
-                        Epetra_SerialDenseVector&     elevec2_epetra,
-                        Epetra_SerialDenseVector&     elevec3_epetra);
+    int EvaluateAction(DRT::ELEMENTS::Transport*     ele,
+                       Teuchos::ParameterList&       params,
+                       DRT::Discretization &         discretization,
+                       const SCATRA::Action&         action,
+                       const std::vector<int> &      lm,
+                       Epetra_SerialDenseMatrix&     elemat1_epetra,
+                       Epetra_SerialDenseMatrix&     elemat2_epetra,
+                       Epetra_SerialDenseVector&     elevec1_epetra,
+                       Epetra_SerialDenseVector&     elevec2_epetra,
+                       Epetra_SerialDenseVector&     elevec3_epetra);
 
 private:
 
@@ -92,8 +82,6 @@ private:
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc,      //!< fluid viscosity
       const int                               iquad=-1   //!< id of current gauss point (default = -1)
     );
@@ -105,8 +93,6 @@ private:
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc      //!< fluid viscosity
     );
 
@@ -117,8 +103,6 @@ private:
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc      //!< fluid viscosity
     );
 
@@ -129,8 +113,6 @@ private:
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc      //!< fluid viscosity
     );
 
@@ -141,8 +123,6 @@ private:
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc      //!< fluid viscosity
     );
 
@@ -153,8 +133,6 @@ private:
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc      //!< fluid viscosity
     );
 
@@ -165,8 +143,6 @@ private:
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc      //!< fluid viscosity
     );
 
@@ -177,8 +153,6 @@ private:
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc      //!< fluid viscosity
     );
 
@@ -226,6 +200,14 @@ private:
     void CalculateDomainAndBodyforce(
       Epetra_SerialDenseVector&  scalars,
       const DRT::Element*        ele
+    );
+
+    //! extract element based or nodal values and return extracted values of phinp
+    std::vector<double> ExtractElementAndNodeValues(
+      DRT::ELEMENTS::Transport*  ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      const std::vector<int>&    lm
     );
 
     /*========================================================================*/

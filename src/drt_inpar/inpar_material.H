@@ -74,6 +74,7 @@ namespace INPAR
       m_ion,            ///< properties of an ion species in an electrolyte solution
       m_diffcond,            ///< properties of an ion species in an electrolyte solution
       m_newman,            ///< properties of an ion species in an electrolyte solution
+      m_electrode,       ///< electrode material
       m_elasthyper,    ///< collection of hyperelastic materials
       m_viscoelasthyper, ///< viscohyperelastic material
       mes_couplogneohooke,  ///< logarithmic Neo-Hooke material as hyperelastic potential summand

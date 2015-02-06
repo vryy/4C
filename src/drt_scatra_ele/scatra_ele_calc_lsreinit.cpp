@@ -100,22 +100,9 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
   Epetra_SerialDenseVector&  elevec3_epetra
   )
 {
-  // reset all managers to their default values (I feel better this way)
-  Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerLsReinit<my::nsd_> >(my::diffmanager_)->Reset();
-  Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->Reset();
-
-  // get element coordinates
-  GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
-
-  // set element id
-  my::eid_ = ele->Id();
-
-  // clear all unused variables
-  my::edispnp_.Clear();
-  my::weights_.Clear();
-  my::evelnp_.Clear();
-  my::eaccnp_.Clear();
-  my::eprenp_.Clear();
+  // setup
+  if(SetupCalc(ele,discretization) == -1)
+    return 0;
 
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (phinp==Teuchos::null)
@@ -163,7 +150,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
         } // for k
       } // for i
 
-      if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->UseProjectedVel())
+      if(LsReinitPara()->UseProjectedVel())
       {
         // get velocity at nodes (pre-computed via L2 projection)
         const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("reinitialization velocity field");
@@ -189,7 +176,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
       if (tmp != allcells->end())
         boundaryIntCells = tmp->second;
 
-      if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->Project())
+      if(LsReinitPara()->Project())
       {
         const Teuchos::RCP<Epetra_MultiVector> gradphi = params.get< Teuchos::RCP<Epetra_MultiVector> >("gradphi");
         DRT::UTILS::ExtractMyNodeBasedValues(ele,my::econvelnp_,gradphi,my::nsd_);
@@ -505,7 +492,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
       LINALG::Matrix<my::nsd_,1> convelint(true);
 
       // switch type for velocity field
-      if (not dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->UseProjectedVel())
+      if (not LsReinitPara()->UseProjectedVel())
       {
 #ifndef USE_PHIN_FOR_VEL
         // gradient of current scalar value at element center
@@ -597,9 +584,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
     const double phin = my::funct_.Dot(my::ephin_[0]);
 
     // also store values in variable manager
-    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetPhinp(0,phinp);
-    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetPhin(0,phin);
-    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetGradPhi(0,gradphinp);
+    VarManager()->SetPhinp(0,phinp);
+    VarManager()->SetPhin(0,phin);
+    VarManager()->SetGradPhi(0,gradphinp);
 
 #if 0 // OLD but running
     // gradient of current scalar value Gauss point
@@ -653,7 +640,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
 #endif
 
     // switch type for velocity field
-    if (not dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->UseProjectedVel())
+    if (not LsReinitPara()->UseProjectedVel())
     {
 #ifndef USE_PHIN_FOR_VEL
       // get norm
@@ -685,9 +672,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
     conv_phi = convelint.Dot(gradphinp);
 
     //set changed values in variable manager
-    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetConv(conv);
-    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetConVel(convelint);
-    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetConvPhi(0,conv_phi);
+    VarManager()->SetConv(conv);
+    VarManager()->SetConVel(convelint);
+    VarManager()->SetConvPhi(0,conv_phi);
 
     // diffusive part used in stabilization terms
     double diff_phi(0.0);
@@ -727,7 +714,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
     hist = phin - my::scatraparatimint_->Dt() * (1.0 - my::scatraparatimint_->TimeFac()/my::scatraparatimint_->Dt()) * (convelintold.Dot(gradphin)-oldsign);
 #endif
     //set changed values in variable manager
-    Teuchos::rcp_dynamic_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_)->SetHist(0,hist);
+    VarManager()->SetHist(0,hist);
 
     //--------------------------------------------------------------------
     // calculation of stabilization parameter at integration point
@@ -748,23 +735,23 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
     // calculation of artificial diffusion
     //--------------------------------------------------------------------
 
-    if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ArtDiff()
+    if (LsReinitPara()->ArtDiff()
         != INPAR::SCATRA::artdiff_none)
     {
       // residual of reinit eq
       double scatrares = 0.0;
       // subgrid scalar (dummy)
       double sgphi = 0.0;
-      my::CalcResidualAndSubgrScalar(0,scatrares,sgphi,1.0,1.0,my::scatravarmanager_,diff_phi,0.0,signphi,tau);
+      my::CalcResidualAndSubgrScalar(0,scatrares,sgphi,1.0,1.0,diff_phi,0.0,signphi,tau);
 
       // compute artificial diffusion
       // diffusion coefficient has been explicitly set to zero
       // additionally stored in subgrid diffusion coefficient
-      my::CalcArtificialDiff(vol,0,my::diffmanager_,1.0,convelint,gradphinp,conv_phi,scatrares,tau);
+      my::CalcArtificialDiff(vol,0,1.0,convelint,gradphinp,conv_phi,scatrares,tau);
 
-      if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ArtDiff()
+      if (LsReinitPara()->ArtDiff()
           == INPAR::SCATRA::artdiff_crosswind)
-        Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerLsReinit<my::nsd_> >(my::diffmanager_)->SetVelocityForCrossWindDiff(convelint);
+        DiffManager()->SetVelocityForCrossWindDiff(convelint);
 
 #ifdef MODIFIED_EQ
       // recompute tau to get adaption to artificial diffusion
@@ -793,7 +780,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
     double sgphi(0.0);
     // compute residual of scalar transport equation and
     // subgrid-scale part of scalar
-    my::CalcResidualAndSubgrScalar(0,scatrares,sgphi,1.0,1.0,my::scatravarmanager_,diff_phi,0.0,signphi,tau);
+    my::CalcResidualAndSubgrScalar(0,scatrares,sgphi,1.0,1.0,diff_phi,0.0,signphi,tau);
 
     //----------------------------------------------------------------
     // evaluation of matrix and rhs
@@ -813,35 +800,35 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
 
     // subgrid-scale velocity (dummy)
     LINALG::Matrix<my::nen_,1> sgconv(true);
-    if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->LinForm() == INPAR::SCATRA::newton)
+    if (LsReinitPara()->LinForm() == INPAR::SCATRA::newton)
     {
       if (my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-        my::CalcMatMassStab(emat,0,taufac,1.0,1.0,my::scatravarmanager_,sgconv,diff);
+        my::CalcMatMassStab(emat,0,taufac,1.0,1.0,sgconv,diff);
     }
 
     //----------------------------------------------------------------
     // 2) element matrix: convective term in convective form
     //----------------------------------------------------------------
 
-    if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->LinForm() == INPAR::SCATRA::newton)
-      my::CalcMatConv(emat,0,timefacfac,1.0,my::scatravarmanager_,sgconv);
+    if (LsReinitPara()->LinForm() == INPAR::SCATRA::newton)
+      my::CalcMatConv(emat,0,timefacfac,1.0,sgconv);
 
     // convective stabilization of convective term (in convective form)
     // transient stabilization of convective term (in convective form)
-    if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->LinForm() == INPAR::SCATRA::newton)
+    if (LsReinitPara()->LinForm() == INPAR::SCATRA::newton)
     {
       if(my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-        my::CalcMatTransConvDiffStab(emat,0,timetaufac,1.0,my::scatravarmanager_,sgconv,diff);
+        my::CalcMatTransConvDiffStab(emat,0,timetaufac,1.0,sgconv,diff);
     }
 
 
     // calculation of diffusive element matrix
-    if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ArtDiff()
+    if (LsReinitPara()->ArtDiff()
         != INPAR::SCATRA::artdiff_none)
 #ifndef MODIFIED_EQ
-      CalcMatDiff(emat,0,dtfac,my::diffmanager_); //implicit treatment
+      CalcMatDiff(emat,0,dtfac); //implicit treatment
 #else
-      CalcMatDiff(emat,0,timefacfac,my::diffmanager_);
+      CalcMatDiff(emat,0,timefacfac);
 #endif
 
     //----------------------------------------------------------------
@@ -853,13 +840,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
     double rhstaufac = my::scatraparatimint_->TimeFacRhsTau() * taufac;
 
     // linearization of transient term
-    my::CalcRHSLinMass(erhs,0,rhsfac,fac,1.0,1.0,my::scatravarmanager_);
+    my::CalcRHSLinMass(erhs,0,rhsfac,fac,1.0,1.0);
 
     // the order of the following three functions is important
     // and must not be changed
     my::ComputeRhsInt(rhsint,1.0,1.0,hist);
     double rea_phi(0.0); // dummy
-    my::RecomputeScatraResForRhs(scatrares,0,diff,1.0,1.0,rea_phi,my::scatravarmanager_,my::reamanager_,rhsint);
+    my::RecomputeScatraResForRhs(scatrares,0,diff,1.0,1.0,rea_phi,rhsint);
     // note: the third function is not required here, since we neither have a subgrid velocity
     //       nor a conservative form
 
@@ -867,20 +854,20 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
     my::CalcRHSHistAndSource(erhs,0,fac,rhsint);
 
     // linearization of convective term
-    my::CalcRHSConv(erhs,0,rhsfac,my::scatravarmanager_);
+    my::CalcRHSConv(erhs,0,rhsfac);
 
     // linearization of diffusive term
-    if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ArtDiff()
+    if (LsReinitPara()->ArtDiff()
         != INPAR::SCATRA::artdiff_none)
 #ifndef MODIFIED_EQ
-      CalcRHSDiff(erhs,0,dtfac,my::diffmanager_,gradphinp);  //implicit treatment
+      CalcRHSDiff(erhs,0,dtfac,gradphinp);  //implicit treatment
 #else
-      CalcRHSDiff(erhs,0,rhsfac,my::diffmanager_,gradphinp);
+      CalcRHSDiff(erhs,0,rhsfac,gradphinp);
 #endif
 
     // linearization of stabilization terms
     if (my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
-      my::CalcRHSTransConvDiffStab(erhs,0,rhstaufac,1.0,scatrares,my::scatravarmanager_,sgconv,diff);
+      my::CalcRHSTransConvDiffStab(erhs,0,rhstaufac,1.0,scatrares,sgconv,diff);
 
   } // end: loop all Gauss points
 
@@ -914,7 +901,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatElliptic(
 
     // gradient of current scalar value at integration point
     LINALG::Matrix<my::nsd_,1> gradphinp(true);
-    if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->Project())
+    if (LsReinitPara()->Project())
       gradphinp.Multiply(my::econvelnp_,my::funct_);
     else
       gradphinp.Multiply(my::derxy_,my::ephinp_[0]);
@@ -934,7 +921,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatElliptic(
 
     // calculate nonlinear diffusivity
     double diff = 0.0;
-    switch (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->DiffFct())
+    switch (LsReinitPara()->DiffFct())
     {
       case INPAR::SCATRA::hyperbolic:
       {
@@ -994,7 +981,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatElliptic(
     // 1) element matrix: diffusion matrix
     //----------------------------------------------------------------
 
-    my::CalcMatDiff(emat,0,fac,my::diffmanager_);
+    my::CalcMatDiff(emat,0,fac);
 
     //----------------------------------------------------------------
     // 2) element right hand side
@@ -1005,7 +992,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatElliptic(
     // set gradphi for rhs term
     my::scatravarmanager_->SetGradPhi(0,gradphinp);
 
-    my::CalcRHSDiff(erhs,0,-fac,my::diffmanager_,my::scatravarmanager_);
+    my::CalcRHSDiff(erhs,0,-fac);
 
   } // end: loop all Gauss points
 
@@ -1033,27 +1020,27 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SignFunction(
   )
 {
   // compute interface thickness
-  const double epsilon = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->InterfaceThicknessFac() * charelelength;
+  const double epsilon = LsReinitPara()->InterfaceThicknessFac() * charelelength;
 
-  if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->SignType()
+  if (LsReinitPara()->SignType()
       == INPAR::SCATRA::signtype_nonsmoothed)
   {
     if      (phizero < 0.0) sign_phi = -1.0;
     else if (phizero > 0.0) sign_phi = +1.0;
     else                    sign_phi =  0.0;
   }
-  else if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->SignType()
+  else if (LsReinitPara()->SignType()
            == INPAR::SCATRA::signtype_SussmanSmerekaOsher1994)
   {
     sign_phi = phizero/sqrt(phizero*phizero + epsilon*epsilon);
   }
-  else if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->SignType()
+  else if (LsReinitPara()->SignType()
            == INPAR::SCATRA::signtype_PengEtAl1999)
   {
     const double grad_norm_phi = gradphi.Norm2();
     sign_phi = phi/sqrt(phi*phi + epsilon*epsilon * grad_norm_phi*grad_norm_phi);
   }
-  else if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->SignType()
+  else if (LsReinitPara()->SignType()
            == INPAR::SCATRA::signtype_SussmanFatemi1999)
   {
     if(fabs(epsilon) < 1e-15) dserror("divide by zero in evaluate for smoothed sign function");
@@ -1078,7 +1065,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::DerivSignFunction(
   )
 {
   // compute interface thickness
-  const double epsilon = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->InterfaceThicknessFac() * charelelength;
+  const double epsilon = LsReinitPara()->InterfaceThicknessFac() * charelelength;
 
   if (phizero < -epsilon)       deriv_sign = 0.0;
   else if (phizero > epsilon)   deriv_sign = 0.0;
@@ -1103,7 +1090,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcCharEleLengthReinit(
   //---------------------------------------------------------------------
   // select from various definitions for characteristic element length
   //---------------------------------------------------------------------
-  switch (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->CharEleLengthReinit())
+  switch (LsReinitPara()->CharEleLengthReinit())
   {
     // a) streamlength due to Kees et al. (2011)
     case INPAR::SCATRA::streamlength_reinit:
@@ -1167,16 +1154,15 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcMatDiff(
   Epetra_SerialDenseMatrix&     emat,
   const int                     k,
-  const double                  timefacfac,
-  Teuchos::RCP<ScaTraEleDiffManager>  diffmanager
+  const double                  timefacfac
   )
 {
   // flag for anisotropic diffusion
-  const bool crosswind = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerLsReinit<my::nsd_> >(diffmanager)->HaveCrossWindDiff();
+  const bool crosswind = DiffManager()->HaveCrossWindDiff();
 
   // set scalar diffusion: isotropic or factor for anisotropic tensor in case of
   // crosswind diffusion
-  double diffus = diffmanager->GetIsotropicDiff(k);
+  double diffus = DiffManager()->GetIsotropicDiff(k);
 
   // diffusive factor
   const double fac_diffus = timefacfac * diffus;
@@ -1194,7 +1180,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcMatDiff(
       // inside 'GetLaplacianWeakForm'
       if (crosswind)
         my::GetLaplacianWeakForm(laplawf,
-                                 Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerLsReinit<my::nsd_> >(diffmanager)->GetCrosswindTensor(),
+                                 DiffManager()->GetCrosswindTensor(),
                                  ui,vi);
       else
         my::GetLaplacianWeakForm(laplawf,ui,vi);
@@ -1214,21 +1200,20 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcRHSDiff(
   Epetra_SerialDenseVector&     erhs,
   const int                     k,
   const double                  rhsfac,
-  Teuchos::RCP<ScaTraEleDiffManager>  diffmanager,
   const LINALG::Matrix<my::nsd_,1>& gradphi
   )
 {
   // flag for anisotropic diffusion
-  const bool crosswind = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerLsReinit<my::nsd_> >(diffmanager)->HaveCrossWindDiff();
+  const bool crosswind = DiffManager()->HaveCrossWindDiff();
 
   // set scalar diffusion: isotropic or factor for anisotropic tensor in case of
   // crosswind diffusion
-  double vrhs = rhsfac*diffmanager->GetIsotropicDiff(k);
+  double vrhs = rhsfac*DiffManager()->GetIsotropicDiff(k);
 
   LINALG::Matrix<my::nsd_,1> gradphirhs(true);
   if (crosswind)
     // in case of anisotropic or crosswind diffusion, multiply 'gradphi' with diffusion tensor
-    gradphirhs.Multiply(Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerLsReinit<my::nsd_> >(diffmanager)->GetCrosswindTensor(),gradphi);
+    gradphirhs.Multiply(DiffManager()->GetCrosswindTensor(),gradphi);
   else
     gradphirhs.Update(1.0,gradphi,0.0);
 
@@ -1401,7 +1386,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcPenaltyTerm(
       // evaluate mat and rhs
       //--------------------------------------------------------------------------------------------
       // caution density of original function is replaced by penalty parameter here
-      my::CalcMatMass(emat,0,fac,dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->PenaltyPara());
+      my::CalcMatMass(emat,0,fac,LsReinitPara()->PenaltyPara());
 
       }// loop Gaussian points
 

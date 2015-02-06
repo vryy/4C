@@ -263,7 +263,6 @@ DRT::Element* DRT::ELEMENTS::Transport::Clone() const
 void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
 {
   // the standard part:
-  //mat_ = MAT::Material::Factory(matnum);  // not allowed since mat_ is private
   DRT::Element::SetMaterial(matnum);
 
   // the special part:

@@ -26,30 +26,23 @@ Maintainer: Ursula Rasthofer / Volker Gravemeier
 
 
 /*----------------------------------------------------------------------*
- * Action type: EvaluateService
+ | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateService(
-  DRT::ELEMENTS::Transport*  ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
-  )
+int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(
+    DRT::ELEMENTS::Transport*   ele,
+    Teuchos::ParameterList&     params,
+    DRT::Discretization&        discretization,
+    const SCATRA::Action&       action,
+    const std::vector<int> &    lm,
+    Epetra_SerialDenseMatrix&   elemat1_epetra,
+    Epetra_SerialDenseMatrix&   elemat2_epetra,
+    Epetra_SerialDenseVector&   elevec1_epetra,
+    Epetra_SerialDenseVector&   elevec2_epetra,
+    Epetra_SerialDenseVector&   elevec3_epetra
+    )
 {
-  // get element coordinates
-  GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
-
-  // set element id
-  my::eid_ = ele->Id();
-
-  // check for the action parameter
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
-
+  // determine and evaluate action
   if (action == SCATRA::calc_dissipation or action == SCATRA::calc_mean_Cai)
   {
     if (my::scatraparatimint_->IsGenAlpha())
@@ -94,15 +87,16 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateService(
   }
   default:
   {
-    my::EvaluateService(ele,
-                        params,
-                        discretization,
-                        lm,
-                        elemat1_epetra,
-                        elemat2_epetra,
-                        elevec1_epetra,
-                        elevec2_epetra,
-                        elevec3_epetra);
+    my::EvaluateAction(ele,
+                       params,
+                       discretization,
+                       action,
+                       lm,
+                       elemat1_epetra,
+                       elemat2_epetra,
+                       elevec1_epetra,
+                       elevec2_epetra,
+                       elevec3_epetra);
     break;
   }
   } // switch(action)
@@ -148,6 +142,48 @@ const DRT::Element*        ele
 
   return;
 } // ScaTraEleCalcLoma::CalculateDomain
+
+
+/*-----------------------------------------------------------------------------------------*
+ | extract element based or nodal values and return extracted values of phinp   fang 02/15 |
+ *-----------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(
+  DRT::ELEMENTS::Transport*  ele,
+  Teuchos::ParameterList&    params,
+  DRT::Discretization&       discretization,
+  const std::vector<int>&    lm
+)
+{
+  // add loma-specific values
+  if(my::scatraparatimint_->IsGenAlpha())
+  {
+    // extract local values from global vector
+    Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
+    if (phiam==Teuchos::null) dserror("Cannot get state vector 'phiam'");
+    std::vector<double> myphiam(lm.size());
+    DRT::UTILS::ExtractMyValues(*phiam,myphiam,lm);
+
+    // fill element array
+    for (int i=0;i<my::nen_;++i)
+    {
+      for (int k = 0; k< my::numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        ephiam_[k](i,0) = myphiam[k+(i*my::numdofpernode_)];
+      }
+    } // for i
+  }
+
+  // get thermodynamic pressure
+  thermpressnp_ = params.get<double>("thermodynamic pressure");
+  thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
+  if (my::scatraparatimint_->IsGenAlpha())
+    thermpressam_ = params.get<double>("thermodynamic pressure at n+alpha_M");
+
+  // call base class routine
+  return my::ExtractElementAndNodeValues(ele,params,discretization,lm);
+}
 
 
 // template classes

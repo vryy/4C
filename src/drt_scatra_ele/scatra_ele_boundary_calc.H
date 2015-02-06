@@ -68,12 +68,12 @@ class ScaTraEleParameter;
 class ScaTraEleParameterTimInt;
 
 template<DRT::Element::DiscretizationType distype>
-class ScaTraBoundaryImpl: public ScaTraBoundaryInterface
+class ScaTraEleBoundaryCalc: public ScaTraBoundaryInterface
 {
 public:
 
   //! Constructor
-  ScaTraBoundaryImpl(const int numdofpernode, const int numscal);
+  ScaTraEleBoundaryCalc(const int numdofpernode, const int numscal);
 
   //! number of element nodes (nomenclature: T. Hughes, The finite element method)
   static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

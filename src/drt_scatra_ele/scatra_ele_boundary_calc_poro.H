@@ -25,9 +25,9 @@ namespace ELEMENTS
 {
 
 template<DRT::Element::DiscretizationType distype>
-class ScaTraEleBoundaryCalcPoro : public ScaTraBoundaryImpl<distype>
+class ScaTraEleBoundaryCalcPoro : public ScaTraEleBoundaryCalc<distype>
 {
-  typedef DRT::ELEMENTS::ScaTraBoundaryImpl<distype> my;
+  typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
 
 public:
 

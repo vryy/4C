@@ -129,8 +129,6 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetMaterialParams(
   double&             densn,     //!< density at t_(n)
   double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
   double&             densam,    //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
   double&             visc,      //!< fluid viscosity
   const int           iquad      //!< id of current gauss point
   )
@@ -150,7 +148,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      Materials(singlemat,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+      Materials(singlemat,k,densn,densnp,densam,visc,iquad);
     }
   }
   else if (material->MaterialType() == INPAR::MAT::m_matlist_reactions)
@@ -166,15 +164,15 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      Materials(singlemat,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+      Materials(singlemat,k,densn,densnp,densam,visc,iquad);
 
-      SetAdvancedReactionTerms(reamanager,k,1.0); //every reaction calculation stuff happens in here!!
+      SetAdvancedReactionTerms(k,1.0); //every reaction calculation stuff happens in here!!
     }
 
   }
   else
   {
-    Materials(material,0,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    Materials(material,0,densn,densnp,densam,visc,iquad);
   }
   return;
 } //ScaTraEleCalc::GetMaterialParams
@@ -189,8 +187,6 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Materials(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,         //!< fluid viscosity
   const int                               iquad         //!< id of current gauss point
   )
@@ -198,13 +194,13 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Materials(
   switch(material->MaterialType())
   {
   case INPAR::MAT::m_scatra:
-    my::MatScaTra(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    my::MatScaTra(material,k,densn,densnp,densam,visc,iquad);
     break;
   case INPAR::MAT::m_biofilm:
-    MatBioFilm(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    MatBioFilm(material,k,densn,densnp,densam,visc,iquad);
     break;
   case INPAR::MAT::m_scatra_growth_scd:
-    MatGrowthScd(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    MatGrowthScd(material,k,densn,densnp,densam,visc,iquad);
     break;
   default:
     dserror("Material type %i is not supported",material->MaterialType());
@@ -224,8 +220,6 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatBioFilm(
     double&                                 densn,    //!< density at t_(n)
     double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
     double&                                 densam,   //!< density at t_(n+alpha_M)
-    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-    Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
     double&                                 visc,         //!< fluid viscosity
     const int                               iquad         //!< id of current gauss point
   )
@@ -234,15 +228,15 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatBioFilm(
     = Teuchos::rcp_dynamic_cast<const MAT::Biofilm>(material);
 
   // get constant diffusivity
-  diffmanager->SetIsotropicDiff(actmat->Diffusivity(),k);
+  my::diffmanager_->SetIsotropicDiff(actmat->Diffusivity(),k);
 
   // get substrate concentration at n+1 or n+alpha_F at integration point
   const double csnp = my::funct_.Dot(my::ephinp_[k]);
 
   // set reaction coefficient
-  reamanager->SetReaCoeff(actmat->ComputeReactionCoeff(csnp),k);
+  my::reamanager_->SetReaCoeff(actmat->ComputeReactionCoeff(csnp),k);
   // set derivative of reaction coefficient
-  reamanager->SetReaCoeffDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp),k,k);
+  my::reamanager_->SetReaCoeffDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp),k,k);
 
   // set density at various time steps and density gradient factor to 1.0/0.0
   densn      = 1.0;
@@ -262,8 +256,6 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatGrowthScd(
     double&                                 densn,    //!< density at t_(n)
     double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
     double&                                 densam,   //!< density at t_(n+alpha_M)
-    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-    Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
     double&                                 visc,         //!< fluid viscosity
     const int                               iquad         //!< id of current gauss point
   )
@@ -276,7 +268,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatGrowthScd(
     = Teuchos::rcp_dynamic_cast<const MAT::ScatraGrowthScd>(material);
 
   // get and save constant diffusivity
-  diffmanager->SetIsotropicDiff(actmat->Diffusivity(),k);
+  my::diffmanager_->SetIsotropicDiff(actmat->Diffusivity(),k);
 
   //strategy to obtain theta from the structure at equivalent gauss-point
   //access structure discretization
@@ -306,9 +298,9 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatGrowthScd(
     const double csnp = my::funct_.Dot(my::ephinp_[k]);
 
     // set reaction coefficient
-    reamanager->SetReaCoeff(actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe),k);
+    my::reamanager_->SetReaCoeff(actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe),k);
     // set derivative of reaction coefficient
-    reamanager->SetReaCoeffDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp,theta,thetaold,1.0),k,k);
+    my::reamanager_->SetReaCoeffDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp,theta,thetaold,1.0),k,k);
 
     // set density at various time steps and density gradient factor to 1.0/0.0
     densn      = 1.0;
@@ -340,11 +332,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetRhsInt(
   const int    k        //!< index of current scalar
   )
 {
-  // dynamic cast to Advanced_Reaction-specific reaction manager
-  Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(my::reamanager_);
-
                                        //... + reaction terms not depending on phi(k) -> source term
-  rhsint = my::bodyforce_[k].Dot(my::funct_) + densnp*reamanageradvreac->GetReaBodyForce(k);
+  rhsint = my::bodyforce_[k].Dot(my::funct_) + densnp*ReaManager()->GetReaBodyForce(k);
 
   return;
 }
@@ -736,23 +725,18 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
   const double                       timetaufac,
   const double                       taufac,
   const double                       densnp,
-  Teuchos::RCP< varmanager >         varmanager,
-  Teuchos::RCP<ScaTraEleReaManager>  reamanager,
   const LINALG::Matrix<my::nen_,1>&      sgconv,
   const LINALG::Matrix<my::nen_,1>&      diff
   )
 {
   // -----------------first care for Term K(c)*(\partial_c c)=Id*K(c)--------------------------------------
 
-  my::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,varmanager,reamanager,sgconv,diff);
+  my::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,sgconv,diff);
 
-  const double&                       phinp = varmanager->Phinp(k);
-  const LINALG::Matrix<my::nen_,1>&   conv  = varmanager->Conv();
+  const double&                       phinp = my::scatravarmanager_->Phinp(k);
+  const LINALG::Matrix<my::nen_,1>&   conv  = my::scatravarmanager_->Conv();
 
   // -----------------second care for Term (\partial_c K(c)) .* c - (\partial_c f_{reabody}(c))------------
-
-  // dynamic cast to Advanced_Reaction-specific reaction manager
-  Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(reamanager);
 
   LINALG::Matrix<my::nen_,1> functint = my::funct_;
   if (not my::scatrapara_->MatGP())
@@ -760,8 +744,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
 
   for (int j=0; j<my::numscal_ ;j++)
   {
-    const double fac_reac        = timefacfac*densnp*( reamanager->GetReaCoeffDerivMatrix(k,j)*phinp - reamanageradvreac->GetReaBodyForceDerivMatrix(k,j) );
-    const double timetaufac_reac = timetaufac*densnp*( reamanager->GetReaCoeffDerivMatrix(k,j)*phinp - reamanageradvreac->GetReaBodyForceDerivMatrix(k,j) );
+    const double fac_reac        = timefacfac*densnp*( my::reamanager_->GetReaCoeffDerivMatrix(k,j)*phinp - ReaManager()->GetReaBodyForceDerivMatrix(k,j) );
+    const double timetaufac_reac = timetaufac*densnp*( my::reamanager_->GetReaCoeffDerivMatrix(k,j)*phinp - ReaManager()->GetReaBodyForceDerivMatrix(k,j) );
 
     //----------------------------------------------------------------
     // standard Galerkin reactive term
@@ -831,7 +815,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
         {
           const int fui = ui*my::numdofpernode_+j;
 
-          emat(fvi,fui) += v*(conv(ui)+reamanager->GetReaCoeff(k)*my::funct_(ui));
+          emat(fvi,fui) += v*(conv(ui)+my::reamanager_->GetReaCoeff(k)*my::funct_(ui));
         }
       }
 
@@ -858,7 +842,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
         // reactive stabilization of transient term
         for (int vi=0; vi<my::nen_; ++vi)
         {
-          const double v = my::scatrapara_->USFEMGLSFac()*taufac*densnp*reamanager->GetReaCoeff(k)*densnp*functint(vi);
+          const double v = my::scatrapara_->USFEMGLSFac()*taufac*densnp*my::reamanager_->GetReaCoeff(k)*densnp*functint(vi);
           const int fvi = vi*my::numdofpernode_+k;
 
           for (int ui=0; ui<my::nen_; ++ui)
@@ -869,7 +853,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
           }
         }
 
-        if (my::use2ndderiv_ and reamanager->GetReaCoeff(k)!=0.0)
+        if (my::use2ndderiv_ and my::reamanager_->GetReaCoeff(k)!=0.0)
           dserror("Second order reactive stabilization is not fully implemented!! ");
       }
     }
@@ -917,27 +901,19 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetAdvancedReactionCoefficien
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::SetAdvancedReactionTerms(
-    Teuchos::RCP<ScaTraEleReaManager>       reamanager,
     const int                               k,
     const double                            scale
                                     )
 {
-  // dynamic cast to Advanced_Reaction-specific reaction manager
-  Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(reamanager);
-  if(reamanageradvreac==Teuchos::null)
-    dserror("cast to ScaTraEleReaManagerAdvReac failed");
+  ReaManager()->SetReaBodyForce( CalcReaBodyForceTerm(k)*scale ,k);
 
-  reamanageradvreac->SetReaBodyForce( CalcReaBodyForceTerm(k)*scale ,k);
-
-  reamanageradvreac->SetReaCoeff( CalcReaCoeff(k)*scale ,k);
+  ReaManager()->SetReaCoeff( CalcReaCoeff(k)*scale ,k);
 
   for (int j=0; j<my::numscal_ ;j++)
   {
+    ReaManager()->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j)*scale ,k,j );
 
-    reamanageradvreac->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j)*scale ,k,j );
-
-    reamanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j)*scale ,k,j );
-
+    my::reamanager_->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j)*scale ,k,j );
   }
 
 }

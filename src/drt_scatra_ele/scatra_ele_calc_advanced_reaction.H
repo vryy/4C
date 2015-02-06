@@ -24,6 +24,8 @@ namespace DRT
 {
 namespace ELEMENTS
 {
+// forward declaration
+class ScaTraEleReaManagerAdvReac;
 
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcAdvReac : public virtual ScaTraEleCalc<distype>
@@ -35,10 +37,10 @@ protected:
 private:
 
   typedef ScaTraEleCalc<distype> my;
-  typedef ScaTraEleInternalVariableManager <my::nsd_,my::nen_>  varmanager;
+  typedef ScaTraEleInternalVariableManager<my::nsd_,my::nen_> varmanager;
 
 public:
-  virtual ~ScaTraEleCalcAdvReac() {}
+  virtual ~ScaTraEleCalcAdvReac(){return;};
 
   /// Singleton access method
   static ScaTraEleCalcAdvReac<distype> * Instance(
@@ -57,8 +59,6 @@ protected:
     double&             densn,     //!< density at t_(n)
     double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
     double&             densam,    //!< density at t_(n+alpha_M)
-    Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-    Teuchos::RCP<ScaTraEleReaManager>  reamanager,   //!< reaction manager
     double&             visc,       //!< fluid viscosity
     const int           iquad=-1    //!< id of current gauss point (default = -1)
   );
@@ -70,8 +70,6 @@ protected:
     double&                                 densn,    //!< density at t_(n)
     double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
     double&                                 densam,   //!< density at t_(n+alpha_M)
-    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-    Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
     double&                                 visc,      //!< fluid viscosity
     const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
@@ -84,8 +82,6 @@ protected:
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc,      //!< fluid viscosity
       const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
@@ -98,8 +94,6 @@ protected:
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
       double&                                 densam,   //!< density at t_(n+alpha_M)
-      Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
       double&                                 visc,      //!< fluid viscosity
       const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
@@ -213,8 +207,6 @@ protected:
     const double                       timetaufac,  //!< domain-integration factor times time-integration factor times tau
     const double                       taufac,      //!< domain-integration factor times tau
     const double                       densnp,      //!< density at time_(n+1)
-    Teuchos::RCP< varmanager >         varmanager,  //!< variable manager
-    Teuchos::RCP<ScaTraEleReaManager>  reamanager,  //!< reaction manager
     const LINALG::Matrix<my::nen_,1>&      sgconv,      //!< subgrid-scale convective operator
     const LINALG::Matrix<my::nen_,1>&      diff         //!< laplace term
   );
@@ -225,7 +217,6 @@ protected:
 
 
   void SetAdvancedReactionTerms(
-      Teuchos::RCP<ScaTraEleReaManager>       reamanager,
       const int                               k,
       const double                            scale=1.0
   );
@@ -240,8 +231,9 @@ protected:
   std::vector<double> reacstart_;             //!< constant by which the reaction starts
   LINALG::Matrix<my::nen_,1> funct_elementcenter_; //! array for shape function at element center
 
+  //! get reaction manager for advanced reaction
+  Teuchos::RCP<ScaTraEleReaManagerAdvReac> ReaManager(){return Teuchos::rcp_static_cast<ScaTraEleReaManagerAdvReac>(my::reamanager_);};
 }; //end ScaTraEleCalcAdvReac
-
 
 
 /// Scatra reaction manager for Advanced_Reaction

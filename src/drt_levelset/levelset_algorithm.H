@@ -229,7 +229,7 @@ namespace SCATRA
     /// convergence check for reinit equation according to Sussman et al. 1994 (helper function for ReinitEq())
     bool ConvergenceCheckReinit();
 
-    /// calculation of nodal velocity field via L2-projection for reinitalization (helper function for ReinitEq())
+    /// calculation of nodal velocity field via L2-projection for reinitialization (helper function for ReinitEq())
     void CalcNodeBasedReinitVel();
 
     /// update phi within the reinitialization loop

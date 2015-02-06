@@ -100,16 +100,12 @@ void SCATRA::ScaTraTimIntElch::Init()
     dserror("Solver type has to be set to >>nonlinear<< for ion transport.");
 
   // check validity of material and element formulation
-  // important for porous Diffusion-Conduction formulation using material ElchMat
-  if(elchtype_==INPAR::ELCH::elchtype_diffcond)
-  {
-    Teuchos::ParameterList eleparams;
-    eleparams.set<int>("action",SCATRA::check_scatra_element_parameter);
-    eleparams.set<int>("scatratype",scatratype_);
-
-    // call standard loop over elements
-    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  }
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action",SCATRA::check_scatra_element_parameter);
+  eleparams.set<int>("scatratype",scatratype_);
+  if(isale_)
+    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   frt_ = INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const * elchparams_->get<double>("TEMPERATURE"));
 
@@ -1635,7 +1631,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         std::cout<<"  | Defined GSTAT_LENGTH_CURRENTPATH:               "<<std::setw(6)<<std::right<< effective_length << std::endl;
 
         if((*actualcurrent)[condid_cathode]!=0.0)
-          std::cout<<"  | Resistance based on the intial conductivity:    "<<std::setw(6)<<std::right<< effective_length/((*sigma_)[numscal_]*meanelectrodesurface) <<std::endl;
+          std::cout<<"  | Resistance based on the initial conductivity:    "<<std::setw(6)<<std::right<< effective_length/((*sigma_)[numscal_]*meanelectrodesurface) <<std::endl;
         std::cout<<"  | Resistance based on .(see GSTAT_APPROX_ELECT_RESIST): "<<std::setw(6)<<std::right<< resistance <<std::endl;
         std::cout<<"  | New guess for:                                  "<<std::endl;
         std::cout<<"  | - ohmic potential increment:                    "<<std::setw(12)<<std::right<< potinc_ohm <<std::endl;

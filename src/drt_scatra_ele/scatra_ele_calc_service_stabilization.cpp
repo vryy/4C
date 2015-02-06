@@ -576,7 +576,6 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcArtificialDiff(
   const double                  vol,        //!< element volume
   const int                     k,          //!< id of current scalar
-  Teuchos::RCP<ScaTraEleDiffManager> diffmanager,  //!< diffusion managery
   const double                  densnp,     //!< density at t_(n+1)
   const LINALG::Matrix<nsd_,1>& convelint,  //!< convective velocity at integration point
   const LINALG::Matrix<nsd_,1>& gradphi,    //!< scalar gradient
@@ -842,7 +841,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcResidualAndSubgrScalar(
   double&                     sgphi,      //!< residual-based subgrid-scale scalar
   const double                densam,     //!< density at t_(n+am)
   const double                densnp,     //!< density at t_(n+1)
-  Teuchos::RCP< varmanager >  varmanager, //! variable manager
   const double                diff_phi,   //!< diffusive contribution
   const double                rea_phi,    //!< reactive contribution
   const double                rhsint,     //!< rhs at gauss point
@@ -850,11 +848,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcResidualAndSubgrScalar(
   )
 {
   // scalar at t_(n+1)
-  const double   phinp = varmanager->Phinp(k);
+  const double   phinp = scatravarmanager_->Phinp(k);
   // history of time integration
-  const double   hist = varmanager->Hist(k);
+  const double   hist = scatravarmanager_->Hist(k);
   // convective contribution
-  const double   conv_phi = varmanager->ConvPhi(k);
+  const double   conv_phi = scatravarmanager_->ConvPhi(k);
 
   if (scatraparatimint_->IsGenAlpha())
   {

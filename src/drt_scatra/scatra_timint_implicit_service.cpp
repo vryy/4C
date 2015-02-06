@@ -550,9 +550,13 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
 {
   // assemble system: M phidt^0 = f^n - K\phi^n - C(u_n)\phi^n
   CalcInitialPhidtAssemble();
+
   // solve for phidt_0
   CalcInitialPhidtSolve();
+
+  return;
 } // SCATRA::ScaTraTimIntImpl::CalcInitialPhidt
+
 
 /*----------------------------------------------------------------------*
  | calculate initial time derivative of phi at t=t_0 (assembly)gjb 08/08|

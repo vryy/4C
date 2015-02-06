@@ -84,15 +84,13 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::Materials(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,         //!< fluid viscosity
   const int                               iquad         //!< id of current gauss point
 
   )
 {
   if (material->MaterialType() == INPAR::MAT::m_myocard)
-    MatMyocard(material,k,densn,densnp,densam,diffmanager,reamanager,visc,iquad);
+    MatMyocard(material,k,densn,densnp,densam,visc,iquad);
   else dserror("Material type is not supported");
 
   return;
@@ -109,8 +107,6 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::MatMyocard(
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
   double&                                 densam,   //!< density at t_(n+alpha_M)
-  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
   double&                                 visc,     //!< fluid viscosity
   const int                               iquad   //!< id of current gauss point (default = -1)
   )
@@ -119,10 +115,10 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::MatMyocard(
     = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
 
   // dynamic cast to Advanced_Reaction-specific reaction manager
-  Teuchos::RCP<ScaTraEleReaManagerAdvReac> advreamanager = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(reamanager);
+  Teuchos::RCP<ScaTraEleReaManagerAdvReac> advreamanager = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(my::reamanager_);
 
   // dynamic cast to anisotropic diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerAniso<my::nsd_> > diffmanageraniso = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerAniso<my::nsd_> >(diffmanager);
+  Teuchos::RCP<ScaTraEleDiffManagerAniso<my::nsd_> > diffmanageraniso = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerAniso<my::nsd_> >(my::diffmanager_);
 
   // get constant diffusivity
   LINALG::Matrix<my::nsd_,my::nsd_> difftensor(true);
@@ -138,8 +134,8 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::MatMyocard(
   advreamanager->SetReaBodyForceDerivMatrix(-actmat->ReaCoeffDeriv(phinp, my::scatraparatimint_->Dt()),k,k);
   advreamanager->SetReaCoeff(0.0, k);
   advreamanager->SetReaCoeffDerivMatrix(0.0,k,k);
-  reamanager->SetReaCoeff(0.0, k);
-  reamanager->SetReaCoeffDerivMatrix(0.0, k, k);
+  my::reamanager_->SetReaCoeff(0.0, k);
+  my::reamanager_->SetReaCoeffDerivMatrix(0.0, k, k);
 
   return;
 } // ScaTraEleCalcCardiacMonodomain<distype>::MatMyocard
@@ -147,7 +143,6 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::MatMyocard(
 
 
 // template classes
-
 // 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2>;
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line3>;
@@ -169,4 +164,3 @@ template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet10
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::pyramid5>;
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::nurbs9>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::nurbs27>;
-

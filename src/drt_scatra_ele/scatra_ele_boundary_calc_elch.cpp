@@ -88,7 +88,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(const int numdofpernode, const int numscal)
   : // constructor of base class
-    my::ScaTraBoundaryImpl(numdofpernode,numscal),
+    my::ScaTraEleBoundaryCalc(numdofpernode,numscal),
     // pointer to class ScaTraEleParameter
     elchpara_(dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(DRT::ELEMENTS::ScaTraEleParameterElch::Instance())),
     // type of closing equation for electric potential
@@ -1426,7 +1426,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
   } // end loop over scalars
 
   return;
-} // ScaTraBoundaryImpl<distype>::EvaluateElchBoundaryKinetics()
+} // ScaTraEleBoundaryCalc<distype>::EvaluateElchBoundaryKinetics()
 
 
 /*-------------------------------------------------------------------------------------*
@@ -2212,7 +2212,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
   params.set<double>("currentresidual",currentresidual);
 
   return;
-} //ScaTraBoundaryImpl<distype>::ElectrodeStatus
+} //ScaTraEleBoundaryCalc<distype>::ElectrodeStatus
 
 
 /*-------------------------------------------------------------------------------------*

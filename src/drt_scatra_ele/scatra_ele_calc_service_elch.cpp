@@ -32,45 +32,26 @@ Maintainer: Andreas Ehrl
 
 #include "scatra_ele_calc_elch.H"
 
+
 /*----------------------------------------------------------------------*
- * Action type: EvaluateService
+ | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
-  DRT::ELEMENTS::Transport*  ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
-  )
+int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
+    DRT::ELEMENTS::Transport*   ele,
+    Teuchos::ParameterList&     params,
+    DRT::Discretization&        discretization,
+    const SCATRA::Action&       action,
+    const std::vector<int> &    lm,
+    Epetra_SerialDenseMatrix&   elemat1_epetra,
+    Epetra_SerialDenseMatrix&   elemat2_epetra,
+    Epetra_SerialDenseVector&   elevec1_epetra,
+    Epetra_SerialDenseVector&   elevec2_epetra,
+    Epetra_SerialDenseVector&   elevec3_epetra
+    )
 {
-  // get element coordinates
-  GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
-
-  // Now do the nurbs specific stuff (for isogeometric elements)
-  if(DRT::NURBS::IsNurbs(distype))
-  {
-    // access knots and weights for this element
-    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
-
-    // if we have a zero sized element due to a interpolated point -> exit here
-    if(zero_size)
-      return(0);
-  } // Nurbs specific stuff
-
-  // set element id
-  my::eid_ = ele->Id();
-
-  INPAR::ELCH::EquPot equpot = dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(my::scatrapara_)->EquPot();
-
-  // check for the action parameter
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
-
-  switch (action)
+  // determine and evaluate action
+  switch(action)
   {
   case SCATRA::check_scatra_element_parameter:
   {
@@ -90,7 +71,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
       );
 
     // do another loop over the integration points for the potential:
-    // At this point time is not so critical since the CalcIntialTimeDerivative()
+    // At this point time is not so critical since the CalcInitialTimeDerivative()
     // is called once in the beginning of the simulation!
 
     // we put a dummy mass matrix here in order to have a regular
@@ -160,10 +141,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
 
     // material parameter at the element center
     if (not my::scatrapara_->MatGP())
-      this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
-
-    // dynamic cast to elch-specific diffusion manager
-    Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
+      this->GetMaterialParams(ele,densn,densnp,densam,visc);
 
     //----------------------------------------------------------------------
     // integration loop for one element
@@ -179,14 +157,14 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
       // get material parameters (evaluation at integration point)
       //----------------------------------------------------------------------
       if (my::scatrapara_->MatGP())
-        this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc,iquad);
+        this->GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
       // set internal variables
       SetInternalVariablesForMatAndRHS();
 
       // access control parameter for flux calculation
-      INPAR::SCATRA::FluxType fluxtype = elchpara_->WriteFlux();
-      Teuchos::RCP<std::vector<int> > writefluxids = elchpara_->WriteFluxIds();
+      INPAR::SCATRA::FluxType fluxtype = ElchPara()->WriteFlux();
+      Teuchos::RCP<std::vector<int> > writefluxids = ElchPara()->WriteFluxIds();
 
       // do a loop for systems of transported scalars
       for (std::vector<int>::iterator it = writefluxids->begin(); it!=writefluxids->end(); ++it)
@@ -203,12 +181,12 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
         if((*it) != my::numdofpernode_)
         {
           k=(*it)-1;
-          CalculateFlux(q,fluxtype,k,fac,varmanager_,dme);
+          CalculateFlux(q,fluxtype,k,fac);
         }
         else if ((*it) == my::numdofpernode_)
         {
           k=my::numdofpernode_-1;
-          CalculateCurrent(q,fluxtype,fac,varmanager_,dme);
+          CalculateCurrent(q,fluxtype,fac);
         }
         else
           dserror("Flux id, which should be calculated, does not exit in the dof set.");
@@ -282,7 +260,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
     if(discretization.Comm().MyPID()==0)
       std::cout << "Electrolyte conductivity evaluated at global element " << ele->Id() << ":" << std::endl;
 
-    CalculateConductivity(ele,equpot,elevec1_epetra);
+    CalculateConductivity(ele,ElchPara()->EquPot(),elevec1_epetra);
     break;
   }
   case SCATRA::calc_elch_initial_potential:
@@ -305,27 +283,22 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateService(
       epotnp_(i) = myphi0[i*my::numdofpernode_+my::numscal_];
     } // for i
 
-    CalculateElectricPotentialField(ele,equpot,elemat1_epetra,elevec1_epetra);
-
-    break;
-  }
-  case SCATRA::calc_elch_electrode_soc:
-  {
-    CalculateElectrodeSOC(ele,params,discretization,lm);
+    CalculateElectricPotentialField(ele,ElchPara()->EquPot(),elemat1_epetra,elevec1_epetra);
 
     break;
   }
   default:
   {
-    my::EvaluateService(ele,
-                        params,
-                        discretization,
-                        lm,
-                        elemat1_epetra,
-                        elemat2_epetra,
-                        elevec1_epetra,
-                        elevec2_epetra,
-                        elevec3_epetra);
+    my::EvaluateAction(ele,
+                       params,
+                       discretization,
+                       action,
+                       lm,
+                       elemat1_epetra,
+                       elemat2_epetra,
+                       elevec1_epetra,
+                       elevec2_epetra,
+                       elevec3_epetra);
     break;
   }
   } // switch(action)
@@ -344,9 +317,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
   Epetra_SerialDenseVector&             errors
   )
 {
-  // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
-
   //at the moment, there is only one analytical test problem available!
   if (DRT::INPUT::get<SCATRA::Action>(params,"action") != SCATRA::calc_error)
     dserror("How did you get here?");
@@ -357,7 +327,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
 
   // set constants for analytical solution
   const double t = my:: scatraparatimint_->Time();
-  const double frt = elchpara_->FRT();
+  const double frt = ElchPara()->FRT();
 
   // density at t_(n)
   double densn(1.0);
@@ -370,7 +340,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
   double visc(0.0);
 
   // get material parameter (constants values)
-  this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
+  this->GetMaterialParams(ele,densn,densnp,densam,visc);
 
 //  if(diffcond_==true)
 //  {
@@ -431,9 +401,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
       xint.Multiply(my::xyze_,my::funct_);
 
       // compute various constants
-      const double d = frt*((dme->GetIsotropicDiff(0)*dme->GetValence(0)) - (dme->GetIsotropicDiff(1)*dme->GetValence(1)));
+      const double d = frt*((DiffManager()->GetIsotropicDiff(0)*DiffManager()->GetValence(0)) - (DiffManager()->GetIsotropicDiff(1)*DiffManager()->GetValence(1)));
       if (abs(d) == 0.0) dserror("division by zero");
-      const double D = frt*((dme->GetValence(0)*dme->GetIsotropicDiff(0)*dme->GetIsotropicDiff(1)) - (dme->GetValence(1)*dme->GetIsotropicDiff(1)*dme->GetIsotropicDiff(0)))/d;
+      const double D = frt*((DiffManager()->GetValence(0)*DiffManager()->GetIsotropicDiff(0)*DiffManager()->GetIsotropicDiff(1)) - (DiffManager()->GetValence(1)*DiffManager()->GetIsotropicDiff(1)*DiffManager()->GetIsotropicDiff(0)))/d;
 
       // compute analytical solution for cation and anion concentrations
       const double A0 = 2.0;
@@ -466,9 +436,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
         dserror("Illegal number of space dimensions for analyt. solution: %d",my::nsd_);
 
       // compute analytical solution for anion concentration
-      c(1) = (-dme->GetValence(0)/dme->GetValence(1))* c(0);
+      c(1) = (-DiffManager()->GetValence(0)/DiffManager()->GetValence(1))* c(0);
       // compute analytical solution for el. potential
-      const double pot = ((dme->GetIsotropicDiff(1)-dme->GetIsotropicDiff(0))/d) * log(c(0)/c_0_0_0_t);
+      const double pot = ((DiffManager()->GetIsotropicDiff(1)-DiffManager()->GetIsotropicDiff(0))/d) * log(c(0)/c_0_0_0_t);
 
       // compute differences between analytical solution and numerical solution
       deltapot = potint - pot;
@@ -533,9 +503,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
         dserror("Illegal number of space dimensions for analyt. solution: %d",my::nsd_);
 
       // compute analytical solution for anion concentration
-      c(1) = (-dme->GetValence(0)/dme->GetValence(1))* c(0);
+      c(1) = (-DiffManager()->GetValence(0)/DiffManager()->GetValence(1))* c(0);
       // compute analytical solution for el. potential
-      const double d = frt*((dme->GetIsotropicDiff(0)*dme->GetValence(0)) - (dme->GetIsotropicDiff(1)*dme->GetValence(1)));
+      const double d = frt*((DiffManager()->GetIsotropicDiff(0)*DiffManager()->GetValence(0)) - (DiffManager()->GetIsotropicDiff(1)*DiffManager()->GetValence(1)));
       if (abs(d) == 0.0) dserror("division by zero");
       // reference value + ohmic resistance + concentration potential
       const double pot = pot_inner + log(c(0)/c0_inner); // + (((diffus_[1]-diffus_[0])/d) * log(c(0)/c0_inner));
@@ -565,7 +535,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
       for (int k=0; k<my::numscal_; ++k)
       {
         const double conint_k = my::funct_.Dot(my::ephinp_[k]);
-        deviation += dme->GetValence(k)*conint_k;
+        deviation += DiffManager()->GetValence(k)*conint_k;
       }
 
     // add square to L2 error
@@ -606,7 +576,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
   double visc(0.0);
 
   // material parameter at the element center
-  this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc);
+  this->GetMaterialParams(ele,densn,densnp,densam,visc);
 
   // compute the conductivity (1/(\Omega m) = 1 Siemens / m)
   double sigma_all(0.0);
@@ -632,9 +602,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
     Epetra_SerialDenseVector&         erhs
   )
 {
-  // dynamic cast to elch-specific diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerElch> dme = Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);
-
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -657,14 +624,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
     double visc(0.0);
 
     // material parameter at the element center
-    this->GetMaterialParams(ele,densn,densnp,densam,my::diffmanager_,my::reamanager_,visc,iquad);
+    this->GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
     // set internal variables
-    varmanager_->SetInternalVariablesElch(my::funct_,my::derxy_,my::ephinp_,my::ephin_,epotnp_,my::econvelnp_,my::ehist_);
+    SetInternalVariablesForMatAndRHS();
 
-    SetFormulationSpecificInternalVariables(dme,varmanager_);
-
-    CalcMatAndRhsElectricPotentialField(varmanager_,equpot,emat,erhs,fac,dme);
+    CalcMatAndRhsElectricPotentialField(equpot,emat,erhs,fac,1.);
   } // integration loop
 
   return;
@@ -672,68 +637,43 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
 } //ScaTraImpl<distype>::CalculateElectricPotentialField
 
 
-/*----------------------------------------------------------------------*
- | calculate electrode state of charge                       fang 01/15 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------*
+ | compute dummy element matrix and residual entries for electric potential dofs   fang 02/15 |
+ *--------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectrodeSOC(
-    const DRT::Element*               ele,              //!< the element we are dealing with
-    Teuchos::ParameterList&           params,           //!< parameter list
-    DRT::Discretization&              discretization,   //!< discretization
-    const std::vector<int>&           lm                //!< location vector
-  )
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::PrepMatAndRhsInitialTimeDerivative(
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra
+)
 {
-  // consider only unghosted elements for integration
-  if(ele->Owner() == discretization.Comm().MyPID())
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // element integration loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // safety check
-    if(my::numscal_ != 1)
-      dserror("Electrode state of charge can only be computed for one transported scalar!");
+    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
-    // get global state vector
-    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if(phinp == Teuchos::null)
-      dserror("Cannot get state vector \"phinp\"!");
-
-    // extract local nodal values from global state vector
-    std::vector<double> ephinpvec(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,ephinpvec,lm);
-    for(int inode = 0; inode < my::nen_; ++inode)
-      my::ephinp_[0](inode,0) = ephinpvec[inode*my::numdofpernode_];
-
-    // get current values of concentration and domain integrals
-    double intconcentration = params.get<double>("intconcentration");
-    double intdomain = params.get<double>("intdomain");
-
-    // integration points and weights
-    const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-    // loop over integration points
-    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    for (int vi=0; vi<my::nen_; ++vi)
     {
-      // evaluate values of shape functions and domain integration factor at current integration point
-      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+      const double v = fac*my::funct_(vi); // no density required here
+      const int fvi = vi*my::numdofpernode_+my::numscal_;
 
-      // calculate concentration and domain integrals
-      for (int vi=0; vi<my::nen_; ++vi)
+      for (int ui=0; ui<my::nen_; ++ui)
       {
-        const double funct_vi_fac = my::funct_(vi)*fac;
+        const int fui = ui*my::numdofpernode_+my::numscal_;
 
-        // concentration integral
-        intconcentration += funct_vi_fac*my::ephinp_[0](vi,0);
-
-        // domain integral
-        intdomain += funct_vi_fac;
+        elemat1_epetra(fvi,fui) += v*my::funct_(ui);
       }
-    } // loop over integration points
+    }
+  }
 
-    // write updated values of concentration and domain integrals back to parameter list
-    params.set<double>("intconcentration",intconcentration);
-    params.set<double>("intdomain",intdomain);
-  } // if(ele->Owner() == discretization.Comm().MyPID())
+  // set zero for the rhs entries associated with the electric potential
+  for (int vi=0; vi<my::nen_; ++vi)
+    elevec1_epetra[vi*my::numdofpernode_+my::numscal_] = 0.;
 
   return;
-} // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectrodeSOC
+}
 
 
 /*----------------------------------------------------------------------------------------*

@@ -24,6 +24,10 @@ namespace DRT
 {
 namespace ELEMENTS
 {
+// forward declarations
+template<int NSD> class ScaTraEleDiffManagerLsReinit;
+template<int NSD, int NEN> class ScaTraEleInternalVariableManagerLsReinit;
+class ScaTraEleParameterLsReinit;
 
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcLsReinit : public ScaTraEleCalc<distype>
@@ -51,6 +55,12 @@ public:
   //! @name access routines
   /*========================================================================*/
 
+  //! setup element evaluation
+  int SetupCalc(
+      DRT::ELEMENTS::Transport*   ele,
+      DRT::Discretization&        discretization
+      );
+
   //! evaluate the element
   int Evaluate(DRT::ELEMENTS::Transport*     ele,
                Teuchos::ParameterList&       params,
@@ -62,15 +72,16 @@ public:
                Epetra_SerialDenseVector&     elevec2_epetra,
                Epetra_SerialDenseVector&     elevec3_epetra);
 
-  int EvaluateService(DRT::ELEMENTS::Transport*     ele,
-                      Teuchos::ParameterList&       params,
-                      DRT::Discretization &         discretization,
-                      const std::vector<int> &      lm,
-                      Epetra_SerialDenseMatrix&     elemat1_epetra,
-                      Epetra_SerialDenseMatrix&     elemat2_epetra,
-                      Epetra_SerialDenseVector&     elevec1_epetra,
-                      Epetra_SerialDenseVector&     elevec2_epetra,
-                      Epetra_SerialDenseVector&     elevec3_epetra);
+  int EvaluateAction(DRT::ELEMENTS::Transport*     ele,
+                     Teuchos::ParameterList&       params,
+                     DRT::Discretization &         discretization,
+                     const SCATRA::Action&         action,
+                     const std::vector<int> &      lm,
+                     Epetra_SerialDenseMatrix&     elemat1_epetra,
+                     Epetra_SerialDenseMatrix&     elemat2_epetra,
+                     Epetra_SerialDenseVector&     elevec1_epetra,
+                     Epetra_SerialDenseVector&     elevec2_epetra,
+                     Epetra_SerialDenseVector&     elevec3_epetra);
 
 protected:
 
@@ -97,8 +108,7 @@ private:
   virtual void CalcMatDiff(
     Epetra_SerialDenseMatrix&     emat,        //!< element matrix to be filled
     const int                     k,           //!< index of current scalar
-    const double                  timefacfac,  //!< domain-integration factor times time-integration factor
-    Teuchos::RCP<ScaTraEleDiffManager>  diffmanager  //!< diffusion manager
+    const double                  timefacfac   //!< domain-integration factor times time-integration factor
   );
 
   //! standard Galerkin diffusive term on right hand side
@@ -106,7 +116,6 @@ private:
     Epetra_SerialDenseVector&     erhs,        //!< element vector to be filled
     const int                     k,           //!< index of current scalar
     const double                  rhsfac,      //!< time-integration factor for rhs times domain-integration factor
-    Teuchos::RCP<ScaTraEleDiffManager>  diffmanager,  //!< diffusion manager
     const LINALG::Matrix<my::nsd_,1>&   gradphi       //!< scalar gradient at Gauss point
   );
 
@@ -189,6 +198,15 @@ private:
   Epetra_SerialDenseVector&             erhs ///< element rhs to calculate
   );
 
+  //! get diffusion manager for reinitialization
+  Teuchos::RCP<ScaTraEleDiffManagerLsReinit<my::nsd_> > DiffManager(){return Teuchos::rcp_static_cast<ScaTraEleDiffManagerLsReinit<my::nsd_> >(my::diffmanager_);};
+
+  //! get parameter list for reinitialization
+  ScaTraEleParameterLsReinit* LsReinitPara(){return static_cast<ScaTraEleParameterLsReinit*>(my::scatrapara_);};
+
+  //! get internal variable manager for reinitialization
+  Teuchos::RCP<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> > VarManager(){return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_);};
+
   /*========================================================================*/
   //! @name additional members
   /*========================================================================*/
@@ -218,7 +236,7 @@ class ScaTraEleDiffManagerLsReinit : public ScaTraEleDiffManager
 
     ~ScaTraEleDiffManagerLsReinit(){};
 
-    //! set the isotropic diffusion coefficient, which may be negative for elliptic reintialization
+    //! set the isotropic diffusion coefficient, which may be negative for elliptic reinitialization
     void SetIsotropicDiff(const double diff, const int k)
     {
       diff_[k] = diff;
@@ -301,7 +319,7 @@ class ScaTraEleInternalVariableManagerLsReinit : public ScaTraEleInternalVariabl
   ScaTraEleInternalVariableManager<NSD,NEN>(numscal)
   {return;}
 
-  ~ScaTraEleInternalVariableManagerLsReinit(){};
+  virtual ~ScaTraEleInternalVariableManagerLsReinit(){};
 
   // compute and set internal variables
   void SetInternalVariables(
