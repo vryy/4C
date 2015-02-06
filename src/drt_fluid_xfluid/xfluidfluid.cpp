@@ -1386,11 +1386,10 @@ void FLD::XFluidFluid::Init()
 
 
   if(condition_manager_->HasMeshCoupling())
-  { std::cout << "hasMeshCoupling" << std::endl;
+  {
   }
   if(condition_manager_->HasLevelSetCoupling())
   {
-    std::cout << "hasLSCoupling" << std::endl;
     //TODO how to deal with level-set fields after restarts?
     condition_manager_->SetLevelSetField( time_ );
   }

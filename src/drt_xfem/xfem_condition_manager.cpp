@@ -115,7 +115,32 @@ void XFEM::CouplingBase::SetElementConditions()
 
 }
 
-void XFEM::CouplingBase::SetCouplingStrategy()
+
+void XFEM::CouplingBase::Status(
+    const int coupling_idx,
+    const int side_start_gid
+)
+{
+  // -------------------------------------------------------------------
+  //                       output to screen
+  // -------------------------------------------------------------------
+  if (myrank_==0)
+  {
+    printf("   +----------+-----------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+\n");
+    printf("   | %8i | %9i | %27s | %27s | %27s | %27s | %27s |\n",
+        coupling_idx ,
+        side_start_gid,
+        TypeToStringForPrint(CondType_stringToEnum(cond_name_)).c_str(),
+        DisNameToString(cutter_dis_).c_str(),
+        DisNameToString(cond_dis_).c_str(),
+        DisNameToString(coupl_dis_).c_str(),
+        AveragingToStringForPrint(averaging_strategy_).c_str());
+  }
+}
+
+
+
+void XFEM::CouplingBase::SetAveragingStrategy()
 {
   const INPAR::XFEM::EleCouplingCondType cond_type = CondType_stringToEnum(cond_name_);
 
@@ -123,7 +148,7 @@ void XFEM::CouplingBase::SetCouplingStrategy()
   {
   case INPAR::XFEM::CouplingCond_SURF_FSI_MONO:
   {
-    coupling_strategy_ = INPAR::XFEM::Xfluid_Sided_Coupling; //TODO: rename to xfluid (only one for coupling and wdbc/Neumann)
+    averaging_strategy_ = INPAR::XFEM::Xfluid_Sided;
     break;
   }
   case INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID:
@@ -131,23 +156,23 @@ void XFEM::CouplingBase::SetCouplingStrategy()
     // ask the first cutter element
     const int lid=0;
     const int val = cutterele_conds_[lid].second->GetInt("COUPSTRATEGY");
-    coupling_strategy_ = static_cast<INPAR::XFEM::CouplingStrategy>(val);
+    averaging_strategy_ = static_cast<INPAR::XFEM::AveragingStrategy>(val);
     break;
   }
   case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:
   case INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION:
   {
-    coupling_strategy_ = INPAR::XFEM::Harmonic;
+    averaging_strategy_ = INPAR::XFEM::Harmonic;
     break;
   }
   case INPAR::XFEM::CouplingCond_SURF_FSI_PART:
   case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
-  case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET: // set this to Teuchos::null when the values are read from the function instead of the ivelnp vector
+  case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
   case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
   case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
   case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
   {
-    coupling_strategy_ = INPAR::XFEM::Xfluid_Sided_weak_DBC; //TODO: rename to xfluid
+    averaging_strategy_ = INPAR::XFEM::Xfluid_Sided;
     break;
   }
   default: dserror("which is the coupling discretization for this type of coupling %i?", cond_type); break;
@@ -169,12 +194,12 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
   case INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID:
   {
     // depending on the weighting strategy
-    if(coupling_strategy_==INPAR::XFEM::Xfluid_Sided_Coupling)
+    if(averaging_strategy_==INPAR::XFEM::Xfluid_Sided)
     {
       coupl_dis_ = cutter_dis_;
     }
-    else if(coupling_strategy_==INPAR::XFEM::Embedded_Sided_Coupling or
-        coupling_strategy_==INPAR::XFEM::Two_Sided_Coupling )
+    else if(averaging_strategy_==INPAR::XFEM::Embedded_Sided or
+        averaging_strategy_==INPAR::XFEM::Mean )
     {
       coupl_dis_ = cond_dis_;
     }
@@ -387,8 +412,8 @@ XFEM::MeshCoupling::MeshCoupling(
   // set unique element conditions
   SetElementConditions();
 
-  // set the coupling strategy
-  SetCouplingStrategy();
+  // set the averaging strategy
+  SetAveragingStrategy();
 
   // set coupling discretization
   SetCouplingDiscretization();
@@ -487,8 +512,8 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
     const int                           step       ///< time step
 ) : MeshCoupling(bg_dis,cond_name,cond_dis,time,step)
 {
-  if (GetCouplingStrategy() == INPAR::XFEM::Embedded_Sided_Coupling ||
-      GetCouplingStrategy() == INPAR::XFEM::Two_Sided_Coupling)
+  if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided ||
+      GetAveragingStrategy() == INPAR::XFEM::Mean)
   {
     // ghost coupling elements, that contribute to the cutting discretization
     RedistributeEmbeddedDiscretization();
@@ -504,8 +529,8 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFluidFluid::RedistributeForErrorCalculation()
 {
-  if (GetCouplingStrategy() == INPAR::XFEM::Embedded_Sided_Coupling ||
-      GetCouplingStrategy() == INPAR::XFEM::Two_Sided_Coupling)
+  if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided ||
+      GetAveragingStrategy() == INPAR::XFEM::Mean)
     return;
   // ghost coupling elements, that contribute to the cutting discretization
   RedistributeEmbeddedDiscretization();
@@ -1317,9 +1342,7 @@ void XFEM::MeshCouplingFSI::ReadRestart(
     const int step
 )
 {
-  const int myrank = cutter_dis_->Comm().MyPID();
-
-  if(myrank) IO::cout << "ReadRestart for boundary discretization " << IO::endl;
+  if(myrank_) IO::cout << "ReadRestart for boundary discretization " << IO::endl;
 
   //-------- boundary discretization
   IO::DiscretizationReader boundaryreader(cutter_dis_, step);
@@ -1327,7 +1350,7 @@ void XFEM::MeshCouplingFSI::ReadRestart(
   const double time = boundaryreader.ReadDouble("time");
 //  const int    step = boundaryreader.ReadInt("step");
 
-  if(myrank == 0)
+  if(myrank_ == 0)
   {
     IO::cout << "time: " << time << IO::endl;
     IO::cout << "step: " << step << IO::endl;
@@ -1374,7 +1397,7 @@ void XFEM::MeshCouplingFSI::GmshOutput(
           step,
           gmsh_step_diff,
           gmsh_debug_out_screen,
-          cutter_dis_->Comm().MyPID()
+          myrank_
       );
 
   std::ofstream gmshfilecontent(filename.c_str());
@@ -1479,7 +1502,7 @@ void XFEM::MeshCouplingFSI::LiftDrag(
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<const Epetra_Vector> iforcecol = DRT::UTILS::GetColVersionOfRowVector(cutter_dis_, itrueresidual_);
 
-  if (cutter_dis_->Comm().MyPID() == 0)
+  if (myrank_ == 0)
   {
     // compute force components
     const int nsd = 3;
@@ -1566,8 +1589,8 @@ void XFEM::MeshCouplingFSICrack::SetCutterDis(Teuchos::RCP<DRT::Discretization> 
   // set unique element conditions
   SetElementConditions();
 
-  // set the coupling strategy
-  SetCouplingStrategy();
+  // set the averaging strategy
+  SetAveragingStrategy();
 
   // set coupling discretization
   SetCouplingDiscretization();
@@ -1670,8 +1693,8 @@ XFEM::LevelSetCoupling::LevelSetCoupling(
 
   SetElementConditions();
 
-  // set the coupling strategy
-  SetCouplingStrategy();
+  // set the averaging strategy
+  SetAveragingStrategy();
 
   // set coupling discretization
   SetCouplingDiscretization();
@@ -1889,6 +1912,50 @@ XFEM::ConditionManager::ConditionManager(
 
 }
 
+void XFEM::ConditionManager::Status()
+{
+  int myrank = bg_dis_->Comm().MyPID();
+
+  // -------------------------------------------------------------------
+  //                       output to screen
+  // -------------------------------------------------------------------
+  if (myrank==0)
+  {
+
+    printf("   +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+\n");
+    printf("   +----------------------------------------------------XFEM::ConditionManager - Created Coupling objects-----------------------------------------------------------------------+\n");
+    printf("   +----------+-----------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+\n");
+    printf("   | COUP-IDX | START-SID |       CONDITION-TYPE        |          CUTTER-DIS         | created from CONDITION-DIS  |        COUPLING-DIS         |     AVERAGING-STRATEGY      |\n");
+
+    if(HasMeshCoupling())
+    {
+      printf("   +----------+-----------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+\n");
+      printf("   |Mesh Coupling Objects                                                                                                                                                       |\n");
+    }
+
+    // loop all mesh coupling objects
+    for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+    {
+      mesh_coupl_[mc]->Status(mc, mesh_coupl_start_gid_[mc]);
+    }
+
+    if(HasLevelSetCoupling())
+    {
+      printf("   +----------+-----------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+\n");
+      printf("   |Levelset Coupling Objects                                                                                                                                                   |\n");
+    }
+
+    // loop all levelset coupling objects
+    for(int lsc=0; lsc<(int)levelset_coupl_.size(); lsc++)
+    {
+      levelset_coupl_[lsc]->Status(lsc, levelset_gid_);
+    }
+
+    printf("   +----------+-----------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+\n");
+    printf("   +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+\n");
+  }
+}
+
 
 void XFEM::ConditionManager::IncrementTimeAndStep(
     const double dt)
@@ -1956,6 +2023,7 @@ void XFEM::ConditionManager::Create()
 
   // set global side Ids for all Mesh coupling discretizations and level-set sides
 
+  //--------------------------------------------------------
   // loop all mesh coupling objects
   for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
   {
@@ -1965,14 +2033,12 @@ void XFEM::ConditionManager::Create()
     // set current number of global coupling sides as start index for global id this coupling object
     mesh_coupl_start_gid_[mc] = numglobal_coupling_sides;
 
-    if (mc_cutdis->Comm().MyPID() == 0)
-      std::cout << "mesh coupling object " << mc << " starts with global side index " << mesh_coupl_start_gid_[mc] << std::endl;
-
     // increase total number of sides with number of global side elements of this mesh coupling object
     numglobal_coupling_sides += mc_cutdis->NumGlobalElements();
   }
 
   // TODO: unify the level-set coupling objects to one unique level-set field
+  //--------------------------------------------------------
   // combine the level-set values
 
   if(levelset_coupl_.size() > 0)
@@ -1982,8 +2048,6 @@ void XFEM::ConditionManager::Create()
     levelset_gid_ = numglobal_coupling_sides;
     numglobal_coupling_sides+=1;
 
-    std::cout << "levelset coupling object " << " has global side id index " << levelset_gid_ << std::endl;
-
     bg_phinp_= LINALG::CreateVector(*bg_dis_->NodeRowMap(), true);
 
     //TODO: note: information about the coupling condition for level-sets is obtained via the background element
@@ -1991,10 +2055,9 @@ void XFEM::ConditionManager::Create()
     // we allow for multiple level-set coupling objects however only for one level-set side
   }
 
-
-
-  //TODO: Status-routine to print to screen
-
+  //--------------------------------------------------------
+  // print status of conditionManager to screen
+  Status();
 }
 
 

@@ -847,7 +847,6 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
     int coup_sid = i->first; // global coupling side id
 
     // get the coupling strategy for coupling of two fields
-    //const INPAR::XFEM::CouplingStrategy coup_strategy = cond_manager->GetCouplingStrategy(coup_sid, my::eid_);
     const XFEM::EleCoupCond & coupcond = cond_manager->GetCouplingCondition(coup_sid, my::eid_);
     const INPAR::XFEM::EleCouplingCondType & cond_type = coupcond.first;
 
@@ -1644,7 +1643,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
     const int coup_sid = bc->first;
 
     // get the coupling strategy for coupling of two fields
-    const INPAR::XFEM::CouplingStrategy coup_strategy = cond_manager->GetCouplingStrategy(coup_sid, my::eid_);
+    const INPAR::XFEM::AveragingStrategy averaging_strategy = cond_manager->GetAveragingStrategy(coup_sid, my::eid_);
 
     begids.insert(coup_sid);
 
@@ -1667,8 +1666,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
     patchelementslm.reserve( patchelementslm.size() + ndof_i);
     patchelementslm.insert(patchelementslm.end(), patchlm.begin(), patchlm.end());
 
-    if(coup_strategy == INPAR::XFEM::Embedded_Sided_Coupling or coup_strategy == INPAR::XFEM::Two_Sided_Coupling )
-      dserror("Embedded-sided or Two-sided coupling for stress-based hybrid LM approach is not yet available!");
+    if(averaging_strategy != INPAR::XFEM::Xfluid_Sided)
+      dserror("Embedded-sided or Mean or Harmonic coupling for stress-based hybrid LM approach is not yet available!");
 
     Cuiui_matrices.resize(2);
     Cuiui_matrices[0].Shape(my::nen_*numstressdof_,ndof_i); //Gsui (coupling between background elements sigma and current side!)
@@ -1732,7 +1731,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
     int coup_sid = i->first;
 
     // get the coupling strategy for coupling of two fields
-    const INPAR::XFEM::CouplingStrategy coup_strategy = cond_manager->GetCouplingStrategy(coup_sid, my::eid_);
+    const INPAR::XFEM::AveragingStrategy averaging_strategy = cond_manager->GetAveragingStrategy(coup_sid, my::eid_);
     const XFEM::EleCoupCond & coupcond = cond_manager->GetCouplingCondition(coup_sid, my::eid_);
     const INPAR::XFEM::EleCouplingCondType & cond_type = coupcond.first;
 
@@ -1798,8 +1797,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
     if(!(is_ls_coupling_side and !cond_manager->IsCoupling( coup_sid, my::eid_ ))) // not level-set-WDBC case
     {
-      if (coup_strategy == INPAR::XFEM::Embedded_Sided_Coupling or
-          coup_strategy == INPAR::XFEM::Two_Sided_Coupling) // for coupling-sided and two-sided coupling
+      if (averaging_strategy == INPAR::XFEM::Embedded_Sided or
+          averaging_strategy == INPAR::XFEM::Mean) // for coupling-sided and two-sided coupling
         dserror("embedded or two-sided coupling not supported");
       else
       {
@@ -1844,8 +1843,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
       Epetra_SerialDenseMatrix & eleGsui = Cuiui_matrices[0];
       Epetra_SerialDenseMatrix & eleGuis = Cuiui_matrices[1];
 
-      if (coup_strategy == INPAR::XFEM::Embedded_Sided_Coupling or
-          coup_strategy == INPAR::XFEM::Two_Sided_Coupling) // for coupling-sided and two-sided coupling
+      if (averaging_strategy == INPAR::XFEM::Embedded_Sided or
+          averaging_strategy == INPAR::XFEM::Mean) // for coupling-sided and two-sided coupling
         dserror("embedded or two-sided coupling not supported");
 
       ci[coup_sid] = DRT::ELEMENTS::XFLUID::HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidSided(
@@ -1991,8 +1990,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
           // project on boundary element
           si->ProjectOnSide(x_gp_lin, x_side, xi_side);
 
-          if (coup_strategy == INPAR::XFEM::Embedded_Sided_Coupling or
-              coup_strategy == INPAR::XFEM::Two_Sided_Coupling)
+          if (averaging_strategy == INPAR::XFEM::Embedded_Sided or
+              averaging_strategy == INPAR::XFEM::Mean)
             dserror("embedded or two-sided weighting not supported"); // evaluate embedded element's shape functions at gauss-point coordinates
           else
           {
@@ -2127,7 +2126,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
               bool non_xfluid_coupling;
               double kappa_m;
               double kappa_s;
-              GetAverageWeights(cond_manager->GetCouplingStrategy(coup_sid, my::eid_), kappa_m, kappa_s, non_xfluid_coupling);
+              GetAverageWeights(cond_manager->GetAveragingStrategy(coup_sid, my::eid_), kappa_m, kappa_s, non_xfluid_coupling);
 
               NIT_Compute_FullPenalty_Stabfac(
                 NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
@@ -2163,7 +2162,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
               bool non_xfluid_coupling;
               double kappa_m;
               double kappa_s;
-              GetAverageWeights(cond_manager->GetCouplingStrategy(coup_sid, my::eid_), kappa_m, kappa_s, non_xfluid_coupling);
+              GetAverageWeights(cond_manager->GetAveragingStrategy(coup_sid, my::eid_), kappa_m, kappa_s, non_xfluid_coupling);
 
               NIT_Compute_FullPenalty_Stabfac(
                 NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
@@ -3417,7 +3416,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     int coup_sid = i->first; // global coupling side id
 
     // get the coupling strategy for coupling of two fields
-    const INPAR::XFEM::CouplingStrategy coup_strategy = cond_manager->GetCouplingStrategy(coup_sid, my::eid_);
+    const INPAR::XFEM::AveragingStrategy averaging_strategy = cond_manager->GetAveragingStrategy(coup_sid, my::eid_);
     const XFEM::EleCoupCond & coupcond = cond_manager->GetCouplingCondition(coup_sid, my::eid_);
     const INPAR::XFEM::EleCouplingCondType & cond_type = coupcond.first;
 
@@ -3442,7 +3441,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     double kappa1;
     double kappa2;
 
-    GetAverageWeights(coup_strategy, kappa1, kappa2, non_xfluid_coupling);
+    GetAverageWeights(averaging_strategy, kappa1, kappa2, non_xfluid_coupling);
 
     //---------------------------------------------------------------------------------
     // set flags used for coupling with given levelset/mesh coupling side
@@ -4976,7 +4975,7 @@ void FluidEleCalcXFEM<distype>::GetMaterialParametersVolumeCell( Teuchos::RCP<co
 
 //Get the average weights kappa1 and kappa2 for the Nitsche calculations.
 template <DRT::Element::DiscretizationType distype>
-void FluidEleCalcXFEM<distype>::GetAverageWeights(const INPAR::XFEM::CouplingStrategy coup_strategy,
+void FluidEleCalcXFEM<distype>::GetAverageWeights(const INPAR::XFEM::AveragingStrategy averaging_strategy,
                        double & kappa_m,
                        double & kappa_s,
                        bool   & non_xfluid_coupling)
@@ -4986,8 +4985,7 @@ void FluidEleCalcXFEM<distype>::GetAverageWeights(const INPAR::XFEM::CouplingStr
   //Average weight for the master side
   kappa_m = 0.0;
 
-  if (coup_strategy == INPAR::XFEM::Xfluid_Sided_Coupling ||
-      coup_strategy == INPAR::XFEM::Xfluid_Sided_weak_DBC)
+  if (averaging_strategy == INPAR::XFEM::Xfluid_Sided)
   {
     kappa_m = 1.0;
   }
@@ -4995,11 +4993,11 @@ void FluidEleCalcXFEM<distype>::GetAverageWeights(const INPAR::XFEM::CouplingStr
   {
     non_xfluid_coupling = true;
 
-    if (coup_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
+    if (averaging_strategy == INPAR::XFEM::Embedded_Sided)
       kappa_m = 0.0;
-    else if (coup_strategy == INPAR::XFEM::Two_Sided_Coupling)
+    else if (averaging_strategy == INPAR::XFEM::Mean)
       kappa_m = 0.5;
-    else if (coup_strategy == INPAR::XFEM::Harmonic)
+    else if (averaging_strategy == INPAR::XFEM::Harmonic)
     {
       //kappa1=0.5; //For Two_Sided_coupling
       kappa_m = viscaf_slave_/(viscaf_master_+viscaf_slave_);  //Positive side (kappa_+ = visc_n/(visc_p+visc_n))

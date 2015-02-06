@@ -105,7 +105,7 @@ public:
   cond_dis_(cond_dis),
   cutter_dis_(Teuchos::null),
   coupl_dis_(Teuchos::null),
-  coupling_strategy_(INPAR::XFEM::invalid),
+  averaging_strategy_(INPAR::XFEM::invalid),
   myrank_(bg_dis_->Comm().MyPID()),
   dt_(-1.0),
   time_(time),
@@ -137,6 +137,50 @@ public:
     step_ += 1;
   }
 
+  void Status(
+      const int coupling_idx,
+      const int side_start_gid
+  );
+
+
+  const std::string DisNameToString(
+      Teuchos::RCP<DRT::Discretization> dis
+  )
+  {
+    if(dis == Teuchos::null)
+      return "---";
+
+    return dis->Name();
+  }
+
+  const std::string TypeToStringForPrint(const INPAR::XFEM::EleCouplingCondType& type)
+  {
+    if     (type == INPAR::XFEM::CouplingCond_SURF_FSI_PART)             return "XFSI Partitioned";
+    else if(type == INPAR::XFEM::CouplingCond_SURF_FSI_MONO)             return "XFSI Monolithic";
+    else if(type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)       return "XFSI Partitioned with Crack";
+    else if(type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)           return "FLUID-FLUID Coupling";
+    else if(type == INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)   return "WEAK DIRICHLET BC / LS";
+    else if(type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN)          return "NEUMANN BC        / LS";
+    else if(type == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)         return "TWO-PHASE Coupling";
+    else if(type == INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION)       return "COMBUSTION Coupling";
+    else if(type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)       return "WEAK DIRICHLET BC / MESH";
+    else if(type == INPAR::XFEM::CouplingCond_SURF_NEUMANN)              return "NEUMANN BC        / MESH";
+    else dserror("unsupported coupling condition type %i", type);
+
+    return "UNKNOWN";
+  }
+
+  const std::string AveragingToStringForPrint(const INPAR::XFEM::AveragingStrategy& strategy)
+  {
+    if     (strategy == INPAR::XFEM::Xfluid_Sided)      return "XFLUID-sided averaging";
+    else if(strategy == INPAR::XFEM::Embedded_Sided)    return "EMBEDDED-sided averaging";
+    else if(strategy == INPAR::XFEM::Mean)              return "MEAN averaging";
+    else if(strategy == INPAR::XFEM::Harmonic)          return "HARMONIC averaging";
+    else if(strategy == INPAR::XFEM::invalid)           return "INVALID";
+    else dserror("unsupported averaging strategy %i", strategy);
+
+    return "UNKNOWN";
+  }
 
 
   const EleCoupCond & GetCouplingCondition(
@@ -153,7 +197,7 @@ public:
   Teuchos::RCP<DRT::Discretization> GetCouplingDis(){return coupl_dis_;}
   Teuchos::RCP<DRT::Discretization> GetCondDis(){return cond_dis_;}
 
-  const INPAR::XFEM::CouplingStrategy GetCouplingStrategy(){return coupling_strategy_;}
+  const INPAR::XFEM::AveragingStrategy GetAveragingStrategy(){return averaging_strategy_;}
 
   virtual void PrepareSolve(){};
 
@@ -172,7 +216,7 @@ protected:
 
   void SetElementConditions();
 
-  void SetCouplingStrategy();
+  void SetAveragingStrategy();
 
   void SetCouplingDiscretization();
 
@@ -239,8 +283,8 @@ protected:
   ///< Teuchos::null in case that no coupling terms but only boundary terms are evaluated
   Teuchos::RCP<DRT::Discretization> coupl_dis_;
 
-  ///< coupling strategy, type of weighting
-  INPAR::XFEM::CouplingStrategy coupling_strategy_;
+  ///< averaging strategy, type of weighting
+  INPAR::XFEM::AveragingStrategy averaging_strategy_;
 
 
 
@@ -276,6 +320,7 @@ public:
   {
     return;
   }
+
 
   /// get the side element of the respective boundary discretization
   DRT::Element* GetSide(
@@ -906,6 +951,8 @@ public:
       const int step
   );
 
+  void Status();
+
   void IncrementTimeAndStep(
       const double dt);
 
@@ -922,36 +969,29 @@ public:
       Teuchos::RCP<DRT::Discretization>   cond_dis
   )
   {
-    const int myrank = cond_dis->Comm().MyPID();
     if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)
     {
-      if (myrank == 0) std::cout << " create new MeshCouplingFSICrack" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSICrack(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
         CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_MONO)
     {
-      if (myrank == 0) std::cout << " create new MeshCouplingFSI" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSI(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)
     {
-      if (myrank == 0) std::cout << " create new MeshCouplingWeakDirichlet" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingWeakDirichlet(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NEUMANN)
     {
-      if (myrank == 0) std::cout << " create new MeshCouplingNeumann" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNeumann(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
     {
-      if (myrank == 0) std::cout << " create new MeshCouplingFluidFluid" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
     else
     {
-      if (myrank == 0) std::cout << " create new MeshCoupling" << std::endl;
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(bg_dis_, cond_name, cond_dis, time_, step_)));
     }
   }
@@ -961,20 +1001,16 @@ public:
       const std::string &                 cond_name
   )
   {
-    const int myrank = bg_dis_->Comm().MyPID();
     if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)
     {
-      if (myrank == 0) std::cout << " create new LevelSetCouplingWeakDirichlet" << std::endl;
       levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingWeakDirichlet(bg_dis_, cond_name, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN)
     {
-      if (myrank == 0) std::cout << " create new LevelSetCouplingNeumann" << std::endl;
       levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNeumann(bg_dis_, cond_name, time_, step_)));
     }
     else
     {
-      if (myrank == 0) std::cout << " create new LevelSetCoupling" << std::endl;
       levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCoupling(bg_dis_, cond_name, time_, step_)));
     }
   }
@@ -983,8 +1019,6 @@ public:
 
   // build the whole object which then can be used
   void Create();
-
-  //void Update(const double time); // update the meshcoupling objects (interface displ), update the level-set couplings
 
 
   /// Getters
@@ -1078,7 +1112,7 @@ public:
       }
 
 
-  const INPAR::XFEM::CouplingStrategy GetCouplingStrategy(
+  const INPAR::XFEM::AveragingStrategy GetAveragingStrategy(
       const int coup_sid, ///< the global id of the coupling side
       const int back_eid  ///< the global element id of the background mesh
   )
@@ -1089,14 +1123,14 @@ public:
       // get the level-set coupling object index for given background element
       const int lsc_idx = GetLevelSetCouplingIndex(back_eid);
 
-      return levelset_coupl_[lsc_idx]->GetCouplingStrategy();
+      return levelset_coupl_[lsc_idx]->GetAveragingStrategy();
     }
     else if(IsMeshCoupling(coup_sid))
     {
       // get the mesh coupling object index
       const int mc_idx =  GetMeshCouplingIndex(coup_sid);
 
-      return mesh_coupl_[mc_idx]->GetCouplingStrategy();
+      return mesh_coupl_[mc_idx]->GetAveragingStrategy();
     }
     else dserror("there is no valid mesh-/levelset-coupling condition object for side: %i", coup_sid);
 
@@ -1194,7 +1228,7 @@ public:
   int NumCoupling(){return (NumMeshCoupling() + NumLevelSetCoupling());}
 
   Teuchos::RCP<CouplingBase> GetCouplingByIdx(const int coup_idx)
-      {
+  {
     if(coup_idx >= NumMeshCoupling())
       return GetLevelSetCoupling(coup_idx-NumMeshCoupling());
     else if(coup_idx >= 0)
@@ -1202,7 +1236,7 @@ public:
     else return Teuchos::null;
 
     return Teuchos::null;
-      }
+  }
 
 
 

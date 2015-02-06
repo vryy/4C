@@ -2237,9 +2237,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
              "xfluid",
              Teuchos::tuple<std::string>("xfluid","embedded","mean"),
              Teuchos::tuple<int>(
-                 INPAR::XFEM::Xfluid_Sided_Coupling,
-                 INPAR::XFEM::Embedded_Sided_Coupling,
-                 INPAR::XFEM::Two_Sided_Coupling)
+                 INPAR::XFEM::Xfluid_Sided,
+                 INPAR::XFEM::Embedded_Sided,
+                 INPAR::XFEM::Mean)
              )));
 
 

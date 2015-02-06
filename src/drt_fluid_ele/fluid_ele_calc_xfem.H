@@ -442,7 +442,7 @@ private:
   }
 
   //Get the average weights kappa1 and kappa2 for the Nitsche calculations.
-  void GetAverageWeights(const INPAR::XFEM::CouplingStrategy coup_strategy,
+  void GetAverageWeights(const INPAR::XFEM::AveragingStrategy averaging_strategy,
                          double & kappa_m,
                          double & kappa_s,
                          bool   & non_xfluid_coupling);
