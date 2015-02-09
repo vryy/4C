@@ -82,7 +82,7 @@ protected:
   /*========================================================================*/
 
   //! extract element based or nodal values and return extracted values of phinp
-  std::vector<double> ExtractElementAndNodeValues(
+  virtual const std::vector<double> ExtractElementAndNodeValues(
     DRT::ELEMENTS::Transport*  ele,
     Teuchos::ParameterList&    params,
     DRT::Discretization&       discretization,
@@ -244,11 +244,6 @@ protected:
     Epetra_SerialDenseVector&         sigma       //!< conductivity of all single ions + overall electrolyte solution
   ) = 0;
 
-  // get nodal current density values
-  virtual void GetCurrentDensity(
-      const std::vector<double>&   myphinp   //!< myphi vector for electric potential and current density
-  ){return;};
-
   //! Solving for electric potential field : Calculate Matrix and Rhs
   virtual void CalcMatAndRhsElectricPotentialField(
       const enum INPAR::ELCH::EquPot   equpot,   //!< type of closing equation for electric potential
@@ -266,9 +261,6 @@ protected:
 
   //! get elch parameter list
   ScaTraEleParameterElch* ElchPara(){return static_cast<ScaTraEleParameterElch*>(my::scatrapara_);};
-
-  //! get elch internal variable manager
-  Teuchos::RCP<ScaTraEleInternalVariableManagerElch<my::nsd_,my::nen_> > VarManager(){return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElch<my::nsd_,my::nen_> >(my::scatravarmanager_);};
 
   /*========================================================================*/
   //! @name flags and enums

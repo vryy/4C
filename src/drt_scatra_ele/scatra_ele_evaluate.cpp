@@ -48,22 +48,27 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
 {
   const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(p,"action");
 
-  if (action == SCATRA::set_general_scatra_parameter)
+  switch(action)
   {
-    DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
-    scatrapara->SetElementGeneralScaTraParameters(p,dis.Comm().MyPID());
-  }
-  else if (action == SCATRA::set_turbulence_scatra_parameter)
+  case SCATRA::set_general_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
-    scatrapara->SetElementTurbulenceParameter(p);
+    DRT::ELEMENTS::ScaTraEleParameterStd::Instance()->SetElementGeneralScaTraParameters(p,dis.Comm().MyPID());
+    break;
   }
-  else if (action == SCATRA::set_time_parameter)
+
+  case SCATRA::set_turbulence_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterTimInt* scatrapara = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance();
-    scatrapara->SetElementTimeParameter(p);
+    DRT::ELEMENTS::ScaTraEleParameterStd::Instance()->SetElementTurbulenceParameter(p);
+    break;
   }
-  else if (action == SCATRA::set_mean_Cai)
+
+  case SCATRA::set_time_parameter:
+  {
+    DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance()->SetElementTimeParameter(p);
+    break;
+  }
+
+  case SCATRA::set_mean_Cai:
   {
     const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(p, "scatratype");
     if (scatratype == INPAR::SCATRA::scatratype_undefined)
@@ -81,16 +86,22 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
         dserror("set your scatratype for mfs here");
         break;
     }
+
+    break;
   }
-  else if (action == SCATRA::set_lsreinit_scatra_parameter)
+
+  case SCATRA::set_lsreinit_scatra_parameter:
   {
     DRT::ELEMENTS::ScaTraEleParameterLsReinit* scatrapara = DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance();
     // set general parameters first
     scatrapara->SetElementGeneralScaTraParameters(p,dis.Comm().MyPID());
     // set additional problem-dependent parameters
     scatrapara->SetElementLsReinitScaTraParameter(p);
+
+    break;
   }
-  else if (action == SCATRA::set_elch_scatra_parameter)
+
+  case SCATRA::set_elch_scatra_parameter:
   {
     DRT::ELEMENTS::ScaTraEleParameterElch* scatrapara = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
     // set general parameters first
@@ -99,6 +110,13 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
     scatrapara->SetElementElchScaTraParameter(p,dis.Comm().MyPID());
 
     scatrapara->SetElementElchDiffCondScaTraParameter(p,dis.Comm().MyPID());
+
+    break;
+  }
+
+  default:
+    // do nothing in all other cases
+    break;
   }
 
   return;
@@ -146,13 +164,13 @@ int DRT::ELEMENTS::Transport::Evaluate(
   INPAR::SCATRA::ImplType impltype = INPAR::SCATRA::impltype_undefined;
   switch(scatratype)
   {
-  case INPAR::SCATRA::scatratype_condif:    impltype = INPAR::SCATRA::impltype_std;      break;
-  case INPAR::SCATRA::scatratype_loma:      impltype = INPAR::SCATRA::impltype_loma;     break;
-  case INPAR::SCATRA::scatratype_poro:      impltype = INPAR::SCATRA::impltype_poro;     break;
-  case INPAR::SCATRA::scatratype_advreac:   impltype = INPAR::SCATRA::impltype_advreac;  break;
-  case INPAR::SCATRA::scatratype_pororeac:  impltype = INPAR::SCATRA::impltype_pororeac; break;
-  case INPAR::SCATRA::scatratype_anisotrop: impltype = INPAR::SCATRA::impltype_aniso;    break;
-  case INPAR::SCATRA::scatratype_cardiac_monodomain: impltype = INPAR::SCATRA::impltype_cardiac_monodomain;    break;
+  case INPAR::SCATRA::scatratype_condif:             impltype = INPAR::SCATRA::impltype_std;                break;
+  case INPAR::SCATRA::scatratype_loma:               impltype = INPAR::SCATRA::impltype_loma;               break;
+  case INPAR::SCATRA::scatratype_poro:               impltype = INPAR::SCATRA::impltype_poro;               break;
+  case INPAR::SCATRA::scatratype_advreac:            impltype = INPAR::SCATRA::impltype_advreac;            break;
+  case INPAR::SCATRA::scatratype_pororeac:           impltype = INPAR::SCATRA::impltype_pororeac;           break;
+  case INPAR::SCATRA::scatratype_anisotrop:          impltype = INPAR::SCATRA::impltype_aniso;              break;
+  case INPAR::SCATRA::scatratype_cardiac_monodomain: impltype = INPAR::SCATRA::impltype_cardiac_monodomain; break;
   case INPAR::SCATRA::scatratype_elch:
   {
     // At this point, an instance of the singleton parameter class ScaTraEleParameterElch already exists
@@ -160,9 +178,11 @@ int DRT::ELEMENTS::Transport::Evaluate(
 
     if(Material()->MaterialType() == INPAR::MAT::m_electrode)
       impltype = INPAR::SCATRA::impltype_elch_electrode;
-    else if(elchpara->ElchType()==INPAR::ELCH::elchtype_diffcond)
+    else if(elchpara->ElchType() == INPAR::ELCH::elchtype_diffcond)
       impltype = INPAR::SCATRA::impltype_elch_diffcond;
-    else impltype = INPAR::SCATRA::impltype_elch_NP;
+    else if(elchpara->ElchType() == INPAR::ELCH::elchtype_nernst_planck)
+      impltype = INPAR::SCATRA::impltype_elch_NP;
+    // else: impltype just remains undefined
     break;
   }
   case INPAR::SCATRA::scatratype_levelset:
@@ -264,10 +284,9 @@ int DRT::ELEMENTS::Transport::Evaluate(
     default:
       dserror("Unknown type of action '%i' for ScaTra", action);
       break;
-  } // end of switch(act)
+  } // switch(action)
 
   return 0;
-
 } //DRT::ELEMENTS::Transport::Evaluate
 
 

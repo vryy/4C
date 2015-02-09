@@ -87,22 +87,19 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
  | extract element based or nodal values and return extracted values of phinp   fang 02/15 |
  *-----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ExtractElementAndNodeValues(
+const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ExtractElementAndNodeValues(
   DRT::ELEMENTS::Transport*  ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
   const std::vector<int>&    lm
 )
 {
-  // get myphi vector for potential and current
+  // call base class routine
   const std::vector<double> myphinp = my::ExtractElementAndNodeValues(ele,params,discretization,lm);
 
   // get electric potential at element nodes
   for (int ien=0;ien<my::nen_;++ien)
     epotnp_(ien) = myphinp[ien*my::numdofpernode_+my::numscal_];
-
-  // get current density at element nodes
-  GetCurrentDensity(myphinp);
 
   // return extracted values of phinp
   return myphinp;

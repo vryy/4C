@@ -179,7 +179,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ReadElementCoordinatesAndProject
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValues(
+const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValues(
   DRT::ELEMENTS::Transport*  ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,

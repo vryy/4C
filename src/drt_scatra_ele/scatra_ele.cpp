@@ -282,10 +282,10 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
      mat->MaterialType() == INPAR::MAT::m_yoghurt or
      mat->MaterialType() == INPAR::MAT::m_scatra_growth_scd
      )
-  {
-    numdofpernode_=1; // we only have a single scalar
-  }
-  else if (mat->MaterialType() == INPAR::MAT::m_matlist) // we have a system of scalars
+    numdofpernode_ = 1; // we only have a single scalar
+  else if(mat->MaterialType() == INPAR::MAT::m_electrode)
+    numdofpernode_ = 2; // concentration and electric potential
+  else if(mat->MaterialType() == INPAR::MAT::m_matlist) // we have a system of scalars
   {
     const MAT::MatList* actmat = static_cast<const MAT::MatList*>(mat.get());
     numdofpernode_=actmat->NumMat();
@@ -303,7 +303,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       numdofpernode_ += 1;
     }
   }
-  else if (mat->MaterialType() == INPAR::MAT::m_matlist_reactions) // we have a system of reactive scalars
+  else if(mat->MaterialType() == INPAR::MAT::m_matlist_reactions) // we have a system of reactive scalars
     {
       const MAT::MatListReactions* actmat = static_cast<const MAT::MatListReactions*>(mat.get());
       numdofpernode_=actmat->NumMat();
@@ -323,7 +323,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
           dserror("The material MAT_matlist_reaction only supports MAT_scatra_reaction as valid reaction Material");
       }
   }
-  else if (mat->MaterialType() == INPAR::MAT::m_elchmat)
+  else if(mat->MaterialType() == INPAR::MAT::m_elchmat)
   {
     const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
 

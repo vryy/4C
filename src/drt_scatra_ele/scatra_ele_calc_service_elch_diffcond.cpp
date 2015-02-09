@@ -204,14 +204,21 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectRHSFromCalcRHSLin
 }
 
 
-/*----------------------------------------------------------------------*
- | get nodal current density values                          fang 01/15 |
- *----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------*
+ | extract element based or nodal values and return extracted values of phinp   fang 01/15 |
+ *-----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetCurrentDensity(
-    const std::vector<double>&   myphinp   //!< myphi vector for electric potential and current density
-)
+const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ExtractElementAndNodeValues(
+    DRT::ELEMENTS::Transport*  ele,
+    Teuchos::ParameterList&    params,
+    DRT::Discretization&       discretization,
+    const std::vector<int>&    lm
+    )
 {
+  // call base class routine
+  const std::vector<double> myphinp = myelch::ExtractElementAndNodeValues(ele,params,discretization,lm);
+
+  // get current density at element nodes if required
   if(cursolvar_)
   {
     // get values for current at element nodes
@@ -227,7 +234,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetCurrentDensity(
   else
     ecurnp_.Clear();
 
-  return;
+  return myphinp;
 }
 
 

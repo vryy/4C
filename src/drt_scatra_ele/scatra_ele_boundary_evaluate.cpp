@@ -11,13 +11,14 @@ Maintainer: Andreas Ehrl
             089 - 289-15252
 </pre>
  *----------------------------------------------------------------------*/
-
-#include "scatra_ele.H"
-#include "scatra_ele_boundary_calc.H"
-#include "scatra_ele_action.H"
-#include "scatra_ele_boundary_factory.H"
-
 #include "../drt_mat/elchmat.H"
+
+#include "scatra_ele_action.H"
+#include "scatra_ele_boundary_calc.H"
+#include "scatra_ele_boundary_factory.H"
+#include "scatra_ele_parameter_elch.H"
+#include "scatra_ele.H"
+
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
@@ -42,7 +43,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
   const int numdofpernode = NumDofPerNode(*(Nodes()[0]));
   int numscal = numdofpernode;
 
-  if (scatratype==INPAR::SCATRA::scatratype_elch)
+  if(scatratype == INPAR::SCATRA::scatratype_elch)
   {
     numscal -= 1;
 
@@ -54,13 +55,46 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
       numscal = static_cast<const MAT::ElchMat*>(material.get())->NumScal();
   }
 
+  // determine implementation type
+  INPAR::SCATRA::ImplType impltype = INPAR::SCATRA::impltype_undefined;
+  switch(scatratype)
+  {
+  case INPAR::SCATRA::scatratype_condif:             impltype = INPAR::SCATRA::impltype_std;                break;
+  case INPAR::SCATRA::scatratype_advreac:            impltype = INPAR::SCATRA::impltype_advreac;            break;
+  case INPAR::SCATRA::scatratype_anisotrop:          impltype = INPAR::SCATRA::impltype_aniso;              break;
+  case INPAR::SCATRA::scatratype_cardiac_monodomain: impltype = INPAR::SCATRA::impltype_cardiac_monodomain; break;
+  case INPAR::SCATRA::scatratype_levelset:           impltype = INPAR::SCATRA::impltype_levelset;           break;
+  case INPAR::SCATRA::scatratype_loma:               impltype = INPAR::SCATRA::impltype_loma;               break;
+  case INPAR::SCATRA::scatratype_elch:
+  {
+    // At this point, an instance of the singleton parameter class ScaTraEleParameterElch already exists
+    DRT::ELEMENTS::ScaTraEleParameterElch* elchpara = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
+
+    if(ParentElement()->Material()->MaterialType() == INPAR::MAT::m_electrode)
+      impltype = INPAR::SCATRA::impltype_elch_electrode;
+    else if(elchpara->ElchType() == INPAR::ELCH::elchtype_diffcond)
+      impltype = INPAR::SCATRA::impltype_elch_diffcond;
+    else if(elchpara->ElchType() == INPAR::ELCH::elchtype_nernst_planck)
+      impltype = INPAR::SCATRA::impltype_elch_NP;
+    // else: impltype just remains undefined
+    break;
+  }
+  case INPAR::SCATRA::scatratype_poro:     impltype = INPAR::SCATRA::impltype_poro;     break;
+  case INPAR::SCATRA::scatratype_pororeac: impltype = INPAR::SCATRA::impltype_pororeac; break;
+  default:
+  {
+    dserror("Unknown scatratype for boundary element evaluation!");
+    break;
+  }
+  }
+
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport
   // boundary element)
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return DRT::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(this,scatratype,numdofpernode,numscal)->EvaluateAction(
+  return DRT::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(this,impltype,numdofpernode,numscal)->EvaluateAction(
       this,
       params,
       discretization,

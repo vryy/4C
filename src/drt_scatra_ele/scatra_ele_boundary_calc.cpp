@@ -173,7 +173,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     if(condition == NULL)
       dserror("Cannot access Neumann boundary condition!");
 
-    EvaluateNeumann(ele,params,discretization,*condition,lm,elevec1_epetra);
+    EvaluateNeumann(ele,params,discretization,*condition,lm,elevec1_epetra,1.);
 
     break;
   }
@@ -570,7 +570,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Surface/Line Neumann boundary condition       gjb 01/09 |
+ | evaluate Neumann boundary condition                        gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
@@ -579,12 +579,10 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
     DRT::Discretization&                discretization,
     DRT::Condition&                     condition,
     std::vector<int>&                   lm,
-    Epetra_SerialDenseVector&           elevec1)
+    Epetra_SerialDenseVector&           elevec1,
+    const double                        scalar
+    )
 {
-  // get the parent element including its material
-  DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
-  Teuchos::RCP<MAT::Material> mat = parentele->Material();
-
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -617,49 +615,44 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
 
     // factor given by spatial function
     double functfac = 1.0;
-    // determine global coordinates of current Gauss point
-    double coordgp[3]; // we always need three coordinates for function evaluation!
-    for (int i = 0; i< 3; i++)
-      coordgp[i] = 0.0;
 
-    for (int i = 0; i< nsd_; i++)
+    // determine global coordinates of current Gauss point
+    double coordgp[3];   // we always need three coordinates for function evaluation!
+    for(int i=0; i<3; ++i)
+      coordgp[i] = 0.;
+    for(int i=0; i<nsd_; ++i)
     {
-      coordgp[i] = 0.0;
-      for (int j = 0; j < nen_; j++)
-      {
-        coordgp[i] += xyze_(i,j) * funct_(j);
-      }
+      coordgp[i] = 0.;
+      for(int j=0; j<nen_; ++j)
+        coordgp[i] += xyze_(i,j)*funct_(j);
     }
 
-    int functnum = -1;
-    const double* coordgpref = &coordgp[0]; // needed for function evaluation
+    const double* coordgpref = &coordgp[0];   // needed for function evaluation
 
-
-    for(int dof=0;dof<numdofpernode_;dof++)
+    for(int dof=0; dof<numdofpernode_; ++dof)
     {
       if ((*onoff)[dof]) // is this dof activated?
       {
+        int functnum = -1;
+
         // factor given by spatial function
-        if (func) functnum = (*func)[dof];
-        {
-          if (functnum>0)
-          {
-            // evaluate function at current gauss point (provide always 3D coordinates!)
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
-          }
-          else
-            functfac = 1.0;
-        }
+        if(func)
+          functnum = (*func)[dof];
+
+        // evaluate function at current Gauss point (provide always 3D coordinates!)
+        if(functnum>0)
+          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
+        else
+          functfac = 1.;
 
         const double val_fac_functfac = (*val)[dof]*fac*functfac;
 
-        for (int node=0;node<nen_;++node)
-        {
-          elevec1[node*numdofpernode_+dof] += funct_(node)*val_fac_functfac;
-        }
+        for(int node=0; node<nen_; ++node)
+          //TODO: with or without eps_
+          elevec1[node*numdofpernode_+dof] += scalar*funct_(node)*val_fac_functfac;
       } // if ((*onoff)[dof])
-    }
-  } //end of loop over integration points
+    } // loop over dofs
+  } // loop over integration points
 
   return 0;
 }

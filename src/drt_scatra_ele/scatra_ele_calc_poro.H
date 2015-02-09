@@ -111,7 +111,7 @@ protected:
 
   //! extract element based or nodal values
   //  return extracted values of phinp
-  virtual std::vector<double> ExtractElementAndNodeValues(
+  virtual const std::vector<double> ExtractElementAndNodeValues(
     DRT::ELEMENTS::Transport*  ele,
     Teuchos::ParameterList&    params,
     DRT::Discretization&       discretization,

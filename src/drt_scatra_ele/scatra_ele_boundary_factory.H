@@ -2,7 +2,7 @@
 /*!
 \file scatra_ele_boundary_factory.H
 
-\brief factory for fluid scatra boundary evaluation
+\brief factory for scatra boundary evaluation
 
 <pre>
 Maintainer: Andreas Ehrl
@@ -33,29 +33,27 @@ class ScaTraBoundaryFactory
 
 public:
   //! ctor
-  ScaTraBoundaryFactory(){ return; };
+  ScaTraBoundaryFactory(){return;};
 
   //! dtor
-  virtual ~ScaTraBoundaryFactory(){ return; };
+  virtual ~ScaTraBoundaryFactory(){return;};
 
   //! ProvideImpl
   static ScaTraBoundaryInterface* ProvideImpl(const DRT::Element* ele,
-                                              const enum INPAR::SCATRA::ScaTraType scatratype,
+                                              const enum INPAR::SCATRA::ImplType impltype,
                                               const int numdofpernode,
                                               const int numscal);
 
-
 private:
 
-  //! define FluidEleBoundaryCalc instances dependent on problemtype
+  //! return instance of element evaluation class depending on implementation type
   template<DRT::Element::DiscretizationType distype>
-  static ScaTraBoundaryInterface* DefineProblemType(const enum INPAR::SCATRA::ScaTraType scatratype,
-                                                    const int numdofpernode,
-                                                    const int numscal);
-
+  static ScaTraBoundaryInterface* DefineProblemType(
+      const enum INPAR::SCATRA::ImplType impltype,
+      const int numdofpernode,
+      const int numscal
+      );
 }; // class ScaTraBoundaryFactory
-
 } // namespace ELEMENTS
 } // namespace DRT
-
 #endif

@@ -140,15 +140,16 @@ public:
                       Epetra_SerialDenseVector&       elevec2,
                       Epetra_SerialDenseVector&       elevec3);
 
-  //! Evaluate a Neumann boundary condition
-  virtual int EvaluateNeumann(DRT::ELEMENTS::TransportBoundary* ele,
-                              Teuchos::ParameterList&           params,
-                              DRT::Discretization&              discretization,
-                              DRT::Condition&                   condition,
-                              std::vector<int>&                 lm,
-                              Epetra_SerialDenseVector&         elevec1_epetra
-                              );
-
+  //! evaluate Neumann boundary condition
+  virtual int EvaluateNeumann(
+      DRT::ELEMENTS::TransportBoundary*   ele,
+      Teuchos::ParameterList&             params,
+      DRT::Discretization&                discretization,
+      DRT::Condition&                     condition,
+      std::vector<int>&                   lm,
+      Epetra_SerialDenseVector&           elevec1,
+      const double                        scalar
+      );
 
   //!computes the factor for the wall shear stress dependent interface flux
   std::vector<double> WSSinfluence(

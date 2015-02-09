@@ -60,12 +60,13 @@ class TransportBoundary;
     ) = 0;
 
     virtual int EvaluateNeumann(
-      DRT::ELEMENTS::TransportBoundary*   ele,
-      Teuchos::ParameterList&             params,
-      DRT::Discretization&                discretization,
-      DRT::Condition&                     condition,
-      std::vector<int>&                   lm,
-      Epetra_SerialDenseVector&           elevec1_epetra
+        DRT::ELEMENTS::TransportBoundary*   ele,
+        Teuchos::ParameterList&             params,
+        DRT::Discretization&                discretization,
+        DRT::Condition&                     condition,
+        std::vector<int>&                   lm,
+        Epetra_SerialDenseVector&           elevec1,
+        const double                        scalar
     ) = 0;
   };
 } // namespace Elements

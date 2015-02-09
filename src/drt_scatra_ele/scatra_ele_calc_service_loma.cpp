@@ -148,7 +148,7 @@ const DRT::Element*        ele
  | extract element based or nodal values and return extracted values of phinp   fang 02/15 |
  *-----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(
+const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(
   DRT::ELEMENTS::Transport*  ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,

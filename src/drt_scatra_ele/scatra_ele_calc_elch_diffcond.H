@@ -324,6 +324,14 @@ private:
   //! @name additional service routines
   /*========================================================================*/
 
+  //! extract element based or nodal values and return extracted values of phinp
+  const std::vector<double> ExtractElementAndNodeValues(
+    DRT::ELEMENTS::Transport*  ele,
+    Teuchos::ParameterList&    params,
+    DRT::Discretization&       discretization,
+    const std::vector<int>&    lm
+  );
+
   //! validity check for all elements with respect to
   //! formulation-specific parameter, degree's of freedom, number of scalars, ...
   void CheckElchElementParameter(
@@ -343,11 +351,6 @@ private:
     const double                  fac,         //!< domain-integration factor
     const double                  densnp,      //!< density at time_(n+1)
     const double                  phinp        //!< scalar at time_(n+1)
-  );
-
-  // get nodal current density values
-  void GetCurrentDensity(
-      const std::vector<double>&   myphinp   //!< myphi vector for electric potential and current density
   );
 
   // Solving for electric potential field : Calculate Matrix and Rhs

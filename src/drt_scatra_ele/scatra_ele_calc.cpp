@@ -172,7 +172,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::Evaluate(
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractElementAndNodeValues(
+const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractElementAndNodeValues(
   DRT::ELEMENTS::Transport*  ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,

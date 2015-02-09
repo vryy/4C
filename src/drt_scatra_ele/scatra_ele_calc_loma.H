@@ -203,7 +203,7 @@ private:
     );
 
     //! extract element based or nodal values and return extracted values of phinp
-    std::vector<double> ExtractElementAndNodeValues(
+    const std::vector<double> ExtractElementAndNodeValues(
       DRT::ELEMENTS::Transport*  ele,
       Teuchos::ParameterList&    params,
       DRT::Discretization&       discretization,
