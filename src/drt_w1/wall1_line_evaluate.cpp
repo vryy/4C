@@ -281,12 +281,12 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       const double dr = w1_substitution(xyecurr, deriv, &unrm, numnod);
 
       // constant factor for integration
-      const double fac = intpoints.qwgt[gpid] * dr * ortho_value * curvefac;
+      const double fac = intpoints.qwgt[gpid] * ortho_value * curvefac;
 
       // add load components
       for (int node = 0; node < numnod; ++node)
         for (int j = 0; j < Wall1::noddof_; ++j)
-          elevec1[node * Wall1::noddof_ + j] += funct[node] * unrm[j] * fac;
+          elevec1[node * Wall1::noddof_ + j] += funct[node] * unrm[j] * dr * fac;
 
       // linearization if needed
       if (loadlin)
@@ -335,8 +335,84 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       break;
     }
     }
-
   }
+
+  /*// FD CHECK FOR ORTHOPRESSURE
+  switch (ltype)
+  {
+  case neum_orthopressure:
+  {
+    // prepare FD check
+    Epetra_SerialDenseMatrix fd_deriv(numnod*Wall1::noddof_,numnod*Wall1::noddof_);
+    Epetra_SerialDenseMatrix an_deriv = *elemat1;
+    Epetra_SerialDenseVector eleforce_ref = elevec1;
+    Epetra_SerialDenseVector eleforce_curr(numnod*Wall1::noddof_);
+    double eps = 1.0e-8;
+
+    // do FD step for all DOFs
+    for (int node=0;node<numnod;++node)
+      for (int dof=0;dof<Wall1::noddof_;++dof)
+      {
+        // move position
+        xyecurr(dof,node) += eps;
+
+        // actual FD evaluation
+        // loop over integration points //new
+        for (int gpid = 0; gpid < intpoints.nquad; gpid++)
+        {
+          const double e1 = intpoints.qxg[gpid][0];
+
+          // get shape functions and derivatives in the line
+          DRT::UTILS::shape_function_1D(funct, e1, distype);
+          DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
+          double ortho_value = (*val)[0];
+
+          // outward normal vector (unit vector)
+          std::vector<double> unrm(Wall1::numdim_);
+
+          // compute infinitesimal line element dr for integration along the line
+          const double dr = w1_substitution(xyecurr, deriv, &unrm, numnod);
+
+          // constant factor for integration
+          const double fac = intpoints.qwgt[gpid] * dr * ortho_value * curvefac;
+
+          // add load components
+          for (int k = 0; k < numnod; ++k)
+            for (int j = 0; j < Wall1::noddof_; ++j)
+              eleforce_curr[k * Wall1::noddof_ + j] += funct[k] * unrm[j] * fac;
+        }
+
+        // compute FD linearization
+        for (int idx=0;idx<numnod*Wall1::noddof_;++idx)
+          fd_deriv(idx,node*Wall1::noddof_+dof) = (eleforce_curr[idx]-eleforce_ref[idx])/eps;
+
+        // unmove position
+        xyecurr(dof,node) -= eps;
+
+        // reset eleforce_curr
+        for (int k = 0; k < numnod; ++k)
+          for (int j = 0; j < Wall1::noddof_; ++j)
+            eleforce_curr[k * Wall1::noddof_ + j] = 0.0;
+      }
+
+    // analyze results
+    std::cout << "FD LINEARIZATION \n" << fd_deriv << std::endl;
+    std::cout << "ANALYTICAL LINEARIZATION \n" << an_deriv << std::endl;
+    //exit(0);
+
+    // overwrite results with FD derivative
+    for (int j = 0; j < numnod*Wall1::noddof_; ++j)
+      for (int k = 0; k < numnod*Wall1::noddof_; ++k)
+        (*elemat1)(j,k) = -fd_deriv(j,k);
+  break;
+  }
+  default:
+  {
+    // do nothing
+    break;
+  }
+  }*/
+
   return 0;
 }
 
