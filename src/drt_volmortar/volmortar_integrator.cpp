@@ -32,6 +32,489 @@ Maintainer: Philipp Farah
 
 
 /*----------------------------------------------------------------------*
+ |  ctor (public)                                            farah 02/15|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS>
+VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::VolMortarIntegratorEleBased(Teuchos::ParameterList& params)
+{
+  // get type of quadratic modification
+  dualquad_ = DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params,"DUALQUAD");
+}
+
+/*----------------------------------------------------------------------*
+ |  Initialize gauss points for ele-based integration        farah 02/15|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS>
+void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
+{
+  // init shape of integration domain
+  DRT::Element::DiscretizationType intshape = distypeS;
+
+  //*******************************
+  // choose Gauss rule accordingly
+  //*******************************
+  switch(intshape)
+  {
+  case DRT::Element::tri3:
+  {
+    DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_tri_7point;
+
+    const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,2);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::tet4:
+  {
+    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_tet_45point;
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,3);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      coords_(i,2)=intpoints.qxg[i][2];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::tet10:
+  {
+    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_tet_45point;
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,3);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      coords_(i,2)=intpoints.qxg[i][2];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::hex8:
+  {
+    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_hex_27point;
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,3);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      coords_(i,2)=intpoints.qxg[i][2];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::hex20:
+  {
+    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_hex_125point;
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,3);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      coords_(i,2)=intpoints.qxg[i][2];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::hex27:
+  {
+    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_hex_125point;
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,3);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      coords_(i,2)=intpoints.qxg[i][2];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  default:
+  {
+    dserror("ERROR: VolMortarIntegrator: This element type is not implemented!");
+    break;
+  }
+  } // switch(eletype)
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Initialize gauss points for ele-based integration        farah 02/15|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS>
+void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
+    DRT::Element& sele,
+    std::vector<int>& foundeles,
+    LINALG::SparseMatrix& dmatrix_A,
+    LINALG::SparseMatrix& mmatrix_A,
+    Teuchos::RCP<const DRT::Discretization> Adis,
+    Teuchos::RCP<const DRT::Discretization> Bdis)
+{
+  //**********************************************************************
+  // loop over all Gauss points for integration
+  //**********************************************************************
+  for (int gp=0;gp<ngp_;++gp)
+  {
+    // coordinates and weight
+    double eta[3]    = {coords_(gp,0), coords_(gp,1), coords_(gp,2)};
+    double wgt       = weights_[gp];
+    double jac       = 0.0;
+    double globgp[3] = {0.0, 0.0, 0.0};
+
+    // quantities for eval. outside gp
+    double gpdist    = 1.0e12;
+    int    gpid      = 0;
+    double AuxXi[3]  = {0.0, 0.0, 0.0};
+
+    // evaluate the integration cell Jacobian
+    jac = UTILS::Jacobian<distypeS>(eta,sele);
+
+    // get global Gauss point coordinates
+    UTILS::LocalToGlobal<distypeS>(sele,eta,globgp);
+
+    // map gp into A and B para space
+    double Axi[3] = {0.0, 0.0, 0.0};
+    MORTAR::UTILS::GlobalToLocal<distypeS>(sele,globgp,Axi);
+
+    // loop over beles
+    for(int found=0;found<(int)foundeles.size();++found)
+    {
+      //get master element
+      DRT::Element* Bele = Bdis->gElement(foundeles[found]);
+      DRT::Element::DiscretizationType shape = Bele->Shape();
+
+      bool proj = false;
+
+      switch (shape)
+      {
+      case DRT::Element::hex8:
+      {
+        proj=VolMortarEleBasedGP<distypeS,DRT::Element::hex8>(
+            sele,
+            *Bele,
+            foundeles,
+            found,
+            gpid,
+            jac,
+            wgt,
+            gpdist,
+            Axi,
+            AuxXi,
+            globgp,
+            dualquad_,
+            dmatrix_A,
+            mmatrix_A,
+            Adis,
+            Bdis);
+
+        break;
+      }
+      case DRT::Element::hex20:
+      {
+        proj=VolMortarEleBasedGP<distypeS,DRT::Element::hex20>(
+            sele,
+            *Bele,
+            foundeles,
+            found,
+            gpid,
+            jac,
+            wgt,
+            gpdist,
+            Axi,
+            AuxXi,
+            globgp,
+            dualquad_,
+            dmatrix_A,
+            mmatrix_A,
+            Adis,
+            Bdis);
+
+        break;
+      }
+      case DRT::Element::hex27:
+      {
+        proj=VolMortarEleBasedGP<distypeS,DRT::Element::hex27>(
+            sele,
+            *Bele,
+            foundeles,
+            found,
+            gpid,
+            jac,
+            wgt,
+            gpdist,
+            Axi,
+            AuxXi,
+            globgp,
+            dualquad_,
+            dmatrix_A,
+            mmatrix_A,
+            Adis,
+            Bdis);
+
+        break;
+      }
+      case DRT::Element::tet4:
+      {
+        proj=VolMortarEleBasedGP<distypeS,DRT::Element::tet4>(
+            sele,
+            *Bele,
+            foundeles,
+            found,
+            gpid,
+            jac,
+            wgt,
+            gpdist,
+            Axi,
+            AuxXi,
+            globgp,
+            dualquad_,
+            dmatrix_A,
+            mmatrix_A,
+            Adis,
+            Bdis);
+
+        break;
+      }
+      case DRT::Element::tet10:
+      {
+        proj=VolMortarEleBasedGP<distypeS,DRT::Element::tet10>(
+            sele,
+            *Bele,
+            foundeles,
+            found,
+            gpid,
+            jac,
+            wgt,
+            gpdist,
+            Axi,
+            AuxXi,
+            globgp,
+            dualquad_,
+            dmatrix_A,
+            mmatrix_A,
+            Adis,
+            Bdis);
+
+        break;
+      }
+      default:
+      {
+        dserror("ERROR: unknown shape!");
+        break;
+      }
+      }
+
+      // if gp evaluated break ele loop
+      if(proj == true)
+        break;
+      else
+        continue;
+    }//beles
+  }//end gp loop
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  possible elements for ele-based integration              farah 02/15|
+ *----------------------------------------------------------------------*/
+template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::quad4>;
+template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::quad8>;
+template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::quad9>;
+
+template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tri3>;
+template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tri6>;
+
+template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::hex8>;
+template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::hex20>;
+template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::hex27>;
+
+template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tet4>;
+template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tet10>;
+
+
+/*----------------------------------------------------------------------*
+ |  gp evaluation                                            farah 02/15|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+bool VOLMORTAR::VolMortarEleBasedGP(
+    DRT::Element& sele,
+    DRT::Element& mele,
+    std::vector<int>& foundeles,
+    int& found, int& gpid,
+    double& jac, double& wgt, double& gpdist,
+    double* Axi, double* AuxXi, double* globgp,
+    INPAR::VOLMORTAR::DualQuad& dq,
+    LINALG::SparseMatrix& dmatrix_A,
+    LINALG::SparseMatrix& mmatrix_A,
+    Teuchos::RCP<const DRT::Discretization> Adis,
+    Teuchos::RCP<const DRT::Discretization> Bdis)
+{
+  //! ns_: number of slave element nodes
+  static const int ns_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
+
+  //! nm_: number of master element nodes
+  static const int nm_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+
+  // create empty vectors for shape fct. evaluation
+  LINALG::Matrix<ns_,1> sval_A;
+  LINALG::Matrix<nm_,1> mval_A;
+  LINALG::Matrix<ns_,1> lmval_A;
+
+  double Bxi[3] = {0.0, 0.0, 0.0};
+
+  bool converged = true;
+  MORTAR::UTILS::GlobalToLocal<distypeM>(mele,globgp,Bxi, converged);
+  if(!converged and found!=((int)foundeles.size()-1))
+    return false;
+
+  // save distance of gp
+  double l = sqrt(Bxi[0]*Bxi[0] + Bxi[1]*Bxi[1] + Bxi[2]*Bxi[2]);
+  if(l<gpdist)
+  {
+    gpdist = l;
+    gpid   = foundeles[found];
+    AuxXi[0]  = Bxi[0];
+    AuxXi[1]  = Bxi[1];
+    AuxXi[2]  = Bxi[2];
+  }
+
+  // Check parameter space mapping
+  bool proj = CheckMapping3D<distypeS,distypeM>(sele,mele,Axi,Bxi);
+
+  // if gp outside continue or eval nearest gp
+  if(!proj and (found!=((int)foundeles.size()-1)))
+    return false;
+  else if(!proj and found==((int)foundeles.size()-1))
+  {
+    Bxi[0] = AuxXi[0];
+    Bxi[1] = AuxXi[1];
+    Bxi[2] = AuxXi[2];
+    mele = *(Bdis->gElement(gpid));
+  }
+
+  // for "master" side
+  UTILS::shape_function<distypeS>(sval_A,Axi,dq);
+  UTILS::shape_function<distypeM>(mval_A,Bxi);
+
+  // evaluate Lagrange multiplier shape functions (on slave element)
+  UTILS::dual_shape_function<distypeS>(lmval_A,Axi,sele,dq);
+
+  // compute cell D/M matrix ****************************************
+  // dual shape functions
+  for (int j=0;j<ns_;++j)
+  {
+    DRT::Node* cnode = sele.Nodes()[j];
+    if (cnode->Owner() != Adis->Comm().MyPID())
+      continue;
+
+    int nsdof=Adis->NumDof(1,cnode);
+
+    //loop over slave dofs
+    for (int jdof=0;jdof<nsdof;++jdof)
+    {
+      int row = Adis->Dof(1,cnode,jdof);
+
+      // integrate D
+      double prod2 = lmval_A(j)*sval_A(j)*jac*wgt;
+      if (abs(prod2)>VOLMORTARINTTOL)
+        dmatrix_A.Assemble(prod2, row, row);
+
+      // integrate M
+      for (int k=0; k<nm_; ++k)
+      {
+        DRT::Node* mnode = mele.Nodes()[k];
+        int col = Bdis->Dof(0,mnode,jdof);
+
+        // multiply the two shape functions
+        double prod = lmval_A(j)*mval_A(k)*jac*wgt;
+
+        if (abs(prod)>VOLMORTARINTTOL)
+          mmatrix_A.Assemble(prod, row, col);
+      }
+    }
+  }
+
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  possible slave/master element pairs                      farah 02/15|
+ *----------------------------------------------------------------------*/
+////slave quad4
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::quad4,DRT::Element::quad4>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::quad4,DRT::Element::tri3>;
+//
+////slave tri3
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tri3,DRT::Element::quad4>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tri3,DRT::Element::tri3>;
+//
+////slave hex8
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::tet4>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::tet10>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::hex8>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::hex27>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex8,DRT::Element::hex20>;
+//
+////slave hex20
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::tet4>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::tet10>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::hex8>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::hex27>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex20,DRT::Element::hex20>;
+//
+////slave hex27
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::tet4>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::tet10>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::hex8>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::hex27>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::hex27,DRT::Element::hex20>;
+//
+////slave tet4
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::tet4>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::tet10>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::hex8>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::hex27>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet4,DRT::Element::hex20>;
+//
+////slave tet10
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::tet4>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::tet10>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::hex8>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::hex27>;
+//template class VOLMORTAR::VolMortarEleBasedGP<DRT::Element::tet10,DRT::Element::hex20>;
+
+
+/*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
@@ -659,7 +1142,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
   //**********************************************************************
   for (int gp=0;gp<ngp_;++gp)
   {
-//    // coordinates and weight
+    // coordinates and weight
     double eta[3]    = {coords_(gp,0), coords_(gp,1), coords_(gp,2)};
     double wgt       = weights_[gp];
     double jac       = 0.0;

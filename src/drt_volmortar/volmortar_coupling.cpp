@@ -170,7 +170,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
   //  std::cout << "Polyogns/Polyhedra = " << polygoncounter_ << std::endl;
   //  std::cout << "Created Cells      = " << cellcounter_    << std::endl;
   //  std::cout << "Integr. Elements   = " << inteles_        << std::endl;
-  //  std::cout << "Integrated Volume  = " << volume_ << "\n" << std::endl;
+    std::cout << "Integrated Volume  = " << volume_ << "\n" << std::endl;
   }
 
   // reset counter
@@ -1183,10 +1183,12 @@ void VOLMORTAR::VolMortarCoupl::PrintStatus(int& i, bool dis_switch)
 }
 
 /*----------------------------------------------------------------------*
- |  Start Cut routine                                         farah 01/14|
+ |  Start Cut routine                                        farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
-    DRT::Element* mele, bool switched_conf)
+void VOLMORTAR::VolMortarCoupl::PerformCut(
+    DRT::Element* sele,
+    DRT::Element* mele,
+    bool switched_conf)
 {
   // create empty vector of integration cells
   std::vector<Teuchos::RCP<Cell> > IntCells;
@@ -1307,7 +1309,6 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(DRT::Element* sele,
     // cut in reference configuration
     wizard->SetBackgroundState(Teuchos::null,Teuchos::null,-1);
     wizard->AddCutterState(0, sauxdis,Teuchos::null);
-
 
     wizard->Cut(true);  // include_inner
 
@@ -1875,305 +1876,57 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate3D Cells                                        farah 04/14|
+ |  Integrate3D elebased                                     farah 04/14|
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
     std::vector<int>& foundeles)
 {
-  // assume that all BDis element types are equal
-  DRT::Element::DiscretizationType btype = Bdiscret_->lColElement(0)->Shape();
-
   switch (Aele.Shape())
   {
   // 2D surface elements
   case DRT::Element::hex8:
   {
-    switch (btype)
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex8> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex27:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex27> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex20:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex20> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet4> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet10:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet10> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("ERROR: unknown shape!");
-      break;
-    }
-    }
+    static VolMortarIntegratorEleBased<DRT::Element::hex8> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixA_,
+        *mmatrixA_, Adiscret_, Bdiscret_);
     break;
   }
   case DRT::Element::tet4:
   {
-    switch (btype)
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex8> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex27:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex27> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex20:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex20> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet4> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet10:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet10> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("ERROR: unknown shape!");
-      break;
-    }
-    }
+    static VolMortarIntegratorEleBased<DRT::Element::tet4> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixA_,
+        *mmatrixA_, Adiscret_, Bdiscret_);
     break;
   }
   case DRT::Element::hex27:
   {
-    switch (btype)
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex8> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex27:
-    {
-      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex27> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex20:
-    {
-      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex20> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet4> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet10:
-    {
-      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet10> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("ERROR: unknown shape!");
-      break;
-    }
-    }
+    static VolMortarIntegratorEleBased<DRT::Element::hex27> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixA_,
+        *mmatrixA_, Adiscret_, Bdiscret_);
     break;
   }
   case DRT::Element::hex20:
   {
-    switch (btype)
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex8> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex27:
-    {
-      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex27> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex20:
-    {
-      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex20> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet4> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet10:
-    {
-      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet10> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("ERROR: unknown shape!");
-      break;
-    }
-    }
+    static VolMortarIntegratorEleBased<DRT::Element::hex20> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixA_,
+        *mmatrixA_, Adiscret_, Bdiscret_);
     break;
   }
   case DRT::Element::tet10:
   {
-    switch (btype)
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex8> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex27:
-    {
-      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex27> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex20:
-    {
-      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex20> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet4> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet10:
-    {
-      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet10> integrator(
-          Params());
-      integrator.InitializeGP(true, 0);
-      integrator.IntegrateEleBased3D_ADis(Aele, foundeles, *dmatrixA_,
-          *mmatrixA_, Adiscret_, Bdiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("ERROR: unknown shape!");
-      break;
-    }
-    }
+    static VolMortarIntegratorEleBased<DRT::Element::tet10> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixA_,
+        *mmatrixA_, Adiscret_, Bdiscret_);
     break;
   }
   default:
@@ -2192,300 +1945,52 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
 void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
     std::vector<int>& foundeles)
 {
-  // assume that all BDis element types are equal
-  DRT::Element::DiscretizationType atype = Adiscret_->lColElement(0)->Shape();
-
-  switch (atype)
+  switch (Bele.Shape())
   {
   // 2D surface elements
   case DRT::Element::hex8:
   {
-    switch (Bele.Shape())
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex8> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex27:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex27> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex20:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex20> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet4> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet10:
-    {
-      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet10> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("ERROR: unknown shape!");
-      break;
-    }
-    }
+    static VolMortarIntegratorEleBased<DRT::Element::hex8> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixB_,
+        *mmatrixB_, Bdiscret_, Adiscret_);
     break;
   }
   case DRT::Element::tet4:
   {
-    switch (Bele.Shape())
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex8> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex27:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex27> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex20:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex20> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet4> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet10:
-    {
-      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet10> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("ERROR: unknown shape!");
-      break;
-    }
-    }
+    static VolMortarIntegratorEleBased<DRT::Element::tet4> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixB_,
+        *mmatrixB_, Bdiscret_, Adiscret_);
     break;
   }
   case DRT::Element::hex27:
   {
-    switch (Bele.Shape())
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex8> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex27:
-    {
-      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex27> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex20:
-    {
-      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex20> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet4> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet10:
-    {
-      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet10> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("ERROR: unknown shape!");
-      break;
-    }
-    }
+    static VolMortarIntegratorEleBased<DRT::Element::hex27> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixB_,
+        *mmatrixB_, Bdiscret_, Adiscret_);
     break;
   }
   case DRT::Element::hex20:
   {
-    switch (Bele.Shape())
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex8> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex27:
-    {
-      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex27> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex20:
-    {
-      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex20> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet4> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet10:
-    {
-      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet10> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("ERROR: unknown shape!");
-      break;
-    }
-    }
+    static VolMortarIntegratorEleBased<DRT::Element::hex20> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixB_,
+        *mmatrixB_, Bdiscret_, Adiscret_);
     break;
   }
   case DRT::Element::tet10:
   {
-    switch (Bele.Shape())
-    {
-    // 2D surface elements
-    case DRT::Element::hex8:
-    {
-      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex8> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex27:
-    {
-      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex27> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::hex20:
-    {
-      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex20> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet4> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    case DRT::Element::tet10:
-    {
-      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet10> integrator(
-          Params());
-      integrator.InitializeGP(true, 1);
-      integrator.IntegrateEleBased3D_BDis(Bele, foundeles, *dmatrixB_,
-          *mmatrixB_, Adiscret_, Bdiscret_);
-      break;
-    }
-    default:
-    {
-      dserror("ERROR: unknown shape!");
-      break;
-    }
-    }
+    static VolMortarIntegratorEleBased<DRT::Element::tet10> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixB_,
+        *mmatrixB_, Bdiscret_, Adiscret_);
     break;
   }
   default:
@@ -2494,7 +1999,6 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
     break;
   }
   }
-
   return;
 }
 

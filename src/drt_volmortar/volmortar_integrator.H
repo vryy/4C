@@ -180,6 +180,125 @@ protected:
 
 };
 
+template<DRT::Element::DiscretizationType distypeS>
+class VolMortarIntegratorEleBased
+{
+public:
+
+  // constructor
+  VolMortarIntegratorEleBased(Teuchos::ParameterList& params);
+
+  // destructor
+  virtual ~VolMortarIntegratorEleBased() {};
+
+  //! ns_: number of slave element nodes
+  static const int ns_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
+
+  //! number of space dimensions ("+1" due to considering only interface elements)
+  static const int ndim_ = DRT::UTILS::DisTypeToDim<distypeS>::dim;
+
+  /*!
+  \brief Initialize Gauss rule (points, weights)
+
+  */
+  void InitializeGP();
+
+  /*!
+  \brief Integrate ele for 3D problems
+
+  */
+  void IntegrateEleBased3D(DRT::Element& sele,
+                           std::vector<int>& foundeles,
+                           LINALG::SparseMatrix& dmatrixA_,
+                           LINALG::SparseMatrix& mmatrixA_,
+                           Teuchos::RCP<const DRT::Discretization> Adiscret_,
+                           Teuchos::RCP<const DRT::Discretization> Bdiscret_);
+protected:
+
+  /*!
+  \brief Check integration point mapping (3D)
+
+  */
+  bool CheckMapping3D(
+      DRT::Element& sele,
+      DRT::Element& mele,
+      double* sxi,
+      double* mxi);
+
+  //@}
+  int                           ngp_;         // number of Gauss points
+  Epetra_SerialDenseMatrix      coords_;      // Gauss point coordinates
+  std::vector<double>           weights_;     // Gauss point weights
+
+  // input parameter
+  INPAR::VOLMORTAR::DualQuad    dualquad_;    // type of quadratic weighting interpolation
+};
+
+/*----------------------------------------------------------------------*
+ |  Check paraspace mapping                                  farah 02/15|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
+bool CheckMapping3D(DRT::Element& sele,
+                               DRT::Element& mele,
+                               double* sxi, double* mxi)
+{
+  // check GP projection (SLAVE)
+  double tol = 1e-5;
+  if (distypeS==DRT::Element::hex8 || distypeS==DRT::Element::hex20 || distypeS==DRT::Element::hex27)
+  {
+    if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[2]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[2]>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if(distypeS==DRT::Element::tet4 || distypeS==DRT::Element::tet10)
+  {
+    if(sxi[0]<0.0-tol || sxi[1]<0.0-tol || sxi[2]<0.0-tol || (sxi[0]+sxi[1]+sxi[2])>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else
+    dserror("Wrong element type!");
+
+  // check GP projection (MASTER)
+  if (distypeM==DRT::Element::hex8 || distypeM==DRT::Element::hex20 || distypeM==DRT::Element::hex27)
+  {
+    if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[2]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[2]>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if(distypeM==DRT::Element::tet4 || distypeM==DRT::Element::tet10)
+  {
+    if(mxi[0]<0.0-tol || mxi[1]<0.0-tol || mxi[2]<0.0-tol || (mxi[0]+mxi[1]+mxi[2])>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else
+    dserror("Wrong element type!");
+
+  return true;
+};
+
+//===================================
+// Alternative to VolMortar coupling:
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+bool VolMortarEleBasedGP(
+      DRT::Element& sele,
+      DRT::Element& mele,
+      std::vector<int>& foundeles,
+      int& found, int& gpid,
+      double& jac, double& wgt, double& gpdist,
+      double* Axi, double* AuxXi, double* globgp,
+      INPAR::VOLMORTAR::DualQuad& dq,
+      LINALG::SparseMatrix& dmatrix_A,
+      LINALG::SparseMatrix& mmatrix_A,
+      Teuchos::RCP<const DRT::Discretization> Adis,
+      Teuchos::RCP<const DRT::Discretization> Bdis);
+
+
 //===================================
 // Alternative to VolMortar coupling:
 template<DRT::Element::DiscretizationType distype>
