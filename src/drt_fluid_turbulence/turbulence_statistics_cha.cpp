@@ -4188,7 +4188,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
 
       (*log_res) << "\n\n\n";
       (*log_res) << "# Statistics record " << countrecord_;
-      (*log_res) << " (Steps " << step-numsamp_+1 << "--" << step <<")   ";
+      (*log_res) << " ( Steps " << step-numsamp_+1 << " -- " << step <<" )   ";
       (*log_res) << " (dt " << params_.get<double>("time step size") <<")\n";
 
       (*log_res) << "#       y    ";
