@@ -1080,7 +1080,8 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
 
           int loopcount = 0;
           // find the place where the item must be inserted
-          while (fabs(tmppair.second) > fabs(insertiter->second) and insertiter != eledistance.end())
+          //while (fabs(tmppair.second) > fabs(insertiter->second) and insertiter != eledistance.end())
+          while (insertiter != eledistance.end() and fabs(tmppair.second) > fabs(insertiter->second))
           {
             insertiter++;
             loopcount++;

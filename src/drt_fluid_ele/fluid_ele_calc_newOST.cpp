@@ -302,10 +302,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     generalbodyforce_.Multiply(eprescpgaf,funct_);
     generalbodyforcen_.Multiply(eprescpgn,funct_);
 
-    //TODO: Need gradphi and curvature at time n. (Can be implemented for interface values at timestep t^(n+1))
-    if(fldpara_->GetIncludeSurfaceTension())
-      AddSurfaceTensionForce(escaaf,escaam,egradphi,ecurvature);
-
     // get momentum history data at integration point
     // (only required for one-step-theta and BDF2 time-integration schemes)
     histmom_.Multiply(emhist,funct_);
@@ -467,6 +463,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
       mffsvderxy_.Clear();
       mffsvdiv_ = 0.0;
     }
+
+    //TODO: Need gradphi and curvature at time n. (Can be implemented for interface values at timestep t^(n+1))
+    //Adds surface tension force to the Gausspoint.
+    // Note: has to be called after GetMaterialParams(), otherwise gamma_ is uninitialized!!
+    if(fldpara_->GetIncludeSurfaceTension())
+      AddSurfaceTensionForce(escaaf,escaam,egradphi,ecurvature);
 
     //----------------------------------------------------------------------
     //  evaluation of various partial operators at integration point

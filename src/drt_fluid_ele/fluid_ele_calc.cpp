@@ -110,6 +110,7 @@ DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::FluidEleCalc():
     visc_(0.0),
     visceff_(0.0),
     reacoeff_(0.0),
+    gamma_(0.0),
     // LOMA-specific variables
     diffus_(0.0),
     rhscon_(0.0),
@@ -931,10 +932,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
     bodyforce_.Multiply(ebofoaf,funct_);
     // get prescribed pressure gradient acting as body force
     // (required for turbulent channel flow)
+    //If one wants to have SURF-tension only at ele-center. Then this might need to be revised.
     generalbodyforce_.Multiply(eprescpgaf,funct_);
-
-    if(fldpara_->GetIncludeSurfaceTension())
-      AddSurfaceTensionForce(escaaf,escaam,egradphi,ecurvature);
 
     // get momentum history data at integration point
     // (only required for one-step-theta and BDF2 time-integration schemes)
@@ -1097,6 +1096,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
       mffsvderxy_.Clear();
       mffsvdiv_ = 0.0;
     }
+
+//    //@Magnus Decide where to have this function!!!
+//    //Adds surface tension force to the Gausspoint.
+//    // Note: has to be called after GetMaterialParams(), otherwise gamma_ is uninitialized!!
+    if(fldpara_->GetIncludeSurfaceTension())
+      AddSurfaceTensionForce(escaaf,escaam,egradphi,ecurvature);
 
     //----------------------------------------------------------------------
     //  evaluation of various partial operators at integration point
@@ -1796,36 +1801,49 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::AddSurfaceTensionForce(
     const LINALG::Matrix<nen_,1>&                 escaam,
     const LINALG::Matrix<nsd_,nen_> &             egradphi,
     const LINALG::Matrix<nen_,1> &                ecurvature
-)
+    )
 {
 
   double                 gaussescaaf;
-  gaussescaaf=funct_.Dot(escaaf);
+  gaussescaaf =    funct_.Dot(escaaf);
 
-  //TODO @Magnus Review gradient usage for TPF again.
-
-  // For surface tension only the values at alpha_f are needed/used.
-  //  double                 gaussescaam;
-  //  gaussescaam=funct_.Dot(escaam);
-
-  double epsilon = fldpara_->GetInterfaceThickness();
+  double epsilon = fldpara_->GetInterfaceThickness(); //Thickness in one direction.
 
   //Add surface force if inside interface thickness, otherwise do not.
   if(abs(gaussescaaf) <= epsilon)
   {
-    LINALG::Matrix<nsd_,1> gaussgradphi;
+    LINALG::Matrix<nsd_,1> gradphi;
     double                 gausscurvature;
 
-    gaussgradphi.Multiply(egradphi,funct_);
+
     gausscurvature=funct_.Dot(ecurvature);
-
-
     double Dheavyside_epsilon = 1.0/(2.0 * epsilon)*(1.0+cos(PI*gaussescaaf/epsilon));
 
-    double scalar_fac = Dheavyside_epsilon*gamma_*gausscurvature/gaussgradphi.Norm2();
 
-    generalbodyforce_.Update(scalar_fac,gaussgradphi,1.0);
+    // NON-smoothed gradient!!! Should be correct
+    gradphi.Multiply(derxy_,escaaf);
+    const double normgradphi=gradphi.Norm2();
+    if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
+      gradphi.Scale(1.0/normgradphi);
+    else
+      gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
+
+
+//    //Smoothed gradient (egradphi, should not be used!!!)
+//    gradphi.Multiply(egradphi,funct_);
+//    const double normsmoothgradphi=gradphi.Norm2();
+//    if(normsmoothgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
+//      gradphi.Scale(1.0/normsmoothgradphi);
+//    else
+//      gradphi.Scale(0.0);
+
+
+    //Smoothed gradient (egradphi, should not be used!!!)
+    double scalar_fac = Dheavyside_epsilon*gamma_*gausscurvature;
+    generalbodyforce_.Update(scalar_fac,gradphi,1.0);
+
   }
+
 
   return;
 }

@@ -108,7 +108,6 @@ void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
         return;
 
       double result = 0.;
-      double result_ghost = 0;
 
       const Epetra_BlockMap& velnpmap = velnp->Map();
 
@@ -117,29 +116,23 @@ void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
       if (position=="velx")
       {
         result = (*velnp)[velnpmap.LID(discret->Dof(actnode,0))];
-        result_ghost = (*velnp_)[velnpmap.LID(discret->Dof(actnode,4))];
       }
       else if (position=="vely")
       {
         result = (*velnp)[velnpmap.LID(discret->Dof(actnode,1))];
-        result_ghost = (*velnp_)[velnpmap.LID(discret->Dof(actnode,5))];
       }
       else if (position=="velz")
       {
         result = (*velnp)[velnpmap.LID(discret->Dof(actnode,2))];
-        result_ghost = (*velnp_)[velnpmap.LID(discret->Dof(actnode,6))];
       }
       else if (position=="pressure")
       {
         result = (*velnp)[velnpmap.LID(discret->Dof(actnode,3))];
-        result_ghost = (*velnp_)[velnpmap.LID(discret->Dof(actnode,7))];
       }
       else
       {
         dserror("Quantity '%s' not supported in ale testing", position.c_str());
       }
-
-      std::cout<<"result: " << result << " result_ghost: " << result_ghost << std::endl;
 
       nerr += CompareValues(result, "NODE", res);
       test_count++;
