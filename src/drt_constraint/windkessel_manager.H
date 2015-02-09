@@ -21,7 +21,7 @@ Maintainer: Marc Hirschvogel
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 
-
+#include "../drt_inpar/inpar_windkessel.H"
 
 namespace IO
 {
@@ -65,7 +65,8 @@ namespace UTILS
     (
       Teuchos::RCP<DRT::Discretization> disc,  ///< standard discretization
       Teuchos::RCP<Epetra_Vector> disp,  ///< current displacement
-      Teuchos::ParameterList param,  ///<  parameterlist from time integration algorithm
+      Teuchos::ParameterList strparams,  ///<  parameterlist from structural time integration algorithm
+      Teuchos::ParameterList wkparams,  ///<  parameterlist from windkessel
       LINALG::Solver& solver,  ///< Solver to solve linear subproblem in iteration
       Teuchos::RCP<LINALG::MapExtractor> dbcmaps  ///< Map extractor for Dirichlet DOFs
     );
@@ -197,9 +198,14 @@ namespace UTILS
       const double& time);
 
     /*!
-     \brief Return input parameter list
+     \brief Return structural input parameter list
     */
-    Teuchos::ParameterList& Params() { return params_; }
+    Teuchos::ParameterList& StrParams() { return strparams_; }
+
+    /*!
+     \brief Return windkessel input parameter list
+    */
+    Teuchos::ParameterList& WkParams() { return wkparams_; }
 
     /// Reset reference base values for restart computations
     void SetRefBaseValues
@@ -302,6 +308,7 @@ namespace UTILS
     int myrank_;
     Teuchos::RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called
+    INPAR::WINDKESSEL::WindkSolveAlgo algochoice_;
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
@@ -309,7 +316,8 @@ namespace UTILS
     INPAR::STR::PreStress pstype_;
     double pstime_;
     double totaltime_;
-    Teuchos::ParameterList params_; ///< input parameters
+    Teuchos::ParameterList strparams_; ///< structure input parameters
+    Teuchos::ParameterList wkparams_; ///< windkessel input parameters
   }; //class
 }
 #endif /*WINDKESSELMANAGER_H*/

@@ -293,6 +293,7 @@ public:
   const Teuchos::ParameterList& DesignDescriptionParams() const { return getParameterList()->sublist("DESIGN DESCRIPTION"); }
   const Teuchos::ParameterList& PatSpecParams() const { return getParameterList()->sublist("PATIENT SPECIFIC"); }
   const Teuchos::ParameterList& StructuralDynamicParams() const { return getParameterList()->sublist("STRUCTURAL DYNAMIC"); }
+  const Teuchos::ParameterList& WindkesselStructuralParams() const { return getParameterList()->sublist("WINDKESSEL-STRUCTURE COUPLING"); }
   const Teuchos::ParameterList& InverseAnalysisParams() const { return getParameterList()->sublist("INVERSE ANALYSIS"); }
   const Teuchos::ParameterList& StatInverseAnalysisParams() const { return getParameterList()->sublist("STAT INVERSE ANALYSIS"); }
   const Teuchos::ParameterList& MultiLevelMonteCarloParams() const { return getParameterList()->sublist("MULTI LEVEL MONTE CARLO"); }

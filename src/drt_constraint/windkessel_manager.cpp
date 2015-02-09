@@ -68,18 +68,22 @@ Maintainer: Marc Hirschvogel
  *----------------------------------------------------------------------*/
 UTILS::WindkesselManager::WindkesselManager
 (
-    Teuchos::RCP<DRT::Discretization> discr,
-    Teuchos::RCP<Epetra_Vector> disp,
-    Teuchos::ParameterList params,
-    LINALG::Solver& solver,
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps):
-    actdisc_(discr),
-    myrank_(actdisc_->Comm().MyPID()),
-    dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
+  Teuchos::RCP<DRT::Discretization> discr,
+  Teuchos::RCP<Epetra_Vector> disp,
+  Teuchos::ParameterList strparams,
+  Teuchos::ParameterList wkparams,
+  LINALG::Solver& solver,
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps
+)
+: actdisc_(discr),
+  myrank_(actdisc_->Comm().MyPID()),
+  dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
 {
 
   //setup solver
-  SolverSetup(discr,solver,dbcmaps,params);
+  SolverSetup(discr,solver,dbcmaps,strparams);
+
+  algochoice_ = DRT::INPUT::IntegralValue<INPAR::WINDKESSEL::WindkSolveAlgo>(wkparams,"SOLALGORITHM");
 
   // a zero vector of full length
   zeros_ = LINALG::CreateVector(*(actdisc_->DofRowMap()), true);
@@ -136,15 +140,15 @@ UTILS::WindkesselManager::WindkesselManager
     offsetID_ -= windkesseldofset_->FirstGID();
 
     Teuchos::ParameterList p;
-    //double time = params.get<double>("total time",0.0);
-    double sc_timint = params.get("scale_timint",1.0);
-    double ts_size = params.get("time_step_size",1.0);
-    theta_ = params.get("WINDKESSEL_TIMINT_THETA",0.5);
+    //double time = strparams.get<double>("total time",0.0);
+    double sc_timint = strparams.get("scale_timint",1.0);
+    double ts_size = strparams.get("time_step_size",1.0);
+    theta_ = wkparams.get("TIMINT_THETA",0.5);
     if ( (theta_ <= 0.0) or (theta_ > 1.0) )
       dserror("theta for Windkessel time integration out of range (0.0,1.0] !");
 
-    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(params,"PRESTRESS");
-    pstime_ = params.get("PRESTRESSTIME",0.0);
+    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(strparams,"PRESTRESS");
+    pstime_ = strparams.get("PRESTRESSTIME",0.0);
 
     // set theta=1 for quasi-static prestressing only!
     // if no prestressing is on and structural time-intrgeator is set to statics, we still can do OST for the windkessel
@@ -241,7 +245,8 @@ UTILS::WindkesselManager::WindkesselManager
 
     wkdofn_->Update(1.0,*wkdof_,0.0);
 
-    params_ = params;
+    strparams_ = strparams;
+    wkparams_ = wkparams;
 
   }
 
@@ -467,7 +472,7 @@ void UTILS::WindkesselManager::UpdateWkDof(Teuchos::RCP<Epetra_Vector> wkdofincr
 void UTILS::WindkesselManager::ReadRestart(IO::DiscretizationReader& reader,const double& time)
 {
   // check if restart from non-Windkessel simulation is desired
-  bool restartwithwindkessel = DRT::INPUT::IntegralValue<int>(Params(),"RESTART_WITH_WINDKESSEL");
+  bool restartwithwindkessel = DRT::INPUT::IntegralValue<int>(WkParams(),"RESTART_WITH_WINDKESSEL");
 
   if(!restartwithwindkessel)
   {
@@ -625,11 +630,12 @@ void UTILS::WindkesselManager::SolverSetup
 
 
 
+
 int UTILS::WindkesselManager::Solve
 (
-    Teuchos::RCP<LINALG::SparseMatrix> mat_structstiff,
-    Teuchos::RCP<Epetra_Vector> dispinc,
-    const Teuchos::RCP<Epetra_Vector> rhsstruct
+  Teuchos::RCP<LINALG::SparseMatrix> mat_structstiff,
+  Teuchos::RCP<Epetra_Vector> dispinc,
+  const Teuchos::RCP<Epetra_Vector> rhsstruct
 )
 {
 
@@ -682,6 +688,46 @@ int UTILS::WindkesselManager::Solve
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
     dbcmaps_ = LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
+
+
+  Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter list
+  const Teuchos::ParameterList& windkstructparams = DRT::Problem::Instance()->WindkesselStructuralParams();
+  const int linsolvernumber = windkstructparams.get<int>("LINEAR_WINDK_STRUCT_SOLVER");
+  solver_->Params() = LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
+  switch (algochoice_)
+  {
+    case INPAR::WINDKESSEL::windksolve_direct:
+    break;
+    case INPAR::WINDKESSEL::windksolve_simple:
+    {
+      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
+      switch (prec) {
+      case INPAR::SOLVER::azprec_CheapSIMPLE:
+      case INPAR::SOLVER::azprec_TekoSIMPLE:
+      {
+
+        // add Inverse1 block for velocity dofs
+        // tell Inverse1 block about NodalBlockInformation
+        Teuchos::ParameterList& inv1 = solver_->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
+        inv1.sublist("NodalBlockInformation") = solver_->Params().sublist("NodalBlockInformation");
+
+        // calculate null space information
+        actdisc_->ComputeNullSpaceIfNecessary(solver_->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"),true);
+        actdisc_->ComputeNullSpaceIfNecessary(solver_->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"),true);
+
+        solver_->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
+        solver_->Params().set("CONSTRAINT",true);
+      }
+      break;
+      default:
+        // do nothing
+        break;
+      }
+    }
+    break;
+    default :
+      dserror("Unknown windkessel-structural solution technique!");
+  }
 
   // use BlockMatrix
   blockmat->Assign(0,0,View,*mat_structstiff);

@@ -46,6 +46,13 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
+--------------------------------------WINDKESSEL-STRUCTURE COUPLING
+TIMINT_THETA                    0.5
+TOLWINDKESSEL                   1e-06
+TOLWINDKESSELDOFINCR            1e-08
+SOLALGORITHM                    direct
+RESTART_WITH_WINDKESSEL         No
+LINEAR_WINDK_STRUCT_SOLVER      1
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
@@ -83,8 +90,6 @@ RESULTSEVRY                     1
 STC_LAYER                       1
 TIMESTEP                        0.01
 TOLCONSTR                       1e-08
-TOLWINDKESSEL                   1e-05
-TOLWINDKESSELDOFINCR            1e-08
 TOLDISP                         1e-07
 TOLINCO                         1e-08
 TOLPRE                          1e-08
@@ -93,7 +98,6 @@ UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
-WINDKESSEL_TIMINT_THETA         0.5
 --------------------------------------------STRUCTURAL DYNAMIC/GEMM
 ALPHA_F                         0.5
 ALPHA_M                         0.5

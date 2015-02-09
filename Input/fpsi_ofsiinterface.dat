@@ -78,7 +78,6 @@ STC_SCALING                     no
 STC_LAYER                       1
 PTCDT                           0.1
 TOLCONSTR                       1e-08
-TOLWINDKESSEL                   1e-08
 MAXITER                         1
 MINITER                         0
 ITERNORM                        L2

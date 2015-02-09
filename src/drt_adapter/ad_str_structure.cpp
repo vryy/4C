@@ -553,43 +553,6 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver
                                     actdis->Comm(),
                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-  // patch allowing to use CheapSIMPLE as preconditioner within the structure time integration, required for Windkessel structure coupling
-  std::vector<DRT::Condition*> windkesselcond1(0);
-  std::vector<DRT::Condition*> windkesselcond2(0);
-  std::vector<DRT::Condition*> windkesselcond3(0);
-  actdis->GetCondition("WindkesselStdStructureCond", windkesselcond1);
-  actdis->GetCondition("WindkesselHeartValveArterialStructureCond", windkesselcond2);
-  actdis->GetCondition("WindkesselHeartValveArterialProxDistStructureCond", windkesselcond3);
-  if ((windkesselcond1.size() > 0) || (windkesselcond2.size() > 0) || (windkesselcond3.size() > 0))
-  {
-    {
-      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
-      switch (prec) {
-      case INPAR::SOLVER::azprec_CheapSIMPLE:
-      case INPAR::SOLVER::azprec_TekoSIMPLE:
-      {
-
-        // add Inverse1 block for velocity dofs
-        // tell Inverse1 block about NodalBlockInformation
-        Teuchos::ParameterList& inv1 = solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
-        inv1.sublist("NodalBlockInformation") = solver->Params().sublist("NodalBlockInformation");
-
-        // calculate null space information
-        actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"),true);
-        actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"),true);
-
-        solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
-        solver->Params().set("CONSTRAINT",true);
-      }
-      break;
-      default:
-        // do nothing
-        break;
-      }
-
-    } // end patch
-  }
-
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   return solver;

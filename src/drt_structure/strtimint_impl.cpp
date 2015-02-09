@@ -105,8 +105,8 @@ STR::TimIntImpl::TimIntImpl
   uzawaparam_(sdynparams.get<double>("UZAWAPARAM")),
   uzawaitermax_(sdynparams.get<int>("UZAWAMAXITER")),
   tolcon_(sdynparams.get<double>("TOLCONSTR")),
-  tolwindk_(sdynparams.get<double>("TOLWINDKESSEL")),
-  tolwindkdofincr_(sdynparams.get<double>("TOLWINDKESSELDOFINCR")),
+  tolwindk_(DRT::Problem::Instance()->WindkesselStructuralParams().get<double>("TOLWINDKESSEL")),
+  tolwindkdofincr_(DRT::Problem::Instance()->WindkesselStructuralParams().get<double>("TOLWINDKESSELDOFINCR")),
   iter_(-1),
   normcharforce_(0.0),
   normchardis_(0.0),
@@ -2832,6 +2832,10 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
         // Call Windkessel solver to solve system
         linsolve_error = windkman_->Solve(SystemMatrix(),disi_,fres_);
       }
+
+//      //############## BEGIN HACK ##############
+//      if (normfres_ > 1.0e7) linsolve_error = 1;
+//      //############## END HACK ##############
 
       // check for problems in linear solver
       // however we only care about this if we have a fancy divcont action  (meaning function will return 0)

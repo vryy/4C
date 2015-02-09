@@ -60,6 +60,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_beampotential.H"
 #include "inpar_acou.H"
 #include "inpar_volmortar.H"
+#include "inpar_windkessel.H"
 
 #include <AztecOO.h>
 
@@ -915,6 +916,36 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   SetValidNoxParameters(snox);
 
 
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& windkstruct = list->sublist("WINDKESSEL-STRUCTURE COUPLING",false,"");
+
+  DoubleParameter("TOLWINDKESSEL",1.0E-08,
+                  "tolerance in the windkessel error norm for the Newton iteration",
+                  &windkstruct);
+  DoubleParameter("TOLWINDKESSELDOFINCR",1.0E-08,
+                  "tolerance in the windkessel dof increment error norm for the Newton iteration",
+                  &windkstruct);
+  DoubleParameter("TIMINT_THETA",0.5,
+                  "theta for one-step-theta time-integration scheme of Windkessel",
+                  &windkstruct);
+  setStringToIntegralParameter<int>("RESTART_WITH_WINDKESSEL","No","Must be chosen if a non-windkessel simulation is to be restarted as windkessel-structural coupled problem.",
+                                 yesnotuple,yesnovalue,&windkstruct);
+
+  // linear solver id used for monolithic windkessel-structural problems
+  IntParameter("LINEAR_WINDK_STRUCT_SOLVER",-1,"number of linear solver used for windkessel-structural problems",&windkstruct);
+
+  setStringToIntegralParameter<int>("SOLALGORITHM","direct","",
+                                 tuple<std::string>(
+                                   "simple",
+                                   "direct"),
+                                 tuple<int>(
+                                   INPAR::WINDKESSEL::windksolve_simple,
+                                   INPAR::WINDKESSEL::windksolve_direct),
+                                 &windkstruct);
+
+
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& sdyn = list->sublist("STRUCTURAL DYNAMIC",false,"");
 
@@ -1092,17 +1123,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TOLCONSTR",1.0E-08,
                   "tolerance in the constr error norm for the newton iteration",
                   &sdyn);
-  DoubleParameter("TOLWINDKESSEL",1.0E-08,
-                  "tolerance in the windkessel error norm for the newton iteration",
-                  &sdyn);
-  DoubleParameter("TOLWINDKESSELDOFINCR",1.0E-08,
-                  "tolerance in the windkessel dof increment error norm for the newton iteration",
-                  &sdyn);
-  DoubleParameter("WINDKESSEL_TIMINT_THETA",0.5,
-                  "theta for one-step-theta time-integration scheme of Windkessel",
-                  &sdyn);
-  setStringToIntegralParameter<int>("RESTART_WITH_WINDKESSEL","No","Must be chosen if a non-Windkessel simulation is to be restarted with Windkessel",
-                                 yesnotuple,yesnovalue,&sdyn);
+
   IntParameter("MAXITER",50,
                "maximum number of iterations allowed for Newton-Raphson iteration before failure",
                &sdyn);
@@ -1284,6 +1305,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // linear solver id used for structural problems
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for structural problems",&sdyn);
+
+  // linear solver id used for monolithic windkessel-structural problems
+  IntParameter("LINEAR_WINDK_STRUCT_SOLVER",-1,"number of linear solver used for windkessel-structural problems",&sdyn);
 
   // flag decides if young's modulus is temperature dependent, so far only available
   // for temperature-dependent St.Venant Kirchhoff material

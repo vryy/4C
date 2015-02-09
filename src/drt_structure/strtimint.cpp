@@ -248,6 +248,7 @@ STR::TimInt::TimInt
   windkman_ = Teuchos::rcp(new UTILS::WindkesselManager(discret_,
                                                         (*dis_)(0),
                                                         sdynparams,
+                                                        DRT::Problem::Instance()->WindkesselStructuralParams(),
                                                         *solver_,
                                                         dbcmaps_));
 
