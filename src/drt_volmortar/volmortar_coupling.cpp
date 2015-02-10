@@ -2009,77 +2009,8 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_ADis(
     DRT::Node* node,
     std::vector<int>& foundeles)
 {
-  // assume that all BDis element types are equal
-  DRT::Element::DiscretizationType btype = Bdiscret_->lColElement(0)->Shape();
-
-  switch (btype)
-  {
-  case DRT::Element::quad4:
-  {
-    static ConsInterpolator<DRT::Element::quad4> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::quad8:
-  {
-    static ConsInterpolator<DRT::Element::quad8> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::quad9:
-  {
-    static ConsInterpolator<DRT::Element::quad9> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::tri3:
-  {
-    static ConsInterpolator<DRT::Element::tri3> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::tri6:
-  {
-    static ConsInterpolator<DRT::Element::tri6> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::hex8:
-  {
-    static ConsInterpolator<DRT::Element::hex8> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::hex27:
-  {
-    static ConsInterpolator<DRT::Element::hex27> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::hex20:
-  {
-    static ConsInterpolator<DRT::Element::hex20> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::tet4:
-  {
-    static ConsInterpolator<DRT::Element::tet4> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::tet10:
-  {
-    static ConsInterpolator<DRT::Element::tet10> interpolator;
-    interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
-    break;
-  }
-  default:
-  {
-    dserror("ERROR: unknown shape!");
-    break;
-  }
-  }
+  static ConsInterpolator interpolator;
+  interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
 
   return;
 }
@@ -2091,77 +2022,8 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_BDis(
     DRT::Node* node,
     std::vector<int>& foundeles)
 {
-  // assume that all BDis element types are equal
-  DRT::Element::DiscretizationType atype = Adiscret_->lColElement(0)->Shape();
-
-  switch (atype)
-  {
-  case DRT::Element::quad4:
-  {
-    static ConsInterpolator<DRT::Element::quad4> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::quad8:
-  {
-    static ConsInterpolator<DRT::Element::quad8> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::quad9:
-  {
-    static ConsInterpolator<DRT::Element::quad9> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::tri3:
-  {
-    static ConsInterpolator<DRT::Element::tri3> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::tri6:
-  {
-    static ConsInterpolator<DRT::Element::tri6> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::hex8:
-  {
-    static ConsInterpolator<DRT::Element::hex8> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::hex27:
-  {
-    static ConsInterpolator<DRT::Element::hex27> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::hex20:
-  {
-    static ConsInterpolator<DRT::Element::hex20> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::tet4:
-  {
-    static ConsInterpolator<DRT::Element::tet4> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
-    break;
-  }
-  case DRT::Element::tet10:
-  {
-    static ConsInterpolator<DRT::Element::tet10> interpolator;
-    interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
-    break;
-  }
-  default:
-  {
-    dserror("ERROR: unknown shape!");
-    break;
-  }
-  }
+  static ConsInterpolator interpolator;
+  interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
 
   return;
 }

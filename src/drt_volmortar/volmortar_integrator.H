@@ -282,12 +282,56 @@ bool CheckMapping3D(DRT::Element& sele,
   return true;
 };
 
+/*----------------------------------------------------------------------*
+ |  Check mapping                                            farah 06/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+bool CheckMapping(DRT::Element& ele,
+                  double* xi)
+{
+  // check node projection
+  double tol = 1e-5;
+  if (distype==DRT::Element::hex8 || distype==DRT::Element::hex20 || distype==DRT::Element::hex27)
+  {
+    if (xi[0]<-1.0-tol || xi[1]<-1.0-tol || xi[2]<-1.0-tol || xi[0]>1.0+tol || xi[1]>1.0+tol || xi[2]>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if(distype==DRT::Element::tet4 || distype==DRT::Element::tet10)
+  {
+    if(xi[0]<0.0-tol || xi[1]<0.0-tol || xi[2]<0.0-tol || (xi[0]+xi[1]+xi[2])>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if (distype==DRT::Element::quad4 || distype==DRT::Element::quad8 || distype==DRT::Element::quad9)
+  {
+    if (xi[0]<-1.0-tol || xi[1]<-1.0-tol || xi[0]>1.0+tol || xi[1]>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if (distype==DRT::Element::tri3 || distype==DRT::Element::tri6)
+  {
+    if (xi[0]<-tol || xi[1]<-tol || xi[0]>1.0+tol || xi[1]>1.0+tol || xi[0]+xi[1]>1.0+2*tol)
+    {
+      return false;
+    }
+  }
+  else
+  {
+    dserror("ERROR: Wrong element type!");
+  }
+
+  return true;
+}
+
 //===================================
-// Alternative to VolMortar coupling:
 template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
 bool VolMortarEleBasedGP(
       DRT::Element& sele,
-      DRT::Element& mele,
+      DRT::Element* mele,
       std::vector<int>& foundeles,
       int& found, int& gpid,
       double& jac, double& wgt, double& gpdist,
@@ -298,10 +342,23 @@ bool VolMortarEleBasedGP(
       Teuchos::RCP<const DRT::Discretization> Adis,
       Teuchos::RCP<const DRT::Discretization> Bdis);
 
+// evaluation of nts approach
+template<DRT::Element::DiscretizationType distype>
+bool ConsInterpolatorEval(
+     DRT::Node* node,
+     DRT::Element* ele,
+     LINALG::SparseMatrix& pmatrix,
+     Teuchos::RCP<const DRT::Discretization> nodediscret,
+     Teuchos::RCP<const DRT::Discretization> elediscret,
+     std::vector<int>& foundeles,
+     int& found,
+     int& eleid,
+     double& dist,
+     double* AuxXi,
+     double* nodepos);
 
 //===================================
 // Alternative to VolMortar coupling:
-template<DRT::Element::DiscretizationType distype>
 class ConsInterpolator
 {
 public:
@@ -312,12 +369,6 @@ public:
   // destructor
   virtual ~ConsInterpolator() {};
 
-  //! ns_: number of element nodes
-  static const int n_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-
-  //! number of space dimensions (due to considering only interface elements)
-  static const int ndim_ = DRT::UTILS::DisTypeToDim<distype>::dim;
-
   /*!
   \brief interpolation functionality
 
@@ -327,14 +378,6 @@ public:
                    Teuchos::RCP<const DRT::Discretization> nodediscret,
                    Teuchos::RCP<const DRT::Discretization> elediscret,
                    std::vector<int>& foundeles);
-
-protected:
-  /*!
-  \brief check node projection
-
-  */
-  bool CheckMapping(DRT::Element& ele,
-                    double* xi);
 
 };
 

@@ -303,6 +303,10 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterialAToB(
     Teuchos::RCP<DRT::Discretization> disA,
     Teuchos::RCP<DRT::Discretization> disB)
 {
+  //if no corresponding element found -> leave
+  if(Aids.empty())
+    return;
+
   //call default assignment
   VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialAToB(volmortar,Bele,Aids,disA,disB);
 
