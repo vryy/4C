@@ -1681,6 +1681,10 @@ void STR::TimInt::ResetStep()
     discret_->ClearState();
   }
 
+  // reset windkessel if we have monolithic windkessel-structure coupling (mhv 02/2015)
+  if (windkman_->HaveWindkessel())
+    windkman_->ResetStep();
+
   // I am gone
   return;
 }
