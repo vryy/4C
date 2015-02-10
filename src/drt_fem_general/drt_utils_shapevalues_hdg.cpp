@@ -129,7 +129,8 @@ DRT::UTILS::ShapeValues<distype>::Evaluate (const DRT::Element &ele)
       xsi(idim) = nodexyzunit(idim,i);
 
     LINALG::Matrix<nen_,1> myfunct;
-    DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
+    //DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
+    DRT::UTILS::shape_function<distype>(xsi,myfunct);
     LINALG::Matrix<nsd_,1> mypoint(nodexyzreal.A()+i*nsd_,true);
     mypoint.MultiplyNN(xyze,myfunct);
   }
@@ -184,22 +185,6 @@ degree_(params.degree_)
     LINALG::Matrix<nfn_,1> myfunct(funct.A()+q*nfn_,true);
     DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
   }
-
-  // Fill face support points
-  nodexyzreal.LightShape(nsd_, nfdofs_);
-  polySpace_->FillUnitNodePoints(nodexyzunit);
-  dsassert(nodexyzreal.M() == nodexyzunit.M()+1 &&
-           nodexyzreal.N() == nodexyzunit.N(), "Dimension mismatch");
-  for (unsigned int i=0; i<nfdofs_; ++i)
-  {
-    for (unsigned int idim=0;idim<nsd_-1;idim++)
-      xsi(idim) = nodexyzunit(idim,i);
-
-    LINALG::Matrix<nfn_,1> myfunct;
-    DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
-    LINALG::Matrix<nsd_,1> mypoint(nodexyzreal.A()+i*nsd_,true);
-    mypoint.MultiplyNN(xyze,myfunct);
-  }
 }
 
 /*----------------------------------------------------------------------*
@@ -220,6 +205,22 @@ DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace (const DRT::Element &ele,
   for (unsigned int i=0; i<nfn_; ++i)
     for (unsigned int d=0; d<nsd_; ++d)
       xyze(d,i) = xyzeElement(d,faceNodeOrder[face][i]);
+
+  // Fill face support points
+  nodexyzreal.LightShape(nsd_, nfdofs_);
+  polySpace_->FillUnitNodePoints(nodexyzunit);
+  dsassert(nodexyzreal.M() == nodexyzunit.M()+1 &&
+           nodexyzreal.N() == nodexyzunit.N(), "Dimension mismatch");
+  for (unsigned int i=0; i<nfdofs_; ++i)
+  {
+    for (unsigned int idim=0;idim<nsd_-1;idim++)
+      xsi(idim) = nodexyzunit(idim,i);
+
+    LINALG::Matrix<nfn_,1> myfunct;
+    DRT::UTILS::shape_function<DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
+    LINALG::Matrix<nsd_,1> mypoint(nodexyzreal.A()+i*nsd_,true);
+    mypoint.MultiplyNN(xyze,myfunct);
+  }
 
   // evaluate geometry
   for (unsigned int q=0; q<nqpoints_; ++q) {
