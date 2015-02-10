@@ -2833,10 +2833,6 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
         linsolve_error = windkman_->Solve(SystemMatrix(),disi_,fres_);
       }
 
-//      //############## BEGIN HACK ##############
-//      if (normfres_ > 1.0e7) linsolve_error = 1;
-//      //############## END HACK ##############
-
       // check for problems in linear solver
       // however we only care about this if we have a fancy divcont action  (meaning function will return 0)
       linsolve_error=LinSolveErrorCheck(linsolve_error);
