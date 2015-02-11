@@ -76,7 +76,8 @@ namespace INPAR
       errornorms_zero,       ///< error norms for zero analytical solution
       errornorms_bending,    ///< error norms for beam bending problem
       errornorms_sphere,     ///< error norms for pressurized sphere problem
-      errornorms_thicksphere ///< error norms for thick pressurized sphere problem
+      errornorms_thicksphere,///< error norms for thick pressurized sphere problem
+      errornorms_infiniteplate ///< error norms for infinite plate with a circular hole
     };
 
     /// Type of formulation of constraint equations

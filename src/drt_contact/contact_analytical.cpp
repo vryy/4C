@@ -99,6 +99,67 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
     derivanalyt(1,1) = -((2*p*nu)/(E*h)) * pos(1,0);
   }
 
+  else if (entype==INPAR::CONTACT::errornorms_infiniteplate)
+  {
+    double E=100.0;
+    double nue=0.3;
+    double s_inf = 1.0; // tensile stress at infinity
+    double a=2.0; // hole radius
+    double x=-pos(0,0);
+    double y=-pos(1,0);
+    LINALG::Matrix<3,1> stress_analytical;
+
+
+    stress_analytical(0) = 0.5*s_inf/((x*x+y*y)*(x*x+y*y)*(x*x+y*y)*(x*x+y*y))
+                           *( 2.0*x*x*x*x*x*x*x*x
+                             +8.0*x*x*x*x*x*x*y*y
+                            +12.0*x*x*x*x*y*y*y*y
+                             -5.0*x*x*x*x*x*x*a*a
+                             +7.0*x*x*x*x*a*a*y*y
+                            +13.0*x*x*a*a*y*y*y*y
+                             +3.0*x*x*x*x*a*a*a*a
+                            -18.0*x*x*a*a*a*a*y*y
+                             +8.0*y*y*y*y*y*y*x*x
+                             +2.0*y*y*y*y*y*y*y*y
+                             +1.0*y*y*y*y*y*y*a*a
+                             +3.0*y*y*y*y*a*a*a*a);
+    stress_analytical(1) = -1.0/2.0*s_inf*a*a/((x*x+y*y)*(x*x+y*y)*(x*x+y*y)*(x*x+y*y))
+                            *( 11.0*x*x*x*x*y*y
+                              + 9.0*x*x*y*y*y*y
+                              - 3.0*y*y*y*y*y*y
+                              -18.0*a*a*x*x*y*y
+                              + 3.0*a*a*y*y*y*y
+                              - 1.0*x*x*x*x*x*x
+                              + 3.0*a*a*x*x*x*x);
+    stress_analytical(2) = -s_inf*x*a*a/((x*x+y*y)*(x*x+y*y)*(x*x+y*y)*sqrt(x*x+y*y))
+                           *( -5.0*x*x*x*x
+                              -2.0*x*x*y*y
+                              +3.0*y*y*y*y
+                              +6.0*a*a*x*x
+                              -6.0*a*a*y*y)
+                           *sqrt(y*y/(x*x+y*y));
+
+    LINALG::Matrix<3,3> CmatInv(true);
+
+    //plane stress
+    CmatInv(0,0)=1.;
+    CmatInv(1,1)=1.;
+    CmatInv(0,1)=-nue;
+    CmatInv(1,0)=-nue;
+    CmatInv(2,2)=2.*(1.+nue);
+    CmatInv.Scale(1./E);
+
+    LINALG::Matrix<3,1> strain_analytical;
+    strain_analytical.Multiply(CmatInv,stress_analytical);
+
+    // strains
+    epsanalyt(0,0) = strain_analytical(0);
+    epsanalyt(1,0) = strain_analytical(1);
+    epsanalyt(2,0) = .5*strain_analytical(2);
+    epsanalyt(3,0) = .5*strain_analytical(2);
+
+  }
+
   //----------------------------------------------------------------------
   // Other cases
   //----------------------------------------------------------------------
@@ -313,6 +374,70 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
     //std::cout << "u: " << usphere(0,0) << " v: " << usphere(1,0) << "w: " << usphere(2,0) << std::endl;
     //std::cout << trafo << std::endl << std::endl;
   }
+
+  else if (entype==INPAR::CONTACT::errornorms_infiniteplate)
+  {
+    double E=100.0;
+    double nue=0.0;
+    double s_inf = 1.0; // tensile stress at infinity
+    double a=2.0; // hole radius
+    double x=-pos(0,0);
+    double y=-pos(1,0);
+    LINALG::Matrix<3,1> stress_analytical;
+
+
+    stress_analytical(0) = 0.5*s_inf/((x*x+y*y)*(x*x+y*y)*(x*x+y*y)*(x*x+y*y))
+                           *( 2.0*x*x*x*x*x*x*x*x
+                             +8.0*x*x*x*x*x*x*y*y
+                            +12.0*x*x*x*x*y*y*y*y
+                             -5.0*x*x*x*x*x*x*a*a
+                             +7.0*x*x*x*x*a*a*y*y
+                            +13.0*x*x*a*a*y*y*y*y
+                             +3.0*x*x*x*x*a*a*a*a
+                            -18.0*x*x*a*a*a*a*y*y
+                             +8.0*y*y*y*y*y*y*x*x
+                             +2.0*y*y*y*y*y*y*y*y
+                             +1.0*y*y*y*y*y*y*a*a
+                             +3.0*y*y*y*y*a*a*a*a);
+    stress_analytical(1) = -1.0/2.0*s_inf*a*a/((x*x+y*y)*(x*x+y*y)*(x*x+y*y)*(x*x+y*y))
+                            *( 11.0*x*x*x*x*y*y
+                              + 9.0*x*x*y*y*y*y
+                              - 3.0*y*y*y*y*y*y
+                              -18.0*a*a*x*x*y*y
+                              + 3.0*a*a*y*y*y*y
+                              - 1.0*x*x*x*x*x*x
+                              + 3.0*a*a*x*x*x*x);
+    stress_analytical(2) = -s_inf*x*a*a/((x*x+y*y)*(x*x+y*y)*(x*x+y*y)*sqrt(x*x+y*y))
+                           *( -5.0*x*x*x*x
+                              -2.0*x*x*y*y
+                              +3.0*y*y*y*y
+                              +6.0*a*a*x*x
+                              -6.0*a*a*y*y)
+                           *sqrt(y*y/(x*x+y*y));
+
+    LINALG::Matrix<3,3> CmatInv(true);
+
+    //plane stress
+    CmatInv(0,0)=1.;
+    CmatInv(1,1)=1.;
+    CmatInv(0,1)=-nue;
+    CmatInv(1,0)=-nue;
+    CmatInv(2,2)=2.*(1.+nue);
+    CmatInv.Scale(1./E);
+
+    LINALG::Matrix<3,1> strain_analytical;
+    strain_analytical.Multiply(CmatInv,stress_analytical);
+
+    // strains
+    epsanalyt(0,0) = strain_analytical(0);
+    epsanalyt(1,0) = strain_analytical(1);
+    epsanalyt(2,0) = 0.;
+    epsanalyt(4,0) = 0.;
+    epsanalyt(5,0) = 0.;
+    epsanalyt(3,0) = strain_analytical(2);
+
+  }
+
 
   //----------------------------------------------------------------------
   // Other cases

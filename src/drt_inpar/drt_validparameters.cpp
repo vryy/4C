@@ -1917,14 +1917,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                          "Zero", "zero",
                          "Bending", "bending",
                          "Sphere", "sphere",
-                         "Thick", "thick"),
+                         "Thick", "thick",
+                         "Plate", "plate"),
       tuple<int>(
               INPAR::CONTACT::errornorms_none, INPAR::CONTACT::errornorms_none,
               INPAR::CONTACT::errornorms_none, INPAR::CONTACT::errornorms_none,
               INPAR::CONTACT::errornorms_zero, INPAR::CONTACT::errornorms_zero,
               INPAR::CONTACT::errornorms_bending, INPAR::CONTACT::errornorms_bending,
               INPAR::CONTACT::errornorms_sphere, INPAR::CONTACT::errornorms_sphere,
-              INPAR::CONTACT::errornorms_thicksphere, INPAR::CONTACT::errornorms_thicksphere),
+              INPAR::CONTACT::errornorms_thicksphere, INPAR::CONTACT::errornorms_thicksphere,
+              INPAR::CONTACT::errornorms_infiniteplate,INPAR::CONTACT::errornorms_infiniteplate),
       &scontact);
 
   setStringToIntegralParameter<int>("INITCONTACTBYGAP","No","Initialize init contact by weighted gap vector",
