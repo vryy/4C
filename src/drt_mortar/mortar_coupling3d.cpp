@@ -3801,8 +3801,6 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
   // *********************************************************** quad9 ***
   if (ele.Shape() == DRT::Element::quad9)
   {
-    //dserror("ERROR: Quadratic 3D coupling for quad9 under construction...");
-
     // split into for quad4 elements
     int numnode = 4;
     DRT::Element::DiscretizationType dt = DRT::Element::quad4;
@@ -3882,8 +3880,6 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
   // *********************************************************** quad8 ***
   else if (ele.Shape() == DRT::Element::quad8)
   {
-    //dserror("ERROR: Quadratic 3D coupling for quad8 under construction...");
-
     // split into four tri3 elements and one quad4 element
     int numnodetri = 3;
     int numnodequad = 4;
@@ -3977,8 +3973,6 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
   // ************************************************************ tri6 ***
   else if (ele.Shape() == DRT::Element::tri6)
   {
-    //dserror("ERROR: Quadratic 3D coupling for tri6 under construction...");
-
     // split into four tri3 elements
     int numnode = 3;
     DRT::Element::DiscretizationType dt = DRT::Element::tri3;
