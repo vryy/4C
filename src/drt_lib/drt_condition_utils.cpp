@@ -703,6 +703,7 @@ void DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(
     }
     myfile << "End \n";
     myfile.close();
+    std::cout << " Condition " << condID+1 << " checked and written to file." << std::endl;
   }
   else if (mypid==0)
   {

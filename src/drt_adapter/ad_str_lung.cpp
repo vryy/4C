@@ -93,7 +93,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
                           constrdofs.begin(), constrdofs.end(),
                           std::inserter(intersection,intersection.begin()));
     if (intersection.size()!=asidofs.size())
-      dserror("missing ASI dofs or buggy assignment of ASI and volume coupling condition IDs");
+      dserror("Condition-ID %d: missing ASI dofs or buggy assignment of ASI and volume coupling condition IDs.",condID+1);
   }
 
   //----------------------------------------------------------------------

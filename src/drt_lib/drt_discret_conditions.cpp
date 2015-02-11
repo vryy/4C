@@ -592,7 +592,9 @@ bool DRT::Discretization::BuildSurfacesinCondition(
       }
     }
     if (VolEleIDs.size() and foundvolele == false)
-      dserror("special surface condition: missing associated volume element");
+    {
+      //std::cout << " Warning: special surface condition: missing associated volume element" << std::endl;
+    }
   }
 
   //Write output for Gmsh format for debugging of StructFluidSurfCoupling surface correction,
