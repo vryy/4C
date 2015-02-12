@@ -34,7 +34,7 @@ Maintainer: Benedikt Schott
 #include "../drt_inpar/inpar_fluid.H"
 
 //Needed for material check.
-#include "../drt_fluid_xfluid/xfluid_utils.H"
+#include "../drt_xfem/xfem_utils.H"
 
 #include "xfem_edgestab.H"
 
@@ -256,8 +256,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             else
               face_type = INPAR::XFEM::face_type_std;
 
-            XFLUID::UTILS::GetVolumeCellMaterial(p_master,matptr_m,(*f)->Position());
-            XFLUID::UTILS::GetVolumeCellMaterial(p_slave ,matptr_s,(*f)->Position());
+            XFEM::UTILS::GetVolumeCellMaterial(p_master,matptr_m,(*f)->Position());
+            XFEM::UTILS::GetVolumeCellMaterial(p_slave ,matptr_s,(*f)->Position());
 
             //--------------------------------------------------------------------------------------------
 
@@ -389,8 +389,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             else
               face_type = INPAR::XFEM::face_type_std;
 
-            XFLUID::UTILS::GetVolumeCellMaterial(p_master,matptr_m,(*f)->Position());
-            XFLUID::UTILS::GetVolumeCellMaterial(p_slave ,matptr_s,(*f)->Position());
+            XFEM::UTILS::GetVolumeCellMaterial(p_master,matptr_m,(*f)->Position());
+            XFEM::UTILS::GetVolumeCellMaterial(p_slave ,matptr_s,(*f)->Position());
 
             //--------------------------------------------------------------------------------------------
             // call evaluate and assemble routine
@@ -529,8 +529,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
 
 
             //Get materials:
-            XFLUID::UTILS::GetVolumeCellMaterial(p_master,matptr_m,f->Position());
-            XFLUID::UTILS::GetVolumeCellMaterial(p_slave ,matptr_s,f->Position());
+            XFEM::UTILS::GetVolumeCellMaterial(p_master,matptr_m,f->Position());
+            XFEM::UTILS::GetVolumeCellMaterial(p_slave ,matptr_s,f->Position());
 
             //--------------------------------------------------------------------------------------------
 
@@ -587,7 +587,7 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
 
 
   //If Saftey check is passed, both elements contain the same material and with the same settings
-  XFLUID::UTILS::SafetyCheckMaterials(material_m , material_s);
+  XFEM::UTILS::SafetyCheckMaterials(material_m , material_s);
 
   //======================================================================================
   // call the internal faces stabilization routine for the current side/surface

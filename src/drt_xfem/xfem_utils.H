@@ -3,10 +3,11 @@
 \brief Basic tools used in XFEM routines
 
 <pre>
-Maintainer:  Raffaela Kruse
+Maintainer:  Magnus Winter / Raffaela Kruse
+             winter@lnm.mw.tum.de
              kruse@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15249
+             089 - 289-15236
 </pre>
 *----------------------------------------------------------------------*/
 
@@ -14,6 +15,7 @@ Maintainer:  Raffaela Kruse
 #define XFEM_UTILS_H_
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_cut/cut_point.H"
 
 namespace XFEM
 {
@@ -37,6 +39,31 @@ namespace XFEM
     void ExtractNodeVectors(
       Teuchos::RCP<DRT::Discretization>    dis,
       std::map<int, LINALG::Matrix<3,1> >& nodevecmap);
+
+    //! @name Get material properties for the Volume Cell
+
+    /*!
+
+    \brief Element material for the volume cell, depending on element and position.
+           If an element which is not a material list is given, the provided material is chosen.
+           If however a material list is given the material chosen for the volume cell is depending on the point position.
+
+     */
+    void GetVolumeCellMaterial( DRT::Element* actele,                        // element for volume cell INPUT
+                                Teuchos::RCP<MAT::Material> & mat,           // material of volume cell OUTPUT
+                                GEO::CUT::Point::PointPosition position = GEO::CUT::Point::outside // position of volume cell INPUT to determine position
+                               );
+
+
+    //! @name Check whether materials are identical
+    /*!
+
+    \brief A Safety check is done for XFEM-type problems. Is utilized in the edgebased framework.
+
+     */
+    void SafetyCheckMaterials(Teuchos::RCP<MAT::Material> &          pmat,
+                              Teuchos::RCP<MAT::Material> &          nmat
+                              );
   }
 }
 

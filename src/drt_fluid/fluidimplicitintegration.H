@@ -209,6 +209,12 @@ public:
   virtual void CompleteGeneralInit();
 
   /*!
+   * \brief Create internal faces extension
+   */
+  void CreateFacesExtension();
+
+
+  /*!
   \brief Set states in the time integration schemes: differs between GenAlpha and the others
 
   */

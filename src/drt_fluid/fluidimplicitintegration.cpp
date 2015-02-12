@@ -506,19 +506,7 @@ void FLD::FluidImplicitTimeInt::Init()
   }
 
   // for the case of edge-oriented stabilization
-  Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-  if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
-  {
-    // if the definition of internal faces would be included
-    // in the standard discretization, these lines can be removed
-    // and CreateInternalFacesExtension() can be called once
-    // in the constructor of the fluid time integration
-    // since we want to keep the standard discretization as clean as
-    // possible, we create interal faces via an enhanced discretization
-    // including the faces between elements
-    facediscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
-    facediscret_->CreateInternalFacesExtension(true);
-  }
+  CreateFacesExtension();
 
   // Initialize WSS manager if smoothing via aggregation is desired
   if (not stressmanager_->IsInit())
@@ -541,7 +529,25 @@ void FLD::FluidImplicitTimeInt::Init()
   return;
 } // FluidImplicitTimeInt::Init()
 
-
+/*----------------------------------------------------------------------*
+ |  create internal faces for the case of EOS stab                      |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::CreateFacesExtension()
+{
+  Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
+  if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
+  {
+    // if the definition of internal faces would be included
+    // in the standard discretization, these lines can be removed
+    // and CreateInternalFacesExtension() can be called once
+    // in the constructor of the fluid time integration
+    // since we want to keep the standard discretization as clean as
+    // possible, we create interal faces via an enhanced discretization
+    // including the faces between elements
+    facediscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+    facediscret_->CreateInternalFacesExtension(true);
+  }
+}
 /*----------------------------------------------------------------------*
  |  initialize algorithm for nonlinear BCs                   thon 09/14 |
  *----------------------------------------------------------------------*/

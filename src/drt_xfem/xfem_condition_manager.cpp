@@ -48,6 +48,8 @@ Maintainer: Benedikt Schott
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 
+#include "../drt_cut/cut_volumecell.H"
+
 void XFEM::CouplingBase::SetElementConditions()
 {
   // number of column cutter boundary elements
@@ -392,8 +394,6 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(
 
 }
 
-
-
 XFEM::MeshCoupling::MeshCoupling(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
     const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
@@ -536,6 +536,16 @@ void XFEM::MeshCouplingFluidFluid::GetCouplingEleLocationVector(
   if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
     ele_gid = GetEmbeddedElementId(sid);
   return coupl_dis_->gElement(ele_gid)->LocationVector(*coupl_dis_, patchlm, patchlmowner, patchlmstride);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFluidFluid::GetInterfaceSlaveMaterial(
+  DRT::Element* actele,
+  Teuchos::RCP<MAT::Material> & mat
+)
+{
+  XFEM::UTILS::GetVolumeCellMaterial(actele,mat,GEO::CUT::Point::outside);
 }
 
 /*--------------------------------------------------------------------------*
@@ -1888,6 +1898,16 @@ void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(
   EvaluateNeumannFunction(itraction, x, cond);
 }
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingTwoPhase::GetInterfaceSlaveMaterial(
+  DRT::Element* actele,
+  Teuchos::RCP<MAT::Material> & mat
+)
+{
+  XFEM::UTILS::GetVolumeCellMaterial(actele,mat,GEO::CUT::Point::inside);
+}
+
 
 //constructor
 XFEM::ConditionManager::ConditionManager(
@@ -2302,4 +2322,20 @@ bool XFEM::ConditionManager::HasMovingInterface()
   return false;
 }
 
+void XFEM::ConditionManager::GetVolumeCellMaterial(
+  DRT::Element* actele,
+  Teuchos::RCP<MAT::Material> & mat,
+  const GEO::CUT::VolumeCell* vc
+)
+{
+  XFEM::UTILS::GetVolumeCellMaterial(actele,mat,vc->Position());
+}
+
+void XFEM::ConditionManager::GetInterfaceMasterMaterial(
+  DRT::Element* actele,
+  Teuchos::RCP<MAT::Material> & mat
+)
+{
+  XFEM::UTILS::GetVolumeCellMaterial(actele,mat);
+}
 

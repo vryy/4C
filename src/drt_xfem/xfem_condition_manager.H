@@ -51,6 +51,7 @@ class CutWizard;
 namespace CUT
 {
 class SideHandle;
+class VolumeCell;
 }
 }
 
@@ -210,9 +211,16 @@ public:
       const DRT::Condition* cond
   ){dserror("EvaluateCouplingConditions should be implemented by derived class");};
 
+  /// set material pointer for coupling slave side
+  virtual void GetInterfaceSlaveMaterial(
+    DRT::Element* actele,
+    Teuchos::RCP<MAT::Material> & mat
+  )
+  {
+    mat = Teuchos::null;
+  }
+
 protected:
-
-
 
   void SetElementConditions();
 
@@ -286,8 +294,6 @@ protected:
   ///< averaging strategy, type of weighting
   INPAR::XFEM::AveragingStrategy averaging_strategy_;
 
-
-
   int myrank_;
 
   double dt_; ///< current time step size
@@ -335,6 +341,15 @@ public:
   virtual void GetCouplingEleLocationVector(
       const int sid,
       std::vector<int> & patchlm);
+
+  /// set material pointer for coupling slave side
+  virtual void GetInterfaceSlaveMaterial(
+    DRT::Element* actele,
+    Teuchos::RCP<MAT::Material> & mat
+  )
+  {
+    mat = Teuchos::null;
+  }
 
   // finalized interface state vectors
   virtual void CompleteStateVectors(){};
@@ -762,6 +777,25 @@ public:
     return it->second;
   }
 
+  /// set material pointer for coupling slave side
+  void GetInterfaceSlaveMaterial(
+    DRT::Element* actele,
+    Teuchos::RCP<MAT::Material> & mat
+  );
+
+  /// set the fluid-fluid interface fix to avoid a cut
+  void SetInterfaceFixed()
+  {
+    // TODO:XFF-class calls this, when used in an FSI algorithm (fixed ALE)
+    moving_interface_ = false;
+  }
+
+  /// free the fluid-fluid interface
+  void SetInterfaceFree()
+  {
+    moving_interface_ = true;
+  }
+
   //! Access to map from cutting surface element id to coupling element's face lid
   int GetFaceLidOfEmbeddedElement(int face_id)
   {
@@ -779,11 +813,10 @@ public:
 
 private:
 
-  //!
-  virtual bool HasMovingInterface()
+  //! determine whether interface is fixed
+  bool HasMovingInterface()
   {
-    std::cout << "WARNING: adapt HasMovingInterface in MeshCouplingFluidFluid!" << std::endl;
-    return true;
+    return moving_interface_;
   }
 
   //! ghost embedded elements, that contribute to the cutting interface discretization on all procs
@@ -805,6 +838,8 @@ private:
   //! map from cutting surface element id to embedded element's face lid
   std::map<int,int> cutting_emb_face_lid_map_;
 
+  //! whether the embedded fluid interface is moving
+  bool moving_interface_;
 };
 
 /*!
@@ -849,6 +884,14 @@ public:
 
   //TODO: remove for twophase flow
   virtual void PrepareSolve();
+
+  virtual void GetInterfaceSlaveMaterial(
+    DRT::Element* actele,
+    Teuchos::RCP<MAT::Material> & mat
+  )
+  {
+    mat = Teuchos::null;
+  }
 
 private:
 
@@ -961,7 +1004,28 @@ public:
 };
 
 
+class LevelSetCouplingTwoPhase : public LevelSetCoupling
+{
+public:
 
+  //! constructor
+  explicit LevelSetCouplingTwoPhase(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,    ///< background discretization
+      const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      const double                        time,      ///< time
+      const int                           step       ///< time step
+  ) : LevelSetCoupling(bg_dis, cond_name, time, step)
+  {}
+
+  virtual ~LevelSetCouplingTwoPhase()
+  {}
+
+  /// set material pointer for coupling slave side
+  void GetInterfaceSlaveMaterial(
+    DRT::Element* actele,
+    Teuchos::RCP<MAT::Material> & mat
+  );
+};
 
 
 
@@ -1048,6 +1112,10 @@ public:
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN)
     {
       levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNeumann(bg_dis_, cond_name, time_, step_)));
+    }
+    else if (CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)
+    {
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingTwoPhase(bg_dis_, cond_name, time_, step_)));
     }
     else
     {
@@ -1494,6 +1562,19 @@ public:
   void PrepareSolve();
 
   bool HasMovingInterface();
+
+  /// set material pointer for volume
+  void GetVolumeCellMaterial(
+    DRT::Element* actele,
+    Teuchos::RCP<MAT::Material> & mat,
+    const GEO::CUT::VolumeCell* vc
+  );
+
+  /// set material pointer for (coupling) master side
+  void GetInterfaceMasterMaterial(
+    DRT::Element* actele,
+    Teuchos::RCP<MAT::Material> & mat
+  );
 
 private:
 

@@ -152,9 +152,9 @@ namespace FLD
 
     /// build linear system matrix and rhs
     /// Monolithic FSI needs to access the linear fluid problem.
-    void Evaluate(
+    virtual void Evaluate(
       Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1
-      );
+    );
 
     /// Update the solution after convergence of the nonlinear
     /// iteration. Current solution becomes old solution of next timestep.
@@ -165,7 +165,7 @@ namespace FLD
 
     /// CUT at new interface position, transform vectors,
     /// perform time integration and set new Vectors
-    virtual void CutAndSetStateVectors();
+    void CutAndSetStateVectors();
 
     /// is a restart of the monolithic Newton necessary caused by changing dofsets?
     bool NewtonRestartMonolithic(){ return newton_restart_monolithic_; }
@@ -360,7 +360,7 @@ namespace FLD
     //! @name XFEM time-integration specific function
 
     /// store state data from old time-step t^n
-    void XTimint_StoreOldStateData(const bool firstcall_in_timestep);
+    virtual void XTimint_StoreOldStateData(const bool firstcall_in_timestep);
 
     /// is a restart of the global monolithic system necessary?
     bool XTimint_CheckForMonolithicNewtonRestart(
@@ -374,13 +374,13 @@ namespace FLD
 
     /// Transfer vectors from old time-step t^n w.r.t dofset and interface position
     /// from t^n to vectors w.r.t current dofset and interface position
-    void XTimint_DoTimeStepTransfer(const bool screen_out);
+    virtual void XTimint_DoTimeStepTransfer(const bool screen_out);
 
     /// Transfer vectors at current time-step t^(n+1) w.r.t dofset and interface position
     /// from last iteration i to vectors w.r.t current dofset and interface position (i+1)
     ///
     /// return, if increment step transfer was successful!
-    bool XTimint_DoIncrementStepTransfer(const bool screen_out);
+    virtual bool XTimint_DoIncrementStepTransfer(const bool screen_out);
 
     /// did the dofsets change?
     bool XTimint_ChangedDofsets(

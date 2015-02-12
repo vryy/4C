@@ -64,8 +64,6 @@ Maintainer:  Benedikt Schott
 #include "../drt_xfem/xfluid_timeInt_base.H"
 #include "../drt_xfem/xfluid_timeInt.H"
 
-#include "../drt_fluid_xfluid/xfluid_utils.H"
-
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -698,7 +696,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
         //Pointer to material of current volume cell
         //Assumes the plain_volumecell_set are all on the same side of the interface.
         Teuchos::RCP<MAT::Material> mat;
-        XFLUID::UTILS::GetVolumeCellMaterial(actele,mat,cells[0]->Position());
+        condition_manager_->GetVolumeCellMaterial(actele,mat,cells[0]);
 
         // we have to assemble all volume cells of this set
         // for linear elements, there should be only one volume-cell for each set
@@ -773,7 +771,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
         Teuchos::RCP<MAT::Material> matptr_s; //If not instantiated, it is left as null pointer.
 
         //Get material pointer for master side (LevelSet: positive side)
-        XFLUID::UTILS::GetVolumeCellMaterial(actele,matptr_m,GEO::CUT::Point::outside);
+        condition_manager_->GetInterfaceMasterMaterial(actele,matptr_m);
 
         // split the boundary cells by the different mesh couplings / levelset couplings
         // coupling matrices have to be evaluated for each coupling time separtely and cannot be mixed up
@@ -837,6 +835,8 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
                 // fill patchlm for the element we couple with
                 const int mc_idx = condition_manager_->GetMeshCouplingIndex(coup_sid);
                 condition_manager_->GetMeshCoupling(mc_idx)->GetCouplingEleLocationVector(coup_sid,patchlm);
+                // set material for coupling element
+                condition_manager_->GetMeshCoupling(mc_idx_)->GetInterfaceSlaveMaterial(actele,matptr_s);
               }
               else if(condition_manager_->IsLevelSetCoupling(coup_sid))
               {
@@ -865,7 +865,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
                 }
 
                 //Get material pointer for slave side (LevelSet: negative side)
-                XFLUID::UTILS::GetVolumeCellMaterial(actele,matptr_s,GEO::CUT::Point::inside);
+                condition_manager_->GetLevelSetCoupling(coup_sid)->GetInterfaceSlaveMaterial(actele,matptr_s);
 
                 // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
                 actele->LocationVector(*coupl_dis,nds_other,la_other,false);
@@ -1838,7 +1838,12 @@ void FLD::XFluid::PrintStabilizationParams() const
             def_tau != "Franca_Madureira_Valentin_Badia_Codina_wo_dt" and
             def_tau != "Hughes_Franca_Balestra_wo_dt")
         {
-          dserror("not a valid tau definition (DEFINITION_TAU) for stationary problems");
+          // TODO: comment in line below - just for compatibility with new XFF
+          // (XFF cases are not checked for this)
+          //dserror("not a valid tau definition (DEFINITION_TAU) for stationary problems");
+          IO::cout << RED_LIGHT
+              << "Not a valid tau definition (DEFINITION_TAU) for stationary problems"
+              << END_COLOR << IO::endl;
         }
       }
       IO::cout << "\n";

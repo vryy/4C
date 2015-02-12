@@ -79,18 +79,26 @@ public:
   /// set Dirichlet and Neumann boundary conditions
   void SetDirichletNeumannBC();
 
+  /// set fluid-fluid interface fixed for current time step
+  void SetInterfaceFixed();
+
+  /// free fluid-fluid interface
+  void SetInterfaceFree();
+
   /// setup the variables to do a new time step
   void PrepareTimeStep();
 
+  /// prepare linear solve
   void PrepareSolve();
+
+  /// Monolithic FSI needs to access the linear fluid problem.
+  void Evaluate(
+    Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1
+  );
 
   /// Update the solution after convergence of the nonlinear
   /// iteration. Current solution becomes old solution of next timestep.
   void TimeUpdate();
-
-  /// CUT at new interface position, transform vectors,
-  /// perform time integration and set new Vectors
-  void CutAndSetStateVectors();
 
   /*!
    * \brief set underlying dof-maps for new shape derivatives matrix
@@ -129,6 +137,10 @@ public:
   Teuchos::RCP<      Epetra_Vector> WriteAccessDispOldState() { return dispnpoldstate_; }
   Teuchos::RCP<const Epetra_Vector> Dispn()                   { return embedded_fluid_->Dispn(); }
 
+  /// get embedded fluid discretization
+  const Teuchos::RCP<DRT::Discretization>& EmbeddedDiscretization() { return embedded_fluid_->Discretization(); }
+
+  /// get merged fluid dofmap
   Teuchos::RCP<const Epetra_Map> DofRowMap()
   {
     return xff_state_->xffluiddofrowmap_;
@@ -151,7 +163,6 @@ public:
   }
 
   /// get map extractor for background/embedded fluid
-
   Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor>const& XFluidFluidMapExtractor(){ return xff_state_->xffluidsplitter_; }
 
   //! get combined background and embedded fluid dirichlet map extractor
@@ -160,8 +171,31 @@ public:
   //! access to new merged fluid state container
   Teuchos::RCP<FLD::XFluidState> GetNewState();
 
+  /// store state data from old time-step t^n
+  void XTimint_StoreOldStateData(const bool firstcall_in_timestep);
+
+  /// Transfer vectors from old time-step t^n w.r.t dofset and interface position
+  /// from t^n to vectors w.r.t current dofset and interface position
+  void XTimint_DoTimeStepTransfer(const bool screen_out);
+
+  /// Transfer vectors at current time-step t^(n+1) w.r.t dofset and interface position
+  /// from last iteration i to vectors w.r.t current dofset and interface position (i+1)
+  ///
+  /// return, if increment step transfer was successful!
+  bool XTimint_DoIncrementStepTransfer(const bool screen_out){ return true; }
+
+
+  /// update grid velocity of embedded fluid
+  void UpdateGridv(){ embedded_fluid_->UpdateGridv(); }
+
+  /// solve fluid field after ALE-mesh relaxation
+  void UpdateMonolithicFluidSolution(const Teuchos::RCP<const Epetra_Map>& fsidofmap);
+
   /// create a result test
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
+  /// write output for both fluid discretizations
+  void Output();
 
 private:
 
@@ -176,6 +210,23 @@ private:
   /// Update velocity and pressure by increment
   void UpdateByIncrement();
 
+  //! @name XFF time integration
+  //@{
+
+  /*!
+   * \brief as part of time integration: determine new background state vectors
+   * \param disp displacement of the ALE-fluid at the time we want to interpolate
+   * values from it
+   */
+  void SetXFluidStateVectors(Teuchos::RCP<const Epetra_Vector> disp);
+
+  /*!
+   * \brief in fixed-ALE-interpolation XFFSI: interpolate embedded state vectors
+   * from embedded elements at previous position
+   */
+  void SetEmbFluidStateVectors(Teuchos::RCP<Epetra_Vector> disp);
+  //@}
+
   /// embedded fluid field
   Teuchos::RCP<FLD::FluidImplicitTimeInt> embedded_fluid_;
 
@@ -183,7 +234,7 @@ private:
   Teuchos::RCP<XFEM::MeshCouplingFluidFluid>  mc_xff_;
 
   /// whether the embedded fluid is an ALE-fluid
-  bool alefluid_;
+  bool ale_embfluid_;
 
   /// merged fluid state (cut-dependent) at time n+1
   Teuchos::RCP<FLD::XFluidFluidState> xff_state_;
@@ -198,7 +249,7 @@ private:
 
   /// shape derivatives matrix (linearization with respect to mesh motion),
   /// including background fluid dof (set to zero)
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase>   extended_shapederivatives_;
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase>    extended_shapederivatives_;
 
   /// xfem time integration object
   Teuchos::RCP<XFEM::XFluidFluidTimeIntegration> xfluidfluid_timeint_;
@@ -227,6 +278,9 @@ private:
   enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_;  ///< type of monolithic XFFSI-approach
   enum INPAR::XFEM::XFluidFluidTimeInt        xfem_timeintapproach_; ///< XFF time integration approach
   //@}
+
+  //! no change in dof-maps compared to previous cut
+  bool samemaps_;
 
 };
 
