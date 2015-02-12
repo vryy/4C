@@ -1,4 +1,4 @@
-From 2ecd4275c86aa9c9a2c95d352bbf99afc157e7a2 Mon Sep 17 00:00:00 2001
+From 6e4b7e94414e1b3721bfb48e5b8ebb5588a9c120 Mon Sep 17 00:00:00 2001
 From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
 Date: Wed, 26 Nov 2014 11:49:33 +0100
 Subject: [PATCH 12/16] Remove dependency from GlobalProblem in
@@ -10,7 +10,7 @@ Should be fine for standard cases (standard conditions)
  1 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/src/drt_lib/drt_discret_conditions.cpp b/src/drt_lib/drt_discret_conditions.cpp
-index b13ed0b..5df979b 100644
+index 87e21f0..fc9dfbd 100644
 --- a/src/drt_lib/drt_discret_conditions.cpp
 +++ b/src/drt_lib/drt_discret_conditions.cpp
 @@ -16,7 +16,7 @@ Maintainer: Michael Gee

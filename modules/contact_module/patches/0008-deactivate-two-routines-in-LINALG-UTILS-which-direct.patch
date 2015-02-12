@@ -1,4 +1,4 @@
-From 6380ea9908071af06352c5051f3e22d695b20726 Mon Sep 17 00:00:00 2001
+From 36012a8e42c8486dec379b6f4ae144d19f3f5101 Mon Sep 17 00:00:00 2001
 From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
 Date: Tue, 25 Nov 2014 23:33:25 +0100
 Subject: [PATCH 08/16] deactivate two routines in LINALG::UTILS which

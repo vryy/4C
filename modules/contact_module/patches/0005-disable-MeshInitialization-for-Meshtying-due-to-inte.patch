@@ -1,4 +1,4 @@
-From ef89575100d5a416a2bebea6153abac0c902b18b Mon Sep 17 00:00:00 2001
+From 6002c5f71094801126d078b5808822d9fe949ae3 Mon Sep 17 00:00:00 2001
 From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
 Date: Wed, 26 Nov 2014 10:20:47 +0100
 Subject: [PATCH 05/16] disable MeshInitialization for Meshtying due to

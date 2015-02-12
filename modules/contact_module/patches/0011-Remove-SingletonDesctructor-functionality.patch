@@ -1,4 +1,4 @@
-From 82920e9839b10820e0bd988d2b1643a0d072d6f0 Mon Sep 17 00:00:00 2001
+From a17c7ac5b1f35cb2c8b701c0d1ac59637c1736e7 Mon Sep 17 00:00:00 2001
 From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
 Date: Wed, 26 Nov 2014 11:16:33 +0100
 Subject: [PATCH 11/16] Remove SingletonDesctructor functionality

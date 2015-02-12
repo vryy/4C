@@ -1,4 +1,4 @@
-From 0fb0973a88267415433d6733ebac19d3f5ae2b56 Mon Sep 17 00:00:00 2001
+From 7b0ecd70275fdf105b36b29d31879b9e2fe4b0c4 Mon Sep 17 00:00:00 2001
 From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
 Date: Thu, 29 Jan 2015 13:16:08 +0100
 Subject: [PATCH 10/16] Remove VisualizeGmsh routine

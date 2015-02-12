@@ -1,4 +1,4 @@
-From 175acd55273670875d37576cafb9b39f615f0c40 Mon Sep 17 00:00:00 2001
+From 268827775d411d447a5c66de95a3435586f8d175 Mon Sep 17 00:00:00 2001
 From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
 Date: Mon, 24 Nov 2014 15:09:29 +0100
 Subject: [PATCH 01/16] drt_dofset.cpp: remove HDG

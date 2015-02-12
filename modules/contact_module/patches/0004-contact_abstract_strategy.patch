@@ -1,4 +1,4 @@
-From c4a9eb26a713a5770e52716df8c28f111f15cb6e Mon Sep 17 00:00:00 2001
+From 7bf030de3e8dd42c69ccc44d65fe3a3edf06ff6d Mon Sep 17 00:00:00 2001
 From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
 Date: Tue, 25 Nov 2014 22:15:13 +0100
 Subject: [PATCH 04/16] contact_abstract_strategy:

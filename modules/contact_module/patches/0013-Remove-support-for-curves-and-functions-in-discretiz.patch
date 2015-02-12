@@ -1,4 +1,4 @@
-From c95773e91c38611e18104bc00889a8b30c47e93f Mon Sep 17 00:00:00 2001
+From 151d9492f2490ec7cefe7eab35dac496d0c2d546 Mon Sep 17 00:00:00 2001
 From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
 Date: Wed, 26 Nov 2014 14:20:45 +0100
 Subject: [PATCH 13/16] Remove support for curves and functions in

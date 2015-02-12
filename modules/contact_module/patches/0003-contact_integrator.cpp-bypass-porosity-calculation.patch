@@ -1,4 +1,4 @@
-From 36a6d0ca8a8b5dec857f4e4aa0e8796a0002a62f Mon Sep 17 00:00:00 2001
+From 2a7e7aee663fc0128bf201d52b0ee6f8d1471f02 Mon Sep 17 00:00:00 2001
 From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
 Date: Tue, 25 Nov 2014 10:28:46 +0100
 Subject: [PATCH 03/16] contact_integrator.cpp: bypass porosity calculation

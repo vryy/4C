@@ -1,4 +1,4 @@
-From 84c6defcd62e380a5ea0a14ee01ad79fb35e4788 Mon Sep 17 00:00:00 2001
+From b20b2e06e016fcb364b4c219e14f6c262566574c Mon Sep 17 00:00:00 2001
 From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
 Date: Wed, 21 Jan 2015 11:44:41 +0100
 Subject: [PATCH 15/16] Undo changes in SparseMatrix

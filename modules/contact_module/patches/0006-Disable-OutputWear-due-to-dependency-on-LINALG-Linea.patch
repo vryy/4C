@@ -1,4 +1,4 @@
-From e5dc30e150f7ac09b9d8aebd917cd573d6fb67c9 Mon Sep 17 00:00:00 2001
+From ae4d89b198f6896da59b3d2d456470009cc02b38 Mon Sep 17 00:00:00 2001
 From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
 Date: Wed, 26 Nov 2014 10:24:30 +0100
 Subject: [PATCH 06/16] Disable OutputWear due to dependency on

@@ -1,4 +1,4 @@
-From 01704ba66273be8025991ca8bae55d3a2693bd8b Mon Sep 17 00:00:00 2001
+From 3e25827bca9e01bb2a77578286b779f905a93309 Mon Sep 17 00:00:00 2001
 From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
 Date: Tue, 16 Dec 2014 01:47:06 +0100
 Subject: [PATCH 14/16] contact_module: remove finite difference checks from
