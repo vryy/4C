@@ -77,12 +77,12 @@ void FSI::DirichletNeumann_Crack::AddNewCrackSurfaceToCutInterface()
   const Teuchos::RCP<ADAPTER::FSICrackingStructure>& structfield =
       Teuchos::rcp_dynamic_cast<ADAPTER::FSICrackingStructure>(StructureField());
 
-  Teuchos::RCP<FLD::XFluid> xfluid =  Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(MBFluidField()->FluidField())->MyFluid();
-
   const std::string condname = "XFEMSurfCrackFSIPart";
-  Teuchos::RCP<DRT::Discretization> boundary_dis = xfluid->BoundaryDiscretization();
 
-  Teuchos::RCP<XFEM::MeshCouplingFSICrack> coupl = xfluid->GetMeshCouplingFSICrack(condname);
+  Teuchos::RCP<FLD::XFluid> xfluid =  Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(MBFluidField()->FluidField())->MyFluid();
+  Teuchos::RCP<XFEM::MeshCouplingFSICrack> coupl = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSICrack>(xfluid->GetMeshCoupling(condname));
+
+  Teuchos::RCP<DRT::Discretization> boundary_dis = coupl->GetCutterDis();
 
   std::map<int, LINALG::Matrix<3,1> > & tip_nodes = coupl->GetCrackTipNodes();
 

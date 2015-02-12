@@ -80,13 +80,12 @@ void FLD::XFluidFluidNew::Init()
   if (DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") != INPAR::FLUID::no_error_calculation)
   {
     const std::string cond_name("XFEMSurfFluidFluid");
-    Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_xff =
-        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(condition_manager_->GetMeshCoupling(cond_name));
+    mc_xff_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(condition_manager_->GetMeshCoupling(cond_name));
 
-    if (mc_xff == Teuchos::null)
+    if (mc_xff_ == Teuchos::null)
       dserror("Failed to cast to MeshCouplingFluidFluid");
 
-    mc_xff->RedistributeForErrorCalculation();
+    mc_xff_->RedistributeForErrorCalculation();
   }
 
   //-------------------------------------------------------------------
@@ -167,9 +166,7 @@ void FLD::XFluidFluidNew::PrepareSolve()
   if (condition_manager_->GetCoupling("XFEMSurfFluidFluid")->GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided
       and nitsche_evp_)
   {
-    Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_ff =
-        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(condition_manager_->GetCoupling("XFEMSurfFluidFluid"));
-    mc_ff->EstimateNitscheTraceMaxEigenvalue(embedded_fluid_->Dispnp());
+    mc_xff_->EstimateNitscheTraceMaxEigenvalue(embedded_fluid_->Dispnp());
   }
 }
 
@@ -239,7 +236,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluidNew::GetNewState()
 {
   if (alefluid_)
   {
-    LINALG::Export(*dispnp_,*IDispnp());
+    LINALG::Export(*dispnp_,*(mc_xff_->IDispnp()));
   }
 
   Teuchos::RCP<FLD::XFluidFluidState> state = state_creator_->Create(
@@ -369,6 +366,6 @@ void FLD::XFluidFluidNew::UpdateByIncrement()
   embedded_fluid_->WriteAccessVelnp()->Update(1.0,*xff_state_->xffluidsplitter_->ExtractFluidVector(xff_state_->xffluidvelnp_),0.0);
 
   // export interface velocities
-  LINALG::Export(*(embedded_fluid_->Velnp()),*(IVelnp()));
-  LINALG::Export(*(embedded_fluid_->Veln()),*(IVeln()));
+  LINALG::Export(*(embedded_fluid_->Velnp()),*(mc_xff_->IVelnp()));
+  LINALG::Export(*(embedded_fluid_->Veln()),*(mc_xff_->IVeln()));
 }

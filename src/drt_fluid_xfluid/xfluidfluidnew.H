@@ -24,6 +24,7 @@ Maintainer:  Raffaela Kruse
 namespace XFEM
 {
   class XFluidFluidTimeIntegration;
+  class MeshCouplingFluidFluid;
 }
 
 namespace FLD
@@ -177,6 +178,9 @@ private:
 
   /// embedded fluid field
   Teuchos::RCP<FLD::FluidImplicitTimeInt> embedded_fluid_;
+
+  /// pointer to fluid-fluid mesh coupling object
+  Teuchos::RCP<XFEM::MeshCouplingFluidFluid>  mc_xff_;
 
   /// whether the embedded fluid is an ALE-fluid
   bool alefluid_;

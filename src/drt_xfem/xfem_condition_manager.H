@@ -1090,23 +1090,23 @@ public:
   }
 
   Teuchos::RCP<MeshCoupling> GetMeshCoupling( const int mc_idx)
-      {
+  {
     if(mc_idx < (int)mesh_coupl_.size() and mc_idx >= 0)
       return mesh_coupl_[mc_idx];
 
     return Teuchos::null;
-      }
+  }
 
   Teuchos::RCP<LevelSetCoupling> GetLevelSetCoupling( const int ls_idx)
-      {
+  {
     if(ls_idx < (int)levelset_coupl_.size() and ls_idx >= 0)
       return levelset_coupl_[ls_idx];
 
     return Teuchos::null;
-      }
+  }
 
   Teuchos::RCP<CouplingBase> GetCoupling(const std::string & name)
-      {
+  {
     Teuchos::RCP<CouplingBase> coupling = Teuchos::null;
 
     coupling=GetMeshCoupling(name);
@@ -1118,18 +1118,38 @@ public:
     if(coupling!=Teuchos::null) return coupling;
 
     return Teuchos::null;
-      }
+  }
 
 
   Teuchos::RCP<MeshCoupling> GetMeshCoupling(const std::string & name)
-      {
+  {
     for(int m=0; m<NumMeshCoupling(); m++)
     {
       if(mesh_coupl_[m]->GetName() == name)
         return mesh_coupl_[m];
     }
     return Teuchos::null;
-      }
+  }
+
+  int GetCouplingIndex(const std::string & name)
+  {
+    int coup_idx = -1;
+
+    for(int m=0; m<NumMeshCoupling(); m++)
+    {
+      if(mesh_coupl_[m]->GetName() == name)
+        return m;
+    }
+
+    for(int l=0; l<NumLevelSetCoupling(); l++)
+    {
+      if(levelset_coupl_[l]->GetName() == name)
+        return (NumMeshCoupling()+l);
+    }
+
+    return coup_idx;
+  }
+
 
   int GetMeshCouplingIndex(const std::string & name)
   {
@@ -1142,14 +1162,14 @@ public:
   }
 
   Teuchos::RCP<LevelSetCoupling> GetLevelSetCoupling(const std::string & name)
-      {
+  {
     for(int l=0; l<NumLevelSetCoupling(); l++)
     {
       if(levelset_coupl_[l]->GetName() == name)
         return levelset_coupl_[l];
     }
     return Teuchos::null;
-      }
+  }
 
 
   const INPAR::XFEM::AveragingStrategy GetAveragingStrategy(

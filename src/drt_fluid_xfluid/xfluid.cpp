@@ -798,7 +798,6 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
           std::vector<GEO::CUT::BoundaryCell*> & bc_new = bcells[bc->first];
           bc_new.clear();
           std::copy(bc->second.begin(), bc->second.end(), std::inserter(bc_new, bc_new.end()));
-          //              bcells[bc->first]=bc->second;
         }
 
         // loop all the different couplings
@@ -1365,49 +1364,6 @@ void FLD::XFluid::AssembleMatAndRHS_GradientPenalty(
   return;
 }
 
-
-Teuchos::RCP<const Epetra_Vector> FLD::XFluid::ITrueResidual()
-{
-  Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx_);
-
-  // try to cast to MeshCouplingFSI
-  Teuchos::RCP<XFEM::MeshCouplingFSI> mc_coupl_fsi = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(mc_coupl);
-
-  if(mc_coupl_fsi != Teuchos::null)
-    return mc_coupl_fsi->ITrueResidual();
-
-  return Teuchos::null;
-}
-
-const Teuchos::RCP<DRT::Discretization> FLD::XFluid::BoundaryDiscretization()
-{
-  return condition_manager_->GetMeshCoupling(mc_idx_)->GetCutterDis();
-}
-
-Teuchos::RCP<Epetra_Vector> FLD::XFluid::IVelnp()
-{
-  return condition_manager_->GetMeshCoupling(mc_idx_)->IVelnp();
-}
-
-Teuchos::RCP<Epetra_Vector> FLD::XFluid::IVeln()
-{
-  return condition_manager_->GetMeshCoupling(mc_idx_)->IVeln();
-}
-
-Teuchos::RCP<Epetra_Vector> FLD::XFluid::IVelnm()
-{
-  return condition_manager_->GetMeshCoupling(mc_idx_)->IVelnm();
-}
-
-Teuchos::RCP<Epetra_Vector> FLD::XFluid::IDispnp()
-{
-  return condition_manager_->GetMeshCoupling(mc_idx_)->IDispnp();
-}
-
-Teuchos::RCP<Epetra_Vector> FLD::XFluid::IDispn()
-{
-  return condition_manager_->GetMeshCoupling(mc_idx_)->IDispn();
-}
 
 /*----------------------------------------------------------------------*
  |  Evaluate errors compared to an analytical solution     schott 09/12 |
@@ -4711,16 +4667,41 @@ void FLD::XFluid::ReadRestart(int step)
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
-Teuchos::RCP<XFEM::MeshCouplingFSICrack> FLD::XFluid::GetMeshCouplingFSICrack(const std::string & condname)
+Teuchos::RCP<XFEM::MeshCoupling> FLD::XFluid::GetMeshCoupling(const std::string & condname)
 {
-  Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(condname);
+  return condition_manager_->GetMeshCoupling(condname);
+}
 
-  if(mc_coupl == Teuchos::null) dserror("no Mesh coupling object with name %s available!", condname.c_str());
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+Teuchos::RCP<LINALG::SparseMatrix> FLD::XFluid::C_sx_Matrix(const std::string & cond_name)
+{
+  const int coup_idx = condition_manager_->GetCouplingIndex(cond_name);
+  return state_->coup_state_[coup_idx]->C_sx_;
+}
 
-  if(condname != "XFEMSurfCrackFSIPart")
-    dserror("Routine only supported for mesh coupling objects based on XFEMSurfCrackFSIPart condition. Actually it is not nice to return the Coupling object for manipulations");
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+Teuchos::RCP<LINALG::SparseMatrix> FLD::XFluid::C_xs_Matrix(const std::string & cond_name)
+{
+  const int coup_idx = condition_manager_->GetCouplingIndex(cond_name);
+  return state_->coup_state_[coup_idx]->C_xs_;
+}
 
-  return Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSICrack>(mc_coupl, true);
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+Teuchos::RCP<LINALG::SparseMatrix> FLD::XFluid::C_ss_Matrix(const std::string & cond_name)
+{
+  const int coup_idx = condition_manager_->GetCouplingIndex(cond_name);
+  return state_->coup_state_[coup_idx]->C_ss_;
+}
+
+// -------------------------------------------------------------------
+// -------------------------------------------------------------------
+Teuchos::RCP<Epetra_Vector> FLD::XFluid::RHS_s_Vec(const std::string & cond_name)
+{
+  const int coup_idx = condition_manager_->GetCouplingIndex(cond_name);
+  return state_->coup_state_[coup_idx]->rhC_s_;
 }
 
 

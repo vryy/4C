@@ -8,7 +8,7 @@ created by pre_exodus
 //NODES       10208
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM_LevelSet
+PROBLEMTYP                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

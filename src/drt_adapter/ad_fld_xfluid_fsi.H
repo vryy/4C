@@ -54,6 +54,11 @@ namespace FLD
   }
 }
 
+namespace XFEM
+{
+  class MeshCouplingFSI;
+}
+
 namespace ADAPTER {
 
   class XFluidFSI : public FluidWrapper
@@ -63,7 +68,8 @@ namespace ADAPTER {
     /// Constructor
     XFluidFSI(Teuchos::RCP<Fluid>              fluid,
         Teuchos::RCP<DRT::Discretization>      xfluiddis,
-        Teuchos::RCP<DRT::Discretization>      soliddis,
+        Teuchos::RCP<DRT::Discretization>      soliddis,      // discretization w.r.t which the coupling condition is set
+        const std::string                      coupling_name, // name of the FSI coupling condition
         Teuchos::RCP<LINALG::Solver>           solver,
         Teuchos::RCP<Teuchos::ParameterList>   params,
         Teuchos::RCP<IO::DiscretizationWriter> output);
@@ -106,10 +112,10 @@ namespace ADAPTER {
     virtual void RebuildFSIStructInterface();
 
 
-       /// apply the interface displacements to the fluid
-       virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
+    /// apply the interface displacements to the fluid
+    virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 
-       virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
+    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
 
     /// return coupling matrix between fluid and structure as sparse matrices
     Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix();
@@ -121,7 +127,7 @@ namespace ADAPTER {
     Teuchos::RCP<FLD::XFluid> MyFluid() {return xfluid_; }
 
     /// return boundary discretization
-    const Teuchos::RCP<DRT::Discretization> BoundaryDiscretization() {return xfluid_->BoundaryDiscretization();}
+    const Teuchos::RCP<DRT::Discretization> BoundaryDiscretization();
 
     bool NewtonRestartMonolithic(){ return xfluid_->NewtonRestartMonolithic(); }
 
@@ -158,6 +164,8 @@ namespace ADAPTER {
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization>      xfluiddis_;
     Teuchos::RCP<DRT::Discretization>      soliddis_;
+    std::string coupling_name_;              /// the name of the XFEM::MeshCoupling object
+    Teuchos::RCP<XFEM::MeshCouplingFSI>    mesh_coupling_fsi_;
     Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
     //@}

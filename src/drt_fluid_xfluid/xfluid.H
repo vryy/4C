@@ -62,6 +62,7 @@ namespace IO
 namespace XFEM
 {
   class ConditionManager;
+  class MeshCoupling;
   class MeshCouplingFSICrack;
   class XFEMDofSet;
   class XFEM_EdgeStab;
@@ -208,17 +209,6 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> Dispnp() { return dispnp_; }  //full Dispnp (1st dofset)
     Teuchos::RCP<      Epetra_Vector> WriteAccessDispnp() {return dispnp_; }  //full Dispnp (1st dofset)
     Teuchos::RCP<const Epetra_Vector> Dispn()  { return dispn_; }  //full Dispn(1st dofset)
-
-    //! get the interface forces acting on the structural surface
-    Teuchos::RCP<const Epetra_Vector> ITrueResidual();
-
-    Teuchos::RCP<Epetra_Vector> IVelnp();
-    Teuchos::RCP<Epetra_Vector> IVeln();
-    Teuchos::RCP<Epetra_Vector> IVelnm();
-
-    Teuchos::RCP<Epetra_Vector> IDispnp();
-    Teuchos::RCP<Epetra_Vector> IDispn();
-
     // @}
 
 
@@ -233,11 +223,10 @@ namespace FLD
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(state_->sysmat_); }
 
     /// return coupling matrix between fluid and structure as sparse matrices
-    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix(){ return state_->coup_state_[mc_idx_]->C_sx_; }
-    Teuchos::RCP<LINALG::SparseMatrix> C_Fluid_Struct_Matrix(){ return state_->coup_state_[mc_idx_]->C_xs_; }
-    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Struct_Matrix(){ return state_->coup_state_[mc_idx_]->C_ss_;}
-
-    Teuchos::RCP<Epetra_Vector> RHS_Struct_Vec(){ return state_->coup_state_[0]->rhC_s_; }
+    Teuchos::RCP<LINALG::SparseMatrix> C_sx_Matrix(const std::string & cond_name);
+    Teuchos::RCP<LINALG::SparseMatrix> C_xs_Matrix(const std::string & cond_name);
+    Teuchos::RCP<LINALG::SparseMatrix> C_ss_Matrix(const std::string & cond_name);
+    Teuchos::RCP<Epetra_Vector>        RHS_s_Vec  (const std::string & cond_name);
 
     /// Return MapExtractor for Dirichlet boundary conditions
     Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(){ return state_->dbcmaps_; }
@@ -270,27 +259,9 @@ namespace FLD
     /// read restart data for fluid discretization
     void ReadRestart(int step);
 
-    /// read restart data for boundary discretization
-    void ReadRestartBound(int step);
 
-
-    //-----------------------------XFEM-Crack specific function------------------
-
-    //! @name XFEM-Crack specific function
-
-    Teuchos::RCP<XFEM::MeshCouplingFSICrack> GetMeshCouplingFSICrack(const std::string & condname);
-
-    //@}
-
-
-    //-----------------------------Getter for Discretizations------------------
-
-    //! @name Getter for Discretizations
-
-    /// return boundary discretization
-    const Teuchos::RCP<DRT::Discretization> BoundaryDiscretization();
-
-    //@}
+    // -------------------------------------------------------------------
+    Teuchos::RCP<XFEM::MeshCoupling> GetMeshCoupling(const std::string & condname);
 
 
     Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() {return Teuchos::null;}

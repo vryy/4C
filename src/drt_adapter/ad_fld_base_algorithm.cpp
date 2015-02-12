@@ -753,19 +753,69 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       else
         dserror("Unknown time integration for this fluid problem type\n");
     }
-      break;
-    case prb_fsi_xfem:
+    break;
     case prb_fluid_xfem:
-    case prb_fsi_crack:
     {
       Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
       Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
-      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, solver, fluidtimeparams, output));
+
+      std::string condition_name = "";
+
+      //TODO: actually in case of ale fluid with e.g. only level-set we do not want to use the XFluidFSI class since not always
+      // a boundary discretization is necessary.
+      // however, the xfluid-class itself does not support the full ALE-functionality without the FSI itself
+      // ALE-fluid with level-set/without mesh discretization not supported yet
+      if (isale) //in ale case
+        fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, condition_name, solver, fluidtimeparams, output));
+      else
+        fluid_ = tmpfluid;
+    }
+    break;
+    case prb_fsi_xfem:
+    {
+      std::string condition_name;
+
+      // FSI input parameters
+      const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+      const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
+      if (
+          coupling == fsi_iter_xfem_monolithic
+      )
+      {
+        condition_name = "XFEMSurfFSIMono";
+      }
+      else if(
+          coupling == fsi_iter_stagg_fixed_rel_param or
+          coupling == fsi_iter_stagg_AITKEN_rel_param or
+          coupling == fsi_iter_stagg_steep_desc or
+          coupling == fsi_iter_stagg_CHEB_rel_param or
+          coupling == fsi_iter_stagg_AITKEN_rel_force or
+          coupling == fsi_iter_stagg_steep_desc_force or
+          coupling == fsi_iter_stagg_steep_desc_force or
+          coupling == fsi_iter_stagg_steep_desc_force
+      )
+      {
+        condition_name = "XFEMSurfFSIPart";
+      }
+      else dserror("non supported COUPALGO for FSI");
+
+      Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
+      Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
+      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, condition_name , solver, fluidtimeparams, output));
+    }
+    break;
+    case prb_fsi_crack:
+    {
+      Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
+      const std::string condition_name = "XFEMSurfCrackFSIPart";
+
+      Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
+      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, condition_name, solver, fluidtimeparams, output));
     }
     break;
     case prb_fluid_xfem_ls:
     {
-      Teuchos::RCP<DRT::Discretization> soliddis = Teuchos::null;
+      Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
       fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
     }
     break;
@@ -895,9 +945,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         }
         else if (probtype == prb_fpsi_xfem)
         {
+          std::string condition_name = "XFEMSurfFSIMono";
           Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
           Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output,isale));
-          fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, solver, fluidtimeparams, output));
+          fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, condition_name, solver, fluidtimeparams, output));
         }
       }
     }
