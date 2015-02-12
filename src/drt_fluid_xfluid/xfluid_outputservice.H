@@ -74,7 +74,7 @@ public:
   /// standard output routine
   void Output(
     int step,
-    int time,
+    double time,
     bool write_restart_data,
     Teuchos::RCP<const FLD::XFluidState> state,
     Teuchos::RCP<const Epetra_Vector>    dispnp  = Teuchos::null,
