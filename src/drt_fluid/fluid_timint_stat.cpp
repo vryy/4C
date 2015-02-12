@@ -14,7 +14,6 @@ Maintainers: Ursula Rasthofer & Martin Kronbichler
 
 #include "fluid_timint_stat.H"
 #include "fluid_volumetric_surfaceFlow_condition.H"
-#include "../drt_fluid_turbulence/scale_sep_gmo.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
@@ -230,20 +229,7 @@ void FLD::TimIntStationary::OutputofFilteredVel(
      Teuchos::RCP<Epetra_Vector> outvec,
      Teuchos::RCP<Epetra_Vector> fsoutvec)
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  Teuchos::RCP<Epetra_Vector> row_finescaleveltmp;
-  row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
-
-  // get fine scale velocity
-  if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
-    Sep_->Multiply(false,*velnp_,*row_finescaleveltmp);
-  else
-    ScaleSepGMO_->ApplyScaleSeparation(velnp_,row_finescaleveltmp);
-  // get filtered or coarse scale velocity
-  outvec->Update(1.0,*velnp_,-1.0,*row_finescaleveltmp,0.0);
-
-  fsoutvec->Update(1.0,*row_finescaleveltmp,0.0);
-
+  // no output since subgrid-scale modeling does not make sense for stationary problems!!!
   return;
 }
 

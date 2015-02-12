@@ -3006,6 +3006,7 @@ void SysmatBoundaryNitsche(
     const M3&                                  egradphi2,
     const V2&                                  ecurv,
     Teuchos::RCP<const MAT::Material>          material,       ///< fluid material
+    const double                               time,         ///< current time
     const INPAR::FLUID::TimeIntegrationScheme  timealgo,       ///< time discretization type
     const double&                              dt,             ///< delta t (time step size)
     const double&                              theta,          ///< factor for one step theta scheme
@@ -3082,6 +3083,19 @@ void SysmatBoundaryNitsche(
   double dynvisc_minus = -1.0;
   // set density and dynamic viscosity
   COMBUST::GetMaterialParams(material, dens_plus, dynvisc_plus, dens_minus, dynvisc_minus);
+
+  // to consistently take into account the blend material option here, a small hack (due to assumption) is best added
+  // I commented this part since it assumes that the minus domain is the blending domain.
+  // Moreover, nobody will use this option in the old framework anymore.
+  // Hence, this should not cause any problems.
+#if 0
+  double dynvisc = -1.0;
+  double dens = -1.0;
+  // blend smoothly to minus (gas bubble) domain (This is assumed here!!!!!)
+  COMBUST::BlendMaterial(ele, false, time, dens, dynvisc, dens_plus, dynvisc_plus, dens_minus, dynvisc_minus);
+  dens_minus = dens;
+  dynvisc_minus = dynvisc;
+#endif
 
   double wallfac = 1.0;
 #ifdef ORACLES

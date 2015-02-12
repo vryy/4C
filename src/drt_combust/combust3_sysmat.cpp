@@ -864,7 +864,8 @@ void Sysmat(
       if (smoothed_boundary_integration)
         fillElementGradPhi<DISTYPE>(mystate, egradphi,egradphi2, ecurv);
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelaf, epreaf, ephi, egradphi,egradphi2, ecurv, material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi,egradphi2, ecurv, material, time,
+          timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, marksteinlength, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, variablesurftens, second_deriv, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration,
@@ -943,7 +944,7 @@ void Sysmat(
 
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi,egradphi2, ecurv,
-          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
+          material, time, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, marksteinlength, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, variablesurftens, second_deriv, connected_interface, INPAR::COMBUST::vel_jump_none,
           INPAR::COMBUST::flux_jump_surface_tension, smoothed_boundary_integration,

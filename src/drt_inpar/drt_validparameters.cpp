@@ -4881,14 +4881,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     tuple<std::string>(
       "no_scale_sep",
       "box_filter",
-      "algebraic_multigrid_operator",
-      "geometric_multigrid_operator"),
+      "algebraic_multigrid_operator"),
     tuple<std::string>(
       "no scale separation",
       "classical box filter",
-      "scale separation by algebraic multigrid operator",
-      "scale separation by geometric multigrid operator"),
-    tuple<int>(0,1,2,3),
+      "scale separation by algebraic multigrid operator"),
+    tuple<int>(0,1,2),
     &fdyn_turbmfs);
 
   IntParameter(

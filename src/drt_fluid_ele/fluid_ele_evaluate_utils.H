@@ -2102,8 +2102,7 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
   double alpha = 0.0;
   if (turbmodelparamsmfs->get<std::string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
    alpha = 3.0;
-  else if (turbmodelparamsmfs->get<std::string>("SCALE_SEPARATION") == "box_filter"
-        or turbmodelparamsmfs->get<std::string>("SCALE_SEPARATION") == "geometric_multigrid_operator")
+  else if (turbmodelparamsmfs->get<std::string>("SCALE_SEPARATION") == "box_filter")
    alpha = 2.0;
   else
    dserror("Unknown filter type!");

@@ -88,7 +88,6 @@ class ForcingInterface;
 class DynSmagFilter;
 class Vreman;
 class Boxfilter;
-class LESScaleSeparation;
 class Meshtying;
 class XWall;
 class TransferTurbulentInflowCondition;
@@ -1188,8 +1187,6 @@ protected:
   //! one instance of the filter object
   Teuchos::RCP<FLD::Vreman> Vrem_;
   Teuchos::RCP<FLD::Boxfilter> Boxf_;
-
-  Teuchos::RCP<LESScaleSeparation> ScaleSepGMO_;
 
   //@}
 

@@ -32,8 +32,7 @@ namespace INPAR
     {
       no_scale_sep,
       box_filter,
-      algebraic_multigrid_operator,
-      geometric_multigrid_operator
+      algebraic_multigrid_operator
     };
 
     //! definition Reynolds number: reference length

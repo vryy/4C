@@ -13,7 +13,6 @@ Maintainers: Ursula Rasthofer & Martin Kronbichler
 /*----------------------------------------------------------------------*/
 
 #include "fluid_timint_genalpha.H"
-#include "../drt_fluid_turbulence/scale_sep_gmo.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
@@ -390,7 +389,8 @@ void FLD::TimIntGenAlpha::OutputofFilteredVel(
   if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
     Sep_->Multiply(false,*velaf_,*row_finescaleveltmp);
   else
-    ScaleSepGMO_->ApplyScaleSeparation(velaf_,row_finescaleveltmp);
+    dserror("Unknown separation type!");
+
   // get filtered or coarse scale velocity
   outvec->Update(1.0,*velaf_,-1.0,*row_finescaleveltmp,0.0);
 

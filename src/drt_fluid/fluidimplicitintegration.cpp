@@ -29,7 +29,6 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 #include "../drt_fluid_turbulence/boxfilter.H"
-#include "../drt_fluid_turbulence/scale_sep_gmo.H"
 #include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
 #include "fluid_utils_mapextractor.H"
 #include "fluid_meshtying.H"
@@ -358,10 +357,6 @@ void FLD::FluidImplicitTimeInt::Init()
       {
         scale_sep_ = INPAR::FLUID::algebraic_multigrid_operator;
       }
-      else if (scale_sep == "geometric_multigrid_operator")
-      {
-        dserror("Not yet implemented!");
-      }
       else
       {
         dserror("Unknown filter type!");
@@ -396,14 +391,6 @@ void FLD::FluidImplicitTimeInt::Init()
       else if (scale_sep == "algebraic_multigrid_operator")
       {
         scale_sep_ = INPAR::FLUID::algebraic_multigrid_operator;
-      }
-      else if (scale_sep == "geometric_multigrid_operator")
-      {
-        scale_sep_ = INPAR::FLUID::geometric_multigrid_operator;
-        ScaleSepGMO_ = Teuchos::rcp(new LESScaleSeparation(scale_sep_,discret_));
-
-        if (fssgv_ != INPAR::FLUID::no_fssgv)
-          dserror("No fine-scale subgrid viscosity for this scale separation operator!");
       }
       else
       {
@@ -3459,8 +3446,7 @@ void FLD::FluidImplicitTimeInt::Output()
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
       Teuchos::RCP<Epetra_Vector> filteredvel = LINALG::CreateVector(*dofrowmap,true);
       Teuchos::RCP<Epetra_Vector> fsvel = LINALG::CreateVector(*dofrowmap,true);
-      if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator
-        or scale_sep_ == INPAR::FLUID::geometric_multigrid_operator)
+      if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
       {
         OutputofFilteredVel(filteredvel,fsvel);
       }
@@ -5960,11 +5946,6 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
 
       break;
     }
-    case INPAR::FLUID::geometric_multigrid_operator:
-    {
-      dserror("Not available for scale-similarity type models!");
-      break;
-    }
     default:
     {
       dserror("Unknown filter type!");
@@ -5998,12 +5979,6 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
       if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales and
           (DRT::INPUT::IntegralValue<int>(params_->sublist("MULTIFRACTAL SUBGRID SCALES"),"SET_FINE_SCALE_VEL")))
         fsvelaf_->PutScalar(0.01);
-
-      break;
-    }
-    case INPAR::FLUID::geometric_multigrid_operator:
-    {
-      ScaleSepGMO_->ApplyScaleSeparation(EvaluationVel(),fsvelaf_);
 
       break;
     }

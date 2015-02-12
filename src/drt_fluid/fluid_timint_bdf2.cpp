@@ -13,7 +13,6 @@ Maintainers: Ursula Rasthofer & Martin Kronbichler
 /*----------------------------------------------------------------------*/
 
 #include "fluid_timint_bdf2.H"
-#include "../drt_fluid_turbulence/scale_sep_gmo.H"
 #include "../drt_io/io.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
@@ -196,7 +195,8 @@ void FLD::TimIntBDF2::OutputofFilteredVel(
   if (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator)
     Sep_->Multiply(false,*velnp_,*row_finescaleveltmp);
   else
-    ScaleSepGMO_->ApplyScaleSeparation(velnp_,row_finescaleveltmp);
+    dserror("Unknown separation type!");
+
   // get filtered or coarse scale velocity
   outvec->Update(1.0,*velnp_,-1.0,*row_finescaleveltmp,0.0);
 
