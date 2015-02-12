@@ -1326,8 +1326,8 @@ void FLD::XFluid::AssembleMatAndRHS_GradientPenalty(
   {
     //dserror("which vectors have to be set for gradient penalty for timeintegration in alefluid?!");
     //In principle we would not need gridv, as tau is anyway set to 1.0 at the end ...
-    discret_->SetState("dispnp", dispnp_);
-    discret_->SetState("gridv", gridvnp_);
+    discret_->SetState("dispnp", state_->dispnp_);
+    discret_->SetState("gridv", state_->gridvnp_);
   }
 
   // set scheme-specific element parameters and vector values
@@ -3390,11 +3390,22 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
 
   if(timint_semi_lagrangean)
   {
+    Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> dispncol = Teuchos::null;
+    if (alefluid_)
+    {
+      Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::rcp(new Epetra_Vector(*DiscretisationXFEM()->InitialDofColMap()));
+      Teuchos::RCP<Epetra_Vector> dispncol = Teuchos::rcp(new Epetra_Vector(*DiscretisationXFEM()->InitialDofColMap()));
 
+      LINALG::Export(*dispnp_,*dispnpcol); //dispnp row->col
+      LINALG::Export(*dispn_,*dispncol); //dispnp row->col
+    }
     XTimint_SemiLagrangean(
         newRowStateVectors,             ///< vectors to be reconstructed
         newdofrowmap,                   ///< dofrowmap at current interface position
         oldRowStateVectors,             ///< vectors from which we reconstruct values (same order of vectors as in newRowStateVectors)
+        dispnpcol,                      ///< displacement col - vector timestep n
+        dispncol,                 ///< displacement row - vector timestep n+1
         &*dofcolmap_Intn_,              ///< dofcolmap at time and interface position t^n
         reconstr_method,                ///< reconstruction map for nodes and its dofsets
         screen_out                      ///< screen output?
@@ -3986,6 +3997,8 @@ void FLD::XFluid::XTimint_SemiLagrangean(
     std::vector<Teuchos::RCP<Epetra_Vector> >&               newRowStateVectors,   ///< vectors to be reconstructed
     const Epetra_Map*                                        newdofrowmap,         ///< dofrowmap at current interface position
     std::vector<Teuchos::RCP<const Epetra_Vector> >&         oldRowStateVectors,   ///< vectors from which we reconstruct values (same order of vectors as in newRowStateVectors)
+    Teuchos::RCP<Epetra_Vector>                              dispn,                ///< displacement initial col - vector timestep n //set to Teuchos::null if no ale displacments
+    Teuchos::RCP<Epetra_Vector>                              dispnp,               ///< displacement initial col - vector timestep n+1 //if Teuchos::null ... --> no ale displacments
     const Epetra_Map*                                        olddofcolmap,         ///< dofcolmap at time and interface position t^n
     std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,      ///< reconstruction map for nodes and its dofsets
     const bool                                               screen_out            ///< screen output?
@@ -4040,9 +4053,15 @@ void FLD::XFluid::XTimint_SemiLagrangean(
         dofset_Intn_,
         state_->DofSet(),
         oldColStateVectorsn,
+        dispn,
+        dispnp,
         *dofcolmap_Intn_,
         *newdofrowmap,
         Teuchos::null));
+
+    //Safty check (both displacements have to exist or not --> based on that ale fluid is activated)
+    if ((dispn != Teuchos::null and dispnp == Teuchos::null) or (dispn == Teuchos::null and dispnp != Teuchos::null))
+      dserror("FLD::XFluid::XTimint_SemiLagrangean: dispn or dispnp indicate ale fluid!");
 
     switch (xfemtimeint_)
     {

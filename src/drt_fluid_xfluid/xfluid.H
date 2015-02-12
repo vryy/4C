@@ -465,6 +465,8 @@ namespace FLD
         std::vector<Teuchos::RCP<Epetra_Vector> >&               newRowStateVectors,   ///< vectors to be reconstructed
         const Epetra_Map*                                        newdofrowmap,         ///< dofrowmap at current interface position
         std::vector<Teuchos::RCP<const Epetra_Vector> >&         oldRowStateVectors,   ///< vectors from which we reconstruct values (same order of vectors as in newRowStateVectors)
+        Teuchos::RCP<Epetra_Vector>                              dispn,                ///< displacement col - vector timestep n
+        Teuchos::RCP<Epetra_Vector>                              dispnp,               ///< displacement col - vector timestep n+1
         const Epetra_Map*                                        olddofcolmap,         ///< dofcolmap at time and interface position t^n
         std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,      ///< reconstruction map for nodes and its dofsets
         const bool                                               screen_out            ///< screen output?

@@ -18,6 +18,8 @@ Maintainer: Benedikt Schott
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_utils.H"
 
+#include "../linalg/linalg_utils.H"
+
 #include "../drt_geometry/position_array.H"
 
 #include "../drt_inpar/inpar_xfem.H"
@@ -52,6 +54,8 @@ XFEM::XFLUID_TIMEINT_BASE::XFLUID_TIMEINT_BASE(
     Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_old,       /// XFEM dofset w.r.t. old interface position
     Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_new,       /// XFEM dofset w.r.t. new interface position
     std::vector<Teuchos::RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
+    Teuchos::RCP<Epetra_Vector>                      dispn,            /// old col displacement vector
+    Teuchos::RCP<Epetra_Vector>                      dispnp,           /// col displacment n +1
     const Epetra_Map&                                olddofcolmap,     /// dofcolmap w.r.t. old interface position
     const Epetra_Map&                                newdofrowmap,     /// dofcolmap w.r.t. new interface position
     const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap        /// map of periodic boundary conditions
@@ -65,6 +69,8 @@ dofset_new_(dofset_new),
 olddofcolmap_(olddofcolmap),
 newdofrowmap_(newdofrowmap),
 oldVectors_(oldVectors),
+dispn_(dispn),
+dispnp_(dispnp),
 timeIntData_(Teuchos::null),
 pbcmap_(pbcmap),
 myrank_(discret_->Comm().MyPID()),
@@ -477,11 +483,43 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(
     const DRT::Element*    ele,           /// pointer to element
     LINALG::Matrix<3,1>&   x,             /// global coordinates of point
     LINALG::Matrix<3,1>&   xi,            /// determined local coordinates w.r.t ele
+    const std::string      state,         ///< state dispn or dispnp?
     bool&                  pointInDomain  /// lies point in element ?
 ) const
 {
   LINALG::SerialDenseMatrix xyz(3,ele->NumNode(),true);
   GEO::fillInitialPositionArray(ele, xyz);
+
+  //add ale displacements to initial position
+  if (state != "reference" && dispnp_ != Teuchos::null && dispn_ != Teuchos::null) //add no displacements in case of state == "reference" or //is ale?
+  {
+    int nen = ele->NumNode();
+    int numdof = ele->NumDofPerNode(*(ele->Nodes()[0]));
+
+    std::vector<int> nds(nen,0);
+
+    DRT::Element::LocationArray la( 1 );
+    ele->LocationVector(*discret_,nds,la,false);
+
+    // extract local values of the global vectors
+    std::vector<double> mydispnp(la[0].lm_.size());
+
+    if (state == "dispnp")
+      DRT::UTILS::ExtractMyValues(*dispnp_,mydispnp,la[0].lm_);
+    else if (state == "dispn")
+      DRT::UTILS::ExtractMyValues(*dispn_,mydispnp,la[0].lm_);
+    else
+      dserror("XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords: Undefined state!");
+
+    for (int inode=0; inode<nen; ++inode)  // number of nodes
+    {
+      for(int idim=0; idim<3; ++idim) // number of dimensions
+      {
+        (xyz)(idim,inode) += mydispnp[idim+(inode*numdof)]; // attention! dispnp vector has 3+1 dofs for displacement (the same as for (u,p))
+      }
+    }
+  }
+
   callXToXiCoords(xyz,ele->Shape(),x,xi,pointInDomain);
 } // end function callXToXiCoords
 
@@ -568,6 +606,29 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(
       DRT::Node* currnode = discret_->gNode(elenodeids[nodeid]);
       for (int i=0;i<nsd;i++)
         nodecoords(i,nodeid) = currnode->X()[i];
+    }
+
+    //add ale displacements to initial position for state np
+    if (dispnp_ != Teuchos::null) //is ale?
+    {
+      int nen = element->NumNode();
+      int numdof = element->NumDofPerNode(*(element->Nodes()[0]));
+
+      std::vector<int> nds(nen,0);
+      DRT::Element::LocationArray la( 1 );
+      element->LocationVector(*discret_,nds,la,false);
+
+      // extract local values of the global vectors
+      std::vector<double> mydispnp(la[0].lm_.size());
+      DRT::UTILS::ExtractMyValues(*dispnp_,mydispnp,la[0].lm_);
+
+      for (int inode=0; inode<nen; ++inode)  // number of nodes
+      {
+        for(int idim=0; idim<nsd; ++idim) // number of dimensions
+        {
+          (nodecoords)(idim,inode) += mydispnp[idim+(inode*numdof)]; // attention! dispnp vector has 3+1 dofs for displacement (the same as for (u,p))
+        }
+      }
     }
 
     // shape function derivatives w.r.t local coordinates
@@ -819,7 +880,7 @@ XFEM::XFLUID_STD::XFLUID_STD(
     XFEM::XFLUID_TIMEINT_BASE&                                       timeInt,            ///< time integration base class object
     const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&   reconstr_method,    ///< reconstruction map for nodes and its dofsets
     INPAR::XFEM::XFluidTimeInt&                                      timeIntType,        ///< type of time integration
-    const Teuchos::RCP<Epetra_Vector>                                         veln,               ///< velocity at time t^n in col map
+    const Teuchos::RCP<Epetra_Vector>                                veln,               ///< velocity at time t^n in col map
     const double&                                                    dt,                 ///< time step size
     const bool                                                       initialize          ///< is initialization?
 ) :
@@ -863,6 +924,21 @@ dt_(dt)
             IO::cout << "\t * fill timeIntData for node " << node->Id() << " and dofset " << i << IO::endl;
 #endif
 
+            LINALG::Matrix<3,1> nodedispnp(true);
+            if (dispnp_ != Teuchos::null) //is alefluid
+            {
+              //------------------------------------------------------- add ale disp
+              // get node location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
+              std::vector<int> lm;
+              std::vector<int> dofs;
+              dofset_new_->Dof(dofs, node, 0 ); // dofs for standard dofset
+              for (int j=0; j< 4; ++j)
+                lm.push_back(dofs[j]);
+
+              LINALG::Matrix<1,1> nodepredummy(true);
+              extractNodalValuesFromVector<1>(nodedispnp,nodepredummy,dispnp_,lm);
+            }
+
             // constructor for standard computation
             timeIntData_->push_back(
                 TimeIntData(
@@ -871,6 +947,7 @@ dt_(dt)
                 LINALG::Matrix<nsd,1>(true),            //!  velocity at point x (=x_Lagr(t^n+1))
                 std::vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),    //! velocity gradient at point x (=x_Lagr(t^n+1))
                 std::vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),        //! pressure gradient at point x (=x_Lagr(t^n+1))
+                nodedispnp,                             //!  displacement at point x (=x_Lagr(t^n+1))
                 dummyStartpoint,                        // dummy-startpoint
                 1,                                      // searchedProcs
                 0,                                      // counter
@@ -970,7 +1047,7 @@ void XFEM::XFLUID_STD::elementSearch(
     }
     else currele = discret_->lRowElement(ieleid);
 
-    callXToXiCoords(currele,x,xi,found);
+    callXToXiCoords(currele,x,xi,"dispn",found);
 
     if (found)
     {
@@ -1060,9 +1137,7 @@ void XFEM::XFLUID_STD::getGPValuesT(
     std::vector<int> dofs;
     dofset.Dof(dofs, node, nds[inode] );
 
-    int size = dofs.size();
-
-    for (int j=0; j< size; ++j)
+    for (int j=0; j< 4; ++j)
     {
       lm.push_back(dofs[j]);
     }
@@ -1167,6 +1242,8 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 
   const int nsd = 3;
   LINALG::Matrix<nsd,1> newNodeCoords(data.node_.X()); // coords of endpoint of Lagrangian characteristics
+  for (int i = 0; i < nsd; ++i)
+    newNodeCoords(i) += data.dispnp_(i);
 
   // determine the smallest distance of node at t^(n+1) to the current side elements
 
@@ -1461,6 +1538,8 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
           std::cout << "line nodeids: " << std::endl;
           for(int i=0; i< (int)(line->first).size(); i++)
             std::cout << "\t nid: " << (line->first)[i] << std::endl;
+          std::cout << "\t\t\t\In case your simulation is a pseudo 2d case, every thing is fine and we will just use" << std::endl;
+          std::cout << "\t\t\t\tthe normal on the first side!" << std::endl;
 #endif
         }
       }
@@ -1490,25 +1569,29 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 
       //---------------------------------------------------------
       // side 2
-      DRT::Element* side_2 = boundarydis_->gElement(sid_2);
-
+      DRT::Element* side_2;
+      Epetra_SerialDenseMatrix side_xyze_2;
+      DRT::Element::LocationArray cutla_2( 1 );
+      if (sid_2 != -1)
+      {
+        side_2 = boundarydis_->gElement(sid_2);
       // side geometry at initial state t^0
       const int numnodes_2 = side_2->NumNode();
       DRT::Node ** nodes_2 = side_2->Nodes();
-      Epetra_SerialDenseMatrix side_xyze_2( 3, numnodes_2 );
+      side_xyze_2.Shape(3, numnodes_2 );
       for ( int i=0; i<numnodes_2; ++i )
       {
         const double * x = nodes_2[i]->X();
         std::copy( x, x+3, &side_xyze_2( 0, i ) );
       }
-
-      DRT::Element::LocationArray cutla_2( 1 );
       side_2->LocationVector(*boundarydis_,cutla_2,false);
-
+      }
+      else
+      {
+        side_2 = NULL;
+      }
       //---------------------------------------------------------
-
       // line geometry at initial state t^0
-
       std::vector<Teuchos::RCP<DRT::Element> > lines = side_1->Lines();
 
       Teuchos::RCP<DRT::Element> line_ele = lines[local_lineIds[0]];
@@ -1894,30 +1977,35 @@ void XFEM::XFLUID_STD::ComputeStartPoint_Line(
   LINALG::Matrix<3,1> xi_1_avg(true);
   LINALG::Matrix<3,1> xi_2_avg(true);
 
+  LINALG::Matrix<3,1> proj_x_n_dummy1(true);
+
 
   for(int i=0; i< side1->NumNode(); i++)
-    xi_1_avg = DRT::UTILS::getNodeCoordinates( i, side1->Shape());
+    xi_1_avg.Update(1.0,DRT::UTILS::getNodeCoordinates( i, side1->Shape()),1.0);
 
   xi_1_avg.Scale(1.0/ side1->NumNode());
-
-  for(int i=0; i< side2->NumNode(); i++)
-    xi_1_avg = DRT::UTILS::getNodeCoordinates( i, side2->Shape());
-
-  xi_2_avg.Scale(1.0/ side2->NumNode());
 
   xi_side1(0,0) = xi_1_avg(0,0);
   xi_side1(1,0) = xi_1_avg(1,0);
 
-  xi_side2(0,0) = xi_2_avg(0,0);
-  xi_side2(1,0) = xi_2_avg(1,0);
-
-  LINALG::Matrix<3,1> proj_x_n_dummy1(true);
-
   callgetNormalSide_tn(side1, normal1, side1_xyze, lm1, proj_x_n_dummy1, xi_side1);
-  callgetNormalSide_tn(side2, normal2, side2_xyze, lm2, proj_x_n_dummy1, xi_side2);
 
   normal_avg.Update(1.0,normal1, 1.0);
-  normal_avg.Update(1.0,normal2, 1.0);
+
+  if (side2 != NULL) //in case we have side2, use averaged normal
+  {
+    for(int i=0; i< side2->NumNode(); i++)
+      xi_2_avg.Update(1.0,DRT::UTILS::getNodeCoordinates( i, side2->Shape()),1.0);
+
+    xi_2_avg.Scale(1.0/ side2->NumNode());
+
+    xi_side2(0,0) = xi_2_avg(0,0);
+    xi_side2(1,0) = xi_2_avg(1,0);
+
+    callgetNormalSide_tn(side2, normal2, side2_xyze, lm2, proj_x_n_dummy1, xi_side2);
+
+    normal_avg.Update(1.0,normal2, 1.0);
+  }
 
   normal_avg.Scale(1.0/normal_avg.Norm2());
 
@@ -3177,6 +3265,7 @@ void XFEM::XFLUID_STD::exportStartData()
     DRT::ParObject::AddtoPack(dataSend,data->vel_);
     DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
     DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
+    DRT::ParObject::AddtoPack(dataSend,data->dispnp_);
     DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
     DRT::ParObject::AddtoPack(dataSend,data->searchedProcs_);
     DRT::ParObject::AddtoPack(dataSend,data->counter_);
@@ -3194,6 +3283,7 @@ void XFEM::XFLUID_STD::exportStartData()
     DRT::ParObject::AddtoPack(dataSend,data->vel_);
     DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
     DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
+    DRT::ParObject::AddtoPack(dataSend,data->dispnp_);
     DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
     DRT::ParObject::AddtoPack(dataSend,data->searchedProcs_);
     DRT::ParObject::AddtoPack(dataSend,data->counter_);
@@ -3219,6 +3309,7 @@ void XFEM::XFLUID_STD::exportStartData()
     LINALG::Matrix<nsd,1> vel; // velocity at point x
     std::vector<LINALG::Matrix<nsd,nsd> > velDeriv; // derivation of velocity at point x
     std::vector<LINALG::Matrix<1,nsd> > presDeriv; // derivation of pressure at point x
+    LINALG::Matrix<nsd,1> dispnp; // displacement at point x
     LINALG::Matrix<nsd,1> startpoint; // startpoint
     int searchedProcs; // number of searched processors
     int counter; // iteration counter
@@ -3230,6 +3321,7 @@ void XFEM::XFLUID_STD::exportStartData()
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,vel);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,velDeriv);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,presDeriv);
+    DRT::ParObject::ExtractfromPack(posinData,dataRecv,dispnp);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,startpoint);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,searchedProcs);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,counter);
@@ -3242,6 +3334,7 @@ void XFEM::XFLUID_STD::exportStartData()
         vel,
         velDeriv,
         presDeriv,
+        dispnp,
         startpoint,
         searchedProcs,
         counter,
@@ -3347,9 +3440,25 @@ void XFEM::XFLUID_STD::exportFinalData()
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,presValues);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,newtype);
 
+      LINALG::Matrix<3,1> nodedispnp(true);
+      if (dispnp_ != Teuchos::null) //is alefluid
+      {
+        //------------------------------------------------------- add ale disp
+        // get node location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
+        std::vector<int> lm;
+        std::vector<int> dofs;
+        dofset_new_->Dof(dofs, discret_->gNode(gid), 0 ); // dofs for standard dofset
+        for (int j=0; j< 4; ++j)
+          lm.push_back(dofs[j]);
+
+        LINALG::Matrix<1,1> nodepredummy(true);
+        extractNodalValuesFromVector<1>(nodedispnp,nodepredummy,dispnp_,lm);
+      }
+
       timeIntData_->push_back(TimeIntData(
           *discret_->gNode(gid),
           nds_np,
+          nodedispnp,
           startpoint,
           velValues,
           presValues,

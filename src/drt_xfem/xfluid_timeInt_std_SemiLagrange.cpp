@@ -480,7 +480,7 @@ void XFEM::XFLUID_SemiLagrange::NewtonLoop(
   // coordinates of endpoint of Lagrangian characteristics
   LINALG::Matrix<nsd,1> origNodeCoords(true);
   for (int i=0;i<nsd;i++)
-    origNodeCoords(i) = data->node_.X()[i];
+    origNodeCoords(i) = data->node_.X()[i] + data->dispnp_(i);
 
   //-------------------------------------------------------
   // initialize residual (Theta = 0 at predictor step)
@@ -1013,9 +1013,7 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
 
     dofset_new_->Dof(dofs, node, 0 ); // dofs for standard dofset
 
-    int size = dofs.size();
-
-    for (int j=0; j< size; ++j)
+    for (int j=0; j< 4; ++j)
     {
       lm.push_back(dofs[j]);
     }
@@ -1028,6 +1026,17 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
 
     data->vel_ = nodevel;
 
+    LINALG::Matrix<3,1> nodedispnp(true);
+    if (dispnp_ != Teuchos::null) //is alefluid
+    {
+      //------------------------------------------------------- add ale disp
+      // get node location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
+
+      LINALG::Matrix<1,1> nodepredummy(true);
+      extractNodalValuesFromVector<1>(nodedispnp,nodepredummy,dispnp_,lm);
+    }
+
+    data->dispnp_ = nodedispnp;
   }
   //----------------------------------------------------------------------------------
 
@@ -1295,9 +1304,8 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
     std::vector<int> dofs;
     dofset_old_->Dof(dofs, node, data->nds_[inode] );
 
-    int size = dofs.size();
 
-    for (int j=0; j< size; ++j)
+    for (int j=0; j< 4; ++j)
     {
       lm.push_back(dofs[j]);
     }
@@ -1418,6 +1426,8 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
   if (data->type_==TimeIntData::predictor_)
   {
     LINALG::Matrix<nsd,1> diff(data->node_.X());
+    for (int i = 0; i < nsd; ++i)
+      diff(i) += data->dispnp_(i);
     diff -=  lagrangeanOrigin; // diff = x_Node - x_Appr
 
     double numerator   = transportVeln.Dot(diff);          // numerator = v^T*(x_Node-x_Appr)
@@ -1611,44 +1621,6 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(
 
 
 /*------------------------------------------------------------------------------------------------*
- * back-tracking of data at final Lagrangian origin of a point                       schott 04/12 *
- *------------------------------------------------------------------------------------------------*/
-template<const int numnode>
-void XFEM::XFLUID_SemiLagrange::extractNodalValuesFromVector(
-    LINALG::Matrix<3,numnode>&  evel,     ///< element velocities
-    LINALG::Matrix<numnode,1>&  epre,     ///< element pressure
-    Teuchos::RCP<Epetra_Vector> vel_vec,  ///< global vector
-    std::vector<int>&           lm        ///< local map
-    )
-{
-  const int nsd = 3;
-  const int numdofpernode = nsd +1;
-
-  evel.Clear();
-  epre.Clear();
-
-  if(vel_vec == Teuchos::null)
-    dserror("vector is null");
-
-  // extract local values of the global vectors
-  std::vector<double> mymatrix(lm.size());
-  DRT::UTILS::ExtractMyValues(*vel_vec,mymatrix,lm);
-
-  for (int inode=0; inode<numnode; ++inode)  // number of nodes
-  {
-    for(int idim=0; idim<nsd; ++idim) // number of dimensions
-    {
-      (evel)(idim,inode) = mymatrix[idim+(inode*numdofpernode)];
-    }
-    (epre)(inode,0) = mymatrix[nsd+(inode*numdofpernode)];
-  }
-
-  return;
-}
-
-
-
-/*------------------------------------------------------------------------------------------------*
  * compute gradients at nodes for that SL-reconstruction is called                   schott 04/13 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_SemiLagrange::computeNodalGradient(
@@ -1686,9 +1658,11 @@ void XFEM::XFLUID_SemiLagrange::computeNodalGradient(
     LINALG::Matrix<nsd,1> x_node(node->X());
 
     // get the local coordinates of the node w.r.t current element
-    callXToXiCoords(e, x_node, tmp_xi, indomain);
-
-
+    // Comment to the configuration:
+    // Here we use the fact that x_node is a node position in reference configuration,
+    // which means we get the same tmp_xi if we use the element in reference config, as
+    // if callXToXi would be done in (n+1) config and x_node^(n+1)
+    callXToXiCoords(e, x_node, tmp_xi,"reference", indomain);
 
     for (size_t tmp_index=0;tmp_index<colVectors.size();tmp_index++)
     {
@@ -1789,6 +1763,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
         DRT::ParObject::AddtoPack(dataSend,data->vel_);
         DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
         DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->dispnp_);
         DRT::ParObject::AddtoPack(dataSend,data->initialpoint_);
         DRT::ParObject::AddtoPack(dataSend,data->initial_eid_);
         DRT::ParObject::AddtoPack(dataSend,data->initial_ele_owner_);
@@ -1808,6 +1783,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
         DRT::ParObject::AddtoPack(dataSend,data->vel_);
         DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
         DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->dispnp_);
         DRT::ParObject::AddtoPack(dataSend,data->initialpoint_);
         DRT::ParObject::AddtoPack(dataSend,data->initial_eid_);
         DRT::ParObject::AddtoPack(dataSend,data->initial_ele_owner_);
@@ -1833,6 +1809,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
       LINALG::Matrix<nsd,1> vel;
       std::vector<LINALG::Matrix<nsd,nsd> > velDeriv;
       std::vector<LINALG::Matrix<1,nsd> > presDeriv;
+      LINALG::Matrix<nsd,1> dispnp;
       LINALG::Matrix<nsd,1> initialpoint;
       int initial_eid;
       int initial_ele_owner;
@@ -1843,6 +1820,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,vel);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,velDeriv);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,presDeriv);
+      DRT::ParObject::ExtractfromPack(posinData,dataRecv,dispnp);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,initialpoint);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,initial_eid);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,initial_ele_owner);
@@ -1854,6 +1832,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
           vel,
           velDeriv,
           presDeriv,
+          dispnp,
           initialpoint,
           initial_eid,
           initial_ele_owner,
@@ -1940,6 +1919,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(
         DRT::ParObject::AddtoPack(dataSend,data->vel_);
         DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
         DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->dispnp_);
         DRT::ParObject::AddtoPack(dataSend,data->initialpoint_);
         DRT::ParObject::AddtoPack(dataSend,data->initial_eid_);
         DRT::ParObject::AddtoPack(dataSend,data->initial_ele_owner_);
@@ -1962,6 +1942,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(
         DRT::ParObject::AddtoPack(dataSend,data->vel_);
         DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
         DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->dispnp_);
         DRT::ParObject::AddtoPack(dataSend,data->initialpoint_);
         DRT::ParObject::AddtoPack(dataSend,data->initial_eid_);
         DRT::ParObject::AddtoPack(dataSend,data->initial_ele_owner_);
@@ -1989,6 +1970,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(
       LINALG::Matrix<nsd,1> vel;
       std::vector<LINALG::Matrix<nsd,nsd> > velDeriv;
       std::vector<LINALG::Matrix<1,nsd> > presDeriv;
+      LINALG::Matrix<nsd,1> dispnp;
       LINALG::Matrix<nsd,1> initialpoint;
       int initial_eid;
       int initial_ele_owner;
@@ -2002,6 +1984,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,vel);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,velDeriv);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,presDeriv);
+      DRT::ParObject::ExtractfromPack(posinData,dataRecv,dispnp);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,initialpoint);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,initial_eid);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,initial_ele_owner);
@@ -2016,6 +1999,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(
           vel,
           velDeriv,
           presDeriv,
+          dispnp,
           initialpoint,
           initial_eid,
           initial_ele_owner,

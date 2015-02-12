@@ -87,8 +87,9 @@ public:
           DRT::Node&                   node,                    //! node for which SL-algorithm is called
           int                          nds_np,                  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo is called
           LINALG::Matrix<3,1>          vel,                     //! velocity at point x (=x_Lagr(t^n+1))
-          std::vector<LINALG::Matrix<3,3> > velDeriv,                //! velocity gradient at point x (=x_Lagr(t^n+1))
-          std::vector<LINALG::Matrix<1,3> > presDeriv,               //! pressure gradient at point x (=x_Lagr(t^n+1))
+          std::vector<LINALG::Matrix<3,3> > velDeriv,           //! velocity gradient at point x (=x_Lagr(t^n+1))
+          std::vector<LINALG::Matrix<1,3> > presDeriv,          //! pressure gradient at point x (=x_Lagr(t^n+1))
+          LINALG::Matrix<3,1>          dispnp,                 //! displacement at point x (=x_Lagr(t^n+1))
           LINALG::Matrix<3,1>          startpoint,              //! current startpoint (Lagrangean origin) approximation
           int                          searchedProcs,
           int                          counter,
@@ -100,6 +101,7 @@ public:
         vel_(vel),
         velDeriv_(velDeriv),
         presDeriv_(presDeriv),
+        dispnp_(dispnp),
         startpoint_(startpoint),
         last_valid_ele_(-1),
         last_valid_vc_(NULL),
@@ -122,6 +124,7 @@ public:
           LINALG::Matrix<3,1>& vel,
           std::vector<LINALG::Matrix<3,3> >& velDeriv,
           std::vector<LINALG::Matrix<1,3> >& presDeriv,
+          LINALG::Matrix<3,1>          dispnp,                 //! displacement at point x (=x_Lagr(t^n+1))
           LINALG::Matrix<3,1>& initialpoint,
           int initial_eid,
           int initial_ele_owner,
@@ -135,6 +138,7 @@ public:
         vel_(vel),
         velDeriv_(velDeriv),
         presDeriv_(presDeriv),
+        dispnp_(dispnp),
         startpoint_(startpoint),
         last_valid_ele_(-1),
         last_valid_vc_(NULL),
@@ -160,6 +164,7 @@ public:
           LINALG::Matrix<3,1>& vel,
           std::vector<LINALG::Matrix<3,3> >& velDeriv,
           std::vector<LINALG::Matrix<1,3> >& presDeriv,
+          LINALG::Matrix<3,1>          dispnp,                 //! displacement at point x (=x_Lagr(t^n+1))
           LINALG::Matrix<3,1>& initialpoint,
           int initial_eid,
           int initial_ele_owner,
@@ -170,6 +175,7 @@ public:
         vel_(vel),
         velDeriv_(velDeriv),
         presDeriv_(presDeriv),
+        dispnp_(dispnp),
         initialpoint_(initialpoint),
         initial_eid_(initial_eid),
         initial_ele_owner_(initial_ele_owner),
@@ -182,6 +188,7 @@ public:
       TimeIntData(
           DRT::Node& node,
           int                          nds_np,                  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo is called
+          LINALG::Matrix<3,1>          dispnp,                 //! displacement at point x (=x_Lagr(t^n+1))
           LINALG::Matrix<3,1>& startpoint,
           std::vector<LINALG::Matrix<3,1> >& velValues,
           std::vector<double>& presValues,
@@ -189,6 +196,7 @@ public:
       ) :
         node_(node),
         nds_np_(nds_np),
+        dispnp_(dispnp),
         startpoint_(startpoint),
         velValues_(velValues),
         presValues_(presValues),
@@ -256,6 +264,8 @@ public:
       std::vector<LINALG::Matrix<3,3> >   velDeriv_;   //! velocity gradient at point x (=x_Lagr(t^n+1))=node, averaged around elements, for all vectors to be reconstructed
       std::vector<LINALG::Matrix<1,3> >   presDeriv_;  //! pressure gradient at point x (=x_Lagr(t^n+1))=node, averaged around elements, for all vectors to be reconstructed
 
+      LINALG::Matrix<3,1>                 dispnp_;        //! ale displacement at point x (=x_Lagr(t^n+1))=node
+
       //------------------------------------------
       //! @name data for current startpoint (Lagrangean origin) approximation
       //------------------------------------------
@@ -289,7 +299,7 @@ public:
       //! @name computed/reconstructed pressure and velocity values
       //------------------------------------------
       std::vector<LINALG::Matrix<3,1> >   velValues_;  // computed velocity for a node
-      std::vector<double>            presValues_; // computed pressure for a node
+      std::vector<double>                 presValues_; // computed pressure for a node
 
       //------------------------------------------
       //! @name state, type of time-integration approach
@@ -315,6 +325,8 @@ public:
       Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_old,       /// XFEM dofset w.r.t. old interface position
       Teuchos::RCP<XFEM::XFEMDofSet>                   dofset_new,       /// XFEM dofset w.r.t. new interface position
       std::vector<Teuchos::RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
+      Teuchos::RCP<Epetra_Vector>                      dispn,            /// displacment n
+      Teuchos::RCP<Epetra_Vector>                      dispnp,            /// displacment n +1
       const Epetra_Map&                                olddofcolmap,     /// dofcolmap w.r.t. old interface position
       const Epetra_Map&                                newdofrowmap,     /// dofcolmap w.r.t. new interface position
       const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap        /// map of periodic boundary conditions
@@ -509,6 +521,7 @@ protected:
       const DRT::Element*    ele,           /// pointer to element
       LINALG::Matrix<3,1>&   x,             /// global coordinates of element
       LINALG::Matrix<3,1>&   xi,            /// determined local coordinates w.r.t ele
+      const std::string      state,         ///< state n or np?
       bool&                  pointInDomain  /// lies point in element ?
   ) const;
 
@@ -559,6 +572,9 @@ protected:
 
   const std::vector<Teuchos::RCP<Epetra_Vector> > oldVectors_; //! vector of col!-vectors w.r.t. old interface position
   std::vector<Teuchos::RCP<Epetra_Vector> > newVectors_;       //! vector of row!-vectors w.r.t. new interface position (overwritten with new information for non-predictor case and filled otherwise)
+
+  Teuchos::RCP<Epetra_Vector> dispn_; //! col!-displacement vector for timestep n w.r.t. old interface position
+  Teuchos::RCP<Epetra_Vector> dispnp_; //! col!-displacement vector for timestep n + 1 w.r.t. old interface position
 
   Teuchos::RCP<std::vector<TimeIntData> > timeIntData_;        //! data-vector containing all data for computation with help of sub-class TimeIntData
 
@@ -664,6 +680,40 @@ public:
       Teuchos::RCP<const Epetra_Vector> vel_vec,         ///< vector used for interpolating at gp
       bool                          compute_deriv=true   ///< shall derivatives be computed?
   ) const;
+
+   //!  back-tracking of data at final Lagrangian origin of a point                       schott 04/12 *
+  template<const int numnode>
+  void extractNodalValuesFromVector(
+      LINALG::Matrix<3,numnode>&  evel,     ///< element velocities
+      LINALG::Matrix<numnode,1>&  epre,     ///< element pressure
+      Teuchos::RCP<Epetra_Vector> vel_vec,  ///< global vector
+      std::vector<int>&           lm        ///< local map
+      )
+  {
+    const int nsd = 3;
+    const int numdofpernode = nsd +1;
+
+    evel.Clear();
+    epre.Clear();
+
+    if(vel_vec == Teuchos::null)
+      dserror("vector is null");
+
+    // extract local values of the global vectors
+    std::vector<double> mymatrix(lm.size());
+    DRT::UTILS::ExtractMyValues(*vel_vec,mymatrix,lm);
+
+    for (int inode=0; inode<numnode; ++inode)  // number of nodes
+    {
+      for(int idim=0; idim<nsd; ++idim) // number of dimensions
+      {
+        (evel)(idim,inode) = mymatrix[idim+(inode*numdofpernode)];
+      }
+      (epre)(inode,0) = mymatrix[nsd+(inode*numdofpernode)];
+    }
+
+    return;
+  }
 
   /*========================================================================*/
   //! parallel routines

@@ -154,14 +154,6 @@ private:
       bool                    step_np ///< computation w.r.t old or new interface position?
       );
 
-  template<const int numnode>
-  void extractNodalValuesFromVector(
-      LINALG::Matrix<3,numnode>&  evel,     ///< element velocities
-      LINALG::Matrix<numnode,1>&  epre,     ///< element pressure
-      Teuchos::RCP<Epetra_Vector> vel_vec,  ///< global vector
-      std::vector<int>&           lm        ///< local map
-      );
-
   //! compute the nodal gradient
   void computeNodalGradient(
       const std::vector<Teuchos::RCP<Epetra_Vector> >&  colVectors,     ///< all vectors for that we reconstruct the their gradients
