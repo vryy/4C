@@ -16,6 +16,10 @@ Maintainer:  Raffaela Kruse
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parallel.H"
+#include "../drt_lib/drt_discret_xfem.H"
+#include "../drt_lib/drt_dofset_transparent_independent.H"
+
+#include "../linalg/linalg_utils.H"
 
 #include "../drt_xfem/xfem_condition_manager.H"
 #include "../drt_xfem/xfem_utils.H"
@@ -32,15 +36,236 @@ Maintainer:  Raffaela Kruse
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
+#include "../drt_fluid/fluid_utils.H"
+
 FLD::XFluidOutputService::XFluidOutputService(
   const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
   const Teuchos::RCP<XFEM::ConditionManager>&  cond_manager
 ) :
   discret_(discret),
-  cond_manager_(cond_manager)
+  cond_manager_(cond_manager),
+  firstoutputofrun_(true),
+  restart_count_(0)
 {
-  // Todo: let this class handle the standard paraview output
-};
+  // Vector & map extractor for paraview output,
+  // mapped to initial fluid dofmap
+  dofset_out_ = Teuchos::rcp(new DRT::IndependentDofSet());
+  velpressplitter_out_ = Teuchos::rcp(new LINALG::MapExtractor());
+  PrepareOutput();
+}
+
+void FLD::XFluidOutputService::PrepareOutput()
+{
+  dofset_out_->Reset();
+  dofset_out_->AssignDegreesOfFreedom(*discret_,0,0);
+  const int ndim = DRT::Problem::Instance()->NDim();
+  // split based on complete fluid field (standard splitter that handles one dofset)
+  FLD::UTILS::SetupFluidSplit(*discret_,*dofset_out_,ndim,*velpressplitter_out_);
+
+  // create vector according to the dofset_out row map holding all standard fluid unknowns
+  outvec_fluid_ = LINALG::CreateVector(*dofset_out_->DofRowMap(),true);
+}
+
+void FLD::XFluidOutputService::Output(
+  int step,
+  int time,
+  bool write_restart_data,
+  Teuchos::RCP<const FLD::XFluidState> state,
+  Teuchos::RCP<const Epetra_Vector>    dispnp,
+  Teuchos::RCP<const Epetra_Vector>    gridvnp
+)
+{
+  discret_->Writer()->NewStep(step,time);
+
+  // create vector according to the initial row map holding all standard fluid unknowns
+  outvec_fluid_->PutScalar(0.0);
+
+  const Epetra_Map* dofrowmap  = dofset_out_->DofRowMap(); // original fluid unknowns
+  const Epetra_Map* xdofrowmap = discret_->DofRowMap();   // fluid unknown for current cut
+
+  for (int i=0; i<discret_->NumMyRowNodes(); ++i)
+  {
+    // get row node via local id
+    const DRT::Node* xfemnode = discret_->lRowNode(i);
+
+    // the initial dofset contains the original dofs for each row node
+    const std::vector<int> gdofs_original(dofset_out_->Dof(xfemnode));
+
+    // if the dofs for this node do not exist in the xdofrowmap, then a hole is given
+    // else copy the right nodes
+    const std::vector<int> gdofs_current(discret_->Dof(xfemnode));
+
+    if(gdofs_current.size() == 0)
+    {
+      // std::cout << "no dofs available->hole" << std::endl;
+    }
+    else if(gdofs_current.size() == gdofs_original.size())
+    {
+      //std::cout << "same number of dofs available" << std::endl;
+    }
+    else if(gdofs_current.size() > gdofs_original.size())
+    {
+      //std::cout << "more dofs available->decide" << std::endl;
+    }
+    else std::cout << "decide which dofs can be copied and which have to be set to zero" << std::endl;
+
+    if(gdofs_current.size() == 0)
+    {
+      size_t numdof = gdofs_original.size();
+      // no dofs for this node... must be a hole or somethin'
+      for (std::size_t idof = 0; idof < numdof; ++idof)
+      {
+        //std::cout << dofrowmap->LID(gdofs[idof]) << std::endl;
+        (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = 0.0;
+      }
+    }
+    else if(gdofs_current.size() == gdofs_original.size())
+    {
+      size_t numdof = gdofs_original.size();
+      // copy all values
+      for (std::size_t idof = 0; idof < numdof; ++idof)
+      {
+        //std::cout << dofrowmap->LID(gdofs[idof]) << std::endl;
+        (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = (*state->velnp_)[xdofrowmap->LID(gdofs_current[idof])];
+      }
+    }
+    else if(gdofs_current.size() % gdofs_original.size() == 0) //multiple dofsets
+    {
+      // if there are multiple dofsets we write output for the standard dofset
+      GEO::CUT::Node* node = state->Wizard()()->GetNode(xfemnode->Id());
+
+      GEO::CUT::Point* p = node->point();
+
+      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> > & dofcellsets = node->DofCellSets();
+
+      int nds = 0;
+      bool is_std_set = false;
+
+      // find the standard dofset
+      for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >::const_iterator cellsets= dofcellsets.begin();
+          cellsets!=dofcellsets.end();
+          cellsets++)
+      {
+        // at least one vc has to contain the node
+        for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator sets=cellsets->begin(); sets!=cellsets->end(); sets++)
+        {
+          const GEO::CUT::plain_volumecell_set& set = *sets;
+
+          for(GEO::CUT::plain_volumecell_set::const_iterator vcs=set.begin(); vcs!=set.end(); vcs++)
+          {
+            if((*vcs)->Contains(p))
+            {
+              // return if at least one vc contains this point
+              is_std_set=true;
+              break;
+            }
+          }
+          // break the outer loop if at least one vc contains this point
+          if(is_std_set == true) break;
+        }
+        if(is_std_set == true) break;
+        nds++;
+      }
+
+      size_t numdof = gdofs_original.size();
+      size_t offset = 0; // no offset in case of no std-dofset means take the first dofset for output
+
+      if(is_std_set)
+      {
+        offset = numdof*nds;   // offset to start the loop over dofs at the right nds position
+      }
+
+      // copy all values
+      for (std::size_t idof = 0; idof < numdof; ++idof)
+      {
+        (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = (*state->velnp_)[xdofrowmap->LID(gdofs_current[offset+idof])];
+      }
+
+
+      // if there are just ghost values, then we write output for the set with largest physical fluid volume
+    }
+    else dserror("unknown number of dofs for output");
+
+  };
+
+  // output (hydrodynamic) pressure for visualization
+
+  Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_out_->ExtractCondVector(outvec_fluid_);
+
+  discret_->Writer()->WriteVector("velnp", outvec_fluid_);
+  discret_->Writer()->WriteVector("pressure", pressure);
+
+  if (dispnp != Teuchos::null)
+  {
+    if (gridvnp == Teuchos::null)
+      dserror("Missing grid velocities for ALE-xfluid!");
+
+    //write ale displacement for t^{n+1}
+    Teuchos::RCP<Epetra_Vector> dispnprm = Teuchos::rcp(new Epetra_Vector(*dispnp));
+    dispnprm->ReplaceMap(outvec_fluid_->Map()); //to get dofs starting by 0 ...
+    discret_->Writer()->WriteVector("dispnp", dispnprm);
+
+    //write grid velocity for t^{n+1}
+    Teuchos::RCP<Epetra_Vector> gridvnprm = Teuchos::rcp(new Epetra_Vector(*gridvnp));
+    gridvnprm->ReplaceMap(outvec_fluid_->Map()); //to get dofs starting by 0 ...
+    discret_->Writer()->WriteVector("gridv", gridvnprm);
+
+    //write convective velocity for t^{n+1}
+    Teuchos::RCP<Epetra_Vector> convvel = Teuchos::rcp(new Epetra_Vector(outvec_fluid_->Map(),true));
+    convvel->Update(1.0,*outvec_fluid_,-1.0,*gridvnprm,0.0);
+    discret_->Writer()->WriteVector("convel", convvel);
+  }
+
+  discret_->Writer()->WriteElementData(firstoutputofrun_);
+  firstoutputofrun_ = false;
+
+  // write restart
+  if (write_restart_data)
+  {
+    if(discret_->Comm().MyPID() == 0) IO::cout << "---  write restart... " << IO::endl;
+
+    restart_count_++;
+
+    // velocity/pressure vector
+    discret_->Writer()->WriteVector("velnp_res",state->velnp_);
+
+    // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
+    discret_->Writer()->WriteVector("accnp_res",state->accnp_);
+    discret_->Writer()->WriteVector("accn_res", state->accn_);
+    discret_->Writer()->WriteVector("veln_res", state->veln_);
+    discret_->Writer()->WriteVector("velnm_res",state->velnm_);
+    //TODO:
+    if (dispnp != Teuchos::null)
+    {
+      std::cout << " WARNING: implement the write restart for alefluid!!!" << std::endl;
+    }
+  }
+
+  //-----------------------------------------------------------
+  // REMARK on "Why to clear the MapCache" for restarts
+  //-----------------------------------------------------------
+  // every time, when output-vectors are written based on a new(!), still unknown map
+  // the map is stored in a mapstack (io.cpp, WriteVector-routine) for efficiency in standard applications.
+  // However, in the XFEM for each timestep or FSI-iteration we have to cut and the map is created newly
+  // (done by the FillComplete call).
+  // This is the reason why the MapStack increases and the storage is overwritten for large problems.
+  // Hence, we have clear the MapCache in regular intervals of written restarts.
+  // In case of writing paraview-output, here, we use a standard map which does not change over time, that's okay.
+  // For the moment, restart_count = 5 is set quite arbitrary, in case that we need for storage, we have to reduce this number
+
+  if(restart_count_ == 5)
+  {
+    if(discret_->Comm().MyPID() == 0) IO::cout << "\t... Clear MapCache after " << restart_count_ << " written restarts." << IO::endl;
+
+    discret_->Writer()->ClearMapCache(); // clear the output's map-cache
+    restart_count_ = 0;
+  }
+
+  //-----------------------------------------------------------
+  // write paraview output for cutter discretization
+  //-----------------------------------------------------------
+  cond_manager_->Output(step, time, write_restart_data);
+}
 
 FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(
   Teuchos::ParameterList& params_xfem,

@@ -13,10 +13,23 @@ Maintainer:  Raffaela Kruse
 #ifndef XFLUID_OUTPUTSERVICE_H_
 #define XFLUID_OUTPUTSERVICE_H_
 
+#include "Epetra_Vector.h"
+
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
 
-#include "../drt_lib/drt_discret_xfem.H"
+namespace DRT
+{
+  class Discretization;
+  class DiscretizationXFEM;
+  class Element;
+  class IndependentDofSet;
+}
+
+namespace LINALG
+{
+  class MapExtractor;
+}
 
 namespace GEO
 {
@@ -54,6 +67,18 @@ public:
   );
 
   virtual ~XFluidOutputService(){};
+
+  /// prepare standard output
+  void PrepareOutput();
+
+  /// standard output routine
+  void Output(
+    int step,
+    int time,
+    bool write_restart_data,
+    Teuchos::RCP<const FLD::XFluidState> state,
+    Teuchos::RCP<const Epetra_Vector>    dispnp  = Teuchos::null,
+    Teuchos::RCP<const Epetra_Vector>    gridvnp = Teuchos::null);
 
   /// Gmsh solution output
   virtual void GmshSolutionOutput(
@@ -128,6 +153,19 @@ protected:
   //! XFEM condition manager
   const Teuchos::RCP<XFEM::ConditionManager> cond_manager_;
 
+  //! dofset for fluid output
+  Teuchos::RCP<DRT::IndependentDofSet>    dofset_out_;
+
+  //! output vector (mapped to initial fluid dofrowmap)
+  Teuchos::RCP<Epetra_Vector>             outvec_fluid_;
+
+  //! vel-pres splitter for output purpose
+  Teuchos::RCP<LINALG::MapExtractor>      velpressplitter_out_;
+
+  bool firstoutputofrun_;
+
+  //! how many restart steps have already been written
+  int restart_count_;
 };
 
 /*!

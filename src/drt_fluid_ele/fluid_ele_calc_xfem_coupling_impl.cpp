@@ -40,6 +40,9 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::AddSlaveEle
   const std::vector<int>&      lm            ///< local map
 )
 {
+  // leave, if displacements are not set
+  if (!slavedis.HasState(disp_statename_))
+    return;
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = slavedis.GetState(disp_statename_);
   if (matrix_state == Teuchos::null)

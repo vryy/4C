@@ -620,20 +620,8 @@ namespace FLD
 
     //---------------------------------output----------------------------
 
-    // flag whether this output step is the first one (restarted or not)
-    bool firstoutputofrun_;
-
-    // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
-    int restart_count_;
-
     // counter for current Newton iteration (used for Debug output)
     int itnum_out_;
-
-    /// output vector (mapped to initial fluid dofrowmap)
-    Teuchos::RCP<Epetra_Vector> outvec_fluid_;
-
-    /// vel-pres splitter for output purpose
-    Teuchos::RCP<LINALG::MapExtractor> velpressplitter_out_;
 
     /// output service class
     Teuchos::RCP<XFluidOutputService> output_service_;

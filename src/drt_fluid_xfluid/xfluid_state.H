@@ -164,7 +164,7 @@ public:
   //@{
 
   /// access to the cut wizard
-  Teuchos::RCP<GEO::CutWizard> Wizard()
+  Teuchos::RCP<GEO::CutWizard> Wizard() const
   {
     if (wizard_ == Teuchos::null)
       dserror("Cut wizard is uninitialized!");

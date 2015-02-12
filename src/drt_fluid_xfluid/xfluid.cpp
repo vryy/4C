@@ -83,8 +83,6 @@ FLD::XFluid::XFluid(
     bool                                          alefluid /*= false*/)
   : TimInt(actdis, solver, params, output),
     xdiscret_(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(actdis, true)),
-    firstoutputofrun_(true),  // used to write out owner of elements just once
-    restart_count_(0),        // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
     alefluid_(alefluid),
     turbmodel_(INPAR::FLUID::dynamic_smagorinsky)
 {
@@ -167,7 +165,6 @@ void FLD::XFluid::Init()
   if(two_phase_coupl != Teuchos::null or combust_coupl!= Teuchos::null)
   {
     include_inner_ = true;
-    dispnp_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
 
     if(condition_manager_->HasMeshCoupling())
       dserror("two-phase flow coupling and mesh coupling at once is not supported by the cut at the moment, as Node-position and include inner are not handled properly then");
@@ -208,15 +205,6 @@ void FLD::XFluid::Init()
   // GMSH discretization output before CUT
   // -------------------------------------------------------------------
   output_service_->GmshOutputDiscretization(eval_eos_, step_);
-
-  // -------------------------------------------------------------------
-  // Vector & map extractor for paraview output,
-  // mapped to initial fluid dofmap
-  // -------------------------------------------------------------------
-  // Todo: shift to XFluidOutputService
-  outvec_fluid_ = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
-  velpressplitter_out_ = Teuchos::rcp(new LINALG::MapExtractor());
-  FLD::UTILS::SetupFluidSplit(*discret_,xdiscret_->InitialDofSet(),numdim_,*velpressplitter_out_);
 
   // -------------------------------------------------------------------
   // initialize ALE-specific fluid vectors based on the intial dof row map
@@ -570,17 +558,6 @@ void FLD::XFluid::AssembleMatAndRHS( int itnum )
   discret_->SetState("accam",state_->accam_);
   discret_->SetState("scaaf",state_->scaaf_);
   discret_->SetState("scaam",state_->scaam_);
-
-  if(include_inner_)
-  {
-    Teuchos::RCP<const Epetra_Vector> dispnp_tmp = dispnp_;
-
-    state_->dispnp_ = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
-    xdiscret_->ExportInitialtoActiveVector(dispnp_tmp,state_->dispnp_);
-
-    // HACK: we need this vector for twophase flow!!!
-    discret_->SetState("dispnp", state_->dispnp_);
-  }
 
   if (alefluid_)
   {
@@ -4206,197 +4183,13 @@ void FLD::XFluid::Output()
 
   if (step_%upres_ == 0)
   {
-
-    output_->NewStep(step_,time_);
-
-    // create vector according to the initial row map holding all standard fluid unknowns
-    outvec_fluid_->PutScalar(0.0);
-
-    const Epetra_Map* dofrowmap  = xdiscret_->InitialDofRowMap(); // original fluid unknowns
-    const Epetra_Map* xdofrowmap = discret_->DofRowMap();   // fluid unknown for current cut
-
-
-    for (int i=0; i<discret_->NumMyRowNodes(); ++i)
-    {
-      // get row node via local id
-      const DRT::Node* xfemnode = discret_->lRowNode(i);
-
-      // the initial dofset contains the original dofs for each row node
-      const std::vector<int> gdofs_original(xdiscret_->InitialDofSet().Dof(xfemnode));
-
-
-      // if the dofs for this node do not exist in the xdofrowmap, then a hole is given
-      // else copy the right nodes
-      const std::vector<int> gdofs_current(discret_->Dof(xfemnode));
-
-      if(gdofs_current.size() == 0)
-      {
-        // cout << "no dofs available->hole" << endl;
-      }
-      else if(gdofs_current.size() == gdofs_original.size())
-      {
-        //cout << "same number of dofs available" << endl;
-      }
-      else if(gdofs_current.size() > gdofs_original.size())
-      {
-        //cout << "more dofs available->decide" << endl;
-      }
-      else cout << "decide which dofs can be copied and which have to be set to zero" << endl;
-
-      if(gdofs_current.size() == 0)
-      {
-        size_t numdof = gdofs_original.size();
-        // no dofs for this node... must be a hole or somethin'
-        for (std::size_t idof = 0; idof < numdof; ++idof)
-        {
-          //cout << dofrowmap->LID(gdofs[idof]) << endl;
-          (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = 0.0;
-        }
-      }
-      else if(gdofs_current.size() == gdofs_original.size())
-      {
-        size_t numdof = gdofs_original.size();
-        // copy all values
-        for (std::size_t idof = 0; idof < numdof; ++idof)
-        {
-          //cout << dofrowmap->LID(gdofs[idof]) << endl;
-          (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = (*state_->velnp_)[xdofrowmap->LID(gdofs_current[idof])];
-        }
-      }
-      else if(gdofs_current.size() % gdofs_original.size() == 0) //multiple dofsets
-      {
-        // if there are multiple dofsets we write output for the standard dofset
-        GEO::CUT::Node* node = state_->Wizard()()->GetNode(xfemnode->Id());
-
-        GEO::CUT::Point* p = node->point();
-
-        const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> > & dofcellsets = node->DofCellSets();
-
-        int nds = 0;
-        bool is_std_set = false;
-
-        // find the standard dofset
-        for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >::const_iterator cellsets= dofcellsets.begin();
-            cellsets!=dofcellsets.end();
-            cellsets++)
-        {
-          // at least one vc has to contain the node
-          for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator sets=cellsets->begin(); sets!=cellsets->end(); sets++)
-          {
-            const GEO::CUT::plain_volumecell_set& set = *sets;
-
-            for(GEO::CUT::plain_volumecell_set::const_iterator vcs=set.begin(); vcs!=set.end(); vcs++)
-            {
-              if((*vcs)->Contains(p))
-              {
-                // return if at least one vc contains this point
-                is_std_set=true;
-                break;
-              }
-            }
-            // break the outer loop if at least one vc contains this point
-            if(is_std_set == true) break;
-          }
-          if(is_std_set == true) break;
-          nds++;
-        }
-
-        size_t numdof = gdofs_original.size();
-        size_t offset = 0; // no offset in case of no std-dofset means take the first dofset for output
-
-        if(is_std_set)
-        {
-          offset = numdof*nds;   // offset to start the loop over dofs at the right nds position
-        }
-
-        // copy all values
-        for (std::size_t idof = 0; idof < numdof; ++idof)
-        {
-          (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = (*state_->velnp_)[xdofrowmap->LID(gdofs_current[offset+idof])];
-        }
-
-
-        // if there are just ghost values, then we write output for the set with largest physical fluid volume
-      }
-      else dserror("unknown number of dofs for output");
-
-    };
-
-    // output (hydrodynamic) pressure for visualization
-
-    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_out_->ExtractCondVector(outvec_fluid_);
-
-    output_->WriteVector("velnp", outvec_fluid_);
-    output_->WriteVector("pressure", pressure);
-
-    if (alefluid_)
-    {
-      //write ale displacement for t^{n+1}
-      Teuchos::RCP<Epetra_Vector> dispnprm = Teuchos::rcp(new Epetra_Vector(*dispnp_));
-      output_->WriteVector("dispnp", dispnprm);
-
-      //write grid velocity for t^{n+1}
-      Teuchos::RCP<Epetra_Vector> gridvnprm = Teuchos::rcp(new Epetra_Vector(*gridvnp_));
-      output_->WriteVector("gridv", gridvnprm);
-
-      //write convective velocity for t^{n+1}
-      Teuchos::RCP<Epetra_Vector> convvel = Teuchos::rcp(new Epetra_Vector(outvec_fluid_->Map(),true));
-      convvel->Update(1.0,*outvec_fluid_,-1.0,*gridvnprm,0.0);
-      output_->WriteVector("convel", convvel);
-    }
-
-    output_->WriteElementData(firstoutputofrun_);
-    firstoutputofrun_ = false;
-
-    // write restart
-    if (write_restart_data)
-    {
-      if(myrank_ == 0) IO::cout << "---  write restart... " << IO::endl;
-
-      restart_count_++;
-
-      // velocity/pressure vector
-      output_->WriteVector("velnp_res",state_->velnp_);
-
-      // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-      output_->WriteVector("accnp_res",state_->accnp_);
-      output_->WriteVector("accn_res",state_->accn_);
-      output_->WriteVector("veln_res",state_->veln_);
-      output_->WriteVector("velnm_res",state_->velnm_);
-
-      //TODO:
-      if (alefluid_)
-      {
-        std::cout << " WARNING: implement the write restart for alefluid!!!" << std::endl;
-      }
-
-    }
-
-    //-----------------------------------------------------------
-    // REMARK on "Why to clear the MapCache" for restarts
-    //-----------------------------------------------------------
-    // every time, when output-vectors are written based on a new(!), still unknown map
-    // the map is stored in a mapstack (io.cpp, WriteVector-routine) for efficiency in standard applications.
-    // However, in the XFEM for each timestep or FSI-iteration we have to cut and the map is created newly
-    // (done by the FillComplete call).
-    // This is the reason why the MapStack increases and the storage is overwritten for large problems.
-    // Hence, we have clear the MapCache in regular intervals of written restarts.
-    // In case of writing paraview-output, here, we use a standard map which does not change over time, that's okay.
-    // For the moment, restart_count = 5 is set quite arbitrary, in case that we need for storage, we have to reduce this number
-
-    if(restart_count_ == 5)
-    {
-      if(myrank_ == 0) IO::cout << "\t... Clear MapCache after " << restart_count_ << " written restarts." << IO::endl;
-
-      output_->ClearMapCache(); // clear the output's map-cache
-      restart_count_ = 0;
-    }
-
-    //-----------------------------------------------------------
-    // write paraview output for cutter discretization
-    //-----------------------------------------------------------
-    condition_manager_->Output(step_, time_, write_restart_data);
-
+    output_service_->Output(
+      step_,
+      time_,
+      write_restart_data,
+      state_,
+      dispnp_,
+      gridvnp_);
   }
 
 
