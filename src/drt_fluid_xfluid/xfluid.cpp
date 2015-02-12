@@ -3067,6 +3067,8 @@ void FLD::XFluid::TimeUpdate()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::CutAndSetStateVectors()
 {
+  const bool screen_out = false;
+
   //------------------------------------------------------------------------------------
   // not required for stationary time integration
   if( timealgo_ == INPAR::FLUID::timeint_stationary ) return;
@@ -3094,8 +3096,6 @@ void FLD::XFluid::CutAndSetStateVectors()
 
   if(step_ <= 0) return; // do not perform XFEM-time-integration for step 0
 
-
-  const bool screen_out = false;
   //------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------
   //                             XFEM TIME-INTEGRATION
@@ -3387,7 +3387,8 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
         state_->DofSet(),
         reconstr_method,
         dbcgids,
-        false);
+        false,
+        screen_out);
 
   } // TransferDofsToNewMap
 
@@ -3532,7 +3533,9 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
         state_->DofSet(),
         reconstr_method,
         dbcgids,
-        true);
+        true,
+        screen_out
+        );
 
   }
 
@@ -3618,10 +3621,10 @@ void FLD::XFluid::XTimint_TransferVectorsBetweenSteps(
     const Teuchos::RCP<XFEM::XFEMDofSet>             dofset_new,               /// dofset w.r.t new interface position
     std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  /// reconstruction map for nodes and its dofsets
     Teuchos::RCP<std::set<int> >                     dbcgids,                  /// set of dof gids that must not be changed by ghost penalty reconstruction
-    bool                                             fill_permutation_map
+    bool                                             fill_permutation_map,
+    bool                                             screen_out
 )
 {
-  const bool print_status = true;
   const bool reconstruct_method_output = false;
 
   xfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidTimeInt(dis,
@@ -3637,9 +3640,9 @@ void FLD::XFluid::XTimint_TransferVectorsBetweenSteps(
 
   if(fill_permutation_map) permutation_map_ = xfluid_timeint_->GetPermutationMap();
 
-  if(myrank_==0) std::cout << " done\n" << std::flush;
+  if(myrank_==0 and screen_out) std::cout << " done\n" << std::flush;
 
-  if(print_status) xfluid_timeint_->SetAndPrintStatus(true);
+  xfluid_timeint_->SetAndPrintStatus(screen_out);
 
   if(reconstruct_method_output) xfluid_timeint_->Output();
 }

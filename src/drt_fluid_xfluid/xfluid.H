@@ -429,7 +429,8 @@ namespace FLD
         const Teuchos::RCP<XFEM::XFEMDofSet>             dofset_new,               ///< dofset w.r.t new interface position
         std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  ///< reconstruction map for nodes and its dofsets
         Teuchos::RCP<std::set<int> >                     dbcgids,                  ///< set of dof gids that must not be changed by ghost penalty reconstruction
-        bool                                             fill_permutation_map      ///< do we have to fill the permutation map?
+        bool                                             fill_permutation_map,     ///< do we have to fill the permutation map?
+        bool                                             screen_out                ///< output to screen
     );
 
     /// decide if semi-Lagrangean back-tracking or ghost-penalty reconstruction has to be performed on any processor

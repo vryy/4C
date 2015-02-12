@@ -573,12 +573,10 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 
         //-----------------------------------------------------------------
         // identify cellsets at t^n with current dofset at t^(n+1)
-        int nds_old = -1; // nds number of corresponding old dofset
-        std::vector<int> identified_sides;
-        IdentifyOldSets(nds_old, identified_sides, dof_cellsets_old, cell_set);
+        int nds_old = IdentifyOldSets(n_old, n_new, dof_cellsets_old, cell_set); // get nds number of corresponding old dofset
         //-----------------------------------------------------------------
 
-        if(nds_old == -1) // not found
+        if(nds_old < 0) // no set or not a unique set found
         {
 #ifdef DEBUG_TIMINT
           IO::cout << "XFLUID-TIMINIT CASE D: node " << gid << ",\t no corresponding dofset found at time t^n for dofset " << nds_new << " at time t^(n+1)" << IO::endl;
@@ -599,7 +597,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
             MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
           }
         }
-        else // found set
+        else // unique set found
         {
           bool is_std_set_n = Is_Std_CellSet(n_old, dof_cellsets_old[nds_old]);
 
@@ -610,57 +608,17 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 
           if(is_std_set_np and is_std_set_n) // std at t^n and t^(n+1)
           {
-            // check special case of tips ( change of side w.r.t identified side of volumecell at t^n and t^(n+1) )
-            bool std_node_changed_side = false;
-            bool successful_check = false;
-            successful_check = CheckChangingSide(std_node_changed_side, identified_sides, n_old,n_new, dof_cellsets_old[nds_old], dof_cellsets_old[nds_new] );
-
-            if(successful_check)
+            // copy values or use SL
+            if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP or
+                timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP)
             {
-
-              if(!std_node_changed_side)
-              {
-                // copy values or use SL
-
-                if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP or
-                   timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP)
-                {
-                  CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
-                }
-                else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
-                {
-                  MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
-                }
-                else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
-
-              }
-              else
-              {
-                // only semilagrange (SL) reasonable
-
-                if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP )
-                  dserror("std-node changed the side, choose a SL-based-approach for node %d", n_new->Id());
-                else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
-                         timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP )
-                {
-                  MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
-                }
-                else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
-
-              }
+              CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
             }
-            else
+            else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
             {
-              if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP )
-              {
-                dserror("Changing side check not successful, you should use a combined semi-lagrangean algorithm here for node %d", n_new->Id());
-              }
-              else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
-                       timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
-              {
-                MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
-              }
+              MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
             }
+            else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
           }
           else if(is_std_set_np and !is_std_set_n) // ghost at t^n and std at t^(n+1)
           {
@@ -769,7 +727,7 @@ void XFEM::XFluidTimeInt::FindSurroundingGhostDofsets(
     const int                              nds_new         /// dofset of node used for finding the surrounding ghost dofs
     )
 {
-  if(nds_new != 0 ) dserror("do you really want to find ghost dofsets surrounding a non-std node?");
+  if(nds_new != 0 ) dserror("do you really want to find ghost dofsets surrounding a non-std node with id %i?", node->Id());
 
   GEO::CUT::Node * n = wizard_new_->GetNode(node->Id());
 
@@ -1154,16 +1112,31 @@ bool XFEM::XFluidTimeInt::Is_Std_CellSet(
   return false;
 }
 
+const GEO::CUT::Point::PointPosition XFEM::XFluidTimeInt::Get_CellSet_Position(
+    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp >&  cell_set  /// set of volumecells
+)
+{
+  return (*cell_set.begin())[0]->Position();
+}
+
+
+
 // -------------------------------------------------------------------
 // identify cellsets at time t^n with cellsets at time t^(n+1)
 // -------------------------------------------------------------------
-void XFEM::XFluidTimeInt::IdentifyOldSets(
-    int &                                                                         nds_old,            /// set identified nodal dofset at t^n
-    std::vector<int> &                                                            identified_sides,   /// set identified using sides (side-Ids)
+int XFEM::XFluidTimeInt::IdentifyOldSets(
+    const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
+    const GEO::CUT::Node *                                         n_new,               /// node w.r.t to new wizard
     const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >&  dof_cellsets_old,   /// all dofcellsets at t^n
     const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>&                cell_set_new        /// dofcellset at t^(n+1) which has to be identified
-    )
+)
 {
+
+  //is current set at t^(n+1) std or ghost or dofset
+  bool is_std_set_np = Is_Std_CellSet(n_new, cell_set_new);
+
+  const GEO::CUT::Point::PointPosition pos_new = Get_CellSet_Position(cell_set_new);
+
   // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
   std::map<int, std::vector<GEO::CUT::BoundaryCell*> >  bcells_new;
 
@@ -1186,17 +1159,18 @@ void XFEM::XFluidTimeInt::IdentifyOldSets(
 
   //--------------------------------------------------------
   // t^n
-  int num_found_old_cellsets = 0; // how many dofsets found
 
-  int set_number = 0;
+  std::map<int, std::set<int> > identified_old_sets; // map of possible nds_sets and related identified sides
 
+  //--------------------------------------------------------
+  // PRESELECTION via common cutting sides (for level-sets all sets have the same level-set side and are possible sets)
+  //--------------------------------------------------------
   //check each old dofset for identification with new dofset
   for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >::const_iterator old_sets=dof_cellsets_old.begin();
       old_sets!=dof_cellsets_old.end();
       old_sets++)
   {
-
-    bool identified_set = false;
+    const int setnumber = old_sets - dof_cellsets_old.begin();
 
     const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & old_set = *old_sets;
 
@@ -1227,51 +1201,160 @@ void XFEM::XFluidTimeInt::IdentifyOldSets(
     {
       if(bcells_new.find((old_sides->first)) != bcells_new.end())
       {
-        identified_set = true;
-        identified_sides.push_back(old_sides->first);
+        std::set<int>& sides = identified_old_sets[setnumber]; // [] creates a new std::set if not created yet
+        sides.insert(old_sides->first);
       }
     }
-
-    if(identified_set == true)
-    {
-      nds_old = set_number;
-      num_found_old_cellsets++;
-    }
-
-    // next possible set
-    set_number++;
   }
 
-  if(num_found_old_cellsets > 1)
+  //---------------------------------------
+  // try to find a unique candidate and do safety check if there is only one possible set
+  //---------------------------------------
+
+  std::set<int> invalid_old_sets; // find invalid cell-sets and erase them from identified_old_sets afterwards
+
+  if(identified_old_sets.size() > 1)
+  {
+
+    bool unique_set_found = false;
+
+    for(std::map<int, std::set<int> >::iterator it= identified_old_sets.begin();
+        it!=identified_old_sets.end();
+        it++)
+    {
+      const int nds_old = it->first;
+
+      if(unique_set_found)
+      {
+        // make the other sets invalid
+        invalid_old_sets.insert(nds_old);
+        continue;
+      }
+
+      const GEO::CUT::Point::PointPosition pos_old = Get_CellSet_Position(dof_cellsets_old[nds_old]);
+
+      if(pos_old == GEO::CUT::Point::undecided or
+          pos_old == GEO::CUT::Point::oncutsurface) dserror("why is the cellcet position undecided or oncutsurface %i, something wrong", pos_old);
+
+      // dof-cellsets at new and old time have to correspond to each other w.r.t position of their cellsets (same fluid phase)
+      if(pos_old == pos_new)
+      {
+        bool is_std_set_n = Is_Std_CellSet(n_old, dof_cellsets_old[nds_old]);
+
+        if(is_std_set_n) // standard sets are unique, therefore accept the unique set and neglect the others
+          unique_set_found = true;
+        else
+          unique_set_found = false;
+      }
+      else // changing dofset positions, not allowed here
+      {
+        // make the other sets invalid
+        invalid_old_sets.insert(nds_old);
+        continue;
+      }
+    } // loop old sets
+  } // identified_dofsets > 1
+
+  //---------------------------------------
+  // remove invalid sets
+  //---------------------------------------
+  for(std::set<int>::iterator set_it=invalid_old_sets.begin();
+      set_it!=invalid_old_sets.end();
+      set_it++)
+  {
+    identified_old_sets.erase(*set_it);
+  }
+
+  //---------------------------------------
+  // no unique reasonable candidate found
+  //---------------------------------------
+  if(identified_old_sets.size() > 1)
   {
 #ifdef DEBUG_TIMINT
-    IO::cout << "Warning: found dofset at t^n not unique, set status to unfound!" << IO::endl;
+    IO::cout << "Warning: found dofset at t^n not unique, found " << identified_old_sets.size() << " dofsets, set status to not-found!" << IO::endl;
 #endif
-    nds_old = -1;
+    return -1;
   }
 
+  //---------------------------------------
+  // no reasonable candidate available
+  //---------------------------------------
+  if(identified_old_sets.size() <= 0)
+  {
+#ifdef DEBUG_TIMINT
+    IO::cout << "Warning: no found dofset at t^n, set status to not-found!" << IO::endl;
+#endif
+    return -1;
+  }
 
+  //---------------------------------------
+  // special check for the unique candidate / can we really accept the value?
+  //---------------------------------------
+  if (identified_old_sets.size() == 1)
+  {
+    const int nds_old = identified_old_sets.begin()->first;
 
-  return;
+#ifdef DEBUG_TIMINT
+    IO::cout << "Exactly one dofset found: nds= " << nds_old << " perform further special checks:" <<IO::endl;
+#endif
+
+    bool is_std_set_n  = Is_Std_CellSet(n_old, dof_cellsets_old[nds_old]);
+
+    //---------------------------------------
+    // do special checks
+    //---------------------------------------
+
+    bool did_node_change_side = false;
+    bool successful_check = false;
+
+    //--------------------------------------
+    // special check whether node slides on cut surface
+    successful_check = SpecialCheck_SlidingOnSurface(did_node_change_side, n_old, n_new);
+
+    if(!successful_check or (successful_check and did_node_change_side))
+      return -1; // do not accept the old value
+
+    //--------------------------------------
+    // special check for crack applications
+    if( (is_std_set_np and is_std_set_n) )
+    {
+      successful_check = SpecialCheck_Crack(did_node_change_side, n_old, n_new);
+
+      if(!successful_check or (successful_check and did_node_change_side))
+        return -1; // do not accept the old value
+    }
+
+    //--------------------------------------
+    // special check for interface tips if the node has changed the side w.r.t identified sides at t^n and t^(n+1)
+    if( (is_std_set_np and is_std_set_n) or (!is_std_set_np and !is_std_set_n))
+    {
+      std::set<int> & identified_sides = identified_old_sets[nds_old];
+      successful_check = SpecialCheck_InterfaceTips(did_node_change_side, identified_sides, n_old,n_new);
+
+      if(!successful_check or (successful_check and did_node_change_side))
+        return -1; // do not accept the old value
+    }
+
+    //---------------------------------------
+    // if the unique candidate passed all checks we accept the value
+    //---------------------------------------
+#ifdef DEBUG_TIMINT
+    IO::cout << "\t ACCEPT the unique dofset!" <<IO::endl;
+#endif
+
+    return nds_old; // all special tests passed -> accept the old value
+  }
+
+  return -1;
 }
 
-// -------------------------------------------------------------------
-// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1)
-// return if check was successful
-// -------------------------------------------------------------------
-bool XFEM::XFluidTimeInt::CheckChangingSide(
-    bool&                                                          changed_side,        /// did the node change the side ?
-    std::vector<int> &                                             identified_sides,    /// side Id of identified side
+
+bool XFEM::XFluidTimeInt::SpecialCheck_SlidingOnSurface(
+    bool &                                                         changed_side,
     const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
-    const GEO::CUT::Node *                                         n_new,               /// node w.r.t to new wizard
-    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_old,        /// dofcellset at t^n
-    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_new         /// dofcellset at t^(n+1)
-    )
+    const GEO::CUT::Node *                                         n_new                /// node w.r.t to new wizard
+)
 {
-  bool successful_check = true;
-
-  changed_side = false;
-
   if(n_old->Id() != n_new->Id()) dserror("XFLUID-TIMINT: not the same node for CheckChangingSide");
 
   //--------------------------------------------------
@@ -1281,54 +1364,10 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
   GEO::CUT::Point* p_old = n_old->point();
   GEO::CUT::Point* p_new = n_new->point();
 
-
   GEO::CUT::Point::PointPosition pos_old = p_old->Position();
   GEO::CUT::Point::PointPosition pos_new = p_new->Position();
 
-  if(pos_old == GEO::CUT::Point::undecided or pos_new == GEO::CUT::Point::undecided) dserror("at least one node position undecided!");
-
-  if(   (pos_old == GEO::CUT::Point::inside  and pos_new == GEO::CUT::Point::outside)
-     or (pos_old == GEO::CUT::Point::outside and pos_new == GEO::CUT::Point::inside )
-     )
-  {
-    // changed from inside->outside or outside->inside
-    changed_side = true;
-    return true;
-  }
-  else if(     (pos_old == GEO::CUT::Point::outside and pos_new == GEO::CUT::Point::outside)
-            or (pos_old == GEO::CUT::Point::inside  and pos_new == GEO::CUT::Point::inside)
-         )
-  {
-    // continue with check based on space time sides
-    // REMARK: the point could have moved through an inside/outside volumecell
-
-    // do nothing and continue with space-time side check
-  }
-  else if(pos_old == GEO::CUT::Point::oncutsurface and pos_new == GEO::CUT::Point::inside)
-  {
-    //dserror("point moved from %d position at t^n to %d at t^(n+1), is this a side change?", pos_old, pos_new);
-    changed_side = true;
-    return true;
-  }
-  else if(pos_old == GEO::CUT::Point::inside and pos_new == GEO::CUT::Point::oncutsurface)
-  {
-    //dserror("point moved from %d position at t^n to %d at t^(n+1), is this a side change?", pos_old, pos_new);
-    changed_side = true;
-    return true;
-  }
-  else if(pos_old == GEO::CUT::Point::oncutsurface and pos_new == GEO::CUT::Point::outside)
-  {
-    //dserror("point moved from %d position at t^n to %d at t^(n+1), is this a side change?", pos_old, pos_new);
-    changed_side = false;
-    return true;
-  }
-  else if(pos_old == GEO::CUT::Point::outside and pos_new == GEO::CUT::Point::oncutsurface)
-  {
-    //dserror("point moved from %d position at t^n to %d at t^(n+1), is this a side change?", pos_old, pos_new);
-    changed_side = false;
-    return true;
-  }
-  else if( (pos_old == GEO::CUT::Point::oncutsurface and pos_new == GEO::CUT::Point::oncutsurface) )
+  if( (pos_old == GEO::CUT::Point::oncutsurface and pos_new == GEO::CUT::Point::oncutsurface) )
   {
     // first case: point slides on the cut surface (within one side or from 'within the side' to point or edge and vice versa)
     // second case: point moves from one side to another side (-> decide if the sides are neighbors and so on)
@@ -1336,8 +1375,13 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
     const GEO::CUT::plain_side_set & cut_sides_old  = p_old->CutSides();
     const GEO::CUT::plain_side_set & cut_sides_new  = p_new->CutSides();
 
-    // check if there is at least one common cutside at both times
 
+#ifdef DEBUG_TIMINT
+    IO::cout << "!!WARNING point is on cut surface at time t^n and t^(n+1)" << IO::endl;
+#endif
+
+
+    // check if there is at least one common cutside at both times
     if(cut_sides_old.size() == 0 or cut_sides_new.size() == 0) dserror("there are no cutsides but point is 'oncutsurface' at both times");
 
     // REMARK: we have to check this based on the real sides not based on the triangulated cutsides
@@ -1390,32 +1434,25 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
     }
 
     //------------------------------------------------------
-
     // if this check was not successful, check if two sides are at least neighbors
     dserror("point moves oncutsurface from t^n to t^(n+1), but remains not within the same side, check if a 'changed side' maybe based on side neighbors would be possible");
+    //------------------------------------------------------
 
     changed_side = false;
     return true;
   }
 
+  changed_side = false;
+  return true;
+}
 
-  if(pos_old == GEO::CUT::Point::oncutsurface and pos_new == GEO::CUT::Point::oncutsurface)
-  {
-#ifdef DEBUG_TIMINT
-    IO::cout << "!!WARNING point is on cut surfac at time t^n and t^(n+1)" << IO::endl;
-#endif
-
-    const GEO::CUT::plain_side_set & cut_sides_old  = p_old->CutSides();
-    const GEO::CUT::plain_side_set & cut_sides_new  = p_new->CutSides();
-
-    if(cut_sides_old.size() != 1) dserror("more than one cut side");
-    if(cut_sides_new.size() != 1) dserror("more than one cut side");
-
-  }
-  else if(pos_old == GEO::CUT::Point::oncutsurface or pos_new == GEO::CUT::Point::oncutsurface)
-  {
-    dserror("point is on cut surface at least at one time t(n) or t(n+1), CheckChangingSide in the right way?");
-  }
+bool XFEM::XFluidTimeInt::SpecialCheck_Crack(
+    bool&                                                          changed_side,        /// did the node change the side ?
+    const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
+    const GEO::CUT::Node *                                         n_new                /// node w.r.t to new wizard
+)
+{
+  bool successful_check = true;
 
   //------------------------------------
   // Get all the connected elements from this nodes at old and new position         sudhakar 12/14
@@ -1425,6 +1462,12 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
 
   if ( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
   {
+    GEO::CUT::Point* p_old = n_old->point();
+    GEO::CUT::Point* p_new = n_new->point();
+
+    GEO::CUT::Point::PointPosition pos_old = p_old->Position();
+    GEO::CUT::Point::PointPosition pos_new = p_new->Position();
+
     const GEO::CUT::plain_element_set & eleold = n_old->Elements();
     const GEO::CUT::plain_element_set & elenew = n_new->Elements();
 
@@ -1434,15 +1477,98 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
     for(GEO::CUT::plain_element_set::const_iterator it=elenew.begin(); it!=elenew.end(); it++)
       new_ele_set.insert( (*it)->Id() );
 
+    //TODO: @ sudhakar
     if( old_ele_set == new_ele_set )
-      return false;
+      return false;// TODO: actually we want to do this    changed_side = false;
     else
-      return true;
+    {
+      if( pos_old == pos_new )
+        changed_side = false;
+      else
+        changed_side = true;
+    }
   }
+  else
+    changed_side = false; // accept the value for this check
   //------------------------------------
 
-  LINALG::Matrix<3,1> n_coord(true);
-  n_old->Coordinates(&n_coord(0,0));
+  return successful_check; // accept value if not crack application
+}
+
+
+
+// -------------------------------------------------------------------
+// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1)
+// return if check was successful
+// -------------------------------------------------------------------
+bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips(
+    bool&                                                          changed_side,        /// did the node change the side ?
+    std::set<int> &                                                identified_sides,    /// side Id of identified side
+    const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
+    const GEO::CUT::Node *                                         n_new                /// node w.r.t to new wizard
+    )
+{
+  bool successful_check = true;
+
+  changed_side = false;
+
+  if(n_old->Id() != n_new->Id()) dserror("XFLUID-TIMINT: not the same node for CheckChangingSide");
+
+  //--------------------------------------------------
+  // do some simple checks for changing side based on point positions to reduce checks based on space-time sides
+
+  // check when point moves on the surface of the same side
+  GEO::CUT::Point* p_old = n_old->point();
+  GEO::CUT::Point* p_new = n_new->point();
+
+
+  GEO::CUT::Point::PointPosition pos_old = p_old->Position();
+  GEO::CUT::Point::PointPosition pos_new = p_new->Position();
+
+  if(pos_old == GEO::CUT::Point::undecided or pos_new == GEO::CUT::Point::undecided) dserror("at least one node position undecided!");
+
+  if(    (pos_old == GEO::CUT::Point::outside and pos_new == GEO::CUT::Point::outside)
+      or (pos_old == GEO::CUT::Point::inside  and pos_new == GEO::CUT::Point::inside)
+  )
+  {
+    // continue with check based on space time sides
+    // REMARK: the point could have moved through an inside/outside volumecell
+
+    // do nothing and continue with space-time side check
+  }
+  else // otherwise check not required, continue with other special checks
+  {
+    changed_side = false;
+    return true;
+  }
+
+
+  //------------------------------------
+
+  LINALG::Matrix<3,1> n_coord_old(true);
+  n_old->Coordinates(&n_coord_old(0,0));
+
+  LINALG::Matrix<3,1> n_coord_new(true);
+  n_new->Coordinates(&n_coord_new(0,0));
+
+  // check if moving node (ALE case)
+  LINALG::Matrix<3,1> n_diff(true);
+  n_diff.Update(1.0, n_coord_new, -1.0, n_coord_old);
+
+  // TODO: for ALE we have to check whether the path of the point crosses at least one space-time side element
+  if(n_diff.Norm2()>1e-14)
+  {
+    // TODO: currently we expect that node did not change the side around a tip
+    // TODO: USE the dserror, at the moment we just throw a warning
+    IO::cout << "WARNING: node " << n_old->Id() << " seems to move (background ALE?). Check the SpecialCheck_InterfaceTips-Check for ALE!" << IO::endl;
+
+    changed_side = false;
+    return true;
+
+    //dserror("node %i seems to move. Check the SpaceTimeChangingSide-Check for ALE!", n_old->Id());
+  }
+
+
 
   // check the change of the node w.r.t to sides using space-time side elements
   // create space-time side elements using the same side at t^n and t^(n+1)
@@ -1451,7 +1577,7 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
   int side_count = 0;
 
   // loop sides
-  for(std::vector<int>::iterator sides=identified_sides.begin(); sides!= identified_sides.end(); sides++)
+  for(std::set<int>::iterator sides=identified_sides.begin(); sides!= identified_sides.end(); sides++)
   {
     side_count++;
 
@@ -1461,60 +1587,84 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
 
     int sid = *sides;
 
-
     GEO::CUT::SideHandle* side_old = wizard_old_->GetMeshCuttingSide(sid, 0);
     GEO::CUT::SideHandle* side_new = wizard_new_->GetMeshCuttingSide(sid, 0);
 
-    if(side_old == NULL or side_new == NULL)
+    if(side_old == NULL and side_new == NULL)
     {
-      // HACK for time-integration with combination of level-set and and mesh
-      changed_side = false;
-      std::cout << "time-integration for level-sets not implemented yet!" << std::endl;
-      return true; // TODO: compare level-set values instead
+      if(n_diff.Norm2()>1e-14)
+        dserror("background fluid ALE with level-sets interface??? Think about that, does Scatra support this?");
 
-      dserror("no sidehandles available for side %d", sid);
+      successful_check = SpecialCheck_InterfaceTips_Levelset(changed_side);
     }
-
-
-    bool node_within_Space_Time_Side = false;
-
-    if(side_old->Shape() != side_new->Shape()) dserror("the same side has different shapes at tn and t(n+1) -> not possible!");
-
-    DRT::Element::DiscretizationType side_distype = side_old->Shape();
-
-    switch(side_distype)
+    else if(side_old != NULL and side_new != NULL)
     {
-      case DRT::Element::tri3:
-      {
-        successful_check = WithinSpaceTimeSide<DRT::Element::tri3,DRT::Element::wedge6>(node_within_Space_Time_Side,side_old, side_new, n_coord);
-        break;
-      }
-      case DRT::Element::quad4:
-      {
-        successful_check = WithinSpaceTimeSide<DRT::Element::quad4,DRT::Element::hex8>(node_within_Space_Time_Side,side_old, side_new, n_coord);
-        break;
-      }
-      default: dserror("side-distype %s not handled", DRT::DistypeToString(side_distype).c_str()); break;
+      successful_check = SpecialCheck_InterfaceTips_SpaceTime(changed_side, side_old, side_new, n_coord_old);
     }
+    else dserror("side is a level-set side at one time and is a mesh cutting side at the other time! Cannot happen!");
+
 
     if(!successful_check) return false; // return non-successful check
 
-    if(node_within_Space_Time_Side)
+    if(changed_side)
     {
-
 #ifdef DEBUG_TIMINT
       IO::cout << "\t\t node " << n_new->Id()<< " changed interface side, node within space-time side element for at least one side" << IO::endl;
 #endif
-
-      changed_side = true;
       break; // stop loop over sides
     }
-
   }
 
   return successful_check;
 }
 
+bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_Levelset(
+    bool& changed_side        /// did the node change the side ?
+)
+{
+  // interface tips moving/rotating around a node not supported yet
+  // TODO: if necessary, implement a check based on the gradients of the level-set field or the normal vectors of the boundary cells
+  // possibility: check the different directions of the normal vectors up to a certain tolerance
+
+  // assume that the interface did not change the side and accept the value
+  changed_side = false;
+  return true;
+}
+
+bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
+    bool&                         changed_side,              /// did the node change the side ?
+    GEO::CUT::SideHandle*         side_old,                  /// side w.r.t old interface
+    GEO::CUT::SideHandle*         side_new,                  /// side w.r.t new interface
+    const LINALG::Matrix<3,1>&    n_coord                    /// node coodinates
+)
+{
+  bool node_within_Space_Time_Side = false;
+
+  if(side_old->Shape() != side_new->Shape()) dserror("the same side has different shapes at tn and t(n+1) -> not possible!");
+
+  DRT::Element::DiscretizationType side_distype = side_old->Shape();
+
+  bool successful_check = false;
+
+  switch(side_distype)
+  {
+    case DRT::Element::tri3:
+    {
+      successful_check = WithinSpaceTimeSide<DRT::Element::tri3,DRT::Element::wedge6>(node_within_Space_Time_Side,side_old, side_new, n_coord);
+      break;
+    }
+    case DRT::Element::quad4:
+    {
+      successful_check = WithinSpaceTimeSide<DRT::Element::quad4,DRT::Element::hex8>(node_within_Space_Time_Side,side_old, side_new, n_coord);
+      break;
+    }
+    default: dserror("side-distype %s not handled", DRT::DistypeToString(side_distype).c_str()); break;
+  }
+
+  changed_side = node_within_Space_Time_Side;
+
+  return successful_check;
+}
 
 // -------------------------------------------------------------------
 // check if the node is within the space time side
@@ -1900,6 +2050,9 @@ void XFEM::XFluidTimeInt::Output()
   if(myrank_==0) IO::cout << IO::endl;
 
 }
+
+
+
 
 
 

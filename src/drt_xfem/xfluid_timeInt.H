@@ -174,22 +174,51 @@ public:
       const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>&  cell_set  /// set of volumecells
   );
 
+  const GEO::CUT::Point::PointPosition Get_CellSet_Position(
+      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp >&  cell_set  /// set of volumecells
+  );
+
   /// identify cellsets at time t^n with cellsets at time t^(n+1)
-  void IdentifyOldSets(
-      int &                                                          nds_old,                           /// set identified nodal dofset at t^n
-      std::vector<int> &                                             identified_sides,                  /// set identified using sides (side-Ids)
+  int IdentifyOldSets(
+      const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
+      const GEO::CUT::Node *                                         n_new,               /// node w.r.t to new wizard
       const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >&  dof_cellsets_old,   /// all dofcellsets at t^n
       const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_new                       /// dofcellset at t^(n+1) which has to be identified
   );
 
-  /// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1), return if check was successful
-  bool CheckChangingSide(
-      bool&                                                          changed_side,        /// did the node change the side ?
-      std::vector<int> &                                             identified_sides,    /// side Id of identified side
+  /// special check if the node slides along the cut surface
+  bool SpecialCheck_SlidingOnSurface(
+      bool &                                                         changed_side,
       const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
-      const GEO::CUT::Node *                                         n_new,               /// node w.r.t to new wizard
-      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_old,        /// dofcellset at t^n
-      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_new         /// dofcellset at t^(n+1)
+      const GEO::CUT::Node *                                         n_new                /// node w.r.t to new wizard
+  );
+
+  /// special check for crack applications
+  bool SpecialCheck_Crack(
+      bool&                                                          changed_side,        /// did the node change the side ?
+      const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
+      const GEO::CUT::Node *                                         n_new                /// node w.r.t to new wizard
+  );
+
+  /// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1), return if check was successful
+  bool SpecialCheck_InterfaceTips(
+      bool&                                                          changed_side,        /// did the node change the side ?
+      std::set<int> &                                                identified_sides,    /// side Id of identified side
+      const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
+      const GEO::CUT::Node *                                         n_new                /// node w.r.t to new wizard
+  );
+
+  /// special check for level-set based interface tips, note: currently empty, can be filled if necessary
+  bool SpecialCheck_InterfaceTips_Levelset(
+      bool&                                                          changed_side        /// did the node change the side ?
+  );
+
+  /// special check for mesh based interface tips
+  bool SpecialCheck_InterfaceTips_SpaceTime(
+      bool&                         changed_side,              /// did the node change the side ?
+      GEO::CUT::SideHandle*         side_old,                  /// side w.r.t old interface
+      GEO::CUT::SideHandle*         side_new,                  /// side w.r.t new interface
+      const LINALG::Matrix<3,1>&    n_coord                    /// node coodinates
   );
 
   /// check if the node is within the space time side

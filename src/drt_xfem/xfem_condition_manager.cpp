@@ -1625,41 +1625,41 @@ void XFEM::MeshCouplingFSICrack::SetCutterDis(Teuchos::RCP<DRT::Discretization> 
 
 void XFEM::MeshCouplingFSICrack::InitCrackInitiationsPoints()
 {
-  tip_nodes_.clear();
-
-  DRT::Condition* crackpts = cond_dis_->GetCondition( "CrackInitiationPoints" );
-
-  const std::vector<int>* crackpt_nodes = const_cast<std::vector<int>* >(crackpts->Nodes());
-
-
-  for(std::vector<int>::const_iterator inod=crackpt_nodes->begin(); inod!=crackpt_nodes->end();inod++ )
-  {
-    const int nodid = *inod;
-    LINALG::Matrix<3, 1> xnod( true );
-
-    tip_nodes_[nodid] = xnod;
-  }
-
-  if( tip_nodes_.size() == 0 )
-    dserror("crack initiation points unspecified\n");
-
-/*---------------------- POSSIBILITY 2 --- adding crack tip elements ----------------------------*/
-/*
-{
-DRT::Condition* crackpts = soliddis_->GetCondition( "CrackInitiationPoints" );
-
-const std::vector<int>* tipnodes = const_cast<std::vector<int>* >(crackpts->Nodes());
-
-if( tipnodes->size() == 0 )
-  dserror("crack initiation points unspecified\n");
-
-addCrackTipElements( tipnodes );
-}*/
-
-/*  Teuchos::RCP<DRT::DofSet> newdofset1 = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true));
-
-boundarydis_->ReplaceDofSet(newdofset1);//do not call this with true!!
-boundarydis_->FillComplete();*/
+//  tip_nodes_.clear();
+//
+//  DRT::Condition* crackpts = cond_dis_->GetCondition( "CrackInitiationPoints" );
+//
+//  const std::vector<int>* crackpt_nodes = const_cast<std::vector<int>* >(crackpts->Nodes());
+//
+//
+//  for(std::vector<int>::const_iterator inod=crackpt_nodes->begin(); inod!=crackpt_nodes->end();inod++ )
+//  {
+//    const int nodid = *inod;
+//    LINALG::Matrix<3, 1> xnod( true );
+//
+//    tip_nodes_[nodid] = xnod;
+//  }
+//
+//  if( tip_nodes_.size() == 0 )
+//    dserror("crack initiation points unspecified\n");
+//
+///*---------------------- POSSIBILITY 2 --- adding crack tip elements ----------------------------*/
+///*
+//{
+//DRT::Condition* crackpts = soliddis_->GetCondition( "CrackInitiationPoints" );
+//
+//const std::vector<int>* tipnodes = const_cast<std::vector<int>* >(crackpts->Nodes());
+//
+//if( tipnodes->size() == 0 )
+//  dserror("crack initiation points unspecified\n");
+//
+//addCrackTipElements( tipnodes );
+//}*/
+//
+///*  Teuchos::RCP<DRT::DofSet> newdofset1 = Teuchos::rcp(new DRT::TransparentIndependentDofSet(soliddis_,true));
+//
+//boundarydis_->ReplaceDofSet(newdofset1);//do not call this with true!!
+//boundarydis_->FillComplete();*/
 }
 
 
@@ -1734,6 +1734,16 @@ void XFEM::LevelSetCoupling::SetConditionsToCopy()
 
   // additional conditions required for the levelset field based on the cutter (background) mesh
   conditions_to_copy_.push_back("XFEMSurfDisplacement");
+}
+
+
+void XFEM::LevelSetCoupling::PrepareSolve()
+{
+//  if(myrank_ == 0) std::cout << "\t set level-set field, time " << time_ << std::endl;
+//
+//  std::cout << "WARNING!!! do not update the level-set field for twophase-flow" << std::endl;
+//  std::cout << "this can be removed, when two-phase interface is transported via scatrafield!" << std::endl;
+//  SetLevelSetField(time_);
 }
 
 
@@ -1835,6 +1845,20 @@ void XFEM::LevelSetCoupling::ReadRestart(
 {
   dserror("read restart for Level-set coupling objects not implemented yet");
 }
+
+
+/*----------------------------------------------------------------------*
+ | set interface level set field at current time           schott 02/15 |
+ *----------------------------------------------------------------------*/
+void XFEM::LevelSetCouplingBC::PrepareSolve()
+{
+
+  if(myrank_ == 0) IO::cout << "\t set level-set field, time " << time_ << IO::endl;
+
+  SetLevelSetField(time_);
+  return;
+}
+
 
 void XFEM::LevelSetCouplingWeakDirichlet::EvaluateCouplingConditions(
     LINALG::Matrix<3,1>& ivel,
@@ -2257,6 +2281,8 @@ void XFEM::ConditionManager::PrepareSolve()
   {
     levelset_coupl_[lsc]->PrepareSolve();
   }
+
+  is_levelset_uptodate_ = false;
 }
 
 bool XFEM::ConditionManager::HasMovingInterface()

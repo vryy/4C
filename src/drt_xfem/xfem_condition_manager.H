@@ -847,9 +847,15 @@ public:
 
   virtual bool HasMovingInterface(){ return true; }
 
+  //TODO: remove for twophase flow
+  virtual void PrepareSolve();
+
 private:
 
   void SetConditionsToCopy();
+
+protected:
+
 
   //! @name state vectors
 
@@ -859,10 +865,36 @@ private:
 
 };
 
+class LevelSetCouplingBC : public LevelSetCoupling
+{
+public:
+
+  //! constructor
+  explicit LevelSetCouplingBC(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+      const double                        time,      ///< time
+      const int                           step       ///< time step
+  ) : LevelSetCoupling(bg_dis, cond_name, time, step)
+  {}
+
+  //! destructor
+  virtual ~LevelSetCouplingBC()
+  {
+    return;
+  }
+
+protected:
+
+  virtual void PrepareSolve();
+
+};
+
+
 /*!
 \brief
  */
-class LevelSetCouplingWeakDirichlet : public LevelSetCoupling
+class LevelSetCouplingWeakDirichlet : public LevelSetCouplingBC
 {
 public:
 
@@ -872,7 +904,7 @@ public:
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) : LevelSetCoupling(bg_dis, cond_name, time, step)
+  ) : LevelSetCouplingBC(bg_dis, cond_name, time, step)
   {}
 
 
@@ -897,7 +929,7 @@ public:
 /*!
 \brief
  */
-class LevelSetCouplingNeumann : public LevelSetCoupling
+class LevelSetCouplingNeumann : public LevelSetCouplingBC
 {
 public:
 
@@ -907,7 +939,7 @@ public:
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) : LevelSetCoupling(bg_dis, cond_name, time, step)
+  ) : LevelSetCouplingBC(bg_dis, cond_name, time, step)
   {}
 
 
