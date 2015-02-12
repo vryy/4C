@@ -28,57 +28,57 @@ Created on: Feb 27, 2014
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "solver_preconditionertype.H"
+#include "solver_amgnxn_smoothers.H"
 
 
 namespace LINALG
 {
   namespace SOLVER
   {
-
-    class AMGnxn_SmootherBase;
-
-    class Richardson_Vcycle_Operator
+    namespace AMGNXN
     {
-      public:
 
-        Richardson_Vcycle_Operator
-          (int NumLevels,int NumSweeps=1,double omega=1);
+      // class GenericSmoother;
 
-        void SetOperators  (std::vector< Teuchos::RCP<Epetra_Operator> > Avec);
-        void SetProjectors (std::vector< Teuchos::RCP<Epetra_Operator> > Pvec);
-        void SetRestrictors(std::vector< Teuchos::RCP<Epetra_Operator> > Rvec);
-        void SetPreSmoothers (std::vector< Teuchos::RCP<AMGnxn_SmootherBase> > SvecPre);
-        void SetPosSmoothers (std::vector< Teuchos::RCP<AMGnxn_SmootherBase> > SvecPos);
+      class Vcycle:  public GenericSmoother
+      {
+        public:
 
-        void Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,int start_level=0) const;
+          Vcycle(int NumLevels, int NumSweeps, int FirstLevel);
 
-      private:
+          void SetOperators  (std::vector< Teuchos::RCP<BlockedMatrix> > Avec);
+          void SetProjectors (std::vector< Teuchos::RCP<BlockedMatrix> > Pvec);
+          void SetRestrictors(std::vector< Teuchos::RCP<BlockedMatrix> > Rvec);
+          void SetPreSmoothers (std::vector< Teuchos::RCP<GenericSmoother> > SvecPre);
+          void SetPosSmoothers (std::vector< Teuchos::RCP<GenericSmoother> > SvecPos);
 
-        void Richardson_Vcycle
-          (const Epetra_MultiVector& X, Epetra_MultiVector& Y,int start_level) const;
+          virtual void Solve
+            (const BlockedVector& X,BlockedVector& Y, bool InitialGuessIsZero=false) const;
 
-        void Vcycle(const Epetra_MultiVector& X,
-            Epetra_MultiVector& Y, int level, bool InitialGuessIsZero) const;
+        private:
 
-        int NumLevels_;
-        int NumSweeps_;
-        double omega_;
+          void DoVcycle
+            (const BlockedVector& X,BlockedVector& Y, int level, bool InitialGuessIsZero) const;
 
-        std::vector< Teuchos::RCP<Epetra_Operator> > Avec_;
-        std::vector< Teuchos::RCP<Epetra_Operator> > Pvec_;
-        std::vector< Teuchos::RCP<Epetra_Operator> > Rvec_;
-        std::vector< Teuchos::RCP<AMGnxn_SmootherBase> > SvecPre_;
-        std::vector< Teuchos::RCP<AMGnxn_SmootherBase> > SvecPos_;
+          int NumLevels_;
+          int NumSweeps_;
+          int FirstLevel_;
 
-        bool flag_set_up_A_;
-        bool flag_set_up_P_;
-        bool flag_set_up_R_;
-        bool flag_set_up_Pre_;
-        bool flag_set_up_Pos_;
+          std::vector< Teuchos::RCP<BlockedMatrix> > Avec_;
+          std::vector< Teuchos::RCP<BlockedMatrix> > Pvec_;
+          std::vector< Teuchos::RCP<BlockedMatrix> > Rvec_;
+          std::vector< Teuchos::RCP<GenericSmoother> > SvecPre_;
+          std::vector< Teuchos::RCP<GenericSmoother> > SvecPos_;
 
-    };
+          bool flag_set_up_A_;
+          bool flag_set_up_P_;
+          bool flag_set_up_R_;
+          bool flag_set_up_Pre_;
+          bool flag_set_up_Pos_;
 
+      };
 
+    } //namespace AMGNXN
   } //namespace LINALG
 } // namespace SOLVER
 

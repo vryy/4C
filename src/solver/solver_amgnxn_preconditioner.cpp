@@ -22,6 +22,7 @@ Created on: Feb 27, 2014
 #include "EpetraExt_RowMatrixOut.h"
 #include "../drt_lib/drt_dserror.H"
 #include "solver_amgnxn_preconditioner.H"
+#include "solver_amgnxn_vcycle.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -192,7 +193,7 @@ LINALG::SOLVER::AMGnxn_Interface::AMGnxn_Interface(Teuchos::ParameterList& param
 
   // Decide whether to choose a default type or parse a xml file
   std::string amgnxn_type =amglist.get<std::string>("AMGNXN_TYPE","AMG(BGS)");
-  if(amgnxn_type=="AMG(BGS)") Params_AMG_BGS(smoo_params_);
+  if(amgnxn_type=="TSI: AMG(BGS)") Params_TSI_AMG_BGS(smoo_params_);
   else if (amgnxn_type=="XML")
   {
     // Parse the whole file
@@ -255,102 +256,109 @@ LINALG::SOLVER::AMGnxn_Interface::AMGnxn_Interface(Teuchos::ParameterList& param
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void LINALG::SOLVER::AMGnxn_Interface::Params_AMG_BGS(Teuchos::ParameterList& params)
+void LINALG::SOLVER::AMGnxn_Interface::Params_TSI_AMG_BGS(Teuchos::ParameterList& params)
 {
 
-// This is a pre-defined AMG(BGS) preconditioner
-// TODO Add the possibility to the user of tuning some of the
-// more relevant parameters using the existing input params in the .dat file
+  // This is a pre-defined AMG(BGS) preconditioner
+  // TODO Add the possibility to the user of tuning some of the
+  // more relevant parameters using the existing input params in the .dat file
 
-// This is the xml file which defines the preconditioner
+  // This is the xml file which defines the preconditioner
 
   std::string file_contents = "";
-  file_contents  += "<ParameterList name=\"dummy\">                                                                                                    ";
-  file_contents  += "  <Parameter name=\"Preconditioner\" type=\"string\"  value=\"myAMGBGS\"/>                                                        ";
-  file_contents  += "  <!-- Preconditioners  -->                                                                                                       ";
-  file_contents  += "  <ParameterList name=\"myAMGBGS\">                                                                                               ";
-  file_contents  += "  <Parameter name=\"type\" type=\"string\"  value=\"AMG(BlockSmoother)\"/>                                                        ";
-  file_contents  += "    <ParameterList name=\"parameters\">                                                                                           ";
-  file_contents  += "      <Parameter name=\"verbosity\"                        type=\"string\"  value=\"on\"/>                                        ";
-  file_contents  += "      <Parameter name=\"number of levels\"                 type=\"int\"     value=\"3\"/>                                         ";
-  file_contents  += "      <Parameter name=\"smoother: all but coarsest level\" type=\"string\"  value=\"BGS\"/>                                       ";
-  file_contents  += "      <Parameter name=\"smoother: coarsest level\"         type=\"string\"  value=\"MERGE_AND_SOLVE\"/>                           ";
-  file_contents  += "      <Parameter name=\"muelu parameters for block 0\"       type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
-  file_contents  += "      <Parameter name=\"muelu parameters for block 1\"       type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
-  file_contents  += "      <Parameter name=\"muelu parameters for block 2\"       type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
-  file_contents  += "      <Parameter name=\"muelu parameters for block 3\"       type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
-  file_contents  += "      <Parameter name=\"muelu parameters for block 4\"       type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
-  file_contents  += "      <Parameter name=\"muelu parameters for block 5\"       type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
-  file_contents  += "      <Parameter name=\"muelu parameters for block 6\"       type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
-  file_contents  += "      <Parameter name=\"muelu parameters for block 7\"       type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
-  file_contents  += "      <Parameter name=\"muelu parameters for block 8\"       type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
-  file_contents  += "      <Parameter name=\"muelu parameters for block 9\"       type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
-  file_contents  += "      <Parameter name=\"muelu parameters for block 10\"      type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
-  file_contents  += "      <Parameter name=\"muelu parameters for block 11\"      type=\"string\"  value=\"SA-AMG-3D\"/>                               ";
-  file_contents  += "    </ParameterList>                                                                                                              ";
-  file_contents  += "  </ParameterList>                                                                                                                ";
-  file_contents  += "  <!-- Muelu  -->                                                                                                                 ";
-  file_contents  += "  <ParameterList name=\"SA-AMG-3D\">                                                                                              ";
-  file_contents  += "    <ParameterList name=\"Factories\">                                                                                            ";
-  file_contents  += "      <ParameterList name=\"myCoalesceDropFact\">                                                                                 ";
-  file_contents  += "        <Parameter name=\"factory\"                         type=\"string\" value=\"CoalesceDropFactory\"/>                       ";
-  file_contents  += "        <Parameter name=\"lightweight wrap\"                type=\"bool\"   value=\"false\"/>                                     ";
-  file_contents  += "      </ParameterList>                                                                                                            ";
-  file_contents  += "      <ParameterList name=\"myUncoupledAggregationFact\">                                                                         ";
-  file_contents  += "        <Parameter name=\"factory\"                         type=\"string\" value=\"UncoupledAggregationFactory\"/>               ";
-  file_contents  += "        <Parameter name=\"Graph\"                           type=\"string\" value=\"myCoalesceDropFact\"/>                        ";
-  file_contents  += "        <Parameter name=\"DofsPerNode\"                     type=\"string\" value=\"myCoalesceDropFact\"/>                        ";
-  file_contents  += "        <Parameter name=\"aggregation: max selected neighbors\"    type=\"int\"    value=\"0\"/>                                  ";
-  file_contents  += "        <Parameter name=\"aggregation: min agg size\"              type=\"int\"    value=\"12\"/>                                 ";
-  file_contents  += "        <Parameter name=\"aggregation: max agg size\"              type=\"int\"    value=\"27\"/>                                 ";
-  file_contents  += "      </ParameterList>                                                                                                            ";
-  file_contents  += "      <ParameterList name=\"myTentativePFactory\">                                                                                ";
-  file_contents  += "        <Parameter name=\"factory\"                         type=\"string\" value=\"TentativePFactory\"/>                         ";
-  file_contents  += "      </ParameterList>                                                                                                            ";
-  file_contents  += "      <ParameterList name=\"myProlongatorFact\">                                                                                  ";
-  file_contents  += "        <Parameter name=\"factory\"                         type=\"string\" value=\"SaPFactory\"/>                                ";
-  file_contents  += "        <Parameter name=\"P\"                               type=\"string\" value=\"myTentativePFactory\"/>                       ";
-  file_contents  += "        <Parameter name=\"Damping factor\"                  type=\"double\" value=\"1.333\"/>                                     ";
-  file_contents  += "      </ParameterList>                                                                                                            ";
-  file_contents  += "      <ParameterList name=\"myRestrictorFact\">                                                                                   ";
-  file_contents  += "        <Parameter name=\"factory\"                         type=\"string\" value=\"TransPFactory\"/>                             ";
-  file_contents  += "        <Parameter name=\"P\"                               type=\"string\" value=\"myProlongatorFact\"/>                         ";
-  file_contents  += "      </ParameterList>                                                                                                            ";
-  file_contents  += "      <ParameterList name=\"myRAPFact\">                                                                                          ";
-  file_contents  += "        <Parameter name=\"factory\"                         type=\"string\" value=\"RAPFactory\"/>                                ";
-  file_contents  += "        <Parameter name=\"P\"                               type=\"string\" value=\"myProlongatorFact\"/>                         ";
-  file_contents  += "        <Parameter name=\"R\"                               type=\"string\" value=\"myRestrictorFact\"/>                          ";
-  file_contents  += "        <Parameter name=\"RepairMainDiagonal\"              type=\"bool\"   value=\"true\"/>                                      ";
-  file_contents  += "      </ParameterList>                                                                                                            ";
-  file_contents  += "      <ParameterList name=\"myForwardGaussSeidel\">                                                                               ";
-  file_contents  += "        <Parameter name=\"factory\"                         type=\"string\" value=\"TrilinosSmoother\"/>                          ";
-  file_contents  += "        <Parameter name=\"type\"                            type=\"string\"  value=\"RELAXATION\"/>                               ";
-  file_contents  += "        <ParameterList name=\"ParameterList\">                                                                                    ";
-  file_contents  += "          <Parameter name=\"relaxation: type\"              type=\"string\"  value=\"Gauss-Seidel\"/>                             ";
-  file_contents  += "          <Parameter name=\"relaxation: backward mode\"     type=\"bool\"    value=\"false\"/>                                    ";
-  file_contents  += "          <Parameter name=\"relaxation: sweeps\"            type=\"int\"     value=\"3\"/>                                        ";
-  file_contents  += "          <Parameter name=\"relaxation: damping factor\"    type=\"double\"  value=\"1\"/>                                        ";
-  file_contents  += "        </ParameterList>                                                                                                          ";
-  file_contents  += "      </ParameterList>                                                                                                            ";
-  file_contents  += "    </ParameterList>                                                                                                              ";
-  file_contents  += "    <ParameterList name=\"Hierarchy\">                                                                                            ";
-  file_contents  += "      <Parameter name=\"numDesiredLevel\"          type=\"int\"      value=\"3\"/>                                                ";
-  file_contents  += "      <Parameter name=\"maxCoarseSize\"            type=\"int\"      value=\"1000\"/>                                             ";
-  file_contents  += "      <Parameter name=\"verbosity\"                type=\"string\"   value=\"High\"/>                                             ";
-  file_contents  += "      <ParameterList name=\"All\">                                                                                                ";
-  file_contents  += "        <Parameter name=\"startLevel\"             type=\"int\"      value=\"0\"/>                                                ";
-  file_contents  += "        <Parameter name=\"Smoother\"               type=\"string\"   value=\"myForwardGaussSeidel\"/>                             ";
-  file_contents  += "        <Parameter name=\"CoarseSolver\"           type=\"string\"   value=\"myForwardGaussSeidel\"/>                             ";
-  file_contents  += "        <Parameter name=\"Aggregates\"             type=\"string\"   value=\"myUncoupledAggregationFact\"/>                       ";
-  file_contents  += "        <Parameter name=\"Graph\"                  type=\"string\"   value=\"myCoalesceDropFact\"/>                               ";
-  file_contents  += "        <Parameter name=\"A\"                      type=\"string\"   value=\"myRAPFact\"/>                                        ";
-  file_contents  += "        <Parameter name=\"P\"                      type=\"string\"   value=\"myProlongatorFact\"/>                                ";
-  file_contents  += "        <Parameter name=\"R\"                      type=\"string\"   value=\"myRestrictorFact\"/>                                 ";
-  file_contents  += "        <Parameter name=\"Nullspace\"              type=\"string\"   value=\"myTentativePFactory\"/>                              ";
-  file_contents  += "      </ParameterList>                                                                                                            ";
-  file_contents  += "    </ParameterList>                                                                                                              ";
-  file_contents  += "  </ParameterList>                                                                                                                ";
-  file_contents  += "</ParameterList>                                                                                                                  ";
+
+  file_contents += "<ParameterList name=\"dummy\">                                                                                     ";
+  file_contents += "  <Parameter name=\"Preconditioner\" type=\"string\"  value=\"myAMGBGS\"/>                                         ";
+  file_contents += "  <ParameterList name=\"myAMGBGS\">                                                                                ";
+  file_contents += "  <Parameter name=\"type\" type=\"string\"  value=\"AMG(BlockSmoother)\"/>                                         ";
+  file_contents += "    <ParameterList name=\"parameters\">                                                                            ";
+  file_contents += "      <Parameter name=\"verbosity\"                        type=\"string\"  value=\"on\"/>                         ";
+  file_contents += "      <Parameter name=\"number of levels\"                 type=\"int\"     value=\"3\"/>                          ";
+  file_contents += "      <Parameter name=\"smoother: all but coarsest level\" type=\"string\"  value=\"myFineSmoother\"/>             ";
+  file_contents += "      <Parameter name=\"smoother: coarsest level\"         type=\"string\"  value=\"myFineSmoother\"/>             ";
+  file_contents += "      <Parameter name=\"muelu parameters for block 0\"       type=\"string\"  value=\"SA-AMG-3D\"/>                ";
+  file_contents += "      <Parameter name=\"muelu parameters for block 1\"       type=\"string\"  value=\"SA-AMG-3D\"/>                ";
+  file_contents += "    </ParameterList>                                                                                               ";
+  file_contents += "  </ParameterList>                                                                                                 ";
+  file_contents += "  <ParameterList name=\"myFineSmoother\">                                                                          ";
+  file_contents += "    <Parameter name=\"type\"   type=\"string\"  value=\"BGS\"/>                                                    ";
+  file_contents += "    <ParameterList name=\"parameters\">                                                                            ";
+  file_contents += "      <Parameter name=\"blocks\"      type=\"string\"  value=\"(0),(1)\"/>                                         ";
+  file_contents += "      <Parameter name=\"smoothers\"   type=\"string\"  value=\"REUSE_MUELU_SMOOTHER,REUSE_MUELU_SMOOTHER\"/>       ";
+  file_contents += "      <Parameter name=\"sweeps\"      type=\"int\"     value=\"1\"/>                                               ";
+  file_contents += "      <Parameter name=\"omega\"       type=\"double\"  value=\"1.0\"/>                                             ";
+  file_contents += "    </ParameterList>                                                                                               ";
+  file_contents += "  </ParameterList>                                                                                                 ";
+  file_contents += "  <ParameterList name=\"SA-AMG-3D\">                                                                               ";
+  file_contents += "    <ParameterList name=\"Factories\">                                                                             ";
+  file_contents += "      <ParameterList name=\"myCoalesceDropFact\">                                                                  ";
+  file_contents += "        <Parameter name=\"factory\"                         type=\"string\" value=\"CoalesceDropFactory\"/>        ";
+  file_contents += "        <Parameter name=\"lightweight wrap\"                type=\"bool\"   value=\"false\"/>                      ";
+  file_contents += "      </ParameterList>                                                                                             ";
+  file_contents += "      <ParameterList name=\"myUncoupledAggregationFact\">                                                          ";
+  file_contents += "        <Parameter name=\"factory\"                         type=\"string\" value=\"UncoupledAggregationFactory\"/>";
+  file_contents += "        <Parameter name=\"Graph\"                           type=\"string\" value=\"myCoalesceDropFact\"/>         ";
+  file_contents += "        <Parameter name=\"DofsPerNode\"                     type=\"string\" value=\"myCoalesceDropFact\"/>         ";
+  file_contents += "        <Parameter name=\"aggregation: max selected neighbors\"    type=\"int\"    value=\"0\"/>                   ";
+  file_contents += "        <Parameter name=\"aggregation: min agg size\"              type=\"int\"    value=\"12\"/>                  ";
+  file_contents += "        <Parameter name=\"aggregation: max agg size\"              type=\"int\"    value=\"27\"/>                  ";
+  file_contents += "      </ParameterList>                                                                                             ";
+  file_contents += "      <ParameterList name=\"myTentativePFactory\">                                                                 ";
+  file_contents += "        <Parameter name=\"factory\"                         type=\"string\" value=\"TentativePFactory\"/>          ";
+  file_contents += "      </ParameterList>                                                                                             ";
+  file_contents += "      <ParameterList name=\"myProlongatorFact\">                                                                   ";
+  file_contents += "        <Parameter name=\"factory\"                         type=\"string\" value=\"SaPFactory\"/>                 ";
+  file_contents += "        <Parameter name=\"P\"                               type=\"string\" value=\"myTentativePFactory\"/>        ";
+  file_contents += "        <Parameter name=\"Damping factor\"                  type=\"double\" value=\"1.333\"/>                      ";
+  file_contents += "      </ParameterList>                                                                                             ";
+  file_contents += "      <ParameterList name=\"myRestrictorFact\">                                                                    ";
+  file_contents += "        <Parameter name=\"factory\"                         type=\"string\" value=\"TransPFactory\"/>              ";
+  file_contents += "        <Parameter name=\"P\"                               type=\"string\" value=\"myProlongatorFact\"/>          ";
+  file_contents += "      </ParameterList>                                                                                             ";
+  file_contents += "      <ParameterList name=\"myRAPFact\">                                                                           ";
+  file_contents += "        <Parameter name=\"factory\"                         type=\"string\" value=\"RAPFactory\"/>                 ";
+  file_contents += "        <Parameter name=\"P\"                               type=\"string\" value=\"myProlongatorFact\"/>          ";
+  file_contents += "        <Parameter name=\"R\"                               type=\"string\" value=\"myRestrictorFact\"/>           ";
+  file_contents += "        <Parameter name=\"RepairMainDiagonal\"              type=\"bool\"   value=\"true\"/>                       ";
+  file_contents += "      </ParameterList>                                                                                             ";
+  file_contents += "      <ParameterList name=\"myForwardGaussSeidel\">                                                                ";
+  file_contents += "        <Parameter name=\"factory\"                         type=\"string\" value=\"TrilinosSmoother\"/>           ";
+  file_contents += "        <Parameter name=\"type\"                            type=\"string\"  value=\"RELAXATION\"/>                ";
+  file_contents += "        <ParameterList name=\"ParameterList\">                                                                     ";
+  file_contents += "          <Parameter name=\"relaxation: type\"              type=\"string\"  value=\"Gauss-Seidel\"/>              ";
+  file_contents += "          <Parameter name=\"relaxation: backward mode\"     type=\"bool\"    value=\"false\"/>                     ";
+  file_contents += "          <Parameter name=\"relaxation: sweeps\"            type=\"int\"     value=\"4\"/>                         ";
+  file_contents += "          <Parameter name=\"relaxation: damping factor\"    type=\"double\"  value=\"0.79\"/>                      ";
+  file_contents += "        </ParameterList>                                                                                           ";
+  file_contents += "      </ParameterList>                                                                                             ";
+  file_contents += "      <ParameterList name=\"mySolverFact\">                                                                        ";
+  file_contents += "        <Parameter name=\"factory\"                         type=\"string\" value=\"DirectSolver\"/>               ";
+  file_contents += "        <Parameter name=\"type\"                            type=\"string\" value=\"Klu\"/>                        ";
+  file_contents += "        <ParameterList name=\"ParameterList\">                                                                     ";
+  file_contents += "          <Parameter name=\"Reindex\"                       type=\"bool\" value=\"true\"/>                         ";
+  file_contents += "        </ParameterList>                                                                                           ";
+  file_contents += "      </ParameterList>                                                                                             ";
+  file_contents += "    </ParameterList>                                                                                               ";
+  file_contents += "    <ParameterList name=\"Hierarchy\">                                                                             ";
+  file_contents += "      <Parameter name=\"max levels\"               type=\"int\"      value=\"3\"/>                                 ";
+  file_contents += "      <Parameter name=\"coarse: max size\"         type=\"int\"      value=\"1\"/>                                 ";
+  file_contents += "      <Parameter name=\"verbosity\"                type=\"string\"   value=\"Low\"/>                               ";
+  file_contents += "      <ParameterList name=\"All\">                                                                                 ";
+  file_contents += "        <Parameter name=\"startLevel\"             type=\"int\"      value=\"0\"/>                                 ";
+  file_contents += "        <Parameter name=\"Smoother\"               type=\"string\"   value=\"myForwardGaussSeidel\"/>              ";
+  file_contents += "        <Parameter name=\"CoarseSolver\"           type=\"string\"   value=\"mySolverFact\"/>                      ";
+  file_contents += "        <Parameter name=\"Aggregates\"             type=\"string\"   value=\"myUncoupledAggregationFact\"/>        ";
+  file_contents += "        <Parameter name=\"Graph\"                  type=\"string\"   value=\"myCoalesceDropFact\"/>                ";
+  file_contents += "        <Parameter name=\"A\"                      type=\"string\"   value=\"myRAPFact\"/>                         ";
+  file_contents += "        <Parameter name=\"P\"                      type=\"string\"   value=\"myProlongatorFact\"/>                 ";
+  file_contents += "        <Parameter name=\"R\"                      type=\"string\"   value=\"myRestrictorFact\"/>                  ";
+  file_contents += "        <Parameter name=\"Nullspace\"              type=\"string\"   value=\"myTentativePFactory\"/>               ";
+  file_contents += "      </ParameterList>                                                                                             ";
+  file_contents += "    </ParameterList>                                                                                               ";
+  file_contents += "  </ParameterList>                                                                                                 ";
+  file_contents += "</ParameterList>                                                                                                   ";
+
+
 
   Teuchos::updateParametersFromXmlString(
       file_contents,Teuchos::Ptr<Teuchos::ParameterList>(&params));
@@ -444,12 +452,44 @@ LINALG::SOLVER::AMGnxn_Operator::AMGnxn_Operator(
 int  LINALG::SOLVER::AMGnxn_Operator::ApplyInverse(
     const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
+
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_Operator::ApplyInverse");
   if(!is_setup_flag_)
     dserror("ApplyInverse cannot be called without a previous set up of the preconditioner");
-  Epetra_MultiVector Ytmp(Y.Map(),X.NumVectors(),true); // true is necessary! (initial guess has to be zero)
-  V_->Apply(X,Ytmp);
-  Y = Ytmp;
+
+  const MultiMapExtractor& range_ex  = A_->RangeExtractor();
+  const MultiMapExtractor& domain_ex = A_->DomainExtractor();
+
+  int NumBlocks = A_->Rows();
+  if (NumBlocks != A_->Cols())
+    dserror("The block matrix has to be square");
+
+  AMGNXN::BlockedVector Xbl(NumBlocks);
+  AMGNXN::BlockedVector Ybl(NumBlocks);
+
+  int NV = X.NumVectors();
+  for(int i=0;i<NumBlocks;i++)
+  {
+    Teuchos::RCP<Epetra_MultiVector> Xi =
+      Teuchos::rcp(new Epetra_MultiVector(*(range_ex.Map(i)),NV));
+
+    Teuchos::RCP<Epetra_MultiVector> Yi =
+      Teuchos::rcp(new Epetra_MultiVector(*(domain_ex.Map(i)),NV));
+
+    range_ex.ExtractVector(X,i,*Xi);
+    domain_ex.ExtractVector(Y,i,*Yi);
+    Xbl.SetVector(Xi,i);
+    Ybl.SetVector(Yi,i);
+  }
+
+  if (V_==Teuchos::null)
+    dserror("Null pointer. We cannot call the vcycle");
+
+  V_->Solve(Xbl,Ybl,true);
+
+  for(int i=0;i<NumBlocks;i++)
+    domain_ex.InsertVector(*(Ybl.GetVector(i)),i,Y);
+
   return 0;
 }
 
@@ -462,75 +502,30 @@ void  LINALG::SOLVER::AMGnxn_Operator::Setup()
 
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_Operator::Setup");
 
-  std::string verbosity = amgnxn_params_.get<std::string>("verbosity","off");
-  if (verbosity=="on")
-  {
-    std::cout << "===============================================" << std::endl;
-    std::cout << "LINALG::SOLVER::AMGnxn_Operator : debug info  (begin)" << std::endl;
-    std::cout << std::endl;
-    std::cout << ">>>>>> Creating MueLu AMG Hierarchies for each one of the blocks" << std::endl;
-    std::cout << std::endl;
-  }
 
-  //recover the muelu params
   int NumBlocks = A_->Rows();
+  if(NumBlocks != A_->Cols())
+    dserror("We spect a square matrix here");
+
+  // Extract the blockedMatrix
+  Teuchos::RCP<AMGNXN::BlockedMatrix> Abl = Teuchos::rcp(new AMGNXN::BlockedMatrix(NumBlocks,NumBlocks));
   for(int i=0;i<NumBlocks;i++)
   {
-
-    // recover the name of the list
-    std::stringstream ss;
-    ss << i;
-    std::string param_name = "muelu parameters for block " + ss.str();
-    std::string list_name =amgnxn_params_.get<std::string>(param_name,"none");
-    if (list_name == "none")
-      dserror("You must specify the parameters for creating the AMG on block %d",i);
-
-    // Parse contents of the list
-    Teuchos::ParameterList muelu_list_this_block;
-    if (not muelu_params_.isSublist(list_name)) dserror("list %s not found",list_name.c_str());
-    std::string xml_file = muelu_params_.sublist(list_name).get<std::string>("xml file","none");
-    if (xml_file!="none")
-      Teuchos::updateParametersFromXmlFile(
-          xml_file,Teuchos::Ptr<Teuchos::ParameterList>(&muelu_list_this_block));
-    else
-      muelu_list_this_block=muelu_params_.sublist(list_name);
-
-    muelu_lists_.push_back(muelu_list_this_block);
+    for(int j=0;j<NumBlocks;j++)
+    {
+      Teuchos::RCP<SparseMatrix> Aij = Teuchos::rcp(new SparseMatrix(A_->Matrix(i,j),View));
+      Abl->SetMatrix(Aij,i,j);
+    }
   }
 
 
-  int num_levels_amg = amgnxn_params_.get<int>("number of levels",20);
-  //if(num_levels_amg==-1)
-  //  dserror("Missing \"number of levels\" in your xml file");
-  H_ = Teuchos::rcp(new  AMGnxn_Hierarchies(
-        A_,
-        muelu_lists_,
-        num_pdes_,
-        null_spaces_dim_,
-        null_spaces_data_,
-        num_levels_amg,
-        verbosity));
+ V_ = Teuchos::rcp(new AMGNXN::CoupledAmg(Abl,num_pdes_,null_spaces_dim_,null_spaces_data_,amgnxn_params_,smoothers_params_,muelu_params_));
 
-  if (verbosity=="on")
-  {
-    std::cout << std::endl;
-    std::cout << ">>>>>> Creating the monolithic hierarchy" << std::endl;
-    std::cout << std::endl;
-  }
-
-  M_ = Teuchos::rcp( new AMGnxn_MonolithicHierarchy( H_,amgnxn_params_,smoothers_params_));
-  V_ = M_->BuildVCycle();
-
-  if (verbosity=="on")
-  {
-    std::cout << std::endl;
-    std::cout << "LINALG::SOLVER::AMGnxn_Operator : debug info  (end)" << std::endl;
-    std::cout << "===============================================" << std::endl;
-  }
 
   is_setup_flag_=true;
   return;
 }
+
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -581,15 +576,43 @@ int  LINALG::SOLVER::BlockSmoother_Operator::ApplyInverse(
     const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::BlockSmoother_Operator::ApplyInverse");
+
   if(!is_setup_flag_)
     dserror("ApplyInverse cannot be called without a previous set up of the preconditioner");
-  if(Sbase_==Teuchos::null) dserror("Something wrong");
-  Epetra_MultiVector Ytmp(Y.Map(),X.NumVectors(),true); // true is necessary! (initial guess has to be zero)
-  Sbase_->Apply(X,Ytmp);
-  Y=Ytmp;
-  // TODO This does not work, Why??
-  //if(S_==Teuchos::null) dserror("Something wrong");
-  //S_->Apply(X,Y);
+
+
+  const MultiMapExtractor& range_ex  = A_->RangeExtractor();
+  const MultiMapExtractor& domain_ex = A_->DomainExtractor();
+
+  int NumBlocks = A_->Rows();
+  if (NumBlocks != A_->Cols())
+    dserror("The block matrix has to be square");
+
+  AMGNXN::BlockedVector Xbl(NumBlocks);
+  AMGNXN::BlockedVector Ybl(NumBlocks);
+  int NV = X.NumVectors();
+  for(int i=0;i<NumBlocks;i++)
+  {
+    Teuchos::RCP<Epetra_MultiVector> Xi = Teuchos::rcp(new Epetra_MultiVector(*(range_ex.Map(i)),NV));
+    Teuchos::RCP<Epetra_MultiVector> Yi = Teuchos::rcp(new Epetra_MultiVector(*(domain_ex.Map(i)),NV));
+    range_ex.ExtractVector(X,i,*Xi);
+    domain_ex.ExtractVector(Y,i,*Yi);
+    Xbl.SetVector(Xi,i);
+    Ybl.SetVector(Yi,i);
+  }
+
+
+  if (S_==Teuchos::null)
+    dserror("Null pointer. We cannot call the smoother");
+
+  //Ybl.Scale(0.0);
+  S_->Solve(Xbl,Ybl,true);
+
+  for(int i=0;i<NumBlocks;i++)
+    domain_ex.InsertVector(*(Ybl.GetVector(i)),i,Y);
+
+
+
   return 0;
 }
 
@@ -602,7 +625,14 @@ void  LINALG::SOLVER::BlockSmoother_Operator::Setup()
 
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::BlockSmoother_Operator::Setup");
 
+
   std::string verbosity = amgnxn_params_.get<std::string>("verbosity","off");
+
+  if (A_->Comm().MyPID() != 0)
+    verbosity = "off";
+
+
+
   if (verbosity=="on")
   {
     std::cout << "===============================================" << std::endl;
@@ -617,16 +647,26 @@ void  LINALG::SOLVER::BlockSmoother_Operator::Setup()
   std::vector<int> blocks(NumBlocks,0);
   for(int i=0;i<NumBlocks;i++)
     blocks[i]=i;
-  std::vector<NullSpaceInfo> null_space_blocks;
+  std::vector<AMGNXN::NullSpaceInfo> null_space_blocks;
   for(int i=0;i<NumBlocks;i++)
   {
-    NullSpaceInfo myNS(num_pdes_[i],null_spaces_dim_[i],null_spaces_data_[i]);
+    AMGNXN::NullSpaceInfo myNS(num_pdes_[i],null_spaces_dim_[i],null_spaces_data_[i]);
     null_space_blocks.push_back(myNS);
+  }
+  Teuchos::RCP<AMGNXN::BlockedMatrix> Abl =
+    Teuchos::rcp(new AMGNXN::BlockedMatrix(NumBlocks,NumBlocks));
+  for(int i=0;i<NumBlocks;i++)
+  {
+    for(int j=0;j<NumBlocks;j++)
+    {
+      Teuchos::RCP<SparseMatrix> Aij = Teuchos::rcp(new SparseMatrix(A_->Matrix(i,j),View));
+      Abl->SetMatrix(Aij,i,j);
+    }
   }
 
   // smoother factory
-  AMGnxn_SmootherFactory mySmootherCreator;
-  mySmootherCreator.SetOperator(A_);
+  AMGNXN::SmootherFactory mySmootherCreator;
+  mySmootherCreator.SetOperator(Abl);
   mySmootherCreator.SetParamsSmoother(smoothers_params_);
   mySmootherCreator.SetLevel(0);
   mySmootherCreator.SetBlocks(blocks);
@@ -636,10 +676,9 @@ void  LINALG::SOLVER::BlockSmoother_Operator::Setup()
 
   // Create smoother
   Sbase_ = mySmootherCreator.Create();
-  Teuchos::RCP<AMGnxn_BlockSmootherBase>
-    S_ = Teuchos::rcp_dynamic_cast<AMGnxn_BlockSmootherBase>(Sbase_);
+  S_ = Teuchos::rcp_dynamic_cast<AMGNXN::BlockedSmoother>(Sbase_);
   if(S_ == Teuchos::null)
-    dserror("Something wrong. Fix the xml file defining the smoother");
+    dserror("We expect a blocked smoother. Fix the xml file defining the smoother");
 
   //// Print maps
   //for(int i=0;i<NumBlocks;i++)

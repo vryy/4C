@@ -144,7 +144,7 @@ AZSCAL                          none
 AZSOLVE                         GMRES
 AZSUB                           300
 AZTOL                           1e-06
-AMGNXN_TYPE                     AMG(BGS)
+AMGNXN_TYPE                     TSI: AMG(BGS)
 SOLVER                          Aztec_MSR //UMFPACK,undefined
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6 THEXPANS 1.72e-5 CAPA 3405.49 CONDUCT 3.1e5 INITTEMP 293.15 // Cu

@@ -12,7 +12,6 @@ Created on: Aug 11, 2014
 
 
 #ifdef HAVE_MueLu
-
 #include <iostream>
 
 #include <Teuchos_PtrDecl.hpp>
@@ -24,13 +23,14 @@ Created on: Aug 11, 2014
 #include "EpetraExt_RowMatrixOut.h"
 #include "../drt_lib/drt_dserror.H"
 #include "solver_amgnxn_hierarchies.H"
+#include "solver_amgnxn_vcycle.H"
 
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-LINALG::SOLVER::AMGnxn_Hierarchies::AMGnxn_Hierarchies(
-    Teuchos::RCP<BlockSparseMatrixBase> A,
+LINALG::SOLVER::AMGNXN::Hierarchies::Hierarchies(
+    Teuchos::RCP<AMGNXN::BlockedMatrix> A,
     std::vector<Teuchos::ParameterList> muelu_params,
     std::vector<int> num_pdes,
     std::vector<int> null_spaces_dim,
@@ -42,12 +42,12 @@ muelu_params_     (muelu_params    ),
 num_pdes_         (num_pdes        ),
 null_spaces_dim_  (null_spaces_dim ),
 null_spaces_data_ (null_spaces_data),
-NumBlocks_        (A->Rows()       ),
+NumBlocks_        (A->GetNumRows() ),
 NumLevelAMG_      (NumLevelAMG     ),
 verbosity_        (verbosity       )
 {
   // Plausibility checks
-  if (A_->Rows() != A_->Cols() or
+  if (A_->GetNumRows() != A_->GetNumCols() or
       (int)(muelu_params_.size()) != NumBlocks_ or
       (int)( num_pdes_.size()) != NumBlocks_ or
       (int)( null_spaces_dim_.size()) != NumBlocks_ or
@@ -61,7 +61,7 @@ verbosity_        (verbosity       )
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-int LINALG::SOLVER::AMGnxn_Hierarchies::GetNumLevels(int block)
+int LINALG::SOLVER::AMGNXN::Hierarchies::GetNumLevels(int block)
 {
   return H_block_[block]->GetNumLevels();
 }
@@ -70,7 +70,7 @@ int LINALG::SOLVER::AMGnxn_Hierarchies::GetNumLevels(int block)
 /*------------------------------------------------------------------------------*/
 
 std::vector<Teuchos::RCP<LINALG::SparseMatrix> >
-LINALG::SOLVER::AMGnxn_Hierarchies::GetA(int block)
+LINALG::SOLVER::AMGNXN::Hierarchies::GetA(int block)
 {
   return A_block_level_[block];
 }
@@ -79,7 +79,7 @@ LINALG::SOLVER::AMGnxn_Hierarchies::GetA(int block)
 /*------------------------------------------------------------------------------*/
 
 std::vector<Teuchos::RCP<LINALG::SparseMatrix> >
-LINALG::SOLVER::AMGnxn_Hierarchies::GetP(int block)
+LINALG::SOLVER::AMGNXN::Hierarchies::GetP(int block)
 {
   return P_block_level_[block];
 }
@@ -88,7 +88,7 @@ LINALG::SOLVER::AMGnxn_Hierarchies::GetP(int block)
 /*------------------------------------------------------------------------------*/
 
 std::vector<Teuchos::RCP<LINALG::SparseMatrix> >
-LINALG::SOLVER::AMGnxn_Hierarchies::GetR(int block)
+LINALG::SOLVER::AMGNXN::Hierarchies::GetR(int block)
 {
   return R_block_level_[block];
 }
@@ -96,8 +96,8 @@ LINALG::SOLVER::AMGnxn_Hierarchies::GetR(int block)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-std::vector<Teuchos::RCP<LINALG::SOLVER::MueluSmootherWrapper> >
-LINALG::SOLVER::AMGnxn_Hierarchies::GetSPre(int block)
+std::vector<Teuchos::RCP<LINALG::SOLVER::AMGNXN::MueluSmootherWrapper> >
+LINALG::SOLVER::AMGNXN::Hierarchies::GetSPre(int block)
 {
   return SPre_block_level_[block];
 }
@@ -105,8 +105,8 @@ LINALG::SOLVER::AMGnxn_Hierarchies::GetSPre(int block)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-std::vector<Teuchos::RCP<LINALG::SOLVER::MueluSmootherWrapper> >
-LINALG::SOLVER::AMGnxn_Hierarchies::GetSPos(int block)
+std::vector<Teuchos::RCP<LINALG::SOLVER::AMGNXN::MueluSmootherWrapper> >
+LINALG::SOLVER::AMGNXN::Hierarchies::GetSPos(int block)
 {
   return SPos_block_level_[block];
 }
@@ -115,7 +115,7 @@ LINALG::SOLVER::AMGnxn_Hierarchies::GetSPos(int block)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-int LINALG::SOLVER::AMGnxn_Hierarchies::GetNumPDEs(int block)
+int LINALG::SOLVER::AMGNXN::Hierarchies::GetNumPDEs(int block)
 {
   return num_pdes_[block];
 }
@@ -123,7 +123,7 @@ int LINALG::SOLVER::AMGnxn_Hierarchies::GetNumPDEs(int block)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-int LINALG::SOLVER::AMGnxn_Hierarchies::GetNullSpaceDim(int block)
+int LINALG::SOLVER::AMGNXN::Hierarchies::GetNullSpaceDim(int block)
 {
   return null_spaces_dim_[block];
 }
@@ -132,7 +132,7 @@ int LINALG::SOLVER::AMGnxn_Hierarchies::GetNullSpaceDim(int block)
 /*------------------------------------------------------------------------------*/
 
 Teuchos::RCP<std::vector<double> >
-LINALG::SOLVER::AMGnxn_Hierarchies::GetNullSpaceData(int block)
+LINALG::SOLVER::AMGNXN::Hierarchies::GetNullSpaceData(int block)
 {
   return null_spaces_data_[block];
 }
@@ -140,10 +140,10 @@ LINALG::SOLVER::AMGnxn_Hierarchies::GetNullSpaceData(int block)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
+void LINALG::SOLVER::AMGNXN::Hierarchies::Setup()
 {
 
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_Hierarchies::Setup");
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::Hierarchies::Setup");
 
   // ===========================================================
   // Build up MueLu Hierarchies of each one of the blocks
@@ -153,8 +153,8 @@ void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
   std::vector<int> offsets(NumLevelAMG_-1,0);
   for(int block=0;block<NumBlocks_;block++)
   {
-    int offsetFineLevel =  A_->Matrix(block,block).RowMap().MinAllGID();
-    Teuchos::RCP<Epetra_Operator> A_eop = A_->Matrix(block,block).EpetraOperator();
+    int offsetFineLevel =  A_->GetMatrix(block,block)->RowMap().MinAllGID();
+    Teuchos::RCP<Epetra_Operator> A_eop = A_->GetMatrix(block,block)->EpetraOperator();
     H_block_[block]=BuildMueLuHierarchy(
         muelu_params_[block],
         num_pdes_[block],
@@ -194,17 +194,17 @@ void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
     std::vector<Teuchos::RCP<SparseMatrix> > A_level(NumLevel_this_block,Teuchos::null);
     std::vector<Teuchos::RCP<SparseMatrix> > P_level(NumLevel_this_block-1,Teuchos::null);
     std::vector<Teuchos::RCP<SparseMatrix> > R_level(NumLevel_this_block-1,Teuchos::null);
-    std::vector<Teuchos::RCP<MueluSmootherWrapper> > SPre_level(NumLevel_this_block,Teuchos::null);
-    std::vector<Teuchos::RCP<MueluSmootherWrapper> > SPos_level(NumLevel_this_block,Teuchos::null);
+    std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper> > SPre_level(NumLevel_this_block,Teuchos::null);
+    std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper> > SPos_level(NumLevel_this_block,Teuchos::null);
 
     Teuchos::RCP<Matrix>              myA = Teuchos::null;
     Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
     Teuchos::RCP<SparseMatrix>     myAspa = Teuchos::null;
     Teuchos::RCP<SmootherBase>        myS = Teuchos::null;
-    Teuchos::RCP<LINALG::SOLVER::MueluSmootherWrapper> mySWrap = Teuchos::null;
+    Teuchos::RCP<LINALG::SOLVER::AMGNXN::MueluSmootherWrapper> mySWrap = Teuchos::null;
 
-    bool explicitdirichlet = A_->Matrix(0,0).ExplicitDirichlet();
-    bool savegraph         = A_->Matrix(0,0).SaveGraph();
+    bool explicitdirichlet = A_->GetMatrix(0,0)->ExplicitDirichlet();
+    bool savegraph         = A_->GetMatrix(0,0)->SaveGraph();
 
     for(int level=0;level<NumLevel_this_block;level++)
     {
@@ -222,7 +222,7 @@ void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
       if (this_level->IsAvailable("PreSmoother"))
       {
         myS     = this_level->Get< Teuchos::RCP<SmootherBase> >("PreSmoother");
-        mySWrap = Teuchos::rcp(new LINALG::SOLVER::MueluSmootherWrapper(myS));
+        mySWrap = Teuchos::rcp(new LINALG::SOLVER::AMGNXN::MueluSmootherWrapper(myS));
         SPre_level[level]=mySWrap;
       }
       else
@@ -233,7 +233,7 @@ void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
         if (this_level->IsAvailable("PostSmoother"))
         {
           myS     = this_level->Get< Teuchos::RCP<SmootherBase> >("PostSmoother");
-          mySWrap = Teuchos::rcp(new LINALG::SOLVER::MueluSmootherWrapper(myS));
+          mySWrap = Teuchos::rcp(new LINALG::SOLVER::AMGNXN::MueluSmootherWrapper(myS));
           SPos_level[level]=mySWrap;
         }
         else
@@ -279,7 +279,7 @@ void LINALG::SOLVER::AMGnxn_Hierarchies::Setup()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
+Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy(
     Teuchos::ParameterList paramListFromXml,
     int numdf,
     int dimns,
@@ -291,7 +291,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
     int offsetFineLevel)
 {
 
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy");
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy");
 
   //Some cheks
   if(numdf<1 or dimns<1)
@@ -350,9 +350,11 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
   MatrixList.set<int>("DOF offset",offsetFineLevel);
   MatrixList.set<int>("number of equations",numdf);
 
-
+ if(A_eop->Comm().MyPID()==0)
+ {
   std::cout << "offsetFineLevel " << offsetFineLevel << std::endl;
   std::cout << "offsets_str " << offsets_str << std::endl;
+ }
 
   // Build up hierarchy
   ParameterListInterpreter mueLuFactory(paramListFromXml);
@@ -390,7 +392,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::BuildMueLuHierarchy(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-int LINALG::SOLVER::AMGnxn_Hierarchies::GetNumLevelMin()
+int LINALG::SOLVER::AMGNXN::Hierarchies::GetNumLevelMin()
 {
   return NumLevelMin_;
 }
@@ -398,7 +400,7 @@ int LINALG::SOLVER::AMGnxn_Hierarchies::GetNumLevelMin()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-int LINALG::SOLVER::AMGnxn_Hierarchies::GetNumBlocks()
+int LINALG::SOLVER::AMGNXN::Hierarchies::GetNumBlocks()
 {
   return NumBlocks_;
 }
@@ -406,7 +408,8 @@ int LINALG::SOLVER::AMGnxn_Hierarchies::GetNumBlocks()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::SOLVER::AMGnxn_Hierarchies::GetBlockMatrix()
+Teuchos::RCP<LINALG::SOLVER::AMGNXN::BlockedMatrix>
+LINALG::SOLVER::AMGNXN::Hierarchies::GetBlockMatrix()
 {
   if (A_== Teuchos::null)
     dserror("No data");
@@ -416,7 +419,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::SOLVER::AMGnxn_Hierarchies::
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::GetH(int block)
+Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGNXN::Hierarchies::GetH(int block)
 {
   Teuchos::RCP<Hierarchy> H = H_block_[block];
   if(H == Teuchos::null)
@@ -428,7 +431,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGnxn_Hierarchies::GetH(int block)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::SOLVER::AMGnxn_Hierarchies::GetA(int block, int level)
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::SOLVER::AMGNXN::Hierarchies::GetA(int block, int level)
 {
   Teuchos::RCP<SparseMatrix> A = A_block_level_[block][level];
   if(A == Teuchos::null)
@@ -440,7 +443,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SOLVER::AMGnxn_Hierarchies::GetA(int 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::SOLVER::AMGnxn_Hierarchies::GetP(int block, int level)
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::SOLVER::AMGNXN::Hierarchies::GetP(int block, int level)
 {
   Teuchos::RCP<SparseMatrix> P = P_block_level_[block][level];
   if(P == Teuchos::null)
@@ -451,7 +454,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SOLVER::AMGnxn_Hierarchies::GetP(int 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::SOLVER::AMGnxn_Hierarchies::GetR(int block, int level)
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::SOLVER::AMGNXN::Hierarchies::GetR(int block, int level)
 {
   Teuchos::RCP<SparseMatrix> R = R_block_level_[block][level];
   if(R == Teuchos::null)
@@ -463,10 +466,10 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SOLVER::AMGnxn_Hierarchies::GetR(int 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::SOLVER::MueluSmootherWrapper> LINALG::SOLVER::AMGnxn_Hierarchies::GetSPre
+Teuchos::RCP<LINALG::SOLVER::AMGNXN::MueluSmootherWrapper> LINALG::SOLVER::AMGNXN::Hierarchies::GetSPre
 (int block, int level)
 {
-  Teuchos::RCP<MueluSmootherWrapper> SPre = SPre_block_level_[block][level];
+  Teuchos::RCP<AMGNXN::MueluSmootherWrapper> SPre = SPre_block_level_[block][level];
   if(SPre == Teuchos::null)
     dserror("No data");
   return SPre;
@@ -476,20 +479,22 @@ Teuchos::RCP<LINALG::SOLVER::MueluSmootherWrapper> LINALG::SOLVER::AMGnxn_Hierar
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::SOLVER::MueluSmootherWrapper> LINALG::SOLVER::AMGnxn_Hierarchies::GetSPos
+Teuchos::RCP<LINALG::SOLVER::AMGNXN::MueluSmootherWrapper> LINALG::SOLVER::AMGNXN::Hierarchies::GetSPos
 (int block, int level)
 {
-  Teuchos::RCP<MueluSmootherWrapper> SPos = SPos_block_level_[block][level];
+  Teuchos::RCP<AMGNXN::MueluSmootherWrapper> SPos = SPos_block_level_[block][level];
   if(SPos == Teuchos::null)
     dserror("No data");
   return SPos;
 }
 
+
+
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-LINALG::SOLVER::AMGnxn_MonolithicHierarchy::AMGnxn_MonolithicHierarchy(
-    Teuchos::RCP<AMGnxn_Hierarchies> H,
+LINALG::SOLVER::AMGNXN::MonolithicHierarchy::MonolithicHierarchy(
+    Teuchos::RCP<AMGNXN::Hierarchies> H,
     const Teuchos::ParameterList& params,
     const Teuchos::ParameterList& params_smoothers):
   H_(H),
@@ -533,7 +538,7 @@ LINALG::SOLVER::AMGnxn_MonolithicHierarchy::AMGnxn_MonolithicHierarchy(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-int LINALG::SOLVER::AMGnxn_MonolithicHierarchy::GetNumLevels()
+int LINALG::SOLVER::AMGNXN::MonolithicHierarchy::GetNumLevels()
 {
   return NumLevels_;
 }
@@ -542,10 +547,10 @@ int LINALG::SOLVER::AMGnxn_MonolithicHierarchy::GetNumLevels()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void LINALG::SOLVER::AMGnxn_MonolithicHierarchy::Setup()
+void LINALG::SOLVER::AMGNXN::MonolithicHierarchy::Setup()
 {
 
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_MonolithicHierarchy::Setup()");
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::MonolithicHierarchy::Setup()");
 
   // ====================================================
   // Create block transfer operators
@@ -582,28 +587,23 @@ void LINALG::SOLVER::AMGnxn_MonolithicHierarchy::Setup()
   // Create block transfer operators
   // ====================================================
 
-  BlockSparseMatrix_Creator myBlockMatrixCreator;
   P_.assign(NumLevels_-1,Teuchos::null);
   R_.assign(NumLevels_-1,Teuchos::null);
   for(int level=0;level<NumLevels_-1;level++)
   {
-    std::vector< Teuchos::RCP<SparseMatrix> > Pblocks(NumBlocks_,Teuchos::null);
-    std::vector< Teuchos::RCP<SparseMatrix> > Rblocks(NumBlocks_,Teuchos::null);
+    P_[level] = Teuchos::rcp(new AMGNXN::DiagonalBlockedMatrix(NumBlocks_));
+    R_[level] = Teuchos::rcp(new AMGNXN::DiagonalBlockedMatrix(NumBlocks_));
     for(int block=0;block<NumBlocks_;block++)
     {
-      Pblocks[block]=H_->GetP(block,level);
-      Rblocks[block]=H_->GetR(block,level);
+      P_[level]->SetMatrix(H_->GetP(block,level),block,block);
+      R_[level]->SetMatrix(H_->GetR(block,level),block,block);
     }
-    P_[level] = myBlockMatrixCreator.CreateBlockSparseMatrix(Pblocks,NumBlocks_,NumBlocks_,View);
-    R_[level] = myBlockMatrixCreator.CreateBlockSparseMatrix(Rblocks,NumBlocks_,NumBlocks_,View);
   }
 
   // ====================================================
   // Create coarser matrices
   // ====================================================
   //
-  bool explicitdirichlet = H_->GetBlockMatrix()->Matrix(0,0).ExplicitDirichlet();
-  bool savegraph         = H_->GetBlockMatrix()->Matrix(0,0).SaveGraph();
 
   A_.assign(NumLevels_,Teuchos::null);
   for(int level=0;level<NumLevels_;level++)
@@ -612,29 +612,36 @@ void LINALG::SOLVER::AMGnxn_MonolithicHierarchy::Setup()
       A_[level] = H_->GetBlockMatrix();
     else
     {
-      std::vector< Teuchos::RCP<SparseMatrix> > Ablocks(NumBlocks_*NumBlocks_,Teuchos::null);
+
+      A_[level] = Teuchos::rcp(new AMGNXN::BlockedMatrix(NumBlocks_,NumBlocks_));
+
       for(int block=0;block<NumBlocks_;block++)
-        Ablocks[block*NumBlocks_+block] = H_->GetA(block,level);
+        A_[level]->SetMatrix(H_->GetA(block,level),block,block);
+
       for(int row=0;row<NumBlocks_;row++)
         for(int col=0;col<NumBlocks_;col++)
         {
           if(row!=col) // The diagonal blocks have been already assigned
           {
-            const SparseMatrix& A_spa   = A_[level-1]->Matrix(row,col);
-            const SparseMatrix& P_spa   = P_[level-1]->Matrix(col,col);
-            const SparseMatrix& R_spa   = R_[level-1]->Matrix(row,row);
+
+            Teuchos::RCP<SparseMatrix>  A_spa   = A_[level-1]->GetMatrix(row,col);
+            Teuchos::RCP<SparseMatrix>  P_spa   = P_[level-1]->GetMatrix(col,col);
+            Teuchos::RCP<SparseMatrix>  R_spa   = R_[level-1]->GetMatrix(row,row);
+
             Teuchos::RCP<SparseMatrix>  AP_spa  = Teuchos::null;
-            AP_spa  = LINALG::MLMultiply(A_spa,false,P_spa,false,explicitdirichlet,savegraph,true);
+            AP_spa  = LINALG::MLMultiply(*A_spa,*P_spa,true);
             if(AP_spa==Teuchos::null)
               dserror("Error in AP");
+
             Teuchos::RCP<SparseMatrix>  RAP_spa = Teuchos::null;
-            RAP_spa = LINALG::MLMultiply(R_spa,false,*AP_spa,false,explicitdirichlet,savegraph,true);
+            RAP_spa = LINALG::MLMultiply(*R_spa,*AP_spa,true);
             if(RAP_spa==Teuchos::null)
               dserror("Error in RAP");
-            Ablocks[row*NumBlocks_+col] = RAP_spa;
+
+            A_[level]->SetMatrix(RAP_spa,row,col);
+
           }
         }
-      A_[level] = myBlockMatrixCreator.CreateBlockSparseMatrix(Ablocks,NumBlocks_,NumBlocks_,View);
     }
   }
 
@@ -672,47 +679,50 @@ void LINALG::SOLVER::AMGnxn_MonolithicHierarchy::Setup()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::BlockSparseMatrixBase>
-LINALG::SOLVER::AMGnxn_MonolithicHierarchy::GetA(int level)
+Teuchos::RCP<LINALG::SOLVER::AMGNXN::BlockedMatrix>
+LINALG::SOLVER::AMGNXN::MonolithicHierarchy::GetA(int level)
 {return A_[level];}
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::SOLVER::AMGnxn_Hierarchies>
-LINALG::SOLVER::AMGnxn_MonolithicHierarchy::GetHierarchies()
+Teuchos::RCP<LINALG::SOLVER::AMGNXN::Hierarchies>
+LINALG::SOLVER::AMGNXN::MonolithicHierarchy::GetHierarchies()
 {return H_;}
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::SOLVER::AMGnxn_BlockSmootherBase>
-LINALG::SOLVER::AMGnxn_MonolithicHierarchy::BuildSmoother(int level)
+Teuchos::RCP<LINALG::SOLVER::AMGNXN::GenericSmoother>
+LINALG::SOLVER::AMGNXN::MonolithicHierarchy::BuildSmoother(int level)
 {
 
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_MonolithicHierarchy::BuildSmoother");
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::MonolithicHierarchy::BuildSmoother");
 
   std::string smother_name;
   if (level<NumLevels_-1)
   {
-    smother_name = params_.get<std::string>("smoother: all but coarsest level","BGS");
-    //if (smother_name=="BGS")
-    //  std::cout << "WARNING file: " << __FILE__ << " line: "<< __LINE__ << " :: Using default values for \"smoother: all but coarsest level\" = BGS" << std::endl;
+    smother_name = params_.get<std::string>("smoother: all but coarsest level","none");
+    if (smother_name=="none")
+      dserror("You have to set the fine level smoother. Fix your xml file.");
   }
   else
   {
-    smother_name = params_.get<std::string>("smoother: coarsest level","BGS");
-    //if (smother_name=="BGS")
-    //  std::cout << "WARNING file: " << __FILE__ << " line: "<< __LINE__ << " :: Using default values for \"smoother: all but coarsest level\" = BGS" << std::endl;
+    smother_name = params_.get<std::string>("smoother: coarsest level","none");
+    if (smother_name=="none")
+      dserror("You have to set the coarse level smoother. Fix your xml file.");
   }
 
   std::string verbosity = params_.get<std::string>("verbosity","off");
+
+  if (GetA(0)->GetMatrix(0,0)->Comm().MyPID() != 0)
+    verbosity = "off";
 
   std::vector<int> blocks(H_->GetNumBlocks(),0);
   for(int i=0;i<H_->GetNumBlocks();i++)
     blocks[i]=i;
 
-  AMGnxn_SmootherFactory mySmootherCreator;
+  AMGNXN::SmootherFactory mySmootherCreator;
   mySmootherCreator.SetOperator(GetA(level));
   mySmootherCreator.SetParamsSmoother(params_smoothers_);
   mySmootherCreator.SetHierarchies(GetHierarchies());
@@ -722,20 +732,20 @@ LINALG::SOLVER::AMGnxn_MonolithicHierarchy::BuildSmoother(int level)
   mySmootherCreator.SetVerbosity(verbosity);
 
   // Recover null spaces from the hierarchies and give it to the smoother creator
-  std::vector<NullSpaceInfo> null_space_blocks;
+  std::vector<AMGNXN::NullSpaceInfo> null_space_blocks;
   for(int i=0;i<NumBlocks_;i++)
   {
-    NullSpaceInfo myNS(H_->GetNumPDEs(i),H_->GetNullSpaceDim(i),H_->GetNullSpaceData(i));
+    AMGNXN::NullSpaceInfo myNS(H_->GetNumPDEs(i),H_->GetNullSpaceDim(i),H_->GetNullSpaceData(i));
     null_space_blocks.push_back(myNS);
   }
   mySmootherCreator.SetNullSpaceAllBlocks(null_space_blocks);
 
-  Teuchos::RCP<AMGnxn_SmootherBase> Sbase = mySmootherCreator.Create();
-  Teuchos::RCP<AMGnxn_BlockSmootherBase>
-    Sblock = Teuchos::rcp_dynamic_cast<AMGnxn_BlockSmootherBase>(Sbase);
+  Teuchos::RCP<AMGNXN::GenericSmoother> Sbase = mySmootherCreator.Create();
+  Teuchos::RCP<AMGNXN::BlockedSmoother>
+    Sblock = Teuchos::rcp_dynamic_cast<AMGNXN::BlockedSmoother>(Sbase);
   if(Sblock == Teuchos::null)
-    dserror("Something wrong. Fix the xml file defining the smoother");
-  return Sblock;
+    dserror("We expect a block smoother. Fix the xml file defining the smoother");
+  return Sbase;
 
 }
 
@@ -743,37 +753,19 @@ LINALG::SOLVER::AMGnxn_MonolithicHierarchy::BuildSmoother(int level)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::SOLVER::Richardson_Vcycle_Operator> LINALG::SOLVER::AMGnxn_MonolithicHierarchy::BuildVCycle()
+Teuchos::RCP<LINALG::SOLVER::AMGNXN::Vcycle>
+LINALG::SOLVER::AMGNXN::MonolithicHierarchy::BuildVCycle()
 {
   int NumSweeps = 1; // Hard coded
-  double omega = 1.0;// Hard coded
-  Teuchos::RCP<Richardson_Vcycle_Operator> V = Teuchos::rcp(
-      new  Richardson_Vcycle_Operator (NumLevels_,NumSweeps,omega));
+  int FirstLevel = 0;
+  Teuchos::RCP<Vcycle> V = Teuchos::rcp( new Vcycle(NumLevels_,NumSweeps,FirstLevel) );
 
-  std::vector<Teuchos::RCP<Epetra_Operator> > Aop(A_.size(),Teuchos::null);
-  for(int i=0;i< (int) Aop.size();i++)
-    Aop[i] = Teuchos::rcp_dynamic_cast<Epetra_Operator>(A_[i]);
-  V->SetOperators(Aop);
+  V->SetOperators(A_);
+  V->SetProjectors(P_);
+  V->SetRestrictors(R_);
+  V->SetPreSmoothers(Spre_);
+  V->SetPosSmoothers(Spos_);
 
-  std::vector<Teuchos::RCP<Epetra_Operator> > Pop(P_.size(),Teuchos::null);
-  for(int i=0;i< (int) Pop.size();i++)
-    Pop[i] = Teuchos::rcp_dynamic_cast<Epetra_Operator>(P_[i]);
-  V->SetProjectors(Pop);
-
-  std::vector<Teuchos::RCP<Epetra_Operator> > Rop(R_.size(),Teuchos::null);
-  for(int i=0;i< (int) Rop.size();i++)
-    Rop[i] = Teuchos::rcp_dynamic_cast<Epetra_Operator>(R_[i]);
-  V->SetRestrictors(Rop);
-
-  std::vector<Teuchos::RCP<AMGnxn_SmootherBase> > SpreOp(Spre_.size(),Teuchos::null);
-  for(int i=0;i< (int) SpreOp.size();i++)
-    SpreOp[i] = Teuchos::rcp_dynamic_cast<AMGnxn_SmootherBase>(Spre_[i]);
-  V->SetPreSmoothers(SpreOp);
-
-  std::vector<Teuchos::RCP<AMGnxn_SmootherBase> > SposOp(Spos_.size(),Teuchos::null);
-  for(int i=0;i< (int) SposOp.size();i++)
-    SposOp[i] = Teuchos::rcp_dynamic_cast<AMGnxn_SmootherBase>(Spos_[i]);
-  V->SetPosSmoothers(SposOp);
   return V;
 }
 

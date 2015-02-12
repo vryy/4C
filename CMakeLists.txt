@@ -1526,6 +1526,7 @@ set(OBJS_SOLVER
   src/solver/solver_amgnxn_vcycle.cpp
   src/solver/solver_amgnxn_hierarchies.cpp
   src/solver/solver_amgnxn_smoothers.cpp
+  src/solver/solver_amgnxn_objects.cpp
 )
 
 set(OBJS_SOLVER_NONLIN

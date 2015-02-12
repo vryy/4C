@@ -30,11 +30,10 @@ Created on: Feb 27, 2014
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-LINALG::SOLVER::Richardson_Vcycle_Operator::Richardson_Vcycle_Operator
-(int NumLevels,int NumSweeps,double omega):
+LINALG::SOLVER::AMGNXN::Vcycle::Vcycle (int NumLevels,int NumSweeps,int FirstLevel):
 NumLevels_(NumLevels),
 NumSweeps_(NumSweeps),
-omega_(omega),
+FirstLevel_(FirstLevel),
 Avec_(NumLevels,Teuchos::null),
 Pvec_(NumLevels-1,Teuchos::null),
 Rvec_(NumLevels-1,Teuchos::null),
@@ -51,8 +50,8 @@ flag_set_up_Pos_(false)
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void LINALG::SOLVER::Richardson_Vcycle_Operator::SetOperators
-  (std::vector< Teuchos::RCP<Epetra_Operator> > Avec)
+void LINALG::SOLVER::AMGNXN::Vcycle::SetOperators
+  (std::vector< Teuchos::RCP<BlockedMatrix> > Avec)
 {
   if((int)Avec.size()!=NumLevels_)
     dserror("Error in Setting Avec_: Size dismatch.");
@@ -70,8 +69,8 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::SetOperators
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void LINALG::SOLVER::Richardson_Vcycle_Operator::SetProjectors
-  (std::vector< Teuchos::RCP<Epetra_Operator> > Pvec)
+void LINALG::SOLVER::AMGNXN::Vcycle::SetProjectors
+  (std::vector< Teuchos::RCP<BlockedMatrix> > Pvec)
 {
   if((int)Pvec.size()!=NumLevels_-1)
     dserror("Error in Setting Pvec_: Size dismatch.");
@@ -89,8 +88,8 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::SetProjectors
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void LINALG::SOLVER::Richardson_Vcycle_Operator::SetRestrictors
-  (std::vector< Teuchos::RCP<Epetra_Operator> > Rvec)
+void LINALG::SOLVER::AMGNXN::Vcycle::SetRestrictors
+  (std::vector< Teuchos::RCP<BlockedMatrix> > Rvec)
 {
   if((int)Rvec.size()!=NumLevels_-1)
     dserror("Error in Setting Rvec_: Size dismatch.");
@@ -108,8 +107,8 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::SetRestrictors
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void LINALG::SOLVER::Richardson_Vcycle_Operator::SetPreSmoothers
-  (std::vector< Teuchos::RCP<LINALG::SOLVER::AMGnxn_SmootherBase> > SvecPre)
+void LINALG::SOLVER::AMGNXN::Vcycle::SetPreSmoothers
+  (std::vector< Teuchos::RCP<GenericSmoother> > SvecPre)
 {
   if((int)SvecPre.size()!=NumLevels_)
     dserror("Error in Setting SvecPre: Size dismatch.");
@@ -126,8 +125,8 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::SetPreSmoothers
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void LINALG::SOLVER::Richardson_Vcycle_Operator::SetPosSmoothers
-  (std::vector< Teuchos::RCP<LINALG::SOLVER::AMGnxn_SmootherBase> > SvecPos)
+void LINALG::SOLVER::AMGNXN::Vcycle::SetPosSmoothers
+  (std::vector< Teuchos::RCP<GenericSmoother> > SvecPos)
 {
   if((int)SvecPos.size()!=NumLevels_-1)
     dserror("Error in Setting SvecPos: Size dismatch.");
@@ -143,83 +142,53 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::SetPosSmoothers
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void LINALG::SOLVER::Richardson_Vcycle_Operator::Vcycle(
-    const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level, bool InitialGuessIsZero) const
+void LINALG::SOLVER::AMGNXN::Vcycle::DoVcycle(
+    const BlockedVector& X, BlockedVector& Y, int level, bool InitialGuessIsZero) const
 {
 
 
   if(level!=NumLevels_-1) // Perform one iteration of the V-cycle
   {
     // Apply presmoother
-    SvecPre_[level]->Apply(X,Y,InitialGuessIsZero);
+    SvecPre_[level]->Solve(X,Y,InitialGuessIsZero);
 
-    // Compute residual TODO optimize if InitialGuessIsZero == true
-    Epetra_MultiVector DX(X.Map(),X.NumVectors());
+    // Compute residual
+    BlockedVector DX = X.DeepCopy();
     Avec_[level]->Apply(Y,DX);
     DX.Update(1.0,X,-1.0);
 
     //  Create coarser representation of the residual
-    Epetra_MultiVector DXcoarse(Rvec_[level]->OperatorRangeMap(),X.NumVectors());
-    Rvec_[level]->Apply(DX,DXcoarse);
+    int NV = X.GetVector(0)->NumVectors();
+    Teuchos::RCP<BlockedVector> DXcoarse = Rvec_[level]->NewRangeBlockedVector(NV,false);
+    Rvec_[level]->Apply(DX,*DXcoarse);
 
     // Damp error with coarser levels
-    Epetra_MultiVector DYcoarse(Pvec_[level]->OperatorDomainMap(),X.NumVectors(),true);
-    DYcoarse.PutScalar(0.0);
-    Vcycle(DXcoarse,DYcoarse,level+1,true);
+    Teuchos::RCP<BlockedVector> DYcoarse = Pvec_[level]->NewDomainBlockedVector(NV,false);
+    DoVcycle(*DXcoarse,*DYcoarse,level+1,true);
 
     // Compute correction
-    Epetra_MultiVector DY(Y.Map(),X.NumVectors());
-    Pvec_[level]->Apply(DYcoarse,DY);
+    BlockedVector DY = Y.DeepCopy();
+    Pvec_[level]->Apply(*DYcoarse,DY);
     Y.Update(1.0,DY,1.0);
 
     // Apply post smoother
-    SvecPos_[level]->Apply(X,Y,false);
+    SvecPos_[level]->Solve(X,Y,false);
 
   }
   else // Apply presmoother
   {
-    Epetra_MultiVector X00(X.Map(),X.NumVectors());
-    SvecPre_[level]->Apply(X,Y,InitialGuessIsZero);
+    SvecPre_[level]->Solve(X,Y,InitialGuessIsZero);
   }
+
 
   return;
 }
 
-/*------------------------------------------------------------------------------*/
-/*------------------------------------------------------------------------------*/
-void LINALG::SOLVER::Richardson_Vcycle_Operator::Richardson_Vcycle(
-    const Epetra_MultiVector& X, Epetra_MultiVector& Y, int start_level) const
-{
-  // Create auxiliary vectors
-  Epetra_MultiVector DX(X.Map(),X.NumVectors(),false);
-  Epetra_MultiVector DY(Y.Map(),X.NumVectors(),false);
-
-  if(&X == &Y) dserror("The two vectors X and Y cannot be physically the same object. Is aztec00 calling directly this routine?");
-  for(int i=0;i<NumSweeps_;i++)
-  {
-
-    double scal_aux = (i==0)? 0.0 : 1.0;
-
-    // Compute residual
-    if(i!=0)
-      Avec_[0]->Apply(Y,DX);
-    DX.Update(1.0,X,-1.0*scal_aux);
-
-    // Apply V-cycle as preconditioner
-    DY.PutScalar(0.0);
-    Vcycle(DX,DY,start_level,true);
-
-    // Apply correction
-    Y.Update(omega_,DY,scal_aux);
-
-  }
-  return;
-}
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void LINALG::SOLVER::Richardson_Vcycle_Operator::Apply(
-    const Epetra_MultiVector& X, Epetra_MultiVector& Y, int start_level) const
+void LINALG::SOLVER::AMGNXN::Vcycle::Solve
+(const BlockedVector& X,BlockedVector& Y, bool InitialGuessIsZero) const
 {
   // Check if everithing is set up
   if(!flag_set_up_A_)
@@ -234,7 +203,8 @@ void LINALG::SOLVER::Richardson_Vcycle_Operator::Apply(
     dserror("Post-smoothers missing");
 
   // Work!
-  Richardson_Vcycle(X,Y,start_level);
+  for (int i=0; i<NumSweeps_;i++)
+    DoVcycle(X,Y,FirstLevel_,InitialGuessIsZero and i==0);
   return;
 }
 
