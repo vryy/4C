@@ -113,6 +113,7 @@ set(OBJS_TEST_MAIN
 
 # the test executable
 add_executable (contact_test ${OBJS_TEST_MAIN})
+set_target_properties (contact_test PROPERTIES EXCLUDE_FROM_ALL TRUE EXCLUDE_FROM_DEFAULT_BUILD TRUE)
 
 target_link_libraries (contact_test
 alg_contact_mod
