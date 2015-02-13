@@ -446,7 +446,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
 
   // x1-direction
   x1sump_ =  Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x1sump_->Reshape(numx1statlocations_,1);
+  x1sump_->Reshape(numx1statlocations_,2);
 
   x1sumu_ =  Teuchos::rcp(new Epetra_SerialDenseMatrix);
   x1sumu_->Reshape(numx1statlocations_,1);
@@ -556,16 +556,18 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp
 
     for (int k=0; k <numx1statlocations_; ++k)
     {
+      // current x2-coordinate of respective wall
+      //constant offset from wall at the middle bottom; has to be adapted for different statlocations
+      double x2cwall = x2statlocations(k,1);
+      double x1cwall = x1statlocations(k,0);
+      double x2cwall_puw = x2statlocations(k,numx2coor_-1);
+      double x2cwall_plw = x2statlocations(k,0);
 
-        // current x2-coordinate of respective wall
-        //constant offset from wall at the middle bottom; has to be adapted for different statlocations
-        double x2cwall = x2statlocations(k,1);
-        double x1cwall = x1statlocations(k,0);
+      // toggle vectors are one in the position of a dof of this node,
+      toggleu_->PutScalar(0.0);
 
-        // toggle vectors are one in the position of a dof of this node,
-        toggleu_->PutScalar(0.0);
-        togglep_->PutScalar(0.0);
-
+      //du1/dx
+      {
         // count the number of nodes in x3-direction contributing to this nodal value
         int countnodes=0;
 
@@ -580,7 +582,6 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp
             double           one = 1.0;
 
             toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
-            togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
             countnodes++;
           }
         }
@@ -597,21 +598,108 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp
           //----------------------------------------------------------------------
           double u;
           velnp->Dot(*toggleu_,&u);
+
+          //----------------------------------------------------------------------
+          // calculate spatial means
+          //----------------------------------------------------------------------
+          double usm=u/countnodesonallprocs;
+          //----------------------------------------------------------------------
+          // add spatial mean values to statistical sample
+          //----------------------------------------------------------------------
+          (*x1sumu_)(k,0)+=usm;
+        }
+      }
+
+      togglep_->PutScalar(0.0);
+      //p, lower wall
+      {
+        // count the number of nodes in x3-direction contributing to this nodal value
+        int countnodes=0;
+
+        for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+        {
+          DRT::Node* node = discret_->lRowNode(nn);
+          // this is the wall node
+          if (node->X()[0]<(x1cwall+2e-9) and node->X()[0]>(x1cwall-2e-9) and
+              node->X()[1]<(x2cwall_plw+2e-9) and node->X()[1]>(x2cwall_plw-2e-9))
+          {
+            std::vector<int> dof = discret_->Dof(node);
+            double           one = 1.0;
+
+            togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+            countnodes++;
+          }
+        }
+        int countnodesonallprocs=0;
+
+        discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
+
+        // reduce by 1 due to periodic boundary condition
+        countnodesonallprocs-=1;
+        if (countnodesonallprocs)
+        {
+          //----------------------------------------------------------------------
+          // get values for velocity derivative and pressure
+          //----------------------------------------------------------------------
           double p;
           velnp->Dot(*togglep_,&p);
 
           //----------------------------------------------------------------------
           // calculate spatial means
           //----------------------------------------------------------------------
-          double usm=u/countnodesonallprocs;
-          double psm=p/countnodesonallprocs;
+          double lwpsm=p/countnodesonallprocs;
           //----------------------------------------------------------------------
           // add spatial mean values to statistical sample
           //----------------------------------------------------------------------
-          (*x1sumu_)(k,0)+=usm;
-          (*x1sump_)(k,0)+=psm;
+          (*x1sump_)(k,0)+=lwpsm;
         }
       }
+
+      togglep_->PutScalar(0.0);
+      // p, upper wall
+      {
+        // count the number of nodes in x3-direction contributing to this nodal value
+        int countnodes=0;
+
+        for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
+        {
+          DRT::Node* node = discret_->lRowNode(nn);
+          // this is the wall node
+          if (node->X()[0]<(x1cwall+2e-9) and node->X()[0]>(x1cwall-2e-9) and
+              node->X()[1]<(x2cwall_puw+2e-9) and node->X()[1]>(x2cwall_puw-2e-9))
+          {
+            std::vector<int> dof = discret_->Dof(node);
+            double           one = 1.0;
+
+            togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+            countnodes++;
+          }
+        }
+        int countnodesonallprocs=0;
+
+        discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
+
+        // reduce by 1 due to periodic boundary condition
+        countnodesonallprocs-=1;
+        if (countnodesonallprocs)
+        {
+          //----------------------------------------------------------------------
+          // get values for velocity derivative and pressure
+          //----------------------------------------------------------------------
+          double p;
+          velnp->Dot(*togglep_,&p);
+
+          //----------------------------------------------------------------------
+          // calculate spatial means
+          //----------------------------------------------------------------------
+          double uwpsm=p/countnodesonallprocs;
+          //----------------------------------------------------------------------
+          // add spatial mean values to statistical sample
+          //----------------------------------------------------------------------
+          (*x1sump_)(k,1)+=uwpsm;
+        }
+      }
+    }
 
     //wall stresses
     for (int k=0; k <numx1statlocations_; ++k)
@@ -672,7 +760,6 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp
         (*x1sumf_)(k,2)+=fz/(double)countnodesonallprocs;
       }
     }
-//    }
 
     //----------------------------------------------------------------------
     // end of loop velocity gradient at lower wall
@@ -691,7 +778,6 @@ void FLD::TurbulenceStatisticsPh::DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp
     //----------------------------------------------------------------------
     for (int x2line = 0; x2line < numx2coor_; ++x2line)
     {
-//      x2nodnum++;
 
       // toggle vectors are one in the position of a dof of this node,
       // else 0
@@ -825,7 +911,7 @@ void FLD::TurbulenceStatisticsPh::DumpStatistics(int step)
 #ifdef SAMP_ALL
     (*log) << "# lower wall behind step\n";
     (*log) << "#     x1";
-    (*log) << "           duxdy         pmean         tau_w          dist\n";
+    (*log) << "           duxdy       pmean (lw)    pmean (uw)     tau_w          dist\n";
     // distance from wall to first node off wall
     for (int i=0; i<numx1statlocations_; ++i)
     {
@@ -833,13 +919,18 @@ void FLD::TurbulenceStatisticsPh::DumpStatistics(int step)
         double dist =  x2statlocations(i,1) - x2statlocations(i,0);
         double lwx1duxdy = lwx1u/dist;
         double lwx1p     = (*x1sump_)(i,0)/numsamp_;
+        double uwx1p     = (*x1sump_)(i,1)/numsamp_;
         double fx     = (*x1sumf_)(i,0)/numsamp_;
         double fy     = (*x1sumf_)(i,1)/numsamp_;
         double fz     = (*x1sumf_)(i,2)/numsamp_;
+        double f = std::sqrt(fx*fx+fy*fy+fz*fz);
+        if(fx<0.0)
+          f*=-1.0; //recover sign
         (*log) <<  " "  << std::setw(11) << std::setprecision(4) << x1statlocations(i,0);
         (*log) << "   " << std::setw(11) << std::setprecision(4) << lwx1duxdy;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << lwx1p;
-        (*log) << "   " << std::setw(11) << std::setprecision(4) << std::sqrt(fx*fx+fy*fy+fz*fz);
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << uwx1p;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << f;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << dist;
         (*log) << "\n";
     }
