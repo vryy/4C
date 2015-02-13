@@ -766,7 +766,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       // however, the xfluid-class itself does not support the full ALE-functionality without the FSI itself
       // ALE-fluid with level-set/without mesh discretization not supported yet
       if (isale) //in ale case
-        fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, condition_name, solver, fluidtimeparams, output));
+        fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, condition_name, solver, fluidtimeparams, output));
       else
         fluid_ = tmpfluid;
     }
@@ -801,7 +801,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
 
       Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
       Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
-      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, condition_name , solver, fluidtimeparams, output));
+      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, condition_name , solver, fluidtimeparams, output));
     }
     break;
     case prb_fsi_crack:
@@ -810,7 +810,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       const std::string condition_name = "XFEMSurfCrackFSIPart";
 
       Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
-      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, condition_name, solver, fluidtimeparams, output));
+      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, condition_name, solver, fluidtimeparams, output));
     }
     break;
     case prb_fluid_xfem_ls:
@@ -949,7 +949,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
           std::string condition_name = "XFEMSurfFSIMono";
           Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
           Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output,isale));
-          fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, soliddis, condition_name, solver, fluidtimeparams, output));
+          fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, condition_name, solver, fluidtimeparams, output));
         }
       }
     }

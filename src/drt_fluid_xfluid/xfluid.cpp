@@ -3316,6 +3316,7 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
     newRowStateVectors.push_back(state_->accn_);
 
     XTimint_TransferVectorsBetweenSteps(
+        xfluid_timintapproach_,            // use the chosen approach as defined in the input file
         discret_,
         oldRowStateVectors,
         newRowStateVectors,
@@ -3472,7 +3473,9 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
     rowStateVectors_npi.push_back(velnp_Intnpi_);
     rowStateVectors_npip.push_back(state_->velnp_);
 
+    //Note: for reconstruction w.r.t last increment, do not use any semi-lagrangean approach
     XTimint_TransferVectorsBetweenSteps(
+        INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP, // just copying and ghost-penalty allowed for transfer w.r.t last step
         discret_,
         rowStateVectors_npi,
         rowStateVectors_npip,
@@ -3498,17 +3501,16 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
 
   XTimint_GetReconstructStatus(timint_ghost_penalty, timint_semi_lagrangean);
 
-
-  // TODO: STEP 2: Semi-Lagrangean algo reasonable here?
-
-  //TODO: perform a good prediction as startvalue when restarting the monolithic Newton is required
-  // and simple copying is not possible
   if( timint_semi_lagrangean )
   {
-    IO::cout << "check, how we can get the best predicted velnpip when simple copying + ghost penalty is not sufficient! "
-             << " --> use steady state predictor! (NOT useful for monolithic solve!!!)" << IO::endl;
-    // TODO: in this case SEMILAGRANGE is probably not reasonable as it is a mapping within the same timestep
-    // reconstruct the missing values purely via Ghost-Penalty? GP-Faces sufficient?
+    // How to perform a good prediction as startvalue when restarting the monolithic Newton is required
+    // and simple copying is not possible???
+
+    IO::cout << "check, how we can get the best predicted velnpip when simple copying + ghost penalty is not sufficient! " << IO::endl;
+
+    // in this case SEMILAGRANGE is probably not reasonable as it is a mapping within the same timestep
+    // reconstruct the missing values purely via Ghost-Penalty? GP-Faces sufficient? -> maybe use more faces
+    dserror("using a Semi-lagrangean technique for reconstructing w.r.t last increment not reasonable, as the last increment is already an approximation to the actual solution at the same timestep!");
 
     return false;
   }
@@ -3561,6 +3563,7 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
  |                                                         schott 04/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::XTimint_TransferVectorsBetweenSteps(
+    const INPAR::XFEM::XFluidTimeIntScheme           xfluid_timintapproach,  /// xfluid_timintapproch
     const Teuchos::RCP<DRT::Discretization>          dis,                      /// discretization
     std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,       /// row map based vectors w.r.t old interface position
     std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,       /// row map based vectors w.r.t new interface position
@@ -3581,7 +3584,7 @@ void FLD::XFluid::XTimint_TransferVectorsBetweenSteps(
       wizard_new,
       dofset_old,
       dofset_new,
-      xfluid_timintapproach_,
+      xfluid_timintapproach,
       reconstr_method,
       step_));
 

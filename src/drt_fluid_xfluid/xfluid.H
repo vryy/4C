@@ -391,6 +391,7 @@ namespace FLD
 
     /// transfer vectors between two time-steps or Newton steps
     void XTimint_TransferVectorsBetweenSteps(
+        const INPAR::XFEM::XFluidTimeIntScheme           xfluid_timintapproach,    /// xfluid_timintapproch
         const Teuchos::RCP<DRT::Discretization>          dis,                      ///< discretization
         std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,       ///< row map based vectors w.r.t old interface position
         std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,       ///< row map based vectors w.r.t new interface position

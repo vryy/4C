@@ -2,7 +2,7 @@
 // Maintainer: Benedikt Schott
 //
 // monolithic xfsi fluid pusher with one hex8 structure element,
-// no 2nd order flag for FSI-theta and fld_theta=1.0
+// 2nd order flag for FSI-theta and fld_theta=0.5
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -23,7 +23,6 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
-OUTPUT_GMSH                     no
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS No //Yes
@@ -42,25 +41,23 @@ NUMSTEP                         3
 UPRES                           1
 RESTARTEVRY                     5
 COUPALGO                        iter_xfem_monolithic
-SECONDORDER                     no
+SECONDORDER                     yes
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
-ITEMAX                          10
+ITEMAX                          5
 INFNORMSCALING                  no
 CONVTOL                         1.0E-12
-NORM_INC                        Rel                           // Abs // Mix
-NORM_RESF                       Rel                           // Abs // Mix
-TOL_DIS_RES_L2                  1.0E-09
-TOL_DIS_RES_INF                 1.0E-09
-TOL_DIS_INC_L2                  1.0E-09
-TOL_DIS_INC_INF                 1.0E-09
-TOL_PRE_RES_L2                  1.0E-09
-TOL_PRE_RES_INF                 1.0E-09
-TOL_PRE_INC_L2                  1.0E-09
-TOL_PRE_INC_INF                 1.0E-09
-TOL_VEL_RES_L2                  1.0E-09
-TOL_VEL_RES_INF                 1.0E-09
-TOL_VEL_INC_L2                  1.0E-09
-TOL_VEL_INC_INF                 1.0E-09
+TOL_DIS_RES_L2                  1.0E-06
+TOL_DIS_RES_INF                 1.0E-06
+TOL_DIS_INC_L2                  1.0E-06
+TOL_DIS_INC_INF                 1.0E-06
+TOL_PRE_RES_L2                  1.0E-06
+TOL_PRE_RES_INF                 1.0E-06
+TOL_PRE_INC_L2                  1.0E-06
+TOL_PRE_INC_INF                 1.0E-06
+TOL_VEL_RES_L2                  1.0E-06
+TOL_VEL_RES_INF                 1.0E-06
+TOL_VEL_INC_L2                  1.0E-06
+TOL_VEL_INC_INF                 1.0E-06
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    field_by_function
 STARTFUNCNO                     1
@@ -71,11 +68,11 @@ CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-13
 UPRES                           1
 RESTARTEVRY                     5
-NUMSTEP                         3
+NUMSTEP                         80
 NUMSTASTEPS                     0
 MAXTIME                         2.0
 TIMESTEP                        0.025
-THETA                           1.0
+THETA                           0.5
 START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
@@ -84,9 +81,9 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      GenAlpha
+DYNAMICTYP                      GenAlpha//OneStepTheta
 TIMESTEP                        0.025
-NUMSTEP                         3
+NUMSTEP                         80
 MAXTIME                         2.0
 NLNSOL                          fullnewton                    // fullnewton modnewton matfreenewton nlncg ptc
 DAMPING                         No
@@ -132,8 +129,8 @@ GMSH_DEBUG_OUT_SCREEN           No
 GMSH_DEBUG_OUT                  No
 GMSH_EOS_OUT                    No
 GMSH_SOL_OUT                    no
-GMSH_DISCRET_OUT                no
-GMSH_CUT_OUT                    no
+GMSH_DISCRET_OUT                No
+GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
@@ -150,12 +147,11 @@ GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 //                              MAT_Struct_StVenantKirchhoff
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.3 DENS 1.0 THEXPANS 1
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1000000000 NUE 0.3 DENS 1.0 THEXPANS 1
 //MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1
 //MAT 3 ELAST_CoupNeoHooke YOUNG 100000000 NUE 0.0
 ----------------------------------------------------------------------CURVE1
-//CURVE1 on EXPR FUNC 0.5*(1.0-cos(2.0*pi*t/1.0)) t1 0.0 t2 100.0
-CURVE1 on EXPR FUNC t t1 0.0 t2 100.0
+CURVE1 on EXPR FUNC 0.5*(1.0-cos(2.0*pi*t/1.0)) t1 0.0 t2 100.0
 ----------------------------------------------------------------------CURVE2
 CURVE2 on EXPR FUNC -0.1*t t1 0.0 t2 100.0
 ----------------------------------------------------------------------CURVE3
@@ -179,7 +175,7 @@ NDVOL                           2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // surface inflow
-E 3 - none 1 1 1 0 0 0 5.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 3 - none 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
@@ -246,11 +242,10 @@ E 5 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 E 6 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 //E 6 - 6 1 0 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // right side of structure
-E 9 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
+E 9 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -0.75 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
-//E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
-//E 1 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL -1.0 0.0 0.0 5.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
+DVOL                            1
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -0.75 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
 DPOINT                          0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
@@ -315,6 +310,16 @@ E 9 - 1
 E 10 - 1
 E 11 - 1
 E 12 - 1
+-----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+DLINE                           0
+-----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+DSURF                           0
+-------------------------------DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS
+DSURF                           0
+----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS
+DSURF                           0
+-----------------------DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS
+DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 26 DNODE 1
 NODE 31 DNODE 1
@@ -1001,7 +1006,7 @@ NODE 202 COORD 1.37500000000000e+00 -3.000000000000000e-01 3.000000000000000e-01
 NODE 203 COORD 1.37500000000000e+00 3.000000000000000e-01 -3.000000000000000e-01
 NODE 204 COORD 1.37500000000000e+00 -3.000000000000000e-01 -3.000000000000000e-01
 NODE 217 COORD 0.37600000000000e+00 3.000000000000000e-01 3.000000000000000e-01
-NODE 218 COORD 0.37600000000000e+00 -3.000000000000000e-01 3.000000000000000e-01
+NODE 218 COORD 0.37600000000000e+000 -3.000000000000000e-01 3.000000000000000e-01
 NODE 219 COORD 0.37600000000000e+00 3.000000000000000e-01 -3.000000000000000e-01
 NODE 220 COORD 0.37600000000000e+00 -3.000000000000000e-01 -3.000000000000000e-01
 ----------------------------------------------------------STRUCTURE ELEMENTS
@@ -1098,9 +1103,9 @@ NODE 220 COORD 0.37600000000000e+00 -3.000000000000000e-01 -3.000000000000000e-0
 89 FLUID3 HEX8 153 155 159 157 169 171 175 173 MAT 1 NA Euler 3 3 3 CA No
 90 FLUID3 HEX8 155 156 160 159 171 172 176 175 MAT 1 NA Euler 3 3 3 CA No
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 118 QUANTITY velx VALUE -6.61031105272152586e-01 TOLERANCE 1e-12
-FLUID DIS fluid NODE 118 QUANTITY vely VALUE 1.22373458064757145e-03 TOLERANCE 1e-12
-FLUID DIS fluid NODE 118 QUANTITY velz VALUE 1.22373458065990880e-03 TOLERANCE 1e-12
-FLUID DIS fluid NODE 118 QUANTITY pressure VALUE -1.52247068399161023e+01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 118 QUANTITY velx VALUE -1.07189481634990891e+00 TOLERANCE 1e-12
+FLUID DIS fluid NODE 118 QUANTITY vely VALUE 0.0e00 TOLERANCE 1e-12
+FLUID DIS fluid NODE 118 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-12
+FLUID DIS fluid NODE 118 QUANTITY pressure VALUE 9.33573736823769806e+00 TOLERANCE 1e-12
 -------------------------------------------------------------------------END
 //                              END

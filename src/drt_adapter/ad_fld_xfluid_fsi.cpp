@@ -34,7 +34,6 @@ Maintainer:  Benedikt Schott
 /* constructor */
 ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,   // the XFluid object
     Teuchos::RCP<DRT::Discretization> xfluiddis,
-    Teuchos::RCP<DRT::Discretization> soliddis,
     const std::string                 coupling_name, // name of the FSI coupling condition
     Teuchos::RCP<LINALG::Solver>      solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
@@ -42,7 +41,6 @@ ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,   // the XFluid object
 : FluidWrapper(fluid),                                      // the XFluid object is set as fluid_ in the FluidWrapper
   fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
   xfluiddis_(xfluiddis),
-  soliddis_(soliddis),
   coupling_name_(coupling_name),
   solver_(solver),
   params_(params)
