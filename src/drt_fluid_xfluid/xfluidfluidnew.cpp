@@ -81,12 +81,6 @@ void FLD::XFluidFluidNew::Init()
 
   if (DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") != INPAR::FLUID::no_error_calculation)
   {
-    const std::string cond_name("XFEMSurfFluidFluid");
-    mc_xff_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(condition_manager_->GetMeshCoupling(cond_name));
-
-    if (mc_xff_ == Teuchos::null)
-      dserror("Failed to cast to MeshCouplingFluidFluid");
-
     mc_xff_->RedistributeForErrorCalculation();
   }
 
@@ -94,8 +88,8 @@ void FLD::XFluidFluidNew::Init()
   // discretization may have changed)
   bool redistributed =
       (DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") != INPAR::FLUID::no_error_calculation
-      || condition_manager_->GetCoupling("XFEMSurfFluidFluid")->GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided
-      || condition_manager_->GetCoupling("XFEMSurfFluidFluid")->GetAveragingStrategy() == INPAR::XFEM::Mean);
+      || mc_xff_->GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided
+      || mc_xff_->GetAveragingStrategy() == INPAR::XFEM::Mean);
   if (redistributed)
     embedded_fluid_->CreateFacesExtension();
 
@@ -167,7 +161,7 @@ void FLD::XFluidFluidNew::PrepareSolve()
   xff_state_->xffluidsplitter_->InsertXFluidVector(xff_state_->velnp_, xff_state_->xffluidvelnp_);
   xff_state_->xffluidsplitter_->InsertFluidVector(embedded_fluid_->Velnp(), xff_state_->xffluidvelnp_);
 
-  if (condition_manager_->GetCoupling("XFEMSurfFluidFluid")->GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided
+  if (mc_xff_->GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided
       and nitsche_evp_)
   {
     mc_xff_->EstimateNitscheTraceMaxEigenvalue(embedded_fluid_->Dispnp());
@@ -254,6 +248,15 @@ Teuchos::RCP<DRT::ResultTest> FLD::XFluidFluidNew::CreateFieldTest()
 
 Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluidNew::GetNewState()
 {
+  // further use type-cast pointer to MeshCouplingFluidFluid
+  if (mc_xff_ == Teuchos::null)
+  {
+    const std::string cond_name("XFEMSurfFluidFluid");
+    mc_xff_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(condition_manager_->GetMeshCoupling(cond_name));
+
+    if (mc_xff_ == Teuchos::null)
+      dserror("Failed to cast to MeshCouplingFluidFluid");
+  }
   if (ale_embfluid_)
   {
     LINALG::Export(*embedded_fluid_->Dispnp(),*mc_xff_->IDispnp());
@@ -308,15 +311,15 @@ void FLD::XFluidFluidNew::AssembleMatAndRHS(
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluidFluidNew::AssembleMatAndRHS");
 
-  if (condition_manager_->GetCoupling("XFEMSurfFluidFluid")->GetAveragingStrategy() ==
+  if (mc_xff_->GetAveragingStrategy() ==
       INPAR::XFEM::Embedded_Sided)
   {
-    condition_manager_->GetCoupling("XFEMSurfFluidFluid")->GetCouplingDis()->ClearState();
+    mc_xff_->GetCouplingDis()->ClearState();
     // set velocity and displacement state for embedded fluid
     embedded_fluid_->SetStateTimInt();
-    condition_manager_->GetCoupling("XFEMSurfFluidFluid")->GetCouplingDis()->SetState("veln",embedded_fluid_->Veln());
+    mc_xff_->GetCouplingDis()->SetState("veln",embedded_fluid_->Veln());
     if (ale_embfluid_)
-      condition_manager_->GetCoupling("XFEMSurfFluidFluid")->GetCouplingDis()->SetState(
+      mc_xff_->GetCouplingDis()->SetState(
         "dispnp",embedded_fluid_->Dispnp());
   }
 
