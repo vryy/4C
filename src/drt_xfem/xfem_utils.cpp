@@ -170,10 +170,11 @@ void XFEM::UTILS::PrintDiscretizationToStream(
 
 void XFEM::UTILS::ExtractNodeVectors(
   Teuchos::RCP<DRT::Discretization>    dis,
-  std::map<int, LINALG::Matrix<3,1> >& nodevecmap)
+  std::map<int, LINALG::Matrix<3,1> >& nodevecmap,
+  Teuchos::RCP<Epetra_Vector>          idispnp
+)
 {
-  Teuchos::RCP<Epetra_Vector> dofrowvec     = LINALG::CreateVector(*dis->DofRowMap(),true);
-  Teuchos::RCP<const Epetra_Vector> dispcol = DRT::UTILS::GetColVersionOfRowVector(dis,dofrowvec);
+  Teuchos::RCP<const Epetra_Vector> dispcol = DRT::UTILS::GetColVersionOfRowVector(dis,idispnp);
   nodevecmap.clear();
 
   for (int lid = 0; lid < dis->NumMyColNodes(); ++lid)

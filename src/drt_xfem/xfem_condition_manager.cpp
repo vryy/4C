@@ -497,7 +497,7 @@ void XFEM::MeshCoupling::GmshOutputDiscretization(
   std::map<int,LINALG::Matrix<3,1> > currinterfacepositions;
 
   // output of cutting discretization
-  XFEM::UTILS::ExtractNodeVectors(cutter_dis_, currinterfacepositions);
+  XFEM::UTILS::ExtractNodeVectors(cutter_dis_, currinterfacepositions, idispnp_);
   XFEM::UTILS::PrintDiscretizationToStream(cutter_dis_,
      cutter_dis_->Name(), true, true,  true, true,  false, false, gmshfilecontent, &currinterfacepositions);
 }
@@ -510,7 +510,8 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
     Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
     const double                        time,      ///< time
     const int                           step       ///< time step
-) : MeshCoupling(bg_dis,cond_name,cond_dis,time,step)
+) : MeshCoupling(bg_dis,cond_name,cond_dis,time,step),
+    moving_interface_(false)
 {
   if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided ||
       GetAveragingStrategy() == INPAR::XFEM::Mean)
@@ -1418,7 +1419,7 @@ void XFEM::MeshCouplingFSI::GmshOutput(
 
   // compute the current boundary position
   std::map<int,LINALG::Matrix<3,1> > currinterfacepositions;
-  XFEM::UTILS::ExtractNodeVectors(cutter_dis_, currinterfacepositions);
+  XFEM::UTILS::ExtractNodeVectors(cutter_dis_, currinterfacepositions,idispnp_);
 
 
   const std::string filename =
@@ -1471,7 +1472,7 @@ void XFEM::MeshCouplingFSI::GmshOutputDiscretization(
   // compute the current solid and boundary position
   std::map<int,LINALG::Matrix<3,1> > currsolidpositions;
 
-  XFEM::UTILS::ExtractNodeVectors(cond_dis_, currsolidpositions);
+  XFEM::UTILS::ExtractNodeVectors(cond_dis_, currsolidpositions, idispnp_);
 
   XFEM::UTILS::PrintDiscretizationToStream(cond_dis_,
       cond_dis_->Name(), true, false, true, false, false, false, gmshfilecontent, &currsolidpositions);

@@ -38,7 +38,9 @@ namespace XFEM
     //! \author schott \date 01/13
     void ExtractNodeVectors(
       Teuchos::RCP<DRT::Discretization>    dis,
-      std::map<int, LINALG::Matrix<3,1> >& nodevecmap);
+      std::map<int, LINALG::Matrix<3,1> >& nodevecmap,
+      Teuchos::RCP<Epetra_Vector>          idispnp
+    );
 
     //! @name Get material properties for the Volume Cell
 

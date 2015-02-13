@@ -634,14 +634,26 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(std::vector<LINALG::Matr
         {
           unsigned int countvecs = 0;
           (*target_state.velnp_)[target_state.velnp_->Map().LID(discret->Dof(node)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
-          countvecs += 4;
-          (*target_state.veln_) [target_state.veln_->Map().LID(discret->Dof(node)[offset+isd])]  = interpolated_vecs.at(i)(isd+countvecs);
-          countvecs += 4;
-          (*target_state.velnm_)[target_state.velnm_->Map().LID(discret->Dof(node)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
-          countvecs += 4;
-          (*target_state.accnp_)[target_state.accnp_->Map().LID(discret->Dof(node)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
-          countvecs += 4;
-          (*target_state.accn_) [target_state.accn_->Map().LID(discret->Dof(node)[offset+isd])]  = interpolated_vecs.at(i)(isd+countvecs);
+          if (target_state.veln_ != Teuchos::null)
+          {
+            countvecs += 4;
+            (*target_state.veln_) [target_state.veln_->Map().LID(discret->Dof(node)[offset+isd])]  = interpolated_vecs.at(i)(isd+countvecs);
+          }
+          if (target_state.velnm_ != Teuchos::null)
+          {
+            countvecs += 4;
+            (*target_state.velnm_)[target_state.velnm_->Map().LID(discret->Dof(node)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
+          }
+          if (target_state.accnp_ != Teuchos::null)
+          {
+           countvecs += 4;
+           (*target_state.accnp_)[target_state.accnp_->Map().LID(discret->Dof(node)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
+          }
+          if (target_state.accn_ != Teuchos::null)
+          {
+            countvecs += 4;
+            (*target_state.accn_) [target_state.accn_->Map().LID(discret->Dof(node)[offset+isd])]  = interpolated_vecs.at(i)(isd+countvecs);
+          }
         }
         offset += 4;
       }
