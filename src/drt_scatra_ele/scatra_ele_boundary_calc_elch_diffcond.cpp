@@ -306,7 +306,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
   // access input parameters associated with current condition
   const int kineticmodel = s2icondition->GetInt("kinetic model");
   const int nume = s2icondition->GetInt("e-");
-  if(not nume > 0)
+  if(not (nume > 0))
     dserror("Charge transfer at electrode-electrolyte interface must involve a positive number of electrons!");
   const std::vector<int>* stoichiometries = s2icondition->GetMutable<std::vector<int> >("stoichiometries");
   if(stoichiometries == NULL)
