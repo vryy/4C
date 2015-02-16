@@ -19,6 +19,7 @@ Maintainer: Georg Hammerl
 #include "../drt_adapter/adapter_particle.H"
 #include "particle_node.H"
 #include "../drt_adapter/ad_fld_base_algorithm.H"
+#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
@@ -67,6 +68,7 @@ CAVITATION::Algorithm::Algorithm(
   gauss_rule_per_dir_(params.get<int>("NUM_GP_VOID_FRACTION")),
   approxelecoordsinit_((bool)DRT::INPUT::IntegralValue<int>(params,"APPROX_ELECOORDS_INIT")),
   simplebubbleforce_((bool)DRT::INPUT::IntegralValue<int>(params,"SIMPLIFIED_BUBBLE_FORCES")),
+  timestepsizeratio_(params.get<int>("TIME_STEP_SIZE_RATIO")),
   fluiddis_(Teuchos::null),
   fluid_(Teuchos::null),
   ele_volume_(Teuchos::null),
@@ -150,6 +152,9 @@ CAVITATION::Algorithm::Algorithm(
       dserror("specify fluid material");
   }
 
+  if(timestepsizeratio_ < 1)
+    dserror("fluid time step must be a multiplicative greater or equal unity. Your choice: %d", timestepsizeratio_);
+
   return;
 }
 
@@ -159,8 +164,9 @@ CAVITATION::Algorithm::Algorithm(
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Timeloop()
 {
+  const int nstep_particles = NStep()*timestepsizeratio_;
   // time loop
-  while (NotFinished())
+  while (NotFinished() || particles_->StepOld() < nstep_particles)
   {
     // counter and print header; predict solution of both fields
     PrepareTimeStep();
@@ -245,9 +251,17 @@ void CAVITATION::Algorithm::InitCavitation()
   // copy structural dynamic params list and adapt particle specific entries
   const Teuchos::ParameterList& cavitationdyn = DRT::Problem::Instance()->CavitationParams();
 
+  // adapt time step properties for particles in case of independent time stepping
+  Teuchos::RCP<Teuchos::ParameterList> adaptedcavitationdyn = Teuchos::rcp(new Teuchos::ParameterList(cavitationdyn));
+
+  adaptedcavitationdyn->set<double>("TIMESTEP", cavitationdyn.get<double>("TIMESTEP") / (double)timestepsizeratio_);
+  adaptedcavitationdyn->set<int>("NUMSTEP", timestepsizeratio_ * cavitationdyn.get<int>("NUMSTEP"));
+  adaptedcavitationdyn->set<int>("RESTARTEVRY", timestepsizeratio_ * cavitationdyn.get<int>("RESTARTEVRY"));
+  adaptedcavitationdyn->set<int>("UPRES", timestepsizeratio_ * cavitationdyn.get<int>("UPRES"));
+
   // create particle time integrator
   Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
-      Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(cavitationdyn, particledis_));
+      Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(*adaptedcavitationdyn, particledis_));
   particles_ = particles->ParticleField();
 
   // set cavitation algorithm into time integration
@@ -307,8 +321,20 @@ void CAVITATION::Algorithm::InitCavitation()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::PrepareTimeStep()
 {
-  PARTICLE::Algorithm::PrepareTimeStep();
-  fluid_->PrepareTimeStep();
+  if(particles_->StepOld() % timestepsizeratio_ == 0)
+  {
+    IncrementTimeAndStep();
+    PrintHeader();
+
+    fluid_->PrepareTimeStep();
+  }
+
+  // apply dirichlet boundary conditions
+  particles_->PrepareTimeStep();
+
+  if(structure_ != Teuchos::null)
+    structure_->PrepareTimeStep();
+
   return;
 }
 
@@ -318,16 +344,26 @@ void CAVITATION::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Integrate()
 {
-  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
+  if(particles_->StepOld() % timestepsizeratio_ == 0)
   {
-    TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateFluidFraction");
-    CalculateFluidFraction();
-    SetFluidFraction();
+    if(coupalgo_ == INPAR::CAVITATION::TwoWayFull || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateFluidFraction");
+      CalculateFluidFraction();
+      SetFluidFraction();
+    }
+  }
+  else
+  {
+    // some output
+    if (myrank_ == 0)
+      IO::cout << "particle substep no. " << (particles_->StepOld() % timestepsizeratio_)+1 << IO::endl;
   }
 
   // apply forces and solve particle time step
   PARTICLE::Algorithm::Integrate();
 
+  if(particles_->StepOld() % timestepsizeratio_ == 0)
   {
     TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::IntegrateFluid");
     fluid_->Solve();
@@ -582,6 +618,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     bool output = false;
     if(output)
     {
+      std::cout << "id_bub: " << currparticle->Id() << " " << std::endl;
+      std::cout << "pos_bub: " << particleposition(0) << " " << particleposition(1) << " " << particleposition(2) << " " << std::endl;
       std::cout << "radius_bub: " << r_bub << std::endl;
       std::cout << "v_bub: " << v_bub[0] << " " << v_bub[1] << " " << v_bub[2] << " " << std::endl;
       std::cout << "v_fl: " << elevector1[0] << " " << elevector1[1] << " " << elevector1[2] << " " << std::endl;
@@ -893,6 +931,10 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::ParticleInflow()
 {
+  // inflow only once in fluid time step -> special case independent time stepping
+  if(particles_->StepOld() % timestepsizeratio_ != 0)
+    return;
+
   std::map<int, std::list<Teuchos::RCP<BubbleSource> > >::const_iterator biniter;
 
   int timeforinflow = 0;
@@ -994,11 +1036,16 @@ void CAVITATION::Algorithm::ParticleInflow()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Update()
 {
+  // here is the transition from n+1 -> n
   PARTICLE::Algorithm::Update();
-  fluid_->Update();
 
-  // update fluid fraction
-  fluidfracn_->Update(1.0,*fluidfracnp_,0.0);
+  if((particles_->StepOld()-1) % timestepsizeratio_ == 0)
+  {
+    fluid_->Update();
+
+    // update fluid fraction
+    fluidfracn_->Update(1.0,*fluidfracnp_,0.0);
+  }
 
   return;
 }
@@ -1009,8 +1056,12 @@ void CAVITATION::Algorithm::Update()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::ReadRestart(int restart)
 {
-  PARTICLE::Algorithm::ReadRestart(restart);
+  // adapt time step properties for particles in case of independent time stepping
+  PARTICLE::Algorithm::ReadRestart(timestepsizeratio_*restart);
   fluid_->ReadRestart(restart);
+
+  // correct time and step in algorithm base
+  SetTimeStep(fluid_->Time(),restart);
 
   // additionally read restart data for fluid fraction
   IO::DiscretizationReader reader(fluid_->Discretization(),restart);
@@ -1192,11 +1243,14 @@ void CAVITATION::Algorithm::TestResults(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Output()
 {
-  // call fluid output and add restart data for fluid fraction if necessary
-  fluid_->Output();
-  const int uprestart = DRT::Problem::Instance()->CavitationParams().get<int>("RESTARTEVRY");
-  if( Step()%uprestart == 0 && uprestart != 0 )
-    fluid_->DiscWriter()->WriteVector("fluid_fraction", fluidfracn_, IO::DiscretizationWriter::dofvector);
+  if((particles_->StepOld()-1) % timestepsizeratio_ == 0)
+  {
+    // call fluid output and add restart data for fluid fraction if necessary
+    fluid_->Output();
+    const int uprestart = DRT::Problem::Instance()->CavitationParams().get<int>("RESTARTEVRY");
+    if( Step()%uprestart == 0 && uprestart != 0 )
+      fluid_->DiscWriter()->WriteVector("fluid_fraction", fluidfracn_, IO::DiscretizationWriter::dofvector);
+  }
 
   PARTICLE::Algorithm::Output();
 

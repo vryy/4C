@@ -181,6 +181,9 @@ namespace ADAPTER
     /// Get the current time
     virtual double TimeOld() const = 0;
 
+    //! Return current step number $n$
+    virtual int StepOld() const = 0;
+
     /// Set time and step
     virtual void SetTimeStep(const double time, const int step) = 0;
 

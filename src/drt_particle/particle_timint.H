@@ -297,13 +297,13 @@ namespace PARTICLE
     //@{
 
     //! Return current time map
-    double TimeOld() const { return (*time_)[0]; }
+    virtual double TimeOld() const { return (*time_)[0]; }
 
     //! Return current step number $n$
-    int StepOld() const { return step_; }
+    virtual int StepOld() const { return step_; }
 
     //! Set current time and step number map
-    void SetTimeStep(const double time, const int step)
+    virtual void SetTimeStep(const double time, const int step)
     {
       (*time_)[0] = time;
       step_ = step;

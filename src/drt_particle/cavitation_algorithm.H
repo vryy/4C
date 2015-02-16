@@ -261,6 +261,8 @@ namespace CAVITATION
 
     bool simplebubbleforce_;   ///< bool whether a simplified force computation is applied
 
+    int timestepsizeratio_;   ///< ratio between fluid and particle time step in case of subcycling
+
     //@}
 
     //! @name fluid related stuff

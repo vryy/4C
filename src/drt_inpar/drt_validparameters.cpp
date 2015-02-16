@@ -7641,6 +7641,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("VOIDFRAC_PROJ_SOLVER",-1,"Number of linear solver used for L2 projection",&cavitationdyn);
 
+  IntParameter("TIME_STEP_SIZE_RATIO",1,"Ration between fluid and particle time step size in cavitation problems",&cavitationdyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& crackdyn = list->sublist("CRACK",false,"");
 
