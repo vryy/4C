@@ -194,7 +194,7 @@ NDVOL                           0
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF                           1
 //                              right_surf_temperature
-E 5 - 2 1 0 0 0 0 0 20.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0 //FUNCT2
+E 5 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 20.0 0.0 0.0 0.0 0.0 0.0 CURVE 2 2 2 2 2 2 FUNCT 0 0 0 0 0 0 Live Mid //FUNCT2
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              left_edge_nodes_fixed_xyz

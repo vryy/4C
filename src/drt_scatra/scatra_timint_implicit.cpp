@@ -368,8 +368,13 @@ void SCATRA::ScaTraTimIntImpl::Init()
   {
     DRT::Condition* cond = discret_->GetCondition("TransportDirichlet");
     if (cond) dserror("Found a Transport Dirichlet condition. Remove Transport std::string!");
-    cond = discret_->GetCondition("TransportNeumann");
-    if (cond) dserror("Found a Transport Neumann condition. Remove Transport std::string!");
+
+    cond = discret_->GetCondition("TransportPointNeumann");
+    if (cond) dserror("Found a Transport Point Neumann condition. Remove Transport std::string!");
+    cond = discret_->GetCondition("TransportLineNeumann");
+    if (cond) dserror("Found a Transport Line Neumann condition. Remove Transport std::string!");
+    cond = discret_->GetCondition("TransportSurfaceNeumann");
+    if (cond) dserror("Found a Transport Surface Neumann condition. Remove Transport std::string!");
   }
 
   // -------------------------------------------------------------------

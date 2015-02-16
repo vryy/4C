@@ -73,7 +73,7 @@ NDVOL   1
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // surface_right
-E 4 - none 1 1 1 0 0 0 -2.0 1.0e-1 0.2e-1 0.0 0.0 0.0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -2.0 1.0e-1 0.2e-1 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 8
 // left_bottom_front

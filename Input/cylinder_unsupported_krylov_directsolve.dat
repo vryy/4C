@@ -171,7 +171,7 @@ E 1 - solid NUMMODES 6 ONOFF 1 1 1 1 1 1 pointvalues
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              innerwall
-E 1 - 1 1 0 0 0 0 0 -13.322E3 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -13.322E3 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 pseudo_orthopressure
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              topinner

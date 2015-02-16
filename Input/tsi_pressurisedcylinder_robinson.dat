@@ -185,7 +185,7 @@ NDVOL                           2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              surf_pseudo_orthopressure
-E 1 - 1 1 0 0 0 0 0 -2.517e4 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -2.517e4 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
 // without time curve
 //E 1 - 0 1 0 0 0 0 0 -2.517e4 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS

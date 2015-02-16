@@ -114,7 +114,7 @@ NDVOL                           0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
 // Surface x+
-E 1 - 1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // Point x+y+

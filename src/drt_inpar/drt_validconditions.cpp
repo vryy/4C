@@ -55,10 +55,39 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   /*--------------------------------------------------------------------*/
   // Neumann
 
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > neumannintsepveccomponents;
+  std::vector<Teuchos::RCP<IntVectorConditionComponent> > neumannintveccomponents;
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > neumannrealsepveccomponents;
+  std::vector<Teuchos::RCP<RealVectorConditionComponent> > neumannrealveccomponents;
   std::vector<Teuchos::RCP<ConditionComponent> > neumanncomponents;
-  neumanncomponents.push_back(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  neumanncomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff",6)));
-  neumanncomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",6)));
+
+  neumannintsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  neumannintveccomponents.push_back(
+    Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
+  neumannrealsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+  neumannrealveccomponents.push_back(
+    Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
+  neumannintsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("CURVE")));
+  neumannintveccomponents.push_back(
+    Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true)));
+  neumannintsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+  neumannintveccomponents.push_back(
+    Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false)));
+
+  neumanncomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
+  neumanncomponents.push_back(
+      Teuchos::rcp(
+        new DirichletNeumannBundle(
+            "neumannbund",
+            Teuchos::rcp(new IntConditionComponent("numdof")),
+            neumannintsepveccomponents,
+            neumannintveccomponents,
+            neumannrealsepveccomponents,
+            neumannrealveccomponents)));
 
   // optional
   neumanncomponents.push_back(
@@ -75,9 +104,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("Mid","Top","Bot"),
         Teuchos::tuple<std::string>("mid","top","bot"),
         true)));
-
-  // optional
-  neumanncomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",6,false,false,true)));
 
   Teuchos::RCP<ConditionDefinition> pointneumann =
     Teuchos::rcp(new ConditionDefinition("DESIGN POINT NEUMANN CONDITIONS",

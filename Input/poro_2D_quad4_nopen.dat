@@ -141,7 +141,7 @@ NDVOL   0
 -------------------------------DESIGN LINE PORO NEUMANN CONDITIONS
 DLINE  1
 // line_radial_top
-E 1 - 1 1 0 0 0 0 0  50.0 0.0 0.0 0.0 0.0 0.0  Live Mid 1 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 50.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 1 0 0 0 0 0 Live Mid
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 4
 // outer_bottom

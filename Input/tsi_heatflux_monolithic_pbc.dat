@@ -273,7 +273,7 @@ E 4 - 1 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF  1
 // THR heatflux
-E 1 - none 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 2 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 2 0 0 0 0 0 Live Mid
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 15 DLINE 1

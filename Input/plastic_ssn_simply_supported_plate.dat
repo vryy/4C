@@ -87,7 +87,7 @@ NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // load
-E 3 - 1  1 0 0 0 0 0  -1.0e-2 0.0 0.0 0.0 0.0 0.0  orthopressure Mid 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0e-2 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 orthopressure Mid
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // d5_xz

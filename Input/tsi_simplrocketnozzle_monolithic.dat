@@ -277,7 +277,7 @@ NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // structure Cu surface bottom
-E 1 - 1 1 0 0 0 0 0 -1.0 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
 // structure Cu surface left

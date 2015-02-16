@@ -82,7 +82,7 @@ DLINE                           0
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           1
 //connect3
-E 1 - 1 1 0 0 0 0 0 1.0 1.0 0.0 0.0 0.0 0.0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL                            0

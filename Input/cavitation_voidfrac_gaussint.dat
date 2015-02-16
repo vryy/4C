@@ -128,7 +128,7 @@ E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 //                              fluid_volume
-E 1 - none 1 0 0 0 0 0 -9.81 0.0 0.0 0.0 0.0 0.0 Dead
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -9.81 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Dead
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
 //                              fluidvolume

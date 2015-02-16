@@ -153,7 +153,7 @@ NDPARTICLE  0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   1
 // fluid_volume
-E 1 - none 0 0 1 0 0 0 0.0 0.0 -980.0 0.0 0.0 0.0 Dead
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -980.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Dead
 ------------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL 1
 // fluid_volume

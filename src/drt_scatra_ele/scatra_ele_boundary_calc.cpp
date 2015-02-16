@@ -591,30 +591,26 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
   const double time = scatraparamstimint_->Time();
   if (time<0.0) usetime = false;
 
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
+  const int numdof = condition.GetInt("numdof");
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+  const std::vector<int>* curve    = condition.Get<std::vector<int> >   ("curve");
   const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
+
+  if (numdofpernode_!=numdof)
+    dserror("The NUMDOF you have entered in your TRANSPORT NEUMANN CONDITION does not equal the number of scalars.");
 
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
     double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
 
-    // multiply integration factor with the timecurve factor
-    fac *= curvefac;
-
     // factor given by spatial function
     double functfac = 1.0;
+    // factor given by temporal curve
+    double curvefac = 1.0;
 
     // determine global coordinates of current Gauss point
     double coordgp[3];   // we always need three coordinates for function evaluation!
@@ -627,29 +623,43 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
         coordgp[i] += xyze_(i,j)*funct_(j);
     }
 
-    const double* coordgpref = &coordgp[0];   // needed for function evaluation
+    int functnum = -1;
+    int curvenum = -1;
+    const double* coordgpref = &coordgp[0]; // needed for function evaluation
 
     for(int dof=0; dof<numdofpernode_; ++dof)
     {
       if ((*onoff)[dof]) // is this dof activated?
       {
-        int functnum = -1;
+        // find out whether we will use a time curve and get the factor
+        if (curve) curvenum = (*curve)[dof];
+
+        if (curvenum>=0 && usetime)
+        {
+          // evaluate curve at current time
+          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        }
+        else
+          curvefac = 1.0;
+
 
         // factor given by spatial function
         if(func)
           functnum = (*func)[dof];
 
-        // evaluate function at current Gauss point (provide always 3D coordinates!)
         if(functnum>0)
+        {
+          // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
+        }
         else
           functfac = 1.;
 
-        const double val_fac_functfac = (*val)[dof]*fac*functfac;
+        const double val_fac_funct_curve_fac = (*val)[dof]*fac*functfac*curvefac;
 
         for(int node=0; node<nen_; ++node)
           //TODO: with or without eps_
-          elevec1[node*numdofpernode_+dof] += scalar*funct_(node)*val_fac_functfac;
+          elevec1[node*numdofpernode_+dof] += scalar*funct_(node)*val_fac_funct_curve_fac;
       } // if ((*onoff)[dof])
     } // loop over dofs
   } // loop over integration points

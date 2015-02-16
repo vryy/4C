@@ -198,7 +198,7 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              fluid_inflow
-E 1 - 1 0 0 1 0 0 0 0.0 0.0 -1.3332e4 0.0 0.0 0.0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.3332e4 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              fluid_fsi_ring_slave_noDBC

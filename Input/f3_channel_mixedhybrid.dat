@@ -130,7 +130,7 @@ NDVOL                           2
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 //                              volume
-E 1 - none 1 0 0 0 0 0 0.00337204 0.0 0.0 0.0 0.0 0.0 Dead
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.00337204 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Dead
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 0 //2
 // wall top

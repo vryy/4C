@@ -257,7 +257,7 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // STR left T_xx=0
-E 2 - none 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 --------------------------------------DESIGN POINT THERMO NEUMANN CONDITIONS
@@ -267,15 +267,15 @@ DLINE                           0
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF                           5
 // No THR heatflux front z=2
-E 3 - none 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux upper surf y=4
-E 4 - none 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux right surf x=6
-E 5 - none 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux lower surf y=0
-E 6 - none 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux back z=-2.0
-E 7 - none 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS

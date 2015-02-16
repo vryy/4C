@@ -92,19 +92,19 @@ NDVOL                           0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          5
 //                              node_force_z_1
-E 1 - 1 0 0 1 0 0 0 0.0 0.0 -1.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 //                              node_force_z_2
-E 2 - 1 0 0 1 0 0 0 0.0 0.0 -2.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -2.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 //                              node_force_z_2.9101562500
-E 3 - 1 0 0 1 0 0 0 0.0 0.0 -2.9101562500 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -2.9101562500 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 //                              node_force_z_3.6835937500
-E 4 - 1 0 0 1 0 0 0 0.0 0.0 -3.6835937500 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -3.6835937500 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 //                              node_force_z_0.24609375000
-E 5 - 1 0 0 1 0 0 0 0.0 0.0 -0.24609375000 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -0.24609375000 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              surf_force_1
-E 1 - 1 0 0 1 0 0 0 0.0 0.0 -1.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 //                              D_all

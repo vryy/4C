@@ -122,17 +122,17 @@ DPOINT                          0
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DLINE                           6
 //node_ns1
-E 1 - 1 0 1 1 0 0 0 0.0 1.0E3 1.0E3 0.0 0.0 0.0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 1.0E3 1.0E3 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 //node_ns2
-E 2 - 1 0 1 1 0 0 0 0.0 1.0E3 1.0E3 0.0 0.0 0.0 Live Mid
+E 2 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 1.0E3 1.0E3 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 //node_ns3
-E 3 - 1 0 0 1 0 0 0 0.0 0.0 -1.0E3 0.0 0.0 0.0 Live Mid
+E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0E3 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 //node_ns4
-E 4 - 1 0 0 1 0 0 0 0.0 0.0 -1.0E3 0.0 0.0 0.0 Live Mid
+E 4 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0E3 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 //node_ns5
-E 5 - 1 1 0 1 0 0 0 1.0E3 0.0 1.0E3 0.0 0.0 0.0 Live Mid
+E 5 - NUMDOF 6 ONOFF 1 0 1 0 0 0 VAL 1.0E3 0.0 1.0E3 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 //node_ns6
-E 6 - 1 1 0 1 0 0 0 1.0E3 0.0 1.0E3 0.0 0.0 0.0 Live Mid
+E 6 - NUMDOF 6 ONOFF 1 0 1 0 0 0 VAL 1.0E3 0.0 1.0E3 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           0

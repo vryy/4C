@@ -147,9 +147,9 @@ NDPOINT                         3
 NDLINE                          0
 NDSURF                          3
 NDVOL                           0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS  // This is for scatra for the pure Scatra case
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS  // This is for scatra for the pure Scatra case
 DPOINT                          1
-E 3 - 1 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 141 DNODE 1
 NODE 247 DNODE 1

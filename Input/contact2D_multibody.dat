@@ -116,9 +116,9 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           2
 //                              upper_ball
-E 1 - 1 0 1 0 0 0 0 0.0 -1.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 //                              lower_ball
-E 2 - 1 0 1 0 0 0 0 0.0 1.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS

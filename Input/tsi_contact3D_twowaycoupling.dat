@@ -289,7 +289,7 @@ DLINE                           0
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF                           1
 //                              dirichlet1
-E 1 - 1 1 0 0 0 0 0 10000.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 10000.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS

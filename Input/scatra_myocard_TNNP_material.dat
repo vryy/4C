@@ -75,7 +75,7 @@ NDVOL   1
 -----------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 1
 // left end
-E 1 - 1 1 0 0 0 0 0  30 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 30.0 CURVE 1 FUNCT 0 Live Mid
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY

@@ -143,7 +143,7 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // Surface x+
-E 6 - 1 1 1 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 ----------------------------------------DESIGN POINT PORO NEUMANN CONDITIONS

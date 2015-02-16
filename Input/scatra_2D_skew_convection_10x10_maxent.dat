@@ -76,7 +76,7 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              Body_force
-E 1 - none 1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 Live Mid
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0 Live Mid
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0 // Line_top
