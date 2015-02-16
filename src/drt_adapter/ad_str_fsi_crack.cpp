@@ -800,7 +800,7 @@ bool ADAPTER::FSICrackingStructure::checkElementExist( Teuchos::RCP<DRT::Discret
 {
 
   const int* elenod = ele->NodeIds();
-  if( not ele->NumNode() == 4 )
+  if( not (ele->NumNode() == 4) )
     dserror("we can handle only quad4 in crack-fsi\n");
 
   return checkElementExist( dis, elenod, eleid );
@@ -824,7 +824,7 @@ bool ADAPTER::FSICrackingStructure::checkElementExist( Teuchos::RCP<DRT::Discret
 
     const int* sournod = sourele->NodeIds();
 
-    if( not sourele->NumNode() == 4 )
+    if( not (sourele->NumNode() == 4) )
       dserror("we can handle only quad4 in crack-fsi\n");
 
     eleid = sourele->Id();
