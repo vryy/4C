@@ -205,6 +205,11 @@ void FLD::XFluid::Init()
   output_service_->GmshOutputDiscretization(eval_eos_, step_);
 
   // -------------------------------------------------------------------
+  // Create velpresssplitter for uncut discretization.
+  velpressplitter_std_ = Teuchos::rcp(new LINALG::MapExtractor());
+  FLD::UTILS::SetupFluidSplit(*discret_,xdiscret_->InitialDofSet(),numdim_,*velpressplitter_std_);
+
+  // -------------------------------------------------------------------
   // initialize ALE-specific fluid vectors based on the intial dof row map
   // -------------------------------------------------------------------
 
@@ -1365,6 +1370,21 @@ void FLD::XFluid::AssembleMatAndRHS_GradientPenalty(
 }
 
 
+Teuchos::RCP<Epetra_Vector> FLD::XFluid::StdVelnp()
+{
+     Teuchos::RCP<Epetra_Vector> initvec = Teuchos::rcp(new Epetra_Vector(*xdiscret_->InitialDofRowMap(),true));
+     LINALG::Export(*(state_->velnp_), *initvec);
+     return initvec;
+}
+
+Teuchos::RCP<Epetra_Vector> FLD::XFluid::StdVeln()
+{
+     Teuchos::RCP<Epetra_Vector> initvec = Teuchos::rcp(new Epetra_Vector(*xdiscret_->InitialDofRowMap(),true));
+     LINALG::Export(*(state_->veln_), *initvec);
+     return initvec;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Evaluate errors compared to an analytical solution     schott 09/12 |
  *----------------------------------------------------------------------*/
@@ -1957,8 +1977,8 @@ void FLD::XFluid::PrintTimeStepInfo()
       printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
       break;
     case INPAR::FLUID::timeint_one_step_theta:
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta    STEP = %4d/%4d \n",
-          time_,maxtime_,dta_,step_,stepmax_);
+      printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta  (theta = %11.2E)  STEP = %4d/%4d \n",
+          time_,maxtime_,dta_,theta_,step_,stepmax_);
       break;
     case INPAR::FLUID::timeint_afgenalpha:
       printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n",
@@ -2075,17 +2095,6 @@ void FLD::XFluid::PrepareTimeStep()
   IncrementTimeAndStep();
 
   condition_manager_->IncrementTimeAndStep(dta_);
-
-
-
-  if(myrank_ == 0)
-    printf("----------------------XFLUID-------  time step %2d ----------------------------------------\n", step_);
-
-  // -------------------------------------------------------------------
-  //                       output to screen
-  // -------------------------------------------------------------------
-  PrintTimeStepInfo();
-
 
   // -------------------------------------------------------------------
   // set time parameters dependent on time integration scheme and step
@@ -2229,6 +2238,14 @@ void FLD::XFluid::Solve()
   dtsolve_  = 0.0;
   dtele_    = 0.0;
   dtfilter_ = 0.0;
+
+  if(myrank_ == 0)
+    printf("----------------------XFLUID-------  time step %2d ----------------------------------------\n", step_);
+
+  // -------------------------------------------------------------------
+  //                       output to screen
+  // -------------------------------------------------------------------
+  PrintTimeStepInfo();
 
   if (myrank_ == 0)
   {

@@ -207,7 +207,11 @@ void fluid_xfem_ls_drt()
 
    Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
 
-//   access parameter for two phase flow
+   //access parameter for two phase flow
+   // these parameters are controling the coupling algorithm.
+   const Teuchos::ParameterList& twophasedyn = problem->TwoPhaseFlowParams();
+
+//   access parameter for XFEM
    const Teuchos::ParameterList& xdyn = problem->XFEMGeneralParams();
 
    // Reserve DoF's for fluid
@@ -224,7 +228,7 @@ void fluid_xfem_ls_drt()
    const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
 
    // access parameter list for fluid
-   const Teuchos::ParameterList& fdyn = problem->FluidDynamicParams();
+   //const Teuchos::ParameterList& fdyn = problem->FluidDynamicParams();
 
    // use fluid discretization as layout for scatra discretization
    if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
@@ -249,20 +253,26 @@ void fluid_xfem_ls_drt()
    // get linear solver id from SCALAR TRANSPORT DYNAMIC
    const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
    if (linsolvernumber == (-1))
-     dserror("no linear solver defined for two phase flow (TPF) problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+     dserror("no linear solver defined for xfem two phase flow (XTPF) problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
-   Teuchos::RCP<XFLUIDLEVELSET::Algorithm>  xfluid_levelset = Teuchos::rcp(new XFLUIDLEVELSET::Algorithm(comm,fdyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+   // Test replacing fdyn in Algorithm with prbdyn
+   Teuchos::RCP<XFLUIDLEVELSET::Algorithm>  xfluid_levelset = Teuchos::rcp(new XFLUIDLEVELSET::Algorithm(comm,twophasedyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
    INPAR::FLUID::TimeIntegrationScheme timeintscheme = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
 
-   if (timeintscheme == INPAR::FLUID::timeint_stationary)
+   if (timeintscheme == INPAR::FLUID::timeint_one_step_theta)
+   {
+     // solve the two phase problem utilizing the smoothing function for parameter values.
+     xfluid_levelset->TimeLoop();
+   }
+   else if (timeintscheme == INPAR::FLUID::timeint_stationary)
    {
      xfluid_levelset->SolveStationaryProblem();
    }
    else
    {
      // every time integration scheme must be either static or dynamic
-     dserror("Only stationary time integration is currently implemented for Fluid_XFEM_LevelSet!");
+     dserror("Only stationary time integration is currently tested for Fluid_XFEM_LevelSet! OST is being built now.");
    }
 
    //------------------------------------------------------------------------------------------------

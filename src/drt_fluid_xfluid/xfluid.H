@@ -203,6 +203,13 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> Velnp()        { return state_->velnp_; }
     Teuchos::RCP<const Epetra_Vector> Velaf()        { return state_->velaf_; }
     Teuchos::RCP<const Epetra_Vector> Veln()         { return state_->veln_;  }
+    /*!
+    \brief get the velocity vector based on standard dofs
+
+    \return Teuchos::RCP to a copy of Velnp with only standard dofs
+     */
+    Teuchos::RCP<Epetra_Vector> StdVelnp();
+    Teuchos::RCP<Epetra_Vector> StdVeln();
 
     virtual Teuchos::RCP<const Epetra_Vector> GridVel()     { return gridvnp_; } //full grid velocity (1st dofset)
 
@@ -218,6 +225,7 @@ namespace FLD
     Teuchos::RCP<const Epetra_Map>     VelocityRowMap()  { return state_->velpressplitter_->OtherMap(); }
     Teuchos::RCP<const Epetra_Map>     PressureRowMap()  { return state_->velpressplitter_->CondMap(); }
 
+    Teuchos::RCP<LINALG::MapExtractor> VelPresSplitterStd() { return velpressplitter_std_; }
 
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->sysmat_); }
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(state_->sysmat_); }
@@ -596,6 +604,9 @@ namespace FLD
 
     // counter for current Newton iteration (used for Debug output)
     int itnum_out_;
+
+    /// vel-pres splitter for output purpose (and outer iteration convergence)
+    Teuchos::RCP<LINALG::MapExtractor> velpressplitter_std_;
 
     /// output service class
     Teuchos::RCP<XFluidOutputService> output_service_;

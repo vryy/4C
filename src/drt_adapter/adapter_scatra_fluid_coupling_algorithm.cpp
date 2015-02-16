@@ -56,17 +56,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   }
 
   // initialize fluid time integration scheme
-  FluidField()->Init();
-
-  // create initial state for xfluid
-  if(DRT::Problem::Instance()->ProblemType() == prb_fluid_xfem_ls)
-  {
-
-    Teuchos::RCP<FLD::XFluid> xfluid = Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField(), true);
-
-    xfluid->SetLevelSetField(ScaTraField()->Phinp(), ScaTraField()->Discretization());
-    xfluid->CreateInitialState();
-  }
+   FluidField()->Init();
 
   // set also initial field
   if (DRT::Problem::Instance()->ProblemType() != prb_combust)

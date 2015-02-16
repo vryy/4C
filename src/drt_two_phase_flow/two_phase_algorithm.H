@@ -94,6 +94,8 @@ namespace TWOPHASEFLOW
     ///Write Output for initial fields
     void OutputInitialField();
 
+  private:
+
     /// time-step length, maximum time and maximum number of steps
     double  dt_;
     double  maxtime_;
@@ -116,8 +118,6 @@ namespace TWOPHASEFLOW
 
     /// number of inflow steps
     int     numinflowsteps_;
-
-  private:
 
   };
 

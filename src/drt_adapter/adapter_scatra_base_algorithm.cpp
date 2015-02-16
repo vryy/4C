@@ -188,7 +188,8 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   INPAR::SCATRA::TimeIntegrationScheme timintscheme =
     DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
 
-  if (probtype != prb_level_set and probtype != prb_combust and probtype != prb_loma and probtype != prb_elch and probtype != prb_cardiac_monodomain and probtype != prb_two_phase_flow and sctrtype != INPAR::SCATRA::scatratype_cardiac_monodomain)
+  if (probtype != prb_level_set and probtype != prb_combust and probtype != prb_loma and probtype != prb_elch and probtype != prb_cardiac_monodomain
+      and probtype != prb_two_phase_flow and sctrtype != INPAR::SCATRA::scatratype_cardiac_monodomain and probtype != prb_fluid_xfem_ls)
   {
     switch(timintscheme)
     {
@@ -307,7 +308,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
         break;
     }
   }
-  else if (probtype == prb_level_set or probtype == prb_combust or probtype == prb_two_phase_flow)
+  else if (probtype == prb_level_set or probtype == prb_combust or probtype == prb_two_phase_flow or probtype == prb_fluid_xfem_ls)
   {
     Teuchos::RCP<Teuchos::ParameterList> lsparams = Teuchos::null;
     if (probtype == prb_level_set)
