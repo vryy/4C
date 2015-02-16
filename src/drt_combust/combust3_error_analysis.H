@@ -1310,7 +1310,7 @@ void Nitsche_BuildDomainIntegratedErrors(
       COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
 
       // blend smoothly to minus (gas bubble) domain
-      COMBUST::BlendMaterial(ele, &(*cell), time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
+      COMBUST::BlendMaterial(ele, true, time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
       dynvisc_max = std::max(dynviscplus,dynviscminus);
     }
 
