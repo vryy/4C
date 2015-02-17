@@ -15,6 +15,7 @@ Created on: Aug 11, 2014
 #include <iostream>
 
 #include <Teuchos_PtrDecl.hpp>
+#include <Epetra_Time.h>
 #include <Teuchos_XMLParameterListHelpers.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
@@ -293,6 +294,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy
 
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy");
 
+  Epetra_Time timer(A_eop->Comm());
+  timer.ResetStartTime();
+
   //Some cheks
   if(numdf<1 or dimns<1)
     dserror("Error: PDE equations or null space dimension wrong.");
@@ -385,6 +389,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy
     offsets[level-1] =  offsets[level-1] + myAcrs->RangeMap().MaxAllGID() + 1;
   }
 
+  double elaptime =  timer.ElapsedTime();
+  if(A_eop->Comm().MyPID()==0)
+    std::cout <<  "       Calling LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy takes " << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl ;
   return H;
 }
 

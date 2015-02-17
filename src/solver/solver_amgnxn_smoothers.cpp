@@ -16,6 +16,7 @@ Created on: Feb 27, 2014
 #include <iostream>
 
 #include <Teuchos_PtrDecl.hpp>
+#include <Epetra_Time.h>
 #include <Teuchos_XMLParameterListHelpers.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
@@ -453,6 +454,9 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup()
 
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::MueluAMGWrapper::Setup");
 
+  Epetra_Time timer(A_->Comm());
+  timer.ResetStartTime();
+
   //Prepare operator for MueLu
   Teuchos::RCP<Epetra_CrsMatrix> A_crs
     = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_->EpetraOperator());
@@ -500,6 +504,9 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup()
   // Create the V-cycle
   P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
 
+  double elaptime =  timer.ElapsedTime();
+  if(A_->Comm().MyPID()==0)
+    std::cout <<  "       Calling LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup takes " << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl ;
   return;
 }
 

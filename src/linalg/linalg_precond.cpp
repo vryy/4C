@@ -52,6 +52,9 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
 
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Preconditioner::Setup");
 
+  Epetra_Time timer(matrix->Comm());
+  timer.ResetStartTime();
+
   std::string solvertype = solver_->Params().get("solver","none");
   if (solvertype=="aztec" || solvertype=="belos")
   {
@@ -149,6 +152,11 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
     }
 #endif
   }
+
+  double elaptime =  timer.ElapsedTime();
+  if(matrix->Comm().MyPID()==0)
+    std::cout <<  "       Calling LINALG::Preconditioner::Setup takes " << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl ;
+
 }
 
 
