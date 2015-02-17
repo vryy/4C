@@ -133,7 +133,7 @@ NDVOL                           2
 DSURF                           1
 // surface outflow
 E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -4.0 3.0 6.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
