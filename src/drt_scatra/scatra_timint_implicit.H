@@ -240,9 +240,6 @@ public:
   //! Provide title of time integration scheme
   std::string MethodTitle(){ return MapTimIntEnumToString(MethodName()); }
 
-  //! return type of physics we are solving for
-  const INPAR::SCATRA::ScaTraType ScaTraType() const { return scatratype_; };
-
   //! print information about current time step to screen
   virtual void PrintTimeStepInfo();
 
@@ -309,9 +306,6 @@ public:
 
   //! output solution and restart data to file
   virtual void Output(const int num =0);
-
-  //! print scatra typ
-  void PrintScatraType();
 
   //! Convergence check for two way coupled ScaTra problems.
   bool ConvergenceCheck(int          itnum,
@@ -426,8 +420,8 @@ public:
   //! return fine-scale scalar field fsphi at time n+1 or alpha_M
   virtual Teuchos::RCP<Epetra_Vector> FsPhi() = 0;
 
-  //! output of mean values of scalar(s)
-  void OutputMeanScalars(const int num=0);
+  //! output mean values of scalar(s)
+  virtual void OutputMeanScalars(const int num=0);
 
   //! output of reaction(s) integral
   void OutputIntegrReac(const int num=0);
@@ -526,9 +520,6 @@ public:
   //! set scatra structure displacement vector due to biofilm growth
   void SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp);
 
-  //needed for multifield problems (e.g.fps3i) with different scatratypes in the different fields
-  void ManipulateScaTraType(INPAR::SCATRA::ScaTraType new_ScaTraType);
-
   /*========================================================================*/
   //! @name  not classified method - to be kept clean!!!
   /*========================================================================*/
@@ -575,16 +566,16 @@ protected:
   virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
 
   //! Set general element parameters
-  void SetElementGeneralScaTraParameters(bool calcinitialtimederiv = false);
+  void SetElementGeneralParameters(bool calcinitialtimederiv = false);
 
   //! Set additional problem-specific parameters for non-standard scalar transport problems (electrochemistry etc.)
   virtual void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams){return;};
 
   //! Set element parameter specific for turbulence
-  void SetElementTurbulenceParameter(bool calcinitialtimederiv = false);
+  void SetElementTurbulenceParameters(bool calcinitialtimederiv = false);
 
   //! Deactivate element parameter specific for turbulence
-  void SetElementTurbulenceParameterDeactivated();
+  void SetElementTurbulenceParametersDeactivated();
 
   /*========================================================================*/
   //! @name general framework
@@ -886,9 +877,6 @@ protected:
   /*========================================================================*/
   //! @name flags and enums
   /*========================================================================*/
-
-  //! flag for type of scalar transport problem
-  INPAR::SCATRA::ScaTraType scatratype_;
 
   //! flag for Eulerian or ALE formulation of equation(s)
   bool isale_;

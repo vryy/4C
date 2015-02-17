@@ -20,6 +20,7 @@ Maintainer: Volker Gravemeier
 #include "loma_algorithm.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
+#include "../drt_scatra_ele/scatra_ele.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include "../drt_lib/drt_globalproblem.H"
@@ -118,7 +119,18 @@ void loma_dyn(int restart)
     // create scatra elements if scatra discretization is empty (typical case)
     if (scatradis->NumGlobalNodes()==0)
     {
+      // fill scatra discretization by cloning fluid discretization
       DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,scatradis);
+
+      // set implementation type of cloned scatra elements to loma
+      for(int i=0; i<scatradis->NumMyColElements(); ++i)
+      {
+        DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
+        if(element == NULL)
+          dserror("Invalid element type!");
+        else
+          element->SetImplType(INPAR::SCATRA::impltype_loma);
+      }
     }
     else dserror("Fluid AND ScaTra discretization present. This is not supported.");
 

@@ -94,7 +94,6 @@ SET_FINE_SCALE_VEL              yes
 ADAPT_CSGS_PHI                  yes
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SCATRATYPE                      ConvectionDiffusion
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      -1

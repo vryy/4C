@@ -3205,8 +3205,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
    {
      // add dissipation and residuals of scalar field
 
-     // set scatra type and action for elements
-     scatraeleparams_.set<int>("scatratype",scatraparams_->get<int>("scatratype"));
+     // set action for elements
      scatraeleparams_.set<int>("action",SCATRA::calc_dissipation);
      // set parameters required for evaluation of residuals, etc.
      scatraeleparams_.set<double>("time-step length",scatraparams_->get<double>("TIMESTEP"));

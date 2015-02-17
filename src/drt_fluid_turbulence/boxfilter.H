@@ -78,12 +78,12 @@ public:
   virtual ~Boxfilter();
 
   void AddScatra(
-    Teuchos::RCP<DRT::Discretization>     scatradis,
-    INPAR::SCATRA::ScaTraType             scatratype);
+    Teuchos::RCP<DRT::Discretization>     scatradis
+  );
 
   void InitializeVremanScatra(
-    Teuchos::RCP<DRT::Discretization>     scatradis,
-    INPAR::SCATRA::ScaTraType             scatratype);
+    Teuchos::RCP<DRT::Discretization>     scatradis
+  );
 
   /*!
   \brief Perform box filter operation, compare filtered quantities
@@ -139,11 +139,11 @@ public:
         DRT::Node* node = discret_->lRowNode(n);
 
         std::vector<int> dofs= discret_->Dof(node);
-        
+
         for(int d=0;d<discret_->NumDof(node)-1;++d)
         {
           double val=(*((*filtered_vel_)(d)))[n];
-          
+
           int    id =dofs[d];
 
           (outvec)->ReplaceGlobalValues(1,&val,&id);
@@ -757,7 +757,6 @@ private:
   //! @name special scatra variables
   //! the discretization
   Teuchos::RCP<DRT::Discretization>     scatradiscret_;
-  INPAR::SCATRA::ScaTraType    scatratype_;
   //@}
 
   //! @name vectors used for filtering (for dynamic Smagorinsky model)

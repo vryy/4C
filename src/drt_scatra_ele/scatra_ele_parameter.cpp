@@ -30,7 +30,6 @@ Maintainer: Andreas Ehrl
 DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter()
  : //set_general_fluid_parameter_(false),
   set_general_scatra_parameter_(false),
-  scatratype_(INPAR::SCATRA::scatratype_undefined),
   is_ale_(false),
   is_conservative_(false),
   writeflux_(INPAR::SCATRA::flux_no),
@@ -82,15 +81,8 @@ DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter()
 //----------------------------------------------------------------------*
 //  set general parameters                                   ehrl 04/10 |
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralScaTraParameters(
-  Teuchos::ParameterList& params,
-  int myrank )
+void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralParameters(Teuchos::ParameterList& params)
 {
-  // the type of scalar transport problem has to be provided for all actions!
- scatratype_ = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
-  if (scatratype_ == INPAR::SCATRA::scatratype_undefined)
-    dserror("Set parameter SCATRATYPE in your input file!");
-
   // set ale case
   is_ale_ = params.get<bool>("isale",false);
 
@@ -170,10 +162,6 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralScaTraParameters(
   // set flags for potential evaluation of tau and material law at int. point
   const INPAR::SCATRA::EvalTau tauloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalTau>(stablist,"EVALUATION_TAU");
   tau_gp_ = (tauloc == INPAR::SCATRA::evaltau_integration_point); // set true/false
-  if ((scatratype_== INPAR::SCATRA::scatratype_advreac) and (not tau_gp_) )
-    dserror("If scatratype is Advances_Reaction, tau needs to be evaluated by integration-point evaluations");
-  if ((scatratype_== INPAR::SCATRA::scatratype_pororeac) and (not tau_gp_) )
-    dserror("If scatratype is Poro_Reaction, tau needs to be evaluated by integration-point evaluations");
 
   const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
   mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
@@ -185,9 +173,6 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralScaTraParameters(
     if (not mat_gp_ or not tau_gp_)
      dserror("Evaluation of material and stabilization parameters need to be done at the integration points if subgrid-scale velocity is included!");
   }
-
-  if (sgvel_ and scatratype_ == INPAR::SCATRA::scatratype_levelset)
-    dserror("CalcSubgrVelocityLevelSet not available anymore");
 
   // get quantities for finite difference check
   fdcheck_ = DRT::INPUT::get<INPAR::SCATRA::FDCheck>(params,"fdcheck");
@@ -201,7 +186,7 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralScaTraParameters(
 //----------------------------------------------------------------------*
 //  set turbulence parameters                            rasthofer 11/11|
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameter::SetElementTurbulenceParameter( Teuchos::ParameterList& params )
+void DRT::ELEMENTS::ScaTraEleParameter::SetElementTurbulenceParameters( Teuchos::ParameterList& params )
 {
   // get list with model-specific parameters
   Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
@@ -320,8 +305,6 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementTurbulenceParameter( Teuchos::
       mfs_conservative_ = true;
       else
         dserror("Unknown form of convective term!");
-      if (scatratype_ == INPAR::SCATRA::scatratype_loma and mfs_conservative_)
-        dserror("Conservative formulation not supported for loma!");
 
       adapt_Csgs_phi_ = DRT::INPUT::IntegralValue<bool>(mfslist,"ADAPT_CSGS_PHI");
 

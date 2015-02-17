@@ -12,18 +12,18 @@ Maintainer: Ursula Rasthofer / Volker Gravemeier
 </pre>
 */
 /*--------------------------------------------------------------------------*/
+#include "../drt_geometry/position_array.H"
 
-#include "scatra_ele_calc_loma.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils.H"
+
+#include "../drt_mat/material.H"
+#include "../drt_mat/sutherland.H"
 
 #include "scatra_ele.H"
 #include "scatra_ele_action.H"
-
 #include "scatra_ele_parameter_timint.H"
-
-#include "../drt_lib/drt_utils.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_lib/drt_discret.H"
-
+#include "scatra_ele_calc_loma.H"
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
@@ -184,6 +184,61 @@ const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractEle
   // call base class routine
   return my::ExtractElementAndNodeValues(ele,params,discretization,lm);
 }
+
+
+/*-----------------------------------------------------------------------------*
+ | get density at integration point                                 fang 02/15 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+const double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(
+    const DRT::Element*                 ele,
+    Teuchos::RCP<const MAT::Material>   material,
+    Teuchos::ParameterList&             params,
+    const double                        phinp
+    )
+{
+  // initialization
+  double density(0.);
+
+  if(material->MaterialType() == INPAR::MAT::m_sutherland)
+  {
+    // get thermodynamic pressure
+    const double thermpress = params.get<double>("thermpress");
+
+    density = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material)->ComputeDensity(phinp,thermpress);
+  }
+
+  else
+    dserror("Invalid material type!");
+
+  return density;
+} // DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity
+
+
+/*-----------------------------------------------------------------------------*
+ | calculate viscous part of subgrid-scale velocity                 fang 02/15 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc(
+    LINALG::Matrix<my::nsd_,1>&   epsilonvel
+    )
+{
+  double prefac = 1.0/3.0;
+  my::derxy2_.Scale(prefac);
+
+  for (int i=0; i<my::nen_; ++i)
+  {
+    double sum = (my::derxy2_(0,i)+my::derxy2_(1,i)+my::derxy2_(2,i))/prefac;
+
+    epsilonvel(0) = ((sum + my::derxy2_(0,i))*my::evelnp_(0,i) + my::derxy2_(3,i)*my::evelnp_(1,i) + my::derxy2_(4,i)*my::evelnp_(2,i))/2.0;
+    epsilonvel(1) = (my::derxy2_(3,i)*my::evelnp_(0,i) + (sum + my::derxy2_(1,i))*my::evelnp_(1,i) + my::derxy2_(5,i)*my::evelnp_(2,i))/2.0;
+    epsilonvel(2) = (my::derxy2_(4,i)*my::evelnp_(0,i) + my::derxy2_(5,i)*my::evelnp_(1,i) + (sum + my::derxy2_(2,i))*my::evelnp_(2,i))/2.0;
+  }
+
+  my::derxy2_.Scale(1.0/prefac);
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc
 
 
 // template classes

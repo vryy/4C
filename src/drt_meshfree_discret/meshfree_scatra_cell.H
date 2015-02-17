@@ -16,7 +16,10 @@ Maintainer: Keijo Nissen
 #define MESHFREE_SCATRA_CELL_H
 
 #include "drt_meshfree_cell.H"
+
 #include "../drt_lib/drt_elementtype.H"
+
+#include "../drt_inpar/inpar_scatra.H"
 
 namespace DRT
 {
@@ -461,6 +464,8 @@ private:
   //! the element discretization type
   DRT::Element::DiscretizationType distype_;
 
+  //! implementation type (physics)
+  INPAR::SCATRA::ImplType impltype_;
 }; // class MeshfreeTransport
 
 

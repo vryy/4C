@@ -69,10 +69,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
+ | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::ScaTraEleCalcLsReinit(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
+DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::ScaTraEleCalcLsReinit(
+    const int numdofpernode,
+    const int numscal
+    ) :
+    DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
     ephizero_(my::numscal_)  // size of vector
 {
   // set appropriate parameter list
@@ -81,6 +85,12 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::ScaTraEleCalcLsReinit(const int n
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerLsReinit<my::nsd_>(my::numscal_));
   // set appropriate internal variable manager
   my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_>(my::numscal_));
+
+  // safety check
+  if(my::scatrapara_->RBSubGrVel())
+    dserror("CalcSubgrVelocityLevelSet not available anymore");
+
+  return;
 }
 
 

@@ -104,7 +104,6 @@ MATID                           5
 ALPHA_F                         1.0
 ALPHA_M                         1.0
 GAMMA                           0.66
-SCATRATYPE                      Elch
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
 ITEMAX                          10
@@ -114,7 +113,6 @@ ADAPTCONV_BETTER                0.1
 ----------------------------------------------------------------ELCH CONTROL
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
 EQUPOT                          ENC
-ELCHTYPE                        Nernst_Planck
 BLOCKPRECOND                    Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver

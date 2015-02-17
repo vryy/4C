@@ -34,67 +34,34 @@ Maintainer: Ursula Rasthofer
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_apply_box_filter(
-  const double               thermpress,
-  double&                    dens_hat,
-  double&                    temp_hat,
-  double&                    dens_temp_hat,
-  double&                    phi2_hat,
-  double&                    phiexpression_hat,
-  Teuchos::RCP<std::vector<double> >       vel_hat,
-  Teuchos::RCP<std::vector<double> >       densvel_hat,
-  Teuchos::RCP<std::vector<double> >       densveltemp_hat,
-  Teuchos::RCP<std::vector<double> >       densstraintemp_hat,
-  Teuchos::RCP<std::vector<double> >       phi_hat,
-  Teuchos::RCP<std::vector<std::vector<double> > > alphaijsc_hat,
-  double&                    volume,
-  const DRT::Element*        ele)
+    double&                                            dens_hat,
+    double&                                            temp_hat,
+    double&                                            dens_temp_hat,
+    double&                                            phi2_hat,
+    double&                                            phiexpression_hat,
+    Teuchos::RCP<std::vector<double> >                 vel_hat,
+    Teuchos::RCP<std::vector<double> >                 densvel_hat,
+    Teuchos::RCP<std::vector<double> >                 densveltemp_hat,
+    Teuchos::RCP<std::vector<double> >                 densstraintemp_hat,
+    Teuchos::RCP<std::vector<double> >                 phi_hat,
+    Teuchos::RCP<std::vector<std::vector<double> > >   alphaijsc_hat,
+    double&                                            volume,
+    const DRT::Element*                                ele,
+    Teuchos::ParameterList&                            params
+    )
 {
   // do preparations first
   // ---------------------------------------------
   LINALG::Matrix<nsd_,nsd_> vderxy (true);
   double alpha2 = 0.0;
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
-
-  volume = EvalShapeFuncAndDerivsAtIntPoint(intpoints,0);
+  volume = EvalShapeFuncAndDerivsAtEleCenter();
 
   // get phi at integration point
   const double phinp = funct_.Dot(ephinp_[0]);
 
   // density at time n+1
-  double densnp(0.0);
-
-  // get material
-  Teuchos::RCP<MAT::Material> material = ele->Material();
-  if (material->MaterialType() == INPAR::MAT::m_scatra)
-  {
-    //access fluid discretization
-    Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
-    fluiddis = DRT::Problem::Instance()->GetDis("fluid");
-    //get corresponding fluid element (it has the same global ID as the scatra element)
-    DRT::Element* fluidele = fluiddis->gElement(ele->Id());
-    if (fluidele == NULL)
-      dserror("Fluid element %i not on local processor", ele->Id());
-    // get fluid material
-    Teuchos::RCP<MAT::Material> fluidmat = fluidele->Material();
-    if(fluidmat->MaterialType() != INPAR::MAT::m_fluid)
-      dserror("Invalid fluid material for passive scalar transport in turbulent flow!");
-
-    const Teuchos::RCP<const MAT::NewtonianFluid>& actfluidmat = Teuchos::rcp_dynamic_cast<const MAT::NewtonianFluid>(fluidmat);
-
-    densnp = actfluidmat->Density();
-     if (densnp != 1.0)
-       dserror("Check your diffusivity! Dynamic diffusivity required!");
-  }
-  else if (material->MaterialType() == INPAR::MAT::m_sutherland)
-  {
-    const Teuchos::RCP<const MAT::Sutherland>& actmat
-      = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material);
-
-    densnp = actmat->ComputeDensity(phinp,thermpress);
-  }
-  else dserror("material not supported");
-
+  const double densnp = GetDensity(ele,ele->Material(),params,phinp);
 
   // get velocities (n+alpha_F/1,i) at integration point
   LINALG::Matrix<nsd_,1> convelint(true);
@@ -196,6 +163,46 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_apply_box_filter(
 
   return;
 } //ScaTraEleCalc::scatra_apply_box_filter
+
+
+/*-----------------------------------------------------------------------------*
+ | get density at integration point                                 fang 02/15 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+const double DRT::ELEMENTS::ScaTraEleCalc<distype>::GetDensity(
+    const DRT::Element*                 ele,
+    Teuchos::RCP<const MAT::Material>   material,
+    Teuchos::ParameterList&             params,
+    const double                        phinp
+    )
+{
+  // initialization
+  double density(0.);
+
+  if(material->MaterialType() == INPAR::MAT::m_scatra)
+  {
+    // access fluid discretization
+    Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
+    fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+    // get corresponding fluid element (it has the same global ID as the scatra element)
+    DRT::Element* fluidele = fluiddis->gElement(ele->Id());
+    if(fluidele == NULL)
+      dserror("Fluid element %i not on local processor", ele->Id());
+    // get fluid material
+    Teuchos::RCP<MAT::Material> fluidmat = fluidele->Material();
+    if(fluidmat->MaterialType() != INPAR::MAT::m_fluid)
+      dserror("Invalid fluid material for passive scalar transport in turbulent flow!");
+
+    density = Teuchos::rcp_dynamic_cast<const MAT::NewtonianFluid>(fluidmat)->Density();
+    if(density != 1.0)
+      dserror("Check your diffusivity! Dynamic diffusivity required!");
+  }
+
+  else
+    dserror("Invalid material type!");
+
+  return density;
+} // DRT::ELEMENTS::ScaTraEleCalc<distype>::GetDensity
 
 
 /*----------------------------------------------------------------------------------*

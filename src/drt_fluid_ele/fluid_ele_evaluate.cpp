@@ -73,7 +73,7 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
   else if (action == FLD::set_turbulence_parameter)
   {
     DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
-    fldpara->SetElementTurbulenceParameter(p);
+    fldpara->SetElementTurbulenceParameters(p);
   }
   else if (action == FLD::set_loma_parameter)
   {
@@ -105,7 +105,7 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
     DRT::ELEMENTS::FluidEleParameterXFEM* fldpara = DRT::ELEMENTS::FluidEleParameterXFEM::Instance();
 
     fldpara->SetElementGeneralFluidParameter(p,dis.Comm().MyPID());
-    fldpara->SetElementTurbulenceParameter(p);
+    fldpara->SetElementTurbulenceParameters(p);
     fldpara->SetElementXFEMParameter(p,dis.Comm().MyPID());
   }
 

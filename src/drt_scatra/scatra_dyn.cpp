@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file scatra_dyn.cpp
-\brief entry point for (passive) scalar transport problems
+\brief entry point for scalar transport problems
 
 <pre>
 Maintainer: Volker Gravemeier
@@ -11,17 +11,21 @@ Maintainer: Volker Gravemeier
 </pre>
 */
 /*----------------------------------------------------------------------*/
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
-#include "scatra_dyn.H"
-#include "scatra_algorithm.H"
-#include "scatra_utils_clonestrategy.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-#include "scatra_resulttest.H"
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include "../drt_scatra_ele/scatra_ele.H"
+
 #include <iostream>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+
+#include "scatra_algorithm.H"
+#include "scatra_resulttest.H"
+#include "scatra_utils_clonestrategy.H"
+#include "scatra_dyn.H"
 
 
 /*----------------------------------------------------------------------*
@@ -100,8 +104,20 @@ void scatra_dyn(int restart)
       // create scatra elements if the scatra discretization is empty
       if (scatradis->NumGlobalNodes()==0)
       {
+        // fill scatra discretization by cloning fluid discretization
         DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,scatradis);
+
+        // set implementation type of cloned scatra elements
+        for(int i=0; i<scatradis->NumMyColElements(); ++i)
+        {
+          DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
+          if(element == NULL)
+            dserror("Invalid element type!");
+          else
+            element->SetImplType(INPAR::SCATRA::impltype_std);
+        }
       }
+
       else
         dserror("Fluid AND ScaTra discretization present. This is not supported.");
 

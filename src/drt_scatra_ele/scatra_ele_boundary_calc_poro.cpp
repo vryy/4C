@@ -68,55 +68,53 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ScaTraEleBoundaryCalcPoro(const int numdofpernode, const int numscal)
   : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(numdofpernode,numscal)
 {
-  // pointer to class ScaTraEleParameter
-  my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
+  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate boundary action                              hemmler 07/14 |
+ | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
-    DRT::ELEMENTS::TransportBoundary* ele,
-    Teuchos::ParameterList&           params,
-    DRT::Discretization&              discretization,
-    std::vector<int>&                 lm,
-    Epetra_SerialDenseMatrix&         elemat1_epetra,
-    Epetra_SerialDenseMatrix&         elemat2_epetra,
-    Epetra_SerialDenseVector&         elevec1_epetra,
-    Epetra_SerialDenseVector&         elevec2_epetra,
-    Epetra_SerialDenseVector&         elevec3_epetra
-)
+    DRT::ELEMENTS::TransportBoundary*   ele,
+    Teuchos::ParameterList&             params,
+    DRT::Discretization&                discretization,
+    SCATRA::BoundaryAction              action,
+    std::vector<int>&                   lm,
+    Epetra_SerialDenseMatrix&           elemat1_epetra,
+    Epetra_SerialDenseMatrix&           elemat2_epetra,
+    Epetra_SerialDenseVector&           elevec1_epetra,
+    Epetra_SerialDenseVector&           elevec2_epetra,
+    Epetra_SerialDenseVector&           elevec3_epetra
+    )
 {
-  // check for the action parameter
-  const SCATRA::BoundaryAction action = DRT::INPUT::get<SCATRA::BoundaryAction>(params,"action");
-
-  DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::SetupCalc(ele,params,discretization);
-
-  switch (action)
+  // determine and evaluate action
+  switch(action)
   {
   case SCATRA::bd_calc_fps3i_surface_permeability:
   case SCATRA::bd_calc_fs3i_surface_permeability:
   case SCATRA::bd_calc_Neumann:
   {
-    DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(ele,
-                                                               params,
-                                                               discretization,
-                                                               action,
-                                                               lm,
-                                                               elemat1_epetra,
-                                                               elemat2_epetra,
-                                                               elevec1_epetra,
-                                                               elevec2_epetra,
-                                                               elevec3_epetra);
+    my::EvaluateAction(
+        ele,
+        params,
+        discretization,
+        action,
+        lm,
+        elemat1_epetra,
+        elemat2_epetra,
+        elevec1_epetra,
+        elevec2_epetra,
+        elevec3_epetra
+        );
     break;
   }
   default:
   {
-    dserror("unknown action parameter");
+    dserror("Invalid action parameter!");
     break;
   }
-  } // switch action
+  } // switch(action)
 
   return 0;
 }

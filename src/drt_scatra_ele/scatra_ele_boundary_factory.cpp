@@ -19,6 +19,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_boundary_calc_elch_diffcond.H"
 #include "scatra_ele_boundary_calc_elch_electrode.H"
 #include "scatra_ele_boundary_calc_elch_NP.H"
+#include "scatra_ele_boundary_calc_loma.H"
 #include "scatra_ele_boundary_calc_poro.H"
 #include "scatra_ele_boundary_calc_std.H"
 #include "scatra_ele_boundary_interface.H"
@@ -100,9 +101,13 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
   case INPAR::SCATRA::impltype_aniso:
   case INPAR::SCATRA::impltype_cardiac_monodomain:
   case INPAR::SCATRA::impltype_levelset:
-  case INPAR::SCATRA::impltype_loma:
   {
     return DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(numdofpernode,numscal);
+    break;
+  }
+  case INPAR::SCATRA::impltype_loma:
+  {
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::Instance(numdofpernode,numscal);
     break;
   }
   case INPAR::SCATRA::impltype_elch_electrode:

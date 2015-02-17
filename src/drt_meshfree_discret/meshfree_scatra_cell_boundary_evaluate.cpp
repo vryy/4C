@@ -29,10 +29,6 @@ int DRT::ELEMENTS::MeshfreeTransportBoundary::Evaluate(
     Epetra_SerialDenseVector& elevec3)
 {
   dserror("MeshfreeTransportBoundary not implemented, yet.");
-  // the type of scalar transport problem has to be provided for all actions!
-//  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
-//  if (scatratype == INPAR::SCATRA::scatratype_undefined)
-//    dserror("Element parameter SCATRATYPE has not been set!");
 
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport
@@ -40,7 +36,7 @@ int DRT::ELEMENTS::MeshfreeTransportBoundary::Evaluate(
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-//  return DRT::ELEMENTS::MeshfreeScaTraBoundaryImplInterface::Impl(this,scatratype)->Evaluate(
+//  return DRT::ELEMENTS::MeshfreeScaTraBoundaryImplInterface::Impl(this)->Evaluate(
 //      this,
 //      params,
 //      discretization,
@@ -68,18 +64,13 @@ int DRT::ELEMENTS::MeshfreeTransportBoundary::EvaluateNeumann(
 {
   dserror("MeshfreeTransportBoundary not implemented, yet.");
 
-  // the type of scalar transport problem has to be provided for all actions!
-//  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
-//  if (scatratype == INPAR::SCATRA::scatratype_undefined)
-//    dserror("Element parameter SCATRATYPE has not been set!");
-
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Transport
   // boundary element)
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-//  return DRT::ELEMENTS::MeshfreeScaTraBoundaryImplInterface::Impl(this,scatratype)->EvaluateNeumann(
+//  return DRT::ELEMENTS::MeshfreeScaTraBoundaryImplInterface::Impl(this)->EvaluateNeumann(
 //      this,
 //      params,
 //      discretization,

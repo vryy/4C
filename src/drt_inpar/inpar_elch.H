@@ -23,15 +23,6 @@ namespace INPAR
   /// Input parameters for ELCH
   namespace ELCH
   {
-
-  /// type of elch problem
-  enum ElchType
-  {
-    elchtype_undefined,
-    elchtype_nernst_planck,
-    elchtype_diffcond
-  };
-
   /// possible types of moving boundary simulation
   enum ElchMovingBoundary
   {

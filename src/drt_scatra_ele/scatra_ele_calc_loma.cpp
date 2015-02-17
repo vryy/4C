@@ -71,10 +71,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
+ | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
+DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
+    const int numdofpernode,
+    const int numscal
+    ) :
+    DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
     ephiam_(my::numscal_),
     densgradfac_(my::numscal_,0.0),
     thermpressnp_(0.0),
@@ -84,6 +88,12 @@ DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(const int numdofper
 {
   // set appropriate reaction manager
   my::reamanager_ = Teuchos::rcp(new ScaTraEleReaManagerLoma(my::numscal_));
+
+  // safety check
+  if(my::scatrapara_->MfsConservative())
+    dserror("Conservative formulation not supported for loma!");
+
+  return;
 }
 
 

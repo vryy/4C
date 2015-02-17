@@ -103,6 +103,7 @@ RESTARTEVRY                     5
 NUMSTEP                         200
 MAXTIME                         1.0
 TIMESTEP                        0.005
+SCATRATYPE                      Poro_Scatra_Reaction //Poroscatra //
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   4
 SOLVERTYPE                      nonlinear
@@ -112,7 +113,6 @@ THETA                           0.5
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
-SCATRATYPE                      Poro_Scatra_Reaction //Poroscatra //
 INITFUNCNO                      1
 CONVFORM                        convective
 SKIPINITDER                     yes

@@ -635,7 +635,7 @@ void FLD::FluidImplicitTimeInt::CompleteGeneralInit()
   //Set general parameters:
   //the following two functions are overloaded (switched off) in TimIntPoro
   SetElementGeneralFluidParameter();
-  SetElementTurbulenceParameter();
+  SetElementTurbulenceParameters();
 
   // set special parameter for faces/edges when using edge-based fluid stabilizations
   if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based")
@@ -5505,7 +5505,7 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
 // -------------------------------------------------------------------
 // set turbulence parameters                         rasthofer 11/2011
 // -------------------------------------------------------------------
-void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameter()
+void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameters()
 {
   Teuchos::ParameterList eleparams;
 

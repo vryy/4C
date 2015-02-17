@@ -187,6 +187,7 @@ SCATRA_SOLVERTYPE               linear
 COUPLED_LINEAR_SOLVER           1
 LINEAR_SOLVER1                  4
 LINEAR_SOLVER2                  3
+SCATRATYPE                      ConvectionDiffusion
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No
 CONVFORM                        conservative
@@ -199,7 +200,6 @@ NUMSTEP                         10
 OUTMEAN                         No
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
-SCATRATYPE                      ConvectionDiffusion
 SKIPINITDER                     yes
 SOLVERTYPE                      linear_incremental
 THETA                           0.66

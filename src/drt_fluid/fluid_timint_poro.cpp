@@ -78,11 +78,11 @@ void FLD::TimIntPoro::SetElementGeneralFluidParameter()
 /*----------------------------------------------------------------------*
 | set params in constructor                                    bk 11/13 |
 *----------------------------------------------------------------------*/
-void FLD::TimIntPoro::SetElementTurbulenceParameter()
+void FLD::TimIntPoro::SetElementTurbulenceParameters()
 {
 
   //set some poro-specific parameters only in specific poro cases
-   FluidImplicitTimeInt::SetElementTurbulenceParameter();
+   FluidImplicitTimeInt::SetElementTurbulenceParameters();
   return;
 }
 

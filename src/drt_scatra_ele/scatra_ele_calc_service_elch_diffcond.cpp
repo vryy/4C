@@ -65,7 +65,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CheckElchElementParamete
                 "the number of materials defined in the material MatPhase.");
 
       int numdofpernode = 0;
-      if (myelch::ElchPara()->CurSolVar()==true)
+      if (ElchPara()->CurSolVar())
         numdofpernode = nummat+DRT::Problem::Instance()->NDim()+numphase;
       else
         numdofpernode = nummat+numphase;
@@ -128,7 +128,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::PrepMatAndRhsInitialTime
     }
 
     // current as a solution variable
-    if(cursolvar_)
+    if(ElchPara()->CurSolVar())
     {
       for(int idim=0;idim<my::nsd_;++idim)
       {
@@ -157,7 +157,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::PrepMatAndRhsInitialTime
     elevec1_epetra[fvi] = 0.0; // zero out!
   }
 
-  if(cursolvar_)
+  if(ElchPara()->CurSolVar())
   {
     for(int idim=0;idim<my::nsd_;++idim)
     {
@@ -219,7 +219,7 @@ const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Ext
   const std::vector<double> myphinp = myelch::ExtractElementAndNodeValues(ele,params,discretization,lm);
 
   // get current density at element nodes if required
-  if(cursolvar_)
+  if(ElchPara()->CurSolVar())
   {
     // get values for current at element nodes
     for (int ien=0;ien<my::nen_;++ien)
@@ -252,13 +252,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsElectricPot
 {
   // specific constants for the Newman-material:
   // switch between a dilute solution theory like formulation and the classical concentrated solution theory
-  double newman_const_a = myelch::ElchPara()->NewmanConstA();
-  double newman_const_b = myelch::ElchPara()->NewmanConstB();
+  double newman_const_a = ElchPara()->NewmanConstA();
+  double newman_const_b = ElchPara()->NewmanConstB();
 
   // safety checks
   if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
     dserror("The function CalcInitialPotential is only implemented for Newman materials");
-  if(cursolvar_==true)
+  if(ElchPara()->CurSolVar())
     dserror("The function CalcInitialPotential is only implemented for Newman materials without the current as solution variable");
 
   // call base class routine
@@ -321,7 +321,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalculateFlux(
     // flux due to ohmic overpotential
     q.Update(-DiffManager()->GetTransNum(k)*VarManager()->InvFVal(k)*DiffManager()->GetCond(),VarManager()->GradPot(),1.0);
     // flux due to concentration overpotential
-    q.Update(-DiffManager()->GetTransNum(k)*VarManager()->RTFFCVal(k)*DiffManager()->GetCond()*DiffManager()->GetThermFac()*(myelch::ElchPara()->NewmanConstA()+(myelch::ElchPara()->NewmanConstB()*DiffManager()->GetTransNum(k)))*VarManager()->ConIntInv(k),VarManager()->GradPhi(k),1.0);
+    q.Update(-DiffManager()->GetTransNum(k)*VarManager()->RTFFCVal(k)*DiffManager()->GetCond()*DiffManager()->GetThermFac()*(ElchPara()->NewmanConstA()+(ElchPara()->NewmanConstB()*DiffManager()->GetTransNum(k)))*VarManager()->ConIntInv(k),VarManager()->GradPhi(k),1.0);
     break;
   default:
     dserror("received illegal flag inside flux evaluation for whole domain"); break;
@@ -362,7 +362,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalculateCurrent(
     q.Update(-DiffManager()->GetCond(),VarManager()->GradPot(),1.0);
     // diffusion overpotential flux contribution
     for (int k = 0; k<my::numscal_; ++k)
-      q.Update(-VarManager()->RTF()/myelch::ElchPara()->NewmanConstC()*DiffManager()->GetCond()*DiffManager()->GetThermFac()*(myelch::ElchPara()->NewmanConstA()+(myelch::ElchPara()->NewmanConstB()*DiffManager()->GetTransNum(k)))*VarManager()->ConIntInv(k),VarManager()->GradPhi(k),1.0);
+      q.Update(-VarManager()->RTF()/ElchPara()->NewmanConstC()*DiffManager()->GetCond()*DiffManager()->GetThermFac()*(ElchPara()->NewmanConstA()+(ElchPara()->NewmanConstB()*DiffManager()->GetTransNum(k)))*VarManager()->ConIntInv(k),VarManager()->GradPhi(k),1.0);
 
     break;
   default:

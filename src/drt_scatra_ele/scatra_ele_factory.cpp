@@ -209,11 +209,11 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::MeshfreeScaTraCellInterface* DRT::ELEMENTS::ScaTraFactory::DefineMeshfreeProblemType(
-    INPAR::SCATRA::ImplType problem,
+    INPAR::SCATRA::ImplType impltype,
   const int numdofpernode,
   const int numscal)
 {
-  if (problem == INPAR::SCATRA::impltype_std_meshfree)
+  if (impltype == INPAR::SCATRA::impltype_std_meshfree)
     return DRT::ELEMENTS::MeshfreeScaTraCellCalcStd<distype>::Instance(numdofpernode,numscal);
   else
     dserror("Defined problem type does not exist!!");

@@ -46,6 +46,7 @@
 
 #include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
+#include "../drt_scatra_ele/scatra_ele.H"
 #include "../drt_inpar/inpar_scatra.H"
 
 #include "fps3i_partitioned.H"
@@ -138,7 +139,18 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
   // transport discretization is empty
   if (fluidscatradis->NumGlobalNodes()==0)
   {
+    // fill fluid-based scatra discretization by cloning fluid discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,fluidscatradis);
+
+    // set implementation type of cloned scatra elements to advanced reactions
+    for(int i=0; i<fluidscatradis->NumMyColElements(); ++i)
+    {
+      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(fluidscatradis->lColElement(i));
+      if(element == NULL)
+        dserror("Invalid element type!");
+      else
+        element->SetImplType(INPAR::SCATRA::impltype_advreac);
+    }
   }
   else
     dserror("Fluid AND ScaTra discretization present. This is not supported.");
@@ -154,8 +166,18 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
     structscatradis->FillComplete();
   if (structscatradis->NumGlobalNodes()==0)
   {
-    // create the poro scatra discretization
+    // fill poro-based scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroScatraCloneStrategy>(structdis,structscatradis);
+
+    // set implementation type of cloned scatra elements to poro reactions
+    for(int i=0; i<structscatradis->NumMyColElements(); ++i)
+    {
+      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(structscatradis->lColElement(i));
+      if(element == NULL)
+        dserror("Invalid element type!");
+      else
+        element->SetImplType(INPAR::SCATRA::impltype_pororeac);
+    }
 
     // redistribute FPSI interface here, since if done before the PoroScatra cloning does not work
     //fpsi_->RedistributeInterface();
@@ -188,10 +210,6 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
 
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);
-
-  //Manipulates the scatratype for the Poro-domain to scatratype_poro
-  INPAR::SCATRA::ScaTraType new_ScaTraType = INPAR::SCATRA::scatratype_pororeac;
-  scatravec_[1]->ScaTraField()->ManipulateScaTraType(new_ScaTraType);
 
   //---------------------------------------------------------------------
   // check various input parameters

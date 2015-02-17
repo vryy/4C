@@ -115,7 +115,7 @@ public:
          and in the fluid boundary element
 
   */
-  virtual void SetElementTurbulenceParameter();
+  virtual void SetElementTurbulenceParameters();
 
 
 protected:

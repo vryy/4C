@@ -10,17 +10,21 @@ Maintainer: Ursula Rasthofer / Volker Gravemeier
             089 - 289-15236/45
 </pre>
  *------------------------------------------------------------------------------------------------*/
+#include "../drt_fluid/fluid_utils.H" // for splitter
 
-#include "scatra_timint_loma.H"
-
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_io/io_control.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/sutherland.H"
+
+#include "../drt_scatra_ele/scatra_ele_action.H"
+
 #include "../linalg/linalg_mapextractor.H"
-#include "../drt_fluid/fluid_utils.H" // for splitter
+
+#include "scatra_timint_loma.H"
 
 
 /*----------------------------------------------------------------------*
@@ -132,7 +136,6 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
 
   // set parameters for element evaluation
   eleparams.set<int>("action",SCATRA::calc_domain_and_bodyforce);
-  eleparams.set<int>("scatratype",scatratype_);
 
   // the time = 0.0, since this function is called BEFORE the first IncrementTimeAndStep() in InitialCalculations()
   // therefore, the standard SetElementTimeParameter() can be used for this method
@@ -209,7 +212,6 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
   // set action for elements
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::calc_mean_scalars);
-  eleparams.set<int>("scatratype",scatratype_);
   // inverted scalar values are required here
   eleparams.set("inverting",true);
 
@@ -249,7 +251,6 @@ void SCATRA::ScaTraTimIntLoma::ComputeThermPressureFromMassCons()
   // set action for elements
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::calc_mean_scalars);
-  eleparams.set<int>("scatratype",scatratype_);
   // inverted scalar values are required here
   eleparams.set("inverting",true);
 
@@ -308,3 +309,62 @@ void SCATRA::ScaTraTimIntLoma::AddProblemSpecificParametersAndVectorsForCalcInit
   params.set("time derivative of thermodynamic pressure",thermpressdtn_);
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | output mean values of scalar(s)                           fang 02/15 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntLoma::OutputMeanScalars(const int num)
+{
+  if(outmean_)
+  {
+    // set scalar values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phinp",phinp_);
+    // set action for elements
+    Teuchos::ParameterList eleparams;
+    eleparams.set<int>("action",SCATRA::calc_mean_scalars);
+    eleparams.set("inverting",false);
+
+    //provide displacement field in case of ALE
+    if (isale_)
+      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+    // evaluate integrals of scalar(s) and domain
+    Teuchos::RCP<Epetra_SerialDenseVector> scalars
+    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+    discret_->EvaluateScalars(eleparams, scalars);
+    discret_->ClearState();   // clean up
+
+    const double domint = (*scalars)[numscal_];
+
+    // print out values
+    if (myrank_ == 0)
+      std::cout << "Mean scalar: " << std::setprecision (9) << (*scalars)[0]/domint << std::endl;
+
+    // print out results to file as well
+    if (myrank_ == 0)
+    {
+      std::stringstream number;
+      number << num;
+      const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".meanvalues.txt";
+
+      std::ofstream f;
+      if (Step() <= 1)
+      {
+        f.open(fname.c_str(),std::fstream::trunc);
+        f << "#| Step | Time | Mean scalar |\n";
+      }
+      else
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+      f << Step() << " " << Time() << " ";
+      f << (*scalars)[0]/domint << "\n";
+      f.flush();
+      f.close();
+    }
+
+  } // if(outmean_)
+
+  return;
+} // SCATRA::ScaTraTimIntLoma::OutputMeanScalars

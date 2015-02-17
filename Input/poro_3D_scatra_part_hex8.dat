@@ -87,7 +87,6 @@ THETA                           0.66
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
-SCATRATYPE                      Poroscatra
 INITFUNCNO                      1
 CONVFORM                        convective
 SKIPINITDER                     yes
@@ -106,6 +105,7 @@ RESTARTEVRY                     5
 NUMSTEP                         10
 MAXTIME                         4.0
 TIMESTEP                        0.01
+SCATRATYPE                      Poroscatra
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2

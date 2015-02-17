@@ -63,7 +63,6 @@ INITIALFIELD                    field_by_function
 MAXTIME                         10000
 NUMSTEP                         15
 RESTARTEVRY                     1000
-SCATRATYPE                      Elch
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
@@ -81,7 +80,6 @@ ITEMAX                          20
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Zero
 ----------------------------------------------------------------ELCH CONTROL
-ELCHTYPE                        Nernst_Planck
 TEMPERATURE                     298.15 //11604.506            // abused as a scaling factor in order to have: F/RT = 1.0
 EQUPOT                          ENC
 --------------------------------------------------------------------SOLVER 1

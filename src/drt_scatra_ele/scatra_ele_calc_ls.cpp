@@ -12,7 +12,7 @@ Maintainer: Ursula Rasthofer
 </pre>
 */
 /*--------------------------------------------------------------------------*/
-
+#include "scatra_ele_parameter.H"
 #include "scatra_ele_calc_ls.H"
 
 /*----------------------------------------------------------------------*
@@ -53,12 +53,20 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
+ | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcLS<distype>::ScaTraEleCalcLS(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal)
+DRT::ELEMENTS::ScaTraEleCalcLS<distype>::ScaTraEleCalcLS(
+    const int numdofpernode,
+    const int numscal
+    ) :
+    DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal)
 {
+  // safety check
+  if(my::scatrapara_->RBSubGrVel())
+    dserror("CalcSubgrVelocityLevelSet not available anymore");
 
+  return;
 }
 
 

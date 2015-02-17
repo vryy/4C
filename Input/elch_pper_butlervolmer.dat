@@ -86,7 +86,6 @@ WRITEFLUX                       totalflux_domain
 OUTMEAN                         Yes
 UPRES                           1
 MATID                           5
-SCATRATYPE                      Elch
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09
 ITEMAX                          15
@@ -94,7 +93,6 @@ EXPLPREDICT                     no                            // yes -> oscillat
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ----------------------------------------------------------------ELCH CONTROL
-ELCHTYPE                        Nernst_Planck
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
 EQUPOT                          ENC
 BLOCKPRECOND                    Yes

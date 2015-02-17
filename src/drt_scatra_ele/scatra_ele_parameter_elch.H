@@ -2,125 +2,76 @@
 /*!
 \file scatra_ele_parameter_elch.H
 
-\brief Setting of elch scatra parameter for element evaluation
+\brief element parameter class for electrochemistry problems
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+Maintainer: Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
 #ifndef SCATRA_ELE_PARAMETER_ELCH_H
 #define SCATRA_ELE_PARAMETER_ELCH_H
 
-#include "scatra_ele_parameter.H"
-
 #include "../drt_inpar/inpar_elch.H"
 
+#include "scatra_ele_parameter.H"
 
 namespace DRT
 {
-namespace ELEMENTS
-{
+  namespace ELEMENTS
+  {
+    // class implementation
+    class ScaTraEleParameterElch : public ScaTraEleParameter
+    {
+      typedef DRT::ELEMENTS::ScaTraEleParameter my;
 
-class ScaTraEleParameterElch : public ScaTraEleParameter
-{
-protected:
+    public:
 
-  /// (private) protected constructor, since we are a Singleton.
-  /// this constructor is called from a derived class
-  /// -> therefore, it has to be protected instead of private
-  ScaTraEleParameterElch();
+      //! destructor
+      virtual ~ScaTraEleParameterElch(){return;};
 
-public:
+      //! singleton access method
+      static ScaTraEleParameterElch* Instance(bool create=true);
 
-  virtual ~ScaTraEleParameterElch() {}
+      //! singleton destruction
+      virtual void Done();
 
-  /// Singleton access method
-  static ScaTraEleParameterElch* Instance( bool create=true );
+      //! set parameters for electrochemistry problems
+      virtual void SetElementGeneralParameters(Teuchos::ParameterList& params);
 
-  /// called upon destruction
-  virtual void Done();
+      //! return type of closing equation for electric potential
+      const INPAR::ELCH::EquPot EquPot() const {return equpot_;};
 
-  /*========================================================================*/
-  //! @name set-routines
-  /*========================================================================*/
+      //! return Faraday constant
+      const double Faraday() const {return faraday_;};
 
-  //! elch-specific parameters are set
-  void SetElementElchScaTraParameter(Teuchos::ParameterList& params,   //> parameter list
-                                     int myrank);                      //> proc id
+      //! return dielectric constant
+      const double Epsilon() const {return epsilon_;};
 
-  //! elch diffusion-conduction formulation specific parameters are set
-  void SetElementElchDiffCondScaTraParameter(
-                                     Teuchos::ParameterList& params,   //> parameter list
-                                     int myrank);                      //> proc id
+      //! return constant F/RT
+      const double FRT() const {return frt_;};
 
-  /*========================================================================*/
-  //! @name access-routines
-  /*========================================================================*/
+    protected:
 
-  /*--------------------------------------------------------*/
-  //! @name general elch parameters
-  /*--------------------------------------------------------*/
+      //! protected constructor for singletons
+      ScaTraEleParameterElch();
 
-  const INPAR::ELCH::ElchType ElchType(){return elchtype_;};
+      //! equation used for closing of the elch-system
+      enum INPAR::ELCH::EquPot equpot_;
 
-  const INPAR::ELCH::EquPot EquPot(){return equpot_;};
+      //! Faraday constant
+      const double faraday_;
 
-  const double FRT(){return frt_;};
+      //! dielectric constant
+      const double epsilon_;
 
-  /*--------------------------------------------------------------*/
-  //! @name elch parameters for Nernst-Planck formulation
-  /*--------------------------------------------------------------*/
-
-  /*--------------------------------------------------------------*/
-  //! @name elch parameters for diffusion-conduction formulation
-  /*--------------------------------------------------------------*/
-
-  const bool CurSolVar(){return cursolvar_;};
-
-  const bool DiffusionCoeffBased(){return diffusioncoefbased_;};
-
-  const double NewmanConstA(){return newmanconsta_;};
-
-  const double NewmanConstB(){return newmanconstb_;};
-
-  const double NewmanConstC(){return newmanconstc_;};
-
-private:
-
-  //! type of elch problem
-  enum INPAR::ELCH::ElchType elchtype_;
-
-  //! equation used for closing of the elch-system
-  enum INPAR::ELCH::EquPot equpot_;
-
-  //! factor F/RT
-  double frt_;
-
-  //! flag if current is used as a solution variable
-  bool cursolvar_;
-
-  // mat_diffcond: flag if diffusion potential is based on diffusion coefficients or transference number
-  bool diffusioncoefbased_;
-
-  /// switch for dilute and concentrated solution theory (diffusion potential in current equation):
-  ///    A          B
-  ///   |--|  |----------|
-  ///   z_1 + (z_2 - z_1) t_1
-  /// ------------------------ (RT/F kappa 1/c_k grad c_k)
-  ///      z_1 z_2
-  ///     |________|
-  ///         C
-  double newmanconsta_;
-  double newmanconstb_;
-  double newmanconstc_;
-};
-
-} // namespace ELEMENTS
+      //! pre-calculation of regularly used constant F/RT
+      //! (a division is much more expensive than a multiplication)
+      double frt_;
+    };
+  } // namespace ELEMENTS
 } // namespace DRT
-
 #endif

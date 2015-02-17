@@ -344,7 +344,7 @@ public:
          and in the fluid boundary element
 
   */
-  virtual void SetElementTurbulenceParameter();
+  virtual void SetElementTurbulenceParameters();
 
   //! @name Set general parameter in class fluid_ele_parameter_intface
   /*!

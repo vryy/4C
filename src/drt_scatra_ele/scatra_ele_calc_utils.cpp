@@ -91,5 +91,87 @@ bool InflowElement(const DRT::Element* ele)
 }
 
 
-} // namespace SCATRA
+/*---------------------------------------------------------------------------------------------------------------------*
+ | convert implementation type of scalar transport elements into corresponding string for output purposes   fang 02/15 |
+ *---------------------------------------------------------------------------------------------------------------------*/
+const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
+{
+  // determine implementation type
+  std::string impltypestring;
+  switch(impltype)
+  {
+  case INPAR::SCATRA::impltype_std:
+  {
+    impltypestring = "Standard scalar transport";
+    break;
+  }
+  case INPAR::SCATRA::impltype_advreac:
+  {
+    impltypestring = "Advanced reactions";
+    break;
+  }
+  case INPAR::SCATRA::impltype_aniso:
+  {
+    impltypestring = "Anisotropic scalar transport";
+    break;
+  }
+  case INPAR::SCATRA::impltype_cardiac_monodomain:
+  {
+    impltypestring = "Cardiac monodomain";
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_diffcond:
+  {
+    impltypestring = "Electrochemistry for diffusion-conduction formulation";
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_electrode:
+  {
+    impltypestring = "Electrochemistry for electrodes";
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_NP:
+  {
+    impltypestring = "Electrochemistry for Nernst-Planck formulation";
+    break;
+  }
+  case INPAR::SCATRA::impltype_loma:
+  {
+    impltypestring = "Low Mach number flow";
+    break;
+  }
+  case INPAR::SCATRA::impltype_levelset:
+  {
+    impltypestring = "Levelset without reinitialization";
+    break;
+  }
+  case INPAR::SCATRA::impltype_lsreinit:
+  {
+    impltypestring = "Levelset with reinitialization";
+    break;
+  }
+  case INPAR::SCATRA::impltype_poro:
+  {
+    impltypestring = "Scalar transport in porous media";
+    break;
+  }
+  case INPAR::SCATRA::impltype_pororeac:
+  {
+    impltypestring = "Reactive scalar transport in porous media";
+    break;
+  }
+  case INPAR::SCATRA::impltype_undefined:
+  {
+    impltypestring = "Undefined";
+    break;
+  }
+  default:
+  {
+    dserror("Invalid implementation type!");
+    break;
+  }
+  }
 
+  return impltypestring;
+}
+} // namespace SCATRA

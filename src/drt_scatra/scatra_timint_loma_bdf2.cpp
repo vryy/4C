@@ -169,7 +169,6 @@ void SCATRA::TimIntLomaBDF2::ComputeThermPressure()
 
   // set action for elements
   eleparams.set<int>("action",SCATRA::calc_domain_and_bodyforce);
-  eleparams.set<int>("scatratype",scatratype_);
   SetElementTimeParameter();
 
   // variables for integrals of domain and bodyforce

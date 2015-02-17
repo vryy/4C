@@ -108,7 +108,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   {
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::integrate_shape_functions);
-    eleparams.set<int>("scatratype",scatratype_);
     // we integrate shape functions for the first numscal_ dofs per node!!
     Epetra_IntSerialDenseVector dofids(7); // make it big enough!
     for(int rr=0;rr<7;rr++)
@@ -131,7 +130,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   // set action for elements
   Teuchos::ParameterList params;
   params.set<int>("action",SCATRA::calc_flux_domain);
-  params.set<int>("scatratype",scatratype_);
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
@@ -141,7 +139,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   discret_->AddMultiVectorToParameterList(params,"pressure field",pre_);
 
   //provide displacement field in case of ALE
-  params.set("isale",isale_);
   if (isale_)
     discret_->AddMultiVectorToParameterList(params,"dispnp",dispnp_);
 
@@ -234,7 +231,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       Teuchos::ParameterList eleparams;
       // action for elements
       eleparams.set<int>("action",SCATRA::calc_mat_and_rhs);
-      eleparams.set<int>("scatratype",scatratype_);
 
       // other parameters that might be needed by the elements
       // the resulting system has to be solved incrementally
@@ -304,7 +300,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       Teuchos::ParameterList params;
 
       params.set<int>("action",SCATRA::bd_add_convective_mass_flux);
-      params.set<int>("scatratype",scatratype_);
 
       // add element parameters according to time-integration scheme
       AddTimeIntegrationSpecificVectors();
@@ -314,7 +309,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       discret_->AddMultiVectorToParameterList(params,"velocity field",convel_);
 
       //provide displacement field in case of ALE
-      params.set("isale",isale_);
       if (isale_)
         discret_->AddMultiVectorToParameterList(params,"dispnp",dispnp_);
 
@@ -383,10 +377,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       // calculate integral of shape functions over indicated boundary and it's area
       params.set("boundaryint",0.0);
       params.set<int>("action",SCATRA::bd_integrate_shape_functions);
-      params.set<int>("scatratype",scatratype_);
 
       //provide displacement field in case of ALE
-      params.set("isale",isale_);
       if (isale_)
         discret_->AddMultiVectorToParameterList(params,"dispnp",dispnp_);
 
@@ -595,8 +587,6 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
 
     // action for elements
     eleparams.set<int>("action",SCATRA::calc_initial_time_deriv);
-    // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
-    eleparams.set<int>("scatratype",scatratype_);
 
     // add additional parameters
     AddTimeIntegrationSpecificVectors();
@@ -743,7 +733,6 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::calc_mean_scalars);
     eleparams.set("inverting",false);
-    eleparams.set<int>("scatratype",scatratype_);
 
     //provide displacement field in case of ALE
     if (isale_)
@@ -760,16 +749,11 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
     // print out values
     if (myrank_ == 0)
     {
-      if (scatratype_==INPAR::SCATRA::scatratype_loma)
-        std::cout << "Mean scalar: " << std::setprecision (9) << (*scalars)[0]/domint << std::endl;
-      else
+      std::cout << "Domain integral:          " << std::setprecision (9) << domint << std::endl;
+      for (int k = 0; k < numscal_; k++)
       {
-        std::cout << "Domain integral:          " << std::setprecision (9) << domint << std::endl;
-        for (int k = 0; k < numscal_; k++)
-        {
-          std::cout << "Total concentration (c_"<<k+1<<"): "<< std::setprecision (9) << (*scalars)[k] << std::endl;
-          std::cout << "Mean concentration (c_"<<k+1<<"): "<< std::setprecision (9) << (*scalars)[k]/domint << std::endl;
-        }
+        std::cout << "Total concentration (c_"<<k+1<<"): "<< std::setprecision (9) << (*scalars)[k] << std::endl;
+        std::cout << "Mean concentration (c_"<<k+1<<"): "<< std::setprecision (9) << (*scalars)[k]/domint << std::endl;
       }
     }
 
@@ -778,41 +762,28 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
     {
       std::stringstream number;
       number << num;
-      const std::string fname
-      = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".meanvalues.txt";
+      const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".meanvalues.txt";
 
       std::ofstream f;
       if (Step() <= 1)
       {
         f.open(fname.c_str(),std::fstream::trunc);
-        if (scatratype_==INPAR::SCATRA::scatratype_loma)
-          f << "#| Step | Time | Mean scalar |\n";
-        else
-        {
-          f << "#| Step | Time | Domain integral ";
-          for (int k = 0; k < numscal_; k++)
-          {
-            f << "Total concentration (c_"<<k+1<<")| Mean concentration (c_"<<k+1<<") ";
-          }
-          f << "\n";
-        }
+        f << "#| Step | Time | Domain integral ";
+        for (int k = 0; k < numscal_; k++)
+          f << "Total concentration (c_"<<k+1<<")| Mean concentration (c_"<<k+1<<") ";
+        f << "\n";
       }
       else
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
       f << Step() << " " << Time() << " ";
-      if (scatratype_==INPAR::SCATRA::scatratype_loma)
-        f << (*scalars)[0]/domint << "\n";
-      else
+      f << std::setprecision (9) << domint << " ";
+      for (int k = 0; k < numscal_; k++)
       {
-        f << std::setprecision (9) << domint << " ";
-        for (int k = 0; k < numscal_; k++)
-        {
-          f << std::setprecision (9) << (*scalars)[k] << " ";
-          f << std::setprecision (9) << (*scalars)[k]/domint << " ";
-        }
-        f << "\n";
+        f << std::setprecision (9) << (*scalars)[k] << " ";
+        f << std::setprecision (9) << (*scalars)[k]/domint << " ";
       }
+      f << "\n";
       f.flush();
       f.close();
     }
@@ -821,6 +792,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
 
   return;
 } // SCATRA::ScaTraTimIntImpl::OutputMeanScalars
+
 
 /*----------------------------------------------------------------------*
  | Evaluate surface/interface permeability for FS3I          Thon 11/14 |
@@ -837,10 +809,8 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
 
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_fs3i_surface_permeability);
-  condparams.set<int>("scatratype",scatratype_);
 
   // provide displacement field in case of ALE
-  condparams.set("isale",isale_);
   if (isale_) discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
   // set vector values needed by elements
@@ -884,10 +854,8 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
 
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_fps3i_surface_permeability);
-  condparams.set<int>("scatratype",scatratype_);
 
   // provide displacement field in case of ALE
-  condparams.set("isale",isale_);
   if (isale_) discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
   // set vector values needed by elements
@@ -920,54 +888,6 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
 
   return;
 } // SCATRA::ScaTraTimIntImpl::KedemKatchalsky
-
-
-/*----------------------------------------------------------------------*
- |                                                      rasthofer 03/14 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::PrintScatraType()
-{
-  std::cout << "# YOUR SCATRA TYPE: ";
-
-  switch (scatratype_)
-  {
-  case INPAR::SCATRA::scatratype_undefined:
-    std::cout << "Undefined" << std::endl;
-    break;
-  case INPAR::SCATRA::scatratype_condif:
-    std::cout << "ConvectionDiffusion" << std::endl;
-    break;
-  case INPAR::SCATRA::scatratype_loma:
-    std::cout << "LowMachNumberFlow" << std::endl;
-    break;
-  case INPAR::SCATRA::scatratype_elch:
-    std::cout << "Elch" << std::endl;
-    break;
-  case INPAR::SCATRA::scatratype_levelset:
-    std::cout << "LevelSet" << std::endl;
-    break;
-  case INPAR::SCATRA::scatratype_poro:
-    std::cout << "Poroscatra" << std::endl;
-    break;
-  case INPAR::SCATRA::scatratype_advreac:
-    std::cout << "Advanced_Reaction" << std::endl;
-    break;
-  case INPAR::SCATRA::scatratype_pororeac:
-    std::cout << "Poro_Scatra_Reaction" << std::endl;
-    break;
-  case INPAR::SCATRA::scatratype_anisotrop:
-    std::cout << "Anisotropic Diffusion" << std::endl;
-    break;
-  case INPAR::SCATRA::scatratype_cardiac_monodomain:
-    std::cout << "Cardiac_Monodomain" << std::endl;
-    break;
-  default:
-    dserror("Fix your scatratype!");
-    break;
-  }
-
-  return;
-}
 
 
 /*==========================================================================*
@@ -1033,11 +953,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   // set action for elements
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::bd_calc_normal_vectors);
-  eleparams.set<int>("scatratype",scatratype_);
   eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("normal vectors",normal);
 
   //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
   if (isale_)
     discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
@@ -1088,8 +1006,6 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
 
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_Neumann_inflow);
-  condparams.set<int>("scatratype",scatratype_);
-  condparams.set("isale",isale_);
 
   // provide velocity field and potentially acceleration/pressure field
   // as well as displacement field in case of ALE
@@ -1128,8 +1044,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
 
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_convective_heat_transfer);
-  condparams.set<int>("scatratype",scatratype_);
-  condparams.set("isale",isale_);
 
   // clear state
   discret_->ClearState();
@@ -1284,7 +1198,6 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
     // set action for elements
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::calc_integr_reaction);
-    eleparams.set<int>("scatratype",scatratype_);
     Teuchos::RCP<std::vector<double> > myreacnp = Teuchos::rcp(new std::vector<double>(numscal_,0.0));
     eleparams.set<Teuchos::RCP<std::vector<double> > >("local reaction integral",myreacnp);
 
@@ -1368,11 +1281,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   // action for elements, time factor and stationary flag
   eleparams.set<int>("action",SCATRA::calc_subgrid_diffusivity_matrix);
 
-  // set type of scalar transport problem
-  eleparams.set<int>("scatratype",scatratype_);
-
   //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
   if (isale_)
     discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
@@ -1545,7 +1454,7 @@ void SCATRA::ScaTraTimIntImpl::AccessDynSmagFilter(
       std::cout << "Dynamic Smagorinsky model: provided access for ScaTra       " << std::endl;
       std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
     }
-    DynSmag_->AddScatra(discret_,scatratype_);
+    DynSmag_->AddScatra(discret_);
   }
 
   return;
@@ -1571,7 +1480,7 @@ void SCATRA::ScaTraTimIntImpl::AccessVreman(
       std::cout << "Dynamic Vreman model: provided access for ScaTra            " << std::endl;
       std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
     }
-    Vrem_->AddScatra(discret_,scatratype_);
+    Vrem_->AddScatra(discret_);
   }
 
   return;
@@ -1608,7 +1517,6 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
     Teuchos::ParameterList myparams;
     // action for elements
     myparams.set<int>("action",SCATRA::calc_mean_Cai);
-    myparams.set<int>("scatratype",scatratype_);
     // add convective velocity
     discret_->AddMultiVectorToParameterList(myparams,"convective velocity field",convel_);
 
@@ -1660,7 +1568,6 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
 
     // set meanCai via pre-evaluate call
     myparams.set<int>("action",SCATRA::set_mean_Cai);
-    myparams.set<int>("INPAR::SCATRA::ScaTraType",scatratype_);
     myparams.set<double>("meanCai",meanCai);
     // call standard loop over elements
     discret_->Evaluate(myparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -1785,9 +1692,6 @@ void SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodes(
 
   // action for elements
   eleparams.set<int>("action",SCATRA::recon_gradients_at_nodes);
-
-  // set type of scalar transport problem
-  eleparams.set<int>("scatratype",scatratype_);
 
   // set vector values needed by elements
   discret_->ClearState();

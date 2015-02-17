@@ -47,16 +47,17 @@ namespace DRT
 
       //! evaluate action
       int EvaluateAction(
-          DRT::ELEMENTS::TransportBoundary* ele,
-          Teuchos::ParameterList&           params,
-          DRT::Discretization&              discretization,
-          std::vector<int>&                 lm,
-          Epetra_SerialDenseMatrix&         elemat1_epetra,
-          Epetra_SerialDenseMatrix&         elemat2_epetra,
-          Epetra_SerialDenseVector&         elevec1_epetra,
-          Epetra_SerialDenseVector&         elevec2_epetra,
-          Epetra_SerialDenseVector&         elevec3_epetra
-      );
+          DRT::ELEMENTS::TransportBoundary*   ele,
+          Teuchos::ParameterList&             params,
+          DRT::Discretization&                discretization,
+          SCATRA::BoundaryAction              action,
+          std::vector<int>&                   lm,
+          Epetra_SerialDenseMatrix&           elemat1_epetra,
+          Epetra_SerialDenseMatrix&           elemat2_epetra,
+          Epetra_SerialDenseVector&           elevec1_epetra,
+          Epetra_SerialDenseVector&           elevec2_epetra,
+          Epetra_SerialDenseVector&           elevec3_epetra
+          );
 
       //! evaluate electrode kinetics boundary condition
       virtual void EvaluateElchBoundaryKinetics(
@@ -127,11 +128,8 @@ namespace DRT
           const int                                  k           //! species number
       ) const = 0;
 
-      //! pointer to parameter class elch
-      DRT::ELEMENTS::ScaTraEleParameterElch* elchpara_;
-
-      //! flag for closure equation
-      enum INPAR::ELCH::EquPot equpot_;
+      //! return parameter class for electrochemistry problems
+      const DRT::ELEMENTS::ScaTraEleParameterElch* ElchParams() const {return static_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(my::scatraparams_);};
     }; // class ScaTraEleBoundaryCalcElch
   } // namespace ELEMENTS
 } // namespace DRT

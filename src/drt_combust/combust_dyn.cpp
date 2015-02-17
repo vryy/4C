@@ -10,19 +10,23 @@ Maintainer: Ursula Rasthofer
             089 - 289-15236
 </pre>
 *----------------------------------------------------------------------*/
-
-#include "combust_dyn.H"
-#include "combust_algorithm.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_scatra/scatra_utils_clonestrategy.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
 
-#include <Teuchos_TimeMonitor.hpp>
-#include <Epetra_Time.h>
-
 #include "../drt_io/io_pstream.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_createdis.H"
+
+#include "../drt_scatra/scatra_utils_clonestrategy.H"
+
+#include "../drt_scatra_ele/scatra_ele.H"
+
+#include <Epetra_Time.h>
 #include <iostream>
+#include <Teuchos_TimeMonitor.hpp>
+
+#include "combust_algorithm.H"
+#include "combust_dyn.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -72,8 +76,20 @@ void combust_dyn()
 
   if (gfuncdis->NumGlobalNodes()==0)
   {
+    // fill scatra discretization by cloning fluid discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,gfuncdis);
+
+    // set implementation type of cloned scatra elements to levelset
+    for(int i=0; i<gfuncdis->NumMyColElements(); ++i)
+    {
+      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(gfuncdis->lColElement(i));
+      if(element == NULL)
+        dserror("Invalid element type!");
+      else
+        element->SetImplType(INPAR::SCATRA::impltype_levelset);
+    }
   }
+
   else
     dserror("G-function discretization is not empty. Fluid and G-function already present!");
 

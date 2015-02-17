@@ -47,7 +47,7 @@ class TransportBoundary;
     /// Empty destructor
     virtual ~ScaTraBoundaryInterface(){return;};
 
-    virtual int EvaluateAction(
+    virtual int Evaluate(
       DRT::ELEMENTS::TransportBoundary*   ele1,
       Teuchos::ParameterList&             params,
       DRT::Discretization&                discretization,

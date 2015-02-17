@@ -38,6 +38,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../linalg/linalg_solver.H"
 //INPAR
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_fs3i.H"
 //ALE
 #include "../drt_ale/ale_utils_clonestrategy.H"
 //ADAPTER
@@ -48,6 +49,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 //SCATRA
 #include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
+#include "../drt_scatra_ele/scatra_ele.H"
 //FOR WSS CALCULATIONS
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -105,6 +107,9 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   //if (clonefieldmatmap.size() < 2)
   //  dserror("At least two material lists required for partitioned FS3I!");
 
+  // determine type of scalar transport
+  const INPAR::SCATRA::ImplType impltype(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->FS3IDynamicParams(),"SCATRATYPE"));
+
   //---------------------------------------------------------------------
   // create discretization for fluid-based scalar transport from and
   // according to fluid discretization
@@ -115,7 +120,18 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // transport discretization is empty
   if (fluidscatradis->NumGlobalNodes()==0)
   {
+    // fill fluid-based scatra discretization by cloning fluid discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,fluidscatradis);
+
+    // set implementation type of cloned scatra elements to advanced reactions
+    for(int i=0; i<fluidscatradis->NumMyColElements(); ++i)
+    {
+      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(fluidscatradis->lColElement(i));
+      if(element == NULL)
+        dserror("Invalid element type!");
+      else
+        element->SetImplType(impltype);
+    }
   }
   else
     dserror("Fluid AND ScaTra discretization present. This is not supported.");
@@ -130,7 +146,18 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // scalar transport discretization is empty
   if (structscatradis->NumGlobalNodes()==0)
   {
+    // fill structure-based scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,structscatradis);
+
+    // set implementation type of cloned scatra elements to advanced reactions
+    for(int i=0; i<structscatradis->NumMyColElements(); ++i)
+    {
+      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(structscatradis->lColElement(i));
+      if(element == NULL)
+        dserror("Invalid element type!");
+      else
+        element->SetImplType(impltype);
+    }
   }
   else
     dserror("Structure AND ScaTra discretization present. This is not supported.");

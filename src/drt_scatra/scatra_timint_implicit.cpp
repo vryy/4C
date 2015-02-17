@@ -93,7 +93,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   splitter_(Teuchos::null),
   errfile_  (extraparams->get<FILE*>("err file")),
   strategy_(Teuchos::null),
-  scatratype_  (DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(*params,"SCATRATYPE")),
   isale_    (extraparams->get<bool>("isale")),
   solvtype_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
   incremental_(true),
@@ -205,25 +204,12 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
  *------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::Init()
 {
-  // what kind of equations do we actually want to solve?
-  PROBLEM_TYP prbtype = DRT::Problem::Instance()->ProblemType();
-
-  if (scatratype_ == INPAR::SCATRA::scatratype_undefined)
-    dserror("Please define SCATRATYPE in datfile!");
-
-  if (prbtype == prb_elch)              scatratype_ = INPAR::SCATRA::scatratype_elch;
-  else if (prbtype == prb_combust)      scatratype_ = INPAR::SCATRA::scatratype_levelset;
-  else if (prbtype == prb_level_set)    scatratype_ = INPAR::SCATRA::scatratype_levelset;
-  else if (prbtype == prb_loma)         scatratype_ = INPAR::SCATRA::scatratype_loma;
-  else
+  // print problem type
+  if (myrank_ == 0)
   {
-    if (myrank_ == 0)
-    {
-      std::cout << "###################################################"<< std::endl;
-      std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << std::endl;
-      PrintScatraType();
-      std::cout << "###################################################" << std::endl;
-    }
+    std::cout << "###################################################"<< std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << std::endl;
+    std::cout << "###################################################" << std::endl;
   }
 
   // -------------------------------------------------------------------
@@ -480,7 +466,6 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   // set action for elements
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::calc_mean_scalars);
-  eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("inverting",false);
 
   // provide displacement field in case of ALE
@@ -748,14 +733,11 @@ SCATRA::ScaTraTimIntImpl::~ScaTraTimIntImpl()
 /*--------------------------------------------------------------------------------*
  | set all general parameters for element                              fang 10/14 |
  *--------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetElementGeneralScaTraParameters(bool calcinitialtimederiv)
+void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimederiv)
 {
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",SCATRA::set_general_scatra_parameter);
-
-  // set type of scalar transport problem
-  eleparams.set<int>("scatratype",scatratype_);
 
   eleparams.set<int>("form of convective term",convform_);
   eleparams.set("isale",isale_);
@@ -803,14 +785,11 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralScaTraParameters(bool calcinitia
 /*----------------------------------------------------------------------*
  | set turbulence parameters for element                rasthofer 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameter(bool calcinitialtimederiv)
+void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameters(bool calcinitialtimederiv)
 {
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",SCATRA::set_turbulence_scatra_parameter);
-
-  // set type of scalar transport problem
-  eleparams.set<int>("scatratype",scatratype_);
 
   eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
   if(calcinitialtimederiv)      // deactivate turbulence model when calculating initial time derivative
@@ -2160,8 +2139,6 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
 
     // set parameters for elements that do not change over mode
     mode_params.set<int>("action",SCATRA::integrate_shape_functions);
-    mode_params.set<int>("scatratype",scatratype_);
-    mode_params.set("isale",isale_);
     if (isale_)
       discret_->AddMultiVectorToParameterList(mode_params,"dispnp",dispnp_);
 
@@ -2371,10 +2348,6 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_Neumann);
 
-  // general parameters
-  condparams.set<int>("scatratype",scatratype_);
-  condparams.set("isale",isale_);
-
   // specific parameters
   AddProblemSpecificParametersAndVectors(condparams);
 
@@ -2444,9 +2417,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     AddFluxApproxToParameterList(eleparams,INPAR::SCATRA::flux_diffusive_domain);
   }
 
-  // set type of scalar transport problem
-  eleparams.set<int>("scatratype",scatratype_);
-
   // prepare dynamic Smagorinsky model if required,
   // i.e. calculate turbulent Prandtl number
   if (timealgo_ != INPAR::SCATRA::timeint_stationary)
@@ -2468,13 +2438,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     discret_->AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
 
   // provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
   if (isale_) discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-  // parameters for finite difference check
-  eleparams.set<int>("fdcheck",fdcheck_);
-  eleparams.set<double>("fdcheckeps",fdcheckeps_);
-  eleparams.set<double>("fdchecktol",fdchecktol_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -2515,9 +2479,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
     // set action for elements
     mhdbcparams.set<int>("action",SCATRA::bd_calc_weak_Dirichlet);
-    mhdbcparams.set("isale",isale_);
-
-    mhdbcparams.set<int>("scatratype",INPAR::SCATRA::scatratype_condif);
 
     discret_->AddMultiVectorToParameterList(mhdbcparams,"convective velocity field",convel_);
     discret_->AddMultiVectorToParameterList(mhdbcparams,"velocity field",vel_);
@@ -2758,12 +2719,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
   return;
 } // ScaTraTimIntImpl::NonlinearSolve
-
-
-void SCATRA::ScaTraTimIntImpl::ManipulateScaTraType( INPAR::SCATRA::ScaTraType new_ScaTraType)
-{
-  scatratype_=new_ScaTraType;
-}
 
 
 /*----------------------------------------------------------------------*

@@ -118,6 +118,10 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(const int num
     reacstart_(0)
 {
   my::reamanager_ = Teuchos::rcp(new ScaTraEleReaManagerAdvReac(my::numscal_));
+
+  // safety check
+  if(not my::scatrapara_->TauGP())
+    dserror("For advanced reactions, tau needs to be evaluated by integration-point evaluations!");
 }
 
 /*----------------------------------------------------------------------*

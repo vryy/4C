@@ -1203,7 +1203,6 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatScatra()
   // other parameters that might be needed by the elements
   sparams_struct.set("delta time", Dt());
   sparams_struct.set("total time", Time());
-  sparams_struct.set<int>("scatratype", ScaTraField()->ScaTraType());
 
   ScaTraField()->Discretization()->AddMultiVectorToParameterList(
       sparams_struct,
@@ -1257,7 +1256,6 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatScatra()
   // other parameters that might be needed by the elements
   sparams_fluid.set("delta time", Dt());
   sparams_fluid.set("total time", Time());
-  sparams_fluid.set<int>("scatratype", ScaTraField()->ScaTraType());
 
   ScaTraField()->Discretization()->AddMultiVectorToParameterList(
       sparams_fluid,

@@ -115,7 +115,6 @@ FSSUGRDIFF                      No
 WRITEFLUX                       No
 MATID                           1
 SKIPINITDER                     yes
-SCATRATYPE                      Cardiac_Monodomain
 CONVFORM                        conservative
 
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
@@ -126,6 +125,7 @@ CONVTOL                         1e-3
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Zero
 EVALUATION_MAT                  element_center
+EVALUATION_TAU                  integration_point
 -----------------------------------------------------------------SSI CONTROL
 UPRES                           1
 RESTARTEVRY                     1
@@ -134,6 +134,7 @@ MAXTIME                         0.5
 TIMESTEP                        0.1
 COUPALGO                        ssi_IterStaggFixedRel_SolidToScatra //   ssi_IterStagg // ssi_IterStaggFixedRel_SolidToScatra //    scatra_to_solid //  solid_to_scatra // scatra_to_solid one_way two_way
 ITEMAX                          10
+SCATRATYPE                      Cardiac_Monodomain
 --------------------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1e-08
 STARTOMEGA                      0.8

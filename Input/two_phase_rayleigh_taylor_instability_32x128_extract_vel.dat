@@ -96,7 +96,6 @@ TRANSIENT                       no_transient
 VSTAB                           no_vstab
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SCATRATYPE LevelSet //ConvectionDiffusion
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      1

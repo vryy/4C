@@ -40,8 +40,11 @@ template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcLoma : public ScaTraEleCalc<distype>
 {
 private:
-    /// private constructor, since we are a Singleton.
-    ScaTraEleCalcLoma(const int numdofpernode,const int numscal);
+    //! private constructor for singletons
+    ScaTraEleCalcLoma(
+        const int numdofpernode,
+        const int numscal
+        );
 
     typedef ScaTraEleCalc<distype> my;
 
@@ -209,6 +212,19 @@ private:
       DRT::Discretization&       discretization,
       const std::vector<int>&    lm
     );
+
+    //! get density at integration point
+    const double GetDensity(
+        const DRT::Element*                 ele,
+        Teuchos::RCP<const MAT::Material>   material,
+        Teuchos::ParameterList&             params,
+        const double                        phinp
+        );
+
+    //! calculate viscous part of subgrid-scale velocity
+    void CalcSubgrVelocityVisc(
+        LINALG::Matrix<my::nsd_,1>&   epsilonvel
+        );
 
     /*========================================================================*/
     //! @name scalar degrees of freedom and related

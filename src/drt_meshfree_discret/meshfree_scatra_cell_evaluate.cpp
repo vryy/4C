@@ -46,7 +46,7 @@ void DRT::ELEMENTS::MeshfreeTransportType::PreEvaluate(
   if (action == SCATRA::set_general_scatra_parameter)
   {
     DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
-    scatrapara->SetElementGeneralScaTraParameters(p,dis.Comm().MyPID());
+    scatrapara->SetElementGeneralParameters(p);
   }
   else if (action == SCATRA::set_time_parameter)
   {
@@ -70,41 +70,10 @@ int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
     Epetra_SerialDenseVector& elevec2,
     Epetra_SerialDenseVector& elevec3)
 {
-  // the type of scalar transport problem has to be provided for all actions!
-  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
-  if (scatratype == INPAR::SCATRA::scatratype_undefined)
-    dserror("Element parameter SCATRATYPE has not been set!");
-
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the csomputations
   const int numdofpernode = this->NumDofPerNode(*(this->Nodes()[0]));
   int numscal = numdofpernode;
-  if (scatratype==INPAR::SCATRA::scatratype_elch)
-  {
-    numscal -= 1;
-
-    // get the material of the first element
-    // we assume here, that the material is equal for all elements in this discretization
-    Teuchos::RCP<MAT::Material> material = this->Material();
-    if (material->MaterialType() == INPAR::MAT::m_elchmat)
-    {
-      const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
-
-      numscal -= actmat->NumScal();
-    }
-  }
-
-  // switch between different physical types as used below
-  INPAR::SCATRA::ImplType impltype = INPAR::SCATRA::impltype_std_meshfree;
-  switch(scatratype)
-  {
-  case INPAR::SCATRA::scatratype_condif:
-    impltype = INPAR::SCATRA::impltype_std_meshfree;
-    break;
-  default:
-    dserror("Unknown meshfree scatratype for calc_mat_and_rhs!");
-    break;
-  }
 
   // check for the action parameter
   const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
@@ -113,7 +82,7 @@ int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
     // be used in principle inside any element (at the moment: only Transport element)
     case SCATRA::calc_mat_and_rhs:
     {
-      return DRT::ELEMENTS::ScaTraFactory::ProvideMeshfreeImpl(Shape(), impltype, numdofpernode, numscal)->Evaluate(
+      return DRT::ELEMENTS::ScaTraFactory::ProvideMeshfreeImpl(Shape(), impltype_, numdofpernode, numscal)->Evaluate(
               this,
               params,
               discretization,
@@ -128,7 +97,7 @@ int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
     }
     case SCATRA::integrate_shape_functions:
 //    {
-//      return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(), impltype, numdofpernode, numscal)->EvaluateService(
+//      return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(), impltype_, numdofpernode, numscal)->EvaluateService(
 //               this,
 //               params,
 //               discretization,

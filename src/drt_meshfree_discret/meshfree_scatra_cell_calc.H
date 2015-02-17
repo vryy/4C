@@ -26,7 +26,6 @@
 
 #include "../drt_lib/drt_element.H"              // Element::DiscretizationType
 #include "../drt_lib/drt_singletondestruction.H" // inheritance
-#include "../drt_inpar/inpar_scatra.H"           // enums ScaTraType and FluxType
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H" // DRT::UTILS::DisTypeToDim
 
 /*==========================================================================*/

@@ -106,12 +106,7 @@ bool ELCH::Algorithm::ConvergenceCheck( int natconvitnum,
   FluidField()->ExtractVelocityPart(FluidField()->Velnp())->Norm2(&velnorm_L2);
 
   // Calculate concentration increment and concentration L2 - Norm
-  // tempincnp_ includes the concentration and the potential increment
-  // tempincnp_ = 1.0 * phinp_ - 1.0 * phin_
-
   phiincnp_->Update(1.0,*ScaTraField()->Phinp(),-1.0);
-  if ((ScaTraField()->ScaTraType())==INPAR::SCATRA::scatratype_elch)
-  {
   Teuchos::RCP<Epetra_Vector> onlycon = conpotsplitter->ExtractOtherVector(phiincnp_);
   onlycon->Norm2(&conincnorm_L2);
   conpotsplitter->ExtractOtherVector(ScaTraField()->Phinp(),onlycon);
@@ -122,12 +117,6 @@ bool ELCH::Algorithm::ConvergenceCheck( int natconvitnum,
   onlypot->Norm2(&potincnorm_L2);
   conpotsplitter->ExtractCondVector(ScaTraField()->Phinp(),onlypot);
   onlypot->Norm2(&potnorm_L2);
-  }
-  else // only one scalar present (convection-diffusion)
-  {
-    phiincnp_->Norm2(&conincnorm_L2);
-    ScaTraField()->Phinp()->Norm2(&connorm_L2);
-  }
 
   // care for the case that there is (almost) zero temperature or velocity
   // (usually not required for temperature)

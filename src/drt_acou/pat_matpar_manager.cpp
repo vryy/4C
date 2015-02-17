@@ -52,7 +52,6 @@ void ACOU::PatMatParManagerUniform::Evaluate(double time, Teuchos::RCP<Epetra_Mu
     // list to define routines at elementlevel
     Teuchos::ParameterList p;
     p.set<int>("action",SCATRA::calc_integr_grad_reac);
-    p.set<int>("scatratype",INPAR::SCATRA::scatratype_condif);
 
     // this works if we optimize only with respect to reac
     p.set<bool>("signum_mu",actele->Material()->Parameter()->GetParameter(1,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
@@ -115,7 +114,6 @@ void ACOU::PatMatParManagerPerElement::Evaluate(double time, Teuchos::RCP<Epetra
     // list to define routines at elementlevel
     Teuchos::ParameterList p;
     p.set<int>("action",SCATRA::calc_integr_grad_reac);
-    p.set<int>("scatratype",INPAR::SCATRA::scatratype_condif);
 
     // this works if we optimize only with respect to reac
     p.set<bool>("signum_mu",actele->Material()->Parameter()->GetParameter(1,Discret()->ElementColMap()->LID(actele->Id()))<0.0);

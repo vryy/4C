@@ -21,8 +21,9 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    // forward declaration
+    // forward declarations
     class ScaTraEleDiffManagerElchDiffCond;
+    class ScaTraEleParameterElchDiffCond;
 
     // class implementation
     template<DRT::Element::DiscretizationType distype> class ScaTraEleBoundaryCalcElchDiffCond : public ScaTraEleBoundaryCalcElchElectrode<distype>
@@ -115,6 +116,9 @@ namespace DRT
           double&                               epd,             //! equilibrium electric potential difference to be computed at current Gauss point
           double&                               epdderiv         //! derivative of equilibrium electric potential difference to be computed at current Gauss point
       ) const;
+
+      //! return parameter class for electrochemistry problems governed by diffusion-conduction formulation
+      const DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* ElchParams() const {return static_cast<DRT::ELEMENTS::ScaTraEleParameterElchDiffCond*>(my::scatraparams_);};
 
       //! diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc_;

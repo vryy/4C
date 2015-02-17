@@ -243,9 +243,6 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! the parameter list for elch problems
   Teuchos::RCP<Teuchos::ParameterList> elchparams_;
 
-  //! elch type
-  INPAR::ELCH::ElchType elchtype_;
-
   //! type of closing equation for electric potential
   INPAR::ELCH::EquPot equpot_;
 

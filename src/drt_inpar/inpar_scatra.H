@@ -165,21 +165,7 @@ namespace INPAR
       evalmat_integration_point
     };
 
-    enum ScaTraType
-    {
-      scatratype_undefined,
-      scatratype_condif,
-      scatratype_loma,
-      scatratype_elch,
-      scatratype_levelset,
-      scatratype_poro,
-      scatratype_advreac,
-      scatratype_pororeac,
-      scatratype_anisotrop,
-      scatratype_cardiac_monodomain
-    };
-
-    //! this parameter is closely connected to ScaTraType
+    //! element implementation type
     enum ImplType
     {
       impltype_undefined,

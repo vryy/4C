@@ -71,8 +71,7 @@ INITIALFIELD                    field_by_condition
 INITFUNCNO                      2
 FSSUGRDIFF                      No
 WRITEFLUX                       No
-OUTMEAN                            No
-SCATRATYPE                      ConvectionDiffusion
+OUTMEAN                         No
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Zero
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -250,8 +249,8 @@ NODE 43 COORD 1.000000000000000e-02 0.000000000000000e-02 0.000000000000000e-02
 NODE 44 COORD 1.000000000000000e-02 9.999999999999998e-04 0.000000000000000e-02
 ------------------------------------------------STRUCTURE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
-11 TRANSP QUAD4 31 33 34 32 MAT 2
-12 TRANSP QUAD4 33 35 36 34 MAT 2
+11 TRANSP QUAD4 31 33 34 32 MAT 2 TYPE Std
+12 TRANSP QUAD4 33 35 36 34 MAT 2 TYPE Std
 -------------------------------------------------ACOUSTIC ELEMENTS
 1 ACOUSTIC       QUAD4 9 11 12 10 MAT 1 DEG 3 SPC 0
 2 ACOUSTIC       QUAD4 11 13 14 12 MAT 1 DEG 3 SPC 0

@@ -113,7 +113,6 @@ CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SCATRATYPE                      LevelSet
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function

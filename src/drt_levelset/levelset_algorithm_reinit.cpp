@@ -72,9 +72,6 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters()
 
   eleparams.set<int>("action",SCATRA::set_lsreinit_scatra_parameter);
 
-  // set type of scalar transport problem
-  eleparams.set<int>("scatratype",scatratype_);
-
   // reinitialization equation id given in convective form
   // ale is not intended here
   eleparams.set<int>("form of convective term",INPAR::SCATRA::convform_convective);
@@ -112,8 +109,6 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementTimeParameters()
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",SCATRA::set_time_parameter);
-  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
-  eleparams.set<int>("scatratype",scatratype_);
 
   eleparams.set<bool>("using generalized-alpha time integration",false);
   eleparams.set<bool>("using stationary formulation",false);
@@ -215,8 +210,8 @@ void SCATRA::LevelSetAlgorithm::FinishTimeLoopReinit()
   // reset time-integration parameters for element evaluation
   SetElementTimeParameter();
   // reset general parameters for element evaluation
-  SetElementGeneralScaTraParameters();
-  SetElementTurbulenceParameter();
+  SetElementGeneralParameters();
+  SetElementTurbulenceParameters();
 
 //  {
 //    // turn on/off screen output for writing process of Gmsh postprocessing file
@@ -370,8 +365,6 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
       // parameters for the elements
       // action
       eleparams.set<int>("action",SCATRA::calc_node_based_reinit_velocity);
-      // set type of scalar transport problem
-      eleparams.set<int>("scatratype",scatratype_);
       // set current spatial direction
       // we have to loop the dimensions, since we merely have one dof per node here
       eleparams.set<int>("direction", idim);
@@ -495,7 +488,6 @@ void SCATRA::LevelSetAlgorithm::CorrectionReinit()
   Teuchos::ParameterList eleparams;
   // action for elements
   eleparams.set<int>("action",SCATRA::calc_mat_and_rhs_lsreinit_correction_step);
-  eleparams.set<int>("scatratype",scatratype_);
   eleparams.set<bool>("solve reinit eq",true);
 
   // set state vectors
@@ -597,13 +589,6 @@ double SCATRA::LevelSetAlgorithm::EvaluateGradientNormError()
 
   // parameters for the elements
   p.set<int>("action",SCATRA::calc_error_reinit);
-
-  // set type of scalar transport problem
-  p.set<int>("scatratype",scatratype_);
-
-  //provide displacement field in case of ALE
-  p.set("isale",false);
-
   p.set<double>("L1 integrated gradient error", 0.0);
   // volume of element for which gradient error is evaluated
   // usually band around interface
@@ -684,7 +669,10 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
       std::cout << "Warning, the fast signed distance reinitialization has not been tested with hex27 elements!" << std::endl;
       break;
     default:
+    {
       dserror("The fast signed distance reinitialization only supports hex8, hex20 and hex27 elements.");
+      break;
+    }
     }
 
     //========================================================================
@@ -1647,8 +1635,8 @@ void SCATRA::LevelSetAlgorithm::ReinitElliptic(
   // reset time-integration parameters for element evaluation
   // SetElementTimeParameter(); -> have not been modified
   // reset general parameters for element evaluation
-  SetElementGeneralScaTraParameters();
-  SetElementTurbulenceParameter();
+  SetElementGeneralParameters();
+  SetElementTurbulenceParameters();
 
   // clear variables
   interface_eleq_ = Teuchos::null;

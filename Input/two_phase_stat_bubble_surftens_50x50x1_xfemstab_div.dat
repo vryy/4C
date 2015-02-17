@@ -119,7 +119,6 @@ EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt
 EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf // EOS_he_vol_eq_diameter
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SCATRATYPE                      LevelSet
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function

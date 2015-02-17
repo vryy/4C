@@ -36,9 +36,6 @@ DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofper
   // replace standard scatra parameter list by elch parameter list
   my::scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
 
-  // replace standard scatra internal variable manager by elch internal variable manager
-  my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElch<my::nsd_, my::nen_>(my::numscal_,ElchPara()));
-
   // safety check
   if(not my::scatraparatimint_->IsIncremental())
     dserror("Since the ion-transport equations are non-linear, it can be solved only incrementally!!");

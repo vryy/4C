@@ -87,7 +87,6 @@ VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
 UPRES                           1
 MATID                           5
-SCATRATYPE                      ConvectionDiffusion
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

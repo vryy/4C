@@ -67,6 +67,7 @@ TOLRES_GLOBAL                   1e-07
 TOLINC_GLOBAL                   1e-06
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
+SCATRATYPE                      Poroscatra
 --------------------------------------------------------SOLVER 1 //poroelast
 SOLVER                          UMFPACK //UMFPACK Aztec_MSR
 AZTOL                           1.0E-9
@@ -125,7 +126,6 @@ THETA                           0.66
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
-SCATRATYPE                      Poroscatra
 INITFUNCNO                      2
 MATID                           5
 SKIPINITDER                     yes

@@ -56,40 +56,33 @@ Maintainer: Andreas Ehrl
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(const int numdofpernode, const int numscal)
   : // constructor of base class
-    my::ScaTraEleBoundaryCalc(numdofpernode,numscal),
-    // pointer to class ScaTraEleParameter
-    elchpara_(dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(DRT::ELEMENTS::ScaTraEleParameterElch::Instance())),
-    // type of closing equation for electric potential
-    equpot_(elchpara_->EquPot())
+    my::ScaTraEleBoundaryCalc(numdofpernode,numscal)
 {
-  // safety check
-  if(equpot_ == INPAR::ELCH::equpot_undefined)
-    dserror("Type of closing equation for electric potential not correctly set!");
+  // replace parameter class for standard scalar transport by parameter class for electrochemistry problems
+  my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
 
   return;
 }
 
 
 /*----------------------------------------------------------------------*
+ | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
-    DRT::ELEMENTS::TransportBoundary* ele,
-    Teuchos::ParameterList&           params,
-    DRT::Discretization&              discretization,
-    std::vector<int>&                 lm,
-    Epetra_SerialDenseMatrix&         elemat1_epetra,
-    Epetra_SerialDenseMatrix&         elemat2_epetra,
-    Epetra_SerialDenseVector&         elevec1_epetra,
-    Epetra_SerialDenseVector&         elevec2_epetra,
-    Epetra_SerialDenseVector&         elevec3_epetra
+    DRT::ELEMENTS::TransportBoundary*   ele,
+    Teuchos::ParameterList&             params,
+    DRT::Discretization&                discretization,
+    SCATRA::BoundaryAction              action,
+    std::vector<int>&                   lm,
+    Epetra_SerialDenseMatrix&           elemat1_epetra,
+    Epetra_SerialDenseMatrix&           elemat2_epetra,
+    Epetra_SerialDenseVector&           elevec1_epetra,
+    Epetra_SerialDenseVector&           elevec2_epetra,
+    Epetra_SerialDenseVector&           elevec3_epetra
 )
 {
-  // check for the action parameter
-  const SCATRA::BoundaryAction action = DRT::INPUT::get<SCATRA::BoundaryAction>(params,"action");
-
-  my::SetupCalc(ele,params,discretization);
-
+  // determine and evaluate action
   switch(action)
   {
   case SCATRA::bd_calc_elch_boundary_kinetics:
@@ -103,6 +96,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
         elevec1_epetra,
         1.
         );
+
     break;
   }
 
@@ -114,27 +108,32 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
         lm,
         elemat1_epetra,
         elevec1_epetra);
+
     break;
   }
 
   case SCATRA::bd_calc_elch_cell_voltage:
   {
     CalcCellVoltage(ele,params,discretization,lm);
+
     break;
   }
 
   default:
   {
-    my::EvaluateAction(ele,
-                       params,
-                       discretization,
-                       action,
-                       lm,
-                       elemat1_epetra,
-                       elemat2_epetra,
-                       elevec1_epetra,
-                       elevec2_epetra,
-                       elevec3_epetra);
+    my::EvaluateAction(
+        ele,
+        params,
+        discretization,
+        action,
+        lm,
+        elemat1_epetra,
+        elemat2_epetra,
+        elevec1_epetra,
+        elevec2_epetra,
+        elevec3_epetra
+        );
+
    break;
   }
   } // switch action
@@ -157,11 +156,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
     const double                      scalar
     )
 {
-  // the type of scalar transport problem has to be provided for all actions!
-  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
-  if (scatratype == INPAR::SCATRA::scatratype_undefined)
-    dserror("Element parameter SCATRATYPE has not been set!");
-
   // get actual values of transported scalars
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if(phinp == Teuchos::null)
@@ -217,7 +211,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
   }
 
   // access input parameter
-  const double frt = elchpara_->FRT();
+  const double frt = ElchParams()->FRT();
   if (frt<=0.0)
     dserror("A negative factor frt is not possible by definition");
 
@@ -330,10 +324,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
     Epetra_SerialDenseVector&         elevec1_epetra
     )
 {
-  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
-  if (scatratype == INPAR::SCATRA::scatratype_undefined)
-    dserror("Element parameter SCATRATYPE has not been set!");
-
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
     if (cond == Teuchos::null) dserror("Cannot access condition 'ElchBoundaryKinetics'");
 
@@ -367,14 +357,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
               " the number of ionic species %d", (*stoich).size(), my::numscal_);
 
     // access input parameter
-    const double frt = elchpara_->FRT();
+    const double frt = ElchParams()->FRT();
     if (frt<0.0)
       dserror("A negative factor frt is not possible by definition");
 
     const double time = my::scatraparamstimint_->Time();
-
-    if (scatratype != INPAR::SCATRA::scatratype_elch)
-      dserror("Only available ELCH");
 
     if (curvenum>=0)
     {

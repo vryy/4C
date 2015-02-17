@@ -317,6 +317,14 @@ namespace ELEMENTS
       const std::vector<LINALG::Matrix<nen_,nsd_> >&   egradphinp    //!< the gradient of phi in the x-direction
       );
 
+    //! calculate filtered fields for turbulent Prandtl number
+    void CalcBoxFilter(
+        DRT::ELEMENTS::Transport*   ele,
+        Teuchos::ParameterList&     params,
+        DRT::Discretization&        discretization,
+        const std::vector<int>&     lm
+        );
+
     /*========================================================================*/
     //! @name material and related functions
     /*========================================================================*/
@@ -527,21 +535,34 @@ namespace ELEMENTS
 
     //! calculate filtered quantities for dynamic Smagorinsky model
     void scatra_apply_box_filter(
-      const double               thermpress,
-      double&                    dens_hat,
-      double&                    temp_hat,
-      double&                    dens_temp_hat,
-      double&                    phi2_hat,
-      double&                    phiexpression_hat,
-      Teuchos::RCP<std::vector<double> >       vel_hat,
-      Teuchos::RCP<std::vector<double> >       densvel_hat,
-      Teuchos::RCP<std::vector<double> >       densveltemp_hat,
-      Teuchos::RCP<std::vector<double> >       densstraintemp_hat,
-      Teuchos::RCP<std::vector<double> >       phi_hat,
-      Teuchos::RCP<std::vector<std::vector<double> > > alphaijsc_hat,
-      double&                    volume,
-      const DRT::Element*        ele
+      double&                                            dens_hat,
+      double&                                            temp_hat,
+      double&                                            dens_temp_hat,
+      double&                                            phi2_hat,
+      double&                                            phiexpression_hat,
+      Teuchos::RCP<std::vector<double> >                 vel_hat,
+      Teuchos::RCP<std::vector<double> >                 densvel_hat,
+      Teuchos::RCP<std::vector<double> >                 densveltemp_hat,
+      Teuchos::RCP<std::vector<double> >                 densstraintemp_hat,
+      Teuchos::RCP<std::vector<double> >                 phi_hat,
+      Teuchos::RCP<std::vector<std::vector<double> > >   alphaijsc_hat,
+      double&                                            volume,
+      const DRT::Element*                                ele,
+      Teuchos::ParameterList&                            params
     );
+
+    //! get density at integration point
+    virtual const double GetDensity(
+        const DRT::Element*                 ele,
+        Teuchos::RCP<const MAT::Material>   material,
+        Teuchos::ParameterList&             params,
+        const double                        phinp
+        );
+
+    //! calculate viscous part of subgrid-scale velocity
+    virtual void CalcSubgrVelocityVisc(
+        LINALG::Matrix<nsd_,1>&   epsilonvel
+        );
 
     //! calculate turbulent Prandtl number for dynamic Smagorinsky model
     void scatra_calc_smag_const_LkMk_and_MkMk(

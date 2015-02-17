@@ -57,6 +57,7 @@ SCATRA_SOLVERTYPE               nonlinear //linear
 COUPLED_LINEAR_SOLVER           4                             // FS3I problem
 LINEAR_SOLVER1                  5                             // ScaTra FLUID solver
 LINEAR_SOLVER2                  6                             // ScaTra STRUCT solver
+SCATRATYPE                      Advanced_Reaction //ConvectionDiffusion //
 ----------------------------------------------------------------FS3I DYNAMIC/PARTITIONED
 COUPALGO                        fs3i_SequStagg //fs3i_IterStagg //
 CONVTOL                         1e-03
@@ -79,7 +80,6 @@ NUMSTEP                         10
 OUTMEAN                         No
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
-SCATRATYPE                      Advanced_Reaction //ConvectionDiffusion //
 SKIPINITDER                     yes
 SOLVERTYPE                      nonlinear //linear_incremental //
 THETA                           0.666666

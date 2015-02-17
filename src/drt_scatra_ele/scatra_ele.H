@@ -16,11 +16,11 @@ Maintainer: Andreas Ehrl
 #ifndef DRT_SCATRA_ELEMENT_H
 #define DRT_SCATRA_ELEMENT_H
 
+#include "../drt_inpar/inpar_scatra.H"
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-
 
 namespace DRT
 {
@@ -288,6 +288,11 @@ public:
   virtual void AddToData(const std::string& name, std::vector<double> data)
   {data_.Add(name,data);};
 
+  //! set implementation type
+  void SetImplType(const INPAR::SCATRA::ImplType impltype);
+
+  //! return implementation type
+  const INPAR::SCATRA::ImplType ImplType(){return impltype_;};
   //@}
 
   //! @name Input and Creation
@@ -295,9 +300,11 @@ public:
   /*!
   \brief Read input for this element
   */
-  bool ReadElement(const std::string& eletype,
-                   const std::string& distype,
-                   DRT::INPUT::LineDefinition* linedef);
+  bool ReadElement(
+      const std::string& eletype,
+      const std::string& distype,
+      DRT::INPUT::LineDefinition* linedef
+      );
 
   //@}
 
@@ -387,11 +394,11 @@ private:
   //! the element discretization type (shape)
   DRT::Element::DiscretizationType distype_;
 
+  //! implementation type (physics)
+  INPAR::SCATRA::ImplType impltype_;
 
   //! don't want = operator
   Transport& operator = (const Transport& old);
-
-
 }; // class Transport
 
 

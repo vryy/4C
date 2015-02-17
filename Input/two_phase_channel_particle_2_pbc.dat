@@ -88,7 +88,6 @@ MAXTIME                         2.00
 NUMSTEP                         6400
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
-SCATRATYPE                      LevelSet
 SOLVERTYPE                      nonlinear
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta

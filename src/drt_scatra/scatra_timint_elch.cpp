@@ -46,7 +46,6 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
         Teuchos::RCP<IO::DiscretizationWriter>   output)
   : ScaTraTimIntImpl(dis,solver,sctratimintparams,extraparams,output),
     elchparams_     (params),
-    elchtype_       (DRT::INPUT::IntegralValue<INPAR::ELCH::ElchType>(*elchparams_,"ELCHTYPE")),
     equpot_         (DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(*elchparams_,"EQUPOT")),
     frt_            (0.0),
     gstatnumite_    (0),
@@ -66,12 +65,9 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::Init()
 {
-  if(elchtype_==INPAR::ELCH::elchtype_undefined)
-    dserror("The ElchType is not specified in the input file!");
-
   // The diffusion-conduction formulation does not support all options of the Nernst-Planck formulation
   // Let's check for valid options
-  if(elchtype_==INPAR::ELCH::elchtype_diffcond)
+  if(DRT::INPUT::IntegralValue<int>(*elchparams_,"DIFFCOND_FORMULATION"))
     ValidParameterDiffCond();
 
   // set up the concentration-el.potential splitter
@@ -102,7 +98,6 @@ void SCATRA::ScaTraTimIntElch::Init()
   // check validity of material and element formulation
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::check_scatra_element_parameter);
-  eleparams.set<int>("scatratype",scatratype_);
   if(isale_)
     discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -156,15 +151,19 @@ void SCATRA::ScaTraTimIntElch::Init()
 void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams)
 {
   // overwrite action type
-  eleparams.set<int>("action",SCATRA::set_elch_scatra_parameter);
+  if(DRT::INPUT::IntegralValue<int>(*elchparams_,"DIFFCOND_FORMULATION"))
+  {
+    eleparams.set<int>("action",SCATRA::set_diffcond_scatra_parameter);
+
+    // parameters for diffusion-conduction formulation
+    eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
+  }
+  else
+    eleparams.set<int>("action",SCATRA::set_elch_scatra_parameter);
 
   // general elch parameters
   eleparams.set<double>("frt",INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*(elchparams_->get<double>("TEMPERATURE"))));
-  eleparams.set<int>("elchtype",elchtype_);
   eleparams.set<int>("equpot",equpot_);
-
-  // parameters for diffusion-conduction formulation
-  eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
 
   return;
 }
@@ -177,12 +176,6 @@ void SCATRA::ScaTraTimIntElch::AddProblemSpecificParametersAndVectors(
   Teuchos::ParameterList& params //!< parameter list
 )
 {
-  // ELCH specific factor F/RT
-  params.set("frt",frt_);
-
-  // parameters for Elch/DiffCond formulation
-  params.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
-
   discret_->SetState("dctoggle",dctoggle_);
 
   return;
@@ -287,16 +280,11 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     // create the parameters for the error calculation
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::calc_error);
-    eleparams.set<int>("scatratype",scatratype_);
     eleparams.set("total time",time_);
-    eleparams.set("frt",frt_);
     eleparams.set<int>("calcerrorflag",calcerr);
     //provide displacement field in case of ALE
-    eleparams.set("isale",isale_);
     if (isale_)
       discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-    // parameters for Elch/DiffCond formulation
-    eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -383,12 +371,9 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     // create the parameters for the error calculation
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::calc_error);
-    eleparams.set<int>("scatratype",scatratype_);
     eleparams.set("total time",time_);
-    eleparams.set("frt",frt_);
     eleparams.set<int>("calcerrorflag",calcerr);
     //provide displacement field in case of ALE
-    eleparams.set("isale",isale_);
     if (isale_)
       discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
@@ -422,12 +407,9 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     // create the parameters for the error calculation
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::calc_error);
-    eleparams.set<int>("scatratype",scatratype_);
     eleparams.set("total time",time_);
-    eleparams.set("frt",frt_);
     eleparams.set<int>("calcerrorflag",calcerr);
     //provide displacement field in case of ALE
-    eleparams.set("isale",isale_);
     if (isale_)
       discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
@@ -603,14 +585,12 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   // set action for elements
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::bd_calc_elch_boundary_kinetics);
-  eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("calc_status",true); // just want to have a status output!
 
   // parameters for Elch/DiffCond formulation
   eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
 
   //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
   if (isale_)
     discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
@@ -785,10 +765,6 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       // action for elements
       condparams.set<int>("action",SCATRA::calc_elch_electrode_soc);
 
-      // further parameters
-      condparams.set<int>("scatratype",scatratype_);
-      condparams.set("isale",isale_);
-
       // initialize concentration and domain integrals
       condparams.set("intconcentration",0.);
       condparams.set("intdomain",0.);
@@ -885,10 +861,6 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
       // action for elements
       condparams.set<int>("action",SCATRA::bd_calc_elch_cell_voltage);
 
-      // further parameters
-      condparams.set<int>("scatratype",scatratype_);
-      condparams.set("isale",isale_);
-
       // initialize potential and domain integrals
       condparams.set("intpotential",0.);
       condparams.set("intdomain",0.);
@@ -943,7 +915,6 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
   // set action for elements
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::calc_mean_scalars);
-  eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("inverting",false);
 
   // provide displacement field in case of ALE
@@ -1084,44 +1055,36 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
     // check if Nernst-BC is defined on electrode kinetics condition
     if (Elchcond[icond]->GetInt("kinetic model")==INPAR::SCATRA::nernst)
     {
-      switch(elchtype_)
+      if(DRT::INPUT::IntegralValue<int>(*elchparams_,"DIFFCOND_FORMULATION"))
       {
-        case INPAR::ELCH::elchtype_diffcond:
+        if(icond==0)
+          ektoggle_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+
+        // 1.0 for electrode-kinetics toggle
+        const double one = 1.0;
+
+        // global node id's which are part of the Nernst-BC
+        const std::vector<int>* nodegids = Elchcond[icond]->Nodes();
+
+        // loop over all global nodes part of the Nernst-BC
+        for (int ii = 0; ii< (int (nodegids->size())); ++ii)
         {
-          // this vector must not be defined more than once!!
-          if(icond==0)
-            ektoggle_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-
-          // 1.0 for electrode-kinetics toggle
-          const double one = 1.0;
-
-          // global node id's which are part of the Nernst-BC
-          const std::vector<int>* nodegids = Elchcond[icond]->Nodes();
-
-          // loop over all global nodes part of the Nernst-BC
-          for (int ii = 0; ii< (int (nodegids->size())); ++ii)
+          if(discret_->NodeRowMap()->MyGID((*nodegids)[ii]))
           {
-            if(discret_->NodeRowMap()->MyGID((*nodegids)[ii]))
-            {
-              // get node with global node id (*nodegids)[ii]
-              DRT::Node* node=discret_->gNode((*nodegids)[ii]);
+            // get node with global node id (*nodegids)[ii]
+            DRT::Node* node=discret_->gNode((*nodegids)[ii]);
 
-              // get global dof ids of all dof's with global node id (*nodegids)[ii]
-              std::vector<int> nodedofs=discret_->Dof(node);
+            // get global dof ids of all dof's with global node id (*nodegids)[ii]
+            std::vector<int> nodedofs=discret_->Dof(node);
 
-              // define electrode kinetics toggle
-              // later on this toggle is used to blanck the sysmat and rhs
-              ektoggle_->ReplaceGlobalValues(1,&one,&nodedofs[numscal_]);
-            }
+            // define electrode kinetics toggle
+            // later on this toggle is used to blanck the sysmat and rhs
+            ektoggle_->ReplaceGlobalValues(1,&one,&nodedofs[numscal_]);
           }
-          break;
-        }
-        default:
-        {
-          dserror("Nernst BC is only available with div i as closure equation");
-          break;
         }
       }
+      else
+        dserror("Nernst BC is only available for diffusion-conduction formulation!");
     }
   }
 
@@ -1226,20 +1189,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     // action for elements
     eleparams.set<int>("action",SCATRA::calc_elch_initial_potential);
 
-    // set type of scalar transport problem
-    eleparams.set<int>("scatratype",scatratype_);
-
-    // factor F/RT
-    eleparams.set("frt",frt_);
-
-    // parameters for stabilization
-    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
-    // parameters for Elch/DiffCond formulation
-    eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
-
     // provide displacement field in case of ALE
-    eleparams.set("isale",isale_);
     if (isale_)
       discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
@@ -1297,10 +1247,8 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::ComputeConducti
   // create the parameters for the elements
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::calc_elch_conductivity);
-  eleparams.set<int>("scatratype",scatratype_);
 
   //provide displacement field in case of ALE
-  eleparams.set("isale",isale_);
   if (isale_)
     discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
@@ -1684,9 +1632,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryConditions(
 
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_elch_boundary_kinetics);
-  condparams.set<int>("scatratype",scatratype_);
-  condparams.set("frt",frt_); // factor F/RT
-  condparams.set("isale",isale_);
 
   // parameters for Elch/DiffCond formulation
   condparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
@@ -1729,11 +1674,6 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
   AddTimeIntegrationSpecificVectors();
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_elch_linearize_nernst);
-  condparams.set<int>("scatratype",scatratype_);
-  condparams.set("isale",isale_);
-
-  // parameters for Elch/DiffCond formulation
-  condparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
 
   // add element parameters and set state vectors according to time-integration scheme
   // we need here concentration at t+np

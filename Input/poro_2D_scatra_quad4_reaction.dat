@@ -66,6 +66,7 @@ TIMESTEP                        0.01
 COUPALGO                        two_way //two_way monolithic
 TOLRES_GLOBAL                   1e-07
 TOLINC_GLOBAL                   1e-06
+SCATRATYPE                      Poroscatra
 --------------------------------------------------------SOLVER 1 //poroelast
 SOLVER                          UMFPACK //UMFPACK Aztec_MSR
 AZTOL                           1.0E-9
@@ -123,7 +124,6 @@ THETA                           0.66
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
-SCATRATYPE                      Poroscatra
 INITFUNCNO                      2
 MATID                           5
 SKIPINITDER                     yes

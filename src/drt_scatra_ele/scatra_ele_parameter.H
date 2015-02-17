@@ -59,11 +59,10 @@ public:
   /*========================================================================*/
 
   //! general fluid parameter are set
-  void SetElementGeneralScaTraParameters(Teuchos::ParameterList& params,   //> parameter list
-                                       int myrank);                      //> proc id
+  virtual void SetElementGeneralParameters(Teuchos::ParameterList& params);
 
   //! turbulence parameters are set
-  void SetElementTurbulenceParameter(Teuchos::ParameterList& params);   //> parameter list
+  void SetElementTurbulenceParameters(Teuchos::ParameterList& params);   //> parameter list
 
   /*========================================================================*/
   //! @name access-routines
@@ -72,8 +71,6 @@ public:
   /*--------------------------*/
   //! @name general parameters
   /*--------------------------*/
-
-  const INPAR::SCATRA::ScaTraType ScaTraType(){return scatratype_;};
   const bool IsAle(){return is_ale_;};
   const bool IsConservative(){return is_conservative_;};
 
@@ -138,8 +135,6 @@ protected:
   //! @name general parameters
   /*--------------------------*/
 
-  //! type of scatra problem
-  INPAR::SCATRA::ScaTraType scatratype_;
   //! flag for ale
   bool is_ale_;
   //! flag for conservative form

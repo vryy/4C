@@ -96,8 +96,8 @@ public:
     );
 
   void AddScatra(
-    Teuchos::RCP<DRT::Discretization>     scatradis,
-    INPAR::SCATRA::ScaTraType    scatratype);
+    Teuchos::RCP<DRT::Discretization>     scatradis
+  );
 
   void GetCv(double& Cv)
   {
@@ -125,7 +125,6 @@ private:
   INPAR::FLUID::PhysicalType   physicaltype_;
   //scatra specific
   Teuchos::RCP<DRT::Discretization>     scatradiscret_;
-  INPAR::SCATRA::ScaTraType    scatratype_;
 
 
   double DynVremanComputeCv();

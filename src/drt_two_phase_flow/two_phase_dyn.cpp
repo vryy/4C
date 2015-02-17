@@ -11,23 +11,26 @@ Maintainer: Magnus Winter
 </pre>
 
 *----------------------------------------------------------------------*/
-
-
-#include <string>
-#include <iostream>
-
-#include "two_phase_algorithm.H"
 #include "../drt_fluid_xfluid/xfluid_levelset_coupling_algorithm.H"
+
 #include "../drt_inpar/drt_validparameters.H"
-#include "../drt_scatra/scatra_utils_clonestrategy.H"
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
+
 #include "../drt_lib/drt_discret_xfem.H"
+#include "../drt_lib/drt_dofset_fixed_size.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include <Epetra_Time.h>
 
-#include "../drt_lib/drt_dofset_fixed_size.H"
+#include "../drt_scatra/scatra_utils_clonestrategy.H"
+
+#include "../drt_scatra_ele/scatra_ele.H"
+
+#include <Epetra_Time.h>
+#include <iostream>
+#include <string>
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_Time.hpp>
+
+#include "two_phase_algorithm.H"
 #include "two_phase_dyn.H"
 
 /*----------------------------------------------------------------------*/
@@ -98,9 +101,21 @@ void two_phase_dyn(int restart)
     // create scatra elements if scatra discretization is empty (typical case)
     if (scatradis->NumGlobalNodes()==0)
     {
+      // fill scatra discretization by cloning fluid discretization
       DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,scatradis);
+
+      // set implementation type of cloned scatra elements to levelset
+      for(int i=0; i<scatradis->NumMyColElements(); ++i)
+      {
+        DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
+        if(element == NULL)
+          dserror("Invalid element type!");
+        else
+          element->SetImplType(INPAR::SCATRA::impltype_levelset);
+      }
     }
-    else dserror("Fluid AND ScaTra discretization present. This is not supported.");
+    else
+      dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
     // get linear solver id from SCALAR TRANSPORT DYNAMIC
     const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
@@ -236,6 +251,7 @@ void fluid_xfem_ls_drt()
    // create scatra elements if scatra discretization is empty (typical case)
    if (scatradis->NumGlobalNodes()==0)
    {
+     // fill scatra discretization by cloning fluid discretization
      DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,scatradis);
 
      // Give ScaTra new dofset (starts after fluid)
@@ -243,10 +259,19 @@ void fluid_xfem_ls_drt()
      scatradis->ReplaceDofSet(newdofset,true);
      scatradis->FillComplete();
 
+     // set implementation type of cloned scatra elements to levelset
+     for(int i=0; i<scatradis->NumMyColElements(); ++i)
+     {
+       DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
+       if(element == NULL)
+         dserror("Invalid element type!");
+       else
+         element->SetImplType(INPAR::SCATRA::impltype_levelset);
+     }
+
      // print all dofsets
      //---FLUID---|---SCATRA---|
      fluiddis->GetDofSetProxy()->PrintAllDofsets(fluiddis->Comm());
-
    }
    else dserror("Fluid AND ScaTra discretization present. This is not supported.");
 

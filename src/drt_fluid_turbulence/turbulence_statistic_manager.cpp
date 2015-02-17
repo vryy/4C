@@ -1720,10 +1720,6 @@ namespace FLD
     // store the relevant pointers to provide access
     scatradis_ = scatra_timeint->Discretization();
     scatraparams_ = scatra_timeint->ScatraParameterList();
-    // set potentially modified scatratype which is not correctly set
-    // in the ScatraParameterList() is it has been modified in the
-    // constructor of the scatra time integration
-    scatraparams_->set<int>("scatratype",scatra_timeint->ScaTraType());
     // and sublists from extraparams
     scatraextraparams_ = scatra_timeint->ScatraExtraParameterList();
     // remark: this is not a good idea, since the sublists are copied and modifications

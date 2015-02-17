@@ -48,7 +48,6 @@ VELOCITYFIELD                   zero
 VELFUNCNO                       1
 INITIALFIELD                    field_by_condition
 INITFUNCNO                      2
-SCATRATYPE                      ConvectionDiffusion
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Zero
 --------------------------------------------------------------------SOLVER 1
@@ -194,8 +193,8 @@ NODE 26 COORD 5.000000000000000e-03 9.999999999999998e-04 0.000000000000000e-02
 NODE 27 COORD 6.000000000000000e-03 0.000000000000000e-02 0.000000000000000e-02
 NODE 28 COORD 6.000000000000014e-03 9.999999999999998e-04 0.000000000000000e-02
 ------------------------------------------------TRANSPORT ELEMENTS
-11 TRANSP QUAD4 23 25 26 24 MAT 2
-12 TRANSP QUAD4 25 27 28 26 MAT 2
+11 TRANSP QUAD4 23 25 26 24 MAT 2 TYPE Std
+12 TRANSP QUAD4 25 27 28 26 MAT 2 TYPE Std
 -------------------------------------------------ACOUSTIC ELEMENTS
 1 ACOUSTIC    QUAD4 9 11 12 10 MAT 1 DEG 3 SPC 0
 2 ACOUSTIC    QUAD4 11 13 14 12 MAT 1 DEG 3 SPC 0

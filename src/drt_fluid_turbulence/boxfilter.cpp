@@ -124,12 +124,10 @@ FLD::Boxfilter::~Boxfilter()
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
 void FLD::Boxfilter::AddScatra(
-  Teuchos::RCP<DRT::Discretization>     scatradis,
-  INPAR::SCATRA::ScaTraType             scatratype
+  Teuchos::RCP<DRT::Discretization>     scatradis
   )
 {
   scatradiscret_ = scatradis;
-  scatratype_ = scatratype;
 
   return;
 }
@@ -145,12 +143,10 @@ void FLD::Boxfilter::InitializeVreman()
 }
 
 void FLD::Boxfilter::InitializeVremanScatra(
-  Teuchos::RCP<DRT::Discretization>     scatradis,
-  INPAR::SCATRA::ScaTraType             scatratype
+  Teuchos::RCP<DRT::Discretization>     scatradis
   )
 {
   scatradiscret_ = scatradis;
-  scatratype_ = scatratype;
 
   phi_=true;
   phi2_=true;
@@ -1041,7 +1037,6 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
   Teuchos::ParameterList filterparams;
   // action for elements
   filterparams.set<int>("action",SCATRA::calc_scatra_box_filter);
-  filterparams.set<int>("scatratype",scatratype_);
 
   // add velocity
   scatradiscret_->AddMultiVectorToParameterList(filterparams, "velocity", velocity);

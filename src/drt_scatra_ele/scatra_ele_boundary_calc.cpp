@@ -19,52 +19,29 @@ Maintainer: Andreas Ehrl
 
 #include <cstdlib>
 
-#include "scatra_ele_boundary_calc.H"
-#include "scatra_ele_parameter_timint.H"
-#include "scatra_ele_parameter_std.H"
-#include "scatra_ele_action.H"
-#include "scatra_ele.H"
-
 #include "../drt_lib/drt_globalproblem.H" // for curves and functions
 #include "../drt_lib/standardtypes_cpp.H" // for EPS12 and so on
-#include "../drt_inpar/inpar_scatra.H"
-#include "../drt_inpar/inpar_elch.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
-#include "../drt_geometry/position_array.H"
 
-// material headers
-#include "../drt_mat/scatra_mat.H"
-#include "../drt_mat/myocard.H"
-#include "../drt_mat/mixfrac.H"
-#include "../drt_mat/sutherland.H"
-#include "../drt_mat/arrhenius_spec.H"
-#include "../drt_mat/arrhenius_temp.H"
-#include "../drt_mat/arrhenius_pv.H"
-#include "../drt_mat/ferech_pv.H"
-#include "../drt_mat/ion.H"
 #include "../drt_mat/fourieriso.H"
-#include "../drt_mat/thermostvenantkirchhoff.H"
-#include "../drt_mat/yoghurt.H"
+#include "../drt_mat/material.H"
 #include "../drt_mat/matlist.H"
+#include "../drt_mat/scatra_mat.H"
+#include "../drt_mat/thermostvenantkirchhoff.H"
 
-#include "../drt_mat/elchmat.H"
-#include "../drt_mat/newman.H"
-#include "../drt_mat/elchphase.H"
+#include "scatra_ele.H"
+#include "scatra_ele_parameter_std.H"
+#include "scatra_ele_boundary_calc.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(const int numdofpernode, const int numscal)
- : numdofpernode_(numdofpernode),
+ : scatraparamstimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance()), // params for time integration
+   scatraparams_(DRT::ELEMENTS::ScaTraEleParameterStd::Instance()),
+   numdofpernode_(numdofpernode),
    numscal_(numscal),
-   isale_(false),
-   is_stationary_(false),
-   is_genalpha_(false),
-   is_incremental_(true),
    xyze_(true),  // initialize to zero
    weights_(true),
    myknots_(nsd_),
@@ -80,12 +57,8 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(const int n
    derxy_(true),
    normal_(true),
    velint_(true),
-   metrictensor_(true),
-   thermpress_(0.0)
+   metrictensor_(true)
 {
-  // params for time integration
-  scatraparamstimint_ = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance();
-
   return;
 }
 
@@ -101,8 +74,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::SetupCalc(DRT::ELEMENTS::Tran
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
   // get additional state vector for ALE case: grid displacement
-  isale_ = params.get<bool>("isale");
-  if (isale_)
+  if(scatraparams_->IsAle())
   {
     const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
     if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
@@ -123,6 +95,47 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::SetupCalc(DRT::ELEMENTS::Tran
     // if we have a zero sized element due to a interpolated point -> exit here
     if(zero_size) return -1;
   } // Nurbs specific stuff
+
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ | evaluate element                                          fang 02/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::Evaluate(
+    DRT::ELEMENTS::TransportBoundary*   ele,
+    Teuchos::ParameterList&             params,
+    DRT::Discretization&                discretization,
+    std::vector<int>&                   lm,
+    Epetra_SerialDenseMatrix&           elemat1_epetra,
+    Epetra_SerialDenseMatrix&           elemat2_epetra,
+    Epetra_SerialDenseVector&           elevec1_epetra,
+    Epetra_SerialDenseVector&           elevec2_epetra,
+    Epetra_SerialDenseVector&           elevec3_epetra
+)
+{
+  // check for the action parameter
+  const SCATRA::BoundaryAction action = DRT::INPUT::get<SCATRA::BoundaryAction>(params,"action");
+
+  // setup
+  if(SetupCalc(ele,params,discretization) == -1)
+    return 0;
+
+  // evaluate action
+  EvaluateAction(
+      ele,
+      params,
+      discretization,
+      action,
+      lm,
+      elemat1_epetra,
+      elemat2_epetra,
+      elevec1_epetra,
+      elevec2_epetra,
+      elevec3_epetra
+      );
 
   return 0;
 }
@@ -151,14 +164,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     CalcNormalVectors(params,ele);
     break;
   }
-  case SCATRA::bd_calc_loma_therm_press:
-  {
-    CalcLomaThermPress(ele,
-        params,
-        discretization,
-        lm);
-    break;
-  }
   case SCATRA::bd_integrate_shape_functions:
   {
     // NOTE: add area value only for elements which are NOT ghosted!
@@ -179,75 +184,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
   }
   case SCATRA::bd_calc_Neumann_inflow:
   {
-    // check for the scatratype
-    const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
-    if (scatratype == INPAR::SCATRA::scatratype_undefined)
-      dserror("Element parameter SCATRATYPE has not been set!");
-
-    // get the parent element including its material
-    DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
-    Teuchos::RCP<MAT::Material> mat = parentele->Material();
-
-    // get control parameters
-    is_stationary_  = scatraparamstimint_->IsStationary();
-    is_genalpha_    = scatraparamstimint_->IsGenAlpha();
-    is_incremental_ = scatraparamstimint_->IsIncremental();
-
-    // get time factor and alpha_F if required
-    // one-step-Theta:    timefac = theta*dt
-    // BDF2:              timefac = 2/3 * dt
-    // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
-    double timefac = 1.0;
-    if (not is_stationary_)
-    {
-      timefac = scatraparamstimint_->TimeFac();
-      if (timefac < 0.0) dserror("time factor is negative.");
-    }
-
-    // set thermodynamic pressure
-    thermpress_ = 0.0;
-    if (scatratype==INPAR::SCATRA::scatratype_loma)
-      thermpress_ = params.get<double>("thermodynamic pressure");
-
-    // get values of scalar
-    Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-
-    // extract local values from global vector
-    std::vector<double> ephinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
-
-    // we dont know the parent element's lm vector; so we have to build it here
-    const int nenparent = parentele->NumNode();
-    std::vector<int> lmparent(nenparent);
-    std::vector<int> lmparentowner;
-    std::vector<int> lmparentstride;
-    parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
-
-    // get velocity values at nodes
-    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
-
-    // we deal with a (nsd_+1)-dimensional flow field
-    Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
-    DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
-
-    // insert velocity field into element array
-    LINALG::Matrix<nsd_+1,nen_> evelnp;
-    for (int i=0;i<nen_;++i)
-    {
-      for (int idim=0 ; idim < nsd_+1 ; idim++)
-      {
-        evelnp(idim,i) = evel[idim + i*(nsd_+1)];
-      }
-    }
-
-    NeumannInflow(ele,
-        mat,
-        ephinp,
-        evelnp,
+    NeumannInflow(
+        ele,
+        params,
+        discretization,
+        lm,
         elemat1_epetra,
-        elevec1_epetra,
-        timefac);
+        elevec1_epetra
+        );
 
     break;
   }
@@ -256,22 +200,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     // get the parent element including its material
     DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
     Teuchos::RCP<MAT::Material> mat = parentele->Material();
-
-    // get control parameters
-    is_stationary_  = scatraparamstimint_->IsStationary();
-    is_genalpha_    = scatraparamstimint_->IsGenAlpha();
-    is_incremental_ = scatraparamstimint_->IsIncremental();
-
-    // get time factor and alpha_F if required
-    // one-step-Theta:    timefac = theta*dt
-    // BDF2:              timefac = 2/3 * dt
-    // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
-    double timefac = 1.0;
-    if (not is_stationary_)
-    {
-      timefac = scatraparamstimint_->TimeFac();
-      if (timefac < 0.0) dserror("time factor is negative.");
-    }
 
     // get values of scalar
     Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
@@ -290,14 +218,15 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     const double heatranscoeff = cond->GetDouble("coeff");
     const double surtemp       = cond->GetDouble("surtemp");
 
-    ConvectiveHeatTransfer(ele,
+    ConvectiveHeatTransfer(
+        ele,
         mat,
         ephinp,
         elemat1_epetra,
         elevec1_epetra,
         heatranscoeff,
-        surtemp,
-        timefac);
+        surtemp
+        );
 
     break;
   }
@@ -357,19 +286,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
   }
   case SCATRA::bd_calc_fs3i_surface_permeability:
   {
-    // get control parameters
-    is_stationary_  = scatraparamstimint_->IsStationary();
-    is_genalpha_    = scatraparamstimint_->IsGenAlpha();
-    is_incremental_ = scatraparamstimint_->IsIncremental();
-
-    double timefac = 1.0;
-    if (is_genalpha_ or not is_incremental_)
+    if(scatraparamstimint_->IsGenAlpha() or not scatraparamstimint_->IsIncremental())
       dserror("calc_surface_permeability: chosen option not available");
-    if (not is_stationary_)
-    {
-      timefac = scatraparamstimint_->TimeFac();
-      if (timefac < 0.0) dserror("time factor is negative.");
-    }
 
     // get values of scalar
     Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
@@ -408,28 +326,17 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
         f_WSS,
         elemat1_epetra,
         elevec1_epetra,
-        perm,
         onoff,
-        timefac
+        perm
     );
 
     break;
   }
   case SCATRA::bd_calc_fps3i_surface_permeability:
   {
-    // get control parameters
-    is_stationary_  = scatraparamstimint_->IsStationary();
-    is_genalpha_    = scatraparamstimint_->IsGenAlpha();
-    is_incremental_ = scatraparamstimint_->IsIncremental();
-
-    double timefac = 1.0;
-    if (is_genalpha_ or not is_incremental_)
+    // safety checks
+    if(scatraparamstimint_->IsGenAlpha() or not scatraparamstimint_->IsIncremental())
       dserror("calc_surface_permeability: chosen option not available");
-    if (not is_stationary_)
-    {
-      timefac = scatraparamstimint_->TimeFac();
-      if (timefac < 0.0) dserror("time factor is negative.");
-    }
 
     //// get velocity values at nodes
     //const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
@@ -500,7 +407,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
         f_WSS,
         elemat1_epetra,
         elevec1_epetra,
-        timefac,
         onoff,
         perm,
         conductivity,
@@ -706,24 +612,38 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcNormalVectors(Teuchos::P
 
 
 /*----------------------------------------------------------------------*
- | calculate loma therm pressure                              vg 03/09  |
+ | calculate Neumann inflow boundary conditions                vg 03/09 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcLomaThermPress(
-    DRT::ELEMENTS::TransportBoundary* ele,
-    Teuchos::ParameterList&           params,
-    DRT::Discretization&              discretization,
-    std::vector<int>&                 lm
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
+    const DRT::ELEMENTS::TransportBoundary*   ele,
+    Teuchos::ParameterList&                   params,
+    DRT::Discretization&                      discretization,
+    std::vector<int>&                         lm,
+    Epetra_SerialDenseMatrix&                 emat,
+    Epetra_SerialDenseVector&                 erhs
     )
 {
-
+  // get parent element
   DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
-  // we dont know the parent element's lm vector; so we have to build it here
+
+  // get material of parent element
+  Teuchos::RCP<MAT::Material> material = parentele->Material();
+
+  // we don't know the parent element's lm vector; so we have to build it here
   const int nenparent = parentele->NumNode();
   std::vector<int> lmparent(nenparent);
   std::vector<int> lmparentowner;
   std::vector<int> lmparentstride;
   parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
+
+  // get values of scalar
+  Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+
+  // extract local values from global vector
+  std::vector<double> ephinp(lm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
 
   // get velocity values at nodes
   const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
@@ -732,72 +652,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcLomaThermPress(
   Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
   DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
 
-  // get values of scalar
-  Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-
-  // extract local values from the global vectors for the parent(!) element
-  std::vector<double> myphinp(lmparent.size());
-  DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
-
-  // define vector for normal diffusive and velocity fluxes
-  std::vector<double> mynormdiffflux(lm.size());
-  std::vector<double> mynormvel(lm.size());
-
-  // determine constant outer normal to this element
-  GetConstNormal(normal_,xyze_);
-
-  // extract temperature flux vector for each node of the parent element
-  LINALG::SerialDenseMatrix eflux(3,nenparent);
-  DRT::Element* peleptr = (DRT::Element*) parentele;
-  int k=numscal_-1;     // temperature is always last degree of freedom!!
-  std::ostringstream temp;
-  temp << k;
-  std::string name = "flux_phi_"+temp.str();
-  // try to get the pointer to the entry (and check if type is Teuchos::RCP<Epetra_MultiVector>)
-  Teuchos::RCP<Epetra_MultiVector>* f = params.getPtr< Teuchos::RCP<Epetra_MultiVector> >(name);
-  // check: field has been set and is not of type Teuchos::null
-  if (f!= NULL) DRT::UTILS::ExtractMyNodeBasedValues(peleptr,eflux,*f,3);
-  else          dserror("MultiVector %s has not been found!",name.c_str());
-
-  // calculate normal diffusive and velocity flux at each node of the
-  // present boundary element
-  for (int i=0; i<nen_; ++i)
+  // insert velocity field into element array
+  LINALG::Matrix<nsd_+1,nen_> evelnp;
+  for (int i=0;i<nen_;++i)
   {
-    for(int j = 0; j<nenparent;++j)
+    for (int idim=0 ; idim < nsd_+1 ; idim++)
     {
-      mynormdiffflux[i] = 0.0;
-      mynormvel[i]      = 0.0;
-      for (int l=0; l<nsd_+1; l++)
-      {
-        mynormdiffflux[i] += eflux(l,j)*normal_(l);
-        mynormvel[i]      += evel[i*(nsd_+1)+l]*normal_(l);
-      }
+      evelnp(idim,i) = evel[idim + i*(nsd_+1)];
     }
   }
 
-  // calculate integral of normal diffusive and velocity flux
-  // NOTE: add integral value only for elements which are NOT ghosted!
-  if(ele->Owner() == discretization.Comm().MyPID())
-  {
-    NormDiffFluxAndVelIntegral(ele,params,mynormdiffflux,mynormvel);
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- | calculate Neumann inflow boundary conditions                vg 03/09 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
-    const DRT::Element*                 ele,
-    Teuchos::RCP<const MAT::Material>   material,
-    const std::vector<double>&          ephinp,
-    const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
-    Epetra_SerialDenseMatrix&           emat,
-    Epetra_SerialDenseVector&           erhs,
-    const double                        timefac)
-{
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -827,107 +691,18 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
       if (normvel<-0.0001)
       {
         // set density to 1.0
-        double dens = 1.0;
-
-        // get density if not equal one
-        if (material->MaterialType() == INPAR::MAT::m_matlist)
-        {
-          const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
-
-          const int matid = actmat->MatID(0);
-          Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
-
-          if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_temp)
-          {
-            const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
-
-            // compute temperature values at nodes (always last scalar)
-            LINALG::Matrix<nen_,1> tempnod(true);
-            for (int inode=0; inode< nen_;++inode)
-            {
-              tempnod(inode) = ephinp[(inode+1)*numdofpernode_-1];
-            }
-            // compute temperature
-            const double temp = funct_.Dot(tempnod);
-
-            // compute density based on temperature and thermodynamic pressure
-            dens = actsinglemat->ComputeDensity(temp,thermpress_);
-          }
-          else if (singlemat->MaterialType() == INPAR::MAT::m_scatra )
-          {
-            dens = 1.0;
-          }
-          else dserror("type of material found in material list is not supported");
-        }
-        else if ( material->MaterialType() == INPAR::MAT::m_matlist_reactions )
-        {
-          // set density
-          dens = 1.0;
-        }
-        else if (material->MaterialType() == INPAR::MAT::m_scatra)
-        {
-          // set density
-          dens = 1.0;
-        }
-        else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
-        {
-          const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
-
-          // compute mixture fraction
-          const double mixfrac = funct_.Dot(phinod);
-
-          // compute density based on mixture fraction
-          dens = actmat->ComputeDensity(mixfrac);
-        }
-        else if (material->MaterialType() == INPAR::MAT::m_sutherland)
-        {
-          const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
-
-          // compute temperature
-          const double temp = funct_.Dot(phinod);
-
-          // compute density based on temperature and thermodynamic pressure
-          dens = actmat->ComputeDensity(temp,thermpress_);
-        }
-        else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
-        {
-          const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
-
-          // compute progress variable
-          const double provar = funct_.Dot(phinod);
-
-          // compute density
-          dens = actmat->ComputeDensity(provar);
-        }
-        else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
-        {
-          const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
-
-          // compute progress variable
-          const double provar = funct_.Dot(phinod);
-
-          // compute density
-          dens = actmat->ComputeDensity(provar);
-        }
-        else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
-        {
-          const MAT::Yoghurt* actmat = static_cast<const MAT::Yoghurt*>(material.get());
-
-          // get constant density
-          dens = actmat->Density();
-        }
-        else dserror("Material type is not supported for Neumann inflow!");
+        double dens = GetDensity(material,ephinp,phinod);
 
         // integration factor for left-hand side
-        const double lhsfac = dens*normvel*timefac*fac;
+        const double lhsfac = dens*normvel*scatraparamstimint_->TimeFac()*fac;
 
         // integration factor for right-hand side
         double rhsfac = 0.0;
-        if (is_incremental_ and is_genalpha_)
+        if(scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
           rhsfac = lhsfac/scatraparamstimint_->AlphaF();
-        else if (not is_incremental_ and is_genalpha_)
+        else if(not scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
           rhsfac = lhsfac*(1.0-scatraparamstimint_->AlphaF())/scatraparamstimint_->AlphaF();
-        else if (is_incremental_ and not is_genalpha_)
+        else if(scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
           rhsfac = lhsfac;
 
         // matrix
@@ -961,7 +736,58 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
   }
 
   return;
-} //ScaTraEleBoundaryCalc<distype>::NeumannInflow
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow
+
+
+/*----------------------------------------------------------------------*
+ | get density at integration point                          fang 02/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+const double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetDensity(
+    Teuchos::RCP<const MAT::Material>   material,
+    const std::vector<double>&          ephinp,
+    const LINALG::Matrix<nen_,1>&       phinod
+    )
+{
+  // initialization
+  double density(0.);
+
+  // get density depending on material
+  switch(material->MaterialType())
+  {
+  case INPAR::MAT::m_matlist:
+  {
+    const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+
+    const int matid = actmat->MatID(0);
+
+    if(actmat->MaterialById(matid)->MaterialType() == INPAR::MAT::m_scatra)
+      // set density to unity
+      density = 1.;
+    else
+      dserror("type of material found in material list is not supported");
+
+    break;
+  }
+
+  case INPAR::MAT::m_matlist_reactions:
+  case INPAR::MAT::m_scatra:
+  {
+    // set density to unity
+    density = 1.;
+
+    break;
+  }
+
+  default:
+  {
+    dserror("Invalid material type!");
+    break;
+  }
+  }
+
+  return density;
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetDensity
 
 
 /*----------------------------------------------------------------------*
@@ -1030,12 +856,12 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
     const DRT::Element*                 ele,
     Teuchos::RCP<const MAT::Material>   material,
-    const std::vector<double>&           ephinp,
+    const std::vector<double>&          ephinp,
     Epetra_SerialDenseMatrix&           emat,
     Epetra_SerialDenseVector&           erhs,
     const double                        heatranscoeff,
-    const double                        surtemp,
-    const double                        timefac)
+    const double                        surtemp
+    )
 {
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -1074,15 +900,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
       else dserror("Material type is not supported for convective heat transfer!");
 
       // integration factor for left-hand side
-      const double lhsfac = heatranscoeff*timefac*fac/shc;
+      const double lhsfac = heatranscoeff*scatraparamstimint_->TimeFac()*fac/shc;
 
       // integration factor for right-hand side
       double rhsfac = 0.0;
-      if (is_incremental_ and is_genalpha_)
+      if(scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
         rhsfac = lhsfac/scatraparamstimint_->AlphaF();
-      else if (not is_incremental_ and is_genalpha_)
+      else if(not scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
         rhsfac = lhsfac*(1.0-scatraparamstimint_->AlphaF())/scatraparamstimint_->AlphaF();
-      else if (is_incremental_ and not is_genalpha_)
+      else if(scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
         rhsfac = lhsfac;
 
       // matrix
@@ -1115,7 +941,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
   }
 
   return;
-} //ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfercteswt
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer
 
 
 /*----------------------------------------------------------------------*
@@ -1353,7 +1179,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
         const std::vector<double>& f_wss,  ///< factor for WSS at element nodes
         Epetra_SerialDenseMatrix&  emat,   ///< element-matrix
         Epetra_SerialDenseVector&  erhs,   ///< element-rhs
-        const double               timefac,///< time factor
         const std::vector<int>*    onoff,  ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
         const double               perm    ///< surface/interface permeability coefficient
     )
@@ -1390,8 +1215,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
 
         // integration factor for right-hand side
         double facfac = 0.0;
-        if (is_incremental_ and not is_genalpha_)
-          facfac = timefac*fac;
+        if(scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
+          facfac = scatraparamstimint_->TimeFac()*fac;
         else
           dserror("EvaluateSurfacePermeability: Requested scheme not yet implemented");
 
@@ -1448,7 +1273,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
     const std::vector<double>& f_wss,       ///< factor for WSS at element nodes
     Epetra_SerialDenseMatrix&  emat,        ///< element-matrix
     Epetra_SerialDenseVector&  erhs,        ///< element-rhs
-    const double               timefac,     ///< time factor
     const std::vector<int>*    onoff,       ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
     const double               perm,        ///< surface/interface permeability coefficient
     const double               conductivity,///< hydraulic conductivity at interface
@@ -1499,8 +1323,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
 
         // integration factor
         double facfac = 0.0;
-        if (is_incremental_ and not is_genalpha_)
-          facfac = timefac * fac;
+        if(scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
+          facfac = scatraparamstimint_->TimeFac() * fac;
         else
           dserror("Kedem-Katchalsky: Requested time integration scheme not yet implemented");
 
@@ -1608,46 +1432,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions(
 
 
 /*----------------------------------------------------------------------*
- | calculate integral of normal diffusive flux and velocity     vg 09/08|
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NormDiffFluxAndVelIntegral(
-    const DRT::Element*             ele,
-    Teuchos::ParameterList&         params,
-    const std::vector<double>&       enormdiffflux,
-    const std::vector<double>&       enormvel
-)
-{
-  // get variables for integrals of normal diffusive flux and velocity
-  double normdifffluxint = params.get<double>("normal diffusive flux integral");
-  double normvelint      = params.get<double>("normal velocity integral");
-
-  // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // loop over integration points
-  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
-  {
-    const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
-
-    // compute integral of normal flux
-    for (int node=0;node<nen_;++node)
-    {
-      normdifffluxint += funct_(node) * enormdiffflux[node] * fac;
-      normvelint      += funct_(node) * enormvel[node] * fac;
-    }
-  } // loop over integration points
-
-  // add contributions to the global values
-  params.set<double>("normal diffusive flux integral",normdifffluxint);
-  params.set<double>("normal velocity integral",normvelint);
-
-  return;
-
-} //ScaTraEleBoundaryCalc<distype>::NormDiffFluxAndVelIntegral
-
-
-/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType bdistype,
@@ -1660,23 +1444,6 @@ template <DRT::Element::DiscretizationType bdistype,
      Epetra_SerialDenseMatrix&          elemat_epetra,
      Epetra_SerialDenseVector&          elevec_epetra)
 {
-  //------------------------------------------------------------------------
-  // control parameters for time integration
-  //------------------------------------------------------------------------
-  is_stationary_  = scatraparamstimint_->IsStationary();
-  is_incremental_ = scatraparamstimint_->IsIncremental();
-
-  // get time factor and alpha_F if required
-  // one-step-Theta:    timefac = theta*dt
-  // BDF2:              timefac = 2/3 * dt
-  // generalized-alpha: timefac = alphaF * (gamma/alpha_M) * dt
-  double timefac = 1.0;
-  if (not is_stationary_)
-  {
-    timefac = scatraparamstimint_->TimeFac();
-    if (timefac < 0.0) dserror("time factor is negative.");
-  }
-
   //------------------------------------------------------------------------
   // Dirichlet boundary condition
   //------------------------------------------------------------------------
@@ -1958,15 +1725,15 @@ template <DRT::Element::DiscretizationType bdistype,
         gradphi.Multiply(pderxy,ephinp[k]);
 
         // integration factor for left-hand side
-        const double lhsfac = timefac*fac;
+        const double lhsfac = scatraparamstimint_->TimeFac()*fac;
 
         // integration factor for right-hand side
         double rhsfac = 0.0;
-        if (is_incremental_ and is_genalpha_)
+        if(scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
           rhsfac = lhsfac/scatraparamstimint_->AlphaF();
-        else if (not is_incremental_ and is_genalpha_)
+        else if(not scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
           rhsfac = lhsfac*(1.0-scatraparamstimint_->AlphaF())/scatraparamstimint_->AlphaF();
-        else if (is_incremental_ and not is_genalpha_)
+        else if(scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
           rhsfac = lhsfac;
 
         //--------------------------------------------------------------------
@@ -2160,15 +1927,15 @@ template <DRT::Element::DiscretizationType bdistype,
       const double phi = pfunct.Dot(ephinp[k]);
 
       // integration factor for left-hand side
-      const double lhsfac = timefac*fac;
+      const double lhsfac = scatraparamstimint_->TimeFac()*fac;
 
       // integration factor for right-hand side
       double rhsfac = 0.0;
-      if (is_incremental_ and is_genalpha_)
+      if(scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
         rhsfac = lhsfac/scatraparamstimint_->AlphaF();
-      else if (not is_incremental_ and is_genalpha_)
+      else if(not scatraparamstimint_->IsIncremental() and scatraparamstimint_->IsGenAlpha())
         rhsfac = lhsfac*(1.0-scatraparamstimint_->AlphaF())/scatraparamstimint_->AlphaF();
-      else if (is_incremental_ and not is_genalpha_)
+      else if(scatraparamstimint_->IsIncremental() and not scatraparamstimint_->IsGenAlpha())
         rhsfac = lhsfac;
 
       if (mixhyb)
@@ -2225,7 +1992,7 @@ template <DRT::Element::DiscretizationType bdistype,
 
           for(int i=0;i<pnsd;++i)
           {
-            vec_s_o_n_phi_minus_g(fvi*pnsd+i) -= pfunct(vi)*bnormal(i)*(rhsfac*phi - timefac*fac*dirichval);
+            vec_s_o_n_phi_minus_g(fvi*pnsd+i) -= pfunct(vi)*bnormal(i)*(rhsfac*phi - scatraparamstimint_->TimeFac()*fac*dirichval);
           }
         }
       }
@@ -2307,7 +2074,7 @@ template <DRT::Element::DiscretizationType bdistype,
             emat(fvi,fui) -= vlhs*pfunct(ui);
           }
 
-          erhs(fvi) += prefac*(rhsfac*phi - timefac*fac*dirichval);
+          erhs(fvi) += prefac*(rhsfac*phi - scatraparamstimint_->TimeFac()*fac*dirichval);
         }
 
         /*  stabilization term
@@ -2330,7 +2097,7 @@ template <DRT::Element::DiscretizationType bdistype,
             emat(fvi,fui) += lhsfac*prefac*pfunct(ui);
           }
 
-          erhs(fvi) -= prefac*(rhsfac*phi - timefac*fac*dirichval);
+          erhs(fvi) -= prefac*(rhsfac*phi - scatraparamstimint_->TimeFac()*fac*dirichval);
         }
       }
     }

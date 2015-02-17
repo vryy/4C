@@ -342,9 +342,6 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
 
     ScaTraEleInternalVariableManagerElch(int numscal,DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
       ScaTraEleInternalVariableManager<NSD, NEN>(numscal),
-      // constant internal variables
-      faraday_(INPAR::ELCH::faraday_const),
-      epsilon_(INPAR::ELCH::epsilon_const),
       frt_(elchpara->FRT()),
       // internal variables evaluated at the Gauss point
       conintinv_(numscal),
@@ -386,14 +383,6 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
     };
 
   /*========================================================================*/
-  //! @name return constant internal variables
-  /*========================================================================*/
-
-    const double Faraday(){return faraday_;};
-    const double Epsilon(){return epsilon_;};
-    const double FRT(){return frt_;};
-
-  /*========================================================================*/
   //! @name return methods for internal variables
   /*========================================================================*/
 
@@ -420,13 +409,8 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
   //! @name constant internal variables
   /*========================================================================*/
 
-    //! Faraday constant
-    double faraday_;
-    //! dielectric constant
-    double epsilon_;
-    //! pre-calculation of divisions which are regularly used in following
+    //! pre-calculation of regularly used constant F/RT
     //! (a division is much more expensive than a multiplication)
-    //! constant parameter F/RT
     double frt_;
 
   /*========================================================================*/

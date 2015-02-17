@@ -92,7 +92,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   )
 {
   // Compute residual of Nernst-Planck equation in strong form and subgrid-scale part of concentration c_k
-  const double residual = CalcRes(k,VarManager()->ConInt(k),hist,VarManager()->ConvPhi(k),VarManager()->FRT(),VarManager()->MigConv(),rhsint);
+  const double residual = CalcRes(k,VarManager()->ConInt(k),hist,VarManager()->ConvPhi(k),myelch::ElchPara()->FRT(),VarManager()->MigConv(),rhsint);
 
   //--------------------------------------------------------------------------
   // 1) element matrix: instationary terms arising from Nernst-Planck equation
@@ -123,7 +123,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   }
 
   // 2c) element matrix: stabilization of convective term due to fluid flow and migration
-  CalcMatConvStab(emat,k,timefacfac,taufac,timetaufac,tauderpot,VarManager()->FRT(),VarManager()->Conv(),VarManager()->MigConv(),VarManager()->ConInt(k),VarManager()->GradPhi(k),residual);
+  CalcMatConvStab(emat,k,timefacfac,taufac,timetaufac,tauderpot,myelch::ElchPara()->FRT(),VarManager()->Conv(),VarManager()->MigConv(),VarManager()->ConInt(k),VarManager()->GradPhi(k),residual);
 
   // 2d) element matrix: standard Galerkin diffusive term (constant diffusion coefficient)
   my::CalcMatDiff(emat,k,timefacfac);
@@ -132,7 +132,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
 
   // 2f) element matrix: standard Galerkin migration term (can be split up into convective and reactive parts)
-  CalcMatMigr(emat,k,timefacfac,VarManager()->FRT(),VarManager()->MigConv(),VarManager()->ConInt(k));
+  CalcMatMigr(emat,k,timefacfac,myelch::ElchPara()->FRT(),VarManager()->MigConv(),VarManager()->ConInt(k));
 
   // 2g) element matrix: stabilization of reactive term due to migration
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
@@ -151,17 +151,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   }
   case INPAR::ELCH::equpot_enc_pde:
   {
-    CalcMatPotEquENCPDE(emat,k,timefacfac,VarManager()->FRT(),VarManager()->MigConv(),VarManager()->ConInt(k));
+    CalcMatPotEquENCPDE(emat,k,timefacfac,myelch::ElchPara()->FRT(),VarManager()->MigConv(),VarManager()->ConInt(k));
     break;
   }
   case INPAR::ELCH::equpot_enc_pde_elim:
   {
-    CalcMatPotEquENCPDEElim(emat,k,timefacfac,VarManager()->FRT(),VarManager()->MigConv(),VarManager()->ConInt(k));
+    CalcMatPotEquENCPDEElim(emat,k,timefacfac,myelch::ElchPara()->FRT(),VarManager()->MigConv(),VarManager()->ConInt(k));
     break;
   }
   case INPAR::ELCH::equpot_poisson:
   {
-    CalcMatPotEquPoisson(emat,k,fac,VarManager()->Epsilon(),VarManager()->Faraday());
+    CalcMatPotEquPoisson(emat,k,fac,myelch::ElchPara()->Epsilon(),myelch::ElchPara()->Faraday());
     break;
   }
   case INPAR::ELCH::equpot_laplace:
@@ -244,7 +244,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   }
   case INPAR::ELCH::equpot_poisson:
   {
-    CalcRhsPotEquPoisson(erhs,k,fac,VarManager()->Epsilon(),VarManager()->Faraday(),VarManager()->ConInt(k),VarManager()->GradPot());
+    CalcRhsPotEquPoisson(erhs,k,fac,myelch::ElchPara()->Epsilon(),myelch::ElchPara()->Faraday(),VarManager()->ConInt(k),VarManager()->GradPot());
     break;
   }
   case INPAR::ELCH::equpot_laplace:
@@ -1047,7 +1047,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
         case INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt:
         {
           // Calculate derivative of tau w.r.t. electric potential
-          CalcTauDerPotTaylorHughesZarins(tauderpot[k],tau[k],densnp,VarManager()->FRT(),myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k),veleff);
+          CalcTauDerPotTaylorHughesZarins(tauderpot[k],tau[k],densnp,myelch::ElchPara()->FRT(),myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k),veleff);
           break;
         }
         default:

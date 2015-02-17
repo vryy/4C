@@ -149,7 +149,6 @@ THETA                           0.9
 VELOCITYFIELD                   zero //zero //Navier_Stokes
 VELFUNCNO                       -1
 INITIALFIELD                    zero_field //zero_field//field_by_function
-SCATRATYPE                      Advanced_Reaction //Advanced_Reaction // //Poroscatra //
 INITFUNCNO                      2
 FSSUGRDIFF                      No
 WRITEFLUX                       No

@@ -97,7 +97,6 @@ MAXTIME                         1
 NUMSTEP                         250
 OUTPUT_GMSH                     yes
 RESTARTEVRY                     35
-SCATRATYPE                      LevelSet
 SKIPINITDER                     no
 SOLVERTYPE                      linear_full
 THETA                           0.5

@@ -44,7 +44,6 @@ VELOCITYFIELD                   zero
 VELFUNCNO                       1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
-SCATRATYPE                      ConvectionDiffusion
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        USFEM
 DEFINITION_TAU                  Franca_Valentin
@@ -92,11 +91,11 @@ NODE 6 COORD 1.000000000000002e+00 0.000000000000000e+00 0.000000000000000e+00
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
-1 TRANSP LINE2 1 2 MAT 1
-2 TRANSP LINE2 2 3 MAT 1
-3 TRANSP LINE2 3 4 MAT 1
-4 TRANSP LINE2 4 5 MAT 1
-5 TRANSP LINE2 5 6 MAT 1
+1 TRANSP LINE2 1 2 MAT 1 TYPE Std
+2 TRANSP LINE2 2 3 MAT 1 TYPE Std
+3 TRANSP LINE2 3 4 MAT 1 TYPE Std
+4 TRANSP LINE2 4 5 MAT 1 TYPE Std
+5 TRANSP LINE2 5 6 MAT 1 TYPE Std
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 9.99999999460135958e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 2 QUANTITY phi VALUE 9.99999977865607681e-01 TOLERANCE 1e-9

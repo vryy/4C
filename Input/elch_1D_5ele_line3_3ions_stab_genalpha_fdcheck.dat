@@ -24,7 +24,6 @@ NUMTHERMDIS                     0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-SCATRATYPE                      Elch
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      Gen_Alpha
@@ -57,7 +56,6 @@ EVALUATION_TAU                  integration_point //element_center
 ITEMAX                          3                             // abort solution process -> be able to test influence of the matrix as well!
 CONVTOL                         1e-09
 ----------------------------------------------------------------ELCH CONTROL
-ELCHTYPE                        Nernst_Planck
 TEMPERATURE                     11.604506                     // abused as a scaling factor in order to have: F/RT = 100.0 -> F/RT\phi is the result stored in \phi
 EQUPOT                          ENC
 --------------------------------------------------------------------SOLVER 1
@@ -132,11 +130,11 @@ NODE 11 COORD 9.0000000000000002e-01 0.0000000000000000e+00 0.0000000000000000e+
 --------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
-1 TRANSP LINE3 1 2 3 MAT 4
-2 TRANSP LINE3 2 4 5 MAT 4
-3 TRANSP LINE3 4 6 7 MAT 4
-4 TRANSP LINE3 6 8 9 MAT 4
-5 TRANSP LINE3 8 10 11 MAT 4
+1 TRANSP LINE3 1 2 3 MAT 4 TYPE ElchNP
+2 TRANSP LINE3 2 4 5 MAT 4 TYPE ElchNP
+3 TRANSP LINE3 4 6 7 MAT 4 TYPE ElchNP
+4 TRANSP LINE3 6 8 9 MAT 4 TYPE ElchNP
+5 TRANSP LINE3 8 10 11 MAT 4 TYPE ElchNP
 -------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

@@ -123,22 +123,37 @@ public:
     return elediam;
   }
 
-  //! Evaluate Boundary ActionSetup some basic variables needed by all methods
+  //! setup element evaluation
   int SetupCalc(DRT::ELEMENTS::TransportBoundary* ele,
                  Teuchos::ParameterList&           params,
                  DRT::Discretization&              discretization);
 
-  //! Evaluate Boundary Action
-  int EvaluateAction( DRT::ELEMENTS::TransportBoundary*  ele1,
-                      Teuchos::ParameterList&         params,
-                      DRT::Discretization&            discretization,
-                      SCATRA::BoundaryAction          action,
-                      std::vector<int>&               lm,
-                      Epetra_SerialDenseMatrix&       elemat1,
-                      Epetra_SerialDenseMatrix&       elemat2,
-                      Epetra_SerialDenseVector&       elevec1,
-                      Epetra_SerialDenseVector&       elevec2,
-                      Epetra_SerialDenseVector&       elevec3);
+  //! evaluate element
+  int Evaluate(
+      DRT::ELEMENTS::TransportBoundary*   ele,
+      Teuchos::ParameterList&             params,
+      DRT::Discretization&                discretization,
+      std::vector<int>&                   lm,
+      Epetra_SerialDenseMatrix&           elemat1_epetra,
+      Epetra_SerialDenseMatrix&           elemat2_epetra,
+      Epetra_SerialDenseVector&           elevec1_epetra,
+      Epetra_SerialDenseVector&           elevec2_epetra,
+      Epetra_SerialDenseVector&           elevec3_epetra
+      );
+
+  //! evaluate action
+  virtual int EvaluateAction(
+      DRT::ELEMENTS::TransportBoundary*   ele,
+      Teuchos::ParameterList&             params,
+      DRT::Discretization&                discretization,
+      SCATRA::BoundaryAction              action,
+      std::vector<int>&                   lm,
+      Epetra_SerialDenseMatrix&           elemat1_epetra,
+      Epetra_SerialDenseMatrix&           elemat2_epetra,
+      Epetra_SerialDenseVector&           elevec1_epetra,
+      Epetra_SerialDenseVector&           elevec2_epetra,
+      Epetra_SerialDenseVector&           elevec3_epetra
+      );
 
   //! evaluate Neumann boundary condition
   virtual int EvaluateNeumann(
@@ -163,14 +178,6 @@ public:
   void CalcNormalVectors(
       Teuchos::ParameterList&            params,
       DRT::ELEMENTS::TransportBoundary*  ele
-      );
-
-  //! evaluate loma thermal press
-  void CalcLomaThermPress(
-      DRT::ELEMENTS::TransportBoundary* ele,
-      Teuchos::ParameterList&           params,
-      DRT::Discretization&              discretization,
-      std::vector<int>&                 lm
       );
 
   //! evaluate shape functions and derivatives at int. point
@@ -201,7 +208,6 @@ public:
       const std::vector<double>& f_wss,       ///< factor for WSS at element nodes
       Epetra_SerialDenseMatrix&  emat,        ///< element-matrix
       Epetra_SerialDenseVector&  erhs,        ///< element-rhs
-      const double               timefac,     ///< time factor
       const std::vector<int>*    onoff,       ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
       const double               perm,        ///< surface/interface permeability coefficient
       const double               conductivity,///< hydraulic conductivity at interface
@@ -223,17 +229,9 @@ public:
       const std::vector<double>& f_wss,  ///< factor for WSS at element nodes
       Epetra_SerialDenseMatrix&  emat,   ///< element-matrix
       Epetra_SerialDenseVector&  erhs,   ///< element-rhs
-      const double               timefac,///< time factor
       const std::vector<int>*    onoff,  ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
       const double               perm    ///< surface/interface permeability coefficient
   );
-
-  //! integral of normal diffusive flux and velocity over boundary surface
-  void NormDiffFluxAndVelIntegral(
-      const DRT::Element*             ele,
-      Teuchos::ParameterList&         params,
-      const std::vector<double>&      enormdiffflux,
-      const std::vector<double>&      enormvel);
 
   //! compute integral of convective mass/heat flux over boundary surface
   std::vector<double> CalcConvectiveFlux(
@@ -249,25 +247,32 @@ public:
       );
 
   //! calculate potential Neumann inflow terms
-  void NeumannInflow(
-      const DRT::Element*                 ele,
+  virtual void NeumannInflow(
+      const DRT::ELEMENTS::TransportBoundary*   ele,
+      Teuchos::ParameterList&                   params,
+      DRT::Discretization&                      discretization,
+      std::vector<int>&                         lm,
+      Epetra_SerialDenseMatrix&                 emat,
+      Epetra_SerialDenseVector&                 erhs
+      );
+
+  //! get density at integration point
+  virtual const double GetDensity(
       Teuchos::RCP<const MAT::Material>   material,
       const std::vector<double>&          ephinp,
-      const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
-      Epetra_SerialDenseMatrix&           emat,
-      Epetra_SerialDenseVector&           erhs,
-      const double                        timefac);
+      const LINALG::Matrix<nen_,1>&       phinod
+      );
 
   //! calculate boundary condition due to convective heat transfer
   void ConvectiveHeatTransfer(
       const DRT::Element*                 ele,
       Teuchos::RCP<const MAT::Material>   material,
-      const std::vector<double>&           ephinp,
+      const std::vector<double>&          ephinp,
       Epetra_SerialDenseMatrix&           emat,
       Epetra_SerialDenseVector&           erhs,
       const double                        heatranscoeff,
-      const double                        surtemp,
-      const double                        timefac);
+      const double                        surtemp
+      );
 
   /*!
   \brief Evaluate weak Dirichlet boundary conditions
@@ -309,15 +314,6 @@ public:
   //! number of transported scalars (numscal_ <= numdofpernode_)
   const int numscal_;
 
-  //! flag for using ALE formulation
-  bool isale_;
-  //! flag for stationary algorithm
-  bool is_stationary_;
-  //! flag for generalized-alpha time integration
-  bool is_genalpha_;
-  //! flag for incremental solver
-  bool is_incremental_;
-
   //! node coordinates
   LINALG::Matrix<nsd_+1,nen_> xyze_;
   //! weights for nurbs elements
@@ -332,8 +328,6 @@ public:
   LINALG::Matrix<nsd_+1,nen_> edispnp_;
   //! diffusivity / diffusivities (in case of systems) / thermal conductivity
   std::vector<double> diffus_;
-  //! charge numbers of all ion species (ELCH specific)
-  // vector<double> valence_;
   //! specific heat capacity at constant pressure (in case of temperature eq.)
   double shcacp_;
   //! coordinates of current integration point in reference coordinates
@@ -350,9 +344,6 @@ public:
   LINALG::Matrix<nsd_+1,1> velint_;
   //! metric tensor at integration point
   LINALG::Matrix<nsd_,nsd_>  metrictensor_;
-
-  //! thermodynamic pressure (LOMA specific)
-  double thermpress_;
 };
 }
 }

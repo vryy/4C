@@ -152,86 +152,14 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateAction(
     }
     break;
   }
-  // calculated filtered fields for calculation of turbulent Prandtl number
+  // calculate filtered fields for calculation of turbulent Prandtl number
   // required for dynamic Smagorinsky model in scatra
   case SCATRA::calc_scatra_box_filter:
   {
     if (nsd_ == 3)
-    {
-      // extract scalar and velocity values from global vectors
-
-      // scalar field
-      Teuchos::RCP<const Epetra_Vector> scalar = discretization.GetState("scalar");
-      if (scalar == Teuchos::null)
-        dserror("Cannot get scalar!");
-      std::vector<double> myscalar(lm.size());
-      DRT::UTILS::ExtractMyValues(*scalar,myscalar,lm);
-      for (int i=0;i<nen_;++i)
-          ephinp_[0](i,0) = myscalar[i];
-      // velocity field
-      const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity");
-      DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
-
-      // get thermodynamic pressure
-      double thermpress = 0.0;
-      if (scatrapara_->ScaTraType() == INPAR::SCATRA::scatratype_loma)
-        thermpress = params.get<double>("thermpress");
-
-      // initialize the contribution of this element to the patch volume to zero
-      double volume_contribution = 0.0;
-      // initialize the contributions of this element to the filtered scalar quantities
-      double dens_hat = 0.0;
-      double temp_hat = 0.0;
-      double dens_temp_hat = 0.0;
-      double phi2_hat=0.0;
-      double phiexpression_hat=0.0;
-      // get pointers for vector quantities
-      Teuchos::RCP<std::vector<double> > vel_hat = params.get<Teuchos::RCP<std::vector<double> > >("vel_hat");
-      Teuchos::RCP<std::vector<double> > densvel_hat = params.get<Teuchos::RCP<std::vector<double> > >("densvel_hat");
-      Teuchos::RCP<std::vector<double> > densveltemp_hat = params.get<Teuchos::RCP<std::vector<double> > >("densveltemp_hat");
-      Teuchos::RCP<std::vector<double> > densstraintemp_hat = params.get<Teuchos::RCP<std::vector<double> > >("densstraintemp_hat");
-      Teuchos::RCP<std::vector<double> > phi_hat = params.get<Teuchos::RCP<std::vector<double> > >("phi_hat");
-      Teuchos::RCP<std::vector<std::vector<double> > > alphaijsc_hat = params.get<Teuchos::RCP<std::vector<std::vector<double> > > >("alphaijsc_hat");
-      // integrate the convolution with the box filter function for this element
-      // the results are assembled onto the *_hat arrays
-      switch (distype)
-      {
-      case DRT::Element::hex8:
-      {
-        scatra_apply_box_filter(
-            thermpress,
-            dens_hat,
-            temp_hat,
-            dens_temp_hat,
-            phi2_hat,
-            phiexpression_hat,
-            vel_hat,
-            densvel_hat,
-            densveltemp_hat,
-            densstraintemp_hat,
-            phi_hat,
-            alphaijsc_hat,
-            volume_contribution,
-            ele);
-        break;
-      }
-      default:
-      {
-        dserror("Unknown element type for box filter application\n");
-      }
-      }
-
-      // hand down the volume contribution to the time integration algorithm
-      params.set<double>("volume_contribution",volume_contribution);
-      // as well as the filtered scalar quantities
-      params.set<double>("dens_hat",dens_hat);
-      params.set<double>("temp_hat",temp_hat);
-      params.set<double>("dens_temp_hat",dens_temp_hat);
-      params.set<double>("phi2_hat",phi2_hat);
-      params.set<double>("phiexpression_hat",phiexpression_hat);
-
-    }// end if (nsd == 3)
-    else dserror("action 'calc_scatra_box_filter' is 3D specific action");
+      CalcBoxFilter(ele,params,discretization,lm);
+    else
+      dserror("action 'calc_scatra_box_filter' is 3D specific action");
 
     break;
   }
@@ -880,6 +808,90 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcCurvatureAtNodes(
   return;
 
 } //ScaTraEleCalc::CalcCurvatureAtNodes
+
+
+/*---------------------------------------------------------------------*
+ | calculate filtered fields for turbulent Prandtl number   fang 02/15 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcBoxFilter(
+    DRT::ELEMENTS::Transport*   ele,
+    Teuchos::ParameterList&     params,
+    DRT::Discretization&        discretization,
+    const std::vector<int>&     lm
+    )
+{
+  // extract scalar and velocity values from global vectors
+  // scalar field
+  Teuchos::RCP<const Epetra_Vector> scalar = discretization.GetState("scalar");
+  if (scalar == Teuchos::null)
+    dserror("Cannot get scalar!");
+  std::vector<double> myscalar(lm.size());
+  DRT::UTILS::ExtractMyValues(*scalar,myscalar,lm);
+  for (int i=0;i<nen_;++i)
+      ephinp_[0](i,0) = myscalar[i];
+  // velocity field
+  const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity");
+  DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+
+  // initialize the contribution of this element to the patch volume to zero
+  double volume_contribution = 0.0;
+  // initialize the contributions of this element to the filtered scalar quantities
+  double dens_hat = 0.0;
+  double temp_hat = 0.0;
+  double dens_temp_hat = 0.0;
+  double phi2_hat=0.0;
+  double phiexpression_hat=0.0;
+  // get pointers for vector quantities
+  Teuchos::RCP<std::vector<double> > vel_hat = params.get<Teuchos::RCP<std::vector<double> > >("vel_hat");
+  Teuchos::RCP<std::vector<double> > densvel_hat = params.get<Teuchos::RCP<std::vector<double> > >("densvel_hat");
+  Teuchos::RCP<std::vector<double> > densveltemp_hat = params.get<Teuchos::RCP<std::vector<double> > >("densveltemp_hat");
+  Teuchos::RCP<std::vector<double> > densstraintemp_hat = params.get<Teuchos::RCP<std::vector<double> > >("densstraintemp_hat");
+  Teuchos::RCP<std::vector<double> > phi_hat = params.get<Teuchos::RCP<std::vector<double> > >("phi_hat");
+  Teuchos::RCP<std::vector<std::vector<double> > > alphaijsc_hat = params.get<Teuchos::RCP<std::vector<std::vector<double> > > >("alphaijsc_hat");
+  // integrate the convolution with the box filter function for this element
+  // the results are assembled onto the *_hat arrays
+  switch (distype)
+  {
+  case DRT::Element::hex8:
+  {
+    scatra_apply_box_filter(
+        dens_hat,
+        temp_hat,
+        dens_temp_hat,
+        phi2_hat,
+        phiexpression_hat,
+        vel_hat,
+        densvel_hat,
+        densveltemp_hat,
+        densstraintemp_hat,
+        phi_hat,
+        alphaijsc_hat,
+        volume_contribution,
+        ele,
+        params
+        );
+
+    break;
+  }
+  default:
+  {
+    dserror("Unknown element type for box filter application\n");
+    break;
+  }
+  }
+
+  // hand down the volume contribution to the time integration algorithm
+  params.set<double>("volume_contribution",volume_contribution);
+  // as well as the filtered scalar quantities
+  params.set<double>("dens_hat",dens_hat);
+  params.set<double>("temp_hat",temp_hat);
+  params.set<double>("dens_temp_hat",dens_temp_hat);
+  params.set<double>("phi2_hat",phi2_hat);
+  params.set<double>("phiexpression_hat",phiexpression_hat);
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcBoxFilter
 
 
 /*----------------------------------------------------------------------------*

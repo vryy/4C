@@ -68,11 +68,11 @@ void SCATRA::TimIntStationary::Init()
   // set element parameters
   // -------------------------------------------------------------------
   // note: - this has to be done before element routines are called
-  //       - order is important here: for safety checks in SetElementGeneralScaTraParameters(),
+  //       - order is important here: for safety checks in SetElementGeneralParameters(),
   //         we have to know the time-integration parameters
   SetElementTimeParameter();
-  SetElementGeneralScaTraParameters();
-  SetElementTurbulenceParameter();
+  SetElementGeneralParameters();
+  SetElementTurbulenceParameters();
 
   // setup krylov
   PrepareKrylovProjection();
@@ -102,9 +102,6 @@ void SCATRA::TimIntStationary::SetElementTimeParameter(bool forcedincrementalsol
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",SCATRA::set_time_parameter);
-  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
-  eleparams.set<int>("scatratype",scatratype_);
-
   eleparams.set<bool>("using generalized-alpha time integration",false);
   eleparams.set<bool>("using stationary formulation",true);
   if(forcedincrementalsolver==false)

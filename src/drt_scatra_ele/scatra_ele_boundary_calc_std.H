@@ -38,28 +38,12 @@ public:
   virtual ~ScaTraEleBoundaryCalcStd(){return;};
 
   /// called upon destruction
-  void Done();
+  virtual void Done();
 
 private:
   /// private constructor since we are singleton
   ScaTraEleBoundaryCalcStd(const int numdofpernode, const int numscal);
-
-  int EvaluateAction(
-      DRT::ELEMENTS::TransportBoundary* ele,
-      Teuchos::ParameterList&           params,
-      DRT::Discretization&              discretization,
-      std::vector<int>&                 lm,
-      Epetra_SerialDenseMatrix&         elemat1_epetra,
-      Epetra_SerialDenseMatrix&         elemat2_epetra,
-      Epetra_SerialDenseVector&         elevec1_epetra,
-      Epetra_SerialDenseVector&         elevec2_epetra,
-      Epetra_SerialDenseVector&         elevec3_epetra
-  );
-
 }; // class ScaTraEleBoundaryCalcStd
-
 } //namsepace ELEMENTS
 } // namespace DRT
-
 #endif
-

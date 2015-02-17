@@ -107,9 +107,6 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrepareFirstTimeStep()
 
     eleparams.set<int>("action",SCATRA::set_lsreinit_scatra_parameter);
 
-    // set type of scalar transport problem
-    eleparams.set<int>("scatratype",scatratype_);
-
     // reinitialization equation id given in convective form
     // ale is not intended here
     eleparams.set<int>("form of convective term",INPAR::SCATRA::convform_convective);
@@ -248,8 +245,6 @@ void SCATRA::LevelSetTimIntOneStepTheta::UpdateState()
     Teuchos::ParameterList eletimeparams;
 
     eletimeparams.set<int>("action",SCATRA::set_time_parameter);
-    // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
-    eletimeparams.set<int>("scatratype",scatratype_);
 
     eletimeparams.set<bool>("using generalized-alpha time integration",false);
     eletimeparams.set<bool>("using stationary formulation",false);

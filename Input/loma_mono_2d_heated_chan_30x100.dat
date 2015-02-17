@@ -88,7 +88,6 @@ UPRES                           10
 CONVFORM                        convective
 MATID                           1
 OUTMEAN                         Yes
-SCATRATYPE                      LowMachNumberFlow
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 SUGRVEL                         yes

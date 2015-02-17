@@ -72,10 +72,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
     // action for elements
     condparams.set<int>("action",SCATRA::bd_calc_s2icoupling);
 
-    // further parameters
-    condparams.set<int>("scatratype",scatratimint_->ScaTraType());
-    condparams.set<bool>("isale",scatratimint_->IsALE());
-
     // set global state vectors according to time-integration scheme
     scatratimint_->Discretization()->ClearState();
     scatratimint_->AddTimeIntegrationSpecificVectors();

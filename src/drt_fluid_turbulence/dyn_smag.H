@@ -80,8 +80,8 @@ public:
   virtual ~DynSmagFilter();
 
   void AddScatra(
-    Teuchos::RCP<DRT::Discretization>     scatradis,
-    INPAR::SCATRA::ScaTraType             scatratype);
+    Teuchos::RCP<DRT::Discretization>     scatradis
+  );
 
   /*!
   \brief Perform box filter operation, compare filtered quantities
@@ -197,7 +197,6 @@ private:
   //! @name special scatra variables
   //! the discretization
   Teuchos::RCP<DRT::Discretization>     scatradiscret_;
-  INPAR::SCATRA::ScaTraType    scatratype_;
   //@}
 
   //! @name vectors used for filtering (for dynamic Smagorinsky model)

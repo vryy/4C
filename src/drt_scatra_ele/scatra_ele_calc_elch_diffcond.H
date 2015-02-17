@@ -15,6 +15,7 @@ Maintainer: Andreas Ehrl
 #ifndef SCATRA_ELE_CALC_ELCH_DIFFCOND_H
 #define SCATRA_ELE_CALC_ELCH_DIFFCOND_H
 
+#include "scatra_ele_parameter_elch_diffcond.H"
 #include "scatra_ele_calc_elch_electrode.H"
 
 namespace DRT
@@ -383,25 +384,14 @@ private:
   //! get diffusion manager for diffusion-conduction formulation
   Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> DiffManager(){return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);};
 
+  //! get elch parameter list for diffusion-conduction formulation
+  ScaTraEleParameterElchDiffCond* ElchPara(){return static_cast<ScaTraEleParameterElchDiffCond*>(my::scatrapara_);};
+
   //! get internal variable manager for diffusion-conduction formulation
   Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_,my::nen_> > VarManager(){return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_,my::nen_> >(my::scatravarmanager_);};
 
-  /*========================================================================*/
-  //! @name flags and enums
-  /*========================================================================*/
-
   //! flag for used element formulation (material based)
   INPAR::ELCH::DiffCondMat diffcondmat_;
-
-  //! flag if current is used as a solution variable
-  bool cursolvar_;
-
-  // flag if elch system is closed by ENC or div i
-  enum INPAR::ELCH::EquPot equpot_;
-
-  /*========================================================================*/
-  //! @name scalar degrees of freedom and related
-  /*========================================================================*/
 
   //! nodal current density values at t_(n+1) or t_(n+alpha_F)
   LINALG::Matrix<my::nsd_,my::nen_> ecurnp_;
@@ -623,7 +613,7 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
 
     typedef ScaTraEleInternalVariableManagerElchElectrode<NSD,NEN> vm;
 
-    ScaTraEleInternalVariableManagerElchDiffCond(int numscal,DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
+    ScaTraEleInternalVariableManagerElchDiffCond(int numscal,DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* elchpara):
       ScaTraEleInternalVariableManagerElchElectrode<NSD,NEN>(numscal,elchpara),
       rtf_(1/vm::frt_),
       rtffc_(rtf_*vm::invf_/elchpara->NewmanConstC()),

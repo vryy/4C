@@ -63,7 +63,7 @@ private:
   //! define MeshfreeScatraCell instances dependent on problem
   template<DRT::Element::DiscretizationType distype>
   static MeshfreeScaTraCellInterface* DefineMeshfreeProblemType(
-    INPAR::SCATRA::ImplType problem,
+    INPAR::SCATRA::ImplType impltype,
     const int numdofpernode,
     const int numscal);
 

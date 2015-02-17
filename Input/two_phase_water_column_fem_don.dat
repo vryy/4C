@@ -96,7 +96,6 @@ MATID                           2
 MAXTIME                         1
 NUMSTEP                         250
 RESTARTEVRY                     35
-SCATRATYPE                      LevelSet
 SKIPINITDER                     no
 SOLVERTYPE                      linear_full
 THETA                           0.5

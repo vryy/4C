@@ -88,7 +88,6 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     tstart_(Teuchos::Time::wallTime())
 {
   // some checks, if everything is alright
-  if(INPAR::SCATRA::scatratype_condif!=DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(scatraparams_,"SCATRATYPE")) dserror("inverse analysis only implemented for SCATRATYPE ConvectionDiffusion (pat_matpar_manager)");
   if(ls_rho_>=1.0) dserror("LS_STEPLENGTHRED has to be smaller than 1.0");
   if(ls_c_>1.0) dserror("LS_DECREASECOND is usually chosen in between 0.0 and 0.01, decrease it!");
   if(not acou_discret_->Filled() || not acou_discret_->HaveDofs()) dserror("acoustical discretization is not complete or has no dofs");
@@ -828,8 +827,6 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
   } // else ** if(meshconform)
 
   Teuchos::ParameterList eleparams;
-  INPAR::SCATRA::ScaTraType scatype = DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(scatraparams_,"SCATRATYPE");
-  eleparams.set<int>("scatratype",scatype);
   scatra_discret_->SetState("rhsnodebasedvals",rhsvec);
   eleparams.set<int>("action",SCATRA::calc_integr_pat_rhsvec);
   Teuchos::RCP<Epetra_Vector> b = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);

@@ -91,7 +91,7 @@ namespace SCATRA{
     void Output();
 
     /// convergence check for natural convection solver
-    bool ConvergenceCheck(int natconvitnum, int natconvitmax, double natconvittol);
+    virtual bool ConvergenceCheck(int natconvitnum, int natconvitmax, double natconvittol);
 
     /// flag for natural convection effects
     int natconv_;

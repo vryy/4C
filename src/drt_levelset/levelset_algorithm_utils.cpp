@@ -258,7 +258,6 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
       eleparams.set<int>("action",SCATRA::calc_error);
-      eleparams.set<int>("scatratype",scatratype_);
       eleparams.set<int>("calcerrorflag",calcerr);
 
       // get initial field
@@ -892,9 +891,6 @@ void SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature(
    // action for elements
    eleparams.set<int>("action",SCATRA::recon_curvature_at_nodes);
 
-   // set type of scalar transport problem
-   eleparams.set<int>("scatratype",scatratype_);
-
    // set vector values needed by elements
    discret_->ClearState();
    discret_->SetState("phinp",phi);
@@ -929,7 +925,6 @@ void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
 
     // create the parameters for the error calculation
     Teuchos::ParameterList eleparams;
-    eleparams.set<int>("scatratype",scatratype_);
 
     // action for elements
     eleparams.set<int>("action",SCATRA::calc_mass_center_smoothingfunct);

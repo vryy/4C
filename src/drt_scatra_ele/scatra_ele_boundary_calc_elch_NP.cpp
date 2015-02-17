@@ -17,6 +17,7 @@ Maintainer: Rui Fang
 #include "../drt_mat/matlist.H"
 
 #include "scatra_ele.H"
+#include "scatra_ele_parameter_elch.H"
 #include "scatra_ele_boundary_calc_elch_NP.H"
 
 /*----------------------------------------------------------------------*
@@ -89,7 +90,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateNeumann(
   my::EvaluateNeumann(ele,params,discretization,condition,lm,elevec1,scalar);
 
   // add boundary flux contributions to potential equation
-  switch(myelch::equpot_)
+  switch(myelch::ElchParams()->EquPot())
   {
   case INPAR::ELCH::equpot_enc_pde:
   case INPAR::ELCH::equpot_enc_pde_elim:
@@ -117,7 +118,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateNeumann(
     dserror("Closing equation for electric potential not recognized!");
     break;
   }
-  } // switch(myelch::equpot_)
+  } // switch(myelch::ElchParams()->EquPot())
 
   return 0;
 }
@@ -148,7 +149,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateElchBoundaryKi
   myelch::EvaluateElchBoundaryKinetics(ele,emat,erhs,ephinp,ehist,timefac,material,cond,nume,stoich,kinetics,pot0,frt,1.);
 
   // compute matrix and residual contributions arising from closing equation for electric potential
-  switch(myelch::equpot_)
+  switch(myelch::ElchParams()->EquPot())
   {
   case INPAR::ELCH::equpot_enc:
   {
@@ -207,7 +208,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateElchBoundaryKi
     dserror("Unknown closing equation for electric potential!");
     break;
   }
-  } // switch(myelch::equpot_)
+  } // switch(myelch::ElchParams()->EquPot())
 
   return;
 } // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateElchBoundaryKinetics

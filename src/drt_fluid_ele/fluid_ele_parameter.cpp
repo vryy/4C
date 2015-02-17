@@ -445,7 +445,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTopoptParameter( Teuchos::Param
 //----------------------------------------------------------------------*
 //  set turbulence parameters                            rasthofer 11/11|
 //---------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::ParameterList& params )
+void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters( Teuchos::ParameterList& params )
 {
   // get parameter lists
   Teuchos::ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");

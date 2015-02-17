@@ -354,12 +354,6 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
     // get the degrees of freedom associated with this fluid node
     std::vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
 
-    if (ScaTraField()->ScaTraType()== INPAR::SCATRA::scatratype_condif)
-    {
-      if (ScaTraField()->NumScal() != 1)
-        dserror("What do you do! I thought you were doing a potential model?");
-    }
-
     if(ivelmap.MyGID(fluidnodedofs[0])) // is this GID (implies: node) relevant for iveln_?
     {
       // determine number of space dimensions (numdof - pressure dof)

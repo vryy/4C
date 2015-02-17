@@ -1,0 +1,104 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file scatra_ele_boundary_calc_loma.H
+
+\brief evaluation of ScaTra boundary elements for low Mach number problems
+
+<pre>
+Maintainer: Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
+</pre>
+ */
+/*----------------------------------------------------------------------*/
+#ifndef SCATRA_ELE_BOUNDARY_CALC_LOMA_H
+#define SCATRA_ELE_BOUNDARY_CALC_LOMA_H
+
+#include "scatra_ele_boundary_calc.H"
+
+namespace DRT
+{
+  namespace ELEMENTS
+  {
+    // class implementation
+    template<DRT::Element::DiscretizationType distype> class ScaTraEleBoundaryCalcLoma : public ScaTraEleBoundaryCalc<distype>
+    {
+      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
+
+    public:
+
+      //! singleton access method
+      static ScaTraEleBoundaryCalcLoma<distype>* Instance(
+          const int numdofpernode,
+          const int numscal,
+          bool create=true
+          );
+
+      //! destructor
+      virtual ~ScaTraEleBoundaryCalcLoma(){return;};
+
+      //! singleton destruction
+      virtual void Done();
+
+      //! evaluate action
+      int EvaluateAction(
+          DRT::ELEMENTS::TransportBoundary*   ele,
+          Teuchos::ParameterList&             params,
+          DRT::Discretization&                discretization,
+          SCATRA::BoundaryAction              action,
+          std::vector<int>&                   lm,
+          Epetra_SerialDenseMatrix&           elemat1_epetra,
+          Epetra_SerialDenseMatrix&           elemat2_epetra,
+          Epetra_SerialDenseVector&           elevec1_epetra,
+          Epetra_SerialDenseVector&           elevec2_epetra,
+          Epetra_SerialDenseVector&           elevec3_epetra
+          );
+
+    private:
+
+      //! private constructor for singletons
+      ScaTraEleBoundaryCalcLoma(
+          const int numdofpernode,
+          const int numscal
+          );
+
+      //! evaluate loma thermal press
+      void CalcLomaThermPress(
+          DRT::ELEMENTS::TransportBoundary* ele,
+          Teuchos::ParameterList&           params,
+          DRT::Discretization&              discretization,
+          std::vector<int>&                 lm
+          );
+
+      //! calculate Neumann inflow boundary conditions
+      void NeumannInflow(
+          const DRT::ELEMENTS::TransportBoundary*   ele,
+          Teuchos::ParameterList&                   params,
+          DRT::Discretization&                      discretization,
+          std::vector<int>&                         lm,
+          Epetra_SerialDenseMatrix&                 emat,
+          Epetra_SerialDenseVector&                 erhs
+          );
+
+      //! get density at integration point
+      const double GetDensity(
+          Teuchos::RCP<const MAT::Material>   material,
+          const std::vector<double>&          ephinp,
+          const LINALG::Matrix<my::nen_,1>&   phinod
+          );
+
+      //! integral of normal diffusive flux and velocity over boundary surface
+      void NormDiffFluxAndVelIntegral(
+          const DRT::Element*          ele,
+          Teuchos::ParameterList&      params,
+          const std::vector<double>&   enormdiffflux,
+          const std::vector<double>&   enormvel
+          );
+
+      //! thermodynamic pressure
+      double thermpress_;
+    };
+  } // namespace ELEMENTS
+} // namespace DRT
+#endif

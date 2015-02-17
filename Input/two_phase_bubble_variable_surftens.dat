@@ -94,7 +94,6 @@ SOLVER                          Aztec_MSR
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-SCATRATYPE LevelSet //ConvectionDiffusion
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      1

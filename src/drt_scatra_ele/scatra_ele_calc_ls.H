@@ -27,8 +27,11 @@ template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcLS : public ScaTraEleCalc<distype>
 {
 private:
-    /// private constructor, since we are a Singleton.
-    ScaTraEleCalcLS(const int numdofpernode,const int numscal);
+    //! private constructor for singletons
+    ScaTraEleCalcLS(
+        const int numdofpernode,
+        const int numscal
+        );
 
     typedef ScaTraEleCalc<distype> my;
 

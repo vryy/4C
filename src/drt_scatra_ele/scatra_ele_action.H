@@ -30,6 +30,7 @@ enum Action {
   set_turbulence_scatra_parameter,  // set turbulence parameters for element evaluation
   set_time_parameter,               // set time-integration parameters for element evaluation
   set_elch_scatra_parameter,        // set elch parameters for element evaluation
+  set_diffcond_scatra_parameter,    // set diffusion-conduction parameters for element evaluation
   set_lsreinit_scatra_parameter,    // set reinitialization parameters for element evaluation
   calc_mat_and_rhs,                // calc_condif_systemmat_and_residual,
   calc_subgrid_diffusivity_matrix, // calc_subgrid_diffusivity_matrix,

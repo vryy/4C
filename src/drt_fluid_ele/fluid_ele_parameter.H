@@ -54,7 +54,7 @@ public:
                                        int myrank);                      //> proc id
 
   //! turbulence parameters are set
-  void SetElementTurbulenceParameter(Teuchos::ParameterList& params);   //> parameter list
+  void SetElementTurbulenceParameters(Teuchos::ParameterList& params);   //> parameter list
 
   /// set loma parameters
   void SetElementLomaParameter(Teuchos::ParameterList& params);   //> parameter list

@@ -60,7 +60,6 @@ TIMESTEP                        0.01
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SCATRATYPE                      LevelSet
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      1

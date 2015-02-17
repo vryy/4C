@@ -10,8 +10,6 @@ Maintainer: Andreas Ehrl
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
-#include "scatra_ele.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
@@ -24,6 +22,8 @@ Maintainer: Andreas Ehrl
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "scatra_ele_calc_utils.H"
+#include "scatra_ele.H"
 
 
 DRT::ELEMENTS::TransportType DRT::ELEMENTS::TransportType::instance_;
@@ -87,126 +87,147 @@ void DRT::ELEMENTS::TransportType::SetupElementDefinition( std::map<std::string,
   defs["HEX8"]
     .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["HEX20"]
     .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["HEX27"]
     .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["NURBS27"]
     .AddIntVector("NURBS27",27)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["NURBS8"]
     .AddIntVector("NURBS8",8)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["TET4"]
     .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["TET10"]
     .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["WEDGE6"]
     .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["WEDGE15"]
     .AddIntVector("WEDGE15",15)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["PYRAMID5"]
     .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
    ;
 
   defs["QUAD4"]
     .AddIntVector("QUAD4",4)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["QUAD8"]
     .AddIntVector("QUAD8",8)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["QUAD9"]
     .AddIntVector("QUAD9",9)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["TRI3"]
     .AddIntVector("TRI3",3)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["TRI6"]
     .AddIntVector("TRI6",6)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["NURBS4"]
     .AddIntVector("NURBS4",4)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["NURBS9"]
     .AddIntVector("NURBS9",9)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["LINE2"]
     .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["LINE3"]
     .AddIntVector("LINE3",3)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["NURBS2"]
     .AddIntVector("NURBS2",2)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
   defs["NURBS3"]
     .AddIntVector("NURBS3",3)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     .AddOptionalNamedDoubleVector("FIBER1",3)
     ;
 
@@ -229,9 +250,10 @@ DRT::ELEMENTS::Transport::Transport(int id, int owner) :
 DRT::Element(id,owner),
 data_(),
 numdofpernode_(-1),
-distype_(dis_none)
+distype_(dis_none),
+impltype_(INPAR::SCATRA::impltype_undefined)
 {
-    return;
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -382,15 +404,15 @@ void DRT::ELEMENTS::Transport::Pack(DRT::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
+
   // add base class Element
   Element::Pack(data);
-  // numdofpernode
-  AddtoPack(data,numdofpernode_);
-  // distype
-  AddtoPack(data,distype_);
 
-  // data_
+  // add internal data
   AddtoPack(data,data_);
+  AddtoPack(data,numdofpernode_);
+  AddtoPack(data,distype_);
+  AddtoPack(data,impltype_);
 
   return;
 }
@@ -407,21 +429,23 @@ void DRT::ELEMENTS::Transport::Unpack(const std::vector<char>& data)
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
-  // numdofpernode
-  ExtractfromPack(position,data,numdofpernode_);
-  // distype
-  distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
 
+  // extract internal data
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
+  ExtractfromPack(position,data,numdofpernode_);
+  distype_ = static_cast<DiscretizationType>(ExtractInt(position,data));
+  impltype_ = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position,data));
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+
   return;
 }
 
@@ -469,11 +493,14 @@ void DRT::ELEMENTS::Transport::Print(std::ostream& os) const
   os << "Transport element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  "<<distype_<<std::endl;
+  std::cout << "DiscretizationType:  " << DRT::DistypeToString(distype_) << std::endl;
   std::cout << std::endl;
-  std::cout << "Number DOF per Node: "<<numdofpernode_<<std::endl;
+  std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
+  std::cout << std::endl;
+  std::cout << "Type of scalar transport: " << SCATRA::ImplTypeToString(impltype_) << std::endl;
   std::cout << std::endl;
   std::cout << data_;
+
   return;
 }
 
@@ -617,6 +644,18 @@ bool DRT::ELEMENTS::Transport ::VisData(const std::string& name, std::vector<dou
   } // loop over transported scalars
 
   return false;
+}
+
+
+/*----------------------------------------------------------------------*
+ | set implementation type                                   fang 02/15 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Transport ::SetImplType(const INPAR::SCATRA::ImplType impltype)
+{
+  // set implementation type
+  impltype_ = impltype;
+
+  return;
 }
 
 

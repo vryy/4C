@@ -59,17 +59,15 @@ FLD::Vreman::~Vreman()
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
 void FLD::Vreman::AddScatra(
-  Teuchos::RCP<DRT::Discretization>     scatradis,
-  INPAR::SCATRA::ScaTraType             scatratype
+  Teuchos::RCP<DRT::Discretization>     scatradis
   )
 {
   scatradiscret_ = scatradis;
-  scatratype_ = scatratype;
 
   Boxfsc_=Teuchos::rcp(new FLD::Boxfilter(scatradiscret_, params_));
 
   //Initialize Boxfilter
-  Boxfsc_->InitializeVremanScatra(scatradiscret_, scatratype_);
+  Boxfsc_->InitializeVremanScatra(scatradiscret_);
 
   return;
 }
@@ -210,7 +208,6 @@ void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList&  extraparams)
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_vreman_params_scatra;
   calc_vreman_params_scatra.set<int>("action",SCATRA::calc_vreman_scatra);
-  calc_vreman_params_scatra.set<int>("scatratype",scatratype_);
   calc_vreman_params_scatra.set("col_filtered_phi",  col_filtered_phi_);
   calc_vreman_params_scatra.set("col_filtered_phi2",  col_filtered_phi2_);
   calc_vreman_params_scatra.set("col_filtered_phiexpression",  col_filtered_phiexpression_);

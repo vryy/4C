@@ -149,15 +149,13 @@ FLD::DynSmagFilter::~DynSmagFilter()
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
 void FLD::DynSmagFilter::AddScatra(
-  Teuchos::RCP<DRT::Discretization>     scatradis,
-  INPAR::SCATRA::ScaTraType             scatratype
+  Teuchos::RCP<DRT::Discretization>     scatradis
   )
 {
   scatradiscret_ = scatradis;
-  scatratype_ = scatratype;
 
   Boxfsc_=Teuchos::rcp(new FLD::Boxfilter(scatradiscret_ , params_));
-  Boxfsc_->AddScatra(scatradiscret_,scatratype_);
+  Boxfsc_->AddScatra(scatradiscret_);
 
   return;
 }
@@ -806,7 +804,6 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
   Teuchos::ParameterList calc_turb_prandtl_params;
   // action for elements
   calc_turb_prandtl_params.set<int>("action",SCATRA::calc_turbulent_prandtl_number);
-  calc_turb_prandtl_params.set<int>("scatratype",scatratype_);
 
   // hand filtered global vectors down to the element
   calc_turb_prandtl_params.set("col_filtered_vel",col_filtered_vel_);

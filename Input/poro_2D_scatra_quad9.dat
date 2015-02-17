@@ -79,7 +79,6 @@ THETA                           0.66
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
-SCATRATYPE                      Poroscatra
 INITFUNCNO                      1
 MATID                           5
 SKIPINITDER                     yes
@@ -118,6 +117,7 @@ TIMESTEP                        0.01
 COUPALGO                        two_way //two_way monolithic
 TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
+SCATRATYPE                      Poroscatra
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5

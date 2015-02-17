@@ -60,7 +60,6 @@ NUMSTEP                         20
 OUTMEAN                         No
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
-SCATRATYPE                      Advanced_Reaction
 SKIPINITDER                     yes
 SOLVERTYPE                      nonlinear
 THETA                           0.5
@@ -138,6 +137,7 @@ NUMSTEP                         20
 RESTARTEVRY                     1
 TIMESTEP                        0.05
 UPRES                           1
+SCATRATYPE                      Advanced_Reaction
 --------------------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1e-08
 STARTOMEGA                      0.9

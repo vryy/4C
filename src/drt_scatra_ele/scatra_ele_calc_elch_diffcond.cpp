@@ -69,15 +69,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(const int numdofpernode,const int numscal)
   : DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(numdofpernode,numscal),
-    diffcondmat_(INPAR::ELCH::diffcondmat_undefined),
-    cursolvar_(myelch::ElchPara()->CurSolVar()),   // flag: current solution variable
-    equpot_(myelch::ElchPara()->EquPot())   // flag if elch system is closed by ENC or div i
+    diffcondmat_(INPAR::ELCH::diffcondmat_undefined)
 {
   // replace diffusion manager for electrodes by diffusion manager for diffusion-conduction formulation
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_));
 
+  // replace standard elch parameter list by elch parameter list for diffusion-conduction formulation
+  my::scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance();
+
   // replace internal variable manager for electrodes by internal variable manager for diffusion-conduction formulation
-  my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>(my::numscal_,myelch::ElchPara()));
+  my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>(my::numscal_,ElchPara()));
 
   return;
 }
@@ -140,7 +141,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   //      i = - kappa nabla phi  + RT/F kappa (thermfactor) f(t_k) nabla ln c_k
 
   // equation for current is inserted in the mass transport equation
-  if (not cursolvar_)
+  if (not ElchPara()->CurSolVar())
   {
     //    i)  conduction term + ohmic overpotential
     //        (w_k, - t_k kappa nabla phi /(z_k F))
@@ -149,7 +150,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
     //    ii) conduction term + concentration overpotential
     //        (w_k, - t_k RT/F kappa (thermfactor) f(t_k) nabla ln c_k /(z_k F))
     if(diffcondmat_==INPAR::ELCH::diffcondmat_newman)
-      CalcMatCondConc(emat,k,timefacfac,VarManager()->RTFFCVal(k),myelch::ElchPara()->NewmanConstA(),myelch::ElchPara()->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv());
+      CalcMatCondConc(emat,k,timefacfac,VarManager()->RTFFCVal(k),ElchPara()->NewmanConstA(),ElchPara()->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv());
   }
   // equation for current is solved independently
   else
@@ -160,7 +161,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
     // this coupling term cancels out for a 2 equation system
     if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
       CalcMatCondDiff(emat,k,timefacfac,VarManager()->InvFVal(k),VarManager()->GradPhi());
-  } // end if(not cursolvar_)
+  } // end if(not ElchPara()->CurSolVar())
 
   //---------------------------------------------------------------------
   // 3)   governing equation for the electric potential field and current
@@ -201,13 +202,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   //          |                  |                                               |
   //      i = - kappa nabla phi  + RT/F kappa (thermfactor) f(t_k) nabla ln c_k
 
-  if(not cursolvar_)
+  if(not ElchPara()->CurSolVar())
   {
     CalcRhsCondOhm(erhs,k,rhsfac,VarManager()->InvFVal(k),VarManager()->GradPot());
 
     // if(diffcondmat_==INPAR::ELCH::diffcondmat_ion): all terms cancel out
     if(diffcondmat_==INPAR::ELCH::diffcondmat_newman)
-      CalcRhsCondConc(erhs,k,rhsfac,VarManager()->RTFFCVal(k),myelch::ElchPara()->NewmanConstA(),myelch::ElchPara()->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv());
+      CalcRhsCondConc(erhs,k,rhsfac,VarManager()->RTFFCVal(k),ElchPara()->NewmanConstA(),ElchPara()->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv());
   }
   // equation for current is solved independently
   else
@@ -252,11 +253,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
   // b) ENC
 
   // // equation for current is NOT solved independently
-  if (not cursolvar_)
+  if (not ElchPara()->CurSolVar())
   {
     // equation for current is inserted in the mass transport equation
     // 3a)  nabla dot i = 0
-    if(equpot_==INPAR::ELCH::equpot_divi)
+    if(ElchPara()->EquPot()==INPAR::ELCH::equpot_divi)
     {
       //  i)  ohmic overpotential (implemented after the scalar loop)
       //      (w_k, - kappa nabla phi)
@@ -270,14 +271,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
       for (int k=0;k<my::numscal_;++k)
       {
         //
-        CalcMatPotEquDiviConc(emat,k,timefacfac,VarManager()->RTFFC(),VarManager()->RTF(),VarManager()->InvF(),myelch::ElchPara()->NewmanConstA(),myelch::ElchPara()->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv(k));
+        CalcMatPotEquDiviConc(emat,k,timefacfac,VarManager()->RTFFC(),VarManager()->RTF(),VarManager()->InvF(),ElchPara()->NewmanConstA(),ElchPara()->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv(k));
 
         //
-        CalcRhsPotEquDiviConc(erhs,k,rhsfac,VarManager()->RTF(),VarManager()->InvFVal(),VarManager()->RTFFC(),myelch::ElchPara()->NewmanConstA(),myelch::ElchPara()->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv(k));
+        CalcRhsPotEquDiviConc(erhs,k,rhsfac,VarManager()->RTF(),VarManager()->InvFVal(),VarManager()->RTFFC(),ElchPara()->NewmanConstA(),ElchPara()->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv(k));
       }
     }
     // 3b)  ENC
-    else if(equpot_==INPAR::ELCH::equpot_enc)
+    else if(ElchPara()->EquPot()==INPAR::ELCH::equpot_enc)
     {
       for (int k=0;k<my::numscal_;++k)
       {
@@ -310,7 +311,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
     CalcMatCurEquOhm(emat,timefacfac,VarManager()->InvF(),VarManager()->GradPot());
 
     // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
-    CalcMatCurEquConc(emat,timefacfac,VarManager()->RTF(),VarManager()->RTFFC(),VarManager()->InvFVal(),myelch::ElchPara()->NewmanConstA(),myelch::ElchPara()->NewmanConstB(),VarManager()->GradPhi(),VarManager()->ConIntInv());
+    CalcMatCurEquConc(emat,timefacfac,VarManager()->RTF(),VarManager()->RTFFC(),VarManager()->InvFVal(),ElchPara()->NewmanConstA(),ElchPara()->NewmanConstB(),VarManager()->GradPhi(),VarManager()->ConIntInv());
 
     // (xsi_i,Di)
     CalcRhsCurEquCur(erhs,rhsfac,VarManager()->InvF(),VarManager()->CurInt());
@@ -319,19 +320,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
     CalcRhsCurEquOhm(erhs,rhsfac,VarManager()->InvF(),VarManager()->GradPot());
 
     // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
-    CalcRhsCurEquConc(erhs,rhsfac,VarManager()->RTF(),VarManager()->InvFVal(),VarManager()->RTFFC(),myelch::ElchPara()->NewmanConstA(),myelch::ElchPara()->NewmanConstB(),VarManager()->GradPhi(),VarManager()->ConIntInv());
+    CalcRhsCurEquConc(erhs,rhsfac,VarManager()->RTF(),VarManager()->InvFVal(),VarManager()->RTFFC(),ElchPara()->NewmanConstA(),ElchPara()->NewmanConstB(),VarManager()->GradPhi(),VarManager()->ConIntInv());
 
   //------------------------------------------------------------------------------------------
   // 3)   governing equation for the electric potential field and current (incl. rhs-terms)
   //------------------------------------------------------------------------------------------
 
-    if(equpot_==INPAR::ELCH::equpot_divi)
+    if(ElchPara()->EquPot()==INPAR::ELCH::equpot_divi)
     {
       CalcMatPotEquDivi(emat,timefacfac,VarManager()->InvF());
 
       CalcRhsPotEquDivi(erhs,rhsfac,VarManager()->InvF(),VarManager()->CurInt());
     }
-    else if(equpot_==INPAR::ELCH::equpot_enc)
+    else if(ElchPara()->EquPot()==INPAR::ELCH::equpot_enc)
     {
       for (int k=0; k < my::numscal_; ++k)
       {
@@ -639,7 +640,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDiviConc(
       }
       else if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
       {
-        if(myelch::ElchPara()->DiffusionCoeffBased()==true)
+        if(ElchPara()->DiffusionCoeffBased()==true)
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)
             += timefacfac*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetValence(k)*DiffManager()->GetIsotropicDiff(k)*laplawf;
         else
@@ -824,7 +825,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquConc(
           }
           else if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
           {
-            if(myelch::ElchPara()->DiffusionCoeffBased()==true)
+            if(ElchPara()->DiffusionCoeffBased()==true)
               emat(vi*my::numdofpernode_+(my::numscal_+1)+idim,ui*my::numdofpernode_+k)
                 += timefacfac*DiffManager()->GetPhasePoroTort(0)*my::funct_(vi)*DiffManager()->GetValence(k)*DiffManager()->GetIsotropicDiff(k)*my::derxy_(idim,ui);
             else
@@ -1010,7 +1011,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDiviConc(
       double laplawf2(0.0);
       my::GetLaplacianWeakFormRHS(laplawf2,gradphi,vi); // compute once, reuse below!
 
-      if(myelch::ElchPara()->DiffusionCoeffBased()==true)
+      if(ElchPara()->DiffusionCoeffBased()==true)
         erhs[vi*my::numdofpernode_+my::numscal_] -= rhsfac*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetValence(k)*DiffManager()->GetIsotropicDiff(k)*laplawf2;
       else
         erhs[vi*my::numdofpernode_+my::numscal_] -= rhsfac*DiffManager()->GetPhasePoroTort(0)*rtf*invfval[k]*DiffManager()->GetCond()*DiffManager()->GetTransNum(k)*conintinv*laplawf2;
@@ -1134,7 +1135,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquConc(
         }
         else if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
         {
-          if(myelch::ElchPara()->DiffusionCoeffBased()==true)
+          if(ElchPara()->DiffusionCoeffBased()==true)
             erhs[vi*my::numdofpernode_+(my::numscal_+1)+idim] -= rhsfac*DiffManager()->GetPhasePoroTort(0)*my::funct_(vi)*DiffManager()->GetValence(k)*DiffManager()->GetIsotropicDiff(k)*gradphi[k](idim);
           else
           {
@@ -1321,7 +1322,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Materials(
       for (int k = 0;k<my::numscal_;++k)
         conint[k] = my::funct_.Dot(my::ephinp_[k]);
 
-      DiffManager()->CalcConductivity(my::numscal_,INPAR::ELCH::faraday_const*myelch::ElchPara()->FRT(),conint);
+      DiffManager()->CalcConductivity(my::numscal_,INPAR::ELCH::faraday_const*ElchPara()->FRT(),conint);
       DiffManager()->CalcTransNum(my::numscal_,conint);
     }
   }

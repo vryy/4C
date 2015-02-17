@@ -23,6 +23,7 @@
 //for cloning
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
+#include "../drt_scatra_ele/scatra_ele.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -131,11 +132,22 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
 
   if (scatradis->NumGlobalNodes()==0)
   {
+    // fill scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,scatradis);
+
+    // set implementation type
+    for(int i=0; i<scatradis->NumMyColElements(); ++i)
+    {
+      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
+      if(element == NULL)
+        dserror("Invalid element type!");
+      else
+        element->SetImplType(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->SSIControlParams(),"SCATRATYPE"));
+    }
   }
+
   else
   {
-
    std::map<std::string,std::string> conditions_to_copy;
    SCATRA::ScatraFluidCloneStrategy clonestrategy;
    conditions_to_copy = clonestrategy.ConditionsToCopy();
@@ -160,5 +172,4 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
         Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
     }
   }
-
 }

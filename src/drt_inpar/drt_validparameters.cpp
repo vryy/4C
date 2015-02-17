@@ -3406,6 +3406,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 ),
                               &poroscatradyn);
 
+  // type of scalar transport
+  setStringToIntegralParameter<int>("SCATRATYPE","Undefined",
+                               "Type of scalar transport problem",
+                               tuple<std::string>(
+                                 "Undefined",
+                                 "Poroscatra",
+                                 "Poro_Scatra_Reaction"),
+                               tuple<int>(
+                                 INPAR::SCATRA::impltype_undefined,
+                                 INPAR::SCATRA::impltype_poro,
+                                 INPAR::SCATRA::impltype_pororeac),
+                                 &poroscatradyn);
+
   /*----------------------------------------------------------------------*/
   /* parameters for SSI */
   /*----------------------------------------------------------------------*/
@@ -3456,6 +3469,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 INPAR::SSI::ssi_IterStaggAitken_SolidToScatra
                                 ),
                               &ssidyn);
+
+  // type of scalar transport
+  setStringToIntegralParameter<int>("SCATRATYPE","Undefined",
+                               "Type of scalar transport problem",
+                               tuple<std::string>(
+                                 "Undefined",
+                                 "Advanced_Reaction",
+                                 "Cardiac_Monodomain"),
+                               tuple<int>(
+                                 INPAR::SCATRA::impltype_undefined,
+                                 INPAR::SCATRA::impltype_advreac,
+                                 INPAR::SCATRA::impltype_cardiac_monodomain),
+                                 &ssidyn);
 
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned SSI */
@@ -5439,32 +5465,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::SCATRA::fssugrdiff_smagorinsky_small),
                                &scatradyn);
 
-  setStringToIntegralParameter<int>("SCATRATYPE","Undefined",
-                               "Type of scalar transport problem",
-                               tuple<std::string>(
-                                 "Undefined",
-                                 "ConvectionDiffusion",
-                                 "LowMachNumberFlow",
-                                 "Elch",
-                                 "LevelSet",
-                                 "Poroscatra",
-                                 "Advanced_Reaction",
-                                 "Poro_Scatra_Reaction",
-                                 "AnisotropicDiffusion",
-                                 "Cardiac_Monodomain"),
-                               tuple<int>(
-                                 INPAR::SCATRA::scatratype_undefined,
-                                 INPAR::SCATRA::scatratype_condif,
-                                 INPAR::SCATRA::scatratype_loma,
-                                 INPAR::SCATRA::scatratype_elch,
-                                 INPAR::SCATRA::scatratype_levelset,
-                                 INPAR::SCATRA::scatratype_poro,
-                                 INPAR::SCATRA::scatratype_advreac,
-                                 INPAR::SCATRA::scatratype_pororeac,
-                                 INPAR::SCATRA::scatratype_anisotrop,
-                                 INPAR::SCATRA::scatratype_cardiac_monodomain),
-                                 &scatradyn);
-
   setStringToIntegralParameter<int>("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm",
                                   tuple<std::string>(
                                       "no",
@@ -5709,6 +5709,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("LINEAR_SOLVER1",-1,"number of linear solver used for fluid problem",&fs3idyn);
   IntParameter("LINEAR_SOLVER2",-1,"number of linear solver used for structural problem",&fs3idyn);
 
+  // type of scalar transport
+  setStringToIntegralParameter<int>("SCATRATYPE","Undefined",
+                               "Type of scalar transport problem",
+                               tuple<std::string>(
+                                 "Undefined",
+                                 "ConvectionDiffusion",
+                                 "Advanced_Reaction"),
+                               tuple<int>(
+                                 INPAR::SCATRA::impltype_undefined,
+                                 INPAR::SCATRA::impltype_std,
+                                 INPAR::SCATRA::impltype_advreac),
+                                 &fs3idyn);
+
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned FS3I */
   /*----------------------------------------------------------------------*/
@@ -5795,17 +5808,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       false,
       "control parameters for electrochemistry problems\n");
 
-  setStringToIntegralParameter<int>("ELCHTYPE","Undefined",
-                                 "Type of elch formulation",
-                                 tuple<std::string>(
-                                   "Undefined",
-                                   "Nernst_Planck",
-                                   "DiffCond"),
-                                 tuple<int>(
-                                   INPAR::ELCH::elchtype_undefined,
-                                   INPAR::ELCH::elchtype_nernst_planck,
-                                   INPAR::ELCH::elchtype_diffcond),
-                                   &elchcontrol);
   IntParameter("MOVBOUNDARYITEMAX",10,"Maximum number of outer iterations in electrode shape change computations",&elchcontrol);
   DoubleParameter("MOVBOUNDARYCONVTOL",1e-6,"Convergence check tolerance for outer loop in electrode shape change computations",&elchcontrol);
   DoubleParameter("TEMPERATURE",298.0,"Constant temperature (Kelvin)",&elchcontrol);
@@ -5872,6 +5874,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("BLOCKPRECOND","NO",
       "Switch to block-preconditioned family of solvers, only works with block preconditioners like CheapSIMPLE!",&elchcontrol);
 
+  BoolParameter("DIFFCOND_FORMULATION","No",
+        "Activation of diffusion-conduction formulation",&elchcontrol);
+
   /*----------------------------------------------------------------------*/
   // attention: this list is a sublist of elchcontrol
 
@@ -5879,9 +5884,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
         "DIFFCOND",
         false,
         "control parameters for electrochemical diffusion conduction problems\n");
-
-    BoolParameter("DIFFCOND_FORMULATION","No",
-          "Activation of diffusion-conduction formulation",&elchdiffcondcontrol);
 
     BoolParameter("CURRENT_SOLUTION_VAR","No","Current as a solution variable",&elchdiffcondcontrol);
 

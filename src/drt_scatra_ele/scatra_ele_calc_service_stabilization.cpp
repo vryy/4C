@@ -621,11 +621,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcArtificialDiff(
   }
   else if (scatrapara_->ASSGDType() == INPAR::SCATRA::assgd_codina)
   {
-    double alpha = 0.0;
-    if (scatrapara_->ScaTraType() == INPAR::SCATRA::scatratype_levelset)
-      alpha = 0.7;
-    else
-      alpha = std::max(0.0,(0.7-2.0*diffmanager_->GetIsotropicDiff(k)/convelint.Norm2()/h));
+    double alpha = std::max(0.0,(0.7-2.0*diffmanager_->GetIsotropicDiff(k)/convelint.Norm2()/h));
 
     // gradient norm
     const double grad_norm = gradphi.Norm2();
@@ -999,7 +995,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocity(
 
   // get viscous term
   if (use2ndderiv_)
-  {
     /*--- viscous term: div(epsilon(u)) --------------------------------*/
     /*   /                                                \
          |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
@@ -1023,36 +1018,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocity(
 
          with N_x .. x-line of N
          N_y .. y-line of N                                             */
-
-    if (scatrapara_->ScaTraType() == INPAR::SCATRA::scatratype_loma)
-    {
-      double prefac = 1.0/3.0;
-      derxy2_.Scale(prefac);
-
-      for (int i=0; i<nen_; ++i)
-      {
-        double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i))/prefac;
-
-        epsilonvel(0) = ((sum + derxy2_(0,i))*evelnp_(0,i) + derxy2_(3,i)*evelnp_(1,i) + derxy2_(4,i)*evelnp_(2,i))/2.0;
-        epsilonvel(1) = (derxy2_(3,i)*evelnp_(0,i) + (sum + derxy2_(1,i))*evelnp_(1,i) + derxy2_(5,i)*evelnp_(2,i))/2.0;
-        epsilonvel(2) = (derxy2_(4,i)*evelnp_(0,i) + derxy2_(5,i)*evelnp_(1,i) + (sum + derxy2_(2,i))*evelnp_(2,i))/2.0;
-      }
-
-      derxy2_.Scale(1.0/prefac);
-    }
-    else
-    {
-      for (int i=0; i<nen_; ++i)
-      {
-        double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i));
-
-        epsilonvel(0) = (sum*evelnp_(0,i))/2.0;
-        epsilonvel(1) = (sum*evelnp_(1,i))/2.0;
-        epsilonvel(2) = (sum*evelnp_(2,i))/2.0;
-      }
-    }
-  }
-  else epsilonvel.Clear();
+    CalcSubgrVelocityVisc(epsilonvel);
+  else
+    epsilonvel.Clear();
 
   //--------------------------------------------------------------------
   // calculation of subgrid-scale velocity based on momentum residual
@@ -1081,6 +1049,27 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocity(
 
   return;
 } //ScaTraEleCalc::CalcSubgrVelocity
+
+
+/*---------------------------------------------------------------*
+ | calculate viscous part of subgrid-scale velocity   fang 02/15 |
+ *---------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocityVisc(
+    LINALG::Matrix<nsd_,1>&   epsilonvel
+    )
+{
+  for (int i=0; i<nen_; ++i)
+  {
+    double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i));
+
+    epsilonvel(0) = (sum*evelnp_(0,i))/2.0;
+    epsilonvel(1) = (sum*evelnp_(1,i))/2.0;
+    epsilonvel(2) = (sum*evelnp_(2,i))/2.0;
+  }
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocityVisc
 
 
 // template classes

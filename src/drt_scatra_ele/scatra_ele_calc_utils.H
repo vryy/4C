@@ -187,6 +187,8 @@ namespace SCATRA
   //! identify elements of inflow section
   bool InflowElement(const DRT::Element* ele);
 
+  //! convert implementation type of scalar transport elements into corresponding string for output purposes
+  const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype);
 } // namespace SCATRA
 
 #endif

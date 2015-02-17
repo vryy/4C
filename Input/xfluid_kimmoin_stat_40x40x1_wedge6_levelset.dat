@@ -134,43 +134,6 @@ ML_SMOTIMES                     3 3 0        // no. smoothing steps or polynomia
 ML_DAMPFINE                     0.2         // damping fine grid
 ML_DAMPMED                      0.2         // damping med grids
 ML_DAMPCOARSE                   1.0          // damping coarse grid
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-SOLVERTYPE                      linear_full
-TIMEINTEGR                      Stationary
-MAXTIME                         1000
-NUMSTEP                         20
-TIMESTEP                        0.1
-THETA                           0.5
-ALPHA_M                         0.5
-ALPHA_F                         0.5
-GAMMA                           0.5
-UPRES                           1
-RESTARTEVRY                     1
-MATID                           -1
-VELOCITYFIELD                   Navier_Stokes
-VELFUNCNO                       -1
-VELCURVENO                      -1
-INITIALFIELD                    field_by_function
-INITFUNCNO                      3
-CALCERROR                       No
-WRITEFLUX                       No
-WRITEMAXINTSTATE                0
-WRITEMAXIONICCURRENTS           0
-ACTTHRES                        1
-WRITEFLUX_IDS                   -1
-OUTMEAN                         No
-OUTINTEGRREAC                   No
-OUTPUT_GMSH                     no
-CONVFORM                        convective
-NEUMANNINFLOW                   no
-CONV_HEAT_TRANS                 no
-SKIPINITDER                     no
-INITPOTCALC                     no
-FSSUGRDIFF                      No
-SCATRATYPE                      LevelSet
-MESHTYING                       no
-ONLYPOTENTIAL                   no
-LINEAR_SOLVER                   1
 --------------------------------------------------------------------SOLVER 2
 NAME                            Scatra_Solver
 SOLVER                          UMFPACK

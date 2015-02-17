@@ -121,7 +121,6 @@ GHOST_PENALTY_TRANSIENT_FAC     0.005                         // in [0.001;0.005
 GHOST_PENALTY_2nd_STAB          no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SCATRATYPE                      LevelSet
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No
 INITFUNCNO                      1

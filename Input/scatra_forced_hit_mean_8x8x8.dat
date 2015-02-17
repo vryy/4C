@@ -101,7 +101,6 @@ NEAR_WALL_LIMIT_CSGS_PHI        no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SKIPINITDER                     yes
-SCATRATYPE                      ConvectionDiffusion
 SOLVERTYPE                      nonlinear
 FSSUGRDIFF                      No //Smagorinsky_small
 INITFUNCNO                      -1

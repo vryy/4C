@@ -11,23 +11,24 @@ Maintainer: Andreas Ehrl
 </pre>
 
 *----------------------------------------------------------------------*/
-
-
-#include "elch_dyn.H"
-#include "elch_algorithm.H"
-#include "elch_moving_boundary_algorithm.H"
-#include "../drt_inpar/inpar_elch.H"
-#include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include "../drt_ale/ale_utils_clonestrategy.H"
+
+#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_elch.H"
+
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include <Teuchos_TimeMonitor.hpp>
+
+#include "../drt_scatra/scatra_utils_clonestrategy.H"
+#include "../drt_scatra_ele/scatra_ele.H"
+
 #include <Epetra_Time.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#if 0
-#include "../drt_io/io_gmsh.H"
-#endif
+#include <Teuchos_TimeMonitor.hpp>
+
+#include "elch_algorithm.H"
+#include "elch_moving_boundary_algorithm.H"
+#include "elch_dyn.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -114,7 +115,28 @@ void elch_dyn(int restart)
 
     // create scatra elements if the scatra discretization is empty
     if (scatradis->NumGlobalNodes()==0)
+    {
+      // fill scatra discretization by cloning fluid discretization
       DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,scatradis);
+
+      // determine implementation type of cloned scatra elements
+      INPAR::SCATRA::ImplType impltype(INPAR::SCATRA::impltype_undefined);
+      if(DRT::INPUT::IntegralValue<int>(elchcontrol,"DIFFCOND_FORMULATION"))
+        impltype = INPAR::SCATRA::impltype_elch_diffcond;
+      else
+        impltype = INPAR::SCATRA::impltype_elch_NP;
+
+      // set implementation type
+      for(int i=0; i<scatradis->NumMyColElements(); ++i)
+      {
+        DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
+        if(element == NULL)
+          dserror("Invalid element type!");
+        else
+          element->SetImplType(impltype);
+      }
+    }
+
     else
       dserror("Fluid AND ScaTra discretization present. This is not supported.");
 

@@ -1009,6 +1009,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_boundary_calc_elch_NP.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_elch_diffcond.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_calc_loma.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_poro.cpp
   src/drt_scatra_ele/scatra_ele_boundary_evaluate.cpp
   src/drt_scatra_ele/scatra_ele_factory.cpp
@@ -1036,6 +1037,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_parameter_std.cpp
   src/drt_scatra_ele/scatra_ele_parameter_lsreinit.cpp
   src/drt_scatra_ele/scatra_ele_parameter_elch.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_parameter_timint.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_general.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_stabilization.cpp

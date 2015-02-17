@@ -107,17 +107,15 @@ FSSUGRDIFF                      No
 WRITEFLUX                       No
 MATID                           1
 SKIPINITDER                     yes
-SCATRATYPE                      Cardiac_Monodomain
 CONVFORM                        conservative
-
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          10
 ABSTOLRES                       1e-3
 CONVTOL                         1e-3
-
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Zero
 EVALUATION_MAT                  element_center
+EVALUATION_TAU                  integration_point
 -----------------------------------------------------------------SSI CONTROL
 UPRES                           1
 RESTARTEVRY                     1
@@ -126,6 +124,7 @@ MAXTIME                         0.5
 TIMESTEP                        0.1
 COUPALGO                        ssi_IterStagg //   ssi_IterStagg // ssi_IterStaggFixedRel_SolidToScatra
 ITEMAX                          10
+SCATRATYPE                      Cardiac_Monodomain
 --------------------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1e-08
 --------------------------------------------------------CLONING MATERIAL MAP

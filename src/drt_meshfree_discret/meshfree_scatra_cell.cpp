@@ -115,31 +115,37 @@ void DRT::ELEMENTS::MeshfreeTransportType::SetupElementDefinition(
   defs["HEX8"]
     .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     ;
 
   defs["TET4"]
     .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     ;
 
   defs["QUAD4"]
     .AddIntVector("QUAD4",4)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     ;
 
   defs["TRI3"]
     .AddIntVector("TRI3",3)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     ;
 
   defs["LINE2"]
     .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     ;
 
   defs["POINT1"]
     .AddIntVector("POINT1",1)
     .AddNamedInt("MAT")
+    .AddNamedString("TYPE")
     ;
 }
 
@@ -157,9 +163,10 @@ DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Eleme
 DRT::MESHFREE::Cell(id,owner),
 data_(),
 numdofpernode_(-1),
-distype_(DRT::Element::dis_none)
+distype_(DRT::Element::dis_none),
+impltype_(INPAR::SCATRA::impltype_undefined)
 {
-    return;
+  return;
 }
 
 /*--------------------------------------------------------------------------*
@@ -371,15 +378,15 @@ void DRT::ELEMENTS::MeshfreeTransport::Pack(DRT::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
+
   // add base class Cell
   DRT::MESHFREE::Cell::Pack(data);
-  // numdofpernode
-  AddtoPack(data,numdofpernode_);
-  // distype
-  AddtoPack(data,distype_);
 
-  // data_
+  // add internal data
   AddtoPack(data,data_);
+  AddtoPack(data,numdofpernode_);
+  AddtoPack(data,distype_);
+  AddtoPack(data,impltype_);
 
   return;
 }
@@ -395,21 +402,23 @@ void DRT::ELEMENTS::MeshfreeTransport::Unpack(const std::vector<char>& data)
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
   // extract base class Cell
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   DRT::MESHFREE::Cell::Unpack(basedata);
-  // numdofpernode
-  ExtractfromPack(position,data,numdofpernode_);
-  // distype
-  distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
 
+  // extract internal data
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
+  ExtractfromPack(position,data,numdofpernode_);
+  distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
+  impltype_ = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position,data));
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+
   return;
 }
 
@@ -492,6 +501,15 @@ bool DRT::ELEMENTS::MeshfreeTransport::ReadElement(
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
+  // read implementation type
+  std::string impltype;
+  linedef->ExtractString("TYPE",impltype);
+  if(impltype == "Std")
+    impltype_ = INPAR::SCATRA::impltype_std_meshfree;
+  else
+    dserror("Meshfree transport element received invalid implementation type!");
+
+  // set discretization type
   SetDisType(DRT::StringToDistype(distype));
 
   return true;

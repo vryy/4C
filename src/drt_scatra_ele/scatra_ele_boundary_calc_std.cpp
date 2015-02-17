@@ -66,45 +66,9 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::ScaTraEleBoundaryCalcStd(const int numdofpernode, const int numscal)
   : my::ScaTraEleBoundaryCalc(numdofpernode,numscal)
 {
-  // pointer to class ScaTraEleParameter
-  my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
+  return;
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::EvaluateAction(
-    DRT::ELEMENTS::TransportBoundary* ele,
-    Teuchos::ParameterList&           params,
-    DRT::Discretization&              discretization,
-    std::vector<int>&                 lm,
-    Epetra_SerialDenseMatrix&         elemat1_epetra,
-    Epetra_SerialDenseMatrix&         elemat2_epetra,
-    Epetra_SerialDenseVector&         elevec1_epetra,
-    Epetra_SerialDenseVector&         elevec2_epetra,
-    Epetra_SerialDenseVector&         elevec3_epetra
-)
-{
-  // check for the action parameter
-  const SCATRA::BoundaryAction action = DRT::INPUT::get<SCATRA::BoundaryAction>(params,"action");
-
-  if(my::SetupCalc(ele,params,discretization) == -1)
-    return 0;
-
-  my::EvaluateAction(ele,
-                     params,
-                     discretization,
-                     action,
-                     lm,
-                     elemat1_epetra,
-                     elemat2_epetra,
-                     elevec1_epetra,
-                     elevec2_epetra,
-                     elevec3_epetra);
-
-  return 0;
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

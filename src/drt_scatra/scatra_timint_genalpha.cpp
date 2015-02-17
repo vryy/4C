@@ -88,11 +88,11 @@ void SCATRA::TimIntGenAlpha::Init()
   // set element parameters
   // -------------------------------------------------------------------
   // note: - this has to be done before element routines are called
-  //       - order is important here: for safety checks in SetElementGeneralScaTraParameters(),
+  //       - order is important here: for safety checks in SetElementGeneralParameters(),
   //         we have to know the time-integration parameters
   SetElementTimeParameter();
-  SetElementGeneralScaTraParameters();
-  SetElementTurbulenceParameter();
+  SetElementGeneralParameters();
+  SetElementTurbulenceParameters();
 
   // for initializing phiaf_, phiam based on the initial field that was
   // set for phinp_, phin_ in the TimInt base class constructor
@@ -144,9 +144,6 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forcedincrementalsolve
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",SCATRA::set_time_parameter);
-  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
-  eleparams.set<int>("scatratype",scatratype_);
-
   eleparams.set<bool>("using generalized-alpha time integration",true);
   eleparams.set<bool>("using stationary formulation",false);
   if(forcedincrementalsolver==false)
@@ -174,8 +171,6 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameterBackwardEuler()
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",SCATRA::set_time_parameter);
-  // set type of scalar transport problem (after preevaluate evaluate, which need scatratype is called)
-  eleparams.set<int>("scatratype",scatratype_);
 
   eleparams.set<bool>("using generalized-alpha time integration",false);
   eleparams.set<bool>("using stationary formulation",false);
@@ -468,7 +463,7 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
   Teuchos::ParameterList eleparams;
 
   // standard general element parameter without stabilization
-  SetElementGeneralScaTraParameters(true);
+  SetElementGeneralParameters(true);
 
   // we also have to modify the time-parameter list (incremental solve)
   // actually we do not need a time integration scheme for calculating the initial time derivatives,
@@ -478,15 +473,15 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
   SetElementTimeParameterBackwardEuler();
 
   // deactivate turbulence settings
-  SetElementTurbulenceParameter(true);
+  SetElementTurbulenceParameters(true);
 
   // compute time derivative of phi at time t=0
   CalcInitialPhidt();
 
   // and finally undo our temporary settings
-  SetElementGeneralScaTraParameters();
+  SetElementGeneralParameters();
   SetElementTimeParameter();
-  SetElementTurbulenceParameter();
+  SetElementTurbulenceParameters();
 
   return;
 }

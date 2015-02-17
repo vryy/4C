@@ -23,6 +23,8 @@ Maintainer: Andreas Ehrl
 
 #include "../drt_fluid_xfluid/xfluid.H"
 
+#include "../drt_levelset/levelset_algorithm.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
@@ -39,7 +41,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
 {
   // check whether fluid and scatra discret still have the same maps
   // they may change due a modified ghosting required, i.e., for particle level-set methods
-  if (ScaTraField()->ScaTraType() == INPAR::SCATRA::scatratype_levelset)
+  if(Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField()) != Teuchos::null)
   {
     const Epetra_Map* scatraelecolmap = ScaTraField()->Discretization()->ElementColMap();
     if (not scatraelecolmap->PointSameAs(*FluidField()->Discretization()->ElementColMap()))

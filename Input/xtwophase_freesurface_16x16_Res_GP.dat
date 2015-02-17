@@ -160,7 +160,6 @@ CONV_HEAT_TRANS                 no
 SKIPINITDER                     no
 INITPOTCALC                     no
 FSSUGRDIFF                      No
-SCATRATYPE                      LevelSet
 MESHTYING                       no
 ONLYPOTENTIAL                   no
 LINEAR_SOLVER                   1

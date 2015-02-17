@@ -79,7 +79,6 @@ EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point               // only evaluation at integration point available in TPF with smoothing
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
-SCATRATYPE                      LevelSet
 SOLVERTYPE                      nonlinear
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function

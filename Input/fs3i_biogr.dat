@@ -185,6 +185,7 @@ SCATRA_SOLVERTYPE               nonlinear
 COUPLED_LINEAR_SOLVER           1
 LINEAR_SOLVER1                  4
 LINEAR_SOLVER2                  3
+SCATRATYPE                      Advanced_Reaction
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No
 CONVFORM                        conservative
@@ -197,7 +198,6 @@ NUMSTEP                         5
 OUTMEAN                         No
 OUTPUT_GMSH                     No
 RESTARTEVRY                     100
-SCATRATYPE                      Advanced_Reaction
 SKIPINITDER                     yes
 SOLVERTYPE                      nonlinear
 THETA                           0.66
