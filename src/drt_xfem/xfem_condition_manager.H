@@ -520,8 +520,6 @@ protected:
       const double dt = 0.0
   );
 
-  virtual void PrepareSolve();
-
   virtual bool HasMovingInterface();
 
 
@@ -541,8 +539,7 @@ public:
       Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) : MeshCouplingBC(bg_dis,cond_name,cond_dis, time, step)
-  {}
+  );
 
   //! destructor
   virtual ~MeshCouplingWeakDirichlet()
@@ -558,6 +555,8 @@ public:
       const LINALG::Matrix<3,1>& x,
       const DRT::Condition* cond
   );
+
+  virtual void PrepareSolve();
 
 };
 
@@ -592,6 +591,8 @@ public:
       const LINALG::Matrix<3,1>& x,
       const DRT::Condition* cond
   );
+
+  virtual void PrepareSolve();
 
 };
 
@@ -1296,25 +1297,16 @@ public:
       return -1;
     }
 
-
-
-    int mc_idx = 0; // mesh coupling index to be set, init to 0 as coup_sid >= 0
-
-    for(int idx=0; idx < (int)mesh_coupl_.size(); idx++)
+    for(int idx=(int)mesh_coupl_.size()-1; idx >= 0; idx--) //inverse loop
     {
-      if(coup_sid < mesh_coupl_start_gid_[idx]) // for the first run this is guaranteed to be false
+      if(coup_sid >= mesh_coupl_start_gid_[idx])
       {
-        mc_idx = idx-1;  // take the last mc-index
+        return idx;
       }
     }
 
-    if(mc_idx == -1 or mc_idx >= num_mesh_coupl)
-    {
-      dserror("invalid mesh coupling index %i", mc_idx);
-      return -1;
-    }
-
-    return mc_idx;
+    dserror("no valid mesh coupling index found!");
+    return -1;
   }
 
 
@@ -1563,7 +1555,10 @@ public:
 
   bool HasMovingInterface();
 
-  /// set material pointer for volume
+  void GetCouplingEleLocationVector(const int coup_sid,
+                                    std::vector<int> & patchlm);
+
+/// set material pointer for volume
   void GetVolumeCellMaterial(
     DRT::Element* actele,
     Teuchos::RCP<MAT::Material> & mat,

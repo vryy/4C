@@ -691,9 +691,6 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
           s!=cell_sets.end();
           s++)
       {
-        // for each side that is involved in the cut for this element,
-        // the coupling matrices C_fs_, C_sf_ and the rhs_s has to be built
-        std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
 
         GEO::CUT::plain_volumecell_set & cells = *s;
         const std::vector<int> & nds = nds_sets[set_counter];
@@ -809,6 +806,10 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
           std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells = coupling_bcells[coupl_idx];
           std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
 
+          // for each side that is involved in the cut for this element,
+          // the coupling matrices C_fs_, C_sf_ and the rhs_s has to be built
+          std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
+
           if ( bcells.size() > 0 )
           {
             TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 2) interface" );
@@ -838,8 +839,8 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
               if(condition_manager_->IsMeshCoupling(coup_sid))
               {
                 // fill patchlm for the element we couple with
-                const int mc_idx = condition_manager_->GetMeshCouplingIndex(coup_sid);
-                condition_manager_->GetMeshCoupling(mc_idx)->GetCouplingEleLocationVector(coup_sid,patchlm);
+                condition_manager_->GetCouplingEleLocationVector(coup_sid,patchlm);
+
                 // set material for coupling element
                 condition_manager_->GetMeshCoupling(mc_idx_)->GetInterfaceSlaveMaterial(actele,matptr_s);
               }

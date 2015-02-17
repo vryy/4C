@@ -981,20 +981,6 @@ XFEM::MeshCouplingBC::MeshCouplingBC(
   // set the interface displacements also to idispn
   idispn_->Update(1.0,*idispnp_,0.0);
 
-  // set the initial interface velocity and possible initialization function
-  SetInterfaceVelocity();
-
-  // set the initial interface velocities also to iveln
-  iveln_->Update(1.0,*ivelnp_,0.0);
-}
-
-void XFEM::MeshCouplingBC::PrepareSolve()
-{
-  // set the new interface displacements where DBCs or Neumann BCs have to be evaluted
-  SetInterfaceDisplacement();
-
-  // set or compute the current prescribed interface velocities, just for XFEM WDBC
-  SetInterfaceVelocity();
 }
 
 bool XFEM::MeshCouplingBC::HasMovingInterface()
@@ -1289,6 +1275,21 @@ void XFEM::MeshCouplingBC::SetInterfaceVelocity()
 }
 
 
+//! constructor
+XFEM::MeshCouplingWeakDirichlet::MeshCouplingWeakDirichlet(
+    Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+    const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+    Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+    const double                        time,      ///< time
+    const int                           step       ///< time step
+) : MeshCouplingBC(bg_dis,cond_name,cond_dis, time, step)
+{
+    // set the initial interface velocity and possible initialization function
+    SetInterfaceVelocity();
+
+    // set the initial interface velocities also to iveln
+    iveln_->Update(1.0,*ivelnp_,0.0);
+}
 
 void XFEM::MeshCouplingWeakDirichlet::EvaluateCouplingConditions(
     LINALG::Matrix<3,1>& ivel,
@@ -1302,6 +1303,15 @@ void XFEM::MeshCouplingWeakDirichlet::EvaluateCouplingConditions(
 
   // no interface traction to be evaluated
   itraction.Clear();
+}
+
+void XFEM::MeshCouplingWeakDirichlet::PrepareSolve()
+{
+  // set the new interface displacements where DBCs or Neumann BCs have to be evaluted
+  SetInterfaceDisplacement();
+
+  // set or compute the current prescribed interface velocities, just for XFEM WDBC
+  SetInterfaceVelocity();
 }
 
 void XFEM::MeshCouplingNeumann::EvaluateCouplingConditions(
@@ -1318,6 +1328,12 @@ void XFEM::MeshCouplingNeumann::EvaluateCouplingConditions(
   EvaluateNeumannFunction(itraction, x, cond);
 }
 
+void XFEM::MeshCouplingNeumann::PrepareSolve()
+{
+  // set the new interface displacements where DBCs or Neumann BCs have to be evaluted
+  SetInterfaceDisplacement();
+
+}
 
 //! constructor
 XFEM::MeshCouplingFSI::MeshCouplingFSI(
@@ -2340,3 +2356,13 @@ void XFEM::ConditionManager::GetInterfaceMasterMaterial(
   XFEM::UTILS::GetVolumeCellMaterial(actele,mat);
 }
 
+void XFEM::ConditionManager::GetCouplingEleLocationVector(
+    const int coup_sid,
+    std::vector<int> & patchlm)
+{
+  int mc = GetMeshCouplingIndex(coup_sid);
+  int sid = GetCutterDisEleId(coup_sid,mc);
+
+  mesh_coupl_[mc]->GetCouplingEleLocationVector(sid, patchlm);
+  return;
+}
