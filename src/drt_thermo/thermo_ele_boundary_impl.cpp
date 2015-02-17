@@ -615,18 +615,14 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
   const double time = params.get("total time",-1.0);
   if (time < 0.0) usetime = false;
 
+
   // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if ( (curvenum >= 0) and usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
 
   // integration loop
@@ -637,10 +633,13 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
 
     // multiply integration factor with the timecurve factor
     // fac_ = fac_ * curvefac
-    fac_ *= curvefac;
+//    fac_ *= curvefac;
+
 
     // factor given by spatial function
     double functfac = 1.0;
+    // factor given by temporal curve
+    double curvefac = 1.0;
     // determine global coordinates of current Gauss point
     double coordgp[3]; // coordinate has always to be given in 3D!
     for (int i=0; i<3; i++)
@@ -655,6 +654,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
       }
     }
 
+    int curvenum = -1;
     int functnum = -1;
     const double* coordgpref = &coordgp[0]; // needed for function evaluation
 
@@ -662,6 +662,13 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
     {
       if ((*onoff)[dof]) // is this dof activated?
       {
+        // factor given by temporal curve
+        if (curve) curvenum = (*curve)[dof];
+          if ( (curvenum >= 0) and usetime)
+            curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+          else
+            curvefac = 1.0;
+
         // factor given by spatial function
         if (func) functnum = (*func)[dof];
         {
@@ -676,13 +683,13 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
 
         // q * detJ * w(gp) * spatial_fac * timecurve_fac
         // val = q; fac_ = detJ * w(gp) * timecurve; funcfac =  spatial_fac
-        const double val_fac_functfac = (*val)[dof]*fac_*functfac;
+        const double val_fac_funct_curve_fac = (*val)[dof]*fac_*functfac*curvefac;
 
         for (int node=0; node<nen_; ++node)
         {
           // fext  = fext +  N^T  * q * detJ * w(gp) * spatial_fac * timecurve_fac
           // with scalar-valued q
-          elevec1[node*numdofpernode_+dof] += funct_(node)*val_fac_functfac;
+          elevec1[node*numdofpernode_+dof] += funct_(node)*val_fac_funct_curve_fac;
         }
       } // if ((*onoff)[dof])
     }
