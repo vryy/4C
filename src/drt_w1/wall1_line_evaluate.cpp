@@ -280,8 +280,34 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       // compute infinitesimal line element dr for integration along the line
       const double dr = w1_substitution(xyecurr, deriv, &unrm, numnod);
 
+      double functfac = 1.0;
+      int functnum = -1;
+
+      // factor given by spatial function
+      if (spa_func) functnum = (*spa_func)[0];
+
+      if (functnum > 0)
+      {
+        // calculate reference position of GP
+        LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
+        gp_coord.Multiply('T', 'T', 1.0, funct, xye, 0.0);
+
+        // write coordinates in another datatype
+        double gp_coord2[3]; // the position vector has to be given in 3D!!!
+        const int numdim = 2;
+        for (int k = 0; k < numdim; k++)
+          gp_coord2[k] = gp_coord(0, k);
+        for (int k = numdim; k < 3; k++) // set a zero value for the remaining spatial directions
+          gp_coord2[k] = 0.0;
+        const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
+
+        //evaluate function at current gauss point
+        functfac = DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(0,
+                coordgpref, time, NULL);
+      }
+
       // constant factor for integration
-      const double fac = intpoints.qwgt[gpid] * ortho_value * curvefac;
+      const double fac = intpoints.qwgt[gpid] * ortho_value * curvefac * functfac;
 
       // add load components
       for (int node = 0; node < numnod; ++node)

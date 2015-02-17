@@ -606,7 +606,8 @@ bool STR::TimIntStatMech::PerformErrorAction()
       // generate random number between 0.51 and 1.99 (as mean value of random
       // numbers generated on all processors), alternating values larger
       // and smaller than 1.0
-      double proc_randnum = ((double) rand()/(double) RAND_MAX);
+      double proc_randnum_get = ((double) rand()/(double) RAND_MAX);
+      double proc_randnum = proc_randnum_get;
       double randnum = 1.0;
       discret_->Comm().SumAll(&proc_randnum,&randnum,1);
       randnum /= discret_->Comm().NumProc();
