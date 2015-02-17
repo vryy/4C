@@ -16,6 +16,7 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <sstream>
+#include <fenv.h>
 
 #include "strtimint.H"
 #include "strtimint_impl.H"

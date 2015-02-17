@@ -25,6 +25,8 @@ Maintainer: Jonas Biehler
 #include "smc_particle_list.H"
 #include "../linalg/linalg_utils.H"
 
+#include "boost/math/distributions/gamma.hpp"
+
 // only compile this on the workstation as kaisers boost version is outdated an cant run this code
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
 
