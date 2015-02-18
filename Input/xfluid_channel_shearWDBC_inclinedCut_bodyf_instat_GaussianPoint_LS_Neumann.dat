@@ -204,7 +204,7 @@ E 12 - COUPLINGID 1 EVALTYPE funct NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE no
 ---------------------------------DESIGN XFEM LEVELSET NEUMANN VOL CONDITIONS
 DVOL                           1
 //                              fluid_volume
-E 1 - LEVELSETFIELDNO 4 LEVELSETCURVE none none 1 1 1 0 0 0 -4.0 3.0 6.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+E 1 - LEVELSETFIELDNO 4 LEVELSETCURVE none NUMDOF 3 ONOFF 1 1 1 VAL -4.0 3.0 6.0 CURVE none none none FUNCT 0 0 0 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 26 DNODE 1
 NODE 31 DNODE 1

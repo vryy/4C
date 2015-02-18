@@ -240,26 +240,12 @@ protected:
       const DRT::Condition* cond
   );
 
-  void EvaluateDirichletFunction(
+  void EvaluateFunction(
       std::vector<double>& final_values,
       const double* x,
       const DRT::Condition* cond,
       const double time
   );
-
-  void EvaluateNeumannFunction(
-      std::vector<double>& final_values,
-      const double* x,
-      const DRT::Condition* cond,
-      const double time
-  );
-
-
-
-
-
-
-
 
   ///< background discretization
   Teuchos::RCP<DRT::Discretization> bg_dis_;
@@ -882,9 +868,6 @@ public:
   );
 
   virtual bool HasMovingInterface(){ return true; }
-
-  //TODO: remove for twophase flow
-  virtual void PrepareSolve();
 
   virtual void GetInterfaceSlaveMaterial(
     DRT::Element* actele,
