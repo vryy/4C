@@ -1,4 +1,3 @@
-
 #include "cut_element.H"
 #include "cut_volumecell.H"
 
@@ -18,19 +17,6 @@ bool GEO::CUT::Cmp::operator()(
   return Compare(s1, s2);
 }
 
-
-/*------------------------------------------------------------------------------*
-  | Operator () compare operator for sets of plain_volumecell_sets
-  |                                                             shahmiri 06/12
- *-----------------------------------------------------------------------------*/
-bool GEO::CUT::Cmp::operator()(
-    const std::set<plain_volumecell_set, Cmp>& set1,
-    const std::set<plain_volumecell_set, Cmp>& set2
-)
-{
-  // call Compare function for two sets of plain_volumecell_sets
-  return Compare(set1, set2);
-}
 
 
 /*------------------------------------------------------------------------------*
@@ -53,7 +39,6 @@ bool GEO::CUT::Cmp::Compare(
 
   return Compare(s1, s2);
 }
-
 
 /*------------------------------------------------------------------------------*
   | Compare() to compare two plain_volumecell_set via the ids of their first volumecell's points
@@ -143,6 +128,38 @@ bool GEO::CUT::Cmp::Compare(
 
 
 /*-----------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------*/
+GEO::CUT::Point::PointPosition GEO::CUT::NodalDofSet::Position() const
+{
+  // get position from first volume-cell of first element
+  const plain_volumecell_set & set = *(volumecell_composite_.begin());
+  return set[0]->Position();
+}
+
+
+/*-----------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------*/
+bool GEO::CUT::NodalDofSet::Contains( GEO::CUT::Point* p)
+{
+  // check if any volume-cell of the volumecell_composite contains this point
+  for(std::set<plain_volumecell_set,Cmp>::iterator it = volumecell_composite_.begin();
+      it!=volumecell_composite_.end();
+      it++)
+  {
+    const plain_volumecell_set & vc_set = *it;
+    for(plain_volumecell_set::const_iterator vcs = vc_set.begin();
+        vcs!=vc_set.end();
+        vcs++)
+    {
+      if((*vcs)->Contains(p)) return true;
+    }
+  }
+
+  return false;
+}
+
+
+/*-----------------------------------------------------------------------------------------*
  * register cuts
  *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::Node::RegisterCuts()
@@ -161,8 +178,10 @@ void GEO::CUT::Node::RegisterCuts()
 /*-----------------------------------------------------------------------------------------*
  * Assign the vc_sets to the node if possible
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::AssignNodalCellSet( std::vector<plain_volumecell_set> & ele_vc_sets,
-    std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets)
+void GEO::CUT::Node::AssignNodalCellSet(
+    std::vector<plain_volumecell_set> & ele_vc_sets,
+    std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets
+)
 {
   for( std::vector<plain_volumecell_set>::iterator s=ele_vc_sets.begin();
       s!=ele_vc_sets.end();
@@ -356,6 +375,16 @@ int GEO::CUT::Node::DofSetNumber( VolumeCell * cell )
 
 
 /*-----------------------------------------------------------------------------------------*
+ * get number of dofsets
+ *-----------------------------------------------------------------------------------------*/
+int GEO::CUT::Node::NumDofSets() const{
+  return NodalDofSets().size();
+}
+
+
+
+
+/*-----------------------------------------------------------------------------------------*
  * get the dofset number of the Volumecell w.r.t this node
  *-----------------------------------------------------------------------------------------*/
 int GEO::CUT::Node::DofSetNumberNEW( plain_volumecell_set & cells )
@@ -368,11 +397,11 @@ int GEO::CUT::Node::DofSetNumberNEW( plain_volumecell_set & cells )
   //  VolumeCell* cell = cells[0];
   VolumeCell* cell = *(cells.begin());
 
-  for ( unsigned int i=0; i<dof_cellsets_.size(); ++i ) // loop over sets
+  for ( unsigned int i=0; i<nodaldofsets_.size(); ++i ) // loop over sets
   {
-    std::set< plain_volumecell_set, GEO::CUT::Cmp >& cellsets = dof_cellsets_[i];
+    const std::set< plain_volumecell_set, GEO::CUT::Cmp >& cellsets = nodaldofsets_[i]->VolumeCellComposite();
 
-    for(std::set<plain_volumecell_set, GEO::CUT::Cmp >::iterator j = cellsets.begin();
+    for(std::set<plain_volumecell_set, GEO::CUT::Cmp >::const_iterator j = cellsets.begin();
         j!=cellsets.end();
         j++)
     {
@@ -407,37 +436,39 @@ int GEO::CUT::Node::DofSetNumberNEW( plain_volumecell_set & cells )
 /*-----------------------------------------------------------------------------------------*
  * sort all dofsets via xyz point coordinates (use compare functions in cut_node.H)
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::SortDOFCellSets()
+void GEO::CUT::Node::SortNodalDofSets()
 {
-  // check if the first set is std set
 
-  // REMARK:
-  // first_set_is_std_set_ = boolian if the first set in dof_cellsets_ is a std set or not
-  // if it is then the first set must not be changed during sorting
-  // because elements without eh assume the first set as std set!
-
-  if(dof_cellsets_.size() > 1)
+  if(nodaldofsets_.size() > 1)
   {
+    std::vector<NodalDofSet* >::iterator it_start = nodaldofsets_.begin();
 
-    // set the start iterator for sorting
-    if(first_set_is_std_set_)
+    if(nodaldofsets_[0]->Is_Standard_DofSet())
     {
-      std::vector<std::set<plain_volumecell_set, Cmp> >::iterator it_start = (dof_cellsets_.begin())+1;
+      // REMARK:
+      // if the first nodal dofset is a standard dofset, then the first set must not be changed during sorting
+      // because elements without eh assume the first set as std set!
 
-      // sort the cellsets w.r.t point ids in first vc in first set of sorted sets of plain volume cells sets
-      // REMARK: do not sort the first dofset, it has to be kept the standard dofset
-      sort(it_start, dof_cellsets_.end(), Cmp());
+      it_start ++;  // exclude the standard set from sorting
     }
-    else
-    {
 
-      std::vector<std::set<plain_volumecell_set, Cmp> >::iterator it_start = dof_cellsets_.begin();
-
-      // sort the cellsets w.r.t point ids in first vc in first set of sorted sets of plain volume cells sets
-      sort(it_start, dof_cellsets_.end(), Cmp());
-
-    }
+    // sort the cellsets w.r.t point ids in first vc in first set of sorted sets of plain volume cells sets
+    // REMARK: do not sort the first dofset, it has to be kept the standard dofset
+    sort(it_start, nodaldofsets_.end(), NodalDofSetCmp());
   }
+
+#if(0)
+  // print the sorted dofsets:
+  std::cout << "DOFSETs for node: " << Id() << std::endl;
+  for(int i=0; i< NumDofSets(); i++)
+  {
+    NodalDofSet * dofset = GetNodalDofSet(i);
+    std::cout << "\t nodal dofset " << i
+        << ": STD dofset? " << dofset->Is_Standard_DofSet()
+        << " Pos: " << dofset->Position()
+        << std::endl;
+  }
+#endif
 
   return;
 }
@@ -446,12 +477,14 @@ void GEO::CUT::Node::SortDOFCellSets()
 /*-----------------------------------------------------------------------------------------*
  * build sets of connected volumecells in a 1-ring around the node
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::BuildDOFCellSets( Point * p,
+void GEO::CUT::Node::BuildDOFCellSets(
+    Point * p,
     const std::vector<plain_volumecell_set> & cell_sets,
     const plain_volumecell_set & cells,
     const std::vector<plain_volumecell_set> & nodal_cell_sets,
     plain_volumecell_set & done,
-    bool isnodalcellset)
+    bool isnodalcellset
+)
 {
   for( std::vector<plain_volumecell_set>::const_iterator s=nodal_cell_sets.begin(); s!=nodal_cell_sets.end(); s++)
   {
@@ -498,16 +531,12 @@ void GEO::CUT::Node::BuildDOFCellSets( Point * p,
             }
           }
 
-          dof_cellsets_.push_back(connected_sets);
-
-          // set if this set is a std set, but only if this function was called with a nodalcellset
-          // otherwise the flag has still the default value = false
-          if(isnodalcellset) first_set_is_std_set_=true;
+          // set if this set is a std set
+          nodaldofsets_.push_back(new NodalDofSet(connected_sets, isnodalcellset));
 
           std::copy( connected.begin(), connected.end(), std::inserter( done, done.begin() ) );
-
-        }
-      }
+        } // connected.size() > 0
+      } // done.count( cell )==0
     }
   }
 
@@ -517,7 +546,8 @@ void GEO::CUT::Node::BuildDOFCellSets( Point * p,
 /*-----------------------------------------------------------------------------------------*
  * build sets of connected volumecells in a 1-ring around the node (old unused version)
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::BuildDOFCellSets( Point * p,
+void GEO::CUT::Node::BuildDOFCellSets(
+    Point * p,
     const plain_volumecell_set & cells,
     const plain_volumecell_set & nodal_cells,
     plain_volumecell_set & done )
@@ -544,46 +574,6 @@ void GEO::CUT::Node::BuildDOFCellSets( Point * p,
 }
 
 
-
-#if 0
-int GEO::CUT::Node::NumDofSets( bool include_inner )
-{
-  if ( include_inner )
-  {
-    return DofSets().size();
-  }
-  else
-  {
-    int numdofsets = 0;
-    for ( std::vector<plain_volumecell_set >::iterator i=dofsets_.begin();
-        i!=dofsets_.end();
-        ++i )
-    {
-      plain_volumecell_set & cells = *i;
-      GEO::CUT::Point::PointPosition position = GEO::CUT::Point::undecided;
-      for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
-      {
-        VolumeCell * c = *i;
-        GEO::CUT::Point::PointPosition cp = c->Position();
-        if ( cp == GEO::CUT::Point::undecided )
-        {
-          throw std::runtime_error( "undecided volume cell position" );
-        }
-        if ( position!=GEO::CUT::Point::undecided and position!=cp )
-        {
-          throw std::runtime_error( "mixed volume cell set" );
-        }
-        position = cp;
-      }
-      if ( position==GEO::CUT::Point::outside )
-      {
-        numdofsets += 1;
-      }
-    }
-    return numdofsets;
-  }
-}
-#endif
 
 /*-----------------------------------------------------------------------------------------*
  *  Gives this node a selfcutposition and spread the positional information     wirtz 05/13
@@ -639,4 +629,64 @@ bool GEO::CUT::Node::isAtSameLocation( const Node * nod ) const
     return true;
 
   return false;
+}
+
+/*-----------------------------------------------------------------------------------------*
+ * get the unique standard NodalDofSet for a given nodal dofset position
+ *-----------------------------------------------------------------------------------------*/
+int GEO::CUT::Node::GetStandardNodalDofSet( Point::PointPosition pos)
+{
+  for(int i=0; i< NumDofSets(); i++)
+  {
+    NodalDofSet * nodaldofset = nodaldofsets_[i];
+    if( nodaldofset->Is_Standard_DofSet() )
+    {
+      if( nodaldofset->Position() == pos)
+        return i;
+    }
+  }
+
+  return -1;
+}
+
+
+/*-----------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------*/
+bool GEO::CUT::NodalDofSetCmp::operator()(
+    NodalDofSet* nodaldofset1,
+    NodalDofSet* nodaldofset2
+)
+{
+  //==============================================
+  // classical sorting of dofsets with:
+  // - possible positions: outside/inside
+  // in combination with
+  // - at most one standard dofset per position (phase)
+  // - arbitrary number of ghost dofsets per position (phase)
+  //==============================================
+  // nds-order starting from 0: STD(outside)/STD(inside) // GHOST(outside)_1 / GHOST(outside)_2 ... GHOST(outside)_nout // GHOST(inside)_1 / GHOST(inside)_2 ... GHOST(inside)_nin
+  // where GHOST(*)_1 ... GHOST(*)_n are sorted by PointIds of contained volumecells
+  //==============================================
+
+
+  // FIRST: sort by std vs ghost nodal dofset if possible
+  if( nodaldofset1->Is_Standard_DofSet() != nodaldofset2->Is_Standard_DofSet() )  // one set is standard, the other is ghost
+    return nodaldofset1->Is_Standard_DofSet() < nodaldofset2->Is_Standard_DofSet(); // std=0, ghost=1 => STD before GHOST
+
+  // now: both nodal dofset are standard dofsets or both nodal dofsets are ghost dofsets
+
+  // SECOND: sort nodal dofset by position
+  if( nodaldofset1->Position() != nodaldofset2->Position() ) // the sets belong to two different phases
+    return nodaldofset1->Position() < nodaldofset2->Position(); // compare the enum: outside=-3 , inside=-2
+
+  // now: both nodal dofset are standard dofsets or both nodal dofsets are ghost dofsets
+  //  AND both nodal dofsets have the same position
+
+  // THIRD: sort by point ids of the contained volume-cell's points
+  const std::set<plain_volumecell_set, Cmp>&  composite1 = nodaldofset1->VolumeCellComposite();
+  const std::set<plain_volumecell_set, Cmp>&  composite2 = nodaldofset2->VolumeCellComposite();
+
+  GEO::CUT::Cmp comp;
+
+  return comp.Compare(composite1, composite2);
 }

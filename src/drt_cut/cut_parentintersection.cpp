@@ -137,7 +137,7 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet( bool include_inner, const 
             }
 
             // sort the dofsets for this node after FindDOFSetsNEW
-            n->SortDOFCellSets();
+            n->SortNodalDofSets();
 
         } // end if n_gid >= 0
 
@@ -439,85 +439,87 @@ void GEO::CUT::ParentIntersection::FindNodalCellSets( bool include_inner,
 /*--------------------------------------------------------------------------------------*
  | connect sets of volumecells for neighboring elements around a node      schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::ConnectNodalDOFSets( std::vector<Node *> &                     nodes,
-                                                      bool                                      include_inner,
-                                                      const DRT::Discretization&                  dis,
-                                                      const std::vector<plain_volumecell_set> & connected_vc_sets,
-                                                      std::vector<std::vector<int> > &          nodaldofset_vc_sets,
-                                                      std::vector<std::map<int,int> >&          vcsets_nid_dofsetnumber_map_toComm)
+void GEO::CUT::ParentIntersection::ConnectNodalDOFSets(
+    std::vector<Node *> &                     nodes,
+    bool                                      include_inner,
+    const DRT::Discretization&                dis,
+    const std::vector<plain_volumecell_set> & connected_vc_sets,
+    std::vector<std::vector<int> > &          nodaldofset_vc_sets,
+    std::vector<std::map<int,int> >&          vcsets_nid_dofsetnumber_map_toComm
+)
 {
 
-    for(std::vector<plain_volumecell_set>::const_iterator s=connected_vc_sets.begin();
-        s!=connected_vc_sets.end();
-        s++)
+  for(std::vector<plain_volumecell_set>::const_iterator s=connected_vc_sets.begin();
+      s!=connected_vc_sets.end();
+      s++)
+  {
+    plain_volumecell_set cells = *s; // this is one connection of volumecells, connected via subelements, within one element
+
+    std::vector<int > nds;
+
+#ifdef PARALLEL
+    // fill the map with nids, whose dofsets for the current set of volumecells has to filled by the nodes row proc
+    // initialize the value (dofset_number with -1)
+    std::map<int,int> nids_dofsetnumber_map_toComm;
+#endif
+
+    // find this plain_volumecell_set in dof_cellsets_ vector of each node
     {
-        plain_volumecell_set cells = *s; // this is one connection of volumecells, connected via subelements, within one element
+      for ( std::vector<Node*>::iterator i=nodes.begin();
+          i!=nodes.end();
+          ++i )
+      {
+        //                Node * n = *i;
+        //
+        //                if( n->Id() >= 0) nds.push_back( n->DofSetNumberNEW( cells ) );
+        //                else dserror("node with negative Id gets no dofnumber!");
 
-        std::vector<int > nds;
+        Node * n = *i;
 
-#ifdef PARALLEL
-        // fill the map with nids, whose dofsets for the current set of volumecells has to filled by the nodes row proc
-        // initialize the value (dofset_number with -1)
-        std::map<int,int> nids_dofsetnumber_map_toComm;
-#endif
+        int nid = n->Id();
 
-        // find this plain_volumecell_set in dof_cellsets_ vector of each node
+        DRT::Node* drt_node = dis.gNode(nid);
+
+        if( nid >= 0)
         {
-            for ( std::vector<Node*>::iterator i=nodes.begin();
-                  i!=nodes.end();
-                  ++i )
-            {
-//                Node * n = *i;
-//
-//                if( n->Id() >= 0) nds.push_back( n->DofSetNumberNEW( cells ) );
-//                else dserror("node with negative Id gets no dofnumber!");
-
-              Node * n = *i;
-
-              int nid = n->Id();
-
-              DRT::Node* drt_node = dis.gNode(nid);
-
-              if( nid >= 0)
-              {
 #ifdef PARALLEL
-                // decide if the information for this cell has to be ordered from row-node or not
-                //REMARK:
-                if(drt_node->Owner() == dis.Comm().MyPID())
-                {
-                  nds.push_back( n->DofSetNumberNEW( cells ) );
-                }
-                else
-                {
-                  // insert the required pair of nid and unset dofsetnumber value (-1)
-                  nids_dofsetnumber_map_toComm.insert(std::pair<int,int>(nid,-1));
+          // decide if the information for this cell has to be ordered from row-node or not
+          //REMARK:
+          if(drt_node->Owner() == dis.Comm().MyPID())
+          {
+            nds.push_back( n->DofSetNumberNEW( cells ) );
+          }
+          else
+          {
+            // insert the required pair of nid and unset dofsetnumber value (-1)
+            nids_dofsetnumber_map_toComm.insert(std::pair<int,int>(nid,-1));
 
-                  // set dofset number to minus one, not a valid dofset number
-                  nds.push_back(-1);
+            // set dofset number to minus one, not a valid dofset number
+            nds.push_back(-1);
 
-                }
+          }
 #else
-                nds.push_back( n->DofSetNumberNEW( cells ) );
+          nds.push_back( n->DofSetNumberNEW( cells ) );
 #endif
-              }
-              else dserror("node with negative Id gets no dofnumber!");
-
-            }
-
         }
+        else dserror("node with negative Id gets no dofnumber!");
 
-        vcsets_nid_dofsetnumber_map_toComm.push_back(nids_dofsetnumber_map_toComm);
-
-        // set the nds vector for each volumecell of the current set
-        for(plain_volumecell_set::iterator c=cells.begin(); c!=cells.end(); c++)
-        {
-          VolumeCell* cell = *c;
-          cell->SetNodalDofSet(nds);
-        }
-
-        nodaldofset_vc_sets.push_back(nds);
+      }
 
     }
+
+    vcsets_nid_dofsetnumber_map_toComm.push_back(nids_dofsetnumber_map_toComm);
+
+    // set the nds vector for each volumecell of the current set
+    for(plain_volumecell_set::iterator c=cells.begin(); c!=cells.end(); c++)
+    {
+      VolumeCell* cell = *c;
+      cell->SetNodalDofSet(nds);
+    }
+
+    nodaldofset_vc_sets.push_back(nds);
+
+  }
 }
 
 

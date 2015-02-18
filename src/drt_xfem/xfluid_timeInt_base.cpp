@@ -1266,10 +1266,8 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
     // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
     std::map<int, std::vector<GEO::CUT::BoundaryCell*> >  bcells_new;
 
-    const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cellsets_new = n_new->DofCellSets();
-
     // the std-set
-    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp >& cell_set_new = dof_cellsets_new[data.nds_np_];
+    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & cell_set_new = n_new->GetNodalDofSet(data.nds_np_)->VolumeCellComposite(); // always the standard dofset
 
     // get all side-ids w.r.t to all volumecells contained in current new set around the current node
     for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator adj_eles = cell_set_new.begin(); adj_eles!=cell_set_new.end(); adj_eles++)

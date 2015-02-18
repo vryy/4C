@@ -78,19 +78,19 @@ void XFEM::XFLUID_SemiLagrange::compute(
   {
   case FRS1FGI1_:
   {
-    if(myrank_ == 0) IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGI1_" << IO::endl;
+    if(myrank_ == 0) IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGI1_ ..." << IO::flush;
     resetState(TimeIntData::basicStd_,TimeIntData::currSL_);
     break;
   }
   case FRSNot1_:
   {
-    if(myrank_ == 0) IO::cout << "\nXFLUID_SemiLagrange::compute: case FRSNot1_" << IO::endl;
+    if(myrank_ == 0) IO::cout << "\nXFLUID_SemiLagrange::compute: case FRSNot1_ ..." << IO::flush;
     resetState(TimeIntData::doneStd_,TimeIntData::currSL_);
     break;
   }
   case FRS1FGINot1_:
   {
-    if(myrank_ == 0) IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGINot1_" << IO::endl;
+    if(myrank_ == 0) IO::cout << "\nXFLUID_SemiLagrange::compute: case FRS1FGINot1_ ..." << IO::flush;
     reinitializeData();
     resetState(TimeIntData::basicStd_,TimeIntData::currSL_);
     resetState(TimeIntData::doneStd_,TimeIntData::currSL_);
@@ -946,10 +946,8 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
 
     if(n!=NULL)
     {
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cellsets_new = n->DofCellSets();
-
       // get the nodal dofset w.r.t the Lagrangean origin
-      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & cellset = dof_cellsets_new[0]; // always the standard dofset
+      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & cellset = n->GetNodalDofSet(0)->VolumeCellComposite(); // always the standard dofset
 
       // get for each adjacent element contained in the nodal dofset the first vc, its parent element is used for the reconstruction
       // REMARK: adjacent elements for that no elementhandle exists in the cut won't be found here
@@ -1355,10 +1353,9 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
 
     if(n!=NULL)
     {
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cellsets_old = n->DofCellSets();
-
       // get the nodal dofset w.r.t the Lagrangean origin
-      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & cellset = dof_cellsets_old[data->nds_[inode]];
+      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & cellset = n->GetNodalDofSet(data->nds_[inode])->VolumeCellComposite();
+
 
       // get for each adjacent element contained in the nodal dofset the first vc, its parent element is used for the reconstruction
       // REMARK: adjacent elements for that no elementhandle exists in the cut won't be found here

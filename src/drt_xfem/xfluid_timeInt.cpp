@@ -304,6 +304,15 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
       // t^(n+1)
       // assume one unique dofset
       const int nds_new = 0;
+      GEO::CUT::Point::PointPosition pos_new = GEO::CUT::Point::undecided;
+
+      if(n_new == NULL)
+        pos_new = GEO::CUT::Point::outside; // by default for nodes outside the cut-boundingbox
+      else
+        pos_new = n_new->Position();
+
+      if(pos_new != GEO::CUT::Point::outside and pos_new != GEO::CUT::Point::inside)
+        dserror("position of unique std-dofset is not inside and not outside, can this happen?");
 
       std::vector<int> dofs_new;
       dofset_new_->Dof(dofs_new, node, nds_new );
@@ -318,7 +327,6 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 
       //-------------------------------
       // t^(n)
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >& dof_cellsets_old = n_old->DofCellSets();
 
       // how many sets of dofs?
       const int numDofSets_old = n_old->NumDofSets(); //= dof_cellsets_old.size()
@@ -333,7 +341,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
       else if(numDofSets_old == 1 and !unique_std_uncut_n)
       {
         // check if there is a standard dofset
-        int nds_old = FindStdDofSet(n_old, dof_cellsets_old);
+        int nds_old = n_old->GetStandardNodalDofSet(pos_new);
 
         if(nds_old != -1) // case b)
         {
@@ -378,7 +386,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
         //-------------------------------------
 
         // check if there is a standard dofset
-        int nds_old = FindStdDofSet(n_old, dof_cellsets_old);
+        int nds_old = n_old->GetStandardNodalDofSet(pos_new);
 
         if( nds_old == -1 )
         {
@@ -440,7 +448,8 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 
       //-------------------------------
       // t^(n+1)
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >& dof_cellsets_new = n_new->DofCellSets();
+      const std::vector<GEO::CUT::NodalDofSet*> & dof_cellsets_new = n_new->NodalDofSets();
+
 
 
       //------------------------------------------
@@ -455,9 +464,9 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
         const int nds_new = 0;
 
         // get the unique cellset
-        const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set = dof_cellsets_new[nds_new];
+        const GEO::CUT::NodalDofSet* nodaldofset = dof_cellsets_new[nds_new];
 
-        if(Is_Std_CellSet(n_new, cell_set)) // case b)
+        if(nodaldofset->Is_Standard_DofSet()) // case b)
         {
           // copy values or SL
           if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP or
@@ -485,21 +494,15 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
         // more than one dofset at new timestep t^(n+1)
         //------------------------------------------
 
-        // REMARK: check if the first set is a std set
-        int nds_new = FindStdDofSet(n_new, dof_cellsets_new);
-
-        if( nds_new == -1 )
-        {
-          dserror("XFLUID-TIMINIT CASE C: node %d,\t first dofset is not a std dofset, structural movement more than one element for node?", gid);
-        }
-
         // loop new dofsets
-        for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >::const_iterator sets=dof_cellsets_new.begin();
+        for(std::vector<GEO::CUT::NodalDofSet* >::const_iterator sets=dof_cellsets_new.begin();
             sets!=dof_cellsets_new.end();
             sets ++)
         {
+          GEO::CUT::NodalDofSet* nodaldofset_new = *sets;
+          int nds_new = sets-dof_cellsets_new.begin();
 
-          if(nds_new == 0) // first dofset (has been checked to be a std-dofset)
+          if(nodaldofset_new->Is_Standard_DofSet()) // first dofset (has been checked to be a std-dofset)
           {
             // copy values or SL
             if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP or
@@ -517,8 +520,6 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
             // for newly created ghost dofsets we have to reconstruct ghost dofs
             MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
           }
-
-          nds_new ++;
         }
       } // more than one dofset
     } //end case C
@@ -552,24 +553,25 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 
       //-------------------------------
       // t^n
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >& dof_cellsets_old = n_old->DofCellSets();
+      const std::vector<GEO::CUT::NodalDofSet*> & dof_cellsets_old = n_old->NodalDofSets();
+
 
       //-------------------------------
       // t^(n+1)
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >& dof_cellsets_new = n_new->DofCellSets();
-
-      int nds_new = 0; // nodal dofset counter
+      const std::vector<GEO::CUT::NodalDofSet*> & dof_cellsets_new = n_new->NodalDofSets();
 
       // loop new dofsets
-      for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >::const_iterator sets=dof_cellsets_new.begin();
+      for(std::vector<GEO::CUT::NodalDofSet* >::const_iterator sets=dof_cellsets_new.begin();
                 sets!=dof_cellsets_new.end();
                 sets ++)
       {
 
-        const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set = *sets;
+        const GEO::CUT::NodalDofSet* cell_set = *sets;
+
+        int nds_new = sets-dof_cellsets_new.begin(); // nodal dofset counter
 
         //is current set at t^(n+1) std or ghost or dofset
-        bool is_std_set_np = Is_Std_CellSet(n_new, cell_set);
+        bool is_std_set_np = cell_set->Is_Standard_DofSet();
 
         //-----------------------------------------------------------------
         // identify cellsets at t^n with current dofset at t^(n+1)
@@ -599,7 +601,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
         }
         else // unique set found
         {
-          bool is_std_set_n = Is_Std_CellSet(n_old, dof_cellsets_old[nds_old]);
+          bool is_std_set_n = dof_cellsets_old[nds_old]->Is_Standard_DofSet();
 
 #ifdef DEBUG_TIMINT
           IO::cout << "XFLUID-TIMINIT CASE D: node " << gid << ",\t corresponding std(yes/no: " << is_std_set_n << ") dofset "
@@ -670,7 +672,6 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
           }
         } // end found set at t^n
 
-        nds_new++;
       } // loop new dofsets
     }//end case D (node handles at t^n and t^(n+1))
 
@@ -722,7 +723,7 @@ bool XFEM::XFluidTimeInt::NonIntersectedElements(DRT::Node* n, const Teuchos::RC
 // find all ghost dofsets around this node and its std-dofset
 // -------------------------------------------------------------------
 void XFEM::XFluidTimeInt::FindSurroundingGhostDofsets(
-    std::map<int,std::vector<int> >&       ghostDofsets,   /// surrounding ghost dofsets to be filled
+    std::map<int,std::set<int> >&          ghostDofsets,   /// surrounding ghost dofsets to be filled, map of ghost nodes and correponding ghost nds index w.r.t given std nodal dofset
     const DRT::Node*                       node,           /// node
     const int                              nds_new         /// dofset of node used for finding the surrounding ghost dofs
     )
@@ -738,14 +739,15 @@ void XFEM::XFluidTimeInt::FindSurroundingGhostDofsets(
     return;
   }
 
-  const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >& dof_cellsets = n->DofCellSets();
+  const std::vector<GEO::CUT::NodalDofSet*> & dof_cellsets = n->NodalDofSets();
+
 
   // get the corresponding cellset
-  const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & cellset = dof_cellsets[nds_new];
+  const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & cellset = dof_cellsets[nds_new]->VolumeCellComposite();
 
   // get for each plain_volumecell_set of the surrounding elements the ghost dofs
 
-  // loop the surrounding elements
+  // loop the surrounding (sub-)elements
   for(std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>::const_iterator e_vcset=cellset.begin();
       e_vcset != cellset.end();
       e_vcset++)
@@ -753,30 +755,37 @@ void XFEM::XFluidTimeInt::FindSurroundingGhostDofsets(
     const GEO::CUT::plain_volumecell_set & vcs= *e_vcset;
 
     // get the element, ask the first vc
-    GEO::CUT::Element* e = vcs[0]->ParentElement();
-    const std::vector<GEO::CUT::Node*> nodes = e->Nodes();
+    int peid = vcs[0]->ParentElement()->GetParentId();
+    DRT::Element * ele = dis_->gElement(peid);
+    DRT::Node* * nodes = ele->Nodes();
 
     const std::vector<int> & nds = vcs[0]->NodalDofSet();
 
     // which dofset is the corresponding to the current vc-connection and is a ghost dofset?
-    for(std::vector<GEO::CUT::Node*>::const_iterator n_it=nodes.begin();
-        n_it!=nodes.end(); n_it++)
+    for(int n_it=0; n_it < ele->NumNode(); n_it++)
     {
+      const DRT::Node* ghost_node = nodes[n_it];
+      const int ghost_nid = ghost_node->Id();
+
+      GEO::CUT::Node* ghost_node_cut = wizard_new_->GetNode(ghost_nid);
+
+      if(ghost_node_cut == NULL) continue; // this node is then a standard node or not on this proc
+
       // check if the neighbored node is a ghost node w.r.t to the cellset of the SL-node
       // if ghost node w.r.t. the cellset then add it to ghostDofsets with the corresponding nds-number
-      if(!Is_Std_CellSet(*n_it, cellset))
+      if(! (dof_cellsets[nds_new]->Contains(ghost_node_cut->point())) )
       {
-        std::map<int, std::vector<int> >::iterator map_it = ghostDofsets.find((*n_it)->Id());
+        std::map<int, std::set<int> >::iterator map_it = ghostDofsets.find(ghost_nid);
         if(map_it==ghostDofsets.end())
         {
-          std::vector<int> tmp_vec;
+          std::set<int> tmp_map;
 
-          tmp_vec.push_back(nds[n_it-nodes.begin()]);
-          ghostDofsets.insert(std::pair<int, std::vector<int> >((*n_it)->Id(),tmp_vec));
+          tmp_map.insert(nds[n_it]); // insert in map, use map as for hex20 elements, the subelements
+          ghostDofsets.insert(std::pair<int, std::set<int> >(ghost_nid,tmp_map));
         }
         else
         {
-          map_it->second.push_back(nds[n_it-nodes.begin()]);
+          map_it->second.insert(nds[n_it]);
         }
       }
     }
@@ -899,32 +908,33 @@ void XFEM::XFluidTimeInt::MarkDofs(
        timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP ) and
        method == INPAR::XFEM::Xf_TimeInt_STD_by_SL)
   {
-    // map of global nid and the corresponding ghost-dofset-number
-    std::map<int,std::vector<int > > ghostDofsets;
+    // map of global nid of a neighbored ghost node and the corresponding ghost-dofset-number which corresponds to the given std dofset at the node
+    std::map<int, std::set<int> > ghostDofsets;
     FindSurroundingGhostDofsets(ghostDofsets, node, nds_new);
 
-    for(std::map<int,std::vector<int > >::iterator it=ghostDofsets.begin(); it!=ghostDofsets.end(); it++)
+    for(std::map<int,std::set<int > >::iterator it=ghostDofsets.begin(); it!=ghostDofsets.end(); it++)
     {
       // mark the ghost dofset in case that the node is a row node on this proc
       // otherwise mark it for export at the end of TransferDofsToNewMap
       int nid=it->first;
-      std::vector<int>& nds = it->second;
-      for(std::vector<int>::iterator nds_it=nds.begin(); nds_it!=nds.end(); nds_it++)
+      std::set<int>& nds = it->second;
+      for(std::set<int>::iterator nds_it=nds.begin(); nds_it!=nds.end(); nds_it++)
       {
-        int dofset = *nds_it;
-        if(dis_->NodeRowMap()->LID(nid) != -1)
+        const int dofset = *nds_it; // dofset number for ghost node
+
+        // comment this block if we do not want to reconstruct ghost values of ghost nodes around SL-standard nodes
+#if(1)
+        if(dis_->NodeRowMap()->LID(nid) != -1) // is row node on this proc
         {
           DRT::Node* n = dis_->gNode(nid);
-          // TODO:
-          // uncomment when no ghost-values shall be copied instead of reconstructed
           MarkDofs(n, dofset, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
         }
         else
         {
-          //TODO:
-          // uncomment when no ghost-values shall be copied instead of reconstructed
+          // in parallel we have to export the info to other procs
           MarkDofsForExport(nid, dofset, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP);
         }
+#endif
       }
     }
   }
@@ -1058,68 +1068,6 @@ bool XFEM::XFluidTimeInt::SetReconstrMethod(
   return false;
 }
 
-// -------------------------------------------------------------------
-// find the standard dofset, return the dofset number of std dofset
-// -------------------------------------------------------------------
-int XFEM::XFluidTimeInt::FindStdDofSet(
-    const GEO::CUT::Node*                                                         node,          /// cut node
-    const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cell_sets  /// dofcellsets of node
-    )
-{
-  int count = 0;
-
-  for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >::const_iterator it = dof_cell_sets.begin();
-      it!= dof_cell_sets.end();
-      it++)
-  {
-    if(Is_Std_CellSet(node,*it))
-    {
-      if(count != 0) dserror("the found standard dofset is not the first dofset! did the cut sorting of dofsets not work?");
-      return count;
-    }
-
-    count ++;
-  }
-
-  return -1;
-}
-
-// -------------------------------------------------------------------
-// is this node a standard or ghost node w.r.t current set
-// -------------------------------------------------------------------
-bool XFEM::XFluidTimeInt::Is_Std_CellSet(
-    const GEO::CUT::Node*                                            node,     /// cut node
-    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp >&  cell_set  /// set of volumecells
-    )
-{
-  GEO::CUT::Point* p = node->point();
-
-  // at least one vc has to contain the node
-  for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator sets=cell_set.begin(); sets!=cell_set.end(); sets++)
-  {
-    const GEO::CUT::plain_volumecell_set& set = *sets;
-
-    for(GEO::CUT::plain_volumecell_set::const_iterator vcs=set.begin(); vcs!=set.end(); vcs++)
-    {
-      if((*vcs)->Contains(p))
-      {
-        // return if at least one vc contains this point
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-const GEO::CUT::Point::PointPosition XFEM::XFluidTimeInt::Get_CellSet_Position(
-    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp >&  cell_set  /// set of volumecells
-)
-{
-  return (*cell_set.begin())[0]->Position();
-}
-
-
 
 // -------------------------------------------------------------------
 // identify cellsets at time t^n with cellsets at time t^(n+1)
@@ -1127,23 +1075,25 @@ const GEO::CUT::Point::PointPosition XFEM::XFluidTimeInt::Get_CellSet_Position(
 int XFEM::XFluidTimeInt::IdentifyOldSets(
     const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
     const GEO::CUT::Node *                                         n_new,               /// node w.r.t to new wizard
-    const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >&  dof_cellsets_old,   /// all dofcellsets at t^n
-    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>&                cell_set_new        /// dofcellset at t^(n+1) which has to be identified
+    const std::vector<GEO::CUT::NodalDofSet*> &                    dof_cellsets_old,    /// all dofcellsets at t^n
+    const GEO::CUT::NodalDofSet*                                   cell_set_new         /// dofcellset at t^(n+1) which has to be identified
 )
 {
 
   //is current set at t^(n+1) std or ghost or dofset
-  bool is_std_set_np = Is_Std_CellSet(n_new, cell_set_new);
+  bool is_std_set_np = cell_set_new->Is_Standard_DofSet();
 
-  const GEO::CUT::Point::PointPosition pos_new = Get_CellSet_Position(cell_set_new);
+  const GEO::CUT::Point::PointPosition pos_new = cell_set_new->Position();
 
   // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
   std::map<int, std::vector<GEO::CUT::BoundaryCell*> >  bcells_new;
 
+  const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & vc_composite = cell_set_new->VolumeCellComposite();
+
   //--------------------------------------------------------
   // t^(n+1)
   // get all side-ids w.r.t to all volumecells contained in current new set around the current node
-  for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator adj_eles = cell_set_new.begin(); adj_eles!=cell_set_new.end(); adj_eles++)
+  for(std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>::const_iterator adj_eles = vc_composite.begin(); adj_eles!=vc_composite.end(); adj_eles++)
   {
     const GEO::CUT::plain_volumecell_set ele_vc = *adj_eles;
 
@@ -1166,19 +1116,19 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
   // PRESELECTION via common cutting sides (for level-sets all sets have the same level-set side and are possible sets)
   //--------------------------------------------------------
   //check each old dofset for identification with new dofset
-  for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >::const_iterator old_sets=dof_cellsets_old.begin();
+  for(std::vector<GEO::CUT::NodalDofSet* >::const_iterator old_sets=dof_cellsets_old.begin();
       old_sets!=dof_cellsets_old.end();
       old_sets++)
   {
     const int setnumber = old_sets - dof_cellsets_old.begin();
 
-    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & old_set = *old_sets;
+    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & old_set = (*old_sets)->VolumeCellComposite();
 
     // for each set a new map of bcs
     std::map<int, std::vector<GEO::CUT::BoundaryCell*> >  bcells_old;
 
     // get all side-ids w.r.t to all volumecells contained in this set around the current node
-    for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator adj_eles = old_set.begin(); adj_eles!=old_set.end(); adj_eles++)
+    for(std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>::const_iterator adj_eles = old_set.begin(); adj_eles!=old_set.end(); adj_eles++)
     {
       const GEO::CUT::plain_volumecell_set ele_vc = *adj_eles;
 
@@ -1231,7 +1181,7 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
         continue;
       }
 
-      const GEO::CUT::Point::PointPosition pos_old = Get_CellSet_Position(dof_cellsets_old[nds_old]);
+      const GEO::CUT::Point::PointPosition pos_old = dof_cellsets_old[nds_old]->Position();
 
       if(pos_old == GEO::CUT::Point::undecided or
           pos_old == GEO::CUT::Point::oncutsurface) dserror("why is the cellcet position undecided or oncutsurface %i, something wrong", pos_old);
@@ -1239,7 +1189,7 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
       // dof-cellsets at new and old time have to correspond to each other w.r.t position of their cellsets (same fluid phase)
       if(pos_old == pos_new)
       {
-        bool is_std_set_n = Is_Std_CellSet(n_old, dof_cellsets_old[nds_old]);
+        bool is_std_set_n = dof_cellsets_old[nds_old]->Is_Standard_DofSet();
 
         if(is_std_set_n) // standard sets are unique, therefore accept the unique set and neglect the others
           unique_set_found = true;
@@ -1298,7 +1248,7 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
     IO::cout << "Exactly one dofset found: nds= " << nds_old << " perform further special checks:" <<IO::endl;
 #endif
 
-    bool is_std_set_n  = Is_Std_CellSet(n_old, dof_cellsets_old[nds_old]);
+    bool is_std_set_n  = dof_cellsets_old[nds_old]->Is_Standard_DofSet();
 
     //---------------------------------------
     // do special checks
@@ -1323,6 +1273,9 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
       if(!successful_check or (successful_check and did_node_change_side))
         return -1; // do not accept the old value
     }
+
+    if ( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+      return nds_old; // don't do further checks, otherwise SpaceTimeCheck can lead to segfault's as sides at t^(n+1) are not available at t^n
 
     //--------------------------------------
     // special check for interface tips if the node has changed the side w.r.t identified sides at t^n and t^(n+1)

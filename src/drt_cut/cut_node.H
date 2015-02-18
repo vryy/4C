@@ -25,11 +25,10 @@ public:
   /// compare operator for sets of plain_volumecell_sets
   bool operator()( const std::set<plain_volumecell_set, Cmp>& set1, const std::set<plain_volumecell_set, Cmp>& set2);
 
-
-private:
-
   /// compare routine for sets of plain_volumecell_set
   bool Compare(const std::set<plain_volumecell_set, Cmp>& set1, const std::set<plain_volumecell_set, Cmp>& set2 );
+
+private:
 
   /// compare routine for plain_volumecell_sets
   bool Compare(const plain_volumecell_set& s1, const plain_volumecell_set& s2 );
@@ -39,6 +38,53 @@ private:
 
 
 };
+
+class NodalDofSet
+{
+public:
+
+  /// constructor
+  NodalDofSet(
+      std::set<plain_volumecell_set,Cmp> connected_volumecells,
+      bool is_std_dofset
+      ) : is_std_dofset_(is_std_dofset)
+  {
+    volumecell_composite_.clear();
+
+    std::copy(
+        connected_volumecells.begin(),
+        connected_volumecells.end(),
+        std::inserter(volumecell_composite_,volumecell_composite_.end())
+    );
+
+  };
+
+  /// return the composite of all connected volumecells between elements and the element's sub-elements
+  const std::set<plain_volumecell_set, Cmp>& VolumeCellComposite() const { return volumecell_composite_; }
+
+  /// is the nodal dofset a standard dofset?
+  bool Is_Standard_DofSet() const { return is_std_dofset_; }
+
+  /// get the position of the nodal dofset which is the same for all its contained volumecells
+  GEO::CUT::Point::PointPosition Position() const;
+
+  /// does the nodal dofset's composite of volumecells contain the point?
+  bool Contains( GEO::CUT::Point* p);
+
+private:
+
+  /// stores for each element (and its subelements) in a 1-ring around the node all its volumecells which has been connected between the surrounding elements
+  /// for linear elements the plain_volumecell_sets contain only one volumecell, for quadratic elements usually more vc's
+  std::set<plain_volumecell_set, Cmp> volumecell_composite_;
+
+  /// is the dofset a standard physical dofset or a ghost dofset?
+  bool is_std_dofset_;
+
+};
+
+
+
+
 
 /// One node in a cut mesh
 /*!
@@ -53,7 +99,7 @@ class Node
 public:
 
   /// constructor
-  Node( int nid, Point * point, double lsv ) : nid_( nid ), point_( point ), lsv_( lsv ), first_set_is_std_set_(false) { selfcutposition_ = Point::undecided; }
+  Node( int nid, Point * point, double lsv ) : nid_( nid ), point_( point ), lsv_( lsv ) { selfcutposition_ = Point::undecided; }
 
   /// get node's node Id
   int Id() const { return nid_; }
@@ -113,14 +159,19 @@ public:
   /*========================================================================*/
 
   /// Assign the vc_sets to the node if possible
-  void AssignNodalCellSet( std::vector<plain_volumecell_set> & ele_vc_sets,
-      std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets);
+  void AssignNodalCellSet(
+      std::vector<plain_volumecell_set> & ele_vc_sets,
+      std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets
+  );
 
   /// Find the dofsets required at this node. (old unused version)
   void FindDOFSets( bool include_inner );
 
   /// Find the dofsets required at this node.
-  void FindDOFSetsNEW( std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets, std::vector<plain_volumecell_set> & cell_sets );
+  void FindDOFSetsNEW(
+      std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets,
+      std::vector<plain_volumecell_set> & cell_sets
+  );
 
   /// get the dofset number of the Volumecell w.r.t this node (old unused version)
   int DofSetNumber( VolumeCell * cell );
@@ -131,17 +182,10 @@ public:
   /// return the sets of volumecells (old unsed version)
   const std::vector<plain_volumecell_set> & DofSets() const { return dofsets_; }
 
-  /// return a vector of sets (corresponding to the dofsets) (connected via subelements) of Volumecells
-  const std::vector<std::set<plain_volumecell_set, Cmp> > & DofCellSets() const { return dof_cellsets_; }
 
-  /// sort all dofsets via xyz point coordinates (use compare functions in cut_node.H)
-  void SortDOFCellSets();
-
-  /// get the number of dofsets at this node
-  int NumDofSets() const { return DofCellSets().size(); }
-
-  /// old variant, unused: get the number of dofsets at this node
-  // int NumDofSets() const { return DofSets().size();}
+  /*========================================================================*/
+  //! @name Selfcut related routines
+  /*========================================================================*/
 
   /// Returns the selfcutposition of this node
   Point::PointPosition SelfCutPosition(){ return selfcutposition_; }
@@ -154,6 +198,34 @@ public:
 
   /// Return true is the given node has same position coordinates as this node
   bool isAtSameLocation ( const Node* nod1 ) const;
+
+
+  /*========================================================================*/
+  //! @name nodal DofSets
+  /*========================================================================*/
+
+  /// get the number of dofsets at this node
+  int NumDofSets() const;
+
+  /// return a vector of all nodal dofsets
+  const std::vector<NodalDofSet* > & NodalDofSets() const { return nodaldofsets_; }
+
+  /// return a vector of all nodal dofsets
+  NodalDofSet* GetNodalDofSet(const int nds) const { return nodaldofsets_[nds]; }
+
+  /// get the unique standard NodalDofSet for a given nodal dofset position
+  int GetStandardNodalDofSet( Point::PointPosition pos );
+
+
+  /*========================================================================*/
+  //! @name sorting of nodal DofSets
+  /*========================================================================*/
+
+  /// sort all nodal dofsets via xyz point coordinates (use compare functions in cut_node.H)
+  void SortNodalDofSets();
+
+  /// compare operator for sorting NodalDofSets
+  bool operator()( NodalDofSet* nodaldofset1, NodalDofSet* nodaldofset2);
 
 
 
@@ -178,30 +250,31 @@ private:
   //! @name private class variables
   /*========================================================================*/
 
-  int nid_;                ///< node's id (the same as in DRT::Discretization)
-  Point* point_;           ///< pointer to the GEO::CUT::Point which defines the node
-  double lsv_;             ///< levelset value if it is a levelset cut
+  int     nid_;                ///< node's id (the same as in DRT::Discretization)
+  Point*  point_;              ///< pointer to the GEO::CUT::Point which defines the node
+  double  lsv_;                ///< levelset value if it is a levelset cut
 
-  plain_edge_set edges_;   ///< all adjacent edges
+  plain_edge_set edges_;       ///< all adjacent edges
 
   std::vector<plain_volumecell_set> dofsets_; ///< set of Volumecells (unused old version)
 
-  /// stores for each node's dofset all its Volumecells (sets of Volumecells) which has been connected in a 1-ring of adjacent elements around the node
-  std::vector<std::set<plain_volumecell_set, Cmp> > dof_cellsets_;
+  std::vector<NodalDofSet*> nodaldofsets_;    ///< nodal dofsets
 
-  /*!
-  \brief boolian if the first set in dof_cellsets_ is a std set or not.
-         If it is, then the first set must not be changed during sorting
-         elements without elementhandle assume the first set as std set!
-         Initialized to false and set to true in case that there is a standard dofset around this node
-         REMARK: don't change the initialization to true!
-   */
-  bool first_set_is_std_set_;
-
-  /// every cutsidenode knows its selfcutposition
-  Point::PointPosition selfcutposition_;
+  Point::PointPosition selfcutposition_;      ///< every cutsidenode knows its selfcutposition
 };
 
+
+/*!
+  \brief internal comparator class used for sorting nodal dofsets.
+         This sorting is necessary to get the
+         same order of sets, important for restarts, restarts of Newton schemes in monolithic solves but also for debugging
+ */
+class NodalDofSetCmp
+{
+public:
+
+  bool operator()(NodalDofSet* nodaldofset1, NodalDofSet* nodaldofset2);
+};
 
 }
 }

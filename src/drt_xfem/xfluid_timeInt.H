@@ -123,7 +123,7 @@ public:
 
   /// find all ghost dofsets around this node and its std-dofset
   void FindSurroundingGhostDofsets(
-      std::map<int,std::vector<int> >&       ghostDofsets,   /// surrounding ghost dofsets to be filled
+      std::map<int,std::set<int> >&          ghostDofsets,   /// surrounding ghost dofsets to be filled, map of ghost nodes and correponding ghost nds index w.r.t given std nodal dofset
       const DRT::Node*                       node,           /// node
       const int                              nds_new         /// dofset of node used for finding the surrounding ghost dofs
   );
@@ -162,28 +162,12 @@ public:
       const INPAR::XFEM::XFluidTimeInt     method                /// which type of reconstruction method
   );
 
-  /// find the standard dofset, return the dofset number of std dofset
-  int FindStdDofSet(
-      const GEO::CUT::Node*                                                         node,          /// cut node
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp > >& dof_cell_sets  /// dofcellsets of node
-  );
-
-  /// is this node a standard or ghost node w.r.t current set
-  bool Is_Std_CellSet(
-      const GEO::CUT::Node*                                           node,     /// cut node
-      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>&  cell_set  /// set of volumecells
-  );
-
-  const GEO::CUT::Point::PointPosition Get_CellSet_Position(
-      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp >&  cell_set  /// set of volumecells
-  );
-
   /// identify cellsets at time t^n with cellsets at time t^(n+1)
   int IdentifyOldSets(
       const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
       const GEO::CUT::Node *                                         n_new,               /// node w.r.t to new wizard
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >&  dof_cellsets_old,   /// all dofcellsets at t^n
-      const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_new                       /// dofcellset at t^(n+1) which has to be identified
+      const std::vector<GEO::CUT::NodalDofSet*> &                    dof_cellsets_old,    /// all dofcellsets at t^n
+      const GEO::CUT::NodalDofSet*                                   cell_set_new         /// dofcellset at t^(n+1) which has to be identified
   );
 
   /// special check if the node slides along the cut surface

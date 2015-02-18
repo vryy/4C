@@ -132,38 +132,22 @@ void FLD::XFluidOutputService::Output(
     else if(gdofs_current.size() % gdofs_original.size() == 0) //multiple dofsets
     {
       // if there are multiple dofsets we write output for the standard dofset
-      GEO::CUT::Node* node = state->Wizard()()->GetNode(xfemnode->Id());
+      GEO::CUT::Node* node = state->Wizard()->GetNode(xfemnode->Id());
 
-      GEO::CUT::Point* p = node->point();
-
-      const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> > & dofcellsets = node->DofCellSets();
+      const std::vector<GEO::CUT::NodalDofSet*> & dofcellsets = node->NodalDofSets();
 
       int nds = 0;
       bool is_std_set = false;
 
       // find the standard dofset
-      for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >::const_iterator cellsets= dofcellsets.begin();
+      for(std::vector<GEO::CUT::NodalDofSet*>::const_iterator cellsets= dofcellsets.begin();
           cellsets!=dofcellsets.end();
           cellsets++)
       {
-        // at least one vc has to contain the node
-        for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator sets=cellsets->begin(); sets!=cellsets->end(); sets++)
-        {
-          const GEO::CUT::plain_volumecell_set& set = *sets;
+        is_std_set = (*cellsets)->Is_Standard_DofSet();
 
-          for(GEO::CUT::plain_volumecell_set::const_iterator vcs=set.begin(); vcs!=set.end(); vcs++)
-          {
-            if((*vcs)->Contains(p))
-            {
-              // return if at least one vc contains this point
-              is_std_set=true;
-              break;
-            }
-          }
-          // break the outer loop if at least one vc contains this point
-          if(is_std_set == true) break;
-        }
-        if(is_std_set == true) break;
+        if(is_std_set) break;
+
         nds++;
       }
 
