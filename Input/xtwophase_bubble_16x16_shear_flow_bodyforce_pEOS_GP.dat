@@ -28,7 +28,7 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1
 --------------------------------------------------------------------------IO
-OUTPUT_GMSH                     yes
+OUTPUT_GMSH                     no
 OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  No
