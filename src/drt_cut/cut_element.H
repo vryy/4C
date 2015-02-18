@@ -55,7 +55,7 @@ public:
       n->Register( this );
       points_.push_back( n->point() );
     }
-    parent_id_ = -1; // initialize with non-reasonable negtive element Id
+    parent_id_ = -1; // initialize with non-reasonable negative element Id
 
     // shadow elements are initialized separately
     isShadow_ = false;
