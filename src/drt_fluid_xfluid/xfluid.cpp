@@ -3078,6 +3078,7 @@ void FLD::XFluid::CutAndSetStateVectors()
   //----------------------------------------------------------------
 
   // create new state class object
+  // state_it_ has been increased by one now
   // performs cut at current interface position and creates new vectors and a new system-matrix
   CreateState();
 
@@ -3096,7 +3097,7 @@ void FLD::XFluid::CutAndSetStateVectors()
   //-------- TRANSFER velnp_Int_n+1_i -> velnp_Int_n+1_i+1  --------
   //----------------------------------------------------------------
 
-  // Transfer vectors from old time-step t^n w.r.t dofset and interface position from t^n
+  // Transfer vectors within the same time-step t^n+1 w.r.t dofset and interface position from last iteration
   // to vectors w.r.t current dofset and interface position
   //
   // NOTE:
@@ -3111,7 +3112,7 @@ void FLD::XFluid::CutAndSetStateVectors()
   //   since then we loose the whole information of the fluid-increments and convergence is not guaranteed at all!
   //TODO: what to do then?
 
-  bool increment_tranfer_success = XTimint_DoIncrementStepTransfer(screen_out);
+  bool increment_tranfer_success = XTimint_DoIncrementStepTransfer(screen_out, firstcall_in_timestep);
 
 
 #if(1) // just possible for partitioned FSI, the usage for pure fluids overwrites the fluid-predictor
@@ -3372,14 +3373,16 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
   {
     Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> dispncol = Teuchos::null;
+
     if (alefluid_)
     {
       Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::rcp(new Epetra_Vector(*DiscretisationXFEM()->InitialDofColMap()));
       Teuchos::RCP<Epetra_Vector> dispncol = Teuchos::rcp(new Epetra_Vector(*DiscretisationXFEM()->InitialDofColMap()));
 
       LINALG::Export(*dispnp_,*dispnpcol); //dispnp row->col
-      LINALG::Export(*dispn_,*dispncol); //dispnp row->col
+      LINALG::Export(*dispn_,*dispncol);   //dispn row->col
     }
+
     XTimint_SemiLagrangean(
         newRowStateVectors,             ///< vectors to be reconstructed
         newdofrowmap,                   ///< dofrowmap at current interface position
@@ -3421,7 +3424,10 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
  | current dofset and interface position (i+1)                          |
  | return, if increment step tranfer was successful!       schott 08/14 |
  *----------------------------------------------------------------------*/
-bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
+bool FLD::XFluid::XTimint_DoIncrementStepTransfer(
+    const bool screen_out,
+    const bool firstcall_in_timestep
+)
 {
 
   const bool check_for_newton_restart =true;
@@ -3477,6 +3483,18 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
   //   exported from row vectors
   //------------------------------------------------------------------------------------
 
+  INPAR::XFEM::XFluidTimeIntScheme timint_method;
+
+  if(firstcall_in_timestep) // for the first iteration we allow the standard reconstruction method as we again reconstruct w.r.t t^n
+    timint_method = xfluid_timintapproach_;
+  else // for further iterations we just allow for simple copying and ghost-penalty reconstruction
+  {
+    if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+      timint_method = xfluid_timintapproach_; // for partitioned fsi with crack we allow e.g. also to use semi-lagrangean
+    else // for monolithic fsi and also for partitioned fsi it is the best not to allow semi-lagrangean
+      timint_method = INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP;
+  }
+
   {
     if(myrank_==0 and screen_out) IO::cout << "\t ...TransferVectorsToNewMap - IncrementStepTransfer...";
 
@@ -3493,7 +3511,7 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
 
     //Note: for reconstruction w.r.t last increment, do not use any semi-lagrangean approach
     XTimint_TransferVectorsBetweenSteps(
-        INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP, // just copying and ghost-penalty allowed for transfer w.r.t last step
+        timint_method,
         discret_,
         rowStateVectors_npi,
         rowStateVectors_npip,
@@ -3521,16 +3539,51 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
 
   if( timint_semi_lagrangean )
   {
-    // How to perform a good prediction as startvalue when restarting the monolithic Newton is required
-    // and simple copying is not possible???
+    if( firstcall_in_timestep ) // allow for semi-lagrangean in the first iteration
+    {
+      Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::null;
+      Teuchos::RCP<Epetra_Vector> dispncol = Teuchos::null;
 
-    IO::cout << "check, how we can get the best predicted velnpip when simple copying + ghost penalty is not sufficient! " << IO::endl;
+      if (alefluid_)
+      {
+        Teuchos::RCP<Epetra_Vector> dispnpcol = Teuchos::rcp(new Epetra_Vector(*DiscretisationXFEM()->InitialDofColMap()));
+        Teuchos::RCP<Epetra_Vector> dispncol = Teuchos::rcp(new Epetra_Vector(*DiscretisationXFEM()->InitialDofColMap()));
 
-    // in this case SEMILAGRANGE is probably not reasonable as it is a mapping within the same timestep
-    // reconstruct the missing values purely via Ghost-Penalty? GP-Faces sufficient? -> maybe use more faces
-    dserror("using a Semi-lagrangean technique for reconstructing w.r.t last increment not reasonable, as the last increment is already an approximation to the actual solution at the same timestep!");
+        LINALG::Export(*dispnp_,*dispnpcol); //dispnp row->col
+        LINALG::Export(*dispn_,*dispncol);   //dispn row->col
+      }
 
-    return false;
+      XTimint_SemiLagrangean(
+          rowStateVectors_npip,           ///< vectors to be reconstructed
+          newdofrowmap,                   ///< dofrowmap at current interface position
+          rowStateVectors_npi,            ///< vectors from which we reconstruct values (same order of vectors as in newRowStateVectors)
+          dispnpcol,                      ///< displacement col - vector timestep n
+          dispncol,                       ///< displacement row - vector timestep n+1
+          &*dofcolmap_Intn_,              ///< dofcolmap at time and interface position t^n
+          reconstr_method,                ///< reconstruction map for nodes and its dofsets
+          screen_out                      ///< screen output?
+          );
+
+    }
+    else
+    {
+      if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+      {
+        IO::cout << "WARNING: CRACK-Application: XTimint_DoIncrementStepTransfer required Semilagrangean algorithm in this iteration! Switch to steady state-predictor! Note: you loose information from the last iteration and start the Fluid-Newton from the stead-state predictor again!" << IO::endl;
+        return false;
+      }
+
+      // How to perform a good prediction as startvalue when restarting the monolithic Newton is required
+      // and simple copying is not possible???
+
+      IO::cout << "check, how we can get the best predicted velnpip when simple copying + ghost penalty is not sufficient! " << IO::endl;
+
+      // in this case SEMILAGRANGE is probably not reasonable as it is a mapping within the same timestep
+      // reconstruct the missing values purely via Ghost-Penalty? GP-Faces sufficient? -> maybe use more faces
+      dserror("using a Semi-lagrangean technique for reconstructing w.r.t last increment not reasonable, as the last increment is already an approximation to the actual solution at the same timestep!");
+
+      return false; // apply the steady-state predictor in first time-step again instead, then we loose the information of the actual fluid predictor
+    }
   }
 
   //------------------------------------------------------------------------------------
@@ -3566,7 +3619,7 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(const bool screen_out)
         timint_semi_lagrangean,  ///< dofs have to be reconstructed via semi-Lagrangean reconstruction techniques
         discret_,                ///< discretization
         dofset_Intnpi_,          ///< dofset last iteration
-        state_->DofSet(),///< dofset current iteration
+        state_->DofSet(),        ///< dofset current iteration
         screen_out               ///< screen output?
     );
   }

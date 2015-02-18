@@ -388,7 +388,10 @@ namespace FLD
     /// from last iteration i to vectors w.r.t current dofset and interface position (i+1)
     ///
     /// return, if increment step transfer was successful!
-    virtual bool XTimint_DoIncrementStepTransfer(const bool screen_out);
+    virtual bool XTimint_DoIncrementStepTransfer(
+        const bool screen_out,
+        const bool firstcall_in_timestep
+    );
 
     /// did the dofsets change?
     bool XTimint_ChangedDofsets(
