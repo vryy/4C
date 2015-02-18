@@ -43,7 +43,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::EvaluateAction(
   {
   case SCATRA::calc_elch_electrode_soc:
   {
-    CalculateElectrodeSOC(ele,params,discretization,lm);
+    CalculateElectrodeSOC(ele,params,discretization,lm,elevec1_epetra);
 
     break;
   }
@@ -114,57 +114,58 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOC(
     const DRT::Element*               ele,              //!< the element we are dealing with
     Teuchos::ParameterList&           params,           //!< parameter list
     DRT::Discretization&              discretization,   //!< discretization
-    const std::vector<int>&           lm                //!< location vector
-  )
+    const std::vector<int>&           lm,               //!< location vector
+    Epetra_SerialDenseVector&         scalars           //!< result vector for scalar integrals to be computed
+    )
 {
-  // consider only unghosted elements for integration
-  if(ele->Owner() == discretization.Comm().MyPID())
+  // safety check
+  if(my::numscal_ != 1)
+    dserror("Electrode state of charge can only be computed for one transported scalar!");
+
+  // get global state vector
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  if(phinp == Teuchos::null)
+    dserror("Cannot get state vector \"phinp\"!");
+
+  // extract local nodal values from global state vector
+  std::vector<double> ephinpvec(lm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,ephinpvec,lm);
+  for(int inode = 0; inode < my::nen_; ++inode)
+    my::ephinp_[0](inode,0) = ephinpvec[inode*my::numdofpernode_];
+
+  // initialize variables for concentration and domain integrals
+  double intconcentration(0.);
+  double intdomain(0.);
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // safety check
-    if(my::numscal_ != 1)
-      dserror("Electrode state of charge can only be computed for one transported scalar!");
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
-    // get global state vector
-    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if(phinp == Teuchos::null)
-      dserror("Cannot get state vector \"phinp\"!");
-
-    // extract local nodal values from global state vector
-    std::vector<double> ephinpvec(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,ephinpvec,lm);
-    for(int inode = 0; inode < my::nen_; ++inode)
-      my::ephinp_[0](inode,0) = ephinpvec[inode*my::numdofpernode_];
-
-    // get current values of concentration and domain integrals
-    double intconcentration = params.get<double>("intconcentration");
-    double intdomain = params.get<double>("intdomain");
-
-    // integration points and weights
-    const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-    // loop over integration points
-    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    // calculate concentration and domain integrals
+    for (int vi=0; vi<my::nen_; ++vi)
     {
-      // evaluate values of shape functions and domain integration factor at current integration point
-      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+      const double funct_vi_fac = my::funct_(vi)*fac;
 
-      // calculate concentration and domain integrals
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        const double funct_vi_fac = my::funct_(vi)*fac;
+      // concentration integral
+      intconcentration += funct_vi_fac*my::ephinp_[0](vi,0);
 
-        // concentration integral
-        intconcentration += funct_vi_fac*my::ephinp_[0](vi,0);
+      // domain integral
+      intdomain += funct_vi_fac;
+    }
+  } // loop over integration points
 
-        // domain integral
-        intdomain += funct_vi_fac;
-      }
-    } // loop over integration points
+  // safety check
+  if(scalars.Length() != 2)
+    dserror("Result vector for electrode state of charge computation has invalid length!");
 
-    // write updated values of concentration and domain integrals back to parameter list
-    params.set<double>("intconcentration",intconcentration);
-    params.set<double>("intdomain",intdomain);
-  } // if(ele->Owner() == discretization.Comm().MyPID())
+  // write results for concentration and domain integrals into result vector
+  scalars(0) = intconcentration;
+  scalars(1) = intdomain;
 
   return;
 } // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOC

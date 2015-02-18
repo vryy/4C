@@ -917,6 +917,104 @@ void DRT::Discretization::EvaluateScalars(
   return;
 }  // DRT::Discretization::EvaluateScalars
 
+
+/*-----------------------------------------------------------------------------*
+ | evaluate/assemble scalars across conditioned elements (public)   fang 02/15 |
+ *-----------------------------------------------------------------------------*/
+void DRT::Discretization::EvaluateScalars(
+    Teuchos::ParameterList&                  params,       //! (in) parameter list
+    Teuchos::RCP<Epetra_SerialDenseVector>   scalars,      //! (out) result vector for scalar quantities to be computed
+    const std::string&                       condstring,   //! (in) name of condition to be evaluated
+    const int                                condid        //! (in) condition ID (optional)
+    )
+{
+  // safety checks
+  if(!Filled())
+    dserror("FillComplete() has not been called on discretization!");
+  if(!HaveDofs())
+    dserror("AssignDegreesOfFreedom() has not been called on discretization!");
+
+  // determine number of scalar quantities to be computed
+  const int numscalars = scalars->Length();
+
+  // safety check
+  if(numscalars <= 0)
+    dserror("Result vector for EvaluateScalars routine must have positive length!");
+
+  // initialize vector for intermediate results of scalar quantities on single processor
+  Epetra_SerialDenseVector cpuscalars(numscalars);
+
+  // define empty dummy element matrices and residuals
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+  // loop over all conditions on discretization
+  for(std::multimap<std::string,Teuchos::RCP<Condition> >::iterator conditionpair=condition_.begin(); conditionpair!=condition_.end(); ++conditionpair)
+  {
+    // consider only conditions with specified label
+    if(conditionpair->first == condstring)
+    {
+      // extract condition from map
+      DRT::Condition& condition = *(conditionpair->second);
+
+      // additional filtering by condition ID if explicitly provided
+      if(condid == -1 or condid == condition.GetInt("ConditionID"))
+      {
+        // extract geometry map of current condition
+        std::map<int,Teuchos::RCP<DRT::Element> >& geometry = condition.Geometry();
+
+        // add condition to parameter list for elements
+        params.set<Teuchos::RCP<DRT::Condition> >("condition", conditionpair->second);
+
+        // loop over all elements associated with current condition
+        for(std::map<int,Teuchos::RCP<DRT::Element> >::iterator elementpair=geometry.begin(); elementpair!=geometry.end(); ++elementpair)
+        {
+          // extract element from map
+          DRT::Element& element = *(elementpair->second);
+
+          // consider only unghosted elements for evaluation
+          if(element.Owner() == Comm().MyPID())
+          {
+            // construct location vector for current element
+            Element::LocationArray la(dofsets_.size());
+            element.LocationVector(*this,la,false);
+
+            // initialize result vector for current element
+            Epetra_SerialDenseVector elescalars(numscalars);
+
+            // call element evaluation routine
+            int error = element.Evaluate(
+                params,
+                *this,
+                la,
+                elematrix1,
+                elematrix2,
+                elescalars,
+                elevector2,
+                elevector3
+                );
+
+            // safety check
+            if(error)
+              dserror("Element evaluation failed for element %d on processor %d with error code %d!",element.Id(),Comm().MyPID(),error);
+
+            // update result vector on single processor
+            cpuscalars += elescalars;
+          } // if(element.Owner() == Comm().MyPID())
+        } // loop over elements
+      } // if(condid == -1 or condid == condition.GetInt("ConditionID"))
+    } // if(conditionpair->first == condstring)
+  } // loop over conditions
+
+  // communicate results across all processors
+  Comm().SumAll(cpuscalars.Values(),scalars->Values(),numscalars);
+
+  return;
+} // DRT::Discretization::EvaluateScalars
+
+
 /*----------------------------------------------------------------------*
  |  evaluate/assemble scalars across elements (public)         gee 05/11|
  *----------------------------------------------------------------------*/

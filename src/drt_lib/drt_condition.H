@@ -392,7 +392,7 @@ public:
   \brief Return type of geometry this condition lives on
 
   The type of geometry this condition lives on determines what type of
-  geometry description is build for this ocndition iff GeometryDescription()==true
+  geometry description is build for this condition iff GeometryDescription()==true
 
   */
   inline virtual DRT::Condition::GeometryType GType() const { return gtype_; }

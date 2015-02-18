@@ -114,7 +114,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
 
   case SCATRA::bd_calc_elch_cell_voltage:
   {
-    CalcCellVoltage(ele,params,discretization,lm);
+    CalcCellVoltage(ele,params,discretization,lm,elevec1_epetra);
 
     break;
   }
@@ -271,42 +271,39 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
   }
   else
   {
-    // NOTE: add integral value only for elements which are NOT ghosted!
-    if(ele->Owner() == discretization.Comm().MyPID())
+    // get actual values of transported scalars
+    Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
+    if(phidtnp == Teuchos::null)
+      dserror("Cannot get state vector 'ephidtnp'");
+    // extract local values from the global vector
+    std::vector<double> ephidtnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phidtnp,ephidtnp,lm);
+
+    if(not is_stationary)
     {
-      // get actual values of transported scalars
-      Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
-      if(phidtnp == Teuchos::null)
-        dserror("Cannot get state vector 'ephidtnp'");
-      // extract local values from the global vector
-      std::vector<double> ephidtnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*phidtnp,ephidtnp,lm);
-
-      if(not is_stationary)
-      {
-        // One-step-Theta:    timefacrhs = theta*dt
-        // BDF2:              timefacrhs = 2/3 * dt
-        // generalized-alpha: timefacrhs = (gamma/alpha_M) * dt
-        timefac = my::scatraparamstimint_->TimeFacRhs();
-        if(timefac < 0.)
-          dserror("time factor is negative.");
-      }
-
-      ElectrodeStatus(
-          ele,
-          params,
-          cond,
-          ephinp,
-          ephidtnp,
-          kinetics,
-          *stoich,
-          nume,
-          pot0,
-          frt,
-          timefac,
-          scalar
-          );
+      // One-step-Theta:    timefacrhs = theta*dt
+      // BDF2:              timefacrhs = 2/3 * dt
+      // generalized-alpha: timefacrhs = (gamma/alpha_M) * dt
+      timefac = my::scatraparamstimint_->TimeFacRhs();
+      if(timefac < 0.)
+        dserror("time factor is negative.");
     }
+
+    ElectrodeStatus(
+        ele,
+        elevec1_epetra,
+        params,
+        cond,
+        ephinp,
+        ephidtnp,
+        kinetics,
+        *stoich,
+        nume,
+        pot0,
+        frt,
+        timefac,
+        scalar
+        );
   }
 }
 
@@ -437,54 +434,55 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcCellVoltage(
     const DRT::Element*               ele,              //!< the element we are dealing with
     Teuchos::ParameterList&           params,           //!< parameter list
     DRT::Discretization&              discretization,   //!< discretization
-    const std::vector<int>&           lm                //!< location vector
+    const std::vector<int>&           lm,               //!< location vector
+    Epetra_SerialDenseVector&         scalars           //!< result vector for scalar integrals to be computed
     )
 {
-  // consider only unghosted elements for integration
-  if(ele->Owner() == discretization.Comm().MyPID())
+  // get global state vector
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  if(phinp == Teuchos::null)
+    dserror("Cannot get state vector \"phinp\"!");
+
+  // extract local nodal values of electric potential from global state vector
+  std::vector<double> ephinpvec(lm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,ephinpvec,lm);
+  LINALG::Matrix<my::nen_,1> epotnp(true);
+  for(int inode=0; inode<my::nen_; ++inode)
+    epotnp(inode,0) = ephinpvec[inode*my::numdofpernode_+my::numscal_];
+
+  // initialize variables for electric potential and domain integrals
+  double intpotential(0.);
+  double intdomain(0.);
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    // get global state vector
-    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if(phinp == Teuchos::null)
-      dserror("Cannot get state vector \"phinp\"!");
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = my::EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
 
-    // extract local nodal values of electric potential from global state vector
-    std::vector<double> ephinpvec(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,ephinpvec,lm);
-    LINALG::Matrix<my::nen_,1> epotnp(true);
-    for(int inode=0; inode<my::nen_; ++inode)
-      epotnp(inode,0) = ephinpvec[inode*my::numdofpernode_+my::numscal_];
-
-    // get current values of potential and domain integrals
-    double intpotential = params.get<double>("intpotential");
-    double intdomain = params.get<double>("intdomain");
-
-    // integration points and weights
-    const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-    // loop over integration points
-    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    // calculate potential and domain integrals
+    for (int vi=0; vi<my::nen_; ++vi)
     {
-      // evaluate values of shape functions and domain integration factor at current integration point
-      const double fac = my::EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
+      const double funct_vi_fac = my::funct_(vi)*fac;
 
-      // calculate potential and domain integrals
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        const double funct_vi_fac = my::funct_(vi)*fac;
+      // potential integral
+      intpotential += funct_vi_fac*epotnp(vi,0);
 
-        // potential integral
-        intpotential += funct_vi_fac*epotnp(vi,0);
+      // domain integral
+      intdomain += funct_vi_fac;
+    }
+  } // loop over integration points
 
-        // domain integral
-        intdomain += funct_vi_fac;
-      }
-    } // loop over integration points
+  // safety check
+  if(scalars.Length() != 2)
+    dserror("Result vector for cell voltage computation has invalid length!");
 
-    // write updated values of potential and domain integrals back to parameter list
-    params.set<double>("intpotential",intpotential);
-    params.set<double>("intdomain",intdomain);
-  } // if(ele->Owner() == discretization.Comm().MyPID())
+  // write results for electric potential and domain integrals into result vector
+  scalars(0) = intpotential;
+  scalars(1) = intdomain;
 
   return;
 }
@@ -1107,6 +1105,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
     const DRT::Element*           ele,        ///< the actual boundary element
+    Epetra_SerialDenseVector&     scalars,    ///< scalars to be computed
     Teuchos::ParameterList&       params,     ///< the parameter list
     Teuchos::RCP<DRT::Condition>  cond,       ///< the condition
     const std::vector<double>&    ephinp,     ///< current conc. and potential values
@@ -1138,17 +1137,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
   // get variables with their current values
   // TODO
   // current integrals: (i = epsilon i^E ) is calculated in case of porous media
-  double currentintegral   = params.get<double>("currentintegral");
-  double currentdlintegral = params.get<double>("currentdlintegral");
-  double boundaryint       = params.get<double>("boundaryintegral");
-  double electpotentialint = params.get<double>("electpotentialintegral");
-  double overpotentialint  = params.get<double>("overpotentialintegral");
-  double electdiffpotint   = params.get<double>("electrodedifferencepotentialintegral");
-  double opencircuitpotint = params.get<double>("opencircuitpotentialintegral");
-  double concentrationint  = params.get<double>("concentrationintegral");
-  double currderiv         = params.get<double>("currentderiv");
-  double currderivDL       = params.get<double>("currentderivDL");
-  double currentresidual   = params.get<double>("currentresidual");
+  double currentintegral(0.);
+  double currentdlintegral(0.);
+  double boundaryint(0.);
+  double electpotentialint(0.);
+  double overpotentialint(0.);
+  double electdiffpotint(0.);
+  double opencircuitpotint(0.);
+  double concentrationint(0.);
+  double currderiv(0.);
+  double currentresidual(0.);
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -1658,18 +1656,17 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
     dserror("There is no oxidized species O (stoich<0) defined in your input file!! \n"
             " Statistics could not be evaluated");
 
-  // add contributions to the global values
-  params.set<double>("currentintegral",currentintegral);
-  params.set<double>("currentdlintegral",currentdlintegral);
-  params.set<double>("boundaryintegral",boundaryint);
-  params.set<double>("electpotentialintegral",electpotentialint);
-  params.set<double>("overpotentialintegral",overpotentialint);
-  params.set<double>("electrodedifferencepotentialintegral",electdiffpotint);
-  params.set<double>("opencircuitpotentialintegral",opencircuitpotint);
-  params.set<double>("concentrationintegral",concentrationint);
-  params.set<double>("currentderiv",currderiv);
-  params.set<double>("currentderivDL",currderivDL);
-  params.set<double>("currentresidual",currentresidual);
+  // write results into result vector
+  scalars(0) = currentintegral;
+  scalars(1) = currentdlintegral;
+  scalars(2) = boundaryint;
+  scalars(3) = electpotentialint;
+  scalars(4) = overpotentialint;
+  scalars(5) = electdiffpotint;
+  scalars(6) = opencircuitpotint;
+  scalars(7) = concentrationint;
+  scalars(8) = currderiv;
+  scalars(9) = currentresidual;
 
   return;
 } // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus

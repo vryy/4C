@@ -441,14 +441,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     //vector<double> locfluxintegral = CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
     //std::cout<<"locfluxintegral[0] = "<<locfluxintegral[0]<<std::endl;
 
-    // NOTE: add value only for boundary elements which are NOT ghosted!
-
-    // if the flux integral for the whole boundary shell be computed as well
-    // by summing up locfluxintegral[k] for each element, then, of course,
-    // values only for boundary elements which are NOT ghosted should be summed up
-    // and added to the parameter list for transport to the outside world
-    //    if(ele->Owner() == discretization.Comm().MyPID())
-
     break;
   }
   case SCATRA::bd_calc_s2icoupling:

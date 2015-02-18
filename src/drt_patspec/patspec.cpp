@@ -200,7 +200,7 @@ void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
     new DRT::Condition(0,DRT::Condition::PatientSpecificData,false,DRT::Condition::Volume));
   cond->Add("elestrength",*elestrength);
 
-  // check whether discretization has been filled before putting ocndition to dis
+  // check whether discretization has been filled before putting condition to dis
   bool filled = dis->Filled();
   dis->SetCondition("PatientSpecificData",cond);
   if (filled && !dis->Filled()) dis->FillComplete();
@@ -413,7 +413,7 @@ void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
     Teuchos::RCP<DRT::Condition> cond = Teuchos::rcp( new DRT::Condition(0,DRT::Condition::PatientSpecificData,false,DRT::Condition::Volume));
     cond->Add("local radius",*locradele);
 
-    // check whether discretization has been filled before putting ocndition to dis
+    // check whether discretization has been filled before putting condition to dis
     bool filled = dis->Filled();
     dis->SetCondition("PatientSpecificData",cond);
     if (filled && !dis->Filled()) dis->FillComplete();
@@ -480,7 +480,7 @@ void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
     new DRT::Condition(0,DRT::Condition::PatientSpecificData,false,DRT::Condition::Volume));
   cond->Add("local radius",*locradele);
 
-  // check whether discretization has been filled before putting ocndition to dis
+  // check whether discretization has been filled before putting condition to dis
   bool filled = dis->Filled();
   dis->SetCondition("PatientSpecificData",cond);
   if (filled && !dis->Filled()) dis->FillComplete();

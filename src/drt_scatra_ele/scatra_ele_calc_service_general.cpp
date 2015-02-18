@@ -124,32 +124,29 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateAction(
   }
   case SCATRA::calc_mean_scalars:
   {
-    // NOTE: add integral values only for elements which are NOT ghosted!
-    if (ele->Owner() == discretization.Comm().MyPID())
+    // get flag for inverting
+    bool inverting = params.get<bool>("inverting");
+
+    // need current scalar vector
+    // -> extract local values from the global vectors
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+    std::vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+    // fill all element arrays
+    for (int i=0;i<nen_;++i)
     {
-      // get flag for inverting
-      bool inverting = params.get<bool>("inverting");
-
-      // need current scalar vector
-      // -> extract local values from the global vectors
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-      std::vector<double> myphinp(lm.size());
-      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-      // fill all element arrays
-      for (int i=0;i<nen_;++i)
+      for (int k = 0; k< numscal_; ++k)
       {
-        for (int k = 0; k< numscal_; ++k)
-        {
-          // split for each transported scalar, insert into element arrays
-          ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-        }
-      } // for i
+        // split for each transported scalar, insert into element arrays
+        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+      }
+    } // for i
 
-      // calculate scalars and domain integral
-      CalculateScalars(ele,elevec1_epetra,inverting);
-    }
+    // calculate scalars and domain integral
+    CalculateScalars(ele,elevec1_epetra,inverting);
+
     break;
   }
   // calculate filtered fields for calculation of turbulent Prandtl number

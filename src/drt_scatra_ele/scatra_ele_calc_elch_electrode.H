@@ -172,10 +172,11 @@ namespace DRT
 
         //! calculate electrode state of charge
         void CalculateElectrodeSOC(
-          const DRT::Element*               ele,              //!< the element we are dealing with
-          Teuchos::ParameterList&           params,           //!< parameter list
-          DRT::Discretization&              discretization,   //!< discretization
-          const std::vector<int>&           lm                //!< location vector
+            const DRT::Element*               ele,              //!< the element we are dealing with
+            Teuchos::ParameterList&           params,           //!< parameter list
+            DRT::Discretization&              discretization,   //!< discretization
+            const std::vector<int>&           lm,               //!< location vector
+            Epetra_SerialDenseVector&         scalars           //!< result vector for scalar integrals to be computed
         );
 
         //! compute element matrix and residual for initial electric potential field

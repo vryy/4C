@@ -1742,6 +1742,25 @@ public:
   );
 
   /*!
+   * \brief Assemble scalar quantities across conditioned elements
+   *
+   * Every element is only called \b once by its owning processor. (We are
+   * checking this inside the function.) At this call the element return its value(s),
+   * i.e. its scalar(s), and contributes to the global
+   * value of the respective scalar quantity(ies).
+   *
+   * Example: strain energy in structures
+   *
+   * \author fang \date 02/15
+   */
+  void EvaluateScalars(
+      Teuchos::ParameterList&                  params,       //! (in) parameter list
+      Teuchos::RCP<Epetra_SerialDenseVector>   scalars,      //! (out) result vector for scalar quantities to be computed
+      const std::string&                       condstring,   //! (in) name of condition to be evaluated
+      const int                                condid = -1   //! (in) condition ID (optional)
+  );
+
+  /*!
    * \brief Assemble scalar quantities for each element separately
    *
    * Every element is only called \b once by its owning processor. (We are

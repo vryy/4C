@@ -91,6 +91,7 @@ namespace DRT
       //! provide electrode kinetics status information
       void ElectrodeStatus(
           const DRT::Element*           ele,        ///< the actual boundary element
+          Epetra_SerialDenseVector&     scalars,    ///< scalars to be computed
           Teuchos::ParameterList&       params,     ///< the parameter list
           Teuchos::RCP<DRT::Condition>  cond,       ///< the condition
           const std::vector<double>&    ephinp,     ///< current conc. and potential values
@@ -119,7 +120,8 @@ namespace DRT
           const DRT::Element*               ele,              //!< the element we are dealing with
           Teuchos::ParameterList&           params,           //!< parameter list
           DRT::Discretization&              discretization,   //!< discretization
-          const std::vector<int>&           lm                //!< location vector
+          const std::vector<int>&           lm,               //!< location vector
+          Epetra_SerialDenseVector&         scalars           //!< result vector for scalar integrals to be computed
       );
 
       //! extract valence of species k from element material

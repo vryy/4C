@@ -611,76 +611,41 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   // add element parameters according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
-  // values to be computed
-  eleparams.set("currentintegral",0.0);
-  eleparams.set("currentdlintegral",0.0);
-  eleparams.set("boundaryintegral",0.0);
-  eleparams.set("electpotentialintegral",0.0);
-  eleparams.set("overpotentialintegral",0.0);
-  eleparams.set("electrodedifferencepotentialintegral",0.0);
-  eleparams.set("opencircuitpotentialintegral",0.0);
-  eleparams.set("concentrationintegral",0.0);
-  eleparams.set("currentderiv",0.0);
-  eleparams.set("currentderivDL",0.0);
-  eleparams.set("currentresidual",0.0);
+  // initialize result vector
+  // physical meaning of vector components is described below
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(10));
 
-  // would be nice to have a EvaluateScalar for conditions!!!
-  discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,"ElchBoundaryKinetics",condid);
+  // evaluate relevant boundary integrals
+  discret_->EvaluateScalars(eleparams,scalars,"ElchBoundaryKinetics",condid);
 
-  // get integral of current on this proc
-  double currentintegral = eleparams.get<double>("currentintegral");
-  // get integral of current on this proc
-  double currentdlintegral = eleparams.get<double>("currentdlintegral");
-  // get area of the boundary on this proc
-  double boundaryint = eleparams.get<double>("boundaryintegral");
-  // get integral of overpotential on this proc
-  double electpotentialint = eleparams.get<double>("electpotentialintegral");
-  // get integral of overpotential on this proc
-  double overpotentialint = eleparams.get<double>("overpotentialintegral");
-  // get integral of overpotential on this proc
-  double epdint = eleparams.get<double>("electrodedifferencepotentialintegral");
-  // get integral of overpotential on this proc
-  double ocpint = eleparams.get<double>("opencircuitpotentialintegral");
-  // get integral of reactant concentration on this proc
-  double cint = eleparams.get<double>("concentrationintegral");
-  // tangent of current w.r.t. electrode potential on this proc
-  double currderiv = eleparams.get<double>("currentderiv");
-  // tangent of current w.r.t. electrode potential on this proc
-  double currderivDL = eleparams.get<double>("currentderivDL");
-  // get negative current residual (rhs of galvanostatic balance equation)
-  double currentresidual = eleparams.get<double>("currentresidual");
-
-  // care for the parallel case
-  double parcurrentintegral = 0.0;
-  discret_->Comm().SumAll(&currentintegral,&parcurrentintegral,1);
-  double parcurrentdlintegral = 0.0;
-  discret_->Comm().SumAll(&currentdlintegral,&parcurrentdlintegral,1);
-  double parboundaryint = 0.0;
-  discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
-  double parelectpotentialint = 0.0;
-  discret_->Comm().SumAll(&electpotentialint,&parelectpotentialint,1);
-  double paroverpotentialint = 0.0;
-  discret_->Comm().SumAll(&overpotentialint,&paroverpotentialint,1);
-  double parepdint = 0.0;
-  discret_->Comm().SumAll(&epdint,&parepdint,1);
-  double parocpint = 0.0;
-  discret_->Comm().SumAll(&ocpint,&parocpint,1);
-  double parcint = 0.0;
-  discret_->Comm().SumAll(&cint,&parcint,1);
-  double parcurrderiv = 0.0;
-  discret_->Comm().SumAll(&currderiv,&parcurrderiv ,1);
-  double parcurrderivDL = 0.0;
-  discret_->Comm().SumAll(&currderivDL,&parcurrderivDL ,1);
-  double parcurrentresidual = 0.0;
-  discret_->Comm().SumAll(&currentresidual,&parcurrentresidual ,1);
+  // get total integral of current
+  double currentintegral = (*scalars)(0);
+  // get total integral of double layer current
+  double currentdlintegral = (*scalars)(1);
+  // get total boundary area
+  double boundaryint = (*scalars)(2);
+  // get total integral of electric potential
+  double electpotentialint = (*scalars)(3);
+  // get total integral of electric overpotential
+  double overpotentialint = (*scalars)(4);
+  // get total integral of electric potential difference
+  double epdint = (*scalars)(5);
+  // get total integral of open circuit electric potential
+  double ocpint = (*scalars)(6);
+  // get total integral of reactant concentration
+  double cint = (*scalars)(7);
+  // get derivative of integrated current with respect to electrode potential
+  double currderiv = (*scalars)(8);
+  // get negative current residual (right-hand side of galvanostatic balance equation)
+  double currentresidual = (*scalars)(9);
 
   // specify some return values
-  currentsum += parcurrentintegral; // sum of currents
-  currtangent  = parcurrderiv;      // tangent w.r.t. electrode potential on metal side
-  currresidual = parcurrentresidual;
-  electrodesurface = parboundaryint;
-  electrodepot = parelectpotentialint/parboundaryint;
-  meanoverpot = paroverpotentialint/parboundaryint;
+  currentsum += currentintegral; // sum of currents
+  currtangent = currderiv;      // tangent w.r.t. electrode potential on metal side
+  currresidual = currentresidual;
+  electrodesurface = boundaryint;
+  electrodepot = electpotentialint/boundaryint;
+  meanoverpot = overpotentialint/boundaryint;
 
   // clean up
   discret_->ClearState();
@@ -691,7 +656,7 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
     if (printtoscreen) // print out results to screen
     {
       printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
-          condid,parcurrentintegral+currentdlintegral,parboundaryint,parcurrentintegral/parboundaryint+currentdlintegral/parboundaryint,paroverpotentialint/parboundaryint, electrodepot, parcint/parboundaryint);
+          condid,currentintegral+currentdlintegral,boundaryint,currentintegral/boundaryint+currentdlintegral/boundaryint,overpotentialint/boundaryint, electrodepot, cint/boundaryint);
     }
 
     if (printtofile)// write results to file
@@ -710,23 +675,23 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
       else
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-      f << condid << "," << Step() << "," << Time() << "," << parcurrentintegral+currentdlintegral  << "," << parboundaryint
-      << "," << parcurrentintegral/parboundaryint << "," << parcurrentdlintegral/parboundaryint
-      << "," << paroverpotentialint/parboundaryint << "," <<
-      parepdint/parboundaryint << "," << parocpint/parboundaryint << "," << electrodepot << ","
-      << parcint/parboundaryint << "\n";
+      f << condid << "," << Step() << "," << Time() << "," << currentintegral+currentdlintegral  << "," << boundaryint
+      << "," << currentintegral/boundaryint << "," << currentdlintegral/boundaryint
+      << "," << overpotentialint/boundaryint << "," <<
+      epdint/boundaryint << "," << ocpint/boundaryint << "," << electrodepot << ","
+      << cint/boundaryint << "\n";
       f.flush();
       f.close();
     }
 
-    (*singleelectkin)[0]= parcint/parboundaryint;
-    (*singleelectkin)[1]= paroverpotentialint/parboundaryint;
+    (*singleelectkin)[0]= cint/boundaryint;
+    (*singleelectkin)[1]= overpotentialint/boundaryint;
   } // if (myrank_ == 0)
 
   // galvanostatic simulations:
   // add the double layer current to the Butler-Volmer current
-  currentsum += parcurrentdlintegral;
-  (*singleelectkin)[2]=currentsum;
+  currentsum += currentdlintegral;
+  (*singleelectkin)[2] = currentsum;
 
   return singleelectkin;
 } // SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary
@@ -765,23 +730,17 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       // action for elements
       condparams.set<int>("action",SCATRA::calc_elch_electrode_soc);
 
-      // initialize concentration and domain integrals
-      condparams.set("intconcentration",0.);
-      condparams.set("intdomain",0.);
+      // initialize result vector
+      // first component = concentration integral, second component = domain integral
+      Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(2));
 
       // evaluate current condition for electrode state of charge
-      discret_->EvaluateCondition(condparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,"ElectrodeSOC",condid);
+      discret_->EvaluateScalars(condparams,scalars,"ElectrodeSOC",condid);
       discret_->ClearState();
 
       // extract concentration and domain integrals
-      double myintconcentration = condparams.get<double>("intconcentration");
-      double myintdomain = condparams.get<double>("intdomain");
-
-      // communicate results
-      double intconcentration(0.);
-      discret_->Comm().SumAll(&myintconcentration,&intconcentration,1);
-      double intdomain(0.);
-      discret_->Comm().SumAll(&myintdomain,&intdomain,1);
+      double intconcentration = (*scalars)(0);
+      double intdomain = (*scalars)(1);
 
       // extract reference concentrations at 0% and 100% state of charge
       const double c_0 = conditions[condid]->GetDouble("c_0%");
@@ -861,23 +820,17 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
       // action for elements
       condparams.set<int>("action",SCATRA::bd_calc_elch_cell_voltage);
 
-      // initialize potential and domain integrals
-      condparams.set("intpotential",0.);
-      condparams.set("intdomain",0.);
+      // initialize result vector
+      // first component = electric potential integral, second component = domain integral
+      Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(2));
 
       // evaluate current condition for electrode state of charge
-      discret_->EvaluateCondition(condparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,"CellVoltage",condid);
+      discret_->EvaluateScalars(condparams,scalars,"CellVoltage",condid);
       discret_->ClearState();
 
       // extract concentration and domain integrals
-      double myintpotential = condparams.get<double>("intpotential");
-      double myintdomain = condparams.get<double>("intdomain");
-
-      // communicate results
-      double intpotential(0.);
-      discret_->Comm().SumAll(&myintpotential,&intpotential,1);
-      double intdomain(0.);
-      discret_->Comm().SumAll(&myintdomain,&intdomain,1);
+      double intpotential = (*scalars)(0);
+      double intdomain = (*scalars)(1);
 
       // compute mean electric potential of current electrode
       potentials[condid] = intpotential/intdomain;
