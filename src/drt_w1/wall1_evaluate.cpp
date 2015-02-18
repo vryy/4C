@@ -870,18 +870,16 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
                                           Epetra_SerialDenseVector& elevec1,
                                           Epetra_SerialDenseMatrix* elemat1)
 {
-  // find out whether we will use a time curve
+  // get values and switches from the condition
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+  const std::vector<int>*    curve = condition.Get<std::vector<int> >   ("curve");
+  const std::vector<int>*    funct = condition.Get<std::vector<int> >   ("funct");
+
+  // check total time
   bool usetime = true;
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
-
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;  // default time curve factor
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // no. of nodes on this surface
   const int iel = NumNode();
@@ -928,7 +926,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
   //  if (!thick) dserror("Cannot find vector of nodal thickness");
 
   // shape functions
-  Epetra_SerialDenseVector funct(iel);
+  Epetra_SerialDenseVector shapefcts(iel);
   // natural derivatives of shape funcions
   Epetra_SerialDenseMatrix deriv(numdim_,iel);
 
@@ -942,12 +940,6 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
     xrefe(0,k) = Nodes()[k]->X()[0];
     xrefe(1,k) = Nodes()[k]->X()[1];
   }
-
-
-  // get values and switches from the condition
-  const std::vector<int>*    onoff = condition.Get<std::vector<int> >("onoff");
-  const std::vector<double>* val   = condition.Get<std::vector<double> >("val");
-  const std::vector<int>* spa_func = condition.Get<std::vector<int> >("funct");
 
   /*=================================================== integration loops */
   for (int ip=0; ip<intpoints.nquad; ++ip)
@@ -963,7 +955,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
        distype != DRT::Element::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+      DRT::UTILS::shape_function_2D       (shapefcts,e1,e2,distype);
       DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
     }
     else
@@ -974,7 +966,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
       gp(1)=e2;
 
       DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
-      (funct  ,
+      (shapefcts,
        deriv  ,
        gp     ,
        myknots,
@@ -986,11 +978,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
     w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
 
     /*------------------------------------ integration factor  -------*/
-    double fac=0;
-    fac = wgt * det;
-
-    double functfac = 1.0;
-    int functnum = -1;
+    double fac = wgt * det;
 
     // load vector ar
     double ar[noddof_];
@@ -998,40 +986,40 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
     // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]
     for (int i=0; i<noddof_; ++i)
     {
-      if ((*onoff)[i]) // is this dof activated?
+      // factor given by spatial function
+      const int functnum = (funct) ? (*funct)[i] : -1;
+      double functfac = 1.0;
+      if (functnum > 0)
       {
-        // factor given by spatial function
-        if (spa_func)
-          functnum = (*spa_func)[i];
+        // calculate reference position of GP
+        LINALG::SerialDenseMatrix gp_coord(1, numdim_);
+        gp_coord.Multiply('T', 'T', 1.0, funct, xrefe, 0.0);
 
-        if (functnum > 0)
-        {
-          // calculate reference position of GP
-          LINALG::SerialDenseMatrix gp_coord(1, numdim_);
-          gp_coord.Multiply('T', 'T', 1.0, funct, xrefe, 0.0);
+        // write coordinates in another datatype
+        double gp_coord2[3]; // the position vector has to be given in 3D!!!
+        for (int k = 0; k < numdim_; k++)
+          gp_coord2[k] = gp_coord(0, k);
+        for (int k = numdim_; k < 3; k++) // set a zero value for the remaining spatial directions
+          gp_coord2[k] = 0.0;
+        const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
-          // write coordinates in another datatype
-          double gp_coord2[3]; // the position vector has to be given in 3D!!!
-          for (int k = 0; k < numdim_; k++)
-            gp_coord2[k] = gp_coord(0, k);
-          for (int k = numdim_; k < 3; k++) // set a zero value for the remaining spatial directions
-            gp_coord2[k] = 0.0;
-          const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
-
-          //evaluate function at current gauss point
-          functfac = DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(i,
-              coordgpref, time, NULL);
-        }
-        else
-          functfac = 1.0;
+        // evaluate function at current gauss point
+        functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
       }
-      ar[i] = fac * (*val)[i] * curvefac * functfac;
+
+      // factor given by time curve
+      const int curvenum = (curve) ? (*curve)[i] : -1;
+      double curvefac = 1.0;
+      if (curvenum >= 0 && usetime)
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+
+      ar[i] = fac * (*onoff)[i] * (*val)[i] * curvefac * functfac;
     }
 
     // add load components
     for (int node=0; node<iel; ++node)
       for (int dof=0; dof<noddof_; ++dof)
-         elevec1[node*noddof_+dof] += funct[node] * ar[dof];
+         elevec1[node*noddof_+dof] += shapefcts[node] * ar[dof];
 
   } // for (int ip=0; ip<totngp; ++ip)
 

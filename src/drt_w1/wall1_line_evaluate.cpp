@@ -68,22 +68,13 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   // get values and switches from the condition
   const std::vector<int>* onoff = condition.Get<std::vector<int> >("onoff");
   const std::vector<double>* val = condition.Get<std::vector<double> >("val");
-  const std::vector<int>* spa_func = condition.Get<std::vector<int> >("funct");
+  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
+  const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
 
-  // find out whether we will use a time curve
+  // check total time
   bool usetime = true;
   const double time = params.get("total time", -1.0);
-  if (time < 0.0)
-    usetime = false;
-
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve)
-    curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum >= 0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  if (time < 0.0) usetime = false;
 
   // set number of nodes
   const int numnod = NumNode();
@@ -94,7 +85,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives
-  LINALG::SerialDenseVector funct(numnod);
+  LINALG::SerialDenseVector shapefcts(numnod);
   LINALG::SerialDenseMatrix deriv(1, numnod);
 
   // prepare element geometry 1
@@ -166,7 +157,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     // get shape functions and derivatives in the line
     if (distype == line2 || distype == line3)
     {
-      DRT::UTILS::shape_function_1D(funct, e1, distype);
+      DRT::UTILS::shape_function_1D(shapefcts, e1, distype);
       DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
     }
     else if (distype == nurbs2 || distype == nurbs3)
@@ -194,7 +185,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
         weights(inode) = cp->W();
       }
 
-      DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(funct, deriv, e1,
+      DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(shapefcts, deriv, e1,
           boundknots[0], weights, distype);
     }
     else
@@ -204,9 +195,6 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     {
     case neum_live:
     { // uniform load on reference configuration
-
-      double functfac = 1.0;
-      int functnum = -1;
 
       // compute infinitesimal line element dr for integration along the line
       const double dr = w1_substitution(xye, deriv, NULL, numnod);
@@ -218,42 +206,42 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       // ar[i] = ar[i] * facr * ds * onoff[i] * val[i] * curvefac * functfac
       for (int i = 0; i < Wall1::noddof_; ++i)
       {
-        if ((*onoff)[i]) // is this dof activated?
+        // factor given by spatial function
+        const int functnum = (funct) ? (*funct)[i] : -1;
+        double functfac = 1.0;
+
+        if (functnum > 0)
         {
-          // factor given by spatial function
-          if (spa_func)
-            functnum = (*spa_func)[i];
+          // calculate reference position of GP
+          LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
+          gp_coord.Multiply('T', 'T', 1.0, shapefcts, xye, 0.0);
 
-          if (functnum > 0)
-          {
-            // calculate reference position of GP
-            LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
-            gp_coord.Multiply('T', 'T', 1.0, funct, xye, 0.0);
+          // write coordinates in another datatype
+          double gp_coord2[3]; // the position vector has to be given in 3D!!!
+          const int numdim = 2;
+          for (int k = 0; k < numdim; k++)
+            gp_coord2[k] = gp_coord(0, k);
+          for (int k = numdim; k < 3; k++) // set a zero value for the remaining spatial directions
+            gp_coord2[k] = 0.0;
+          const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
-            // write coordinates in another datatype
-            double gp_coord2[3]; // the position vector has to be given in 3D!!!
-            const int numdim = 2;
-            for (int k = 0; k < numdim; k++)
-              gp_coord2[k] = gp_coord(0, k);
-            for (int k = numdim; k < 3; k++) // set a zero value for the remaining spatial directions
-              gp_coord2[k] = 0.0;
-            const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
-
-            //evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(i,
-                coordgpref, time, NULL);
-          }
-          else
-            functfac = 1.0;
+          // evaluate function at current gauss point
+          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
         }
-        ar[i] = intpoints.qwgt[gpid] * dr * (*onoff)[i] * (*val)[i] * curvefac
-            * functfac;
+
+        // factor given by time curve
+        const int curvenum = (curve) ? (*curve)[i] : -1;
+        double curvefac = 1.0;
+        if (curvenum >= 0 && usetime)
+          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+
+        ar[i] = intpoints.qwgt[gpid] * dr * (*onoff)[i] * (*val)[i] * curvefac * functfac;
       }
 
       // add load components
       for (int node = 0; node < numnod; ++node)
         for (int j = 0; j < Wall1::noddof_; ++j)
-          elevec1[node * Wall1::noddof_ + j] += funct[node] * ar[j];
+          elevec1[node * Wall1::noddof_ + j] += shapefcts[node] * ar[j];
 
       break;
     }
@@ -265,7 +253,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       // check for correct input
       if ((*onoff)[0] != 1)
         dserror("orthopressure on 1st dof only!");
-      for (int checkdof = 1; checkdof < 3; ++checkdof)
+      for (int checkdof = 1; checkdof <= Wall1::noddof_; ++checkdof)
       {
         if ((*onoff)[checkdof] != 0)
           dserror("orthopressure on 1st dof only!");
@@ -280,17 +268,14 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       // compute infinitesimal line element dr for integration along the line
       const double dr = w1_substitution(xyecurr, deriv, &unrm, numnod);
 
-      double functfac = 1.0;
-      int functnum = -1;
-
       // factor given by spatial function
-      if (spa_func) functnum = (*spa_func)[0];
-
+      const int functnum = (funct) ? (*funct)[0] : -1;
+      double functfac = 1.0;
       if (functnum > 0)
       {
         // calculate reference position of GP
         LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
-        gp_coord.Multiply('T', 'T', 1.0, funct, xye, 0.0);
+        gp_coord.Multiply('T', 'T', 1.0, shapefcts, xye, 0.0);
 
         // write coordinates in another datatype
         double gp_coord2[3]; // the position vector has to be given in 3D!!!
@@ -302,9 +287,14 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
         const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
         //evaluate function at current gauss point
-        functfac = DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(0,
-                coordgpref, time, NULL);
+        functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref, time, NULL);
       }
+
+      // factor given by time curve
+      const int curvenum = (curve) ? (*curve)[0] : -1;
+      double curvefac = 1.0;
+      if (curvenum >= 0 && usetime)
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
       // constant factor for integration
       const double fac = intpoints.qwgt[gpid] * ortho_value * curvefac * functfac;
@@ -312,7 +302,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       // add load components
       for (int node = 0; node < numnod; ++node)
         for (int j = 0; j < Wall1::noddof_; ++j)
-          elevec1[node * Wall1::noddof_ + j] += funct[node] * unrm[j] * dr * fac;
+          elevec1[node * Wall1::noddof_ + j] += shapefcts[node] * unrm[j] * dr * fac;
 
       // linearization if needed
       if (loadlin)
@@ -348,8 +338,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
         for (int node = 0; node < numnod; ++node)
           for (int dim = 0; dim < 2; dim++)
             for (int dof = 0; dof < elevec1.M(); dof++)
-              (*elemat1)(node * Wall1::noddof_ + dim, dof) -= funct[node]
-                  * a_Dnormal(dim, dof) * fac;
+              (*elemat1)(node * Wall1::noddof_ + dim, dof) -= shapefcts[node] * a_Dnormal(dim, dof) * fac;
       }
 
       break;
@@ -389,7 +378,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
           const double e1 = intpoints.qxg[gpid][0];
 
           // get shape functions and derivatives in the line
-          DRT::UTILS::shape_function_1D(funct, e1, distype);
+          DRT::UTILS::shape_function_1D(shapefcts, e1, distype);
           DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
           double ortho_value = (*val)[0];
 
