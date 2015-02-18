@@ -90,9 +90,14 @@ DRT::ELEMENTS::Truss3::Truss3(int id, int owner) :
 DRT::Element(id,owner),
 data_(),
 isinit_(false),
+diff_disp_ref_(LINALG::Matrix<1,3>(true)),
+deltatheta_(LINALG::Matrix<1,3>(true)),
 material_(0),
 lrefe_(0),
 crosssec_(0),
+NormMoment(0),
+NormForce(0),
+RatioNormForceMoment(0),
 Theta0_(LINALG::Matrix<3,1>(true)),
 Theta_(LINALG::Matrix<3,1>(true)),
 kintype_(tr3_totlag),
@@ -112,13 +117,18 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old) :
  X_(old.X_),
  trefNode_(old.trefNode_),
  ThetaRef_(old.ThetaRef_),
+ diff_disp_ref_(old.diff_disp_ref_),
+ deltatheta_(old.deltatheta_),
  material_(old.material_),
  lrefe_(old.lrefe_),
  jacobimass_(old.jacobimass_),
  jacobinode_(old.jacobinode_),
  crosssec_(old.crosssec_),
- Theta0_(LINALG::Matrix<3,1>(true)),
- Theta_(LINALG::Matrix<3,1>(true)),
+ NormMoment(old.NormMoment),
+ NormForce(old.NormForce),
+ RatioNormForceMoment(old.RatioNormForceMoment),
+ Theta0_(old.Theta0_),
+ Theta_(old.Theta_),
  kintype_(old. kintype_),
  gaussrule_(old.gaussrule_)
 {
@@ -155,6 +165,7 @@ void DRT::ELEMENTS::Truss3::Print(std::ostream& os) const
 }
 
 
+
  /*----------------------------------------------------------------------*
   | Print the change in angle of this element            mukherjee 10/14 |
   *----------------------------------------------------------------------*/
@@ -188,14 +199,19 @@ void DRT::ELEMENTS::Truss3::Pack(DRT::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
   AddtoPack(data,isinit_);
-  AddtoPack(data,X_);
+  AddtoPack<6,1>(data,X_);
   AddtoPack(data,trefNode_);
   AddtoPack(data,ThetaRef_);
+  AddtoPack<1,3>(data,diff_disp_ref_);
+  AddtoPack<1,3>(data,deltatheta_);
   AddtoPack(data,material_);
   AddtoPack(data,lrefe_);
   AddtoPack(data,jacobimass_);
   AddtoPack(data,jacobinode_);
   AddtoPack(data,crosssec_);
+  AddtoPack(data,NormMoment);
+  AddtoPack(data,NormForce);
+  AddtoPack(data,RatioNormForceMoment);
   AddtoPack<3,1>(data,Theta0_);
   AddtoPack<3,1>(data,Theta_);
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
@@ -222,14 +238,19 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   isinit_ = ExtractInt(position,data);
-  ExtractfromPack(position,data,X_);
+  ExtractfromPack<6,1>(position,data,X_);
   ExtractfromPack(position,data,trefNode_);
   ExtractfromPack(position,data,ThetaRef_);
+  ExtractfromPack<1,3>(position,data,diff_disp_ref_);
+  ExtractfromPack<1,3>(position,data,deltatheta_);
   ExtractfromPack(position,data,material_);
   ExtractfromPack(position,data,lrefe_);
   ExtractfromPack(position,data,jacobimass_);
   ExtractfromPack(position,data,jacobinode_);
   ExtractfromPack(position,data,crosssec_);
+  ExtractfromPack(position,data,NormMoment);
+  ExtractfromPack(position,data,NormForce);
+  ExtractfromPack(position,data,RatioNormForceMoment);
   ExtractfromPack<3,1>(position,data,Theta0_);
   ExtractfromPack<3,1>(position,data,Theta_);
   // gaussrule_
@@ -391,106 +412,104 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const std::vector<double>& xr
     for (int i=0; i<6; i++)
       abs_rotrefe+= std::pow(rotrefe[i],2);
 
-   if (abs_rotrefe!=0)
-   {
-     //assign size to the vector
-     ThetaRef_.resize(3);
-     trefNode_.resize(3);
+    if (abs_rotrefe!=0)
+    {
+      //assign size to the vector
+      ThetaRef_.resize(3);
+      trefNode_.resize(3);
 
-     // Reference directional vector of the truss element (v_1 in derivation)
-     LINALG::Matrix<1,3> diff_disp_ref(true);
+      for (int node=0; node<2; node++)
+      {
+        trefNode_[node].Clear();
+        for(int dof=0; dof<3; dof++)
+          trefNode_[node](dof)=rotrefe[3*node+dof];
+      }
+      diff_disp_ref_.Clear();
 
-     for (int node=0; node<2; node++)
-     {
-       trefNode_[node].Clear();
-       for(int dof=0; dof<3; dof++)
-       {
-         trefNode_[node](dof)=rotrefe[3*node+dof];
-       }
-     }
+      //Calculate reference directional vector of the truss element
+      for (int j=0; j<3; ++j)
+      {
+        diff_disp_ref_(j) = Nodes()[1]->X()[j]  - Nodes()[0]->X()[j];
+      }
 
-     //Calculate reference directional vector of the truss elemen
-     for (int j=0; j<3; ++j)
-     {
-       diff_disp_ref(j) = Nodes()[1]->X()[j]  - Nodes()[0]->X()[j];
-     }
+      for (int location=0; location<3; location++) // Location of torsional spring. There are three locations
+      {
+        double dotprod=0.0;
+        LINALG::Matrix  <1,3> crossprod(true);
+        double CosTheta=0.0;
+        double SinTheta=0.0;
 
-     for (int location=0; location<3; location++) // Location of torsional spring. There are three locations
-     {
-       double dotprod=0.0;
-       double s=0.0;
+        if (location==0)
+        {
+          double norm_v_ref = diff_disp_ref_.Norm2();
+          double norm_t1_ref=trefNode_[location].Norm2();
+          for (int j=0; j<3; ++j)
+            dotprod +=  trefNode_[location](j) * diff_disp_ref_(j);
 
-       if (location==0)
-       {
-         double norm_v_ref = diff_disp_ref.Norm2();
-         double norm_t1_ref=trefNode_[location].Norm2();
-         if (norm_v_ref==0.0)
-           norm_v_ref=1.0e-14;
-         if (norm_t1_ref==0.0)
-           norm_t1_ref=1.0e-14;
-         for (int j=0; j<3; ++j)
-           dotprod +=  trefNode_[location](j) * diff_disp_ref(j);
+          CosTheta = dotprod/(norm_v_ref*norm_t1_ref);
 
-         s = dotprod/(norm_v_ref*norm_t1_ref);
+          //Cross Product
+          crossprod(0) = trefNode_[location](1)*diff_disp_ref_(2) - trefNode_[location](2)*diff_disp_ref_(1);
+          crossprod(1) = trefNode_[location](2)*diff_disp_ref_(0) - trefNode_[location](0)*diff_disp_ref_(2);
+          crossprod(2) = trefNode_[location](0)*diff_disp_ref_(1) - trefNode_[location](1)*diff_disp_ref_(0);
 
-       }
-       else if (location==1)
-       {
-         double norm_v_ref = diff_disp_ref.Norm2();
-         double norm_t2_ref= trefNode_[location].Norm2();
-         if (norm_v_ref==0.0)
-           norm_v_ref=1.0e-14;
-         if (norm_t2_ref==0.0)
-           norm_t2_ref=1.0e-14;
-         for (int j=0; j<3; ++j)
-           dotprod +=  trefNode_[location](j) * diff_disp_ref(j); // From the opposite direction v_2 =-v_1
+          double norm= crossprod.Norm2();
+          SinTheta= norm/(norm_v_ref*norm_t1_ref);
 
-           s = dotprod/(norm_v_ref*norm_t2_ref);
-       }
-       else // i.e. for calculation of reference angle between t1 & t2
-       {
-         double norm_t1_ref = trefNode_[location-2].Norm2();
-         double norm_t2_ref=trefNode_[location-1].Norm2();
-         if (norm_t1_ref==0.0)
-           norm_t1_ref=1.0e-14;
-         if (norm_t2_ref==0.0)
-           norm_t1_ref=1.0e-14;
-         for (int j=0; j<3; ++j)
-           dotprod +=  trefNode_[location-1](j) * trefNode_[location-2](j);
+        }
+        else if (location==1)
+        {
+          double norm_v_ref = diff_disp_ref_.Norm2();
+          double norm_t2_ref= trefNode_[location].Norm2();
+          for (int j=0; j<3; ++j)
+            dotprod +=  trefNode_[location](j) * diff_disp_ref_(j); // From the opposite direction v_2 =-v_1
 
-         s = dotprod/(norm_t1_ref*norm_t2_ref);
-       }
+          CosTheta = dotprod/(norm_v_ref*norm_t2_ref);
 
-       // Owing to round-off errors the variable s can be slightly
-       // outside the admissible range [-1.0;1.0]. We take care for this
-       // preventing potential floating point exceptions in acos(s)
-       if (s>1.0)
-       {
-         if ((s-1.0)>1.0e-14)
-           dserror("s out of admissible range [-1.0;1.0]");
-         else // tiny adaptation of s accounting for round-off errors
-           s = 1.0-1.0e-14;
-       }
-       if (s<-1.0)
-       {
-         if ((s+1.0)<-1.0e-14)
-           dserror("s out of admissible range [-1.0;1.0]");
-         else // tiny adaptation of s accounting for round-off errors
-           s = -1.0+1.0e-14;
-       }
-       if (s==0.0)
-         s = 1.0e-14;
-       else if (s==1.0)
-         s = 1-1.0e-14;
-       else if (s==-1.0)
-         s = -1+1.0e-14;
+          // cross product
+          crossprod(0) = trefNode_[location](1)*diff_disp_ref_(2) - trefNode_[location](2)*diff_disp_ref_(1);
+          crossprod(1) = trefNode_[location](2)*diff_disp_ref_(0) - trefNode_[location](0)*diff_disp_ref_(2);
+          crossprod(2) = trefNode_[location](0)*diff_disp_ref_(1) - trefNode_[location](1)*diff_disp_ref_(0);
+          double norm= crossprod.Norm2();
+          SinTheta= norm/(norm_v_ref*norm_t2_ref);
+        }
+        else // i.e. for calculation of reference angle between t1 & t2
+        {
+          double norm_t1_ref = trefNode_[location-2].Norm2();
+          double norm_t2_ref=trefNode_[location-1].Norm2();
+          for (int j=0; j<3; ++j)
+            dotprod +=  trefNode_[location-1](j) * trefNode_[location-2](j);
 
-       ThetaRef_[location]=0;
-       ThetaRef_[location]=acos(s);
-       Theta0_(location)=ThetaRef_[location];
+          CosTheta = dotprod/(norm_t1_ref*norm_t2_ref);
 
-     }
-   }
+          // cross product
+          crossprod(0) = trefNode_[location-2](1)*trefNode_[location-1](2) - trefNode_[location-2](2)*trefNode_[location-1](1);
+          crossprod(1) = trefNode_[location-2](2)*trefNode_[location-1](0) - trefNode_[location-2](0)*trefNode_[location-1](2);
+          crossprod(2) = trefNode_[location-2](0)*trefNode_[location-1](1) - trefNode_[location-2](1)*trefNode_[location-1](0);
+
+          double norm= crossprod.Norm2();
+          SinTheta= norm/(norm_t1_ref*norm_t2_ref);
+        }
+
+        double ThetaBoundary1=M_PI/4;
+        double ThetaBoundary2=3*M_PI/4;
+
+        ThetaRef_[location]=0;
+        if (SinTheta>=0)
+        {
+          if (CosTheta >= cos(ThetaBoundary1))
+            ThetaRef_[location]=asin(SinTheta);
+          else if (CosTheta <= cos(ThetaBoundary2))
+            ThetaRef_[location]=M_PI-asin(SinTheta);
+          else
+            ThetaRef_[location]=acos(CosTheta);
+        }
+        else
+          dserror("Angle more than 180 degrees!");
+
+        Theta0_(location)=ThetaRef_[location];
+      }
+    }
 
   }
 

@@ -979,7 +979,7 @@ void STR::TimIntStatMech::NewtonFull()
     iter_ += 1;
 
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
-    if(normfres_>1.0e4 && iter_>4)
+    if(normfres_>1.0e6 && iter_>4)
     {
       std::cout << "Attention: Left nonlinear equilibrium loop since normfres_>1.0e4!" << std::endl;
       break;

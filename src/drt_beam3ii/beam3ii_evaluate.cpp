@@ -1350,6 +1350,86 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
     CalcBrownian<nnode,3,6,3>(params,vel,disp,stiffmatrix,force,Imass,Itildemass);
   #endif
 
+/*
+        if (this->Id()==0 || this->Id()==3 || this->Id()==4 || this->Id()==7)
+        {
+          std::cout<<"Beam3ii Element "<<this->Id()<<std::endl;
+          LINALG::Matrix<1,6>displacement(true);
+          for (int i=0; i<3; i++)
+          {
+            displacement(i)=disp[i];
+            displacement(i+3)=disp[i+6];
+          }
+          std::cout<<"displacement="<<displacement<<std::endl;
+        }*/
+//    LINALG::Matrix<3,3>DummyLambda(true);
+
+//    for(int node=0; node< 2; node++)
+//
+//    {
+//
+//      LARGEROTATIONS::quaterniontotriad(Qnew_[node],DummyLambda);
+//
+//      const int* nodeids=this->NodeIds();
+//
+////      if(nodeids[0]==2 || nodeids[1]==2 || nodeids[0]==7 || nodeids[1]==7)
+////      {
+////        std::cout<<"Element "<<this->Id()<<std::endl;
+////        std::cout<<"Node 1="<<nodeids[0]<<std::endl;
+////        std::cout<<"Node 2="<<nodeids[1]<<std::endl;
+////        std::cout<<"DummyPsili[0]="<<Psili[0]<<std::endl;
+////        std::cout<<"DummyPsili[1]="<<Psili[1]<<std::endl;
+//////        std::cout<<"DummyI[numgp]="<<DummyI[numgp]<<std::endl;
+////        std::cout<<"DummyPsil="<<DummyPsil<<std::endl;
+////        std::cout<<"DummyLambda="<<DummyLambda<<std::endl;
+////        std::cout<<"NewDummyLambda="<<NewDummyLambda<<std::endl;
+////        std::cout<<"DummyQNode="<<DummyQNode<<std::endl;
+////        std::cout<<"DummyQl="<<DummyQl<<std::endl;
+////        std::cout<<"Qr="<<Qr<<std::endl;
+////      }
+//      if((nodeids[1]==1 && node==1) || (nodeids[1]==8 && node==1))
+//      {
+//        LINALG::Matrix<1,3> Tangent(true);
+//        for (int i=0; i<3; i++)
+//          Tangent(i)= DummyLambda(0,i);
+//
+//        std::cout<<"Tangent in axial direction for Beam3 at node "<<nodeids[1]<<" is "<<Tangent<<std::endl;
+//      }
+//    }
+
+    /*  LINALG::Matrix<3,1>xrefe(true);
+  //getting element's nodal coordinates and treating them as reference configuration
+    if (Nodes()[0] == NULL || Nodes()[1] == NULL)
+      dserror("Cannot get nodes in order to compute reference configuration'");
+    else
+    {
+      for (int node=0; node<nnode; node++) //element has k nodes
+        for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
+        {
+          xrefe(node*3 + dof) = Nodes()[node]->X()[dof];
+        }
+    }
+
+    for(int node = 0; node<nnode ; node++)
+    {
+
+      Tref_.Clear();
+      for(int dof = 0; dof< 3 ; dof++ )
+      {
+        Tref_(dof) =  xrefe(3+dof) - xrefe(dof);
+      }
+      double norm2 = Tref_.Norm2();
+      Tref_.Scale(1/norm2);
+    }*/
+//    std::cout<<"Tref_="<<Tref_<<std::endl;
+//   std::cout<<"Element "<<this->Id()<<std::endl;
+//   for(int i=0; i<int(disp.size()); i++)
+//     std::cout<<"Disp["<<i<<"]="<<disp[i]<<std::endl;
+
+//   std::cout<<"force="<<*force<<std::endl;
+//   std::cout<<__FILE__<<__LINE__<<"Norm2()="<<force->Norm2()<<std::endl;
+
+
 //  string action = params.get<string>("action","calc_none");
 //  if (action=="calc_struct_nlnstiff")
 //  {

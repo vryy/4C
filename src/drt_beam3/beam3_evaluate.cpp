@@ -14,6 +14,8 @@ Maintainer: Christoph Meier
 
 
 #include "beam3.H"
+#include "../drt_statmech/statmech_manager.H"
+#include "../drt_beam3ii/beam3ii.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
@@ -302,8 +304,10 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
   /*at the end of an iteration step the geometric configuration has to be updated: the starting point for the
    * next iteration step is the configuration at the end of the current step */
   Qold_ = Qnew_;
+  QoldNode_ = QnewNode_;
   curvold_ = curvnew_;
   thetaold_ = thetanew_;
+  ThetaOldNode_ = ThetaNewNode_;
   thetaprimeold_ = thetaprimenew_;
 
 /*
@@ -683,14 +687,67 @@ inline void DRT::ELEMENTS::Beam3::updatetriad(const LINALG::Matrix<3,1>& deltath
   return;
 } //DRT::ELEMENTS::Beam3::updatetriad
 
+/*----------------------------------------------------------------------------------------*
+ |this function performs an update of the rotation (in quaterion form) at the node by     |
+ |the incremental rotation deltatheta, by means of a quaternion product and then computes |
+ |the respective new triad Tnew at node                          (public) mukherjee 10/14 |
+ *----------------------------------------------------------------------------------------*/
+
+inline void DRT::ELEMENTS::Beam3::UpdateNodalTriad(std::vector<double>&      disp,
+                                      std::vector<LINALG::Matrix<3,1> >&     Tnew)
+{
+
+
+  std::vector<LINALG::Matrix <3,1> > ThetaNode;
+  ThetaNode.resize(2);
+  Tnew.resize(2);
+  //set up current  theta, at the node
+  for (int node=0; node<2; ++node)
+  {
+    for (int dof=0; dof<3; ++dof)
+    {
+      ThetaNode[node](dof)          += disp[6*node+3+dof];
+    }//for (int dof=0; dof<3; ++dof)
+  ThetaNewNode_[node]= ThetaNode[node];
+
+
+  /*to perform a curvature update at a specific nodal point we need to know the angle deltatheta
+   * by which the triad at that node is rotated */
+
+  //compute delta theta for (16.146) at node only according to remark in the bottom of page 209
+  LINALG::Matrix<3,1> deltatheta_node = ThetaNewNode_[node];
+  deltatheta_node -= ThetaOldNode_[node];
+
+  // Convert angle to quaternion
+  LINALG::Matrix<4,1> Qrot(true);
+  LARGEROTATIONS::angletoquaternion(deltatheta_node,Qrot);
+
+  //computing quaternion Qnew_ for new configuration of Qold_ for old configuration by means of a quaternion product
+  LARGEROTATIONS::quaternionproduct(QoldNode_[node],Qrot,QnewNode_[node]);
+
+  //normalizing quaternion in order to make sure that it keeps unit absolute values through time stepping
+  double abs = QnewNode_[node].Norm2();
+
+  for(int i = 0; i<4; i++)
+    QnewNode_[node](i) = QnewNode_[node](i) / abs;
+  LINALG::Matrix<3,3> Triad(true);
+  LARGEROTATIONS::quaterniontotriad(QnewNode_[node],Triad);
+
+  for (int i=0; i<3; i++)
+    Tnew[node](i)=Triad (0,i);
+
+  }//for (int node=0; node<nnode; ++node)
+
+  return;
+} //DRT::ELEMENTS::Beam3::UpdateNodalTriad
 
 /*-------------------------------------------------------------------------------------------------------*
- |updating local curvature according to Crisfield, Vol. 2, pages 209 - 210; an exact update of         |
+ |updating local curvature according to Crisfield, Vol. 2, pages 209 - 210; an exact update of           |
  | the curvature is computed by means of equation (16.148) instead of an approximated one as given by    |
  | equs. (17.72) and (17.73); note that this function requires as input parameters the angle delta theta |
  | from (16.146), which is responsible for the rotation of the triad at the Gauss point as well as its   |
  | derivative with respect to the curve parameter s, i.e. d(delta theta)/ds. This derivative is denoted  |
- | as deltathetaprime                                   (public)cyron02/09|
+ | as deltathetaprime                                                                  (public)cyron02/09|
  *-------------------------------------------------------------------------------------------------------*/
 inline void DRT::ELEMENTS::Beam3::updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1>& deltatheta,LINALG::Matrix<3,1>& deltathetaprime, const int numgp)
 {
@@ -1145,7 +1202,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
 
     S_gp.Clear();
 
-     LARGEROTATIONS::computespin(S_gp,dxdxi_gp);
+    LARGEROTATIONS::computespin(S_gp,dxdxi_gp);
 
     //stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
     epsilonn(0) *= ym*crosssec_;
@@ -1308,6 +1365,32 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
     f_ = *force;
     Ngp_ = stressn; //correct?
   }
+
+  LINALG::Matrix<6,1> axialforce;
+  axialforce.Clear();
+  LINALG::Matrix<6,1> moment;
+  moment.Clear();
+  for (int i=0; i<3; i++)
+  {
+    axialforce(i)=(*force)(i);
+    axialforce(i+3)=(*force)(i+6);
+    moment(i)=(*force)(i+3);
+    moment(i+3)=(*force)(i+9);
+  }
+
+  NormForce=axialforce.Norm2();
+  NormMoment=moment.Norm2();
+  if (NormMoment!=0)
+    RatioNormForceMoment=NormForce/NormMoment;
+  else
+    RatioNormForceMoment=0;
+
+//  std::cout<<"Beam3 Element ID="<<this->Id()<<std::endl;
+//  std::cout<<"Norm Force="<<NormForce<<std::endl;
+//  std::cout<<"Norm Moment="<<NormMoment<<std::endl;
+//  std::cout<<"Norm force/Norm Moment="<<axialforce.Norm2()/moment.Norm2()<<std::endl;
+
+//  std::cout<<"beam3 force="<<*force<<std::endl;
 
   return;
 

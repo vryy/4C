@@ -201,12 +201,16 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),
+ QoldNode_(old.QoldNode_),
+ QnewNode_(old.QnewNode_),
  curvconv_(old.curvconv_),
  curvold_(old.curvold_),
  curvnew_(old.curvnew_),
  thetaconv_(old.thetaconv_),
  thetaold_(old.thetaold_),
  thetanew_(old.thetanew_),
+ ThetaOldNode_(old.ThetaOldNode_),
+ ThetaNewNode_(old.ThetaNewNode_),
  thetaprimeconv_(old.thetaprimeconv_),
  thetaprimeold_(old.thetaprimeold_),
  thetaprimenew_(old.thetaprimenew_),
@@ -246,6 +250,24 @@ DRT::ELEMENTS::Beam3::~Beam3()
 void DRT::ELEMENTS::Beam3::Print(std::ostream& os) const
 {
   return;
+}
+
+double DRT::ELEMENTS::Beam3::ReturnNormMoment() const
+{
+//for now constant, since we only implemented 4-noded interpolated element with linear shape functions
+ return NormMoment;
+}
+
+double DRT::ELEMENTS::Beam3::ReturnNormForce() const
+{
+//for now constant, since we only implemented 4-noded interpolated element with linear shape functions
+ return NormForce;
+}
+
+double DRT::ELEMENTS::Beam3::ReturnRatioNormForceMoment() const
+{
+//for now constant, since we only implemented 4-noded interpolated element with linear shape functions
+ return RatioNormForceMoment;
 }
 
 
@@ -313,9 +335,13 @@ void DRT::ELEMENTS::Beam3::Pack(DRT::PackBuffer& data) const
   AddtoPack<4,1>(data,Qconv_);
   AddtoPack<4,1>(data,Qnew_);
   AddtoPack<4,1>(data,Qold_);
+  AddtoPack<4,1>(data,QnewNode_);
+  AddtoPack<4,1>(data,QoldNode_);
   AddtoPack<3,1>(data,thetanew_);
   AddtoPack<3,1>(data,thetaconv_);
   AddtoPack<3,1>(data,thetaold_);
+  AddtoPack<3,1>(data,ThetaNewNode_);
+  AddtoPack<3,1>(data,ThetaOldNode_);
   AddtoPack<3,1>(data,thetaprimenew_);
   AddtoPack<3,1>(data,thetaprimeconv_);
   AddtoPack<3,1>(data,thetaprimeold_);
@@ -362,9 +388,13 @@ void DRT::ELEMENTS::Beam3::Unpack(const std::vector<char>& data)
   ExtractfromPack<4,1>(position,data,Qconv_);
   ExtractfromPack<4,1>(position,data,Qnew_);
   ExtractfromPack<4,1>(position,data,Qold_);
+  ExtractfromPack<4,1>(position,data,QnewNode_);
+  ExtractfromPack<4,1>(position,data,QoldNode_);
   ExtractfromPack<3,1>(position,data,thetanew_);
   ExtractfromPack<3,1>(position,data,thetaconv_);
   ExtractfromPack<3,1>(position,data,thetaold_);
+  ExtractfromPack<3,1>(position,data,ThetaNewNode_);
+  ExtractfromPack<3,1>(position,data,ThetaOldNode_);
   ExtractfromPack<3,1>(position,data,thetaprimenew_);
   ExtractfromPack<3,1>(position,data,thetaprimeconv_);
   ExtractfromPack<3,1>(position,data,thetaprimeold_);

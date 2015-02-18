@@ -1028,6 +1028,19 @@ bool STATMECH::StatMechManager::CheckCrossPeriodicBCLink(const Epetra_SerialDens
 void STATMECH::StatMechManager::ShiftPositions(std::vector<double>& pos,
                                                const int&           nnode)
 {
+  for (int i=0; i<nnode; i++)
+  {
+
+    for (int k = 0; k < 3; k++)
+    {
+      // in case of positive overlap of component
+      if (pos[3*i+k] > periodlength_->at(k))
+          pos[3*i+k] -=  periodlength_->at(k);
+      // in case of negative overlap of component
+      if (pos[3*i+k] < 0)
+          pos[3*i+k] += periodlength_->at(k);
+    }
+  }
   return;
 }
 

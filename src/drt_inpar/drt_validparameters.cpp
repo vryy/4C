@@ -2652,6 +2652,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("GMSHNETSTRUCT","No","If chosen, special gmsh visualization for network structure types is generated.", yesnotuple,yesnovalue,&statmech);
   //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);
+  //Number of interpolation points for higher order plotting of filaments, applicable only in case of Kirchchoff
+  //type of beam elements reconstructed with hermite polynomials
+  IntParameter("GMSHNINTPT",10,"Number of interpolation points for higher order plotting of filaments",&statmech);
   //Number of time steps between two gmsh outputs written
   IntParameter("GMSHOUTINTERVALS",100,"Number of time steps between two gmsh outputs written",&statmech);
   //Reading direction of oscillatory motion that DBC nodes are subjected to (we need this when using periodic BCs)

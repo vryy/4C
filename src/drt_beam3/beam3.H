@@ -132,6 +132,9 @@ public:
   */
   virtual DiscretizationType Shape() const;
 
+  virtual double ReturnRatioNormForceMoment() const;
+  virtual double ReturnNormForce() const;
+  virtual double ReturnNormMoment() const;
 
   /*!
   \brief Return unique ParObject id
@@ -387,12 +390,16 @@ public:
       Qconv_.resize((nnode-1));
       Qold_.resize((nnode-1));
       Qnew_.resize((nnode-1));
+      QoldNode_.resize((nnode));
+      QnewNode_.resize((nnode));
       curvconv_.resize((nnode-1));
       curvold_.resize((nnode-1));
       curvnew_.resize((nnode-1));
       thetaconv_.resize((nnode-1));
       thetaold_.resize((nnode-1));
       thetanew_.resize((nnode-1));
+      ThetaOldNode_.resize((nnode));
+      ThetaNewNode_.resize((nnode));
       thetaprimeconv_.resize((nnode-1));
       thetaprimeold_.resize((nnode-1));
       thetaprimenew_.resize((nnode-1));
@@ -495,12 +502,20 @@ public:
       //Now all triads have been calculated and Qold_ and Qnew_ can be updated
       Qold_ = Qconv_;
       Qnew_ = Qconv_;
+      QoldNode_[0] = Qconv_[0];
+      QoldNode_[1] = Qconv_[0];
+      QnewNode_[0] = Qconv_[0];
+      QnewNode_[1] = Qconv_[0];
 
       curvold_ = curvconv_;
       curvnew_ = curvconv_;
 
       thetaold_ = thetaconv_;
       thetanew_ = thetaconv_;
+      ThetaOldNode_[0] = thetaconv_[0];
+      ThetaOldNode_[1] = thetaconv_[0];
+      ThetaNewNode_[0] = thetaconv_[0];
+      ThetaNewNode_[1] = thetaconv_[0];
 
       thetaprimeold_ = thetaprimeconv_;
       thetaprimenew_ = thetaprimeconv_;
@@ -613,6 +628,10 @@ private:
   std::vector<LINALG::Matrix<4,1> > Qold_;
   //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
   std::vector<LINALG::Matrix<4,1> > Qnew_;
+  //! quaternions of triads at GPs at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
+  std::vector<LINALG::Matrix<4,1> > QoldNode_;
+  //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
+  std::vector<LINALG::Matrix<4,1> > QnewNode_;
   //!curvaturea at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.72)
   std::vector<LINALG::Matrix<3,1> > curvconv_;
   //!curvaturea at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.72)
@@ -626,6 +645,10 @@ private:
   std::vector<LINALG::Matrix<3,1> > thetaold_;
   //!angle displacement taken from discretization and interpolated for a specific Gauss point by Crisfield, Vol. 2, equation (17.93); relates to current iteration step
   std::vector<LINALG::Matrix<3,1> > thetanew_;
+  //!angle displacement at nodes relates to the end of the preceeding iteration step
+  std::vector<LINALG::Matrix<3,1> > ThetaOldNode_;
+  //!angle displacement at nodes relating to current iteration step
+  std::vector<LINALG::Matrix<3,1> > ThetaNewNode_;
   //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding time step
   std::vector<LINALG::Matrix<3,1> > thetaprimeconv_;
   //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the end of the preceeding iteration step
@@ -663,11 +686,21 @@ private:
   //! \brief vector, which stores the initial rotational node coordinates of the element
   LINALG::Matrix<6,1> rotinitrefe_;
 
+
+  //force and moments for debugging purpose
+  double NormMoment;
+  double NormForce;
+  double RatioNormForceMoment;
+
   //! @name Internal calculation methods
 
   /*!this function performs an update of the rotation (in quaterion form) at the numgp-th Gauss point by the incremental rotation deltatheta,
    *by means of a quaternion product and then computes the respective new triad Tnew at the Gauss point*/
   void updatetriad(const LINALG::Matrix<3,1>& deltatheta, LINALG::Matrix<3,3>& Tnew, const int numgp);
+
+  /*!this function performs an update of the rotation (in quaterion form) at the node by the incremental rotation deltatheta,
+    *by means of a quaternion product and then computes the respective new triad Tnew at node*/
+  void UpdateNodalTriad(std::vector<double>& disp, std::vector<LINALG::Matrix<3,1> >& Tnew);
 
   //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210, basically equation (16.148)
   void updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1>& deltatheta,LINALG::Matrix<3,1>& deltathetaprime, const int numgp);

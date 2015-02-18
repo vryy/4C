@@ -217,6 +217,7 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  dispthetaconv_(old.dispthetaconv_),
  dispthetaold_(old.dispthetaold_),
  dispthetanew_(old.dispthetanew_),
+ Tcurr_(old.Tcurr_),
  kapparef_(old.kapparef_),
  gammaref_(old.gammaref_),                                  //2)
  nodeI_(old.nodeI_),
@@ -263,6 +264,8 @@ DRT::ELEMENTS::Beam3ii::~Beam3ii()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3ii::Print(std::ostream& os) const
 {
+  os << "beam3ii ";
+  Element::Print(os);
   return;
 }
 
@@ -340,6 +343,7 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,dispthetaconv_);
   AddtoPack<3,1>(data,dispthetaold_);
   AddtoPack<3,1>(data,dispthetanew_);
+  AddtoPack<3,1>(data,Tcurr_);
   AddtoPack<3,1>(data,kapparef_);
   AddtoPack(data,eps_);
   AddtoPack(data,f_);
@@ -403,6 +407,7 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,dispthetaconv_);
   ExtractfromPack<3,1>(position,data,dispthetaold_);
   ExtractfromPack<3,1>(position,data,dispthetanew_);
+  ExtractfromPack<3,1>(position,data,Tcurr_);
   ExtractfromPack<3,1>(position,data,kapparef_);
   ExtractfromPack(position,data,eps_);
   ExtractfromPack(position,data,f_);
@@ -606,6 +611,38 @@ int DRT::ELEMENTS::Beam3iiType::Initialize(DRT::Discretization& dis)
     } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 
     return 0;
+}
+
+/*----------------------------------------------------------------------------------*
+ |  return current tangent at node                                   mukherjee 10/14|
+ *----------------------------------------------------------------------------------*/
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3ii::Tcurr(const int NodeID)
+{
+  for(int node=0; node< 2; node++)
+  {
+    const int* nodeids=this->NodeIds();
+    if (nodeids[this->nodeI_]==NodeID)
+    {
+      LINALG::Matrix<3,3>DummyLambda(true);
+      LARGEROTATIONS::quaterniontotriad(Qnew_[this->nodeI_],DummyLambda);
+      Tcurr_.Clear();
+      for (int i=0; i<3; i++)
+        Tcurr_(i)= DummyLambda(i,0);
+    }
+    else if (nodeids[this->nodeJ_]==NodeID)
+    {
+      LINALG::Matrix<3,3>DummyLambda(true);
+      LARGEROTATIONS::quaterniontotriad(Qnew_[this->nodeJ_],DummyLambda);
+      Tcurr_.Clear();
+
+      for (int i=0; i<3; i++)
+        Tcurr_(i)= DummyLambda(i,0);
+    }
+    else
+      for (int i=0; i<3; i++)
+        Tcurr_(i)= 0;
+  }
+  return Tcurr_;
 }
 
 

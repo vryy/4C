@@ -137,7 +137,7 @@ NUMSUBSTRATEFIL     0                     // number of substrate filaments
 R_LINK              0.1                   // distance between the two binding domains of a linker
 DeltaR_LINK         0.02                  // deviation from r_link
 ALINK               4.751658e-06           // assuming circular cross section of crosslinker with diameter according to PhD Tharmann
-ILINK               4.4918e-11            // Must set ilink=0.0 ->TRUSS!
+ILINK               0                     // Must set ilink=0.0 ->TRUSS!
 IPLINK              8.9836e-11            // 2xilink
 ELINK               2560000              // torsion stiffness from Nishizaka 2000 and ilink from PhD Tharmann
 LINKERSCALEFACTOR   1            // length compression factor for active crosslinkers

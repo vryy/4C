@@ -308,12 +308,30 @@ public:
    */
   template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
   void EvaluatePTC(Teuchos::ParameterList& params,
-                    Epetra_SerialDenseMatrix& elemat1);
+      Epetra_SerialDenseMatrix& elemat1);
 
   //!\brief return cross section of the truss
   const double& CSec() const
   {
     return crosssec_;
+  }
+
+  double ReturnNormMoment() const
+  {
+    //for now constant, since we only implemented 4-noded interpolated element with linear shape functions
+    return NormMoment;
+  }
+
+  double ReturnNormForce() const
+  {
+    //for now constant, since we only implemented 4-noded interpolated element with linear shape functions
+    return NormForce;
+  }
+
+  double ReturnRatioNormForceMoment() const
+  {
+    //for now constant, since we only implemented 4-noded interpolated element with linear shape functions
+    return RatioNormForceMoment;
   }
 
   //! \brief return reference length
@@ -324,9 +342,9 @@ public:
 
   //! \brief internal force vector
   const Teuchos::RCP<Epetra_SerialDenseVector> InternalForceVector() const
-  {
+      {
     return f_;
-  }
+      }
 
   //@}
 
@@ -348,11 +366,11 @@ private:
     calc_struct_fsiload,
     calc_struct_update_istep,
     calc_struct_reset_istep, //!< reset elementwise internal variables
-                             //!< during iteration to last converged state
+    //!< during iteration to last converged state
     postprocess_stress,
     calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
     calc_struct_energy
-  //calculate current elastic energy of element
+    //calculate current elastic energy of element
   };
 
   //! kind of integration to be performed
@@ -382,6 +400,12 @@ private:
   //! Vector holding values of ref angles
   std::vector<double> ThetaRef_;
 
+  //!reference tangent position
+  LINALG::Matrix<1,3> diff_disp_ref_;
+
+  //Change is angle
+  LINALG::Matrix<1,3> deltatheta_;
+
   //! material type
   int material_;
 
@@ -397,13 +421,18 @@ private:
   //! cross section area
   double crosssec_;
 
+  // L2 norm of total moment
+  double NormMoment;
+  // L2 norm of total force
+  double NormForce;
+  // Ratio of norm of Force to Moment
+  double RatioNormForceMoment;
+
   //! angle of last time step (necessary for PTC scheme)
   LINALG::Matrix<3,1> Theta0_;
   //! Angle of current time step (necessary for PTC scheme)
   LINALG::Matrix<3,1> Theta_;
 
-  //current node position (first entries 0,1,2 for first node, 3,4,5 for second node)
-  LINALG::Matrix<1,3> deltatheta_;
 
   //! internal force vector
   Teuchos::RCP<Epetra_SerialDenseVector> f_;
@@ -431,53 +460,89 @@ private:
 
   //!calculation of nonlinear stiffness and mass matrix
   void t3_nlnstiffmass_totlag(LINALG::Matrix<1, 6>& DummyDisp,
-  Epetra_SerialDenseMatrix& DummyStiffMatrix,
-  Epetra_SerialDenseMatrix* massmatrix,
-  Epetra_SerialDenseVector& DummyForce);
+      Epetra_SerialDenseMatrix& DummyStiffMatrix,
+      Epetra_SerialDenseMatrix* massmatrix,
+      Epetra_SerialDenseVector& DummyForce);
 
   // Calculate change in angle from reference configuration
   void CalcDeltaTheta(std::vector<double>&  disp, LINALG::Matrix<1,3>& thetacurr,
-                                              LINALG::Matrix<1,3>& deltatheta);
+      LINALG::Matrix<1,3>& deltatheta);
 
   //   Calculate torsional stiffness matrices
   void torsion_stiffmass(Teuchos::ParameterList&   params,
-                                              std::vector<double>&      disp,
-                                              Epetra_SerialDenseMatrix* stiffmatrix,
-                                              Epetra_SerialDenseVector* force);
+      std::vector<double>&      disp,
+      Epetra_SerialDenseMatrix* stiffmatrix,
+      Epetra_SerialDenseVector* force);
 
   // Calculate torsional stiffness matrices and forces
-  void MyTorsionalStiffatNode(Teuchos::ParameterList&   params,
-                                                double theta,
-                                                double deltatheta,
-                                                LINALG::Matrix<1,3> & diff_disp,
-                                                LINALG::Matrix<1,3> & tcurr,
-                                                Epetra_SerialDenseMatrix & TorStiffmatrix,
-                                                Epetra_SerialDenseVector & TorForce);
+  void MyTorsionalStiffatNodeCos(Teuchos::ParameterList&   params,
+      double theta,
+      double deltatheta,
+      LINALG::Matrix<1,3> & tcurr,
+      LINALG::Matrix<1,3> & diff_disp,
+      Epetra_SerialDenseMatrix & TorStiffmatrix,
+      Epetra_SerialDenseVector & TorForce);
+
+  void MyTorsionalStiffatNodeDot(Teuchos::ParameterList&   params,
+      const int              node,
+      LINALG::Matrix<1,3> & tcurr,
+      LINALG::Matrix<1,6> & xcurr,
+      Epetra_SerialDenseMatrix & TorStiffmatrix,
+      Epetra_SerialDenseVector & TorForce);
+
+
+  void MyTorsionalStiffatNodeSin(Teuchos::ParameterList&   params,
+      double theta,
+      double deltatheta,
+      LINALG::Matrix<1,3> & tcurr,
+      LINALG::Matrix<1,6> & xcurr,
+      Epetra_SerialDenseMatrix & TorStiffmatrix,
+      Epetra_SerialDenseVector & TorForce);
+
 
   // Calculate torsional stiffness matrices using automatic differentiation
-   void FADMyTorsionalStiffatNode(Teuchos::ParameterList&   params,
-                                               double theta_0,
-                                               LINALG::Matrix<1,3> & tcurr,
-                                               LINALG::Matrix<1,6> & xcurr,
-                                               Epetra_SerialDenseMatrix & TorStiffmatrix,
-                                               Epetra_SerialDenseVector & TorForce);
+  void FADMyTorsionalStiffatNodeCos(Teuchos::ParameterList&   params,
+      double theta_0,
+      LINALG::Matrix<1,3> & tcurr,
+      LINALG::Matrix<1,6> & xcurr,
+      Epetra_SerialDenseMatrix & TorStiffmatrix,
+      Epetra_SerialDenseVector & TorForce);
 
   // Calculate torsional stiffness matrices using automatic differentiation
-   void FADMyTorsionalStiffTangent(Teuchos::ParameterList&   params,
-                                               double theta_0,
-                                               LINALG::Matrix<1,3> & tcurrNode2,
-                                               LINALG::Matrix<1,3> & tcurrNode1,
-                                               Epetra_SerialDenseMatrix & TorStiffmatrix,
-                                               Epetra_SerialDenseVector & TorForce);
+  void FADMyTorsionalStiffTangentCos(Teuchos::ParameterList&   params,
+      double theta_0,
+      LINALG::Matrix<1,3> & tcurrNode1,
+      LINALG::Matrix<1,3> & tcurrNode2,
+      Epetra_SerialDenseMatrix & TorStiffmatrix,
+      Epetra_SerialDenseVector & TorForce);
+
+  void MyTorsionalStiffTangentDot(Teuchos::ParameterList&   params,
+      LINALG::Matrix<1,3> & tangentcurr1,
+      LINALG::Matrix<1,3> & tangentcurr2,
+      Epetra_SerialDenseMatrix & TorStiffmatrix,
+      Epetra_SerialDenseVector & TorForce);
+
+  void MyTorsionalStiffatTangentSin(Teuchos::ParameterList&   params,
+      double theta,
+      double deltatheta,
+      LINALG::Matrix<1,3> & tcurr1,
+      LINALG::Matrix<1,3> & tcurr2,
+      Epetra_SerialDenseMatrix & TorStiffmatrix,
+      Epetra_SerialDenseVector & TorForce);
+
+  void FADThetaLinearisation(LINALG::Matrix<1,3> & diff_disp,
+      LINALG::Matrix<1,3> & tcurr,
+      LINALG::Matrix<1,3> & A,
+      LINALG::Matrix<1,3> & B);
 
   // Calculate torsional stiffness matrices and forces between tangents of beam
-  void MyTorsionalStiffTangent(Teuchos::ParameterList&   params,
-                                              double theta,
-                                              double deltatheta,
-                                              LINALG::Matrix<1,3> & tcurr2,
-                                              LINALG::Matrix<1,3> & tcurr1,
-                                              Epetra_SerialDenseMatrix & TorStiffmatrix,
-                                              Epetra_SerialDenseVector & TorForce);
+  void MyTorsionalStiffTangentCos(Teuchos::ParameterList&   params,
+      double theta,
+      double deltatheta,
+      LINALG::Matrix<1,3> & tcurr1,
+      LINALG::Matrix<1,3> & tcurr2,
+      Epetra_SerialDenseMatrix & TorStiffmatrix,
+      Epetra_SerialDenseVector & TorForce);
 
   /*!
    * \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain measure.
@@ -487,9 +552,9 @@ private:
    *
    */
   void t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& DummyDisp,
-  Epetra_SerialDenseMatrix& DummyStiffMatrix,
-  Epetra_SerialDenseMatrix* massmatrix,
-  Epetra_SerialDenseVector& DummyForce);
+      Epetra_SerialDenseMatrix& DummyStiffMatrix,
+      Epetra_SerialDenseMatrix* massmatrix,
+      Epetra_SerialDenseVector& DummyForce);
 
   //! lump mass matrix
   void t3_lumpmass(Epetra_SerialDenseMatrix* emass);
@@ -540,7 +605,8 @@ private:
       std::vector<double>& disp); //!<element disp vector
 
   //@}
-
+  //! Calculates Signum function of a given "value"
+  double Signum(double value);
   // don't want = operator
   Truss3& operator =(const Truss3& old);
 

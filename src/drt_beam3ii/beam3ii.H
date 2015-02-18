@@ -208,6 +208,11 @@ public:
   const double& Irr() const { return Irr_;}
 
   /*!
+   \brief get current tangent at specified node i.e. Tcurr_
+   */
+   LINALG::Matrix<3,1>  Tcurr(const int NodeID);
+
+  /*!
   \brief Get jacobi_ factor of first gauss point
   */
   const double& GetJacobi() const { return jacobi_[0];}
@@ -675,6 +680,8 @@ private:
   std::vector<LINALG::Matrix<3,1> > dispthetaold_;
   //!rotation angle displacement at nodes; relates to current configuration
   std::vector<LINALG::Matrix<3,1> > dispthetanew_;
+  //! Matrix holding current tangent at the node connected to Beam3ii element for statmech problem
+  LINALG::Matrix<3,1> Tcurr_;
 
   //!initial curvature at Gauss points for elasticity (corresponding to \Lambda_0^t \Labmda'_0 in eq. (3.5), Crisfield 1999
   std::vector<LINALG::Matrix<3,1> > kapparef_;
@@ -1076,8 +1083,7 @@ private:
 
 
 
-  //!compute matrix v_J as outlined in the equations above (3.15) on page 152 of Jelenic 1999
-  /*----------------------------------------------------------------------------------------------------------------------*
+   /*----------------------------------------------------------------------------------------------------------------------*
    |compute matrix v_J as outlined in the equations above (3.15) on page 152 of Jelenic 1999                   cyron 04/10|
    *----------------------------------------------------------------------------------------------------------------------*/
   LINALG::Matrix<3,3> vJ(const LINALG::Matrix<3,1>& phiIJ)
@@ -1100,7 +1106,6 @@ private:
   } // DRT::ELEMENTS::Beam3ii::vJ
 
 
-  //!compute derivative r' (rprime) of line of centroids at Gauss point x with respect to Jelenic 1999 , eq. (2.12)
   /*----------------------------------------------------------------------------------------------------------------------*
    |compute derivative r' (rprime) of line of centroids at Gauss point x with respect to Jelenic 1999, eq. (2.12)        |
    |                                                                                                           cyron 04/10|

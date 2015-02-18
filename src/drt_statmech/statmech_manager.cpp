@@ -443,7 +443,7 @@ void STATMECH::StatMechManager::GetNodalBindingSpotPositionsFromDisVec(const Epe
     {
       //Check via dynamic cast, if it's a beam3eb element
          DRT::ELEMENTS::Beam3eb* BeamElement = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(Element);
-       //if not, tell the user to use beam3eb instead
+       //if not, tell the user to use beam3 instead
          if(BeamElement==NULL)
          {
            for(int j=0; j<bspotrotationsrow->NumVectors(); j++)
@@ -714,12 +714,38 @@ void STATMECH::StatMechManager::GetBindingSpotTriads(const Teuchos::RCP<Epetra_M
   return;
 }
 
+
+/*------------------------------------------------------------------------------------------------*
+ | (private) update internodal triads at binding positions for GMSH visualizations                |
+ | This is done by a transfer of the current rotations into Quaternions           Mukherjee 12/14 |
+ *------------------------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::GetBindingSpotTriadsGMSH(const Teuchos::RCP<Epetra_MultiVector> bspotrotations,
+                                                     Teuchos::RCP<Epetra_MultiVector>       bspottriads)
+{
+  if(bspottriads!=Teuchos::null && bspotrotations!=Teuchos::null)
+  {
+    if (DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT") ||
+        filamentmodel_ == statmech_filament_helical ||
+        linkermodel_ == statmech_linker_activeintpol ||
+        linkermodel_ == statmech_linker_bellseqintpol ||
+        linkermodel_ == statmech_linker_myosinthick)
+    {
+      if (linkermodel_ == statmech_linker_stdintpol || linkermodel_ == statmech_linker_activeintpol || linkermodel_ == statmech_linker_bellseqintpol || linkermodel_ ==  statmech_linker_myosinthick)
+        GetInterpolatedBindingSpotTriads(bspotrotations, bspottriads);
+      else
+        GetElementBindingSpotTriads(bspottriads);
+    }
+  }
+  return;
+}
+
 /*----------------------------------------------------------------------*
  | (private) update nodal triads                           mueller 1/11 |
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::GetElementBindingSpotTriads(Teuchos::RCP<Epetra_MultiVector> nodetriads)
 {
   //first get triads at all row nodes
+  // In case of Beam3eb elements, nodal triad returns only the nodal tangent at Reference config.
   Teuchos::RCP<Epetra_MultiVector> nodetriadsrow = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()), 4, true));
   //update nodaltriads_
   for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); i++)
@@ -760,8 +786,24 @@ void STATMECH::StatMechManager::GetElementBindingSpotTriads(Teuchos::RCP<Epetra_
       for(int j=0; j<4; j++)
         (*nodetriadsrow)[j][i] = ((filele->Qnew())[0])(j);
     }
+    else if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
+    {
+      DRT::ELEMENTS::Beam3eb* filele = NULL;
+      filele = dynamic_cast<DRT::ELEMENTS::Beam3eb*> (discret_->lRowNode(i)->Elements()[lowestidele]);
+
+      //check whether crosslinker is connected to first or second node of that element
+      int nodenumber = 0;
+      if(discret_->lRowNode(i)->Id() == ((filele->Nodes())[1])->Id() )
+        nodenumber = 1;
+
+      //save nodal triad of this node in nodaltriadrow
+      for(int j=0; j<3; j++)
+        (*nodetriadsrow)[j][i] = ((filele->Tref())[nodenumber])(j);
+      // Unlike quaternion, Triad has only 3 components. Therefore the 4th component is set to zero.
+      (*nodetriadsrow)[3][i]=0.0;
+    }
     else
-      dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
+      dserror("Filaments have to be discretized with beam3ii or Beam3eb elements for orientation check!!!");
   }
   // communicate the appropriate vector
   if(nodetriads->MyLength()==discret_->NodeColMap()->NumMyElements())
@@ -1024,7 +1066,7 @@ void STATMECH::StatMechManager::DetectBindingSpots(const Teuchos::RCP<Epetra_Mul
                             if(distance.Norm2()<rmax && distance.Norm2()>rmin)
                             {
                               // further calculations in case of helical binding spot geometry and singly bound crosslinkers
-                              if(filamentmodel_ == statmech_filament_helical)
+                              if(filamentmodel_ == statmech_filament_helical && statmechparams_.get<double>("ILINK",0.0)>0.0)
                               {
                                 bool bspot1=false;
                                 bool bspot2=false;
@@ -1541,12 +1583,9 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
   /*preliminaries*/
   // BINDING SPOT TRIAD UPDATE
   Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::null;
-  // beam elements only. Binding spot triads are not available for Euler type elements
-  if(statmechparams_.get<double>("ILINK",0.0)>0.0)
-  {
+  // beam elements only. Binding spot triads represent tangential vector for Euler type elements
     bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
     GetBindingSpotTriads(bspotrotations, bspottriadscol);
-  }
 
   //get current on-rate for crosslinkers
   double kon = 0;
@@ -1855,7 +1894,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                        * orientation, a marker, indicating an element to be added, will be set
                        * In addition to that, if beam contact is enabled, a linker is only set if
                        * it does not intersect with other existing elements*/
-                      if(CheckOrientation(direction,bspottriadscol,LID) && !intersection)
+                      if(CheckOrientation(direction,discol,bspottriadscol,LID) && !intersection)
                       {
                         numsetelements++;
                         if(linkermodel_ == statmech_linker_active || linkermodel_ == statmech_linker_activeintpol ||
@@ -3471,10 +3510,12 @@ void STATMECH::StatMechManager::UpdateNumberOfUnconvergedSteps()
  | checks orientation of crosslinker relative to linked filaments       |
  |                                                  (public) cyron 06/10|
  *----------------------------------------------------------------------*/
-bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, Teuchos::RCP<Epetra_MultiVector> bspottriadscol, const Epetra_SerialDenseMatrix& LID, Teuchos::RCP<double> phifil)
+bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, const Epetra_Vector& discol, Teuchos::RCP<Epetra_MultiVector> bspottriadscol, const Epetra_SerialDenseMatrix& LID, Teuchos::RCP<double> phifil)
 {
   //if orientation is not to be checked explicitly, this function always returns true
-  if (!DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT") || bspottriadscol==Teuchos::null)
+  if (statmechparams_.get<double>("ILINK",0.0)>0.0 && (!DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT") || bspottriadscol==Teuchos::null))
+    return true;
+  else if (statmechparams_.get<double>("ILINK",0.0)==0.0 && (!DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT") || bspottriadscol==Teuchos::null))
     return true;
 
   // check for linkers with both their binding domains on one filament
@@ -3501,9 +3542,8 @@ bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> dire
   if(LID.M()!=2 && LID.N()!=1)
     dserror("LID has wrong dimensions %d x %d", LID.M(),LID.N());
 
-  //triads on filaments at the two nodes connected by crosslinkers
-  LINALG::Matrix<3, 3> T1;
-  LINALG::Matrix<3, 3> T2;
+  //auxiliary variable
+  double scalarproduct =0.0;
 
   //auxiliary variable for storing a triad in quaternion form
   LINALG::Matrix<4, 1> qnode;
@@ -3513,6 +3553,11 @@ bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> dire
 
   //Deltaphi = Phi - Phi0, where Phi0 is the angle between crosslinked filaments with zero potential energy (i.e. the most likely one)
   double DeltaPhi;
+  if(statmechparams_.get<double>("ILINK",0.0)>0.0 )
+  {
+    //triads on filaments at the two nodes connected by crosslinkers
+    LINALG::Matrix<3, 3> T1;
+    LINALG::Matrix<3, 3> T2;
 
   //triad of binding site on first filament which is affected by the new crosslinker
   for (int j=0; j<4; j++)
@@ -3525,10 +3570,58 @@ bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> dire
   LARGEROTATIONS::quaterniontotriad(qnode, T2);
 
   //auxiliary variable
-  double scalarproduct = T1(0, 0)*T2(0,0) + T1(1,0)*T2(1,0) + T1(2,0)*T2(2,0);
+  scalarproduct = T1(0, 0)*T2(0,0) + T1(1,0)*T2(1,0) + T1(2,0)*T2(2,0);
+  }
 
+
+  else if(statmechparams_.get<double>("ILINK",0.0)==0.0 )
+  {
+    //triads on filaments at the two nodes connected by crosslinkers
+    LINALG::Matrix<3, 1> T(true);
+    LINALG::Matrix<6, 1> TrefFil(true);
+    LINALG::Matrix<3, 1> T1(true);
+    LINALG::Matrix<3, 1> T2(true);
+
+    for (int i=0; i<2; i++)
+    {
+    //triad of binding site on first filament which is affected by the new crosslinker
+      {
+        DRT::Node* node = discret_->lColNode((int)LID(i,0));
+        std::vector<int> DofNode = discret_->Dof(node);
+        //if node has also rotational degrees of freedom
+        if (discret_->NumDof(node) == 6)
+        {
+           //if not, tell the user to use beam3 instead
+             {
+               for(int j=0; j<3; j++)
+               {
+                 TrefFil(j+3*i) = (*bspottriadscol)[j][(int) LID(i,0)];
+                 T(j)=TrefFil(j+3*i)+discol[discret_->DofColMap()->LID(DofNode[j+3])];
+               }
+               if (i==0)
+                 T1=T;
+               else
+                 T2=T;
+             }
+        }
+      }
+    }
+
+    //auxiliary variable
+    scalarproduct = T1(0)*T2(0) + T1(1)*T2(1) + T1(2)*T2(2);
+  }
+
+  if(statmechparams_.get<double>("ILINK",0.0)>0.0 )
+  {
   if(scalarproduct>1.0 && fabs(scalarproduct-1.0)<1e-12)
     scalarproduct = 1.0;
+  }
+  if(statmechparams_.get<double>("ILINK",0.0)==0.0 )
+  {
+    if(scalarproduct>1.0 || scalarproduct<-1.0 )
+      return true; // exit
+  }
+
   Phi = acos(scalarproduct);
 
   //Phi should be the acute angle between 0° and 90° between the filament axes

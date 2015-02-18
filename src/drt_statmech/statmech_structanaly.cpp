@@ -1642,11 +1642,8 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
     // NODAL TRIAD UPDATE
     Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::null;
     // beam elements only
-    if(statmechparams_.get<double>("ILINK",0.0)>0.0)
-    {
       bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
       GetBindingSpotTriads(bspotrotations, bspottriadscol);
-    }
 
     // distance and orientation checks
     int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
@@ -1714,7 +1711,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
                 LINALG::Matrix<3,1> direction(distance);
                 direction.Scale(1.0/direction.Norm2());
                 Teuchos::RCP<double> phifil = Teuchos::rcp(new double(0.0));
-                bool orientation = CheckOrientation(direction,bspottriadscol,LID,phifil);
+                bool orientation = CheckOrientation(direction,discol,bspottriadscol,LID,phifil);
 
                 // increment count for that bin
                 (*orderparameterbinsincrow)[0][currdistbin] += 1.0;

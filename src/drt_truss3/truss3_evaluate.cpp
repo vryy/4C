@@ -13,6 +13,7 @@ Maintainer: Dhrubajyoti Mukherjee
 
 #include "truss3.H"
 #include "../drt_beam3eb/beam3eb.H"
+#include "../drt_beamcontact/beam3contact_utils.H"
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
@@ -588,6 +589,30 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Teuchos::ParameterList&   params,
   if(sdyn.get<std::string> ("DYNAMICTYP", "none")=="StatMech")
     torsion_stiffmass(params, disp, stiffmatrix, force);
 
+  /*****************Compare magnitude of calculated forces********************/
+//  LINALG::Matrix<6,1> axialforce;
+//  axialforce.Clear();
+//  LINALG::Matrix<6,1> moment;
+//  moment.Clear();
+//  for (int i=0; i<3; i++)
+//  {
+//    axialforce(i)=(*force)(i);
+//    axialforce(i+3)=(*force)(i+6);
+//    moment(i)=(*force)(i+3);
+//    moment(i+3)=(*force)(i+9);
+//  }
+
+//  NormForce=axialforce.Norm2();
+//  NormMoment=moment.Norm2();
+//  if (NormMoment!=0)
+//    RatioNormForceMoment=NormForce/NormMoment;
+//  else
+//    RatioNormForceMoment=0;
+//  std::cout<<"Truss3 Element ID="<<this->Id()<<std::endl;
+//  std::cout<<"Norm Axial Force="<<NormForce<<std::endl;
+//  std::cout<<"Norm Moment="<<NormMoment<<std::endl;
+  /*****************Compare magnitude of calculated forces********************/
+
   return;
 }
 
@@ -836,7 +861,9 @@ void DRT::ELEMENTS::Truss3::t3_lumpmass(Epetra_SerialDenseMatrix* emass)
 /*-------------------------------------------------------------------------------------------*
  | Calculate change in angle from reference configuration                     mukherjee 09/14|
  *-------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::CalcDeltaTheta(std::vector<double>& disp, LINALG::Matrix<1,3>& thetacurr, LINALG::Matrix<1,3>& deltatheta)
+void DRT::ELEMENTS::Truss3::CalcDeltaTheta(std::vector<double>& disp,
+                                                 LINALG::Matrix<1,3>& thetacurr,
+                                                 LINALG::Matrix<1,3>& deltatheta)
 {
   //current tangential vector
   std::vector<LINALG::Matrix<3,1> >  tcurrNode;
@@ -848,6 +875,7 @@ void DRT::ELEMENTS::Truss3::CalcDeltaTheta(std::vector<double>& disp, LINALG::Ma
   // Calculate current directional vector of the truss element (v_1 in derivation)
   // v_1 direction 1---->2 i.e. v1=d2-d1;
   LINALG::Matrix<1,3> diff_disp_curr(true);
+
   //current nodal position and directional vector of the truss
   for (int j=0; j<3; ++j)
   {
@@ -869,89 +897,95 @@ void DRT::ELEMENTS::Truss3::CalcDeltaTheta(std::vector<double>& disp, LINALG::Ma
   for (int location=0; location<3; location++) // Location of torsional spring. There are three locations
   {
     double dotprod=0.0;
-    double s=0.0;
+    LINALG::Matrix  <1,3> crossprod(true);
+    double CosTheta=0.0;
+    double SinTheta=0.0;
 
     if (location==0)
     {
       double norm_v_curr = diff_disp_curr.Norm2();
       double norm_t1_curr=tcurrNode[location].Norm2();
-      if (norm_v_curr==0.0)
-        norm_v_curr=1.0e-14;
-      if (norm_t1_curr==0.0)
-        norm_t1_curr=1.0e-14;
-      for (int j=0; j<3; ++j)
-        dotprod +=  tcurrNode[location](j) * diff_disp_curr(j);
 
-      s = dotprod/(norm_v_curr*norm_t1_curr);
+      for (int j=0; j<3; ++j)
+      {
+        dotprod +=  tcurrNode[location](j) * diff_disp_curr(j);
+      }
+
+      CosTheta = dotprod/(norm_v_curr*norm_t1_curr);
+
+      //Cross Product
+      crossprod(0) = tcurrNode[location](1)*diff_disp_curr(2) - tcurrNode[location](2)*diff_disp_curr(1);
+      crossprod(1) = tcurrNode[location](2)*diff_disp_curr(0) - tcurrNode[location](0)*diff_disp_curr(2);
+      crossprod(2) = tcurrNode[location](0)*diff_disp_curr(1) - tcurrNode[location](1)*diff_disp_curr(0);
+
+      double norm= crossprod.Norm2();
+      SinTheta= norm/(norm_v_curr*norm_t1_curr);
 
     }
     else if (location==1)
     {
       double norm_v_curr = diff_disp_curr.Norm2();
       double norm_t2_curr= tcurrNode[location].Norm2();
-      if (norm_v_curr==0.0)
-        norm_v_curr=1.0e-14;
-      if (norm_t2_curr==0.0)
-        norm_t2_curr=1.0e-14;
       for (int j=0; j<3; ++j)
+      {
         dotprod +=  tcurrNode[location](j) * diff_disp_curr(j); // From the opposite direction v_2 =-v_1
+      }
 
-      s = dotprod/(norm_v_curr*norm_t2_curr);
+      CosTheta = dotprod/(norm_v_curr*norm_t2_curr);
+
+      // cross product
+      crossprod(0) = tcurrNode[location](1)*diff_disp_curr(2) - tcurrNode[location](2)*diff_disp_curr(1);
+      crossprod(1) = tcurrNode[location](2)*diff_disp_curr(0) - tcurrNode[location](0)*diff_disp_curr(2);
+      crossprod(2) = tcurrNode[location](0)*diff_disp_curr(1) - tcurrNode[location](1)*diff_disp_curr(0);
+      double norm= crossprod.Norm2();
+      SinTheta= norm/(norm_v_curr*norm_t2_curr);
     }
     else // i.e. for calculation of reference angle between t1 & t2
     {
       double norm_t1_curr = tcurrNode[location-2].Norm2();
       double norm_t2_curr=tcurrNode[location-1].Norm2();
-      if (norm_t1_curr==0.0)
-        norm_t1_curr=1.0e-14;
-      if (norm_t2_curr==0.0)
-        norm_t1_curr=1.0e-14;
       for (int j=0; j<3; ++j)
         dotprod +=  tcurrNode[location-1](j) * tcurrNode[location-2](j);
 
-      s = dotprod/(norm_t1_curr*norm_t2_curr);
+      CosTheta = dotprod/(norm_t1_curr*norm_t2_curr);
+
+      // cross product
+      crossprod(0) = tcurrNode[location-2](1)*tcurrNode[location-1](2) - tcurrNode[location-2](2)*tcurrNode[location-1](1);
+      crossprod(1) = tcurrNode[location-2](2)*tcurrNode[location-1](0) - tcurrNode[location-2](0)*tcurrNode[location-1](2);
+      crossprod(2) = tcurrNode[location-2](0)*tcurrNode[location-1](1) - tcurrNode[location-2](1)*tcurrNode[location-1](0);
+
+      double norm= crossprod.Norm2();
+      SinTheta= norm/(norm_t1_curr*norm_t2_curr);
     }
 
-    // Owing to round-off errors the variable s can be slightly
-    // outside the admissible range [-1.0;1.0]. We take care for this
-    // preventing potential floating point exceptions in acos(s)
-    if (s>1.0)
-    {
-      if ((s-1.0)>1.0e-14)
-        dserror("s out of admissible range [-1.0;1.0]");
-      else // tiny adaptation of s accounting for round-off errors
-        s = 1.0-1.0e-14;
-    }
-    if (s<-1.0)
-    {
-      if ((s+1.0)<-1.0e-14)
-        dserror("s out of admissible range [-1.0;1.0]");
-      else // tiny adaptation of s accounting for round-off errors
-        s = -1.0+1.0e-14;
-    }
-    if (s==0.0)
-      s = 1.0e-14;
-    else if (s==1.0)
-      s = 1-1.0e-14;
-    else if (s==-1.0)
-      s = -1+1.0e-14;
+    double ThetaBoundary1=M_PI/4;
+    double ThetaBoundary2=3*M_PI/4;
 
-    thetacurr(location)=acos(s);
+    if (SinTheta >=0)
+    {
+      if (CosTheta >= cos(ThetaBoundary1))
+        thetacurr(location)=asin(SinTheta);
+      else if (CosTheta <= cos(ThetaBoundary2))
+        thetacurr(location)=M_PI-asin(SinTheta);
+      else
+        thetacurr(location)=acos(CosTheta);
+    }
+    else
+      dserror("Angle more than 180 degrees!");
+
     deltatheta(location)=thetacurr(location)-ThetaRef_[location];
   }
+
   return;
 }
-
-
-
 
 /*--------------------------------------------------------------------------------------*
  | Calculate torsional stiffness matrices                                mukherjee 09/14|
  *--------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList&   params,
-    std::vector<double>&      disp,
-    Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseVector* force)
+                                              std::vector<double>&      disp,
+                                              Epetra_SerialDenseMatrix* stiffmatrix,
+                                              Epetra_SerialDenseVector* force)
 {
 
   // Calculate current directional vector of the truss element (v_1 in derivation)
@@ -980,9 +1014,125 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList&   params,
     tcurrNode2(j)   = trefNode_[1](j) + disp[9 + j];  //second node
   }
 
+//  if (tcurrNode1.MaxValue()>0.999 || tcurrNode2.MaxValue()>0.999)
+//    return;
+
   deltatheta_.Clear();
   LINALG::Matrix<1,3> thetacurr(true);
   CalcDeltaTheta(disp, thetacurr, deltatheta_);
+  double ThetaBoundary1=M_PI/4;
+  double ThetaBoundary2=3*M_PI/4;
+
+  /********************Check if work potential function is unique*************************************/
+//  //Energy potential
+//  FAD W = 0.0;
+//  // Current tangents
+//  LINALG::TMatrix<FAD,3,1> t1(true);
+//    LINALG::TMatrix<FAD,3,1> t2(true);
+//    LINALG::TMatrix<FAD,3,1> t1_unit(true);
+//    LINALG::TMatrix<FAD,3,1> t2_unit(true);
+//
+//    // Reference tangents
+//  LINALG::TMatrix<FAD,3,1> t10(true);
+//    LINALG::TMatrix<FAD,3,1> t20(true);
+//    LINALG::TMatrix<FAD,3,1> t10_unit(true);
+//    LINALG::TMatrix<FAD,3,1> t20_unit(true);
+//
+//    t1(0)=1.0;
+//    t2(1)=1.0;
+//    // Compute terms at reference config.
+//    t10(0)=1.0;
+//    t20(1)=1.0;
+//    FAD norm_t20 = pow(BEAMCONTACT::ScalarProduct(t20,t20),0.5);
+//    t20_unit.Update(1.0/norm_t20,t20,0.0);
+//
+//    FAD norm_t10 = pow(BEAMCONTACT::ScalarProduct(t10,t10),0.5);
+//    t10_unit.Update(1.0/norm_t10,t10,0.0);
+//    double delta=1.0e-6;
+//
+//
+//    for(int i=0;i<=360;i++)
+//    {
+//      double theta = 360-1.0*i;
+//      t2(0)=cos(theta/180.0*M_PI);
+//      t2(1)=sin(theta/180.0*M_PI);
+//
+//      for(int j=0;j<3;j++)
+//      {
+//        t1(j).diff(j,6);
+//        t2(j).diff(j+3,6);
+//      }
+//
+//      FAD norm_t2 = pow(BEAMCONTACT::ScalarProduct(t2,t2),0.5);
+//      t2_unit.Update(1.0/norm_t2,t2,0.0);
+//
+//      FAD norm_t1 = pow(BEAMCONTACT::ScalarProduct(t1,t1),0.5);
+//      t1_unit.Update(1.0/norm_t1,t1,0.0);
+//
+//      W=pow((BEAMCONTACT::ScalarProduct(t1_unit,t2_unit)-BEAMCONTACT::ScalarProduct(t10_unit,t20_unit)),2);
+//
+//      std::cout<<"Energy Potential FAD="<<W<<std::endl;
+//
+//      std::cout << "theta: " << theta << std::endl;
+//      std::cout << "t1: " << t1 << std::endl;
+//      std::cout << "t2: " << t2 << std::endl;
+//      std::cout << "t1_unit: " << t1_unit << std::endl;
+//      std::cout << "t2_unit: " << t2_unit << std::endl;
+
+      /*%%%%%%%%%%%%%Check with  analytical results %%%%%%%%%%%%%%%%%%%%%*/
+//
+//      // Reference tangents
+//      LINALG::Matrix<3,1> tangent10(true);
+//      LINALG::Matrix<3,1> tangent20(true);
+//      LINALG::Matrix<3,1> tangent10_unit(true);
+//      LINALG::Matrix<3,1> tangent20_unit(true);
+//
+//      // Compute terms at reference config.
+//      tangent10(0)=1.0;
+//      tangent20(1)=1.0;
+//      tangent20_unit.Scale(1.0/tangent20.Norm2());
+//      tangent10_unit.Scale(1.0/tangent10.Norm2());
+//
+//
+//      LINALG::Matrix<3,1> t1_m(true);
+//      LINALG::Matrix<3,1> t1_l(true);
+//      LINALG::Matrix<3,1> t1_r(true);
+//      LINALG::Matrix<3,1> t2_m(true);
+//
+//      t1_m(0)=1.0;
+//      t1_l(0)=1.0;
+//      t1_r(0)=1.0;
+//
+//      for (int j=0;j<3;j++)
+//      {
+//        t2_m(j)=t2(j).val();
+//      }
+//
+//      for(int k=0;k<3;k++)
+//      {
+//        t1_l(k)-=delta;
+//        t1_r(k)+=delta;
+//
+//        t1_l.Scale(1.0/t1_l.Norm2());
+//        t1_r.Scale(1.0/t1_r.Norm2());
+//
+//        double W_m = pow((BEAMCONTACT::ScalarProduct(t1_m,t2_m)-BEAMCONTACT::ScalarProduct(tangent20_unit,tangent10_unit)),2);
+//        double W_l = pow((BEAMCONTACT::ScalarProduct(t1_l,t2_m)-BEAMCONTACT::ScalarProduct(tangent20_unit,tangent10_unit)),2);
+//        double W_r = pow((BEAMCONTACT::ScalarProduct(t1_r,t2_m)-BEAMCONTACT::ScalarProduct(tangent20_unit,tangent10_unit)),2);
+//
+//        std::cout << "W_m: " << W_m << std::endl;
+//        std::cout << "W_l: " << W_l << std::endl;
+//        std::cout << "W_r: " << W_r << std::endl;
+//
+//        std::cout << "left difference: " << (W_m-W_l)/delta << std::endl;
+//        std::cout << "right difference: " << (W_r-W_m)/delta << std::endl;
+//
+//        t1_l(k)+=delta;
+//        t1_r(k)-=delta;
+//      }
+
+//    }
+ /*******************End check work potential****************************************/
 
   /*%%%%%%%%%%%%%%%%% Calculate torsional stiffness matrices and forces at node 1 linker%%%%%%%%%%%%%%%%%%%%*/
   //9x9 Stiffness Matrix of the Truss at node 1
@@ -993,11 +1143,27 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList&   params,
   Epetra_SerialDenseVector TorForceNode1;
   TorForceNode1.Size(9);
   TorForceNode1.Scale(0);
+  if (thetacurr(0)>=ThetaBoundary1 && thetacurr(0)<=ThetaBoundary2)
+  {
+    // Calculation based on dot product of vectors
+    MyTorsionalStiffatNodeDot(params, 1, tcurrNode1, xcurr,TorStiffmatrixNode1, TorForceNode1);
 
-  MyTorsionalStiffatNode(params, double(thetacurr(0)), double(deltatheta_(0)),diff_disp_curr, tcurrNode1, TorStiffmatrixNode1, TorForceNode1);
-  // Uncomment this part to verify the stiffness matrix with FAD type of variable
-  //   FADMyTorsionalStiffatNode(params, double(ThetaRef_[0]), tcurrNode1, xcurr, TorStiffmatrixNode1, TorForceNode1);
+    // Calculation based on Cosine of the inclusive angles
+//    MyTorsionalStiffatNodeCos(params, double(thetacurr(0)), double(deltatheta_(0)), tcurrNode1, diff_disp_curr, TorStiffmatrixNode1, TorForceNode1);
 
+    // Uncomment this part to verify the stiffness matrix with FAD type of variable
+//    FADMyTorsionalStiffatNodeCos(params, double(ThetaRef_[0]), tcurrNode1, xcurr, TorStiffmatrixNode1, TorForceNode1);
+  }
+  else if ((thetacurr(0)>=0 && thetacurr(0)<ThetaBoundary1) || (thetacurr(0)>ThetaBoundary2 && thetacurr(0)<=M_PI))
+  {
+    // Calculation based on dot product of vectors
+    MyTorsionalStiffatNodeDot(params, 1, tcurrNode1, xcurr,TorStiffmatrixNode1, TorForceNode1);
+
+    // Calculation based on sin of the inclusive angles
+//  MyTorsionalStiffatNodeSin(params, double(thetacurr(0)), double(deltatheta_(0)), tcurrNode1, xcurr, TorStiffmatrixNode1, TorForceNode1);
+  }
+  else
+   dserror("Angle out of range!");
 
   // Map element level into global 12 by 12 element
   if (force->Length()!=12)
@@ -1041,9 +1207,27 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList&   params,
   TorForceNode2.Size(9);
   TorForceNode2.Scale(0);
 
-  MyTorsionalStiffatNode(params,double(thetacurr(1)), double(deltatheta_(1)),diff_disp_curr, tcurrNode2, TorStiffmatrixNode2, TorForceNode2);
+  if (thetacurr(1)>=ThetaBoundary1 && thetacurr(1)<=ThetaBoundary2)
+  {
+    // Calculation based on dot product of vectors
+    MyTorsionalStiffatNodeDot(params, 2, tcurrNode2, xcurr,TorStiffmatrixNode2, TorForceNode2);
+
+    // Calculation based on Cosine of the inclusive angles
+//    MyTorsionalStiffatNodeCos(params,double(thetacurr(1)), double(deltatheta_(1)), tcurrNode2, diff_disp_curr, TorStiffmatrixNode2, TorForceNode2);
+
   // Uncomment this part to verify the stiffness matrix with FAD type of variable
-  //    FADMyTorsionalStiffatNode(params, double(ThetaRef_[1]), tcurrNode2, xcurr, TorStiffmatrixNode2, TorForceNode2);
+//    FADMyTorsionalStiffatNodeCos(params, double(ThetaRef_[1]), tcurrNode2, xcurr, TorStiffmatrixNode2, TorForceNode2);
+  }
+  else if ((thetacurr(1)>=0 && thetacurr(1)<ThetaBoundary1) || (thetacurr(1)>ThetaBoundary2 && thetacurr(1)<=M_PI))
+  {
+    // Calculation based on dot product of vectors
+    MyTorsionalStiffatNodeDot(params, 2, tcurrNode2, xcurr,TorStiffmatrixNode2, TorForceNode2);
+
+    // Calculation based on sin of the inclusive angles
+//    MyTorsionalStiffatNodeSin(params, double(thetacurr(1)), double(deltatheta_(1)), tcurrNode2, xcurr, TorStiffmatrixNode2, TorForceNode2);
+  }
+  else
+   dserror("Angle out of range!");
 
   // Map element level into global 12 by 12 element
   if (force->Length()!=12)
@@ -1085,12 +1269,29 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList&   params,
   Epetra_SerialDenseVector TorForceNode3;
   TorForceNode3.Size(6);
   TorForceNode3.Scale(0);
+
   // Calculate torsional stiffness matrices and forces between tangents at node 1 & node 2
-  MyTorsionalStiffTangent(params, double(thetacurr(2)), double(deltatheta_(2)), tcurrNode2, tcurrNode1, TorStiffmatrixNode3, TorForceNode3);
+  if (thetacurr(2)>=ThetaBoundary1 && thetacurr(2)<=ThetaBoundary2)
+  {
+    // Calculation based on dot product of vectors
+    MyTorsionalStiffTangentDot(params, tcurrNode1, tcurrNode2,TorStiffmatrixNode3, TorForceNode3);
+
+    // Calculation based on Cosine of the inclusive angles
+//    MyTorsionalStiffTangentCos(params, double(thetacurr(2)), double(deltatheta_(2)), tcurrNode1, tcurrNode2, TorStiffmatrixNode3, TorForceNode3);
 
   // Uncomment this part to verify the stiffness matrix with FAD type of variable
-  //   FADMyTorsionalStiffTangent(params, double(ThetaRef_[2]),tcurrNode2, tcurrNode1, TorStiffmatrixNode3, TorForceNode3);
+//     FADMyTorsionalStiffTangentCos(params, double(ThetaRef_[2]), tcurrNode1, tcurrNode2, TorStiffmatrixNode3, TorForceNode3);
+  }
+  else if ((thetacurr(2)>=0 && thetacurr(2)<ThetaBoundary1) || (thetacurr(2)>ThetaBoundary2 && thetacurr(2)<=M_PI))
+  {
+    // Calculation based on dot product of vectors
+    MyTorsionalStiffTangentDot(params, tcurrNode1, tcurrNode2,TorStiffmatrixNode3, TorForceNode3);
 
+    // Calculation based on Cosine of the inclusive angles
+//    MyTorsionalStiffatTangentSin(params, double(thetacurr(2)), double(deltatheta_(2)), tcurrNode1, tcurrNode2, TorStiffmatrixNode3, TorForceNode3);
+  }
+  else
+   dserror("Angle out of range!");
   // Map element level into global 12 by 12 element
   if (force->Length()!=12)
     dserror("This element does not need torsional element!");
@@ -1122,46 +1323,20 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList&   params,
 /*-------------------------------------------------------------------------------------------------------------------------------*
  | Calculate torsional stiffness matrices and forces between tangent of beam and directional vector of truss      mukherjee 09/14|
  *-------------------------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNode(Teuchos::ParameterList&   params,
-    double theta,
-    double deltatheta,
-    LINALG::Matrix<1,3> & diff_disp,
-    LINALG::Matrix<1,3> & tcurr,
-    Epetra_SerialDenseMatrix & TorStiffmatrix,
-    Epetra_SerialDenseVector & TorForce)
+void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNodeCos(Teuchos::ParameterList&   params,
+                                                   double theta,
+                                                   double deltatheta,
+                                                   LINALG::Matrix<1,3> & tcurr,
+                                                   LINALG::Matrix<1,3> & diff_disp,
+                                                   Epetra_SerialDenseMatrix & TorStiffmatrix,
+                                                   Epetra_SerialDenseVector & TorForce)
 {
   // Norms of the tangential vectors and directional displacement vector
   double norm_v= diff_disp.Norm2();
   double norm_t= tcurr.Norm2();
-    double s=cos(theta);
+  double s=cos(theta);
 
-  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-
-  // Calculate auxiliary vectors for computation of forces and stiffnessmatrix
-  LINALG::Matrix<1,3> aux_a(true);  // Identical to "a" in derivation
-  LINALG::Matrix<1,3> aux_b(true);  // Identical to "b" in derivation
-  LINALG::Matrix<1,9> aux_c(true);  // Identical to "c" in derivation
-
-  for(int j=0; j<3; j++)
-  {
-    aux_a(j)= tcurr(j)*s/(pow(norm_t,2)*sin(theta))-diff_disp(j)/(norm_v*norm_t*sin(theta));
-    aux_b(j)= tcurr(j)/(norm_v*norm_t*sin(theta)) - diff_disp(j)*s/(pow(norm_v,2)*sin(theta));
-    aux_c(j)= aux_a(j);
-    aux_c(j+3)= aux_b(j);
-    aux_c(j+6)= -aux_b(j);
-  }
-
-  // Torsional Spring stiffness
-  double spring =statmechparams.get<double> ("KTOR1_LINK", 0.0);
-  if (abs(deltatheta)<1.0e-4)
-    spring=0;
-
-  // Calculate torsional forces
-  for(int j=0; j<9; j++)
-    TorForce(j)=spring*deltatheta*aux_c(j);
-
-  //%%%%%%% Calculation of stiffness matrix %%%%%%%%
-  // Calculate auxiliary vectors for computation of stiffnessmatrices
+  // Calculate gradient of theta w.r.t. unknown dofs , in this case {t1,v1}
   LINALG::Matrix<1,3> A(true);  // Identical to "A" in derivation
   LINALG::Matrix<1,3> B(true);  // Identical to "B" in derivation
 
@@ -1170,6 +1345,28 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNode(Teuchos::ParameterList&   par
     A(i)+=tcurr(i)*s/(pow(norm_t,2)*sin(theta)) - diff_disp(i)/(norm_t*norm_v*sin(theta));
     B(i)+=diff_disp(i)*s/(pow(norm_v,2)*sin(theta)) - tcurr(i)/(norm_t*norm_v*sin(theta));
   }
+
+  // Calculate auxiliary vectors for computation of forces and stiffnessmatrix
+  LINALG::Matrix<1,9> aux_c(true);  // Identical to "c" in derivation
+
+  for(int j=0; j<3; j++)
+  {
+    aux_c(j)= A(j);
+    aux_c(j+3)= -B(j); // since v1=d2-d1
+    aux_c(j+6)= B(j);
+  }
+
+  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+  // Torsional Spring stiffness
+  double spring =statmechparams.get<double> ("KTOR1_LINK", 0.0);
+
+  // Calculate torsional forces
+  for(int j=0; j<9; j++)
+    TorForce(j)=spring*deltatheta*aux_c(j);
+
+  //%%%%%%% Calculation of stiffness matrix %%%%%%%%
+
+//  FADThetaLinearisation(diff_disp, tcurr, A, B);
 
   // Calculate auxiliary vectors for computation of stiffnessmatrices
   LINALG::Matrix<3,3> dadt1(true);
@@ -1203,6 +1400,260 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNode(Teuchos::ParameterList&   par
       TorStiffmatrix(i+6,j+3)+= spring*aux_c(i+6)*aux_c(j+3) + spring* deltatheta * dbdv1(i,j);
       TorStiffmatrix(i+6,j+6)+= spring*aux_c(i+6)*aux_c(j+6) + spring* deltatheta * -dbdv1(i,j);
     }
+
+  return;
+}
+
+/*--------------------------------------------------------------------------------------------------*
+ | Calculate torsional stiffness matrices between tangent of beam and directional vector of truss   |
+ | using automatic differentiation                                                  mukherjee 09/14 |
+ *--------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNodeDot(Teuchos::ParameterList&   params,
+                                                      const int                   node,
+                                                      LINALG::Matrix<1,3> & tangentcurr,
+                                                      LINALG::Matrix<1,6> & xcurr,
+                                                      Epetra_SerialDenseMatrix & TorStiffmatrix,
+                                                      Epetra_SerialDenseVector & TorForce)
+{
+
+  //see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
+  //total no of dofs
+  const int totdof = 9; // (t,d1,d2)
+
+  //FAD calculated stiff matrix for validation purposes
+  LINALG::TMatrix<FAD,totdof,totdof> stiffmatrix_check(true);
+  LINALG::TMatrix<FAD,1,totdof> force_check(true);
+
+  //matrix for current positions and tangents
+  std::vector<FAD> disp_tot(totdof,0.0);
+
+  // current diff_disp = d2 -d1
+  LINALG::TMatrix<FAD,3,1> vcurr(true);
+  // current tangent
+  LINALG::TMatrix<FAD,3,1> tcurr(true);
+  // reference diff_disp = d2 -d1
+  LINALG::TMatrix<FAD,3,1> vref(true);
+  // reference tangent
+  LINALG::TMatrix<FAD,3,1> tref(true);
+  // unit current diff_disp = d2 -d1
+  LINALG::TMatrix<FAD,3,1> vcurr_unit(true);
+  // unit current tangent
+  LINALG::TMatrix<FAD,3,1> tcurr_unit(true);
+  // unit reference diff_disp = d2 -d1
+  LINALG::TMatrix<FAD,3,1> vref_unit(true);
+  // unit reference tangent
+  LINALG::TMatrix<FAD,3,1> tref_unit(true);
+
+  for (int i=0; i<3; i++)
+  {
+    disp_tot[i]=tangentcurr(i);
+    disp_tot[i].diff(i,totdof);
+    disp_tot[i+3]= xcurr(i);
+    disp_tot[i+3].diff(i+3, totdof);
+    disp_tot[i+6]= xcurr(i+3);
+    disp_tot[i+6].diff(i+6, totdof);
+    tcurr(i)=disp_tot[i];
+    vcurr(i)=disp_tot[i+6]-disp_tot[i+3];
+    tref(i)=trefNode_[node-1](i); // trefNode_ nodal index varies from [0,1]
+    vref(i)=diff_disp_ref_(i);
+  }
+
+  // Norms of the tangential vectors and directional displacement vector
+  FAD norm_tref=pow(BEAMCONTACT::ScalarProduct(tref,tref),0.5);
+  FAD norm_vref=pow(BEAMCONTACT::ScalarProduct(vref,vref),0.5);
+  FAD norm_tcurr=pow(BEAMCONTACT::ScalarProduct(tcurr,tcurr),0.5);
+  FAD norm_vcurr=pow(BEAMCONTACT::ScalarProduct(vcurr,vcurr),0.5);
+
+  // Recalculate unit vectors
+  tref_unit.Update(1.0/norm_tref,tref,0.0);
+  vref_unit.Update(1.0/norm_vref,vref,0.0);
+  tcurr_unit.Update(1.0/norm_tcurr,tcurr,0.0);
+  vcurr_unit.Update(1.0/norm_vcurr,vcurr,0.0);
+
+  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+  // Spring stiffness
+  FAD spring =statmechparams.get<double> ("KTOR1_LINK", 0.0);
+
+  //computing energy potential (equation 3.3)
+  FAD W=0.5*spring*pow((BEAMCONTACT::ScalarProduct(tcurr_unit,vcurr_unit)-BEAMCONTACT::ScalarProduct(tref_unit,vref_unit)),2);
+
+  //Compute linerisation with FAD for checking
+  for (int i=0; i<totdof; i++)
+    force_check(i)=W.dx(i);
+
+  // Analytical matrix for computation of forces
+  LINALG::TMatrix<FAD,1,3> A(true);
+  LINALG::TMatrix<FAD,1,3> B(true);
+  // Auxiliary matrix
+  LINALG::TMatrix<FAD,3,3> t_aux(true);
+  LINALG::TMatrix<FAD,3,3> v_aux(true);
+
+  // Calculate dot product
+  FAD tvcurr_unit=BEAMCONTACT::ScalarProduct(tcurr_unit,vcurr_unit);
+  FAD tvref_unit=BEAMCONTACT::ScalarProduct(tref_unit,vref_unit);
+  for (int i=0; i<3; i++)
+    for (int j=0; j<3; j++)
+    {
+      t_aux(i,j)= (i==j)/norm_tcurr -tcurr(i)*tcurr(j)/pow(norm_tcurr,3);
+      v_aux(i,j)= (i==j)/norm_vcurr -vcurr(i)*vcurr(j)/pow(norm_vcurr,3);
+      A(i)+=spring*(tvcurr_unit-tvref_unit)*t_aux(i,j)*vcurr_unit(j);
+      B(i)+=spring*(tvcurr_unit-tvref_unit)*v_aux(i,j)*tcurr_unit(j);
+    }
+
+  // FAD force vector for computation of forces
+  LINALG::TMatrix<FAD,1,totdof> FADforce(true);
+  for (int i=0; i<3; i++)
+  {
+    FADforce(i)=A(i);
+    TorForce(i)=A(i).val();
+    FADforce(i+3)=-B(i);
+    TorForce(i+3)=-B(i).val();
+    FADforce(i+6)=B(i);
+    TorForce(i+6)=B(i).val();
+
+  }
+  // FAD force vector for computation of forces
+  LINALG::TMatrix<FAD,totdof,totdof> FADstiffMatrix(true);
+
+  for (int i=0; i<totdof; i++)
+    for (int j=0; j<totdof; j++)
+      TorStiffmatrix(i,j)=FADforce(i).dx(j);
+
+  return;
+}
+
+
+
+/*-------------------------------------------------------------------------------------------------*
+ | Calculate torsional stiffness matrices and forces between tangent of beam                       |
+ | and directional vector of truss at angle smaller than 45 degrees                 mukherjee 09/14|
+ *-------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNodeSin(Teuchos::ParameterList& params,
+                                                   double theta,
+                                                   double deltatheta,
+                                                   LINALG::Matrix<1,3> & tcurr,
+                                                   LINALG::Matrix<1,6> & xcurr,
+                                                   Epetra_SerialDenseMatrix & TorStiffmatrix,
+                                                   Epetra_SerialDenseVector & TorForce)
+{
+  if (theta==0.0)
+    return;
+
+  //total no of dofs
+  const int totdof = 9; // only {t1 or t2, d1, d2}
+
+  //matrix for current positions and tangents
+  std::vector<FAD> disp_tot(totdof,0.0);
+
+  // diff_disp = d2 -d1
+  LINALG::TMatrix<FAD,1,3> diff_disp;
+  // t1 = tangent
+  LINALG::TMatrix<FAD,1,3> tangent;
+
+  for (int i=0; i<3; i++)
+  {
+    disp_tot[i]=tcurr(i);
+    disp_tot[i].diff(i,totdof);
+    disp_tot[i+3]= xcurr(i);
+    disp_tot[i+3].diff(i+3, totdof);
+    disp_tot[i+6]= xcurr(i+3);
+    disp_tot[i+6].diff(i+6, totdof);
+    diff_disp(i)=disp_tot[i+6]-disp_tot[i+3];
+    tangent(i)=disp_tot[i];
+  }
+
+  LINALG::TMatrix<FAD,1,3> crossprod(true);
+  FAD Theta=0.0;
+  FAD SinTheta=0.0;
+
+
+  //Cross Product
+  crossprod(0) = tangent(1)*diff_disp(2) - tangent(2)*diff_disp(1);
+  crossprod(1) = tangent(2)*diff_disp(0) - tangent(0)*diff_disp(2);
+  crossprod(2) = tangent(0)*diff_disp(1) - tangent(1)*diff_disp(0);
+
+  // Norms of the tangential vectors, directional displacement vector and cross product
+  FAD norm_v= 0.0;
+  FAD norm_t= 0.0;
+  FAD norm_crossprod= 0.0;
+  for (int i=0; i<3; i++)
+  {
+    norm_v+=pow(diff_disp(i),2);
+    norm_t+=pow(tangent(i),2);
+    norm_crossprod+=pow(crossprod(i),2);
+  }
+  norm_v=pow(norm_v,0.5);
+  norm_t=pow(norm_t,0.5);
+  norm_crossprod=pow(norm_crossprod,0.5);
+
+  SinTheta = norm_crossprod/(norm_v*norm_t); // Sin of angle
+  Theta=asin(SinTheta);
+
+  //Auxilary vectors for calculation of vectors
+  LINALG::TMatrix<FAD,1,3>V(true);
+  LINALG::TMatrix<FAD,1,3>T(true);
+
+  T(0) = (diff_disp(1)*crossprod(2) - diff_disp(2)*crossprod(1))/norm_crossprod;
+  T(1) = (diff_disp(2)*crossprod(0) - diff_disp(0)*crossprod(2))/norm_crossprod;
+  T(2) = (diff_disp(0)*crossprod(1) - diff_disp(1)*crossprod(0))/norm_crossprod;
+
+  V(0) = (crossprod(1)*tangent(2) - crossprod(2)*tangent(1))/norm_crossprod;
+  V(1) = (crossprod(2)*tangent(0) - crossprod(0)*tangent(2))/norm_crossprod;
+  V(2) = (crossprod(0)*tangent(1) - crossprod(1)*tangent(0))/norm_crossprod;
+
+  // Calculate gradient of theta w.r.t. unknown dofs , in this case {t1 or t2,v1}
+  LINALG::TMatrix<FAD,1,3> A(true);  // Identical to "A" in derivation
+  LINALG::TMatrix<FAD,1,3> B(true);  // Identical to "B" in derivation
+
+  for(int i=0; i<3; i++)
+  {
+    A(i)+=-tangent(i)*sin(Theta)/(pow(norm_t,2)*cos(Theta)) + T(i)/(norm_t*norm_v*cos(Theta));
+    B(i)+=-diff_disp(i)*sin(Theta)/(pow(norm_v,2)*cos(Theta)) + V(i)/(norm_t*norm_v*cos(Theta));
+  }
+
+  // Calculate auxiliary vectors for computation of forces and stiffnessmatrix
+  LINALG::TMatrix<FAD,1,totdof> aux_c(true);  // Identical to "c" in derivation
+
+  for(int j=0; j<3; j++)
+  {
+    aux_c(j)= A(j);
+    aux_c(j+3)= -B(j);
+    aux_c(j+6)= B(j);
+  }
+
+  /*    //Uncomment this part to see if the linearisation is correct.
+    // ****Important not to further use the linearised expression to calculate stiffness matrix ****** //
+    // Linearisation of theta w.r.t. dofs. i.e. {t1 or t2, d1, d2}
+    LINALG::TMatrix<FAD,1,totdof> LinTheta;
+    for(int i = 0; i < totdof; i++)
+    {
+      LinTheta(i) = Theta.dx(i);
+    }
+    std::cout<<"LinTheta="<<LinTheta<<std::endl;
+    std::cout<<"aux_c="<<aux_c<<std::endl;
+   */
+
+  // FAD Force vector for calculating stiffness matrix
+  LINALG::TMatrix<FAD,1,totdof> TorForceFAD;
+
+  // Spring stiffness
+  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+  FAD spring =statmechparams.get<double> ("KTOR1_LINK", 0.0);
+
+  FAD deltathetaFAD=deltatheta;
+
+  // Calculate torsional forces
+  for(int j=0; j<totdof; j++)
+  {
+    TorForceFAD(j)=spring*deltathetaFAD*aux_c(j);
+    TorForce(j)=TorForceFAD(j).val();
+  }
+
+  // Calculate stiffness matrix
+  for(int i = 0; i < totdof; i++)
+    for(int j = 0; j < totdof; j++)
+      TorStiffmatrix(i,j) = TorForceFAD(i).dx(j);
+
   return;
 }
 
@@ -1210,44 +1661,20 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNode(Teuchos::ParameterList&   par
 /*-------------------------------------------------------------------------------------------------*
  | Calculate torsional stiffness matrices and forces between tangents of beam       mukherjee 09/14|
  *-------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::MyTorsionalStiffTangent(Teuchos::ParameterList&   params,
-    double theta,
-    double deltatheta,
-    LINALG::Matrix<1,3> & tcurr2,
-    LINALG::Matrix<1,3> & tcurr1,
-    Epetra_SerialDenseMatrix & TorStiffmatrix,
-    Epetra_SerialDenseVector & TorForce)
+void DRT::ELEMENTS::Truss3::MyTorsionalStiffTangentCos(Teuchos::ParameterList&   params,
+                                                    double theta,
+                                                    double deltatheta,
+                                                    LINALG::Matrix<1,3> & tcurr1,
+                                                    LINALG::Matrix<1,3> & tcurr2,
+                                                    Epetra_SerialDenseMatrix & TorStiffmatrix,
+                                                    Epetra_SerialDenseVector & TorForce)
 {
   // Norms of the tangential vectors and directional displacement vector
   double norm_t2= tcurr2.Norm2();
   double norm_t1= tcurr1.Norm2();
   double s=cos(theta);
 
-  // Calculate auxiliary vectors for computation of forces and stiffnessmatrix
-  LINALG::Matrix<1,3> aux_a(true);  // Identical to "a" in derivation
-  LINALG::Matrix<1,3> aux_b(true);  // Identical to "b" in derivation
-  LINALG::Matrix<1,6> aux_c(true);  // Identical to "c" in derivation
-
-  for(int j=0; j<3; j++)
-  {
-    aux_a(j)= tcurr1(j)*s/(pow(norm_t1,2)*sin(theta))-tcurr2(j)/(norm_t2*norm_t1*sin(theta));
-    aux_b(j)= tcurr2(j)*s/(pow(norm_t2,2)*sin(theta))-tcurr1(j)/(norm_t2*norm_t1*sin(theta));
-    aux_c(j)= aux_a(j);
-    aux_c(j+3)= aux_b(j);
-  }
-
-  // Spring stiffness
-  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  double spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
-  if (abs(deltatheta)<1.0e-4)
-    spring=0;
-
-  // Calculate torsional forces
-  for(int j=0; j<6; j++)
-    TorForce(j)=spring*deltatheta*aux_c(j);
-
-  //%%%%%%% Calculation of stiffness matrix %%%%%%%%
-  // Calculate auxiliary vectors for computation of stiffnessmatrices
+  // Calculate gradient of theta w.r.t. unknown dofs , in this case {t1,t2}
   LINALG::Matrix<1,3> A(true);  // Identical to "A" in derivation
   LINALG::Matrix<1,3> B(true);  // Identical to "B" in derivation
 
@@ -1256,6 +1683,25 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffTangent(Teuchos::ParameterList&   pa
     A(i)+=tcurr1(i)*s/(pow(norm_t1,2)*sin(theta)) - tcurr2(i)/(norm_t1*norm_t2*sin(theta));
     B(i)+=tcurr2(i)*s/(pow(norm_t2,2)*sin(theta)) - tcurr1(i)/(norm_t1*norm_t2*sin(theta));
   }
+
+  // Calculate auxiliary vectors for computation of forces and stiffnessmatrix
+  LINALG::Matrix<1,6> aux_c(true);  // Identical to "c" in derivation
+
+  for(int j=0; j<3; j++)
+  {
+    aux_c(j)= A(j);
+    aux_c(j+3)= B(j);
+  }
+
+  // Spring stiffness
+  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+  double spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
+
+  // Calculate torsional forces
+  for(int j=0; j<6; j++)
+    TorForce(j)=spring*deltatheta*aux_c(j);
+
+  //%%%%%%% Calculation of stiffness matrix %%%%%%%%
 
   // Calculate auxiliary vectors for computation of stiffnessmatrices
   LINALG::Matrix<3,3> dadt1(true);
@@ -1292,19 +1738,263 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffTangent(Teuchos::ParameterList&   pa
  | Calculate torsional stiffness matrices between tangent of beam and directional vector of truss   |
  | using automatic differentiation                                                  mukherjee 09/14 |
  *--------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffatNode(Teuchos::ParameterList&   params,
-    double theta_0,
-    LINALG::Matrix<1,3> & tcurr,
-    LINALG::Matrix<1,6> & xcurr,
-    Epetra_SerialDenseMatrix & TorStiffmatrix,
-    Epetra_SerialDenseVector & TorForce)
+void DRT::ELEMENTS::Truss3::MyTorsionalStiffTangentDot(Teuchos::ParameterList&   params,
+                                                      LINALG::Matrix<1,3> & tangentcurr1,
+                                                      LINALG::Matrix<1,3> & tangentcurr2,
+                                                      Epetra_SerialDenseMatrix & TorStiffmatrix,
+                                                      Epetra_SerialDenseVector & TorForce)
+{
+
+  //see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
+  //total no of dofs
+  const int totdof = 6; // (t1,t2)
+
+  //FAD calculated stiff matrix for validation purposes
+  LINALG::TMatrix<FAD,totdof,totdof> stiffmatrix_check(true);
+  LINALG::TMatrix<FAD,1,totdof> force_check(true);
+
+  //matrix for current positions and tangents
+  std::vector<FAD> disp_tot(totdof,0.0);
+
+  // current tangent at Node 1
+  LINALG::TMatrix<FAD,3,1> tcurr1(true);
+  // current tangent at Node 2
+  LINALG::TMatrix<FAD,3,1> tcurr2(true);
+  // reference tangent at Node 1
+  LINALG::TMatrix<FAD,3,1> tref1(true);
+  // reference tangent at Node 2
+  LINALG::TMatrix<FAD,3,1> tref2(true);
+  // unit current tangent at Node 1
+  LINALG::TMatrix<FAD,3,1> tcurr1_unit(true);
+  // unit current tangent at Node 2
+  LINALG::TMatrix<FAD,3,1> tcurr2_unit(true);
+  // unit reference tangent at Node 1
+  LINALG::TMatrix<FAD,3,1> tref1_unit(true);
+  // unit reference tangent at Node 2
+  LINALG::TMatrix<FAD,3,1> tref2_unit(true);
+
+  for (int i=0; i<3; i++)
+  {
+    disp_tot[i]=tangentcurr1(i);
+    disp_tot[i].diff(i,totdof);
+    disp_tot[i+3]= tangentcurr2(i);
+    disp_tot[i+3].diff(i+3, totdof);
+    tcurr1(i)=disp_tot[i];
+    tcurr2(i)=disp_tot[i+3];
+    tref1(i)=trefNode_[0](i); // trefNode_ nodal index varies from [0,1]
+    tref2(i)=trefNode_[1](i);
+  }
+
+  // Norms of the tangential vectors and directional displacement vector
+  FAD norm_tref1=pow(BEAMCONTACT::ScalarProduct(tref1,tref1),0.5);
+  FAD norm_tref2=pow(BEAMCONTACT::ScalarProduct(tref2,tref2),0.5);
+  FAD norm_tcurr1=pow(BEAMCONTACT::ScalarProduct(tcurr1,tcurr1),0.5);
+  FAD norm_tcurr2=pow(BEAMCONTACT::ScalarProduct(tcurr2,tcurr2),0.5);
+
+  // Recalculate unit vectors
+  tref1_unit.Update(1.0/norm_tref1,tref1,0.0);
+  tref2_unit.Update(1.0/norm_tref2,tref2,0.0);
+  tcurr1_unit.Update(1.0/norm_tcurr1,tcurr1,0.0);
+  tcurr2_unit.Update(1.0/norm_tcurr2,tcurr2,0.0);
+
+  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+  // Spring stiffness
+  FAD spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
+
+  //computing energy potential (equation 3.3)
+  FAD W=0.5*spring*pow((BEAMCONTACT::ScalarProduct(tcurr1_unit,tcurr2_unit)-BEAMCONTACT::ScalarProduct(tref1_unit,tref2_unit)),2);
+
+  //Compute linearization with FAD for checking
+  for (int i=0; i<totdof; i++)
+    force_check(i)=W.dx(i);
+
+  // Analytical matrix for computation of forces
+  LINALG::TMatrix<FAD,1,3> A(true);
+  LINALG::TMatrix<FAD,1,3> B(true);
+  // Auxiliary matrix
+  LINALG::TMatrix<FAD,3,3> t1_aux(true);
+  LINALG::TMatrix<FAD,3,3> t2_aux(true);
+
+  // Calculate dot product
+  FAD t1t2curr_unit=BEAMCONTACT::ScalarProduct(tcurr1_unit,tcurr2_unit);
+  FAD t1t2ref_unit=BEAMCONTACT::ScalarProduct(tref1_unit,tref2_unit);
+  for (int i=0; i<3; i++)
+    for (int j=0; j<3; j++)
+    {
+      t1_aux(i,j)= (i==j)/norm_tcurr1 -tcurr1(i)*tcurr1(j)/pow(norm_tcurr1,3);
+      t2_aux(i,j)= (i==j)/norm_tcurr2 -tcurr2(i)*tcurr2(j)/pow(norm_tcurr2,3);
+      A(i)+=spring*(t1t2curr_unit-t1t2ref_unit)*t1_aux(i,j)*tcurr2_unit(j);
+      B(i)+=spring*(t1t2curr_unit-t1t2ref_unit)*t2_aux(i,j)*tcurr1_unit(j);
+    }
+
+  // FAD force vector for computation of forces
+  LINALG::TMatrix<FAD,1,totdof> FADforce(true);
+  for (int i=0; i<3; i++)
+  {
+    FADforce(i)=A(i);
+    TorForce(i)=A(i).val();
+    FADforce(i+3)=B(i);
+    TorForce(i+3)=B(i).val();
+  }
+
+  // FAD force vector for computation of forces
+  LINALG::TMatrix<FAD,totdof,totdof> FADstiffMatrix(true);
+
+  for (int i=0; i<totdof; i++)
+    for (int j=0; j<totdof; j++)
+      TorStiffmatrix(i,j)=FADforce(i).dx(j);
+
+  return;
+}
+
+/*-------------------------------------------------------------------------------------------------*
+ | Calculate torsional stiffness matrices and forces                                               |
+ | between tangents of beam at angle smaller than 45 degrees                         mukherjee 09/14|
+ *-------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3::MyTorsionalStiffatTangentSin(Teuchos::ParameterList&   params,
+                                                   double theta,
+                                                   double deltatheta,
+                                                   LINALG::Matrix<1,3> & tcurr1,
+                                                   LINALG::Matrix<1,3> & tcurr2,
+                                                   Epetra_SerialDenseMatrix & TorStiffmatrix,
+                                                   Epetra_SerialDenseVector & TorForce)
+{
+  if (theta==0.0)
+    return;
+
+  //total no of dofs
+  const int totdof = 6; // only {t1, t2}
+
+  //matrix for current positions and tangents
+  std::vector<FAD> disp_tot(totdof,0.0);
+
+  // t1 = tangent1
+  LINALG::TMatrix<FAD,1,3> tangent1;
+  // t2 = tangent2
+  LINALG::TMatrix<FAD,1,3> tangent2;
+
+  for (int i=0; i<3; i++)
+  {
+    disp_tot[i]=tcurr1(i);
+    disp_tot[i].diff(i,totdof);
+    disp_tot[i+3]= tcurr2(i);
+    disp_tot[i+3].diff(i+3, totdof);
+    tangent1(i)=disp_tot[i];
+    tangent2(i)=disp_tot[i+3];
+  }
+
+  LINALG::TMatrix<FAD,1,3> crossprod;
+  crossprod.Clear();
+  FAD Theta=0.0;
+  FAD SinTheta=0.0;
+
+  //Cross Product
+  crossprod(0) = tangent1(1)*tangent2(2) - tangent1(2)*tangent2(1);
+  crossprod(1) = tangent1(2)*tangent2(0) - tangent1(0)*tangent2(2);
+  crossprod(2) = tangent1(0)*tangent2(1) - tangent1(1)*tangent2(0);
+
+  // Norms of the tangential vectors, directional displacement vector and cross product
+  FAD norm_t1= 0.0;
+  FAD norm_t2= 0.0;
+  FAD norm_crossprod= 0.0;
+  for (int i=0; i<3; i++)
+  {
+    norm_t1+=pow(tangent1(i),2);
+    norm_t2+=pow(tangent2(i),2);
+    norm_crossprod+=pow(crossprod(i),2);
+  }
+  norm_t1=pow(norm_t1,0.5);
+  norm_t2=pow(norm_t2,0.5);
+  norm_crossprod=pow(norm_crossprod,0.5);
+
+  SinTheta = norm_crossprod/(norm_t1*norm_t2); // Sin of angle
+
+  Theta=asin(SinTheta);
+
+  //Auxilary vectors for calculation of vectors
+  LINALG::TMatrix<FAD,1,3>T1(true);
+  LINALG::TMatrix<FAD,1,3>T2(true);
+
+  T1(0) = (tangent2(1)*crossprod(2) - tangent2(2)*crossprod(1))/norm_crossprod;
+  T1(1) = (tangent2(2)*crossprod(0) - tangent2(0)*crossprod(2))/norm_crossprod;
+  T1(2) = (tangent2(0)*crossprod(1) - tangent2(1)*crossprod(0))/norm_crossprod;
+
+  T2(0) = (crossprod(1)*tangent1(2) - crossprod(2)*tangent1(1))/norm_crossprod;
+  T2(1) = (crossprod(2)*tangent1(0) - crossprod(0)*tangent1(2))/norm_crossprod;
+  T2(2) = (crossprod(0)*tangent1(1) - crossprod(1)*tangent1(0))/norm_crossprod;
+
+  // Calculate gradient of theta w.r.t. unknown dofs , in this case {t1,t2}
+  LINALG::TMatrix<FAD,1,3> A(true);  // Identical to "A" in derivation
+  LINALG::TMatrix<FAD,1,3> B(true);  // Identical to "B" in derivation
+
+  for(int i=0; i<3; i++)
+  {
+    A(i)+=-tcurr1(i)*sin(theta)/(pow(norm_t1,2)*cos(theta)) + T1(i)/(norm_t1*norm_t2*cos(theta));
+    B(i)+=-tcurr2(i)*sin(theta)/(pow(norm_t2,2)*cos(theta)) + T2(i)/(norm_t1*norm_t2*cos(theta));
+  }
+
+  // Calculate auxiliary vectors for computation of forces and stiffnessmatrix
+  LINALG::TMatrix<FAD,1,6> aux_c(true);  // Identical to "c" in derivation
+
+  for(int j=0; j<3; j++)
+  {
+    aux_c(j)= A(j);
+    aux_c(j+3)= B(j);
+  }
+
+  /*    //Uncomment this part to see if the linearisation is correct.
+    // ****Important not to further use the linearised expression to calculate stiffness matrix ****** //
+    // Linearisation of theta w.r.t. dofs. i.e. {t1 or t2, d1, d2}
+    LINALG::TMatrix<FAD,1,totdof> LinTheta;
+    for(int i = 0; i < totdof; i++)
+    {
+      LinTheta(i) = Theta.dx(i);
+    }
+    std::cout<<"LinTheta="<<LinTheta<<std::endl;
+    std::cout<<"aux_c="<<aux_c<<std::endl;
+   */
+
+  // FAD Force vector for calculating stiffness matrix
+  LINALG::TMatrix<FAD,1,totdof> TorForceFAD;
+
+  // Spring stiffness
+  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+  FAD spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
+
+  FAD deltathetaFAD=deltatheta;
+
+  for(int j=0; j<totdof; j++)
+  {
+    TorForceFAD(j)=spring*deltathetaFAD*aux_c(j);
+    TorForce(j)=TorForceFAD(j).val();
+  }
+
+  // Calculate stiffness matrix
+  for(int i = 0; i < totdof; i++)
+    for(int j = 0; j < totdof; j++)
+      TorStiffmatrix(i,j) = TorForceFAD(i).dx(j);
+
+  return;
+}
+
+
+
+/*--------------------------------------------------------------------------------------------------*
+ | Calculate torsional stiffness matrices between tangent of beam and directional vector of truss   |
+ | using automatic differentiation                                                  mukherjee 09/14 |
+ *--------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffatNodeCos(Teuchos::ParameterList&   params,
+                                                      double theta_0,
+                                                      LINALG::Matrix<1,3> & tcurr,
+                                                      LINALG::Matrix<1,6> & xcurr,
+                                                      Epetra_SerialDenseMatrix & TorStiffmatrix,
+                                                      Epetra_SerialDenseVector & TorForce)
 {
 
   //see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
   //FAD calculated stiff matrix for validation purposes
-  LINALG::TMatrix<FAD,9,9> stiffmatrix_check;
-  stiffmatrix_check.Clear();
-  LINALG::TMatrix<FAD,1,9> force_check;
+  LINALG::TMatrix<FAD,9,9> stiffmatrix_check(true);
+  LINALG::TMatrix<FAD,1,9> force_check(true);
 
   //total no of dofs
   const int totdof = 9;
@@ -1379,7 +2069,6 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffatNode(Teuchos::ParameterList&   
 
   Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
 
-
   // Calculate auxiliary vectors for computation of forces and stiffnessmatrix
   LINALG::TMatrix<FAD,1,3> aux_a(true);  // Identical to "a" in derivation
   LINALG::TMatrix<FAD,1,3> aux_b(true);  // Identical to "b" in derivation
@@ -1394,10 +2083,8 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffatNode(Teuchos::ParameterList&   
     aux_c(0,j+6)= -aux_b(0,j);
   }
 
-
   // Spring stiffness
   FAD spring =statmechparams.get<double> ("KTOR1_LINK", 0.0);
-
 
   // Calculate torsional forces
   for(int j=0; j<9; j++)
@@ -1461,14 +2148,13 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffatNode(Teuchos::ParameterList&   
  | Calculate torsional stiffness matrices between tangent of beam and directional vector of truss   |
  | using automatic differentiation                                                  mukherjee 09/14 |
  *--------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffTangent(Teuchos::ParameterList&   params,
-    double theta_0,
-    LINALG::Matrix<1,3> & tcurrNode2,
-    LINALG::Matrix<1,3> & tcurrNode1,
-    Epetra_SerialDenseMatrix & TorStiffmatrix,
-    Epetra_SerialDenseVector & TorForce)
+void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffTangentCos(Teuchos::ParameterList&   params,
+                                                      double theta_0,
+                                                      LINALG::Matrix<1,3> & tcurrNode1,
+                                                      LINALG::Matrix<1,3> & tcurrNode2,
+                                                      Epetra_SerialDenseMatrix & TorStiffmatrix,
+                                                      Epetra_SerialDenseVector & TorForce)
 {
-
   //see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
   //FAD calculated stiff matrix for validation purposes
   LINALG::TMatrix<FAD,6,6> stiffmatrix_check;
@@ -1626,13 +2312,103 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffTangent(Teuchos::ParameterList&  
   return;
 }
 
+/*--------------------------------------------------------------------------------------------------*
+ | Calculate torsional stiffness matrices between tangent of beam and directional vector of truss   |
+ | using automatic differentiation                                                  mukherjee 09/14 |
+ *--------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3::FADThetaLinearisation(LINALG::Matrix<1,3> & diff_disp,
+                                                  LINALG::Matrix<1,3> & tcurr,
+                                                  LINALG::Matrix<1,3> & A,
+                                                  LINALG::Matrix<1,3> & B)
+{
+  //1x6 Auxilary vector to verify linearisation of angle w.r.t. variables. Contributions to vector {t1, v1} in respective order
+  LINALG::Matrix<1,6> AuxilaryVector(true);
+  for (int i=0; i<3; i++)
+  {
+    AuxilaryVector(i)=A(i);
+    AuxilaryVector(i+3)=B(i);
+  }
+
+  //see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
+  //FAD calculated linearisation for validation purposes
+  LINALG::TMatrix<FAD,1,6> vector_check;
+
+  //total no of dofs
+  const int totdof = 6;
+
+  //matrix for current positions and tangents
+  std::vector<FAD> disp_tot(totdof,0.0);
+
+  // diff_disp = d2 -d1
+  LINALG::TMatrix<FAD,1,3> FADdiff_disp;
+  // t1 = tangent
+  LINALG::TMatrix<FAD,1,3> tangent;
+
+  for (int i=0; i<3; i++)
+  {
+    disp_tot[i]=tcurr(i);
+    disp_tot[i].diff(i,totdof);
+    disp_tot[i+3]= diff_disp(i);
+    disp_tot[i+3].diff(i+3, totdof);
+    tangent(i)=disp_tot[i];
+    FADdiff_disp(i)=disp_tot[i+3];
+  }
+
+  // Norms of the tangential vectors and directional displacement vector
+  FAD norm_v= 0.0;
+  FAD norm_t= 0.0;
+  for (int i=0; i<3; i++)
+  {
+    norm_v+=pow(FADdiff_disp(i),2);
+    norm_t+=pow(tangent(i),2);
+  }
+  norm_v=pow(norm_v,0.5);
+  norm_t=pow(norm_t,0.5);
+
+  //computing the change of angle theta (equation 3.3)
+  FAD Theta=0.0;
+  FAD dotprod=0.0;
+  FAD CosTheta=0.0;
+
+  for (int j=0; j<3; ++j)
+    dotprod +=  tangent(j) * FADdiff_disp(j);
+
+  CosTheta = dotprod/(norm_v*norm_t); // Cosine of angle
+
+  Theta=acos(CosTheta);
+
+  for(int i = 0; i < totdof; i++)
+  {
+    vector_check(i) = Theta.dx(i);
+  }
+
+
+  LINALG::TMatrix<FAD,1,totdof> vector_relerr;
+  vector_relerr.Clear();
+
+  for(int index=0; index<totdof; index++)
+  {
+    if (fabs(vector_check(index))<1.0e-30 || fabs(AuxilaryVector(index))<1.0e-30 )
+      vector_relerr(index) = 0;
+    else
+      vector_relerr(index)= fabs(AuxilaryVector(index) - vector_check(index));
+  }
+
+  //  std::cout<<"\n\n rel error of vector"<< vector_relerr;
+  //  std::cout<<"Analytical vector= "<< vector_check<< std::endl;
+  //  std::cout<<"Numerical Force="<<AuxilaryVector<<std::endl;
+  return;
+}
+
 
 /*-----------------------------------------------------------------------------------------------------------*
  | computes damping coefficients per length and stores them in a matrix in the following order: damping of    |
  | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
  | rotation around filament axis                                             (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Truss3::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel)
+inline void DRT::ELEMENTS::Truss3::MyDampingConstants(Teuchos::ParameterList& params,
+                                                      LINALG::Matrix<3,1>& gamma,
+                                                      const INPAR::STATMECH::FrictionModel& frictionmodel)
 {
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
@@ -1665,21 +2441,50 @@ int DRT::ELEMENTS::Truss3::HowManyRandomNumbersINeed()
  *----------------------------------------------------------------------------------------------------------*/
 template<int ndim> //number of dimensions of embedding space
 void DRT::ELEMENTS::Truss3::MyBackgroundVelocity(Teuchos::ParameterList&       params,  //!<parameter list
-    const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
-    LINALG::Matrix<ndim,1>&       velbackground,  //!< velocity of background fluid
-    LINALG::Matrix<ndim,ndim>&    velbackgroundgrad) //!<gradient of velocity of background fluid
+                                                 const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
+                                                 LINALG::Matrix<ndim,1>&       velbackground,  //!< velocity of background fluid
+                                                 LINALG::Matrix<ndim,ndim>&    velbackgroundgrad) //!<gradient of velocity of background fluid
 {
-
   /*note: this function is not yet a general one, but always assumes a shear flow, where the velocity of the
    * background fluid is always directed in x-direction. In 3D the velocity increases linearly in z and equals zero for z = 0.
    * In 2D the velocity increases linearly in y and equals zero for y = 0. */
 
+  //velocity at upper boundary of domain
+  double uppervel = 0.0;
+
+  //default values for background velocity and its gradient
   velbackground.PutScalar(0);
-  velbackground(0) = evaluationpoint(ndim-1) * params.get<double>("CURRENTSHEAR",0.0);
-
   velbackgroundgrad.PutScalar(0);
-  velbackgroundgrad(0,ndim-1) = params.get<double>("CURRENTSHEAR",0.0);
 
+  double time = params.get<double>("total time",0.0);
+  double starttime = params.get<double>("STARTTIMEACT",0.0);
+  double dt = params.get<double>("delta time");
+  double shearamplitude = params.get<double> ("SHEARAMPLITUDE", 0.0);
+  int curvenumber = params.get<int> ("CURVENUMBER", -1)-1;
+  int dbcdispdir = params.get<int> ("DBCDISPDIR", -1)-1;
+  INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE", INPAR::STATMECH::dbctype_std);
+  Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
+  Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
+
+  bool shearflow = false;
+  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
+     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
+     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
+     dbctype==INPAR::STATMECH::dbctype_affineshear||
+     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
+    shearflow = true;
+  //oscillations start only at params.get<double>("STARTTIMEACT",0.0)
+  if(periodlength->at(0) > 0.0)
+    if(shearflow && time>starttime && fabs(time-starttime)>dt/1e4 && curvenumber >=  0 && dbcdispdir >= 0 )
+    {
+      uppervel = shearamplitude * (DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1))[1];
+
+      //compute background velocity
+      velbackground(dbcdispdir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) * uppervel;
+
+      //compute gradient of background velocity
+      velbackgroundgrad(dbcdispdir,ndim-1) = uppervel / periodlength->at(ndim-1);
+    }
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -1798,10 +2603,10 @@ inline void DRT::ELEMENTS::Truss3::MyTranslationalDamping(Teuchos::ParameterList
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
 inline void DRT::ELEMENTS::Truss3::MyStochasticForces(Teuchos::ParameterList&    params,  //!<parameter list
-    const LINALG::Matrix<1,6>& DummyVel,  //!< element velocity vector
-    const LINALG::Matrix<1,6>& DummyDisp, //!<element disp vector
-    Epetra_SerialDenseMatrix&  DummyStiffMatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector&  DummyForce)//!< element internal force vector
+                                                      const LINALG::Matrix<1,6>& DummyVel,  //!< element velocity vector
+                                                      const LINALG::Matrix<1,6>& DummyDisp, //!<element disp vector
+                                                      Epetra_SerialDenseMatrix&  DummyStiffMatrix,  //!< element stiffness matrix
+                                                      Epetra_SerialDenseVector&  DummyForce)//!< element internal force vector
 {
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
@@ -1878,17 +2683,17 @@ inline void DRT::ELEMENTS::Truss3::MyStochasticForces(Teuchos::ParameterList&   
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
 inline void DRT::ELEMENTS::Truss3::CalcBrownian(Teuchos::ParameterList&    params,
-    const LINALG::Matrix<1,6>& DummyVel,  //!< element velocity vector
-    const LINALG::Matrix<1,6>& DummyDisp, //!< element displacement vector
-    Epetra_SerialDenseMatrix&  DummyStiffMatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector&  DummyForce) //!< element internal force vector
+                                                const LINALG::Matrix<1,6>& DummyVel,  //!< element velocity vector
+                                                const LINALG::Matrix<1,6>& DummyDisp, //!< element displacement vector
+                                                Epetra_SerialDenseMatrix&  DummyStiffMatrix,  //!< element stiffness matrix
+                                                Epetra_SerialDenseVector&  DummyForce) //!< element internal force vector
 {
   //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
   if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
     return;
 
   //add stiffness and forces due to translational damping effects
-  MyTranslationalDamping<nnode,ndim,dof>(params,DummyVel,DummyDisp,DummyStiffMatrix,DummyForce);
+   MyTranslationalDamping<nnode,ndim,dof>(params,DummyVel,DummyDisp,DummyStiffMatrix,DummyForce);
 
   //add stochastic forces and (if required) resulting stiffness
   MyStochasticForces<nnode,ndim,dof,randompergauss>(params,DummyVel,DummyDisp,DummyStiffMatrix,DummyForce);
@@ -1906,7 +2711,7 @@ inline void DRT::ELEMENTS::Truss3::CalcBrownian(Teuchos::ParameterList&    param
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim> //number of nodes, number of dimensions
 inline void DRT::ELEMENTS::Truss3::NodeShift(Teuchos::ParameterList& params,  //!<parameter list
-    std::vector<double>&    disp) //!<element disp vector
+                                             std::vector<double>&    disp) //!<element disp vector
 {
   /* get number of degrees of freedom per node; note: the following function assumes the same number of degrees
    * of freedom for each element node*/

@@ -248,6 +248,78 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector&                 
               }
           }
         }
+        else if(eot==DRT::ELEMENTS::Beam3ebType::Instance())  // Kirchhoff Type of beam elements
+        {
+          // this cast is necessary in order to use the method ->Tref()
+          const DRT::ELEMENTS::Beam3eb* ele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(element);
+          //number of interpolated points in axial direction
+          const int n_axial= statmechparams_.get<int>("GMSHNINTPT",10.0);
+          // prepare storage for nodal coordinates
+          int nnodes = element->NumNode();
+          LINALG::SerialDenseMatrix nodalcoords(3,nnodes);
+          LINALG::SerialDenseMatrix nodaltangents(3,nnodes);
+          // Change the size of coord for interpolated coordinates
+          coord.Reshape(3,n_axial);
+          // compute current nodal positions
+          for (int i=0;i<3;++i)
+          {
+            for (int j=0;j<element->NumNode();++j)
+            {
+              double referenceposition = ((element->Nodes())[j])->X()[i];
+              std::vector<int> dofnode = discret_->Dof((element->Nodes())[j]);
+              double displacement = discol[discret_->DofColMap()->LID(dofnode[i])];
+              nodalcoords(i,j) =  referenceposition + displacement;
+              nodaltangents(i,j) =  ((ele->Tref())[j])(i) + discol[discret_->DofColMap()->LID(dofnode[3+i])];
+            }
+          }
+          // Position vector for shifting broken elements to their original location
+          std::vector<double> position(6);
+          for(int i=0; i<3; i++)
+          {
+            position[i]=nodalcoords(i,0);
+            position[i+3]=nodalcoords(i,1);
+          }
+          // Shift the broken filaments to their unbroken state or original state
+          UnshiftPositions(position);
+
+          // Position vector to break them again i.e. bring them in the periodic volume
+          std::vector<double> ShiftPosition(n_axial*3);
+
+          // Vector to interpolate the positions
+          if (nnodes ==2)
+          {
+            LINALG::Matrix<12,1> disp_totlag(true);
+            for (int i=0;i<3;i++)
+            {
+              disp_totlag(i)=position[i];
+              disp_totlag(i+6)=position[i+3];
+              disp_totlag(i+3)=nodaltangents(i,0);
+              disp_totlag(i+9)=nodaltangents(i,1);
+            }
+
+            //Calculate axial positions within the element by using the Hermite interpolation of Kirchhoff beams
+            for (int i=0;i<n_axial;i++)
+            {
+              double xi=-1.0 + i*2.0/(n_axial -1); // parameter coordinate of position vector on beam centerline
+              LINALG::Matrix<3,1> r = ele->GetPos(xi, disp_totlag); //position vector on beam centerline
+
+              for (int j=0;j<3;j++)
+                ShiftPosition[3*i+j]=r(j);
+            }
+
+            // Shift the interpolated element back where they were, i.e. inside periodic volume
+            ShiftPositions(ShiftPosition,n_axial);
+
+            // Store the values in coord matrix for further plotting purposes
+            for (int i=0;i<n_axial;i++)
+              for (int j=0;j<3;j++)
+                coord(j,i)=ShiftPosition[3*i+j];
+
+          }
+            else
+              dserror("Only 2-noded Kirchhoff elements possible so far!");
+        }
+
         else  // standard beam or truss element
         {
           for (int id=0; id<3; id++)
@@ -325,15 +397,33 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector&                 
                 int numnode = element->NumNode();
                 if(eot==DRT::ELEMENTS::BeamCLType::Instance() || eot==DRT::ELEMENTS::Truss3CLType::Instance())
                   numnode = 2;
-                for (int j=0; j<numnode - 1; j++)
+                if(eot==DRT::ELEMENTS::Beam3ebType::Instance())
                 {
-                  //define output coordinates
-                  LINALG::SerialDenseMatrix coordout(3,2);
-                  for(int m=0; m<coordout.M(); m++)
-                    for(int n=0; n<coordout.N(); n++)
-                      coordout(m,n)=coord(m,j+n);
+                  const int n_axial= statmechparams_.get<int>("GMSHNINTPT",10.0);
+                  for (int j=0; j<n_axial-1; j++)
+                  {
+                    //define output coordinates
+                    LINALG::SerialDenseMatrix coordout(3,2);
+                    for(int m=0; m<coordout.M(); m++)
+                      for(int n=0; n<coordout.N(); n++)
+                        coordout(m,n)=coord(m,j+n);
 
-                   GmshWedge(nline,coordout,element,gmshfilecontent,color);
+                    GmshWedge(nline,coordout,element,gmshfilecontent,color);
+                  }
+
+                }
+                else
+                {
+                  for (int j=0; j<numnode - 1; j++)
+                  {
+                    //define output coordinates
+                    LINALG::SerialDenseMatrix coordout(3,2);
+                    for(int m=0; m<coordout.M(); m++)
+                      for(int n=0; n<coordout.N(); n++)
+                        coordout(m,n)=coord(m,j+n);
+
+                    GmshWedge(nline,coordout,element,gmshfilecontent,color);
+                  }
                 }
               }
               else
@@ -356,7 +446,23 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector&                 
           }
           //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
           else
-            GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
+          {
+            if(eot==DRT::ELEMENTS::Beam3ebType::Instance())
+            {
+              const int n_axial= statmechparams_.get<int>("GMSHNINTPT",10.0);
+              for (int j=0; j<n_axial - 1; j++)
+              {
+                //define output coordinates
+                LINALG::SerialDenseMatrix coordout(3,2);
+                for(int m=0; m<coordout.M(); m++)
+                  for(int n=0; n<coordout.N(); n++)
+                    coordout(m,n)=coord(m,j+n);
+              GmshOutputPeriodicBoundary(coordout, color, gmshfilecontent,element->Id(),false);
+              }
+            }
+              else
+                GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
+          }
 
         }//end if(eot != rigid sphere)
 

@@ -144,9 +144,9 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old) :
  Izz_(old.Izz_),
  Irr_(old.Irr_),
  jacobi_(old.jacobi_),
- Tref_(old.Tref_),
  Ekin_(old.Ekin_),
  Eint_(old.Eint_),
+ Tref_(old.Tref_),
  L_(old.L_),
  P_(old.P_),
  t0_(old.t0_),
@@ -212,7 +212,6 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
 
   //add all class variables of beam2r element
   AddtoPack(data,jacobi_);
-  AddtoPack(data,Tref_);
   AddtoPack(data,crosssec_);
   AddtoPack(data,isinit_);
   AddtoPack(data,Irr_);
@@ -220,6 +219,7 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,Izz_);
   AddtoPack(data,Ekin_);
   AddtoPack(data,Eint_);
+  AddtoPack(data,Tref_);
   AddtoPack<3,1>(data,L_);
   AddtoPack<3,1>(data,P_);
   AddtoPack<3,2>(data,t0_);
@@ -247,7 +247,6 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
 
   //extract all class variables of beam3 element
   ExtractfromPack(position,data,jacobi_);
-  ExtractfromPack<3,1>(position,data,Tref_);
   ExtractfromPack(position,data,crosssec_);
   isinit_ = ExtractInt(position,data);
   ExtractfromPack(position,data,Irr_);
@@ -255,6 +254,7 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,Izz_);
   ExtractfromPack(position,data,Ekin_);
   ExtractfromPack(position,data,Eint_);
+  ExtractfromPack(position,data,Tref_);
   ExtractfromPack<3,1>(position,data,L_);
   ExtractfromPack<3,1>(position,data,P_);
   ExtractfromPack<3,2>(position,data,t0_);

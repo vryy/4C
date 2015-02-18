@@ -194,6 +194,10 @@ public:
   void GetBindingSpotTriads(Teuchos::RCP<Epetra_MultiVector> bspotrotations,
                             Teuchos::RCP<Epetra_MultiVector> bspottriads);
 
+  //! \brief Retrieve binding spot triads for Gmsh visualizations
+  void GetBindingSpotTriadsGMSH(Teuchos::RCP<Epetra_MultiVector> bspotrotations,
+                            Teuchos::RCP<Epetra_MultiVector> bspottriads);
+
   //! \brief Retrieve binding spot triads on the basis of column map nodes
   void GetElementBindingSpotTriads(Teuchos::RCP<Epetra_MultiVector> nodetriads);
 
@@ -275,6 +279,7 @@ public:
 
   //! \brief checks orientation of crosslinker relative to linked filaments
   bool CheckOrientation(const LINALG::Matrix<3,1>        direction,
+                        const Epetra_Vector& discol,
                         Teuchos::RCP<Epetra_MultiVector> bspottriadscol,
                         const Epetra_SerialDenseMatrix&  LID,
                         Teuchos::RCP<double>             phifil = Teuchos::null);
@@ -890,6 +895,9 @@ protected:
 
   //! \brief some simple checks for correct setup of boundary conditions via input file
   void BCSanityCheck();
+
+  //! \brief some simple checks to see if the correct elementtypes are chosen for Filamenent and linkers
+  void ElementSanityCheck();
 
   /*! \brief adjusted DBC evaluation for periodic case
    *  \param params          (in)     a parameter list

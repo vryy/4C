@@ -287,6 +287,9 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
   // set bctimeindex_ (position in actiontime_ where DBCs start being applied
   bctimeindex_ = statmechparams_.get<int>("BCTIMEINDEX", -1);
 
+  //Element sanity checks
+  ElementSanityCheck();
+
   // BC sanity checks
   BCSanityCheck();
 
@@ -303,6 +306,23 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
         std::cout<<"t("<<i<<")        = "<<std::setprecision(10)<<actiontime_->at(i)<<" @ dt = "<<timestepsizes_->at(i)<<std::endl;
     std::cout<<"================================================================"<<std::endl;
   }
+  return;
+}
+
+/*--------------------------------------------------------------------------------------------------*
+ | Sanity checks for elementypes for filament and linkers                (private)  mukherjee 10/14 |
+ *--------------------------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::ElementSanityCheck()
+{
+  // Not all Beam element type for filaments are compatible with all type of element types currently used
+  // for Linkers. This method makes sure that the correct element type for filament and  linker is chosen.
+  // An element used to browse through local Row Elements
+
+  DRT::Element * element = discret_->gElement(discret_->lRowElement(0)->Id());
+  if (element->ElementType().Name()=="Beam3iiType" && linkermodel_ != statmech_linker_none && statmechparams_.get<double>("ILINK",0.0) == 0.0)
+    dserror("Truss linkers are not currently configured to bind with filaments discretized with Beam3ii elements.\nPlease choose Beam3Type element for linkers.");
+  if (element->ElementType().Name()=="Beam3ebType" && linkermodel_ != statmech_linker_none && statmechparams_.get<double>("ILINK",0.0) != 0.0)
+    dserror("Currently only Truss linkers are configured to bind with filaments discretized with Beam3eb elements.\nPlease set ILINK in input file to zero to activate truss linkers.");
   return;
 }
 
@@ -431,9 +451,10 @@ void STATMECH::StatMechManager::SetStartStep(Teuchos::ParameterList& parameters)
   return;
 }
 
-/*----------------------------------------------------------------------*
- | Initialize crosslinker positions               (public) mueller 07/10|
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------*
+ | Initialize crosslinker positions                                                |
+ |(point-like particles and not doubly-bound)                (public) mueller 07/10|
+ *---------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
 {
   int ncrosslink = statmechparams_.get<int> ("N_crosslink", 0);
@@ -1089,11 +1110,8 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
 
     Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::null;
-    if(statmechparams_.get<double>("ILINK",0.0)>0.0)
-    {
-      bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
-      GetBindingSpotTriads(bspotrotations, bspottriadscol);
-    }
+    bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
+    GetBindingSpotTriads(bspotrotations, bspottriadscol);
 //==ENDNEW
 //==OLD
     //node positions and rotations (binding spot positions and rotations when applying 4-noded beam element)
@@ -1321,7 +1339,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
               direction(j) = (*bspotpositions)[j][(int)LID(0,0)]-(*bspotpositions)[j][(int)LID(1,0)];
             direction.Scale(1.0/direction.Norm2());
 
-            if(CheckOrientation(direction, bspottriadscol,LID) && !intersection)
+            if(CheckOrientation(direction,discol,bspottriadscol,LID) && !intersection)
             {
               numsetelements++;
               (*addcrosselement)[currlink] = 1.0;

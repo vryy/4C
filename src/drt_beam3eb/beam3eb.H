@@ -498,13 +498,13 @@ private:
   //! bool recognizing first element call
   bool firstcall_;
 
-  //! Matrix holding tangents at each node in reference configuration
-  std::vector<LINALG::Matrix<3,1> > Tref_;
-
   //! kinetic energy
   double Ekin_;
   //! internal energy
   double Eint_;
+
+  //! Matrix holding tangents at each node in reference configuration
+  std::vector<LINALG::Matrix<3,1> > Tref_;
   //! angular momentum of the element
   LINALG::Matrix<3,1> L_;
   //! linear momentum of the element
