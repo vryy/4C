@@ -76,7 +76,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   neumannintsepveccomponents.push_back(
       Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
   neumannintveccomponents.push_back(
-    Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false)));
+    Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
 
   neumanncomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
   neumanncomponents.push_back(
