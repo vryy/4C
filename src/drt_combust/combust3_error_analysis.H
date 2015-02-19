@@ -1214,6 +1214,15 @@ void Nitsche_BuildDomainIntegratedErrors(
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion Nitsche errors - domain");
 
+  std::cout << "#################################################################################\n";
+  std::cout << "## WARNING: You should use the calculation of errorrs with caution! Check all  ##\n";
+  std::cout << "##          functionality before using it!                                     ##\n";
+  std::cout << "#################################################################################";
+  // I am not sure whether this function has been carefully considered when further developing the combustion
+  // module. It has been introduced in the DA of Schott and also been applied by Flo Henke for his dissertation. Since
+  // I fixed a bug here (February 19th 2015), I would not rely on the results obtained with this function and strongly
+  // recommend to check it before using!! Ursula
+
   //==================================================================================================
   // get actual values of norms^2 of domain errors,stored in eleparams, then update the values with error part of this element
   // at the end of this function we set the eleparams new
@@ -1310,7 +1319,10 @@ void Nitsche_BuildDomainIntegratedErrors(
       COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
 
       // blend smoothly to minus (gas bubble) domain
-      COMBUST::BlendMaterial(ele, true, time, densaf, dynvisc, densplus, dynviscplus, densminus, dynviscminus);
+      COMBUST::BlendMaterial(ele, cell->getDomainPlus(), time,
+                             densaf, dynvisc, densplus, dynviscplus,
+                             densminus, dynviscminus);
+
       dynvisc_max = std::max(dynviscplus,dynviscminus);
     }
 
