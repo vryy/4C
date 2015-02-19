@@ -378,10 +378,15 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     // coarse check
     if (fast_)
     {
-      // if first node of first associated element is far from the interface the bin is also expected to be far from the interface
+      // if first node of first associated element is far from the interface the bin is also expected to be far
+      // from the interface
       DRT::Element* scatraele = scatraelesinbin[0];
       if (scatraele->Shape() != DRT::Element::hex8)
        dserror("Other element than hex8 not yet supported!");
+      // This check should also work for all other element types, but has not yet been tested or applied! Thus,
+      // check first!
+      // In general, you should first test entire algorithm for other element types than hex8 before using it!
+      // But should work!
 
       // get nodal phi values
       std::vector<int> lm;
@@ -3049,6 +3054,35 @@ DRT::Element* PARTICLE::ScatraParticleCoupling::GetEleCoordinatesFromPosition(
 }
 
 
+// FOR EXTENSION TO OTHER ELEMENT TYPES: consider template version
+//void PARTICLE::ScatraParticleCoupling::GetLSValParticle(
+//  double& phi_particle,               ///< phi value at particle position
+//  LINALG::Matrix<3,1>& gradphi,       ///< gradient of level-set field at particle position
+//  DRT::Element* scatraele,            ///< corresponding scatra element
+//  const LINALG::Matrix<3,1> elecoord, ///< matrix containing particle coordinates in element space
+//  const Teuchos::RCP<const Epetra_Vector> phinp, ///< vector containing level-set values (col map)
+//  bool compute_normal                 ///< additionally compute normal vector Optional -> default = true)
+//  )
+//{
+//  switch (scatraele->Shape())
+//  {
+//    case  DRT::Element::hex8:
+//    {
+//      GetLSValParticle<DRT::Element::hex8>(phi_particle,gradphi,scatraele,elecoord,phinp,compute_normal);
+//      break;
+//    }
+//    default:
+//    {
+//      dserror("Add your element type!");
+//      break;
+//    }
+//  }
+//
+//  return;
+//}
+// also for GetVelParticle
+
+
 /*----------------------------------------------------------------------*
  | compute level-set value of particle                  rasthofer 12/13 |
  *----------------------------------------------------------------------*/
@@ -3062,7 +3096,7 @@ void PARTICLE::ScatraParticleCoupling::GetLSValParticle(
   )
 {
   if (scatraele->Shape() != DRT::Element::hex8)
-    dserror("Other element than hex8 not yet supported!");
+    dserror("Other element than hex8 not yet supported!"); // -> for adaption see comment above
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
 
   // get nodal phi values
