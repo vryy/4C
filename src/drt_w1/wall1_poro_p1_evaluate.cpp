@@ -975,14 +975,6 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;  // default time curve factor
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-
   /*----------------------------------------------------- geometry update */
   // update element geometry
   LINALG::Matrix<my::numdim_,my::numnod_> xrefe; // material coord. of element
@@ -1001,43 +993,76 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
 
 
   // get values and switches from the condition
-  const std::vector<int>*    onoff = condition.Get<std::vector<int> >("onoff");
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val");
+  const std::vector<int>*    curve = condition.Get<std::vector<int> >   ("curve");
+  const std::vector<int>*    funct = condition.Get<std::vector<int> >   ("funct");
+
 
   LINALG::Matrix<my::numdim_,my::numnod_> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
   // CAUTION: defgrd(true): filled with zeros!
   LINALG::Matrix<my::numdim_,my::numdim_> defgrd(true);
-  LINALG::Matrix<my::numnod_,1> shapefct;
+  LINALG::Matrix<my::numnod_,1> shapefcts;
   LINALG::Matrix<my::numdim_,my::numnod_> deriv ;
 
   LINALG::Matrix<my::numstr_,1> fstress(true);
 
   for (int gp=0; gp<my::numgpt_; ++gp)
   {
-    //evaluate shape functions and derivatives at integration point
-    my::ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
+      //evaluate shape functions and derivatives at integration point
+      my::ComputeShapeFunctionsAndDerivatives(gp,shapefcts,deriv,N_XYZ);
 
-    //jacobian determinant of transformation between spatial and material space "|dx/dX|"
-    my::ComputeJacobianDeterminant(gp,xcurr,deriv);
+      //jacobian determinant of transformation between spatial and material space "|dx/dX|"
+      my::ComputeJacobianDeterminant(gp,xcurr,deriv);
 
-    /*------------------------------------ integration factor  -------*/
-    double fac=0;
-    fac = my::detJ_[gp]*my::intpoints_.Weight(gp);
+      /*------------------------------------ integration factor  -------*/
+      double fac = my::detJ_[gp]*my::intpoints_.Weight(gp);
 
-    // load vector ar
-    double ar[2];
-    // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]
-    for (int i=0; i<my::numdim_; ++i)
-    {
-      ar[i] = fac * (*onoff)[i] * (*val)[i] * curvefac;
-    }
+      // load vector ar
+      double ar[my::numdim_]= {0.0,0.0};
+      // loop the dofs of a node
+      // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]
+      for (int i=0; i<my::numdim_; ++i)
+      {
+        if((*onoff)[i])
+        {
+          // factor given by spatial function
+          const int functnum = (funct) ? (*funct)[i] : -1;
+          double functfac = 1.0;
+          if (functnum > 0)
+          {
+            // calculate reference position of GP
+            LINALG::Matrix<1,my::numdim_>  gp_coord;
+            gp_coord.MultiplyTT(shapefcts, xrefe);
 
-    // add load components
-    for (int node=0; node< my::numnod_; ++node)
-      for (int dim=0; dim<my::numdim_; ++dim)
-         elevec1[node*noddof_+dim] += shapefct(node) * ar[dim];
+            // write coordinates in another datatype
+            double gp_coord2[3]; // the position vector has to be given in 3D!!!
+            for (int k = 0; k < my::numdim_; k++)
+              gp_coord2[k] = gp_coord(0, k);
+            for (int k = my::numdim_; k < 3; k++) // set a zero value for the remaining spatial directions
+              gp_coord2[k] = 0.0;
+            const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
+
+            // evaluate function at current gauss point
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
+          }
+
+          // factor given by time curve
+          const int curvenum = (curve) ? (*curve)[i] : -1;
+          double curvefac = 1.0;
+          if (curvenum >= 0 && usetime)
+            curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+
+          ar[i] = fac * (*val)[i] * curvefac * functfac;
+        }
+      }
+
+      // add load components
+      for (int node=0; node<my::numnod_; ++node)
+        for (int dim=0; dim<my::numdim_; ++dim)
+           elevec1[node*noddof_+dim] += shapefcts(node) * ar[dim];
 
   } // for (int ip=0; ip<totngp; ++ip)
 

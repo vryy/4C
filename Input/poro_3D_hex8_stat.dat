@@ -11,11 +11,11 @@ General Data File CCARAT
 -----------------------------------------------------------------------TITLE
 standard poro hex8 stationary
 ----------------------------------------------------------------PROBLEM SIZE
-//ELEMENTS                        1
-//NODES                           8
+//ELEMENTS                      1
+//NODES                         8
 DIM                             3
-//MATERIALS                       88
-//NUMDF                           6
+//MATERIALS                     88
+//NUMDF                         6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Poroelasticity
 RESTART                         0
@@ -31,7 +31,7 @@ THETA                           0.66
 TIMEINTEGR                      Stationary
 UPRES                           1
 LINEAR_SOLVER                   3
-----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
+-------------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
@@ -128,7 +128,7 @@ DLINE                           0
 -----------------------------------------DESIGN SURF PORO NEUMANN CONDITIONS
 DSURF                           1
 // Surface x+
-E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 3 3 3 3 3 3 FUNCT 0 0 0 0 0 0 Live Mid
+E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 3 none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 // Surface x-
 //E 4 - 0 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 ------------------------------------------DESIGN VOL PORO NEUMANN CONDITIONS
@@ -184,11 +184,11 @@ DSURF                           3
 // Surface z-
 E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Surface y-
-E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Surface x-
-//E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+//E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Surface y+
-////E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+////E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // Surface x+
 E 6 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
@@ -255,23 +255,23 @@ DSURF                           2
 E 6 -
 // Surface x-
 E 4 -
-//Surface z-
+//Surface                       z-
 //E 2 -
-//   Surface y-
+// Surface y-
 //E 3 -
 // Surface z+
 //E 1 -
 // Surface y+
 //E 5 -
----------------------------------------DESIGN SURFACE PORO PRESSURE INTEGRATION
+------------------------------------DESIGN SURFACE PORO PRESSURE INTEGRATION
 DSURF                           2
 // Surface z+
 E 1 -
-//Surface z-
+//Surface                       z-
 //E 2 -
-//   Surface y-
+// Surface y-
 //E 3 -
-//   Surface x-
+// Surface x-
 //E 4 -
 // Surface y+
 E 5 -

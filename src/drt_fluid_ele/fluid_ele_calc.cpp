@@ -1644,32 +1644,19 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::BodyForce(DRT::ELEMENTS::Flui
   {
     const std::string* condtype = myneumcond[0]->Get<std::string>("type");
 
-    // check for potential time curve
-    const std::vector<int>* curve  = myneumcond[0]->Get<std::vector<int> >("curve");
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
-
-    // initialization of time-curve factor
-    double curvefac = 0.0;
-
-    // compute potential time curve or set time-curve factor to one
-    if (curvenum >= 0)
-    {
-      // time factor (negative time indicating error)
-      if (time >= 0.0)
-           curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-      else dserror("Negative time in bodyforce calculation: time = %f", time);
-    }
-    else curvefac = 1.0;
-
     // get values and switches from the condition
-    const std::vector<int>*    onoff = myneumcond[0]->Get<std::vector<int> >   ("onoff");
-    const std::vector<double>* val   = myneumcond[0]->Get<std::vector<double> >("val"  );
-    const std::vector<int>*    functions = myneumcond[0]->Get<std::vector<int> >("funct");
+    const std::vector<int>*    onoff     = myneumcond[0]->Get<std::vector<int> >   ("onoff");
+    const std::vector<double>* val       = myneumcond[0]->Get<std::vector<double> >("val"  );
+    const std::vector<int>*    functions = myneumcond[0]->Get<std::vector<int> >   ("funct");
+    const std::vector<int>*    curve     = myneumcond[0]->Get<std::vector<int> >   ("curve");
 
     // factor given by spatial function
     double functionfac = 1.0;
     int functnum = -1;
+
+    // factor given by temporal curve
+    double curvefac = 0.0;
+    int curvenum = -1;
 
     // set this condition to the ebofoaf array
     for (int isd=0;isd<nsd_;isd++)
@@ -1677,6 +1664,18 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::BodyForce(DRT::ELEMENTS::Flui
       // get factor given by spatial function
       if (functions) functnum = (*functions)[isd];
       else functnum = -1;
+
+      if (curve) curvenum = (*curve)[isd];
+      else curvenum = -1;
+      // compute potential time curve or set time-curve factor to one
+      if (curvenum >= 0)
+      {
+        // time factor (negative time indicating error)
+        if (time >= 0.0)
+             curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        else dserror("Negative time in bodyforce calculation: time = %f", time);
+      }
+      else curvefac = 1.0;
 
       double num = (*onoff)[isd]*(*val)[isd]*curvefac;
 
