@@ -4009,6 +4009,45 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(windkesselheartvalvearterialproxdistcond);
 
   /*--------------------------------------------------------------------*/
+  // Monolithic coupling of structure and a heart valve cardiovascular full Windkessel model (closed-loop circulatory system model)
+  // mhv 02/15
+
+  Teuchos::RCP<ConditionDefinition> windkesselheartvalvecardiovascularfullcond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF HEART VALVE CARDIOVASCULAR FULL WINDKESSEL CONDITIONS",
+                                         "WindkesselHeartValveCardiovascularFullStructureCond",
+                                         "Surface heart valve cardiovascular full Windkessel",
+                                         DRT::Condition::WindkesselHeartValveCardiovascularFullStructure,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  AddNamedInt(windkesselheartvalvecardiovascularfullcond,"id");
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_qvout_max"); // maximal arterial valve resistance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_qvout_min"); // minimal arterial valve resistance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_qvin_max"); // maximal atrial valve resistance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_qvin_min"); // minimal atrial valve resistance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"E_at_max"); // maximal atrial elastance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"E_at_min"); // minimal atrial elastance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"C_ar"); // arterial compliance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_ar"); // arterial resistance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"L_ar"); // arterial inertance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"C_ven"); // venous compliance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_ven"); // venous resistance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"L_ven"); // venous inertance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"p_at_0"); // initial atrial pressure
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"p_ar_0"); // initial arterial pressure
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"p_ven_0"); // initial venous pressure
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"q_ar_0"); // initial arterial flow
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"q_ven_0"); // initial venous flow
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_ar_0"); // initial volume of arteries and capillaries
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_ven_0"); // initial volume of veins
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_at_dias"); // diastolic volume of atrium at zero pressure
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_at_syst"); // systolic volume of atrium at zero pressure
+  windkesselheartvalvecardiovascularfullcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("at_act_curve")));
+  windkesselheartvalvecardiovascularfullcond->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+
+  condlist.push_back(windkesselheartvalvecardiovascularfullcond);
+
+  /*--------------------------------------------------------------------*/
   // Monolithic coupling of structure and Windkessel: Neumann coupling surface - mhv 11/13
 
   Teuchos::RCP<ConditionDefinition> windkesselstructurecouplingcond =

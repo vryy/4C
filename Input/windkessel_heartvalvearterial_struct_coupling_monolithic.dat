@@ -53,6 +53,7 @@ TOLWINDKESSELDOFINCR            1e-08
 SOLALGORITHM                    direct
 RESTART_WITH_WINDKESSEL         No
 LINEAR_WINDK_STRUCT_SOLVER      1
+ENHANCED_OUTPUT                 No
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1

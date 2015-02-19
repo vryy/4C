@@ -33,7 +33,7 @@ namespace DRT
 }
 namespace LINALG
 {
-	class SparseMatrix;
+  class SparseMatrix;
   class SparseOperator;
 }
 
@@ -53,6 +53,7 @@ namespace UTILS
       wk_std,
       wk_heartvalvearterial,
       wk_heartvalvearterial_proxdist,
+      wk_heartvalvecardiovascular_full
     };
 
     /*!
@@ -227,7 +228,7 @@ namespace UTILS
     );
 
     //! Evaluate Windkessel conditions and assemble the results
-    void EvaluateHeartValveArterialWindkessel_Experimental
+    void EvaluateHeartValveCardiovascularFullWindkessel
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
@@ -241,9 +242,7 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec6,
       Teuchos::RCP<Epetra_Vector>    sysvec7,
       Teuchos::RCP<Epetra_Vector>    sysvec8,
-      Teuchos::RCP<Epetra_Vector>    sysvec9,
-      Teuchos::RCP<Epetra_Vector>    sysvec10,
-      Teuchos::RCP<Epetra_Vector>    sysvec11
+      Teuchos::RCP<Epetra_Vector>    sysvec9
     );
 
     //! Compute and assemble initial Windkessel values
@@ -270,6 +269,14 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec2 ///< distributed vector that may be filled by assembly of element contributions
     );
 
+    //! Compute and assemble initial Windkessel values
+    void InitializeHeartValveCardiovascularFullWindkessel
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<Epetra_Vector>    sysvec1, ///< distributed vector that may be filled by assembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    sysvec2 ///< distributed vector that may be filled by assembly of element contributions
+    );
+
 
     //! reset when prestressing
     void ResetStdWindkessel
@@ -287,6 +294,13 @@ namespace UTILS
 
     //! reset when prestressing
     void ResetHeartValveArterialProxDistWindkessel
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<Epetra_Vector>    sysvec
+    );
+
+    //! reset when prestressing
+    void ResetHeartValveCardiovascularFullWindkessel
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<Epetra_Vector>    sysvec

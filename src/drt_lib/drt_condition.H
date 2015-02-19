@@ -162,6 +162,7 @@ public:
     WindkesselStructure,
     WindkesselHeartValveArterialStructure,
     WindkesselHeartValveArterialProxDistStructure,
+    WindkesselHeartValveCardiovascularFullStructure,
     WindkesselStructureCoupling,
     ImpedanceCond,
     Impedance_Calb_Cond,

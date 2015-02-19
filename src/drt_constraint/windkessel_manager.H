@@ -111,6 +111,14 @@ namespace UTILS
     };
 
     /*!
+     \brief Return windkessel rhs norm at generalized midpoint $t_{n+\theta}$
+    */
+    int GetWindkesselLinSolveError() const
+    {
+      return linsolveerror_;
+    };
+
+    /*!
          \brief Update windkessel dofs
     */
     void UpdateTimeStep();
@@ -278,22 +286,23 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> v_; ///< vol vector at t_{n}
     Teuchos::RCP<Epetra_Vector> vn_; ///< vol vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> vm_; ///< vol vector at mid-point
-    Teuchos::RCP<Epetra_Vector> q_; ///< flux vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> qn_; ///< flux vector at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> qm_; ///< flux vector at mid-point
-    Teuchos::RCP<Epetra_Vector> dq_; ///< flux rate vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> dqn_; ///< flux rate vector at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> dqm_; ///< flux rate vector at mid-point
-    Teuchos::RCP<Epetra_Vector> ddq_; ///< time deriv of flux rate vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> ddqn_; ///< time deriv of flux rate vector at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> ddqm_; ///< time deriv of flux rate vector at mid-point
+    Teuchos::RCP<Epetra_Vector> Q_; ///< flux vector at t_{n}
+    Teuchos::RCP<Epetra_Vector> Qn_; ///< flux vector at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> Qm_; ///< flux vector at mid-point
+    Teuchos::RCP<Epetra_Vector> dQ_; ///< flux rate vector at t_{n}
+    Teuchos::RCP<Epetra_Vector> dQn_; ///< flux rate vector at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> dQm_; ///< flux rate vector at mid-point
+    Teuchos::RCP<Epetra_Vector> ddQ_; ///< time deriv of flux rate vector at t_{n}
+    Teuchos::RCP<Epetra_Vector> ddQn_; ///< time deriv of flux rate vector at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> ddQm_; ///< time deriv of flux rate vector at mid-point
     Teuchos::RCP<Epetra_Vector> windkesselrhsm_; ///< Windkessel rhs vector at mid-point
     Teuchos::RCP<Epetra_Vector> windk_rhs_wkdof_; ///< Windkessel rhs associated with p
     Teuchos::RCP<Epetra_Vector> windk_rhs_dwkdof_; ///< Windkessel rhs associated with pressure rate dp/dt
-    Teuchos::RCP<Epetra_Vector> windk_rhs_q_; ///< Windkessel rhs associated with q
-    Teuchos::RCP<Epetra_Vector> windk_rhs_dq_; ///< Windkessel rhs associated with s
-    Teuchos::RCP<Epetra_Vector> windk_rhs_ddq_; ///< Windkessel rhs associated with ds/dt
+    Teuchos::RCP<Epetra_Vector> windk_rhs_Q_; ///< Windkessel rhs associated with q
+    Teuchos::RCP<Epetra_Vector> windk_rhs_dQ_; ///< Windkessel rhs associated with s
+    Teuchos::RCP<Epetra_Vector> windk_rhs_ddQ_; ///< Windkessel rhs associated with ds/dt
     Teuchos::RCP<Epetra_Vector> windk_rhs_1_; ///< Windkessel rhs associated with 1
+    Teuchos::RCP<Epetra_Vector> compvolm_; ///< compartment volume vector (V_at, V_ar, V_ven) at mid-point
     int WindkesselID_;  ///< smallest Windkessel bc id
     int offsetID_;  ///< smallest Windkessel bc id
     int numWindkesselID_;  ///< number of Windkessel bcs
@@ -305,6 +314,7 @@ namespace UTILS
     Teuchos::RCP<Windkessel> wk_std_;
     Teuchos::RCP<Windkessel> wk_heartvalvearterial_;
     Teuchos::RCP<Windkessel> wk_heartvalvearterial_proxdist_;
+    Teuchos::RCP<Windkessel> wk_heartvalvecardiovascular_full_;
     int myrank_;
     Teuchos::RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called
@@ -313,9 +323,11 @@ namespace UTILS
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
     double theta_;
+    bool enhanced_output_;
     INPAR::STR::PreStress pstype_;
     double pstime_;
     double totaltime_;
+    int linsolveerror_;
     Teuchos::ParameterList strparams_; ///< structure input parameters
     Teuchos::ParameterList wkparams_; ///< windkessel input parameters
   }; //class

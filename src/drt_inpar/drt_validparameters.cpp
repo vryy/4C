@@ -931,6 +931,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   &windkstruct);
   setStringToIntegralParameter<int>("RESTART_WITH_WINDKESSEL","No","Must be chosen if a non-windkessel simulation is to be restarted as windkessel-structural coupled problem.",
                                  yesnotuple,yesnovalue,&windkstruct);
+  setStringToIntegralParameter<int>("ENHANCED_OUTPUT","No","Set to yes for enhanced output (like e.g. derivative information)",
+                                 yesnotuple,yesnovalue,&windkstruct);
 
   // linear solver id used for monolithic windkessel-structural problems
   IntParameter("LINEAR_WINDK_STRUCT_SOLVER",-1,"number of linear solver used for windkessel-structural problems",&windkstruct);

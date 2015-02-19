@@ -151,6 +151,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==WindkesselStructure)           os << "Surface Windkessel condition: ";
   else if (Type()==WindkesselHeartValveArterialStructure) os << "Surface heart valve arterial Windkessel condition: ";
   else if (Type()==WindkesselHeartValveArterialProxDistStructure) os << "Surface heart valve arterial prox dist Windkessel condition: ";
+  else if (Type()==WindkesselHeartValveCardiovascularFullStructure) os << "Surface heart valve cardiovascular full Windkessel condition: ";
   else if (Type()==WindkesselStructureCoupling)   os << "Surface Windkessel structure coupling condition: ";
   else if (Type()==ImpedanceCond)                 os << "Impedance boundary condition: ";
   else if (Type()==Impedance_Calb_Cond)           os << "Impedance calibration boundary condition: ";
