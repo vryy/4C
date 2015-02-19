@@ -616,11 +616,11 @@ void UQ::MLMC::IntegrateScaleByThickness()
         {
 
           // for first run do normal integration
-          my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),0.0,false);
+          //my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),0.0,false);
 
           if(stoch_wall_thickness_)
           {
-            my_thickness_manager_->SetUpThickness((random_seed+(unsigned int)numb_run_),0.0,false);
+           // my_thickness_manager_->SetUpThickness((random_seed+(unsigned int)numb_run_),0.0,false);
           }
           discret_->Comm().Barrier();
           ResetPrestress();
@@ -668,16 +668,15 @@ void UQ::MLMC::IntegrateScaleByThickness()
           CalcVonMises(my_output_elements_c_strains,vonMisesStrain);
           for(unsigned int i=0; i<my_wall_elements_.size();i++)
           {
-           std::vector<double> my_loc(3,0.0);
-           my_loc = discret_->gElement(my_wall_elements_.at(i))->ElementCenterRefeCoords();
-
-           double scaling = my_thickness_manager_->InitialThickness()/(my_thickness_manager_->EvalThicknessAtLocation(my_loc,1.0)+my_thickness_manager_->InitialThickness() );
-           IO::cout << "InitialThickness " << my_thickness_manager_->InitialThickness() << IO::endl;
-           IO::cout << "my_thickness_manager_->EvalThicknessAtLocation " << my_thickness_manager_->EvalThicknessAtLocation(my_loc,1.0) << IO::endl;
-           IO::cout << "scaling " << scaling << IO::endl;
-           IO::cout << "break " << IO::endl;
-           vonMisesStress_scaled->push_back(vonMisesStress->at(i)*scaling);
+            double scaling = my_thickness_manager_->InitialThickness()/(my_thickness_manager_->EvalThicknessAtLocation(my_wall_elements_.at(i),1.0)+my_thickness_manager_->InitialThickness() );
+             //IO::cout << "InitialThickness " << my_thickness_manager_->InitialThickness() << IO::endl;
+             //IO::cout << "my_thickness_manager_->EvalThicknessAtLocation " << my_thickness_manager_->EvalThicknessAtLocation(my_loc,1.0) << IO::endl;
+             //IO::cout << "scaling " << scaling << IO::endl;
+             //IO::cout << "break " << IO::endl;
+             //IO::cout << "EleGID" << my_wall_elements_.at(i) << "Closest node ID "<< my_thickness_manager_->EvalThicknessAtLocation(my_wall_elements_.at(i),1.0) << IO::endl;
+             vonMisesStress_scaled->push_back(vonMisesStress->at(i)*scaling);
           }
+          discret_->Comm().Barrier();
 
           // compute disp magnitude
           for(unsigned int i=0;i<my_output_elements_c_disp->size();i++)

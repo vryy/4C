@@ -78,11 +78,12 @@ public:
   //! \brief reset discretization to its original state
   void ResetGeometry();
 
+
   /*! \brief Evaluate random field for variable wall thickness
-  *
+  *   Thickness will be evaluated at closest point to element center
   */
   double EvalThicknessAtLocation(
-      std::vector<double> myloc,  ///< spatial location at which random field is evaluated
+      int ele_GID,  ///< spatial location is ecoded by element GID
       double para_cont_parameter  ///< parameter continuation parameter for blending over thickness
       );
 
@@ -142,6 +143,15 @@ private:
   void ComputeNormals();
 
 
+  /*! \brief sort uncertain nodes into bins to speed up closest point search
+  *
+  */
+  void SortUncertainNodesIntoBins();
+
+
+  void ComputeMapWallElementsClosestSurfacePoint();
+
+
   //! brief structure discretization for convenience
   Teuchos::RCP<DRT::Discretization> discret_;
 
@@ -153,6 +163,13 @@ private:
 
   //! brief vector with all nodes subject to uncertainty
   std::vector<int> my_uncert_nodeids_;
+
+  //! brief map with all nodes subject to uncertainty sorted into bins with unique bin id
+  std::map<int, std::vector<int> > my_uncert_nodeids_in_bins_;
+
+  //! brief map with giving closest uncertain nodes for each wall element
+  // ele_GID , node_ID
+  std::map<int, int > closest_uncertain_node_;
 
   //! brief total number of nodes in uncertain surface condition
   int my_uncert_nnodes_;

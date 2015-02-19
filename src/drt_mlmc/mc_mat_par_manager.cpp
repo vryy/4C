@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file matpar_manager.cpp
+ \file matpar_manager.cpp
 \brief manages material parameters during UQ at some point this should
        be merged with the mat par manager in stat inv ana
 
@@ -318,9 +318,9 @@ void UQ::MCMatParManager::SetParams(double para_cont_parameter)
   std::map<int, std::vector<int> >::const_iterator curr;
 
   // ************************************************************
-  // deal with material parameters modelled as random field first
+  // deal with material parameters modeled as random field first
   // ************************************************************
-  // do we have quantities modelled as random fields ?
+  // do we have quantities modeled as random fields ?
   if(numstochparams_r_field_)
   {
     // this call updates params_r_field_
@@ -347,9 +347,9 @@ void UQ::MCMatParManager::SetParams(double para_cont_parameter)
   }
 
   // **************************************************************
-  // now deal with material parameters modelled as random variables
+  // now deal with material parameters modeled as random variables
   // **************************************************************
-  // do we have quantities modelled as random variables ?
+  // do we have quantities modeled as random variables ?
   if(numstochparams_r_var_)
   {
     ComputeMatParamsMultivectorFromRandomVariables(para_cont_parameter);

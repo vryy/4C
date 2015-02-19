@@ -48,6 +48,8 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
     aledis_(Teuchos::null),
     randomfield_(Teuchos::null),
     my_uncert_nodeids_(),
+    my_uncert_nodeids_in_bins_(),
+    closest_uncertain_node_(),
     my_uncert_nnodes_(-1),
     my_uncertain_nodes_org_pos_(),
     my_uncertain_nodes_dbc_onoff_(),
@@ -314,6 +316,21 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
     }
   }
   ComputeNormals();
+
+
+  SortUncertainNodesIntoBins();
+
+  // brute force search for closest surface node
+//  std::map<int, std::vector<int> >::const_iterator iter;
+//
+//  for (iter = my_uncert_nodeids_in_bins_.begin(); iter != my_uncert_nodeids_in_bins_.end(); iter++)
+//  {
+//    IO::cout<< "Bin ID " << iter->first  << IO::endl;
+//    for(unsigned int i=0;i<iter->second.size();i++)
+//    {
+//      IO::cout<< "Ids " << iter->second.at(i) << IO::endl;
+//    }
+//  }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -607,17 +624,154 @@ void UQ::MCVarThicknessManager::ModifyGeometryBasedOnRF(const unsigned int mysee
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 double UQ::MCVarThicknessManager::EvalThicknessAtLocation(
-    std::vector<double> myloc, double para_cont_parameter)
+    int ele_GID, double para_cont_parameter)
 {
   double rf_thick = 0.0;
+  int corresponding_min_dist_id =-1;
 
-  // evaluate random field
-  rf_thick = randomfield_->EvalFieldAtLocation(myloc, para_cont_parameter,
-      false, false);
+  std::vector<double> myloc(3,0.0);
+  myloc = discret_->gElement(ele_GID)->ElementCenterRefeCoords();
+
+
+  if(closest_uncertain_node_.find(ele_GID)==closest_uncertain_node_.end())
+  {
+    int numbins=20;
+    // get bounding box
+    std::vector<double> min_bb = randomfield_->GetMinBB();
+    std::vector<double> max_bb = randomfield_->GetMaxBB();
+
+    double bb_lx=max_bb[0]-min_bb[0];
+    double bb_ly=max_bb[1]-min_bb[1];
+    double bb_lz=max_bb[2]-min_bb[2];
+
+
+    int i = 0;
+    int j = 0;
+    int k = 0;
+
+    i = floor((myloc.at(0)-min_bb[0])/(bb_lx/numbins));
+    j = floor((myloc.at(1)-min_bb[1])/(bb_ly/numbins));
+    k = floor((myloc.at(2)-min_bb[2])/(bb_lz/numbins));
+
+    // compute bin id
+    int bin_id=i+numbins*j+numbins*numbins*k;
+
+    // get vector of nodes
+    std::vector<int> closest_nodes;
+
+    double min_dist = 10e12;
+    //int corresponding_min_dist_id =-1;
+
+    std::map<int, std::vector<int> >::iterator iter2=my_uncert_nodeids_in_bins_.find(bin_id);
+    // we have found uncertain nodes in this bin
+    if(iter2!=my_uncert_nodeids_in_bins_.end())
+    {
+      closest_nodes=iter2->second;
+
+      for(unsigned int l=0;l<closest_nodes.size();l++)
+      {
+        std::vector<double> node_loc = my_uncertain_nodes_org_pos_.at(closest_nodes.at(l));
+        if(node_loc.size()==3 && myloc.size()==3 )
+        {
+          double xdist_sq=(node_loc.at(0)-myloc.at(0))*(node_loc.at(0)-myloc.at(0));
+          double ydist_sq=(node_loc.at(1)-myloc.at(1))*(node_loc.at(1)-myloc.at(1));
+          double zdist_sq=(node_loc.at(2)-myloc.at(2))*(node_loc.at(2)-myloc.at(2));
+
+          double dist=sqrt(xdist_sq+ydist_sq+zdist_sq);
+
+          if(dist<min_dist)
+          {
+            min_dist=dist;
+            corresponding_min_dist_id=my_uncertain_nodes_org_pos_.find(closest_nodes.at(l))->first;
+          }
+        }
+        else
+          dserror("Node position must have three dimensions");
+      }
+      if(corresponding_min_dist_id>-1)
+      {
+        // store id of closest node in map
+        if(!closest_uncertain_node_.insert(std::pair<int,int >(ele_GID, corresponding_min_dist_id)).second)
+          dserror("Entry already exists cannot insert new node for one element");
+      }
+      else
+      {
+        dserror("Something went wrong during minimum distance search");
+      }
+    }
+    // we have not found uncertain nodes in this bin and hence search the surrounding ones
+    else
+    {
+      for (int n = i - 1; n < i + 2; n++)
+      {
+        for (int m = j - 1; m < j + 2; m++)
+        {
+          for (int p = k - 1; p < k + 2; p++)
+          {
+            if (n >= 0 && n < numbins && m >= 0 && m < numbins && p >= 0
+                && p < numbins)
+            {
+              bin_id = n + numbins * m + numbins * numbins * p;
+              std::map<int, std::vector<int> >::iterator iter3 =
+                  my_uncert_nodeids_in_bins_.find(bin_id);
+              if (iter3 != my_uncert_nodeids_in_bins_.end())
+              {
+                closest_nodes = iter3->second;
+                for (unsigned int l = 0; l < closest_nodes.size(); l++)
+                {
+                  std::vector<double> node_loc = my_uncertain_nodes_org_pos_.at(
+                      closest_nodes.at(l));
+                  if (node_loc.size() == 3 && myloc.size() == 3)
+                  {
+                    double xdist_sq = (node_loc.at(0) - myloc.at(0))
+                        * (node_loc.at(0) - myloc.at(0));
+                    double ydist_sq = (node_loc.at(1) - myloc.at(1))
+                        * (node_loc.at(1) - myloc.at(1));
+                    double zdist_sq = (node_loc.at(2) - myloc.at(2))
+                        * (node_loc.at(2) - myloc.at(2));
+                    double dist = sqrt(xdist_sq + ydist_sq + zdist_sq);
+
+                    if (dist < min_dist)
+                    {
+                      min_dist = dist;
+                      corresponding_min_dist_id =
+                          my_uncertain_nodes_org_pos_.find(closest_nodes.at(l))->first;
+                    }
+                  }
+                  else
+                    dserror("Node position must have three dimensions");
+                }
+              }
+            }
+          }
+        }
+      } // end of loop over bins
+      if (corresponding_min_dist_id > -1)
+      {
+        // store id of closest node in map
+        if (!closest_uncertain_node_.insert(
+            std::pair<int, int>(ele_GID, corresponding_min_dist_id)).second)
+          dserror("Entry already exists cannot insert new node for one element");
+       }
+       else
+       {
+         dserror("Something went wrong during minimum distance search");
+       }
+    } // end of loop over 26 adjacent bins
+  }
 
   if(use_mean_field_from_cond_)
   {
-    dserror("Currently not implemented");
+    rf_thick = randomfield_->EvalFieldAtLocation(
+        my_uncertain_nodes_org_pos_.at(closest_uncertain_node_.find(ele_GID)->second),
+        my_uncertain_nodes_dbc_val_.at(closest_uncertain_node_.find(ele_GID)->second)[0], para_cont_parameter, false, false);
+  }
+  else // evaluate random field
+  {
+    rf_thick = randomfield_->EvalFieldAtLocation(
+        my_uncertain_nodes_org_pos_.at(
+            closest_uncertain_node_.find(ele_GID)->second), para_cont_parameter,
+        false, false);
   }
   return rf_thick;
 
@@ -630,6 +784,51 @@ void UQ::MCVarThicknessManager::ComputeNormals()
   mytemp.SetupForUQAbuseNormalCalculation(discret_, discret_->Comm());
   mytemp.Interface()->EvaluateNodalNormals(my_uncertain_nodes_normals_);
   LINALG::GatherAll(my_uncertain_nodes_normals_, discret_->Comm());
+}
+
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::MCVarThicknessManager::SortUncertainNodesIntoBins()
+{
+  int numbins=20;
+  // get bounding box
+  std::vector<double> min_bb = randomfield_->GetMinBB();
+  std::vector<double> max_bb = randomfield_->GetMaxBB();
+
+  double bb_lx=max_bb[0]-min_bb[0];
+  double bb_ly=max_bb[1]-min_bb[1];
+  double bb_lz=max_bb[2]-min_bb[2];
+
+
+  int i = 0;
+  int j = 0;
+  int k = 0;
+
+  // brute force search for closest surface node
+  std::map<int, std::vector<double> >::iterator iter;
+  for (iter = my_uncertain_nodes_org_pos_.begin(); iter != my_uncertain_nodes_org_pos_.end(); iter++)
+  {
+    i = floor((iter->second.at(0)-min_bb[0])/(bb_lx/numbins));
+    j = floor((iter->second.at(1)-min_bb[1])/(bb_ly/numbins));
+    k = floor((iter->second.at(2)-min_bb[2])/(bb_lz/numbins));
+
+    // compute bin id
+    int bin_id=i+numbins*j+numbins*numbins*k;
+
+    // insert node id in map
+    std::map<int, std::vector<int> >::iterator iter2=my_uncert_nodeids_in_bins_.find(bin_id);
+    if(iter2!=my_uncert_nodeids_in_bins_.end())
+    {
+      iter2->second.push_back(iter->first);
+    }
+    else
+    {
+      std::vector<int> temp_node_ids(1,iter->first);
+      my_uncert_nodeids_in_bins_.insert(std::pair<int, std::vector<int> >(bin_id,temp_node_ids));
+    }
+  }
+
 }
 
 #endif /* #ifdef HAVE_FFTW */

@@ -90,6 +90,13 @@ public:
 
   const bool IsBounded() {return is_bounded_; }
 
+
+  //!brief get min corner of bounding box
+  std::vector<double> GetMinBB() {return bb_min_;}
+
+  //!brief get min corner of bounding box
+  std::vector<double> GetMaxBB() {return bb_max_;}
+
 protected:
  //! \brief which proc am I on
  int myrank_;
