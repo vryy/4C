@@ -123,6 +123,9 @@ public:
   /// set the option if positions have to be determined or not
   void SetFindPositions( bool positions ) { options_.SetFindPositions( positions ); }
 
+  /// set the option if positions have to be determined or not
+  void SetNodalDofSetStrategy( INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy) { options_.SetNodalDofSetStrategy( nodal_dofset_strategy ); }
+
   /// get the options
   void GetOptions(Options & options){options = options_;};
 

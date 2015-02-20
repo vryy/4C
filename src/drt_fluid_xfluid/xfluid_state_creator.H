@@ -82,6 +82,7 @@ public:
       int minnumdofsets,
       bool include_inner) :
         condition_manager_(condition_manager),
+        nodal_dofset_strategy_(DRT::INPUT::IntegralValue<INPAR::CUT::NodalDofSetStrategy>(params_xfem, "NODAL_DOFSET_STRATEGY")),
         VolumeCellGaussPointBy_(DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY")),
         BoundCellGaussPointBy_(DRT::INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(params_xfem,"BOUNDARY_GAUSS_POINTS_BY")),
         gmsh_cut_out_(DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_CUT_OUT")),
@@ -135,6 +136,9 @@ private:
 
   //! condition manager which handles all coupling objects and the coupling/boundary conditions
   Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
+
+  //! strategy for nodal dofset management
+  const INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy_;
 
   const INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy_;
   const INPAR::CUT::BCellGaussPts BoundCellGaussPointBy_;

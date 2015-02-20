@@ -1241,6 +1241,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(
   {
     // Set options for the cut wizard
     wizard->SetOptions(
+        INPAR::CUT::NDS_Strategy_full,
         INPAR::CUT::VCellGaussPts_Tessellation, // how to create volume cell Gauss points?
         INPAR::CUT::BCellGaussPts_Tessellation, // how to create boundary cell Gauss points?
         false,                                  // gmsh output for cut library
@@ -1298,6 +1299,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(
   {
     // Set options for the cut wizard
     wizard->SetOptions(
+        INPAR::CUT::NDS_Strategy_full,
         INPAR::CUT::VCellGaussPts_DirectDivergence, // how to create volume cell Gauss points?
         INPAR::CUT::BCellGaussPts_DirectDivergence, // how to create boundary cell Gauss points?
         false,                                      // gmsh output for cut library

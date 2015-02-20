@@ -31,6 +31,8 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet( bool include_inner, const 
 
     Mesh & m = NormalMesh();
 
+    const INPAR::CUT::NodalDofSetStrategy strategy = options_.GetNodalDofSetStrategy();
+
     // nodes used for CUT std::map<node->ID, Node>, shadow nodes have ID<0
     std::map<int, Node* > nodes;
     m.GetNodeMap( nodes );
@@ -139,8 +141,16 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet( bool include_inner, const 
             // sort the dofsets for this node after FindDOFSetsNEW
             n->SortNodalDofSets();
 
-        } // end if n_gid >= 0
 
+            if(strategy == INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition)
+            {
+
+              // combine the (ghost) dofsets for this node w.r.t each phase to avoid multiple ghost nodal dofsets for a certain phase
+              n->CollectNodalDofSets();
+
+            } // otherwise do nothing
+
+        } // end if n_gid >= 0
     } // end loop over nodes
 
 

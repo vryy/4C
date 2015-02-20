@@ -43,21 +43,16 @@ class NodalDofSet
 {
 public:
 
-  /// constructor
-  NodalDofSet(
+  /// constructor for a nodal dofset
+  explicit NodalDofSet(
       std::set<plain_volumecell_set,Cmp> connected_volumecells,
       bool is_std_dofset
-      ) : is_std_dofset_(is_std_dofset)
-  {
-    volumecell_composite_.clear();
+      );
 
-    std::copy(
-        connected_volumecells.begin(),
-        connected_volumecells.end(),
-        std::inserter(volumecell_composite_,volumecell_composite_.end())
-    );
+  /// constructor for CompositeNodalDofSet
+  explicit NodalDofSet(bool is_std_dofset, GEO::CUT::Point::PointPosition pos);
 
-  };
+  virtual ~NodalDofSet(){};
 
   /// return the composite of all connected volumecells between elements and the element's sub-elements
   const std::set<plain_volumecell_set, Cmp>& VolumeCellComposite() const { return volumecell_composite_; }
@@ -66,12 +61,14 @@ public:
   bool Is_Standard_DofSet() const { return is_std_dofset_; }
 
   /// get the position of the nodal dofset which is the same for all its contained volumecells
-  GEO::CUT::Point::PointPosition Position() const;
+  GEO::CUT::Point::PointPosition Position() const { return position_; };
 
   /// does the nodal dofset's composite of volumecells contain the point?
-  bool Contains( GEO::CUT::Point* p);
+  virtual bool Contains( GEO::CUT::Point* p);
 
-private:
+  virtual void Print();
+
+protected:
 
   /// stores for each element (and its subelements) in a 1-ring around the node all its volumecells which has been connected between the surrounding elements
   /// for linear elements the plain_volumecell_sets contain only one volumecell, for quadratic elements usually more vc's
@@ -79,6 +76,54 @@ private:
 
   /// is the dofset a standard physical dofset or a ghost dofset?
   bool is_std_dofset_;
+
+  GEO::CUT::Point::PointPosition position_;
+
+};
+
+
+class CompositeNodalDofSet : public NodalDofSet
+{
+public:
+
+  /// constructor
+  CompositeNodalDofSet(
+      bool is_std_dofset,
+      GEO::CUT::Point::PointPosition pos
+      ) : NodalDofSet( is_std_dofset, pos)
+  {
+    nodal_dofsets_.clear();
+  };
+
+  /// add a nodal dofset to the composite of nodal dofsets
+  void add(NodalDofSet *nds)
+  {
+    if( is_std_dofset_ != nds->Is_Standard_DofSet() or position_ != nds->Position() )
+      dserror("NodalDofSet you want to combine to a CompositeNodalDofSet do not have the same properties! Invalid!");
+
+    nodal_dofsets_.push_back(nds);
+
+    std::copy(
+            nds->VolumeCellComposite().begin(),
+            nds->VolumeCellComposite().end(),
+            std::inserter(volumecell_composite_,volumecell_composite_.end())
+        );
+  }
+
+  /// does one of the nodal dofset's contain the point?
+  bool Contains( GEO::CUT::Point* p)
+  {
+    for(unsigned int i=0; i< nodal_dofsets_.size(); i++)
+      if(nodal_dofsets_[i]->Contains(p)) return true;
+
+    return false;
+  }
+
+  void Print();
+
+private:
+
+  std::vector< NodalDofSet* > nodal_dofsets_; ///< a collection of NodalDofSet objects combined to one composite
 
 };
 
@@ -218,11 +263,14 @@ public:
 
 
   /*========================================================================*/
-  //! @name sorting of nodal DofSets
+  //! @name sorting and collecting of nodal DofSets
   /*========================================================================*/
 
   /// sort all nodal dofsets via xyz point coordinates (use compare functions in cut_node.H)
   void SortNodalDofSets();
+
+  /// collect the (ghost) dofsets for this node w.r.t each phase to avoid multiple ghost nodal dofsets for a certain phase
+  void CollectNodalDofSets();
 
   /// compare operator for sorting NodalDofSets
   bool operator()( NodalDofSet* nodaldofset1, NodalDofSet* nodaldofset2);

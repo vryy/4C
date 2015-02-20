@@ -56,6 +56,7 @@ GEO::CutWizard::CutWizard( Teuchos::RCP<DRT::Discretization> dis )
  * set options and flags used during the cut
 *--------------------------------------------------------------*/
 void GEO::CutWizard::SetOptions(
+    INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy, //!< strategy for nodal dofset management
     INPAR::CUT::VCellGaussPts VCellgausstype,   //!< Gauss point generation method for Volumecell
     INPAR::CUT::BCellGaussPts BCellgausstype,   //!< Gauss point generation method for Boundarycell
     bool gmsh_output,                           //!< print write gmsh output for cut
@@ -73,6 +74,7 @@ void GEO::CutWizard::SetOptions(
 
   // set position option to the intersection class
   intersection_->SetFindPositions( positions );
+  intersection_->SetNodalDofSetStrategy( nodal_dofset_strategy );
 
   is_set_options_ = true;
 }

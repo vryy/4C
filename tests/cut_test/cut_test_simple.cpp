@@ -478,7 +478,7 @@ void test_hex8_multiple()
 {
   for ( int step=0; step<2; ++step )
   {
-    GEO::CUT::Options options( true, step!=0 );
+    GEO::CUT::Options options( INPAR::CUT::NDS_Strategy_full, true, step!=0 );
     GEO::CUT::Mesh mesh(options);
     GEO::CUT::Element * e = create_hex8( mesh );
 

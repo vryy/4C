@@ -1,6 +1,8 @@
 #ifndef CUT_OPTIONS_H
 #define CUT_OPTIONS_H
 
+#include "../drt_inpar/inpar_cut.H"
+
 namespace GEO
 {
 namespace CUT
@@ -13,13 +15,15 @@ class Options
 {
 public:
 
-  Options( bool positions=true,
+  Options( INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy = INPAR::CUT::NDS_Strategy_full,
+           bool positions=true,
            bool simpleshapes=true,
            bool genquad4=true,
            bool genhex8=true,
            bool genwedge6=false,
            bool genpyramid5=false )
-    : positions_(positions),
+    : nodal_dofset_strategy_(nodal_dofset_strategy),
+      positions_(positions),
       simpleshapes_(simpleshapes),
       genquad4_(genquad4),
       genhex8_(genhex8),
@@ -29,6 +33,10 @@ public:
   }
 
   void SetFindPositions( bool positions ) { positions_ = positions; }
+
+  void SetNodalDofSetStrategy( INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy) { nodal_dofset_strategy_ = nodal_dofset_strategy; }
+
+  INPAR::CUT::NodalDofSetStrategy GetNodalDofSetStrategy(){ return nodal_dofset_strategy_; }
 
   bool FindPositions() const { return positions_; }
 
@@ -43,12 +51,15 @@ public:
 
 private:
 
+  INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy_;
+
   bool positions_;
   bool simpleshapes_;
   bool genquad4_;
   bool genhex8_;
   bool genwedge6_;
   bool genpyramid5_;
+
 };
 
 }

@@ -33,7 +33,7 @@ FLUID_STRESS                    No
 FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
-OUTPUT_GMSH                     yes
+OUTPUT_GMSH                     no
 FILESTEPS                       1000
 ----------------------------------------------------------TWO PHASE FLOW
 CONVTOL                         1e-5
@@ -42,7 +42,7 @@ MAXTIME                         1000.0
 NUMSTEP                         5
 RESTARTEVRY                     1000//20
 TIMESTEP                        3.0e-03
-UPRES                           1
+UPRES                           5
 //INTERFACE_THICKNESS             0.0 //0.04  //Initial: 0.04, h=0.02
 //ENHANCED_GAUSSRULE              No  //No Yes
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -176,7 +176,6 @@ FUNCT1 EXPR 0 0.0 0 FUNCTION sqrt((x-0.0)*(x-0.0)+(y+1.0)*(y+1.0))-0.3 //y-0.05*
 ----------------------------------------------------------------------FUNCT4
 
 ----------------------------------------------------------RESULT DESCRIPTION
-//AT INTEGRATION POINT
 //node: 4213 is top of bubble
 FLUID DIS fluid NODE 4213 QUANTITY velx VALUE 0.0000000000e+00 TOLERANCE 1e-8
 FLUID DIS fluid NODE 4213 QUANTITY vely VALUE 6.99262765654554697e-02 TOLERANCE 1e-8
@@ -201,6 +200,7 @@ FLUID DIS fluid NODE 3203 QUANTITY velx VALUE -4.29673061236187249e-03 TOLERANCE
 FLUID DIS fluid NODE 3203 QUANTITY vely VALUE 4.09330226951107670e-03 TOLERANCE 1e-8
 FLUID DIS fluid NODE 3203 QUANTITY pressure VALUE 2.34809487395548359e+02 TOLERANCE 1e-6
 SCATRA DIS scatra NODE 3203 QUANTITY phi VALUE 3.67972794569106365e-01 TOLERANCE 1e-8
+
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12

@@ -47,6 +47,12 @@ namespace INPAR
     EleIntType_DirectDivergence  ///< element uses DirectDivergence for integration of the element's volume-cells
   };
 
+  enum NodalDofSetStrategy
+  {
+    NDS_Strategy_OneDofset_PerNodeAndPosition,  ///< suppress multiple dofset per node and allow just one dofset per node and per dofset position
+    NDS_Strategy_full                           ///< full strategy based on found connections of volume-cells in support of the nodal shape function
+  };
+
   }  // namespace CUT
 
 }  // namespace INPAR

@@ -7332,6 +7332,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("MAX_NUM_DOFSETS",3,"Maximum number of volumecells in the XFEM element",&xfem_general);
 
+
+  setStringToIntegralParameter<int>("NODAL_DOFSET_STRATEGY","full","which strategy used for the nodal dofset management per node?",
+                                 tuple<std::string>("OneDofset_PerNodeAndPosition","full"),
+                                 tuple<int>(
+                                     INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition,
+                                     INPAR::CUT::NDS_Strategy_full
+                                     ),
+                                 &xfem_general);
+
+
   // Integration options
   setStringToIntegralParameter<int>("VOLUME_GAUSS_POINTS_BY","Tessellation","how to find Gauss Points for the cut volumes",
                                tuple<std::string>("Tessellation","MomentFitting","DirectDivergence"),

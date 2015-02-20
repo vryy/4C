@@ -127,15 +127,33 @@ bool GEO::CUT::Cmp::Compare(
 }
 
 
-/*-----------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------*/
-GEO::CUT::Point::PointPosition GEO::CUT::NodalDofSet::Position() const
+GEO::CUT::NodalDofSet::NodalDofSet(
+    std::set<plain_volumecell_set,Cmp> connected_volumecells,
+    bool is_std_dofset
+    ) : is_std_dofset_(is_std_dofset)
 {
-  // get position from first volume-cell of first element
-  const plain_volumecell_set & set = *(volumecell_composite_.begin());
-  return set[0]->Position();
-}
+  volumecell_composite_.clear();
 
+  std::copy(
+      connected_volumecells.begin(),
+      connected_volumecells.end(),
+      std::inserter(volumecell_composite_,volumecell_composite_.end())
+  );
+
+  // set the position of the nodal dofset
+  const plain_volumecell_set & set = *(volumecell_composite_.begin());
+  position_ = set[0]->Position();
+
+};
+
+
+GEO::CUT::NodalDofSet::NodalDofSet(
+    bool is_std_dofset,
+    GEO::CUT::Point::PointPosition pos
+) : is_std_dofset_(is_std_dofset), position_(pos)
+{
+  volumecell_composite_.clear();
+}
 
 /*-----------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------*/
@@ -156,6 +174,22 @@ bool GEO::CUT::NodalDofSet::Contains( GEO::CUT::Point* p)
   }
 
   return false;
+}
+
+void GEO::CUT::NodalDofSet::Print()
+{
+  std::cout << "GEO::CUT::NodalDofSet: "
+      << "STD dofset? " << this->Is_Standard_DofSet()
+      << " Pos: " << this->Position()
+      << std::endl;
+}
+
+void GEO::CUT::CompositeNodalDofSet::Print()
+{
+  std::cout << "GEO::CUT::CompositeNodalDofSet which contains " << nodal_dofsets_.size() << " combined GEO::CUT::NodalDofSet: "
+      << "STD dofset? " << this->Is_Standard_DofSet()
+      << " Pos: " << this->Position()
+      << std::endl;
 }
 
 
@@ -459,19 +493,96 @@ void GEO::CUT::Node::SortNodalDofSets()
 
 #if(0)
   // print the sorted dofsets:
-  std::cout << "DOFSETs for node: " << Id() << std::endl;
+  std::cout << "Sorted DOFSETs for node: " << Id() << std::endl;
   for(int i=0; i< NumDofSets(); i++)
   {
     NodalDofSet * dofset = GetNodalDofSet(i);
-    std::cout << "\t nodal dofset " << i
-        << ": STD dofset? " << dofset->Is_Standard_DofSet()
-        << " Pos: " << dofset->Position()
-        << std::endl;
+    dofset->Print();
   }
 #endif
 
   return;
 }
+
+
+/*-----------------------------------------------------------------------------------------*
+ * collect the (ghost) dofsets for this node w.r.t each phase to avoid multiple ghost nodal dofsets for a certain phase
+ *-----------------------------------------------------------------------------------------*/
+void GEO::CUT::Node::CollectNodalDofSets()
+{
+
+  // assume that the nodal dofsets have been sorted in a step before,
+  // such that ghost sets to be combined are stored consecutively in the vector of sorted nodal dofsets
+
+  std::vector<CompositeNodalDofSet* > collected_nodaldofsets;
+
+  for(std::vector<NodalDofSet*>::iterator it=nodaldofsets_.begin();
+      it!=nodaldofsets_.end();
+      it++)
+  {
+    NodalDofSet* nds = *it;
+    bool is_std_dofset = nds->Is_Standard_DofSet();
+    GEO::CUT::Point::PointPosition pos = nds->Position();
+
+    // already an appropriate composite of nodal dofsets found, the current nodal dofset can be combined with?
+    CompositeNodalDofSet* cnds = NULL;
+
+    if(is_std_dofset) // do not combine standard dofsets as they are unique for each phase
+    {
+      cnds = new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos);
+      collected_nodaldofsets.push_back(cnds);
+    }
+    else // ghost set -> create new collected set or append to an already existing one
+    {
+
+      if( collected_nodaldofsets.size() == 0 ) // no composite added yet
+      {
+        cnds = new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos); // if first, then create a new composite
+        collected_nodaldofsets.push_back(cnds);
+      }
+      else
+      {
+        // assume that the nodal dofsets have been sorted in a step before
+        // then we potentially combine the current nodal dofset with the last CompositeNodalDofSet at most
+        CompositeNodalDofSet * cnds_last = collected_nodaldofsets.back();
+
+        if(cnds_last->Is_Standard_DofSet() == is_std_dofset and
+            cnds_last->Position() == pos) // same position (phase) and also ghost
+          cnds = cnds_last;
+        else
+        {
+          cnds = new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos); // if first, then create a new composite
+          collected_nodaldofsets.push_back(cnds);
+        }
+      }
+    }
+
+    cnds->add(nds);
+  }
+
+  // set the composite of nodal dofsets for the node
+  nodaldofsets_.clear();
+
+  std::copy(
+      collected_nodaldofsets.begin(),
+      collected_nodaldofsets.end(),
+      std::inserter(nodaldofsets_,nodaldofsets_.begin())
+  );
+
+  // safety check for number of allowed sets (one std and one ghost per position)
+
+
+#if(0)
+  // print the sorted dofsets:
+  std::cout << "Collected DOFSETs for node: " << Id() << std::endl;
+  for(int i=0; i< NumDofSets(); i++)
+  {
+    NodalDofSet * dofset = GetNodalDofSet(i);
+    dofset->Print();
+  }
+#endif
+}
+
 
 
 /*-----------------------------------------------------------------------------------------*
